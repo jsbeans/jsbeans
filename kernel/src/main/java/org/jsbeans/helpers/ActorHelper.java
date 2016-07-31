@@ -22,27 +22,30 @@ import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import java.util.concurrent.TimeUnit;
+
 public class ActorHelper {
     private static Timeout serviceCommTimeout = null;
     private static Timeout nodeIntercommTimeout = null;
+    private static Timeout infiniteTimeout = null;
 
 //	public static ActorRef getActorFor(Class<? extends UntypedActor> clazz){
 //		//return Core.getActorSystem().actorSelection("/user/" + generateName(clazz));
 //		return Core.getActorSystem().actorFor("/user/" + generateName(clazz));
 //	}
 
-    public static ActorSelection getActorSelection(String nodeId, Class<? extends UntypedActor> clazz) {
-        if (nodeId.indexOf("://") != -1) {
+    public static ActorSelection getActorSelection(String nodeId, Class<? extends UntypedActor> clazz){
+        if(nodeId.indexOf("://") != -1){
             return Core.getActorSystem().actorSelection(nodeId + "/user/" + generateName(clazz));
         }
         return Core.getActorSystem().actorSelection("akka.tcp://" + nodeId + "/user/" + generateName(clazz));
     }
 
-    public static ActorSelection getActorSelection(Class<? extends UntypedActor> clazz) {
+    public static ActorSelection getActorSelection(Class<? extends UntypedActor> clazz){
         return Core.getActorSystem().actorSelection("/user/" + generateName(clazz));
     }
 
-    public static ActorSelection getActorSelection(ActorPath path) {
+    public static ActorSelection getActorSelection(ActorPath path){
         return Core.getActorSystem().actorSelection(path);
     }
 
@@ -82,8 +85,8 @@ public class ActorHelper {
         return ctx.actorOf(Props.create(cl, args).withDispatcher(dispatcher), name);
     }
 
-    public static Timeout getServiceCommTimeout() {
-        if (serviceCommTimeout == null) {
+    public static Timeout getServiceCommTimeout(){
+        if(serviceCommTimeout == null ){
 //			serviceCommTimeout = new Timeout(Duration.create(300, TimeUnit.SECONDS));
             serviceCommTimeout = ConfigHelper.getConfigTimeout("kernel.serviceCommTimeout");
         }
@@ -91,8 +94,16 @@ public class ActorHelper {
         return serviceCommTimeout;
     }
 
-    public static Timeout getNodeIntercommTimeout() {
-        if (nodeIntercommTimeout == null) {
+    public static Timeout getInfiniteTimeout(){
+        if(infiniteTimeout == null ){
+            infiniteTimeout = new Timeout(Duration.create(240, TimeUnit.DAYS));
+        }
+
+        return infiniteTimeout;
+    }
+
+    public static Timeout getNodeIntercommTimeout(){
+        if(nodeIntercommTimeout == null ){
 //			nodeIntercommTimeout = new Timeout(Duration.create(1000, TimeUnit.SECONDS));
             nodeIntercommTimeout = ConfigHelper.getConfigTimeout("kernel.nodeIntercommTimeout");
         }
@@ -101,16 +112,16 @@ public class ActorHelper {
     }
 
 
-    public static String generateName(Class<?> clazz) {
+    public static String generateName(Class<?> clazz){
         return generateName(clazz.getName());
     }
 
-    public static String generateName(String qualifiedName) {
+    public static String generateName(String qualifiedName ) {
         String[] names = qualifiedName.split("\\.");
         return names[names.length - 1];
     }
 
-    public static String getServiceNameForActor(ActorRef a) {
+    public static String getServiceNameForActor(ActorRef a){
         String[] names = a.path().name().split("\\/");
         return names[names.length - 1];
     }
@@ -142,7 +153,7 @@ public class ActorHelper {
         return future;
     }
 
-    public static boolean isDeadLetters(ActorRef ar) {
+    public static boolean isDeadLetters(ActorRef ar){
         return ar.toString().indexOf("/deadLetters") != -1;
     }
 }

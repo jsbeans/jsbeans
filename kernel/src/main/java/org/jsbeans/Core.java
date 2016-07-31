@@ -68,7 +68,7 @@ public class Core {
 			Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
 			if (logger instanceof ch.qos.logback.classic.Logger) {
                 ch.qos.logback.classic.Logger l = ((ch.qos.logback.classic.Logger) logger);
-                if (l.getLevel().toInt() > Level.DEBUG.toInt()) {
+                if (l.getLevel() != null && l.getLevel().toInt() > Level.DEBUG.toInt()) {
                     l.setLevel(Level.DEBUG);
                 }
 			}

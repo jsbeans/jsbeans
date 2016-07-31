@@ -10,6 +10,7 @@ JSB({
 		links: {},
 		
 		options: {
+			enabled: true,
 			userLink: true,
 			allowLinkCallback: function(remoteConnector, linkId, callback){
 				return true;
@@ -97,6 +98,9 @@ JSB({
 			}
 			
 			this.subscribe('_jsb_diagramConnectorUserHover', function(sender, msg, source){
+				if(!self.isEnabled()){
+					return;
+				}
 				self._lalCallCnt++;
 				if(source == self){
 					// highlight source connector
@@ -122,6 +126,10 @@ JSB({
 			});
 			
 			this.subscribe('_jsb_diagramConnectorUserOut', function(sender, msg, source){
+				if(!self.isEnabled()){
+					return;
+				}
+
 				self._lalCallCnt++;
 				if(source == self){
 					self.highlight(false, 'source');
@@ -140,9 +148,36 @@ JSB({
 			}
 			var sheetRect = this.node.diagram.sheet.get(0).getBoundingClientRect();
 			var originRect = this.options.origin.get(0).getBoundingClientRect();
+			
+			var ox = Math.round((originRect.left + originRect.right) / 2);
+			var oy = Math.round((originRect.top + originRect.bottom) / 2);
+			
+			switch(this.options.align){
+			case 'left':
+				ox = originRect.left;
+				break;
+			case 'right':
+				ox = originRect.right;
+				break;
+			case 'top':
+				oy = originRect.top;
+				break;
+			case 'bottom':
+				oy = originRect.bottom;
+				break;
+			}
+			
+			if(this.options.offsetX){
+				ox += this.options.offsetX;
+			}
+
+			if(this.options.offsetY){
+				oy += this.options.offsetY;
+			}
+
 			return {
-				x: ((originRect.left + originRect.right) / 2 - sheetRect.left) / this.node.diagram.getOption('zoom'),
-				y: ((originRect.top + originRect.bottom) / 2 - sheetRect.top) / this.node.diagram.getOption('zoom')
+				x: (ox - sheetRect.left) / this.node.diagram.getOption('zoom'),
+				y: (oy - sheetRect.top) / this.node.diagram.getOption('zoom')
 			};
 		},
 
@@ -175,6 +210,9 @@ JSB({
 				linkMap[link.key] = link;
 			}
 			this.links[link.getId()] = link;
+			if(this.options.onChangeConnection){
+				this.options.onChangeConnection.call(this);
+			}
 		},
 		
 		removeLink: function(link){
@@ -194,6 +232,18 @@ JSB({
 			if(Object.keys(linkMap).length === 0){
 				delete this.remoteConnectors[remoteConnector.getId()];
 			}
+			if(this.options.onChangeConnection){
+				this.options.onChangeConnection.call(this);
+			}
+
+		},
+		
+		enable: function(bEnable){
+			this.options.enabled = bEnable;
+		},
+		
+		isEnabled: function(){
+			return this.options.enabled;
 		}
 
 		

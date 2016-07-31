@@ -34,6 +34,10 @@ JSB({
 					this.connectors[cKey].install();
 				}
 			}
+			
+			this.getElement().resize(function(){
+				self.updateLinks();
+			});
 
 		},
 		
@@ -230,7 +234,12 @@ JSB({
 			opts.origin = origin;
 			opts.handle = handle;
 			
-			var connector = new self.Connector(this, cKey, opts);
+			var connectorClass = this.diagram.connectorDescs[cKey].connectorClass;
+			if(!connectorClass){
+				connectorClass = self.Connector;
+			}
+			
+			var connector = new connectorClass(this, cKey, opts);
 			this.connectors[connector.getId()] = connector;
 			
 			return connector;

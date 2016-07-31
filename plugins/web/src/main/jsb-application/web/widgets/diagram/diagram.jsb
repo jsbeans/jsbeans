@@ -5,6 +5,8 @@ JSB({
 		'JQuery.UI.Effects': 'JQuery.UI.Effects',
 		'JSB.Widgets.Diagram.Node': 'Node',
 		'JSB.Widgets.Diagram.Link': 'Link',
+		'JSB.Widgets.Diagram.Joint': 'Joint',
+		'JSB.Widgets.Diagram.Connector': 'Connector',
 		'JSB.Widgets.Diagram.Controller': 'Controller',
 		'JSB.Widgets.Diagram.WiringController': 'WiringController'
 	},
@@ -13,6 +15,8 @@ JSB({
 		connectorDescs: {},
 		linkDescs: {},
 		nodeDescs: {},
+		shapeDescs: {},
+		
 		controllers: {},
 		controllerStack: [],
 		selectedNodes: {},
@@ -64,6 +68,8 @@ JSB({
 			this.svg = d3.select(this.canvas.get(0)).append('svg')
 			    .attr('width', elt.width())
 			    .attr('height', elt.height());
+			
+			this.defs = this.svg.append('defs');
 			    
 			self.sheet = self.$('<div class="_jsb_diagramSheet"></div>');
 			this.canvas.append(self.sheet);
@@ -131,6 +137,23 @@ JSB({
 				}
 			}
 			
+			// register predefined shapes
+			this.registerShape('arrow', function(){
+				return this.defs.append('path')
+					.attr('d', 'M-20,-10 L0,0 L-20,10');
+			});
+
+			this.registerShape('arrowTriangle', function(){
+				return this.defs.append('path')
+					.attr('d', 'M0,0 L-20,-10 L-20,10 z');
+			});
+			
+			this.registerShape('arrowSharp', function(){
+				return this.defs.append('path')
+					.attr('d', 'M0,0 L-20,-10 L-15,0 L-20,10 z');
+			});
+
+			
 			this.setupEventHandlers();
 			
 			this.getElement().resize(function(){
@@ -139,6 +162,26 @@ JSB({
 			
 			this.updateViewport();
 
+		},
+		
+		registerShape: function(key, createCallback){
+			var desc = {
+				id: key + '_' + this.getId(),
+				createCallback: createCallback,
+				element: null
+			};
+			this.shapeDescs[key] = desc;
+		},
+		
+		useShape: function(key){
+			if(!this.shapeDescs[key]){
+				throw 'No shape has been registered with key: ' + key;
+			}
+			if(!this.shapeDescs[key].element){
+				this.shapeDescs[key].element = this.shapeDescs[key].createCallback.call(this);
+				this.shapeDescs[key].element.attr('id', this.shapeDescs[key].id);
+			}
+			return this.shapeDescs[key].id;
 		},
 		
 		getPan: function(){
@@ -316,6 +359,7 @@ JSB({
 				});
 			} else {
 				_setupConnector();
+				self.connectorDescs[key].connectorClass = self.Connector;
 			}
 		},
 		
@@ -341,6 +385,19 @@ JSB({
 			} else {
 				_setupLink();
 			}
+			
+			// check joints classes
+			if(opts.joints && JSB().isArray(opts.joints) && opts.joints.length > 0){
+				for(var i = 0; i < opts.joints.length; i++){
+					var jDesc = opts.joints[i];
+					if(jDesc.jsb && JSB().isString(jDesc.jsb)){
+						JSB().lookup(opts.jsb, function(cls){
+							jDesc.jsb = cls.jsb;
+						});
+					}
+				}	
+			}
+			
 		},
 		
 		destroy: function(){
@@ -374,6 +431,9 @@ JSB({
 		
 		createNode: function(key, opts){
 			var nodeDesc = this.nodeDescs[key];
+			if(!nodeDesc){
+				throw 'Unable to create node due to unknown node key: ' + key;
+			}
 			var nodeClass = self.Node;
 			if(nodeDesc.nodeClass){
 				nodeClass = nodeDesc.nodeClass;
@@ -469,6 +529,9 @@ JSB({
 				for(var lId in allLinkDescs){
 					var lDesc = allLinkDescs[lId].options;
 					
+					if(!lDesc.source || !lDesc.target){
+						continue;
+					}
 					var sourceArr = lDesc.source;
 					if(!JSB().isArray(sourceArr)){
 						sourceArr = [sourceArr];

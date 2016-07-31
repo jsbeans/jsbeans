@@ -76,19 +76,25 @@ JSB({
 				break;
 			case 'mouseover':
 				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && !this.isSelecting && !this.panStartPt){
-					this.publish('_jsb_diagramConnectorUserHover', sender);
+					if(sender.isEnabled()){
+						this.publish('_jsb_diagramConnectorUserHover', sender);
+					}
 				}
 				break;
 			case 'mouseout':
 				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && !this.isSelecting && !this.panStartPt){
-					this.publish('_jsb_diagramConnectorUserOut', sender);
+					if(sender.isEnabled()){
+						this.publish('_jsb_diagramConnectorUserOut', sender);
+					}
 				}
 				break;
 			case 'mousedown':
 				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && params.event.which == 1){
-					this.wiringStartPt = this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY});
-					this.wiringConnector = sender;
-					params.event.stopPropagation();
+					if(sender.isEnabled()){
+						this.wiringStartPt = this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY});
+						this.wiringConnector = sender;
+						params.event.stopPropagation();
+					}
 				} else if(sender == this.diagram && params.event.which == 3){
 					this.panStartPt = {x: params.event.pageX, y: params.event.pageY};
 					this.diagram.addClass('panning');
@@ -391,7 +397,7 @@ JSB({
 					}
 				}
 				
-				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && sender != this.fromConnector){
+				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && sender != this.fromConnector && sender.isEnabled()){
 					params.event.stopPropagation();
 					// check current connector
 					this.diagram.lookupAppropriateLinks(this.fromConnector, sender, function(lMap){

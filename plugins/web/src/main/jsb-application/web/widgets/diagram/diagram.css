@@ -29,9 +29,15 @@
 
 ._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet > ._jsb_diagramNode {}
 
+
+
 ._jsb_diagram > ._jsb_diagramCanvas > svg {}
 
-._jsb_diagram > ._jsb_diagramCanvas > svg > .link {
+/* link */
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link {}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link > path {
 	fill: none;
 	stroke: #000000;
 	stroke-width: 2;
@@ -41,7 +47,7 @@
 	opacity: 0.5;
 }
 
-._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="_jsb_diagramUserWiringLink"] {
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="_jsb_diagramUserWiringLink"] > path {
 	stroke-width: 2;
 }
 

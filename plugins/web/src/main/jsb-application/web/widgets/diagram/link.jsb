@@ -1,7 +1,9 @@
 JSB({
 	name: 'JSB.Widgets.Diagram.Link',
 	parent: 'JSB.Widgets.Actor',
-	require: {},
+	require: {
+		'JSB.Widgets.Diagram.Joint': 'Joint'
+	},
 	
 	client: {
 		diagram: null,
@@ -10,6 +12,7 @@ JSB({
 		source: null,
 		target: null,
 		path: null,
+		joints: [],
 		
 		options: {
 			cellRoundMax: 2,
@@ -21,11 +24,24 @@ JSB({
 			this.base();
 			this.diagram = diagram;
 			this.key = key;
-			JSB().merge(this.options, this.diagram.linkDescs[key].options, opts);
+			JSB().merge(true, this.options, this.diagram.linkDescs[key].options, opts);
 			
-			// construct link
+			// construct joints
+			if(this.options.joints){
+				for(var i = 0; i < this.options.joints.length; i++){
+					var jDesc = this.options.joints[i];
+					var jClass = self.Joint;
+					if(jDesc.jsb){
+						jClass = jDesc.jsb.getClass();
+					}
+					var joint = new jClass(this, jDesc);
+					this.joints.push(joint);
+				}
+			}
 			
 		},
+		
+		installJoint: function(){},
 		
 		destroy: function(){
 			if(this.diagram && this.diagram.hasLink(this)){
@@ -36,8 +52,8 @@ JSB({
 			// TODO: unbind connectors
 			
 			// remove from svg
-			if(this.path){
-				this.path.remove();
+			if(this.group){
+				this.group.remove();
 			}
 			
 			this.getSuperClass('JSB.Widgets.Actor').destroy.call(this);
@@ -124,8 +140,8 @@ JSB({
 							vecOffs = this.diagram.getOption('cellSize') * this.options.cellRoundMax;
 						}
 						segments[j].med = {
-							left: seg.to.x - vecOffs * vec.x,
-							top: seg.to.y - vecOffs * vec.y
+							x: seg.to.x - vecOffs * vec.x,
+							y: seg.to.y - vecOffs * vec.y
 						};
 					}
 					
@@ -141,27 +157,118 @@ JSB({
 			if(JSB().isNull(this.source) || JSB().isNull(this.target)){
 				return;
 			}
-			if(!this.path){
-				this.path = this.diagram.svg.append('path')
+			
+			if(!this.group){
+				this.group = this.diagram.svg.append('g')
 					.classed('link', true)
 					.attr('key', this.key);
+				this.path = this.group.append('path');
+				this.sourceHead = null;
+				this.targetHead = null;
+				
+				// create heads
+				if(this.options.heads){
+					if(this.options.heads.source && this.options.heads.source.shape){
+						var sourceId = this.diagram.useShape(this.options.heads.source.shape);
+						this.sourceHead = this.group.append('g')
+							.classed('head', true)
+							.classed('source', true);
+						this.sourceHead.append('use')
+							.attr('xlink:href', '#' + sourceId)
+							.classed('shape', true);
+
+					}
+					if(this.options.heads.target && this.options.heads.target.shape){
+						var targetId = this.diagram.useShape(this.options.heads.target.shape);
+						this.targetHead = this.group.append('g')
+							.classed('head', true)
+							.classed('target', true);
+						this.targetHead.append('use')
+							.attr('xlink:href', '#' + targetId)
+							.classed('shape', true);
+					}
+				}
 			}
 			
 			var ptSource = this.getSourcePosition();
 			var ptTarget = this.getTargetPosition();
 			
-			var pts = [ptSource, ptTarget];
-			var path = this.createPathFromPoints(pts);
+			// construct points
+			var pts = [ptSource];
 			
+			for(var i = 0; i < this.joints.length; i++){
+				var joint = this.joints[i];
+				var pt = joint.getPosition();
+				if(pt){
+					pts.push(pt);
+				}
+			}
 			
-			this.path.attr('d', path);
+			pts.push(ptTarget);
+			
+			this.path.attr('d', this.createPathFromPoints(pts));
+			
+			var bRebuildPath = false;
+			
+			// place & direct heads
+			if(this.sourceHead || this.targetHead){
+				var pathNode = this.path.node();
+				var pathLength = pathNode.getTotalLength();
+				
+				function _getOrientation(pt1, pathPos){
+					var pt2 = pathNode.getPointAtLength(pathPos);
+					var vec = {x: pt1.x - pt2.x, y: pt1.y - pt2.y};
+					var vecLength = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+					vec.x /= vecLength;
+					vec.y /= vecLength;
+					var vec2 = {x: 1, y: 0};
+					var val = Math.acos(vec.x * vec2.x + vec.y * vec2.y) * 180 / Math.PI;
+					return vec.y < 0 ? -val: val;
+				}
+				
+				if(this.sourceHead){
+					var odd = '';
+					if(pathLength > 1){
+						var o = _getOrientation(ptSource, 1);
+						odd = ' rotate(' + o + ')';
+					}
+					this.sourceHead.attr('transform', 'translate(' + ptSource.x + ' ' + ptSource.y + ')' + odd);
+					
+					// strip source
+					if(this.options.heads.source.strip && pathLength > this.options.heads.source.strip){
+						var ptFirst = pathNode.getPointAtLength(this.options.heads.source.strip);
+						pts.splice(0, 1, ptFirst);
+						bRebuildPath = true;
+					}
+
+				}
+				if(this.targetHead){
+					var odd = '';
+					if(pathLength > 1){
+						var o = _getOrientation(ptTarget, pathLength - 1);
+						odd = ' rotate(' + o + ')';
+					}
+					this.targetHead.attr('transform', 'translate(' + ptTarget.x + ' ' + ptTarget.y + ')' + odd);
+					
+					// strip target
+					if(this.options.heads.target.strip && pathLength > this.options.heads.target.strip){
+						var ptLast = pathNode.getPointAtLength(pathLength - this.options.heads.target.strip);
+						pts.splice(pts.length - 1, 1, ptLast);
+						bRebuildPath = true;
+					}
+				}
+			}
+			
+			if(bRebuildPath){
+				this.path.attr('d', this.createPathFromPoints(pts));
+			}
 		},
 		
 		setWiringModeStyle: function(bEnable){
-			if(!this.path){
+			if(!this.group){
 				return;
 			}
-			this.path.classed(this.options.wiringClass, bEnable);
+			this.group.classed(this.options.wiringClass, bEnable);
 		}
 		
 
