@@ -1,0 +1,81 @@
+@CHARSET "UTF-8";
+
+._dwp_splitbox {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+._dwp_splitbox ._dwp_splitPane {
+	position: absolute;
+	overflow: hidden;
+}
+
+._dwp_splitbox ._dwp_splitPane.vertical {
+	display: inline-block;
+	height: 100%;
+	top: 0;
+}
+
+._dwp_splitbox ._dwp_splitPane.horizontal {
+	width: 100%;
+	left: 0;
+}
+
+._dwp_splitbox ._dwp_splitter {
+	z-index: 100;
+}
+
+._dwp_splitbox ._dwp_splitter.vertical {
+	background: -moz-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -webkit-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -o-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -ms-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	border-left: 1px solid #CCCCCC;
+	border-right: 1px solid #CCCCCC;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	width: 5px;
+	cursor: e-resize;
+	cursor: col-resize;
+}
+
+._dwp_splitbox ._dwp_splitter.vertical .gripIcon {
+	background: url("../images/grip.png") repeat-y;
+	height: 50px;
+	left: 1px;
+	margin: -25px 0 0;
+	position: relative;
+	top: 50%;
+	width: 3px;
+}
+
+._dwp_splitbox ._dwp_splitter.horizontal {
+	background: -moz-linear-gradient(top, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: linear-gradient(top, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -webkit-linear-gradient(top, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -o-linear-gradient(top, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -ms-linear-gradient(top, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	border-top: 1px solid #CCCCCC;
+	border-bottom: 1px solid #CCCCCC;
+	width: 100%;
+	position: absolute;
+	left: 0;
+	height: 5px;
+	cursor: s-resize;
+	cursor: row-resize
+}
+
+._dwp_splitbox ._dwp_splitter.horizontal .gripIcon {
+	position: relative;
+	background: url("../images/grip.png") repeat-x scroll 0 0;
+	width: 50px;
+	height: 3px;
+	left: 50%;
+	top: 1px;
+	margin: 0 0 0 -25px;
+}
+
+

@@ -1,0 +1,47 @@
+@CHARSET "UTF-8";
+
+.entityFormView {
+	padding: 0 10px;
+}
+
+.entityFormView ._dwp_groupBox {
+	margin-top: 10px;
+}
+
+.entityFormView .entityHeader {
+	padding: 10px 4px;
+}
+
+.entityFormView .entityHeader > .entityTitle {
+	display: inline-block;
+    vertical-align: middle;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.entityFormView[key="class"] .entityHeader > .entityTitle {
+	color: #735539;
+}
+
+.entityFormView[key="annotationProperty"] .entityHeader > .entityTitle {
+	color: #567B7B;
+}
+
+.entityFormView[key="dataProperty"] .entityHeader > .entityTitle {
+	color: #48650E;
+}
+
+.entityFormView[key="objectProperty"] .entityHeader > .entityTitle {
+	color: #306FA2;
+}
+
+.entityFormView[key="instance"] .entityHeader > .entityTitle {
+    color: #863588;
+}
+
+.entityFormView .entityHeader > .entityIRI {
+    display: block;
+	color: #333;
+    vertical-align: middle;
+    font-size: 14px;
+}

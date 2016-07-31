@@ -1,0 +1,321 @@
+@CHARSET "UTF-8";
+
+.dwpConsole {
+	position: relative;
+	overflow: hidden;
+	
+	background-image: url("back.jpg");
+	background-size: 100%;
+	background-color: #ddd5c0;
+	
+}
+
+.dwpConsole .logWindow {
+	width: 100%;
+	position: absolute;
+	overflow: hidden;
+	top: 0;
+	bottom: 25px;
+}
+
+.dwpConsole .logWindow .canvas {
+	width: 100%;
+	position: absolute;
+}
+
+.dwpConsole .logWindow .canvas .logItem {
+	background: #e8e7e5;
+	background: -moz-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,243,243,0.5) 30%, rgba(229,229,229,0.5) 40%, rgba(242,242,242,0.5));
+	background: linear-gradient(top,rgba(255,255,255,0.5), rgba(243,243,243,0.5) 30%, rgba(229,229,229,0.5) 40%, rgba(242,242,242,0.5));
+	background: -webkit-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,243,243,0.5) 30%, rgba(229,229,229,0.5) 40%, rgba(242,242,242,0.5));
+	background: -o-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,243,243,0.5) 30%, rgba(229,229,229,0.5) 40%, rgba(242,242,242,0.5));
+	background: -ms-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,243,243,0.5) 30%, rgba(229,229,229,0.5) 40%, rgba(242,242,242,0.5));
+	border: 1px solid #cccccc;
+	min-height: 20px;
+	margin: -1px 10px 0 10px;
+	overflow: hidden;
+	position: relative;
+	border-radius: 6px;
+}
+
+.dwpConsole .logWindow .canvas .logItem.odd {
+	background: -moz-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 223, 223, 0.5) 30%, rgba(209, 209, 209, 0.5) 40%, rgba(222, 222, 222, 0.5));
+	background: linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 223, 223, 0.5) 30%, rgba(209, 209, 209, 0.5) 40%, rgba(222, 222, 222, 0.5));
+	background: -webkit-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 223, 223, 0.5) 30%, rgba(209, 209, 209, 0.5) 40%, rgba(222, 222, 222, 0.5));
+	background: -o-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 223, 223, 0.5) 30%, rgba(209, 209, 209, 0.5) 40%, rgba(222, 222, 222, 0.5));
+	background: -ms-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 223, 223, 0.5) 30%, rgba(209, 209, 209, 0.5) 40%, rgba(222, 222, 222, 0.5));
+}
+
+.dwpConsole .logWindow .canvas .logItem.error {
+	background: -moz-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,213,213,0.5) 30%, rgba(229,209,209,0.5) 40%, rgba(242,222,222,0.5));
+	background: linear-gradient(top,rgba(255,255,255,0.5), rgba(243,213,213,0.5) 30%, rgba(229,209,209,0.5) 40%, rgba(242,222,222,0.5));
+	background: -webkit-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,213,213,0.5) 30%, rgba(229,209,209,0.5) 40%, rgba(242,222,222,0.5));
+	background: -o-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,213,213,0.5) 30%, rgba(229,209,209,0.5) 40%, rgba(242,222,222,0.5));
+	background: -ms-linear-gradient(top,rgba(255,255,255,0.5), rgba(243,213,213,0.5) 30%, rgba(229,209,209,0.5) 40%, rgba(242,222,222,0.5));
+}
+
+.dwpConsole .logWindow .canvas .logItem.error.odd {
+	background: -moz-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 203, 203, 0.5) 30%, rgba(209, 180, 180, 0.5) 40%, rgba(222, 202, 202, 0.5));
+	background: linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 203, 203, 0.5) 30%, rgba(209, 180, 180, 0.5) 40%, rgba(222, 202, 202, 0.5));
+	background: -webkit-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 203, 203, 0.5) 30%, rgba(209, 180, 180, 0.5) 40%, rgba(222, 202, 202, 0.5));
+	background: -o-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 203, 203, 0.5) 30%, rgba(209, 180, 180, 0.5) 40%, rgba(222, 202, 202, 0.5));
+	background: -ms-linear-gradient(top, rgba(235, 235, 235, 0.5), rgba(223, 203, 203, 0.5) 30%, rgba(209, 180, 180, 0.5) 40%, rgba(222, 202, 202, 0.5));
+	}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet {
+	padding: 5px 0.5%;
+	position: relative;
+	display: inline-block;
+	min-height: 25px;
+	-webkit-user-select: initial;
+	-khtml-user-select: initial;
+	-moz-user-select: initial;
+	-ms-user-select: initial;
+	user-select: initial;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.cmdSheet {
+	float: left;
+	width: 48.9%;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.resultSheet {
+	width: 48.9%;
+}
+
+.dwpConsole .logWindow .canvas .logItem.error .itemSheet.resultSheet {
+	font-family: monospace;
+	font-size: small;
+	color: #900;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemFader {
+	width: 100%;
+	height: 8px;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	background: -moz-linear-gradient(top,rgba(237, 235, 234, 0), rgba(242, 242, 242, 0.5));
+	background: linear-gradient(top,rgba(237, 235, 234, 0), rgba(242, 242, 242, 0.5));
+	background: -webkit-linear-gradient(top,rgba(237, 235, 234, 0), rgba(242, 242, 242, 0.5));
+	background: -o-linear-gradient(top,rgba(237, 235, 234, 0), rgba(242, 242, 242, 0.5));
+	background: -ms-linear-gradient(top,rgba(237, 235, 234, 0), rgba(242, 242, 242, 0.5));
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSplitter {
+	background: -moz-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+    background: linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -webkit-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -o-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+	background: -ms-linear-gradient(left, #D5D5D5 0%, #F5F5F5 50%, #D5D5D5 100%);
+    border-left: 1px solid #CCCCCC;
+    border-right: 1px solid #CCCCCC;
+    height: 100%;
+    left: 50%;
+    margin-left: -5px;
+    position: absolute;
+    top: 0;
+    width: 5px;
+    cursor: e-resize;
+    cursor: col-resize;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSplitter .gripIcon {
+	background: url("/jsb.widgets/images/grip.png") repeat-y;
+    height: 50px;
+    left: 1px;
+    margin: -25px 0 0;
+    position: relative;
+    top: 50%;
+    width: 3px;
+}
+
+.dwpConsole .logWindow .canvas .logItem .splitterBox {
+	position: absolute;
+	height: 100%;
+	width: 60%;
+	top: 0;
+	left: 20%;
+	z-index: -1;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.cmdSheet .cm-keyword {
+	color: #7F0055;
+    font-weight: bold;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.cmdSheet .cm-variable {
+	color: black;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.cmdSheet .cm-string {
+	color: #2A00FF;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.cmdSheet .cm-number {
+	color: #116644;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.cmdSheet .cm-comment {
+	color: #3F7F5F;
+}
+
+.dwpConsole .logWindow .canvas .logItem .itemSheet.cmdSheet pre {
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+.dwpConsole .logWindow .toolbar {
+	position: absolute;
+	right: 0;
+	top: 0;
+	margin: 0 10px 6px;
+	display: none;
+	background-color: #E5E5E5;
+	border-bottom: 1px solid #CCCCCC;
+	border-left: 1px solid #CCCCCC;
+	border-right: 1px solid #CCCCCC;
+	border-radius: 0 0 8px 8px;
+	padding: 6px;
+	z-index: 9999;
+	
+	background: -moz-linear-gradient(top , rgba(245, 245, 245, 0.5), rgba(200, 200, 200, 0.5) 30%);
+	background: linear-gradient(top , rgba(245, 245, 245, 0.5), rgba(200, 200, 200, 0.5) 30%);
+	background: -webkit-linear-gradient(top , rgba(245, 245, 245, 0.5), rgba(200, 200, 200, 0.5) 30%);
+	background: -o-linear-gradient(top , rgba(245, 245, 245, 0.5), rgba(200, 200, 200, 0.5) 30%);
+	background: -ms-linear-gradient(top , rgba(245, 245, 245, 0.5), rgba(200, 200, 200, 0.5) 30%);
+	
+}
+
+.dwpConsole .logWindow .toolbar ul {
+	margin: 0;
+	padding: 0;
+}
+
+.dwpConsole .logWindow .toolbar ul li {
+	list-style-type: none;
+	display: inline-block;
+	width: 20px;
+	height: 20px;
+	background-image: url('icons.png');
+	cursor: pointer;
+	opacity: 0.5;
+	margin: 0 1px;
+}
+
+.dwpConsole .logWindow .toolbar ul li:hover {
+	opacity: 1;
+}
+
+.dwpConsole .logWindow .toolbar .edit {
+	background-position: 0 -80px;	
+}
+
+.dwpConsole .logWindow .toolbar .separator {
+	background-image: none;
+	width: 4px;
+	border-left: 1px solid #999;
+	margin-left: 6px;
+	cursor: default;
+}
+
+.dwpConsole .logWindow .toolbar .copy {
+	background-position: 0 -60px;
+}
+
+.dwpConsole .logWindow .toolbar .toggle.expand {
+	background-position: 0 -20px;
+}
+
+.dwpConsole .logWindow .toolbar .toggle {
+	background-position: 0 -40px;
+}
+
+.dwpConsole .logWindow .toolbar .close {
+	background-position: 0 0;
+}
+
+.dwpConsole .logWindow .toolbar .run {
+	background-position: 0 -100px;
+}
+
+
+.dwpConsole .cmdWindow {
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+	opacity:0.9;
+	min-height: 22px;
+}
+
+.dwpConsole .cmdWindow .CodeMirror {
+	border: 1px solid #eee;
+	height: auto;
+	background: -webkit-linear-gradient(top,rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.87)) !important;
+}
+
+.dwpConsole .cmdWindow .CodeMirror .cmdBar {
+	width: 2.0em;
+}
+
+.dwpConsole .cmdWindow .CodeMirror .gutterMarker {
+	margin-left: 0.4em;
+}
+
+.dwpConsole .cmdWindow .CodeMirror .lint-error {
+	font-family: arial;
+	font-size: 70%;
+	background: #ffa;
+	color: #a00;
+	padding: 2px 5px 3px;
+}
+
+.dwpConsole .cmdWindow .CodeMirror .lint-error-icon {
+	color: white;
+	background-color: red;
+	font-weight: bold;
+	border-radius: 50%;
+	padding: 0 3px;
+	margin-right: 7px;
+}
+
+.dwpConsole .cmdWindow .CodeMirror-scroll {
+	overflow-y: hidden;
+	overflow-x: auto;
+}
+
+.dwpConsole .cmdWindow .CodeMirror-fullscreen {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 9999;
+}
+
+.dwpConsole .scrollBarWindow {
+	position: absolute;
+	width: 60px;
+	height: 300px;
+	padding: 2px;
+	background: #999;
+	display: none;
+	opacity: 0.5;
+	border-radius: 3px;
+}
+
+.dwpConsole .scrollBarWindow .scrollBar {
+	position: relative;
+	width: 100%;
+	background: #ccc;
+	cursor: n-resize;
+}
+
+.dwpConsole .embeddedObject {
+	width: 100%;
+}
+
+.dwpConsole .resultSheet > .null {
+	font-style: italic;
+    color: #797979;
+}

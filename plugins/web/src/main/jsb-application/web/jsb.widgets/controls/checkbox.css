@@ -1,0 +1,40 @@
+@CHARSET "UTF-8";
+
+._dwp_checkBox {
+	position: relative;
+	vertical-align: middle;
+}
+
+._dwp_checkBox > label {}
+
+._dwp_checkBox > label > input,
+._dwp_checkBox > label > span {
+	vertical-align: middle;
+}
+
+._dwp_checkBox > .contents {
+	position: relative;
+	vertical-align: middle;
+	display: inline-block;
+}
+
+._dwp_checkBox.disabled,
+._dwp_checkBox > .contents.disabled {
+	opacity: 0.5;
+}
+
+._dwp_checkBox > .shadowPanel,
+._dwp_checkBox > .contents > .shadowPanel {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1;
+	display: none;
+}
+
+._dwp_checkBox.disabled > .shadowPanel,
+._dwp_checkBox > .contents.disabled > .shadowPanel {
+	display: block;
+}

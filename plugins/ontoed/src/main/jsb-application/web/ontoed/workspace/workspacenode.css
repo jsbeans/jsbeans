@@ -1,0 +1,154 @@
+@CHARSET "UTF-8";
+
+.workspaceNode {
+	width: 100%;
+	padding-right: 8px;
+	position: relative;
+}
+
+.workspaceNode > .icon {
+	width: 16px;
+    height: 16px;
+    background: url('../images/icons16.png');
+    margin-right: 2px;
+    position: absolute;
+	left: 2px;
+    top: 0;
+}
+
+.workspaceNode > .title {
+    text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
+    padding-left: 22px;
+}
+
+.workspaceNode > .btnEdit {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    display: none;
+}
+
+li._dwp_treeViewNode.selected > ._dwp_nodeHeader > ._dwp_itemContainer > .workspaceNode > .btnEdit,
+li._dwp_treeViewNode.highlighted > ._dwp_nodeHeader > ._dwp_itemContainer > .workspaceNode > .btnEdit {
+	display: inline-block;
+}
+
+
+.workspaceNode.folderNode > ._dwp_primitiveEditor {
+	padding-left: 22px;
+	display: block;
+	padding-right: 16px;
+}
+
+.workspaceNode.folderNode > ._dwp_primitiveEditor > ._dwp_plain {
+	padding: 0;
+	cursor: inherit;
+}
+
+.workspaceNode.folderNode > ._dwp_primitiveEditor > input {
+	border-radius: 0;
+}
+
+.workspaceNode.folderNode > .icon {
+	background-position: -32px 0;
+}
+
+.workspaceNode.ontologyNode > .icon {
+    top: 6px;
+    background-position: -16px 0;
+    cursor: pointer;
+}
+
+.workspaceView > ._dwp_treeview ._dwp_treeViewNode.ontology.current .workspaceNode.ontologyNode > .icon {
+	background-position: -64px -64px;
+}
+
+.workspaceNode.ontologyNode.spinOntologyNode > .icon {
+	background-position: -16px -80px;
+}
+
+.workspaceView > ._dwp_treeview ._dwp_treeViewNode.spinontology.current .workspaceNode.ontologyNode.spinOntologyNode > .icon {
+	background-position: -32px -80px;
+}
+
+.workspaceNode.ontologyNode > .btnEdit {
+	top: 6px;
+}
+
+.workspaceNode.ontologyNode > .title {
+	font-size: 11px;
+	display: block;
+	padding-right: 16px;
+}
+
+.workspaceNode.ontologyNode > .title > .file {
+	margin-right: 4px;
+    padding-right: 4px;
+    border-right: 1px solid #A5A5A5;
+	color: #7E5323;
+}
+
+.workspaceNode.ontologyNode > .title > .file.hidden {
+	display: none;
+}
+
+.workspaceNode.ontologyNode > .title > .name {}
+
+.workspaceNode.ontologyNode > .subtitle {
+	color: #555;
+    font-style: italic;
+    font-size: 11px;
+	text-overflow: ellipsis;
+    overflow: hidden;
+    padding-left: 22px;
+    padding-right: 16px;
+}
+
+.workspaceNode.missingOntologyNode {}
+
+.workspaceNode.missingOntologyNode > .icon {
+	background-position: -16px 0;
+}
+.workspaceNode.missingOntologyNode > .icon > .warnIcon {
+    position: absolute;
+    background-image: url('../images/icons16.png');
+    background-position: -67px -19px;
+    width: 10px;
+    height: 10px;
+    right: 0;
+    bottom: 0;
+}
+
+.workspaceNode.missingOntologyNode > .title {
+	color: #555;
+    font-style: italic;
+}
+
+.workspaceNode.missingOntologyNode > .message {
+	display: inline-block;
+    vertical-align: top;
+    margin-left: 6px;
+    color: #8C0E0E;
+}
+
+.workspaceNode.missingOntologyNode > .message > span {
+	color: #555;
+	margin-right: 6px;
+}
+
+.workspaceNode.uploadNode {}
+
+.workspaceNode.uploadNode > .icon {
+	 background: url('../images/loading.gif');
+}
+
+.workspaceNode.uploadNode.error > .icon {
+	background: url('../images/icons16.png');
+	background-position: -112px -16px;
+}
+
+.workspaceNode.uploadNode > .title {
+	color: #777;
+}

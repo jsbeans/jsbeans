@@ -1,0 +1,1368 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://polimorf/general/OPO#"
+     xml:base="http://polimorf/general/OPO"
+     xmlns:general="http://polimorf/general/OPO#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:root="http://polimorf/general/ROOT#"
+     xmlns:ace_lexicon="http://attempto.ifi.uzh.ch/ace_lexicon#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <owl:Ontology rdf:about="http://polimorf/general/OPO">
+        <owl:imports rdf:resource="http://polimorf/general/ROOT"/>
+        <dc:description rdf:datatype="http://www.w3.org/2001/XMLSchema#string">undefined</dc:description>
+        <dc:title rdf:datatype="http://www.w3.org/2001/XMLSchema#string">36047f3ee0eb80c55b329f3d92013904</dc:title>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    
+
+
+    <!-- http://polimorf/general/OPO#attributeSHO -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#attributeSHO">
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Имя колонки НСО, указанного в параметре typeSHO</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">колонкаНСО</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityValue"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#capabilityAttribute -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#capabilityAttribute">
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">свойстваАтрибута</rdfs:label>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#capabilityIndicator -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#capabilityIndicator">
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">свойстваПоказателя</rdfs:label>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#capabilityValue -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#capabilityValue">
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">свойстваЗначения</rdfs:label>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#categoryIndicator -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#categoryIndicator">
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Свойство Категория может принимать одно из множества значений {&quot;плановый&quot; , &quot;текущий&quot;, &quot;исторический&quot;}</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">категорияПкз</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityIndicator"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#nullNotNull -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#nullNotNull">
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Определяет обязательность атрибута в типе предмета.Принимает значения 0 или 1.</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">обязательность</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityAttribute"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#patternValue -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#patternValue">
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Для типа значения=&quot;координаты&quot;, шаблон имеет вид [-]99.999999 [-]999.999999 999999, где 
+[-]99.999999 - широта
+[-]999.999999 - долгота
+999999 - высота
+
+Для типа значения=&quot;абсолютное&quot;, шаблон может иметь любой, заранее оговоренный вид.</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">шаблонЗначения</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityValue"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#refOnСapabilityValueDataProperty -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#refOnСapabilityValueDataProperty">
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ссылка на свойства значения атрибута домена</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ссылкаНаСвойство</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityAttribute"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#typeSHO -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#typeSHO">
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Имя типа НСО (классификатора, справочника, рубрики)</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типНСО</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityValue"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#typeValue -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#typeValue">
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">{&quot;абсолютное&quot;, &quot;ссылочное&quot;, &quot;координаты&quot;, &quot;дата время&quot;, &quot;uuid&quot;}</typeValue>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Тип значения: &quot;абсолютное&quot;, &quot;ссылочное&quot;, &quot;координаты&quot;,&quot;дата время&quot;, &quot;uuid&quot;.</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типЗначения</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityValue"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#unitfMeasurement -->
+
+
+    <owl:AnnotationProperty rdf:about="http://polimorf/general/OPO#unitfMeasurement">
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">единицаИзмерения</rdfs:label>
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#capabilityValue"/>
+    </owl:AnnotationProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasCodeIdPassport_fromPassportMSG -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasCodeIdPassport_fromPassportMSG">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетКодИдПаспорта_изПаспортСообщения</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasObject_fromTypeObject -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasObject_fromTypeObject">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетСубъект_изТипПредмета</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasSubject_fromTypeObject -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasSubject_fromTypeObject">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетОбъект_изТипПредмета</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasTypeIndicator_fromTypeIndicator -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasTypeIndicator_fromTypeIndicator">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетКодПоказателя_изТипПоказателя</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPassportMessage_hasCodeIdStructMessage_fromStructMessage -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aPassportMessage_hasCodeIdStructMessage_fromStructMessage">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетКодИдСтруктуры_изСтруктураСообщения</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdIndicator_fromIndicatorTypeObject -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdIndicator_fromIndicatorTypeObject">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">секцияТипаСообщения_имеетКодИдПоказателя_изПоказательТипаПредмета</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdSection_fromSectionTypeMessage -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdSection_fromSectionTypeMessage">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">секцияТипаСообщения_имеетКодИдСекции_изСекцииТипаСообщения</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdTypeObject_fromTypeObject -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdTypeObject_fromTypeObject">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Под кодом ТипаПредмета понимается рефактор (часть URI после #),</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">секцияТипаСообщения_имеетКодИдТипаПредмета_изТипПредмета</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aSectionTypeMessage_hasCodeOwner_fromSectionTypeMessage -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeOwner_fromSectionTypeMessage">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">секцияТипаСообщения_имеетКодРодителя_изСекцииТипаСообщения</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aSectionTypeMessage_hasCodeOwner_fromTypeMessage -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeOwner_fromTypeMessage">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">секцияТипаСообщения_имеетКодРодителя_изТипаСообщения</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeMessage_hasCodeIdPasportMessage_fromPasportMessage -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aTypeMessage_hasCodeIdPasportMessage_fromPasportMessage">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типСообщения_имеетКодИдПаспорта_изПаспортСообщения</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeMessage_hasCodeIdSection_fromSectionTypeMessage -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aTypeMessage_hasCodeIdSection_fromSectionTypeMessage">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_object"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типСообщения_имеетКодИдСекции_изСекцииТипаСообщения</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeObject_hasNameTypeObjectOwner_fromTypeObject -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#aTypeObject_hasNameTypeObjectOwner_fromTypeObject">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_object"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#IrreflexiveProperty"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типПредмета_имеетИмяТипаПредметаРодителя_изТипПредмета</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#attrMSG_object -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#attrMSG_object">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">свойствоСообщения_object</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#attrOPO_object -->
+
+
+    <owl:ObjectProperty rdf:about="http://polimorf/general/OPO#attrOPO_object">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">свойствоОПО_object</rdfs:label>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorCurrentTypeObject_hasTimeStartActuality_typeDT -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aIndicatorCurrentTypeObject_hasTimeStartActuality_typeDT">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <patternValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ЧЧ-ММ-ГГГГ чч:мм:сс</patternValue>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Для КатегорииПоказателя:
+
+-Плановый &quot;датаВремяЧ/датаВремяДельта&quot; (Первое значение может отсутствовать. В этом случае оно принимается равным &quot;0&quot;)
+-Текущий  &quot;датаВремя&quot;</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТекущийТипаПредмета_имеетВремяНачалаАктуальности</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorPlaneTypeObject_hasTimeDelta_typeDT -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aIndicatorPlaneTypeObject_hasTimeDelta_typeDT">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательПлановыйТипаПредмета_имеетВремяЧ</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorPlaneTypeObject_hasTimeX_typeDT -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aIndicatorPlaneTypeObject_hasTimeX_typeDT">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательПлановыйТипаПредмета_имеетВремяДельта</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasCategory_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasCategory_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">плановый</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">текущий</rdf:first>
+                                <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетКатегорию</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasPeriod_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasPeriod_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетПериодичность</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasSource_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasSource_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">абсолютное</typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетИсточник</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aIndicatorTypeObject_hasValueBase_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aIndicatorTypeObject_hasValueBase_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <attributeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></attributeSHO>
+        <typeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></typeSHO>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">показательТипаПредмета_имеетОснование</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasCodeIdPassport_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasCodeIdPassport_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетКодИдПаспорта</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasCodeModeMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasCodeModeMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">1</rdf:first>
+                                <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетКодРежимаРаботы</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasDateTimeCreationMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasDateTimeCreationMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <patternValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">YYYY-MM-DD hh:mm:ss</patternValue>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">датаВремя</typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетДатаВремяСозданияСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasGrifMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasGrifMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">1</rdf:first>
+                                <rdf:rest>
+                                    <rdf:Description>
+                                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">2</rdf:first>
+                                        <rdf:rest>
+                                            <rdf:Description>
+                                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">3</rdf:first>
+                                                <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                                            </rdf:Description>
+                                        </rdf:rest>
+                                    </rdf:Description>
+                                </rdf:rest>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетГрифСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasNameMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasNameMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетИмяСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasPrPersonallyHandMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasPrPersonallyHandMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетПрЛичноСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasPromptnessCategoryMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasPromptnessCategoryMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range>
+            <rdfs:Datatype>
+                <owl:oneOf>
+                    <rdf:Description>
+                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">1</rdf:first>
+                        <rdf:rest>
+                            <rdf:Description>
+                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">2</rdf:first>
+                                <rdf:rest>
+                                    <rdf:Description>
+                                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">3</rdf:first>
+                                        <rdf:rest>
+                                            <rdf:Description>
+                                                <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                                <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">4</rdf:first>
+                                                <rdf:rest>
+                                                    <rdf:Description>
+                                                        <rdf:type rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#List"/>
+                                                        <rdf:first rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5</rdf:first>
+                                                        <rdf:rest rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"/>
+                                                    </rdf:Description>
+                                                </rdf:rest>
+                                            </rdf:Description>
+                                        </rdf:rest>
+                                    </rdf:Description>
+                                </rdf:rest>
+                            </rdf:Description>
+                        </rdf:rest>
+                    </rdf:Description>
+                </owl:oneOf>
+            </rdfs:Datatype>
+        </rdfs:range>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетКатегориюСрочностиСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasReceipientMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasReceipientMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетПолучателяСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasReferenceNumberMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasReferenceNumberMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетИсходНомерСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasSenderMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasSenderMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетОтправителяСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasSendingDateTimeMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasSendingDateTimeMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <patternValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">YYYY-MM-DD hh:mm:ss</patternValue>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">датаВремя</typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетДатаВремяОтправкиСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasStatusMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasStatusMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетСтатусСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasTotalSizeDataMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasTotalSizeDataMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">абсолютное</typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетСумРазмерДанныхСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aPasport_hasСheckSumMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aPasport_hasСheckSumMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">абсолютное</typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">паспорт_имеетКонтрСуммаСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aSectionTypeMessage_hasCodeTypeSection_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeTypeSection_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">секцияТипаСообщения_имеетКодСекции</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aSectionTypeMessage_hasText_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aSectionTypeMessage_hasText_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">секцияТипаСообщения_имеетТекст</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aStructMessage_hasPrEndDataMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aStructMessage_hasPrEndDataMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">структураСообщения_имеетПрОкончанияДанныхСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aStructMessage_hasPrEndMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aStructMessage_hasPrEndMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">структураСообщения_имеетПрОкончанияСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aStructMessage_hasPrEndPasport_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aStructMessage_hasPrEndPasport_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">структураСообщения_имеетПрОкончанияПаспорта</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aStructMessage_hasPrStartDataMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aStructMessage_hasPrStartDataMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">структураСообщения_имеетПрНачалаДанныхСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aStructMessage_hasPrStartMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aStructMessage_hasPrStartMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">структураСообщения_имеетПрНачалаСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aStructMessage_hasPrStartPasport_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aStructMessage_hasPrStartPasport_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">структураСообщения_имеетПрНачалаПаспорта</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeIndicator_hasCodePath_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeIndicator_hasCodePath_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <attributeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></attributeSHO>
+        <typeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></typeSHO>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ссылочное</typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типПоказателя_имеетКодПути</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeIndicator_hasCodeType_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeIndicator_hasCodeType_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типПоказателя_имеетКодТипа</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeIndicator_hasUnitfMeasurementBase_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeIndicator_hasUnitfMeasurementBase_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <attributeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string">CODE_POZ_OB</attributeSHO>
+        <typeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string">KL_OKEI_POZ_ORIO</typeSHO>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ссылочное</typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типПоказателя_имеетЕдиницуИзмеренияОснования</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeMessage_hasAttributesTypeMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeMessage_hasAttributesTypeMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типСообщения_имеетАтрибуты</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeMessage_hasCodeTypeMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeMessage_hasCodeTypeMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типСообщения_имеетКодТипаСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeMessage_hasNameMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeMessage_hasNameMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типСообщения_имеетИмяСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeMessage_hasNumberMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeMessage_hasNumberMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типСообщения_имеетНомерСообщения</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeMessage_hasTextMSG_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeMessage_hasTextMSG_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrMSG_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типСообщения_имеетТекст</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeObject_hasAttributes -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeObject_hasAttributes">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <attributeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></attributeSHO>
+        <nullNotNull rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></nullNotNull>
+        <patternValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></patternValue>
+        <refOnСapabilityValueDataProperty rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></refOnСapabilityValueDataProperty>
+        <typeSHO rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></typeSHO>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string"></typeValue>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типПредмета_имеетАтрибуты</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeObject_hasCodeType_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeObject_hasCodeType_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типПредмета_имеетКодТипа</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeObject_hasUUID_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeObject_hasUUID_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#aTypeObject_hasUniqueISN_typeS"/>
+        <patternValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF</patternValue>
+        <typeValue rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uuid</typeValue>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">32-разрядный уникаьный код
+Пример: &quot;1A101754-5607-4BE4-8F31-A3E11BB85A61&quot;</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UUID</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#aTypeObject_hasUniqueISN_typeS -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#aTypeObject_hasUniqueISN_typeS">
+        <rdfs:subPropertyOf rdf:resource="http://polimorf/general/OPO#attrOPO_data"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">типПредмета_имеетИдентификаторПредмета</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#attrMSG_data -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#attrMSG_data">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">свойствоСообщения_data</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://polimorf/general/OPO#attrOPO_data -->
+
+
+    <owl:DatatypeProperty rdf:about="http://polimorf/general/OPO#attrOPO_data">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">свойствоОПО_data</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.w3.org/2002/07/owl#topDataProperty -->
+
+
+    <rdf:Description rdf:about="http://www.w3.org/2002/07/owl#topDataProperty">
+        <nullNotNull>
+            <rdf:Description/>
+        </nullNotNull>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Характеристики атрибута:
+        nullNotNull - обязательность
+        typeValue - тип значения (абсолютное/ссылочное/координаты)
+        patternValue - шаблон значения
+        unitOfMeasure - единица измерения
+        typeSHO - тип нормативно-справочного объекта (заполняется при  typeValue=&quot;ссылочное&quot;)
+        attributeSHO - атрибут нормативно-справочного объекта (заполняется при  typeValue=&quot;ссылочное&quot;)</rdfs:comment>
+    </rdf:Description>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    
+
+
+    <!-- http://polimorf/general/OPO#IndicatorCurrentTypeObject -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#IndicatorCurrentTypeObject">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/OPO#IndicatorTypeObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorCurrentTypeObject_hasTimeStartActuality_typeDT"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ТекущийПоказательТипаПредмета</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/OPO#IndicatorPlaneTypeObject -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#IndicatorPlaneTypeObject">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/OPO#IndicatorTypeObject"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorPlaneTypeObject_hasTimeDelta_typeDT"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorPlaneTypeObject_hasTimeX_typeDT"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ПлановыйПоказательТипаПредмета</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/OPO#IndicatorTypeObject -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#IndicatorTypeObject">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/ROOT#Segment_Indicator"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasCodeIdPassport_fromPassportMSG"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#PasportMessage"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasObject_fromTypeObject"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#TypeObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasSubject_fromTypeObject"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#TypeObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasTypeIndicator_fromTypeIndicator"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#TypeIndicator"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasCategory_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasPeriod_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasSource_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aIndicatorTypeObject_hasValueBase_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ПоказательТипаПредмета</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/OPO#PasportMessage -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#PasportMessage">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/ROOT#Message"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPassportMessage_hasCodeIdStructMessage_fromStructMessage"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#StructMessage"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasCodeIdPassport_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasCodeModeMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasDateTimeCreationMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasGrifMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasNameMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasPrPersonallyHandMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasPromptnessCategoryMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasReceipientMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasReferenceNumberMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasSenderMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasSendingDateTimeMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasStatusMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasTotalSizeDataMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aPasport_hasСheckSumMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <owl:hasKey rdf:parseType="Collection">
+            <rdf:Description rdf:about="http://polimorf/general/OPO#aPasport_hasCodeIdPassport_typeS"/>
+        </owl:hasKey>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ПаспортСообщения</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/OPO#SectionTypeMessage -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#SectionTypeMessage">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/ROOT#Message"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdIndicator_fromIndicatorTypeObject"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#IndicatorTypeObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdSection_fromSectionTypeMessage"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#SectionTypeMessage"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeIdTypeObject_fromTypeObject"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#TypeObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aSectionTypeMessage_hasCodeTypeSection_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aSectionTypeMessage_hasText_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">СекцияТипаСообщения</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/OPO#StructMessage -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#StructMessage">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/ROOT#Message"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aStructMessage_hasPrEndDataMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aStructMessage_hasPrEndMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aStructMessage_hasPrEndPasport_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aStructMessage_hasPrStartDataMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aStructMessage_hasPrStartMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aStructMessage_hasPrStartPasport_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">СтруктураСообщения</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/OPO#TypeIndicator -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#TypeIndicator">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/ROOT#Segment_Indicator"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeIndicator_hasCodePath_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeIndicator_hasCodeType_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeIndicator_hasUnitfMeasurementBase_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ТипПоказателя</rdfs:label>
+    </owl:Class>
+    <owl:Axiom>
+        <owl:annotatedSource rdf:resource="http://polimorf/general/OPO#TypeIndicator"/>
+        <owl:annotatedProperty rdf:resource="http://www.w3.org/2000/01/rdf-schema#subClassOf"/>
+        <owl:annotatedTarget>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeIndicator_hasUnitfMeasurementBase_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </owl:annotatedTarget>
+        <rdfs:comment rdf:resource="http://polimorf/general/OPO#aTypeIndicator_hasUnitfMeasurementBase_typeS"/>
+    </owl:Axiom>
+    
+
+
+    <!-- http://polimorf/general/OPO#TypeMessage -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#TypeMessage">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/ROOT#Message"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeMessage_hasCodeIdPasportMessage_fromPasportMessage"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#PasportMessage"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeMessage_hasCodeIdSection_fromSectionTypeMessage"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#SectionTypeMessage"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeMessage_hasAttributesTypeMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeMessage_hasCodeTypeMSG_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Реальный класс
+Иерархия структуры сложного сообщения задается через правила эквивалентности типовСообщения. 
+Например, донесение о состоянии свои сил и сил противника, состоит из трех типов сообщений: 
+ -ДонесениеГруппирующее, 
+ -СостояниеСвоихСил,
+ -СостояниеСилПротивника. 
+Правило группирования типов сообщений имеет вид: 
+  Донесение or СостояниеСвоихСил or СостояниеСилПротивника</rdfs:comment>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ТипСообщения</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/OPO#TypeObject -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/OPO#TypeObject">
+        <rdfs:subClassOf rdf:resource="http://polimorf/general/ROOT#Segment_Object"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeObject_hasNameTypeObjectOwner_fromTypeObject"/>
+                <owl:someValuesFrom rdf:resource="http://polimorf/general/OPO#TypeObject"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeObject_hasAttributes"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeObject_hasCodeType_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://polimorf/general/OPO#aTypeObject_hasUniqueISN_typeS"/>
+                <owl:someValuesFrom rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ТипПредмета</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://polimorf/general/ROOT#Message -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/ROOT#Message"/>
+    
+
+
+    <!-- http://polimorf/general/ROOT#Segment_Indicator -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/ROOT#Segment_Indicator"/>
+    
+
+
+    <!-- http://polimorf/general/ROOT#Segment_Object -->
+
+
+    <owl:Class rdf:about="http://polimorf/general/ROOT#Segment_Object"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 5.0.2) https://github.com/owlcs/owlapi/ -->
+
+

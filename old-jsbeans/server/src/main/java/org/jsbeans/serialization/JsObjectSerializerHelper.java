@@ -1,0 +1,210 @@
+package org.jsbeans.serialization;
+
+import org.jsbeans.scripting.Decompiler;
+import org.jsbeans.scripting.ScopeTree;
+import org.jsbeans.types.JsObject;
+import org.jsbeans.types.JsObject.JsObjectType;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Map;
+
+public class JsObjectSerializerHelper {
+    private static JsObjectSerializerHelper instance = new JsObjectSerializerHelper();
+    private ScopeTree scopeTree = null;
+
+    public static JsObjectSerializerHelper getInstance() {
+        return instance;
+    }
+
+    public void initScopeTree(Scriptable s) {
+        scopeTree = new ScopeTree(s);
+    }
+
+    public ScopeTree getScopeTree() {
+        return scopeTree;
+    }
+
+    public JsObject serializeNativeObject(NativeObject no) {
+        JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
+        Object[] ids = no.getAllIds();
+        for (Object keyObj : ids) {
+            JsObject val = this.serializeNative(no.get(keyObj));
+            String key = keyObj.toString();
+            jObj.addToObject(key, val);
+        }
+        return jObj;
+    }
+
+    public JsObject serializeNativeArray(NativeArray arr) {
+        JsObject jObj = new JsObject(JsObjectType.JSONARRAY);
+        for (int i = 0; i < arr.size(); i++) {
+            jObj.addToArray(this.serializeNative(arr.get(i)));
+        }
+
+        return jObj;
+    }
+
+    public JsObject serializeNative(Object obj) {
+        JsObject retObj = null;
+        if (obj == null) {
+            retObj = new JsObject(JsObjectType.NULL);
+        } else if (obj instanceof NativeJavaArray) {
+            retObj = this.serializeJavaArray((NativeJavaArray) obj);
+        } else if (obj instanceof NativeJavaObject) {
+            retObj = this.serializeJavaObject((NativeJavaObject) obj);
+        } else if (obj instanceof NativeFunction) {
+            retObj = this.serializeNativeFunction((NativeFunction) obj);
+        } else if (obj instanceof NativeObject) {
+            retObj = this.serializeNativeObject((NativeObject) obj);
+        } else if (obj instanceof NativeArray) {
+            retObj = this.serializeNativeArray((NativeArray) obj);
+        } else if (obj instanceof String || obj instanceof ConsString) {
+            retObj = new JsObject(JsObjectType.STRING);
+            retObj.setString(obj.toString());
+        } else if (obj instanceof Integer) {
+            retObj = new JsObject(JsObjectType.INTEGER);
+            retObj.setInt((Integer) obj);
+        } else if (obj instanceof Long) {
+            retObj = new JsObject(JsObjectType.INTEGER);
+            retObj.setInt((Long) obj);
+        } else if (obj instanceof Double || obj instanceof Float) {
+            Double d = (Double) obj;
+            if (Math.floor(d.doubleValue()) == d.doubleValue() && ((double) (int) d.doubleValue()) == d.doubleValue()) {
+                // convert to integer
+                retObj = new JsObject(JsObjectType.INTEGER);
+                retObj.setInt((int) d.doubleValue());
+            } else {
+                retObj = new JsObject(JsObjectType.DOUBLE);
+                retObj.setDouble((Double) obj);
+            }
+        } else if (obj instanceof Boolean) {
+            retObj = new JsObject(JsObjectType.BOOLEAN);
+            retObj.setBoolean((Boolean) obj);
+        } else if (obj instanceof Undefined) {
+
+        } else {
+            try {
+                retObj = this.serializeObject(obj);
+            } catch (Exception ex) {
+                throw new SerializationException(String.format("Unexpected object faced due to serialization to JsObject: '%s'. Serialization failed with: %s", obj.getClass().getName(), ex.getMessage()));
+            }
+        }
+
+        return retObj;
+    }
+
+    public JsObject jsonElementToJsObject(JsonElement jsonElt) {
+        JsObject jsObj = null;
+        if (jsonElt.isJsonPrimitive()) {
+            // searialize primitive
+            JsonPrimitive jPrim = jsonElt.getAsJsonPrimitive();
+            if (jPrim.isBoolean()) {
+                jsObj = new JsObject(JsObjectType.BOOLEAN);
+                jsObj.setBoolean(jPrim.getAsBoolean());
+            } else if (jPrim.isNumber()) {
+                Number n = jPrim.getAsNumber();
+                if (n instanceof Integer || n instanceof Long || n instanceof Short || n instanceof Byte || n instanceof BigDecimal || n instanceof BigInteger) {
+                    jsObj = new JsObject(JsObjectType.INTEGER);
+                    jsObj.setInt(n.longValue());
+                } else {
+                    jsObj = new JsObject(JsObjectType.DOUBLE);
+                    jsObj.setDouble(n.doubleValue());
+                }
+            } else if (jPrim.isString()) {
+                jsObj = new JsObject(JsObjectType.STRING);
+                jsObj.setString(jPrim.getAsString());
+            }
+        } else if (jsonElt.isJsonObject()) {
+            JsonObject jsonObj = jsonElt.getAsJsonObject();
+            jsObj = new JsObject(JsObjectType.JSONOBJECT);
+            for (Map.Entry<String, JsonElement> e : jsonObj.entrySet()) {
+                String key = e.getKey();
+                JsObject val = this.jsonElementToJsObject(e.getValue());
+                jsObj.addToObject(key, val);
+            }
+        } else if (jsonElt.isJsonArray()) {
+            JsonArray jsonArr = jsonElt.getAsJsonArray();
+            jsObj = new JsObject(JsObjectType.JSONARRAY);
+            for (int i = 0; i < jsonArr.size(); i++) {
+                jsObj.addToArray(this.jsonElementToJsObject(jsonArr.get(i)));
+            }
+        }
+        return jsObj;
+    }
+
+    public Object jsonElementToNativeObject(JsonElement jsonElt, Context ctx, Scriptable scope) {
+        Object rObj = null;
+        if (jsonElt.isJsonPrimitive()) {
+            // searialize primitive
+            JsonPrimitive jPrim = jsonElt.getAsJsonPrimitive();
+            if (jPrim.isBoolean()) {
+                rObj = jPrim.getAsBoolean();
+            } else if (jPrim.isNumber()) {
+                rObj = jPrim.getAsDouble();
+            } else if (jPrim.isString()) {
+                rObj = jPrim.getAsString();
+            }
+        } else if (jsonElt.isJsonObject()) {
+
+            JsonObject jsonObj = jsonElt.getAsJsonObject();
+            rObj = ctx.newObject(scope);
+            for (Map.Entry<String, JsonElement> e : jsonObj.entrySet()) {
+                String key = e.getKey();
+                Object val = this.jsonElementToNativeObject(e.getValue(), ctx, scope);
+                ((Scriptable) rObj).put(key, (Scriptable) rObj, val);
+            }
+        } else if (jsonElt.isJsonArray()) {
+            JsonArray jsonArr = jsonElt.getAsJsonArray();
+            rObj = ctx.newArray(scope, jsonArr.size());
+            for (int i = 0; i < jsonArr.size(); i++) {
+                ((Scriptable) rObj).put(i, (Scriptable) rObj, this.jsonElementToNativeObject(jsonArr.get(i), ctx, scope));
+            }
+        }
+
+        return rObj;
+    }
+
+    public JsObject serializeObject(Object obj) {
+        JsonElement jsonElt = new Gson().toJsonTree(obj);
+        return this.jsonElementToJsObject(jsonElt);
+    }
+
+
+    public JsObject serializeJavaArray(NativeJavaArray obj) {
+        return serializeObject(obj.unwrap());
+    }
+
+    private JsObject serializeJavaObject(NativeJavaObject obj) {
+        return serializeObject(obj.unwrap());
+    }
+
+    private JsObject serializeNativeFunction(NativeFunction so) {
+//		Context ctx = Context.getCurrentContext();
+        JsObject jObj = new JsObject(JsObjectType.FUNCTION);
+        String dec = "";
+/*		
+        if(ctx != null){
+			dec = ctx.decompileFunction(so, 4);
+		} else {
+			dec = Decompiler.decompile(so.getEncodedSource(), Decompiler.TO_SOURCE_FLAG, new UintMap());
+		}
+*/
+        dec = Decompiler.decompile(so.getEncodedSource(), Decompiler.TO_SOURCE_FLAG/*|Decompiler.OMIT_EOLS*/, new UintMap());
+        jObj.setFunction(dec);
+        return jObj;
+    }
+
+    public Object convertToNativeObject(Object obj, NativeObject scopeObject) {
+        Context ctx = Context.enter();
+        try {
+            return this.jsonElementToNativeObject(
+                    GsonWrapper.toGsonJsonElement(obj),
+                    ctx,
+                    scopeObject.getParentScope());
+        } finally {
+            Context.exit();
+        }
+    }
+
+}

@@ -1,0 +1,172 @@
+@CHARSET "UTF-8";
+
+.ontologyDiagram .classNode {
+	border-radius: 6px;
+	box-shadow: 1px 1px 3px #999999;
+	border: 1px solid #987a5f;
+	position: relative;
+}
+
+.ontologyDiagram .classNode.highlighted {
+	box-shadow: 0 0 0px 3px #92693c;
+/*	box-shadow: 0 0 4px 2px #8d4a00; */
+}
+
+.ontologyDiagram .classNode.selected,
+.ontologyDiagram .classNode.highlighted.selected
+{
+	box-shadow: 0 0 0px 3px #92693c;
+}
+
+
+.ontologyDiagram .classNode > .caption {
+	background: -webkit-linear-gradient(top, #f1d9c5 0%, #e0c3a8 60%, #d4b192 100%);
+	background: -moz-linear-gradient(top, #f1d9c5 0%, #e0c3a8 60%, #d4b192 100%);
+    background: linear-gradient(top, #f1d9c5 0%, #e0c3a8 60%, #d4b192 100%);
+	background: -o-linear-gradient(top, #f1d9c5 0%, #e0c3a8 60%, #d4b192 100%);
+	background: -ms-linear-gradient(top, #f1d9c5 0%, #e0c3a8 60%, #d4b192 100%);
+	
+	
+    padding: 2px 12px 2px 6px;
+	cursor: url('/jsb.widgets/images/hand.gif'), move;
+	border-radius: 6px 6px 0 0;
+    border-bottom: 1px solid #987a5f;
+}
+
+.ontologyDiagram .classNode.selected > .caption,
+.ontologyDiagram .classNode.highlighted > .caption {
+	background: -webkit-linear-gradient(top, #e2c5ad 0%, #d4ab86 60%, #d08644 100%);
+	background: -moz-linear-gradient(top, #e2c5ad 0%, #d4ab86 60%, #d08644 100%);
+    background: linear-gradient(top, #e2c5ad 0%, #d4ab86 60%, #d08644 100%);
+	background: -o-linear-gradient(top, #e2c5ad 0%, #d4ab86 60%, #d08644 100%);
+	background: -ms-linear-gradient(top, #e2c5ad 0%, #d4ab86 60%, #d08644 100%);
+}
+
+.ontologyDiagram .classNode > .caption > .renderer {}
+
+.ontologyDiagram .classNode > .body {
+	border-radius: 0 0 6px 6px;
+    background: #e8e8e8;
+}
+
+.ontologyDiagram .classNode > .body > table.props {
+	width: 100%;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr {
+	cursor: default;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr:last-child {
+	border-radius: 0 0 6px 6px;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr:last-child > td:first-child {
+	border-radius: 0 0 0 6px;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr:last-child > td:last-child {
+	border-radius: 0 0 6px 0;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr.highlighted {
+	background-color: #efd2b1 !important;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr:nth-child(even) {
+	background-color: #F7F2EE;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr:nth-child(odd) {
+	background-color: #EFE9E0;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr.domain {}
+
+.ontologyDiagram .classNode > .body > table.props tr.domain > td.domain {
+	padding-top: 8px;
+	padding-left: 4px;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr.domain > td.domain > .renderer {}
+
+.ontologyDiagram .classNode > .body > table.props tr.prop {}
+
+.ontologyDiagram .classNode > .body > table.props tr.prop > td.entity {
+	position: relative;
+	padding: 1px 2px 1px 4px !important;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr.prop > td.entity > .renderer {
+	font-size: 10px;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr.prop > td.range {
+	position: relative;
+	padding: 1px 4px 1px 2px !important;
+}
+
+.ontologyDiagram .classNode > .body > table.props tr.prop > td.range > .renderer {
+	font-size: 10px;
+	opacity: 0.7;
+}
+
+
+
+
+.ontologyDiagram .classNode .connector {
+	width: 10px;
+	height: 10px;
+	position: absolute;
+	border-radius: 10px;
+	background: radial-gradient(circle at 35% 35% , rgb(253, 236, 221) 0%, rgb(202, 179, 160) 100%);
+    border: 1px solid #987a5f;
+}
+
+.ontologyDiagram .classNode .connector.highlighted {
+	border: 1px solid #E08654 !important;
+    box-shadow: 0 0 1px 1px #FF8654 !important;
+    background: radial-gradient(circle at 30% 20% , #FFFFFF 0%, #f98e26 100%) !important;
+}
+
+.ontologyDiagram .classNode .connector.top {
+	left: 50%;
+	margin-left: -6px;
+	top: -7px;
+}
+
+.ontologyDiagram .classNode .connector.bottom {
+	left: 50%;
+	margin-left: -6px;
+	bottom: -7px;
+}
+
+.ontologyDiagram .classNode .connector.mapping {
+	top: 7px;
+	width: 7px;
+	height: 7px;
+}
+
+.ontologyDiagram .classNode .connector.mapping.left {
+    left: -5px;
+}
+
+.ontologyDiagram .classNode .connector.mapping.right {
+    right: -5px;
+}
+
+.ontologyDiagram .classNode .connector.mapping.prop {
+	top: 5px;
+	width: 5px;
+	height: 5px;
+	background: radial-gradient(circle at 35% 35% , rgb(255, 255, 255) 0%, rgb(195, 195, 195) 100%);
+    border: 1px solid #9a8b73;
+}
+
+.ontologyDiagram .classNode .connector.mapping.prop.left {
+    left: -4px;
+}
+
+.ontologyDiagram .classNode .connector.mapping.prop.right {
+    right: -4px;
+}

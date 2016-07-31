@@ -1,0 +1,19 @@
+@CHARSET "UTF-8";
+
+.messageRenderer {}
+
+.messageRenderer > .icon {
+	position: absolute;
+	display: inline-block;
+	vertical-align: top;
+	width: 16px;
+	height: 16px;
+	background-image: url(/ontoed/images/icons16.png);
+	background-position: -112px -16px;
+}
+
+.messageRenderer > .value {
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 22px;
+}

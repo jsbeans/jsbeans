@@ -1,0 +1,34 @@
+@CHARSET "UTF-8";
+
+._dwp_userMenuTool {
+	min-width: 200px;
+	min-height: 100px;
+}
+
+._dwp_userMenuTool > .header {
+    padding: 4px 10px 6px;
+}
+
+._dwp_userMenuTool > .header > .icon {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+._dwp_userMenuTool > .header > .title {
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 26px;
+    font-family: roboto_cnregular;
+    color: #893400;
+}
+
+._dwp_userMenuTool > .header > .close {
+	width: 16px;
+    height: 16px;
+    position: absolute;
+    background-image: url('/sc/workspace/small-icons.png');
+    background-position: -112px -64px;
+    top: 2px;
+    right: 0;
+    cursor: pointer;
+}

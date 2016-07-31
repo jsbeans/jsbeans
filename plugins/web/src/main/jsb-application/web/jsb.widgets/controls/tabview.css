@@ -1,0 +1,211 @@
+@CHARSET "UTF-8";
+
+._dwp_tabview {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+._dwp_tabview > ul._dwp_tabPane {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	list-style: none;
+	margin: 0;
+	padding: 3px 6px;
+	height: 22px;
+	background: -webkit-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
+	background: -moz-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
+	background: linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
+	background: -o-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
+	background: -ms-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
+	border-bottom: 1px solid #BEBEBE;
+}
+
+._dwp_tabview._dwp_tabBottom > ul._dwp_tabPane {
+	bottom: 0;
+	z-index: 1;
+	border-bottom: none;
+	background: -webkit-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
+	background: -moz-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
+	background: linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
+	background: -o-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
+	background: -ms-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
+}
+
+._dwp_tabview._dwp_hiddenTabs > ul._dwp_tabPane {
+	display: none;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab {
+	min-width: 20px;
+	border-radius: 20px 6px 0 0;
+	border: 1px solid #ccc;
+	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -moz-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -o-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -ms-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	cursor: pointer;
+	position: relative;
+	float: left;
+	height: 17px;
+	padding: 6px 10px 0 14px;
+	top: 1px;
+	font-size: small;
+	color: #444;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab.disabled {
+	opacity: 0.5;
+	cursor: default;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab.hidden {
+	display: none;
+}
+
+._dwp_tabview._dwp_tabBottom > ._dwp_tabPane > li._dwp_tab {
+	top: -3px;
+	border-radius: 0 0 6px 20px;
+	padding: 3px 10px 3px 16px;
+}
+
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab > ._dwp_icon {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab > ._dwp_tabText {
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: 3px;
+	text-shadow: 1px 1px #fff;
+	color: #666;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab.active > ._dwp_tabText {
+	color: #444;
+	text-shadow: 1px 1px #ebebeb;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab > ._dwp_closeBtn {
+	width: 10px;
+	height: 10px;
+	background-image: url('../images/icons.png');
+	background-position: -18px -18px;
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	display: none;
+	opacity: 0.5;
+	cursor: pointer;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab > ._dwp_closeBtn:hover {
+	opacity: 1;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab.active {
+	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
+	background: -moz-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
+	background: linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
+	background: -o-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
+	background: -ms-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
+	height: 18px;
+	cursor: default;
+	border-bottom: none;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab:hover {
+	background: -webkit-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: -moz-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: -o-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: -ms-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab.disabled:hover {
+	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -moz-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -o-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -ms-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_tab.active > ._dwp_closeBtn, ._dwp_tabview > ._dwp_tabPane > li._dwp_tab:hover > ._dwp_closeBtn {
+	display: block;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_newTab {
+	width: 30px;
+	height: 23px;
+	border-radius: 16px 6px 0 0;
+	border: 1px solid #ccc;
+	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -moz-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -o-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: -ms-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	cursor: pointer;
+	float: left;
+	position: relative;
+	top: 1px;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_newTab > ._dwp_icon {
+	position: relative;
+	width: 16px;
+	height: 16px;
+	background-image: url('../images/icons.png');
+	background-position: 0 -16px;
+	left: 9px;
+	top: 6px;
+	opacity: 0.7;
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_newTab:hover {
+	background: -webkit-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: -moz-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: -o-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+	background: -ms-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+}
+
+._dwp_tabview > ._dwp_tabPane > li._dwp_newTab:hover > ._dwp_icon {
+	opacity: 1;
+}
+
+._dwp_tabview > ._dwp_clientPane {
+	position: absolute;
+	top: 29px;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+._dwp_tabview._dwp_tabBottom > ._dwp_clientPane {
+	top: 0;
+	bottom: 29px;
+}
+
+._dwp_tabview._dwp_hiddenTabs > ._dwp_clientPane {
+	top: 0;
+	bottom: 0;
+}
+
+._dwp_tabview > ._dwp_clientPane > ._dwp_clientPaneWrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: -webkit-linear-gradient(160deg, #fff 30%, #eee 100%);
+	background: -moz-linear-gradient(160deg, #fff 30%, #eee 100%);
+    background: linear-gradient(160deg, #fff 30%, #eee 100%);
+	background: -o-linear-gradient(160deg, #fff 30%, #eee 100%);
+	background: -ms-linear-gradient(160deg, #fff 30%, #eee 100%);
+	box-sizing: border-box;
+}

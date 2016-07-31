@@ -1,0 +1,50 @@
+@CHARSET "UTF-8";
+
+.hierarchyView {
+}
+
+.hierarchyView > ._dwp_toolBar {
+	height: 29px;
+}
+
+.hierarchyView > ._dwp_treeview {
+	position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 29px;
+    height: auto;
+    padding: 2px;
+}
+
+.hierarchyView > ._dwp_treeview ._dwp_treeViewContainer > li {
+	margin-left: 12px;
+}
+
+.hierarchyView > ._dwp_treeview ._dwp_treeViewNode {
+	margin-left: 18px;
+	border: none;
+}
+
+.hierarchyView > ._dwp_treeview ._dwp_treeViewNode > ._dwp_nodeHeader {
+	padding: 1px 2px;
+}
+
+.dragHelper > .entityRenderer,
+.dragHelper > .odd {
+	background: -webkit-linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
+	background: -moz-linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
+    background: linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
+	background: -o-linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
+	background: -ms-linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
+	
+	padding: 2px;
+	font-size: 11px;
+	display: block;
+} 
+
+.dragHelper > .odd em {
+	font-style: normal;
+	font-weight: bold;
+	color: #803C00;
+}

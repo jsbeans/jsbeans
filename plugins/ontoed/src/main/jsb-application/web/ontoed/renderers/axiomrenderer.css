@@ -1,0 +1,31 @@
+@CHARSET "UTF-8";
+
+.axiomRenderer {}
+
+.expressionRenderer {
+}
+
+.expressionRenderer.highlighted {
+}
+
+.expressionRenderer .entityRenderer.context {
+	border-bottom: 1px dotted rgb(140, 60, 0);
+}
+
+.expressionRenderer > .type {
+	color: #794C1C;
+	vertical-align: middle;
+}
+
+.expressionRenderer > .paren {
+	font-size: 15px;
+	vertical-align: middle;
+}
+
+.expressionRenderer .equivalentEntityExpressionRenderer > .eqSign,
+.expressionRenderer .unionExpressionRenderer > .unionSign {
+	display: inline-block;
+    vertical-align: middle;
+    margin: 0 4px;
+	font-size: 15px;
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=1024px, user-scalable=no"/>
+    <title>dWires Console</title>
+    <script type="text/javascript" src="boot?type=js&v={{VERSION}}"></script>
+    <style>
+ 		body {
+			font-family: verdana, lucida, sans, arial, sans-serif;
+			overflow: hidden; /* this is important to prevent the whole page to bounce */
+			margin: 0;
+		}
+
+		.mainContainer {
+			width: 100%;
+			height: 100%;
+			left: 0%;
+			top: 0%;
+			display: block;
+			position: absolute;
+			background-image: url("common/images/bgrnd4.jpg");
+			background-repeat: no-repeat;
+			background-size: 100%;
+			background-position: 100% 100%;
+			background-color: #ddd5c0;
+		}
+		
+		.mainContainer .loginForm {
+			box-shadow: 1px 1px 2px #626262;
+			left: 50%;
+			top: 50%;
+			margin: -107px 0 0 -192px;
+			background-color: #F5F2EF;
+			border: 1px solid #D5CBC5;
+		}
+		
+		.mainContainer .loginForm > .logo {
+			width: 120px;
+			height: 135px;
+			background-image: url('common/images/wires-logo.png');
+		}
+		
+		.mainContainer .loginForm > .fields > ._dwp_editor > input {
+			font-family: verdana, lucida, sans, arial, sans-serif;
+			font-size: 18px;
+		}
+
+    </style>
+    <script type="text/javascript">
+	 	function doLoad(){
+			JSO().lookup('Console',function(f){
+	 			new f({
+	 				container: 'div#mainContainer'
+	 			});
+	 		})
+		}
+		JSO().run('Auth', {}, function(auth){
+			window.se = window.se || {};
+			window.se.auth = auth;
+			auth.getUserPrincipal(function(p){
+				if(p == null || p.length == 0){
+					JSO().run('Login', {
+						container: 'div.mainContainer',
+						onSuccess: function(token){
+							this.show(false);
+							doLoad();
+						}
+					}, function(obj){
+						obj.show(true);
+					});
+				} else {
+					doLoad();
+				}
+			});
+		});
+
+    </script>
+</head>
+<body>
+<div id="mainContainer" class="mainContainer"></div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+@CHARSET "UTF-8";
+
+.networkConnection {
+	position: absolute;
+	right: 0;
+	z-index: 20000;
+	width: 220px;
+	height: 220px;
+	background: radial-gradient(circle at 50% 50% , rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 40%, rgba(255, 255, 255, 0.8) 55%, rgba(245, 245, 245, 0) 70%) repeat scroll 0 0 transparent;
+}
+
+.networkConnection .icon {
+	width: 128px;
+	height: 128px;
+	background-image: url("images/connect.png");
+	position: relative;
+	left: 50%;
+	top: 50%;
+	margin: -64px 0 0 -64px;
+}
+
+.networkConnection.connected .icon {
+	background-position: -128px 0;
+}

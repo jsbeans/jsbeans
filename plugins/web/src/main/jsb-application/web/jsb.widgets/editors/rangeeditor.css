@@ -1,0 +1,23 @@
+@CHARSET "UTF-8";
+
+._dwp_rangeEditor {
+	padding: 6px;
+	height: 40px !important;
+}
+
+._dwp_rangeEditor ._dwp_slider {
+	
+}
+
+._dwp_rangeEditor ._dwp_slider a {
+	cursor: pointer;
+}
+
+._dwp_rangeEditor ._dwp_slider a ._dwp_sliderSubtitle {
+	font-size: x-small;
+	position: absolute;
+	top: 18px;
+	left: 2px;
+	font-weight: bold;
+	color: #6B2B00;
+}

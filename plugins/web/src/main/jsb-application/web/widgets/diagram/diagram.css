@@ -1,0 +1,49 @@
+@CHARSET "UTF-8";
+
+._jsb_diagram {
+	cursor: default;
+	background-color: #fff;
+}
+
+._jsb_diagram.panning {
+	cursor: url('/jsb.widgets/images/hand.gif'), move;
+}
+
+._jsb_diagram > ._jsb_diagramToolContainer {}
+
+._jsb_diagram > ._jsb_diagramToolContainer > ._jsb_diagramGrid {
+	background-image: url('cells-min.png');
+	background-repeat: repeat;
+	background-position: 25px 25px;
+}
+
+._jsb_diagram > ._jsb_diagramToolContainer > ._jsb_diagramSelectorTool {
+	background-color: rgba(211, 89, 49, 0.5);
+	border: 1px solid rgba(152, 96, 78, 0.8);
+	border-radius: 3px;
+}
+
+
+._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet {
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet > ._jsb_diagramNode {}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg {}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link {
+	fill: none;
+	stroke: #000000;
+	stroke-width: 2;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link._jsb_diagramWiringLinkMode {
+	opacity: 0.5;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="_jsb_diagramUserWiringLink"] {
+	stroke-width: 2;
+}
+
+
+

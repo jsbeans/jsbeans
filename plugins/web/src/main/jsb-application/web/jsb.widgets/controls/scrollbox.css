@@ -1,0 +1,98 @@
+@CHARSET "UTF-8";
+
+._dwp_scrollBox {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+}
+
+._dwp_scrollBox._dwp_pan {
+	cursor: url('../images/hand.gif'), auto;
+}
+
+._dwp_scrollBox > ._dwp_scrollPane {
+/*	position: absolute;
+	width: 100%; */
+	-webkit-transform: translateZ(0);
+	-moz-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	-o-transform: translateZ(0);
+	transform: translateZ(0);
+}
+
+._dwp_scrollBox.vertScrollVisible > ._dwp_scrollPane {
+	padding-right: 10px;
+}
+
+._dwp_scrollBox.horzScrollVisible > ._dwp_scrollPane {
+	padding-bottom: 10px;
+}
+
+
+/*
+._dwp_scrollBox ._dwp_scrollBar {
+	position: absolute;
+	border-radius: 4px;
+	opacity: 0.8;
+	z-index: 100;
+	display: none;
+}
+*/
+._dwp_scrollBox > .iScrollVerticalScrollbar {
+	border-radius: 4px;
+	width: 8px !important;
+	background: -webkit-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
+	background: -moz-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
+	background: linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
+	background: -o-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
+	background: -ms-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
+	right: 0 !important;
+	display: none;
+}
+
+._dwp_scrollBox.vertScrollVisible > .iScrollVerticalScrollbar {
+	display: block;
+}
+
+._dwp_scrollBox > .iScrollHorizontalScrollbar {
+	border-radius: 4px;
+	height: 8px !important;
+	background: -webkit-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
+	background: -moz-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
+	background: linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
+	background: -o-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
+	background: -ms-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
+	bottom: 0 !important;
+	display: none;
+}
+
+._dwp_scrollBox.horzScrollVisible > .iScrollHorizontalScrollbar {
+	display: block;
+}
+
+._dwp_scrollBox > div > .iScrollIndicator {
+	margin: 1px;
+	border-radius: 2px;
+	border: none !important;
+}
+
+._dwp_scrollBox > .iScrollVerticalScrollbar > .iScrollIndicator {
+	width: 6px !important;
+	background: -webkit-linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: -moz-linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: -o-linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: -ms-linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+/*	cursor: n-resize; */
+}
+
+._dwp_scrollBox > .iScrollHorizontalScrollbar > .iScrollIndicator {
+	height: 6px !important;
+	background: -webkit-linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: -moz-linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: -o-linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+	background: -ms-linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
+/*	cursor: e-resize; */
+}

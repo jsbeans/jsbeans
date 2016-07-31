@@ -1,0 +1,8 @@
+{
+  "org.jsbeans.jshub": {
+    "JsHubService": {
+      "sessionExpire": 3600000
+      // 1 hour
+    }
+  }
+}

@@ -1,0 +1,78 @@
+@CHARSET "UTF-8";
+
+._dwp_toolWrapper {
+	z-index: 30000;
+	position: absolute;
+	border: 1px solid #CCC7A1;
+	border-radius: 8px;
+	background: -webkit-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
+	background: -moz-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
+    background: linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
+    background: -o-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
+    background: -ms-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
+	
+	font-size: small;
+	padding: 2px 5px;
+	box-shadow: 2px 2px 8px #585858;
+	width: auto !important;
+	height: auto !important; 
+	overflow: visible;
+}
+
+._dwp_toolWrapper._dwp_modal {
+	z-index: 40000;
+}
+
+._dwp_toolWrapper svg.svgContainer {
+	position: absolute;
+	pointer-events: none;
+}
+
+._dwp_toolWrapper svg.svgContainer stop.bottom.transparent {
+	stop-color: rgb(253, 250, 227);
+	stop-opacity: 0.5;
+}
+
+._dwp_toolWrapper svg.svgContainer stop.bottom.opaque {
+	stop-color: rgb(253, 250, 227);
+	stop-opacity: 1;
+}
+
+._dwp_toolWrapper svg.svgContainer stop.top.transparent {
+	stop-color: rgb(253, 250, 227);
+	stop-opacity: 0.5;
+}
+
+._dwp_toolWrapper svg.svgContainer stop.top.opaque {
+	stop-color: rgb(255, 255, 255);
+	stop-opacity: 1;
+}
+
+._dwp_toolWrapper svg.svgContainer stop.left.transparent,
+._dwp_toolWrapper svg.svgContainer stop.right.transparent {
+	stop-color: rgb(253, 250, 227);
+	stop-opacity: 0.5;
+}
+
+._dwp_toolWrapper svg.svgContainer stop.left.opaque,
+._dwp_toolWrapper svg.svgContainer stop.right.opaque {
+	stop-color: rgb(253, 252, 237);
+	stop-opacity: 1;
+}
+
+
+._dwp_toolWrapper svg.svgContainer polyline {
+	stroke: #CCC7A1;
+}
+
+._dwp_toolWrapperModalBack {
+	position: absolute;
+	z-index: 29990;
+	display: none;
+	overflow: hidden;
+}
+
+._dwp_toolWrapperModalBack ._dwp_toolWrapperModalHighlighter {
+	position: absolute;
+	background: radial-gradient(circle at 50% 50% , rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.2) 10%, rgba(0, 0, 0, 0.4) 20%, rgba(0, 0, 0, 0.7) 100%);
+}

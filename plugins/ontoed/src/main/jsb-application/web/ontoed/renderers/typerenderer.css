@@ -1,0 +1,90 @@
+@CHARSET "UTF-8";
+
+.typeRenderer {}
+
+.typeRenderer > .icon {
+	width: 16px;
+	height: 16px;
+	background-image: url('../images/icons16.png');
+	display: inline-block;
+    vertical-align: middle;
+}
+
+.typeRenderer.min > .icon {
+	width: 12px;
+	height: 12px;
+}
+
+.typeRenderer[type="xsd:dateTime"] > .icon,
+.typeRenderer[type="xsd:time"] > .icon {
+	background-position: -48px -32px;
+}
+
+.typeRenderer[type="xsd:dateTime"].min > .icon,
+.typeRenderer[type="xsd:time"].min > .icon {
+	background-position: -50px -34px;
+}
+
+
+.typeRenderer[type="xsd:float"] > .icon,
+.typeRenderer[type="xsd:double"] > .icon {
+	background-position: -16px -32px;
+    border: 1px solid #7B542D;
+    border-radius: 3px;
+    background-color: #DCA37C;
+}
+
+.typeRenderer[type="xsd:float"].min > .icon,
+.typeRenderer[type="xsd:double"].min > .icon {
+	background-position: -18px -34px;
+}
+
+.typeRenderer[type="xsd:int"] > .icon,
+.typeRenderer[type="xsd:decimal"] > .icon {
+	background-position: -32px -16px;
+    border: 1px solid #7B542D;
+    border-radius: 3px;
+    background-color: #DCA37C;
+}
+
+.typeRenderer[type="xsd:int"].min > .icon,
+.typeRenderer[type="xsd:decimal"].min > .icon {
+	background-position: -34px -18px;
+}
+
+.typeRenderer[type="xsd:boolean"] > .icon {
+	background-position: -32px -32px;
+}
+
+.typeRenderer[type="xsd:boolean"].min > .icon {
+	background-position: -34px -34px;
+}
+
+
+.typeRenderer[type="rdfs:Literal"] > .icon {
+	background-position: -48px -64px;
+	border: 1px solid #3d6ea9;
+    border-radius: 3px;
+	background-color: #7cbadc;
+}
+
+.typeRenderer[type="rdfs:Literal"].min > .icon {
+	background-position: -50px -66px;
+}
+
+
+.typeRenderer[type="xsd:string"] > .icon {
+	background-position: -48px -16px;
+    border: 1px solid #787B2D;
+    border-radius: 3px;
+    background-color: #DCDC7C;
+}
+
+.typeRenderer[type="xsd:string"].min > .icon {
+	background-position: -50px -18px;
+}
+
+.typeRenderer > .typeName {
+	display: inline-block;
+    vertical-align: middle;
+}

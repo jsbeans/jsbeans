@@ -1,0 +1,34 @@
+@CHARSET "UTF-8";
+
+._dwp_messageTool {
+	min-width: 400px;
+	max-width: 800px;
+	padding: 6px 10px;
+}
+
+._dwp_messageTool ._dwp_messageTool_Icon {
+	margin-right: 6px;
+	vertical-align: middle;
+	display: inline-block;
+}
+._dwp_messageTool ._dwp_messageTool_Icon.hidden {
+	display: none;
+}
+
+._dwp_messageTool ._dwp_messageTool_Message {
+	text-align: justify;
+	vertical-align: middle;
+	display: inline-block;
+	max-width: 300px;
+}
+
+._dwp_messageTool ._dwp_messageTool_Buttons {
+	text-align: center;
+	margin-top: 10px;
+	clear: both;
+}
+
+._dwp_messageTool ._dwp_messageTool_Buttons ._dwp_messageTool_Button {
+	display: inline-block;
+	margin: 6px;
+}

@@ -1,0 +1,168 @@
+@CHARSET "UTF-8";
+
+.expressionPlaceholderRenderer {
+	display: inline-block;
+}
+
+.expressionPlaceholderRenderer > .argContainer {
+	padding-left: 30px;
+    border-left: 1px dotted rgba(66, 37, 0, 0.2);
+    padding-top: 1px;
+    margin-top: 1px;
+    display: block;
+}
+
+.expressionPlaceholderRenderer > .paren {
+	margin: 0 2px 0 0;
+}
+
+.expressionPlaceholderRenderer > .paren.open {
+	margin-left: 2px;
+}
+
+.expressionPlaceholderRenderer > .paren.close {}
+
+.expressionPlaceholderRenderer > .comment {
+	font-size: 10px;
+    font-style: italic;
+    margin-left: 6px;
+    color: #968271;
+}
+
+
+.expressionPlaceholderRenderer > .placeholder,
+.expressionPlaceholderRenderer > .placeholder.Class.ObjectProperty.DataProperty.AnnotationProperty.Individual {
+	display: inline-block;
+    border: 1px solid #8e8e8e;
+    border-radius: 3px;
+    padding: 1px 2px;
+    background-color: #cac9c9;
+}
+
+.expressionPlaceholderRenderer > .placeholder.changeable {
+	cursor: pointer;
+}
+
+.expressionPlaceholderRenderer > .placeholder.changeable:hover,
+.expressionPlaceholderRenderer > .placeholder.changeable.Class.ObjectProperty.DataProperty.AnnotationProperty.Individual:hover {
+	background-color: #dcdcdc;
+}
+
+.expressionPlaceholderRenderer > .placeholder.empty {
+	border-style: dotted;
+}
+
+.expressionPlaceholderRenderer > .placeholder.Axiom {
+	background-color: #dec46c;
+	border-color: #a0915d;
+}
+
+.expressionPlaceholderRenderer > .placeholder.Axiom.changeable:hover {
+	background-color: #efd992;
+}
+
+.expressionPlaceholderRenderer > .placeholder.Class {
+	background-color: #d4c4b6;
+	border-color: #a7907c;
+}
+
+.expressionPlaceholderRenderer > .placeholder.Class.changeable:hover {
+	background-color: #e6d8cb;
+}
+
+.expressionPlaceholderRenderer > .placeholder.DataProperty {
+	background-color: #9cd08e;
+	border-color: #6d8467;
+}
+
+.expressionPlaceholderRenderer > .placeholder.DataProperty.changeable:hover {
+	background-color: #b6e0ab;
+}
+
+.expressionPlaceholderRenderer > .placeholder.ObjectProperty {
+	background-color: #aec2d2;
+    border-color: #6f7f8c;
+}
+
+.expressionPlaceholderRenderer > .placeholder.ObjectProperty.changeable:hover {
+	background-color: #c7d9e6;
+}
+
+.expressionPlaceholderRenderer > .placeholder.AnnotationProperty {
+    background-color: #b1cdce;
+    border-color: #7b8b8c;
+}
+
+.expressionPlaceholderRenderer > .placeholder.AnnotationProperty.changeable:hover {
+	background-color: #c5e3e4;
+}
+
+
+.expressionPlaceholderRenderer > .placeholder.Datatype {
+    background-color: #d6cc9f;
+    border-color: #90875f;
+}
+
+.expressionPlaceholderRenderer > .placeholder.Datatype.changeable:hover {
+	background-color: #e6deb6;
+}
+
+.expressionPlaceholderRenderer > .placeholder.Individual {
+	background-color: #d2b6cf;
+    border-color: #9c6c97;
+}
+
+.expressionPlaceholderRenderer > .placeholder.Individual.changeable:hover {
+	background-color: #e8c8e5;
+}
+
+.expressionPlaceholderRenderer > .placeholder > .type {
+	vertical-align: middle;
+}
+
+.expressionPlaceholderRenderer > .placeholder.empty > .plus {
+	opacity: 0.5;
+	margin-right: 2px;
+}
+
+.expressionPlaceholderRenderer > .placeholder.empty > .type {
+	opacity: 0.5;
+}
+
+.expressionPlaceholderRenderer > .placeholder.empty > .separator {
+	opacity: 0.5;
+	margin: 0 1px;
+    color: #555;
+}
+
+.expressionPlaceholderRenderer > .placeholder > .menu {
+	vertical-align: middle;
+	display: none;
+}
+
+.expressionPlaceholderRenderer > .placeholder.selectable > .menu {
+	display: inline-block;
+}
+
+
+.expressionPlaceholderRenderer > .placeholder > .close {
+    background-image: url('../images/icons10.png');
+    background-position: -30px 0;
+    display: none;
+    width: 10px;
+    height: 10px;
+    vertical-align: middle;
+    margin-left: 2px;
+    cursor: pointer;
+	opacity: 0.7;
+}
+
+.expressionPlaceholderRenderer.allowDelete > .placeholder > .close {
+	display: inline-block;
+}
+
+.expressionPlaceholderRenderer > .placeholder > .close:hover {
+	opacity: 1;
+}
+
+.expressionPlaceholderRenderer > .placeholder > .renderer {}

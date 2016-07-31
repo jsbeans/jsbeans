@@ -1,0 +1,105 @@
+@CHARSET "UTF-8";
+
+.logView {
+}
+
+.logView > ._dwp_toolBar {
+	position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+}
+
+.logView > ._dwp_toolBar li._dwp_toolBarItem {
+	padding: 2px 3px;
+    position: relative;
+}
+
+.logView > ._dwp_toolBar li._dwp_toolBarItem > .icon {
+	width: 16px;
+    height: 16px;
+    background-image: url('../images/icons16.png');
+    background-repeat: no-repeat;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.logView > ._dwp_toolBar li._dwp_toolBarItem[key="clear"] > .icon {
+    background-position: -64px -48px;
+}
+
+.logView > ._dwp_toolBar li._dwp_toolBarItem[key="scrollLock"] > .icon {
+    background-position: 0 -64px;
+}
+
+.logView > ._dwp_listBox {
+	padding-top: 30px;
+    border: none;
+    box-sizing: border-box;
+    padding-bottom: 1px;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer {}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li {
+	position: relative;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li:nth-child(odd) {
+	background-color: #EFE9E0;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li:nth-child(even) {
+	background-color: #F7F2EE;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li > .level {
+	position: absolute;
+	width: 16px;
+	height: 16px;
+	background-image: url('../images/icons16.png');
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.ERROR > .level {
+	background-position: -80px -48px;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.WARN > .level {
+	background-position: -112px -16px;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.DEBUG > .level {
+	background-position: -112px -48px;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.INFO > .level {
+	background-position: -96px -48px;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li > .timestamp {
+	position: absolute;
+    left: 32px;
+    font-size: 11px;
+	top: 3px;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li > .message {
+    font-size: 11px;
+    padding: 1px 10px 1px 110px;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.ERROR > .message {
+	color: #940202;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.WARN > .message {
+	color: #755700;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.DEBUG > .message {
+	color: #3E3E3E;
+}
+
+.logView > ._dwp_listBox ul._dwp_listBoxContainer > li.INFO > .message {
+	color: #003A65;
+}

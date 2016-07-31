@@ -1,0 +1,62 @@
+<assembly
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+        xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+
+    <id>build</id>
+    <formats>
+        <format>dir</format>
+        <format>zip</format>
+    </formats>
+
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <dependencySets>
+        <!--  extract home -->
+        <dependencySet>
+            <outputDirectory>${org.jsbeans.application.path}</outputDirectory>
+            <includes>
+                <include>org.jsbeans:enviroment-home</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <excludes>
+                    <exclude>META-INF/**</exclude>
+                </excludes>
+            </unpackOptions>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+
+        <!--  copy kernel and plugins to lib -->
+        <dependencySet>
+            <outputDirectory>${org.jsbeans.application.path}/lib</outputDirectory>
+            <includes>
+                <include>**</include>
+            </includes>
+            <excludes>
+                <exclude>*:*:jar:jsb-application</exclude>
+            </excludes>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+
+        <!--  extract kernel and plugins content to home-->
+        <dependencySet>
+            <!--<outputDirectory>${org.jsbeans.application.path}/..</outputDirectory>-->
+            <outputDirectory></outputDirectory>
+            <includes>
+                <include>*:*:jar:jsb-application</include>
+            </includes>
+            <unpack>true</unpack>
+            <unpackOptions>
+                <includes>
+                    <include>${org.jsbeans.application.path}/**</include>
+                </includes>
+            </unpackOptions>
+            <useProjectArtifact>false</useProjectArtifact>
+        </dependencySet>
+
+    </dependencySets>
+
+</assembly>

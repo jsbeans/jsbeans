@@ -1,0 +1,131 @@
+@CHARSET "UTF-8";
+
+.jsonView {
+	font-family: monospace;
+	
+	-webkit-user-select: initial;
+	-khtml-user-select: initial;
+	-moz-user-select: initial;
+	-ms-user-select: initial;
+	user-select: initial;
+}
+
+.jsonView .pane {
+	font-family: monospace;
+	text-align: left;
+}
+
+.jsonView .expandCollapseToggle {
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+	display: inline-block;
+	float: left;
+	margin: 0;
+	background-image: url('expcoll.png');
+	opacity: 0.7;
+}
+
+.jsonView .expandCollapseToggle:hover {
+	opacity: 1.0;
+}
+
+.jsonView .expandCollapseToggle.expanded {
+	background-position: -16px 0;
+	float: none;
+}
+
+.jsonView .expandCollapseToggle.collapsed {
+	background-position: 0 0;
+}
+
+.jsonView ul.objBody {
+	clear: both;
+	display: block;
+	margin: 0 0 0 20px;
+	padding: 0;
+}
+
+.jsonView ul.objBody li {
+	list-style-type: none;
+	display: block;
+	margin: 0;
+	clear: both;
+}
+
+.jsonView .string {
+	color: #2A00FF;
+	float: left;
+}
+
+.jsonView .number {
+	color: #116644;
+	float: left;
+}
+
+.jsonView .nil {
+	color: #777;
+	float: left;
+}
+
+.jsonView .function {
+	color: #7F0055;
+	font-weight: bold;
+	float: left;
+}
+
+.jsonView .bool {
+	font-weight: bold;
+	float: left;
+}
+
+.jsonView .bool.true {
+	color: #090;
+}
+
+.jsonView .bool.false {
+	color: #900;
+}
+
+.jsonView .brace {
+	font-weight: bold;
+	float: left;
+	font-size: 1.2em;
+}
+
+.jsonView .leftBrace {
+}
+
+.jsonView .rightBrace {
+}
+
+.jsonView .bracket {
+	font-weight: bold;
+	float: left;
+	font-size: 1.2em;
+}
+
+.jsonView .leftBracket {
+}
+
+.jsonView .rightBracket {
+}
+
+.jsonView .comma {
+	float: left;
+}
+
+.jsonView .eos {
+	clear: both;
+}
+
+.jsonView .objBody.embedded {
+	margin: 0 0 0 20px;
+	position: relative;
+	overflow: hidden;
+}
+
+.jsonView .objBody .key {
+	margin-right: 4px;
+	float:left;
+}

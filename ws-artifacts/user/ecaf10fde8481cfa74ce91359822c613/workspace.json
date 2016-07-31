@@ -1,0 +1,809 @@
+{
+  "historyOperations": [
+    {
+      "id": 0,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace"
+        ],
+        "value": {
+          "id": "ecaf10fde8481cfa74ce91359822c613",
+          "name": "ecaf10fde8481cfa74ce91359822c613",
+          "users": {
+            "user": {
+              "newDetails": null,
+              "name": "user",
+              "id": "user",
+              "owner": "user",
+              "createdTimestamp": 1469729636387,
+              "category": ""
+            }
+          },
+          "projects": {},
+          "ontologies": {
+            "e865927f36c1e859cbd9fe79dcf35f33": {
+              "title": "Friend of a Friend (FOAF) vocabulary",
+              "version": "1469729636388",
+              "id": "e865927f36c1e859cbd9fe79dcf35f33",
+              "owner": "user",
+              "createdTimestamp": 1469729636388,
+              "category": "Примеры",
+              "uri": "http://xmlns.com/foaf/0.1/",
+              "description": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+            },
+            "6465ea3fe97421f16e8872e18fb29c0f": {
+              "title": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce",
+              "version": "1469729644667",
+              "id": "6465ea3fe97421f16e8872e18fb29c0f",
+              "owner": "user",
+              "createdTimestamp": 1469729644667,
+              "category": "Примеры",
+              "uri": "http://purl.org/goodrelations/v1",
+              "description": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+            }
+          },
+          "datasources": {},
+          "datastores": {},
+          "owner": "user",
+          "createdTimestamp": 1469729636386,
+          "category": ""
+        }
+      },
+      "user": "user",
+      "timestamp": 1469729636386
+    },
+    {
+      "id": 1,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "users",
+          "user"
+        ],
+        "value": {
+          "newDetails": null,
+          "name": "user",
+          "id": "user",
+          "owner": "user",
+          "createdTimestamp": 1469729636387,
+          "category": ""
+        }
+      },
+      "user": "user",
+      "timestamp": 1469729636387
+    },
+    {
+      "id": 2,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "e865927f36c1e859cbd9fe79dcf35f33"
+        ],
+        "value": {
+          "title": "Friend of a Friend (FOAF) vocabulary",
+          "version": "1469729636388",
+          "id": "e865927f36c1e859cbd9fe79dcf35f33",
+          "owner": "user",
+          "createdTimestamp": 1469729636388,
+          "category": "Примеры",
+          "uri": "http://xmlns.com/foaf/0.1/",
+          "description": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+        }
+      },
+      "user": "user",
+      "timestamp": 1469729636388
+    },
+    {
+      "id": 3,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "e865927f36c1e859cbd9fe79dcf35f33",
+          "category"
+        ],
+        "current": "",
+        "value": "Примеры"
+      },
+      "user": "user",
+      "timestamp": 1469729636388
+    },
+    {
+      "id": 4,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "e865927f36c1e859cbd9fe79dcf35f33",
+          "uri"
+        ],
+        "value": "http://test.org/unknown-ontology-1469729638300"
+      },
+      "user": "user",
+      "timestamp": 1469729638300
+    },
+    {
+      "id": 5,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "e865927f36c1e859cbd9fe79dcf35f33",
+          "uri"
+        ],
+        "current": "http://test.org/unknown-ontology-1469729638300",
+        "value": "http://xmlns.com/foaf/0.1/"
+      },
+      "user": "user",
+      "timestamp": 1469729644450
+    },
+    {
+      "id": 6,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "e865927f36c1e859cbd9fe79dcf35f33",
+          "title"
+        ],
+        "current": "e865927f36c1e859cbd9fe79dcf35f33",
+        "value": "Friend of a Friend (FOAF) vocabulary"
+      },
+      "user": "user",
+      "timestamp": 1469729644465
+    },
+    {
+      "id": 7,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "e865927f36c1e859cbd9fe79dcf35f33",
+          "description"
+        ],
+        "value": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+      },
+      "user": "user",
+      "timestamp": 1469729644467
+    },
+    {
+      "id": 8,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "6465ea3fe97421f16e8872e18fb29c0f"
+        ],
+        "value": {
+          "title": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce",
+          "version": "1469729644667",
+          "id": "6465ea3fe97421f16e8872e18fb29c0f",
+          "owner": "user",
+          "createdTimestamp": 1469729644667,
+          "category": "Примеры",
+          "uri": "http://purl.org/goodrelations/v1",
+          "description": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+        }
+      },
+      "user": "user",
+      "timestamp": 1469729644668
+    },
+    {
+      "id": 9,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "6465ea3fe97421f16e8872e18fb29c0f",
+          "category"
+        ],
+        "current": "",
+        "value": "Примеры"
+      },
+      "user": "user",
+      "timestamp": 1469729644668
+    },
+    {
+      "id": 10,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "6465ea3fe97421f16e8872e18fb29c0f",
+          "uri"
+        ],
+        "value": "http://test.org/unknown-ontology-1469729644670"
+      },
+      "user": "user",
+      "timestamp": 1469729644670
+    },
+    {
+      "id": 11,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "6465ea3fe97421f16e8872e18fb29c0f",
+          "uri"
+        ],
+        "current": "http://test.org/unknown-ontology-1469729644670",
+        "value": "http://purl.org/goodrelations/v1"
+      },
+      "user": "user",
+      "timestamp": 1469729648422
+    },
+    {
+      "id": 12,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "6465ea3fe97421f16e8872e18fb29c0f",
+          "title"
+        ],
+        "current": "6465ea3fe97421f16e8872e18fb29c0f",
+        "value": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce"
+      },
+      "user": "user",
+      "timestamp": 1469729648425
+    },
+    {
+      "id": 13,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "6465ea3fe97421f16e8872e18fb29c0f",
+          "description"
+        ],
+        "value": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+      },
+      "user": "user",
+      "timestamp": 1469729648426
+    },
+    {
+      "id": 14,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "value": {
+          "user": "user",
+          "timestamp": 1469729648725
+        }
+      },
+      "user": "user",
+      "timestamp": 1469729648725
+    },
+    {
+      "id": 15,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469729648725
+    },
+    {
+      "id": 16,
+      "operation": "clean",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469729648746
+    },
+    {
+      "id": 17,
+      "operation": "load",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469729648746
+    },
+    {
+      "id": 18,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "wName"
+        ],
+        "value": "Мои онтологии"
+      },
+      "user": "user",
+      "timestamp": 1469729648750
+    },
+    {
+      "id": 19,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "current": {
+          "user": "user",
+          "timestamp": 1469729648725
+        },
+        "value": {
+          "user": "user",
+          "timestamp": 1469729648750
+        }
+      },
+      "user": "user",
+      "timestamp": 1469729648750
+    },
+    {
+      "id": 20,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469729648750
+    },
+    {
+      "id": 21,
+      "operation": "clean",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469730308361
+    },
+    {
+      "id": 22,
+      "operation": "load",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469730308361
+    },
+    {
+      "id": 23,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "71471adccba14107ae984efdc9f8ce3a"
+        ],
+        "value": {
+          "title": "71471adccba14107ae984efdc9f8ce3a",
+          "version": "1469730343702",
+          "id": "71471adccba14107ae984efdc9f8ce3a",
+          "owner": "user",
+          "createdTimestamp": 1469730343702,
+          "category": "",
+          "file": "OPO.ttl",
+          "uri": "http://polimorf/general/OPO"
+        }
+      },
+      "user": "user",
+      "timestamp": 1469730343706
+    },
+    {
+      "id": 24,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "71471adccba14107ae984efdc9f8ce3a",
+          "category"
+        ],
+        "current": "",
+        "value": ""
+      },
+      "user": "user",
+      "timestamp": 1469730343706
+    },
+    {
+      "id": 25,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "71471adccba14107ae984efdc9f8ce3a",
+          "file"
+        ],
+        "value": "OPO.ttl"
+      },
+      "user": "user",
+      "timestamp": 1469730343706
+    },
+    {
+      "id": 26,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "71471adccba14107ae984efdc9f8ce3a",
+          "uri"
+        ],
+        "value": "http://test.org/unknown-ontology-1469730344837"
+      },
+      "user": "user",
+      "timestamp": 1469730344837
+    },
+    {
+      "id": 27,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "71471adccba14107ae984efdc9f8ce3a",
+          "uri"
+        ],
+        "current": "http://test.org/unknown-ontology-1469730344837",
+        "value": "http://polimorf/general/OPO"
+      },
+      "user": "user",
+      "timestamp": 1469730355449
+    },
+    {
+      "id": 28,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "current": {
+          "user": "user",
+          "timestamp": 1469729648750
+        },
+        "value": {
+          "user": "user",
+          "timestamp": 1469730355864
+        }
+      },
+      "user": "user",
+      "timestamp": 1469730355864
+    },
+    {
+      "id": 29,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469730355864
+    },
+    {
+      "id": 30,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "current": {
+          "user": "user",
+          "timestamp": 1469730355864
+        },
+        "value": {
+          "user": "user",
+          "timestamp": 1469730356200
+        }
+      },
+      "user": "user",
+      "timestamp": 1469730356200
+    },
+    {
+      "id": 31,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469730356200
+    },
+    {
+      "id": 32,
+      "operation": "clean",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469736893848
+    },
+    {
+      "id": 33,
+      "operation": "load",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469736893848
+    },
+    {
+      "id": 34,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "71471adccba14107ae984efdc9f8ce3a"
+        ],
+        "current": {
+          "title": "71471adccba14107ae984efdc9f8ce3a",
+          "version": "1469730343702",
+          "id": "71471adccba14107ae984efdc9f8ce3a",
+          "owner": "user",
+          "createdTimestamp": 1469730343702,
+          "category": "",
+          "file": "OPO.ttl",
+          "uri": "http://polimorf/general/OPO"
+        },
+        "value": null
+      },
+      "user": "user",
+      "timestamp": 1469736968375
+    },
+    {
+      "id": 35,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "current": {
+          "user": "user",
+          "timestamp": 1469730356200
+        },
+        "value": {
+          "user": "user",
+          "timestamp": 1469736968378
+        }
+      },
+      "user": "user",
+      "timestamp": 1469736968378
+    },
+    {
+      "id": 36,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469736968378
+    },
+    {
+      "id": 37,
+      "operation": "clean",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469737034312
+    },
+    {
+      "id": 38,
+      "operation": "load",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469737034312
+    },
+    {
+      "id": 39,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "36047f3ee0eb80c55b329f3d92013904"
+        ],
+        "value": {
+          "title": "36047f3ee0eb80c55b329f3d92013904",
+          "version": "1469737058744",
+          "id": "36047f3ee0eb80c55b329f3d92013904",
+          "owner": "user",
+          "createdTimestamp": 1469737058744,
+          "category": "",
+          "file": "OPO.ttl",
+          "uri": "http://polimorf/general/OPO"
+        }
+      },
+      "user": "user",
+      "timestamp": 1469737058744
+    },
+    {
+      "id": 40,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "36047f3ee0eb80c55b329f3d92013904",
+          "category"
+        ],
+        "current": "",
+        "value": ""
+      },
+      "user": "user",
+      "timestamp": 1469737058744
+    },
+    {
+      "id": 41,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "36047f3ee0eb80c55b329f3d92013904",
+          "file"
+        ],
+        "value": "OPO.ttl"
+      },
+      "user": "user",
+      "timestamp": 1469737058744
+    },
+    {
+      "id": 42,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "36047f3ee0eb80c55b329f3d92013904",
+          "uri"
+        ],
+        "value": "http://test.org/unknown-ontology-1469737059878"
+      },
+      "user": "user",
+      "timestamp": 1469737059878
+    },
+    {
+      "id": 43,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "36047f3ee0eb80c55b329f3d92013904",
+          "uri"
+        ],
+        "current": "http://test.org/unknown-ontology-1469737059878",
+        "value": "http://polimorf/general/OPO"
+      },
+      "user": "user",
+      "timestamp": 1469737065705
+    },
+    {
+      "id": 44,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "current": {
+          "user": "user",
+          "timestamp": 1469736968378
+        },
+        "value": {
+          "user": "user",
+          "timestamp": 1469737066085
+        }
+      },
+      "user": "user",
+      "timestamp": 1469737066085
+    },
+    {
+      "id": 45,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469737066085
+    },
+    {
+      "id": 46,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "current": {
+          "user": "user",
+          "timestamp": 1469737066085
+        },
+        "value": {
+          "user": "user",
+          "timestamp": 1469737066449
+        }
+      },
+      "user": "user",
+      "timestamp": 1469737066449
+    },
+    {
+      "id": 47,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/ecaf10fde8481cfa74ce91359822c613"
+      },
+      "user": "user",
+      "timestamp": 1469737066449
+    }
+  ],
+  "workspace": {
+    "id": "ecaf10fde8481cfa74ce91359822c613",
+    "name": "ecaf10fde8481cfa74ce91359822c613",
+    "users": {
+      "user": {
+        "newDetails": null,
+        "name": "user",
+        "id": "user",
+        "owner": "user",
+        "createdTimestamp": 1469729636387,
+        "category": ""
+      }
+    },
+    "projects": {},
+    "ontologies": {
+      "e865927f36c1e859cbd9fe79dcf35f33": {
+        "title": "Friend of a Friend (FOAF) vocabulary",
+        "version": "1469729636388",
+        "id": "e865927f36c1e859cbd9fe79dcf35f33",
+        "owner": "user",
+        "createdTimestamp": 1469729636388,
+        "category": "Примеры",
+        "uri": "http://xmlns.com/foaf/0.1/",
+        "description": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+      },
+      "6465ea3fe97421f16e8872e18fb29c0f": {
+        "title": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce",
+        "version": "1469729644667",
+        "id": "6465ea3fe97421f16e8872e18fb29c0f",
+        "owner": "user",
+        "createdTimestamp": 1469729644667,
+        "category": "Примеры",
+        "uri": "http://purl.org/goodrelations/v1",
+        "description": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+      },
+      "71471adccba14107ae984efdc9f8ce3a": null,
+      "36047f3ee0eb80c55b329f3d92013904": {
+        "title": "36047f3ee0eb80c55b329f3d92013904",
+        "version": "1469737058744",
+        "id": "36047f3ee0eb80c55b329f3d92013904",
+        "owner": "user",
+        "createdTimestamp": 1469737058744,
+        "category": "",
+        "file": "OPO.ttl",
+        "uri": "http://polimorf/general/OPO"
+      }
+    },
+    "datasources": {},
+    "datastores": {},
+    "owner": "user",
+    "createdTimestamp": 1469729636386,
+    "category": "",
+    "wName": "Мои онтологии"
+  },
+  "lastCommit": {
+    "user": "user",
+    "timestamp": 1469737066449
+  }
+}

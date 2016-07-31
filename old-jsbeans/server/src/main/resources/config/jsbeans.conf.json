@@ -1,0 +1,29 @@
+{
+  "__imports__comment__": "List of files or resources for merge with this JSON",
+  "__imports__": [
+    "config/jsbeans.scripting.conf.json"
+  ],
+  "__comment__": "Use long paths keys (eg: {\"a.b.c\":1}) for define JSON structures (eg: {a:{b:{c:1}}). Use \"__*__\" keys for technical fields.",
+  "__org.jsbeans__comment__": "jsBeans node configuration",
+  "org.jsbeans": {
+    "JsBeans": {
+      "name": "jsbeans-local",
+      "__services__comment__": "Ordered list of Service classes for loading",
+      "services": [
+        "org.jsbeans.security.SecurityService",
+        "org.jsbeans.scripting.JsHubService",
+        "org.jsbeans.scripting.jsb.JsoRegistryService"
+      ],
+      "__waitStopTimeoutMills__comment__": "Waiting timeout in mills for node stoped",
+      "waitStopTimeoutMills": 5000
+    },
+    "servicemanager.defaultmanager.DefaultServiceManager": {
+      "__serviceStartTimeoutMills__comment__": "Service starting timeout or timeout of Service.start() completetion",
+      "serviceStartTimeoutMills": 5000,
+      "__serviceStopTimeoutMills__comment__": "Service stopping timeout or timeout of Service.stop() completetion",
+      "serviceStopTimeoutMills": 5000,
+      "__eventsMaxThreads__comment__": "Max number of threads of cached ThreadPool that executing event handlers",
+      "eventsMaxThreads": 100
+    }
+  }
+}

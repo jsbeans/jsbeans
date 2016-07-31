@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+
+._dwp_toolManager_toolArea {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+    bottom: 0;
+}

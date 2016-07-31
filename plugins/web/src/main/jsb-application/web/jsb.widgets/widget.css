@@ -1,0 +1,7 @@
+@CHARSET "UTF-8";
+
+._dwp_widget {
+	height: 100%;
+	overflow: hidden;
+	position: relative;
+}

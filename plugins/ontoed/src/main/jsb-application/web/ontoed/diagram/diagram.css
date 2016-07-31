@@ -1,0 +1,51 @@
+@CHARSET "UTF-8";
+
+.ontologyDiagram {}
+
+.ontologyDiagram.acceptDraggable {
+	box-shadow: inset 0 0 2px #6478A0;
+    background-color: #C8DDF9;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="subClassOf"] > path {
+    stroke: #9a7a5d;
+    stroke-width: 5px;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="subClassOf"] > .head.target {}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="subClassOf"] > .head.target > .shape {
+	stroke: #9a7a5d;
+    fill: #fff;
+    transform: scale(0.8);
+    stroke-width: 4px;
+}
+
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="classMapping"] > path {
+	stroke: #915a96;
+    stroke-width: 4px;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="classMapping"] > .head.target {}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="classMapping"] > .head.target > .shape {
+    transform: scale(0.7);
+    fill: #915a96;
+    stroke: #915a96;
+    stroke-width: 2px;
+    stroke-linejoin: round;
+}
+
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="propMapping"] > path {
+	stroke: #915a96;
+    stroke-width: 1.5px;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="propMapping"] > .head.target {}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="propMapping"] > .head.target > .shape {
+	fill: #915a96;
+    transform: scale(0.5);
+}

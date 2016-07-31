@@ -1,0 +1,17 @@
+@CHARSET "UTF-8";
+
+._dwp_droplistToolWrapper {
+	border-radius: 4px !important;
+	border: none !important;
+	padding: 0 !important;
+	box-shadow: 2px 2px 4px #636363 !important;
+}
+
+._dwp_droplistTool {
+	max-height: 300px;
+}
+
+._dwp_droplistTool ._dwp_listBox {
+	border-radius: 0 0 4px 4px !important;
+}
+

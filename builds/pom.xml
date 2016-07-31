@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jsbeans</groupId>
+        <artifactId>jsbeans</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>builds</artifactId>
+    <packaging>pom</packaging>
+
+    <name>${project.artifactId}</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>kernel</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>kernel</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <classifier>jsb-application</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>utils</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>enviroment-home</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>plugin-web</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jsbeans</groupId>
+            <artifactId>plugin-web</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <classifier>jsb-application</classifier>
+        </dependency>
+    </dependencies>
+
+
+    <properties>
+        <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
+    </properties>
+
+    <modules>
+        <module>local</module>
+        <module>ontoed</module>
+    </modules>
+
+</project>

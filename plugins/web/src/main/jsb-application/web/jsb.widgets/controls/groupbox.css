@@ -1,0 +1,95 @@
+@CHARSET "UTF-8";
+
+._dwp_groupBox {
+	position: relative;
+	font-size: small;
+}
+
+._dwp_groupBox ._dwp_groupBoxHeader {
+	position: relative;
+	left: 0;
+	right: 0;
+	top: 0;
+	z-index: 1;
+	display: inline-block;
+	border-radius: 4px 4px 4px 0;
+	border: 1px solid rgba(162, 135, 66, 0.7);
+	padding: 0 4px;
+	background: -webkit-linear-gradient(left, rgba(255, 252, 226, 1), rgba(255, 243, 203, 1));
+	background: -moz-linear-gradient(left, rgba(255, 252, 226, 1), rgba(255, 243, 203, 1));
+    background: linear-gradient(left, rgba(255, 252, 226, 1), rgba(255, 243, 203, 1));
+    background: -o-linear-gradient(left, rgba(255, 252, 226, 1), rgba(255, 243, 203, 1));
+    background: -ms-linear-gradient(left, rgba(255, 252, 226, 1), rgba(255, 243, 203, 1));
+	
+}
+
+._dwp_groupBox.collapsible ._dwp_groupBoxHeader,
+._dwp_groupBox.collapsible ._dwp_groupBoxHeader .inplace ._dwp_plain {
+	cursor: pointer;
+}
+
+._dwp_groupBox.collapsed ._dwp_groupBoxHeader {
+	border: 1px solid rgba(162, 135, 66, 0);
+	background: none;
+}
+
+._dwp_groupBox ._dwp_groupBoxHeader ._dwp_groupBoxTitle {
+	color: #794C1C;
+}
+
+._dwp_groupBox ._dwp_groupBoxHeader ._dwp_groupBoxCollapseContainer {
+	position: relative;
+	display: inline-block;
+	margin-right: 4px;
+	height: 16px;
+	width: 6px;
+	vertical-align: bottom;
+}
+
+._dwp_groupBox ._dwp_groupBoxHeader ._dwp_groupBoxCollapseHandler {
+	width: 6px;
+	height: 8px;
+	position: absolute;
+	background: url('../images/icons.png');
+	background-position: -58px 0;
+	cursor: pointer;
+	top: 50%;
+	margin-top: -4px;
+}
+
+._dwp_groupBox.collapsible ._dwp_groupBoxHeader:hover ._dwp_groupBoxCollapseHandler {
+	background-position: -58px -9px;
+}
+
+._dwp_groupBox.collapsed ._dwp_groupBoxHeader ._dwp_groupBoxCollapseHandler {
+	background-position: -50px 0;
+}
+
+._dwp_groupBox.collapsed.collapsible ._dwp_groupBoxHeader:hover ._dwp_groupBoxCollapseHandler {
+	background-position: -50px -9px;
+}
+
+._dwp_groupBox ._dwp_groupBoxPane {
+	height: 100%;
+	margin-top: -9px;
+	position: relative;
+	padding: 8px 3px 3px 3px;
+	border: 1px solid rgba(162, 135, 66, 0.7);
+	border-radius: 4px;
+	background: -webkit-linear-gradient(rgba(255, 255, 255, 0.5),rgba(248, 248, 248, 0.7),rgba(255, 255, 255, 0.5));
+	background: -moz-linear-gradient(rgba(255, 255, 255, 0.5),rgba(248, 248, 248, 0.7),rgba(255, 255, 255, 0.5));
+    background: linear-gradient(rgba(255, 255, 255, 0.5),rgba(248, 248, 248, 0.7),rgba(255, 255, 255, 0.5));
+    background: -o-linear-gradient(rgba(255, 255, 255, 0.5),rgba(248, 248, 248, 0.7),rgba(255, 255, 255, 0.5));
+    background: -ms-linear-gradient(rgba(255, 255, 255, 0.5),rgba(248, 248, 248, 0.7),rgba(255, 255, 255, 0.5));
+}
+
+._dwp_groupBox.collapsed ._dwp_groupBoxPane {
+	display: none;
+}
+
+._dwp_groupBox ._dwp_groupBoxHidden {
+	position: absolute;
+	left: 0;
+	top: 0;
+	visibility: hidden;
+}

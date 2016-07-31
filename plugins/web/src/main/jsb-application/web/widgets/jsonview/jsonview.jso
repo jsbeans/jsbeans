@@ -1,0 +1,240 @@
+JSO({
+	name: 'JsonView',
+	parent: 'JSB.Widgets.Widget',
+/*	
+	require: {
+		'JSB.Widgets.ScrollBox': 'ScrollBox',
+		'JSB.Widgets.TabView': 'TabView',
+		'MultiEditor': 'MultiEditor'
+	},
+*/	
+	client: {
+		constructor: function(opts){
+			this.base(opts);
+			this.loadCss('jsonview.css');
+			this.preloadImages();
+			this.init(opts);
+		},
+		
+		body: {
+			defVisibleDeep: 2,
+			embeddedCount: 0,
+			embeddedWidgets:[],
+			
+			init: function(opts){
+				var self = this;
+				this.element.addClass('jsonView');
+				this.applyBehavior({
+					allowResize: {
+						vertical: false
+					}
+				});
+/*				
+				this.tabView = new self.TabView({
+					allowCloseTab: false,
+					allowNewTab: false
+				});
+				this.append(this.tabView);
+*/				
+				// add general view
+//				this.scrollBox = new self.ScrollBox();
+//				var generalTab = self.tabView.addTab('Вид', this.scrollBox, {});
+				this.pane = this.$('<div class="pane"></div>');
+				this.append(this.pane);
+//				this.scrollBox.append(this.pane);
+/*				
+				// add source view
+				this.editor = new self.MultiEditor({
+					valueType: 'org.jsbeans.types.Javascript',
+					readOnly: true
+				});
+				var editorTab = self.tabView.addTab('Источник', this.editor, {});
+*/					
+				if(opts && opts['data'] != null && opts['data'] != undefined){
+					this.setData(opts['data']);
+				}
+//				self.tabView.switchTab(generalTab);
+			},
+			
+			destroy: function(){
+				for(var i in this.embeddedWidgets){
+					this.embeddedWidgets[i].destroy();
+				}
+				this.parent().destroy.call(this);
+			},
+			
+			setData: function(obj){
+				var self = this;
+				this.pane.empty();	//avoid content
+				this.renderElement(obj, this.pane, 0);
+				this.pane.find('.expandCollapseToggle').click(function(evt){
+					var toggler = self.$(evt.currentTarget);
+					var ul = toggler.find('+ .objBody');	
+					if( toggler.hasClass('collapsed')){
+						// expand
+						toggler.removeClass('collapsed');
+						toggler.addClass('expanded');
+						ul.css('display','');
+					} else {
+						// collapse
+						toggler.removeClass('expanded');
+						toggler.addClass('collapsed');
+						ul.css('display','none');
+					}
+				});
+			},
+			
+			renderElement: function(obj, elt, deep){
+				if(obj == null){
+					this.renderNull(elt, deep);
+				} else if( typeof(obj) == 'object' ){
+					if(Object.prototype.toString.call(obj) === "[object Array]") {
+						this.renderArray(obj, elt, deep);
+					} else {
+						this.renderObj(obj, elt, deep);
+					}
+				} else if(typeof(obj) == 'boolean'){
+					this.renderBool(obj, elt, deep);
+				} else if(typeof(obj) == 'number'){
+					this.renderNumber(obj, elt, deep);
+				} else if(typeof(obj) == 'string'){
+					this.renderString(obj, elt, deep);
+				} else if(typeof(obj) == 'function'){
+					this.renderFunction(obj, elt, deep);
+				} else {
+					// internal error: unknown type
+				}
+			},
+			
+			renderObj: function(obj, elt, deep){
+				var self = this;
+				elt.append('<span class="brace leftBrace">{</span>');
+				var objBody = null;
+				var size = 0;
+				var cnt = 0;
+				for(var i in obj){ size++; }
+				if(size > 0){
+					var expColCls = 'expanded';
+					if(deep >= this.defVisibleDeep){
+						expColCls = 'collapsed';
+					}
+					elt.append('<span class="expandCollapseToggle '+expColCls+'"></span>');
+				}
+				var embeddedField = '_embeddedType_';
+				var dataField = '_embeddedData_';
+				if(obj[embeddedField] != null 
+					&& obj[embeddedField] != undefined ) {
+					var allowedWidth = this.element.width();
+					JSO().lookup('JSB.Widgets.FloatingContainer',function(ff){
+						var container = new ff({
+							position: 'fixed',
+							suggested: {
+								width: elt.width() / 2,
+								height: elt.width() / 2,
+							}
+						});
+						var containerElt = container.getElement();
+						containerElt.addClass('objBody').addClass('embedded');
+						elt.append(containerElt);
+						elt.resize(function(evt, w, h){
+							if(evt.target != elt.get(0)){
+								return;
+							}
+
+							container.updateArea(w - containerElt.position().left, 0);
+						});
+						if(deep >= self.defVisibleDeep){
+							containerElt.css('display','none');
+						}
+
+						JSO().lookup(obj[embeddedField], function(ff){
+							var embId = self.embeddedCount;
+							self.embeddedCount++;
+							var embeddedWidget = new ff({
+								data: obj[dataField]
+							});
+							self.embeddedWidgets[self.embeddedWidgets.length] = embeddedWidget; 
+							container.attachWidget(embeddedWidget);
+						});
+					});
+				} else {
+					for(var i in obj){
+						if(objBody == null){
+							objBody = this.$('<ul class="objBody"></ul>');
+							if(deep >= this.defVisibleDeep){
+								objBody.css('display','none');
+							}
+							elt.append(objBody);
+						}
+						var idElt = this.$('<span class="key"></span>');
+						idElt.text('' + i + ':');
+						var itemElt = this.$('<li></li>').append(idElt);
+						objBody.append(itemElt);
+						this.renderElement(obj[i], itemElt, deep + 1);
+						if(cnt + 1 < size){
+							itemElt.append('<span class="comma">,</span>');
+						}
+						itemElt.append('<div class="eos"></div>');
+						cnt++;
+					}
+				}
+				if(objBody != null){
+					
+				}
+				elt.append('<span class="brace rightBrace">}</span>');
+			},
+
+			renderArray: function(obj, elt, deep){
+				elt.append('<span class="bracket leftBracket">[</span>');
+				if(obj.length > 0){
+					var expColCls = 'expanded';
+					if(deep >= this.defVisibleDeep){
+						expColCls = 'collapsed';
+					}
+					elt.append('<span class="expandCollapseToggle '+expColCls+'"></span>');
+					var objBody = this.$('<ul class="objBody"></ul>');
+					if(deep >= this.defVisibleDeep){
+						objBody.css('display','none');
+					}
+					for(var i = 0; i < obj.length; i++ ){
+						var itemElt = this.$('<li></li>');
+						objBody.append(itemElt);
+						this.renderElement(obj[i], itemElt, deep + 1);
+						if(i + 1 < obj.length){
+							itemElt.append('<span class="comma">,</span>');
+						}
+						itemElt.append('<div class="eos"></div>');
+					}
+					elt.append(objBody);
+				}
+				elt.append('<span class="bracket rightBracket">]</span>');
+			},
+			
+			renderBool: function(obj, elt){
+				if(obj == true){
+					elt.append('<span class="bool true">true</span>');
+				} else {
+					elt.append('<span class="bool false">false</span>');
+				}
+			},
+
+			renderNull: function(elt){
+				elt.append('<span class="nil">null</span>');
+			},
+
+			renderNumber: function(obj, elt){
+				elt.append('<span class="number">'+obj+'</span>');
+			},
+			
+			renderString: function(obj, elt){
+				var strElt = this.$('<span class="string"></span>');
+				strElt.text('"' + obj + '"');
+				elt.append(strElt);
+			},
+			
+			renderFunction: function(obj, elt){
+				elt.append('<span class="function">function</span>');
+			}
+		}
+	}
+});
