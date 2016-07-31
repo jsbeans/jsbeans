@@ -1,3 +1,0 @@
-отловить в скриптах использование AbstractMessage и заменить на проброс значения или исключения
-изменился тип поля JsAskMessage: timeout Timeout->Long
-JsHub -> JsHubService
