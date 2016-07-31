@@ -48,3 +48,4 @@ logs
 #ignore scala
 .cache
 nohup.out
+ws-artifacts

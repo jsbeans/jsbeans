@@ -12,6 +12,9 @@ package org.jsbeans;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.core.util.StatusPrinter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
@@ -22,6 +25,7 @@ import org.jsbeans.messages.Message;
 import org.jsbeans.plugin.PluginActivationException;
 import org.jsbeans.plugin.PluginActivator;
 import org.jsbeans.services.ServiceManagerService;
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,8 +36,8 @@ import java.util.*;
 
 public class Core {
     public static final String PLATFORM_PACKAGE = "org.jsbeans";
-    public static final String defaultConfigPath = "jsb-application/config/";
-    public static final Optional<String> confDir = Optional.empty();
+    public static final String defaultConfigPath = "jsb-application/config";
+    public static final String configPath = System.getProperty("jsbeans.configPath", defaultConfigPath);
 
     public static final boolean DEBUG = !"false".equalsIgnoreCase(System.getProperty("jsbeans.debug", "false"));
 
@@ -49,11 +53,33 @@ public class Core {
     public static synchronized void start() {
         log.info("System core started at " + new Date());
 
+        Core.configureLogger();
         Core.loadBaseConfiguration();
         Core.collectAndConfigurePlugins();
         Core.startActorSystem();
         Core.initPlugins();
         Core.startServiceManager();
+    }
+
+    private static void configureLogger() {
+        System.setProperty("logback.configurationFile", configPath + "/logback.xml");
+		// set platform log level to debug
+		if (DEBUG) {
+			Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
+			if (logger instanceof ch.qos.logback.classic.Logger) {
+                ch.qos.logback.classic.Logger l = ((ch.qos.logback.classic.Logger) logger);
+                if (l.getLevel().toInt() > Level.DEBUG.toInt()) {
+                    l.setLevel(Level.DEBUG);
+                }
+			}
+		}
+
+        // print Logback internal state
+        ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
+        if (iLoggerFactory instanceof LoggerContext) {
+            LoggerContext lc = (LoggerContext) iLoggerFactory;
+            StatusPrinter.printIfErrorsOccured(lc);
+        }
     }
 
     public static Config getConfig() {
@@ -70,14 +96,9 @@ public class Core {
     }
 
     private static void loadBaseConfiguration() {
-        if (confDir.isPresent()) {
-            File file = new File(confDir.get() + "application.conf");
-            config = ConfigFactory.load(ConfigFactory.parseFile(file));
-            log.info("Configuration loaded from file '{}'", file);
-        } else {
-            config = ConfigFactory.load(defaultConfigPath + "application.conf");
-            log.info("Configuration loaded from default resource (application.[conf,json,properties])");
-        }
+        String path = configPath + "/application.conf";
+        config = ConfigFactory.load(path);
+        log.info("Configuration loaded from '{}'", path);
     }
 
     private static void startActorSystem() {
@@ -145,23 +166,7 @@ public class Core {
 
     private static Config loadPluginConfig(String name) {
         // load plugin config
-        Config config = null;
-        if (confDir.isPresent()) {
-            File file = new File(confDir.get() + name + ".conf");
-            if (file.exists()) {
-                config = ConfigFactory.parseFile(file);
-            }
-            log.debug("Configuration merged with file '{}'", file);
-        } else {
-            String res = "/" + defaultConfigPath + name + ".conf";
-            URL is = Core.class.getResource(res);
-            if (is != null) {
-                config = ConfigFactory.parseResources(Core.class, res);
-//						config = ConfigFactory.load(Core.class.getClassLoader(), res);
-                log.debug("Configuration merged with resource '{}'", res);
-            }
-        }
-        return config;
+        return ConfigFactory.parseResources(configPath + "/" + name + ".conf");
     }
 
     private static void initPlugins() {

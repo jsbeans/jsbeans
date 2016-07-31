@@ -1,0 +1,410 @@
+{
+  "historyOperations": [
+    {
+      "id": 0,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace"
+        ],
+        "value": {
+          "id": "d319160648c6be6dc30c3efc069fed73",
+          "name": "d319160648c6be6dc30c3efc069fed73",
+          "users": {
+            "user": {
+              "newDetails": null,
+              "name": "user",
+              "id": "user",
+              "owner": "user",
+              "createdTimestamp": 1469982195211,
+              "category": ""
+            }
+          },
+          "projects": {},
+          "ontologies": {
+            "7c3ad4d946b79864075fa302262b8077": {
+              "title": "Friend of a Friend (FOAF) vocabulary",
+              "version": "1469982195212",
+              "id": "7c3ad4d946b79864075fa302262b8077",
+              "owner": "user",
+              "createdTimestamp": 1469982195212,
+              "category": "Примеры",
+              "uri": "http://xmlns.com/foaf/0.1/",
+              "description": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+            },
+            "dfb9c404c28305b13e9262f730997611": {
+              "title": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce",
+              "version": "1469982198544",
+              "id": "dfb9c404c28305b13e9262f730997611",
+              "owner": "user",
+              "createdTimestamp": 1469982198544,
+              "category": "Примеры",
+              "uri": "http://purl.org/goodrelations/v1",
+              "description": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+            }
+          },
+          "datasources": {},
+          "datastores": {},
+          "owner": "user",
+          "createdTimestamp": 1469982195211,
+          "category": ""
+        }
+      },
+      "user": "user",
+      "timestamp": 1469982195211
+    },
+    {
+      "id": 1,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "users",
+          "user"
+        ],
+        "value": {
+          "newDetails": null,
+          "name": "user",
+          "id": "user",
+          "owner": "user",
+          "createdTimestamp": 1469982195211,
+          "category": ""
+        }
+      },
+      "user": "user",
+      "timestamp": 1469982195211
+    },
+    {
+      "id": 2,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "7c3ad4d946b79864075fa302262b8077"
+        ],
+        "value": {
+          "title": "Friend of a Friend (FOAF) vocabulary",
+          "version": "1469982195212",
+          "id": "7c3ad4d946b79864075fa302262b8077",
+          "owner": "user",
+          "createdTimestamp": 1469982195212,
+          "category": "Примеры",
+          "uri": "http://xmlns.com/foaf/0.1/",
+          "description": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+        }
+      },
+      "user": "user",
+      "timestamp": 1469982195212
+    },
+    {
+      "id": 3,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "7c3ad4d946b79864075fa302262b8077",
+          "category"
+        ],
+        "current": "",
+        "value": "Примеры"
+      },
+      "user": "user",
+      "timestamp": 1469982195212
+    },
+    {
+      "id": 4,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "7c3ad4d946b79864075fa302262b8077",
+          "uri"
+        ],
+        "value": "http://test.org/unknown-ontology-1469982197114"
+      },
+      "user": "user",
+      "timestamp": 1469982197114
+    },
+    {
+      "id": 5,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "7c3ad4d946b79864075fa302262b8077",
+          "uri"
+        ],
+        "current": "http://test.org/unknown-ontology-1469982197114",
+        "value": "http://xmlns.com/foaf/0.1/"
+      },
+      "user": "user",
+      "timestamp": 1469982198342
+    },
+    {
+      "id": 6,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "7c3ad4d946b79864075fa302262b8077",
+          "title"
+        ],
+        "current": "7c3ad4d946b79864075fa302262b8077",
+        "value": "Friend of a Friend (FOAF) vocabulary"
+      },
+      "user": "user",
+      "timestamp": 1469982198349
+    },
+    {
+      "id": 7,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "7c3ad4d946b79864075fa302262b8077",
+          "description"
+        ],
+        "value": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+      },
+      "user": "user",
+      "timestamp": 1469982198350
+    },
+    {
+      "id": 8,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "dfb9c404c28305b13e9262f730997611"
+        ],
+        "value": {
+          "title": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce",
+          "version": "1469982198544",
+          "id": "dfb9c404c28305b13e9262f730997611",
+          "owner": "user",
+          "createdTimestamp": 1469982198544,
+          "category": "Примеры",
+          "uri": "http://purl.org/goodrelations/v1",
+          "description": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+        }
+      },
+      "user": "user",
+      "timestamp": 1469982198544
+    },
+    {
+      "id": 9,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "dfb9c404c28305b13e9262f730997611",
+          "category"
+        ],
+        "current": "",
+        "value": "Примеры"
+      },
+      "user": "user",
+      "timestamp": 1469982198544
+    },
+    {
+      "id": 10,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "dfb9c404c28305b13e9262f730997611",
+          "uri"
+        ],
+        "value": "http://test.org/unknown-ontology-1469982198545"
+      },
+      "user": "user",
+      "timestamp": 1469982198545
+    },
+    {
+      "id": 11,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "dfb9c404c28305b13e9262f730997611",
+          "uri"
+        ],
+        "current": "http://test.org/unknown-ontology-1469982198545",
+        "value": "http://purl.org/goodrelations/v1"
+      },
+      "user": "user",
+      "timestamp": 1469982199155
+    },
+    {
+      "id": 12,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "dfb9c404c28305b13e9262f730997611",
+          "title"
+        ],
+        "current": "dfb9c404c28305b13e9262f730997611",
+        "value": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce"
+      },
+      "user": "user",
+      "timestamp": 1469982199174
+    },
+    {
+      "id": 13,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "ontologies",
+          "dfb9c404c28305b13e9262f730997611",
+          "description"
+        ],
+        "value": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+      },
+      "user": "user",
+      "timestamp": 1469982199174
+    },
+    {
+      "id": 14,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "value": {
+          "user": "user",
+          "timestamp": 1469982199426
+        }
+      },
+      "user": "user",
+      "timestamp": 1469982199426
+    },
+    {
+      "id": 15,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/d319160648c6be6dc30c3efc069fed73"
+      },
+      "user": "user",
+      "timestamp": 1469982199426
+    },
+    {
+      "id": 16,
+      "operation": "clean",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/d319160648c6be6dc30c3efc069fed73"
+      },
+      "user": "user",
+      "timestamp": 1469982199455
+    },
+    {
+      "id": 17,
+      "operation": "load",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/d319160648c6be6dc30c3efc069fed73"
+      },
+      "user": "user",
+      "timestamp": 1469982199455
+    },
+    {
+      "id": 18,
+      "operation": "set",
+      "data": {
+        "path": [
+          "workspace",
+          "wName"
+        ],
+        "value": "Мои онтологии"
+      },
+      "user": "user",
+      "timestamp": 1469982199455
+    },
+    {
+      "id": 19,
+      "operation": "set",
+      "data": {
+        "path": [
+          "lastCommit"
+        ],
+        "current": {
+          "user": "user",
+          "timestamp": 1469982199426
+        },
+        "value": {
+          "user": "user",
+          "timestamp": 1469982199455
+        }
+      },
+      "user": "user",
+      "timestamp": 1469982199455
+    },
+    {
+      "id": 20,
+      "operation": "store",
+      "data": {
+        "workspacePath": "/home/user/dev/jsbeans/ws-artifacts/user/d319160648c6be6dc30c3efc069fed73"
+      },
+      "user": "user",
+      "timestamp": 1469982199455
+    }
+  ],
+  "workspace": {
+    "id": "d319160648c6be6dc30c3efc069fed73",
+    "name": "d319160648c6be6dc30c3efc069fed73",
+    "users": {
+      "user": {
+        "newDetails": null,
+        "name": "user",
+        "id": "user",
+        "owner": "user",
+        "createdTimestamp": 1469982195211,
+        "category": ""
+      }
+    },
+    "projects": {},
+    "ontologies": {
+      "7c3ad4d946b79864075fa302262b8077": {
+        "title": "Friend of a Friend (FOAF) vocabulary",
+        "version": "1469982195212",
+        "id": "7c3ad4d946b79864075fa302262b8077",
+        "owner": "user",
+        "createdTimestamp": 1469982195212,
+        "category": "Примеры",
+        "uri": "http://xmlns.com/foaf/0.1/",
+        "description": "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language."
+      },
+      "dfb9c404c28305b13e9262f730997611": {
+        "title": "The GoodRelations Vocabulary for Semantic Web-based E-Commerce",
+        "version": "1469982198544",
+        "id": "dfb9c404c28305b13e9262f730997611",
+        "owner": "user",
+        "createdTimestamp": 1469982198544,
+        "category": "Примеры",
+        "uri": "http://purl.org/goodrelations/v1",
+        "description": "The GoodRelations ontology provides the vocabulary for annotating e-commerce offerings (1) to sell, lease, repair, dispose, or maintain commodity products and (2) to provide commodity services.\n\nGoodRelations allows describing the relationship between (1) Web resources, (2) offerings made by those Web resources, (3) legal entities, (4) prices, (5) terms and conditions, and the aforementioned ontologies for products and services (6).\n \nFor more information, see http://purl.org/goodrelations/\n\nNote: The base URI of GoodRelations is http://purl.org/goodrelations/v1. Please make sure you are only using element identifiers in this namespace, e.g. http://purl.org/goodrelations/v1#BusinessEntity. There may be copies of the ontology file on the Web which can be retrieved from other locations, BUT THOSE LOCATIONS MUST NOT BE USED AS THE BASIS OF IDENTIFIERS.\n\nIf you use GoodRelations for scientific purposes, please cite our paper:\n\nHepp, Martin: GoodRelations: An Ontology for Describing Products and Services Offers on the Web, Proceedings of the 16th International Conference on Knowledge Engineering and Knowledge Management (EKAW2008), September 29 - October 3, 2008, Acitrezza, Italy, Springer LNCS, Vol. 5268, pp. 332-347.\n\nPDF at http://www.heppnetz.de/publications/"
+      }
+    },
+    "datasources": {},
+    "datastores": {},
+    "owner": "user",
+    "createdTimestamp": 1469982195211,
+    "category": "",
+    "wName": "Мои онтологии"
+  },
+  "lastCommit": {
+    "user": "user",
+    "timestamp": 1469982199455
+  }
+}
