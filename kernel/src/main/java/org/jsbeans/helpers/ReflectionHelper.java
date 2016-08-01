@@ -30,7 +30,8 @@ public class ReflectionHelper {
     private static Reflections reflections = new Reflections(
             new ConfigurationBuilder()
                     .addScanners(new TypeAnnotationsScanner(), new SubTypesScanner(), new ResourcesScanner())
-                    .setUrls(ClasspathHelper.forPackage(Core.PLATFORM_PACKAGE))
+                    .setUrls(ClasspathHelper.forClassLoader())
+//                    .setUrls(ClasspathHelper.forPackage(Core.PLATFORM_PACKAGE))
     );
 
     public static ReflectionHelper getInstance() {
