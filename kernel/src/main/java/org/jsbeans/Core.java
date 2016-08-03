@@ -31,15 +31,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.SocketException;
-import java.net.URL;
 import java.util.*;
 
 public class Core {
     public static final String PLATFORM_PACKAGE = "org.jsbeans";
-    public static final String defaultConfigPath = "jsb-application/config";
-    public static final String configPath = System.getProperty("jsbeans.configPath", defaultConfigPath);
-
+    public static final String debugConfigPath = "jsb-application/config";
+    public static final String defaultConfigPath = "";
     public static final boolean DEBUG = !"false".equalsIgnoreCase(System.getProperty("jsbeans.debug", "false"));
+
+    public static final String configPath = System.getProperty("jsbeans.configPath", DEBUG ? debugConfigPath : defaultConfigPath);
+
 
     private static final Logger log = LoggerFactory.getLogger(Core.class);
     private static final Collection<Class<? extends PluginActivator>> pluginTypes =
@@ -62,7 +63,7 @@ public class Core {
     }
 
     private static void configureLogger() {
-        System.setProperty("logback.configurationFile", configPath + "/logback.xml");
+        System.setProperty("logback.configurationFile", getConfigPath(configPath, "logback.xml"));
 		// set platform log level to debug
 		if (DEBUG) {
 			Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
@@ -96,9 +97,15 @@ public class Core {
     }
 
     private static void loadBaseConfiguration() {
-        String path = configPath + "/application.conf";
+        String path = getConfigPath(configPath, "application.conf");
         config = ConfigFactory.load(path);
         log.info("Configuration loaded from '{}'", path);
+    }
+
+    private static String getConfigPath(String configPath, String name) {
+        return configPath.endsWith(File.separator) || configPath.length() == 0
+                ? configPath + name
+                : configPath + File.separator + name;
     }
 
     private static void startActorSystem() {
@@ -166,7 +173,7 @@ public class Core {
 
     private static Config loadPluginConfig(String name) {
         // load plugin config
-        return ConfigFactory.parseResources(configPath + "/" + name + ".conf");
+        return ConfigFactory.parseResources(getConfigPath(configPath, name + ".conf"));
     }
 
     private static void initPlugins() {

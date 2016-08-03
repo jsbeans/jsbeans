@@ -13,7 +13,7 @@ JSB({
 					id: '_dwp_droplistTool',
 					jso: self,
 					wrapperOpts: {
-						exclusive: true,
+						exclusive: '_dwp_droplistTool',
 						modal: false,
 						hideByOuterClick: true,
 						hideInterval: 0,

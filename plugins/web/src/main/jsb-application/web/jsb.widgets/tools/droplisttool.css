@@ -5,6 +5,7 @@
 	border: none !important;
 	padding: 0 !important;
 	box-shadow: 2px 2px 4px #636363 !important;
+	z-index: 40000;
 }
 
 ._dwp_droplistTool {

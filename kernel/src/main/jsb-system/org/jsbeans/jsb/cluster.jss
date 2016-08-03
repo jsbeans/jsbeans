@@ -17,7 +17,7 @@ JSO({
 Cluster.ask({
 	service: 'SignalDispatcherService',
 	messageType: 'StartedContextsMessage',
-	nodeId: 'akka.tcp://jsBeans@127.0.0.1:2552',
+	nodeId: 'akka.tcp://dWires@127.0.0.1:2552',
 	args: []
 });
 
@@ -32,7 +32,7 @@ Cluster.ask({
 Cluster.ask({
 	service: 'JsHub',
 	messageType: 'StartedContextsMessage',
-	nodeId: 'akka.tcp://jsBeans@127.0.0.1:2552',
+	nodeId: 'akka.tcp://dWires@127.0.0.1:2552',
 	args: []
 });
 
