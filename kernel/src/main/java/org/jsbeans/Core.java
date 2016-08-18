@@ -34,6 +34,7 @@ import java.net.SocketException;
 import java.util.*;
 
 public class Core {
+
     public static final String PLATFORM_PACKAGE = "org.jsbeans";
     public static final String debugConfigPath = "jsb-application/config";
     public static final String defaultConfigPath = "";
@@ -41,6 +42,9 @@ public class Core {
 
     public static final String configPath = System.getProperty("jsbeans.configPath", DEBUG ? debugConfigPath : defaultConfigPath);
 
+    static {
+        System.setProperty("logback.configurationFile", getConfigPath(configPath, "logback.xml"));
+    }
 
     private static final Logger log = LoggerFactory.getLogger(Core.class);
     private static final Collection<Class<? extends PluginActivator>> pluginTypes =
@@ -63,23 +67,24 @@ public class Core {
     }
 
     private static void configureLogger() {
-        System.setProperty("logback.configurationFile", getConfigPath(configPath, "logback.xml"));
-		// set platform log level to debug
-		if (DEBUG) {
-			Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
-			if (logger instanceof ch.qos.logback.classic.Logger) {
-                ch.qos.logback.classic.Logger l = ((ch.qos.logback.classic.Logger) logger);
-                if (l.getLevel() != null && l.getLevel().toInt() > Level.DEBUG.toInt()) {
-                    l.setLevel(Level.DEBUG);
+        // set platform log level to debug
+        if (DEBUG) {
+            Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
+            if (logger instanceof ch.qos.logback.classic.Logger) {
+                ch.qos.logback.classic.Logger logbackLogger = ((ch.qos.logback.classic.Logger) logger);
+                if (logbackLogger.getLevel() != null && logbackLogger.getLevel().toInt() > Level.DEBUG.toInt()) {
+                    logbackLogger.setLevel(Level.DEBUG);
                 }
-			}
-		}
+            }
+        }
 
-        // print Logback internal state
-        ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
-        if (iLoggerFactory instanceof LoggerContext) {
-            LoggerContext lc = (LoggerContext) iLoggerFactory;
-            StatusPrinter.printIfErrorsOccured(lc);
+        ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
+        if (loggerFactory instanceof LoggerContext) {
+            ch.qos.logback.classic.BasicConfigurator.configureDefaultContext();
+
+            // print Logback internal state
+            LoggerContext logbackLoggerContext = (LoggerContext) loggerFactory;
+            StatusPrinter.printIfErrorsOccured(logbackLoggerContext);
         }
     }
 
@@ -103,9 +108,9 @@ public class Core {
     }
 
     private static String getConfigPath(String configPath, String name) {
-        return configPath.endsWith(File.separator) || configPath.length() == 0
+        return configPath.endsWith("/") || configPath.length() == 0
                 ? configPath + name
-                : configPath + File.separator + name;
+                : configPath + "/" + name;
     }
 
     private static void startActorSystem() {
@@ -186,5 +191,10 @@ public class Core {
     private static void startServiceManager() {
         ActorHelper.actorOf(ServiceManagerService.class, ActorHelper.generateName(ServiceManagerService.class))
                 .tell(Message.SVC_INIT, ActorRef.noSender());
+    }
+
+    public static void exit() {
+        Core.getActorSystem().shutdown();
+        System.exit(0);
     }
 }
