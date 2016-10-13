@@ -46,14 +46,18 @@ JSB({
 					}
 					var nodeMap = this.diagram.getNodesUnderCursor(this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY}));
 					if(Object.keys(nodeMap).length === 0){
-						this.selectNodes(this.diagram.nodes, false);	
+						this.select(this.diagram.nodes, false);	
+						this.select(this.diagram.links, false);
 					}
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && params.event.which == 1) {
 					params.event.stopPropagation();
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1){
 					params.event.stopPropagation();
 					if(params.event.altKey){
-						sender.select(false);
+						if(sender.isSelected()){
+							sender.select(false);
+						}
+						
 					} else if(params.event.ctrlKey){
 						// toggle
 						sender.select(!sender.isSelected());
@@ -62,15 +66,42 @@ JSB({
 						sender.select(true);
 						
 						// remove old selected
-						var rNodeMap = {};
+						var rMap = {};
 						for(var nodeId in this.diagram.nodes){
 							var node = this.diagram.nodes[nodeId];
 							if(node == sender){
 								continue;
 							}
-							rNodeMap[nodeId] = node;
+							rMap[nodeId] = node;
 						}
-						this.selectNodes(rNodeMap, false);
+						this.select(rMap, false);
+						this.select(this.diagram.links, false);
+					}
+				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Link') && params.event.which == 1){
+					params.event.stopPropagation();
+					if(params.event.altKey){
+						if(sender.isSelected()){
+							sender.select(false);
+						}
+						
+					} else if(params.event.ctrlKey){
+						// toggle
+						sender.select(!sender.isSelected());
+					} else {
+						// select new
+						sender.select(true);
+						
+						// remove old selected
+						var rMap = {};
+						for(var linkId in this.diagram.links){
+							var link = this.diagram.links[linkId];
+							if(link == sender){
+								continue;
+							}
+							rMap[linkId] = link;
+						}
+						this.select(rMap, false);
+						this.select(this.diagram.nodes, false);
 					}
 				}
 				break;
@@ -105,7 +136,7 @@ JSB({
 					params.event.stopPropagation();
 					
 					// store select and highlight states
-					this.lastSelectedNodeStateMap = JSB().clone(this.diagram.getSelectedNodes());
+					this.lastSelectedStateMap = JSB().clone(this.diagram.getSelected());
 				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1 && !self.isNodeMoving){
 					var pt = self.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY});
 					self.nodeMovePt = {x: pt.x, y: pt.y};
@@ -123,8 +154,9 @@ JSB({
 					if(this.isSelecting){
 						
 						// remove all highlights
-						this.highlightNodes(this.diagram.nodes, false);
-						var nodeMap = self.diagram.getNodesUnderSelection();
+						this.highlight(this.diagram.nodes, false);
+						this.highlight(this.diagram.links, false);
+						var itemMap = self.diagram.getItemsUnderSelection();
 						
 						self.diagram.selectorTool.css({
 							'display': 'none'
@@ -132,32 +164,39 @@ JSB({
 						
 						if(params.event.altKey){
 							// subtract highlighted from current selection
-							var rNodeMap = {};
-							for(var nodeId in this.lastSelectedNodeStateMap){
-								var node = this.lastSelectedNodeStateMap[nodeId];
-								if(nodeMap[nodeId]){
-									rNodeMap[nodeId] = node;
+							var rItemMap = {};
+							for(var itemId in this.lastSelectedStateMap){
+								var item = this.lastSelectedStateMap[itemId];
+								if(itemMap[itemId]){
+									rItemMap[itemId] = item;
 								}
 							}
-							this.selectNodes(rNodeMap, false);
+							this.select(rItemMap, false);
 							
 						} else if(params.event.ctrlKey){
 							// append highlighted to current selection
-							this.selectNodes(nodeMap, true);
+							this.select(itemMap, true);
 						} else {
 							// select new
-							this.selectNodes(nodeMap, true);
+							this.select(itemMap, true);
 							
 							// remove old selected
-							var rNodeMap = {};
+							var rItemMap = {};
 							for(var nodeId in this.diagram.nodes){
 								var node = this.diagram.nodes[nodeId];
-								if(nodeMap[nodeId]){
+								if(itemMap[nodeId]){
 									continue;
 								}
-								rNodeMap[nodeId] = node;
+								rItemMap[nodeId] = node;
 							}
-							this.selectNodes(rNodeMap, false);
+							for(var linkId in this.diagram.links){
+								var link = this.diagram.links[linkId];
+								if(itemMap[linkId]){
+									continue;
+								}
+								rItemMap[linkId] = link;
+							}
+							this.select(rItemMap, false);
 							
 						}
 						this.isSelecting = false;
@@ -168,9 +207,11 @@ JSB({
 					
 					if(this.isNodeMoving){
 						this.isNodeMoving = false;
+						this.diagram.options.autoLayout = this.storedAutoLayoutEnabled;
 						this.nodeMovePt = null;
 						this.preventClick = true;
 						params.event.stopPropagation();
+						this.diagram.updateLayout(this.diagram.getSelected());
 					}
 					
 				} else if(params.event.which == 3){
@@ -218,21 +259,28 @@ JSB({
 						height: maxPt.y - minPt.y
 					});
 					
-					var nodeMap = self.diagram.getNodesUnderSelection();
+					var itemMap = self.diagram.getItemsUnderSelection();
 					
 					// highlight new
-					this.highlightNodes(nodeMap, true);
+					this.highlight(itemMap, true);
 					
 					// remove highlight old
-					var rNodeMap = {};
+					var rItemMap = {};
 					for(var nodeId in this.diagram.nodes){
 						var node = this.diagram.nodes[nodeId];
-						if(nodeMap[nodeId]){
+						if(itemMap[nodeId]){
 							continue;
 						}
-						rNodeMap[nodeId] = node;
+						rItemMap[nodeId] = node;
 					}
-					this.highlightNodes(rNodeMap, false);
+					for(var linkId in this.diagram.links){
+						var link = this.diagram.links[linkId];
+						if(itemMap[linkId]){
+							continue;
+						}
+						rItemMap[linkId] = link;
+					}
+					this.highlight(rItemMap, false);
 				}
 				
 				if(this.nodeMovePt || this.isNodeMoving){
@@ -241,12 +289,24 @@ JSB({
 							&& Math.abs(pt.y - this.nodeMovePt.y) < this.diagram.getOption('cellSize')){
 						return;
 					}
-					var selMap = this.diagram.getSelectedNodes();
+					var sMap = this.diagram.getSelected();
+					var selMap = {};
+					// filter nodes
+					for(var i in sMap){
+						if(JSB().isInstanceOf(sMap[i], 'JSB.Widgets.Diagram.Node')){
+							selMap[i] = sMap[i];
+						}
+					}
 					if(!this.isNodeMoving){
 						this.isNodeMoving = true;
+						this.storedAutoLayoutEnabled = this.diagram.options.autoLayout;
+						this.diagram.options.autoLayout = false;
 						if(!selMap[self.nodeMove.getId()]){
-							this.selectNodes(this.diagram.nodes, false);
+							this.select(this.diagram.nodes, false);
+							this.select(this.diagram.links, false);
 							self.nodeMove.select(true);
+							selMap = {};
+							selMap[self.nodeMove.getId()] = self.nodeMove;
 						}
 						// store positions
 						this.storedPositions = {};
@@ -273,20 +333,20 @@ JSB({
 			}
 		},
 		
-		highlightNodes: function(nodeMap, bEnable){
-			for(var nodeId in nodeMap){
-				var node = nodeMap[nodeId];
-				node.highlight(bEnable);
+		highlight: function(objMap, bEnable){
+			for(var objId in objMap){
+				var obj = objMap[objId];
+				obj.highlight(bEnable);
 			}
 		},
 		
-		selectNodes: function(nodeMap, bEnable){
-			for(var nodeId in nodeMap){
-				var node = nodeMap[nodeId];
-				node.select(bEnable);
+		select: function(objMap, bEnable){
+			for(var objId in objMap){
+				var obj = objMap[objId];
+				obj.select(bEnable);
 			}
 		}
-
+		
 
 	}
 });

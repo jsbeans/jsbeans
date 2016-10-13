@@ -142,7 +142,6 @@ JSB({
 					innerElt.append(valObj.element);
 					this.getElement().append(innerElt);
 					this.getElement().append('<div class="_dwp_dropBtn"></div>');
-					
 					this.selectedObject = valObj;
 					if(!JSO().isNull(this.options.onChange)){
 						this.options.onChange(valObj.key, valObj);
@@ -156,6 +155,7 @@ JSB({
 					}
 				}
 			}
+			this.getElement().attr('value', valObj.key);
 		},
 		
 		getItems: function(){

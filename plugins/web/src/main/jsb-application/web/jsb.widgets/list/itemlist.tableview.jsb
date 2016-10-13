@@ -36,10 +36,15 @@ JSB({
 				
 				var wrapper = params.item.getElement().parent();
 				self.syncItem(wrapper);
+				JSB.defer(function(){
+					self.updateHeader();
+				}, 0, '_updateHeader');
 			});
 		},
 		
-		options: {},
+		options: {
+			header: false
+		},
 		columns: [{key: '__main__', opts:{}}],
 		
 		addColumn: function(key, opts){
@@ -71,12 +76,83 @@ JSB({
 		activate: function(container){
 			this.getSuperClass().activate.call(this, container);
 			this.list.addClass('tableView');
+			
+			// append header
+			this.updateHeader();
 		},
 		
 		deactivate: function(){
 			this.list.removeClass('tableView');
 			this.container.find('> li > .cell').remove();	// TODO: remove internal beans
 			this.getSuperClass().deactivate.call(this);
+			
+			// hide header
+			var tvh = this.list.find('.tableViewHeader');
+			if(tvh.length > 0){
+				tvh.addClass('hidden');
+			}
+		},
+		
+		updateHeader: function(){
+			if(!this.options.header){
+				return;
+			}
+			var self = this;
+			var tvh = this.list.find('.tableViewHeader');
+			var tr = null;
+			if(tvh.length === 0){
+				tvh = this.$('<div class="tableViewHeader"></div>');
+				this.list.prepend(tvh);
+				tr = this.$('<div class="tableViewHeaderRow"></div>');
+				tvh.append(tr);
+			} else {
+				tr = tvh.find('> .tableViewHeaderRow');
+			}
+			
+			var hCells = tr.find('> .cellHeader');
+			if(hCells.length != this.columns.length){
+				hCells.remove();
+				
+				// fill
+				for(var i = 0; i < this.columns.length; i++){
+					var col = this.columns[i];
+					var th = this.$('<div class="cellHeader"></div>');
+					th.attr('key', col.key);
+					tr.append(th);
+					
+					if(col.opts && col.opts.onCreateCellHeader){
+						col.opts.onCreateCellHeader.call(this, th);
+					}
+				}
+				
+			}
+			
+			// update sizes
+			var lis = this.container.find('> li');
+			if(lis.length > 0){
+				var fli = this.$(lis[0]);
+				var cells = fli.find('> *');
+				for(var i = 0; i < cells.length; i++){
+					(function(cell, i){
+						self.$(cell).resize(function(){
+							self.$(hCells[i]).width(self.$(cell).outerWidth());
+						});
+						self.$(hCells[i]).width(self.$(cell).outerWidth());
+											
+					})(cells[i], i);
+				}
+			}
+			
+			this.container.resize(function(){
+				tvh.width(self.container.width());
+			});
+			
+			tvh.resize(function(){
+				self.list.find('> ._dwp_scrollBox').css({
+					top: tvh.height()
+				});
+			});
+
 		},
 		
 		update: function(){
@@ -88,6 +164,8 @@ JSB({
 			this.container.find('> li').each(function(){
 				self.syncItem(self.$(this));
 			});
+			
+			this.updateHeader();
 		},
 		
 		syncItem: function(wrapper){

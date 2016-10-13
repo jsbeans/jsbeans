@@ -139,7 +139,7 @@ JSB({
 			});
 
 			this.installed = true;
-			
+			this.publish('_jsb_diagramConnectorInstalled');
 		},
 		
 		getPoint: function(){
@@ -210,6 +210,9 @@ JSB({
 				linkMap[link.key] = link;
 			}
 			this.links[link.getId()] = link;
+		},
+		
+		notifyChangeConnection: function(){
 			if(this.options.onChangeConnection){
 				this.options.onChangeConnection.call(this);
 			}
@@ -224,6 +227,9 @@ JSB({
 			if(remoteConnector == this){
 				remoteConnector = link.target;
 			}
+			if(!JSB().isInstanceOf(remoteConnector, 'JSB.Widgets.Diagram.Connector')){
+				return;
+			}
 			var linkMap = this.remoteConnectors[remoteConnector.getId()];
 			if(!linkMap || !linkMap[link.key]){
 				return;
@@ -232,10 +238,6 @@ JSB({
 			if(Object.keys(linkMap).length === 0){
 				delete this.remoteConnectors[remoteConnector.getId()];
 			}
-			if(this.options.onChangeConnection){
-				this.options.onChangeConnection.call(this);
-			}
-
 		},
 		
 		enable: function(bEnable){
@@ -244,8 +246,21 @@ JSB({
 		
 		isEnabled: function(){
 			return this.options.enabled;
+		},
+		
+		getRemote: function(){
+			var remoteConnArr = [];
+			for(var lId in this.links){
+				var link = this.links[lId];
+				var rConn = link.source;
+				if(rConn == this){
+					rConn = link.target;
+				}
+				remoteConnArr.push({connector: rConn, link: link, node: rConn.node});
+			}
+			
+			return remoteConnArr;
 		}
-
 		
 	},
 	

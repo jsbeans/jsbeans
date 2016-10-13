@@ -8,7 +8,8 @@ JSB({
 		'JSB.Widgets.Diagram.Joint': 'Joint',
 		'JSB.Widgets.Diagram.Connector': 'Connector',
 		'JSB.Widgets.Diagram.Controller': 'Controller',
-		'JSB.Widgets.Diagram.WiringController': 'WiringController'
+		'JSB.Widgets.Diagram.WiringController': 'WiringController',
+		'JSB.Widgets.Diagram.DefaultLayoutManager': 'DefaultLayoutManager'
 	},
 	
 	client: {
@@ -17,10 +18,12 @@ JSB({
 		nodeDescs: {},
 		shapeDescs: {},
 		
+		layoutManagers: {},
+		
 		controllers: {},
 		controllerStack: [],
-		selectedNodes: {},
-		highlightedNodes: {},
+		selected: {},
+		highlighted: {},
 		
 		nodes: {},
 		links: {},
@@ -33,10 +36,16 @@ JSB({
 			panX: 0,
 			panY: 0,
 			cellSize: 10,
+			autoLayout: true,
 			
 			links: {
 				'_jsb_diagramUserWiringLink': {
 					
+				}
+			},
+			layouts: {
+				'default': {
+					jsb: 'JSB.Widgets.Diagram.DefaultLayoutManager'
 				}
 			}
 		},
@@ -116,6 +125,13 @@ JSB({
 				self.controllers.normal.onMessage(sender, msg, params);
 			});
 			
+			// setup layouts
+			if(this.options.layouts){
+				for(var lId in this.options.layouts){
+					this.setupLayout(lId, this.options.layouts[lId]);
+				}
+			}
+			
 			// setup nodes
 			if(this.options.nodes){
 				for(var nId in this.options.nodes){
@@ -152,6 +168,38 @@ JSB({
 				return this.defs.append('path')
 					.attr('d', 'M0,0 L-20,-10 L-15,0 L-20,10 z');
 			});
+			
+			// add highlight filter
+			this.registerShape('highlightFilter', function(){
+				var filter = this.defs.append('filter');
+				filter.append('feMorphology')
+					.attr('in', 'SourceGraphic')
+					.attr('operator', 'dilate')
+					.attr('radius', 2);
+				
+				var fc = filter.append('feComponentTransfer');
+				fc.append('feFuncR')
+					.attr('type', 'linear')
+					.attr('slope', 2);
+				fc.append('feFuncG')
+					.attr('type', 'linear')
+					.attr('slope', 2);
+				fc.append('feFuncB')
+					.attr('type', 'linear')
+					.attr('slope', 2);
+				
+				filter.append('feGaussianBlur')
+					.attr('stdDeviation', 1)
+					.attr('result', 'blur');
+				
+				var feMerge = filter.append('feMerge');
+				feMerge.append('feMergeNode')
+					.attr('in', 'blur');
+				feMerge.append('feMergeNode')
+					.attr('in', 'SourceGraphic');
+				
+				return filter;
+			});
 
 			
 			this.setupEventHandlers();
@@ -161,12 +209,12 @@ JSB({
 			});
 			
 			this.updateViewport();
-
+			this.useShape('highlightFilter');
 		},
 		
 		registerShape: function(key, createCallback){
 			var desc = {
-				id: key + '_' + this.getId(),
+				id: key/* + '_' + this.getId()*/,
 				createCallback: createCallback,
 				element: null
 			};
@@ -248,10 +296,10 @@ JSB({
 		},
 		
 		pageToSheetCoords: function(pt){
-			var offs = this.sheet.offset();
+			var sheetRc = this.sheet.get(0).getBoundingClientRect();
 			return {
-				x: (pt.x - offs.left) / this.options.zoom,
-				y: (pt.y - offs.top) / this.options.zoom
+				x: (pt.x - sheetRc.left) / this.options.zoom,
+				y: (pt.y - sheetRc.top) / this.options.zoom
 			};
 		},
 		
@@ -314,6 +362,27 @@ JSB({
 				width: gridSideX * 2,
 				height: gridSideY * 2
 			})
+		},
+		
+		setupLayout: function(key, opts){
+			var self = this;
+
+			function _setupLayout(LayoutClass){
+				var lmInst = new LayoutClass(self, opts);
+				self.layoutManagers[key] = lmInst;
+				lmInst.key = key;
+			}
+			
+			if(opts.jsb){
+				JSB().lookup(opts.jsb, function(cls){
+					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.LayoutManager')){
+						throw 'Unable to setup layout "' + key + '": wrong class - ' + cls.jsb.name;
+					}
+					_setupLayout(cls);
+				});
+			} else {
+				_setupLayout(self.DefaultLayoutManager);
+			}
 		},
 		
 		setupNode: function(key, opts){
@@ -465,7 +534,20 @@ JSB({
 				}
 			}
 			
-			// TODO: remove all links
+			if(node.options.onRemove){
+				node.options.onRemove.call(node);
+			}
+			
+			// remove all links
+			var links = node.getLinks();
+			for(var lId in links){
+				var link = links[lId];
+				this.removeLink(link);
+			}
+			
+			// unselect & unhighlight
+			node.select(false);
+			node.highlight(false);
 			
 			// remove node from the sheet
 			node.getElement().remove();
@@ -505,18 +587,49 @@ JSB({
 					throw 'ERROR(removeLink): Unknown link argument passed: ' + JSON.stringify(linkVal);
 				}
 			}
+			
+			// unselect & unhighlight
+			link.select(false);
+			link.highlight(false);
 
 			delete this.links[link.getId()];
 			link.destroy();
 		},
 		
 		clear: function(){
+			var oldLinks = this.links;
+			this.links = {};
+			for(var id in oldLinks){
+				var link = oldLinks[id];
+				link.destroy();
+			}
+			
 			var oldNodes = this.nodes;
 			this.nodes = {};
 			for(var id in oldNodes){
 				var node = oldNodes[id];
 				node.getElement().remove();
 				node.destroy();
+			}
+		},
+		
+		removeSelected: function(){
+			var sel = this.getSelected();
+			for(var itemId in sel){
+				var item = sel[itemId];
+				this.remove(item);
+			}
+		},
+		
+		remove: function(item){
+			if(JSB().isInstanceOf(item, 'JSB.Widgets.Diagram.Node')){
+				if(this.nodes[item.getId()]){
+					this.removeNode(item);
+				}
+			} else if(JSB().isInstanceOf(item, 'JSB.Widgets.Diagram.Link')){
+				if(this.links[item.getId()]){
+					this.removeLink(item);
+				}
 			}
 		},
 		
@@ -637,12 +750,12 @@ JSB({
 			});
 		},
 		
-		getSelectedNodes: function(){
-			return this.selectedNodes;
+		getSelected: function(){
+			return this.selected;
 		},
 		
-		getHighlightedNodes: function(){
-			return this.highlightedNodes;
+		getHighlighted: function(){
+			return this.highlighted;
 		},
 		
 		getNodesUnderCursor: function(pt){
@@ -663,21 +776,21 @@ JSB({
 			return selMap;
 		},
 		
-		getNodesUnderSelection: function(){
+		getItemsUnderSelection: function(){
 			var selMap = {};
 			var toolRc = this.selectorTool.get(0).getBoundingClientRect();
 			var sheetRc = this.sheet.get(0).getBoundingClientRect();
 			
-			var selMinPt = {x: toolRc.left - sheetRc.left, y: toolRc.top - sheetRc.top};
-			var selMaxPt = {x: toolRc.right - sheetRc.left, y: toolRc.bottom - sheetRc.top};
+			var selMinPt = {x: (toolRc.left - sheetRc.left) / this.options.zoom, y: (toolRc.top - sheetRc.top) / this.options.zoom};
+			var selMaxPt = {x: (toolRc.right - sheetRc.left) / this.options.zoom, y: (toolRc.bottom - sheetRc.top) / this.options.zoom};
 			
-			// iterate each node
+			// iterate over each node
 			for(var nodeId in this.nodes){
 				var node = this.nodes[nodeId];
-				var nodeRc = node.getElement().get(0).getBoundingClientRect();
+				var nodeRc = node.getRect();
 				
-				var nodeMinPt = {x: nodeRc.left - sheetRc.left, y: nodeRc.top - sheetRc.top};
-				var nodeMaxPt = {x: nodeRc.right - sheetRc.left, y: nodeRc.bottom - sheetRc.top};
+				var nodeMinPt = {x: nodeRc.x, y: nodeRc.y};
+				var nodeMaxPt = {x: nodeRc.x + nodeRc.w, y: nodeRc.y + nodeRc.h};
 				
 				if(nodeMaxPt.x < selMinPt.x){
 		        	continue;	// item is leftside from the selection
@@ -695,8 +808,84 @@ JSB({
 		        selMap[nodeId] = node;
 			}
 			
+			// iterate over each link
+			for(var linkId in this.links){
+				var link = this.links[linkId];
+				var pArr = link.getPathPoints();
+				for(var i = 0; i < pArr.length; i++){
+					var p = pArr[i];
+					if(p.x >= selMinPt.x && p.y >= selMinPt.y && p.x <= selMaxPt.x && p.y <= selMaxPt.y){
+						selMap[linkId] = link;
+						break;
+					}
+				}
+			}
+			
 			return selMap;
-		}
+		},
+		
+		updateLayout: function(items){
+			if(!this.options.autoLayout){
+				return;
+			}
+			var self = this;
+			function _getManagersForNode(item){
+				var lmans = [];
+				if(!item.options.layout){
+					return lmans;
+				}
+				var layout = item.options.layout;
+				if(layout){
+					if(!JSB().isPlainObject(layout)){
+						throw 'Invalid layout descriptor for node: ' + item.jsb.name;
+					}
+					var lmans = [];
+					for(var ln in layout){
+						if(layout[ln].auto){
+							lmans.push(ln);
+						}
+					}
+				}
+				return lmans;
+			}
+			
+			if(!items){
+				items = this.diagram.nodes;
+			}
+			if(JSB().isBean(items)){
+				var ni = {};
+				ni[items.getId()] = items;
+				items = ni;
+			} else if(JSB().isArray(items)){
+				var ni = {};
+				for(var i = 0; i < items.length; i++){
+					ni[items[i].getId()] = items[i];
+				}
+				items = ni;
+			}
+			
+			var manNodeMap = {};
+			for(var nId in items){
+				var node = items[nId];
+				var lmans = _getManagersForNode(node);
+				for(var i = 0; i < lmans.length; i++){
+					var lman = lmans[i];
+					if(!manNodeMap[lman]){
+						manNodeMap[lman] = {};
+					}
+					manNodeMap[lman][node.getId()] = node;
+				}
+			}
+			
+			// call managers
+			for(var lman in manNodeMap){
+				var lm = self.layoutManagers[lman];
+				if(!lm){
+					throw 'Unable to find layout manager: ' + lman;
+				}
+				lm.execute(manNodeMap[lman]);
+			}
+		},
 
 	},
 	

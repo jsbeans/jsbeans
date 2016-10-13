@@ -472,6 +472,14 @@ JSB({
 			return this.rootElt.find('> li._dwp_listBoxItem[key="'+key+'"]').is('.highlighted');
 		},
 		
+		getSelected: function(){
+			var selArr = [];
+			for(var i = 0; i < this.selected.length; i++){
+				selArr.push(this.get(this.selected[i]));
+			}
+			return selArr;
+		},
+		
 		getHighlightedItem: function(){
 			var itemWrapper = this.rootElt.find('.highlighted');
 			if(itemWrapper.length == 0){

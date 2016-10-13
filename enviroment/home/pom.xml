@@ -36,7 +36,6 @@
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
-                <version>1.5.2</version>
                 <executions>
                     <execution>
                         <phase>prepare-package</phase>

@@ -273,6 +273,8 @@ JSB({
 			this.panes[paneIdx].append(this.resolveElement(ctrl));
 			this.filledPanes[paneIdx] = true;
 			this.hidden[paneIdx] = false;
+			
+			return this.panes[paneIdx];
 		},
 		
 		append: function(ctrl){

@@ -89,7 +89,7 @@
    *  @author Martin Odersky
    *  @version 2.8
    *  @since   2.8
-   *  @tparam A    the element type of the collection
+   *  @tparam A    the entry type of the collection
    *  @tparam Repr the type of the actual collection containing the elements.
    *
    *  @define Coll Traversable
@@ -137,7 +137,7 @@
      *    It's important to implement this method in an efficient way.
      *  
      *
-     *  @param  f   the function that is applied for its side-effect to every element.
+     *  @param  f   the function that is applied for its side-effect to every entry.
      *              The result of function `f` is discarded.
      *              
      *  @tparam  U  the type parameter describing the result of function `f`. 
@@ -191,7 +191,7 @@
      *  resulting collection rather than the left one.
      * 
      *  @param that   the traversable to append.
-     *  @tparam B     the element type of the returned collection. 
+     *  @tparam B     the entry type of the returned collection.
      *  @tparam That  $thatinfo
      *  @param bf     $bfinfo
      *  @return       a new collection of type `That` which contains all elements
@@ -262,18 +262,18 @@
      *  elements of this $coll on which the function is defined.
      *
      *  @param f      the option-valued function which filters and maps the $coll.
-     *  @tparam B     the element type of the returned collection.
+     *  @tparam B     the entry type of the returned collection.
      *  @tparam That  $thatinfo
      *  @param bf     $bfinfo
      *  @return       a new collection of type `That` resulting from applying the option-valued function
-     *                `f` to each element and collecting all defined results.
+     *                `f` to each entry and collecting all defined results.
      *                The order of the elements is preserved.
      *
      *  @usecase def filterMap[B](f: A => Option[B]): $Coll[B]
      *  
      *  @param pf     the partial function which filters and maps the $coll.
      *  @return       a new $coll resulting from applying the given option-valued function
-     *                `f` to each element and collecting all defined results.
+     *                `f` to each entry and collecting all defined results.
      *                The order of the elements is preserved.
     def filterMap[B, That](f: A => Option[B])(implicit bf: CanBuildFrom[Repr, B, That]): That = {
       val b = bf(repr)
@@ -348,13 +348,13 @@
       result
     }
 
-    /** Finds the first element of the $coll satisfying a predicate, if any.
+    /** Finds the first entry of the $coll satisfying a predicate, if any.
      * 
      *  $mayNotTerminateInf
      *  $orderDependent
      *
      *  @param p    the predicate used to test elements.
-     *  @return     an option value containing the first element in the $coll
+     *  @return     an option value containing the first entry in the $coll
      *              that satisfies `p`, or `None` if none exists.
      */
     def find(p: A => Boolean): Option[A] = {
@@ -393,9 +393,9 @@
       b.result
     }
 
-    /** Selects the first element of this $coll.
+    /** Selects the first entry of this $coll.
      *  $orderDependent
-     *  @return  the first element of this $coll.
+     *  @return  the first entry of this $coll.
      *  @throws `NoSuchElementException` if the $coll is empty.
      */
     def head: A = {
@@ -409,9 +409,9 @@
       result()
     }
 
-    /** Optionally selects the first element.
+    /** Optionally selects the first entry.
      *  $orderDependent
-     *  @return  the first element of this $coll if it is nonempty, `None` if it is empty.
+     *  @return  the first entry of this $coll if it is nonempty, `None` if it is empty.
      */
     def headOption: Option[A] = if (isEmpty) None else Some(head)
 
@@ -426,9 +426,9 @@
       drop(1)
     }
 
-    /** Selects the last element.
+    /** Selects the last entry.
       * $orderDependent
-      * @return The last element of this $coll.
+      * @return The last entry of this $coll.
       * @throws NoSuchElementException If the $coll is empty.
       */
     def last: A = {
@@ -438,9 +438,9 @@
       lst
     }
 
-    /** Optionally selects the last element.
+    /** Optionally selects the last entry.
      *  $orderDependent
-     *  @return  the last element of this $coll$ if it is nonempty, `None` if it is empty.
+     *  @return  the last entry of this $coll$ if it is nonempty, `None` if it is empty.
      */
     def lastOption: Option[A] = if (isEmpty) None else Some(last)
 
@@ -640,8 +640,8 @@
      *  Note: `view(from, to)` is equivalent to `view.slice(from, to)`
      *  $orderDependent
      * 
-     *  @param from   the index of the first element of the view
-     *  @param until  the index of the element following the view
+     *  @param from   the index of the first entry of the view
+     *  @param until  the index of the entry following the view
      *  @return a non-strict view of a slice of this $coll, starting at index `from`
      *  and extending up to (but not including) index `until`.
      */
@@ -671,18 +671,18 @@
       /** Builds a new collection by applying a function to all elements of the
        *  outer $coll containing this `WithFilter` instance that satisfy predicate `p`.
        *
-       *  @param f      the function to apply to each element.
-       *  @tparam B     the element type of the returned collection.
+       *  @param f      the function to apply to each entry.
+       *  @tparam B     the entry type of the returned collection.
        *  @tparam That  $thatinfo
        *  @param bf     $bfinfo
        *  @return       a new collection of type `That` resulting from applying
-       *                the given function `f` to each element of the outer $coll
+       *                the given function `f` to each entry of the outer $coll
        *                that satisfies predicate `p` and collecting the results.
        *
        *  @usecase def map[B](f: A => B): $Coll[B] 
        *  
        *  @return       a new $coll resulting from applying the given function
-       *                `f` to each element of the outer $coll that satisfies
+       *                `f` to each entry of the outer $coll that satisfies
        *                predicate `p` and collecting the results.
        */
       def map[B, That](f: A => B)(implicit bf: CanBuildFrom[Repr, B, That]): That = {
@@ -696,19 +696,19 @@
        *  outer $coll containing this `WithFilter` instance that satisfy
        *  predicate `p` and concatenating the results. 
        *
-       *  @param f      the function to apply to each element.
-       *  @tparam B     the element type of the returned collection.
+       *  @param f      the function to apply to each entry.
+       *  @tparam B     the entry type of the returned collection.
        *  @tparam That  $thatinfo
        *  @param bf     $bfinfo
        *  @return       a new collection of type `That` resulting from applying
-       *                the given collection-valued function `f` to each element
+       *                the given collection-valued function `f` to each entry
        *                of the outer $coll that satisfies predicate `p` and
        *                concatenating the results.
        *
        *  @usecase def flatMap[B](f: A => TraversableOnce[B]): $Coll[B]
        * 
        *  @return       a new $coll resulting from applying the given collection-valued function
-       *                `f` to each element of the outer $coll that satisfies predicate `p` and concatenating the results.
+       *                `f` to each entry of the outer $coll that satisfies predicate `p` and concatenating the results.
        */
       def flatMap[B, That](f: A => GenTraversableOnce[B])(implicit bf: CanBuildFrom[Repr, B, That]): That = {
         val b = bf(repr)
@@ -720,7 +720,7 @@
       /** Applies a function `f` to all elements of the outer $coll containing
        *  this `WithFilter` instance that satisfy predicate `p`.
        *
-       *  @param  f   the function that is applied for its side-effect to every element.
+       *  @param  f   the function that is applied for its side-effect to every entry.
        *              The result of function `f` is discarded.
        *              
        *  @tparam  U  the type parameter describing the result of function `f`. 

@@ -137,7 +137,7 @@ _.each = (obj, iterator, context) ->
   obj
 
 
-# Return the results of applying the iterator to each element. Use JavaScript
+# Return the results of applying the iterator to each entry. Use JavaScript
 # 1.6's version of **map**, if possible.
 _.map = (obj, iterator, context) ->
   return obj.map(iterator, context) if nativeMap and obj.map is nativeMap
@@ -207,7 +207,7 @@ _.every = (obj, iterator, context) ->
   result
 
 
-# Determine if at least one element in the object matches a truth test. Use
+# Determine if at least one entry in the object matches a truth test. Use
 # JavaScript 1.6's **some**, if it exists.
 _.some = (obj, iterator, context) ->
   iterator ||= _.identity
@@ -247,7 +247,7 @@ _.max = (obj, iterator, context) ->
   result.value
 
 
-# Return the minimum element (or element-based computation).
+# Return the minimum entry (or entry-based computation).
 _.min = (obj, iterator, context) ->
   return Math.min.apply(Math, obj) if not iterator and _.isArray(obj)
   result = computed: Infinity
@@ -295,7 +295,7 @@ _.size = (obj) -> _.toArray(obj).length
 # Array Functions
 # ---------------
 
-# Get the first element of an array. Passing `n` will return the first N
+# Get the first entry of an array. Passing `n` will return the first N
 # values in the array. Aliased as **head**. The `guard` check allows it to work
 # with **map**.
 _.first = (array, n, guard) ->
@@ -310,7 +310,7 @@ _.rest = (array, index, guard) ->
   slice.call(array, if _.isUndefined(index) or guard then 1 else index)
 
 
-# Get the last element of an array.
+# Get the last entry of an array.
 _.last = (array) -> array[array.length - 1]
 
 
@@ -544,7 +544,7 @@ _.isEmpty = (obj) ->
   true
 
 
-# Is a given value a DOM element?
+# Is a given value a DOM entry?
 _.isElement = (obj) -> obj and obj.nodeType is 1
 
 

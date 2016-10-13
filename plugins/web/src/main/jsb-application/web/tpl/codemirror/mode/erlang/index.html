@@ -52,7 +52,7 @@ expand_recs(M,Tup) when is_tuple(Tup) ->
     L when L < 1 -> Tup;
     L ->
       try
-        Fields = M:rec_info(element(1,Tup)),
+        Fields = M:rec_info(entry(1,Tup)),
         L = length(Fields)+1,
         lists:zip(Fields,expand_recs(M,tl(tuple_to_list(Tup))))
       catch

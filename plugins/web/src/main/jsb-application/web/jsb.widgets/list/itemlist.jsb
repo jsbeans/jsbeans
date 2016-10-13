@@ -166,6 +166,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			this.base(opts);
+			JSB.merge(true, this.options, opts);
 		},
 		
 		options: {},

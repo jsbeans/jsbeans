@@ -18,9 +18,8 @@
 }
 
 ._jsb_diagram > ._jsb_diagramToolContainer > ._jsb_diagramSelectorTool {
-	background-color: rgba(211, 89, 49, 0.5);
-	border: 1px solid rgba(152, 96, 78, 0.8);
-	border-radius: 3px;
+    background-color: rgba(211, 89, 49, 0.3);
+    border: 1px dashed rgba(152, 96, 78, 0.8);
 }
 
 
@@ -35,7 +34,17 @@
 
 /* link */
 
-._jsb_diagram > ._jsb_diagramCanvas > svg > .link {}
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link {
+	cursor: pointer;
+}
+
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link.selected,
+._jsb_diagram > ._jsb_diagramCanvas > svg > .link.highlighted {
+/*	
+	filter: url("data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\"><filter id=\"highlight\"><feMorphology in=\"SourceGraphic\" operator=\"dilate\" radius=\"2\"></feMorphology><feComponentTransfer><feFuncR type=\"linear\" slope=\"2\"></feFuncR><feFuncG type=\"linear\" slope=\"2\"></feFuncG><feFuncB type=\"linear\" slope=\"2\"></feFuncB></feComponentTransfer><feGaussianBlur stdDeviation=\"1\" result=\"blur\"></feGaussianBlur><feMerge><feMergeNode in=\"blur\"></feMergeNode><feMergeNode in=\"SourceGraphic\"></feMergeNode></feMerge></filter></svg>#highlight");
+	-webkit-filter: url(#highlightFilter);
+*/	
+}
 
 ._jsb_diagram > ._jsb_diagramCanvas > svg > .link > path {
 	fill: none;

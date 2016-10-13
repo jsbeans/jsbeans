@@ -25,6 +25,13 @@ JSB({
 			this._init();
 		},
 		
+		destroy: function(){
+			if(this.getElement()){
+				this.getElement().remove();
+			}
+			this.getSuperClass('JSB.Widgets.Actor').destroy.call(this);
+		},
+		
 		options: {
 			onContextMenu: null
 		},
@@ -181,6 +188,14 @@ JSB({
 		
 		find: function(c){
 			return this.getElement().find(c);
+		},
+		
+		classed: function(c, b){
+			if(b){
+				this.addClass(c);
+			} else {
+				this.removeClass(c);
+			}
 		},
 		
 		addClass: function(c){

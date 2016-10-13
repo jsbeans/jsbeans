@@ -1,6 +1,34 @@
 @CHARSET "UTF-8";
 
-._dwp_itemList.tableView {}
+._dwp_itemList.tableView {
+}
+
+._dwp_itemList.tableView > .tableViewHeader {
+	display: table;
+	width: 100%;
+}
+
+._dwp_itemList.tableView > .tableViewHeader > .tableViewHeaderRow {
+	display: table-row;
+}
+
+._dwp_itemList.tableView > .tableViewHeader > .tableViewHeaderRow > .cellHeader {
+	display: table-cell;
+}
+
+._dwp_itemList.tableView > .tableViewHeader.hidden {
+	display: none;
+}
+
+._dwp_itemList.tableView > ._dwp_scrollBox {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: auto;
+	height: auto;
+}
 
 ._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane > ul._dwp_listBoxContainer {
 	display: table;

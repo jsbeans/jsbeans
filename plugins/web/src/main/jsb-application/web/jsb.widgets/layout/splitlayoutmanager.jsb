@@ -78,7 +78,22 @@ JSB({
 						self.constructArea(paneDesc, layoutName, function(ctrl){
 							if(ctrl){
 								paneDesc.ctrl = ctrl;
-								sb.addToPane(idx, ctrl);
+								var pane = sb.addToPane(idx, ctrl);
+								if(desc.split == 'vertical'){
+									if(paneDesc.minSize){
+										pane.css('min-width', paneDesc.minSize);
+									}
+									if(paneDesc.maxSize){
+										pane.css('max-width', paneDesc.maxSize);
+									}
+								} else {
+									if(paneDesc.minSize){
+										pane.css('min-height', paneDesc.minSize);
+									}
+									if(paneDesc.maxSize){
+										pane.css('max-height', paneDesc.maxSize);
+									}
+								}
 							}
 						});
 					})(i);
@@ -229,6 +244,8 @@ JSB({
 			// reattach widgets
 			this.updateArea(self.options.layouts[layoutName]);
 			
+			this.getElement().attr('layout', layoutName);
+			
 			this.publish('_jsb_switchLayout', layoutName);
 		},
 		
@@ -288,6 +305,8 @@ JSB({
 					})(l);
 				}
 			}
+			
+			this.getElement().attr('layout', this.options.defaultLayout);
 		}
 	}
 });

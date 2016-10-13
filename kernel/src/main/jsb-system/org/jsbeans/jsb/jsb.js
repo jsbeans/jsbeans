@@ -1,4 +1,4 @@
-/*! jsBeans v2.1.1 | jsbeans.org | (c) 2011-2016 Special Information Systems, LLC */
+/*! jsBeans v2.1.2 | jsbeans.org | (c) 2011-2016 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -157,14 +157,14 @@
 		},
 		
 		register: function(obj, id){
-			var scope = JSB().getInstancesScope();
+			var scope = JSB().getSessionInstancesScope();
 			var jsb = obj.jsb;
 			if(obj.targetJsb){
 				jsb = obj.targetJsb;
 			}
 			var entry = jsb.currentEntry();
 			if(jsb.isSingleton() || jsb.isFixedId()){
-				scope = JSB().getSingletonScope();
+				scope = JSB().getGlobalInstancesScope();
 			}
 			
 			if(jsb.isSingleton()){
@@ -186,7 +186,7 @@
 					this.getLogger().warn('Duplicate fixedId bean instantiation: ' + obj.id);
 				}
 /*				
-				scope = JSB().getInstancesScope();
+				scope = JSB().getSessionInstancesScope();
 				if(id){
 					obj.id = id;
 				} else {
@@ -206,9 +206,9 @@
 			return (function(){return this;}).call(null);
 		},
 		
-		getInstancesScope: function(){
+		getSessionInstancesScope: function(){
 			var globe = this.getGlobe();
-			var scopeConst = 'JSO_Instances';
+			var scopeConst = '_jsb_sessionInstances';
 			if(globe[scopeConst] == null || globe[scopeConst] == undefined){
 				globe[scopeConst] = {};
 			}
@@ -216,7 +216,7 @@
 			return globe[scopeConst];
 		},
 		
-		getSingletonScope: function(){
+		getGlobalInstancesScope: function(){
 			return JSB().globalInstances;
 		},
 		
@@ -227,6 +227,7 @@
 				this.libraryScopes[name] = this.merge(this.libraryScopes[name], scope);
 			}
 			JSB()[name] = this.libraryScopes[name];
+			JSB[name] = JSB()[name];
 		},
 		
 		isLibraryScope: function(scope){
@@ -263,13 +264,12 @@
 			if(!id){
 				return null;
 			}
-			if(JSB().getSingletonScope()[id]){
-				JSB().getSingletonScope()[id] = undefined;
-				delete JSB().getSingletonScope()[id];
+			if(JSB().getGlobalInstancesScope()[id]){
+				var scope = JSB().getGlobalInstancesScope();
+				delete scope[id];
 			}
-			if(this.getInstancesScope()[id]){
-				var scope = this.getInstancesScope();
-				scope[id] = undefined;
+			if(this.getSessionInstancesScope()[id]){
+				var scope = this.getSessionInstancesScope();
 				delete scope[id];
 			}
 			
@@ -1014,17 +1014,61 @@
 		},
 		
 		getInstance: function(key){
-			var obj = JSB().getSingletonScope()[key];
+			var obj = JSB().getGlobalInstancesScope()[key];
 			if(obj == null || obj == undefined){
-				obj = JSB().getInstancesScope()[key];
+				obj = JSB().getSessionInstancesScope()[key];
 			}
 			return obj;
+		},
+		
+		getInstanceInfo: function(){
+			function _buildInstanceMap(scope){
+				var typeMap = {};
+				for(var i in scope){
+				    var jsbName = scope[i].jsb.name;
+				    if(!typeMap[jsbName]){
+				        typeMap[jsbName] = 1;
+				    } else {
+				        typeMap[jsbName]++;
+				    }
+				}
+				var typeArr = [];
+				for(var n in typeMap){
+					typeArr.push({jsb: n, count: typeMap[n]});
+				}
+				typeArr.sort(function(a, b){
+					return b.count - a.count;
+				});
+				
+				return typeArr;
+			}
+			
+			function _count(arr){
+				var cnt = 0;
+				for(var i = 0; i < arr.length; i++){
+					cnt += arr[i].count;
+				}
+				
+				return cnt;
+			}
+			
+			var sArr = _buildInstanceMap(this.getSessionInstancesScope());
+			var gArr = _buildInstanceMap(this.getGlobalInstancesScope());
+			var sCount = _count(sArr);
+			var gCount = _count(gArr);
+			return {
+				total: sCount + gCount,
+				session: sCount,
+				global: gCount,
+				sessionInstances: sArr,
+				globalInstances: gArr
+			};
 		},
 		
 		searchInstances: function(patternObj){
 			var arr = [];
 			// look in singleton scope
-			var scopes = [JSB().getSingletonScope(), JSB().getInstancesScope()];
+			var scopes = [JSB().getGlobalInstancesScope(), JSB().getSessionInstancesScope()];
 			for(var s in scopes){
 				var scope = scopes[s];
 				for(var i in scope){
@@ -1048,7 +1092,7 @@
 						}
 					}
 					if(fit){
-						arr[arr.length] = obj;
+						arr.push(obj);
 					}
 				}
 			}
@@ -2143,7 +2187,8 @@
 							
 							// check for rpc instance creation permission
 							if(entry.disableRpcInstance){
-								throw 'Unable to create new instance from RPC call for jso: "' + jsoName + '" due option "disableRpcInstance" set';
+								JSB().getLogger().warn('Unable to create new instance from RPC call for jsb: "' + jsoName + '('+instanceId+')" due option "disableRpcInstance" set')
+								return null;
 							}
 							
 							var f = jso.getClass();
@@ -2253,6 +2298,19 @@
 	// expose JSO & JSB
 	(function(){return this;}).call(null).JSO = JSO;
 	(function(){return this;}).call(null).JSB = JSB;
+	
+	// deploy JSB.fn methods into JSB scope
+	var jsbScope = (function(){return this;}).call(null).JSB;
+	for(var f in JSB.fn){
+		if(JSB().isFunction(JSB.fn[f])){
+			(function(f){
+				jsbScope[f] = function(){
+					return JSB.fn[f].apply(JSB.fn, arguments);
+				}
+			})(f);
+		}
+	}
+
 	
 	// setup window
 	if(JSB().isClient()){
@@ -2527,7 +2585,7 @@ JSB({
 			}
 			this.syncCheckInterval = to;
 			function _sync(){
-				if(self.syncCheckInterval && !JSB().isNull(self.syncScopes)){
+				if(self.syncCheckInterval && !JSB().isNull(self.syncScopes) && !self.isDestroyed()){
 					self.doSync(function(){
 						JSB().defer(function(){
 							_sync();
@@ -3016,7 +3074,7 @@ JSB({
 		doSync: function(){
 			var self = this;
 			var syncInfo = null;
-			if(this._destroyed || JSB().isNull(this.syncScopes)){
+			if(this.isDestroyed() || JSB().isNull(this.syncScopes)){
 				return;
 			}
 			
@@ -3174,7 +3232,7 @@ JSB({
 		onSyncRequest: function(){},
 		
 		doSync: function(callback){
-			if(this._destroyed || JSB().isNull(this.syncScopes)){
+			if(this.isDestroyed() || JSB().isNull(this.syncScopes)){
 				return;
 			}
 			this.onSyncCheck();
@@ -3197,14 +3255,15 @@ JSB({
 			
 			// perform updateSyncState if required
 			var curTimeStamp = new Date().getTime();
-			if(JSB().isNull(this.lastUpdateTimeStamp) || curTimeStamp - this.lastUpdateTimeStamp > this.syncTimeout ){
-				this.updateSyncState();
-				this.lastUpdateTimeStamp = curTimeStamp;
+			var bNeedUpdate = this.updateSyncState();
+			this.lastUpdateTimeStamp = curTimeStamp;
+			if(bNeedUpdate){
+				this.client.doSync(true);
 			}
 			var retSlice = null;
 			// perform update local state
 			if(!JSB().isNull(syncInfo) && !JSB().isNull(syncInfo.slice) && !JSB().isNull(syncInfo.maxStamp) && this._onBeforeSync(syncInfo.slice)){
-				this.updateSyncState();
+//				this.updateSyncState();
 				retSlice = this.getSyncSlice(timeSlice);
 				this.applySlice(syncInfo.slice);
 				this._onAfterSync(syncInfo.slice)
@@ -3574,7 +3633,7 @@ JSB({
 			var self = this;
 			if(this.batchStartTime == null ){
 				this.batchStartTime = new Date().getTime();
-			} else if(new Date().getTime() - this.batchStartTime < this.bulkTimeoutVal){
+			} else if(new Date().getTime() - this.batchStartTime > this.bulkTimeoutVal){
 				return;
 			}	
 			if(this.rpcTimeout != null){
@@ -3632,14 +3691,16 @@ JSB({
 				}
 				if(rpcEntry.completed){
 					if(rpcEntry.success){
-						if(!JSB().isNull(this.rpcEntryMap[rpcEntry.id].callback)){
+						if(this.rpcEntryMap[rpcEntry.id] && !JSB().isNull(this.rpcEntryMap[rpcEntry.id].callback)){
 							this.rpcEntryMap[rpcEntry.id].callback(rpcEntry.result);
 						}
 					} else {
 						// try again 
 						this.queueToSend[rpcEntry.id] = this.rpcEntryMap[rpcEntry.id];
 					}
-					delete this.rpcEntryMap[rpcEntry.id];
+					if(this.rpcEntryMap[rpcEntry.id]){
+						delete this.rpcEntryMap[rpcEntry.id];
+					}
 				} else {
 					this.queueToCheck[rpcEntry.id] = this.rpcEntryMap[rpcEntry.id];
 				}
@@ -3756,31 +3817,30 @@ JSB({
 			function _doCleanup(){
 				if(self.rpcQueueFirst){
 					// perform cleanup
-					var timestamp = new Date().getTime();
+					var timestamp = Date.now();
 					var locker = JSB().getLocker();
 					locker.lock('_jsb_rpcQueue');
 					var curEntry = self.rpcQueueFirst;
 					while(curEntry){
-						if(timestamp - curEntry.timestamp > invalidateInterval){
-							var nextEntry = curEntry.next;
-							if(self.rpcQueueFirst == curEntry){
-								self.rpcQueueFirst = nextEntry;
-							}
-							if(self.rpcQueueLast == curEntry){
-								self.rpcQueueLast = nextEntry;
-							}
-							delete self.rpcMap[curEntry.id];
-							curEntry = nextEntry;
-						} else {
+						if(timestamp - curEntry.timestamp < invalidateInterval){
 							break;
 						}
+						var nextEntry = curEntry.next;
+						if(self.rpcQueueFirst == curEntry){
+							self.rpcQueueFirst = nextEntry;
+						}
+						if(self.rpcQueueLast == curEntry){
+							self.rpcQueueLast = nextEntry;
+						}
+						delete self.rpcMap[curEntry.id];
+						curEntry = nextEntry;
 					}
 					locker.unlock('_jsb_rpcQueue');
 				}
 				if(self.rpcCleanupEnabled){
 					JSB().defer(function(){
 						_doCleanup();
-					}, cleanupInterval);
+					}, cleanupInterval, '_jsb_rpcCleanup');
 				}
 			}
 			
@@ -3795,7 +3855,7 @@ JSB({
 			// cmd.params
 			var entry = {
 				id: JSB().generateUid(),
-				timestamp: new Date().getTime(),
+				timestamp: Date.now(),
 				instance: cmd.instance,
 				proc: cmd.proc,
 				params: cmd.params,

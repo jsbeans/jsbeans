@@ -71,10 +71,17 @@
             <artifactId>guava</artifactId>
             <version>18.0</version>
         </dependency>
-        <dependency>
+<!--
+      <dependency>
             <groupId>com.esotericsoftware</groupId>
             <artifactId>wildcard</artifactId>
             <version>1.03</version>
+        </dependency>
+-->
+      <dependency>
+            <groupId>com.larrymite</groupId>
+            <artifactId>js-class-loader</artifactId>
+            <version>1.2.7</version>
         </dependency>
 
         <dependency>
@@ -122,6 +129,40 @@
     </dependencies>
 
     <build>
+      
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.19.1</version>
+          <configuration>
+              <skipTests>true</skipTests>
+          </configuration>
+        </plugin>
+      </plugins>
+      
+      <pluginManagement>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.5</version>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <version>2.5.2</version>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.19.1</version>
+            <configuration>
+                <skipTests>true</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </pluginManagement>
     </build>
 
 </project>

@@ -16,7 +16,25 @@ JSB({
 		
 		options: {
 			cellRoundMax: 2,
-			wiringClass: '_jsb_diagramWiringLinkMode'
+			wiringClass: '_jsb_diagramWiringLinkMode',
+			
+			onHighlight: function(bEnable){
+				this.group.classed('highlighted', bEnable);
+				if(bEnable){
+					this.group.attr('filter', 'url(#highlightFilter)');
+				} else if(!this.isSelected()){
+					this.group.attr('filter', null);
+				}
+			},
+			onSelect: function(bEnable){
+				this.group.classed('selected', bEnable);
+				if(bEnable){
+					this.group.attr('filter', 'url(#highlightFilter)');
+				} else if(!this.isHighlighted()){
+					this.group.attr('filter', null);
+				}
+
+			}
 		},
 		
 		constructor: function(diagram, key, opts){
@@ -39,6 +57,11 @@ JSB({
 				}
 			}
 			
+			this.subscribe('_jsb_diagramConnectorInstalled', function(sender, msg, params){
+				if(sender == self.source || sender == self.target){
+					self.redraw();
+				}
+			});
 		},
 		
 		installJoint: function(){},
@@ -49,8 +72,17 @@ JSB({
 				return;
 			}
 			
-			// TODO: unbind connectors
+			// unbind connectors
+			if(JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && this.source.links[this.getId()]){
+				this.source.removeLink(this);
+				this.source.notifyChangeConnection();
+			}
 			
+			if(JSB().isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector') && this.target.links[this.getId()]){
+				this.target.removeLink(this);
+				this.target.notifyChangeConnection();
+			}
+
 			// remove from svg
 			if(this.group){
 				this.group.remove();
@@ -89,6 +121,8 @@ JSB({
 			}
 			this.source.addLink(this);
 			this.target.addLink(this);
+			this.source.notifyChangeConnection();
+			this.target.notifyChangeConnection();
 		},
 
 		getSourcePosition: function(){
@@ -157,6 +191,7 @@ JSB({
 			if(JSB().isNull(this.source) || JSB().isNull(this.target)){
 				return;
 			}
+			var self = this;
 			
 			if(!this.group){
 				this.group = this.diagram.svg.append('g')
@@ -188,10 +223,21 @@ JSB({
 							.classed('shape', true);
 					}
 				}
+				
+				// add event handler
+				this.group.on({
+					click: function(evt){
+						self.publish('_jsb_diagramMouseEvent', {name: 'click', event: d3.event});
+					}
+				});
 			}
 			
 			var ptSource = this.getSourcePosition();
 			var ptTarget = this.getTargetPosition();
+			
+			if(!ptSource || !ptTarget){
+				return;
+			}
 			
 			// construct points
 			var pts = [ptSource];
@@ -269,7 +315,87 @@ JSB({
 				return;
 			}
 			this.group.classed(this.options.wiringClass, bEnable);
+		},
+		
+		select: function(bEnable){
+			if(bEnable){
+				if(!this.diagram.selected[this.getId()]){
+					this.diagram.selected[this.getId()] = this;
+					if(this.options.onSelect){
+						this.options.onSelect.call(this, bEnable);
+					}
+					this.notifyUpdateSelected();
+				}
+			} else {
+				if(this.diagram.selected[this.getId()]){
+					delete this.diagram.selected[this.getId()];
+					if(this.options.onSelect){
+						this.options.onSelect.call(this, bEnable);
+					}
+					this.notifyUpdateSelected();
+				}
+			}
+		},
+		
+		notifyUpdateSelected: function(){
+			var self = this;
+			JSB().defer(function(){
+				self.diagram.publish('_jsb_diagramSelectionChanged', self.diagram.getSelected());
+			}, 100, '_jsb_notifyUpdateSelected');
+		},
+		
+		highlight: function(bEnable){
+			if(bEnable){
+				if(!this.diagram.highlighted[this.getId()]){
+					this.diagram.highlighted[this.getId()] = this;
+					if(this.options.onHighlight){
+						this.options.onHighlight.call(this, bEnable);
+					}
+					this.notifyUpdateHighlighted();
+				}
+			} else {
+				if(this.diagram.highlighted[this.getId()]){
+					delete this.diagram.highlighted[this.getId()];
+					if(this.options.onHighlight){
+						this.options.onHighlight.call(this, bEnable);
+					}
+					this.notifyUpdateHighlighted();
+				}
+			}
+		},
+		
+		notifyUpdateHighlighted: function(){
+			var self = this;
+			JSB().defer(function(){
+				self.diagram.publish('_jsb_diagramHighlightChanged', self.diagram.getHighlighted());
+			}, 100, '_jsb_notifyUpdateHighlighted');
+		},
+
+		
+		isSelected: function(){
+			if(this.diagram.selected[this.getId()]){
+				return true;
+			}
+			return false;
+		},
+		
+		isHighlighted: function(){
+			if(this.diagram.highlighted[this.getId()]){
+				return true;
+			}
+			return false;
+		},
+		
+		getPathPoints: function(){
+			var pArr = [];
+			var pathNode = this.path.node();
+			var pathLength = pathNode.getTotalLength();
+			for(var i = 0; i < pathLength; i++){
+				pArr.push(pathNode.getPointAtLength(i));
+			}
+			return pArr;
 		}
+
 		
 
 	},

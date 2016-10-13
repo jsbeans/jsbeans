@@ -74,12 +74,12 @@ JSO({
 			   * opening and closing tags used in the template (e.g. [ "<%", "%>" ]). Of
 			   * course, the default is to use mustaches (i.e. mustache.tags).
 			   *
-			   * A token is an array with at least 4 elements. The first element is the
+			   * A token is an array with at least 4 elements. The first entry is the
 			   * mustache symbol that was used inside the tag, e.g. "#" or "&". If the tag
-			   * did not contain a symbol (i.e. {{myValue}}) this element is "name". For
-			   * all text that appears outside a symbol this element is "text".
+			   * did not contain a symbol (i.e. {{myValue}}) this entry is "name". For
+			   * all text that appears outside a symbol this entry is "text".
 			   *
-			   * The second element of a token is its "value". For mustache tags this is
+			   * The second entry of a token is its "value". For mustache tags this is
 			   * whatever else was inside the tag besides the opening symbol. For text tokens
 			   * this is the text itself.
 			   *

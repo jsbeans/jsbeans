@@ -37,6 +37,7 @@ JSB({
 			
 			this.getElement().resize(function(){
 				self.updateLinks();
+				self.diagram.updateLayout(self);
 			});
 
 		},
@@ -68,12 +69,19 @@ JSB({
 			});
 			
 			this.updateLinks();
+			this.diagram.updateLayout(this);
 		},
 		
 		getPosition: function(){
 			var sheetRc = this.diagram.sheet.get(0).getBoundingClientRect();
 			var nodePos = this.getElement().get(0).getBoundingClientRect();
 			return {x: (nodePos.left - sheetRc.left) / this.diagram.options.zoom, y: (nodePos.top - sheetRc.top) / this.diagram.options.zoom};
+		},
+		
+		getRect: function(){
+			var sheetRc = this.diagram.sheet.get(0).getBoundingClientRect();
+			var nodePos = this.getElement().get(0).getBoundingClientRect();
+			return {x: (nodePos.left - sheetRc.left) / this.diagram.options.zoom, y: (nodePos.top - sheetRc.top) / this.diagram.options.zoom, w: nodePos.width / this.diagram.options.zoom, h: nodePos.height / this.diagram.options.zoom};
 		},
 		
 		resolveSelector: function(sel, callback){
@@ -183,10 +191,6 @@ JSB({
 						self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 					},
 					
-					click: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
-					},
-					
 					mousedown: function(evt){
 						self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 					},
@@ -245,6 +249,18 @@ JSB({
 			return connector;
 		},
 		
+		getConnectors: function(cKey){
+			var cMap = {};
+			for(var cId in this.connectors){
+				var conn = this.connectors[cId];
+				if(!cKey || conn.key == cKey){
+					cMap[cId] = conn;
+				}
+			}
+			
+			return cMap;
+		},
+		
 		getLinks: function(){
 			var lMap = {};
 			for(var i in this.connectors){
@@ -263,49 +279,68 @@ JSB({
 		
 		select: function(bEnable){
 			if(bEnable){
-				if(!this.diagram.selectedNodes[this.getId()]){
-					this.diagram.selectedNodes[this.getId()] = this;
+				if(!this.diagram.selected[this.getId()]){
+					this.diagram.selected[this.getId()] = this;
 					if(this.options.onSelect){
 						this.options.onSelect.call(this, bEnable);
 					}
+					this.notifyUpdateSelected();
 				}
 			} else {
-				if(this.diagram.selectedNodes[this.getId()]){
-					delete this.diagram.selectedNodes[this.getId()];
+				if(this.diagram.selected[this.getId()]){
+					delete this.diagram.selected[this.getId()];
 					if(this.options.onSelect){
 						this.options.onSelect.call(this, bEnable);
 					}
+					this.notifyUpdateSelected();
 				}
 			}
+		},
+		
+		notifyUpdateSelected: function(){
+			var self = this;
+			JSB().defer(function(){
+				self.diagram.publish('_jsb_diagramSelectionChanged', self.diagram.getSelected());
+			}, 100, '_jsb_notifyUpdateSelected');
 		},
 		
 		highlight: function(bEnable){
 			if(bEnable){
-				if(!this.diagram.highlightedNodes[this.getId()]){
-					this.diagram.highlightedNodes[this.getId()] = this;
+				if(!this.diagram.highlighted[this.getId()]){
+					this.diagram.highlighted[this.getId()] = this;
 					if(this.options.onHighlight){
 						this.options.onHighlight.call(this, bEnable);
 					}
+					this.notifyUpdateHighlighted();
 				}
 			} else {
-				if(this.diagram.highlightedNodes[this.getId()]){
-					delete this.diagram.highlightedNodes[this.getId()];
+				if(this.diagram.highlighted[this.getId()]){
+					delete this.diagram.highlighted[this.getId()];
 					if(this.options.onHighlight){
 						this.options.onHighlight.call(this, bEnable);
 					}
+					this.notifyUpdateHighlighted();
 				}
 			}
 		},
 		
+		notifyUpdateHighlighted: function(){
+			var self = this;
+			JSB().defer(function(){
+				self.diagram.publish('_jsb_diagramHighlightChanged', self.diagram.getHighlighted());
+			}, 100, '_jsb_notifyUpdateHighlighted');
+		},
+
+		
 		isSelected: function(){
-			if(this.diagram.selectedNodes[this.getId()]){
+			if(this.diagram.selected[this.getId()]){
 				return true;
 			}
 			return false;
 		},
 		
 		isHighlighted: function(){
-			if(this.diagram.highlightedNodes[this.getId()]){
+			if(this.diagram.highlighted[this.getId()]){
 				return true;
 			}
 			return false;

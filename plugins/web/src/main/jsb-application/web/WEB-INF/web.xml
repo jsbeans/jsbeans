@@ -102,11 +102,11 @@
         <servlet-name>JSEndPointServlet</servlet-name>
         <url-pattern>/jspoint</url-pattern>
     </servlet-mapping>
-
+    
     <filter>
-        <async-supported>true</async-supported>
         <filter-name>cross-origin</filter-name>
         <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
+        <async-supported>true</async-supported>
         <init-param>
             <param-name>allowedOrigins</param-name>
             <param-value>*</param-value>

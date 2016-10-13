@@ -72,6 +72,10 @@ JSB({
 				itemWrapper.addClass(itemObj.cssClass);
 			}
 			
+			if(itemObj.tooltip){
+				itemWrapper.attr('title', itemObj.tooltip);
+			}
+			
 			itemWrapper.append(item);
 			
 			return itemWrapper;
@@ -123,9 +127,18 @@ JSB({
 			return itemObj;
 		},
 		
-		addSeparator: function(){
-			var sepElt = this.$('<li class="_dwp_toolBarSeparator"></li>');
-			this.itemContainer.append(sepElt);
+		addSeparator: function(desc){
+			var itemWrapper = this.$('<li class="_dwp_toolBarSeparator"></li>');
+			this.itemContainer.append(itemWrapper);
+			
+			if(desc){
+				if(desc.key){
+					itemWrapper.attr("key", desc.key);	
+				}
+				if(desc.cssClass){
+					itemWrapper.addClass(desc.cssClass);
+				}
+			}
 		},
 		
 		checkItem: function(key, b){
@@ -166,8 +179,10 @@ JSB({
 				return;
 			}
 			if(b){
+				itemObj.disabled = false;
 				itemObj.wrapper.removeClass('disabled');
 			} else {
+				itemObj.disabled = true;
 				itemObj.wrapper.addClass('disabled');
 			}
 			if(JSO().isInstanceOf(itemObj.obj, 'JSB.Widgets.Button')){

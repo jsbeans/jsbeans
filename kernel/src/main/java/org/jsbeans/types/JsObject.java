@@ -133,10 +133,7 @@ public class JsObject implements Serializable {
         this.dataInt = b ? 1 : 0;
     }
 
-    public byte[] toByteArray() {
-        if (this.getResultType() != JsObjectType.JSONARRAY && this.getResultType() != JsObjectType.STRING) {
-            return null;
-        }
+    public byte[] toByteArray() throws UnsupportedEncodingException {
         byte[] bArr = null;
         if (this.getResultType() == JsObjectType.JSONARRAY) {
             bArr = new byte[this.dataJsonArray.size()];
@@ -145,6 +142,9 @@ public class JsObject implements Serializable {
             }
         } else if (this.getResultType() == JsObjectType.STRING) {
             bArr = this.dataStr.getBytes();
+        } else {
+        	String str = this.toJS(false, true);
+        	bArr = str.getBytes();
         }
         return bArr;
     }
