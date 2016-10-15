@@ -93,7 +93,7 @@ JSB({
 						}],
 	
 						callback: function(res){
-							self.createNewSpinOntology(res);
+							self.createNewSpinDocument(res);
 						}
 					});
 
@@ -207,7 +207,7 @@ JSB({
 							var format = key;
 							var oId = node.descriptor.id;
 							var wId = self.currentWorkspace.getId();
-							window.open('/api/exportOntology?wId='+wId+'&oId='+oId+'&format='+format, '_blank');
+							window.open('/api/exportDocument?wId='+wId+'&oId='+oId+'&format='+format, '_blank');
 						}
 					});
 					
@@ -315,7 +315,7 @@ JSB({
 			this.subscribe('changeWorkspaceElement', function(sender, msg, onto){
 				self.tree.find('li._dwp_treeViewNode.current').removeClass('current');
 				self.tree.find('li._dwp_treeViewNode[key="'+onto.getId()+'"]').addClass('current');
-				self.currentWorkspace.server.setCurrentOntology(onto);
+				self.currentWorkspace.server.setCurrentDocument(onto);
 			});
 		},
 		
@@ -686,7 +686,7 @@ JSB({
 						if(!witem.ontology){
 							self.$('.antiplagContainer').loader();
 							self.$('.antiplagContainer').loader('content', 'Загрузка онтологии');
-							self.currentWorkspace.server.ensureOntology(witem.descriptor.id, function(onto){
+							self.currentWorkspace.server.ensureDocument(witem.descriptor.id, function(onto){
 								self.$('.antiplagContainer').loader('hide');
 								witem.ontology = onto;
 								self.publish('changeWorkspaceElement', onto);
@@ -951,7 +951,7 @@ JSB({
 				
 				self.$('.antiplagContainer').loader();
 				self.$('.antiplagContainer').loader('content', 'Загрузка онтологии');
-				self.currentWorkspace.server.ensureOntology(desc.id, function(onto){
+				self.currentWorkspace.server.ensureDocument(desc.id, function(onto){
 					self.$('.antiplagContainer').loader('hide');
 					self.publish('changeWorkspaceElement', onto);
 				});
@@ -1040,7 +1040,7 @@ JSB({
 		
 		loadWorkspaceFolders: function(){
 			var w = this.currentWorkspace.getSystemWorkspace();
-			var categories = w.getProperty('categories');
+			var categories = w.get('categories');
 			return categories;
 		},
 		
@@ -1065,7 +1065,7 @@ JSB({
 			// remove ontologies
 			for(var i in items){
 				if(items[i].type == 'ontology'){
-					if(this.currentWorkspace.removeOntology(items[i].id)){
+					if(this.currentWorkspace.removeDocument(items[i].id)){
 						removed.push(items[i]);
 					}
 				}
@@ -1088,7 +1088,7 @@ JSB({
 		},
 		
 		addOntology: function(category, ontoDesc){
-			var onto = this.currentWorkspace.createNewOntology(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
+			var onto = this.currentWorkspace.createNewDocument(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
 			return {
 				type: 'ontology',
 				id: onto.id(),
@@ -1098,7 +1098,7 @@ JSB({
 		},
 		
 		addSpinOntology: function(category, ontoDesc){
-			var onto = this.currentWorkspace.createNewSpinOntology(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
+			var onto = this.currentWorkspace.createNewSpinDocument(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
 			return {
 				type: 'spinontology',
 				id: onto.id(),
@@ -1110,7 +1110,8 @@ JSB({
 		loadWorkspaceTree: function(){
 
 			var tree = {};
-			var w = this.currentWorkspace.getSystemWorkspace();
+			var currentWorkspace = this.currentWorkspace;
+			var w = currentWorkspace.getSystemWorkspace();
 			
 			function touch(cat){
 				var curTree = tree;
@@ -1134,50 +1135,47 @@ JSB({
 			}
 			
 			// collect categories
-			var categories = w.getProperty('categories');
+			var categories = w.get('categories');
 			for(var i in categories){
 				var cat = categories[i];
 				touch(cat);
 			}
 			
-			// collect projects
-			var projects = w.projects();
-			
+
 			// collect ontologies
-			var ontologies = w.ontologies();
-			var ontoIds = ontologies.ids();
-			for(var i in ontoIds){
-				var id = ontoIds[i];
-				var onto = ontologies.get(id);
-				var treeNode = touch(onto.category());
-				treeNode[onto.uri()] = {
-					type: 'ontology',
-					id: id,
-					file: onto.getProperty('file'),
-					title: onto.title(),
-					name: onto.uri()
-				};
-				
-				if(onto.getProperty('spin')){
-					treeNode[onto.uri()].type = 'spinontology';
-				}
-			}
-			
+			currentWorkspace.getDocumentsReactor().entries().forEach(new java.util.function.Consumer() {
+                accept: function(document){
+                    var treeNode = touch(''+document.category());
+                    var id = ''+document.id();
+                    var uri = ''+document.uri();
+                    treeNode[uri] = {
+                        type: 'ontology',
+                        id: id,
+                        file: ''+document.get('file'),
+                        title: ''+document.title(),
+                        name: uri
+                    };
+
+                    if(document.get('spin')){
+                        treeNode[uri].type = 'spinontology';
+                    }
+                }
+            });
 			
 			return tree;
 		},
 		
 		loadFromContent: function(obj){
 			try {
-				var onto = this.currentWorkspace.createOntologyFromContent(obj.name, obj.category, obj.content);
+				var onto = this.currentWorkspace.createDocumentFromContent(obj.name, obj.category, obj.content);
 				var ontoDesc = {
 					type: 'ontology',
 					id: onto.id(),
-					file: onto.getProperty('file'),
+					file: onto.get('file'),
 					title: onto.title(),
 					name: onto.uri()
 				};
-				if(onto.getProperty('spin')){
+				if(onto.get('spin')){
 					ontoDesc.type = 'spinontology';
 				}
 				return ontoDesc;

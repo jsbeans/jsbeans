@@ -34,23 +34,23 @@ JSB({
 	
 	server: {
 		disableRpcInstance: true,
-		
-		ontologies: {},
+
+		documents: {},
 		workspace: null,
-		currentOntology: null,
+		currentDocument: null,
 		
 		constructor: function(w){
 			this.base();
-			var wId = w.name();
+			var wId = ''+w.id();
 			this.workspace = w;
 			this.setId(wId);
 			
 			try {
 				this.workspace.load();
-				this.wName = this.workspace.getProperty('wName');
+				this.wName = this.workspace.get('wName');
 				if(!this.wName || this.wName.length == 0){
-					this.wName = 'Мои онтологии';
-					this.workspace.setProperty('wName', this.wName);
+					this.wName = 'Мои документы';
+					this.workspace.set('wName', this.wName);
 					this.workspace.store();
 				}
 			} catch(e){
@@ -62,66 +62,43 @@ JSB({
 			return this.workspace;
 		},
 		
-		createOntologyFromContent: function(name, category, content){
-			var self = this;
+		setCurrentDocument: function(document){
+			this.currentDocument = document;
+		},
+
+		getCurrentDocument: function(){
+			return this.currentDocument;
+		},
+
+		getDocumentsReactor: function(){
+		    return this.workspace.reactor(Packages.ru.avicomp.antiplag.DocumentsReactor.getType());
+		},
+		
+		createDocumentFromContent: function(name, category, content){
 			var locker = JSB().getLocker();
-			locker.lock('createOntologyFromContent');
-			var ontology = this.workspace.ontologies().createById(JSB().generateUid());
-			ontology.category(category);
-			ontology.setProperty('file', name);
+			locker.lock('createDocumentFromContent');
+			var document = this.getDocumentsReactor().entry(JSB().generateUid());
+			document.category(category);
+			document.setProperty('file', name);
 			try {
-				var model = ontology.ontologyModel();
-				model.loadContent(content,{
-					isolated: true
-				});
-				
-				// check ontology is spin ontology
-				var opts = {
-					imports: true,
-					axioms: false,
-					signature: false,
-					annotations:  false,
-					individuals: false,
-					entities: false,
-					classesTree: false,
-					objectPropertiesTree: false,
-					dataPropertiesTree: false,
-					annotationPropertiesTree: false
-				};
-				var ontologyDetails = null;
-				this.locked(function(){
-	                ontologyDetails = model.ontologyDetails(opts);
-		        });
-				
-				var importedOntologies = ontologyDetails.importedOntologies;
-				var spinUri = '' + Packages.ru.avicomp.spinmap.external.vocabulary.TOPBRAID_SPIN.BASE_URI.toString();
-				for(var i in importedOntologies){
-					var det = importedOntologies[i];
-					if(det.iri.toLowerCase() == spinUri.toLowerCase()){
-						ontology.setProperty('spin', {
-							enabled: true
-						});
-						break;
-					}
-				}
-				
-				model.store();
+				document.store();
 				this.workspace.store();
 			} catch(e){
-				this.workspace.ontologies().remove(ontology.id());
+				this.workspace.entries().remove(document.id());
 				Log.error(true, e);
 				throw e;
 			} finally{
-				locker.unlock('createOntologyFromContent');
+				locker.unlock('createDocumentFromContent');
 			}
-			
+
+			var self = this;
 			JSB().defer(function(){
-				self.workspace.ontologies().reactor().resolveImports();
-				self.updateOntologies();
+//				self.getDocumentsReactor().update();
+				self.updateDocuments();
 				self.workspace.store();
-			}, 300, 'createOntologyFromContent' + this.getId());
+			}, 300, 'createDocumentFromContent' + this.getId());
 			
-			return ontology;
+			return document;
 		},
 		
 		locked: function(callback){
@@ -137,104 +114,103 @@ JSB({
 			return result;
 		},
 		
-		createNewOntology: function(name, category, iri, desc){
+		createNewDocument: function(name, category, iri, desc){
 			var locker = JSB().getLocker();
-			locker.lock('createOntologyFromContent');
-			var ontology = this.workspace.ontologies().createById(JSB().generateUid());
+			locker.lock('createDocumentFromContent');
+			var document = this.workspace.getDocumentsReactor().entry(JSB().generateUid());
 			try {
-				ontology.category(category);
-				ontology.uri(iri);
-				ontology.title(name);
-				ontology.description(desc);
-				ontology.ontologyModel().load();
+				document.category(category);
+				document.uri(iri);
+				document.title(name);
+				document.description(desc);
+//				document.documentModel().load();
 				this.workspace.store();
 			} catch(e){
-				this.workspace.ontologies().remove(ontology.id());
+				this.workspace.entries().remove(document.id());
 				Log.error(true, e);
 				throw e;
 			} finally {
-				locker.unlock('createOntologyFromContent');
+				locker.unlock('createDocumentFromContent');
 			}
-			return ontology;
+			return document;
 		},
 		
-		createNewSpinOntology: function(name, category, iri, desc){
+		createNewSpinDocument: function(name, category, iri, desc){
 			var locker = JSB().getLocker();
-			locker.lock('createOntologyFromContent');
-			var ontology = this.workspace.ontologies().createById(JSB().generateUid());
+			locker.lock('createNewSpinDocument');
+			var document = this.workspace.getDocumentsReactor().entry(JSB().generateUid());
 			try {
-				ontology.category(category);
-				ontology.uri(iri);
-				ontology.title(name);
-				ontology.description(desc);
+				document.category(category);
+				document.uri(iri);
+				document.title(name);
+				document.description(desc);
 				
-				ontology.setProperty('spin', {
+				document.set('spin', {
 					enabled: true
 				});
-				ontology.ontologyModel().load();
+				document.documentModel().load();
 				this.workspace.store();
 			} catch(e){
-				this.workspace.ontologies().remove(ontology.id());
+				this.workspace.getDocumentsReactor().remove(document.id());
 				Log.error(true, e);
 				throw e;
 			} finally {
-				locker.unlock('createOntologyFromContent');
+				locker.unlock('createNewSpinDocument');
 			}
-			return ontology;
+			return document;
 		},
 		
 		updateOntologies: function(){
-			for(var id in this.ontologies){
-				this.ontologies[id].updateModel();
+			for(var id in this.documents){
+				this.documents[id].updateModel();
 			}
 		},
 		
-		ensureOntology: function(id){
+		ensureDocument: function(id){
 			var self = this;
-			if(!this.ontologies[id]){
-				JSB().getLocker().lock('ensureOntology');
+			if(!this.documents[id]){
+				JSB().getLocker().lock('ensureDocument');
 				try {
-					if(!this.ontologies[id]){
-						var ontology = this.workspace.ontologies().get(id);
-						if(!ontology){
-							ontology = this.workspace.ontologies().createById(id);
-							this.workspace.store();
+					if(!this.documents[id]){
+						var document = this.workspace.getDocumentsReactor().entry(id);
+						if(document.isChanged()) {
+						    this.workspace.store();
 						}
-						if(ontology.getProperty('spin')){
-							this.ontologies[id] = new Ontoed.Model.SpinOntology(id, ontology, this);
+						if(document.get('spin')){
+							this.documents[id] = new Antiplag.Model.SpinDocument(id, document, this);
 						} else {
-							// simple ontology
-							this.ontologies[id] = new Ontoed.Model.Ontology(id, ontology, this);
+							// simple document
+							this.documents[id] = new Antiplag.Model.Document(id, document, this);
 						}
 					}
 				} finally {
-					JSB().getLocker().unlock('ensureOntology');
+					JSB().getLocker().unlock('ensureDocument');
 				}
 			}
 			
-			return this.ontologies[id];
+			return this.documents[id];
 		},
 		
-		exportOntology: function(id, format){
-			var ontology = this.workspace.ontologies().get(id);
+		exportDocument: function(id, format){
+			var document = this.workspace.documents().get(id);
 			var model = null;
-			if(ontology.getProperty('spin')){
-				model = ontology.spinModel();
+			if(document.getProperty('spin')){
+				model = document.spinModel();
 			} else {
-				model = ontology.ontologyModel();
+				model = document.documentModel();
 			}
 			return model.export(format);
 		},
 		
-		removeOntology: function(id){
-			// remove ontology model object
-			if(this.ontologies[id]){
-				this.ontologies[id].destroy();
-				delete this.ontologies[id];
+		removeDocument: function(id){
+			// remove document model object
+			if(this.documents[id]){
+				this.documents[id].destroy();
+				delete this.documents[id];
 			}
 			
 			// remove from workspace
-			this.workspace.ontologies().remove(id);
+			this.workspace.documents().remove(id);
 			
 			this.workspace.store();
 			
@@ -242,15 +218,15 @@ JSB({
 		},
 		
 		removeCategory: function(category){
-			// remove ontologies from this category
-			var ontologies = this.workspace.ontologies();
-			var ontoIds = ontologies.ids();
+			// remove documents from this category
+			var documents = this.workspace.documents();
+			var ontoIds = documents.ids();
 			for(var i in ontoIds){
 				var id = ontoIds[i];
-				var onto = ontologies.get(id);
+				var onto = documents.get(id);
 				var cat = onto.category();
 				if(cat && cat.indexOf(category) == 0){
-					this.removeOntology(id);
+					this.removeDocument(id);
 				}
 			}
 			
@@ -312,11 +288,11 @@ JSB({
 			}
 
 			// check projects for new category already existed
-			var ontologies = this.workspace.ontologies();
-			var ontoIds = ontologies.ids();
+			var documents = this.workspace.documents();
+			var ontoIds = documents.ids();
 			for(var i in ontoIds){
 				var id = ontoIds[i];
-				var onto = ontologies.get(id);
+				var onto = documents.get(id);
 				var cat = onto.category();
 				if(cat && cat.indexOf(newCategory) == 0){
 					return false;
@@ -333,7 +309,7 @@ JSB({
 			// rename projects
 			for(var i in ontoIds){
 				var id = ontoIds[i];
-				var onto = ontologies.get(id);
+				var onto = documents.get(id);
 				var cat = onto.category();
 				if(cat && cat.indexOf(oldCategory) == 0){
 					cat = cat.replace(oldCategory, newCategory);
@@ -356,7 +332,7 @@ JSB({
 			}
 			
 			try {
-				this.workspace.setProperty('wName', t);
+				this.workspace.set('wName', t);
 				this.wName = t;
 				this.workspace.store();
 			} catch(e){
@@ -368,12 +344,12 @@ JSB({
 		},
 
 		moveItems: function(target, sources){
-			var ontologies = this.workspace.ontologies();
+			var documents = this.workspace.documents();
 			
 			for(var i in sources){
 				var source = sources[i];
 				if(source.type == 'ontology'){
-					var onto = ontologies.get(source.id);
+					var onto = this.getOwlReactor().ontology(source.id);
 					onto.category(target.path);
 				} else if(source.type == 'node'){
 					var tPath = target.path;
