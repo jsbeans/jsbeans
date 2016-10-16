@@ -348,9 +348,9 @@ JSB({
 			
 			for(var i in sources){
 				var source = sources[i];
-				if(source.type == 'ontology'){
-					var onto = this.getOwlReactor().ontology(source.id);
-					onto.category(target.path);
+				if(source.type == 'document'){
+//					var onto = this.getOwlReactor().ontology(source.id);
+//					onto.category(target.path);
 				} else if(source.type == 'node'){
 					var tPath = target.path;
 					if(tPath.length > 0){

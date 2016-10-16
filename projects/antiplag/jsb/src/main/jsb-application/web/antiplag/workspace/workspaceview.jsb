@@ -41,16 +41,16 @@ JSB({
 			});
 			
 			this.toolbar.addItem({
-				key: 'createOntology',
-				tooltip: 'Создать новую онтологию',
+				key: 'createDocument',
+				tooltip: 'Создать новый документ',
 				element: '<div class="icon"></div>',
 				click: function(evt){
 					var elt = self.$(evt.currentTarget);
 					JSB.Widgets.ToolManager.activate({
-						id: 'newOntologyTool',
+						id: 'newDocumentTool',
 						cmd: 'show',
 						data: {
-							type: 'ontology'
+							type: 'document'
 						},
 						scope: null,
 						target: {
@@ -63,37 +63,7 @@ JSB({
 						}],
 	
 						callback: function(res){
-							self.createNewOntology(res);
-						}
-					});
-
-				}
-			});
-
-			this.toolbar.addItem({
-				key: 'createSpinOntology',
-				tooltip: 'Создать онтологию SPIN отображения',
-				element: '<div class="icon"></div>',
-				click: function(evt){
-					var elt = self.$(evt.currentTarget);
-					JSB.Widgets.ToolManager.activate({
-						id: 'newOntologyTool',
-						cmd: 'show',
-						data: {
-							type: 'spin'
-						},
-						scope: null,
-						target: {
-							selector: elt,
-							weight: 10.0
-						},
-						constraints: [{
-							selector: self.toolbar.getElement(),
-							weight: 10.0
-						}],
-	
-						callback: function(res){
-							self.createNewSpinDocument(res);
+							self.createNewDocument(res);
 						}
 					});
 
@@ -104,7 +74,7 @@ JSB({
 
 			var uploadItem = this.toolbar.addItem({
 				key: 'import',
-				tooltip: 'Импортировать онтологию',
+				tooltip: 'Импортировать документ',
 				element: '<div class="icon"><input type="file" style="display: none;" /></div>',
 				click: function(evt, id, obj){
 					var input = obj.wrapper.find('input[type="file"]');
@@ -153,7 +123,7 @@ JSB({
 			
 			var downloadItem = this.toolbar.addItem({
 				key: 'export',
-				tooltip: 'Экспортировать онтологию',
+				tooltip: 'Экспортировать документ',
 				element: '<div class="icon"><input type="file" style="display: none;" /></div>',
 				click: function(evt, id, obj){
 					var elt = self.$(evt.currentTarget);
@@ -164,36 +134,26 @@ JSB({
 					
 					var node = sel.obj;
 					var items = null;
-					if(!JSB().isInstanceOf(node, 'Antiplag.OntologyNode')){
+					if(!JSB().isInstanceOf(node, 'Antiplag.DocumentNode')){
 						return;
 					}
 					
-					if(node.descriptor.type == 'spinontology'){
-						items = [{
-							key: 'TURTLE',
-							element: 'TURTLE'
-						},{
-							key: 'RDF/XML',
-							element: 'RDF'
-						}];
-					} else {
-						items = [{
-							key: 'TURTLE',
-							element: 'TURTLE'
-						},{
-							key: 'RDF/XML',
-							element: 'RDF'
-						},{
-							key: 'OWL/XML',
-							element: 'OWL'
-						},{
-							key: 'ManchesterSyntax',
-							element: 'ManchesterSyntax'
-						},{
-							key: 'FunctionalSyntax',
-							element: 'FunctionalSyntax'
-						}];
-					}
+					items = [{
+						key: 'TURTLE',
+						element: 'TURTLE'
+					},{
+						key: 'RDF/XML',
+						element: 'RDF'
+					},{
+						key: 'OWL/XML',
+						element: 'OWL'
+					},{
+						key: 'ManchesterSyntax',
+						element: 'ManchesterSyntax'
+					},{
+						key: 'FunctionalSyntax',
+						element: 'FunctionalSyntax'
+					}];
 					
 					JSB.Widgets.ToolManager.activate({
 						id: '_dwp_droplistTool',
@@ -610,7 +570,7 @@ JSB({
 				// enable buttons
 				this.toolbar.enableItem('delete', true);
 			}
-			if(!selection || JSB().isArray(selection) && selection.length != 1 || !JSB().isInstanceOf(selection.obj, 'Antiplag.OntologyNode')){
+			if(!selection || JSB().isArray(selection) && selection.length != 1 || !JSB().isInstanceOf(selection.obj, 'Antiplag.DocumentNode')){
 				this.toolbar.enableItem('export', false);
 			} else {
 				this.toolbar.enableItem('export', true);
@@ -621,6 +581,7 @@ JSB({
 			var self = this;
 			this.tree.getElement().loader();
 			this.server.loadWorkspaceTree(function(wtree){
+//				debugger;
 				self.tree.getElement().loader('hide');
 				self.wtree = wtree;
 				self.redrawTree();
@@ -678,21 +639,21 @@ JSB({
 				self.installUploadContainer(node);
 				
 				break;
-			case 'ontology':
-				node = new Antiplag.OntologyNode({
+			case 'document':
+				node = new Antiplag.DocumentNode({
 					descriptor: itemDesc,
 					onDblClick: function(){
 						var witem = this;
-						if(!witem.ontology){
+						if(!witem.document){
 							self.$('.antiplagContainer').loader();
-							self.$('.antiplagContainer').loader('content', 'Загрузка онтологии');
-							self.currentWorkspace.server.ensureDocument(witem.descriptor.id, function(onto){
+							self.$('.antiplagContainer').loader('content', 'Загрузка документа');
+							self.currentWorkspace.server.ensureDocument(witem.descriptor.id, function(doc){
 								self.$('.antiplagContainer').loader('hide');
-								witem.ontology = onto;
-								self.publish('changeWorkspaceElement', onto);
+								witem.document = doc;
+								self.publish('changeWorkspaceElement', doc);
 							});
 						} else {
-							self.publish('changeWorkspaceElement', witem.ontology);
+							self.publish('changeWorkspaceElement', witem.document);
 						}
 					}
 				});
@@ -824,9 +785,9 @@ JSB({
 						path: node ? self.constructPathFromKey(node.treeNode.key) : '',
 						name: node ? node.getName() : ''
 					}
-				} else if(JSB().isInstanceOf(node, 'Antiplag.OntologyNode')){
+				} else if(JSB().isInstanceOf(node, 'Antiplag.DocumentNode')){
 					return {
-						type: 'ontology',
+						type: 'document',
 						id: node.descriptor.id,
 						path: self.constructPathFromKey(node.treeNode.parent)
 					}
@@ -856,9 +817,9 @@ JSB({
 			}
 			for(var i in sel){
 				var node = sel[i].obj;
-				if(JSB().isInstanceOf(node, 'Antiplag.OntologyNode')){
+				if(JSB().isInstanceOf(node, 'Antiplag.DocumentNode')){
 					batch.push({
-						type: 'ontology',
+						type: 'document',
 						id: node.descriptor.id,
 						key: sel[i].key
 					});
@@ -878,8 +839,8 @@ JSB({
 				for(var i in removed){
 					self.tree.deleteNode(removed[i].key, function(itemObj){
 						var node = itemObj.obj;
-						if(JSB().isInstanceOf(node, 'Antiplag.OntologyNode') && node.ontology){
-							node.ontology.destroy();
+						if(JSB().isInstanceOf(node, 'Antiplag.DocumentNode') && node.document){
+							node.document.destroy();
 						}
 					});
 				}
@@ -911,7 +872,7 @@ JSB({
 					return a.obj.getName().localeCompare(b.obj.getName());
 				}
 				
-				if(JSB().isInstanceOf(a.obj, 'Antiplag.OntologyNode') && JSB().isInstanceOf(b.obj, 'Antiplag.OntologyNode')){
+				if(JSB().isInstanceOf(a.obj, 'Antiplag.DocumentNode') && JSB().isInstanceOf(b.obj, 'Antiplag.DocumentNode')){
 					return a.obj.getUri().localeCompare(b.obj.getUri());
 				}
 				
@@ -919,7 +880,7 @@ JSB({
 			});
 		},
 		
-		createNewOntology: function(ontoDesc){
+		createNewDocument: function(ontoDesc){
 			var self = this;
 			// resolve parent
 			var item = this.tree.getSelected();
@@ -941,7 +902,7 @@ JSB({
 			var curPath = this.constructPathFromKey(parentKey);
 			
 			// create new folder
-			self.server.addOntology(curPath, ontoDesc, function(desc){
+			self.server.addDocument(curPath, ontoDesc, function(desc){
 				if(!desc){
 					// internal error: failed to create ontology
 					return;
@@ -950,7 +911,7 @@ JSB({
 				self.sort();
 				
 				self.$('.antiplagContainer').loader();
-				self.$('.antiplagContainer').loader('content', 'Загрузка онтологии');
+				self.$('.antiplagContainer').loader('content', 'Загрузка документа');
 				self.currentWorkspace.server.ensureDocument(desc.id, function(onto){
 					self.$('.antiplagContainer').loader('hide');
 					self.publish('changeWorkspaceElement', onto);
@@ -1064,7 +1025,7 @@ JSB({
 			var removed = [];
 			// remove ontologies
 			for(var i in items){
-				if(items[i].type == 'ontology'){
+				if(items[i].type == 'document'){
 					if(this.currentWorkspace.removeDocument(items[i].id)){
 						removed.push(items[i]);
 					}
@@ -1087,26 +1048,16 @@ JSB({
 			return this.currentWorkspace.addCategory(category);
 		},
 		
-		addOntology: function(category, ontoDesc){
+		addDocument: function(category, ontoDesc){
 			var onto = this.currentWorkspace.createNewDocument(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
 			return {
-				type: 'ontology',
+				type: 'document',
 				id: onto.id(),
 				title: onto.title(),
 				name: onto.uri()
 			};
 		},
 		
-		addSpinOntology: function(category, ontoDesc){
-			var onto = this.currentWorkspace.createNewSpinDocument(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
-			return {
-				type: 'spinontology',
-				id: onto.id(),
-				title: onto.title(),
-				name: onto.uri()
-			};
-		},
-			
 		loadWorkspaceTree: function(){
 
 			var tree = {};
@@ -1148,17 +1099,14 @@ JSB({
                     var treeNode = touch(''+document.category());
                     var id = ''+document.id();
                     var uri = ''+document.uri();
+                    var fileName = uri.substr(uri.lastIndexOf('/') + 1);
                     treeNode[uri] = {
-                        type: 'ontology',
+                        type: 'document',
                         id: id,
-                        file: ''+document.get('file'),
+                        file: fileName,
                         title: ''+document.title(),
                         name: uri
                     };
-
-                    if(document.get('spin')){
-                        treeNode[uri].type = 'spinontology';
-                    }
                 }
             });
 			
@@ -1169,15 +1117,12 @@ JSB({
 			try {
 				var onto = this.currentWorkspace.createDocumentFromContent(obj.name, obj.category, obj.content);
 				var ontoDesc = {
-					type: 'ontology',
+					type: 'document',
 					id: onto.id(),
 					file: onto.get('file'),
 					title: onto.title(),
 					name: onto.uri()
 				};
-				if(onto.get('spin')){
-					ontoDesc.type = 'spinontology';
-				}
 				return ontoDesc;
 			} catch(e){
 				return {
