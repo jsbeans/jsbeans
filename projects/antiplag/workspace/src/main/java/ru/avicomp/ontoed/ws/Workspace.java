@@ -17,8 +17,9 @@ public interface Workspace extends Entry, PropertyAccessor, Closeable {
 
     Stream<Class<? extends Entry>> entryTypes();
 
-    InputStream readArtifact(String name) throws FileNotFoundException, IOException;
-    OutputStream writeArtifact(String name) throws IOException;
+    InputStream artifactInputStream(String name) throws FileNotFoundException, IOException;
+    OutputStream artifactOutputStream(String name) throws IOException;
+    boolean artifactRemove(String name);
 
     <EntryType extends Entry> Reactor<EntryType> reactor(Class<EntryType> type);
 }

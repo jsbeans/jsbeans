@@ -12,9 +12,9 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class PoiTextExtractor implements TextExtractor<PoiTextExtractor.PoiTextConfig, PoiTextExtractor.PoiTextTextAttribute> {
 
@@ -93,7 +93,8 @@ public class PoiTextExtractor implements TextExtractor<PoiTextExtractor.PoiTextC
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return Arrays.stream(PoiTextTextAttribute.values())
-                .collect(Collectors.toMap(Enum::name, this::getAttribute));
+        Map<String, Object> attrs = new HashMap<>(PoiTextTextAttribute.values().length);
+        Arrays.stream(PoiTextTextAttribute.values()).forEach(a -> attrs.put(a.name(), this.getAttribute(a)));
+        return attrs;
     }
 }

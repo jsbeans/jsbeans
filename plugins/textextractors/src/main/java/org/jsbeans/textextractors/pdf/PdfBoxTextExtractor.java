@@ -7,12 +7,15 @@ import org.jsbeans.textextractors.ExtractableAttribute;
 import org.jsbeans.textextractors.ExtractorConfig;
 import org.jsbeans.textextractors.TextExtractor;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * PdfBox implementation
@@ -102,7 +105,8 @@ public class PdfBoxTextExtractor implements TextExtractor<PdfBoxTextExtractor.Pd
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        return Arrays.stream(PdfBoxAttribute.values())
-                .collect(Collectors.toMap(Enum::name, this::getAttribute));
+        Map<String, Object> attrs = new HashMap<>(PdfBoxAttribute.values().length);
+        Arrays.stream(PdfBoxAttribute.values()).forEach(a -> attrs.put(a.name(), this.getAttribute(a)));
+        return attrs;
     }
 }

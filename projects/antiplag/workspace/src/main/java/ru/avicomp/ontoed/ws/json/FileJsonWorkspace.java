@@ -60,14 +60,14 @@ public class FileJsonWorkspace implements Workspace {
     }
 
     @Override
-    public InputStream readArtifact(String name) throws FileNotFoundException {
+    public InputStream artifactInputStream(String name) throws FileNotFoundException {
         File file = new File(baseDirectory, name);
         Logger.debug("Reading workspace artifact: " + file);
         return new FileInputStream(file);
     }
 
     @Override
-    public OutputStream writeArtifact(String name) throws IOException {
+    public OutputStream artifactOutputStream(String name) throws IOException {
         File file = new File(baseDirectory, name);
         new File(file.getParent()).mkdirs();
         Logger.debug("Writing workspace artifact: " + file);
@@ -75,10 +75,20 @@ public class FileJsonWorkspace implements Workspace {
     }
 
     @Override
+    public boolean artifactRemove(String name) {
+        File file = new File(baseDirectory, name);
+        if (file.exists()) {
+            Logger.debug("Removing workspace artifact: " + file);
+            return file.delete();
+        }
+        return false;
+    }
+
+    @Override
     public void load() throws IOException {
         Logger.debug("Loading workspace: " + id());
         synchronized (ioLock) {
-            try (InputStream inputStream = readArtifact(WOKRSPACE_ARTIFACT_NAME)) {
+            try (InputStream inputStream = artifactInputStream(WOKRSPACE_ARTIFACT_NAME)) {
                 descriptorJson = JsonJava.parse(inputStream);
             } catch (FileNotFoundException e) {
                 Logger.debug("Loading empty descriptor");
@@ -95,7 +105,7 @@ public class FileJsonWorkspace implements Workspace {
                 reactor.store();
             }
 
-            try (OutputStream outputStream = writeArtifact(WOKRSPACE_ARTIFACT_NAME)) {
+            try (OutputStream outputStream = artifactOutputStream(WOKRSPACE_ARTIFACT_NAME)) {
                 JsonJava.write(outputStream, descriptorJson);
                 outputStream.flush();
             }

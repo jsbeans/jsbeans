@@ -5,7 +5,7 @@ JSB({
 	
 	server: {
 		singleton:true,
-		
+
 		HttpApi: {
 			mapping: {
 				'exportDocument': 'exportDocument'
@@ -38,7 +38,7 @@ JSB({
                             var wWrap = new Antiplag.Workspace(workspace);
                             self.workspaces[''+workspace.id()] = wWrap;
                         }catch (e) {
-                            Log.info('Workspace loading failed: ' + workspace.id());
+                            Log.error(true, 'Workspace loading failed: ' + workspace.id());
                             throw e;
                         }
                     }
@@ -177,13 +177,30 @@ JSB({
 				var file = documents[i];
 				var path = '/examples/documents/' + file;
 
+				debugger;
+
                 // create new document
                 var document = documentsReactor.entry(JSB().generateUid());
                 document.uri(path);
 				document.category('Примеры');
+                // set document type by file extension
+			    document.type(Packages.ru.avicomp.antiplag.DocumentType.valueForFile(file));
 
-				// create document and load resource to reactor
-				documentsReactor.loadArtifactResource(document, document.getClass(), path);
+				// load resource as document artifact
+				documentsReactor.loadArtifactFromResource(document, document.getClass(), path);
+
+				// try extract document plaintext
+                documentsReactor.extractTexts(document, false);
+
+                // attributes stored as fields in workspace
+                var attributesJavaMap = document.plaintextAttributes();
+                var attributes = utils.javaToJson(attributesJavaMap);
+                Log.debug("Document text attributes " +  document.id() + ': ' + JSON.stringify(attributes, 0, 2));
+
+                // text stored as document.plaintextFile() artifact
+                var plaintext = '' + documentsReactor.readPlaintextAsString(document);
+                Log.debug("Document plaintext " +  document.id() + ': ' + plaintext);
+
 				// store artifacts and update document entry descriptor
 				documentsReactor.store(document);
 			}

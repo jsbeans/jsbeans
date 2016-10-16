@@ -104,9 +104,9 @@ JSB({
 			this.base();
 			
 			// run code in global scope
-			this.loadScript('/jsb-system/antiplag/utils.js');
-			this.loadScript('/jsb-system/antiplag/wrappers.js');
-			this.loadScript('/jsb-system/antiplag/workspace.js');
+			this.loadScript('/antiplag/utils.js');
+//			this.loadScript('/antiplag/wrappers.js');
+//			this.loadScript('/antiplag/workspace.js');
 /*			
 			this.loadScript('/ontoed/owlapi.js');
 			this.loadScript('/ontoed/spinjs.js');
