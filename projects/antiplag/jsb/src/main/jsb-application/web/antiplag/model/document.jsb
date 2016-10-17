@@ -1,6 +1,6 @@
 JSB({
 	name:'Antiplag.Model.Document',
-	parent: 'Antiplag.Project',
+	parent: 'Antiplag.Model.Project',
 	require: [],
 	
 	common: {
@@ -9,7 +9,17 @@ JSB({
 		},
 		
 		workspace: null,
+		info: {},
+		
 		updateCounter: 0,
+		
+		getTitle: function(){
+			return this.info.title;
+		},
+		
+		getType: function(){
+			return this.info.type;
+		}
 	},
 
 	client: {
@@ -22,7 +32,7 @@ JSB({
 			// TODO: clear entries
 			console.log('Cleaning document: ' + this.getId());
 			
-			this.getSuperClass('Antiplag.Project').destroy.call(this);
+			this.getSuperClass('Antiplag.Model.Project').destroy.call(this);
 		},
 		
 		onAfterSync: function(syncInfo){
@@ -35,20 +45,31 @@ JSB({
 	
 	server: {
 		disableRpcInstance: true,
+		document: null,
 		
-		constructor: function(ontoId, onto, w){
+		constructor: function(id, doc, w){
 			this.base();
-			this.setId(ontoId);
+			this.setId(id);
 			this.workspace = w;
+			this.document = doc;
 			
-			this.axiomProfiler = new JSB.Profiler();
+			// load attributes
+            this.info.uri = ''+this.document.uri();
+            this.info.file = this.info.uri.substr(this.info.uri.lastIndexOf('/') + 1);
+            
+            var attributesJavaMap = this.document.plaintextAttributes();
+            var attributes = utils.javaToJson(attributesJavaMap);
+            
+            this.info.type = this.document.type();
+            this.info.title = this.document.title() || attributes.Title || attributes.title || this.info.file;
+            this.info.author = attributes.Author || attributes.Creator;
 		},
 		
 		destroy: function(){
 			// TODO: clear entries
 			Log.debug('Cleaning document: ' + this.getId());
 			
-			this.getSuperClass('Antiplag.Project').destroy.call(this);
+			this.getSuperClass('Antiplag.Model.Project').destroy.call(this);
 		},
 		
 		
@@ -63,6 +84,13 @@ JSB({
 				locker.unlock(mtxName);
 			}
 			return result;
+		},
+		
+		getPlainText: function(){
+			var documentsReactor = Antiplag.WorkspaceManager.getDocumentsReactor(this.workspace.workspace);
+			var plaintext = '' + documentsReactor.readPlaintextAsString(this.document);
+			
+			return plaintext;
 		}
 		
 

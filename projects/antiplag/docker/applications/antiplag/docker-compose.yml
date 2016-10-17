@@ -1,0 +1,60 @@
+version: '2'
+
+services:
+  web:
+    build: ./../../images/antiplag_nginx
+    image: antiplag_nginx
+    ports:
+      - "80:80" # Public HTTP
+      - "443:443" # Public HTTPS
+    volumes:
+      - "$DATA_DIR/nginx:/etc/nginx/external"
+      - "$LOG_DIR/nginx:/var/log/nginx"
+    links:
+      - fulltext
+      - repository
+      - jsbeans
+
+  fulltext:
+    build: ./../../images/antiplag_elasticsearch
+    image: antiplag_elasticsearch
+    ports:
+#      - "9300:9300" # REST API
+      - "9200:9200" # HTTP (TODO hide and proxify with dwires-nginx)
+    volumes:
+      - "$DATA_DIR/elasticsearch:/data/data"
+      - "$LOG_DIR/elasticsearch:/data/log"
+    expose:
+      - 9300 # Private
+      - 9200 # Private HTTP REST API
+
+  repository:
+    build: ./../../images/antiplag_webdav
+    image: antiplag_webdav
+    ports:
+      - "9080:9080" # Public WebDAV (TODO hide and proxify with dwires-nginx)
+    expose:
+      - 9080
+    volumes:
+      - "$DATA_DIR/.antiplag:/var/www" # shared with dwires
+#    volumes_from:
+#      - jsbeans
+
+  jsbeans:
+    build: ./../../images/antiplag_jsbeans
+    image: antiplag_jsbeans
+    ports:
+      - "8888:8888" # HTTP
+      - "2552:2552" # Netty+Akka
+    volumes:
+      - "$DATA_DIR/repo:/root/.antiplag"  # shared with repository
+      - "$LOG_DIR/dwires:/root/dwires/logs"
+
+    expose:
+      - 8888 # Private HTTP
+    links:
+      - repository
+      - fulltext
+    depends_on:
+      - repository
+      - fulltext

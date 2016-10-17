@@ -31,7 +31,7 @@
 
         <!--  copy kernel and plugins to lib -->
         <dependencySet>
-            <outputDirectory>${org.jsbeans.application.path}/lib</outputDirectory>
+            <outputDirectory>${org.jsbeans.application.path}/libs</outputDirectory>
             <includes>
                 <include>**</include>
             </includes>

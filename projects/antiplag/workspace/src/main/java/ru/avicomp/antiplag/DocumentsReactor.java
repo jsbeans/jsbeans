@@ -140,9 +140,12 @@ public class DocumentsReactor extends EntriesReactor<Document> {
     @Override
     public boolean remove(Document document) {
         if (document.artifactFile() != null) {
-            if(new File(document.artifactFile()).delete()) {
-                Logger.debug("Document artifact removed: " + document.artifactFile());
-            }
+            workspace().artifactRemove(document.artifactFile());
+            Logger.debug("Document artifact removed: " + document.artifactFile());
+        }
+        if (document.plaintextFile() != null) {
+            workspace().artifactRemove(document.plaintextFile());
+            Logger.debug("Document artifact removed: " + document.plaintextFile());
         }
         return super.remove(document);
     }

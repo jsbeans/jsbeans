@@ -75,14 +75,20 @@ JSB({
 		},
 		
 		createDocumentFromContent: function(name, category, content){
+			var self = this;
+			debugger;
 			var locker = JSB().getLocker();
 			locker.lock('createDocumentFromContent');
 			var document = this.getDocumentsReactor().entry(JSB().generateUid());
-			document.category(category);
-			document.setProperty('file', name);
 			try {
-				document.store();
-				this.workspace.store();
+				document.category(category);
+				document.set('file', name);
+				document.type(Packages.ru.avicomp.antiplag.DocumentType.valueForFile(name));
+				var bytes = Packages.javax.xml.bind.DatatypeConverter.parseBase64Binary(content);
+				this.getDocumentsReactor().loadArtifactFromBytes(document, bytes);
+				this.getDocumentsReactor().extractTexts(document, false);
+				
+				this.getDocumentsReactor().store(document);
 			} catch(e){
 				this.workspace.entries().remove(document.id());
 				Log.error(true, e);
@@ -94,7 +100,7 @@ JSB({
 			var self = this;
 			JSB().defer(function(){
 //				self.getDocumentsReactor().update();
-				self.updateDocuments();
+//				self.updateDocuments();
 				self.workspace.store();
 			}, 300, 'createDocumentFromContent' + this.getId());
 			
@@ -117,7 +123,7 @@ JSB({
 		createNewDocument: function(name, category, iri, desc){
 			var locker = JSB().getLocker();
 			locker.lock('createDocumentFromContent');
-			var document = this.workspace.getDocumentsReactor().entry(JSB().generateUid());
+			var document = this.getDocumentsReactor().entry(JSB().generateUid());
 			try {
 				document.category(category);
 				document.uri(iri);
@@ -135,31 +141,6 @@ JSB({
 			return document;
 		},
 		
-		createNewSpinDocument: function(name, category, iri, desc){
-			var locker = JSB().getLocker();
-			locker.lock('createNewSpinDocument');
-			var document = this.workspace.getDocumentsReactor().entry(JSB().generateUid());
-			try {
-				document.category(category);
-				document.uri(iri);
-				document.title(name);
-				document.description(desc);
-				
-				document.set('spin', {
-					enabled: true
-				});
-				document.documentModel().load();
-				this.workspace.store();
-			} catch(e){
-				this.workspace.getDocumentsReactor().remove(document.id());
-				Log.error(true, e);
-				throw e;
-			} finally {
-				locker.unlock('createNewSpinDocument');
-			}
-			return document;
-		},
-		
 		updateOntologies: function(){
 			for(var id in this.documents){
 				this.documents[id].updateModel();
@@ -172,16 +153,14 @@ JSB({
 				JSB().getLocker().lock('ensureDocument');
 				try {
 					if(!this.documents[id]){
-						var document = this.workspace.getDocumentsReactor().entry(id);
+						var document = this.getDocumentsReactor().entry(id);
+/*						
 						if(document.isChanged()) {
 						    this.workspace.store();
 						}
-						if(document.get('spin')){
-							this.documents[id] = new Antiplag.Model.SpinDocument(id, document, this);
-						} else {
-							// simple document
-							this.documents[id] = new Antiplag.Model.Document(id, document, this);
-						}
+*/						
+						// simple document
+						this.documents[id] = new Antiplag.Model.Document(id, document, this);
 					}
 				} finally {
 					JSB().getLocker().unlock('ensureDocument');
@@ -210,7 +189,9 @@ JSB({
 			}
 			
 			// remove from workspace
-			this.workspace.documents().remove(id);
+			var doc = this.getDocumentsReactor().entry(id);
+			this.getDocumentsReactor().remove(doc);
+//			this.workspace.documents().remove(id);
 			
 			this.workspace.store();
 			

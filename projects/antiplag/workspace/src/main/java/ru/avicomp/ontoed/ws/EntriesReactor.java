@@ -114,6 +114,7 @@ public abstract class EntriesReactor<EntryType extends Entry> implements Reactor
     @Override
     public boolean remove(EntryType entry) {
         synchronized (entries) {
+            propertyAccessor.set(entry.id(), null);
             return entries.remove(entry.id()) != null;
         }
     }

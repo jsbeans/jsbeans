@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # created by dimonab
 # Universal server-application starter
 

@@ -28,13 +28,15 @@ JSB({
 				this.title.find('.file').addClass('hidden');
 			}
 			
-			this.subtitle = this.$('<div class="subtitle"></div>').text(this.descriptor.name).attr('title', this.descriptor.name);
+			this.subtitle = this.$('<div class="subtitle"></div>').text(this.descriptor.author).attr('title', this.descriptor.author);
 			this.append(this.subtitle);
+			
+			this.getElement().attr('type', this.descriptor.docType);
 			
 			// add buttons
 			var editBtn = new JSB.Widgets.Button({
 				cssClass: 'roundButton btnEdit btn10',
-				tooltip: 'Редактировать онтологию',
+				tooltip: 'Открыть документ',
 				onClick: function(evt){
 					evt.stopPropagation();
 					if(self.options.onDblClick){
@@ -43,11 +45,11 @@ JSB({
 				}
 			});
 			this.append(editBtn);
-			
+/*			
 			// generate user-friendly name from uri
-			this.uri = this.descriptor.name.replace(/^(http(s)?\:\/\/)?(www\.)?/, '');;
+			this.uri = this.descriptor.name.replace(/^(http(s)?\:\/\/)?(www\.)?/, '');
 			this.subtitle.text(this.uri);
-			
+*/			
 			this.getElement().dblclick(function(){
 				if(self.options.onDblClick){
 					self.options.onDblClick.call(self);
@@ -57,6 +59,10 @@ JSB({
 		
 		getUri: function(){
 			return this.uri;
+		},
+		
+		getName: function(){
+			return this.descriptor.file || this.descriptor.title || '';
 		}
 	}
 });

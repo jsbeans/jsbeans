@@ -27,7 +27,7 @@ JSB({
 				workspace.store();
 
 				var wWrap = new Antiplag.Workspace(workspace);
-				this.workspaces[''+workspace] = wWrap;
+				this.workspaces[''+workspace.id()] = wWrap;
 		    } else {
 		        var self = this;
 		        // load all existed workspace descriptor

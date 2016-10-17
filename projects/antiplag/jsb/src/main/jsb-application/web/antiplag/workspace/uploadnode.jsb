@@ -39,7 +39,7 @@ JSB({
 									(function(item){
 										if(item.isFile){
 											item.file(function(file){
-												var isFile = /\.((rdf)|(ttl)|(owl))/i.test(file.name);
+												var isFile = /\.((doc)|(docx)|(pdf)|(rtf)|(txt))/i.test(file.name);
 												if(isFile){
 													var uploadNode = new Ontoed.UploadNode({
 														file: file, 
@@ -83,10 +83,13 @@ JSB({
 			if(!isDir){
 				var reader = new FileReader();
 				reader.onload = function(){
+					// convert result to base64
+					debugger;
+					var base64 = btoa(reader.result);
 					self.options.w.server.loadFromContent({
 						category: self.options.node ? self.options.w.constructPathFromKey(self.options.node.treeNode.key) : '',
 						name: self.options.file.name,
-						content: reader.result
+						content: base64
 					}, function(ontoDesc){
 						JSB().deferUntil(function(){
 							if(ontoDesc.type == 'error'){
@@ -101,7 +104,7 @@ JSB({
 						});
 					});
 				}
-				reader.readAsText(this.options.file);
+				reader.readAsBinaryString(this.options.file);
 			}
 			
 		},
