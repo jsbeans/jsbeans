@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+
+.documentRenderer {
+	padding: 4px;
+}
+
+.documentRenderer > p {
+	margin: 6px 0;
+}

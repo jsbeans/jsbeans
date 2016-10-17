@@ -23,7 +23,7 @@
 	background-position: -80px -32px;
 }
 
-.workspaceView > ._dwp_toolBar li._dwp_toolBarItem[key="createOntology"] > .icon {
+.workspaceView > ._dwp_toolBar li._dwp_toolBarItem[key="createDocument"] > .icon {
 	background-position: -96px -32px;
 }
 
@@ -94,8 +94,7 @@
 
 .workspaceView > ._dwp_treeview ._dwp_treeViewNode.node.collapsed > ._dwp_nodeHeader > ._dwp_nodeIcon {}
 
-.workspaceView > ._dwp_treeview ._dwp_treeViewNode.ontology > ._dwp_nodeHeader,
-.workspaceView > ._dwp_treeview ._dwp_treeViewNode.spinontology > ._dwp_nodeHeader {
+.workspaceView > ._dwp_treeview ._dwp_treeViewNode.document > ._dwp_nodeHeader {
 	height: 32px;
 }
 

@@ -581,7 +581,6 @@ JSB({
 			var self = this;
 			this.tree.getElement().loader();
 			this.server.loadWorkspaceTree(function(wtree){
-//				debugger;
 				self.tree.getElement().loader('hide');
 				self.wtree = wtree;
 				self.redrawTree();
@@ -873,7 +872,7 @@ JSB({
 				}
 				
 				if(JSB().isInstanceOf(a.obj, 'Antiplag.DocumentNode') && JSB().isInstanceOf(b.obj, 'Antiplag.DocumentNode')){
-					return a.obj.getUri().localeCompare(b.obj.getUri());
+					return a.obj.getName().localeCompare(b.obj.getName());
 				}
 				
 				return 0;
@@ -1100,11 +1099,17 @@ JSB({
                     var id = ''+document.id();
                     var uri = ''+document.uri();
                     var fileName = uri.substr(uri.lastIndexOf('/') + 1);
+                    
+                    var attributesJavaMap = document.plaintextAttributes();
+                    var attributes = utils.javaToJson(attributesJavaMap);
+                    
                     treeNode[uri] = {
                         type: 'document',
                         id: id,
                         file: fileName,
-                        title: ''+document.title(),
+                        docType: document.type(),
+                        title: document.title() || attributes.Title || attributes.title || fileName,
+                        author: attributes.Author || attributes.Creator,
                         name: uri
                     };
                 }

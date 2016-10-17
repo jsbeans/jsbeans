@@ -1,5 +1,5 @@
 JSB({
-	name: 'Antiplag.Project',
+	name: 'Antiplag.Model.Project',
 	parent: 'JSB.Widgets.Actor',
 	fixedId: true
 });

@@ -28,7 +28,7 @@ JSB({
 						},{
 							split: 'horizontal',
 							minSize: '60%',
-							widgets: 'welcomeForm'
+							widgets: 'documents'
 						}]
 					}
 				},
@@ -40,6 +40,10 @@ JSB({
 					},
 					welcomeForm: {
 						jsb: 'Antiplag.WelcomeForm'
+					},
+					
+					documents: {
+						jsb: 'Antiplag.DocumentsView'
 					}
 				}
 			});
@@ -66,7 +70,7 @@ JSB({
 			}});
 */
 			this.subscribe('changeWorkspaceElement', function(sender, msg, obj){
-				if(!JSB().isInstanceOf(obj, 'Antiplag.Project')){
+				if(!JSB().isInstanceOf(obj, 'Antiplag.Model.Project')){
 					return;
 				}
 /*				

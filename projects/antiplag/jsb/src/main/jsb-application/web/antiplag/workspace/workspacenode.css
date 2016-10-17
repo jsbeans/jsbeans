@@ -61,12 +61,12 @@ li._dwp_treeViewNode.highlighted > ._dwp_nodeHeader > ._dwp_itemContainer > .wor
     cursor: pointer;
 }
 
-.workspaceView > ._dwp_treeview ._dwp_treeViewNode.ontology.current .workspaceNode.documentNode > .icon {
-	background-position: -64px -64px;
+.workspaceNode.documentNode[type="DOCX"] > .icon {
+	background-position: -16px 0;
 }
 
-.workspaceNode.documentNode.spindocumentNode > .icon {
-	background-position: -16px -80px;
+.workspaceNode.documentNode[type="PDF"] > .icon {
+	background-position: -96px 0;
 }
 
 .workspaceNode.documentNode > .btnEdit {

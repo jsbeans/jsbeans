@@ -117,7 +117,7 @@ JSB({
 		createNewDocument: function(name, category, iri, desc){
 			var locker = JSB().getLocker();
 			locker.lock('createDocumentFromContent');
-			var document = this.workspace.getDocumentsReactor().entry(JSB().generateUid());
+			var document = this.getDocumentsReactor().entry(JSB().generateUid());
 			try {
 				document.category(category);
 				document.uri(iri);
@@ -172,16 +172,14 @@ JSB({
 				JSB().getLocker().lock('ensureDocument');
 				try {
 					if(!this.documents[id]){
-						var document = this.workspace.getDocumentsReactor().entry(id);
+						var document = this.getDocumentsReactor().entry(id);
+/*						
 						if(document.isChanged()) {
 						    this.workspace.store();
 						}
-						if(document.get('spin')){
-							this.documents[id] = new Antiplag.Model.SpinDocument(id, document, this);
-						} else {
-							// simple document
-							this.documents[id] = new Antiplag.Model.Document(id, document, this);
-						}
+*/						
+						// simple document
+						this.documents[id] = new Antiplag.Model.Document(id, document, this);
 					}
 				} finally {
 					JSB().getLocker().unlock('ensureDocument');
