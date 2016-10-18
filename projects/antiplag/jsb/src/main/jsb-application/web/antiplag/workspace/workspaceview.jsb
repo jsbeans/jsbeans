@@ -39,7 +39,7 @@ JSB({
 					self.createNewFolder();
 				}
 			});
-			
+/*			
 			this.toolbar.addItem({
 				key: 'createDocument',
 				tooltip: 'Создать новый документ',
@@ -69,7 +69,7 @@ JSB({
 
 				}
 			});
-
+*/
 			this.toolbar.addSeparator();
 
 			var uploadItem = this.toolbar.addItem({
@@ -103,7 +103,7 @@ JSB({
 				
 				for(var i = 0; i < this.files.length; i++ ){
 					var file = this.files[i];
-					if(/\.((rdf)|(ttl)|(owl))/i.test(file.name)){
+					if(/\.((doc)|(docx)|(pdf)|(rtf)|(txt))/i.test(file.name)){
 						// upload file
 						var uploadNode = new Antiplag.UploadNode({
 							file: file, 
@@ -1055,7 +1055,12 @@ JSB({
 		constructViewEntryFromDocument: function(document){
             var id = ''+document.id();
             var uri = ''+document.uri();
-            var fileName = uri.substr(uri.lastIndexOf('/') + 1);
+            var fileName = '';
+            if(document.get('file')){
+            	fileName = ''+document.get('file');
+            } else {
+            	fileName = uri.substr(uri.lastIndexOf('/') + 1);
+            }
             
             var attributesJavaMap = document.plaintextAttributes();
             var attributes = utils.javaToJson(attributesJavaMap);
@@ -1100,14 +1105,13 @@ JSB({
 			}
 			
 			// collect categories
-			var categories = w.get('categories');
+			var categories = utils.javaToJson(w.get('categories'));
 			for(var i in categories){
-				var cat = categories[i];
+				var cat = ''+categories[i];
 				touch(cat);
 			}
 			
 			
-
 			// collect ontologies
 			currentWorkspace.getDocumentsReactor().entries().forEach(new java.util.function.Consumer() {
                 accept: function(document){

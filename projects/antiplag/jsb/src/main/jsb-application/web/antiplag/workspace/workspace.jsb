@@ -76,13 +76,13 @@ JSB({
 		
 		createDocumentFromContent: function(name, category, content){
 			var self = this;
-			debugger;
 			var locker = JSB().getLocker();
 			locker.lock('createDocumentFromContent');
 			var document = this.getDocumentsReactor().entry(JSB().generateUid());
 			try {
 				document.category(category);
 				document.set('file', name);
+				document.uri('' + document.id() + '/' + name);
 				document.type(Packages.ru.avicomp.antiplag.DocumentType.valueForFile(name));
 				var bytes = Packages.javax.xml.bind.DatatypeConverter.parseBase64Binary(content);
 				this.getDocumentsReactor().loadArtifactFromBytes(document, bytes);
@@ -90,8 +90,8 @@ JSB({
 				
 				this.getDocumentsReactor().store(document);
 			} catch(e){
-				this.workspace.entries().remove(document.id());
 				Log.error(true, e);
+				this.getDocumentsReactor().remove(document);
 				throw e;
 			} finally{
 				locker.unlock('createDocumentFromContent');
@@ -119,7 +119,7 @@ JSB({
 			}
 			return result;
 		},
-		
+/*		
 		createNewDocument: function(name, category, iri, desc){
 			var locker = JSB().getLocker();
 			locker.lock('createDocumentFromContent');
@@ -140,13 +140,8 @@ JSB({
 			}
 			return document;
 		},
-		
-		updateOntologies: function(){
-			for(var id in this.documents){
-				this.documents[id].updateModel();
-			}
-		},
-		
+*/		
+
 		ensureDocument: function(id){
 			var self = this;
 			if(!this.documents[id]){
@@ -191,7 +186,6 @@ JSB({
 			// remove from workspace
 			var doc = this.getDocumentsReactor().entry(id);
 			this.getDocumentsReactor().remove(doc);
-//			this.workspace.documents().remove(id);
 			
 			this.workspace.store();
 			
@@ -199,20 +193,24 @@ JSB({
 		},
 		
 		removeCategory: function(category){
+			var self = this;
 			// remove documents from this category
-			var documents = this.workspace.documents();
-			var ontoIds = documents.ids();
-			for(var i in ontoIds){
-				var id = ontoIds[i];
-				var onto = documents.get(id);
-				var cat = onto.category();
-				if(cat && cat.indexOf(category) == 0){
-					this.removeDocument(id);
-				}
+			var idsToRemove = [];
+			this.getDocumentsReactor().entries().forEach(new java.util.function.Consumer() {
+                accept: function(document){
+                	var cat = document.category();
+                	if(cat && cat.indexOf(category) == 0){
+                		idsToRemove.push(document.id());
+                		
+    				}
+                }
+            });
+			for(var i = 0; i < idsToRemove.length; i++){
+				self.removeDocument(idsToRemove[i]);
 			}
 			
 			//remove categories
-			var categories = this.workspace.getProperty('categories');
+			var categories = utils.javaToJson(this.workspace.get('categories'));
 			
 			// check categories for new category already existed
 			for(var i = categories.length - 1; i >= 0; i-- ){
@@ -220,6 +218,7 @@ JSB({
 					categories.splice(i, 1);
 				}
 			}
+			this.workspace.set('categories', utils.jsonToJava(categories));
 			
 			this.workspace.store();
 			
@@ -227,10 +226,10 @@ JSB({
 		},
 		
 		addCategory: function(category){
-			var categories = this.workspace.getProperty('categories');
+			var categories = utils.javaToJson(this.workspace.get('categories'));
 			if(!categories){
 				categories = [];
-				this.workspace.setProperty('categories', categories);
+				this.workspace.set('categories', utils.jsonToJava(categories));
 			}
 			for(var i in categories){
 				var cat = categories[i];
@@ -239,6 +238,8 @@ JSB({
 				}
 			}
 			categories.push(category);
+			this.workspace.set('categories', utils.jsonToJava(categories));
+			
 			var partName = category;
 			if(category.lastIndexOf('/') >= 0){
 				partName = category.substr(category.lastIndexOf('/') + 1);
@@ -259,7 +260,7 @@ JSB({
 			}
 			
 			// rename categories
-			var categories = this.workspace.getProperty('categories');
+			var categories = utils.javaToJson(this.workspace.get('categories'));
 			
 			// check categories for new category already existed
 			for(var i in categories){
@@ -267,19 +268,7 @@ JSB({
 					return false;
 				}
 			}
-
-			// check projects for new category already existed
-			var documents = this.workspace.documents();
-			var ontoIds = documents.ids();
-			for(var i in ontoIds){
-				var id = ontoIds[i];
-				var onto = documents.get(id);
-				var cat = onto.category();
-				if(cat && cat.indexOf(newCategory) == 0){
-					return false;
-				}
-			}
-
+			
 			// rename categories
 			for(var i in categories){
 				if(categories[i].indexOf(oldCategory) == 0){
@@ -287,16 +276,18 @@ JSB({
 				}
 			}
 			
+			this.workspace.set('categories', utils.jsonToJava(categories));
+			
 			// rename projects
-			for(var i in ontoIds){
-				var id = ontoIds[i];
-				var onto = documents.get(id);
-				var cat = onto.category();
-				if(cat && cat.indexOf(oldCategory) == 0){
-					cat = cat.replace(oldCategory, newCategory);
-				}
-				onto.category(cat);
-			}
+			this.getDocumentsReactor().entries().forEach(new java.util.function.Consumer() {
+                accept: function(document){
+                	var cat = document.category();
+                	if(cat && cat.indexOf(oldCategory) == 0){
+    					cat = cat.replace(oldCategory, newCategory);
+    				}
+                	document.category(cat);
+                }
+            });
 			
 			this.workspace.store();
 			
@@ -325,13 +316,11 @@ JSB({
 		},
 
 		moveItems: function(target, sources){
-			var documents = this.workspace.documents();
-			
 			for(var i in sources){
 				var source = sources[i];
 				if(source.type == 'document'){
-//					var onto = this.getOwlReactor().ontology(source.id);
-//					onto.category(target.path);
+					var document = this.getDocumentsReactor().entry(source.id);
+					document.category(target.path);
 				} else if(source.type == 'node'){
 					var tPath = target.path;
 					if(tPath.length > 0){

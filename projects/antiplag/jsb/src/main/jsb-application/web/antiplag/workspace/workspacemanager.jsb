@@ -177,8 +177,6 @@ JSB({
 				var file = documents[i];
 				var path = '/examples/documents/' + file;
 
-				debugger;
-
                 // create new document
                 var document = documentsReactor.entry(JSB().generateUid());
                 document.uri(path);

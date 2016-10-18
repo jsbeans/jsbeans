@@ -1,5 +1,6 @@
 package ru.avicomp.ontoed.ws.json;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.avicomp.ontoed.json.JsonJava;
@@ -10,6 +11,7 @@ import ru.avicomp.ontoed.ws.Reactor;
 import ru.avicomp.ontoed.ws.Workspace;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -119,9 +121,18 @@ public class FileJsonWorkspace implements Workspace {
             close();
             descriptorJson = JsonJava.emptyJsonObject();
             if (baseDirectory.exists()) {
+            	try {
+            		FileUtils.deleteDirectory(baseDirectory);
+                    Logger.debug("Workspace removed: " + id());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            	
+/*            	
                 if (baseDirectory.delete()) {
                     Logger.debug("Workspace removed: " + id());
                 }
+*/                
             }
         }
     }

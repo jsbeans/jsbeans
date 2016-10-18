@@ -190,18 +190,19 @@ var utils = {
 
     jsonToJava: function (map, convertor) {
         var convertor = convertor || function (v){
-            if (typeof v === 'array') {
-                for(var i = 0; i < v.size(); i++){
-                    v[i] = convertor(v[i]);
+            if (Object.prototype.toString.call(v) === "[object Array]") {
+            	var value = new Packages.java.util.ArrayList();
+                for(var i = 0; i < v.length; i++){
+                	value.add(convertor(v[i]));
                 }
-                return v;
+                return value;
             } else if (typeof v === 'number' || v instanceof Packages.java.lang.Number) {
                 return new java.lang.Double(v.doubleValue && v.doubleValue() || parseFloat(v));
             } else if (typeof v === 'boolean' || v instanceof Packages.java.lang.Boolean) {
                 return new java.lang.Boolean(v.booleanValue && v.booleanValue() || !!v);
-            } else if (typeof v === 'string' || v instanceof Packages.java.lang.String) {
+            } else if (Object.prototype.toString.call(v) === "[object String]" || v instanceof Packages.java.lang.String) {
                 return new java.lang.String(v);
-            } else if (typeof v === 'object') {
+            } else if (Object.prototype.toString.call(v) === "[object Object]") {
                 var ids = Object.keys(v);
                 var value = new Packages.java.util.HashMap(ids.length);
                 for(var i in ids){

@@ -84,7 +84,6 @@ JSB({
 				var reader = new FileReader();
 				reader.onload = function(){
 					// convert result to base64
-					debugger;
 					var base64 = btoa(reader.result);
 					self.options.w.server.loadFromContent({
 						category: self.options.node ? self.options.w.constructPathFromKey(self.options.node.treeNode.key) : '',
