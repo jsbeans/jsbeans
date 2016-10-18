@@ -25,7 +25,16 @@
 	background-position: -96px 0;
 }
 
-.documentsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="DOCX"] > ._dwp_icon {
+.documentsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="TXT"] > ._dwp_icon {
+	background-position: -80px 0;
+}
+
+.documentsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="RTF"] > ._dwp_icon {
+	background-position: -112px 0;
+}
+
+.documentsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="DOCX"] > ._dwp_icon,
+.documentsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="DOC"] > ._dwp_icon {
 	background-position: -16px 0;
 }
 

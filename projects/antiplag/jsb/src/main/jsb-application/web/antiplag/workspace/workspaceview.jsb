@@ -1071,7 +1071,7 @@ JSB({
                 file: fileName,
                 docType: document.type(),
                 title: document.title() || attributes.Title || attributes.title || fileName,
-                author: attributes.Author || attributes.Creator,
+                author: attributes.Author || attributes.Creator || 'автор не указан',
                 name: uri,
                 uri: uri
             };

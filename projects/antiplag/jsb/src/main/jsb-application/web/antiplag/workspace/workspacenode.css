@@ -61,13 +61,23 @@ li._dwp_treeViewNode.highlighted > ._dwp_nodeHeader > ._dwp_itemContainer > .wor
     cursor: pointer;
 }
 
-.workspaceNode.documentNode[type="DOCX"] > .icon {
+.workspaceNode.documentNode[type="DOCX"] > .icon,
+.workspaceNode.documentNode[type="DOC"] > .icon {
 	background-position: -16px 0;
 }
 
 .workspaceNode.documentNode[type="PDF"] > .icon {
 	background-position: -96px 0;
 }
+
+.workspaceNode.documentNode[type="RTF"] > .icon {
+	background-position: -112px 0;
+}
+
+.workspaceNode.documentNode[type="TXT"] > .icon {
+	background-position: -80px 0;
+}
+
 
 .workspaceNode.documentNode > .btnEdit {
 	top: 6px;
