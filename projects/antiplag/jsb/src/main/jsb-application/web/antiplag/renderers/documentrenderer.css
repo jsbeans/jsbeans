@@ -2,6 +2,7 @@
 
 .documentRenderer {
 	padding: 4px;
+	min-height: 200px;
 }
 
 .documentRenderer > p {

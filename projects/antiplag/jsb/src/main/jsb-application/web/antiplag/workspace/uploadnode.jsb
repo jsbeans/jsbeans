@@ -41,7 +41,7 @@ JSB({
 											item.file(function(file){
 												var isFile = /\.((doc)|(docx)|(pdf)|(rtf)|(txt))/i.test(file.name);
 												if(isFile){
-													var uploadNode = new Ontoed.UploadNode({
+													var uploadNode = new Antiplag.UploadNode({
 														file: file, 
 														node: node, 
 														item: item, 
@@ -56,7 +56,7 @@ JSB({
 												}
 											});
 										} else if(item.isDirectory){
-											var uploadNode = new Ontoed.UploadNode({
+											var uploadNode = new Antiplag.UploadNode({
 												file: item, 
 												node: node, 
 												item: item, 

@@ -17,8 +17,10 @@ JSB({
 		
 		load: function(){
 			var self = this;
+			this.getElement().loader();
 			this.document.server.getPlainText(function(txt){
 				self.drawText(txt);
+				self.getElement().loader('hide');
 			});
 		},
 		
