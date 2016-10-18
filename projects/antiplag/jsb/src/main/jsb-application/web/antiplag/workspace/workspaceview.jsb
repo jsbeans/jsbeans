@@ -536,7 +536,7 @@ JSB({
 					}
 					for(var i = 0; i < dt.files.length; i++ ){
 						var file = dt.files[i];
-						var isFile = /\.((rdf)|(ttl)|(owl))/i.test(file.name);
+						var isFile = /\.((doc)|(docx)|(pdf)|(rtf)|(txt))/i.test(file.name);
 						var isDir = dt.items ? dt.items[i].webkitGetAsEntry().isDirectory : false;
 						
 						if(isFile || isDir){
@@ -1048,17 +1048,32 @@ JSB({
 		},
 		
 		addDocument: function(category, ontoDesc){
-			var onto = this.currentWorkspace.createNewDocument(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
-			return {
-				type: 'document',
-				id: onto.id(),
-				title: onto.title(),
-				name: onto.uri()
-			};
+			var document = this.currentWorkspace.createNewDocument(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
+			return this.constructViewEntryFromDocument(document);
+		},
+		
+		constructViewEntryFromDocument: function(document){
+            var id = ''+document.id();
+            var uri = ''+document.uri();
+            var fileName = uri.substr(uri.lastIndexOf('/') + 1);
+            
+            var attributesJavaMap = document.plaintextAttributes();
+            var attributes = utils.javaToJson(attributesJavaMap);
+            
+            return {
+                type: 'document',
+                id: id,
+                file: fileName,
+                docType: document.type(),
+                title: document.title() || attributes.Title || attributes.title || fileName,
+                author: attributes.Author || attributes.Creator,
+                name: uri,
+                uri: uri
+            };
 		},
 		
 		loadWorkspaceTree: function(){
-
+			var self = this;
 			var tree = {};
 			var currentWorkspace = this.currentWorkspace;
 			var w = currentWorkspace.getSystemWorkspace();
@@ -1091,27 +1106,14 @@ JSB({
 				touch(cat);
 			}
 			
+			
 
 			// collect ontologies
 			currentWorkspace.getDocumentsReactor().entries().forEach(new java.util.function.Consumer() {
                 accept: function(document){
                     var treeNode = touch(''+document.category());
-                    var id = ''+document.id();
                     var uri = ''+document.uri();
-                    var fileName = uri.substr(uri.lastIndexOf('/') + 1);
-                    
-                    var attributesJavaMap = document.plaintextAttributes();
-                    var attributes = utils.javaToJson(attributesJavaMap);
-                    
-                    treeNode[uri] = {
-                        type: 'document',
-                        id: id,
-                        file: fileName,
-                        docType: document.type(),
-                        title: document.title() || attributes.Title || attributes.title || fileName,
-                        author: attributes.Author || attributes.Creator,
-                        name: uri
-                    };
+                    treeNode[uri] = self.constructViewEntryFromDocument(document);
                 }
             });
 			
@@ -1120,15 +1122,8 @@ JSB({
 		
 		loadFromContent: function(obj){
 			try {
-				var onto = this.currentWorkspace.createDocumentFromContent(obj.name, obj.category, obj.content);
-				var ontoDesc = {
-					type: 'document',
-					id: onto.id(),
-					file: onto.get('file'),
-					title: onto.title(),
-					name: onto.uri()
-				};
-				return ontoDesc;
+				var document = this.currentWorkspace.createDocumentFromContent(obj.name, obj.category, obj.content);
+				return this.constructViewEntryFromDocument(document);
 			} catch(e){
 				return {
 					type: 'error',
