@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class PoiTextExtractor implements TextExtractor<PoiTextExtractor.PoiTextConfig, PoiTextExtractor.PoiTextTextAttribute> {
+public class XWPFTextExtractor implements TextExtractor<XWPFTextExtractor.PoiTextConfig, XWPFTextExtractor.XWPFTextAttribute> {
 
     public static class PoiTextConfig implements ExtractorConfig {
         private final String name;
@@ -31,7 +31,7 @@ public class PoiTextExtractor implements TextExtractor<PoiTextExtractor.PoiTextC
 
     }
 
-    public enum PoiTextTextAttribute implements ExtractableAttribute<CoreProperties> {
+    public enum XWPFTextAttribute implements ExtractableAttribute<CoreProperties> {
         Title   (String.class, CoreProperties::getTitle),
         Description (String.class, CoreProperties::getDescription),
         Category    (String.class, CoreProperties::getCategory),
@@ -48,7 +48,7 @@ public class PoiTextExtractor implements TextExtractor<PoiTextExtractor.PoiTextC
         private final Class<?> type;
         private Function<CoreProperties, ?> func;
 
-        PoiTextTextAttribute(Class<?> type, Function<CoreProperties, ?> func) {
+        XWPFTextAttribute(Class<?> type, Function<CoreProperties, ?> func) {
             this.type = type;
             this.func = func;
         }
@@ -87,14 +87,21 @@ public class PoiTextExtractor implements TextExtractor<PoiTextExtractor.PoiTextC
     }
 
     @Override
-    public <T> T getAttribute(PoiTextTextAttribute attribute) {
+    public <T> T getAttribute(XWPFTextAttribute attribute) {
         return attribute.get(coreProperties);
     }
 
     @Override
     public Map<String, Object> getAllAttributes() {
-        Map<String, Object> attrs = new HashMap<>(PoiTextTextAttribute.values().length);
-        Arrays.stream(PoiTextTextAttribute.values()).forEach(a -> attrs.put(a.name(), this.getAttribute(a)));
+        Map<String, Object> attrs = new HashMap<>(XWPFTextAttribute.values().length);
+        Arrays.stream(XWPFTextAttribute.values()).forEach(a -> attrs.put(a.name(), this.getAttribute(a)));
         return attrs;
+    }
+
+    @Override
+    public void close() throws IOException {
+        document = null;
+        extractor = null;
+        coreProperties = null;
     }
 }

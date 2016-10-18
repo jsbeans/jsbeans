@@ -109,4 +109,11 @@ public class PdfBoxTextExtractor implements TextExtractor<PdfBoxTextExtractor.Pd
         Arrays.stream(PdfBoxAttribute.values()).forEach(a -> attrs.put(a.name(), this.getAttribute(a)));
         return attrs;
     }
+
+    @Override
+    public void close() throws IOException {
+        pdfDocument.close();
+        pdfDocument = null;
+        info = null;
+    }
 }

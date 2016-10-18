@@ -1,8 +1,11 @@
 package ru.avicomp.antiplag;
 
+import org.jsbeans.textextractors.ExtractorConfig;
+import org.jsbeans.textextractors.PlainTextExtractor;
 import org.jsbeans.textextractors.TextExtractor;
 import org.jsbeans.textextractors.pdf.PdfBoxTextExtractor;
-import org.jsbeans.textextractors.poi.PoiTextExtractor;
+import org.jsbeans.textextractors.poi.HWPFTextExtractor;
+import org.jsbeans.textextractors.poi.XWPFTextExtractor;
 import ru.avicomp.ontoed.ws.EntriesReactor;
 import ru.avicomp.ontoed.ws.PropertyAccessor;
 import ru.avicomp.ontoed.ws.Workspace;
@@ -10,6 +13,7 @@ import ru.avicomp.ontoed.ws.Workspace;
 import java.io.*;
 import java.util.Iterator;
 import java.util.Scanner;
+import java.util.function.Supplier;
 
 public class DocumentsReactor extends EntriesReactor<Document> {
     private static final String artifactPrefix = "document-";
@@ -94,27 +98,27 @@ public class DocumentsReactor extends EntriesReactor<Document> {
     }
 
     public void extractTexts(Document document, boolean force) throws IOException {
-        TextExtractor textExtractor = doExtractTexts(document);
-
-        if (document.plaintextFile() == null) {
-            document.plaintextFile(artifactName(document) + ".plaintext");
-        }
-
-        if (force || !Boolean.TRUE.equals(document.get("plaintext.extracted"))) {
-            Logger.debug(String.format("Extract document plaintext: %s", document.id()));
-
-            if (document.plaintextFile() != null) {
-                workspace().artifactRemove(document.plaintextFile());
+        try (TextExtractor textExtractor = doExtractTexts(document)) {
+            if (document.plaintextFile() == null) {
+                document.plaintextFile(artifactName(document) + ".plaintext");
             }
 
-            try (OutputStream outputStream = workspace().artifactOutputStream(document.plaintextFile())) {
-                textExtractor.writeText(new OutputStreamWriter(outputStream));
-            }
+            if (force || !Boolean.TRUE.equals(document.get("plaintext.extracted"))) {
+                Logger.debug(String.format("Extract document plaintext: %s", document.id()));
 
-            textExtractor.getAllAttributes().forEach((attr, val) -> {
-                document.set("plaintext." + attr, val != null ? val.toString(): null);
-            });
-            document.set("plaintext.extracted", true);
+                if (document.plaintextFile() != null) {
+                    workspace().artifactRemove(document.plaintextFile());
+                }
+
+                try (OutputStream outputStream = workspace().artifactOutputStream(document.plaintextFile())) {
+                    textExtractor.writeText(new OutputStreamWriter(outputStream));
+                }
+
+                textExtractor.getAllAttributes().forEach((attr, val) -> {
+                    document.set("plaintext." + attr, val != null ? val.toString() : null);
+                });
+                document.set("plaintext.extracted", true);
+            }
         }
     }
 
@@ -124,17 +128,32 @@ public class DocumentsReactor extends EntriesReactor<Document> {
             throw new FileNotFoundException("Document artifact file name is not defiled: " +document.id());
         }
         try (InputStream inputStream = workspace().artifactInputStream(artifactFile)) {
-            if (DocumentType.PDF.equals(document.type())) {
-                TextExtractor e = new PdfBoxTextExtractor();
-                e.load(inputStream, new PdfBoxTextExtractor.PdfBoxConfig());
-                return e;
-            } else if (DocumentType.DOCX.equals(document.type())) {
-                TextExtractor e = new PoiTextExtractor();
-                e.load(inputStream, new PoiTextExtractor.PoiTextConfig());
-                return e;
-            }
+            TextExtractor e = createTextExtractor(document, inputStream);
+            if (e != null) return e;
         }
         throw new IllegalArgumentException("Unsupported document type: " + document.type() + "(" + document.id() + ")");
+    }
+
+    private TextExtractor createTextExtractor(Document document, InputStream inputStream) throws IOException {
+        switch (document.type()) {
+            case PDF:
+                return this.loadExtractor(inputStream, PdfBoxTextExtractor::new, PdfBoxTextExtractor.PdfBoxConfig::new);
+            case DOCX:
+                return this.loadExtractor(inputStream, XWPFTextExtractor::new, XWPFTextExtractor.PoiTextConfig::new);
+            case DOC:
+            case RTF:
+                return this.loadExtractor(inputStream, HWPFTextExtractor::new, HWPFTextExtractor.PoiTextConfig::new);
+            case TXT:
+                return this.loadExtractor(inputStream, PlainTextExtractor::new, PlainTextExtractor::config);
+            default:
+                return null;
+        }
+    }
+
+    private TextExtractor loadExtractor(InputStream inputStream, Supplier<TextExtractor> textExtractor, Supplier<ExtractorConfig> extractorConfig) throws IOException {
+        TextExtractor e = textExtractor.get();
+        e.load(inputStream, extractorConfig.get());
+        return e;
     }
 
     @Override
