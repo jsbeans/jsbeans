@@ -22,11 +22,10 @@ RUN chmod a+x /opt/entrypoint.sh
 ADD web-antiplag.conf /etc/nginx/conf.d/web-antiplag.conf
 
 ## Define mountable directories.
-VOLUME /etc/nginx/conf.d/external
+VOLUME /etc/nginx/external
 
 # Expose ports.
 EXPOSE 80
 EXPOSE 443
 
-ENTRYPOINT ["/opt/entrypoint.sh"]
-CMD ["nginx"]
+ENTRYPOINT DOMAIN_NAME=antiplag-demo.avicomp.ru /opt/entrypoint.sh nginx
