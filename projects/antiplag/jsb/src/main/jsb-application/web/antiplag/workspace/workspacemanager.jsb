@@ -170,14 +170,19 @@ JSB({
 			var documentsReactor = this.getDocumentsReactor(workspace);
 			var documents = [
 			                  'test.pdf',
-			                  'test.docx'
+			                  'test.docx',
+			                  'test.doc',
+//			                  'test.rtf',
+			                  'test.txt'
 			                  ];
 
 			for(var i in documents){
 				var file = documents[i];
 				var path = '/examples/documents/' + file;
 
-                // create new document
+
+			    Log.info('Example: ' + file);
+				// create new document
                 var document = documentsReactor.entry(JSB().generateUid());
                 document.uri(path);
 				document.category('Примеры');
