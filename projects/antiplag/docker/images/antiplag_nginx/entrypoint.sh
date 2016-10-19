@@ -16,17 +16,15 @@ IMPORTANT:
 
 EOF
 
-if [ -z ${DH_SIZE+x} ]
-then
-  >&2 echo ">> no \$DH_SIZE specified using default" 
-#  DH_SIZE="2048"
-  DH_SIZE="512"
-fi
-
-HTUSER=${HTUSER:-avc}
-HTPASSWD=${HTPASSWD:-123qwe123qwe}
+DH_SIZE=${DH_SIZE:-512}
 DOMAIN_NAME=${DOMAIN_NAME:-localhost}
+HTUSER=${HTUSER:-""}
+HTPASSWD=${HTPASSWD:-""}
 
+echo ">> DH_SIZE=${DH_SIZE}"
+echo ">> DOMAIN_NAME=${DOMAIN_NAME}"
+echo ">> HTUSER=${HTUSER}"
+echo ">> HTPASSWD=${HTPASSWD}"
 
 DH="/etc/nginx/external/dh.pem"
 
