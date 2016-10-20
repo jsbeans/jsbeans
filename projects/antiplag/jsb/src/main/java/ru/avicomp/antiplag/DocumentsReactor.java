@@ -98,7 +98,7 @@ public class DocumentsReactor extends EntriesReactor<Document> {
     }
 
     public void extractTexts(Document document, boolean force) throws IOException {
-        try (TextExtractor textExtractor = doExtractTexts(document)) {
+        try (TextExtractor textExtractor = createAndExecuteTextExtractor(document)) {
             if (document.plaintextFile() == null) {
                 document.plaintextFile(artifactName(document) + ".plaintext");
             }
@@ -110,8 +110,9 @@ public class DocumentsReactor extends EntriesReactor<Document> {
                     workspace().artifactRemove(document.plaintextFile());
                 }
 
-                try (OutputStream outputStream = workspace().artifactOutputStream(document.plaintextFile())) {
-                    textExtractor.writeText(new OutputStreamWriter(outputStream));
+                try (OutputStream outputStream = workspace().artifactOutputStream(document.plaintextFile());
+                     OutputStreamWriter writer = new OutputStreamWriter(outputStream)) {
+                    textExtractor.writeText(writer);
                 }
 
                 textExtractor.getAllAttributes().forEach((attr, val) -> {
@@ -122,35 +123,35 @@ public class DocumentsReactor extends EntriesReactor<Document> {
         }
     }
 
-    private TextExtractor doExtractTexts(Document document) throws IOException {
+    private TextExtractor createAndExecuteTextExtractor(Document document) throws IOException {
         String artifactFile = document.artifactFile();
         if (artifactFile == null) {
             throw new FileNotFoundException("Document artifact file name is not defiled: " +document.id());
         }
         try (InputStream inputStream = workspace().artifactInputStream(artifactFile)) {
-            TextExtractor e = createTextExtractor(document, inputStream);
+            TextExtractor e = extractTextWith(document, inputStream);
             if (e != null) return e;
         }
         throw new IllegalArgumentException("Unsupported document type: " + document.type() + "(" + document.id() + ")");
     }
 
-    private TextExtractor createTextExtractor(Document document, InputStream inputStream) throws IOException {
+    private TextExtractor extractTextWith(Document document, InputStream inputStream) throws IOException {
         switch (document.type()) {
             case PDF:
-                return this.loadExtractor(inputStream, PdfBoxTextExtractor::new, PdfBoxTextExtractor.PdfBoxConfig::new);
+                return this.extractTextWith(inputStream, PdfBoxTextExtractor::new, PdfBoxTextExtractor.PdfBoxConfig::new);
             case DOCX:
-                return this.loadExtractor(inputStream, XWPFTextExtractor::new, XWPFTextExtractor.PoiTextConfig::new);
+                return this.extractTextWith(inputStream, XWPFTextExtractor::new, XWPFTextExtractor.PoiTextConfig::new);
             case DOC:
             case RTF:
-                return this.loadExtractor(inputStream, HWPFTextExtractor::new, HWPFTextExtractor.PoiTextConfig::new);
+                return this.extractTextWith(inputStream, HWPFTextExtractor::new, HWPFTextExtractor.PoiTextConfig::new);
             case TXT:
-                return this.loadExtractor(inputStream, PlainTextExtractor::new, PlainTextExtractor::config);
+                return this.extractTextWith(inputStream, PlainTextExtractor::new, PlainTextExtractor::config);
             default:
                 return null;
         }
     }
 
-    private TextExtractor loadExtractor(InputStream inputStream, Supplier<TextExtractor> textExtractor, Supplier<ExtractorConfig> extractorConfig) throws IOException {
+    private TextExtractor extractTextWith(InputStream inputStream, Supplier<TextExtractor> textExtractor, Supplier<ExtractorConfig> extractorConfig) throws IOException {
         TextExtractor e = textExtractor.get();
         e.load(inputStream, extractorConfig.get());
         return e;

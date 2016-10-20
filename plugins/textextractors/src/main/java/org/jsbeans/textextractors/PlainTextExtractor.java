@@ -30,6 +30,7 @@ public class PlainTextExtractor implements TextExtractor<ExtractorConfig, Extrac
     @Override
     public void writeText(Writer writer) throws IOException {
         writer.append(getText());
+        writer.flush();
     }
 
     @Override
