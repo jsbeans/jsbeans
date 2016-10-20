@@ -15,18 +15,23 @@ RUN sed -i 's/^pid/daemon off;\npid/g' /etc/nginx/nginx.conf
 ADD basic.conf /etc/nginx/conf.d/basic.conf
 ADD ssl.conf /etc/nginx/conf.d/ssl.conf
 
+# Pregenerate self sing cert and default user for HTTPS
 ADD entrypoint.sh /opt/entrypoint.sh
 RUN chmod a+x /opt/entrypoint.sh
 
-# application conf
+# Copy application nginx config
 ADD web-antiplag.conf /etc/nginx/conf.d/web-antiplag.conf
 
 ## Define mountable directories.
-VOLUME /etc/nginx/conf.d/external
+VOLUME /etc/nginx/external
 
 # Expose ports.
 EXPOSE 80
 EXPOSE 443
 
-ENTRYPOINT ["/opt/entrypoint.sh"]
-CMD ["nginx"]
+ENV DOMAIN_NAME=antiplag-demo.avicomp.ru
+ENV DH_SIZE=512
+ENV HTUSER avc
+ENV HTPASSWD 123qwe123qwe
+
+ENTRYPOINT /opt/entrypoint.sh nginx

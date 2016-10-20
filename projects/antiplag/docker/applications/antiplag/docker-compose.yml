@@ -4,6 +4,7 @@ services:
   web:
     build: ./../../images/antiplag_nginx
     image: antiplag_nginx
+    domainname: antiplag-demo.avicomp.ru
     ports:
       - "80:80" # Public HTTP
       - "443:443" # Public HTTPS
@@ -11,22 +12,22 @@ services:
       - "$DATA_DIR/nginx:/etc/nginx/external"
       - "$LOG_DIR/nginx:/var/log/nginx"
     links:
-      - fulltext
+#      - fulltext
       - repository
       - jsbeans
 
-  fulltext:
-    build: ./../../images/antiplag_elasticsearch
-    image: antiplag_elasticsearch
-    ports:
-#      - "9300:9300" # REST API
-      - "9200:9200" # HTTP (TODO hide and proxify with dwires-nginx)
-    volumes:
-      - "$DATA_DIR/elasticsearch:/data/data"
-      - "$LOG_DIR/elasticsearch:/data/log"
-    expose:
-      - 9300 # Private
-      - 9200 # Private HTTP REST API
+#  fulltext:
+#    build: ./../../images/antiplag_elasticsearch
+#    image: antiplag_elasticsearch
+#    ports:
+##      - "9300:9300" # REST API
+#      - "9200:9200" # HTTP (TODO hide and proxify with dwires-nginx)
+#    volumes:
+#      - "$DATA_DIR/elasticsearch:/data/data"
+#      - "$LOG_DIR/elasticsearch:/data/log"
+#    expose:
+#      - 9300 # Private
+#      - 9200 # Private HTTP REST API
 
   repository:
     build: ./../../images/antiplag_webdav
@@ -49,12 +50,11 @@ services:
     volumes:
       - "$DATA_DIR/repo:/root/.antiplag"  # shared with repository
       - "$LOG_DIR/dwires:/root/dwires/logs"
-
     expose:
       - 8888 # Private HTTP
     links:
       - repository
-      - fulltext
+#      - fulltext
     depends_on:
       - repository
-      - fulltext
+#      - fulltext
