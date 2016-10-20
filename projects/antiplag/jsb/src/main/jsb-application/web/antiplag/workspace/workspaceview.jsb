@@ -1,7 +1,8 @@
 JSB({
 	name:'Antiplag.WorkspaceView',
 	parent: 'JSB.Widgets.Widget',
-	require: ['Antiplag.WorkspaceManager', 
+	require: ['Antiplag.WorkspaceManager',
+	          'Antiplag.NewDocumentTool',
 	          'JSB.Widgets.ToolBar', 
 	          'JSB.Widgets.TreeView', 
 	          'JSB.Widgets.ToolManager',
@@ -39,7 +40,7 @@ JSB({
 					self.createNewFolder();
 				}
 			});
-/*			
+			
 			this.toolbar.addItem({
 				key: 'createDocument',
 				tooltip: 'Создать новый документ',
@@ -62,14 +63,14 @@ JSB({
 							weight: 10.0
 						}],
 	
-						callback: function(res){
-							self.createNewDocument(res);
+						callback: function(opts){
+							self.createNewDocument(opts);
 						}
 					});
 
 				}
 			});
-*/
+
 			this.toolbar.addSeparator();
 
 			var uploadItem = this.toolbar.addItem({
@@ -120,7 +121,7 @@ JSB({
 					}
 				}
 			});
-			
+/*			
 			var downloadItem = this.toolbar.addItem({
 				key: 'export',
 				tooltip: 'Экспортировать документ',
@@ -173,7 +174,7 @@ JSB({
 					
 				}
 			});
-			
+*/			
 
 
 			this.toolbar.addSeparator();
@@ -570,11 +571,13 @@ JSB({
 				// enable buttons
 				this.toolbar.enableItem('delete', true);
 			}
+/*			
 			if(!selection || JSB().isArray(selection) && selection.length != 1 || !JSB().isInstanceOf(selection.obj, 'Antiplag.DocumentNode')){
 				this.toolbar.enableItem('export', false);
 			} else {
 				this.toolbar.enableItem('export', true);
 			}
+*/			
 		},
 		
 		refresh: function(){
@@ -879,7 +882,7 @@ JSB({
 			});
 		},
 		
-		createNewDocument: function(ontoDesc){
+		createNewDocument: function(opts){
 			var self = this;
 			// resolve parent
 			var item = this.tree.getSelected();
@@ -901,7 +904,7 @@ JSB({
 			var curPath = this.constructPathFromKey(parentKey);
 			
 			// create new folder
-			self.server.addDocument(curPath, ontoDesc, function(desc){
+			self.server.addDocument(curPath, opts.name, function(desc){
 				if(!desc){
 					// internal error: failed to create ontology
 					return;
@@ -911,9 +914,9 @@ JSB({
 				
 				self.$('.antiplagContainer').loader();
 				self.$('.antiplagContainer').loader('content', 'Загрузка документа');
-				self.currentWorkspace.server.ensureDocument(desc.id, function(onto){
+				self.currentWorkspace.server.ensureDocument(desc.id, function(doc){
 					self.$('.antiplagContainer').loader('hide');
-					self.publish('changeWorkspaceElement', onto);
+					self.publish('changeWorkspaceElement', doc);
 				});
 			});
 
@@ -1047,8 +1050,8 @@ JSB({
 			return this.currentWorkspace.addCategory(category);
 		},
 		
-		addDocument: function(category, ontoDesc){
-			var document = this.currentWorkspace.createNewDocument(ontoDesc.name, category, ontoDesc.iri, ontoDesc.desc);
+		addDocument: function(category, title){
+			var document = this.currentWorkspace.createDocumentFromContent(title, category, '');
 			return this.constructViewEntryFromDocument(document);
 		},
 		
@@ -1058,8 +1061,6 @@ JSB({
             var fileName = '';
             if(document.get('file')){
             	fileName = ''+document.get('file');
-            } else {
-            	fileName = uri.substr(uri.lastIndexOf('/') + 1);
             }
             
             var attributesJavaMap = document.plaintextAttributes();
@@ -1070,8 +1071,8 @@ JSB({
                 id: id,
                 file: fileName,
                 docType: document.type(),
-                title: document.title() || attributes.Title || attributes.title || fileName,
-                author: attributes.Author || attributes.Creator || 'автор не указан',
+                title: document.title() || attributes.Title || attributes.title,
+                author: attributes.Author || attributes.Creator || document.get('author') || 'автор не указан',
                 name: uri,
                 uri: uri
             };
@@ -1126,7 +1127,7 @@ JSB({
 		
 		loadFromContent: function(obj){
 			try {
-				var document = this.currentWorkspace.createDocumentFromContent(obj.name, obj.category, obj.content);
+				var document = this.currentWorkspace.createDocumentFromContent(obj.name, obj.category, obj.content, obj.name);
 				return this.constructViewEntryFromDocument(document);
 			} catch(e){
 				return {

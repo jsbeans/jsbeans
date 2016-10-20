@@ -186,6 +186,7 @@ JSB({
                 var document = documentsReactor.entry(JSB().generateUid());
                 document.uri(path);
 				document.category('Примеры');
+				document.set('file', file);
                 // set document type by file extension
 			    document.type(Packages.ru.avicomp.antiplag.DocumentType.valueForFile(file));
 

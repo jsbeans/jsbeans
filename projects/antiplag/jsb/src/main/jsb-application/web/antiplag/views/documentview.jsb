@@ -1,7 +1,7 @@
 JSB({
 	name:'Antiplag.DocumentView',
 	parent: 'JSB.Widgets.Widget',
-	require: ['JSB.Widgets.ScrollBox', 'Antiplag.DocumentRenderer'],
+	require: ['JSB.Widgets.ScrollBox', 'Antiplag.DocumentRenderer', 'JSB.Widgets.ToolBar', 'JSB.Widgets.Button', 'Antiplag.DocumentEditor'],
 	
 	client: {
 		
@@ -11,13 +11,101 @@ JSB({
 			this.addClass('documentView');
 			this.loadCss('documentview.css');
 			
+			this.toolbar = new JSB.Widgets.ToolBar();
+			this.append(this.toolbar);
+			
+			if(!this.options.mode){
+				this.options.mode = 'view';
+			}
+			
+			this.toolbar.addItem({
+				key: 'saveDocument',
+				tooltip: 'Сохранить документ',
+				element: '<div class="icon"></div>',
+				disabled: true,
+				click: function(){
+					if(self.options.mode == 'edit'){
+						self.getElement().loader();
+						self.docEditor.save(function(){
+							self.getElement().loader('hide');
+							self.toolbar.enableItem('saveDocument', false);
+						});
+					}
+				}
+			});
+			
+			this.toolbar.addItem({
+				key: 'editMode',
+				group: 'mode',
+				tooltip: 'Режим редактирования',
+				checked: false,
+				disabled: this.options.document.getType() != 'TXT',
+				element: '<div class="icon"></div>',
+				cssClass: 'right',
+				click: function(){
+					self.switchMode('edit');
+				}
+			});
+
+			this.toolbar.addItem({
+				key: 'viewMode',
+				group: 'mode',
+				tooltip: 'Режим просмотра',
+				checked: true,
+				element: '<div class="icon"></div>',
+				cssClass: 'right',
+				click: function(){
+					self.switchMode('view');
+				}
+			});
+
+			this.editorContainer = this.$('<div class="editorContainer"></div>');
+			this.append(this.editorContainer);
 			this.scrollBox = new JSB.Widgets.ScrollBox();
 			this.append(this.scrollBox);
+			this.scrollBox.addClass('docScroll');
 			
-			this.docRenderer = new Antiplag.DocumentRenderer({document: this.options.document});
-			this.scrollBox.append(this.docRenderer);
-		}
+			this.constructView();
+			
+			this.subscribe('textChanged', function(sender, msg, bChanged){
+				if(sender != self.docEditor){
+					return;
+				}
+				self.toolbar.enableItem('saveDocument', bChanged);
+			});
+		},
 		
+		switchMode: function(mode){
+			var self = this;
+			if(this.options.mode == mode){
+				return;
+			}
+			if(this.options.mode == 'edit'){
+				this.getElement().loader();
+				this.docEditor.save(function(){
+					self.getElement().loader('hide');
+					self.options.mode = mode;
+					self.constructView();
+				});
+			} else {
+				this.options.mode = mode;
+				this.constructView();
+			}
+		},
+		
+		constructView: function(){
+			this.toolbar.enableItem('saveDocument', false);
+			this.getElement().attr('mode', this.options.mode);
+			if(this.options.mode == 'view'){
+				this.scrollBox.clear();
+				this.docRenderer = new Antiplag.DocumentRenderer({document: this.options.document});
+				this.scrollBox.append(this.docRenderer);
+			} else {
+				this.editorContainer.empty();
+				this.docEditor = new Antiplag.DocumentEditor({document: this.options.document});
+				this.editorContainer.append(this.docEditor.getElement());
+			}
+		}
 	},
 	
 	server: {

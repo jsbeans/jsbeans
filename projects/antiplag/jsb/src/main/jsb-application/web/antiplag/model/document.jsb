@@ -91,6 +91,12 @@ JSB({
 			var plaintext = '' + documentsReactor.readPlaintextAsString(this.document);
 			
 			return plaintext;
+		},
+		
+		saveText: function(txt){
+			this.workspace.getDocumentsReactor().loadArtifactFromText(this.document, txt);
+			this.workspace.getDocumentsReactor().extractTexts(this.document, true);
+			this.workspace.getDocumentsReactor().store(this.document);
 		}
 		
 

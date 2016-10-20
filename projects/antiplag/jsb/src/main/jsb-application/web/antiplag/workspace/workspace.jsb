@@ -74,16 +74,24 @@ JSB({
 		    return this.workspace.reactor(Packages.ru.avicomp.antiplag.DocumentsReactor.getType());
 		},
 		
-		createDocumentFromContent: function(name, category, content){
+		createDocumentFromContent: function(name, category, content, fileName){
 			var self = this;
 			var locker = JSB().getLocker();
 			locker.lock('createDocumentFromContent');
 			var document = this.getDocumentsReactor().entry(JSB().generateUid());
 			try {
 				document.category(category);
-				document.set('file', name);
+				if(fileName){
+					document.set('file', fileName);
+				}
 				document.uri('' + document.id() + '/' + name);
-				document.type(Packages.ru.avicomp.antiplag.DocumentType.valueForFile(name));
+				document.title(name);
+				if(fileName){
+					document.type(Packages.ru.avicomp.antiplag.DocumentType.valueForFile(fileName));
+				} else {
+					document.type(Packages.ru.avicomp.antiplag.DocumentType.valueForFile('.txt'));
+					document.set('author', Kernel.user());
+				}
 				var bytes = Packages.javax.xml.bind.DatatypeConverter.parseBase64Binary(content);
 				this.getDocumentsReactor().loadArtifactFromBytes(document, bytes);
 				this.getDocumentsReactor().extractTexts(document, false);
