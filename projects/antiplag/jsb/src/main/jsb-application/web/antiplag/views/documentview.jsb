@@ -34,11 +34,12 @@ JSB({
 				}
 			});
 			
+			
 			this.toolbar.addItem({
 				key: 'editMode',
 				group: 'mode',
 				tooltip: 'Режим редактирования',
-				checked: false,
+				checked: this.options.mode == 'edit',
 				disabled: this.options.document.getType() != 'TXT',
 				element: '<div class="icon"></div>',
 				cssClass: 'right',
@@ -51,7 +52,7 @@ JSB({
 				key: 'viewMode',
 				group: 'mode',
 				tooltip: 'Режим просмотра',
-				checked: true,
+				checked: this.options.mode == 'view',
 				element: '<div class="icon"></div>',
 				cssClass: 'right',
 				click: function(){
@@ -94,15 +95,29 @@ JSB({
 		},
 		
 		constructView: function(){
+			var self = this;
 			this.toolbar.enableItem('saveDocument', false);
 			this.getElement().attr('mode', this.options.mode);
 			if(this.options.mode == 'view'){
 				this.scrollBox.clear();
-				this.docRenderer = new Antiplag.DocumentRenderer({document: this.options.document});
+				this.docRenderer = new Antiplag.DocumentRenderer({
+					document: this.options.document,
+					onLoadText: function(txt){
+						self.toolbar.enableItem('checkDocument', txt && txt.trim().length > 0);
+					}
+				});
 				this.scrollBox.append(this.docRenderer);
 			} else {
 				this.editorContainer.empty();
-				this.docEditor = new Antiplag.DocumentEditor({document: this.options.document});
+				this.docEditor = new Antiplag.DocumentEditor({
+					document: this.options.document,
+					onLoadText: function(txt){
+						self.toolbar.enableItem('checkDocument', txt && txt.trim().length > 0);
+					},
+					onChangeText: function(txt, oldTxt){
+						self.toolbar.enableItem('checkDocument', txt && txt.trim().length > 0);
+					}
+				});
 				this.editorContainer.append(this.docEditor.getElement());
 			}
 		}

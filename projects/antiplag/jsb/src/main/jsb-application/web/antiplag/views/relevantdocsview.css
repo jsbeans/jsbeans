@@ -1,0 +1,38 @@
+@CHARSET "UTF-8";
+
+.relevantDocsView {
+	padding: 0 6px;
+}
+
+
+.analyticsView > ._dwp_toolBar li._dwp_toolBarItem[key="checkDocument"] > .icon {
+	background-position: -32px -64px;
+}
+
+.relevantDocsView > .docList {}
+
+.relevantDocsView > .hidden {
+	display: none;
+}
+
+.relevantDocsView > .message {
+	padding: 4px 8px;
+    color: #960000;
+}
+
+
+.relevantDocsView > .docList ._dwp_listItem {
+}
+
+.relevantDocsView > .docList ._dwp_listItem > .title {
+	color: #525252 !important;
+	font-size: 11px;
+}
+
+.relevantDocsView > .docList ._dwp_listItem > .distance {
+	font-size: 10px;
+}
+
+.relevantDocsView > .docList ._dwp_listItem > .distance > span {
+	color: #984a4a;
+}

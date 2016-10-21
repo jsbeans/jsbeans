@@ -17,6 +17,9 @@ JSB({
 				multiline: true,
 				onChange: function(){
 					self.publish('textChanged', self.getText() != self.originalText);
+					if(self.options.onChangeText){
+						self.options.onChangeText.call(self, self.getText(), self.originalText);
+					}
 				}
 			});
 			this.append(this.editor);
@@ -30,6 +33,9 @@ JSB({
 				self.originalText = txt;
 				self.editor.setData(txt);
 				self.getElement().loader('hide');
+				if(self.options.onLoadText){
+					self.options.onLoadText.call(self, txt);
+				}
 			});
 		},
 		

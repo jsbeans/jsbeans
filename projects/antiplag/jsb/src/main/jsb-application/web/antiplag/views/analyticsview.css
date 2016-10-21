@@ -2,3 +2,74 @@
 
 .analyticsView {
 }
+
+.analyticsView > ._dwp_toolBar {
+	height: 29px;
+}
+
+.analyticsView > ._dwp_toolBar li._dwp_toolBarItem {
+	padding: 2px 3px;
+	position: relative;
+	height: 22px;
+    box-sizing: border-box;
+}
+
+.analyticsView > ._dwp_toolBar li._dwp_toolBarItem > .icon {
+	width: 16px;
+    height: 16px;
+    background-image: url('../images/icons16.png');
+	background-repeat: no-repeat;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.analyticsView > ._dwp_toolBar li._dwp_toolBarItem > .caption {
+	margin-left: 2px;
+}
+
+.analyticsView > ._dwp_toolBar li.right {
+	float: right;
+}
+
+
+.analyticsView > ._dwp_tabview {
+	position: absolute;
+    top: 29px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+	height: initial;
+}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane {
+	background: #e9e9e9 !important;
+	padding: 20px 0 0 0 !important;
+}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab {
+	border-radius: 0 !important;
+    margin-left: -2px !important;
+	margin-top: -1px;
+}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab:first-child {}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_icon {
+	width: 32px;
+	height: 32px;
+	background-image: url('../images/icons32.png');
+}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="relDocs"] > ._dwp_icon {
+	background-position: -32px 0;
+}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="storyline"] > ._dwp_icon {
+	background-position: -64px 0;
+}
+
+.analyticsView > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab[type="graph"] > ._dwp_icon {
+	background-position: -96px 0;
+}

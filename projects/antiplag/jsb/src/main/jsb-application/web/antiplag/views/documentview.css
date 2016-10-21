@@ -39,6 +39,8 @@
 .documentView > ._dwp_toolBar li._dwp_toolBarItem {
 	padding: 2px 3px;
 	position: relative;
+	height: 22px;
+    box-sizing: border-box;
 }
 
 .documentView > ._dwp_toolBar li._dwp_toolBarItem > .icon {
@@ -50,6 +52,10 @@
 	vertical-align: middle;
 }
 
+.documentView > ._dwp_toolBar li._dwp_toolBarItem > .caption {
+	margin-left: 2px;
+}
+
 .documentView > ._dwp_toolBar li.right {
 	float: right;
 }
@@ -58,6 +64,9 @@
 	background-position: -64px -64px;
 }
 
+.documentView > ._dwp_toolBar li._dwp_toolBarItem[key="checkDocument"] > .icon {
+	background-position: -32px -64px;
+}
 
 .documentView > ._dwp_toolBar li._dwp_toolBarItem[key="viewMode"] > .icon {
 	background-position: -16px -80px;

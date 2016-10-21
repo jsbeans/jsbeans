@@ -31,11 +31,11 @@ JSB({
 				widgets: {
 					documentView: {
 						jsb: 'Antiplag.DocumentView',
-						options: {document: this.document}
+						options: opts
 					},
 					analyticsView: {
 						jsb: 'Antiplag.AnalyticsView',
-						options: {document: this.document}
+						options: opts
 					}
 				}
 			});

@@ -1,6 +1,7 @@
 @CHARSET "UTF-8";
 
 @import "buttons.css";
+@import "fonts/aeromatics/aeromatics.css";
 
 /* Common */
 
@@ -33,6 +34,49 @@ a:hover {
 ._jsb_control {
 }
 
+.antiplagContainer > .header {
+	background: -webkit-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
+    background: -moz-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
+    background: linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
+    background: -o-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
+    background: -ms-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
+	padding: 8px 8px 2px 8px;
+}
+
+.antiplagContainer > .header > .icon {
+	width: 32px;
+    height: 32px;
+    display: inline-block;
+    vertical-align: middle;
+    background-image: url('images/icons32.png');
+    background-position: 0 0;
+}
+
+.antiplagContainer > .header > .title {
+	display: inline-block;
+    vertical-align: middle;
+	font-size: 26px;
+    font-family: aeromatics_b;
+    color: #525252;
+}
+
+.antiplagContainer > ._jsb_splitLayoutManager {
+	height: auto;
+    position: absolute;
+    left: 0;
+    top: 42px;
+    right: 0;
+    bottom: 0;
+}
+
+.antiplagContainer > ._jsb_splitLayoutManager > ._dwp_tabview > ._dwp_clientPane > ._dwp_clientPaneWrapper > ._dwp_splitbox {
+	background-color: #dfdfdf;
+}
+
+.antiplagContainer > ._jsb_splitLayoutManager > ._dwp_tabview > ._dwp_clientPane > ._dwp_clientPaneWrapper > ._dwp_splitbox > ._dwp_splitter {
+	border-top: 1px solid #ccc;
+    border-radius: 5px 5px 0 0;
+}
 
 .antiplagContainer ._dwp_toolBar ul._dwp_tbContainer {
 	background: -webkit-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
@@ -51,27 +95,27 @@ a:hover {
 }
 
 .antiplagContainer ._dwp_splitbox ._dwp_splitter.horizontal {
-	background: -webkit-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -moz-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -o-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -ms-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
+	background: -webkit-linear-gradient(left, rgb(236, 236, 236), #F0F0F0 50%, #D5D5D5 100%);
+    background: -moz-linear-gradient(left, rgb(236, 236, 236), #F0F0F0 50%, #D5D5D5 100%);
+    background: linear-gradient(left, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: -o-linear-gradient(left, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: -ms-linear-gradient(left, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
 }
 
 .antiplagContainer ._dwp_splitbox ._dwp_splitter.vertical {
-    background: -webkit-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -moz-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -o-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -ms-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: -webkit-linear-gradient(top, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: -moz-linear-gradient(top, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: linear-gradient(top, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: -o-linear-gradient(top, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: -ms-linear-gradient(top, rgb(236, 236, 236) 0%, #F0F0F0 50%, #D5D5D5 100%);
 }
 
-.antiplagContainer ._dwp_tabview > ul._dwp_tabPane {
-	background: -webkit-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
-	background: -moz-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
-    background: linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
-	background: -o-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
-	background: -ms-linear-gradient(top, #F1F1F1 0%, #DEDEDE 100%);
+.antiplagContainer ._dwp_tabview._dwp_tabTop > ul._dwp_tabPane {
+	background: -webkit-linear-gradient(top, #dfdfdf 0%, #DEDEDE 100%);
+	background: -moz-linear-gradient(top, #dfdfdf 0%, #DEDEDE 100%);
+    background: linear-gradient(top, #dfdfdf 0%, #DEDEDE 100%);
+	background: -o-linear-gradient(top, #dfdfdf 0%, #DEDEDE 100%);
+	background: -ms-linear-gradient(top, #dfdfdf 0%, #DEDEDE 100%);
 }
 
 .antiplagContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab {

@@ -273,10 +273,10 @@ JSB({
 				self.updateTab();
 			});
 			
-			this.subscribe('changeWorkspaceElement', function(sender, msg, onto){
+			this.subscribe('changeWorkspaceElement', function(sender, msg, docDesc){
 				self.tree.find('li._dwp_treeViewNode.current').removeClass('current');
-				self.tree.find('li._dwp_treeViewNode[key="'+onto.getId()+'"]').addClass('current');
-				self.currentWorkspace.server.setCurrentDocument(onto);
+				self.tree.find('li._dwp_treeViewNode[key="'+docDesc.document.getId()+'"]').addClass('current');
+				self.currentWorkspace.server.setCurrentDocument(docDesc.document);
 			});
 		},
 		
@@ -652,10 +652,10 @@ JSB({
 							self.currentWorkspace.server.ensureDocument(witem.descriptor.id, function(doc){
 								self.$('.antiplagContainer').loader('hide');
 								witem.document = doc;
-								self.publish('changeWorkspaceElement', doc);
+								self.publish('changeWorkspaceElement', {document: doc, mode: 'view'});
 							});
 						} else {
-							self.publish('changeWorkspaceElement', witem.document);
+							self.publish('changeWorkspaceElement', {document: witem.document, mode: 'view'});
 						}
 					}
 				});
@@ -916,7 +916,7 @@ JSB({
 				self.$('.antiplagContainer').loader('content', 'Загрузка документа');
 				self.currentWorkspace.server.ensureDocument(desc.id, function(doc){
 					self.$('.antiplagContainer').loader('hide');
-					self.publish('changeWorkspaceElement', doc);
+					self.publish('changeWorkspaceElement', {document: doc, mode: 'edit'});
 				});
 			});
 

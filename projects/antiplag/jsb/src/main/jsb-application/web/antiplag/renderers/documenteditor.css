@@ -8,4 +8,5 @@
 .documentEditor > ._dwp_primitiveEditor > textarea {
 	border: none;
     padding: 4px;
+	background: none;
 }

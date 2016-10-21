@@ -18,20 +18,21 @@ JSB({
 			
 			this.append(this.tabView);
 			
-			this.subscribe('changeWorkspaceElement', function(sender, msg, doc){
-				if(!JSB().isInstanceOf(doc, 'Antiplag.Model.Document')){
+			this.subscribe('changeWorkspaceElement', function(sender, msg, docDesc){
+				if(!JSB().isInstanceOf(docDesc.document, 'Antiplag.Model.Document')){
 					return;
 				}
-				self.openDocument(doc);
+				self.openDocument(docDesc);
 			});
 		},
 		
-		openDocument: function(doc){
+		openDocument: function(docDesc){
+			var doc = docDesc.document;
 			var id = doc.getId();
 			if(this.tabView.containsTab(id)){
 				this.tabView.switchTab(id);
 			} else {
-				var ctrl = new Antiplag.DocAreaView({document:doc});
+				var ctrl = new Antiplag.DocAreaView(docDesc);
 				var tabDesc = this.tabView.addTab(doc.getTitle(), ctrl, {id: id});
 				tabDesc.tab.attr('type', doc.getType());
 			}

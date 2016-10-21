@@ -48,52 +48,18 @@ JSB({
 				}
 			});
 			
+			this.append(#dot{{
+				<div class="header">
+					<div class="icon"></div>
+					<div class="title">Антиплагиат</div>
+				</div>
+			}});
 			this.append(this.layoutManager);
-/*			
-			// inject header
-			var wc = this.layoutManager.getPaneContainer('ontoViews', 'ontology');
-			var tabView = wc.wcView;
-			tabView.prepend(#dot{{
-				<div class="header">
-					<div class="projectIcon"></div>
-					<div class="projectInfo"></div>
-				</div>
-			}});
 
-			var wc = this.layoutManager.getPaneContainer('ontoViews', 'spinontology');
-			var tabView = wc.wcView;
-			tabView.prepend(#dot{{
-				<div class="header">
-					<div class="projectIcon"></div>
-					<div class="projectInfo"></div>
-				</div>
-			}});
-*/
 			this.subscribe('changeWorkspaceElement', function(sender, msg, obj){
 				if(!JSB().isInstanceOf(obj, 'Antiplag.Model.Project')){
 					return;
 				}
-/*				
-				if(JSB().isInstanceOf(obj, 'Ontoed.Model.Ontology')){
-					
-					if(JSB().isInstanceOf(obj, 'Ontoed.Model.SpinOntology')){
-						// switch to spinontology layout
-						self.layoutManager.switchLayout('spinontology');
-					} else {
-						// switch to ontology layout
-						self.layoutManager.switchLayout('ontology');
-					}
-					
-					// switch to ontology view
-					var ow = self.find('.ontologyOverview').jso();
-					ow.container.switchWidget(ow.getId());
-					
-					// hide entity view
-					var ew = self.find('.entityView').jso();
-					var tab = ew.container.getTab(ew.getId());
-					ew.container.wcView.showTab(tab, false);
-				}
-*/				
 			});
 		}
 		

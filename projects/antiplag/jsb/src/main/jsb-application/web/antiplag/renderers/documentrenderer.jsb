@@ -21,6 +21,9 @@ JSB({
 			this.document.server.getPlainText(function(txt){
 				self.drawText(txt);
 				self.getElement().loader('hide');
+				if(self.options.onLoadText){
+					self.options.onLoadText.call(self, txt);
+				}
 			});
 		},
 		

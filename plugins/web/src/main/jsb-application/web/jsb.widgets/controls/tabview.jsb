@@ -26,6 +26,18 @@ JSB({
 				this.addClass('_dwp_tabBottom');
 			}
 			
+			if(this.options.tabPosition == 'left'){
+				this.addClass('_dwp_tabLeft');
+			}
+
+			if(this.options.tabPosition == 'right'){
+				this.addClass('_dwp_tabRight');
+			}
+			
+			if(!this.options.tabPosition || this.options.tabPosition == 'top'){
+				this.addClass('_dwp_tabTop');
+			}
+
 			// create tab pane
 			this.tabPane = this.$('<ul class="_dwp_tabPane"></ul>');
 			this.append(this.tabPane);
@@ -47,6 +59,10 @@ JSB({
 			// create client area
 			this.clientPane = this.$('<div class="_dwp_clientPane"></div>');
 			this.append(this.clientPane);
+			
+			this.tabPane.resize(function(){
+				self.updateSizes();
+			});
 		},
 		
 		containsTab: function(tab){
@@ -105,6 +121,10 @@ JSB({
 			
 			if(!(this.options.dontSwitchOnCreate || opts.dontSwitchOnCreate)){
 				this.switchTab(uid);
+			}
+			
+			if(opts.disabled){
+				this.enableTab(self.tabs[uid], false);
 			}
 			
 			return self.tabs[uid];
@@ -220,6 +240,44 @@ JSB({
 			this.tabs = {};
 			this.clientPane.empty();
 			this.tabPane.empty();
+		},
+		
+		updateSizes: function(){
+			var tabPaneRc = this.tabPane.get(0).getBoundingClientRect();
+			var css = {};
+			if(this.options.tabPosition == 'bottom'){
+				css = {
+					top: 0,
+					bottom: tabPaneRc.height,
+					left: 0,
+					right: 0 
+				};
+				
+			} else if(this.options.tabPosition == 'left'){
+				css = {
+					top: 0,
+					bottom: 0,
+					left: tabPaneRc.width,
+					right: 0 
+				};
+			} else if(this.options.tabPosition == 'right'){
+				css = {
+					top: 0,
+					bottom: 0,
+					left: 0,
+					right: tabPaneRc.width 
+				};
+			} else {
+				// top
+				css = {
+					top: tabPaneRc.height,
+					bottom: 0,
+					left: 0,
+					right: 0 
+				};
+			}
+			this.clientPane.css(css);
+
 		}
 	}
 });
