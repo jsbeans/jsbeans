@@ -32,6 +32,8 @@ case $1 in
 
         cd $TARGET_DIR/$name
         tar czf ../$name.tar.gz .
+
+        echo "Packaged TARGET_FILE $TARGET_DIR/$name.tar.gz"
     ;;
     build)
         $DOCKER_COMPOSE build
@@ -54,11 +56,14 @@ case $1 in
     ps)
         $DOCKER_COMPOSE ps
     ;;
+    logs)
+        $DOCKER_COMPOSE logs
+    ;;
     exec)
         $DOCKER_COMPOSE exec ${@:2}
     ;;
     help)
-        echo "Usage: $0 [-v|--verbose] [package|build|start|startd|stop|kill|clean|exec|ps] [x <docker-compose-arguments>]"
+        echo "Usage: $0 [-v|--verbose] [package|build|start|startd|stop|kill|clean|exec|ps|logs] [x <docker-compose-arguments>]"
     ;;
     x)
         $DOCKER_COMPOSE ${@:2}

@@ -9,10 +9,12 @@ image_init() {
 }
 
 image_update() {
+    # get last created artifact
     art=$(ls ../../../build/target/*.tar.gz | sort -n -t _ -k 2 | tail -1)
     echo "ARTIFACT=$art"
-    cp -f $art .
-    
+    [[ -n $art ]] && cp -f $art .
+
+    # remove all except last created artifact
     find *.tar.gz ! -name "$(ls *.tar.gz | sort -n -t _ -k 2 | tail -1)" -type f -exec rm -f {} +
 }
 

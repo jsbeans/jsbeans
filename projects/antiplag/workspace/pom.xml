@@ -15,10 +15,17 @@
 
     <name>${project.artifactId}</name>
 
+    <properties>
+        <!-- define system js-beans location in jar -->
+        <org.jsbeans.system.path>jsb-system</org.jsbeans.system.path>
+        <!-- define application js-beans location in jar and result build directory-->
+        <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.jsbeans</groupId>
-            <artifactId>plugin-textextractors</artifactId>
+            <artifactId>kernel</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
@@ -39,6 +46,8 @@
         </dependency>
     </dependencies>
 
+
+
     <build>
         <resources>
             <resource>
@@ -47,6 +56,14 @@
             <resource>
                 <directory>src/main/resources</directory>
             </resource>
+            <resource>
+                <directory>src/main/jsb-system</directory>
+                <targetPath>${org.jsbeans.system.path}</targetPath>
+            </resource>
+            <resource>
+                <directory>src/main/jsb-application</directory>
+                <targetPath>${org.jsbeans.application.path}</targetPath>
+            </resource>
         </resources>
         <testResources>
             <testResource>
@@ -54,6 +71,14 @@
             </testResource>
             <testResource>
                 <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/test/jsb-system</directory>
+                <targetPath>${org.jsbeans.system.path}</targetPath>
+            </testResource>
+            <testResource>
+                <directory>src/test/jsb-application</directory>
+                <targetPath>${org.jsbeans.application.path}</targetPath>
             </testResource>
         </testResources>
         <plugins>
@@ -79,6 +104,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
+                    <!--<finalName>${reactor.groupId}-${reactor.artifactId}-${reactor.version}</finalName>-->
                 </configuration>
                 <executions>
                     <execution>
@@ -87,9 +113,69 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <includes>
+                                <include>**</include>
+                            </includes>
+                            <excludes>
+                                <exclude>${org.jsbeans.application.path}/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jsb-application-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>jsb-application</classifier>
+                            <includes>
+                                <include>${org.jsbeans.application.path}/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-jar</id>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--<basedir>${reactor.basedir}/src</basedir>-->
+                    <includes>
+                        <include>**/*.sh</include>
+                    </includes>
+                    <token>KERNEL.JAR</token>
+                    <value>jsbeans-kernel-${project.version}.jar</value>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+            <!--plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-javadoc-plugin</artifactId>
+                  <version>2.9.1</version>
+              </plugin-->
         </plugins>
     </build>
 

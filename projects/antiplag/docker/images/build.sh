@@ -12,3 +12,5 @@ for module in ${modules[*]}; do
 done
 
 echo "*** Build modules images completed: ${modules[*]}"
+
+exit 0
