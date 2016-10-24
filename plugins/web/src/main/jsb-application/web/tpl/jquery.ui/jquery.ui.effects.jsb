@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'JQuery.UI.Effects',
 	require: ['JQuery', 'JQuery.UI.Core'],
 	client:{

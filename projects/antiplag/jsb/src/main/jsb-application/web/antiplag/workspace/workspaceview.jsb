@@ -1066,6 +1066,10 @@ JSB({
             var attributesJavaMap = document.plaintextAttributes();
             var attributes = utils.javaToJson(attributesJavaMap);
             
+            if(!attributes){
+            	attributes = {};
+            }
+            
             return {
                 type: 'document',
                 id: id,

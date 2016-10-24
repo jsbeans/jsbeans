@@ -9,6 +9,23 @@
 	background-position: -32px -64px;
 }
 
+.analyticsView > ._dwp_toolBar li._dwp_toolBarItem[key="checkThreshold"] > .slider {
+	width: 150px;
+	margin-top: 2px;
+}
+
+.analyticsView > ._dwp_toolBar li._dwp_toolBarItem[key="checkThreshold"] > .slider > .ui-slider-handle {
+    font-size: 10px;
+    padding: 1px 3px;
+    text-align: center;
+    width: initial;
+}
+
+.analyticsView > ._dwp_toolBar li._dwp_toolBarItem[key="checkThreshold"] > .slider > .ui-slider-handle.ui-state-active {
+	 
+}
+
+
 .relevantDocsView > .docList {}
 
 .relevantDocsView > .hidden {

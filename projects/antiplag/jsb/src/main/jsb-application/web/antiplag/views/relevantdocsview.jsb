@@ -28,7 +28,7 @@ JSB({
 JSB({
 	name:'Antiplag.RelevantDocsView',
 	parent: 'JSB.Widgets.Widget',
-	require: ['JSB.Widgets.ItemList', 'Antiplag.RelevantDocItem'],
+	require: ['JSB.Widgets.ItemList', 'Antiplag.RelevantDocItem', 'JQuery.UI'],
 	
 	client: {
 		
@@ -49,18 +49,48 @@ JSB({
 				}
 			});
 			
+			this.toolbar.addSeparator();
+			
+			this.toolbar.addItem({
+				allowHover: false,
+				key: 'checkThreshold',
+				tooltip: 'Порог близости',
+				element: '<div class="slider"><div class="ui-slider-handle"></div></div>'
+			});
+			
+			var handle = this.toolbar.find('.slider .ui-slider-handle');
+			this.toolbar.find('.slider').slider({
+				min: 0,
+				max: 1,
+				step: 0.01,
+				value: 0.1,
+				create: function() {
+					var val = self.$( this ).slider( "value" ).toFixed(2);
+					handle.text( val );
+		        },
+		        slide: function( event, ui ) {
+		        	var val = ui.value.toFixed(2);
+		        	handle.text( val );
+		        },
+		        change: function( event, ui ){
+		        	self.checkDocument();
+		        }
+			});
+			
 			this.docsElt = new JSB.Widgets.ItemList({});
 			this.docsElt.addClass('docList');
 			this.append(this.docsElt);
 			
 			this.errMsgElt = this.$('<div class="message hidden"></div>');
 			this.append(this.errMsgElt);
+			
+			this.checkDocument();
 		},
 		
 		checkDocument: function(){
 			var self = this;
 			this.getElement().loader();
-			this.server.findSimilarDocs(this.options.document, function(res){
+			this.server.findSimilarDocs(this.options.document, this.toolbar.find('.slider').slider('value'), function(res){
 				self.getElement().loader('hide');
 				self.drawItems(res);
 			});
@@ -95,13 +125,13 @@ JSB({
 	},
 	
 	server: {
-		findSimilarDocs: function(doc){
+		findSimilarDocs: function(doc, threshold){
 			var text = doc.getPlainText();
 			
 			try {
 				var res = Http.request('POST','http://claster.avicomp.ru/nearest', {
 					text: text,
-					threshold: 0.95
+					threshold: 1 - threshold
 				});
 				
 				if(res.responseCode == 200){
