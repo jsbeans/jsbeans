@@ -25,11 +25,7 @@ JSB({
 				disabled: true,
 				click: function(){
 					if(self.options.mode == 'edit'){
-						self.getElement().loader();
-						self.docEditor.save(function(){
-							self.getElement().loader('hide');
-							self.toolbar.enableItem('saveDocument', false);
-						});
+						self.saveText();
 					}
 				}
 			});
@@ -62,17 +58,27 @@ JSB({
 
 			this.editorContainer = this.$('<div class="editorContainer"></div>');
 			this.append(this.editorContainer);
+			this.docEditor = new Antiplag.DocumentEditor({
+				onChangeText: function(txt, oldTxt){
+					self.toolbar.enableItem('saveDocument', txt != oldTxt);
+				}
+			});
+			this.editorContainer.append(this.docEditor.getElement());
+			
 			this.scrollBox = new JSB.Widgets.ScrollBox();
 			this.append(this.scrollBox);
 			this.scrollBox.addClass('docScroll');
+			this.docRenderer = new Antiplag.DocumentRenderer();
+			this.scrollBox.append(this.docRenderer);
+			
 			
 			this.constructView();
 			
-			this.subscribe('textChanged', function(sender, msg, bChanged){
-				if(sender != self.docEditor){
+			this.subscribe('relDocHighlight', function(sender, msg, params){
+				if(params.document != self.options.document){
 					return;
 				}
-				self.toolbar.enableItem('saveDocument', bChanged);
+				self.docRenderer.highlight(params.originalHighlight);
 			});
 		},
 		
@@ -81,10 +87,8 @@ JSB({
 			if(this.options.mode == mode){
 				return;
 			}
-			if(this.options.mode == 'edit'){
-				this.getElement().loader();
-				this.docEditor.save(function(){
-					self.getElement().loader('hide');
+			if(this.options.mode == 'edit' && this.docEditor.isTextChanged()){
+				this.saveText(function(){
 					self.options.mode = mode;
 					self.constructView();
 				});
@@ -98,28 +102,28 @@ JSB({
 			var self = this;
 			this.toolbar.enableItem('saveDocument', false);
 			this.getElement().attr('mode', this.options.mode);
-			if(this.options.mode == 'view'){
-				this.scrollBox.clear();
-				this.docRenderer = new Antiplag.DocumentRenderer({
-					document: this.options.document,
-					onLoadText: function(txt){
-						self.toolbar.enableItem('checkDocument', txt && txt.trim().length > 0);
-					}
-				});
-				this.scrollBox.append(this.docRenderer);
-			} else {
-				this.editorContainer.empty();
-				this.docEditor = new Antiplag.DocumentEditor({
-					document: this.options.document,
-					onLoadText: function(txt){
-						self.toolbar.enableItem('checkDocument', txt && txt.trim().length > 0);
-					},
-					onChangeText: function(txt, oldTxt){
-						self.toolbar.enableItem('checkDocument', txt && txt.trim().length > 0);
-					}
-				});
-				this.editorContainer.append(this.docEditor.getElement());
-			}
+			
+			this.options.document.server.getPlainText(function(txt){
+				if(self.options.mode == 'view'){
+					self.docRenderer.setText(txt);
+				} else {
+					self.docEditor.setText(txt);
+				}
+			});
+		},
+		
+		saveText: function(callback){
+			var self = this;
+			var txt = this.docEditor.getText();
+			this.getElement().loader();
+			this.options.document.server.saveText(txt, function(){
+				self.docEditor.updateOriginal();
+				self.toolbar.enableItem('saveDocument', false);
+				self.getElement().loader('hide');
+				if(callback){
+					callback.call(self);
+				}
+			});
 		}
 	},
 	

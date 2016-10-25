@@ -4,42 +4,66 @@ JSB({
 	require: [],
 	
 	client: {
+		highlights: [],
 		
 		constructor: function(opts){
 			var self = this;
 			this.base(opts);
 			this.addClass('documentRenderer');
 			this.loadCss('documentrenderer.css');
-			
-			this.document = this.options.document;
-			this.load();
 		},
 		
-		load: function(){
-			var self = this;
-			this.getElement().loader();
-			this.document.server.getPlainText(function(txt){
-				self.drawText(txt);
-				self.getElement().loader('hide');
-				if(self.options.onLoadText){
-					self.options.onLoadText.call(self, txt);
-				}
-			});
+		setText: function(txt){
+			this.text = txt;
+			this.redraw();
 		},
 		
-		drawText: function(txt){
+		redraw: function(){
 			this.getElement().empty();
-			var pArr = txt.split('\n');
+
+			// inject highlight marks
+			var html = this.text;
+			
+			for(var i = 0; i < this.highlights.length; i++){
+				var h = this.highlights[i];
+				var keyword = h.text;
+/*				
+				html = html.toLowerCase().replace(new RegExp(keyword, 'g'), '<span class="highlight" id="'+h.id+'">' + keyword + '</span>');
+*/				
+//				console.log(keyword);
+				var lastIdx = 0;
+				while(true){
+					var fromIdx = html.toLowerCase().indexOf(keyword.toLowerCase(), lastIdx);
+					if(fromIdx == -1){
+						break;
+					}
+					var toIdx = fromIdx + h.length;
+					// do replace
+					var prefix = html.substr(0, fromIdx);
+					var postfix = html.substr(toIdx, html.length - toIdx);
+					var highlightStr = html.substr(fromIdx, toIdx - fromIdx);
+					html = prefix + '<span class="highlight" id="'+h.id+'">' + highlightStr + '</span>' + postfix;
+					lastIdx = toIdx + 77;
+				}
+				
+			}
+			
+			var pArr = html.split('\n');
 			
 			for(var i = 0; i < pArr.length; i++){
 				var pTxt = pArr[i];
 				if(pTxt.trim().length === 0){
 					this.append('<br />');
 				} else {
-					var pElt = this.$('<p></p>').text(pTxt);
-					this.append(pElt);
+//					var pElt = this.$('<p></p>').text(pTxt);
+					this.append(pTxt);
 				}
 			}
+		},
+		
+		highlight: function(hArr){
+			this.highlights = hArr;
+			this.redraw();
 		}
 		
 	},

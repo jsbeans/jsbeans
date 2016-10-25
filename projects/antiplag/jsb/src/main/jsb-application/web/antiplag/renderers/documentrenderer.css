@@ -2,9 +2,15 @@
 
 .documentRenderer {
 	padding: 4px;
-	min-height: 200px;
+	text-align: justify;
 }
 
 .documentRenderer > p {
 	margin: 6px 0;
+	text-align: justify;
+}
+
+.documentRenderer > span.highlight {
+	background-color: #decca5;
+	cursor: pointer;
 }

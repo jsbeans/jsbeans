@@ -1,9 +1,10 @@
 JSB({
 	name: 'Antiplag.RelevantDocItem',
 	parent: 'JSB.Widgets.ListItem',
-	
+	require: ['Antiplag.DocumentRenderer'],
 	client: {
 		constructor: function(opts){
+			var self = this;
 			this.base(opts);
 			
 			this.title = this.$('<div class="title"></div>');
@@ -13,6 +14,23 @@ JSB({
 			this.distance = this.$('<div class="distance">Близость: <span class="value"></span></div>');
 			this.append(this.distance);
 			this.distance.find('span').text('' + (1 - this.options.info.distance).toFixed(2));
+			
+			this.docRenderer = new Antiplag.DocumentRenderer();
+			this.append(this.docRenderer);
+			
+			this.errorMessage = this.$('<div class="error"></div>');
+			this.append(this.errorMessage);
+			
+			this.subscribe('relevantDocChanged', function(sender, msg, params){
+				if(self.list != sender){
+					return;
+				}
+				if(params.key == self.key){
+					self.expand(params.document, params.view);
+				} else {
+					self.collapse();
+				}
+			});
 		},
 		
 		getTitle: function(){
@@ -21,6 +39,74 @@ JSB({
 				title = JSON.parse(title);
 			}
 			return title;
+		},
+		
+		collapse: function(){
+			if(!this.expanded){
+				return;
+			}
+			this.expanded = false;
+			this.docRenderer.getElement().slideUp();
+			this.errorMessage.slideUp();
+		},
+		
+		cleanDocBody: function(txt){
+			var curTxt = txt;
+			if(curTxt && curTxt.length > 0){
+				while((curTxt[0] == '"' && curTxt[curTxt.length - 1] == '"') ||(curTxt[0] == '\'' && curTxt[curTxt.length - 1] == '\'')){
+					curTxt = curTxt.substr(1, curTxt.length - 2);
+				}
+			}
+			return curTxt;
+		},
+		
+		expand: function(doc, view){
+			var self = this;
+			if(this.expanded){
+				return;
+			}
+			this.expanded = true;
+			this.getElement().loader();
+			view.server.compareDocs(doc, this.key, function(res){
+				self.getElement().loader('hide');
+				if(res.success){
+					var compareDocBody = res.result.Body;//self.cleanDocBody(res.result.Body);
+					self.docRenderer.setText(compareDocBody);
+					self.docRenderer.getElement().slideDown();
+					
+					// prepare highlights
+					var hArr1 = [], hArr2 = [];
+					for(var i = 0; i < res.result.CommonParts.length; i++){
+						var cEntry = res.result.CommonParts[i];
+						if(cEntry.Length < 3 || cEntry.HitLength < 3){
+							continue;
+						}
+						var id = JSB.generateUid();
+						hArr1.push({
+							id: id,
+							offset: cEntry.Offset,
+							length: cEntry.Length,
+							docId: res.result.DocID,
+							text: cEntry.Text
+						});
+						hArr2.push({
+							id: id,
+							offset: cEntry.HitOffset,
+							length: cEntry.HitLength,
+							text: cEntry.HitText
+						});
+					}
+					self.publish('relDocHighlight',{
+						document: self.options.document,
+						originalHighlight: hArr1
+					});
+					self.docRenderer.highlight(hArr2);
+				} else {
+					// show error message
+					self.errorMessage.text(res.error);
+					self.errorMessage.slideDown();
+				}
+			});
 		}
 	}
 });
@@ -77,7 +163,11 @@ JSB({
 		        }
 			});
 			
-			this.docsElt = new JSB.Widgets.ItemList({});
+			this.docsElt = new JSB.Widgets.ItemList({
+				onSelectionChanged: function(key, item, evt){
+					self.docsElt.publish('relevantDocChanged', {key: key, item: item, document: self.options.document, view: self});
+				}
+			});
 			this.docsElt.addClass('docList');
 			this.append(this.docsElt);
 			
@@ -116,7 +206,7 @@ JSB({
 			
 			for(var i = 0; i < desc.result.length; i++){
 				var entry = desc.result[i];
-				var item = new Antiplag.RelevantDocItem({info: entry, close: false});
+				var item = new Antiplag.RelevantDocItem({info: entry, close: false, document: this.options.document});
 				this.docsElt.addItem(item, entry.id);
 			}
 			
@@ -132,6 +222,28 @@ JSB({
 				var res = Http.request('POST','http://claster.avicomp.ru/nearest', {
 					text: text,
 					threshold: 1 - threshold
+				});
+				
+				if(res.responseCode == 200){
+					var obj = JSON.parse(res.body);
+					if(JSB.isString(obj)){
+						obj = JSON.parse(obj)
+					}
+					return {result: obj, success: true};
+				}
+				
+				return {success: false, error: '' + res.responseCode + ': ' + res.responseMessage};
+			} catch(e){
+				return {success: false, error: e.message}
+			}
+		},
+		
+		compareDocs: function(doc, compareDocId){
+			var text = doc.getPlainText();
+			try {
+				var res = Http.request('POST','http://claster.avicomp.ru/diff', {
+					text: text,
+					id: compareDocId
 				});
 				
 				if(res.responseCode == 200){
