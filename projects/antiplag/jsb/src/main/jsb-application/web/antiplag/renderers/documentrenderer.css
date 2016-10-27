@@ -13,4 +13,10 @@
 .documentRenderer > span.highlight {
 	background-color: #decca5;
 	cursor: pointer;
+	padding: 0 1px;
+    border-radius: 3px;
+}
+
+.documentRenderer > span.highlight.active {
+	background-color: #d4a540;
 }
