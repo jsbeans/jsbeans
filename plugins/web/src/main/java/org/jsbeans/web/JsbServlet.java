@@ -133,7 +133,9 @@ public class JsbServlet extends HttpServlet {
             if (ac.getRequest().getParameterMap().containsKey("callback")) {
                 result = String.format("%s(%s);", ac.getRequest().getParameter("callback"), result);
             }
-            ac.getResponse().getOutputStream().write(result.getBytes("UTF-8"));
+            try {
+            	ac.getResponse().getOutputStream().write(result.getBytes("UTF-8"));
+            } catch(Exception e){}
         } else {
             // respond error (404)
             ((HttpServletResponse) ac.getResponse()).sendError(404);

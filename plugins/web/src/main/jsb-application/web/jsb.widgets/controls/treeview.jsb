@@ -99,20 +99,21 @@ JSB({
 			
 			itemObj.wrapper = itemWrapper;
 
-			
+			itemObj.ecToggleElt = this.$('<div class="_dwp_expandCollapseToggle hidden"></div>').click(function(evt){
+				// toggle expand/collapse
+				itemWrapper.toggleClass('collapsed');
+				evt.stopPropagation();
+			}).mouseover(function(evt){
+				evt.stopPropagation();
+			});
 			var nodeHeader = this.$('<div class="_dwp_nodeHeader"></div>')
-				.append(this.$('<div class="_dwp_expandCollapseToggle hidden"></div>').click(function(evt){
-					// toggle expand/collapse
-					itemWrapper.toggleClass('collapsed');
-					evt.stopPropagation();
-				}).mouseover(function(evt){
-					evt.stopPropagation();
-				}))
+				.append(itemObj.ecToggleElt)
 				.append('<div class="_dwp_nodeIcon"></div>')
 				.append(this.$('<div class="_dwp_itemContainer"></div>').append(item));
 			
 			itemWrapper.append(nodeHeader);
-			itemWrapper.append(this.$('<ul class="_dwp_childContainer"></ul>'));
+			itemObj.childContainerElt = this.$('<ul class="_dwp_childContainer"></ul>');
+			itemWrapper.append(itemObj.childContainerElt);
 			
 			if(itemObj.allowHover != false){
 				itemWrapper.addClass('allowHover');
@@ -287,12 +288,20 @@ JSB({
 			var wrappedItem = this.wrapItem(itemObj);
 			var parentElt = this.rootElt;
 			if(parentKey){
+				var parentObj = this.itemMap[parentKey];
+				if(!parentObj || !parentObj.childContainerElt || parentObj.childContainerElt.length === 0){
+					return;
+				}
+				parentElt = parentObj.childContainerElt;
+/*				
 				// search for another parent
 				parentElt = this.rootElt.find('li[key="'+parentKey+'"] > ul._dwp_childContainer');
 				if(parentElt.length === 0){
 					return;
 				}
-				this.rootElt.find('li[key="'+parentKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').removeClass('hidden');
+*/
+				parentObj.ecToggleElt.removeClass('hidden');
+//				this.rootElt.find('li[key="'+parentKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').removeClass('hidden');
 				itemObj.parent = parentKey;
 			} else {
 				itemObj.parent = null;

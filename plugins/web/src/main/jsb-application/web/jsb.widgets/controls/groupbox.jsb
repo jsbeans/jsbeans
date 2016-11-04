@@ -13,7 +13,7 @@ JSB({
 		},
 		
 		options: {
-			title: 'title',
+			caption: 'title',
 			collapsed: false,
 			collapsible: true,
 			editable: false,
@@ -33,7 +33,7 @@ JSB({
 			elt.append(this.pane);
 			elt.append(this.hiddenArea);
 			
-			this.setTitle(this.options.title);
+			this.setTitle(this.options.caption);
 		},
 		
 		setTitle: function(title){

@@ -4,7 +4,8 @@ JSB({
 	require: {
 		'JSB.Widgets.SplitBox': 'SplitBox',
 		'JSB.Widgets.TabView': 'TabView',
-		'JSB.Widgets.WidgetContainer': 'WidgetContainer'
+		'JSB.Widgets.WidgetContainer': 'WidgetContainer',
+		'JSB.Widgets.FloatingContainer': 'FloatingContainer'
 	},
 	client: {
 		constructor: function(opts){
@@ -111,12 +112,24 @@ JSB({
 						}
 						desc.defaultWidget = opts.id;
 						self.publish('_jsb_activateWidget', {widget: w, opts: opts});
-					}
+					},
+					position: 'fixed',
+					allowClose: false,
+/*					
+					allowDock: true,
+					dockedHorz: true,
+					dockedVert: true
+*/					
 				};
 				if(desc.caption){
 					wcOpts.caption = desc.caption;
 				}
-				var ctrl = new self.WidgetContainer(wcOpts);
+				var ctrl = null;
+				if(desc.floating){
+					ctrl = new self.FloatingContainer(wcOpts);
+				} else {
+					ctrl = new self.WidgetContainer(wcOpts);
+				}
 				if(desc.key){
 					ctrl.getElement().attr('key', desc.key);
 				}

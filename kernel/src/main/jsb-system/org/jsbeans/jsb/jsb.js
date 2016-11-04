@@ -1,4 +1,4 @@
-/*! jsBeans v2.1.2 | jsbeans.org | (c) 2011-2016 Special Information Systems, LLC */
+/*! jsBeans v2.1.3 | jsbeans.org | (c) 2011-2016 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -107,15 +107,22 @@
 		deferTimeoutMap: {},
 		globalInstances: {},
 		libraryScopes: {},
-		fieldMaps: {},
+		
+/*		fieldMaps: {},*/
+		fieldArrs: {},
+		syncScopes: {},
+		
 		support: {
 			ownLast: checkOwnLast()
 		},
 
 		
 		isClient: function(){
-			// check for window object existed
-			return typeof(window) !== 'undefined';
+			if(this.isNull(this._isClient)){
+				// check for window object existed
+				this._isClient = (typeof(window) !== 'undefined');
+			}
+			return this._isClient;
 		},
 		
 		isSingleton: function(){
@@ -124,7 +131,7 @@
 				s = this.singleton;
 			}
 			
-			var e = this.currentEntry();
+			var e = this.currentSection();
 			if(!this.isNull(e.singleton)){
 				s = e.singleton;
 			}
@@ -137,7 +144,7 @@
 				s = this.fixedId;
 			}
 			
-			var e = this.currentEntry();
+			var e = this.currentSection();
 			if(!this.isNull(e.fixedId)){
 				s = e.fixedId;
 			}
@@ -162,7 +169,7 @@
 			if(obj.targetJsb){
 				jsb = obj.targetJsb;
 			}
-			var entry = jsb.currentEntry();
+			var entry = jsb.currentSection();
 			if(jsb.isSingleton() || jsb.isFixedId()){
 				scope = JSB().getGlobalInstancesScope();
 			}
@@ -207,8 +214,8 @@
 		},
 		
 		getSessionInstancesScope: function(){
-			var globe = this.getGlobe();
 			var scopeConst = '_jsb_sessionInstances';
+			var globe = this.getGlobe();
 			if(globe[scopeConst] == null || globe[scopeConst] == undefined){
 				globe[scopeConst] = {};
 			}
@@ -291,13 +298,13 @@
 			
 			this.merge(true, this, cfg);
 			this.ready = false;
-			this.prepareEntries();
+			this.prepareSections(parent);
 			
 			// inherit parent's jso options
-			var entry = this.currentEntry();
+			var entry = this.currentSection();
 			if(parent){
 				if(this.format == 'jso'){
-					var pe = parent.currentEntry();
+					var pe = parent.currentSection();
 					for(var ek in pe){
 						if(ek == 'body' || ek == 'constructor' || ek == 'bootstrap'){
 							continue;
@@ -309,7 +316,7 @@
 						}
 					}
 				} else {
-					var pe = parent.currentEntry();
+					var pe = parent.currentSection();
 					var kfs = ['singleton', 'globalize', 'fixedId', 'disableRpcInstance'];
 					for(var i in kfs){
 						var key = kfs[i];
@@ -361,10 +368,10 @@
 					ctor = function(){};
 				}
 				
-				if(parent == null || parent == undefined || parent.currentEntry() == null){
+				if(parent == null || parent == undefined || parent.currentSection() == null){
 					entry.cls = this._class(ctor, body);
 				} else {
-					entry.cls = this._extends(parent.currentEntry().cls, ctor, body);
+					entry.cls = this._extends(parent.currentSection().cls, ctor, body);
 				}
 				entry.cls.prototype.jso = this;
 				entry.cls.prototype.targetJso = this;
@@ -381,7 +388,7 @@
 			}
 		},
 		
-		prepareEntries: function(){
+		prepareSections: function(parent){
 			var self = this;
 			
 			if(this.isClient()){
@@ -399,26 +406,58 @@
 					}
 				}
 				
+				var blackProcs = {
+					'import': true,
+					'export': true,
+					'rpc': true,
+					'constructor': true,
+					'bootstrap': true
+				};
+				
 				// resolve server-side push-proxies
-				if(this.format == 'jsb' && !JSB().isNull(this.server) && !JSB().isNull(this.client)){
-					var clientBody = this.client;
+				if(this.format == 'jsb' && !JSB.isNull(this.server) && !JSB.isNull(this.client)){
 					var serverBody = this.server;
-					var commonBody = this.common;
-					var bodies = [commonBody, clientBody];
-					for(var b in bodies){
-						var curBody = bodies[b];
-						if(!curBody){
-							continue;
+					var curJsb = this;
+					
+					while(curJsb) {
+						var bodies = [];
+						if(curJsb.format == 'jso'){
+							if(curJsb.body){
+								bodies.push(curJsb.body);
+							}
+							if(curJsb.client && curJsb.client.body) {
+								bodies.push(curJsb.client.body);
+							}
+						} else {
+							if(curJsb.common){
+								bodies.push(curJsb.common);
+							}
+							if(curJsb.client){
+								bodies.push(curJsb.client);
+							}
 						}
-						for(var procName in curBody){
-							if(!JSB().isFunction(curBody[procName])){
-								continue;
+						for(var b = 0; b < bodies.length; b++){
+							var curBody = bodies[b];
+							for(var procName in curBody){
+								if(!JSB().isFunction(curBody[procName])){
+									continue;
+								}
+								var scope = serverBody.client = serverBody.client || {};
+								if(scope[procName] || blackProcs[procName]){
+									continue;
+								}
+								scope[procName] = eval('function(){JSB().proxyRpcCall.call(this.__instance, "'+procName+'", arguments);}');
 							}
-							var scope = serverBody.client = serverBody.client || {};
-							if(scope[procName] || procName == 'import' || procName == 'export'){
-								continue;
+						}
+						
+						if(curJsb.getClass()){
+							var s = curJsb.getClass().superclass;
+							if(!s){
+								break;
 							}
-							scope[procName] = eval('function(){JSB().proxyRpcCall.call(this.__instance, "'+procName+'", arguments);}');
+							curJsb = s.jsb;
+						} else {
+							curJsb = parent;
 						}
 					}
 				}
@@ -426,43 +465,61 @@
 				// resolve client-side rpc proxies
 				if(!JSB().isNull(this.client)){
 					var clientBody = this.client;
-					var serverBody = this.server;
-					var commonBody = this.common;
 					if(this.format == 'jso'){
 						this.client.body = this.client.body || {};
 						clientBody = this.client.body;
-						serverBody = this.server.body;
-						commonBody = this.body;
 					}
-					var bodies = [serverBody];
-					if(this.format == 'jsb'){
-						bodies.push(commonBody);
-					}
-					for(var b in bodies){
-						var curBody = bodies[b];
-						if(!curBody){
-							continue;
+					
+					var curJsb = this;
+					
+					while(curJsb) {
+						var bodies = [];
+						if(curJsb.format == 'jso'){
+							if(curJsb.server && curJsb.server.body){
+								bodies.push(curJsb.server.body);
+							}
+						} else {
+							if(curJsb.common){
+								bodies.push(curJsb.common);
+							}
+							if(curJsb.server){
+								bodies.push(curJsb.server);
+							}
 						}
-						for(var procName in curBody){
-							if(!JSB().isFunction(curBody[procName])){
+						for(var b in bodies){
+							var curBody = bodies[b];
+							if(!curBody){
 								continue;
 							}
-							var scope = clientBody;
-							if(this.format == 'jsb'){
-								scope = clientBody.server = clientBody.server || {};
+							for(var procName in curBody){
+								if(!JSB().isFunction(curBody[procName])){
+									continue;
+								}
+								var scope = clientBody;
+								if(this.format == 'jsb'){
+									scope = clientBody.server = clientBody.server || {};
+								}
+								if(scope[procName] || blackProcs[procName]){
+									continue;
+								}
+								scope[procName] = eval('function(){JSB().proxyRpcCall.call('+(this.format == 'jso' ? 'this': 'this.__instance' )+', "'+procName+'", arguments);}');
 							}
-							if(scope[procName] || procName == 'import' || procName == 'export'){
-								continue;
+						}
+						
+						if(curJsb.getClass()){
+							var s = curJsb.getClass().superclass;
+							if(!s){
+								break;
 							}
-							scope[procName] = eval('function(){JSB().proxyRpcCall.call('+(this.format == 'jso' ? 'this': 'this.__instance' )+', "'+procName+'", arguments);}');
+							curJsb = s.jsb;
+						} else {
+							curJsb = parent;
 						}
 					}
 				}
-				
-				
 			}
 			
-			var entry = this.currentEntry();
+			var entry = this.currentSection();
 			if(this.isPlainObject(entry)){
 				// copy global jsb settings into current entry
 				if(this.fixedId){
@@ -494,13 +551,13 @@
 		},
 
 		
-		currentEntry: function(){
+		currentSection: function(){
 			if(this.isClient() ){
-				if(this.isPlainObject(this.client)){
+				if(this.isObject(this.client)){
 					return this.client;
 				}
 			} else {
-				if(this.isPlainObject(this.server)){
+				if(this.isObject(this.server)){
 					return this.server;
 				}
 			}
@@ -617,7 +674,7 @@
 				return false;
 			}
 			try {
-				if(obj && obj.id && obj.jso && obj.jso.getClass && obj instanceof obj.jso.getClass()){
+				if(obj && obj.id && obj.jsb && obj.jsb.getClass && obj instanceof obj.jsb.getClass()){
 					return true;
 				}
 			} catch(e) {}
@@ -845,6 +902,25 @@
 
 				// copy all fields into current scope
 				if(!this._fieldsCopied){
+					function _copyFields(targetScope, fieldArr){
+						for(var i = 0; i < fieldArr.length; i++){
+							var fDesc = fieldArr[i];
+							var fName = fDesc.field;
+							if(fDesc.type == 'val'){
+								targetScope[fName] = fDesc.value;
+							} else if(fDesc.type == 'scope'){
+								targetScope[fName] = {};
+								_copyFields(targetScope[fName], fDesc.scope);
+							} else if(fDesc.type == 'array'){
+								targetScope[fName] = [];
+								_copyFields(targetScope[fName], fDesc.scope);
+							}
+						}
+					}
+//					debugger;
+					_copyFields(this, /*this.jsb._fieldsArr*/JSB().fieldArrs[this.jsb.name]);
+					
+/*					
 					function _copyFields(targetScope, fieldMap){
 						for(var fName in fieldMap){
 							var fDesc = fieldMap[fName];
@@ -861,15 +937,31 @@
 					}
 					
 					_copyFields(this, JSB().fieldMaps[this.jsb.name]);
+*/
+					
+					// place sync scopes
+					var syncScopes = JSB().syncScopes[this.jsb.name];
+					if(syncScopes){
+						this.syncScopes = {};
+						for(var fName in syncScopes){
+							this.syncScopes[fName] = {};
+						}
+					} else {
+						this.syncScopes = null;
+					}
+					
 					
 					this._fieldsCopied = true;
 					
 					// fill remote proxy instance field
-					if(JSB().isClient() && this.server){
-						this.server.__instance = this;
-					}
-					if(!JSB().isClient() && this.client){
-						this.client.__instance = this;
+					if(JSB().isClient()){
+						if(this.server){
+							this.server.__instance = this;
+						}
+					} else {
+						if(this.client){
+							this.client.__instance = this;
+						}
 					}
 				}
 				
@@ -1124,10 +1216,11 @@
 		
 		_prepareFieldMap: function(){
 			var self = this;
-			
 			var curProto = this.getClass().prototype;
-			var fieldMap = this.fieldMaps[this.name] = {};
+			var fieldMap = /*this.fieldMaps[this.name] = */{};
+			var syncScopes = this.syncScopes[this.name] = {};
 			var protoStack = [];
+			
 			while(curProto){
 				// add to proto stack
 				protoStack.push(curProto);
@@ -1141,7 +1234,7 @@
 			function _translateFields(fromScope, toScope, deep){
 
 				for(var fName in fromScope){
-					if(deep === 0 && (fName == 'jso' || fName == 'targetJso' || fName == 'jsb' || fName == 'targetJsb')){
+					if(deep === 0 && (fName == 'jso' || fName == 'targetJso' || fName == 'jsb' || fName == 'targetJsb' || fName == 'client' || fName == 'server')){
 						continue;
 					}
 					// check for exclude
@@ -1153,12 +1246,13 @@
 						if(deep == 0){
 							continue;
 						} else {
-							toScope[fName] = {type: 'ref', origin: fromScope};
+							toScope[fName] = {type: 'val', value: fromScope[fName], field: fName};
 						}
 					} else if(self.isPlainObject(fromScope[fName]) && !self.isJavaObject(fromScope[fName]) && !self.isBean(fromScope[fName], true)){
 						if(!toScope[fName]){
 							toScope[fName] = {
 								type: 'scope',
+								field: fName,
 								scope: {}
 							};
 						}
@@ -1167,20 +1261,83 @@
 						if(!toScope[fName]){
 							toScope[fName] = {
 								type: 'array',
+								field: fName,
 								scope: []
 							};
 						}
 						_translateFields(fromScope[fName], toScope[fName].scope, deep + 1);
 					} else {
-						toScope[fName] = {type: 'ref', origin: fromScope};
+						toScope[fName] = {type: 'val', value: fromScope[fName], field: fName};
 					}
 				}
 			}
 			
+			function _collectSyncScopes(curJsb, scope){
+				// collect sync scopes
+				var commonScope = curJsb.common;
+				if(curJsb.format == 'jso'){
+					commonScope = curJsb.body;
+				}
+				if(!commonScope){
+					return;
+				}
+				var kfs = {
+					'constructor': true,
+					'bootstrap': true,
+					'singleton': true,
+					'globalize': true,
+					'fixedId': true,
+					'disableRpcInstance': true,
+					'sync': true
+				};
+				
+				for(var fieldName in commonScope){
+					// check fieldName is non-function
+					if(kfs[fieldName]){
+						continue;
+					}
+					if(JSB().isFunction(commonScope[fieldName])){
+						continue;
+					}
+					if(!scope[fieldName]){
+						scope[fieldName] = {};
+					}
+				}
+			}
+			
+			// prepare field map
 			while(protoStack.length > 0){
 				curProto = protoStack.pop();
 				_translateFields(curProto, fieldMap, 0);
+				_collectSyncScopes(curProto.jsb, syncScopes);
 			}
+			
+			if(Object.keys(syncScopes).length === 0){
+				this.syncScopes[this.name] = null;
+			}
+			
+			// prepare field arr
+			var fieldArr = this.fieldArrs[this.name] = [];
+			
+			function _convertMapsToArrs(fieldMap, arrMap){
+				for(var fName in fieldMap){
+					var fDesc = fieldMap[fName];
+					if(fDesc.type == 'val'){
+						arrMap.push(fDesc);
+					} else if(fDesc.type == 'scope' || fDesc.type == 'array'){
+						var arrScope = {
+							type: fDesc.type,
+							field: fDesc.field,
+							scope: []
+						};
+						_convertMapsToArrs(fDesc.scope, arrScope.scope);
+						arrMap.push(arrScope);
+					}
+				}
+			}
+			
+			_convertMapsToArrs(fieldMap, fieldArr);
+			
 		},
 		
 		registerObject: function(){
@@ -1212,7 +1369,7 @@
 			}
 			
 			// resolve requires
-			var entry = this.currentEntry();
+			var entry = this.currentSection();
 			
 			if(!this.isNull(entry) && (!this.isNull(this.require) || (!this.isNull(entry.require) && this.format == 'jso'))){
 				
@@ -1342,7 +1499,7 @@
 			}
 			
 			// setup libraries
-			var entry = this.currentEntry();
+			var entry = this.currentSection();
 			if(entry){
 				this.setupLibraries(entry.cls.prototype);
 			}
@@ -1363,7 +1520,7 @@
 
 			// execute bootstrap and keep initialization
 			function afterBoostrap1(){
-				var entry = self.currentEntry();
+				var entry = self.currentSection();
 				if(!self.isNull(entry)){
 					function afterBoostrap2(){
 						self.finalizeRegistration();
@@ -1458,7 +1615,7 @@
 				self.matchWaiters();
 			}
 			
-			var entry = self.currentEntry();
+			var entry = self.currentSection();
 			if(entry && self.isSingleton()){
 				function ccall(){
 					var f = entry.cls;
@@ -1469,7 +1626,12 @@
 					if(entry.globalize && self.isString(entry.globalize)){
 						self.deploy(entry.globalize, o, true);
 					}
-					
+/*					
+					// run sync if syncScopes
+					if(o.syncScopes){
+						o.doSync();
+					}
+*/					
 					keepFinalize();
 				}
 				if(self.isSystem()){
@@ -1524,7 +1686,7 @@
 		},
 
 		getClass: function(){
-			var entry = this.currentEntry();
+			var entry = this.currentSection();
 			if(this.isPlainObject(entry) && !this.isNull(entry.cls)){
 				return entry.cls;
 			}
@@ -2120,20 +2282,24 @@
 			if(this.isClient()){
 				return;
 			}
-			if(this.isNull(this.getGlobe()['_JSB_ClientServerBindMap'])){
-				this.getGlobe()['_JSB_ClientServerBindMap'] = {};
+			var c = '_JSB_ClientServerBindMap';
+			var globe = this.getGlobe();
+			if(this.isNull(globe[c])){
+				globe[c] = {};
 			}
-			return this.getGlobe()['_JSB_ClientServerBindMap'];
+			return globe[c];
 		},
 		
 		getReverseBindMap: function(){
 			if(this.isClient()){
 				return;
 			}
-			if(this.isNull(this.getGlobe()['_JSB_ClientServerReverseBindMap'])){
-				this.getGlobe()['_JSB_ClientServerReverseBindMap'] = {};
+			var c = '_JSB_ClientServerReverseBindMap';
+			var globe = this.getGlobe();
+			if(this.isNull(globe[c])){
+				globe[c] = {};
 			}
-			return this.getGlobe()['_JSB_ClientServerReverseBindMap'];
+			return globe[c];
 		},
 		
 		constructServerInstanceFromClientId: function(jsoName, instanceId){
@@ -2169,11 +2335,12 @@
 					}
 			
 					if(JSB().isNull(serverInstance)){
+						var bNeedSync = false;
 						var jso = JSB().get(jsoName);
 						if(jso == null || jso == undefined){
 							return null;
 						}
-						var entry = jso.currentEntry();
+						var entry = jso.currentSection();
 						if(entry.singleton){
 							serverInstance = JSB().getInstance(jsoName);
 							if(JSB().isNull(serverInstance)){
@@ -2204,6 +2371,7 @@
 							} else {
 								serverInstance = new f();
 							}
+							bNeedSync = true;
 						}
 						serverInstanceId = serverInstance.getId();
 						bindMapScope[instanceId] = serverInstanceId;
@@ -2211,6 +2379,10 @@
 							reverseBindMapScope[serverInstanceId] = {};
 						}
 						reverseBindMapScope[serverInstanceId][instanceId] = true;
+						
+						if(bNeedSync){
+							serverInstance.doSync();
+						}
 					}
 				} finally {
 					if(locker){
@@ -2235,7 +2407,7 @@
 						}
 					} else {
 						// check for fixedId
-						if(cls.jsb.currentEntry().fixedId){
+						if(cls.jsb.currentSection().fixedId){
 							obj = self.getInstance(id);
 						}
 					}
@@ -2243,13 +2415,14 @@
 					if(!obj){
 						JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 							// use this to access current object
-							if(cls.jsb.currentEntry().fixedId){
+							if(cls.jsb.currentSection().fixedId){
 								this.id = id;
 							}
 							this.bindKey = id;
 						});
 						obj = new cls();
 						JSB().getThreadLocal().clear('_jsoRegisterCallback');
+						obj.doSync();
 					}
 					
 					if(!JSB().isNull(obj.syncScopes)){
@@ -2291,6 +2464,41 @@
 			this.callbackAttrs.idMap[id] = proc;
 			
 			return "function(){ var procToCall = JSB().callbackAttrs.idMap[&#39;"+id+"&#39;]; if(procToCall){ return procToCall.apply(this, arguments); } }";
+		},
+		
+		
+		
+		/* JSB reflection methods */
+		
+		getMethods: function(own){
+			var names = [];
+			var cls = this.getClass();
+			var scope = cls.prototype;
+			for(var n in scope){
+				if(own && !scope.hasOwnProperty(n)){
+					continue;
+				}
+				if(JSB.isFunction(scope[n])){
+					names.push(n);
+				}
+			}
+			
+			return names;
+		},
+		
+		createMethodInterceptor: function(mtdName, inetrceptorCallback){
+			var cls = this.getClass();
+			var scope = cls.prototype;
+			
+			var originalMethod = scope[mtdName];
+			
+			var mtdWrapper = function(){
+				return inetrceptorCallback.call(this, originalMethod, arguments);
+			}
+			
+			scope[mtdName] = mtdWrapper;
+			
+			return mtdWrapper;
 		}
 		
 	};
@@ -2549,38 +2757,31 @@ JSB({
 		},
 		
 		setupSync: function(){
-			var self= this;
-			if(!this.sync){
+			if(!this.sync || !this.syncScopes){
 				return;
 			}
-			this.collectSyncScopes();
-			if(JSB().isNull(this.syncScopes)){
-				return;
-			}
+			
 			var defaultVal = 1000;
-			if(JSB().isPlainObject(this.sync) && !JSB().isNull(this.sync.updateCheckInterval)){
+			if(JSB().isObject(this.sync) && !JSB().isNull(this.sync.updateCheckInterval)){
 				defaultVal = this.sync.updateCheckInterval;
 			}
 			
-			this.doSync(function(){
-				self.setSyncCheckInterval(defaultVal);
-			});
-			
+			this.setSyncCheckInterval(defaultVal);
 		},
 		
 		setSyncCheckInterval: function(to){
 			var self = this;
 			var bUpdateServer = false;
 			var bUpdateClient = true;
-			if(JSB().isPlainObject(this.sync) && this.sync.updateServer){
+			if(JSB.isObject(this.sync) && this.sync.updateServer){
 				bUpdateServer = true;
 			}
-			if(JSB().isPlainObject(this.sync) && !JSB().isNull(this.sync.updateClient)){
+			if(JSB.isObject(this.sync) && !JSB.isNull(this.sync.updateClient)){
 				bUpdateClient = this.sync.updateClient;
 			}
 			if(!this.sync 
-				|| (JSB().isClient() && !bUpdateServer)
-				|| (!JSB().isClient() && !bUpdateClient) ){
+				|| (JSB.isClient() && !bUpdateServer)
+				|| (!JSB.isClient() && !bUpdateClient) ){
 				return;
 			}
 			this.syncCheckInterval = to;
@@ -2593,60 +2794,31 @@ JSB({
 					});
 				}
 			}
-			JSB().defer(function(){
-				_sync();
-			}, self.syncCheckInterval, 'doSync_' + self.getId());
-		},
-
-		collectSyncScopes: function(){
-			this.syncScopes = null;
-			var curScope = this;
-			var kfs = {
-				'constructor': true,
-				'bootstrap': true,
-				'singleton': true,
-				'globalize': true,
-				'fixedId': true,
-				'disableRpcInstance': true,
-				'sync': true
-			};
-			while(!JSB().isNull(curScope) && !JSB().isNull(curScope.targetJso)){
-				var bodyScope = curScope.targetJso.body;
-				if(curScope.targetJso.format == 'jsb'){
-					bodyScope = curScope.targetJso.common;
-				}
-				if(!JSB().isNull(bodyScope)){
-					for(var fieldName in bodyScope){
-						// check fieldName is non-function
-						if(JSB().isFunction(bodyScope[fieldName])){
-							continue;
-						}
-						if(kfs[fieldName]){
-							continue;
-						}
-						
-						if(JSB().isNull(this.syncScopes)){
-							this.syncScopes = {};
-						}
-						this.syncScopes[fieldName] = {};
-					}
-				}
-				curScope = curScope.constructor.superclass;
+			if(this.syncCheckInterval){
+				JSB().defer(function(){
+					_sync();
+				}, self.syncCheckInterval, 'doSync_' + self.getId());
 			}
 		},
 		
 		updateSyncState: function(){
 			// update local state
-			var timeStamp = new Date().getTime();
-			var update = false;
+			var timeStamp = Date.now();
+			var updated = false;
+/*			
+			if(JSB.isInstanceOf(this, 'Ontoed.Model.Function') && this.info['short-uri'] == 'spin:construct'){
+				debugger;
+			}
+*/			
 			for(var scopeName in this.syncScopes){
-				update = this.updateSyncScope(timeStamp, scopeName, this[scopeName], this.syncScopes[scopeName]) || update;
+				updated |= this.updateSyncScope(timeStamp, scopeName, this[scopeName], this.syncScopes[scopeName]);
 			}
 			
-			return update;
+			return updated;
 		},
 		
 		updateSyncScope: function(timeStamp, name, realScope, syncInfoScope){
+			var updated = false;
 			if(JSB().isBean(realScope)){
 				// fixup realscope if it is Bean
 				realScope = {
@@ -2660,90 +2832,77 @@ JSB({
 				// now skipping
 				return false;
 			} else if(JSB().isPlainObject(realScope)){
-				var overalHash = JSB()['MD5'].md5(JSB().stringify(realScope, function(scope){
-					if(JSB().isFunction(scope)){
-						return null;
-					} else if(JSB().isBean(scope)){
-						return scope.getId();
-					}
-				}));
-				if(syncInfoScope.hash == overalHash){
-					return false;
-				}
 				// iterate over all fields in realScope to find news and changes
 				syncInfoScope.type = 1;
 				syncInfoScope.value = null;
 				if(JSB().isNull(syncInfoScope.data)){
 					syncInfoScope.data = {};
+					updated = true;
 				}
 				for(var realPropName in realScope){
+					if(realScope[realPropName] === undefined){
+						continue;
+					}
 					if(JSB().isNull(syncInfoScope.data[realPropName])){
 						// item to add
 						syncInfoScope.data[realPropName] = {};
+						updated = true;
 					}
-					this.updateSyncScope(timeStamp, realPropName, realScope[realPropName], syncInfoScope.data[realPropName]);
+					updated |= this.updateSyncScope(timeStamp, realPropName, realScope[realPropName], syncInfoScope.data[realPropName]);
 				}
 				// iterate over all fields in syncInfo to find absent entries
 				for(var propName in syncInfoScope.data){
 					if(realScope[propName] === undefined){
 						syncInfoScope.data[propName].timeStamp = timeStamp;
 						syncInfoScope.data[propName].existed = false;
-						syncInfoScope.data[propName].hash = null;
 						syncInfoScope.data[propName].data = null;
+						syncInfoScope.data[propName].value = null;
+						updated = true;
 					}
 				}
-				syncInfoScope.hash = overalHash;
 
 			} else if(JSB().isArray(realScope)){
-				var scopeStr = JSB().stringify(realScope, function(scope){
-					if(JSB().isFunction(scope)){
-						return null;
-					} else if(JSB().isBean(scope)){
-						return scope.getId();
-					}
-				});
-				if(!scopeStr){
-					Log.debug('scope: ' + JSON.stringify(realScope));
-				}
-				var overalHash = JSB()['MD5'].md5(scopeStr);
-				if(syncInfoScope.hash == overalHash){
-					return false;
-				}
 				syncInfoScope.type = 2;
 				syncInfoScope.value = null;
 				if(JSB().isNull(syncInfoScope.data)){
 					syncInfoScope.data = {};
+					updated = true;
 				}
 				// new or existed
 				for(var i = 0; i < realScope.length; i++ ){
 					if(JSB().isNull(syncInfoScope.data[i])){
 						syncInfoScope.data[i] = {};
+						updated = true;
 					} 
-					this.updateSyncScope(timeStamp, i, realScope[i], syncInfoScope.data[i]);
+					updated |= this.updateSyncScope(timeStamp, i, realScope[i], syncInfoScope.data[i]);
 				}
 				// removed
 				for(var i in syncInfoScope.data){
 					if(i >= realScope.length){
 						syncInfoScope.data[i].existed = false;
 						syncInfoScope.data[i].timeStamp = timeStamp;
+						syncInfoScope.data[i].data = null;
+						syncInfoScope.data[i].value = null;
+						updated = true;
 					}
 				}
-				syncInfoScope.hash = overalHash;
 
 			} else {
-				// number or string
+				// number, string or boolean
 				if(realScope != syncInfoScope.value || syncInfoScope.value === undefined){
 					syncInfoScope.value = realScope;
 					syncInfoScope.type = 0;
-					syncInfoScope.hash = null;
+					updated = true;
 				} else {
 					return false;
 				}
 			}
 			
-			syncInfoScope.existed = true;
-			syncInfoScope.timeStamp = timeStamp;
-			return true;
+			if(updated){
+				syncInfoScope.existed = true;
+				syncInfoScope.timeStamp = timeStamp;
+			}
+			return updated;
 		},
 		
 		getSyncSlice: function(timeStamp) {
@@ -3072,11 +3231,11 @@ JSB({
 		},
 
 		doSync: function(){
-			var self = this;
-			var syncInfo = null;
 			if(this.isDestroyed() || JSB().isNull(this.syncScopes)){
 				return;
 			}
+			var self = this;
+			var syncInfo = null;
 			
 			var bForceSync = false;
 			var callback = null;
@@ -3175,7 +3334,7 @@ JSB({
 				JSB().injectJsoInRpcResult(res, function(r){
 					args[0] = r;
 					if(callback){
-						callback.apply(inst, args);
+						callback.apply(inst, args);	
 					}
 				});
 			} );
@@ -3252,7 +3411,7 @@ JSB({
 			}
 			// perform onSync event call
 			this.onSyncRequest();
-			
+/*			
 			// perform updateSyncState if required
 			var curTimeStamp = new Date().getTime();
 			var bNeedUpdate = this.updateSyncState();
@@ -3260,17 +3419,22 @@ JSB({
 			if(bNeedUpdate){
 				this.client.doSync(true);
 			}
-			var retSlice = null;
+*/
+			var needUpdate = this.updateSyncState();
+			var retSlice = this.getSyncSlice(timeSlice);
+
 			// perform update local state
 			if(!JSB().isNull(syncInfo) && !JSB().isNull(syncInfo.slice) && !JSB().isNull(syncInfo.maxStamp) && this._onBeforeSync(syncInfo.slice)){
-//				this.updateSyncState();
-				retSlice = this.getSyncSlice(timeSlice);
 				this.applySlice(syncInfo.slice);
-				this._onAfterSync(syncInfo.slice)
-				this.updateSyncState();
-				retSlice.maxStamp = new Date().getTime();
-			} else {
-				retSlice = this.getSyncSlice(timeSlice);
+				this._onAfterSync(syncInfo.slice);
+				retSlice.maxStamp = Date.now();
+				needUpdate |= this.updateSyncState()
+			}
+			
+			if(needUpdate){
+				JSB.defer(function(){
+					self.client.doSync(true);	
+				}, 0);
 			}
 			
 			return retSlice;
@@ -3367,6 +3531,7 @@ JSB({
 		cmdTimeoutVal: 0,
 		bulkTimeoutVal: 300,
 		updateRpcTimeout: 300,
+		maxBatchSize: 100,
 
 		// methods
 		getServerBase: function(){
@@ -3632,8 +3797,8 @@ JSB({
 		updateRpc: function(){
 			var self = this;
 			if(this.batchStartTime == null ){
-				this.batchStartTime = new Date().getTime();
-			} else if(new Date().getTime() - this.batchStartTime > this.bulkTimeoutVal){
+				this.batchStartTime = Date.now();
+			} else if(Date.now() - this.batchStartTime > this.bulkTimeoutVal){
 				return;
 			}	
 			if(this.rpcTimeout != null){
@@ -3663,10 +3828,10 @@ JSB({
 			}
 			this.queueToSend = {};
 			
-			var cmdStr = '';
 			if( rpcBatch.length > 0 ){
-				cmdStr = JSON.stringify(rpcBatch);
-				this.ajax(this.getServerBase() + 'jsb',{
+/*				
+				var cmdStr = JSON.stringify(rpcBatch);
+				this.ajax(this.getServerBase() + 'jsb', {
 					cmd: 'rpc',
 					data: encodeURIComponent(cmdStr)
 				},function(res, obj){
@@ -3679,12 +3844,39 @@ JSB({
 						self.handleRpcResponse(obj.result);
 					}
 				});
+*/
+				
+				// split batch into several batches
+				var lastOffset = 0;
+				while(lastOffset < rpcBatch.length){
+					var curBatch = rpcBatch.slice(lastOffset, Math.min(rpcBatch.length, lastOffset + this.maxBatchSize));
+					if(curBatch.length === 0){
+						break;
+					}
+					lastOffset += curBatch.length;
+					
+					var cmdStr = JSON.stringify(curBatch);
+					this.ajax(this.getServerBase() + 'jsb', {
+						cmd: 'rpc',
+						data: encodeURIComponent(cmdStr)
+					},function(res, obj){
+						if(res == 'error'){
+							// communication error - try in 5 seconds
+							JSB().defer(function(){
+								self.updateRpc();
+							}, 5000);
+						} else {
+							self.handleRpcResponse(obj.result);
+						}
+					});
+				}
+				
 			}
 		},
 		
 		handleRpcResponse: function(rpcResp){
 			var self = this;
-			for(var i in rpcResp){
+			for(var i = 0; i < rpcResp.length; i++){
 				var rpcEntry = rpcResp[i];
 				if(!rpcEntry || JSB().isNull(rpcEntry.completed) || !rpcEntry.id){
 					continue;
@@ -3692,7 +3884,11 @@ JSB({
 				if(rpcEntry.completed){
 					if(rpcEntry.success){
 						if(this.rpcEntryMap[rpcEntry.id] && !JSB().isNull(this.rpcEntryMap[rpcEntry.id].callback)){
-							this.rpcEntryMap[rpcEntry.id].callback(rpcEntry.result);
+							(function(callback, result){
+								JSB().defer(function(){
+									callback(result);	
+								}, 0);
+							})(this.rpcEntryMap[rpcEntry.id].callback, rpcEntry.result);
 						}
 					} else {
 						// try again 
@@ -3741,20 +3937,24 @@ JSB({
 						for(var j = 0; j < entry.clientIds.length; j++){
 							var clientId = entry.clientIds[j];
 							var clientInstance = JSB().getInstance(clientId);
-							if(clientInstance){
-								var result = null;
-								if(JSB().isArray(entry.params)){
-									result = clientInstance[entry.proc].apply(clientInstance, entry.params);
-								} else {
-									result = clientInstance[entry.proc].call(clientInstance, entry.params);
-								}
-								if(entry.respond){
-									self.rpc('submitServerClientCallResult', {
-										id: entry.id,
-										clientId: clientId,
-										result: result
-									}, true);
-								}
+							if(clientInstance && clientInstance[entry.proc]){
+								(function(cInst, proc, params, respond, id, cId){
+									JSB.defer(function(){
+										var result = null;
+										if(JSB().isArray(params)){
+											result = cInst[proc].apply(cInst, params);
+										} else {
+											result = cInst[proc].call(cInst, params);
+										}
+										if(respond){
+											self.rpc('submitServerClientCallResult', {
+												id: id,
+												clientId: cId,
+												result: result
+											}, true);
+										}
+									}, 0);
+								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
 							}
 						} 
 					}
@@ -3999,10 +4199,10 @@ JSB({
 					last: 0
 				};
 			}
-			this.profiles[key].last = new Date().getTime();
+			this.profiles[key].last = Date.now();
 		},
 		stop: function(key){
-			var l = new Date().getTime();
+			var l = Date.now();
 			if(!this.profiles){
 				this.profiles = {};
 			}
@@ -4072,6 +4272,46 @@ JSB({
 			});
 			
 			return JSON.stringify(items, null, 2);
+		},
+		
+		performInstrumentation: function(jsb, own){
+			var self = this;
+			var mtdNames = jsb.getMethods(own);
+			var locker = JSB.getLocker();
+			for(var i = 0; i < mtdNames.length; i++){
+				if(mtdNames[i] == 'constructor'){
+					continue;
+				}
+				(function(mtdName){
+					var keyName = jsb.name + '.' + mtdName;
+					jsb.createMethodInterceptor(mtdName, function(originalProc, args){
+						var l = Date.now();
+						var res = originalProc.apply(this, args);
+						var taken = Date.now() - l;
+
+						locker.lock(keyName);
+						if(!self.profiles){
+							self.profiles = {};
+						}
+						if(!self.profiles[keyName]){
+							self.profiles[keyName] = {
+								key: keyName,
+								total: 0,
+								average: 0,
+								count: 0,
+								last: 0
+							};
+						}
+						self.profiles[keyName].total += taken;
+						self.profiles[keyName].count++;
+						self.profiles[keyName].average = self.profiles[keyName].total / self.profiles[keyName].count;
+						locker.unlock(keyName);
+						
+						return res; 
+					});
+				})(mtdNames[i]);
+			}
+			
 		}
 	}
 });

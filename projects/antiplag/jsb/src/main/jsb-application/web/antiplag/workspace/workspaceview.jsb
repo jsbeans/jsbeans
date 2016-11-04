@@ -285,6 +285,7 @@ JSB({
 			this.currentWorkspace = w;
 			Web.setCookie('Antiplag.currentWorkspace', w.getId(), {expires: 30*24*3600});
 			this.server.setCurrentWorkspace(w, function(){
+				self.currentWorkspace = w;
 				self.updateTab();
 				self.refresh();
 				self.updateToolbar();

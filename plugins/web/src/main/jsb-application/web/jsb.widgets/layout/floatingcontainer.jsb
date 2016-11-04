@@ -136,7 +136,7 @@ JSB({
 			});
 			
 			this.getElement().addClass('fullscreen');
-			this.getElement().find('.gripper').css({
+			this.getElement().find('> .gripper').css({
 				visibility:'hidden'
 			});
 			
@@ -165,7 +165,7 @@ JSB({
 			this.getElement().insertBefore(this.replacingMark);
 			this.replacingMark.remove();
 			this.getElement().removeClass('fullscreen');
-			this.getElement().find('.gripper').css({
+			this.getElement().find('> .gripper').css({
 				visibility:''
 			});
 		},
