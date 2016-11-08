@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'Template',
 	require: {
 		'Kernel': 'Kernel',
@@ -9,14 +9,12 @@ JSO({
 		globalize: true,
 		constructor: function(){},
 
-		body: {
-			exec: function(te, pattern, json){
-				var execProc = 'exec_' + te;
-				if(!this[execProc]){
-					throw 'Unable to find template engine: ' + te;
-				}
-				return this[execProc](pattern, json);
+		exec: function(te, pattern, json){
+			var execProc = 'exec_' + te;
+			if(!this[execProc]){
+				throw 'Unable to find template engine: ' + te;
 			}
+			return this[execProc](pattern, json);
 		}
 	}
 });

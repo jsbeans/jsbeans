@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'DWP.DomController',
 	group: 'dwp',
 	require: ['JQuery'],
@@ -118,128 +118,127 @@ JSO({
 			}, 1000);
 			
 		},
-		body: {
-			injectControl: function(elt, readyCallback){
-				var self = this;
-				if(elt.attr('_inject')){
-					if(readyCallback) {
-						if(elt.jso()){
-							readyCallback(elt.jso());
-						} else {
-							JSO().deferUntil(function(){
-								readyCallback(elt.jso());
-							}, function(){
-								return elt.jso();
-							});
-						}
-					}
-					return;
-				}
-				elt.attr('_inject', true);
-				var jsoName = elt.attr('jso');
-				JSO().lookup(jsoName, function(cls){
-					if(!cls){
-						throw 'Unable to find JSO object: ' + jsoName;
-					}
-
-					// collect opts from attrs
-					var opts = {};
-					var attrs = elt.get(0).attributes;
-					var initProc = null;
-					for(var i = 0; i < attrs.length; i++){
-						var attr = attrs[i];
-						if(attr.name == 'jso' || attr.name == 'id' || attr.name == '_inject'){
-							continue;
-						}
-						if(attr.name == 'options'){
-							var opObj = self.performAttrVal(attr.value);
-							if(JSO().isFunction(opObj)){
-								opObj = opObj.call(this);
-							}
-							JSO().merge(opts, opObj);
-						} else if(attr.name == 'init'){
-							initProc = self.performAttrVal(attr.value);
-						} else {
-							opts[attr.name] = self.performAttrVal(attr.value);
-							if(JSO().isFunction(opts[attr.name])){
-								var onName = 'on' + attr.name[0].toUpperCase() + attr.name.substr(1);
-								opts[onName] = opts[attr.name];
-							}
-						}
-					}
-					opts.element = elt;
-					var ctrlObj = null;
-					
-					// detach content
-					var content = this.$(elt.get(0).childNodes);
-					if(content.length > 0){
-						content.detach();
-						var contentToAdd = [];
-						content.each(function(){
-							contentToAdd.push(self.$(this));
-						});
-						
-						ctrlObj = new cls(opts);
-						
-						// remove _id attr to prevent complete status until children are ok
-						var eltId = elt.attr('_id');
-						elt.removeAttr('_id');
-						
-						if(initProc){
-							initProc.call(ctrlObj);
-						}
-						
-						function nextContentItem(){
-							if(contentToAdd.length == 0){
-								
-								// return _id attr back
-								elt.attr('_id', eltId);
-								
-								if(readyCallback) readyCallback(ctrlObj);
-								return;
-							}
-							var c = contentToAdd.shift();
-							if(c.get(0).nodeName == 'DWP-CONTROL'){
-								if(c.jso()){
-									// append control
-									ctrlObj.append(c.jso());
-									nextContentItem();
-								} else {
-									// inject & append control
-									self.injectControl(c, function(obj){
-										ctrlObj.append(obj);
-										nextContentItem();
-									});
-								}
-							} else {
-								// append other
-								ctrlObj.append(c);
-								nextContentItem();
-							}
-						}
-						
-						nextContentItem();
+		
+		injectControl: function(elt, readyCallback){
+			var self = this;
+			if(elt.attr('_inject')){
+				if(readyCallback) {
+					if(elt.jso()){
+						readyCallback(elt.jso());
 					} else {
-						ctrlObj = new cls(opts);
-						if(initProc){
-							initProc.call(ctrlObj);
-						}
-						if(readyCallback) readyCallback(ctrlObj);
+						JSO().deferUntil(function(){
+							readyCallback(elt.jso());
+						}, function(){
+							return elt.jso();
+						});
 					}
-				});
-			},
-			
-			performAttrVal: function(val){
-				var tVal = val.trim();
-				var jVal = null;
-				// try to eval
-				try {
-					jVal = eval('(' + tVal + ')');
-				} catch(e){
-					jVal = val;
 				}
-				return jVal;
+				return;
 			}
+			elt.attr('_inject', true);
+			var jsoName = elt.attr('jso');
+			JSO().lookup(jsoName, function(cls){
+				if(!cls){
+					throw 'Unable to find JSO object: ' + jsoName;
+				}
+
+				// collect opts from attrs
+				var opts = {};
+				var attrs = elt.get(0).attributes;
+				var initProc = null;
+				for(var i = 0; i < attrs.length; i++){
+					var attr = attrs[i];
+					if(attr.name == 'jso' || attr.name == 'id' || attr.name == '_inject'){
+						continue;
+					}
+					if(attr.name == 'options'){
+						var opObj = self.performAttrVal(attr.value);
+						if(JSO().isFunction(opObj)){
+							opObj = opObj.call(this);
+						}
+						JSO().merge(opts, opObj);
+					} else if(attr.name == 'init'){
+						initProc = self.performAttrVal(attr.value);
+					} else {
+						opts[attr.name] = self.performAttrVal(attr.value);
+						if(JSO().isFunction(opts[attr.name])){
+							var onName = 'on' + attr.name[0].toUpperCase() + attr.name.substr(1);
+							opts[onName] = opts[attr.name];
+						}
+					}
+				}
+				opts.element = elt;
+				var ctrlObj = null;
+				
+				// detach content
+				var content = this.$(elt.get(0).childNodes);
+				if(content.length > 0){
+					content.detach();
+					var contentToAdd = [];
+					content.each(function(){
+						contentToAdd.push(self.$(this));
+					});
+					
+					ctrlObj = new cls(opts);
+					
+					// remove _id attr to prevent complete status until children are ok
+					var eltId = elt.attr('_id');
+					elt.removeAttr('_id');
+					
+					if(initProc){
+						initProc.call(ctrlObj);
+					}
+					
+					function nextContentItem(){
+						if(contentToAdd.length == 0){
+							
+							// return _id attr back
+							elt.attr('_id', eltId);
+							
+							if(readyCallback) readyCallback(ctrlObj);
+							return;
+						}
+						var c = contentToAdd.shift();
+						if(c.get(0).nodeName == 'DWP-CONTROL'){
+							if(c.jso()){
+								// append control
+								ctrlObj.append(c.jso());
+								nextContentItem();
+							} else {
+								// inject & append control
+								self.injectControl(c, function(obj){
+									ctrlObj.append(obj);
+									nextContentItem();
+								});
+							}
+						} else {
+							// append other
+							ctrlObj.append(c);
+							nextContentItem();
+						}
+					}
+					
+					nextContentItem();
+				} else {
+					ctrlObj = new cls(opts);
+					if(initProc){
+						initProc.call(ctrlObj);
+					}
+					if(readyCallback) readyCallback(ctrlObj);
+				}
+			});
+		},
+		
+		performAttrVal: function(val){
+			var tVal = val.trim();
+			var jVal = null;
+			// try to eval
+			try {
+				jVal = eval('(' + tVal + ')');
+			} catch(e){
+				jVal = val;
+			}
+			return jVal;
 		}
 	}
 });

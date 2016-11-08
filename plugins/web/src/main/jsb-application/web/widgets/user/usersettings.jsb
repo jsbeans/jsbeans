@@ -83,7 +83,7 @@ JSB({
 				<dwp-control class="apply" jso="JSB.Widgets.Button" caption="Применить" click="{{=this.callbackAttr(function(evt){ self.applyChanges(); })}}"></dwp-control>
 			}});
 
-			this.server.getAttributes(function(attrs){
+			this.server().getAttributes(function(attrs){
 				JSB().deferUntil(function(){
 					self.attrs = attrs;
 					self.find('.email>dwp-control').jso().setData(attrs.email||attrs.login);
@@ -129,7 +129,7 @@ JSB({
 					return;
 				}
 
-				this.server.storeChanges({name: name, hash: passhash(newpass)}, passhash(oldpass), function(result){
+				this.server().storeChanges({name: name, hash: passhash(newpass)}, passhash(oldpass), function(result){
 					if (result.success === true) {
 						self.publish('userMenuClose');
 					} else if(result.error === 'wrongpass') {

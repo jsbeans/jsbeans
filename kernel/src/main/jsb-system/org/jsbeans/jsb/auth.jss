@@ -1,6 +1,6 @@
-JSO({
+JSB({
 	name:'Auth',
-	body: {
+	common: {
 //		initSHA: function(){
 //			/*
 //			 A JavaScript implementation of the SHA family of hashes, as
@@ -82,7 +82,6 @@ JSO({
 		constructor: function(){
 //			this.initSHA();
 		},
-		body: {}
 	},
 	server: {
 		singleton: true,
@@ -90,125 +89,123 @@ JSO({
 		constructor: function(){
 //			this.initSHA();
 		},
-		body: {
-			isSecurityEnabled: function(){
-				return Config.get('kernel.security.enabled');
-			},
-			
-			getUserPrincipal: function(token){
-				return Kernel.user();
-			},
-			
-			getUserTokenInfo: function(token){
-				if(!token){
-					token = Kernel.userToken();
-				}
-				var res = Kernel.ask('SecurityService', 'GetTokenMessage', {
-					token: token
-				});
-				if(!res.success){
-					throw res.errorMsg;
-				}
-				var tokenObj = res.result.response;
-				var tokenUser = '' + tokenObj.userName;
-				if(!Kernel.isAdmin() && tokenUser != Kernel.user()){
-					throw 'Operation is not permitted with foreign tokens';
-				}
-				return tokenObj;
-			},
-			
-			createUser: function(user, pass){
-				return Kernel.ask('SecurityService', 'CreateUserMessage', {
-					userName: user,
-					password: pass
-				});
-			},
-			
-			deleteUser: function(user){
-				return Kernel.ask('SecurityService', 'DeleteUserMessage', {
-					userName: user
-				});
-			},
-			
-			getUserCredentials: function(user){
-				return Kernel.ask('SecurityService', 'GetUserCredentialsMessage', {
-					userName: user || null
-				});
-			},
-
-			setUserCredentials: function(user, json){
-				return Kernel.ask('SecurityService', 'SetUserCredentialsMessage', {
-					userName: user || null,
-					credentials: json
-				});
-			},
-			
-			generatePassword: function(count) {
-				var count = count || 10;
-
-				var pwd = '';
-				var symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-				for(var i=0; i < count; i++) {
-					pwd += symbols.charAt(Math.floor(Math.random() * symbols.length));
-				}
-				return pwd;
-			},
-
-			permitted: function(permission, func){
-				var permissionAttributes = this.usePermission(permission);
-				func.call(permissionAttributes, permissionAttributes);
-			},
-
-			/**
-			* Возвращает объект с атрибутами разрешения, если у принципала есть указанное разрешение
-			*/
-			hasPermission: function(permission, user) {
-				// TODO: кэшировать на какое-то небольшое время для частых запросов
-				var result = Kernel.ask('SecurityService', 'CheckPermissionMessage', {
-					userName: user||this.getUserPrincipal(),
-					permission: permission
-				});
-				Log.debug('checkPermission: ' + JSON.stringify(result));
-				return result.success && result.result && result.result.response;
-			},
-
-			/**
-            * Почти как #hasPermission, но разрешение как бы "используется", что подразумевает:
-            * <br/> * если используется ограничение по числу раз использования, то
-            * в отличии от checkPermission число уменьшается на единицу, пока не достигнет 0
-            * <br/> * в случае отсуствия разрешения или по достижению лимита выбрасывается исключение
-            */
-            usePermission: function(permission){
-            	var result = Kernel.ask('SecurityService', 'CheckPermissionMessage', {
-					userName: this.getUserPrincipal(),
-					permission: permission,
-					use: true
-				});
-				Log.debug(true, 'usePermission: ' + JSON.stringify(result));
-				var attrs = result.success && result.result && result.result.response;
-				if (!attrs) throw 'Has no permission: ' + permission;
-				return attrs;
-            },
-
-            addPermissions: function(user, permissionKey, permissions) {
-				return Kernel.ask('SecurityService', 'AddPermissionsMessage', {
-					userName: user,
-					permissionKey: permissionKey||null,
-					permissions: permissions
-				});
-				return result.success && result.result && result.result.response;
-			},
-
-			removePermissions: function(user, permissionKey, permission) {
-				return Kernel.ask('SecurityService', 'RemovePermissionsMessage', {
-					userName: user,
-					permissionKey: permissionKey,
-					permission: permission
-				});
-				return result.success && result.result && result.result.response;
+		isSecurityEnabled: function(){
+			return Config.get('kernel.security.enabled');
+		},
+		
+		getUserPrincipal: function(token){
+			return Kernel.user();
+		},
+		
+		getUserTokenInfo: function(token){
+			if(!token){
+				token = Kernel.userToken();
 			}
+			var res = Kernel.ask('SecurityService', 'GetTokenMessage', {
+				token: token
+			});
+			if(!res.success){
+				throw res.errorMsg;
+			}
+			var tokenObj = res.result.response;
+			var tokenUser = '' + tokenObj.userName;
+			if(!Kernel.isAdmin() && tokenUser != Kernel.user()){
+				throw 'Operation is not permitted with foreign tokens';
+			}
+			return tokenObj;
+		},
+		
+		createUser: function(user, pass){
+			return Kernel.ask('SecurityService', 'CreateUserMessage', {
+				userName: user,
+				password: pass
+			});
+		},
+		
+		deleteUser: function(user){
+			return Kernel.ask('SecurityService', 'DeleteUserMessage', {
+				userName: user
+			});
+		},
+		
+		getUserCredentials: function(user){
+			return Kernel.ask('SecurityService', 'GetUserCredentialsMessage', {
+				userName: user || null
+			});
+		},
 
+		setUserCredentials: function(user, json){
+			return Kernel.ask('SecurityService', 'SetUserCredentialsMessage', {
+				userName: user || null,
+				credentials: json
+			});
+		},
+		
+		generatePassword: function(count) {
+			var count = count || 10;
+
+			var pwd = '';
+			var symbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+			for(var i=0; i < count; i++) {
+				pwd += symbols.charAt(Math.floor(Math.random() * symbols.length));
+			}
+			return pwd;
+		},
+
+		permitted: function(permission, func){
+			var permissionAttributes = this.usePermission(permission);
+			func.call(permissionAttributes, permissionAttributes);
+		},
+
+		/**
+		* Возвращает объект с атрибутами разрешения, если у принципала есть указанное разрешение
+		*/
+		hasPermission: function(permission, user) {
+			// TODO: кэшировать на какое-то небольшое время для частых запросов
+			var result = Kernel.ask('SecurityService', 'CheckPermissionMessage', {
+				userName: user||this.getUserPrincipal(),
+				permission: permission
+			});
+			Log.debug('checkPermission: ' + JSON.stringify(result));
+			return result.success && result.result && result.result.response;
+		},
+
+		/**
+        * Почти как #hasPermission, но разрешение как бы "используется", что подразумевает:
+        * <br/> * если используется ограничение по числу раз использования, то
+        * в отличии от checkPermission число уменьшается на единицу, пока не достигнет 0
+        * <br/> * в случае отсуствия разрешения или по достижению лимита выбрасывается исключение
+        */
+        usePermission: function(permission){
+        	var result = Kernel.ask('SecurityService', 'CheckPermissionMessage', {
+				userName: this.getUserPrincipal(),
+				permission: permission,
+				use: true
+			});
+			Log.debug(true, 'usePermission: ' + JSON.stringify(result));
+			var attrs = result.success && result.result && result.result.response;
+			if (!attrs) throw 'Has no permission: ' + permission;
+			return attrs;
+        },
+
+        addPermissions: function(user, permissionKey, permissions) {
+			return Kernel.ask('SecurityService', 'AddPermissionsMessage', {
+				userName: user,
+				permissionKey: permissionKey||null,
+				permissions: permissions
+			});
+			return result.success && result.result && result.result.response;
+		},
+
+		removePermissions: function(user, permissionKey, permission) {
+			return Kernel.ask('SecurityService', 'RemovePermissionsMessage', {
+				userName: user,
+				permissionKey: permissionKey,
+				permission: permission
+			});
+			return result.success && result.result && result.result.response;
 		}
+
 	}
 });

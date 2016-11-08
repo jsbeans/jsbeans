@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'Service',
 	require: {
 		'Kernel': 'Kernel'
@@ -6,15 +6,13 @@ JSO({
 	server: {
 		singleton: true,
 		globalize: true,
-		body: {
-			list: function(opts){
-				var res = Kernel.ask('ServiceManagerService','svcList');
-				if(!JSO().isNull(res) && !JSO().isNull(res.result) && !JSO().isNull(res.result.services)){
-					return res.result.services;
-				}
-				return null;
-			},
-			
+		
+		list: function(opts){
+			var res = Kernel.ask('ServiceManagerService','svcList');
+			if(!JSO().isNull(res) && !JSO().isNull(res.result) && !JSO().isNull(res.result.services)){
+				return res.result.services;
+			}
+			return null;
 		}
 	}
 });

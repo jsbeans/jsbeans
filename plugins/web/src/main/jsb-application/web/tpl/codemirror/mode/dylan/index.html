@@ -123,13 +123,13 @@ define open generic string-as-locator
 define sealed sideways method as
     (class :: subclass(<string>), locator :: <locator>)
  => (string :: <string>)
-  let string = entry($locator-to-string-cache, locator, default: #f);
+  let string = element($locator-to-string-cache, locator, default: #f);
   if (string)
     as(class, string)
   else
     let string = locator-as-string(class, locator);
     if ($cache-locator-strings?)
-      entry($locator-to-string-cache, locator) := string;
+      element($locator-to-string-cache, locator) := string;
     else
       string
     end
@@ -139,13 +139,13 @@ end method as;
 define sealed sideways method as
     (class :: subclass(<locator>), string :: <string>)
  => (locator :: <locator>)
-  let locator = entry($string-to-locator-cache, string, default: #f);
+  let locator = element($string-to-locator-cache, string, default: #f);
   if (instance?(locator, class))
     locator
   else
     let locator = string-as-locator(class, string);
     if ($cache-locators?)
-      entry($string-to-locator-cache, string) := locator;
+      element($string-to-locator-cache, string) := locator;
     else
       locator
     end

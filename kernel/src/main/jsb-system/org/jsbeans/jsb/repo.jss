@@ -74,7 +74,7 @@ JSB({
 		
 		add: function(jsb){
 			if(!jsb || (!jsb.expose && !jsb.server.expose)){
-				throw 'Unable to expose object "'+jsb.name+'" because no "expose" entry found';
+				throw 'Unable to expose object "'+jsb.name+'" because no "expose" element found';
 			}
 			var self = this;
 			function _expose(path, opts, jsb){

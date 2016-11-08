@@ -103,7 +103,7 @@ JSB({
 			this.toolbar.enableItem('saveDocument', false);
 			this.getElement().attr('mode', this.options.mode);
 			
-			this.options.document.server.getPlainText(function(txt){
+			this.options.document.server().getPlainText(function(txt){
 				if(self.options.mode == 'view'){
 					self.docRenderer.setText(txt);
 				} else {
@@ -116,7 +116,7 @@ JSB({
 			var self = this;
 			var txt = this.docEditor.getText();
 			this.getElement().loader();
-			this.options.document.server.saveText(txt, function(){
+			this.options.document.server().saveText(txt, function(){
 				self.docEditor.updateOriginal();
 				self.toolbar.enableItem('saveDocument', false);
 				self.getElement().loader('hide');

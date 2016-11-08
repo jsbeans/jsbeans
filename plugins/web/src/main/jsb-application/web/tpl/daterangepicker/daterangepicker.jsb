@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'DateRangePicker',
 	parent: 'JSB.Widgets.Control',
 	require:['JQuery', 'JSB.Widgets.ToolManager'],
@@ -6,13 +6,13 @@ JSO({
 		
 		bootstrap: function(readyCallback){
 			
-			JSO().loadCss('tpl/daterangepicker/daterangepicker.css');
-			JSO().loadCss('tpl/glyphs/glyphs.css');
+			JSB().loadCss('tpl/daterangepicker/daterangepicker.css');
+			JSB().loadCss('tpl/glyphs/glyphs.css');
 			
 			(function(jQuery){
 				#include 'moment.js';
 				#include 'daterangepicker.js';
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 			
 		},
 		
@@ -29,7 +29,7 @@ JSO({
 				inputElt.click();
 			});
 			
-			JSO().deferUntil(function(){
+			JSB().deferUntil(function(){
 				var today = new Date();
 				var ops = JSO().merge(true, {
 					parentEl: self.$('._dwp_toolManager_toolArea'),
@@ -66,12 +66,10 @@ JSO({
 			
 		},
 		
-		body: {
-			getPeriod: function(){
-				return {
-					from: this.from,
-					to: this.to
-				}
+		getPeriod: function(){
+			return {
+				from: this.from,
+				to: this.to
 			}
 		}
 	}

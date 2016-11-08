@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'JQuery.FitText',
 	require:['JQuery'],
 	client:{
@@ -326,7 +326,7 @@ JSO({
 					return this;
 				};
 
-			})(JSO().$);
+			})(JSB().$);
 
 			
 		}

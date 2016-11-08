@@ -68,7 +68,7 @@
 		JSO().run('Auth', {}, function(auth){
 			window.se = window.se || {};
 			window.se.auth = auth;
-			auth.getUserPrincipal(function(p){
+			auth.server().getUserPrincipal(function(p){
 				if(p == null || p.length == 0){
 					JSO().run('Login', {
 						container: 'div.mainContainer',

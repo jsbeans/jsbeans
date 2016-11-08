@@ -21,7 +21,7 @@ JSB({
 		
 		rename: function(newName, callback){
 			var self = this;
-			this.server.renameWorkspace(newName, function(res){
+			this.server().renameWorkspace(newName, function(res){
 				if(res){
 					self.wName = newName;
 				}

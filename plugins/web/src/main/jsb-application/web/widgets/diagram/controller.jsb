@@ -137,15 +137,24 @@ JSB({
 					
 					// store select and highlight states
 					this.lastSelectedStateMap = JSB().clone(this.diagram.getSelected());
-				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1 && !self.isNodeMoving){
+				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1 && !self.isNodeMoving && params.handle.type == 'drag'){
 					var pt = self.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY});
 					self.nodeMovePt = {x: pt.x, y: pt.y};
 					self.nodeMove = sender;
+					params.event.stopPropagation();
+				} else if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Node') && params.event.which == 1 && !self.isNodeResizing && params.handle.type == 'resize'){
+					var pt = self.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY});
+					self.nodeResizePt = {x: pt.x, y: pt.y};
+					self.nodeResize = sender;
+					self.nodeResizeHandle = params.handle;
+					self.nodeRect = sender.getRect();
+					self.isNodeResizing = true;
 					params.event.stopPropagation();
 				}
 				break;
 			case 'mouseup':
 				if(params.event.which == 1){
+					this.nodeResizePt = null;
 					this.wiringStartPt = null;
 					this.wiringConnector = null;
 					this.selectorToolPt = null;
@@ -212,6 +221,10 @@ JSB({
 						this.preventClick = true;
 						params.event.stopPropagation();
 						this.diagram.updateLayout(this.diagram.getSelected());
+					}
+					
+					if(this.isNodeResizing){
+						this.isNodeResizing = false;
 					}
 					
 				} else if(params.event.which == 3){
@@ -322,6 +335,34 @@ JSB({
 						var node = selMap[nodeId];
 						node.setPosition({x: this.storedPositions[nodeId].x + offset.x, y: this.storedPositions[nodeId].y + offset.y});
 					}
+				}
+				
+				if(this.isNodeResizing){
+					var pt = self.diagram.pageToSheetCoords({x:params.event.pageX, y:params.event.pageY});
+					
+					// generate diff
+					var diff = {x: pt.x - this.nodeResizePt.x, y: pt.y - this.nodeResizePt.y};
+					var nodeRect = JSB.clone(this.nodeRect);
+					
+					if(this.nodeResizeHandle.resize.top){
+						nodeRect.y += diff.y;
+						nodeRect.h -= diff.y;
+					}
+
+					if(this.nodeResizeHandle.resize.bottom){
+						nodeRect.h += diff.y;
+					}
+
+					if(this.nodeResizeHandle.resize.left){
+						nodeRect.x += diff.x;
+						nodeRect.w -= diff.x;
+					}
+
+					if(this.nodeResizeHandle.resize.right){
+						nodeRect.w += diff.x;
+					}
+
+					this.nodeResize.setRect(nodeRect);
 				}
 				
 				break;

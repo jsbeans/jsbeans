@@ -258,7 +258,7 @@ JSB({
 			this.installUploadContainer(null);
 
 			// refresh workspace
-			this.server.getWorkspaces(function(wMap){
+			this.server().getWorkspaces(function(wMap){
 				if(Object.keys(wMap).length == 0){
 					throw 'Error: No default workspace existed';
 				}
@@ -276,7 +276,7 @@ JSB({
 			this.subscribe('changeWorkspaceElement', function(sender, msg, docDesc){
 				self.tree.find('li._dwp_treeViewNode.current').removeClass('current');
 				self.tree.find('li._dwp_treeViewNode[key="'+docDesc.document.getId()+'"]').addClass('current');
-				self.currentWorkspace.server.setCurrentDocument(docDesc.document);
+				self.currentWorkspace.server().setCurrentDocument(docDesc.document);
 			});
 		},
 		
@@ -284,7 +284,7 @@ JSB({
 			var self = this;
 			this.currentWorkspace = w;
 			Web.setCookie('Antiplag.currentWorkspace', w.getId(), {expires: 30*24*3600});
-			this.server.setCurrentWorkspace(w, function(){
+			this.server().setCurrentWorkspace(w, function(){
 				self.currentWorkspace = w;
 				self.updateTab();
 				self.refresh();
@@ -356,7 +356,7 @@ JSB({
 			var tab = this.container.getTab(this.getId());
 			var btnElt = tab.tab.find('.btnMenu');
 			
-			this.server.getWorkspaces(function(wMap){
+			this.server().getWorkspaces(function(wMap){
 				// construct menu
 				var items = [{
 					key: 'createWorkspace',
@@ -411,7 +411,7 @@ JSB({
 					callback: function(key, item, evt){
 						if(key == 'createWorkspace'){
 							// create new workspace
-							self.server.createWorkspace(function(w){
+							self.server().createWorkspace(function(w){
 								self.setCurrentWorkspace(w, function(){
 									var editor = tab.tab.find('._dwp_primitiveEditor').jso();
 									editor.beginEdit();
@@ -451,7 +451,7 @@ JSB({
 				}],
 				callback: function(bDel){
 					if(bDel){
-						self.server.removeWorkspace(w, function(){
+						self.server().removeWorkspace(w, function(){
 							messageTool.close();
 						});
 					}
@@ -584,7 +584,7 @@ JSB({
 		refresh: function(){
 			var self = this;
 			this.tree.getElement().loader();
-			this.server.loadWorkspaceTree(function(wtree){
+			this.server().loadWorkspaceTree(function(wtree){
 				self.tree.getElement().loader('hide');
 				self.wtree = wtree;
 				self.redrawTree();
@@ -623,7 +623,7 @@ JSB({
 						}
 						var oldPath = path + oldName;
 						var newPath = path + newName;
-						self.server.renameCategory(oldPath, newPath, function(res){
+						self.server().renameCategory(oldPath, newPath, function(res){
 							if(res){
 								// all is ok
 								node.setName(newName);
@@ -650,7 +650,7 @@ JSB({
 						if(!witem.document){
 							self.$('.antiplagContainer').loader();
 							self.$('.antiplagContainer').loader('content', 'Загрузка документа');
-							self.currentWorkspace.server.ensureDocument(witem.descriptor.id, function(doc){
+							self.currentWorkspace.server().ensureDocument(witem.descriptor.id, function(doc){
 								self.$('.antiplagContainer').loader('hide');
 								witem.document = doc;
 								self.publish('changeWorkspaceElement', {document: doc, mode: 'view'});
@@ -803,7 +803,7 @@ JSB({
 				sourceArr.push(prepareNode(sourceNodes[i]));
 			}
 			
-			this.server.moveItems(targetObj, sourceArr, function(res){
+			this.server().moveItems(targetObj, sourceArr, function(res){
 				if(res){
 					for(var i in sourceNodes){
 						self.tree.moveNode(sourceNodes[i].treeNode.key, targetNode ? targetNode.treeNode.key:null);
@@ -838,7 +838,7 @@ JSB({
 					}
 				}
 			}
-			this.server.removeItems(batch, function(removed){
+			this.server().removeItems(batch, function(removed){
 				for(var i in removed){
 					self.tree.deleteNode(removed[i].key, function(itemObj){
 						var node = itemObj.obj;
@@ -905,7 +905,7 @@ JSB({
 			var curPath = this.constructPathFromKey(parentKey);
 			
 			// create new folder
-			self.server.addDocument(curPath, opts.name, function(desc){
+			self.server().addDocument(curPath, opts.name, function(desc){
 				if(!desc){
 					// internal error: failed to create ontology
 					return;
@@ -915,7 +915,7 @@ JSB({
 				
 				self.$('.antiplagContainer').loader();
 				self.$('.antiplagContainer').loader('content', 'Загрузка документа');
-				self.currentWorkspace.server.ensureDocument(desc.id, function(doc){
+				self.currentWorkspace.server().ensureDocument(desc.id, function(doc){
 					self.$('.antiplagContainer').loader('hide');
 					self.publish('changeWorkspaceElement', {document: doc, mode: 'edit'});
 				});
@@ -943,7 +943,7 @@ JSB({
 			}
 			
 			// choose folder name
-			this.server.loadWorkspaceFolders(function(categories){
+			this.server().loadWorkspaceFolders(function(categories){
 				
 				var catMap = {};
 				for(var i in categories){
@@ -971,7 +971,7 @@ JSB({
 				}
 				
 				// create new folder
-				self.server.addCategory(path, function(desc){
+				self.server().addCategory(path, function(desc){
 					if(!desc){
 						// internal error: folder already exists
 						return;

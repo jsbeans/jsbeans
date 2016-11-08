@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'JQuery.Placeholder',
 	require:['JQuery'],
 	client:{
@@ -188,7 +188,7 @@ JSO({
 					} catch (exception) {}
 				}
 
-			}(this, document, JSO().$));
+			}(this, document, JSB().$));
 			
 		}
 	}

@@ -67,7 +67,7 @@ JSB({
 			}
 			this.expanded = true;
 			this.getElement().loader();
-			view.server.compareDocs(doc, this.key, function(res){
+			view.server().compareDocs(doc, this.key, function(res){
 				self.getElement().loader('hide');
 				if(res.success){
 					var compareDocBody = res.result.Body;//self.cleanDocBody(res.result.Body);
@@ -180,7 +180,7 @@ JSB({
 		checkDocument: function(){
 			var self = this;
 			this.getElement().loader();
-			this.server.findSimilarDocs(this.options.document, this.toolbar.find('.slider').slider('value'), function(res){
+			this.server().findSimilarDocs(this.options.document, this.toolbar.find('.slider').slider('value'), function(res){
 				self.getElement().loader('hide');
 				self.drawItems(res);
 			});

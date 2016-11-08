@@ -234,6 +234,30 @@ JSB({
 				}
 			}
 			return true;
+		},
+		
+		isAttached: function(){
+			return this.$.contains(document, this.getElement().get(0));
+		},
+		
+		detach: function(){
+			if(!this.isAttached()){
+				return;
+			}
+			
+			// create replacing placeholder mark
+			this.replacingMark = this.$('<div id="'+this.getId()+'_rmark"></div>');
+			this.getElement().after(this.replacingMark);
+			this.getElement().detach();
+		},
+		
+		attach: function(){
+			if(!this.replacingMark || this.isAttached()){
+				return;
+			}
+			this.replacingMark.before(this.getElement());
+			this.replacingMark.remove();
+			this.replacingMark = null;
 		}
 
 	}

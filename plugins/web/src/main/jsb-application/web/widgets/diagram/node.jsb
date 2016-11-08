@@ -8,6 +8,7 @@ JSB({
 	client: {
 		connectors: {},
 		dragHandles: {},
+		resizeHandles: {},
 		
 		constructor: function(diagram, key, opts){
 			var self = this;
@@ -78,6 +79,18 @@ JSB({
 			return {x: (nodePos.left - sheetRc.left) / this.diagram.options.zoom, y: (nodePos.top - sheetRc.top) / this.diagram.options.zoom};
 		},
 		
+		setRect: function(r){
+			this.getElement().css({
+				'left': r.x,
+				'top': r.y,
+				'width': r.w,
+				'height': r.h
+			});
+			
+			this.updateLinks();
+			this.diagram.updateLayout(this);
+		},
+		
 		getRect: function(){
 			var sheetRc = this.diagram.sheet.get(0).getBoundingClientRect();
 			var nodePos = this.getElement().get(0).getBoundingClientRect();
@@ -136,7 +149,7 @@ JSB({
 			}
 		},
 */		
-		_installDragHandle: function(key, handleDesc){
+		_installHandle: function(key, handleDesc){
 			var self = this;
 			if(handleDesc.installed){
 				return;
@@ -145,34 +158,6 @@ JSB({
 				handleDesc.installed = false;
 				return;
 			}
-/*			
-			self.getElement().draggable({
-				handle: handleDesc.selector,
-				distance: self.diagram.getOption('cellSize'),
-				grid: [self.diagram.getOption('cellSize'), self.diagram.getOption('cellSize')],
-
-				start: function(evt, data){
-					var bElt = data.helper;
-					bElt.css('z-index', 10);
-				},
-				
-				drag: function(evt, data){
-					self.updateLinks();
-				},
-				
-				stop: function(evt, data){
-					var x = data.position.left;
-					var y = data.position.top;
-
-					self.setPosition(x, y);
-					self.getElement().css({
-						height: 'auto',
-						width: 'auto'
-					});
-					self.updateLinks();
-				}
-			});
-*/			
 			var selector = handleDesc.selector;
 			if(!JSB().isArray(selector)){
 				selector = [selector];
@@ -180,31 +165,31 @@ JSB({
 			for(var i = 0; i < selector.length; i++){
 				selector[i].on({
 					click: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
+						self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt, handle: handleDesc});
 					},
 
 					mouseover: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
+						self.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt, handle: handleDesc});
 					},
 					
 					mouseout: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
+						self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt, handle: handleDesc});
 					},
 					
 					mousedown: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
+						self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt, handle: handleDesc});
 					},
 
 					mouseup: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
+						self.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt, handle: handleDesc});
 					},
 
 					mousemove: function(evt){
-						self.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
+						self.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt, handle: handleDesc});
 					},
 					
 					mousewheel: function(evt, delta){
-						self.publish('_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
+						self.publish('_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta, handle: handleDesc});
 					}
 				});
 			}
@@ -215,11 +200,26 @@ JSB({
 		installDragHandle: function(key, opts){
 			var self = this;
 			this.resolveSelector(opts.selector, function(sel){
-				self.dragHandles[key] = {
-					selector: sel
-				};
-				self._installDragHandle(key, self.dragHandles[key]);
+				self.dragHandles[key] = JSB.merge({}, opts, {
+					selector: sel,
+					key: key,
+					type: 'drag'
+				});
+				self._installHandle(key, self.dragHandles[key]);
 			});
+		},
+		
+		installResizeHandle: function(key, opts){
+			var self = this;
+			this.resolveSelector(opts.selector, function(sel){
+				self.resizeHandles[key] = JSB.merge({}, opts,{
+					selector: sel,
+					key: key,
+					type: 'resize'
+				});
+				self._installHandle(key, self.resizeHandles[key]);
+			});
+
 		},
 		
 		installConnector: function(cKey, opts){

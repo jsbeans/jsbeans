@@ -95,7 +95,7 @@ JSB({
 				self.removeClass('loggedin');
 			}
 			
-			self.server.collectMenuItems(function(items){
+			self.server().collectMenuItems(function(items){
 				self.items = items;
 				self.constructUserMenu();
 			});

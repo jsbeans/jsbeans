@@ -23,7 +23,7 @@ JSB({
 					JSB().deferUntil(function(){
 						// change is node to directory
 						var path = self.options.w.constructPathFromKey(self.treeNode.key);
-						self.options.w.server.addCategory(path, function(desc){
+						self.options.w.server().addCategory(path, function(desc){
 							if(!desc){
 								// internal error: folder already exists
 								return;
@@ -85,7 +85,7 @@ JSB({
 				reader.onload = function(){
 					// convert result to base64
 					var base64 = btoa(reader.result);
-					self.options.w.server.loadFromContent({
+					self.options.w.server().loadFromContent({
 						category: self.options.node ? self.options.w.constructPathFromKey(self.options.node.treeNode.key) : '',
 						name: self.options.file.name,
 						content: base64

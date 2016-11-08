@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'JQuery.Cron',
 	require:['JQuery'],
 	client:{

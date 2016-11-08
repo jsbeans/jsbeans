@@ -127,26 +127,26 @@
 		
 		isSingleton: function(){
 			var s = false;
-			if(!this.isNull(this.singleton)){
+			if(this.singleton){
 				s = this.singleton;
-			}
-			
-			var e = this.currentSection();
-			if(!this.isNull(e.singleton)){
-				s = e.singleton;
+			} else {
+				var e = this.currentSection();
+				if(e.singleton){
+					s = e.singleton;
+				}
 			}
 			return s;
 		},
 		
 		isFixedId: function(){
 			var s = false;
-			if(!this.isNull(this.fixedId)){
+			if(this.fixedId){
 				s = this.fixedId;
-			}
-			
-			var e = this.currentSection();
-			if(!this.isNull(e.fixedId)){
-				s = e.fixedId;
+			} else {
+				var e = this.currentSection();
+				if(e.fixedId){
+					s = e.fixedId;
+				}
 			}
 			return s;
 		},
@@ -164,47 +164,45 @@
 		},
 		
 		register: function(obj, id){
-			var scope = JSB().getSessionInstancesScope();
-			var jsb = obj.jsb;
+			var scope, jsb;
 			if(obj.targetJsb){
 				jsb = obj.targetJsb;
+			} else {
+				jsb = obj.jsb;
 			}
-			var entry = jsb.currentSection();
-			if(jsb.isSingleton() || jsb.isFixedId()){
-				scope = JSB().getGlobalInstancesScope();
+			var isSingleton = jsb.isSingleton();
+			var isFixedId = jsb.isFixedId();
+			
+			if(isSingleton || isFixedId){
+				scope = this.getGlobalInstancesScope();
+			} else {
+				scope = this.getSessionInstancesScope();
 			}
 			
-			if(jsb.isSingleton()){
+			if(isSingleton){
 				obj.id = jsb.name;
 			} else {
 				if(id){
 					obj.id = id;
 				} else if(!obj.id){
-					obj.id = JSB().generateUid();
+					obj.id = this.generateUid();
 				}
 			}
-			
 			// repeating registration - wrong
-			if(scope[obj.id] && (jsb.isSingleton() || jsb.isFixedId())){
+			if(scope[obj.id] && (isSingleton || isFixedId)){
 				var n = jsb.name;
-				if(jsb.isSingleton()){
+				if(isSingleton){
 					this.getLogger().warn('Duplicate singleton instantiation: ' + n);
 				} else {
 					this.getLogger().warn('Duplicate fixedId bean instantiation: ' + obj.id);
 				}
-/*				
-				scope = JSB().getSessionInstancesScope();
-				if(id){
-					obj.id = id;
-				} else {
-					obj.id = JSB().generateUid();
-				}
-*/				
 			}
-
-			var tl = JSB().getThreadLocal();
-			if(tl && tl.get('_jsoRegisterCallback')){
-				tl.get('_jsoRegisterCallback').call(obj);
+			var tl = this.getThreadLocal();
+			if(tl){
+				var tc = tl.get('_jsoRegisterCallback');
+				if(tc){
+					tc.call(obj);
+				}
 			}
 			scope[obj.id] = obj;
 		},
@@ -292,6 +290,9 @@
 		},
 		
 		create: function(cfg, parent){
+			if(cfg.format == 'jso'){
+				throw 'Unable to create bean "' + cfg.name + '" due to JSO format is no longer supported';
+			}
 			if(!this.isString(cfg.name)){
 				throw "Class name required to create managed object";
 			}
@@ -418,6 +419,7 @@
 				if(this.format == 'jsb' && !JSB.isNull(this.server) && !JSB.isNull(this.client)){
 					var serverBody = this.server;
 					var curJsb = this;
+					var scope = this.clientProcs = this.clientProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
@@ -442,7 +444,7 @@
 								if(!JSB().isFunction(curBody[procName])){
 									continue;
 								}
-								var scope = serverBody.client = serverBody.client || {};
+//								var scope = serverBody.client = serverBody.client || {};
 								if(scope[procName] || blackProcs[procName]){
 									continue;
 								}
@@ -471,6 +473,7 @@
 					}
 					
 					var curJsb = this;
+					var scope = this.serverProcs = this.serverProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
@@ -495,10 +498,12 @@
 								if(!JSB().isFunction(curBody[procName])){
 									continue;
 								}
+/*								
 								var scope = clientBody;
 								if(this.format == 'jsb'){
 									scope = clientBody.server = clientBody.server || {};
 								}
+*/								
 								if(scope[procName] || blackProcs[procName]){
 									continue;
 								}
@@ -553,13 +558,19 @@
 		
 		currentSection: function(){
 			if(this.isClient() ){
+				return this.client;
+/*				
 				if(this.isObject(this.client)){
 					return this.client;
 				}
+*/				
 			} else {
+				return this.server;
+/*				
 				if(this.isObject(this.server)){
 					return this.server;
 				}
+*/				
 			}
 			
 			return null;
@@ -952,7 +963,7 @@
 					
 					
 					this._fieldsCopied = true;
-					
+/*					
 					// fill remote proxy instance field
 					if(JSB().isClient()){
 						if(this.server){
@@ -963,6 +974,7 @@
 							this.client.__instance = this;
 						}
 					}
+*/					
 				}
 				
 				
@@ -3204,6 +3216,12 @@ JSB({
 			this._synchronized = false;
 			this.setupSync();
 		},
+		
+		server: function(){
+			return JSB.merge({
+				__instance: this
+			}, this.jsb.serverProcs);
+		},
 
 		bind: function(key){
 			this.bindKey = key;
@@ -3379,6 +3397,12 @@ JSB({
 			JSB().register(this);
 			this.setupSync();
 		},
+		
+		client: function(){
+			return JSB.merge({
+				__instance: this
+			}, this.jsb.clientProcs);
+		},
 
 		onBeforeSync: function(syncInfo){
 			var bUpdateServer = false;
@@ -3397,7 +3421,7 @@ JSB({
 			this.onSyncCheck();
 			var bNeedUpdate = this.updateSyncState();
 			if(bNeedUpdate){
-				this.client.doSync(true);
+				this.client().doSync(true);
 			}
 			if(callback){
 				callback.call(this);
@@ -3417,7 +3441,7 @@ JSB({
 			var bNeedUpdate = this.updateSyncState();
 			this.lastUpdateTimeStamp = curTimeStamp;
 			if(bNeedUpdate){
-				this.client.doSync(true);
+				this.client().doSync(true);
 			}
 */
 			var needUpdate = this.updateSyncState();
@@ -3433,7 +3457,7 @@ JSB({
 			
 			if(needUpdate){
 				JSB.defer(function(){
-					self.client.doSync(true);	
+					self.client().doSync(true);	
 				}, 0);
 			}
 			

@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'JQuery',
 	client:{
 		bootstrap: function(readyCallback){
@@ -14,7 +14,7 @@ JSO({
 				#include 'jquery.resize.js';
 				#include 'jquery.mousewheel.js';
 				#include 'jquery.cookie.js';
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 			
 		}
 	}

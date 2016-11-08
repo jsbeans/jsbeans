@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'DWP.KeyPress',
 	group: 'dwp',
 	client: {
@@ -12,10 +12,8 @@ JSO({
 			});
 		},
 		
-		body: {
-			init: function(){
-				
-			},
+		init: function(){
+			
 		}
 	}
 });

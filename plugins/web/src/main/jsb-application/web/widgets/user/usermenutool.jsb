@@ -1,4 +1,4 @@
-JSO({
+JSB({
 	name:'UserMenuTool',
 	parent: 'JSB.Widgets.Tool',
 	group: 'dwp',
@@ -49,25 +49,23 @@ JSO({
 			});
 		},
 		
-		body: {
-			onMessage: function(sender, msg, params ){
-			},
-			
-			update: function(){
-				var widget = this.data.data;
-				this.header.find('.title').text(widget.jso.expose.displayName);
-				this.header.find('.icon').attr('key', widget.jso.name);
-				if(!this.wc.getWidget() || (this.wc.getWidget() && this.wc.getWidget().getId() != widget.getId())){
-					if(this.wc.getWidget()){
-						this.wc.getWidget().detachContainer();
-					}
-					this.wc.attachWidget(widget);
+		onMessage: function(sender, msg, params ){
+		},
+		
+		update: function(){
+			var widget = this.data.data;
+			this.header.find('.title').text(widget.jso.expose.displayName);
+			this.header.find('.icon').attr('key', widget.jso.name);
+			if(!this.wc.getWidget() || (this.wc.getWidget() && this.wc.getWidget().getId() != widget.getId())){
+				if(this.wc.getWidget()){
+					this.wc.getWidget().detachContainer();
 				}
-			},
-			
-			
-			setFocus: function(){
+				this.wc.attachWidget(widget);
 			}
+		},
+		
+		
+		setFocus: function(){
 		}
 	}
 });
