@@ -1491,32 +1491,21 @@
 		
 		afterLoadObject: function(){
 			var self = this;
+/*			
 			// check class already exists
 			try {
-				var hash = this['MD5'].md5(this.stringify(this, function(scope, name){
-					if(JSB().isFunction(scope)){ return 'function'; }
-					else if(JSB().isBean(scope)){ return scope.getId(); }
-					else if(name == 'fieldMap'){ return 'fieldMap'; }
-				}));
 				if(!JSB().isNull(this.objects[this.name])){
-/*					
-					if(this.objects[this.name].hash != hash){
-						this.getLogger().error('JSO "'+this.name+'" already exists');
-						return;
-					}
-*/					
+					
 				}
 			} catch(e){
 				// ignore hash check
 			}
-			
+*/			
 			// setup libraries
 			var entry = this.currentSection();
 			if(entry){
 				this.setupLibraries(entry.cls.prototype);
 			}
-			
-			this.hash = hash;
 			
 			// deploy object into class tree
 			if(entry.cls.jsb && entry.cls.jsb.name != this.name){
@@ -3218,9 +3207,12 @@ JSB({
 		},
 		
 		server: function(){
-			return JSB.merge({
-				__instance: this
-			}, this.jsb.serverProcs);
+			var self = this;
+			var f = function(){
+				this.__instance = self;
+			};
+			f.prototype = this.jsb.serverProcs;
+			return new f();
 		},
 
 		bind: function(key){
@@ -3399,9 +3391,12 @@ JSB({
 		},
 		
 		client: function(){
-			return JSB.merge({
-				__instance: this
-			}, this.jsb.clientProcs);
+			var self = this;
+			var f = function(){
+				this.__instance = self;
+			};
+			f.prototype = this.jsb.clientProcs;
+			return new f();
 		},
 
 		onBeforeSync: function(syncInfo){
