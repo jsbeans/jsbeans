@@ -326,7 +326,7 @@ JSB({
 				|| this.options.valueType == 'char'){
 				bValid = val.length == 1;
 			}
-			bValid = bValid && this.getSuperClass('JSB.Widgets.Editor').isValid.call(this); 
+			bValid = bValid && this.base(); 
 			bValid = bValid && this.options.onValidate(val);
 			this.setMark(!bValid);
 			return bValid;

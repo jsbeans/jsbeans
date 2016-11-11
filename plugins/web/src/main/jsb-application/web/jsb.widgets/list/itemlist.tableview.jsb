@@ -74,7 +74,7 @@ JSB({
 		},
 		
 		activate: function(container){
-			this.getSuperClass().activate.call(this, container);
+			this.base(container);
 			this.list.addClass('tableView');
 			
 			// append header
@@ -84,7 +84,7 @@ JSB({
 		deactivate: function(){
 			this.list.removeClass('tableView');
 			this.container.find('> li > .cell').remove();	// TODO: remove internal beans
-			this.getSuperClass().deactivate.call(this);
+			this.base();
 			
 			// hide header
 			var tvh = this.list.find('.tableViewHeader');

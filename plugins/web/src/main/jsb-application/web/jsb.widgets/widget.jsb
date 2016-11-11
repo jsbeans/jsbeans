@@ -34,7 +34,7 @@ JSB({
 		
 		destroy: function(){
 			this.detachContainer();
-			this.getSuperClass('JSB.Widgets.Control').destroy.call(this);
+			this.base();
 		},
 		
 		attachContainer: function( c, desc ){

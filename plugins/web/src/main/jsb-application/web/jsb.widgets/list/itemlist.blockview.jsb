@@ -111,7 +111,7 @@ JSB({
 		},
 		
 		activate: function(container){
-			this.getSuperClass().activate.call(this, container);
+			this.base(container);
 			this.initPackery();
 		},
 		

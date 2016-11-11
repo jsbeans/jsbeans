@@ -31,8 +31,7 @@ JSB({
 		destroy: function(){
 			// TODO: clear entries
 			console.log('Cleaning document: ' + this.getId());
-			
-			this.getSuperClass('Antiplag.Model.Project').destroy.call(this);
+			this.base();
 		},
 		
 		onAfterSync: function(syncInfo){
@@ -68,8 +67,7 @@ JSB({
 		destroy: function(){
 			// TODO: clear entries
 			Log.debug('Cleaning document: ' + this.getId());
-			
-			this.getSuperClass('Antiplag.Model.Project').destroy.call(this);
+			this.base();
 		},
 		
 		

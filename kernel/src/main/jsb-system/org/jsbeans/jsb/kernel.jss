@@ -5,7 +5,7 @@ JSB({
 		
 		constructor: function(){
 			JSB().setLocker(this);
-			JSB().setThreadLocal(this.tls);
+//			JSB().setThreadLocal(this.tls);
 
 			var Exception = JSB().getGlobe().Exception = function(message,data) {
             	this.message = message;
@@ -31,7 +31,7 @@ JSB({
             	return _checkServerScripts.call(null);
             });
 		},
-
+/*
 		tls: {
 			get: function(key){
 				return Bridge.getThreadLocal(key);
@@ -43,6 +43,7 @@ JSB({
 				Bridge.removeThreadLocal(key);
 			}
 		},
+*/		
 		scope: function(scope, callback){
 			if(!scope){
 				return [];

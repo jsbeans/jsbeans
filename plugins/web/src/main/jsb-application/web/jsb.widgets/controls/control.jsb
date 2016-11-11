@@ -29,7 +29,7 @@ JSB({
 			if(this.getElement()){
 				this.getElement().remove();
 			}
-			this.getSuperClass('JSB.Widgets.Actor').destroy.call(this);
+			this.base();
 		},
 		
 		options: {
@@ -134,7 +134,7 @@ JSB({
 		
 		destroy: function(){
 			this.getElement().remove();
-			this.getSuperClass('JSB.Widgets.Actor').destroy.call(this);
+			this.base();
 		},
 		
 		screenToLocal: function(x, y){

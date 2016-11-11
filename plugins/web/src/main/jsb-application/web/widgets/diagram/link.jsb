@@ -88,7 +88,7 @@ JSB({
 				this.group.remove();
 			}
 			
-			this.getSuperClass('JSB.Widgets.Actor').destroy.call(this);
+			this.base();
 		},
 		
 		setSource: function(obj){

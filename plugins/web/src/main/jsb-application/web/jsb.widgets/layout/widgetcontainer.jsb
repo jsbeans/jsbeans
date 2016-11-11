@@ -50,7 +50,7 @@ JSB({
 				
 			}
 			this.widgets = {};
-			this.getSuperClass('JSB.Widgets.Control').destroy.call(this);
+			this.base();
 		},
 		
 		getElement: function(){

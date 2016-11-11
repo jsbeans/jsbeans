@@ -107,7 +107,28 @@
 		deferTimeoutMap: {},
 		globalInstances: {},
 		libraryScopes: {},
-		
+		threadLocal: {		
+			put: function(key, val){
+				if(!this.tlsMap){
+					this.tlsMap = {};
+				}
+				this.tlsMap[key] = val;
+			},
+			get: function(key){
+				if(!this.tlsMap){
+					this.tlsMap = {};
+				}
+
+				return this.tlsMap[key];
+			},
+			clear: function(key){
+				if(!this.tlsMap){
+					this.tlsMap = {};
+				}
+
+				delete this.tlsMap[key];
+			}
+		},
 /*		fieldMaps: {},*/
 		fieldArrs: {},
 		syncScopes: {},
@@ -296,6 +317,7 @@
 			if(!this.isString(cfg.name)){
 				throw "Class name required to create managed object";
 			}
+			var self = this;
 			
 			this.merge(true, this, cfg);
 			this.ready = false;
@@ -319,7 +341,7 @@
 				} else {
 					var pe = parent.currentSection();
 					var kfs = ['singleton', 'globalize', 'fixedId', 'disableRpcInstance'];
-					for(var i in kfs){
+					for(var i = 0; i < kfs.length; i++){
 						var key = kfs[i];
 						if(!JSB().isNull(pe[key])){
 							entry[key] = pe[key];
@@ -353,11 +375,39 @@
 					
 					// clear JSB keyword fields
 					var kfs = ['constructor', 'bootstrap', 'singleton', 'globalize', 'fixedId', 'disableRpcInstance'];
-					for(var i in kfs ){
+					for(var i = 0; i < kfs.length; i++ ){
 						if(body[kfs[i]]){
 							delete body[kfs[i]];
 						}
 					}
+				}
+				
+				// substitute body methods via checking proxy
+				for(var mtdName in body){
+					if(!this.isFunction(body[mtdName])){
+						continue;
+					}
+					(function(mtdName){
+						var proc = body[mtdName];
+						body[mtdName] = function(){
+							var ctxStack = self.getCallingContext();
+							ctxStack.push({
+								jsb: self,
+								methodName: mtdName
+							});
+							
+							// TODO: perform call check
+							
+							// call original function
+							var res = proc.apply(this, arguments);
+							
+							// restore prev context
+							ctxStack.pop();
+							
+							return res;
+						}
+						body[mtdName].jsb = self;
+					})(mtdName);
 				}
 				
 				var ctor = null;
@@ -777,6 +827,17 @@
 			return null;
 		},
 		
+		getCallingContext: function(){
+			var tls = this.getThreadLocal();
+			var ctx = tls.get('_jsbCallingContext');
+			if(!ctx){
+				ctx = [];
+				tls.put('_jsbCallingContext', ctx);
+			}
+			
+			return ctx;
+		},
+		
 		getGroup: function(){
 			if(this.group){
 				if(this.isArray(this.group)){
@@ -885,32 +946,18 @@
 
 			child.prototype.constructor = child;
 			child.prototype.parent = function() {
-				return this.constructor.superclass;
+				return parent;
 			};
 			child.superclass = parent.prototype;
 		},
 
 		_extends: function(parent, ctor, body) {
+			var ss = this;
 			var newFunc = function() {
 				var self = this;
 //				var sysProfiler = JSB().getSystemProfiler();
 //				if(sysProfiler){sysProfiler.probe('create base func');}
-				var storeF = this.base;
 				var storeSuperCalled = this._superCalled;
-				this.base = function(){
-					if (this._superCalled == true) {
-						throw "Superconstructor has been called twice";
-					}
-					var storeJso = this.jso;
-					var storeJsb = this.jsb;
-					this.jso = parent.prototype.jso;
-					this.jsb = parent.prototype.jsb;
-					parent.apply(this, arguments);
-					this.jso = storeJso;
-					this.jsb = storeJsb;
-					this._superCalled = true;
-				}
-
 				// copy all fields into current scope
 				if(!this._fieldsCopied){
 					function _copyFields(targetScope, fieldArr){
@@ -928,7 +975,6 @@
 							}
 						}
 					}
-//					debugger;
 					_copyFields(this, /*this.jsb._fieldsArr*/JSB().fieldArrs[this.jsb.name]);
 					
 /*					
@@ -963,40 +1009,33 @@
 					
 					
 					this._fieldsCopied = true;
-/*					
-					// fill remote proxy instance field
-					if(JSB().isClient()){
-						if(this.server){
-							this.server.__instance = this;
-						}
-					} else {
-						if(this.client){
-							this.client.__instance = this;
-						}
-					}
-*/					
 				}
 				
 				
 //				if(sysProfiler){sysProfiler.probe('call ctor');}
 				// call ctor
 				this._superCalled = false;
-				if (ctor != null && ctor != undefined) {
+					
+				var ctxStack = ss.getCallingContext();
+				ctxStack.push({
+					jsb: ss,
+					methodName: 'constructor'
+				});
+				// TODO: perform call check
+				
+				// call original function
+				if(ctor){
 					ctor.apply(this, arguments);
 				}
-				
 				if (!this._superCalled) {
-//					throw 'No super constructor called for the Bean: ' + this.jsb.name;
-					
-//					if(sysProfiler){sysProfiler.probe('call base');}
 					this.base.apply(this, arguments);
-					
 				}
 				
-//				if(sysProfiler){sysProfiler.probe();}
+				// restore prev context
+				ctxStack.pop();
+					
 				
 				this._superCalled = storeSuperCalled;
-				this.base = storeF;
 				
 			};
 
@@ -1005,6 +1044,7 @@
 		},
 
 		_class : function(arg1, arg2) {
+			var ss = this;
 			var ctor = null;
 			var body = null;
 			if( this.isFunction(arg1) ) {
@@ -1015,7 +1055,18 @@
 			}
 			var newFunc = function() {
 				if (ctor != null && ctor != undefined) {
+					var ctxStack = ss.getCallingContext();
+					ctxStack.push({
+						jsb: ss,
+						methodName: 'constructor'
+					});
+					// TODO: perform call check
+					
+					// call original function
 					ctor.apply(this, arguments);
+					
+					// restore prev context
+					ctxStack.pop();
 				}
 			}
 
@@ -1688,7 +1739,7 @@
 
 		getClass: function(){
 			var entry = this.currentSection();
-			if(this.isPlainObject(entry) && !this.isNull(entry.cls)){
+			if(entry && entry.cls){
 				return entry.cls;
 			}
 			
@@ -1734,6 +1785,32 @@
 		},
 		
 		getThreadLocal: function(){
+/*			
+			if(!this.threadLocal){
+				this.threadLocal = {		
+					put: function(key, val){
+						if(!this.tlsMap){
+							this.tlsMap = {};
+						}
+						this.tlsMap[key] = val;
+					},
+					get: function(key){
+						if(!this.tlsMap){
+							this.tlsMap = {};
+						}
+	
+						return this.tlsMap[key];
+					},
+					clear: function(key){
+						if(!this.tlsMap){
+							this.tlsMap = {};
+						}
+	
+						delete this.tlsMap[key];
+					}
+				}
+			}
+*/			
 			return this.threadLocal;
 		},
 		
@@ -2496,6 +2573,7 @@
 			var mtdWrapper = function(){
 				return inetrceptorCallback.call(this, originalMethod, arguments);
 			}
+			mtdWrapper.jsb = originalMethod.jsb;
 			
 			scope[mtdName] = mtdWrapper;
 			
@@ -2538,6 +2616,18 @@
 			},
 			clearInterval: function(key){
 				Bridge.clearInterval(key);
+			}
+		});
+		
+		JSB().setThreadLocal({
+			get: function(key){
+				return Bridge.getThreadLocal(key);
+			},
+			put: function(key, val){
+				Bridge.putThreadLocal(key, val);
+			},
+			clear: function(key){
+				Bridge.removeThreadLocal(key);
 			}
 		});
 	}
@@ -2714,6 +2804,62 @@ JSB({
 			exclude: []
 		},
 */
+		
+		base: function(){
+			
+			var ret = undefined;
+			var ctxStack = this.jsb.getCallingContext()
+
+			// get calling proc
+			if(ctxStack.length < 2){
+				throw 'Invalid "base" function call';
+			}
+
+			var callerCtx = ctxStack[ctxStack.length - 2];
+
+			if(callerCtx.methodName == 'constructor'){
+				if (this._superCalled == true) {
+					throw "Superconstructor has been called twice";
+				}
+
+				// call parent constructor
+				var parentCtor = null;
+				var cls = callerCtx.jsb.getClass();
+				if(cls && cls.superclass && cls.superclass.constructor){
+					parentCtor = cls.superclass.constructor;
+				}
+				if(parentCtor){
+					var storeJso = this.jso;
+					var storeJsb = this.jsb;
+					this.jso = parentCtor.prototype.jso;
+					this.jsb = parentCtor.prototype.jsb;
+					
+					parentCtor.apply(this, arguments);
+					
+					this.jso = storeJso;
+					this.jsb = storeJsb;
+				}
+				
+				this._superCalled = true;
+			} else {
+				// call parent method
+				var cls = callerCtx.jsb.getClass();
+				if(cls && cls.superclass){
+					var storeJso = this.jso;
+					var storeJsb = this.jsb;
+					this.jso = cls.superclass.jso;
+					this.jsb = cls.superclass.jsb;
+					
+					ret = cls.superclass[callerCtx.methodName].apply(this, arguments);
+
+					this.jso = storeJso;
+					this.jsb = storeJsb;
+				}
+			}
+			
+			return ret;
+		},
+		
 		destroy: function(){
 			this._destroyed = true;
 			JSB().unregister(this);
@@ -2725,8 +2871,19 @@ JSB({
 		
 		getSuperClass: function(className){
 			if(JSB().isNull(className)){
-				var sClass = this.constructor.superclass;
-				if(JSB().isNull(sClass) || JSB().isNull(sClass.jso)){
+				
+				var ctxStack = this.jsb.getCallingContext();
+
+				// get calling proc
+				if(ctxStack.length < 2){
+					throw 'Invalid "getSuperClass" function call';
+				}
+
+				var callerCtx = ctxStack[ctxStack.length - 2];
+				var cls = callerCtx.jsb.getClass();
+				
+				var sClass = cls.superclass;
+				if(JSB().isNull(sClass) || JSB().isNull(sClass.jsb)){
 					throw 'Wrong parent class found';
 				}
 				return sClass;
@@ -2734,10 +2891,10 @@ JSB({
 			
 			var curScope = this.constructor.superclass;
 			while(true){
-				if(JSB().isNull(curScope) || JSB().isNull(curScope.jso)){
-					throw 'Unable to find className: "' + className + '"in "' + this.jso.name + '" hierarchy stack';
+				if(JSB().isNull(curScope) || JSB().isNull(curScope.jsb)){
+					throw 'Unable to find className: "' + className + '"in "' + this.jsb.name + '" hierarchy stack';
 				}
-				if(curScope.jso.name == className){
+				if(curScope.jsb.name == className){
 					return curScope; 
 				}
 				
@@ -2811,105 +2968,154 @@ JSB({
 				debugger;
 			}
 */			
-			for(var scopeName in this.syncScopes){
-				updated |= this.updateSyncScope(timeStamp, scopeName, this[scopeName], this.syncScopes[scopeName]);
-			}
-			
-			return updated;
-		},
-		
-		updateSyncScope: function(timeStamp, name, realScope, syncInfoScope){
-			var updated = false;
-			if(JSB().isBean(realScope)){
-				// fixup realscope if it is Bean
-				realScope = {
-					__jso: realScope.jsb.name,
-					__id: realScope.getId()
-				};
-			}
-			if(JSB().isFunction(realScope)){
-				// this case occurs when users manually fills sync scope with function object
-				// TODO: subject to remove
-				// now skipping
-				return false;
-			} else if(JSB().isPlainObject(realScope)){
-				// iterate over all fields in realScope to find news and changes
-				syncInfoScope.type = 1;
-				syncInfoScope.value = null;
-				if(JSB().isNull(syncInfoScope.data)){
-					syncInfoScope.data = {};
-					updated = true;
+			function updateSyncScope(timeStamp, name, realScope, syncInfoScope){
+				var updated = false;
+				if(JSB().isBean(realScope)){
+					// fixup realscope if it is Bean
+					realScope = {
+						__jso: realScope.jsb.name,
+						__id: realScope.getId()
+					};
 				}
-				for(var realPropName in realScope){
-					if(realScope[realPropName] === undefined){
-						continue;
-					}
-					if(JSB().isNull(syncInfoScope.data[realPropName])){
-						// item to add
-						syncInfoScope.data[realPropName] = {};
-						updated = true;
-					}
-					updated |= this.updateSyncScope(timeStamp, realPropName, realScope[realPropName], syncInfoScope.data[realPropName]);
-				}
-				// iterate over all fields in syncInfo to find absent entries
-				for(var propName in syncInfoScope.data){
-					if(realScope[propName] === undefined){
-						syncInfoScope.data[propName].timeStamp = timeStamp;
-						syncInfoScope.data[propName].existed = false;
-						syncInfoScope.data[propName].data = null;
-						syncInfoScope.data[propName].value = null;
-						updated = true;
-					}
-				}
-
-			} else if(JSB().isArray(realScope)){
-				syncInfoScope.type = 2;
-				syncInfoScope.value = null;
-				if(JSB().isNull(syncInfoScope.data)){
-					syncInfoScope.data = {};
-					updated = true;
-				}
-				// new or existed
-				for(var i = 0; i < realScope.length; i++ ){
-					if(JSB().isNull(syncInfoScope.data[i])){
-						syncInfoScope.data[i] = {};
-						updated = true;
-					} 
-					updated |= this.updateSyncScope(timeStamp, i, realScope[i], syncInfoScope.data[i]);
-				}
-				// removed
-				for(var i in syncInfoScope.data){
-					if(i >= realScope.length){
-						syncInfoScope.data[i].existed = false;
-						syncInfoScope.data[i].timeStamp = timeStamp;
-						syncInfoScope.data[i].data = null;
-						syncInfoScope.data[i].value = null;
-						updated = true;
-					}
-				}
-
-			} else {
-				// number, string or boolean
-				if(realScope != syncInfoScope.value || syncInfoScope.value === undefined){
-					syncInfoScope.value = realScope;
-					syncInfoScope.type = 0;
-					updated = true;
-				} else {
+				if(JSB().isFunction(realScope)){
+					// this case occurs when users manually fills sync scope with function object
+					// TODO: subject to remove
+					// now skipping
 					return false;
+				} else if(JSB().isPlainObject(realScope)){
+					// iterate over all fields in realScope to find news and changes
+					syncInfoScope.type = 1;
+					syncInfoScope.value = null;
+					if(JSB().isNull(syncInfoScope.data)){
+						syncInfoScope.data = {};
+						updated = true;
+					}
+					for(var realPropName in realScope){
+						if(realScope[realPropName] === undefined){
+							continue;
+						}
+						if(JSB().isNull(syncInfoScope.data[realPropName])){
+							// item to add
+							syncInfoScope.data[realPropName] = {};
+							updated = true;
+						}
+						updated |= updateSyncScope(timeStamp, realPropName, realScope[realPropName], syncInfoScope.data[realPropName]);
+					}
+					// iterate over all fields in syncInfo to find absent entries
+					for(var propName in syncInfoScope.data){
+						if(realScope[propName] === undefined){
+							syncInfoScope.data[propName].timeStamp = timeStamp;
+							syncInfoScope.data[propName].existed = false;
+							syncInfoScope.data[propName].data = null;
+							syncInfoScope.data[propName].value = null;
+							updated = true;
+						}
+					}
+
+				} else if(JSB().isArray(realScope)){
+					syncInfoScope.type = 2;
+					syncInfoScope.value = null;
+					if(JSB().isNull(syncInfoScope.data)){
+						syncInfoScope.data = {};
+						updated = true;
+					}
+					// new or existed
+					for(var i = 0; i < realScope.length; i++ ){
+						if(JSB().isNull(syncInfoScope.data[i])){
+							syncInfoScope.data[i] = {};
+							updated = true;
+						} 
+						updated |= updateSyncScope(timeStamp, i, realScope[i], syncInfoScope.data[i]);
+					}
+					// removed
+					for(var i in syncInfoScope.data){
+						if(i >= realScope.length){
+							syncInfoScope.data[i].existed = false;
+							syncInfoScope.data[i].timeStamp = timeStamp;
+							syncInfoScope.data[i].data = null;
+							syncInfoScope.data[i].value = null;
+							updated = true;
+						}
+					}
+
+				} else {
+					// number, string or boolean
+					if(realScope != syncInfoScope.value || syncInfoScope.value === undefined){
+						syncInfoScope.value = realScope;
+						syncInfoScope.type = 0;
+						updated = true;
+					} else {
+						return false;
+					}
 				}
+				
+				if(updated){
+					syncInfoScope.existed = true;
+					syncInfoScope.timeStamp = timeStamp;
+				}
+				return updated;
+
 			}
 			
-			if(updated){
-				syncInfoScope.existed = true;
-				syncInfoScope.timeStamp = timeStamp;
+			for(var scopeName in this.syncScopes){
+				updated |= updateSyncScope(timeStamp, scopeName, this[scopeName], this.syncScopes[scopeName]);
 			}
+			
 			return updated;
 		},
-		
+
 		getSyncSlice: function(timeStamp) {
 			var slice = {}, minStamp = null, maxStamp = null;
+			
+			function getScopeSlice(timeStamp, syncScope, realScope){
+				if(syncScope.timeStamp < timeStamp){
+					return null;
+				}
+				var slice = {
+					t: syncScope.type,
+					ex: syncScope.existed,
+				}, minStamp = syncScope.timeStamp, maxStamp = syncScope.timeStamp;
+				if(syncScope.existed){
+					if(realScope === undefined){
+//						throw 'getScopeSlice: sync error due to out of the realScope';
+					} else if(JSB().isBean(realScope)){
+						realScope = {
+							__jso: realScope.jsb.name,
+							__id: JSB().isClient() ? (realScope.bindKey || realScope.getId()) : realScope.getId()
+						};
+					}
+					if(syncScope.type == 0){
+						// primitive
+						slice.v = syncScope.value;
+					} else if(syncScope.type == 1 || syncScope.type == 2){
+						// object & array
+						slice.d = {};
+						for(var fName in syncScope.data){
+							var s = getScopeSlice(timeStamp, syncScope.data[fName], realScope[fName]);
+							if(JSB().isPlainObject(s)){
+								slice.d[fName] = s.slice;
+								if(s.minStamp <= minStamp){
+									minStamp = s.minStamp;
+								}
+								if(s.maxStamp >= maxStamp){
+									maxStamp = s.maxStamp;
+								}
+							}
+						}
+					} else {
+						throw 'getScopeSlice: unknown syncScope.type';
+					}
+				}
+				return {
+					minStamp: minStamp,
+					maxStamp: maxStamp,
+					slice: slice
+				};
+
+			}
+			
 			for(var scopeName in this.syncScopes){
-				var s = this.getScopeSlice(timeStamp, this.syncScopes[scopeName], this[scopeName]);
+				var s = getScopeSlice(timeStamp, this.syncScopes[scopeName], this[scopeName]);
 				if(JSB().isPlainObject(s)){
 					slice[scopeName] = s.slice;
 					if(JSB().isNull(minStamp) || s.minStamp <= minStamp){
@@ -2926,58 +3132,12 @@ JSB({
 				slice: slice
 			};
 		},
-		
-		getScopeSlice: function(timeStamp, syncScope, realScope){
-			if(syncScope.timeStamp < timeStamp){
-				return null;
-			}
-			var slice = {
-				t: syncScope.type,
-				ex: syncScope.existed,
-			}, minStamp = syncScope.timeStamp, maxStamp = syncScope.timeStamp;
-			if(syncScope.existed){
-				if(realScope === undefined){
-//					throw 'getScopeSlice: sync error due to out of the realScope';
-				} else if(JSB().isBean(realScope)){
-					realScope = {
-						__jso: realScope.jsb.name,
-						__id: JSB().isClient() ? (realScope.bindKey || realScope.getId()) : realScope.getId()
-					};
-				}
-				if(syncScope.type == 0){
-					// primitive
-					slice.v = syncScope.value;
-				} else if(syncScope.type == 1 || syncScope.type == 2){
-					// object & array
-					slice.d = {};
-					for(var fName in syncScope.data){
-						var s = this.getScopeSlice(timeStamp, syncScope.data[fName], realScope[fName]);
-						if(JSB().isPlainObject(s)){
-							slice.d[fName] = s.slice;
-							if(s.minStamp <= minStamp){
-								minStamp = s.minStamp;
-							}
-							if(s.maxStamp >= maxStamp){
-								maxStamp = s.maxStamp;
-							}
-						}
-					}
-				} else {
-					throw 'getScopeSlice: unknown syncScope.type';
-				}
-			}
-			return {
-				minStamp: minStamp,
-				maxStamp: maxStamp,
-				slice: slice
-			};
-		},
-		
+
 		applySlice: function(slice, callback){
 			var self = this;
 			var completeMap = {};
 			var scope = { needWait: false, iterateComplete: false }
-			function _checkComplete(){
+			function _checkComplete1(){
 				if(!scope.iterateComplete){
 					return;
 				}
@@ -2988,50 +3148,69 @@ JSB({
 					callback.call(self);
 				}
 			}
-			for(var sName in slice){
-				completeMap[sName] = false;
-				(function(name){
-					if(self.applyScopeSlice(name, slice[name], self, function(){
-						completeMap[name] = true;
-						_checkComplete();
-					})){
-						scope.needWait = true;
-					} else {
-						delete completeMap[name];
-					}
-				})(sName);
-			}
-			scope.iterateComplete = true;
-			if(scope.needWait){
-				_checkComplete();
-			} else {
-				if(callback){
-					callback.call(self);
+			
+			function applyScopeSlice(name, syncSlice, parentRealScope, callback){
+				if(!syncSlice.ex){
+					// remove
+					delete parentRealScope[name];
+					return;
 				}
-			}
-		},
-		
-		applyScopeSlice: function(name, syncSlice, parentRealScope, callback){
-			var self = this;
-			if(!syncSlice.ex){
-				// remove
-				delete parentRealScope[name];
-				return;
-			}
-			if( syncSlice.t == 0 ){
-				parentRealScope[name] = syncSlice.v;
-				return;
-			} else if(syncSlice.t == 1){
-				if(syncSlice.d.__jso && syncSlice.d.__id && JSB().isString(syncSlice.d.__jso.v) && JSB().isString(syncSlice.d.__id.v)){
-					// inject bean
-					JSB().constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
-						parentRealScope[name] = obj;
-						callback.call(self);
-					});
-					return true;
-				} else {
-					if(parentRealScope[name] === undefined || !JSB().isPlainObject(parentRealScope[name])){
-						parentRealScope[name] = {};
+				if( syncSlice.t == 0 ){
+					parentRealScope[name] = syncSlice.v;
+					return;
+				} else if(syncSlice.t == 1){
+					if(syncSlice.d.__jso && syncSlice.d.__id && JSB().isString(syncSlice.d.__jso.v) && JSB().isString(syncSlice.d.__id.v)){
+						// inject bean
+						JSB().constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
+							parentRealScope[name] = obj;
+							callback.call(self);
+						});
+						return true;
+					} else {
+						if(parentRealScope[name] === undefined || !JSB().isPlainObject(parentRealScope[name])){
+							parentRealScope[name] = {};
+						}
+						var completeMap = {};
+						var scope = {needWait: false, iterateComplete: false};
+						function _checkComplete(){
+							if(!scope.iterateComplete){
+								return;
+							}
+							for(var i in completeMap){
+								if(!completeMap[i]) return;
+							}
+							if(callback){
+								callback.call(self);
+							}
+						}
+						for(var pName in syncSlice.d){
+							if(!syncSlice.d[pName].ex){
+								delete parentRealScope[name][pName];
+							} else {
+								completeMap[pName] = false;
+								(function(pn){
+									if(applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
+										completeMap[pn] = true;
+										_checkComplete();
+									})){
+										scope.needWait = true;
+									} else {
+										delete completeMap[pn];
+									}
+								})(pName);
+								
+							}
+						}
+						scope.iterateComplete = true;
+						if(scope.needWait){
+							_checkComplete();
+							return true;
+						}
+						return;
+					}
+				} else if(syncSlice.t == 2){
+					if(parentRealScope[name] === undefined || !JSB().isArray(parentRealScope[name])){
+						parentRealScope[name] = [];
 					}
 					var completeMap = {};
 					var scope = {needWait: false, iterateComplete: false};
@@ -3046,13 +3225,14 @@ JSB({
 							callback.call(self);
 						}
 					}
+					var toRemove = [];
 					for(var pName in syncSlice.d){
 						if(!syncSlice.d[pName].ex){
-							delete parentRealScope[name][pName];
+							toRemove.push(parseInt(pName));
 						} else {
 							completeMap[pName] = false;
 							(function(pn){
-								if(self.applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
+								if(applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
 									completeMap[pn] = true;
 									_checkComplete();
 								})){
@@ -3065,63 +3245,44 @@ JSB({
 						}
 					}
 					scope.iterateComplete = true;
+					if(toRemove.length > 0){
+						toRemove.sort(function(a,b){return b - a;});
+						for(var i in toRemove){
+							parentRealScope[name].splice(toRemove[i], 1);
+						}
+					}
 					if(scope.needWait){
 						_checkComplete();
 						return true;
 					}
 					return;
 				}
-			} else if(syncSlice.t == 2){
-				if(parentRealScope[name] === undefined || !JSB().isArray(parentRealScope[name])){
-					parentRealScope[name] = [];
-				}
-				var completeMap = {};
-				var scope = {needWait: false, iterateComplete: false};
-				function _checkComplete(){
-					if(!scope.iterateComplete){
-						return;
-					}
-					for(var i in completeMap){
-						if(!completeMap[i]) return;
-					}
-					if(callback){
-						callback.call(self);
-					}
-				}
-				var toRemove = [];
-				for(var pName in syncSlice.d){
-					if(!syncSlice.d[pName].ex){
-						toRemove.push(parseInt(pName));
+
+			}
+			
+			for(var sName in slice){
+				completeMap[sName] = false;
+				(function(name){
+					if(applyScopeSlice(name, slice[name], self, function(){
+						completeMap[name] = true;
+						_checkComplete1();
+					})){
+						scope.needWait = true;
 					} else {
-						completeMap[pName] = false;
-						(function(pn){
-							if(self.applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
-								completeMap[pn] = true;
-								_checkComplete();
-							})){
-								scope.needWait = true;
-							} else {
-								delete completeMap[pn];
-							}
-						})(pName);
-						
+						delete completeMap[name];
 					}
+				})(sName);
+			}
+			scope.iterateComplete = true;
+			if(scope.needWait){
+				_checkComplete1();
+			} else {
+				if(callback){
+					callback.call(self);
 				}
-				scope.iterateComplete = true;
-				if(toRemove.length > 0){
-					toRemove.sort(function(a,b){return b - a;});
-					for(var i in toRemove){
-						parentRealScope[name].splice(toRemove[i], 1);
-					}
-				}
-				if(scope.needWait){
-					_checkComplete();
-					return true;
-				}
-				return;
 			}
 		},
-		
+
 		getId: function(){
 			return this.id;
 		},
@@ -4161,7 +4322,7 @@ JSB({
 			
 	}
 });
-
+/*
 JSB({
 	name: 'JSB.ThreadLocal',
 	singleton: true,
@@ -4191,7 +4352,7 @@ JSB({
 		}
 	}
 });
-
+*/
 JSB({
 	name: 'JSB.Profiler',
 	common: {

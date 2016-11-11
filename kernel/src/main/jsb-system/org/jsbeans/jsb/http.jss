@@ -173,7 +173,7 @@ JSB({
 
         destroy: function(){
             this.disconnect();
-            this.getSuperClass('Bean').destroy.call(this);
+            this.base();
         },
 
         send: function(data){

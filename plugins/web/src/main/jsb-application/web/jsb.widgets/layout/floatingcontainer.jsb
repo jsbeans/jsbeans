@@ -108,7 +108,7 @@ JSB({
 		
 		destroy: function(){
 			this.close();
-			this.getSuperClass('JSB.Widgets.WidgetContainer').destroy.call(this);
+			this.base();
 		},
 		
 		close: function(){

@@ -4,9 +4,11 @@ JSB({
 	require:['JQuery.UI.Interactions'],
 	client: {
 		constructor: function(opts){
+			var self = this;
 			this.base(opts);
 			this.loadCss('splitbox.css');
-			this.init();
+			this.addClass('_dwp_splitbox');
+			self.init();
 		},
 		
 		panes: [],
@@ -18,7 +20,6 @@ JSB({
 			var self = this;
 			
 			var elt = this.getElement();
-			elt.addClass('_dwp_splitbox');
 			var posArr = this.options.position;
 			if(!JSO().isArray(posArr)){
 				posArr = [this.options.position];
@@ -144,6 +145,9 @@ JSB({
 		
 		updatePanes: function(){
 			var elt = this.getElement();
+			if(!elt.is(':visible')){
+				return;
+			}
 			
 			// update visibility
 			var vPanes = [];

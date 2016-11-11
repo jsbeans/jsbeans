@@ -470,7 +470,7 @@ JSB({
 		},
 		
 		destroy: function(){
-			this.getSuperClass('JSB.Widgets.Widget').destroy.call(this);
+			this.base();
 		},
 		
 		getNode: function(id){

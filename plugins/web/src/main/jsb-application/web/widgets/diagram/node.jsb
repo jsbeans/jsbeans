@@ -55,7 +55,7 @@ JSB({
 			}
 			this.connectors = {};
 			
-			this.getSuperClass('JSB.Widgets.Control').destroy.call(this);
+			this.base();
 		},
 		
 		setPosition: function(x, y){

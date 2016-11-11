@@ -83,7 +83,7 @@ JSB({
 				}
 				
 			}
-			self.getSuperClass('Bean').destroy.call(this);
+			this.base();
 		},
 		
 		callbackAttr: function(proc){

@@ -83,7 +83,7 @@ JSB({
 			}
 			item.key = id;
 			item.list = this;
-			var it = this.getSuperClass('JSB.Widgets.ListBox').addItem.call(this, JSO().merge(true, {}, item.options, {
+			var it = this.base(JSO().merge(true, {}, item.options, {
 				key: id,
 				element: item
 			}));
@@ -99,7 +99,7 @@ JSB({
 			}
 			item.key = id;
 			item.list = this;
-			var it = this.getSuperClass('JSB.Widgets.ListBox').insertItem.call(this, key, JSO().merge(true, {}, item.options, {
+			var it = this.base(key, JSO().merge(true, {}, item.options, {
 				key: id,
 				element: item
 			}));
@@ -109,12 +109,12 @@ JSB({
 		},
 		
 		deleteItem: function(key){
-			this.getSuperClass('JSB.Widgets.ListBox').deleteItem.call(this, key);
+			this.base(key);
 			this.publish('JSB.Widgets.ItemList.deleteItem', {id: key});
 		},
 		
 		addSeparator: function(id){
-			this.getSuperClass('JSB.Widgets.ListBox').addItem.call(this, {
+			this.getSuperClass().addItem.call(this, {
 				allowHover: false,
 				allowSelect: false,
 				key: id,
@@ -124,7 +124,7 @@ JSB({
 		},
 		
 		insertSeparator: function(key, id){
-			this.getSuperClass('JSB.Widgets.ListBox').insertItem.call(this, key, {
+			this.getSuperClass().insertItem.call(this, key, {
 				allowHover: false,
 				allowSelect: false,
 				key: id,
@@ -134,7 +134,7 @@ JSB({
 		},
 
 		get: function(id){
-			var itemObj = this.getSuperClass('JSB.Widgets.ListBox').get.call(this, id);
+			var itemObj = this.base(id);
 			if(itemObj && itemObj.obj){
 				return itemObj.obj;
 			}
@@ -142,7 +142,7 @@ JSB({
 		},
 		
 		clear: function(){
-			this.getSuperClass('JSB.Widgets.ListBox').clear.call(this);
+			this.base();
 			this.publish('JSB.Widgets.ItemList.clear');
 		},
 		
@@ -152,7 +152,7 @@ JSB({
 				return this;
 			} 
 			
-			return this.getSuperClass('JSB.Widgets.ListBox').append.call(this, obj);
+			return this.base(obj);
 		}
 	}
 });
