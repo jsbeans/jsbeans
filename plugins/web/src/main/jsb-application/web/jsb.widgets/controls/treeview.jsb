@@ -467,22 +467,18 @@ JSB({
 		},
 		
 		scrollTo: function(key){
-			var postion = {};
-			if(JSO().isString(key)){
+			if(JSB().isString(key)){
 				// it's a key
 				var elt = this.getElement().find('li[key="'+key+'"]');
-				postion.left = elt.position().left;
-				postion.top = elt.position().top;
-			} else if(JSO().isNumber(key)){
+				this.scrollBox.scrollToElement(elt);
+			} else if(JSB().isNumber(key)){
 				// offset
-				postion.left = 0;
-				postion.top = key;
+				var left = 0;
+				var top = key;
+				this.scrollBox.scrollTo(-left, -top);
 			} else {
-				postion.left = this.$(target).position().left;
-				postion.top = this.$(target).position().top;
+				this.scrollBox.scrollToElement(key);
 			}
-			this.scrollBox.scrollTo(-postion.left, -postion.top);
 		}
-
 	}
 });

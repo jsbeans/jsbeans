@@ -16,7 +16,10 @@ JSB({
 				if(sender == self){
 					return;
 				}
-				self.activateHighlight(hid);
+				var hElt = self.activateHighlight(hid);
+				if(hElt){
+					self.publish('highlightActivated', hElt);
+				}
 			});
 		},
 		
@@ -85,6 +88,7 @@ JSB({
 			}
 			this.find('span.highlight').removeClass('active');
 			hElt.addClass('active');
+			return hElt;
 		}
 		
 	},

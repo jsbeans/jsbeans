@@ -80,6 +80,13 @@ JSB({
 				}
 				self.docRenderer.highlight(params.originalHighlight);
 			});
+			
+			this.subscribe('highlightActivated', function(sender, msg, hElt){
+				if(sender != self.docRenderer){
+					return;
+				}
+				self.scrollBox.scrollToElement(hElt);
+			});
 		},
 		
 		switchMode: function(mode){

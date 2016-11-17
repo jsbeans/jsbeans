@@ -32,7 +32,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class JsBridge {
     private static JsBridge instance = new JsBridge();
     private ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, ThreadLocal<ScriptableObject>> tlsMap = new ConcurrentHashMap<>();
 
 /*	
 	private Object mutex = new Object();
@@ -75,37 +74,17 @@ public class JsBridge {
             lockMap.remove(str);
         }
     }
-
-    public synchronized void putThreadLocal(String key, ScriptableObject val) {
-        ThreadLocal<ScriptableObject> tl = null;
-        if (!this.tlsMap.containsKey(key)) {
-            tl = new ThreadLocal<ScriptableObject>() {
-                @Override
-                protected ScriptableObject initialValue() {
-                    return null;
-                }
-
-            };
-            this.tlsMap.put(key, tl);
-        } else {
-            tl = this.tlsMap.get(key);
-        }
-
-        tl.set(val);
+    
+    public synchronized void putThreadLocal(String key, ScriptableObject val){
+    	Context.getCurrentContext().putThreadLocal(key, val);
     }
-
-    public ScriptableObject getThreadLocal(String key) {
-        if (!this.tlsMap.containsKey(key)) {
-            return null;
-        }
-        return this.tlsMap.get(key).get();
+    
+    public ScriptableObject getThreadLocal(String key){
+    	return (ScriptableObject)Context.getCurrentContext().getThreadLocal(key);
     }
-
-    public void removeThreadLocal(String key) {
-        if (!this.tlsMap.containsKey(key)) {
-            return;
-        }
-        this.tlsMap.get(key).remove();
+    
+    public void removeThreadLocal(String key){
+    	Context.getCurrentContext().removeThreadLocal(key);
     }
 
     public void sleep(final long msec) throws Exception {

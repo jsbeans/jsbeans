@@ -107,28 +107,7 @@
 		deferTimeoutMap: {},
 		globalInstances: {},
 		libraryScopes: {},
-		threadLocal: {		
-			put: function(key, val){
-				if(!this.tlsMap){
-					this.tlsMap = {};
-				}
-				this.tlsMap[key] = val;
-			},
-			get: function(key){
-				if(!this.tlsMap){
-					this.tlsMap = {};
-				}
-
-				return this.tlsMap[key];
-			},
-			clear: function(key){
-				if(!this.tlsMap){
-					this.tlsMap = {};
-				}
-
-				delete this.tlsMap[key];
-			}
-		},
+		threadLocal: null,
 /*		fieldMaps: {},*/
 		fieldArrs: {},
 		syncScopes: {},
@@ -178,7 +157,6 @@
 				'JSB.Locker': true,
 				'JSB.Logger': true,
 				'JSB.AjaxProvider': true,
-				'JSB.ThreadLocal': true,
 				'JSB.Profiler': true
 			};
 			return sysMap[this.name] ? true: false;
@@ -383,26 +361,80 @@
 				}
 				
 				// substitute body methods via checking proxy
+				function checkPrivate(curDesc, ctxStack){
+					if(ctxStack.length == 0){
+						throw 'Private method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' can\'t be called from anywhere';
+					}
+					var prevDesc = ctxStack[ctxStack.length - 1];
+					if(prevDesc.jsb != curDesc.jsb){
+						throw 'Private method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' is not accessible from ' + prevDesc.jsb.name + '.' + prevDesc.methodName;
+					}
+				}
+
+				function checkProtected(curDesc, ctxStack){
+					if(ctxStack.length == 0){
+						throw 'Protected method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' can\'t be called from anywhere';
+					}
+					var prevDesc = ctxStack[ctxStack.length - 1];
+					if(!prevDesc.jsb.isSubclassOf(curDesc.jsb)){
+						throw 'Protected method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' is not accessible from ' + prevDesc.jsb.name + '.' + prevDesc.methodName;
+					}
+				}
+
+				
 				for(var mtdName in body){
 					if(!this.isFunction(body[mtdName])){
 						continue;
 					}
 					(function(mtdName){
 						var proc = body[mtdName];
+						var privateMethod = false;
+						var protectedMethod = false;
+						if(mtdName[0] == '_'){
+							if(mtdName.length < 2){
+								throw 'Invalid method name "' + mtdName + '" in bean ' + self.name;
+							}
+							// private or protected method
+							protectedMethod = true;
+							
+							if(mtdName[1] == '_'){
+								if(mtdName.length < 3){
+									throw 'Invalid method name "' + mtdName + '" in bean ' + self.name;
+								}
+								
+								// private method
+								privateMethod = true;
+							}
+						}
 						body[mtdName] = function(){
 							var ctxStack = self.getCallingContext();
+							
+							// perform access call check
+							if(privateMethod){
+								checkPrivate({
+									jsb: self,
+									methodName: mtdName
+								}, ctxStack);
+							} else if(protectedMethod){
+								checkProtected({
+									jsb: self,
+									methodName: mtdName
+								}, ctxStack);
+							}
+
 							ctxStack.push({
 								jsb: self,
 								methodName: mtdName
 							});
 							
-							// TODO: perform call check
-							
-							// call original function
-							var res = proc.apply(this, arguments);
-							
-							// restore prev context
-							ctxStack.pop();
+							var res;
+							try {
+								// call original function
+								res = proc.apply(this, arguments);
+							} finally {
+								// restore prev context
+								ctxStack.pop();
+							}
 							
 							return res;
 						}
@@ -838,6 +870,40 @@
 			return ctx;
 		},
 		
+		stringifyCallingContext: function(){
+			var ctx = this.getCallingContext();
+			var dumpArr = [];
+			for(var i = 0; i < ctx.length; i++){
+				dumpArr.push({
+					jsb: (ctx[i] && ctx[i].jsb ? ctx[i].jsb.name : null),
+					methodName: (ctx[i] ? ctx[i].methodName : null)
+				});
+			}
+			
+			return JSON.stringify(dumpArr);
+		},
+		
+		saveCallingContext: function(){
+			var saveCtx = [];
+			var ctx = this.getCallingContext();
+			for(var i = 0; i < ctx.length; i++){
+				if(!ctx[i]){
+					continue;
+				}
+				saveCtx.push({
+					jsb: ctx[i].jsb,
+					methodName: ctx[i].methodName
+				});
+			}
+			
+			return saveCtx;
+		},
+		
+		putCallingContext: function(ctx){
+			var tls = this.getThreadLocal();
+			tls.put('_jsbCallingContext', ctx);
+		},
+		
 		getGroup: function(){
 			if(this.group){
 				if(this.isArray(this.group)){
@@ -1023,16 +1089,18 @@
 				});
 				// TODO: perform call check
 				
-				// call original function
-				if(ctor){
-					ctor.apply(this, arguments);
+				try {
+					// call original function
+					if(ctor){
+						ctor.apply(this, arguments);
+					}
+					if (!this._superCalled) {
+						this.base.apply(this, arguments);
+					}
+				} finally {
+					// restore prev context
+					ctxStack.pop();
 				}
-				if (!this._superCalled) {
-					this.base.apply(this, arguments);
-				}
-				
-				// restore prev context
-				ctxStack.pop();
 					
 				
 				this._superCalled = storeSuperCalled;
@@ -1061,12 +1129,14 @@
 						methodName: 'constructor'
 					});
 					// TODO: perform call check
+					try {
+						// call original function
+						ctor.apply(this, arguments);
+					} finally {
+						// restore prev context
+						ctxStack.pop();
+					}
 					
-					// call original function
-					ctor.apply(this, arguments);
-					
-					// restore prev context
-					ctxStack.pop();
 				}
 			}
 
@@ -1785,32 +1855,6 @@
 		},
 		
 		getThreadLocal: function(){
-/*			
-			if(!this.threadLocal){
-				this.threadLocal = {		
-					put: function(key, val){
-						if(!this.tlsMap){
-							this.tlsMap = {};
-						}
-						this.tlsMap[key] = val;
-					},
-					get: function(key){
-						if(!this.tlsMap){
-							this.tlsMap = {};
-						}
-	
-						return this.tlsMap[key];
-					},
-					clear: function(key){
-						if(!this.tlsMap){
-							this.tlsMap = {};
-						}
-	
-						delete this.tlsMap[key];
-					}
-				}
-			}
-*/			
 			return this.threadLocal;
 		},
 		
@@ -2087,7 +2131,9 @@
 			if(key && this.deferTimeoutMap[key]){
 				JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
 			}
+			var callCtx = this.saveCallingContext();
 			var deferTimeout = JSB().Window.setTimeout(function(){
+				self.putCallingContext(callCtx);
 				if(key && self.deferTimeoutMap[key]){
 					delete self.deferTimeoutMap[key];
 				}
@@ -2106,7 +2152,9 @@
 			if(key && this.deferTimeoutMap[key]){
 				JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
 			}
+			var callCtx = this.saveCallingContext();
 			var toProc = function(){
+				self.putCallingContext(callCtx);
 				var untilRes = false;
 				if(key && self.deferTimeoutMap[key]){
 					delete self.deferTimeoutMap[key];
@@ -2602,6 +2650,28 @@
 	// setup window
 	if(JSB().isClient()){
 		JSB().addLibraryScope('Window', window);
+		JSB().setThreadLocal({		
+			put: function(key, val){
+				if(!this.tlsMap){
+					this.tlsMap = {};
+				}
+				this.tlsMap[key] = val;
+			},
+			get: function(key){
+				if(!this.tlsMap){
+					this.tlsMap = {};
+				}
+
+				return this.tlsMap[key];
+			},
+			clear: function(key){
+				if(!this.tlsMap){
+					this.tlsMap = {};
+				}
+
+				delete this.tlsMap[key];
+			}
+		});
 	} else {
 		JSB().addLibraryScope('Window', {
 			setTimeout: function(proc, timeout){
@@ -2808,7 +2878,7 @@ JSB({
 		base: function(){
 			
 			var ret = undefined;
-			var ctxStack = this.jsb.getCallingContext()
+			var ctxStack = this.jsb.getCallingContext();
 
 			// get calling proc
 			if(ctxStack.length < 2){
@@ -2834,10 +2904,12 @@ JSB({
 					this.jso = parentCtor.prototype.jso;
 					this.jsb = parentCtor.prototype.jsb;
 					
-					parentCtor.apply(this, arguments);
-					
-					this.jso = storeJso;
-					this.jsb = storeJsb;
+					try {
+						parentCtor.apply(this, arguments);
+					} finally {
+						this.jso = storeJso;
+						this.jsb = storeJsb;
+					}
 				}
 				
 				this._superCalled = true;
@@ -2850,10 +2922,15 @@ JSB({
 					this.jso = cls.superclass.jso;
 					this.jsb = cls.superclass.jsb;
 					
-					ret = cls.superclass[callerCtx.methodName].apply(this, arguments);
-
-					this.jso = storeJso;
-					this.jsb = storeJsb;
+					try {
+						if(!cls.superclass[callerCtx.methodName]){
+							throw 'Internal Error: No method found: ' + callerCtx.methodName + '; context: ' + this.jsb.stringifyCallingContext();
+						}
+						ret = cls.superclass[callerCtx.methodName].apply(this, arguments);
+					} finally {
+						this.jso = storeJso;
+						this.jsb = storeJsb;
+					}
 				}
 			}
 			
@@ -3003,7 +3080,7 @@ JSB({
 					}
 					// iterate over all fields in syncInfo to find absent entries
 					for(var propName in syncInfoScope.data){
-						if(realScope[propName] === undefined){
+						if(realScope[propName] === undefined && syncInfoScope.data[propName].existed){
 							syncInfoScope.data[propName].timeStamp = timeStamp;
 							syncInfoScope.data[propName].existed = false;
 							syncInfoScope.data[propName].data = null;
@@ -3029,7 +3106,7 @@ JSB({
 					}
 					// removed
 					for(var i in syncInfoScope.data){
-						if(i >= realScope.length){
+						if(i >= realScope.length && syncInfoScope.data[i].existed){
 							syncInfoScope.data[i].existed = false;
 							syncInfoScope.data[i].timeStamp = timeStamp;
 							syncInfoScope.data[i].data = null;
@@ -3435,7 +3512,7 @@ JSB({
 				var slice = null;
 				if(this.lastDownloadSyncTimeStamp > 0){
 					slice = JSB().merge(true, JSB().isNull(this.oddSlice) ? {} : this.oddSlice, this.getSyncSlice(this.lastUploadSyncTimeStamp + 1));
-					this.lastUploadSyncTimeStamp = new Date().getTime();
+					this.lastUploadSyncTimeStamp = Date.now();
 				}
 				var ts = this.lastDownloadSyncTimeStamp + 1;
 				this.rpc('requestSyncInfo', [ts, slice], function(resp){
@@ -3455,7 +3532,7 @@ JSB({
 							self.applySlice(resp.slice, function(){
 								self._onAfterSync(resp.slice);
 								self.updateSyncState();
-								self.lastUploadSyncTimeStamp = new Date().getTime();
+								self.lastUploadSyncTimeStamp = Date.now();
 								_syncComplete();
 							});
 						} else {
@@ -3477,6 +3554,7 @@ JSB({
 			var params = null;
 			var callback = null;
 			var sync = false;
+			var self = this;
 			if(JSB().isFunction(arg1)){
 				callback = arg1;
 				sync = arg2;
@@ -3493,6 +3571,7 @@ JSB({
 			if(JSB().isNull(tJso)){
 				tJso = this.jso;
 			}
+			var callCtx = this.jsb.saveCallingContext();
 			JSB().getProvider().enqueueRpc({
 				jso: tJso.name,
 				instance: JSB().isNull(this.bindKey) ? this.id : this.bindKey,
@@ -3505,6 +3584,7 @@ JSB({
 				JSB().injectJsoInRpcResult(res, function(r){
 					args[0] = r;
 					if(callback){
+						self.jsb.putCallingContext(callCtx);
 						callback.apply(inst, args);	
 					}
 				});
@@ -3629,12 +3709,14 @@ JSB({
 				params = JSB().substJsoInRpcResult(arg1);
 				callback = arg2;
 			}
-			
+			var self = this;
+			var callCtx = this.jsb.saveCallingContext();
 			var wrapCallback = (callback ? function(res){
 				var inst = this;
 				var args = arguments;
 				JSB().injectJsoInRpcResult(res, function(r){
 					args[0] = r;
+					self.jsb.putCallingContext(callCtx);
 					callback.apply(inst, args);
 				});
 			} : null);
@@ -4322,37 +4404,7 @@ JSB({
 			
 	}
 });
-/*
-JSB({
-	name: 'JSB.ThreadLocal',
-	singleton: true,
-	common: {
-		constructor: function(){
-			JSB().setThreadLocal(this);
-		},
-		put: function(key, val){
-			if(!this.tlsMap){
-				this.tlsMap = {};
-			}
-			this.tlsMap[key] = val;
-		},
-		get: function(key){
-			if(!this.tlsMap){
-				this.tlsMap = {};
-			}
 
-			return this.tlsMap[key];
-		},
-		clear: function(key){
-			if(!this.tlsMap){
-				this.tlsMap = {};
-			}
-
-			delete this.tlsMap[key];
-		}
-	}
-});
-*/
 JSB({
 	name: 'JSB.Profiler',
 	common: {

@@ -645,6 +645,7 @@ public class JsHub extends Service {
                             cx.putThreadLocal("userToken", msg.getUserToken());
                             cx.putThreadLocal("clientAddr", msg.getClientAddr());
                             cx.putThreadLocal("clientRequestId", msg.getClientRequestId());
+                            cx.putThreadLocal("_jsbCallingContext", null);
                             Object resultObj = null;
                             if (msg.getBody() != null) {
 /*

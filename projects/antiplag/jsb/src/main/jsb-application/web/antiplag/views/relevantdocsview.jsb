@@ -31,6 +31,13 @@ JSB({
 					self.collapse();
 				}
 			});
+			
+			this.subscribe('highlightActivated', function(sender, msg, hElt){
+				if(sender != self.docRenderer){
+					return;
+				}
+				self.list.scrollTo(hElt);
+			});
 		},
 		
 		getTitle: function(){
@@ -219,7 +226,7 @@ JSB({
 			var text = doc.getPlainText();
 			
 			try {
-				var res = Http.request('POST','http://claster.avicomp.ru/nearest', {
+				var res = Http.request('POST', Config.get('antiplag.externals.nearest'), {
 					text: text,
 					threshold: 1 - threshold
 				});
@@ -241,7 +248,7 @@ JSB({
 		compareDocs: function(doc, compareDocId){
 			var text = doc.getPlainText();
 			try {
-				var res = Http.request('POST','http://claster.avicomp.ru/diff', {
+				var res = Http.request('POST', Config.get('antiplag.externals.diff'), {
 					text: text,
 					id: compareDocId
 				});

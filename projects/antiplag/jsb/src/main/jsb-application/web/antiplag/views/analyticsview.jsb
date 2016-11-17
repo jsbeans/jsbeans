@@ -26,7 +26,7 @@ JSB({
 			var relDocsTab = this.tabView.addTab('', this.relevantDocsView, {id: 'relDocs'});
 			relDocsTab.tab.attr('type', 'relDocs');
 			relDocsTab.tab.attr('title', 'Похожие документы');
-			
+/*			
 			// add storyline
 			this.storylineView = new Antiplag.StorylineView(this.options);
 			var storylineTab = this.tabView.addTab('', this.storylineView, {id: 'storyline', disabled: true});
@@ -40,6 +40,7 @@ JSB({
 			graphTab.tab.attr('title', 'Граф');
 
 			this.tabView.switchTab(relDocsTab);
+*/			
 		}
 		
 	},

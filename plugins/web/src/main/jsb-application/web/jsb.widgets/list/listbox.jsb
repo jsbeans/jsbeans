@@ -617,21 +617,18 @@ JSB({
 		},
 		
 		scrollTo: function(target, y){
-			var postion = {};
-			if(JSO().isString(target)){
+			if(JSB().isString(target)){
 				// it's a key
 				var elt = this.getElement().find('li[key="'+target+'"]');
-				postion.left = elt.position().left;
-				postion.top = elt.position().top;
-			} else if(JSO().isNumber(target)){
+				this.scrollBox.scrollToElement(elt);
+			} else if(JSB().isNumber(target)){
 				// offset
-				postion.left = target;
-				postion.top = y;
+				var left = target;
+				var top = y;
+				this.scrollBox.scrollTo(-left, -top);
 			} else {
-				postion.left = this.$(target).position().left;
-				postion.top = this.$(target).position().top;
+				this.scrollBox.scrollToElement(target);
 			}
-			this.scrollBox.scrollTo(-postion.left, -postion.top);
 		}
 	}
 });

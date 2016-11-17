@@ -6,19 +6,15 @@ JSB({
 			var self = this;
 			this.base(opts);
 			this.loadCss('scrollbox.css');
-			JSO().loadScript('tpl/iscroll/iscroll-probe.js', function(){
+			JSB().loadScript('tpl/iscroll/iscroll-probe.js', function(){
 				self.init();
 			});
-/*			
-			JSO().waitForObjectExist('window.IScroll',function(){
-				
-			});
-*/			
 		},
 		
 		options: {
 			scrollbars: true
 		},
+		
 		init: function(){
 			var self = this;
 			self.pan = {
@@ -479,6 +475,47 @@ JSB({
 				this.updateScrollTarget(x, y);
 //					this.scroll.scrollTo(x, y, 900, IScroll.utils.ease.quadratic);
 			}
+		},
+		
+		scrollToElement: function(target, vAlign, hAlign){
+			var paneRc = this.scrollPane.get(0).getBoundingClientRect();
+			var targetRc = this.$(target).get(0).getBoundingClientRect();
+			var sbRc = this.getElement().get(0).getBoundingClientRect();
+			if(!vAlign){
+				vAlign = 'center';
+			}
+			if(!hAlign){
+				hAlign = 'center';
+			}
+			var hOffs = 0;
+			var vOffs = 0;
+			
+			switch(vAlign){
+			case 'top':
+				vOffs = 0;
+				break;
+			case 'bottom':
+				vOffs = sbRc.bottom - sbRc.top;
+				break;
+			case 'center':
+				vOffs = (sbRc.bottom - sbRc.top) / 2;
+				break;
+			}
+			
+			switch(hAlign){
+			case 'left':
+				hOffs = 0;
+				break;
+			case 'right':
+				hOffs = sbRc.right - sbRc.left;
+				break;
+			case 'center':
+				hOffs = (sbRc.right - sbRc.left) / 2;
+				break;
+			}
+			var left = targetRc.left - paneRc.left - hOffs;
+			var top = targetRc.top - paneRc.top - vOffs;
+			this.scrollTo(-left, -top);
 		},
 		
 		getScrollPosition: function(){
