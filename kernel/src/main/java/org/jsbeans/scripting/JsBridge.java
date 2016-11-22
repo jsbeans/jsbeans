@@ -75,6 +75,10 @@ public class JsBridge {
         }
     }
     
+    public boolean isJavaObject(Object obj){
+    	return obj != null && !(obj instanceof Boolean) && !(obj instanceof String) && !(obj instanceof Number) && !(obj instanceof ScriptableObject);
+    }
+    
     public synchronized void putThreadLocal(String key, ScriptableObject val){
     	Context.getCurrentContext().putThreadLocal(key, val);
     }

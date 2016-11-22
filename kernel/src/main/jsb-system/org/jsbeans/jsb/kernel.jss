@@ -139,15 +139,29 @@ JSB({
 			});
 		},
 		
-		getJSO: function(name){
-			var jso = JSB().get(name);
-			if(JSB().isNull(jso)){
+		getClientJSB: function(name){
+			var clientFieldBlacklist = {
+				'server': true,
+				'_clientProcs': true,
+				'_ready': true,
+				'_requireCnt': true,
+				'_cls': true
+			};
+			var jsb = JSB().get(name);
+			if(JSB().isNull(jsb)){
 				Log.error('Unable to find JSB: ' + name);
 				return null;
 			}
-			return jso;
-//				return jso.group ? jso.getGroup() : jso; 
+			
+			var cJsb = {};
+			for(var f in jsb){
+				if(jsb.hasOwnProperty(f) && !clientFieldBlacklist[f]){
+					cJsb[f] = jsb[f];
+				}
+			}
+			return cJsb;
 		},
+
 		
 		restart: function(){
 			return this.ask('RestartService', 'RestartMessage', {});

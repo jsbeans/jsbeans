@@ -44,10 +44,10 @@
 				if(!par || !par.jsb || par.jsb.name != cfg.parent){
 					throw 'Unable to create bean "' + cfg.name + '" due to wrong parent specified: "' + cfg.parent + '"' + (par && par.jsb ? '; found: '+par.jsb.name: '');
 				}
-				self.create(cfg, par.jsb);
+				self._create(cfg, par.jsb);
 			});
 		} else {
-			this.create(cfg);
+			this._create(cfg);
 		}
 		
 		return this;
@@ -124,7 +124,11 @@
 			}
 			return this._isClient;
 		},
-		
+
+		isServer: function(){
+			return !this.isClient();
+		},
+
 		isSingleton: function(){
 			var s = false;
 			if(this.singleton){
@@ -288,7 +292,7 @@
 			}
 		},
 		
-		create: function(cfg, parent){
+		_create: function(cfg, parent){
 			if(cfg.format == 'jso'){
 				throw 'Unable to create bean "' + cfg.name + '" due to JSO format is no longer supported';
 			}
@@ -298,8 +302,8 @@
 			var self = this;
 			
 			this.merge(true, this, cfg);
-			this.ready = false;
-			this.prepareSections(parent);
+			this._ready = false;
+			this._prepareSections(parent);
 			
 			// inherit parent's jso options
 			var entry = this.currentSection();
@@ -383,7 +387,7 @@
 
 				
 				for(var mtdName in body){
-					if(!this.isFunction(body[mtdName])){
+					if(!this.isFunction(body[mtdName]) || this.isJavaObject(body[mtdName])){
 						continue;
 					}
 					(function(mtdName){
@@ -408,7 +412,7 @@
 						}
 						body[mtdName] = function(){
 							var ctxStack = self.getCallingContext();
-							
+/*							
 							// perform access call check
 							if(privateMethod){
 								checkPrivate({
@@ -421,7 +425,7 @@
 									methodName: mtdName
 								}, ctxStack);
 							}
-
+*/
 							ctxStack.push({
 								jsb: self,
 								methodName: mtdName
@@ -452,17 +456,17 @@
 				}
 				
 				if(parent == null || parent == undefined || parent.currentSection() == null){
-					entry.cls = this._class(ctor, body);
+					this._cls = this._class(ctor, body);
 				} else {
-					entry.cls = this._extends(parent.currentSection().cls, ctor, body);
+					this._cls = this._extends(parent._cls, ctor, body);
 				}
-				entry.cls.prototype.jso = this;
-				entry.cls.prototype.targetJso = this;
-				entry.cls.prototype.jsb = this;
-				entry.cls.prototype.targetJsb = this;
+				this._cls.prototype.jso = this;
+				this._cls.prototype.targetJso = this;
+				this._cls.prototype.jsb = this;
+				this._cls.prototype.targetJsb = this;
 			}
 			
-			this.registerObject();
+			this._registerObject();
 		},
 		
 		setupLibraries: function(proto){
@@ -471,7 +475,7 @@
 			}
 		},
 		
-		prepareSections: function(parent){
+		_prepareSections: function(parent){
 			var self = this;
 			
 			if(this.isClient()){
@@ -501,7 +505,7 @@
 				if(this.format == 'jsb' && !JSB.isNull(this.server) && !JSB.isNull(this.client)){
 					var serverBody = this.server;
 					var curJsb = this;
-					var scope = this.clientProcs = this.clientProcs || {};
+					var scope = this._clientProcs = this._clientProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
@@ -523,7 +527,10 @@
 						for(var b = 0; b < bodies.length; b++){
 							var curBody = bodies[b];
 							for(var procName in curBody){
-								if(!JSB().isFunction(curBody[procName])){
+								if(this.isJavaObject(curBody[procName])){
+									throw 'Error: Java field "' + procName + '" is not permitted in client-side section of bean ' + this.name;
+								}
+								if(!this.isFunction(curBody[procName])){
 									continue;
 								}
 //								var scope = serverBody.client = serverBody.client || {};
@@ -555,7 +562,7 @@
 					}
 					
 					var curJsb = this;
-					var scope = this.serverProcs = this.serverProcs || {};
+					var scope = this._serverProcs = this._serverProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
@@ -641,18 +648,8 @@
 		currentSection: function(){
 			if(this.isClient() ){
 				return this.client;
-/*				
-				if(this.isObject(this.client)){
-					return this.client;
-				}
-*/				
 			} else {
 				return this.server;
-/*				
-				if(this.isObject(this.server)){
-					return this.server;
-				}
-*/				
 			}
 			
 			return null;
@@ -677,7 +674,7 @@
 		
 		isJavaObject: function(obj){
 			if(!this.isClient()){
-				return obj instanceof java.lang.Object;
+				return obj instanceof java.lang.Object || Bridge.isJavaObject(obj);
 			} else {
 				return false;
 			}
@@ -775,7 +772,7 @@
 		},
 		
 		isSubclassOf: function(str){
-			if(str instanceof JSO){
+			if(str instanceof JSB){
 				str = str.name;
 			}
 			if(this.name == str){
@@ -790,7 +787,7 @@
 				}
 				return false;
 			}
-			var parentJso = JSB().get(this.parent);
+			var parentJso = this.get(this.parent);
 			return parentJso.isSubclassOf(str);
 		},
 		
@@ -968,8 +965,8 @@
 						if (deep && 
 							copy && 
 							(this.isPlainObject(copy, true) || (copyIsArray = this.isArray(copy))) && 
-							!JSB().isJavaObject(copy) && 
-							!(copy instanceof JSO) &&
+							!this.isJavaObject(copy) && 
+							!(copy instanceof JSB) &&
 							!this.isInstanceOf(copy, 'Bean') &&
 							(!JSB().isClient() || (!(copy instanceof HTMLElement))&&(!(copy == document)))) {
 							if (copyIsArray) {
@@ -1148,13 +1145,14 @@
 			return newFunc;
 		},
 		
-		run: function(wName, opts, callback){
+		create: function(wName, opts, callback){
+			var self = this;
 			this.lookup(wName, function(f){
 				var w = f;
-				if(JSB().isFunction(f)){
+				if(self.isFunction(f)){
 					w = new f(opts);
 				}
-				if(!JSB().isNull(callback)){
+				if(!self.isNull(callback)){
 					callback(w);
 				}
 			});
@@ -1176,20 +1174,20 @@
 		
 		lookup: function(name, callback, forceUpdate){
 			var self = this;
-			if(this.objects[name] && this.objects[name].ready && !forceUpdate && callback){
+			if(this.objects[name] && this.objects[name]._ready && !forceUpdate && callback){
 				var ctObj = this.classTree(name);
 				callback.call(this, ctObj);
 				return;
 			}
 			
-			if(this.registering[name] || (self.objects[name] && !self.objects[name].ready) ){
+			if(this.registering[name] || (self.objects[name] && !self.objects[name]._ready) ){
 				JSB().deferUntil(function(){
 					self._lookup(name, callback, forceUpdate);
 				}, function(){
-					return self.objects[name] && self.objects[name].ready;
+					return self.objects[name] && self.objects[name]._ready;
 /*					
 					var ctObj = self.classTree(name);
-					return ctObj && ((self.objects[name] && self.objects[name].ready) || (JSB().isFunction(ctObj) && ctObj.jsb.ready) || self.requestedPackages[name]);
+					return ctObj && ((self.objects[name] && self.objects[name]._ready) || (JSB().isFunction(ctObj) && ctObj.jsb._ready) || self.requestedPackages[name]);
 */					
 				});
 			} else {
@@ -1198,7 +1196,7 @@
 		},
 		
 		_lookup: function(name, callback, forceUpdate){
-			if(this.objects[name] && this.objects[name].ready && !forceUpdate && callback){
+			if(this.objects[name] && this.objects[name]._ready && !forceUpdate && callback){
 				var ctObj = this.classTree(name);
 				callback.call(this, ctObj);
 				return;
@@ -1473,7 +1471,7 @@
 			
 		},
 		
-		registerObject: function(){
+		_registerObject: function(){
 			var self = this;
 			
 			// prepare field map
@@ -1572,9 +1570,9 @@
 				for(var i in requires){
 					reqLst.push(i);
 				}
-				self.requireCnt = reqLst.length;
-				if(self.requireCnt == 0){
-					self.afterLoadObject();
+				self._requireCnt = reqLst.length;
+				if(self._requireCnt == 0){
+					self._afterLoadObject();
 				} else {
 					for(var i in reqLst){
 						var req = reqLst[i];
@@ -1583,35 +1581,36 @@
 							var jso = cls.jsb;
 							
 							var alias = requires[jso.name];
-							var locker = JSB().getLocker();
+							var locker = self.getLocker();
 							if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
-							self.requireCnt--;
+							self._requireCnt--;
 							if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
-							if(JSB().isFunction(alias)){
+							if(self.isFunction(alias)){
 								alias.call(self, cls);
-							} else if(JSB().isArray(alias)) {
+							} else if(self.isArray(alias)) {
 								for(var j in alias){
-									self.deploy(alias[j], cls, true, entry.cls.prototype);
+									self.deploy(alias[j], cls, true, self._cls.prototype);
 								}
 							} else {
-								self.deploy(alias, cls, true, entry.cls.prototype);
+								self.deploy(alias, cls, true, self._cls.prototype);
 							}
 //								delete requires[jso.name];
 							
-							if(self.requireCnt == 0){
-								self.afterLoadObject();
+							if(self._requireCnt == 0){
+								self._afterLoadObject();
 							}
 						});
 					}
 				}
 			} else {
-				this.afterLoadObject();
+				this._afterLoadObject();
 			}
 			
 		},
 		
-		afterLoadObject: function(){
+		_afterLoadObject: function(){
 			var self = this;
+			delete self._requireCnt;
 /*			
 			// check class already exists
 			try {
@@ -1625,16 +1624,16 @@
 			// setup libraries
 			var entry = this.currentSection();
 			if(entry){
-				this.setupLibraries(entry.cls.prototype);
+				this.setupLibraries(this._cls.prototype);
 			}
 			
 			// deploy object into class tree
-			if(entry.cls.jsb && entry.cls.jsb.name != this.name){
-				throw 'System error: wrong inheritance occured due to loading "' + this.name + '": found "' + entry.cls.jsb.name + '"';
+			if(this._cls.jsb && this._cls.jsb.name != this.name){
+				throw 'System error: wrong inheritance occured due to loading "' + this.name + '": found "' + this._cls.jsb.name + '"';
 			}
-			entry.cls['jsb'] = this;
+			this._cls['jsb'] = this;
 			if(entry){
-				this.deploy(this.name, entry.cls);
+				this.deploy(this.name, this._cls);
 			}
 
 			// add to objects
@@ -1732,7 +1731,7 @@
 			var self = this;
 
 			function keepFinalize(){
-				self.ready = true;
+				self._ready = true;
 				self.runOnLoadCallbacks();
 				self.matchWaiters();
 			}
@@ -1740,7 +1739,7 @@
 			var entry = self.currentSection();
 			if(entry && self.isSingleton()){
 				function ccall(){
-					var f = entry.cls;
+					var f = self._cls;
 					var o = new f();
 					
 					self.deploy(self.name, o);
@@ -1808,12 +1807,7 @@
 		},
 
 		getClass: function(){
-			var entry = this.currentSection();
-			if(entry && entry.cls){
-				return entry.cls;
-			}
-			
-			return null;
+			return this._cls;
 		},
 		
 		setProvider: function(p){
@@ -3449,7 +3443,7 @@ JSB({
 			var f = function(){
 				this.__instance = self;
 			};
-			f.prototype = this.jsb.serverProcs;
+			f.prototype = this.jsb._serverProcs;
 			return new f();
 		},
 
@@ -3636,7 +3630,7 @@ JSB({
 			var f = function(){
 				this.__instance = self;
 			};
-			f.prototype = this.jsb.clientProcs;
+			f.prototype = this.jsb._clientProcs;
 			return new f();
 		},
 

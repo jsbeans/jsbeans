@@ -55,19 +55,26 @@ public class JsbServlet extends HttpServlet {
             }
             if (jsoResult != null && jsoResult.getResult() != null) {
                 JsObject jsoFull = jsoResult.getResult();
+/*                
                 if (jsoFull.getResultType() == JsObjectType.JSONARRAY) {
                     for (int i = 0; i < jsoFull.getArraySize(); i++) {
                         JsObject item = jsoFull.getArrayItem(i);
                         if (item.getAttribute("server") != null) {
                             item.removeFromObject("server");
                         }
+                        if(item.getAttribute("clientProcs") != null){
+                        	item.removeFromObject("clientProcs");
+                        }
                     }
                 } else if (jsoFull.getResultType() == JsObjectType.JSONOBJECT) {
                     if (jsoFull.getAttribute("server") != null) {
                         jsoFull.removeFromObject("server");
                     }
+                    if (jsoFull.getAttribute("clientProcs") != null) {
+                        jsoFull.removeFromObject("clientProcs");
+                    }
                 }
-
+*/
                 jObj.addToObject("result", jsoFull);
             } else {
                 jObj.addToObject("result", "");

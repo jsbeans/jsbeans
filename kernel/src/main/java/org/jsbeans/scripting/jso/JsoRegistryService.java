@@ -182,6 +182,7 @@ public class JsoRegistryService extends Service {
             if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                 execMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
             }
+            execMsg.setToken(jsoPath);
             Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
             Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());
             if (result instanceof UpdateStatusMessage) {
@@ -208,7 +209,7 @@ public class JsoRegistryService extends Service {
                     public Future<Object> run(String name) throws PlatformException {
                         // try to lookup locally via JsHub
                         LookupJsoMessage msg = this.getArgument(0);
-                        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(String.format("Kernel.getJSO('%s');", name), false);
+                        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(String.format("Kernel.getClientJSB('%s');", name), false);
                         execMsg.setScopePath(msg.getSession());
                         execMsg.setUser(msg.getUser());
                         execMsg.setUserToken(msg.getUserToken());
@@ -227,14 +228,14 @@ public class JsoRegistryService extends Service {
                     public void onComplete(Chain<?, UpdateStatusMessage> chain, UpdateStatusMessage result, Throwable fail) throws PlatformException {
                         ActorRef sender = this.getArgument(0);
                         if (fail != null) {
-                            getLog().error(String.format("JSO lookup failed with the following error '%s'", fail.getMessage()), fail);
+                            getLog().error(String.format("JSB lookup failed with the following error '%s'", fail.getMessage()), fail);
                             sender.tell(new LookupJsoMessage(fail), getSelf());
                             return;
                         }
                         if (result.status == ExecutionStatus.SUCCESS) {
                             sender.tell(new LookupJsoMessage(result.result), getSelf());
                         } else {
-                            getLog().error(String.format("JSO lookup completes with unsuccessfull code: '%s'", result.error), fail);
+                            getLog().error(String.format("JSB lookup completes with unsuccessfull code: '%s'", result.error), fail);
                             sender.tell(new LookupJsoMessage(new PlatformException(result.error)), getSelf());
                         }
 

@@ -88,7 +88,32 @@ JSB({
 			var documentsReactor = Antiplag.WorkspaceManager.getDocumentsReactor(this.workspace.workspace);
 			var plaintext = '' + documentsReactor.readPlaintextAsString(this.document);
 			
-			return plaintext;
+			// prepare document
+			var newPlainText = '';
+			var pArr = plaintext.split('\n');
+			for(var i = pArr.length - 1; i >= 0 ; i--){
+				if(!pArr[i] || pArr[i].length === 0){
+					pArr.splice(i, 1);
+				}
+			}
+			for(var i = 0; i < pArr.length; i++){
+				if(pArr[i] && pArr[i].length > 0){
+					newPlainText += pArr[i];
+				}
+				if(i < pArr.length - 1){
+					if((pArr[i + 1].length > 0 && pArr[i + 1][0] == pArr[i + 1][0].toUpperCase() && pArr[i][pArr[i].length - 1] != ',')
+						/*||(pArr[i].length > 0 && (pArr[i][pArr[i].length - 1] == '.' || pArr[i][pArr[i].length - 1] == ';' || pArr[i][pArr[i].length - 1] == ':' || pArr[i][pArr[i].length - 1] == '?' || pArr[i][pArr[i].length - 1] == '!'))*/){
+						newPlainText += '\n';
+					} else {
+						if(!/\s/.test(pArr[i][pArr[i].length - 1]) && !/\s/.test(pArr[i + 1][0])){
+							newPlainText += ' ';
+						}
+					}
+				}
+			}
+			
+			
+			return newPlainText;
 		},
 		
 		saveText: function(txt){
