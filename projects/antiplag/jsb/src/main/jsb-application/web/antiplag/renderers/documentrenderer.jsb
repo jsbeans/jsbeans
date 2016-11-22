@@ -39,7 +39,6 @@ JSB({
 			
 			for(var i = 0; i < this.highlights.length; i++){
 				var h = this.highlights[i];
-				console.log(JSON.stringify(h));
 				var keyword = h.text;
 				var fromIdx = h.offset + deltaOffset;
 				var toIdx = fromIdx + h.length;
