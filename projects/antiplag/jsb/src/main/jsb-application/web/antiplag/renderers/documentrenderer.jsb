@@ -75,34 +75,38 @@ JSB({
 		},
 		
 		highlight: function(hArr){
-			// prepare highlights
-			var nArr = [];
-			for(var i = 0; i < hArr.length; i++){
-				var h = hArr[i];
-				if(h.text && h.text.indexOf('\n') >= 0){
-					var curOffset = h.offset;
-					var hParts = h.text.split('\n');
-					for(var j = 0; j < hParts.length; j++){
-						if(hParts[j].length > 0){
-							nArr.push({
-								id: h.id,
-								docId: h.docId,
-								text: hParts[j],
-								offset: curOffset,
-								length: hParts[j].length
-							});
+			if(hArr){
+				// prepare highlights
+				var nArr = [];
+				for(var i = 0; i < hArr.length; i++){
+					var h = hArr[i];
+					if(h.text && h.text.indexOf('\n') >= 0){
+						var curOffset = h.offset;
+						var hParts = h.text.split('\n');
+						for(var j = 0; j < hParts.length; j++){
+							if(hParts[j].length > 0){
+								nArr.push({
+									id: h.id,
+									docId: h.docId,
+									text: hParts[j],
+									offset: curOffset,
+									length: hParts[j].length
+								});
+							}
+							curOffset += hParts[j].length + 1;
 						}
-						curOffset += hParts[j].length + 1;
+					} else {
+						nArr.push(h);
 					}
-				} else {
-					nArr.push(h);
 				}
+				
+				this.highlights = nArr;
+				this.highlights.sort(function(a, b){
+					return a.offset - b.offset;
+				});
+			} else {
+				this.highlights = [];
 			}
-			
-			this.highlights = nArr;
-			this.highlights.sort(function(a, b){
-				return a.offset - b.offset;
-			});
 			this.redraw();
 		},
 		

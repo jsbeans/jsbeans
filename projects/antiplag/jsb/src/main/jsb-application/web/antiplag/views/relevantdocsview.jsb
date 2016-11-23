@@ -15,18 +15,38 @@ JSB({
 			this.append(this.distance);
 			this.distance.find('span').text('' + (1 - this.options.info.distance).toFixed(2));
 			
+			this.docContainer = this.$('<div class="docContainer"></div>');
+			this.collapser = this.$('<div class="collapser"><div class="triangle">&#9652;</div></div>');
+			this.docContainer.append(this.collapser);
 			this.docRenderer = new Antiplag.DocumentRenderer();
-			this.append(this.docRenderer);
+			this.docContainer.append(this.docRenderer.getElement());
+			this.append(this.docContainer);
 			
 			this.errorMessage = this.$('<div class="error"></div>');
 			this.append(this.errorMessage);
 			
+			this.collapser.click(function(){
+				self.isCollapsing = true;
+				self.collapse(function(){
+					self.isCollapsing = false;
+					self.publish('relDocHighlight',{
+						document: self.options.document,
+						originalHighlight: null
+					});
+					self.list.selectItem();
+					self.list.highlightItem(self.getKey());
+					self.list.scrollTo(self.title);
+				});
+			});
+			
 			this.subscribe('relevantDocChanged', function(sender, msg, params){
-				if(self.list != sender){
+				if(self.list != sender || !params.key){
 					return;
 				}
 				if(params.key == self.key){
-					self.expand(params.document, params.view);
+					self.expand(params.document, params.view, function(){
+						self.list.scrollTo(self.title, 'top');
+					});
 				} else {
 					self.collapse();
 				}
@@ -40,21 +60,41 @@ JSB({
 			});
 		},
 		
+		updateCollapser: function(){
+			if(this.isCollapsing){
+				return;
+			}
+			var listRc = this.list.getElement().get(0).getBoundingClientRect();
+			var docContainerRc = this.docContainer.get(0).getBoundingClientRect();
+			var nRc = {
+				top: Math.max(listRc.top, docContainerRc.top) - docContainerRc.top,
+				bottom: docContainerRc.bottom - Math.min(listRc.bottom, docContainerRc.bottom) 
+			}
+			this.collapser.css(nRc);
+		},
+		
 		getTitle: function(){
 			var title = this.options.info.title;
+/*			
 			if(title && title.length > 0 && (title[0] == '"' || title[0] == '\'')){
 				title = JSON.parse(title);
 			}
+*/			
 			return title;
 		},
 		
-		collapse: function(){
+		collapse: function(callback){
 			if(!this.expanded){
 				return;
 			}
 			this.expanded = false;
-			this.docRenderer.getElement().slideUp();
-			this.errorMessage.slideUp();
+			if(this.docContainer.is(':visible')){
+				this.docContainer.slideUp(callback);
+			} else if(this.errorMessage.is(':visible')){
+				this.errorMessage.slideUp(callback);
+			}
+			
+			
 		},
 		
 		cleanDocBody: function(txt){
@@ -67,7 +107,7 @@ JSB({
 			return curTxt;
 		},
 		
-		expand: function(doc, view){
+		expand: function(doc, view, callback){
 			var self = this;
 			if(this.expanded){
 				return;
@@ -79,7 +119,7 @@ JSB({
 				if(res.success){
 					var compareDocBody = res.result.Body;//self.cleanDocBody(res.result.Body);
 					self.docRenderer.setText(compareDocBody);
-					self.docRenderer.getElement().slideDown();
+					self.docContainer.slideDown(callback);
 					
 					// prepare highlights
 					var hArr1 = [], hArr2 = [];
@@ -173,6 +213,14 @@ JSB({
 			this.docsElt = new JSB.Widgets.ItemList({
 				onSelectionChanged: function(key, item, evt){
 					self.docsElt.publish('relevantDocChanged', {key: key, item: item, document: self.options.document, view: self});
+				},
+				onScroll: function(x, y){
+					var selArr = self.docsElt.getSelected();
+					if(!selArr || selArr.length === 0){
+						return;
+					}
+					var item = selArr[0];
+					item.updateCollapser();
 				}
 			});
 			this.docsElt.addClass('docList');

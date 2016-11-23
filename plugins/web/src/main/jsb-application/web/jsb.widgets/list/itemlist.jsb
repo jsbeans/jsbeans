@@ -249,6 +249,10 @@ JSB({
 		
 		viewChanged: function(viewName){
 			console.log('viewChanged: ' + viewName);
+		},
+		
+		getKey: function(){
+			return this.key;
 		}
 	}
 });

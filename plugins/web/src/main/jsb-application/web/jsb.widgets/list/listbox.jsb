@@ -381,6 +381,15 @@ JSB({
 		
 		selectItem: function(key, evt, keepSelection, unselect){
 			var selectedCls = 'selected';
+			
+			if(!key){
+				var itemWrapper = this.rootElt.find('> .' +selectedCls);
+				itemWrapper.removeClass(selectedCls);
+				this.selected = [];
+				this.notifySelChanged(evt);
+				return;
+			}
+			
 			var keyArr = [];
 			if(!JSO().isArray(key)){
 				keyArr.push(key);
@@ -616,7 +625,7 @@ JSB({
 			});
 		},
 		
-		scrollTo: function(target, y){
+		scrollTo: function(target, y, arg){
 			if(JSB().isString(target)){
 				// it's a key
 				var elt = this.getElement().find('li[key="'+target+'"]');
@@ -627,7 +636,7 @@ JSB({
 				var top = y;
 				this.scrollBox.scrollTo(-left, -top);
 			} else {
-				this.scrollBox.scrollToElement(target);
+				this.scrollBox.scrollToElement(target, y, arg);
 			}
 		}
 	}

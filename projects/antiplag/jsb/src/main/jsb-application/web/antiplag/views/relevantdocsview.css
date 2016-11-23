@@ -62,8 +62,41 @@
 	color: #984a4a;
 }
 
-.relevantDocsView > .docList ._dwp_listItem > .documentRenderer {
+.relevantDocsView > .docList ._dwp_listItem > .docContainer {
 	display: none;
+	position: relative;
+	margin-top: 4px;
+}
+
+.relevantDocsView > .docList ._dwp_listItem > .docContainer > .collapser {
+	position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: #ece4d2;
+    border-radius: 4px;
+    border: 1px solid #d2c5a9;
+    cursor: pointer;
+    
+    transition: background 200ms, border 200ms;
+}
+
+.relevantDocsView > .docList ._dwp_listItem > .docContainer > .collapser > .triangle {
+	top: 50%;
+    position: absolute;
+    margin-top: -9px;
+    font-size: 14px;
+    color: #8a5d43;
+}
+
+.relevantDocsView > .docList ._dwp_listItem > .docContainer > .collapser:hover {
+    background: #decca5;
+    border: 1px solid #c1b08c;
+}
+
+.relevantDocsView > .docList ._dwp_listItem > .docContainer > .documentRenderer {
+	padding: 0 4px 4px 16px;
 }
 
 .relevantDocsView > .docList ._dwp_listItem > .error {
