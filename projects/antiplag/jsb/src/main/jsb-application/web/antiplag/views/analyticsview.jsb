@@ -18,6 +18,7 @@ JSB({
 				tabPosition: 'left',
 				allowCloseTab: false,
 				allowNewTab: false,
+				showTabs: false
 			});
 			this.append(this.tabView);
 			
