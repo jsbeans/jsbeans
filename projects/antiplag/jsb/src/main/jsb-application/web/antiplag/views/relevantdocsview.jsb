@@ -277,6 +277,9 @@ JSB({
 				var res = Http.request('POST', Config.get('antiplag.externals.nearest'), {
 					text: text,
 					threshold: 1 - threshold
+				}, {
+					connectTimeout: Config.get('antiplag.externals.connectTimeout'), 
+					socketTimeout: Config.get('antiplag.externals.socketTimeout')
 				});
 				
 				if(res.responseCode == 200){
@@ -299,6 +302,9 @@ JSB({
 				var res = Http.request('POST', Config.get('antiplag.externals.diff'), {
 					text: text,
 					id: compareDocId
+				}, {
+					connectTimeout: Config.get('antiplag.externals.connectTimeout'), 
+					socketTimeout: Config.get('antiplag.externals.socketTimeout')
 				});
 				
 				if(res.responseCode == 200){
