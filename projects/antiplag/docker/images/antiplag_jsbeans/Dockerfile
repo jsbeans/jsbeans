@@ -9,14 +9,14 @@ RUN cd /root/jsbeans && ls -l
 #    tar -xzf $file && \
 #    rm -f $file
 
-ADD config /root/jsbeans/config
+ADD config /root/jsbeans/jsb-application/config
 
 EXPOSE 8888
 
 RUN chmod +x /root/jsbeans/jsb-application/*.sh
 
-CMD cd /root/jsbeans/jsb-application && ./start_release.sh
+CMD cp -rf /root/jsbeans/jsb-application/external_config/* /root/jsbeans/jsb-application/config ; cd /root/jsbeans/jsb-application && ./start_release.sh
 
 VOLUME /root/.antiplag
-VOLUME /root/jsbeans/logs
-
+VOLUME /root/jsbeans/jsb-application/logs
+VOLUME /root/jsbeans/jsb-application/external_config
