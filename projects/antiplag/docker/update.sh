@@ -48,6 +48,9 @@ case $1 in
         name=${1:-$default_name}
         $0 install && sshpass -p "$default_pwd" ssh $srv "cd $name && $0 update && $0 restart"
     ;;
+    remotedeploy)
+         sshpass -p "$default_pwd" ssh $default_srv -t "cd $default_name && $0 deploy"
+    ;;
     deploy)
         echo -n "Enter deploy server password ($deploy_server): " && read -s deploy_pwd && echo
         #$0 autoupdate || exit $?
