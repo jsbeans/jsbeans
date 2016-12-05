@@ -52,17 +52,21 @@ import java.util.concurrent.TimeUnit;
 @DependsOn({SecurityService.class})
 public class JsHub extends Service {
     private static final boolean openDebugger = ConfigHelper.getConfigBoolean("kernel.jshub.openDebugger");
+    private static final boolean createDump = ConfigHelper.getConfigBoolean("kernel.jshub.createDump");
+    
     //	private static final String JSS_FOLDER_KEY = "kernel.jss.folder";
     private static final long completeDelta = ConfigHelper.getConfigInt("kernel.jshub.stateCompleteTimeout");
     private static final long execDelta = ConfigHelper.getConfigInt("kernel.jshub.stateExecutingTimeout");
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
-    private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpire");
+    private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpireTimeout");
     private static final int jsOptimizationLevel = -1;
     private static final int jsLanguageVersion = Context.VERSION_1_8;
-    private final Map<String, JsCmdState> stateMap = new HashMap<>();
+    
+    private final Map<String, JsCmdState> stateMap = new ConcurrentHashMap<String, JsCmdState>();
+    
 //	private static Global jsGlobal = new Global();
-    private final Map<String, Cancellable> timeoutMap = new HashMap<>();
-    private final Map<String, MessageDispatcher> dispatcherMap = new HashMap<>();
+    private final Map<String, Cancellable> timeoutMap = new ConcurrentHashMap<String, Cancellable>();
+//    private final Map<String, MessageDispatcher> dispatcherMap = new HashMap<>();
     private final Map<String, Map<String, Object>> execMapScript = new ConcurrentHashMap<String, Map<String, Object>>();
     private Main debugger;
     private ContextFactory contextFactory;
@@ -406,7 +410,7 @@ public class JsHub extends Service {
                         execMsg.setUserToken(msg.getUserToken());
                         execMsg.setClientRequestId(msg.getClientRequestId());
                         execMsg.setClientAddr(msg.getClientAddr());
-                        getSelf().tell(execMsg, getSelf());
+                        getSelf().tell(execMsg, sender);
                     }
                 }
             }
@@ -654,11 +658,12 @@ public class JsHub extends Service {
 								jsCallCount++;
 							}
 */
-                                dumpScript(scriptId, msg.getBody(), null, true);
+                            	if(createDump){
+                            		dumpScript(scriptId, msg.getBody(), null, true);
+                            	}
 
                                 resultObj = cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null);
 
-                                dumpScript(scriptId, null, null, false);
 /*
 							synchronized(mutex){
 								jsCallCount--;
@@ -666,19 +671,22 @@ public class JsHub extends Service {
 							}
 */
                             } else if (msg.getFunction() != null) {
+                            	Object[] args = msg.getArgs();
                                 List<Object> objArr = new ArrayList<Object>();
-                                JsObjectSerializerHelper jser = new JsObjectSerializerHelper();
-                                for (Object obj : msg.getArgs()) {
-                                    objArr.add(jser.jsonElementToNativeObject(GsonWrapper.toGsonJsonElement(obj), cx, scope));
+                            	if(args.length > 0){
+                                    JsObjectSerializerHelper jser = new JsObjectSerializerHelper();
+                                    for (Object obj : args) {
+                                        objArr.add(jser.jsonElementToNativeObject(GsonWrapper.toGsonJsonElement(obj), cx, scope));
+                                    }
+                            	}
+                                if(createDump){
+                                	dumpScript(scriptId, null, msg.getFunction(), true);
                                 }
-                                dumpScript(scriptId, null, msg.getFunction(), true);
                                 resultObj = msg.getFunction().call(cx, scope, scope, objArr.toArray());
-                                dumpScript(scriptId, null, null, false);
                             }
                             jsResult = new JsObjectSerializerHelper().serializeNative(resultObj);
 
                         } catch (Throwable e) {
-                            dumpScript(scriptId, null, null, false);
 /*
                     	synchronized(mutex){
 							jsCallCount--;
@@ -707,6 +715,9 @@ public class JsHub extends Service {
 
                             throw new PlatformException(e);
                         } finally {
+                        	if(createDump){
+                        		dumpScript(scriptId, null, null, false);
+                        	}
                             Context.exit();
                         }
                         return jsResult;

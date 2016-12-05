@@ -287,6 +287,8 @@ JSB({
 			}
 			var wrappedItem = this.wrapItem(itemObj);
 			var parentElt = this.rootElt;
+			this._applyFilteredToItem(itemObj);
+
 			if(parentKey){
 				var parentObj = this.itemMap[parentKey];
 				if(!parentObj || !parentObj.childContainerElt || parentObj.childContainerElt.length === 0){
@@ -300,7 +302,9 @@ JSB({
 					return;
 				}
 */
-				parentObj.ecToggleElt.removeClass('hidden');
+				if(!itemObj.filtered){
+					parentObj.ecToggleElt.removeClass('hidden');
+				}
 //				this.rootElt.find('li[key="'+parentKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').removeClass('hidden');
 				itemObj.parent = parentKey;
 			} else {
@@ -311,6 +315,7 @@ JSB({
 			if(!JSO().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
+			
 			
 			return itemObj;
 		},
@@ -333,6 +338,7 @@ JSB({
 			}
 			
 			this.deleteNode(oldKey);
+			this._applyFilteredToItem(itemObj);
 			
 			return itemObj;
 		},
@@ -363,7 +369,7 @@ JSB({
 			delete this.itemMap[key];
 			
 			if(pKey){
-				var oldPContainerCh = this.rootElt.find('li[key="'+pKey+'"] > ul._dwp_childContainer > li');
+				var oldPContainerCh = this.rootElt.find('li[key="'+pKey+'"] > ul._dwp_childContainer > li[filtered="false"]');
 				if(oldPContainerCh.length == 0){
 					this.rootElt.find('li[key="'+pKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').addClass('hidden');
 				}
@@ -397,14 +403,16 @@ JSB({
 			var parentContainer = this.rootElt;
 			if(targetParentKey){
 				parentContainer = this.rootElt.find('li[key="'+targetParentKey+'"] > ul._dwp_childContainer');
-				this.rootElt.find('li[key="'+targetParentKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').removeClass('hidden');
+				if(!itemObj.filtered){
+					this.rootElt.find('li[key="'+targetParentKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').removeClass('hidden');
+				}
 				itemObj.parent = targetParentKey;
 			} else {
 				itemObj.parent = null;
 			}
 			parentContainer.append(itemObj.wrapper);
 			if(pKey){
-				var oldPContainerCh = this.rootElt.find('li[key="'+pKey+'"] > ul._dwp_childContainer > li');
+				var oldPContainerCh = this.rootElt.find('li[key="'+pKey+'"] > ul._dwp_childContainer > li[filtered="false"]');
 				if(oldPContainerCh.length == 0){
 					this.rootElt.find('li[key="'+pKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').addClass('hidden');
 				}
@@ -466,6 +474,14 @@ JSB({
 			wrapper.addClass('collapsed');
 		},
 		
+		expandToNode: function(key){
+			var item = this.itemMap[key];
+			if(item.parent){
+				this.expandNode(item.parent);
+				this.expandToNode(item.parent);
+			}
+		},
+		
 		scrollTo: function(key){
 			if(JSB().isString(key)){
 				// it's a key
@@ -478,6 +494,45 @@ JSB({
 				this.scrollBox.scrollTo(-left, -top);
 			} else {
 				this.scrollBox.scrollToElement(key);
+			}
+		},
+		
+		_applyFilteredToItem: function(item, filtered){
+			var self = this;
+			
+			if(JSB.isNull(filtered)){
+				var filterCallback = this.options.filter;
+				filtered = false;
+				if(filterCallback){
+					filtered = !filterCallback.call(this, item);
+				}
+			}
+			item.wrapper.attr('filtered', filtered);
+			item.filtered = filtered;
+			if(item.parent){
+				var parentItem = this.itemMap[item.parent];
+				if(!filtered){
+					// reset parent filter
+					if(parentItem.filtered){
+						this._applyFilteredToItem(parentItem, false);
+					}
+					parentItem.ecToggleElt.removeClass('hidden');
+				} else {
+					if(parentItem.wrapper.find('> ul._dwp_childContainer > li[filtered="false"]').length == 0){
+						parentItem.ecToggleElt.addClass('hidden');
+					}
+				}
+			}
+				
+		},
+		
+		setFilter: function(filterCallback){
+			this.setOption('filter', filterCallback);
+			
+			// iterate over all items and apply filter
+			for(var key in this.itemMap){
+				var item = this.itemMap[key];
+				this._applyFilteredToItem(item);
 			}
 		}
 	}

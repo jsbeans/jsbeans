@@ -191,6 +191,19 @@ JSB({
 				element: '<div class="slider"><div class="ui-slider-handle"></div></div>'
 			});
 			
+			this.toolbar.addSeparator();
+			
+			this.toolbar.addItem({
+				key: 'research',
+				disabled: true,
+				tooltip: 'Просмотреть найденные документы',
+				element: '<div class="icon"></div><span class="caption">Документы</span>',
+				click: function(){
+					self.apocryphyDocuments();
+				}
+			});
+
+			
 			var handle = this.toolbar.find('.slider .ui-slider-handle');
 			this.toolbar.find('.slider').slider({
 				min: 0,
@@ -241,6 +254,12 @@ JSB({
 			});
 		},
 		
+		apocryphyDocuments: function(){
+			this.server().getResearchUrl(function(url){
+				window.open(url, '_blank');
+			});
+		},
+		
 		drawItems: function(desc){
 			if(!desc.success){
 				this.errMsgElt.removeClass('hidden');
@@ -265,11 +284,33 @@ JSB({
 				this.docsElt.addItem(item, entry.id);
 			}
 			
+			this.docItems = desc.result;
+			if(this.docItems.length > 0){
+				this.toolbar.enableItem('research', true);
+			}
+		
 		}
 		
 	},
 	
 	server: {
+		docItems: null,
+		
+		getResearchUrl: function(){
+			if(!this.docItems){
+				return null;
+			}
+			var url = Config.get('antiplag.externals.reseach');
+			for(var i = 0; i < this.docItems.length; i++){
+				var entry = this.docItems[i];
+				if(i > 0){
+					url += ' OR ';
+				}
+				url += 'id:"' + entry.extid + '"';
+			}
+			return url;
+		},
+		
 		findSimilarDocs: function(doc, threshold){
 			var text = doc.getPlainText();
 			
@@ -287,6 +328,7 @@ JSB({
 					if(JSB.isString(obj)){
 						obj = JSON.parse(obj)
 					}
+					this.docItems = obj;
 					return {result: obj, success: true};
 				}
 				

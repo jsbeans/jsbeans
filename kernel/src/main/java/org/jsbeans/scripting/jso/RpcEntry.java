@@ -17,6 +17,7 @@ public class RpcEntry {
     private String error = "";
     private boolean completed = false;
     private boolean success = true;
+    private long lastUpdated = System.currentTimeMillis();
 
     public RpcEntry() {
     }
@@ -41,6 +42,7 @@ public class RpcEntry {
         this.result = r;
         this.success = true;
         this.completed = true;
+        this.lastUpdated = System.currentTimeMillis();
     }
 
     public String getError() {
@@ -51,6 +53,7 @@ public class RpcEntry {
         this.success = false;
         this.error = e;
         this.completed = true;
+        this.lastUpdated = System.currentTimeMillis();
     }
 
     public boolean isCompleted() {
@@ -59,6 +62,10 @@ public class RpcEntry {
 
     public boolean isSuccess() {
         return this.success;
+    }
+    
+    public long getLastUpdated(){
+    	return this.lastUpdated;
     }
 
 };

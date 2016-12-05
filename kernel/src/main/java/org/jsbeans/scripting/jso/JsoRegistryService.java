@@ -49,9 +49,10 @@ import java.util.regex.Pattern;
 @DependsOn(JsHub.class)
 public class JsoRegistryService extends Service {
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
-    private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpire");
+    private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpireTimeout");
 
     private Set<String> objectsToLoad = new HashSet<String>();
+//    private Map<String, SessionEntry> sessionMap = Collections.synchronizedMap(new LinkedHashMap<String, SessionEntry>(16, 0.75F, true));
     private Map<String, SessionEntry> sessionMap = new LinkedHashMap<String, SessionEntry>(16, 0.75F, true);
     private boolean coreLoaded = false;
 
@@ -86,7 +87,7 @@ public class JsoRegistryService extends Service {
             this.handleUpdateRpc((UpdateRpcMessage) msg);
         } else if (msg instanceof LoadAdditionalObjectsMessage) {
             this.handleLoadAdditionalObjects((LoadAdditionalObjectsMessage) msg);
-        } else if (msg.equals(Message.TICK)) {
+        } else if (msg instanceof String && msg.equals(Message.TICK)) {
             this.updateSessionMap();
         } else {
             unhandled(msg);
@@ -252,12 +253,11 @@ public class JsoRegistryService extends Service {
         }
         SessionEntry se = this.sessionMap.get(sessionId);
         se.update();
-        Map<String, RpcEntry> idMap = se.getMap();
-        if (!idMap.containsKey(entryId)) {
+        if (!se.containsRpc(entryId)) {
             getLog().error(String.format("Unable to locate rpc entry: '%s' for session: '%s'", entryId, sessionId));
             return;
         }
-        RpcEntry entry = idMap.get(entryId);
+        RpcEntry entry = se.getRpc(entryId);
         if (msg.getStatus().status == ExecutionStatus.SUCCESS) {
             entry.setResult(msg.getStatus().result);
         } else {
@@ -306,16 +306,20 @@ public class JsoRegistryService extends Service {
                 }
                 JsonObject obj = elt.getAsJsonObject();
                 String id = obj.get("id").getAsString();
-                if (sEntry.getMap().containsKey(id)) {
+                if (sEntry.containsRpc(id)) {
                     // check for existed entry state
                     JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
-                    RpcEntry entry = sEntry.getMap().get(id);
+                    RpcEntry entry = sEntry.getRpc(id);
                     rpcEntryResp.addToObject("id", id);
                     rpcEntryResp.addToObject("completed", entry.isCompleted());
                     rpcEntryResp.addToObject("error", entry.getError());
                     rpcEntryResp.addToObject("result", entry.getResult());
                     rpcEntryResp.addToObject("success", entry.isSuccess());
                     rpcResult.addToArray(rpcEntryResp);
+                    
+                    if(entry.isCompleted()){
+                    	sEntry.removeRpc(id);
+                    }
                 } else {
                     // check whether widget and proc field are filled
                     JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
@@ -371,7 +375,7 @@ public class JsoRegistryService extends Service {
                     rpcResult.addToArray(rpcEntryResp);
 
                     // add entry to map and run rpc monad
-                    sEntry.getMap().put(id, new RpcEntry());
+                    sEntry.newRpc(id);
 
                     this.createChain(JsonObject.class, UpdateStatusMessage.class, obj)
                             .add(new FutureMonad<JsonObject, Object>(sessionId, clientAddr, user, clientRequestId, userToken) {
@@ -387,7 +391,7 @@ public class JsoRegistryService extends Service {
                                     String instanceId = obj.get("instance").getAsString();
                                     JsonElement paramElt = obj.get("params");
 
-                                    String script = String.format("JSO().rpc('%s','%s','%s',%s);", jsoName, instanceId, procName, paramElt != null ? paramElt.toString() : "null");
+                                    String script = String.format("JSB().rpc('%s','%s','%s',%s);", jsoName, instanceId, procName, paramElt != null ? paramElt.toString() : "null");
                                     ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
                                     execMsg.setScopePath(sessionId);
                                     execMsg.setClientAddr(clientAddr);
@@ -438,7 +442,7 @@ public class JsoRegistryService extends Service {
                 }
                 sessionsToRemove.add(entry.getKey());
             } else {
-                break;
+            	se.updateRpcEntries();
             }
         }
         if (sessionsToRemove != null) {

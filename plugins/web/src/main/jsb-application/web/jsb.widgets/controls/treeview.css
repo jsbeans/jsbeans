@@ -33,6 +33,10 @@
 	position: relative;
 }
 
+._dwp_treeViewNode[filtered="true"]{
+	display: none;
+}
+
 /*
 ._dwp_treeViewNode:first-child {
 	border-top: none;

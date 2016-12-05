@@ -20,7 +20,7 @@ public class ExecuteScriptMessage implements Message {
     private static final long serialVersionUID = 4816471636009002875L;
 
     private String scriptBody = null;
-    private boolean async = true;
+    private boolean async = false;
     private String clientAddr = "";
     private String scopePath = "";
     private Function scriptable = null;

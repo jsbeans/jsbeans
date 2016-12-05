@@ -93,7 +93,8 @@ public class ScopeTree {
     // nested
     public class Node {
         private Scriptable scope = null;
-        private Map<String, Node> children = Collections.synchronizedMap(new LinkedHashMap<String, Node>(16, 0.75F, true));
+//        private Map<String, Node> children = Collections.synchronizedMap(new LinkedHashMap<String, Node>(16, 0.75F, true));
+        private Map<String, Node> children = new LinkedHashMap<String, Node>(16, 0.75F, true);
         private long lastTimeAccessed = System.currentTimeMillis();
 
         public Node(Scriptable s) {
@@ -144,6 +145,7 @@ public class ScopeTree {
         public void updateEldest(long expireDelta) {
             long curTime = System.currentTimeMillis();
             List<String> keysToRemove = null;
+            
             Iterator<Entry<String, Node>> itr = this.children.entrySet().iterator();
             while (itr.hasNext()) {
                 Entry<String, Node> entry = itr.next();

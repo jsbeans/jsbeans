@@ -18,7 +18,7 @@ public class DebuggerMessage implements Message {
     private boolean breakOnStart = false;
     private boolean breakOnEnter = false;
     private boolean breakOnReturn = false;
-    private boolean breakOnExceptions = true;
+    private boolean breakOnExceptions = false;
 
     public DebuggerMessage() {
         this(false);
