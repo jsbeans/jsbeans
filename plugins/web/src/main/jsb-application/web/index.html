@@ -59,18 +59,18 @@
     </style>
     <script type="text/javascript">
 	 	function doLoad(){
-			JSO().lookup('Console',function(f){
+			JSB().lookup('Console',function(f){
 	 			new f({
 	 				container: 'div#mainContainer'
 	 			});
 	 		})
 		}
-		JSO().run('Auth', {}, function(auth){
+		JSB().create('Auth', {}, function(auth){
 			window.se = window.se || {};
 			window.se.auth = auth;
 			auth.server().getUserPrincipal(function(p){
 				if(p == null || p.length == 0){
-					JSO().run('Login', {
+					JSB().create('Login', {
 						container: 'div.mainContainer',
 						onSuccess: function(token){
 							this.show(false);

@@ -334,6 +334,7 @@ JSB({
 				
 				return {success: false, error: '' + res.responseCode + ': ' + res.responseMessage};
 			} catch(e){
+				Log.error(true, e);
 				return {success: false, error: e.message}
 			}
 		},
@@ -359,6 +360,7 @@ JSB({
 				
 				return {success: false, error: '' + res.responseCode + ': ' + res.responseMessage};
 			} catch(e){
+				Log.error(true, e);
 				return {success: false, error: e.message}
 			}
 		}

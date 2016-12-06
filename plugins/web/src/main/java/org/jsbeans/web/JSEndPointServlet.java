@@ -103,7 +103,7 @@ public class JSEndPointServlet extends HttpServlet {
             Object userTokenObj = req.getSession().getAttribute("token");
             String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
             Timeout timeout = ActorHelper.getServiceCommTimeout();
-            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script);
+            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, true);
             execMsg.setScopePath(req.getSession().getId());
             execMsg.setUserToken(userToken);
             execMsg.setClientAddr(req.getRemoteAddr());
