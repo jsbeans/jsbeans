@@ -39,7 +39,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.getElement().addClass('userSettings');
 
 			this.append(#dot{{
@@ -191,7 +191,7 @@ JSO({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 
 			this.append(#dot{{
 				<dwp-control jso="JSB.Widgets.Button" caption="Close" click="{{=this.callbackAttr(function(evt){ self.doClose(); })}}"></dwp-control>

@@ -168,11 +168,7 @@
 		
 		register: function(obj, id){
 			var scope, jsb;
-			if(obj.targetJsb){
-				jsb = obj.targetJsb;
-			} else {
-				jsb = obj.jsb;
-			}
+			jsb = obj.getJsb();
 			var isSingleton = jsb.isSingleton();
 			var isFixedId = jsb.isFixedId();
 			
@@ -262,11 +258,23 @@
 			return this.serverVersion;
 		},
 		
+		getBasePath: function(){
+			if(this.path == null || this.path == undefined){
+				return '';
+			}
+			if(this.path.length > 0 
+					&& this.path[this.path.length] != '\\' 
+					&& this.path[this.path.length] != '/' ){
+				return this.path + '/';
+			}
+			return this.path;
+		},
+		
 		unregister: function(obj){
 			var id = null;
 			if(JSB().isString(obj)){
 				id = obj;
-			} else if(obj.jso && obj.id){
+			} else if(obj.getJsb() && obj.id){
 				id = obj.id;
 			}
 			if(!id){
@@ -385,85 +393,147 @@
 					}
 				}
 
-				
-				for(var mtdName in body){
-					if(!this.isFunction(body[mtdName]) || this.isJavaObject(body[mtdName])){
-						continue;
-					}
-					(function(mtdName){
-						var proc = body[mtdName];
-						var privateMethod = false;
-						var protectedMethod = false;
-						if(mtdName[0] == '_'){
-							if(mtdName.length < 2){
-								throw 'Invalid method name "' + mtdName + '" in bean ' + self.name;
+				(function(){
+					var $jsb = self;
+					var $parent = null;
+					
+					// propagate $super variable
+					var $superFunc = null;
+					if(parent){
+						$parent = parent.getClass();
+						$superFunc = function(inst){this.__instance = inst;};
+						var parScope = parent.getClass().prototype;
+						for(var mtdName in parScope){
+							if(!self.isFunction(parScope[mtdName]) || self.isJavaObject(parScope[mtdName])){
+								continue;
 							}
-							// private or protected method
-							protectedMethod = true;
-							
-							if(mtdName[1] == '_'){
-								if(mtdName.length < 3){
+							(function(mtdName){
+								$superFunc.prototype[mtdName] = function(){
+									return parScope[mtdName].apply(this.__instance, arguments);
+								}
+							})(mtdName);
+						}
+					}
+/*					
+					// propagate $server and $client
+					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb._serverProcs; return new f();}
+					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb._clientProcs; return new f();}
+*/					
+					function _enrichFunction(mtdName, proc, isCtor){
+						var procStr = proc.toString();
+						// extract proc declaration
+						var declM = procStr.match(/^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/);
+						if(!declM){
+							throw 'Internal error: wrong procStr: ' + procStr;
+						}
+						var fName = declM[1];
+						if(fName.length === 0){
+							fName = mtdName;
+						}
+						var procDecl = 'function ' + fName + '(' + declM[2] + '){ var $this=this; ';
+						if(parent){ 
+							procDecl += 'var $super = new $superFunc(this); ';
+							if(isCtor){
+								procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this._superCalled = true; }; ';
+							} else {
+								procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
+							}
+						}
+/*						if(self.isClient()){
+							procDecl += 'var $server = $serverFunc(this); ';
+						} else {
+							procDecl += 'var $client = $clientFunc(this); ';
+						}
+*/						
+						// extract proc body 
+						procStr = procDecl + procStr.substr(declM[0].length);
+						
+						return eval('(' + procStr + ')');
+					}
+
+					
+					for(var mtdName in body){
+						if(!self.isFunction(body[mtdName]) || self.isJavaObject(body[mtdName])){
+							continue;
+						}
+						(function(mtdName){
+							var proc = _enrichFunction(mtdName, body[mtdName])
+							var privateMethod = false;
+							var protectedMethod = false;
+							if(mtdName[0] == '_'){
+								if(mtdName.length < 2){
 									throw 'Invalid method name "' + mtdName + '" in bean ' + self.name;
 								}
+								// private or protected method
+								protectedMethod = true;
 								
-								// private method
-								privateMethod = true;
+								if(mtdName[1] == '_'){
+									if(mtdName.length < 3){
+										throw 'Invalid method name "' + mtdName + '" in bean ' + self.name;
+									}
+									
+									// private method
+									privateMethod = true;
+								}
 							}
-						}
-						body[mtdName] = function(){
-							var ctxStack = self.getCallingContext();
-/*							
-							// perform access call check
-							if(privateMethod){
-								checkPrivate({
+							body[mtdName] = function(){
+								var ctxStack = self.getCallingContext();
+	/*							
+								// perform access call check
+								if(privateMethod){
+									checkPrivate({
+										jsb: self,
+										methodName: mtdName
+									}, ctxStack);
+								} else if(protectedMethod){
+									checkProtected({
+										jsb: self,
+										methodName: mtdName
+									}, ctxStack);
+								}
+	*/
+								ctxStack.push({
 									jsb: self,
-									methodName: mtdName
-								}, ctxStack);
-							} else if(protectedMethod){
-								checkProtected({
-									jsb: self,
-									methodName: mtdName
-								}, ctxStack);
+									methodName: mtdName,
+									inst: this
+								});
+								
+								var res;
+								try {
+									// call original function
+									res = proc.apply(this, arguments);
+								} finally {
+									// restore prev context
+									ctxStack.pop();
+								}
+								
+								return res;
 							}
-*/
-							ctxStack.push({
-								jsb: self,
-								methodName: mtdName
-							});
-							
-							var res;
-							try {
-								// call original function
-								res = proc.apply(this, arguments);
-							} finally {
-								// restore prev context
-								ctxStack.pop();
-							}
-							
-							return res;
-						}
-						body[mtdName].jsb = self;
-					})(mtdName);
-				}
+							body[mtdName].jsb = self;
+						})(mtdName);
+					}
+
+					var ctor = null;
+					if(entry && entry.hasOwnProperty('constructor')){
+						ctor = entry.constructor;
+					} else if(!ctor && commonSection && commonSection.hasOwnProperty('constructor')){
+						ctor = commonSection.constructor;
+					} else if(!ctor){
+						ctor = function(){};
+					}
+					
+					ctor = _enrichFunction('constructor', ctor, true);
+					
+					if(parent == null || parent == undefined || parent.currentSection() == null){
+						self._cls = self._class(ctor, body);
+					} else {
+						self._cls = self._extends(parent._cls, ctor, body);
+					}
+//					self._cls.prototype.jso = self;
+					self._cls.prototype.jsb = self;
 				
-				var ctor = null;
-				if(entry && entry.hasOwnProperty('constructor')){
-					ctor = entry.constructor;
-				} else if(!ctor && commonSection && commonSection.hasOwnProperty('constructor')){
-					ctor = commonSection.constructor;
-				} else if(!ctor){
-					ctor = function(){};
-				}
-				
-				if(parent == null || parent == undefined || parent.currentSection() == null){
-					this._cls = this._class(ctor, body);
-				} else {
-					this._cls = this._extends(parent._cls, ctor, body);
-				}
-				this._cls.prototype.jso = this;
-				this._cls.prototype.targetJso = this;
-				this._cls.prototype.jsb = this;
-				this._cls.prototype.targetJsb = this;
+				})();
+
 			}
 			
 			this._registerObject();
@@ -747,8 +817,8 @@
 			if(!obj){
 				return false;
 			}
-			if(obj.jso && obj.jso.getClass){
-				return obj.jso.isSubclassOf(cls);
+			if(obj.jsb && obj.jsb.getClass && obj instanceof obj.jsb.getClass()){
+				return obj.jsb.isSubclassOf(cls);
 			}
 			if(JSB().isString(obj)){
 				var jso = this.get(obj);
@@ -867,13 +937,30 @@
 			return ctx;
 		},
 		
+		getLastInstance: function(){
+			var ctx = this.getCallingContext();
+			if(ctx.length === 0){
+				return null;
+			}
+			return ctx[ctx.length - 1].inst;
+		},
+		
+		getCallerJsb: function(){
+			var ctx = this.getCallingContext();
+			if(ctx.length < 2){
+				return null;
+			}
+			return ctx[ctx.length - 2].jsb;
+		},
+		
 		stringifyCallingContext: function(){
 			var ctx = this.getCallingContext();
 			var dumpArr = [];
 			for(var i = 0; i < ctx.length; i++){
 				dumpArr.push({
 					jsb: (ctx[i] && ctx[i].jsb ? ctx[i].jsb.name : null),
-					methodName: (ctx[i] ? ctx[i].methodName : null)
+					methodName: (ctx[i] ? ctx[i].methodName : null),
+					inst: (ctx[i] && ctx[i].inst && ctx[i].inst.jsb ? ctx[i].inst.jsb.name : null)
 				});
 			}
 			
@@ -889,7 +976,8 @@
 				}
 				saveCtx.push({
 					jsb: ctx[i].jsb,
-					methodName: ctx[i].methodName
+					methodName: ctx[i].methodName,
+					inst: ctx[i].inst
 				});
 			}
 			
@@ -1070,7 +1158,6 @@
 						this.syncScopes = null;
 					}
 					
-					
 					this._fieldsCopied = true;
 				}
 				
@@ -1082,7 +1169,8 @@
 				var ctxStack = ss.getCallingContext();
 				ctxStack.push({
 					jsb: ss,
-					methodName: 'constructor'
+					methodName: 'constructor',
+					inst: this
 				});
 				// TODO: perform call check
 				
@@ -1092,7 +1180,8 @@
 						ctor.apply(this, arguments);
 					}
 					if (!this._superCalled) {
-						this.base.apply(this, arguments);
+						parent.apply(this, arguments);
+						this._superCalled = true;
 					}
 				} finally {
 					// restore prev context
@@ -1123,7 +1212,8 @@
 					var ctxStack = ss.getCallingContext();
 					ctxStack.push({
 						jsb: ss,
-						methodName: 'constructor'
+						methodName: 'constructor',
+						inst: this
 					});
 					// TODO: perform call check
 					try {
@@ -1365,7 +1455,7 @@
 			function _translateFields(fromScope, toScope, deep){
 
 				for(var fName in fromScope){
-					if(deep === 0 && (fName == 'jso' || fName == 'targetJso' || fName == 'jsb' || fName == 'targetJsb' || fName == 'client' || fName == 'server')){
+					if(deep === 0 && (fName == 'jso' || fName == 'jsb' || fName == 'client' || fName == 'server')){
 						continue;
 					}
 					// check for exclude
@@ -2318,7 +2408,7 @@
 					if(JSB().isBean(res)){
 						// encode jso object
 						return {
-							__jso : res.jso.name,
+							__jso : res.getJsb().name,
 							__id: res.getId()
 						};
 					} else {
@@ -2868,69 +2958,6 @@ JSB({
 			exclude: []
 		},
 */
-		
-		base: function(){
-			
-			var ret = undefined;
-			var ctxStack = this.jsb.getCallingContext();
-
-			// get calling proc
-			if(ctxStack.length < 2){
-				throw 'Invalid "base" function call';
-			}
-
-			var callerCtx = ctxStack[ctxStack.length - 2];
-
-			if(callerCtx.methodName == 'constructor'){
-				if (this._superCalled == true) {
-					throw "Superconstructor has been called twice";
-				}
-
-				// call parent constructor
-				var parentCtor = null;
-				var cls = callerCtx.jsb.getClass();
-				if(cls && cls.superclass && cls.superclass.constructor){
-					parentCtor = cls.superclass.constructor;
-				}
-				if(parentCtor){
-					var storeJso = this.jso;
-					var storeJsb = this.jsb;
-					this.jso = parentCtor.prototype.jso;
-					this.jsb = parentCtor.prototype.jsb;
-					
-					try {
-						parentCtor.apply(this, arguments);
-					} finally {
-						this.jso = storeJso;
-						this.jsb = storeJsb;
-					}
-				}
-				
-				this._superCalled = true;
-			} else {
-				// call parent method
-				var cls = callerCtx.jsb.getClass();
-				if(cls && cls.superclass){
-					var storeJso = this.jso;
-					var storeJsb = this.jsb;
-					this.jso = cls.superclass.jso;
-					this.jsb = cls.superclass.jsb;
-					
-					try {
-						if(!cls.superclass[callerCtx.methodName]){
-							throw 'Internal Error: No method found: ' + callerCtx.methodName + '; context: ' + this.jsb.stringifyCallingContext();
-						}
-						ret = cls.superclass[callerCtx.methodName].apply(this, arguments);
-					} finally {
-						this.jso = storeJso;
-						this.jsb = storeJsb;
-					}
-				}
-			}
-			
-			return ret;
-		},
-		
 		destroy: function(){
 			this._destroyed = true;
 			JSB().unregister(this);
@@ -2976,13 +3003,9 @@ JSB({
 		getClass: function(){
 			return this.getJsb().getClass();
 		},
-		
-		getJso: function(){
-			return this.jso;
-		},
 
 		getJsb: function(){
-			return this.jso;
+			return this.jsb;
 		},
 		
 		setupSync: function(){
@@ -3364,7 +3387,7 @@ JSB({
 		},
 		
 		getName: function(){
-			return this.jso.name;
+			return this.getJsb().name;
 		},
 		
 		_extendSyncInfo: function(syncInfo){
@@ -3422,7 +3445,15 @@ JSB({
 		
 		onAfterSync: function(syncInfo){},
 		
-		onSyncCheck: function(){}
+		onSyncCheck: function(){},
+		
+		remote: function(){
+			if($jsb.isClient()){
+				return this.server();
+			} else {
+				return this.client();
+			}
+		}
 		
 	},
 	client:{
@@ -3439,9 +3470,9 @@ JSB({
 		},
 		
 		server: function(){
-			var self = this;
+//			return $server;
 			var f = function(){
-				this.__instance = self;
+				this.__instance = $this;
 			};
 			f.prototype = this.jsb._serverProcs;
 			return new f();
@@ -3509,13 +3540,19 @@ JSB({
 					this.lastUploadSyncTimeStamp = Date.now();
 				}
 				var ts = this.lastDownloadSyncTimeStamp + 1;
-				this.rpc('requestSyncInfo', [ts, slice], function(resp){
+				
+				this.server().requestSyncInfo(ts, slice, function(resp, err){
 					function _syncComplete(){
 						self._synchronized = true;
 						self.matchSynchronized();
 						if(callback){
 							callback.call(self);
 						}
+					}
+
+					if(err){
+						_syncComplete();
+						return;
 					}
 					
 					if(!JSB().isNull(resp.maxStamp)){
@@ -3561,13 +3598,10 @@ JSB({
 					sync = arg2;
 				}
 			}
-			var tJso = this.targetJso;
-			if(JSB().isNull(tJso)){
-				tJso = this.jso;
-			}
+			var tJso = this.getJsb();
 			var callCtx = this.jsb.saveCallingContext();
 			JSB().getProvider().enqueueRpc({
-				jso: tJso.name,
+				jsb: tJso.name,
 				instance: JSB().isNull(this.bindKey) ? this.id : this.bindKey,
 				proc: procName,
 				params: JSB().substJsoInRpcResult(params),
@@ -3585,25 +3619,14 @@ JSB({
 			} );
 		},
 
-		
-		getBasePath: function(){
-			if(this.jso.path == null || this.jso.path == undefined){
-				return '';
-			}
-			if(this.jso.path.length > 0 
-					&& this.jso.path[this.jso.path.length] != '\\' 
-					&& this.jso.path[this.jso.path.length] != '/' ){
-				return this.jso.path + '/';
-			}
-			return this.jso.path;
-		},
-
 		loadScript: function( relativeUrl, callback ){
-			JSB().loadScript( this.getBasePath() + relativeUrl, callback ); 
+			var callingJsb = $jsb.getCallerJsb();
+			JSB().loadScript( callingJsb.getBasePath() + relativeUrl, callback ); 
 		},
 
 		loadCss: function( relativeUrl ){
-			JSB().loadCss( this.getBasePath() + relativeUrl );
+			var callingJsb = $jsb.getCallerJsb();
+			JSB().loadCss( callingJsb.getBasePath() + relativeUrl );
 		},
 
 		ajax: function(url, params, callback){
@@ -3626,9 +3649,9 @@ JSB({
 		},
 		
 		client: function(){
-			var self = this;
+//			return $client;
 			var f = function(){
-				this.__instance = self;
+				this.__instance = $this;
 			};
 			f.prototype = this.jsb._clientProcs;
 			return new f();
@@ -4138,17 +4161,16 @@ JSB({
 					continue;
 				}
 				if(rpcEntry.completed){
-					if(rpcEntry.success){
-						if(this.rpcEntryMap[rpcEntry.id] && !JSB().isNull(this.rpcEntryMap[rpcEntry.id].callback)){
-							(function(callback, result){
-								JSB().defer(function(){
-									callback(result);	
-								}, 0);
-							})(this.rpcEntryMap[rpcEntry.id].callback, rpcEntry.result);
-						}
-					} else {
-						// try again 
-						this.queueToSend[rpcEntry.id] = this.rpcEntryMap[rpcEntry.id];
+					if(this.rpcEntryMap[rpcEntry.id] && !JSB().isNull(this.rpcEntryMap[rpcEntry.id].callback)){
+						(function(success, callback, result, error){
+							JSB().defer(function(){
+								if(success){
+									callback(result);
+								} else {
+									callback(undefined, error);
+								}
+							}, 0);
+						})(rpcEntry.success, this.rpcEntryMap[rpcEntry.id].callback, rpcEntry.result, rpcEntry.error);
 					}
 					if(this.rpcEntryMap[rpcEntry.id]){
 						delete this.rpcEntryMap[rpcEntry.id];

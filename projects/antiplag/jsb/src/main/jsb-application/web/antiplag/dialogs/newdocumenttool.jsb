@@ -21,7 +21,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('newdocumenttool.css');
 			this.addClass('newDocumentTool');
 			

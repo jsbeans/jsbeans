@@ -325,7 +325,7 @@ public class JsoRegistryService extends Service {
                     JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
                     rpcEntryResp.addToObject("id", id);
 
-                    if (!obj.has("jso") || !obj.has("proc")) {
+                    if (!obj.has("jsb") || !obj.has("proc")) {
                         rpcEntryResp.addToObject("completed", true);
                         rpcEntryResp.addToObject("error", String.format("Rpc entry with id: '%s' is missing or malformed", id));
                         rpcEntryResp.addToObject("result", "");
@@ -339,7 +339,7 @@ public class JsoRegistryService extends Service {
                         JsonElement paramElt = obj.get("params");
                         String script = String.format(
                                 "JSO().rpc('%s','%s','%s',%s);",
-                                obj.get("jso").getAsString(),
+                                obj.get("jsb").getAsString(),
                                 obj.get("instance").getAsString(),
                                 obj.get("proc").getAsString(),
                                 paramElt != null ? paramElt.toString() : "null");
@@ -386,7 +386,7 @@ public class JsoRegistryService extends Service {
                                     String user = this.getArgument(2);
                                     String rid = this.getArgument(3);
                                     String userToken = this.getArgument(4);
-                                    String jsoName = obj.get("jso").getAsString();
+                                    String jsoName = obj.get("jsb").getAsString();
                                     String procName = obj.get("proc").getAsString();
                                     String instanceId = obj.get("instance").getAsString();
                                     JsonElement paramElt = obj.get("params");

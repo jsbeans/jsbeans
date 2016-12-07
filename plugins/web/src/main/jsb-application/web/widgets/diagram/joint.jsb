@@ -11,7 +11,7 @@ JSB({
 		
 		constructor: function(link, opts){
 			var self = this;
-			this.base();
+			$base();
 			this.link = link;
 			JSB().merge(true, this.options, opts);
 		},

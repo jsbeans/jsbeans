@@ -39,7 +39,7 @@ JSB({
 		
 		constructor: function(diagram, key, opts){
 			var self = this;
-			this.base();
+			$base();
 			this.diagram = diagram;
 			this.key = key;
 			JSB().merge(true, this.options, this.diagram.linkDescs[key].options, opts);
@@ -88,7 +88,7 @@ JSB({
 				this.group.remove();
 			}
 			
-			this.base();
+			$base();
 		},
 		
 		setSource: function(obj){

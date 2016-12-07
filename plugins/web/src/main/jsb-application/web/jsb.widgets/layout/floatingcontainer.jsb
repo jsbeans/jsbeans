@@ -4,7 +4,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			// ctor
-			this.base(opts);
+			$base(opts);
 			this.loadCss('floatingcontainer.css');
 			this.getElement().addClass('_dwp_floatingContainer');
 			this.init();
@@ -89,7 +89,7 @@ JSB({
 						}
 					} else if(tgt.hasClass('dock')){
 						self.publish('widgetDock', {
-							widgetName: self.getWidget().jso.name,
+							widgetName: self.getWidget().getJsb().name,
 							options: self.getWidget().options
 						});
 					}
@@ -108,7 +108,7 @@ JSB({
 		
 		destroy: function(){
 			this.close();
-			this.base();
+			$base();
 		},
 		
 		close: function(){

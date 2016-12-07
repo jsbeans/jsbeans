@@ -4,7 +4,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('scrollbox.css');
 			JSB().loadScript('tpl/iscroll/iscroll-probe.js', function(){
 				self.init();

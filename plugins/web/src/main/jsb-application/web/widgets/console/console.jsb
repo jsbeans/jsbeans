@@ -10,7 +10,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			
 			JSO().loadCss('tpl/codemirror/lib/codemirror.css');
 			JSO().loadCss('tpl/codemirror/theme/eclipse.css');

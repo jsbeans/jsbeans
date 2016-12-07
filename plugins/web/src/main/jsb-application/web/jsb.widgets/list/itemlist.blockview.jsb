@@ -6,7 +6,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			JSO().loadScript('tpl/packery/packery.pkgd.min.js', function(){
 				self.initPackery(opts);
 			});
@@ -111,7 +111,7 @@ JSB({
 		},
 		
 		activate: function(container){
-			this.base(container);
+			$base(container);
 			this.initPackery();
 		},
 		

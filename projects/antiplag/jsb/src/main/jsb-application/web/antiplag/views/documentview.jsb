@@ -7,7 +7,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.addClass('documentView');
 			this.loadCss('documentview.css');
 			

@@ -3,7 +3,7 @@ JSB({
 	
 	server: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 		}
 	}
 });

@@ -15,7 +15,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.getElement().addClass('testwidget');
 			this.loadCss('testwidget.css');
 			JSO().loadScript('http://code.highcharts.com/highcharts.js', function(){

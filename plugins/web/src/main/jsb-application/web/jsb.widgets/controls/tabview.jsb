@@ -3,7 +3,7 @@ JSB({
 	parent: 'JSB.Widgets.Control',
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.loadCss('tabview.css');
 			this.init();
 		},

@@ -5,7 +5,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('dwp.datestring.css');
 			this.addClass('_dwp_dateString');
 		},

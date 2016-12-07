@@ -14,7 +14,7 @@ JSB({
 			var self = this;
 			this.diagram = diagram;
 			this.key = key;
-			this.base();
+			$base();
 			JSB().merge(this.options, this.diagram.nodeDescs[key].options, opts);
 			this.addClass('_jsb_diagramNode');
 			
@@ -55,7 +55,7 @@ JSB({
 			}
 			this.connectors = {};
 			
-			this.base();
+			$base();
 		},
 		
 		setPosition: function(x, y){

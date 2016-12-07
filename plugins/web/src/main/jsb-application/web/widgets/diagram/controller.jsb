@@ -18,7 +18,7 @@ JSB({
 		constructor: function(d){
 			var self = this;
 			this.diagram = d;
-			this.base();
+			$base();
 		},
 		
 		onMessage: function(sender, msg, params){
@@ -406,7 +406,7 @@ JSB({
 
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 		},
 		
 		enter: function(fromConnector, curPt){

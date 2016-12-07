@@ -5,7 +5,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('splitbox.css');
 			this.addClass('_dwp_splitbox');
 			self.init();

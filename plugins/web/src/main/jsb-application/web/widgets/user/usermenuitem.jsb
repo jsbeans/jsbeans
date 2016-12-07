@@ -3,7 +3,7 @@ JSB({
 	parent: 'JSB.Widgets.Actor',
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 		},
 		
 		execute: function(){

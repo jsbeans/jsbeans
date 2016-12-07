@@ -10,7 +10,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('widgetcontainer.css');
 			this.getElement().addClass('_dwp_widgetContainer');
 			
@@ -50,7 +50,7 @@ JSB({
 				
 			}
 			this.widgets = {};
-			this.base();
+			$base();
 		},
 		
 		getElement: function(){

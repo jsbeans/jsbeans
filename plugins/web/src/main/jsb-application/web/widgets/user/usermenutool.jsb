@@ -26,7 +26,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('usermenutool.css');
 			this.addClass('_dwp_userMenuTool');
 			
@@ -54,8 +54,8 @@ JSB({
 		
 		update: function(){
 			var widget = this.data.data;
-			this.header.find('.title').text(widget.jso.expose.displayName);
-			this.header.find('.icon').attr('key', widget.jso.name);
+			this.header.find('.title').text(widget.getJsb().expose.displayName);
+			this.header.find('.icon').attr('key', widget.getJsb().name);
 			if(!this.wc.getWidget() || (this.wc.getWidget() && this.wc.getWidget().getId() != widget.getId())){
 				if(this.wc.getWidget()){
 					this.wc.getWidget().detachContainer();

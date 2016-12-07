@@ -6,7 +6,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.addClass('docAreaView');
 			this.loadCss('docareaview.css');
 			this.document = opts.document;

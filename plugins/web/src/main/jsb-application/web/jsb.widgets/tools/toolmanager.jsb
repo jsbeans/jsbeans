@@ -258,7 +258,7 @@ JSB({
 			}
 			
 			// find entry
-			if(JSO().isNull(sender) || JSO().isNull(sender.jso) || !sender.jso.isSubclassOf('JSB.Widgets.Control')){
+			if(JSO().isNull(sender) || JSO().isNull(sender.getJsb()) || !sender.getJsb().isSubclassOf('JSB.Widgets.Control')){
 				throw 'ToolManager.onMessage: invalid sender';
 			}
 
@@ -303,7 +303,7 @@ JSB({
 	parent: 'JSB.Widgets.Widget',
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 		},
 		
 		setData: function(data){
@@ -339,7 +339,7 @@ JSB({
 	client: {
 		constructor: function(toolId, toolMgr, w, opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('toolwrapper.css');
 			this.toolId = toolId;
 			this.toolManager = toolMgr;

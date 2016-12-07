@@ -10,7 +10,7 @@ JSB({
 */	
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.loadCss('jsonview.css');
 			this.preloadImages();
 			this.init(opts);

@@ -7,7 +7,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('checkbox.css');
 			this.addClass('_dwp_checkBox');
 			

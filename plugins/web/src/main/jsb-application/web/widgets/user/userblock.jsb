@@ -16,7 +16,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.getElement().addClass('userBlock');
 			this.loadCss('userblock.css');
 

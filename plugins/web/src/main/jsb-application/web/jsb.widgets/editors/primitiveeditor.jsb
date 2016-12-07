@@ -29,7 +29,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			if(this.options.multiline && this.options.valueType != 'java.lang.Object' && this.options.valueType != 'java.lang.String' && this.options.valueType != 'string'){
 				this.options.multiline = false;
 			}
@@ -326,7 +326,7 @@ JSB({
 				|| this.options.valueType == 'char'){
 				bValid = val.length == 1;
 			}
-			bValid = bValid && this.base(); 
+			bValid = bValid && $base(); 
 			bValid = bValid && this.options.onValidate(val);
 			this.setMark(!bValid);
 			return bValid;

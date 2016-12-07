@@ -15,7 +15,7 @@ JSB({
 	},
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.loadCss('enumeditor.css');
 			this.getElement().addClass('_dwp_enumEditor');
 			this.init();

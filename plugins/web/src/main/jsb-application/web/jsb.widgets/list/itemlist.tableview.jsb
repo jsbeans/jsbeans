@@ -6,7 +6,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			
 			this.loadCss('itemlist.tableview.css');
 			
@@ -74,7 +74,7 @@ JSB({
 		},
 		
 		activate: function(container){
-			this.base(container);
+			$base(container);
 			this.list.addClass('tableView');
 			
 			// append header
@@ -84,7 +84,7 @@ JSB({
 		deactivate: function(){
 			this.list.removeClass('tableView');
 			this.container.find('> li > .cell').remove();	// TODO: remove internal beans
-			this.base();
+			$base();
 			
 			// hide header
 			var tvh = this.list.find('.tableViewHeader');

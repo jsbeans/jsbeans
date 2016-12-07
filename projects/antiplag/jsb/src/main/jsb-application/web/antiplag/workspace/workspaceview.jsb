@@ -23,7 +23,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			
 			this.loadCss('workspaceview.css');
 			this.addClass('workspaceView');

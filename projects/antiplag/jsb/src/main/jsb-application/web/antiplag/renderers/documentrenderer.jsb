@@ -8,7 +8,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.addClass('documentRenderer');
 			this.loadCss('documentrenderer.css');
 			

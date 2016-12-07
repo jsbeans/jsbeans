@@ -6,7 +6,7 @@ JSB({
 	},
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.loadCss('widget.css');
 			this.element.addClass('_dwp_widget');
 			this.container = null;
@@ -34,7 +34,7 @@ JSB({
 		
 		destroy: function(){
 			this.detachContainer();
-			this.base();
+			$base();
 		},
 		
 		attachContainer: function( c, desc ){
@@ -78,7 +78,7 @@ JSB({
 				globe['DWP_PreloadedImageList'] = {};
 			}
 			var preloadScope = globe['DWP_PreloadedImageList'];
-			if(preloadScope[this.jso.name]){
+			if(preloadScope[this.getJsb().name]){
 				return;
 			}
 			
@@ -87,7 +87,7 @@ JSB({
 					var img = new Image();
 					img.src = imgList[i];
 				}
-				preloadScope[self.jso.name] = imgList;
+				preloadScope[self.getJsb().name] = imgList;
 			});
 		}
 	},
@@ -103,12 +103,12 @@ JSB({
 				if(folder.charAt(folder.length() - 1) != '\\' && folder.charAt(folder.length() - 1) != '/'){
 					folder += '/';
 				}
-				folder += this.jso.path;
+				folder += this.getJsb().path;
 				var imgNames = fh.searchFiles(folder, "**/*.jpg|**/*.png|**/*.gif", true);
 				var imgArr = [];
 				for(var i = 0; i < imgNames.size(); i++){
 					var p = imgNames.get(i).replace('\\', '/').replace('\'', '"');
-					imgArr[imgArr.length] = this.jso.path + '/' + p;
+					imgArr[imgArr.length] = this.getJsb().path + '/' + p;
 				}
 			}
 			return imgArr;

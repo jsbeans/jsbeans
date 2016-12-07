@@ -9,7 +9,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('combobox.css');
 			this.addClass('_dwp_comboBox');
 			this.init();

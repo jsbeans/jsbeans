@@ -5,7 +5,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			
 			this.title = this.$('<div class="title"></div>');
 			this.append(this.title);
@@ -167,7 +167,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.addClass('relevantDocsView');
 			this.loadCss('relevantdocsview.css');
 			

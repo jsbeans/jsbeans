@@ -5,7 +5,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.addClass('uploadNode');
 			
 			this.icon = this.$('<div class="icon"></div>');

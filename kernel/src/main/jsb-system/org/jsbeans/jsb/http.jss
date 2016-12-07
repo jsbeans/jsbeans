@@ -173,7 +173,7 @@ JSB({
 
         destroy: function(){
             this.disconnect();
-            this.base();
+            $base();
         },
 
         send: function(data){

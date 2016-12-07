@@ -101,7 +101,7 @@ JSB({
 		nameCache: {},
 		
 		constructor: function(){
-			this.base();
+			$base();
 			
 			// run code in global scope
 			this.loadScript('/antiplag/utils.js');

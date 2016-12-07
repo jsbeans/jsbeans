@@ -25,13 +25,13 @@ JSB({
 	client: {
 		
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 		},
 
 		destroy: function(){
 			// TODO: clear entries
 			console.log('Cleaning document: ' + this.getId());
-			this.base();
+			$base();
 		},
 		
 		onAfterSync: function(syncInfo){
@@ -47,7 +47,7 @@ JSB({
 		document: null,
 		
 		constructor: function(id, doc, w){
-			this.base();
+			$base();
 			this.setId(id);
 			this.workspace = w;
 			this.document = doc;
@@ -67,7 +67,7 @@ JSB({
 		destroy: function(){
 			// TODO: clear entries
 			Log.debug('Cleaning document: ' + this.getId());
-			this.base();
+			$base();
 		},
 		
 		

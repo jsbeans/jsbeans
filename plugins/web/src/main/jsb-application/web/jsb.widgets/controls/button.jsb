@@ -7,7 +7,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('button.css');
 			this.addClass('_dwp_button');
 			

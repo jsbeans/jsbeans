@@ -11,7 +11,7 @@ JSB({
 		
 		constructor: function(diagram, opts){
 			var self = this;
-			this.base();
+			$base();
 			this.diagram = diagram;
 			JSB().merge(true, this.options, opts);
 		},
@@ -173,7 +173,7 @@ JSB({
 		
 		constructor: function(diagram, opts){
 			var self = this;
-			this.base(diagram, opts);
+			$base(diagram, opts);
 		},
 		
 		layout: function(items){

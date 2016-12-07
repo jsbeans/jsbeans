@@ -110,7 +110,7 @@ JSB({
 	},
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.getElement().addClass('_dwp_editor');
 		},
 		

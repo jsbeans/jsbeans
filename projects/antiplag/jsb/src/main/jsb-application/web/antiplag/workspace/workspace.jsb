@@ -16,7 +16,7 @@ JSB({
 	
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 		},
 		
 		rename: function(newName, callback){
@@ -40,7 +40,7 @@ JSB({
 		currentDocument: null,
 		
 		constructor: function(w){
-			this.base();
+			$base();
 			var wId = ''+w.id();
 			this.workspace = w;
 			this.setId(wId);

@@ -4,7 +4,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.addClass('missingDocumentNode');
 			
 			this.icon = this.$('<div class="icon"><div class="warnIcon"></div></div>');

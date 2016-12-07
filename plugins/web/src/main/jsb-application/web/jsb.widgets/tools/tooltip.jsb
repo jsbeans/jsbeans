@@ -23,7 +23,7 @@ JSB({
 		},
 		
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.construct();
 		},
 		

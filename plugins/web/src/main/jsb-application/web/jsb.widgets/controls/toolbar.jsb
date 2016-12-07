@@ -5,7 +5,7 @@ JSB({
 	},
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.loadCss('toolbar.css');
 			this.addClass('_dwp_toolBar');
 			this.itemContainer = this.$('<ul class="_dwp_tbContainer"></ul>');

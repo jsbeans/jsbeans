@@ -18,7 +18,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			
 			this.addClass('_dwp_DateRangePicker');
 			var inputElt = this.$('<input type="text" class="form-control" />');

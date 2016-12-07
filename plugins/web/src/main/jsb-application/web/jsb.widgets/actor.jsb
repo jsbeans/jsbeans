@@ -3,7 +3,7 @@ JSB({
 	require: ['JSB.Widgets.AjaxProvider'],
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 		},
 		
 		eventBus: null,
@@ -83,7 +83,7 @@ JSB({
 				}
 				
 			}
-			this.base();
+			$base();
 		},
 		
 		callbackAttr: function(proc){

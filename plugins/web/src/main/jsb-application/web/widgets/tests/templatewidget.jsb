@@ -4,7 +4,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.getElement().addClass('templatewidget');
 			
 			this.draw(['Anna', 'Maria', 'Vera']);

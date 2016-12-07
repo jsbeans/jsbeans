@@ -2,7 +2,7 @@ JSB({
 	name:'JSB.Widgets.Value',
 	client: {
 		constructor: function(value, type){
-			this.base();
+			$base();
 			this.value = value;
 			this.type = type;
 		},

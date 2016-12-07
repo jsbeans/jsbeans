@@ -53,7 +53,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('diagram.css');
 			this.addClass('_jsb_diagram');
 			
@@ -470,7 +470,7 @@ JSB({
 		},
 		
 		destroy: function(){
-			this.base();
+			$base();
 		},
 		
 		getNode: function(id){

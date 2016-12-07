@@ -6,7 +6,7 @@ JSB({
 		singleton: true,
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			var testDwpId = '_testDwpDetection' + JSO().generateUid();
 			if(!document.registerElement){
 				try {

@@ -24,7 +24,7 @@ JSB({
 		
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('widgettool.css');
 			this.addClass('_dwp_widgetTool');
 			

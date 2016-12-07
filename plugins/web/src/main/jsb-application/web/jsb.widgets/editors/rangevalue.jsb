@@ -3,7 +3,7 @@ JSB({
 	parent: 'JSB.Widgets.Value',
 	client: {
 		constructor: function(value){
-			this.base(value, 'range');
+			$base(value, 'range');
 		},
 		
 		toString: function(){

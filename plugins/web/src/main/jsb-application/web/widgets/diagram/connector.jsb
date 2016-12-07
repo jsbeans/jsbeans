@@ -39,7 +39,7 @@ JSB({
 		
 		constructor: function(node, key, opts){
 			var self = this;
-			this.base();
+			$base();
 			this.node = node;
 			this.key = key;
 			JSB().merge(this.options, opts);

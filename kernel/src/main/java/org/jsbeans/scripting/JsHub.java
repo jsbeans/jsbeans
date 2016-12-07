@@ -60,7 +60,7 @@ public class JsHub extends Service {
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
     private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpireTimeout");
     private static final int jsOptimizationLevel = -1;
-    private static final int jsLanguageVersion = Context.VERSION_1_8;
+    private static final int jsLanguageVersion = Context.VERSION_ES6;
     
     private final Map<String, JsCmdState> stateMap = new ConcurrentHashMap<String, JsCmdState>();
     
@@ -72,7 +72,6 @@ public class JsHub extends Service {
     private ContextFactory contextFactory;
     private Context context;
     private ScriptableObject sharedScope;
-    private int execCount = 0;
 
     private static String serializeFunction(Function func) throws UnsupportedEncodingException {
         String script;
@@ -86,10 +85,6 @@ public class JsHub extends Service {
         }
         return script;
     }
-/*	
-    private Object mutex = new Object();
-	private int jsCallCount = 0; 
-*/
 
     @Override
     protected void onInit() throws PlatformException {
@@ -214,11 +209,11 @@ public class JsHub extends Service {
         }
         getSender().tell(msg.createResponse(retLst), getSelf());
     }
-
+/*
     private MessageDispatcher getDispatcher() {
         return this.getDispatcher("kernel.jshub.dispatcher");
     }
-
+*/
     private MessageDispatcher getDispatcher(String dName) {
         return Core.getActorSystem().dispatchers().lookup(dName);
 /*
@@ -422,59 +417,6 @@ public class JsHub extends Service {
         this.updateSessions();
     }
 
-/*	
-	private void handleUpdateScope(UpdateScopeMessage msg) throws PlatformException {
-		Context ctx = Context.enter();
-		ctx.setOptimizationLevel(jsOptimizationLevel);
-		ctx.setLanguageVersion(jsLanguageVersion);
-		try {
-			Scriptable curScope = JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().scope();
-			if(msg.getPath() != null || msg.getPath().trim().length() > 0){
-				// create scope chain
-				String[] scopes = msg.getPath().split("\\.|\\/");
-				for(String scopeName : scopes){
-					if(scopeName.length() > 0){
-						ScriptableObject newScope;
-						if(!curScope.has(scopeName, curScope)){
-							// create scope
-							newScope = (ScriptableObject) ctx.newObject(curScope);
-							curScope.put(scopeName, curScope, newScope);
-						} else {
-							newScope = (ScriptableObject) curScope.get(scopeName, curScope);
-						}
-						curScope = newScope;
-					}
-				}
-			}
-			ctx.putThreadLocal("token", UUID.randomUUID().toString());
-//			cx.putThreadLocal("session", msg.getScopePath());
-
-			Object resObj = ctx.evaluateString(curScope, msg.getData(), msg.getFileName(), 1, null);
-			JsObject jObj = new JsObjectSerializerHelper().serializeNative(resObj);
-			this.getSender().tell(new ScopeResponseMessage(msg.getPath(), jObj), this.getSelf());
-		} catch(Exception e){
-			this.getSender().tell(new ScopeResponseMessage(msg.getPath(), e.getMessage()), this.getSelf());
-			throw new PlatformException(e);
-		} 
-		finally {
-			Context.exit();
-		}
-	}
-*/
-
-//	private void loadJSS() throws IOException, PlatformException {
-//		String folder = ConfigHelper.getConfigString(JSS_FOLDER_KEY);
-//		if(folder == null){
-//			folder = "jss"; 
-//		}
-//
-//		List<String> paths = FileHelper.searchFiles(ConfigHelper.getRootFolder() + folder, "**/*.jss");
-//		for(String jss : paths){
-//			String jssFile = FileHelper.readStringFromFile(jss);
-//			this.context.evaluateString(this.scopeTree.getRoot().scope(), jssFile, jss, 1, null);
-//		}
-//		
-//	}
 
     private void updateTokens() {
         List<String> tokensToRemove = new ArrayList<String>();
@@ -632,7 +574,6 @@ public class JsHub extends Service {
                         cx.setOptimizationLevel(jsOptimizationLevel);
                         cx.setLanguageVersion(jsLanguageVersion);
                         String scriptId = UUID.randomUUID().toString();
-                        String scriptBody = null;
                         try {
                             if (msg.isAsync()) {
                                 // send local message to update status
@@ -652,24 +593,10 @@ public class JsHub extends Service {
                             cx.putThreadLocal("_jsbCallingContext", null);
                             Object resultObj = null;
                             if (msg.getBody() != null) {
-/*
-							synchronized(mutex){
-								getLog().debug("Js call count before: " + jsCallCount);
-								jsCallCount++;
-							}
-*/
                             	if(createDump){
                             		dumpScript(scriptId, msg.getBody(), null, true);
                             	}
-
                                 resultObj = cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null);
-
-/*
-							synchronized(mutex){
-								jsCallCount--;
-								getLog().debug("Js call count after: " + jsCallCount);
-							}
-*/
                             } else if (msg.getFunction() != null) {
                             	Object[] args = msg.getArgs();
                                 List<Object> objArr = new ArrayList<Object>();
@@ -687,12 +614,6 @@ public class JsHub extends Service {
                             jsResult = new JsObjectSerializerHelper().serializeNative(resultObj);
 
                         } catch (Throwable e) {
-/*
-                    	synchronized(mutex){
-							jsCallCount--;
-							getLog().debug("Js call count after exception: " + jsCallCount);
-						}
-*/
                             StringBuilder sb = new StringBuilder("Execute script error: ");
                             sb.append(e.getMessage()).append("\n");
                             sb.append("--> Script executed: ");
@@ -764,11 +685,11 @@ public class JsHub extends Service {
     private String getScriptNameByToken(String token) {
         return String.format("<cmd:%s>", token);
     }
-
+/*
     private String getTokenByScript(String scriptName) {
         return scriptName.substring("<cmd:".length(), scriptName.length() - 1);
     }
-
+*/
     private class JsCmdState {
         private final String token;
         private ExecutionStatus status = ExecutionStatus.INIT;

@@ -5,7 +5,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			opts = opts || {};
-			this.base(opts);
+			$base(opts);
 			
 			if(this.options !== this.constructor.superclass.options){
 				this.options = JSO().merge(true, {}, this.constructor.superclass.options, this.options);
@@ -29,7 +29,7 @@ JSB({
 			if(this.getElement()){
 				this.getElement().remove();
 			}
-			this.base();
+			$base();
 		},
 		
 		options: {
@@ -134,7 +134,7 @@ JSB({
 		
 		destroy: function(){
 			this.getElement().remove();
-			this.base();
+			$base();
 		},
 		
 		screenToLocal: function(x, y){

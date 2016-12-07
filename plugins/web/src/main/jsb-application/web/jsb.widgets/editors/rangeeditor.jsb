@@ -13,7 +13,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('rangeeditor.css');
 			this.addClass('_dwp_rangeEditor');
 			this.slider = this.$('<div class="_dwp_slider"></div>');

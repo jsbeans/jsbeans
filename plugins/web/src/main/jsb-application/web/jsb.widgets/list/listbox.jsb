@@ -6,7 +6,7 @@ JSB({
 	},
 	client: {
 		constructor: function(opts){
-			this.base(opts);
+			$base(opts);
 			this.loadCss('listbox.css');
 			var self = this;
 			var elt = this.getElement();

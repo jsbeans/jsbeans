@@ -7,7 +7,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('itemlist.css');
 			this.addClass('_dwp_itemList');
 			
@@ -83,7 +83,7 @@ JSB({
 			}
 			item.key = id;
 			item.list = this;
-			var it = this.base(JSO().merge(true, {}, item.options, {
+			var it = $base(JSO().merge(true, {}, item.options, {
 				key: id,
 				element: item
 			}));
@@ -99,7 +99,7 @@ JSB({
 			}
 			item.key = id;
 			item.list = this;
-			var it = this.base(key, JSO().merge(true, {}, item.options, {
+			var it = $base(key, JSO().merge(true, {}, item.options, {
 				key: id,
 				element: item
 			}));
@@ -109,7 +109,7 @@ JSB({
 		},
 		
 		deleteItem: function(key){
-			this.base(key);
+			$base(key);
 			this.publish('JSB.Widgets.ItemList.deleteItem', {id: key});
 		},
 		
@@ -134,7 +134,7 @@ JSB({
 		},
 
 		get: function(id){
-			var itemObj = this.base(id);
+			var itemObj = $base(id);
 			if(itemObj && itemObj.obj){
 				return itemObj.obj;
 			}
@@ -142,7 +142,7 @@ JSB({
 		},
 		
 		clear: function(){
-			this.base();
+			$base();
 			this.publish('JSB.Widgets.ItemList.clear');
 		},
 		
@@ -152,7 +152,7 @@ JSB({
 				return this;
 			} 
 			
-			return this.base(obj);
+			return $base(obj);
 		}
 	}
 });
@@ -165,7 +165,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			JSB.merge(true, this.options, opts);
 		},
 		
@@ -203,7 +203,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('itemlist.css');
 			this.addClass('_dwp_listItem');
 			

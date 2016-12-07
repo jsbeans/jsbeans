@@ -7,7 +7,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.loadCss('treeview.css');
 			this.addClass('_dwp_treeview');
 			this.scrollBox = new self.ScrollBox(this.options);

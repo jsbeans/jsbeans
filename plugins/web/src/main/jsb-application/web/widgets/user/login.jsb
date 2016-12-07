@@ -9,7 +9,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			var self = this;
-			this.base(opts);
+			$base(opts);
 			this.getElement().addClass('loginForm');
 			this.loadCss('login.css');
 			
