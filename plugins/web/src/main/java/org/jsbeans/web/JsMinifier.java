@@ -23,7 +23,7 @@ public class JsMinifier {
     public static String minify(String src, boolean bPrepare) throws IOException {
         String prefixComment = "";
         CompilerOptions options = new CompilerOptions();
-        CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel(options);
+        CompilationLevel.WHITESPACE_ONLY.setOptionsForCompilationLevel(options);
         options.setLanguageIn(LanguageMode.ECMASCRIPT5);
         if (src.startsWith("/*")) {
             int endCommentPos = src.indexOf("*/");
