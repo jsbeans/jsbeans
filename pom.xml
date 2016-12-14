@@ -63,8 +63,6 @@
         <module>plugins</module>
         <module>enviroment</module>
         <module>builds</module>
-
-        <module>projects</module>
     </modules>
 
 
