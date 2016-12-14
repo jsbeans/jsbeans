@@ -517,6 +517,30 @@ JSB({
 				top: -rect.height + pt.y - rect.top
 			});
 			scopeEl.append(this.modalBack);
+/*			
+			this.modalBack.on({
+				mouseover: function(evt){
+					evt.preventDefault();
+					evt.stopPropagation();
+				},
+				mouseout: function(evt){
+					evt.preventDefault();
+					evt.stopPropagation();
+				},
+				mousemove: function(evt){
+					evt.preventDefault();
+					evt.stopPropagation();
+				},
+				mouseenter: function(evt){
+					evt.preventDefault();
+					evt.stopPropagation();
+				},
+				mouseleave: function(evt){
+					evt.preventDefault();
+					evt.stopPropagation();
+				},
+			});
+*/			
 			this.modalBack.fadeIn();
 		},
 		

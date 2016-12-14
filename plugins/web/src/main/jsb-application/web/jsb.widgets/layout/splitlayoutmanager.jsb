@@ -79,6 +79,9 @@ JSB({
 						self.constructArea(paneDesc, layoutName, function(ctrl){
 							if(ctrl){
 								paneDesc.ctrl = ctrl;
+								if(paneDesc.key){
+									ctrl.attr('key', paneDesc.key);
+								}
 								var pane = sb.addToPane(idx, ctrl);
 								if(desc.split == 'vertical'){
 									if(paneDesc.minSize){

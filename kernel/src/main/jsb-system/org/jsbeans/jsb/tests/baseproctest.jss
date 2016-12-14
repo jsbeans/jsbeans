@@ -12,7 +12,7 @@ JSB({
 	parent: 'JSB.Tests.BaseProcTest',
 	server: {
 		func: function(x){
-			return 'JSB.Tests.BaseProcTest2.func('+x+') => ' + this.base(x + 2);
+			return 'JSB.Tests.BaseProcTest2.func('+x+') => ' + $base(x + 2);
 		}
 	}
 });
@@ -22,7 +22,7 @@ JSB({
 	parent: 'JSB.Tests.BaseProcTest2',
 	server: {
 		func: function(x){
-			return 'JSB.Tests.BaseProcTest3.func('+x+') => ' + this.base(x + 1);
+			return 'JSB.Tests.BaseProcTest3.func('+x+') => ' + $base(x + 1);
 		}
 	}
 });
