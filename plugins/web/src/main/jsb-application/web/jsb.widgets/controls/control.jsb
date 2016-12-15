@@ -1,7 +1,7 @@
 JSB({
 	name:'JSB.Widgets.Control',
 	parent: 'JSB.Widgets.Actor',
-	require: ['JQuery', 'DWP.DomController'],
+	require: ['JQuery', 'JSB.Widgets.DomController'],
 	client: {
 		constructor: function(opts){
 			opts = opts || {};

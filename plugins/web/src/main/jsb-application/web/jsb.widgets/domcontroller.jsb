@@ -1,6 +1,5 @@
 JSB({
-	name:'DWP.DomController',
-	group: 'dwp',
+	name:'JSB.Widgets.DomController',
 	require: ['JQuery'],
 	client: {
 		singleton: true,
@@ -84,12 +83,12 @@ JSB({
 			}});
 			
 			// update jQuery fn scope with access function
-			this.$.fn.jso = function(){
+			this.$.fn.jsb = function(){
 				var id = this.attr('_id');
 				if(!id){
 					return null;
 				}
-				return JSO().getInstance(id);
+				return JSB.getInstance(id);
 			}
 			
 			// inject controls on startup
@@ -109,11 +108,11 @@ JSB({
 				// check whether automatic dwp detect method is available
 				if(self.animationDetectSupported){
 					// everything is ok, nothing to do
-//					console.log('DWP.DomController: animation detection supported');
+//					console.log('JSB.Widgets.DomController: animation detection supported');
 					return;
 				} else {
 					// TODO: enable manual detection method
-//					console.log('DWP.DomController: animation detection NOT supported');
+//					console.log('JSB.Widgets.DomController: animation detection NOT supported');
 				}
 			}, 1000);
 			
@@ -123,23 +122,39 @@ JSB({
 			var self = this;
 			if(elt.attr('_inject')){
 				if(readyCallback) {
-					if(elt.jso()){
-						readyCallback(elt.jso());
+					if(elt.jsb()){
+						readyCallback(elt.jsb());
 					} else {
 						JSO().deferUntil(function(){
-							readyCallback(elt.jso());
+							readyCallback(elt.jsb());
 						}, function(){
-							return elt.jso();
+							return elt.jsb();
 						});
 					}
 				}
 				return;
 			}
 			elt.attr('_inject', true);
-			var jsoName = elt.attr('jso');
-			JSO().lookup(jsoName, function(cls){
+			var jsoName = elt.attr('jsb');
+			JSB.lookup(jsoName, function(cls){
 				if(!cls){
-					throw 'Unable to find JSO object: ' + jsoName;
+					throw 'Unable to find Bean: ' + jsoName;
+				}
+				
+				// collect option names map
+				var optMap = {};
+				var curCtor = cls;
+				while(curCtor){
+					var opts = curCtor.prototype.options;
+					if(opts){
+						for(var n in opts){
+							optMap[n.toLowerCase()] = n;
+						}
+					}
+					if(!curCtor.superclass){
+						break;
+					}
+					curCtor = curCtor.superclass.constructor;
 				}
 
 				// collect opts from attrs
@@ -148,23 +163,29 @@ JSB({
 				var initProc = null;
 				for(var i = 0; i < attrs.length; i++){
 					var attr = attrs[i];
-					if(attr.name == 'jso' || attr.name == 'id' || attr.name == '_inject'){
+					if(attr.name == 'jsb' || attr.name == 'id' || attr.name == '_inject'){
 						continue;
 					}
 					if(attr.name == 'options'){
 						var opObj = self.performAttrVal(attr.value);
-						if(JSO().isFunction(opObj)){
+						if(JSB.isFunction(opObj)){
 							opObj = opObj.call(this);
 						}
-						JSO().merge(opts, opObj);
+						JSB.merge(opts, opObj);
 					} else if(attr.name == 'init'){
 						initProc = self.performAttrVal(attr.value);
 					} else {
-						opts[attr.name] = self.performAttrVal(attr.value);
-						if(JSO().isFunction(opts[attr.name])){
+						var attrName = attr.name;
+						if(optMap[attrName]){
+							attrName = optMap[attrName];
+						}
+						opts[attrName] = self.performAttrVal(attr.value);
+/*						
+						if(JSB().isFunction(opts[attrName])){
 							var onName = 'on' + attr.name[0].toUpperCase() + attr.name.substr(1);
 							opts[onName] = opts[attr.name];
 						}
+*/						
 					}
 				}
 				opts.element = elt;
@@ -200,9 +221,9 @@ JSB({
 						}
 						var c = contentToAdd.shift();
 						if(c.get(0).nodeName == 'DWP-CONTROL'){
-							if(c.jso()){
+							if(c.jsb()){
 								// append control
-								ctrlObj.append(c.jso());
+								ctrlObj.append(c.jsb());
 								nextContentItem();
 							} else {
 								// inject & append control
@@ -234,7 +255,7 @@ JSB({
 			var jVal = null;
 			// try to eval
 			try {
-				jVal = eval('(' + tVal + ')');
+				jVal = eval(tVal);
 			} catch(e){
 				jVal = val;
 			}

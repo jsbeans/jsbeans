@@ -1,9 +1,10 @@
 @CHARSET "UTF-8";
 
 ._dwp_comboBox {
-	height: 100%;
 	position: relative;
 	font-size: small;
+	display: inline-block;
+	height: 26px;
 }
 
 ._dwp_comboBox._dwp_dropDown,
@@ -11,7 +12,7 @@
 ._dwp_comboBox._dwp_dropDown.disabled:active {
 	padding: 4px 8px;
 	border-radius: 4px;
-	display: inline-block;
+	
 	cursor: pointer;
 	height: initial;
     vertical-align: middle;
@@ -64,14 +65,20 @@
 }
 
 ._dwp_comboBox._dwp_editable {
-	display: inline-block;
 }
 
 ._dwp_comboBox._dwp_editable ._dwp_dropBtn {
 	display: inline-block;
+	box-sizing: border-box;
+	position: absolute;
+    top: 0;
+    right: 0;
 	vertical-align: middle;
 	border-radius: 0 4px 4px 0;
 	cursor: pointer;
+	height: 100%;
+    width: 26px;
+	text-align: center;
   	  		
 	border: 1px solid #B1B1B1;
 	background: -webkit-linear-gradient(top,#fffffd, #f2f2f2 5%, #CFCFCF 25%, #EEEEEE 98%, #D8D8D8 100%);
@@ -79,7 +86,6 @@
 	background: linear-gradient(top,#fffffd, #f2f2f2 5%, #CFCFCF 25%, #EEEEEE 98%, #D8D8D8 100%);
 	background: -o-linear-gradient(top,#fffffd, #f2f2f2 5%, #CFCFCF 25%, #EEEEEE 98%, #D8D8D8 100%);
 	background: -ms-linear-gradient(top,#fffffd, #f2f2f2 5%, #CFCFCF 25%, #EEEEEE 98%, #D8D8D8 100%);
-	padding: 4px 7px;
 }
 
 ._dwp_comboBox._dwp_editable ._dwp_dropBtn:hover {
@@ -91,7 +97,6 @@
 }
 
 ._dwp_comboBox._dwp_editable ._dwp_dropBtn:active {
-	padding: 5px 6px 3px 8px;
 	background: -webkit-linear-gradient(top,#F2F2F2, #CACACA 5%, #CBCBCB 25%, #F9F9F9 98%, #FFFFFF 100%);
 	background: -moz-linear-gradient(top,#F2F2F2, #CACACA 5%, #CBCBCB 25%, #F9F9F9 98%, #FFFFFF 100%);
     background: linear-gradient(top,#F2F2F2, #CACACA 5%, #CBCBCB 25%, #F9F9F9 98%, #FFFFFF 100%);
@@ -116,8 +121,10 @@
 
 
 ._dwp_comboBox._dwp_editable ._dwp_primitiveEditor {
+	display: block;
 	vertical-align: middle;
-	height: 26px;
+	padding-right: 26px;
+	height: 100%;
 }
 
 ._dwp_comboBox._dwp_editable ._dwp_primitiveEditor input {

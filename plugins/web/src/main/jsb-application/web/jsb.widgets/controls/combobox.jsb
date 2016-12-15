@@ -41,7 +41,9 @@ JSB({
 			} else {
 				// create editable
 				this.addClass('_dwp_editable');
-				this.editor = new self.Editor();
+				this.editor = new self.Editor({
+					placeholder: this.options.placeholder
+				});
 				this.append(this.editor);
 				this.ddBtn = this.$('<div class="_dwp_dropBtn"><div class="_dwp_dropIcon"></div></div>');
 				this.append(this.ddBtn);
@@ -129,6 +131,16 @@ JSB({
 			this.itemMap[itemObj.key] = itemObj;
 		},
 		
+		setItems: function(items){
+			this.clear();
+			if(!JSB.isArray(items)){
+				items = [items];
+			}
+			for(var i = 0; i < items.length; i++){
+				this.addItem(items[i]);
+			}
+		},
+		
 		setData: function(val){
 			var valObj = this.resolveItem(val);
 			if(this.options.dropDown){
@@ -148,8 +160,12 @@ JSB({
 					}
 				}
 			} else {
-				if(this.editor.getData().getValue() != valObj.element){
-					this.editor.setData(valObj.element);
+				var val = valObj.element;
+				if(JSB.isObject(val) || JSB.isArray(val)){
+					val = valObj.key;
+				}
+				if(this.editor.getData().getValue() != val){
+					this.editor.setData(val);
 					if(!JSO().isNull(this.options.onChange)){
 						this.options.onChange(valObj.key, valObj);
 					}
