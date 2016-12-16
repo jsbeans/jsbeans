@@ -219,11 +219,19 @@ JSB({
 			mode: 'simple',	// simple | inplace	
 			readonly: false,
 			multiline: false,
+			placeholder: '',
+			title: '',
+			password: false,
+			autocomplete: null,
+			
 			onChange: null,
 			onValidate: function(val){return true;},
 			onContextMenu: function(evt){
 				return true;
-			}
+			},
+			onFocus: null,
+			onFocusOut: null,
+			
 		},
 		setData: function(val){
 			var self = this;

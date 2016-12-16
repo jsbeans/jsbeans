@@ -447,8 +447,18 @@
 */						
 						// extract proc body 
 						procStr = procDecl + procStr.substr(declM[0].length);
-						
-						return eval('(' + procStr + ')');
+
+						try {
+							return eval('(' + procStr + ')');
+						} catch(e){
+							debugger;
+							if(self.isClient()){
+								console.log('Error: ' + e + ' due to parsing function: ' + procStr);
+							} else {
+								Log.error('Error: ' + e + ' due to parsing function: ' + procStr);
+							}
+							throw e;
+						}
 					}
 
 					
@@ -2673,7 +2683,7 @@
 			}
 			this.callbackAttrs.idMap[id] = proc;
 			
-			return "function(){ var procToCall = JSB().callbackAttrs.idMap[&#39;"+id+"&#39;]; if(procToCall){ return procToCall.apply(this, arguments); } }";
+			return "(function(){ var procToCall = JSB().callbackAttrs.idMap[&#39;"+id+"&#39;]; if(procToCall){ return procToCall.apply(this, arguments); } })";
 		},
 		
 		

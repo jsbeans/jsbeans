@@ -215,7 +215,7 @@ JSB({
 							cell.before(cellElt);
 						}
 						if(col.opts && col.opts.onCreateCell){
-							var item = wrapper.find('> ._dwp_listItem').jso();
+							var item = wrapper.find('> ._dwp_listItem').jsb();
 							col.opts.onCreateCell.call(this, item, cellElt);
 						}
 						cells = wrapper.find('> *');
