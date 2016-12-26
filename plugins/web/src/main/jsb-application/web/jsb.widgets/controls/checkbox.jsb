@@ -36,7 +36,7 @@ JSB({
 			this.enable(this.options.enabled);
 			
 			if(this.options.check){
-				this.setChecked(this.options.checked);
+				this.setChecked(this.options.checked, true);
 			}
 		},
 		
@@ -65,13 +65,13 @@ JSB({
 			return this.options.enabled;
 		},
 		
-		setChecked: function(b){
+		setChecked: function(b, dontNotify){
 			if(!this.options.check){
 				return;
 			}
 			this.find('> label > input').prop('checked', b);
 			this.enableContents(b);
-			if(this.options.onChange){
+			if(this.options.onChange && !dontNotify){
 				this.options.onChange.call(this, b);
 			}
 		},
