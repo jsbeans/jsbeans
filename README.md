@@ -51,37 +51,31 @@ JSB({
     типы импортированных бинов будут интегрированы в scope методов */
     $require: {MyWorld: 'my.examples.MyWorld'},
 
-	/** При установке $sync в true все поля общей секции синхронизируются и 
-	могут использоваться в $client и в $server прозрачно (производится 
-	слияние изменений)*/
-	$sync: true,
-     
-    /** поле, объявленное в общей секции, подлежит синхронизации*/
-    myField: {}, 
-    
     /** методы из общей секции могут использоваться (копируются) в $client и $server*/
-    getMessageText: function(){
+    formatMessageText: function(data){
         var text = '';
-        for (let p: this.myField) if (this.myField.hasOwnProperty(p)) {
-            return p + ' = ' + this.myField.text + '\n';
+        for (let p: data) if (data.hasOwnProperty(p)) {
+            text += p + ' = ' + data[p] + '\n';
         }
         return text;
     },
 
     /** секция клиентского кода (исполняется в браузере)*/
     $client: {
-        $constructor: function(){          
-            
+        $constructor: function(){
             window.setInterval(function(){
                 /** вызов метода из "противоположной секции" осуществляется 
                 асинхронно через адаптер, получаемый внутри методов $server() 
                 и вне jsb.$server()*/
-                $server().getTimestamp(function(){                    
-                    /** getMessageText при создании был скопирован из общей секции,
-                     поэтому использовает значение this.myFiled на клиенте */
-                    alert($this.getMessageText());
+                $server().getTimestamp(function(result, error){                    
+                    /** в scope всех методов добавляется $this равный this метода бина, чтобы 
+                    перед вложенными функциями не декларировать 'var self = this' */
+                    if (!error) {
+                        let data = {timestamp: 0 + result};
+                        alert($this.formatMessageText(data));
+                    }
                 });                
-            }, 1000)
+            }, 1000);
         }
     },
 
@@ -91,25 +85,21 @@ JSB({
         экземпляра бина */
         $constructor: function(){
             /** создание экземпляра импортированного бина */
-            this.myWorld = new MyWorld();
-            /** в scope всех методов добавляется $this равный this, чтобы 
-            перед вложенными функциями не декларировать 'var self = this' */
-            $this.say('Hello');                            
+            this.myWorld = new MyWorld();                        
         },
+        
         /** методы, объявленные в серверной секции могут вызываться с клиента 
         и наоборот */
-        say: function (text){
-            /** изменение значения поля из общей секции будет синхронизировано 
-            с клиентом и в $client this.myFiled будет обновлено */
-            this.myField.text = this.getTimestamp() + ': Server say ' + text + '!';
+        getTimestamp: function (){
+            return 0 + this.getSystemTimestamp();
         },
+        
         /** В серверной секции так же можно использовать java классы и объекты, 
         добавив префикс 'Packages.' */
-        getTimestamp: function() {
-            return 0 + Packages.java.lang.System.currentTimeMillis();
+        getSystemTimestamp: function() {
+            return Packages.java.lang.System.currentTimeMillis();
         }
-    },
-    
+    }    
 });
 ```
 
