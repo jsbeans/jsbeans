@@ -24,8 +24,7 @@
  * TODO
  * TODO
 
-# Самый простой бин
-
+## Простейший бин
 ```javascript
 JSB({
     $name: 'MyBean',
@@ -38,7 +37,7 @@ JSB({
 });
 ```
 
-# Клиент-серверный бин с тремя секциями - общая базовая ($common), $server, $client
+## Клиент-серверный бин
 
 ```javascript
 JSB({
@@ -48,17 +47,23 @@ JSB({
     /** бин может наследовать свойства и методы родительского */
     $parent: 'my.examples.ParentBean',
      
-    /** бин может импортировать другие бины (например, для создания экземпляров), типы импортированных бинов будут интегрированы в scope методов */
+    /** бин может импортировать другие бины (например, для создания экземпляров), 
+    типы импортированных бинов будут интегрированы в scope методов */
     $require: {MyWorld: 'my.examples.MyWorld'},
+
+	/** При установке $sync в true все поля общей секции синхронизируются и 
+	могут использоваться в $client и в $server прозрачно (производится 
+	слияние изменений)*/
+	$sync: true,
      
-    /** поля, объявленные в общей секции синхронизируются и могут использоваться в $client и $server прозрачно (производится слияние изменений)*/
-    myField: {}, /// common fields changes would be synchronized both $client and $server
+    /** поле, объявленное в общей секции, подлежит синхронизации*/
+    myField: {}, 
     
     /** методы из общей секции могут использоваться (копируются) в $client и $server*/
     getMessageText: function(){
         var text = '';
-        for (let p: this.myMessage) if (this.myMessage.hasOwnProperty(p)) {
-            return p + ' = ' + this.myMessage.text + '\n';
+        for (let p: this.myField) if (this.myField.hasOwnProperty(p)) {
+            return p + ' = ' + this.myField.text + '\n';
         }
         return text;
     },
@@ -68,9 +73,12 @@ JSB({
         $constructor: function(){          
             
             window.setInterval(function(){
-                /** вызов метода из "противоположной секции" осуществляется асинхронно через адаптер, получаемый внутри методов $server() и вне jsb.$server()*/
+                /** вызов метода из "противоположной секции" осуществляется 
+                асинхронно через адаптер, получаемый внутри методов $server() 
+                и вне jsb.$server()*/
                 $server().getTimestamp(function(){                    
-                    /** getMessageText при создании был скопирован из общей секции, поэтому использовает значение this.myFiled на клиенте */
+                    /** getMessageText при создании был скопирован из общей секции,
+                     поэтому использовает значение this.myFiled на клиенте */
                     alert($this.getMessageText());
                 });                
             }, 1000)
@@ -79,19 +87,24 @@ JSB({
 
     /** секция серверного кода (исполняется на сервере)*/
     $server: {
-        /** серверный конструктор вызывается при порождении серверной части экземпляра бина */
+        /** серверный конструктор вызывается при порождении серверной части 
+        экземпляра бина */
         $constructor: function(){
             /** создание экземпляра импортированного бина */
             this.myWorld = new MyWorld();
-            /** в scope всех методов добавляется $this равный this, чтобы перед вложенными функциями не декларировать 'var self = this' */
+            /** в scope всех методов добавляется $this равный this, чтобы 
+            перед вложенными функциями не декларировать 'var self = this' */
             $this.say('Hello');                            
         },
-        /** методы, объявленные в серверной секции могут вызываться с клиента и наоборот */
+        /** методы, объявленные в серверной секции могут вызываться с клиента 
+        и наоборот */
         say: function (text){
-            /** изменение значения поля из общей секции будет синхронизировано с клиентом и в $client this.myFiled будет обновлено */
-            this.myFiled.serverText = this.getTimestamp() + ': Server say ' + text + '!';
+            /** изменение значения поля из общей секции будет синхронизировано 
+            с клиентом и в $client this.myFiled будет обновлено */
+            this.myField.text = this.getTimestamp() + ': Server say ' + text + '!';
         },
-        /** В серверной секции так же можно использовать java классы и объекты, добавив префикс 'Packages.' */
+        /** В серверной секции так же можно использовать java классы и объекты, 
+        добавив префикс 'Packages.' */
         getTimestamp: function() {
             return 0 + Packages.java.lang.System.currentTimeMillis();
         }
@@ -100,36 +113,162 @@ JSB({
 });
 ```
 
-# Web виджет
-* TODO
+## Web компонент
+```javascript
+JSB({
+	$name: 'my.examples.MyWebControl',
 
-#  Создание простой страницы (встраивание в обычнй HTML)
+	/** Унаследуем наш компонент от бина Control из библиотеки JSB.Widgets */
+	$parent: 'JSB.Widgets.Control', 
 
-* TODO
+	/** Наш компонент будет использовать ComboBox из библиотеки JSB.Widgtets */	
+	$require: ['JSB.Widgets.ComboBox'],
 
-#  Размещение на странице
+	/** Клиентская секция (код будет выполняться в браузере) */
+	$client: {
+		#constructor: function(opts){
+			$base(opts); // Вызываем родительский конструктор
+			
+			/** Загружаем стили (путь задается относительно места расположения 
+			файла с текущим бином) */
+			this.loadCss('myWebControl.css');
 
-* TODO (custom field, attachTo)
+			/** Создадим экземпляр бина ComboBox из библиотеки JSB.Widgets */
+			var cb = new ComboBox({
+				cssClass: 'myCombo',
+				dropDown: true,
+				items: [{
+					key: 'first',
+					element: 'Первый'
+				},{
+					key: 'second',
+					element: 'Второй'
+				},{ 
+					key: 'third',
+					element: '<div class="cool">Третий</div>'
+				}],
 
-# Управление жизненным циклом
+				/* инициализируем комбо значением, переданным через параметр 
+				конструктора */
+				value: opts.initialValue,
+				
+				onChange: function(key, obj){
+					$this.updateMyData();
+				}
+			});
+			
+			/** Добавим ComboBox в DOM элемент нашего компонента */
+			this.append(cb); 
+
+			/** Создадим DOM элемент для помещения туда данных с сервера */
+			this.append($('<div class="myContainer"></div>'));
+			
+			/** Загрузим/обновим данные с сервера и выведем их */
+			this.updateMyData();
+		},
+
+		updateMyData: function(){
+			/** Получим текущее значение из комбо-бокса */
+			var cbVal = this.find('.myCombo').jsb().getData();
+			
+			/** Вызываем серверную функцию для получения данных с сервера.
+			Первым аргументом передаем значение из комбо, а вторым - колбэк 
+			функцию, которая будет вызвана сразу как только серверный метод 
+			вернет данные */
+			$server().loadMyData(cbVal, function(res){
+				$this.drawData(res); // отрисуем данные
+			});
+		},
+		
+		drawData: function(data){
+			/** Предварительно очистим контейнерный элемент */
+			$('.myContainer').empty(); // вызов jQuery
+
+			/** Добавим данные в контейнерный элемент при помощи встроенного
+			шаблонизатора doT */
+			$('.myContainer').append(`#dot
+				<ul class="myTags">
+				{{ for(var i in data) { }}
+					<li class="myTag">{{=data[i]}}</li>
+				{{ } }}
+				</ul>
+			`);
+		}
+	},
+
+	/** Серверная секция (код будет выполняться на стороне сервера) */
+	$server: {
+		myDictionary: {
+			first: ['Анна', 'Мария'],
+			second: ['Вера', 'Лариса'],
+			third: ['Вероника','Петр']
+		},
+		
+		loadMyData: function(key){
+			return this.myDictionary[key];
+		}
+	}
+});
+```
+
+##  Встраивание компонента в HTML
+
+#### Встраивание при помощи JavaScript
+```html
+<html>
+	<head>
+		<script type="text/javascript" src="jsbeans.js"></script>
+	</head>
+	<body>
+		<div id="myGlobalContainer"></div>
+		
+		<script type="text/javascript">
+			JSB.create('my.examples.MyWebControl', {
+				container: '#myGlobalContainer',
+				initialValue: 'second'
+			}, function(){
+				/** place code here if you want to do anything after control
+				has been created */
+			});
+		</script>
+	</body>
+</html>
+```
+
+#### Автоматическое встраивание
+```html
+<html>
+	<head>
+		<script type="text/javascript" src="jsbeans.js"></script>
+	</head>
+	<body>
+		<div id="myGlobalContainer" 
+			jsb="my.examples.MyWebControl"
+			initialvalue="second"
+		></div>
+	</body>
+</html>
+```
+
+## Управление жизненным циклом
 Бин является составным объектом, разные его части (клиентская и серверная) имеют различные JavaScript объекты, у каждого может быть свой жизненный цикл и область видимости. Разработчик может привязать жизненный цикл бина к сесии пользователя, управлять автопорождением экземпляров или управлять жизненным циклом вручную. Ниже приведено несколько часто используемых случаев. 
 
-## Синглтон 
+#### Синглтон 
 * TODO
 
-## Синглтон в рамках сессии
+#### Синглтон в рамках сессии
 * TODO
 
-## Автопорождение серверной части с клиента
+#### Автопорождение серверной части с клиента
 * TODO
 
-## Один бин: один клиентский - один серверный
+#### Один бин: один клиентский - один серверный
 * TODO
 
-## Один бин: много клиентский - один серверный
+#### Один бин: много клиентский - один серверный
 * TODO
 
-## Один бин: много клиентский - много серверных
+#### Один бин: много клиентский - много серверных
 * TODO
 
 
