@@ -82,7 +82,7 @@ JSB({
     /** методы из общей секции могут использоваться (копируются) в $client и $server*/
     formatMessageText: function(data){
         var text = '';
-        for (let p: data) if (data.hasOwnProperty(p)) {
+        for (let p in data) if (data.hasOwnProperty(p)) {
             text += p + ' = ' + data[p] + '\n';
         }
         return text;
