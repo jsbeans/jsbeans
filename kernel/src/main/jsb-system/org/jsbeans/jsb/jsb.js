@@ -128,7 +128,25 @@
 		isServer: function(){
 			return !this.isClient();
 		},
-
+		
+		eval: function(script, scopeVars, fName){
+			if(this.isClient()){
+				// generate scope vars
+				for(var varName in scopeVars){
+					eval('var ' + varName + ' = scopeVars["' + varName + '"];');
+				}
+				return eval('('+script+')');
+			} else {
+				var ctx = Packages.org.mozilla.javascript.Context.getCurrentContext();
+				var scope = ctx.newObject(ctx.getThreadLocal('scope'));
+				for(var varName in scopeVars){
+					Packages.org.mozilla.javascript.ScriptableObject.putProperty(scope, varName, scopeVars[varName]);
+				}
+				var res = ctx.evaluateString(scope, '('+script+')', '' + scopeVars['$jsb'].name + '.' + fName, 1, null);
+				return res;
+			}
+		},
+		
 		isSingleton: function(){
 			var s = false;
 			if(this.singleton){
@@ -419,6 +437,12 @@
 					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb._serverProcs; return new f();}
 					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb._clientProcs; return new f();}
 */					
+					
+					var scopeVars = {
+						'$jsb': $jsb,
+						'$parent': $parent,
+						'$superFunc': $superFunc
+					};
 					function _enrichFunction(mtdName, proc, isCtor){
 						var procStr = proc.toString();
 						// extract proc declaration
@@ -449,7 +473,7 @@
 						procStr = procDecl + procStr.substr(declM[0].length);
 
 						try {
-							return eval('(' + procStr + ')');
+							return self.eval(procStr,scopeVars, fName);
 						} catch(e){
 							debugger;
 							if(self.isClient()){
