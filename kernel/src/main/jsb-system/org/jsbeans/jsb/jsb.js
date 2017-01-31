@@ -30,14 +30,14 @@
 		}
 
 		if(cfg.parent == null || cfg.parent == undefined){
-			cfg.parent = 'Bean';
+			cfg.parent = 'JSB.Bean';
 		}
 		
 		if(cfg.path == null || cfg.path == undefined){
 			cfg.path = JSB().lastPath;
 		}
 		
-		if(cfg.name != 'Bean'){
+		if(cfg.name != 'JSB.Bean'){
 			this.registering[cfg.name] = true;
 			var parentExisted = this.get(cfg.parent);
 			this.lookup(cfg.parent, function(par){
@@ -175,7 +175,7 @@
 		
 		isSystem: function(){
 			var sysMap = {
-				'Bean': true,
+				'JSB.Bean': true,
 				'JSB.Locker': true,
 				'JSB.Logger': true,
 				'JSB.AjaxProvider': true,
@@ -885,8 +885,8 @@
 			if(this.parent == null 
 				|| this.parent == undefined 
 				|| this.parent.length == 0 
-				|| this.parent == 'Bean'){
-				if(str == 'Bean'){
+				|| this.parent == 'JSB.Bean'){
+				if(str == 'JSB.Bean'){
 					return true;
 				}
 				return false;
@@ -1089,7 +1089,7 @@
 							(this.isPlainObject(copy, true) || (copyIsArray = this.isArray(copy))) && 
 							!this.isJavaObject(copy) && 
 							!(copy instanceof JSB) &&
-							!this.isInstanceOf(copy, 'Bean') &&
+							!this.isInstanceOf(copy, 'JSB.Bean') &&
 							(!JSB().isClient() || (!(copy instanceof HTMLElement))&&(!(copy == document)))) {
 							if (copyIsArray) {
 								copyIsArray = false;
@@ -2979,7 +2979,7 @@
 })();
 
 JSB({
-	name: 'Bean',
+	name: 'JSB.Bean',
 	parent: null,
 	common: {
 /*

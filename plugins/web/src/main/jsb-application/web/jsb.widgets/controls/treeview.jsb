@@ -36,6 +36,7 @@ JSB({
 			allowSelect: true,
 			allowHover: true,
 			selectMulti: false,
+			collapsed: false,
 			// events
 			onSelectionChanged: null
 		},
@@ -316,6 +317,8 @@ JSB({
 			    this.itemMap[itemObj.key] = itemObj;
 			}
 			
+			if(this.rootElt["0"].firstChild != null)
+				this.classRemove(this.rootElt["0"].firstChild, 'collapsed');
 			
 			return itemObj;
 		},
@@ -534,6 +537,15 @@ JSB({
 				var item = this.itemMap[key];
 				this._applyFilteredToItem(item);
 			}
+		},
+		
+		classRemove: function(el, className) {
+			if (el.classList)
+				el.classList.remove(className)
+			else if (hasClass(el, className)) {
+				var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
+				el.className=el.className.replace(reg, ' ')
+				}
 		}
 	}
 });

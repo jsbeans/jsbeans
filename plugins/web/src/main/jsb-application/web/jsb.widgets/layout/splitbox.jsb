@@ -78,7 +78,7 @@ JSB({
 						splitter.css({
 							top: pos 
 						});
-						splitter.draggable({ 
+						splitter.draggable({
 							axis: 'y',
 //								containment: splitterBox,
 							start: function(evt, data){

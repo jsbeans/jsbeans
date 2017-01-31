@@ -1,7 +1,7 @@
 JSB({
 	name:'JSB.Widgets.ItemList.TableView',
 	parent: 'JSB.Widgets.ItemList.View',
-	require: {},
+//	require:['JQuery', 'JQuery.UI.Interactions'],
 	
 	client: {
 		constructor: function(opts){
@@ -204,11 +204,13 @@ JSB({
 				for(var i = 0; i < this.columns.length; i++ ){
 					var col = this.columns[i];
 					var cell = this.$(cells[i]);
+					
 					if(col.key == '__main__'){
 						bWasMain = true;
 					} else {
 						var cellElt = this.$('<div class="cell"></div>');
 						cellElt.attr('key', col.key);
+						
 						if(bWasMain){
 							wrapper.append(cellElt);
 						} else {
@@ -223,6 +225,5 @@ JSB({
 				}
 			}
 		}
-		
 	}
 });
