@@ -4,8 +4,8 @@ JSB({
 	require: {
 		'JSB.Widgets.Value': 'Value',
 		'JSB.Widgets.ListBox': 'ListBox',
-		'JQuery.Placeholder': 'JQuery.Placeholder',
-		'JSB.Widgets.DroplistTool': 'JSB.Widgets.DroplistTool'
+		'JQuery.Placeholder': 'Placeholder',
+		'JSB.Widgets.DroplistTool': 'DroplistTool'
 	},
 	bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){

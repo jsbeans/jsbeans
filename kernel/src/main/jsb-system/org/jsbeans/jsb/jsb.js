@@ -326,6 +326,7 @@
 				throw "Class name required to create managed object";
 			}
 			var self = this;
+			var logger = this.getLogger();
 			
 			this.merge(true, this, cfg);
 			this._ready = false;
@@ -334,62 +335,36 @@
 			// inherit parent's jso options
 			var entry = this.currentSection();
 			if(parent){
-				if(this.format == 'jso'){
-					var pe = parent.currentSection();
-					for(var ek in pe){
-						if(ek == 'body' || ek == 'constructor' || ek == 'bootstrap'){
-							continue;
-						}
-						if(entry[ek]){
-							entry[ek] = this.merge(true, pe[ek], entry[ek] );
-						} else {
-							entry[ek] = pe[ek];
-						}
-					}
-				} else {
-					var pe = parent.currentSection();
-					var kfs = ['singleton', 'globalize', 'fixedId', 'disableRpcInstance'];
-					for(var i = 0; i < kfs.length; i++){
-						var key = kfs[i];
-						if(!JSB().isNull(pe[key])){
-							entry[key] = pe[key];
-						}
+				var pe = parent.currentSection();
+				var kfs = ['singleton', 'globalize', 'fixedId', 'disableRpcInstance'];
+				for(var i = 0; i < kfs.length; i++){
+					var key = kfs[i];
+					if(!JSB().isNull(pe[key])){
+						entry[key] = pe[key];
 					}
 				}
 			}
 			
 			var commonSection = this.common;
-			if(this.format == 'jso'){
-				commonSection = this.body;
-			}
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
 				var body = {};
 				
-				if(this.format == 'jso') {
-					if(this.body){
-						this.merge(true, body, this.body);
-					}
-					if(entry.body){
-						this.merge(true, body, entry.body);
-					}
-				} else {
-					// jsb
-					if(this.common){
-						this.merge(true, body, this.common);
-					}
-					if(entry){
-						this.merge(true, body, entry);
-					}
-					
-					// clear JSB keyword fields
-					var kfs = ['constructor', 'bootstrap', 'singleton', 'globalize', 'fixedId', 'disableRpcInstance'];
-					for(var i = 0; i < kfs.length; i++ ){
-						if(body[kfs[i]]){
-							delete body[kfs[i]];
-						}
-					}
+				// merge common and entry sections
+				if(this.common){
+					this.merge(true, body, this.common);
+				}
+				if(entry){
+					this.merge(true, body, entry);
 				}
 				
+				// clear JSB keyword fields
+				var kfs = ['constructor', 'bootstrap', 'singleton', 'globalize', 'fixedId', 'disableRpcInstance', 'require'];
+				for(var i = 0; i < kfs.length; i++ ){
+					if(body[kfs[i]]){
+						delete body[kfs[i]];
+					}
+				}
+/*				
 				// substitute body methods via checking proxy
 				function checkPrivate(curDesc, ctxStack){
 					if(ctxStack.length == 0){
@@ -410,7 +385,68 @@
 						throw 'Protected method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' is not accessible from ' + prevDesc.jsb.name + '.' + prevDesc.methodName;
 					}
 				}
+*/
+				
+				// combine requires
+				var requireMap = {};
+				var reverseRequireMap = {};
+				
+				if(this.require || (entry && entry.require)){
+					
+					function parseReqEntry(e){
+						if(JSB().isArray(e)){
+							for(var i in e){
+								parseReqEntry(e[i]);
+							}
+							return;
+						} else if(JSB().isString(e)){
+							var rObj = {};
+							rObj[e] = '';
+							parseReqEntry(rObj);
+						} else {
+							// plain object
+							for(var i in e){
+								if(!self.isString(i)){
+									throw 'Invalid required entity declaration "' + JSON.stringify(i) + '" in bean ' + self.name;
+								}
+								if(requireMap[i]){
+									throw 'Duplicate require "' + i + '" in bean ' + self.name;
+								} else {
+									var alias = e[i];
+									if(self.isFunction(alias)){
+										alias = alias.call(self);
+									}
+									if(!alias || alias.length === 0){
+										alias = i;
+										// generate alias
+										if(alias.lastIndexOf('.') >= 0){
+											alias = alias.substr(alias.lastIndexOf('.') + 1);
+										}
+									}
+									if(!self.isString(alias)){
+										throw 'Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.name+'" requirement';
+									}
+									if(!/^[A-Za-z_][A-Za-z_\d]*$/.test(alias)){
+										throw 'Invalid alias "' + alias + '" in bean "'+self.name+'" requirement';
+									}
+									if(reverseRequireMap[alias]){
+										throw 'Duplicate require alias "' + alias + '" in bean ' + self.name + '. Please choose another alias name';
+									}
+									requireMap[i] = alias;
+									reverseRequireMap[alias] = i;
+								}
+							}
+						}
+					}
 
+					if(this.require){
+						parseReqEntry(this.require);
+					}
+					if(entry && entry.require){
+						parseReqEntry(entry.require);
+					}
+				}
+				
 				(function(){
 					var $jsb = self;
 					var $parent = null;
@@ -443,6 +479,17 @@
 						'$parent': $parent,
 						'$superFunc': $superFunc
 					};
+					
+					// inject requires into scopeVars
+					function injectRequire(reqAlias){
+						var beanName = reverseRequireMap[reqAlias];
+						return eval('(function '+reqAlias+'(){ var refBean = JSB.get("'+beanName+'"); var refCls = refBean.getClass(); refCls.apply(this, arguments); })');
+					}
+/*					
+					for(var reqAlias in reverseRequireMap){
+						scopeVars[reqAlias] = injectRequire(reqAlias)
+					}
+*/					
 					function _enrichFunction(mtdName, proc, isCtor){
 						var procStr = proc.toString();
 						// extract proc declaration
@@ -570,7 +617,89 @@
 
 			}
 			
-			this._registerObject();
+			// prepare field map
+			this._prepareFieldMap();
+
+			// resolve requires
+			if(this.require || (entry && entry.require)){
+				
+				var requires = {};
+				
+				function parseReqEntry(e){
+					if(JSB().isArray(e)){
+						for(var i in e){
+							parseReqEntry(e[i]);
+						}
+						return;
+					} else if(JSB().isString(e)){
+						var rObj = {};
+						rObj[e] = '';
+						parseReqEntry(rObj);
+					} else {
+						// plain object
+						for(var i in e){
+							if(requires[i]){
+								if(JSB().isArray(requires[i])){
+									requires[i].push(e[i]);
+								} else {
+									requires[i] = [requires[i], e[i]];
+								}
+							} else {
+								requires[i] = e[i];
+							}
+						}
+					}
+				}
+
+				if(this.require){
+					parseReqEntry(this.require);
+				}
+				if(entry && entry.require){
+					parseReqEntry(entry.require);
+				}
+
+				// lookup requires
+				var reqLst = [];
+				for(var i in requires){
+					reqLst.push(i);
+				}
+				var rcWrap = {
+					_requireCnt: reqLst.length
+				}
+				if(rcWrap._requireCnt == 0){
+					self._afterLoadObject();
+				} else {
+					for(var i in reqLst){
+						var req = reqLst[i];
+						
+						JSB().lookup(req, function(cls){
+							var jso = cls.jsb;
+							
+							var alias = requires[jso.name];
+							var locker = self.getLocker();
+							if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
+							rcWrap._requireCnt--;
+							if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
+							if(self.isFunction(alias)){
+								alias.call(self, cls);
+							} else if(self.isArray(alias)) {
+								for(var j in alias){
+									self.deploy(alias[j], cls, true, self._cls.prototype);
+								}
+							} else {
+								self.deploy(alias, cls, true, self._cls.prototype);
+							}
+							
+							if(rcWrap._requireCnt == 0){
+								self._afterLoadObject();
+							}
+						});
+					}
+				}
+			} else {
+				this._afterLoadObject();
+			}
+
 		},
 		
 		setupLibraries: function(proto){
@@ -868,7 +997,7 @@
 				return false;
 			}
 			try {
-				if(obj && obj.id && obj.jsb && obj.jsb.getClass && obj instanceof obj.jsb.getClass()){
+				if(obj && obj.id && obj.jsb && obj.jsb.getClass /*&& obj instanceof obj.jsb.getClass()*/){
 					return true;
 				}
 			} catch(e) {}
@@ -1299,7 +1428,7 @@
 		lookup: function(name, callback, forceUpdate){
 			var self = this;
 			if(this.objects[name] && this.objects[name]._ready && !forceUpdate && callback){
-				var ctObj = this.classTree(name);
+				var ctObj = this.objects[name].getClass();/*this.classTree(name);*/
 				callback.call(this, ctObj);
 				return;
 			}
@@ -1321,7 +1450,7 @@
 		
 		_lookup: function(name, callback, forceUpdate){
 			if(this.objects[name] && this.objects[name]._ready && !forceUpdate && callback){
-				var ctObj = this.classTree(name);
+				var ctObj = this.objects[name].getClass();/*this.classTree(name);*/
 				callback.call(this, ctObj);
 				return;
 			}
@@ -1361,6 +1490,9 @@
 		},
 		
 		getInstance: function(key){
+			if(!key && this.isSingleton()){
+				key = this.name;
+			}
 			var obj = JSB().getGlobalInstancesScope()[key];
 			if(obj == null || obj == undefined){
 				obj = JSB().getSessionInstancesScope()[key];
@@ -1595,146 +1727,8 @@
 			
 		},
 		
-		_registerObject: function(){
-			var self = this;
-			
-			// prepare field map
-			this._prepareFieldMap();
-			
-			// add to groups if any
-			if(this.group){
-				var gg = [];
-				if(this.isString(this.group)){
-					gg[gg.length] = this.group;
-				} else if(this.isArray(this.group)){
-					for(var gItem in this.group){
-						if(this.isString(this.group[gItem])){
-							gg[gg.length] = this.group[gItem];
-						}
-					}
-				}
-				for(var curGroup in gg){
-					var gName = gg[curGroup];
-					if(this.groups[gName] == null || this.groups[gName] == undefined){
-						this.groups[gName] = [];
-					}
-					var groupArr = this.groups[gName];
-					groupArr[groupArr.length] = this;
-				}
-			}
-			
-			// resolve requires
-			var entry = this.currentSection();
-			
-			if(!this.isNull(entry) && (!this.isNull(this.require) || (!this.isNull(entry.require) && this.format == 'jso'))){
-				
-				var requires = {};
-				
-				if(this.format == 'jso'){
-					// prepare requires structure
-					if(!this.isNull(this.require)){
-						if(this.isString(this.require)){
-							requires[this.require] = this.require;
-						} else if(this.isArray(this.require)){
-							for(var i in this.require){
-								var n = this.require[i];
-								requires[n] = n;
-							}
-						} else {
-							requires = JSB().merge(requires, this.require);
-						}
-					}
-					if(!this.isNull(entry.require)){
-						if(this.isString(entry.require)){
-							requires[entry.require] = entry.require;
-						} else if(this.isArray(entry.require)){
-							for(var i in entry.require){
-								var n = entry.require[i];
-								requires[n] = n;
-							}
-						} else {
-							requires = JSB().merge(requires, entry.require);
-						}
-					}
-				} else {
-					// jsb format
-					if(!this.isNull(this.require)){
-						function parseReqEntry(e){
-							if(JSB().isArray(e)){
-								for(var i in e){
-									parseReqEntry(e[i]);
-								}
-								return;
-							} else if(JSB().isString(e)){
-								var rObj = {};
-								rObj[e] = '';
-								parseReqEntry(rObj);
-							} else {
-								// plain object
-								for(var i in e){
-									if(requires[i]){
-										if(JSB().isArray(requires[i])){
-											requires[i].push(e[i]);
-										} else {
-											requires[i] = [requires[i], e[i]];
-										}
-									} else {
-										requires[i] = e[i];
-									}
-								}
-							}
-						}
-						
-						parseReqEntry(this.require);
-					}
-				}
-
-				// lookup requires
-				var reqLst = [];
-				for(var i in requires){
-					reqLst.push(i);
-				}
-				self._requireCnt = reqLst.length;
-				if(self._requireCnt == 0){
-					self._afterLoadObject();
-				} else {
-					for(var i in reqLst){
-						var req = reqLst[i];
-						
-						JSB().lookup(req, function(cls){
-							var jso = cls.jsb;
-							
-							var alias = requires[jso.name];
-							var locker = self.getLocker();
-							if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
-							self._requireCnt--;
-							if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
-							if(self.isFunction(alias)){
-								alias.call(self, cls);
-							} else if(self.isArray(alias)) {
-								for(var j in alias){
-									self.deploy(alias[j], cls, true, self._cls.prototype);
-								}
-							} else {
-								self.deploy(alias, cls, true, self._cls.prototype);
-							}
-//								delete requires[jso.name];
-							
-							if(self._requireCnt == 0){
-								self._afterLoadObject();
-							}
-						});
-					}
-				}
-			} else {
-				this._afterLoadObject();
-			}
-			
-		},
-		
 		_afterLoadObject: function(){
 			var self = this;
-			delete self._requireCnt;
 /*			
 			// check class already exists
 			try {
@@ -1922,9 +1916,11 @@
 			if(locker){ locker.unlock('JSO_lookup_waiters'); }
 
 			var cls = this.getClass();
+/*			
 			if(this.isSingleton()){
 				cls = JSB().getInstance(this.name);
 			}
+*/			
 			for(var c in wList){
 				wList[c].call(this, cls);
 			}

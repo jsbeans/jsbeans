@@ -2,9 +2,9 @@ JSB({
 	name:'Console',
 	parent: 'JSB.Widgets.Widget',
 	require: {
-		'JQuery.UI.Effects': 'JQuery.UI.Effects',
+		'JQuery.UI.Effects': 'UiEffects',
 		'JSB.Widgets.FloatingContainer': 'FloatingContainer',
-		'JQuery.UI.Interactions': 'JQuery.UI.Interactions'
+		'JQuery.UI.Interactions': 'UiInteractions'
 		
 	},
 	client: {

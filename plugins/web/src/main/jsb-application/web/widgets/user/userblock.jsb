@@ -3,7 +3,7 @@ JSB({
 	parent: 'JSB.Widgets.Control',
 	require: {
 		'JSB.Widgets.ListBox': 'ListBox',
-		'JSB.Widgets.ToolManager': 'JSB.Widgets.ToolManager',
+		'JSB.Widgets.ToolManager': 'ToolManager',
 		'UserMenuTool': 'UserMenuTool'
 	},
 	

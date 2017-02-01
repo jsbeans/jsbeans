@@ -2,7 +2,7 @@ JSB({
 	name: 'JSB.Widgets.Diagram',
 	parent: 'JSB.Widgets.Widget',
 	require: {
-		'JQuery.UI.Effects': 'JQuery.UI.Effects',
+		'JQuery.UI.Effects': 'UiEffects',
 		'JSB.Widgets.Diagram.Node': 'Node',
 		'JSB.Widgets.Diagram.Link': 'Link',
 		'JSB.Widgets.Diagram.Joint': 'Joint',

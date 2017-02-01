@@ -35,7 +35,7 @@ JSB({
 					success: function(data, status, xhr){
 						if(self.indicatorEnabled){
 							self.curDeferTimeout = self.options.minDeferTimeout;
-							self.NetworkIndicator.enable(false);
+							self.NetworkIndicator.jsb.getInstance().enable(false);
 						}
 						var respObj = data;
 						self.decodeObject(respObj);
@@ -45,12 +45,12 @@ JSB({
 						if(xhr.status == 404 || xhr.status == 401){
 							if(self.indicatorEnabled){
 								self.curDeferTimeout = self.options.minDeferTimeout;
-								self.NetworkIndicator.enable(false);
+								self.NetworkIndicator.jsb.getInstance().enable(false);
 							}
 							callback(status, xhr);
 						} else {
 							self.indicatorEnabled = true;
-							self.NetworkIndicator.enable(true);
+							self.NetworkIndicator.jsb.getInstance().enable(true);
 							self.curDeferTimeout *= 2;
 							if(self.curDeferTimeout > self.options.maxDeferTimeout) {
 								self.curDeferTimeout = self.options.maxDeferTimeout;
@@ -71,7 +71,7 @@ JSB({
 					success: function(data, status, xhr){
 						if(self.indicatorEnabled){
 							self.curDeferTimeout = self.options.minDeferTimeout;
-							self.NetworkIndicator.enable(false);
+							self.NetworkIndicator.jsb.getInstance().enable(false);
 						}
 						var respObj = eval('('+data+')');
 						self.decodeObject(respObj);
@@ -81,12 +81,12 @@ JSB({
 						if(xhr.status == 404 || xhr.status == 401){
 							if(self.indicatorEnabled){
 								self.curDeferTimeout = self.options.minDeferTimeout;
-								self.NetworkIndicator.enable(false);
+								self.NetworkIndicator.jsb.getInstance().enable(false);
 							}
 							callback(status, xhr);
 						} else {
 							self.indicatorEnabled = true;
-							self.NetworkIndicator.enable(true);
+							self.NetworkIndicator.jsb.getInstance().enable(true);
 							self.curDeferTimeout *= 2;
 							if(self.curDeferTimeout > self.options.maxDeferTimeout) {
 								self.curDeferTimeout = self.options.maxDeferTimeout;

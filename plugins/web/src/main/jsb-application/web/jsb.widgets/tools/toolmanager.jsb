@@ -4,9 +4,9 @@ JSB({
 		'JQuery': 'JQuery', 
 		'JSB.Widgets.EventBus': 'EventBus',
 		'JSB.Widgets.ToolWrapper': 'ToolWrapper',
-		'JSB.Widgets.MessageTool': 'JSB.Widgets.MessageTool',
-		'JSB.Widgets.WidgetTool': 'JSB.Widgets.WidgetTool',
-		'JSB.Widgets.Tooltip':'JSB.Widgets.Tooltip'
+		'JSB.Widgets.MessageTool': 'MessageTool',
+		'JSB.Widgets.WidgetTool': 'WidgetTool',
+		'JSB.Widgets.Tooltip':'Tooltip'
 	},
 	client: {
 		singleton: true,
@@ -15,7 +15,7 @@ JSB({
 			this.loadCss('toolmanager.css');
 			this.tools = {};
 			this.visibleInstances = [];
-			this.EventBus.subscribe(this, 'tool');
+			this.EventBus.jsb.getInstance().subscribe(this, 'tool');
 			
 			// create tool area
 			JSO().deferUntil(function(){
@@ -475,13 +475,13 @@ JSB({
 			var scope = this.getScope();
 			var scopeEl = null;
 			var rect = null;
-			if(JSO().isInstanceOf(scope, 'JSB.Widgets.Control')){
+			if(JSB.isInstanceOf(scope, 'JSB.Widgets.Control')){
 				scopeEl = scope.getElement();
-			} else if(JSO().isInstanceOf(scope, 'Bean')) {
+			} else if(JSB.isBean(scope)) {
 				scopeEl = this.$('body');
-			} else if(JSO().isNull(scope)){
+			} else if(JSB.isNull(scope)){
 				scopeEl = this.$('body');
-			} else if(JSO().isWindow(scope)){
+			} else if(JSB.isWindow(scope)){
 				scopeEl = null;
 			} else {
 				scopeEl = this.$(scope);

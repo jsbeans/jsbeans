@@ -4,7 +4,7 @@ JSB({
 	require: {
 		'JSB.Widgets.PrimitiveEditor': 'Editor',
 		'JSB.Widgets.ToolManager': 'ToolManager',
-		'JSB.Widgets.DroplistTool': 'JSB.Widgets.DroplistTool'
+		'JSB.Widgets.DroplistTool': 'DroplistTool'
 	},
 	client: {
 		constructor: function(opts){
