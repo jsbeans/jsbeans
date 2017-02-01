@@ -132,11 +132,6 @@ JSB({
 			});
 		},
 		
-		destroy: function(){
-			this.getElement().remove();
-			$base();
-		},
-		
 		screenToLocal: function(x, y){
 			var pt = this.getRelativePosition();
 			return {x: x - pt.left, y: y - pt.top};
