@@ -30,9 +30,14 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
+			this.loadCss('primitiveeditor.css');
+			this.addClass('_dwp_primitiveEditor');
+			this.addClass(this.options.mode);
+			
 			if(this.options.multiline && this.options.valueType != 'java.lang.Object' && this.options.valueType != 'java.lang.String' && this.options.valueType != 'string'){
 				this.options.multiline = false;
 			}
+/*			
 			this.applyBehavior({
 				allowResize: {
 					vertical: this.options.multiline,
@@ -44,9 +49,7 @@ JSB({
 					defaultHeight: (this.options.multiline ? 150: null),
 				}
 			});
-			this.loadCss('primitiveeditor.css');
-			this.getElement().addClass('_dwp_primitiveEditor');
-			this.getElement().addClass(this.options.mode);
+*/			
 			this.emptyData = this.data = new self.Value(null, this.options.valueType); 
 			this.isMouseInside = false;
 			if(this.options.multiline){

@@ -24,10 +24,10 @@ JSB({
 		},
 		
 		toString: function(){
-			if(JSO().isNull(this.value)){
+			if(JSB.isNull(this.value)){
 				return '(null)';
 			}
-			if(JSO().isArray(this.value) || JSO().isPlainObject(this.value)){
+			if(JSB.isArray(this.value) || JSB.isPlainObject(this.value)){
 				return JSON.stringify(this.value, null, 2);
 			}
 			return '' + this.value;

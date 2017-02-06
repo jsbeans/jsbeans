@@ -104,14 +104,14 @@ JSB({
 
 JSB({
 	name:'JSB.Widgets.Editor',
-	parent: 'JSB.Widgets.Widget',
+	parent: 'JSB.Widgets.Control',
 	require: {
 		'JSB.Widgets.EditorRegistry': 'EditorRegistry'
 	},
 	client: {
 		constructor: function(opts){
 			$base(opts);
-			this.getElement().addClass('_dwp_editor');
+			this.addClass('_dwp_editor');
 		},
 		
 		setData: function(){
