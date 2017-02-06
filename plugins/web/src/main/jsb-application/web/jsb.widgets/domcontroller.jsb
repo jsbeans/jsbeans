@@ -136,6 +136,9 @@ JSB({
 			}
 			elt.attr('_inject', true);
 			var jsoName = elt.attr('jsb');
+			if(!jsoName || jsoName.length === 0){
+				throw 'JSB injection failed due to missing "jsb" attribute: ' + this.$('<div></div>').append(elt.clone()).html();
+			}
 			JSB.lookup(jsoName, function(cls){
 				if(!cls){
 					throw 'Unable to find Bean: ' + jsoName;
