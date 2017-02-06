@@ -1,0 +1,45 @@
+._dwp_gridTable .tableHeader, 
+._dwp_gridTable ._dwp_gridTableContainer{
+	width: 100%;
+/* 	table-layout: fixed; */
+	border-spacing: 0;
+	border-collapse: collapse;
+	overflow: hidden;
+}
+._dwp_gridTable .tableHeader{
+	background-color: #ded8ce;
+}
+._dwp_control._dwp_gridTable{
+	height: 100%;
+}
+._dwp_gridTable ._dwp_gridTableContainer tr{
+	border: 1px solid transparent;
+}
+._dwp_gridTable ._dwp_gridTableContainer tr:hover{
+	background: -webkit-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
+	background: -moz-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
+    background: linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
+    background: -o-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
+    background: -ms-linear-gradient(top,rgba(238, 235, 151, 0.5) 0%, rgba(250, 248, 199, 0.6) 40%, rgba(223, 213, 125, 0.5) 100%);
+	border: 1px solid rgba(170, 149, 39, 0.5);
+	border-radius: 3px;
+	cursor: pointer;
+}
+._dwp_gridTable ._dwp_gridTableContainer tr.selected{
+	background: -webkit-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
+	background: -moz-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
+    background: linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
+    background: -o-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
+    background: -ms-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
+	border: 1px solid #AA9527;
+	border-radius: 3px;
+}
+._dwp_gridTable ._dwp_gridTableContainer tr:nth-child(odd){
+	background-color: #EFE9E0;
+}
+._dwp_gridTable ._dwp_gridTableContainer tr:nth-child(even){
+	background-color: #F7F2EE;
+}
+._dwp_gridTable ._dwp_gridTableContainer td{
+	padding: 5px;
+}
