@@ -40,6 +40,8 @@
 ._dwp_gridTable ._dwp_gridTableContainer tr:nth-child(even){
 	background-color: #F7F2EE;
 }
-._dwp_gridTable ._dwp_gridTableContainer td{
+._dwp_gridTable ._dwp_gridTableContainer td,
+._dwp_gridTable .tableHeader td{
+	box-sizing: border-box;
 	padding: 5px;
 }
