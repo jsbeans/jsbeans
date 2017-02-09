@@ -19,7 +19,7 @@ JSB({
 				this.element.attr('_id', this.getId());
 				this.element.addClass('_dwp_control');
 			} else {
-				var tag = opts.tag || 'dwp-control';
+				var tag = opts.tag || 'div';
 				this.element = this.$('<'+tag+' _id="'+this.getId()+'" class="_dwp_control"></'+tag+'>');
 			}
 			this._init();
@@ -220,7 +220,7 @@ JSB({
 		
 		isContentReady: function(sel){
 			if(!sel){
-				sel = 'dwp-control';
+				sel = '*[jsb]';
 			}
 			var ctrls = this.find(sel);
 			for(var i = 0; i < ctrls.length; i++){

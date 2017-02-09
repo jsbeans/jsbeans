@@ -393,16 +393,16 @@
 				
 				if(this.require || (entry && entry.require)){
 					
-					function parseReqEntry(e){
+					var parseReqEntry1 = function(e){
 						if(JSB().isArray(e)){
 							for(var i in e){
-								parseReqEntry(e[i]);
+								parseReqEntry1(e[i]);
 							}
 							return;
 						} else if(JSB().isString(e)){
 							var rObj = {};
 							rObj[e] = '';
-							parseReqEntry(rObj);
+							parseReqEntry1(rObj);
 						} else {
 							// plain object
 							for(var i in e){
@@ -440,10 +440,10 @@
 					}
 
 					if(this.require){
-						parseReqEntry(this.require);
+						parseReqEntry1(this.require);
 					}
 					if(entry && entry.require){
-						parseReqEntry(entry.require);
+						parseReqEntry1(entry.require);
 					}
 				}
 				
@@ -625,16 +625,16 @@
 				
 				var requires = {};
 				
-				function parseReqEntry(e){
+				var parseReqEntry2 = function(e){
 					if(JSB().isArray(e)){
 						for(var i in e){
-							parseReqEntry(e[i]);
+							parseReqEntry2(e[i]);
 						}
 						return;
 					} else if(JSB().isString(e)){
 						var rObj = {};
 						rObj[e] = '';
-						parseReqEntry(rObj);
+						parseReqEntry2(rObj);
 					} else {
 						// plain object
 						for(var i in e){
@@ -652,10 +652,10 @@
 				}
 
 				if(this.require){
-					parseReqEntry(this.require);
+					parseReqEntry2(this.require);
 				}
 				if(entry && entry.require){
-					parseReqEntry(entry.require);
+					parseReqEntry2(entry.require);
 				}
 
 				// lookup requires

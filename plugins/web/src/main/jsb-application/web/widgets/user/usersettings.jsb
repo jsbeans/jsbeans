@@ -50,7 +50,7 @@ JSB({
     					font-size: 14px;
 				    	height: 220px;
 					}
-					.userSettings .row dwp-control {
+					.userSettings .row > div {
 						display: block;
 						height: 26px;
 						margin: 8px 12px 8px 6px;
@@ -63,33 +63,33 @@ JSB({
 				</style>
 
 				<div class="row email">
-					<dwp-control jsb="JSB.Widgets.PrimitiveEditor" readonly="true"></dwp-control>
+					<div jsb="JSB.Widgets.PrimitiveEditor" readonly="true"></div>
 				</div>
 
 				<div class="row name">
-					<dwp-control jsb="JSB.Widgets.PrimitiveEditor" placeholder="Ваше имя"></dwp-control>
+					<div jsb="JSB.Widgets.PrimitiveEditor" placeholder="Ваше имя"></div>
 				</div>
 
 				<div class="row pass oldpass">
-					<dwp-control jsb="JSB.Widgets.PrimitiveEditor" placeholder="Текущий пароль" password=true></dwp-control>
+					<div jsb="JSB.Widgets.PrimitiveEditor" placeholder="Текущий пароль" password=true></div>
 				</div>
 				<div class="row pass newpass">
-					<dwp-control jsb="JSB.Widgets.PrimitiveEditor" placeholder="Новый пароль" password=true></dwp-control>
+					<div jsb="JSB.Widgets.PrimitiveEditor" placeholder="Новый пароль" password=true></div>
 				</div>
 				<div class="row pass newpass2">
-					<dwp-control jsb="JSB.Widgets.PrimitiveEditor" placeholder="Подтверждение пароля" password=true></dwp-control>
+					<div jsb="JSB.Widgets.PrimitiveEditor" placeholder="Подтверждение пароля" password=true></div>
 				</div>
 
-				<dwp-control class="apply" jsb="JSB.Widgets.Button" caption="Применить" onclick="{{=this.callbackAttr(function(evt){ self.applyChanges(); })}}"></dwp-control>
+				<div class="apply" jsb="JSB.Widgets.Button" caption="Применить" onclick="{{=this.callbackAttr(function(evt){ self.applyChanges(); })}}"></div>
 			}});
 
 			this.server().getAttributes(function(attrs){
 				JSB().deferUntil(function(){
 					self.attrs = attrs;
-					self.find('.email>dwp-control').jsb().setData(attrs.email||attrs.login);
-					self.find('.name>dwp-control').jsb().setData(attrs.name||'');
+					self.find('.email>div').jsb().setData(attrs.email||attrs.login);
+					self.find('.name>div').jsb().setData(attrs.name||'');
 				}, function(){
-					return self.find('.email>dwp-control').jsb() && self.find('.name>dwp-control').jsb(); 
+					return self.find('.email>div').jsb() && self.find('.name>div').jsb(); 
 				});
 			});
 		},
@@ -112,20 +112,20 @@ JSB({
 					return JSO().MD5.md5(self.attrs.login + '@' + p);
 				return null;
 			}
-			var name = this.find('.name>dwp-control').jsb().getData().getValue();
-			var oldpass = this.find('.oldpass>dwp-control').jsb().getData().getValue();
-			var newpass = this.find('.newpass>dwp-control').jsb().getData().getValue();
-			var newpass2 = this.find('.newpass2>dwp-control').jsb().getData().getValue();
+			var name = this.find('.name>div').jsb().getData().getValue();
+			var oldpass = this.find('.oldpass>div').jsb().getData().getValue();
+			var newpass = this.find('.newpass>div').jsb().getData().getValue();
+			var newpass2 = this.find('.newpass2>div').jsb().getData().getValue();
 
 			var changed = name.length > 0 && name !== this.attrs.name  ||  newpass.length > 0 || newpass2.length > 0;
 			if (changed) {
 				if (oldpass.length == 0) {
-					this.find('.oldpass>dwp-control').jsb().setMark(true);
+					this.find('.oldpass>div').jsb().setMark(true);
 					return;
 				}
 
 				if (newpass !== newpass2) {
-					this.find('.newpass2>dwp-control').jsb().setMark(true);
+					this.find('.newpass2>div').jsb().setMark(true);
 					return;
 				}
 
@@ -133,7 +133,7 @@ JSB({
 					if (result.success === true) {
 						self.publish('userMenuClose');
 					} else if(result.error === 'wrongpass') {
-						self.find('.oldpass>dwp-control').jsb().setMark(true);
+						self.find('.oldpass>div').jsb().setMark(true);
 						return;
 					} else {
 						alert('Произошла ошибка сохранения изменений, попробуйте повторить');
@@ -194,7 +194,7 @@ JSO({
 			$base(opts);
 
 			this.append(#dot{{
-				<dwp-control jsb="JSB.Widgets.Button" caption="Close" onclick="{{=this.callbackAttr(function(evt){ self.doClose(); })}}"></dwp-control>
+				<div jsb="JSB.Widgets.Button" caption="Close" onclick="{{=this.callbackAttr(function(evt){ self.doClose(); })}}"></div>
 			}});
 		},
 		body: {

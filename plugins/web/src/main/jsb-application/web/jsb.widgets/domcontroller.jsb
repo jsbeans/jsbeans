@@ -7,24 +7,10 @@ JSB({
 			var self = this;
 			$base(opts);
 			var testDwpId = '_testDwpDetection' + JSO().generateUid();
-			if(!document.registerElement){
-				try {
-					(function(){
-						#include '../tpl/webcomponents/webcomponents-lite.min.js';
-					}).call(null);
-				} catch(e){
-					// polymer is not supported by current browser - skip it
-				}
-			}
-			if(document.registerElement){
-				document.registerElement('dwp-control', {
-					prototype: Object.create(HTMLDivElement.prototype)
-				});
-			}
 			var insertListener = function(evt){
-				if (evt.animationName == "nodeInserted" && evt.target.nodeName == 'DWP-CONTROL') {
+				if (evt.animationName == "nodeInserted") {
 					var elt = self.$(evt.target);
-					if(elt.attr('_id') || elt.attr('_inject')){
+					if(elt.attr('_id') || elt.attr('_inject') || !elt.attr('jsb')){
 						return;	// already existed
 					}
 					if(elt.is('#' + testDwpId)){
@@ -67,7 +53,7 @@ JSB({
 					to { opacity: 1; }
 				} 
 
-				dwp-control {
+				*[jsb] {
 				    animation-duration: 0.001s;
 				    -o-animation-duration: 0.001s;
 				    -ms-animation-duration: 0.001s;
@@ -92,7 +78,7 @@ JSB({
 			}
 			
 			// inject controls on startup
-			var ctrls = this.$('dwp-control');
+			var ctrls = this.$('*[jsb]');
 			for(var i = 0; i < ctrls.length; i++ ){
 				var elt = self.$(ctrls.get(i));
 				if(elt.attr('_id') || elt.attr('_inject')){
@@ -101,21 +87,6 @@ JSB({
 
 				self.injectControl(elt);
 			}
-			
-			// check dwp-control method insert detection is available on current browser
-			this.$('body').append('<dwp-control id="'+testDwpId+'"></dwp-control>');
-			JSO().defer(function(){
-				// check whether automatic dwp detect method is available
-				if(self.animationDetectSupported){
-					// everything is ok, nothing to do
-//					console.log('JSB.Widgets.DomController: animation detection supported');
-					return;
-				} else {
-					// TODO: enable manual detection method
-//					console.log('JSB.Widgets.DomController: animation detection NOT supported');
-				}
-			}, 1000);
-			
 		},
 		
 		injectControl: function(elt, readyCallback){
@@ -223,7 +194,7 @@ JSB({
 							return;
 						}
 						var c = contentToAdd.shift();
-						if(c.get(0).nodeName == 'DWP-CONTROL'){
+						if(c.attr('jsb')){
 							if(c.jsb()){
 								// append control
 								ctrlObj.append(c.jsb());
