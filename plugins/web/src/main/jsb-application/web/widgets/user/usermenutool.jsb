@@ -39,7 +39,7 @@ JSB({
 			});
 			
 			// append container
-			this.wc = new self.WidgetContainer({
+			this.wc = new WidgetContainer({
 				position: 'fixed',
 				allowClose: false
 			});

@@ -1,14 +1,15 @@
 JSB({
 	name:'JQuery',
 	client:{
+		singleton: true,
 		bootstrap: function(readyCallback){
 			
 			#include 'jquery-1.11.3.min.js';
 			
-			JSO().addLibraryScope('$', window.jQuery.noConflict());
+			JSB().addLibraryScope('$', window.jQuery.noConflict());
 			
 			// override global variable to bind all plugins to JSO().$
-			var jQuery = JSO().$;
+			var jQuery = JSB().$;
 
 			(function(jQuery){
 				#include 'jquery.resize.js';

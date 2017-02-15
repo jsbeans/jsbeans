@@ -112,8 +112,8 @@ JSB({
 			
 			
 			// setup controllers
-			this.controllers.normal = new self.Controller(this);
-			this.controllers.wiring = new self.WiringController(this);
+			this.controllers.normal = new Controller(this);
+			this.controllers.wiring = new WiringController(this);
 			
 			this.subscribe('_jsb_diagramMouseEvent', function(sender, msg, params){
 				for(var i = self.controllerStack.length - 1; i >= 0; i--){
@@ -381,7 +381,7 @@ JSB({
 					_setupLayout(cls);
 				});
 			} else {
-				_setupLayout(self.DefaultLayoutManager);
+				_setupLayout(DefaultLayoutManager);
 			}
 		},
 		
@@ -428,7 +428,7 @@ JSB({
 				});
 			} else {
 				_setupConnector();
-				self.connectorDescs[key].connectorClass = self.Connector;
+				self.connectorDescs[key].connectorClass = Connector;
 			}
 		},
 		
@@ -503,7 +503,7 @@ JSB({
 			if(!nodeDesc){
 				throw 'Unable to create node due to unknown node key: ' + key;
 			}
-			var nodeClass = self.Node;
+			var nodeClass = Node;
 			if(nodeDesc.nodeClass){
 				nodeClass = nodeDesc.nodeClass;
 			}
@@ -558,7 +558,7 @@ JSB({
 		createLink: function(linkKey, opts){
 			var self = this;
 			var linkDesc = this.linkDescs[linkKey];
-			var linkClass = self.Link;
+			var linkClass = Link;
 			if(linkDesc.linkClass){
 				linkClass = linkDesc.linkClass;
 			}

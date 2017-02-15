@@ -1,6 +1,6 @@
 JSB({
 	name:'JSB.HttpApi',
-	require: ['Log', 'Web'],
+	require: ['Kernel','Log', 'Web'],
 	server: {
 		singleton: true,
 		httpMap: {},

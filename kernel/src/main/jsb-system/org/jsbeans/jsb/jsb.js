@@ -38,7 +38,6 @@
 		}
 		
 		if(cfg.name != 'JSB.Bean'){
-			this.registering[cfg.name] = true;
 			var parentExisted = this.get(cfg.parent);
 			this.lookup(cfg.parent, function(par){
 				if(!par || !par.jsb || par.jsb.name != cfg.parent){
@@ -93,7 +92,6 @@
 	JSO.fn = JSO.prototype =
 	JSB.fn = JSB.prototype = 
 	{
-		registering: {},
 		looking:{},
 		requestedPackages:{},
 		objects : {},
@@ -330,6 +328,11 @@
 			
 			this.merge(true, this, cfg);
 			this._ready = false;
+			this._readyState = 0;
+
+			// add to objects
+			this.objects[this.name] = this;
+			
 			this._prepareSections(parent);
 			
 			// inherit parent's jso options
@@ -348,6 +351,16 @@
 			var commonSection = this.common;
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
 				var body = {};
+				
+				// construct class stub
+				if(parent == null || parent == undefined || parent.currentSection() == null){
+					self._cls = self._simpleClass();
+				} else {
+					self._cls = self._inheritedClass(parent._cls);
+				}
+				self._cls['jsb'] = self;
+				self._readyState = 1;
+				self._matchWaiters(1);
 				
 				// merge common and entry sections
 				if(this.common){
@@ -388,21 +401,22 @@
 */
 				
 				// combine requires
-				var requireMap = {};
+				var requireMap = self._requireMap = {};
 				var reverseRequireMap = {};
+				var requireVals = {};
 				
 				if(this.require || (entry && entry.require)){
 					
-					var parseReqEntry1 = function(e){
+					var parseReqEntry = function(e){
 						if(JSB().isArray(e)){
 							for(var i in e){
-								parseReqEntry1(e[i]);
+								parseReqEntry(e[i]);
 							}
 							return;
 						} else if(JSB().isString(e)){
 							var rObj = {};
 							rObj[e] = '';
-							parseReqEntry1(rObj);
+							parseReqEntry(rObj);
 						} else {
 							// plain object
 							for(var i in e){
@@ -440,14 +454,43 @@
 					}
 
 					if(this.require){
-						parseReqEntry1(this.require);
+						parseReqEntry(this.require);
 					}
 					if(entry && entry.require){
-						parseReqEntry1(entry.require);
+						parseReqEntry(entry.require);
 					}
 				}
 				
-				(function(){
+				function loadRequires(callback){
+					if(Object.keys(requireMap).length === 0){
+						callback.call(self);
+					} else {
+						var locker = self.getLocker();
+						var rcWrap = {
+							_requireCnt: Object.keys(requireMap).length
+						};
+						
+						for(var req in requireMap){
+							(function(req){
+								var alias = requireMap[req];
+								self._lookupRequire(req, function(cls){
+									
+									if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
+									rcWrap._requireCnt--;
+									if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
+									
+									requireVals[alias] = cls;
+									
+									if(rcWrap._requireCnt === 0){
+										callback.call(self);
+									}
+								});
+							})(req);
+						}
+					}
+				}
+				
+				loadRequires(function(){
 					var $jsb = self;
 					var $parent = null;
 					
@@ -474,11 +517,12 @@
 					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb._clientProcs; return new f();}
 */					
 					
-					var scopeVars = {
+					var scopeVars = self.merge({
 						'$jsb': $jsb,
+						'$class': self._cls,
 						'$parent': $parent,
 						'$superFunc': $superFunc
-					};
+					}, requireVals);
 					
 					// inject requires into scopeVars
 					function injectRequire(reqAlias){
@@ -490,7 +534,7 @@
 						scopeVars[reqAlias] = injectRequire(reqAlias)
 					}
 */					
-					function _enrichFunction(mtdName, proc, isCtor){
+					function _enrichFunction(mtdName, proc, isCtor, isBootstrap){
 						var procStr = proc.toString();
 						// extract proc declaration
 						var declM = procStr.match(/^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/);
@@ -502,7 +546,7 @@
 							fName = mtdName;
 						}
 						var procDecl = 'function ' + fName + '(' + declM[2] + '){ var $this=this; ';
-						if(parent){ 
+						if(parent && !isBootstrap){ 
 							procDecl += 'var $super = new $superFunc(this); ';
 							if(isCtor){
 								procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this._superCalled = true; }; ';
@@ -594,6 +638,7 @@
 						})(mtdName);
 					}
 
+					// perform constructor
 					var ctor = null;
 					if(entry && entry.hasOwnProperty('constructor')){
 						ctor = entry.constructor;
@@ -602,107 +647,82 @@
 					} else if(!ctor){
 						ctor = function(){};
 					}
+					self._ctor = _enrichFunction('constructor', ctor, true);
 					
-					ctor = _enrichFunction('constructor', ctor, true);
+					// perform bootstrap
+					if(entry && entry.bootstrap){
+						self._entryBootstrap = _enrichFunction('bootstrap', entry.bootstrap, false, true);
+					}
+					if(self.bootstrap){
+						self._commonBootstrap = _enrichFunction('bootstrap', self.bootstrap, false, true);
+					}
+					
 					
 					if(parent == null || parent == undefined || parent.currentSection() == null){
-						self._cls = self._class(ctor, body);
+						self._enhanceSimple(self._cls, body);
 					} else {
-						self._cls = self._extends(parent._cls, ctor, body);
+						self._enhanceInherited(self._cls, parent._cls, body);
 					}
-//					self._cls.prototype.jso = self;
 					self._cls.prototype.jsb = self;
-				
-				})();
 
-			}
-			
-			// prepare field map
-			this._prepareFieldMap();
+					// prepare field map
+					self._prepareFieldMap();
+					self._setupLibraries(self._cls.prototype);
+					
+					self._readyState = 2;
+					self._matchWaiters(2);
+					
+					// wait until all requirements set ready state to 2 or greater
+					self._waitRequires(2, function(){
+						self._proceedBootstrapStage();
+					});
+				});
 
-			// resolve requires
-			if(this.require || (entry && entry.require)){
-				
-				var requires = {};
-				
-				var parseReqEntry2 = function(e){
-					if(JSB().isArray(e)){
-						for(var i in e){
-							parseReqEntry2(e[i]);
-						}
-						return;
-					} else if(JSB().isString(e)){
-						var rObj = {};
-						rObj[e] = '';
-						parseReqEntry2(rObj);
-					} else {
-						// plain object
-						for(var i in e){
-							if(requires[i]){
-								if(JSB().isArray(requires[i])){
-									requires[i].push(e[i]);
-								} else {
-									requires[i] = [requires[i], e[i]];
-								}
-							} else {
-								requires[i] = e[i];
-							}
-						}
-					}
-				}
-
-				if(this.require){
-					parseReqEntry2(this.require);
-				}
-				if(entry && entry.require){
-					parseReqEntry2(entry.require);
-				}
-
-				// lookup requires
-				var reqLst = [];
-				for(var i in requires){
-					reqLst.push(i);
-				}
-				var rcWrap = {
-					_requireCnt: reqLst.length
-				}
-				if(rcWrap._requireCnt == 0){
-					self._afterLoadObject();
-				} else {
-					for(var i in reqLst){
-						var req = reqLst[i];
-						
-						JSB().lookup(req, function(cls){
-							var jso = cls.jsb;
-							
-							var alias = requires[jso.name];
-							var locker = self.getLocker();
-							if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
-							rcWrap._requireCnt--;
-							if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
-							if(self.isFunction(alias)){
-								alias.call(self, cls);
-							} else if(self.isArray(alias)) {
-								for(var j in alias){
-									self.deploy(alias[j], cls, true, self._cls.prototype);
-								}
-							} else {
-								self.deploy(alias, cls, true, self._cls.prototype);
-							}
-							
-							if(rcWrap._requireCnt == 0){
-								self._afterLoadObject();
-							}
-						});
-					}
-				}
 			} else {
-				this._afterLoadObject();
+				self._readyState = 2;
+				self._matchWaiters(2);
+				self._waitRequires(2, function(){
+					self._proceedBootstrapStage();
+				});
 			}
-
 		},
 		
-		setupLibraries: function(proto){
+		_waitRequires: function(readyState, callback){
+			var self = this;
+			if(Object.keys(this._requireMap).length === 0){
+				callback.call(this);
+				return;
+			}
+			var wMap = {};
+			// collect all requires with smaller readyState
+			for(var req in this._requireMap){
+				var jsb = this.objects[req];
+				if(jsb._readyState < readyState){
+					wMap[req] = true;
+				}
+			}
+			var rcWrap = {
+				_requireCnt: Object.keys(wMap).length
+			};
+			
+			if(rcWrap._requireCnt === 0){
+				callback.call(this);
+				return;
+			}
+			var locker = this.getLocker();
+			for(var req in wMap){
+				this._pushWaiter(req, function(){
+					if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
+					rcWrap._requireCnt--;
+					if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
+					if(rcWrap._requireCnt === 0){
+						callback.call(self);
+					}
+				}, readyState);
+			}
+		},
+		
+		_setupLibraries: function(proto){
 			for(var name in this.libraryScopes){
 				proto[name] = this.libraryScopes[name];
 			}
@@ -1250,27 +1270,10 @@
 			return target;
 		},
 
-		_extend: function(child, parent, body) {
-			var F = function() {};
-			F.prototype = parent.prototype;
-			child.prototype = new F();
-			if(body) {
-				this.merge(child.prototype, body);
-			}
-
-			child.prototype.constructor = child;
-			child.prototype.parent = function() {
-				return parent;
-			};
-			child.superclass = parent.prototype;
-		},
-
-		_extends: function(parent, ctor, body) {
+		_inheritedClass: function(parent) {
 			var ss = this;
 			var newFunc = function() {
 				var self = this;
-//				var sysProfiler = JSB().getSystemProfiler();
-//				if(sysProfiler){sysProfiler.probe('create base func');}
 				var storeSuperCalled = this._superCalled;
 				// copy all fields into current scope
 				if(!this._fieldsCopied){
@@ -1289,26 +1292,10 @@
 							}
 						}
 					}
-					_copyFields(this, /*this.jsb._fieldsArr*/JSB().fieldArrs[this.jsb.name]);
-					
-/*					
-					function _copyFields(targetScope, fieldMap){
-						for(var fName in fieldMap){
-							var fDesc = fieldMap[fName];
-							if(fDesc.type == 'ref'){
-								targetScope[fName] = fDesc.origin[fName];
-							} else if(fDesc.type == 'scope'){
-								targetScope[fName] = {};
-								_copyFields(targetScope[fName], fDesc.scope);
-							} else if(fDesc.type == 'array'){
-								targetScope[fName] = [];
-								_copyFields(targetScope[fName], fDesc.scope);
-							}
-						}
+					if(!this.jsb){
+						debugger;
 					}
-					
-					_copyFields(this, JSB().fieldMaps[this.jsb.name]);
-*/
+					_copyFields(this, /*this.jsb._fieldsArr*/JSB().fieldArrs[this.jsb.name]);
 					
 					// place sync scopes
 					var syncScopes = JSB().syncScopes[this.jsb.name];
@@ -1325,7 +1312,6 @@
 				}
 				
 				
-//				if(sysProfiler){sysProfiler.probe('call ctor');}
 				// call ctor
 				this._superCalled = false;
 					
@@ -1339,8 +1325,8 @@
 				
 				try {
 					// call original function
-					if(ctor){
-						ctor.apply(this, arguments);
+					if(ss._ctor){
+						ss._ctor.apply(this, arguments);
 					}
 					if (!this._superCalled) {
 						parent.apply(this, arguments);
@@ -1356,22 +1342,29 @@
 				
 			};
 
-			this._extend(newFunc, parent, body);
 			return newFunc;
 		},
-
-		_class : function(arg1, arg2) {
-			var ss = this;
-			var ctor = null;
-			var body = null;
-			if( this.isFunction(arg1) ) {
-				ctor = arg1;
-				body = arg2;
-			} else {
-				body = arg1;
+		
+		_enhanceInherited: function(cls, parent, body) {
+			var F = function() {};
+			F.prototype = parent.prototype;
+			cls.prototype = new F();
+			if(body) {
+				this.merge(cls.prototype, body);
 			}
+
+			cls.prototype.constructor = cls;
+			cls.prototype.parent = function() {
+				return parent;
+			};
+			cls.superclass = parent.prototype;
+		},
+
+
+		_simpleClass: function() {
+			var ss = this;
 			var newFunc = function() {
-				if (ctor != null && ctor != undefined) {
+				if (ss._ctor != null && ss._ctor != undefined) {
 					var ctxStack = ss.getCallingContext();
 					ctxStack.push({
 						jsb: ss,
@@ -1381,7 +1374,7 @@
 					// TODO: perform call check
 					try {
 						// call original function
-						ctor.apply(this, arguments);
+						ss._ctor.apply(this, arguments);
 					} finally {
 						// restore prev context
 						ctxStack.pop();
@@ -1389,13 +1382,20 @@
 					
 				}
 			}
-
+/*
 			var F = function() {};
 			F.prototype = body;
 			newFunc.prototype = new F();
 			newFunc.prototype.constructor = newFunc;
-
+*/
 			return newFunc;
+		},
+		
+		_enhanceSimple: function(cls, body){
+			var F = function() {};
+			F.prototype = body;
+			cls.prototype = new F();
+			cls.prototype.constructor = cls;
 		},
 		
 		create: function(wName, opts, callback){
@@ -1425,70 +1425,137 @@
 			return curGlobe;
 		},
 		
-		lookup: function(name, callback, forceUpdate){
-			var self = this;
-			if(this.objects[name] && this.objects[name]._ready && !forceUpdate && callback){
-				var ctObj = this.objects[name].getClass();/*this.classTree(name);*/
-				callback.call(this, ctObj);
+		_pushWaiter: function(name, callback, readyState){
+			if(!callback){
 				return;
 			}
-			
-			if(this.registering[name] || (self.objects[name] && !self.objects[name]._ready) ){
-				JSB().deferUntil(function(){
-					self._lookup(name, callback, forceUpdate);
-				}, function(){
-					return self.objects[name] && self.objects[name]._ready;
-/*					
-					var ctObj = self.classTree(name);
-					return ctObj && ((self.objects[name] && self.objects[name]._ready) || (JSB().isFunction(ctObj) && ctObj.jsb._ready) || self.requestedPackages[name]);
-*/					
-				});
-			} else {
-				self._lookup(name, callback, forceUpdate);
+			if(this.isNull(readyState)){
+				readyState = 4;	// maximal readiness
 			}
-		},
-		
-		_lookup: function(name, callback, forceUpdate){
-			if(this.objects[name] && this.objects[name]._ready && !forceUpdate && callback){
-				var ctObj = this.objects[name].getClass();/*this.classTree(name);*/
-				callback.call(this, ctObj);
-				return;
-			}
-			
 			// push callback to waiters list
 			var locker = this.getLocker();
-			if(locker){ locker.lock('JSO_lookup_waiters'); }
+			if(locker){ locker.lock('JSB_lookup_waiters'); }
 
 			if(this.isNull(this.waiters[name])){
 				this.waiters[name] = [];
 			}
 			var wList = this.waiters[name];
-			if(callback){
-				wList.push(callback);
+			wList.push({
+				waiter: this.name,
+				callback: callback,
+				readyState: readyState
+			});
+		
+			if(locker){ locker.unlock('JSB_lookup_waiters'); }
+		},
+		
+		_matchWaiters: function(readyState){
+			if(this.isNull(readyState)){
+				readyState = 4;	// maximum readiness
+			}
+			var execArr = [];
+			
+			var locker = this.getLocker();
+			if(locker){ locker.lock('JSB_lookup_waiters'); }
+			var wList = this.waiters[this.name];
+			if(wList && wList.length > 0){
+				var delArr = [];
+
+				for(var c = 0; c < wList.length; c++){
+					var wObj = wList[c];
+					if(wObj.readyState <= readyState){
+						execArr.push(wObj);
+						delArr.push(c);
+					}
+				}
+				
+				if(delArr.length > 0){
+					for(var i = delArr.length - 1; i >= 0; i--){
+						var idx = delArr[i];
+						wList.splice(idx, 1);
+					}
+					if(wList.length === 0){
+						delete this.waiters[this.name];
+					}
+				}
 			}
 			
-			if(locker){ locker.unlock('JSO_lookup_waiters'); }
+			if(locker){ locker.unlock('JSB_lookup_waiters'); }
 			
+			if(execArr.length === 0){
+				return;
+			}
 			
-			// load object from the server
-			if(this.isClient()){
-				if(JSB().isNull(this.initQueue) || JSB().isNull(this.initQueue[name])){ 
-					if(this.provider){
-						if(!this.isNull(this.loadQueue) && !this.isNull(this.loadQueue[name]) && !forceUpdate){
-							return;
+			var cls = this.getClass();
+			
+			if(this._ready && this.isSingleton()){
+				cls = this.getInstance();
+			}
+			
+			for(var i = 0; i < execArr.length; i++){
+				var wObj = execArr[i];
+				wObj.callback.call(this, cls);
+			}
+		},
+		
+		
+		_lookupRequire: function(name, callback){
+			var self = this;
+			this.lookup(name, function(cls){
+				if(self.isNull(cls)){
+					throw 'Failed to lookup require: "' + name + '", expecting for object but nothing returned';
+				}
+				var jsb = cls.jsb;
+				if(self.isNull(jsb)){
+					throw 'Failed to lookup require: "' + name + '", jsb is null';
+				}
+				if(!jsb._ready && jsb.isSingleton()){
+					self.lookup(name, callback);
+				} else {
+					callback.call(self, cls);
+				}
+			}, {readyState: 1});
+		},
+
+		
+		lookup: function(name, callback, opts){
+			var self = this;
+			var forceUpdate = opts && opts.forceUpdate || false;
+			var readyState = opts && opts.readyState || 4;
+			
+			if(this.objects[name] && this.objects[name]._readyState >= readyState && !forceUpdate){
+				var ctObj = this.objects[name].getClass();
+				if(this.objects[name]._ready && this.objects[name].isSingleton()){
+					ctObj = this.objects[name].getInstance();
+				}
+				
+				if(callback){
+					callback.call(this, ctObj);
+				}
+				return;
+			} else {
+				this._pushWaiter(name, callback, readyState);
+				
+				// load object from the server
+				if(this.isClient() && (!this.objects[name] || forceUpdate)){
+					if(this.isNull(this.initQueue) || this.isNull(this.initQueue[name])){ 
+						if(this.provider){
+							if(!this.isNull(this.loadQueue) && !this.isNull(this.loadQueue[name]) && !forceUpdate){
+								return;
+							}
+							this.provider.loadObject(name);
+							if(this.isNull(this.loadQueue)){
+								this.loadQueue = {}
+							}
+							this.loadQueue[name] = true;
+						} else {
+							this.objectsToLoad.push(name);
 						}
-						this.provider.loadObject(name);
-						if(this.isNull(this.loadQueue)){
-							this.loadQueue = {}
-						}
-						this.loadQueue[name] = true;
-					} else {
-						this.objectsToLoad.push(name);
 					}
 				}
 			}
 		},
-		
+
 		getInstance: function(key){
 			if(!key && this.isSingleton()){
 				key = this.name;
@@ -1724,88 +1791,6 @@
 			}
 			
 			_convertMapsToArrs(fieldMap, fieldArr);
-			
-		},
-		
-		_afterLoadObject: function(){
-			var self = this;
-/*			
-			// check class already exists
-			try {
-				if(!JSB().isNull(this.objects[this.name])){
-					
-				}
-			} catch(e){
-				// ignore hash check
-			}
-*/			
-			// setup libraries
-			var entry = this.currentSection();
-			if(entry){
-				this.setupLibraries(this._cls.prototype);
-			}
-			
-			// deploy object into class tree
-			if(this._cls.jsb && this._cls.jsb.name != this.name){
-				throw 'System error: wrong inheritance occured due to loading "' + this.name + '": found "' + this._cls.jsb.name + '"';
-			}
-			this._cls['jsb'] = this;
-			if(entry){
-				this.deploy(this.name, this._cls);
-			}
-
-			// add to objects
-			this.objects[this.name] = this;
-
-			// execute bootstrap and keep initialization
-			function afterBoostrap1(){
-				var entry = self.currentSection();
-				if(!self.isNull(entry)){
-					function afterBoostrap2(){
-						self.finalizeRegistration();
-					}
-					if(self.isFunction(entry.bootstrap)){
-						
-						function ebcall(){
-							var bWait = entry.bootstrap.call(self, afterBoostrap2);
-							if(!bWait){
-								afterBoostrap2();
-							}
-						}
-						if(self.isSystem()){
-							ebcall();
-						} else {
-							JSB().defer(function(){
-								ebcall();
-							});
-						}
-						
-					} else {
-						afterBoostrap2();
-					}
-					
-				} else {
-					self.finalizeRegistration();
-				}
-			}
-			
-			if(this.bootstrap){
-				function bcall(){
-					var bWait = self.bootstrap.call(self, afterBoostrap1);
-					if(!bWait){
-						afterBoostrap1();
-					}
-				}
-				if(self.isSystem()){
-					bcall();
-				} else {
-					JSB().defer(function(){
-						bcall();
-					});
-				}
-			} else {
-				afterBoostrap1();
-			}
 		},
 		
 		deploy: function(qname, obj, overwrite, scope){
@@ -1844,49 +1829,116 @@
 			
 			if(locker){ locker.unlock('JSB_deploy'); }
 		},
-		
-		finalizeRegistration: function(){
-			var self = this;
 
-			function keepFinalize(){
-				self._ready = true;
-				self.runOnLoadCallbacks();
-				self.matchWaiters();
+		
+		_proceedBootstrapStage: function(){
+			var self = this;
+/*			
+			// deploy object into class tree
+			if(this._cls.jsb && this._cls.jsb.name != this.name){
+				throw 'System error: wrong inheritance occured due to loading "' + this.name + '": found "' + this._cls.jsb.name + '"';
+			}
+			if(entry){
+				this.deploy(this.name, this._cls);
+			}
+*/
+
+			// execute bootstrap and keep initialization
+			function afterBoostrap1(){
+				if(self.isFunction(self._entryBootstrap)){
+					function afterBoostrap2(){
+						self._proceedSingletonStage();
+					}
+					function ebcall(){
+						var bWait = self._entryBootstrap.call(self, afterBoostrap2);
+						if(!bWait){
+							afterBoostrap2();
+						}
+					}
+					if(self.isSystem()){
+						ebcall();
+					} else {
+						JSB().defer(function(){
+							ebcall();
+						});
+					}
+						
+				} else {
+					self._proceedSingletonStage();
+				}
 			}
 			
-			var entry = self.currentSection();
-			if(entry && self.isSingleton()){
-				function ccall(){
-					var f = self._cls;
-					var o = new f();
-					
-					self.deploy(self.name, o);
-					
-					if(entry.globalize && self.isString(entry.globalize)){
-						self.deploy(entry.globalize, o, true);
+			if(this._commonBootstrap){
+				function bcall(){
+					var bWait = self._commonBootstrap.call(self, afterBoostrap1);
+					if(!bWait){
+						afterBoostrap1();
 					}
-/*					
-					// run sync if syncScopes
-					if(o.syncScopes){
-						o.doSync();
-					}
-*/					
-					keepFinalize();
 				}
 				if(self.isSystem()){
-					ccall();
+					bcall();
 				} else {
 					JSB().defer(function(){
-						ccall();
+						bcall();
 					});
 				}
 			} else {
-				keepFinalize();
+				afterBoostrap1();
 			}
+		},
+		
+		
+		_proceedSingletonStage: function(){
+			var self = this;
+			self._readyState = 3;
+			self._matchWaiters(3);
+			
+			function keepFinalize(){
+				self._readyState = 4;
+				self._ready = true;
+
+				self._runOnLoadCallbacks();
+				self._matchWaiters();
+			}
+			
+			self._waitRequires(3, function(){
+				var entry = self.currentSection();
+				if(entry && self.isSingleton()){
+					function ccall(){
+						var f = self._cls;
+						var o = new f();
+						
+						if(entry.globalize){
+							if(self.isString(entry.globalize)){
+								self.deploy(entry.globalize, o, true);
+							} else {
+								self.deploy(self.name, o);
+							}
+						}
+	/*					
+						// run sync if syncScopes
+						if(o.syncScopes){
+							o.doSync();
+						}
+	*/					
+						keepFinalize();
+					}
+					if(self.isSystem()){
+						ccall();
+					} else {
+						JSB().defer(function(){
+							ccall();
+						});
+					}
+				} else {
+					keepFinalize();
+				}
+
+			});
 			
 		},
 		
-		runOnLoadCallbacks: function(){
+		_runOnLoadCallbacks: function(){
 			if(this.isNull(this.onLoadCallbacks)){
 				return;
 			}
@@ -1902,29 +1954,6 @@
 			this.onLoadCallbacks.push(callback);
 		},
 		
-		matchWaiters: function(){
-			var locker = this.getLocker();
-			if(locker){ locker.lock('JSO_lookup_waiters'); }
-			var wList = this.waiters[this.name];
-			if(wList == null || wList == undefined){
-				if(locker){ locker.unlock('JSO_lookup_waiters'); }
-				return;
-			}
-			
-			delete this.waiters[this.name];
-			this.waiters[this.name] = null;
-			if(locker){ locker.unlock('JSO_lookup_waiters'); }
-
-			var cls = this.getClass();
-/*			
-			if(this.isSingleton()){
-				cls = JSB().getInstance(this.name);
-			}
-*/			
-			for(var c in wList){
-				wList[c].call(this, cls);
-			}
-		},
 
 		getClass: function(){
 			return this._cls;
@@ -3878,10 +3907,10 @@ JSB({
 			}, function(status,obj){
 				if(status == 'success'){
 					var jsoRes = obj.result;
-					if(JSB().isArray(jsoRes)){
+					if(JSB.isArray(jsoRes)){
 						for(var i in jsoRes){
 							if(jsoRes[i] != null && jsoRes[i] != undefined){
-								if(JSB().isNull(JSB().initQueue)){
+								if(JSB.isNull(JSB().initQueue)){
 									JSB().initQueue = {};
 								}
 								JSB().initQueue[jsoRes[i].name] = true;
@@ -3889,12 +3918,12 @@ JSB({
 						}
 						for(var i in jsoRes){
 							if(jsoRes[i] != null && jsoRes[i] != undefined){
-								JSO(jsoRes[i]);
+								JSB(jsoRes[i]);
 							}
 						}
 					} else {
 						if(jsoRes != null && jsoRes != undefined){
-							JSO(jsoRes);
+							JSB(jsoRes);
 						}
 					}
 				} else {

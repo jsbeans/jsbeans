@@ -240,7 +240,7 @@ JSB({
 			
 			var connectorClass = this.diagram.connectorDescs[cKey].connectorClass;
 			if(!connectorClass){
-				connectorClass = self.Connector;
+				connectorClass = Connector;
 			}
 			
 			var connector = new connectorClass(this, cKey, opts);

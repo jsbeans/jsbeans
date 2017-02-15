@@ -16,7 +16,7 @@ JSB({
 			if(this.options.headerItems)
 				this.setHeader();
 			
-			this.scrollBox = new JSB.Widgets.ScrollBox(this.options);
+			this.scrollBox = new ScrollBox(this.options);
 			elt.append(this.scrollBox.getElement());
 			
 			this.rootElt = this.$('<table class="_dwp_gridTableContainer"></table>');

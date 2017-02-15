@@ -21,7 +21,7 @@ JSB({
 				this.$(this.options.container).append(this.getElement());
 			}
 			// construct
-			this.loginElt = new self.TextEditor({
+			this.loginElt = new TextEditor({
 				placeholder: 'имя пользователя',
 				onChange: function(str, evt){
 					if(evt && evt.which && evt.which == 13){
@@ -35,7 +35,7 @@ JSB({
 					}
 				}
 			});
-			this.passElt = new self.TextEditor({
+			this.passElt = new TextEditor({
 				placeholder: 'пароль',
 				password: true,
 				onChange: function(str, evt){
@@ -49,7 +49,7 @@ JSB({
 					}
 				}
 			});
-			this.postBtn = new self.Button({
+			this.postBtn = new Button({
 				caption: 'Войти',
 				onClick: function(){
 					self.doLogin();

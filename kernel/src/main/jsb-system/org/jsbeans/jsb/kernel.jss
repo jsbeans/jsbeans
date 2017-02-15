@@ -2,6 +2,7 @@ JSB({
 	name:'Kernel',
 	server: {
 		singleton: true,
+		globalize: true,
 		
 		constructor: function(){
 			JSB().setLocker(this);
@@ -144,8 +145,12 @@ JSB({
 				'server': true,
 				'_clientProcs': true,
 				'_ready': true,
+				'_readyState': true,
 				'_requireCnt': true,
-				'_cls': true
+				'_cls': true,
+				'_ctor': true,
+				'_entryBootstrap': true,
+				'_commonBootstrap': true
 			};
 			var jsb = JSB().get(name);
 			if(JSB().isNull(jsb)){

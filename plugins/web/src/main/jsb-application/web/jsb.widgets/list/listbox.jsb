@@ -17,7 +17,7 @@ JSB({
 				this.noItemsElt.text(this.options.emptyText);
 			}
 			elt.append(this.noItemsElt);
-			this.scrollBox = new self.ScrollBox(this.options);
+			this.scrollBox = new ScrollBox(this.options);
 			elt.append(this.scrollBox.getElement());
 			this.rootElt = this.$('<ul class="_dwp_listBoxContainer"></ul>');
 			this.scrollBox.append(this.rootElt);

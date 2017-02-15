@@ -2,12 +2,13 @@ JSB({
 	name:'JQuery.UI',
 	require: ['JQuery'],
 	client:{
+		singleton: true,
 		bootstrap: function(){
-			JSO().loadCss('tpl/jquery.ui/jquery-ui.min.css');
+			JSB().loadCss('tpl/jquery.ui/jquery-ui.min.css');
 			
 			(function(jQuery){
 				#include 'jquery-ui.min.js';
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 			
 		}
 	}

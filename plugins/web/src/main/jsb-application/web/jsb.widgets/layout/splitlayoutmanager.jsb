@@ -61,7 +61,7 @@ JSB({
 				}
 
 				// setup SplitBox
-				var sb = new self.SplitBox({
+				var sb = new SplitBox({
 					type: desc.split,
 					position: position
 				});
@@ -129,9 +129,9 @@ JSB({
 				}
 				var ctrl = null;
 				if(desc.floating){
-					ctrl = new self.FloatingContainer(wcOpts);
+					ctrl = new FloatingContainer(wcOpts);
 				} else {
-					ctrl = new self.WidgetContainer(wcOpts);
+					ctrl = new WidgetContainer(wcOpts);
 				}
 				if(desc.key){
 					ctrl.getElement().attr('key', desc.key);
@@ -295,7 +295,7 @@ JSB({
 		construct: function(){
 			var self = this;
 			this.addClass('_jsb_splitLayoutManager');
-			this.layoutsView = new self.TabView({
+			this.layoutsView = new TabView({
 				showTabs: false,
 				allowNewTab: false,
 				allowCloseTab: false,

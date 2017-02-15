@@ -74,7 +74,7 @@ JSB({
 			}
 			
 			if(this.options.editable){
-				this.titleEditor = new self.PrimitiveEditor({
+				this.titleEditor = new PrimitiveEditor({
 					mode: 'inplace',
 					onValidate: self.options.onValidateTitle,
 					onChange: self.options.onChangeTitle

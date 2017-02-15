@@ -30,7 +30,7 @@ JSB({
 		
 		init: function(){
 			var self = this;
-			this.data = new self.Value(null, this.options.valueType);
+			this.data = new Value(null, this.options.valueType);
 			if(this.options.valueType == 'java.lang.Boolean' || this.options.valueType == 'boolean'){
 				// create editor for boolean
 				self.createEnumForBoolean();
@@ -49,7 +49,7 @@ JSB({
 		
 		createEnumForBoolean: function(){
 			var self = this;
-			this.listBox = new self.ListBox({
+			this.listBox = new ListBox({
 				onSelectionChanged: function(key){
 					self.changeSelection(key);
 				}
@@ -70,7 +70,7 @@ JSB({
 		
 		createEnumForType: function(desc){
 			var self = this;
-			this.listBox = new self.ListBox({
+			this.listBox = new ListBox({
 				onSelectionChanged: function(key){
 					self.changeSelection(key);
 				}
@@ -89,7 +89,7 @@ JSB({
 		
 		createEnumForList: function(items){
 			var self = this;
-			this.listBox = new self.ListBox({
+			this.listBox = new ListBox({
 				onSelectionChanged: function(key){
 					self.changeSelection(key);
 				}
@@ -111,7 +111,7 @@ JSB({
 			if(JSO().isInstanceOf(val, 'JSB.Widgets.Value')){
 				this.data = val;
 			} else {
-				this.data = new this.Value(val, this.options.valueType);
+				this.data = new Value(val, this.options.valueType);
 			}
 			
 			this.dontComplete = true;

@@ -10,7 +10,7 @@ JSB({
 			$base(opts);
 			this.loadCss('treeview.css');
 			this.addClass('_dwp_treeview');
-			this.scrollBox = new self.ScrollBox(this.options);
+			this.scrollBox = new ScrollBox(this.options);
 			this.append(this.scrollBox);
 			this.rootElt = this.$('<ul class="_dwp_treeViewContainer"></ul>');
 			this.scrollBox.append(this.rootElt);

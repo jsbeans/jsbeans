@@ -48,7 +48,7 @@ JSB({
 			if(this.options.joints){
 				for(var i = 0; i < this.options.joints.length; i++){
 					var jDesc = this.options.joints[i];
-					var jClass = self.Joint;
+					var jClass = Joint;
 					if(jDesc.jsb){
 						jClass = jDesc.jsb.getClass();
 					}
@@ -141,6 +141,14 @@ JSB({
 			}
 		},
 		
+		getSource: function(){
+			return this.source;
+		},
+
+		getTarget: function(){
+			return this.target;
+		},
+
 		createPathFromPoints: function(pts){
 			var pathStr = '';
 			for(var i = 0; i < pts.length; i++ ){

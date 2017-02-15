@@ -593,7 +593,7 @@ JSB({
 				widgetData = obj[dataField];
 				widgetContext = obj[contextField];
 
-				var fc = new self.FloatingContainer({
+				var fc = new FloatingContainer({
 					position: 'fixed',
 					suggested: {
 						width: container.width() / 2,
@@ -619,7 +619,9 @@ JSB({
 					});
 					self.items[idx].embeddedObject = embeddedWidget;
 					fc.attachWidget(embeddedWidget);
-				}, true);
+				}, {
+					forceUpdate: true
+				});
 			} else {
 				widgetToLoad = 'JsonView';
 				widgetData = obj;

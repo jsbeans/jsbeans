@@ -12,7 +12,7 @@ JSB({
 			this.addClass('_dwp_itemList');
 			
 			if(!this.options.views.basic){
-				this.options.views.basic = new self.ItemListView();
+				this.options.views.basic = new ItemListView();
 			}
 			
 			this.switchView(this.options.view);

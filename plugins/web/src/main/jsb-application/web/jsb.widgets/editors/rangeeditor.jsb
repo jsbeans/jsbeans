@@ -39,7 +39,7 @@ JSB({
 	    	if(this.data){
 	    		this.data.destroy();
 	    	}
-	    	this.data = new this.Value(values);
+	    	this.data = new Value(values);
 		},
 		
 		setData: function(val){
@@ -47,7 +47,7 @@ JSB({
 			if(JSO().isInstanceOf(val, 'JSB.Widgets.RangeValue')){
 				this.data = val;
 			} else {
-				this.data = new this.Value(val);
+				this.data = new Value(val);
 			}
 			if(this.slider){
 				this.slider.slider('values', this.data.getValue());

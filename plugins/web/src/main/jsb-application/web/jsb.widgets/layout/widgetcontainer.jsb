@@ -27,7 +27,7 @@ JSB({
 				}
 			}
 			
-			this.wcView = new self.TabView(twOpts);
+			this.wcView = new TabView(twOpts);
 			
 			JSB().deferUntil(function(){
 				self.getClientContainer().append(self.wcView.getElement());

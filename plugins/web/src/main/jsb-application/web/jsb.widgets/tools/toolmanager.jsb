@@ -15,7 +15,7 @@ JSB({
 			this.loadCss('toolmanager.css');
 			this.tools = {};
 			this.visibleInstances = [];
-			this.EventBus.jsb.getInstance().subscribe(this, 'tool');
+			EventBus.jsb.getInstance().subscribe(this, 'tool');
 			
 			// create tool area
 			JSO().deferUntil(function(){
@@ -67,7 +67,7 @@ JSB({
 			if(settings.enforceInstance){
 				var cls = toolJso.getClass();
 				var obj = new cls(opts);
-				var chosenInstance = new self.ToolWrapper(toolId, self, obj, wrapOpts);
+				var chosenInstance = new ToolWrapper(toolId, self, obj, wrapOpts);
 				this.tools[toolId].instances.push(chosenInstance);
 			}
 		},
@@ -200,7 +200,7 @@ JSB({
 				// create new instance
 				var cls = toolEntry.jso.getClass();
 				var obj = new cls(toolEntry.toolOpts);
-				chosenInstance = new self.ToolWrapper(params.id, self, obj, JSO().merge(toolEntry.wrapperOpts, params));
+				chosenInstance = new ToolWrapper(params.id, self, obj, JSO().merge(toolEntry.wrapperOpts, params));
 				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
 			}
 			

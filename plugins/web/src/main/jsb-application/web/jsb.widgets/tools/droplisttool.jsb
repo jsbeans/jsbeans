@@ -32,7 +32,7 @@ JSB({
 			var self = this;
 			this.loadCss('droplisttool.css');
 			this.addClass('_dwp_droplistTool');
-			this.listbox = new self.ListBox({
+			this.listbox = new ListBox({
 				onSelectionChanged: function(key, item, evt){
 					if(!item.dontClose){
 						self.complete();

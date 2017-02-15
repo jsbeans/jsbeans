@@ -1,9 +1,9 @@
 JSB({
 	name:'Web',
 	require: ['Log'],
+	singleton: true,
+	
 	client: {
-		singleton: true,
-		
 		getCookie: function(name){
 			var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
 			return matches ? decodeURIComponent(matches[1]) : undefined;
@@ -39,8 +39,6 @@ JSB({
 		}
 	},
 	server: {
-		singleton: true,
-		
 		constructor: function(){
 			JSO().onLoad(function(){
 				// remove jso from the web cache

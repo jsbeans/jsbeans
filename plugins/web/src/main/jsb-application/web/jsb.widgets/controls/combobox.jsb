@@ -41,7 +41,7 @@ JSB({
 			} else {
 				// create editable
 				this.addClass('_dwp_editable');
-				this.editor = new self.Editor({
+				this.editor = new Editor({
 					placeholder: this.options.placeholder
 				});
 				this.append(this.editor);

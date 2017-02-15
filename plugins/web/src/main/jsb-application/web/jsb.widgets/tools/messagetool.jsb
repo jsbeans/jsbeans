@@ -75,7 +75,7 @@ JSB({
 				
 				(function(b){
 					
-					var btnElt = new self.Button({
+					var btnElt = new Button({
 						caption: b.text,
 						onClick: function(){
 							if(self.data.callback){

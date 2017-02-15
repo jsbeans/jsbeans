@@ -50,7 +50,7 @@ JSB({
 				}
 			});
 */			
-			this.emptyData = this.data = new self.Value(null, this.options.valueType); 
+			this.emptyData = this.data = new Value(null, this.options.valueType); 
 			this.isMouseInside = false;
 			if(this.options.multiline){
 				this.editBoxElt = this.$('<textarea></textarea>');
@@ -242,7 +242,7 @@ JSB({
 			if(JSO().isInstanceOf(val, 'JSB.Widgets.Value')){
 				this.data = val;
 			} else {
-				this.data = new self.Value(val, this.options.valueType);
+				this.data = new Value(val, this.options.valueType);
 			}
 			this.editBoxElt.val(this.data.getValue());
 			if(this.options.mode == 'inplace'){

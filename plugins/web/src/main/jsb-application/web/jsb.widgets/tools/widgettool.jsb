@@ -28,7 +28,7 @@ JSB({
 			this.loadCss('widgettool.css');
 			this.addClass('_dwp_widgetTool');
 			
-			this.wc = new self.WidgetContainer();
+			this.wc = new WidgetContainer();
 			this.append(this.wc);
 		},
 		
