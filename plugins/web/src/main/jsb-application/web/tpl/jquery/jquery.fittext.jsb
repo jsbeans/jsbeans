@@ -2,6 +2,7 @@ JSB({
 	name:'JQuery.FitText',
 	require:['JQuery'],
 	client:{
+		singleton: true,
 		bootstrap: function(readyCallback){
 			
 			/**

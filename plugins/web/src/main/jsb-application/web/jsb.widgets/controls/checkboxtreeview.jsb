@@ -44,7 +44,7 @@ JSB({
 				evt.stopPropagation();
 			});
 			
-			var cb = new JSB.Widgets.CheckBox({
+			var cb = new CheckBox({
 				label: item,
 				checked: self.isChecked(itemObj.checkKey),
 				onChange: function(bChecked){

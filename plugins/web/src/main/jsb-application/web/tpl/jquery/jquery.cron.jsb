@@ -2,6 +2,7 @@ JSB({
 	name:'JQuery.Cron',
 	require:['JQuery'],
 	client:{
+		singleton: true,
 		bootstrap: function(readyCallback){
 		
 			JSO().loadCss('tpl/jquery/jquery.cron.css');
