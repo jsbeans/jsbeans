@@ -47,7 +47,7 @@ JSB({
         connect: function(options) {
             this.lastId = (this.lastId||0) + 1;
             options.id = this.lastId;
-            var httpConnection = new this.HttpConnection(options);
+            var httpConnection = new HttpConnection(options);
             httpConnection.connect();
             return httpConnection;
         },
