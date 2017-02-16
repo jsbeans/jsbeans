@@ -18,12 +18,14 @@ JSB({
 					{{? self.options.check}}
 					<input type="checkbox">
 					{{?}}
-					{{? self.options.label.length > 0}}
-					<span>{{=self.options.label}}</span>
-					{{?}}
+					<span class="_dwp_caption"></span>
 				</label>
 				<div class="contents"><div class="shadowPanel"></div></div>
 			}});
+			
+			if(this.options.label){
+				this.setLabel(this.options.label);
+			}
 			
 			this.find('> label').click(function(evt){
 				if(self.options.onClick){
@@ -41,7 +43,7 @@ JSB({
 		},
 		
 		options: {
-			label: '',
+			label: null,
 			check: true,
 			checked: false,
 			enabled: true,
@@ -51,7 +53,7 @@ JSB({
 		},
 		
 		setLabel: function(str){
-			this.getElement().find('._dwp_caption').text(str);
+			this.getElement().find('._dwp_caption').append(str);
 		},
 		
 		isChecked: function(){
