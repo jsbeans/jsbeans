@@ -249,6 +249,14 @@ JSB({
 			return connector;
 		},
 		
+		removeConnector: function(conn){
+			if(JSB.isString(conn)){
+				conn = this.connectors[conn];
+			}
+			delete this.connectors[conn.getId()];
+			conn.destroy();
+		},
+		
 		getConnectors: function(cKey){
 			var cMap = {};
 			for(var cId in this.connectors){

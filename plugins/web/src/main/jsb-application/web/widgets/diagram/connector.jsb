@@ -52,6 +52,24 @@ JSB({
 			});
 		},
 		
+		destroy: function(){
+			if(!this.node.diagram){
+				return;
+			}
+
+			if(this.node.connectors[this.getId()]){
+				delete this.node.connectors[this.getId()];
+			}
+			
+			var links = this.getLinks();
+			for(var lId in links){
+				links[lId].destroy();
+			}
+			
+			$base();
+		},
+		
+		
 		install: function(){
 			var self = this;
 			if(!this.node.diagram){
@@ -210,6 +228,10 @@ JSB({
 				linkMap[link.key] = link;
 			}
 			this.links[link.getId()] = link;
+		},
+		
+		getLinks: function(){
+			return this.links;
 		},
 		
 		notifyChangeConnection: function(){

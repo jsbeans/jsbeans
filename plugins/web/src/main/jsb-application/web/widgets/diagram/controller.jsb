@@ -31,6 +31,51 @@ JSB({
 			}
 		},
 		
+		setCapture: function(){
+			this.diagram.captureObj = {
+				click: function(evt){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
+				},
+
+				mouseover: function(evt){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseover', event: evt});
+				},
+				
+				mouseout: function(evt){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
+				},
+				
+				click: function(evt){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
+				},
+				
+				mousedown: function(evt){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
+				},
+
+				mouseup: function(evt){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mouseup', event: evt});
+				},
+
+				mousemove: function(evt){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousemove', event: evt});
+				},
+				
+				mousewheel: function(evt, delta){
+					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'mousewheel', event: evt, delta: delta});
+				}
+			};
+			this.$(document).on(this.diagram.captureObj);
+		},
+		
+		releaseCapture: function(){
+			if(!this.diagram.captureObj){
+				return;
+			}
+			this.$(document).off(this.diagram.captureObj);
+			this.diagram.captureObj = null;
+		},
+		
 		handleMouseEvent: function(sender, params){
 			var self = this;
 			switch(params.name){
@@ -120,6 +165,7 @@ JSB({
 				}
 				break;
 			case 'mousedown':
+				this.setCapture();
 				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && params.event.which == 1){
 					if(sender.isEnabled()){
 						this.wiringStartPt = this.diagram.pageToSheetCoords({x: params.event.pageX, y: params.event.pageY});
@@ -153,6 +199,7 @@ JSB({
 				}
 				break;
 			case 'mouseup':
+				this.releaseCapture();
 				if(params.event.which == 1){
 					this.nodeResizePt = null;
 					this.wiringStartPt = null;
@@ -449,6 +496,7 @@ JSB({
 				return true;
 				break;
 			case 'mouseup':
+				this.releaseCapture();
 				if(params.event.which != 1){
 					return;
 				}
