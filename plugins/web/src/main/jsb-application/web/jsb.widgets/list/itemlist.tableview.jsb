@@ -43,7 +43,8 @@ JSB({
 		},
 		
 		options: {
-			header: false
+			header: false,
+			autoResizeHeader: true
 		},
 		columns: [{key: '__main__', opts:{}}],
 		
@@ -128,18 +129,39 @@ JSB({
 			}
 			
 			// update sizes
-			var lis = this.container.find('> li');
-			if(lis.length > 0){
-				var fli = this.$(lis[0]);
-				var cells = fli.find('> *');
-				for(var i = 0; i < cells.length; i++){
-					(function(cell, i){
-						self.$(cell).resize(function(){
+			if(this.options.autoResizeHeader){
+				var lis = this.container.find('> li');
+				if(lis.length > 0){					
+					var fli = this.$(lis[0]);
+					
+					var cells = fli.find('> *');
+					for(var i = 0; i < cells.length; i++){
+						(function(cell, i){
+							self.$(cell).resize(function(){
+								self.$(hCells[i]).width(self.$(cell).outerWidth());
+							});
 							self.$(hCells[i]).width(self.$(cell).outerWidth());
-						});
-						self.$(hCells[i]).width(self.$(cell).outerWidth());
-											
-					})(cells[i], i);
+												
+						})(cells[i], i);
+					}
+				}
+			}else{
+				var lis = this.container.find('> li');
+				if(lis.length > 0){
+					var fli;
+					
+					for(var j = 0; j < lis.length; j++)
+						if(!this.$(lis[j]).hasClass('hidden')){
+							fli = this.$(lis[j]);
+							break;
+						}
+					
+					if(fli != undefined){
+						var cells = fli.find('> *');
+						for(var i = 0; i < cells.length; i++){
+							self.$(hCells[i]).width(self.$(cells[i]).outerWidth());
+						}
+					}
 				}
 			}
 			
