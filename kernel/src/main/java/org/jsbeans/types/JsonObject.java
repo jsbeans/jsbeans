@@ -13,6 +13,9 @@ package org.jsbeans.types;
 import com.google.gson.Gson;
 import org.jsbeans.serialization.GsonWrapper;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -39,6 +42,17 @@ public class JsonObject extends LinkedHashMap<String, Object> implements JsonEle
     public static JsonObject parse(String json) {
         JsonObject rdf = new Gson().fromJson(json, JsonObject.class);
         return rdf;
+    }
+
+    public static JsonObject parse(InputStream json) {
+        try {
+            try(InputStreamReader reader = new InputStreamReader(json)) {
+                JsonObject rdf = new Gson().fromJson(reader, JsonObject.class);
+                return rdf;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static JsonObject create(String key, Object value) {
