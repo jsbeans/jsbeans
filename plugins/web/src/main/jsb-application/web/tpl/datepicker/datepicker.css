@@ -1,0 +1,26 @@
+@CHARSET "UTF-8";
+
+._jsb_DatePicker {}
+
+._jsb_DatePicker > .picker {
+	width: 100%;
+}
+
+._jsb_DatePicker > input.picker {
+    border-radius: 4px;
+    padding: 1px 3px;
+    box-sizing: border-box;
+    outline-color: rgba(0, 0, 0, 0);
+    -webkit-touch-callout: initial;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    background: -webkit-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
+    background: -moz-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
+    background: linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
+    background: -o-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
+    background: -ms-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
+    font-family: verdana, lucida, sans, arial, sans-serif;
+}
