@@ -227,6 +227,8 @@ JSB({
 			password: false,
 			autocomplete: null,
 			
+			valueType: 'string',
+			
 			onChange: null,
 			onValidate: function(val){return true;},
 			onContextMenu: function(evt){
