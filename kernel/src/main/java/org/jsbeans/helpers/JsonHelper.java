@@ -27,7 +27,7 @@ public class JsonHelper {
             JsonArray json = new JsonArray();
             for (Object element:array.getIds()){
                 int index = (Integer) element;
-                json.add(nativeToJsonObject((Scriptable) array.get(index, null)));
+                json.add(nativeToJsonObject(array.get(index)));
 
             }
             return json;
