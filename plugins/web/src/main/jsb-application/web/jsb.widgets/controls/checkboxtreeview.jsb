@@ -44,9 +44,17 @@ JSB({
 				evt.stopPropagation();
 			});
 			
+			var isChecked;
+			if(itemObj.isChecked != undefined){
+				isChecked = itemObj.isChecked;
+				this.setCheck(itemObj, itemObj.checkKey)
+			}
+			else
+				isChecked = self.isChecked(itemObj.checkKey);
+			
 			var cb = new CheckBox({
 				label: item,
-				checked: self.isChecked(itemObj.checkKey),
+				checked: isChecked,
 				onChange: function(bChecked){
 					self.changeCheck(bChecked, itemObj);
 				}

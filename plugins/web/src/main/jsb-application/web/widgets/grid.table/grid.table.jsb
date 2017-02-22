@@ -77,12 +77,14 @@ JSB({
 			
 			if(this.options.headerItems != null)
 				for(var el in this.options.headerItems){
-					var td = this.$('<td>' + item.data[el] + '</td>');	
+					var td = this.$('<td></td>');
+					td.append(item.data[el]);
 					tr.append(td);
 				}
 			else
 				for(var el in item.data){
-					var td = this.$('<td>' + item.data[el] + '</td>');	
+					var td = this.$('<td></td>');
+					td.append(item.data[el]);
 					tr.append(td);
 				}
 
@@ -144,7 +146,7 @@ JSB({
 			if(!targetNum){
 				this.selectedItems = [];
 				this.changeSelect();
-				this.options.onSelectChange.call();
+				this.options.onSelectChange.call(this, this.getSelectedItems());
 				return;
 			}
 			
@@ -183,7 +185,7 @@ JSB({
 				this.changeSelect();
 			}
 			
-			this.options.onSelectChange.call();
+			this.options.onSelectChange.call(this, this.getSelectedItems());
 		},
 		
 		changeSelect: function(){
