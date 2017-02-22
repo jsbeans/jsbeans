@@ -105,14 +105,17 @@ JSB({
 		},
 		
 		showMessage: function(params, scope){
-			if(JSO().isNull(scope)){
-				scope = this;
+			if(JSB.isNull(params.scope)){
+				params.scope = this;
 			}
-			this.activate({
+			if(!JSB.isNull(scope)){
+				params.scope = scope;
+			}
+			return this.activate({
 				id: '_dwp_messageTool',
 				cmd: 'show',
 				data: params,
-				scope: scope,
+				scope: params.scope,
 				target: params.target,
 				constraints: params.constraints,
 				callback: params.callback
@@ -121,11 +124,14 @@ JSB({
 		},
 		
 		showTip: function(params) {
-			this.activate({
+			if(JSB.isNull(params.scope)){
+				params.scope = this;
+			}
+			return this.activate({
 				id: '_dwp_standardTooltip',
 				cmd: 'show',
 				data: params.data,
-				scope: this,
+				scope: params.scope,
 				target: params.target,
 				constraints: params.constraints,
 				callback: params.callback
@@ -133,11 +139,11 @@ JSB({
 		},
 		
 		showWidget: function(params){
-			if(JSO().isNull(params.scope)){
+			if(JSB.isNull(params.scope)){
 				params.scope = this;
 			}
 			
-			this.activate(JSO().merge({
+			return this.activate(JSB.merge({
 				id: '_dwp_widgetTool',
 				cmd: 'show',
 			},params));
@@ -592,10 +598,10 @@ JSB({
 				var elt = params.target;
 				this.trackProcs = {
 					over: function(){
-						JSO().cancelDefer('_toolHideInterval_');
+						JSB.cancelDefer('_toolHideInterval_');
 					},
 					out: function(){
-						JSO().defer(function(){
+						JSB.defer(function(){
 							self.close();
 						}, self.options.hideInterval, '_toolHideInterval_');
 					}
@@ -610,6 +616,10 @@ JSB({
 						mouseout: this.trackProcs.out
 					});
 				}
+				
+				JSB.defer(function(){
+					self.close();
+				}, self.options.hideInterval, '_toolHideInterval_');
 			}
 		},
 		

@@ -7,7 +7,7 @@ JSB({
 		bootstrap: function(){
 			// register tooltip
 			var self = this;
-			JSO().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
+			JSB.lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
 				toolMgr.registerTool({
 					id: '_dwp_standardTooltip',
 					jso: self,
@@ -15,7 +15,7 @@ JSB({
 						exclusive: 'tooltip',
 						modal: false,
 						hideByOuterClick: true,
-						hideInterval: 1500,
+						hideInterval: 3000,
 					}
 				});
 			});

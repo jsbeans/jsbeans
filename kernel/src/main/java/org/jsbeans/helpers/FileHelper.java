@@ -36,7 +36,8 @@ public class FileHelper {
     }
 
     public static void writeStringToFile(String fName, String str) throws IOException {
-        byte[] encoded = Charset.forName("UTF-8").encode(str).array();
+//        byte[] encoded = Charset.forName("UTF-8").encode(str).array();
+    	byte[] encoded = str.getBytes("UTF-8");
         Files.write(java.nio.file.Paths.get(fName), encoded, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 

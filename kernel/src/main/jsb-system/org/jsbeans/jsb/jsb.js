@@ -1075,7 +1075,7 @@
 					if(fRes === null){
 						continue;
 					}
-					str += fName + ':' + fRes;
+					str += '"' + fName + '":' + fRes;
 				}
 				str += '}';
 				

@@ -3,15 +3,18 @@
 ._dwp_toolWrapper {
 	z-index: 30000;
 	position: absolute;
-	border: 1px solid #CCC7A1;
-	border-radius: 8px;
+	border-radius: 3px;
+	
+    background: #fcfbf6;
+	
+/*	
 	background: -webkit-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
 	background: -moz-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
     background: linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
     background: -o-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
     background: -ms-linear-gradient(top,rgba(255, 255, 255, 0.9) 0%, rgba(253, 252, 237, 1) 50%, rgba(253, 250, 224, 0.9) 100%);
+*/
 	
-	font-size: small;
 	padding: 2px 5px;
 	box-shadow: 2px 2px 8px #585858;
 	width: auto !important;
