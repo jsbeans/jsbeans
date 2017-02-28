@@ -1,4 +1,4 @@
-/*! jsBeans v2.1.3 | jsbeans.org | (c) 2011-2016 Special Information Systems, LLC */
+/*! jsBeans v2.2.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -143,6 +143,17 @@
 				var res = ctx.evaluateString(scope, '('+script+')', '' + scopeVars['$jsb'].name + '.' + fName, 1, null);
 				return res;
 			}
+		},
+		
+		getCurrentSession: function(){
+			if(!this.isServer()){
+				return null;
+			}
+			var session = Bridge.getCurrentSession();
+			if(session){
+				session = '' + session;
+			}
+			return session;
 		},
 		
 		isSingleton: function(){
@@ -2447,19 +2458,6 @@
 			generateForkJoinTask(params);
 		},
 
-
-		rpc: function(jsoName, instanceId, procName, params){
-			if(this.isClient()){
-				return null;
-			}
-			var np = {};
-			this.injectJsoInRpcResult(params, function(r){
-				np.res = r;
-			});
-			var res = this.getProvider().executeClientRpc(jsoName, instanceId, procName, np.res);
-			return this.substJsoInRpcResult(res);
-		},
-		
 		substJsoInRpcResult: function(res){
 			function _substJsoInRpcResult(res){
 				if(JSB().isPlainObject(res)){
@@ -2525,7 +2523,7 @@
 					}
 				}
 			}
-			if(this.isPlainObject(res)){
+			if(this.isPlainObject(res) && !this.isBean(res)){
 				if(JSB().isString(res.__jso) && JSB().isString(res.__id)){
 					// this is a server object reference
 					this.constructInstanceFromRemote(res.__jso, res.__id, function(fObj){
@@ -3640,21 +3638,25 @@ JSB({
 			}
 		},
 		
-		rpc: function(procName, arg1, arg2, arg3){
+		rpc: function(procName, arg1, arg2, arg3, arg4){
 			var params = null;
 			var callback = null;
 			var sync = false;
 			var self = this;
+			var disableInjectJsb = false;
 			if(JSB().isFunction(arg1)){
 				callback = arg1;
 				sync = arg2;
+				disableInjectJsb = arg3;
 			} else {
 				params = arg1;
 				if(JSB().isFunction(arg2)){
 					callback = arg2;
 					sync = arg3;
+					disableInjectJsb = arg4;
 				} else {
 					sync = arg2;
+					disableInjectJsb = arg3;
 				}
 			}
 			var tJso = this.getJsb();
@@ -3668,13 +3670,21 @@ JSB({
 			}, function(res){
 				var inst = this;
 				var args = arguments;
-				JSB().injectJsoInRpcResult(res, function(r){
-					args[0] = r;
+				if(disableInjectJsb){
+					args[0] = res;
 					if(callback){
 						self.jsb.putCallingContext(callCtx);
 						callback.apply(inst, args);	
 					}
-				});
+				} else {
+					JSB().injectJsoInRpcResult(res, function(r){
+						args[0] = r;
+						if(callback){
+							self.jsb.putCallingContext(callCtx);
+							callback.apply(inst, args);	
+						}
+					});
+				}
 			} );
 		},
 
@@ -3776,14 +3786,17 @@ JSB({
 			return retSlice;
 		},
 		
-		rpc: function(procName, arg1, arg2){
+		rpc: function(procName, arg1, arg2, arg3){
 			var params = null;
 			var callback = null;
-			if(typeof(arg1) == 'function'){
+			var session = null;
+			if(JSB().isFunction(arg1)){
 				callback = arg1;
+				session = arg2;
 			} else {
 				params = JSB().substJsoInRpcResult(arg1);
 				callback = arg2;
+				session = arg3;
 			}
 			var self = this;
 			var callCtx = this.jsb.saveCallingContext();
@@ -3801,7 +3814,7 @@ JSB({
 				instance: this,
 				proc: procName,
 				params: params
-			}, wrapCallback );
+			}, wrapCallback, session );
 		}
 	}
 });
@@ -3845,18 +3858,25 @@ JSB({
 
 JSB({
 	name: 'JSB.AjaxProvider',
+	singleton: true,
 	client:{
-		bootstrap: function(){
-			var f = this.getClass();
-			var provider = new f();
+		constructor: function(){
+			$base();
+			this.curDeferTimeout = this.options.minDeferTimeout;
 			if(JSB().getProvider()){
 				JSB().getProvider().enableServerClientCallTracking(false);
 			}
-			JSB().setProvider(provider);
-			provider.enableServerClientCallTracking(true);
+			JSB().setProvider(this);
+			this.enableServerClientCallTracking(true);
 		},
 		
-		constructor: function(){},
+		options: {
+			minDeferTimeout: 5000,	// 5 sec
+			maxDeferTimeout: 60000,	// 60 sec
+			
+			minScInterval: 30,
+			maxScInterval: 3000
+		},
 		
 		queueToSend: {},
 		queueToCheck: {},
@@ -4062,14 +4082,26 @@ JSB({
 					url: url,
 					data: params,
 					dataType: 'jsonp',
-					timeout: 100000,	// 10 secs
+					timeout: 100000,	// 100 secs
 					success: function(data, status, xhr){
+						self.curDeferTimeout = self.options.minDeferTimeout;
 						var respObj = data;
 						self.decodeObject(respObj);
 						callback('success', respObj);
 					},
 					error: function(xhr, status, err){
-						callback('error', err);
+						if(xhr.status == 404 || xhr.status == 401){
+							self.curDeferTimeout = self.options.minDeferTimeout;
+							callback(status, xhr);
+						} else {
+							self.curDeferTimeout *= 2;
+							if(self.curDeferTimeout > self.options.maxDeferTimeout) {
+								self.curDeferTimeout = self.options.maxDeferTimeout;
+							}
+							JSB.defer(function(){
+								self.ajax(url, params, callback);
+							}, self.curDeferTimeout);
+						}
 					}
 				});
 			} else {
@@ -4077,14 +4109,26 @@ JSB({
 					url: url,
 					data: params,
 					type: 'post',
-					timeout: 100000,	// 10 secs
+					timeout: 100000,	// 100 secs
 					success: function(data, status, xhr){
+						self.curDeferTimeout = self.options.minDeferTimeout;
 						var respObj = eval('('+data+')');
 						self.decodeObject(respObj);
 						callback('success', respObj);
 					},
 					error: function(xhr, status, err){
-						callback('error', err);
+						if(xhr.status == 404 || xhr.status == 401){
+							self.curDeferTimeout = self.options.minDeferTimeout;
+							callback(status, xhr);
+						} else {
+							self.curDeferTimeout *= 2;
+							if(self.curDeferTimeout > self.options.maxDeferTimeout) {
+								self.curDeferTimeout = self.options.maxDeferTimeout;
+							}
+							JSB.defer(function(){
+								self.ajax(url, params, callback);
+							}, self.curDeferTimeout);
+						}
 					}
 				});
 			}
@@ -4152,12 +4196,7 @@ JSB({
 		doRpc: function(){
 			var self = this;
 			var rpcBatch = [];
-			// place old queries into batch
-			for(var id in this.queueToCheck){
-				rpcBatch.push({id: id});
-			}
-			this.queueToCheck = {};
-			
+
 			// place new queries into batch 
 			for(var id in this.queueToSend){
 				var entry = this.queueToSend[id];
@@ -4167,23 +4206,6 @@ JSB({
 			this.queueToSend = {};
 			
 			if( rpcBatch.length > 0 ){
-/*				
-				var cmdStr = JSON.stringify(rpcBatch);
-				this.ajax(this.getServerBase() + 'jsb', {
-					cmd: 'rpc',
-					data: encodeURIComponent(cmdStr)
-				},function(res, obj){
-					if(res == 'error'){
-						// communication error - try in 5 seconds
-						JSB().defer(function(){
-							self.updateRpc();
-						}, 5000);
-					} else {
-						self.handleRpcResponse(obj.result);
-					}
-				});
-*/
-				
 				// split batch into several batches
 				var lastOffset = 0;
 				while(lastOffset < rpcBatch.length){
@@ -4235,17 +4257,12 @@ JSB({
 						delete this.rpcEntryMap[rpcEntry.id];
 					}
 				} else {
-					this.queueToCheck[rpcEntry.id] = this.rpcEntryMap[rpcEntry.id];
+					self.enforceServerClientCallTracking();
 				}
 			}
 			var doUpdate = false;
-			for( var id in this.queueToSend){
+			if(Object.keys(this.queueToSend).length > 0){
 				doUpdate = true;
-				break;
-			}
-			for( var id in this.queueToCheck){
-				doUpdate = true;
-				break;
 			}
 			if(doUpdate){
 				JSB().defer(function(){
@@ -4254,20 +4271,56 @@ JSB({
 			}
 		},
 		
-		enableServerClientCallTracking: function(b){
+		enforceServerClientCallTracking: function(){
+			this.enableServerClientCallTracking(this.options.minScInterval);
+		},
+		
+		slowDownServerClientCallTracking: function(){
+			var newInterval = this.serverClientCallTrackInterval * 2;
+			if(newInterval > this.options.maxScInterval){
+				newInterval = this.options.maxScInterval;
+			}
+			this.enableServerClientCallTracking(newInterval);
+		},
+		
+		enableServerClientCallTracking: function(trackInterval){
 			var self = this;
-			var trackInterval = 1000;	// 1 sec
 			
-			if(this.serverClientCallTrackingEnabled == b){
+			if(JSB.isNull(trackInterval)){
+				trackInterval = this.options.maxScInterval;
+			}
+			
+			if(trackInterval == false){
+				trackInterval = 0;
+			}
+			
+			if(trackInterval == true){
+				trackInterval = this.options.maxScInterval;
+				this.serverClientCallTrackInterval = trackInterval;
+				_doTrack();
 				return;
 			}
 			
-			this.serverClientCallTrackingEnabled = b;
+			if(this.serverClientCallTrackInterval == trackInterval){
+				return;
+			}
+			
+			if(this.serverClientCallTrackInterval && trackInterval > this.serverClientCallTrackInterval){
+				this.serverClientCallTrackInterval = trackInterval;
+				return;
+			}
+			
+			this.serverClientCallTrackInterval = trackInterval;
 			
 			function _doTrack(){
 				self.rpc('getServerClientCallSlice', [self.lastTrackId], function(res){
 					self.lastTrackId = res.lastId;
 					var entries = res.slice;
+					if(entries.length === 0){
+						self.slowDownServerClientCallTracking();
+					} else {
+						self.enforceServerClientCallTracking();
+					}
 					// do something with slice
 					for(var i = 0; i < entries.length; i++){
 						var entry = entries[i];
@@ -4276,55 +4329,99 @@ JSB({
 							var clientInstance = JSB().getInstance(clientId);
 							if(clientInstance && clientInstance[entry.proc]){
 								(function(cInst, proc, params, respond, id, cId){
-									JSB.defer(function(){
-										var result = null;
-										if(JSB().isArray(params)){
-											result = cInst[proc].apply(cInst, params);
-										} else {
-											result = cInst[proc].call(cInst, params);
-										}
-										if(respond){
-											self.rpc('submitServerClientCallResult', {
-												id: id,
-												clientId: cId,
-												result: result
-											}, true);
-										}
-									}, 0);
+									function doCall(p){
+										JSB.defer(function(){
+											var result = null;
+											if(JSB().isArray(p)){
+												result = cInst[proc].apply(cInst, p);
+											} else {
+												result = cInst[proc].call(cInst, p);
+											}
+											if(respond){
+												self.rpc('submitServerClientCallResult', {
+													id: id,
+													clientId: cId,
+													result: result
+												}, true);
+											}
+										}, 0);
+									}
+									if(cInst == self && proc == 'handleRpcResponse'){
+										doCall(params);
+									} else {
+										JSB().injectJsoInRpcResult(params, doCall);
+									}
 								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
 							}
 						} 
 					}
 					
-					if(self.serverClientCallTrackingEnabled){
+					if(self.serverClientCallTrackInterval){
 						JSB().defer(function(){
 							_doTrack();
-						}, trackInterval);
+						}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
 					}
-				}, true);
+				}, true, true);
 			}
 			
-			if(b){
-				_doTrack();
+			if(self.serverClientCallTrackInterval){
+				JSB().defer(function(){
+					_doTrack();
+				}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
 			}
 		}
 
 	},
 	
 	server: {
-		singleton: true,
-		
 		rpcQueueFirst: null,
 		rpcQueueLast: null,
 		rpcMap: {},
 		
 		constructor: function(){
+			$base();
 			if(JSB().getProvider()){
 				JSB().getProvider().enableRpcCleanup(false);
 			}
 			JSB().setProvider(this);
 			this.enableRpcCleanup(true);
 		},
+		
+		performRpc: function(jsoName, instanceId, procName, params, rpcId){
+			var np = {};
+			$jsb.injectJsoInRpcResult(params, function(r){
+				np.res = r;
+			});
+			var ret = null, fail = null;
+			try {
+				var res = this.executeClientRpc(jsoName, instanceId, procName, np.res);
+				ret = $jsb.substJsoInRpcResult(res);
+			} catch(e){
+				fail = e;
+				if(!rpcId){
+					throw e;
+				}
+			}
+			if(rpcId){
+				var respPacket = {
+					id: rpcId,
+					completed: true,
+					result: null,
+					error: null,
+				};
+				if(fail){
+					respPacket.error = fail;
+					respPacket.success = false;
+				} else {
+					respPacket.result = ret;
+					respPacket.success = true;
+				}
+				this.rpc('handleRpcResponse', [[respPacket]], null, $jsb.getCurrentSession());
+			} else {
+				return ret;
+			}
+		},
+
 
 		executeClientRpc: function(jsoName, instanceId, procName, params){
 			
@@ -4386,7 +4483,7 @@ JSB({
 			}
 		},
 		
-		enqueueRpc: function(cmd, callback){
+		enqueueRpc: function(cmd, callback, session){
 			// cmd.instance
 			// cmd.proc
 			// cmd.params
@@ -4397,6 +4494,7 @@ JSB({
 				proc: cmd.proc,
 				params: cmd.params,
 				callback: callback,
+				session: session,
 				next: null
 			};
 			
@@ -4447,7 +4545,7 @@ JSB({
 			while(fromEntry){
 				lastId = fromEntry.id;
 				var clientIdMap = reverseBindMap[fromEntry.instance.getId()];
-				if(clientIdMap){
+				if(clientIdMap && (JSB().isNull(fromEntry.session) || fromEntry.session == JSB().getCurrentSession())){
 					slice.push({
 						id: fromEntry.id,
 						clientIds: Object.keys(clientIdMap),

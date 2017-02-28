@@ -1,23 +1,17 @@
+/*
 JSB({
 	name:'JSB.Widgets.AjaxProvider',
 	parent: 'JSB.AjaxProvider',
+	singleton: true,
 	require: {
 		'JSB.Widgets.NetworkIndicator': 'NetworkIndicator'
 	},
 	client: {
-		bootstrap: function(){
-			var serverBase = JSO().getProvider().getServerBase();
-			var f = this.getClass();
-			var provider = new f();
-			if(JSB().getProvider()){
-				JSB().getProvider().enableServerClientCallTracking(false);
-			}
-			provider.setServerBase(serverBase);
-			JSO().setProvider(provider);
-			provider.enableServerClientCallTracking(true);
-		},
 		constructor: function(){
 			this.curDeferTimeout = this.options.minDeferTimeout;
+			var serverBase = JSB().getProvider().getServerBase();
+			$base();
+			this.setServerBase(serverBase);
 		},
 
 		options: {
@@ -101,3 +95,4 @@ JSB({
 		}
 	}
 });
+*/

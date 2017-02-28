@@ -1,6 +1,6 @@
 JSB({
 	name:'JSB.Widgets.Actor',
-	require: ['JSB.Widgets.AjaxProvider'],
+/*	require: ['JSB.Widgets.AjaxProvider'],*/
 	client: {
 		constructor: function(opts){
 			$base(opts);

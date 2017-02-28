@@ -39,6 +39,7 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -83,9 +84,9 @@ public class JsoRegistryService extends Service {
             this.handleJSOLoaded((JsoLoadCompleteMessage)msg);
 		} else */ if (msg instanceof RpcMessage) {
             this.handleRpc((RpcMessage) msg);
-        } else if (msg instanceof UpdateRpcMessage) {
+        } /*else if (msg instanceof UpdateRpcMessage) {
             this.handleUpdateRpc((UpdateRpcMessage) msg);
-        } else if (msg instanceof LoadAdditionalObjectsMessage) {
+        } */else if (msg instanceof LoadAdditionalObjectsMessage) {
             this.handleLoadAdditionalObjects((LoadAdditionalObjectsMessage) msg);
         } else if (msg instanceof String && msg.equals(Message.TICK)) {
             this.updateSessionMap();
@@ -244,6 +245,7 @@ public class JsoRegistryService extends Service {
                 });
     }
 
+/*    
     private void handleUpdateRpc(UpdateRpcMessage msg) {
         String sessionId = msg.getSessionId();
         String entryId = msg.getEntryId();
@@ -263,8 +265,31 @@ public class JsoRegistryService extends Service {
         } else {
             entry.setError(msg.getStatus().error);
         }
+        
+        if(msg.needInvokeClient()){
+        	try {
+	        	// check whether widget and proc field are filled
+	            JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
+	            rpcEntryResp.addToObject("id", entryId);
+	            rpcEntryResp.addToObject("error", msg.getStatus().error);
+	            rpcEntryResp.addToObject("result", msg.getStatus().result);
+	            rpcEntryResp.addToObject("success", msg.getStatus().status == ExecutionStatus.SUCCESS);
+	            rpcEntryResp.addToObject("completed", true);
+	        	
+		        String script = String.format("JSB().getProvider().rpc('handleRpcResponse', [[%s]], null, '%s');", rpcEntryResp.toJS(), sessionId);
+		        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
+		        execMsg.setScopePath(sessionId);
+		        ActorHelper.getActorSelection(JsHub.class).tell(execMsg, ActorRef.noSender());
+        	} catch(UnsupportedEncodingException e){
+        		throw new PlatformException(e);
+        	}
+        	if(entry.isCompleted()){
+        		se.removeRpc(entryId);
+            }
+        }
     }
-
+*/
+    
     private void handleRpc(RpcMessage msg) {
         try {
             JsObject rpcResult = new JsObject(JsObjectType.JSONARRAY);
@@ -273,6 +298,7 @@ public class JsoRegistryService extends Service {
             String user = msg.getUser();
             String userToken = msg.getUserToken();
             String clientRequestId = msg.getClientRequestId();
+/*            
             SessionEntry sEntry = null;
             if (!this.sessionMap.containsKey(sessionId)) {
                 sEntry = new SessionEntry();
@@ -281,7 +307,7 @@ public class JsoRegistryService extends Service {
                 sEntry = this.sessionMap.get(sessionId);
                 sEntry.update();
             }
-
+*/
             String data = msg.getRpcData();
             JsonElement jsonElt = null;
             try {
@@ -306,119 +332,107 @@ public class JsoRegistryService extends Service {
                 }
                 JsonObject obj = elt.getAsJsonObject();
                 String id = obj.get("id").getAsString();
-                if (sEntry.containsRpc(id)) {
-                    // check for existed entry state
-                    JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
-                    RpcEntry entry = sEntry.getRpc(id);
-                    rpcEntryResp.addToObject("id", id);
-                    rpcEntryResp.addToObject("completed", entry.isCompleted());
-                    rpcEntryResp.addToObject("error", entry.getError());
-                    rpcEntryResp.addToObject("result", entry.getResult());
-                    rpcEntryResp.addToObject("success", entry.isSuccess());
-                    rpcResult.addToArray(rpcEntryResp);
-                    
-                    if(entry.isCompleted()){
-                    	sEntry.removeRpc(id);
-                    }
-                } else {
-                    // check whether widget and proc field are filled
-                    JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
-                    rpcEntryResp.addToObject("id", id);
+                
+                // check whether widget and proc field are filled
+                JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
+                rpcEntryResp.addToObject("id", id);
 
-                    if (!obj.has("jsb") || !obj.has("proc")) {
-                        rpcEntryResp.addToObject("completed", true);
-                        rpcEntryResp.addToObject("error", String.format("Rpc entry with id: '%s' is missing or malformed", id));
-                        rpcEntryResp.addToObject("result", "");
-                        rpcEntryResp.addToObject("success", false);
-                        rpcResult.addToArray(rpcEntryResp);
-                        continue;
-                    }
-
-                    if (obj.has("sync") && obj.get("sync").getAsBoolean()) {
-                        // call script on synchronized manner
-                        JsonElement paramElt = obj.get("params");
-                        String script = String.format(
-                                "JSO().rpc('%s','%s','%s',%s);",
-                                obj.get("jsb").getAsString(),
-                                obj.get("instance").getAsString(),
-                                obj.get("proc").getAsString(),
-                                paramElt != null ? paramElt.toString() : "null");
-                        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
-                        execMsg.setScopePath(sessionId);
-                        execMsg.setClientAddr(clientAddr);
-                        execMsg.setUser(user);
-                        execMsg.setUserToken(userToken);
-                        execMsg.setClientRequestId(clientRequestId);
-                        Timeout timeout = ActorHelper.getServiceCommTimeout();
-                        Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, timeout);
-                        try {
-                            UpdateStatusMessage result = (UpdateStatusMessage) Await.result(f, timeout.duration());
-                            rpcEntryResp.addToObject("error", result.error);
-                            rpcEntryResp.addToObject("result", result.result);
-                            rpcEntryResp.addToObject("success", result.status == ExecutionStatus.SUCCESS);
-                        } catch (Throwable fail) {
-                            rpcEntryResp.addToObject("error", fail.getMessage());
-                            rpcEntryResp.addToObject("success", false);
-                            rpcEntryResp.addToObject("result", (JsObject) null);
-                            getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
-
-                        }
-                        rpcEntryResp.addToObject("completed", true);
-                        rpcResult.addToArray(rpcEntryResp);
-                        continue;
-                    }
-
-                    rpcEntryResp.addToObject("completed", false);
-                    rpcEntryResp.addToObject("error", "");
+                if (!obj.has("jsb") || !obj.has("proc")) {
+                    rpcEntryResp.addToObject("completed", true);
+                    rpcEntryResp.addToObject("error", String.format("Rpc entry with id: '%s' is missing or malformed", id));
                     rpcEntryResp.addToObject("result", "");
-                    rpcEntryResp.addToObject("success", true);
+                    rpcEntryResp.addToObject("success", false);
                     rpcResult.addToArray(rpcEntryResp);
-
-                    // add entry to map and run rpc monad
-                    sEntry.newRpc(id);
-
-                    this.createChain(JsonObject.class, UpdateStatusMessage.class, obj)
-                            .add(new FutureMonad<JsonObject, Object>(sessionId, clientAddr, user, clientRequestId, userToken) {
-                                @Override
-                                public Future<Object> run(JsonObject obj) throws PlatformException {
-                                    String sessionId = this.getArgument(0);
-                                    String clientAddr = this.getArgument(1);
-                                    String user = this.getArgument(2);
-                                    String rid = this.getArgument(3);
-                                    String userToken = this.getArgument(4);
-                                    String jsoName = obj.get("jsb").getAsString();
-                                    String procName = obj.get("proc").getAsString();
-                                    String instanceId = obj.get("instance").getAsString();
-                                    JsonElement paramElt = obj.get("params");
-
-                                    String script = String.format("JSB().rpc('%s','%s','%s',%s);", jsoName, instanceId, procName, paramElt != null ? paramElt.toString() : "null");
-                                    ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
-                                    execMsg.setScopePath(sessionId);
-                                    execMsg.setClientAddr(clientAddr);
-                                    execMsg.setUser(user);
-                                    execMsg.setUserToken(userToken);
-                                    execMsg.setClientRequestId(rid);
-                                    return ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
-                                }
-                            }).add(new CompleteMonad<UpdateStatusMessage>(sessionId, id) {
-                        @Override
-                        public void onComplete(Chain<?, UpdateStatusMessage> chain, UpdateStatusMessage result, Throwable fail) throws PlatformException {
-                            String sessionId = this.getArgument(0);
-                            String id = this.getArgument(1);
-                            if (fail != null) {
-                                // fail
-                                UpdateStatusMessage statusMsg = new UpdateStatusMessage(null);
-                                statusMsg.error = fail.getMessage();
-                                statusMsg.status = ExecutionStatus.FAIL;
-                                getSelf().tell(new UpdateRpcMessage(sessionId, id, statusMsg), getSelf());
-                                getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
-                            } else {
-                                // success
-                                getSelf().tell(new UpdateRpcMessage(sessionId, id, result), getSelf());
-                            }
-                        }
-                    });
+                    continue;
                 }
+
+                if (obj.has("sync") && obj.get("sync").getAsBoolean()) {
+                    // call script on synchronized manner
+                    JsonElement paramElt = obj.get("params");
+                    String script = String.format(
+                            "JSB().getProvider().performRpc('%s','%s','%s',%s);",
+                            obj.get("jsb").getAsString(),
+                            obj.get("instance").getAsString(),
+                            obj.get("proc").getAsString(),
+                            paramElt != null ? paramElt.toString() : "null");
+                    ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
+                    execMsg.setScopePath(sessionId);
+                    execMsg.setClientAddr(clientAddr);
+                    execMsg.setUser(user);
+                    execMsg.setUserToken(userToken);
+                    execMsg.setClientRequestId(clientRequestId);
+                    Timeout timeout = ActorHelper.getServiceCommTimeout();
+                    Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, timeout);
+                    try {
+                        UpdateStatusMessage result = (UpdateStatusMessage) Await.result(f, timeout.duration());
+                        rpcEntryResp.addToObject("error", result.error);
+                        rpcEntryResp.addToObject("result", result.result);
+                        rpcEntryResp.addToObject("success", result.status == ExecutionStatus.SUCCESS);
+                    } catch (Throwable fail) {
+                        rpcEntryResp.addToObject("error", fail.getMessage());
+                        rpcEntryResp.addToObject("success", false);
+                        rpcEntryResp.addToObject("result", (JsObject) null);
+                        getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
+
+                    }
+                    rpcEntryResp.addToObject("completed", true);
+                    rpcResult.addToArray(rpcEntryResp);
+                    continue;
+                }
+
+                rpcEntryResp.addToObject("completed", false);
+                rpcEntryResp.addToObject("error", "");
+                rpcEntryResp.addToObject("result", "");
+                rpcEntryResp.addToObject("success", true);
+                rpcResult.addToArray(rpcEntryResp);
+
+                // add entry to map and run rpc monad
+//                    sEntry.newRpc(id);
+
+                this.createChain(JsonObject.class, UpdateStatusMessage.class, obj)
+                    .add(new FutureMonad<JsonObject, Object>(sessionId, clientAddr, user, clientRequestId, userToken, id) {
+                        @Override
+                        public Future<Object> run(JsonObject obj) throws PlatformException {
+                            String sessionId = this.getArgument(0);
+                            String clientAddr = this.getArgument(1);
+                            String user = this.getArgument(2);
+                            String rid = this.getArgument(3);
+                            String userToken = this.getArgument(4);
+                            String rpcId = this.getArgument(5);
+                            String jsoName = obj.get("jsb").getAsString();
+                            String procName = obj.get("proc").getAsString();
+                            String instanceId = obj.get("instance").getAsString();
+                            JsonElement paramElt = obj.get("params");
+
+                            String script = String.format("JSB().getProvider().performRpc('%s','%s','%s',%s,'%s');", jsoName, instanceId, procName, paramElt != null ? paramElt.toString() : "null", rpcId);
+                            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
+                            execMsg.setScopePath(sessionId);
+                            execMsg.setClientAddr(clientAddr);
+                            execMsg.setUser(user);
+                            execMsg.setUserToken(userToken);
+                            execMsg.setClientRequestId(rid);
+                            return ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
+                        }
+                    }).add(new CompleteMonad<UpdateStatusMessage>(sessionId, id) {
+	                    @Override
+	                    public void onComplete(Chain<?, UpdateStatusMessage> chain, UpdateStatusMessage result, Throwable fail) throws PlatformException {
+	                        String sessionId = this.getArgument(0);
+	                        String id = this.getArgument(1);
+	                        if (fail != null) {
+	/*                            	
+	                                // fail
+	                                UpdateStatusMessage statusMsg = new UpdateStatusMessage(null);
+	                                statusMsg.error = fail.getMessage();
+	                                statusMsg.status = ExecutionStatus.FAIL;
+	                                getSelf().tell(new UpdateRpcMessage(sessionId, id, statusMsg, true), getSelf());
+	*/                                
+	                            getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
+	                        } else {
+	                            // success
+	  /*                              getSelf().tell(new UpdateRpcMessage(sessionId, id, result, true), getSelf());*/
+	                        }
+	                    }
+                    });
             }
 
             this.getSender().tell(new RpcMessage(rpcResult), this.getSelf());

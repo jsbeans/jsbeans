@@ -18,11 +18,13 @@ public class UpdateRpcMessage implements Message {
     public UpdateStatusMessage jsStatusMessage;
     private String sessionId;
     private String entryId;
+    private boolean invokeClient;
 
-    public UpdateRpcMessage(String session, String entry, UpdateStatusMessage status) {
+    public UpdateRpcMessage(String session, String entry, UpdateStatusMessage status, boolean invokeClient) {
         this.sessionId = session;
         this.entryId = entry;
         this.jsStatusMessage = status;
+        this.invokeClient = invokeClient;
     }
 
     public String getSessionId() {
@@ -35,5 +37,9 @@ public class UpdateRpcMessage implements Message {
 
     public UpdateStatusMessage getStatus() {
         return this.jsStatusMessage;
+    }
+    
+    public boolean needInvokeClient(){
+    	return this.invokeClient;
     }
 }

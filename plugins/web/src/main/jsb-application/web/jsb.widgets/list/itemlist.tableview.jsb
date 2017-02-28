@@ -1,7 +1,7 @@
 JSB({
 	name:'JSB.Widgets.ItemList.TableView',
 	parent: 'JSB.Widgets.ItemList.View',
-//	require:['JQuery', 'JQuery.UI.Interactions'],
+	require:['JQuery.UI.Resizable'],
 	
 	client: {
 		constructor: function(opts){
@@ -44,7 +44,7 @@ JSB({
 		
 		options: {
 			header: false,
-			autoResizeHeader: true
+//			autoResizeHeader: true
 		},
 		columns: [{key: '__main__', opts:{}}],
 		
@@ -128,40 +128,68 @@ JSB({
 				
 			}
 			
-			// update sizes
-			if(this.options.autoResizeHeader){
-				var lis = this.container.find('> li');
-				if(lis.length > 0){					
-					var fli = this.$(lis[0]);
+//			new
+			function findCol(lis, i){
+				var col = {
+						cells: [],
+						isEmpty: true,
+						maxWidth: 0
+					};
 					
-					var cells = fli.find('> *');
-					for(var i = 0; i < cells.length; i++){
-						(function(cell, i){
-							self.$(cell).resize(function(){
-								self.$(hCells[i]).width(self.$(cell).outerWidth());
-							});
-							self.$(hCells[i]).width(self.$(cell).outerWidth());
-												
-						})(cells[i], i);
+					for(var j = 0; j < lis.length; j++){
+						col.cells.push($this.$(lis[j].children[i]));
+						if(lis[j].children[i].innerHTML != '')
+							col.isEmpty = false;
+						if(self.$(lis[j].children[i]).outerWidth() > col.maxWidth)
+							col.maxWidth = self.$(lis[j].children[i]).outerWidth();
 					}
+						
+					return col;
+			}
+			
+			var lis = this.container.find('> li');
+			if(lis.length > 0){
+				// set header width				
+				var count = lis[0].children.length;
+				var cols = [];
+				
+				for(var i = 0; i < count; i++){
+					var col = findCol(lis, i);
+					cols.push(col);
 				}
-			}else{
-				var lis = this.container.find('> li');
-				if(lis.length > 0){
-					var fli;
+				
+				for(var i = 0; i < count; i++){
+					(function(i){
+						self.$(cols[i].cells[0]).resize(function(){							
+							if(self.$(hCells[i]).outerWidth() <= cols[i].cells[0].outerWidth())
+								self.$(hCells[i]).outerWidth(cols[i].cells[0].outerWidth());
+							else
+								for(var s = 0; s < cols[i].cells.length; s++)
+									cols[i].cells[s].outerWidth(self.$(hCells[i]).outerWidth());
+						});	
+						
+						if(self.$(hCells[i]).outerWidth() <= cols[i].cells[0].outerWidth())
+							self.$(hCells[i]).outerWidth(cols[i].cells[0].outerWidth());
+						else
+							for(var j = 0; j < cols[i].cells.length; j++)
+								cols[i].cells[j].outerWidth(self.$(hCells[i]).outerWidth());
+						
+//						if(self.$(hCells[i]).outerWidth() <= cols[i].maxWidth)
+//							self.$(hCells[i]).outerWidth(cols[i].maxWidth);
+//						else
+//							for(var j = 0; j < cols[i].cells.length; j++)
+//								cols[i].cells[j].outerWidth(self.$(hCells[i]).outerWidth());
+					})(i);
 					
-					for(var j = 0; j < lis.length; j++)
-						if(!this.$(lis[j]).hasClass('hidden')){
-							fli = this.$(lis[j]);
-							break;
-						}
-					
-					if(fli != undefined){
-						var cells = fli.find('> *');
-						for(var i = 0; i < cells.length; i++){
-							self.$(hCells[i]).width(self.$(cells[i]).outerWidth());
-						}
-					}
+					// resizable
+//					if(this.$(hCells[i]).resizable( "instance" ) != undefined)
+//						this.$(hCells[i]).resizable("destroy");
+//					
+//					this.$(hCells[i]).resizable({
+//						autoHide: true,
+//						handles: "e",
+//						alsoResize: this.$(cols[i].cells)
+//					});
 				}
 			}
 			
@@ -174,7 +202,6 @@ JSB({
 					top: tvh.height()
 				});
 			});
-
 		},
 		
 		update: function(){
