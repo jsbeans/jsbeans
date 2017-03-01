@@ -182,6 +182,7 @@ JSB({
 					})(i);
 					
 					// resizable
+					// not work
 //					if(this.$(hCells[i]).resizable( "instance" ) != undefined)
 //						this.$(hCells[i]).resizable("destroy");
 //					
