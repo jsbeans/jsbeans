@@ -3874,8 +3874,9 @@ JSB({
 			minDeferTimeout: 5000,	// 5 sec
 			maxDeferTimeout: 60000,	// 60 sec
 			
-			minScInterval: 30,
-			maxScInterval: 3000
+			minScInterval: 10,
+			maxScInterval: 3000,
+			defScInterval: 100
 		},
 		
 		queueToSend: {},
@@ -4236,6 +4237,7 @@ JSB({
 		
 		handleRpcResponse: function(rpcResp){
 			var self = this;
+			var needEnforce = false;
 			for(var i = 0; i < rpcResp.length; i++){
 				var rpcEntry = rpcResp[i];
 				if(!rpcEntry || JSB().isNull(rpcEntry.completed) || !rpcEntry.id){
@@ -4257,8 +4259,13 @@ JSB({
 						delete this.rpcEntryMap[rpcEntry.id];
 					}
 				} else {
-					self.enforceServerClientCallTracking();
+					needEnforce = true;
 				}
+			}
+			if(needEnforce){
+				JSB.defer(function(){
+					self.enforceServerClientCallTracking();
+				}, 0, '_jsb_enforceScc' + this.getId());
 			}
 			var doUpdate = false;
 			if(Object.keys(this.queueToSend).length > 0){
@@ -4272,7 +4279,16 @@ JSB({
 		},
 		
 		enforceServerClientCallTracking: function(){
-			this.enableServerClientCallTracking(this.options.minScInterval);
+			var newInterval = this.serverClientCallTrackInterval;
+			if(newInterval > this.options.defScInterval){
+				newInterval = this.options.defScInterval;
+			} else {
+				newInterval /= 2;
+				if(newInterval < this.options.minScInterval){
+					newInterval = this.options.minScInterval;
+				}
+			}
+			this.enableServerClientCallTracking(newInterval);
 		},
 		
 		slowDownServerClientCallTracking: function(){
