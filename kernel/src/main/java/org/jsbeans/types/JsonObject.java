@@ -95,22 +95,36 @@ public class JsonObject extends LinkedHashMap<String, Object> implements JsonEle
         return keyValue;
     }
 
+
     public static void setPathValue(JsonObject obj, String path, Object val) {
+        setPathValue(obj, path, val, false);
+    }
+
+    public static void setPathValue(JsonObject obj, String path, Object value, boolean removeNull) {
         String[] props = path.split("\\.");
         JsonObject cur = obj;
         for (int i = 0; i < props.length - 1; i++) {
             Object next = cur.get(props[i]);
             if (next == null) {
+                if (value == null && removeNull) {
+                    // skip set null
+                    return;
+                }
                 next = new JsonObject();
                 cur.put(props[i], next);
                 cur = (JsonObject) next;
-            } else if (cur instanceof JsonObject) {
+            } else if (next instanceof JsonObject) {
                 cur = (JsonObject) next;
             } else {
                 throw new IllegalArgumentException("Property '" + props[i] + "' is not JsonObject");
             }
         }
-        cur.put(props[props.length - 1], val);
+        String lastKey = props[props.length - 1];
+        if (value == null && removeNull) {
+            cur.remove(lastKey);
+        } else {
+            cur.put(lastKey, value);
+        }
     }
 
     @Override
