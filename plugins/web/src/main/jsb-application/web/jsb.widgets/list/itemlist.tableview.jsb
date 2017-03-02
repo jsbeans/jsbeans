@@ -132,16 +132,15 @@ JSB({
 			function findCol(lis, i){
 				var col = {
 						cells: [],
-						isEmpty: true,
-						maxWidth: 0
+						renderers: [],
+						isEmpty: true
 					};
 					
 					for(var j = 0; j < lis.length; j++){
 						col.cells.push($this.$(lis[j].children[i]));
+						col.renderers.push($this.$(lis[j].children[i]).find('._dwp_control.renderer.entityRenderer'));
 						if(lis[j].children[i].innerHTML != '')
 							col.isEmpty = false;
-						if(self.$(lis[j].children[i]).outerWidth() > col.maxWidth)
-							col.maxWidth = self.$(lis[j].children[i]).outerWidth();
 					}
 						
 					return col;
@@ -160,37 +159,25 @@ JSB({
 				
 				for(var i = 0; i < count; i++){
 					(function(i){
-						self.$(cols[i].cells[0]).resize(function(){							
-							if(self.$(hCells[i]).outerWidth() <= cols[i].cells[0].outerWidth())
-								self.$(hCells[i]).outerWidth(cols[i].cells[0].outerWidth());
-							else
-								for(var s = 0; s < cols[i].cells.length; s++)
-									cols[i].cells[s].outerWidth(self.$(hCells[i]).outerWidth());
+						self.$(hCells[i]).resize(function(){
+							for(var s = 0; s < cols[i].cells.length; s++){
+								cols[i].cells[s].outerWidth(self.$(hCells[i]).outerWidth());
+								cols[i].renderers[s].outerWidth(self.$(hCells[i]).outerWidth());
+							}
 						});	
 						
-						if(self.$(hCells[i]).outerWidth() <= cols[i].cells[0].outerWidth())
-							self.$(hCells[i]).outerWidth(cols[i].cells[0].outerWidth());
-						else
-							for(var j = 0; j < cols[i].cells.length; j++)
-								cols[i].cells[j].outerWidth(self.$(hCells[i]).outerWidth());
-						
-//						if(self.$(hCells[i]).outerWidth() <= cols[i].maxWidth)
-//							self.$(hCells[i]).outerWidth(cols[i].maxWidth);
-//						else
-//							for(var j = 0; j < cols[i].cells.length; j++)
-//								cols[i].cells[j].outerWidth(self.$(hCells[i]).outerWidth());
+						for(var j = 0; j < cols[i].cells.length; j++)
+							cols[i].cells[j].outerWidth(self.$(hCells[i]).outerWidth());
 					})(i);
 					
 					// resizable
-					// not work
-//					if(this.$(hCells[i]).resizable( "instance" ) != undefined)
-//						this.$(hCells[i]).resizable("destroy");
-//					
-//					this.$(hCells[i]).resizable({
-//						autoHide: true,
-//						handles: "e",
-//						alsoResize: this.$(cols[i].cells)
-//					});
+					if(this.$(hCells[i]).resizable( "instance" ) != undefined)
+						this.$(hCells[i]).resizable("destroy");
+					
+					this.$(hCells[i]).resizable({
+						autoHide: true,
+						handles: "e"
+					});
 				}
 			}
 			
