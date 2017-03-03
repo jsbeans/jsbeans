@@ -237,7 +237,7 @@ public class ApiServlet extends HttpServlet {
 
     private UpdateStatusMessage execCmd(String proc, String params, String session, String clientAddr, String user, String rid, String uri, String token) throws UnsupportedEncodingException {
         Timeout timeout = ActorHelper.getServiceCommTimeout();
-        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ var result = JSB.HttpApi.exec('%s', [%s, decodeURIComponent('%s')]); var opts = {}; if(result instanceof Web.Response){opts = result.opts; result = result.data;} return {exec: result, opts: opts};})()", proc, params, URLEncoder.encode(uri, "UTF-8")), false);
+        ExecuteScriptMessage msg = new ExecuteScriptMessage(String.format("(function(){ var Web = JSB.getInstance('Web'); var result = JSB.getInstance('JSB.HttpApi').exec('%s', [%s, decodeURIComponent('%s')]); var opts = {}; if(result instanceof Web.Response){opts = result.opts; result = result.data;} return {exec: result, opts: opts};})()", proc, params, URLEncoder.encode(uri, "UTF-8")), false);
         msg.setUserToken(token);
         msg.setScopePath(session);
         msg.setClientAddr(clientAddr);
