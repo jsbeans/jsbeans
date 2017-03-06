@@ -43,8 +43,7 @@ JSB({
 		},
 		
 		options: {
-			header: false,
-//			autoResizeHeader: true
+			header: false
 		},
 		columns: [{key: '__main__', opts:{}}],
 		

@@ -1,22 +1,22 @@
 @CHARSET "UTF-8";
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > ._dwp_listBoxItem {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > ._dwp_listBoxItem {
 	padding: 0;
 	margin: 0 3px 3px 0;
 	background: none;
 	border: none;
 }
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > ._dwp_listBoxItem:first-child {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > ._dwp_listBoxItem:first-child {
 }
 
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.allowHover.highlighted {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.allowHover.highlighted {
 	background: none;
 	border: none;
 }
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem {
 	padding: 4px 6px;
 	border: 1px solid #CCCCCC;
 	border-radius: 4px;
@@ -29,7 +29,7 @@
 	color: #858585;
 }
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.highlighted ._dwp_listItem {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.highlighted ._dwp_listItem {
 	background: -webkit-linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
 	background: -moz-linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
     background: linear-gradient(top, #FFF0DB 0%, #FCEBDF 15%, #FFE1C2 95%, #F8ECDD 100%);
@@ -39,7 +39,7 @@
     border: 1px solid #D1C0B8;
 }
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem {
 	background: -webkit-linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
 	background: -moz-linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
     background: linear-gradient(top, #FFD7A3 0%, #FFE1CB 15%, #FCCC99 95%, #FFD9A9 100%);
@@ -50,7 +50,7 @@
 }
 
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem ._dwp_closeBtn {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem ._dwp_closeBtn {
 	width: 14px;
 	height: 14px;
 	position: absolute;
@@ -64,26 +64,26 @@
 	display: none;
 }
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.highlighted ._dwp_listItem ._dwp_closeBtn,
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem ._dwp_closeBtn
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.highlighted ._dwp_listItem ._dwp_closeBtn,
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem ._dwp_closeBtn
  {
 	display: block;
 }
 /*
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.highlighted ._dwp_listItem ._dwp_closeBtn,
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem ._dwp_closeBtn {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.highlighted ._dwp_listItem ._dwp_closeBtn,
+._dwp_itemList >._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem ._dwp_closeBtn {
 	display: none;
 }
 */
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem ._dwp_closeBtn:hover {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem ._dwp_closeBtn:hover {
 	background-position: -14px -32px;
 	opacity: 1;
 }
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem._dwp_separator {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem._dwp_separator {
 	display: block;
 }
 
-._dwp_itemList > ._dwp_scrollBox > ._dwp_scrollPane > ._dwp_listBoxContainer.basic > li {
+._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer.basic > li {
 	display: block;
 }
