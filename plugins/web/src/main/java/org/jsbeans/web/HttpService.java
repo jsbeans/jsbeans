@@ -22,7 +22,7 @@ import org.jsbeans.Core;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.scripting.JsHub;
-import org.jsbeans.scripting.jso.JsoRegistryService;
+import org.jsbeans.scripting.jsb.JsbRegistryService;
 import org.jsbeans.security.SecurityService;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
@@ -33,7 +33,7 @@ import org.jsbeans.services.ServiceManagerService;
 /**
  * @author Alex
  */
-@DependsOn({JsHub.class, JsoRegistryService.class, SecurityService.class})
+@DependsOn({JsHub.class, JsbRegistryService.class, SecurityService.class})
 public class HttpService extends Service {
     private static final String WEB_FOLDER_KEY = "web.folder";
     private static final String WEB_PORT_KEY = "web.http-port";

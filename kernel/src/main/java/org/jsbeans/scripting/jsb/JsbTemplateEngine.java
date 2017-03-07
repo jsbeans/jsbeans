@@ -8,7 +8,7 @@
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
  */
 
-package org.jsbeans.scripting.jso;
+package org.jsbeans.scripting.jsb;
 
 import akka.util.Timeout;
 import org.jsbeans.PlatformException;
@@ -26,7 +26,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JsoTemplateEngine {
+public class JsbTemplateEngine {
 
     public static String perform(String jsoBody, String jsoFile) throws Exception {
         String curJsoText = jsoBody;
@@ -102,7 +102,7 @@ public class JsoTemplateEngine {
             UpdateStatusMessage usMsg = (UpdateStatusMessage) Await.result(future, timeout.duration());
 
             if (usMsg.result == null) {
-                LoggerFactory.getLogger(JsoTemplateEngine.class).error("Error occured due to expanding doT template in file: '{}'; templateBody: {}; error: {}", jsoFile, templateBody, usMsg.error);
+                LoggerFactory.getLogger(JsbTemplateEngine.class).error("Error occured due to expanding doT template in file: '{}'; templateBody: {}; error: {}", jsoFile, templateBody, usMsg.error);
                 return "";
             }
 

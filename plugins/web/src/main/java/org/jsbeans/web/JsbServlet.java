@@ -16,9 +16,9 @@ import akka.util.Timeout;
 import org.jsbeans.Core;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
-import org.jsbeans.scripting.jso.JsoRegistryService;
-import org.jsbeans.scripting.jso.LookupJsoMessage;
-import org.jsbeans.scripting.jso.RpcMessage;
+import org.jsbeans.scripting.jsb.JsbRegistryService;
+import org.jsbeans.scripting.jsb.LookupJsoMessage;
+import org.jsbeans.scripting.jsb.RpcMessage;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import org.slf4j.LoggerFactory;
@@ -99,7 +99,7 @@ public class JsbServlet extends HttpServlet {
     public static String getJsoCode(final String jsoName, final String sessionId, final String clientAddr, final String userName, final String rid, final String userToken) throws Exception {
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         Future<Object> f = ActorHelper.futureAsk(
-                ActorHelper.getActorSelection(JsoRegistryService.class),
+                ActorHelper.getActorSelection(JsbRegistryService.class),
                 new LookupJsoMessage(jsoName, sessionId, clientAddr, userName, rid, userToken),
                 timeout);
 
@@ -155,7 +155,7 @@ public class JsbServlet extends HttpServlet {
 
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         HttpServletRequest req = ((HttpServletRequest) ac.getRequest());
-        Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsoRegistryService.class), new RpcMessage(req.getSession().getId(), clientAddr, data, userName, rid, userToken), timeout);
+        Future<Object> future = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsbRegistryService.class), new RpcMessage(req.getSession().getId(), clientAddr, data, userName, rid, userToken), timeout);
 
         future.onSuccess(new OnSuccess<Object>() {
             @Override
@@ -206,7 +206,7 @@ public class JsbServlet extends HttpServlet {
         } else {
             Timeout timeout = ActorHelper.getServiceCommTimeout();
             Future<Object> f = ActorHelper.futureAsk(
-                    ActorHelper.getActorSelection(JsoRegistryService.class),
+                    ActorHelper.getActorSelection(JsbRegistryService.class),
                     new LookupJsoMessage(jsoName, ((HttpServletRequest) ac.getRequest()).getSession().getId(), clientAddr, userName, rid, userToken),
                     timeout);
 

@@ -32,9 +32,16 @@
 		if(cfg.parent == null || cfg.parent == undefined){
 			cfg.parent = 'JSB.Bean';
 		}
-		
+/*		
 		if(cfg.path == null || cfg.path == undefined){
 			cfg.path = JSB().lastPath;
+		}
+*/		
+		
+		// insert into repo
+		var repo = this.getRepository();
+		if(repo){
+			repo.registerLoaded(cfg, this);
 		}
 		
 		if(cfg.name != 'JSB.Bean'){
@@ -98,6 +105,7 @@
 		groups: {},
 		waiters: {},
 		provider: null,
+		repository: null,
 		objectsToLoad: [],
 		resourceLoaded: {},
 		resourceScheduled: {},
@@ -1564,6 +1572,13 @@
 						}
 					}
 				}
+				if(this.isServer()){
+					// check bean is existed
+					var repoEntry = this.getRepository().get(name);
+					if(!repoEntry){
+						throw 'Bean "'+name+'" is missing in repository' + (this.name ? '; required by "' + this.name + '"' : '');
+					}
+				}
 			}
 		},
 
@@ -1988,6 +2003,14 @@
 			return this.provider;
 		},
 		
+		setRepository: function(repo){
+			this.repository = repo;
+		},
+
+		getRepository: function(){
+			return this.repository;
+		},
+
 		setLogger: function(l){
 			this.logger = l;
 		},
@@ -2023,14 +2046,14 @@
 		setSystemProfiler: function(prof){
 			this.systemProfiler = prof;
 		},
-		
+/*		
 		wrapJSO: function(file, path, initJSOCode){
 			var storePath = JSB().lastPath; 
 			JSB().lastPath = path; 
 			initJSOCode.call(this);
 			JSB().lastPath = storePath;
 		},
-		
+*/		
 		injectServerVersion: function(url){
 			if(!this.getServerVersion()){
 				return url;
@@ -3817,6 +3840,82 @@ JSB({
 			}, wrapCallback, session );
 		}
 	}
+});
+
+JSB({
+	name: 'JSB.Repository',
+	singleton: true,
+	common: {
+		items: {},
+		loadList: {},
+		
+		constructor: function(){
+			JSB().setRepository(this);
+		},
+		
+		register: function(beanCfg, path){
+			if(JSB.isArray(beanCfg)){
+				for(var i = 0; i < beanCfg.length; i++){
+					this.register(beanCfg[i], path);
+				}
+				return;
+			}
+			var name = beanCfg.name;
+			if(!name || name.length == 0){
+				var err = 'Bean has no name: ' + JSON.stringify(beanCfg);
+				throw err;
+			}
+			if(path){
+				beanCfg.path = path;
+			}
+			var locker = JSB().getLocker();
+			if(locker)locker.lock('_jsb_repo');
+			var entry = this.items[name];
+			if(!entry){
+				entry = this.items[name] = {
+					cfg: beanCfg,
+					jsb: null
+				};
+			} else {
+				entry.cfg = beanCfg;
+			}
+			this.loadList[name] = true;
+			if(locker)locker.unlock('_jsb_repo');
+		},
+		
+		registerLoaded: function(beanCfg, jsb){
+			var name = beanCfg.name;
+			var entry = this.items[name];
+			if(!entry){
+				entry = this.items[name] = {};
+			}
+			entry.cfg = beanCfg;
+			entry.jsb = jsb;
+		},
+		
+		load: function(){
+			var locker = JSB().getLocker();
+			var loadArr = Object.keys(this.loadList);
+			for(var i = 0; i < loadArr.length; i++){
+				var name = loadArr[i];
+				var entry = this.items[name];
+				var cfg = entry.cfg;
+				
+				// do load
+				JSB(cfg);
+				
+				if(locker)locker.lock('_jsb_repo');
+				delete this.loadList[name];
+				if(locker)locker.unlock('_jsb_repo');
+			}
+		},
+		
+		get: function(name){
+			return this.items[name];
+		}
+	},
+	client: {},
+	server: {}
 });
 
 JSB({

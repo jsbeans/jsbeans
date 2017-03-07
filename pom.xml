@@ -53,6 +53,9 @@
         <!-- org.jsbeans.system.path - define system js-beans location in jar -->
         <org.jsbeans.system.path>jsb-system</org.jsbeans.system.path>
 
+        <!-- org.jsbeans.resource.path - define system js-beans location in jar -->
+        <org.jsbeans.resource.path>jsb-resource</org.jsbeans.resource.path>
+
         <!-- org.jsbeans.system.path - define application js-beans location in jar and result build directory (look builds/**/assembly.xml)-->
         <org.jsbeans.application.path>jsb-application</org.jsbeans.application.path>
     </properties>
@@ -84,6 +87,10 @@
                 <targetPath>${org.jsbeans.system.path}</targetPath>
             </resource>
             <resource>
+                <directory>src/main/jsb-resource</directory>
+                <targetPath>${org.jsbeans.resource.path}</targetPath>
+            </resource>
+            <resource>
                 <directory>src/main/jsb-application</directory>
                 <targetPath>${org.jsbeans.application.path}</targetPath>
             </resource>
@@ -98,6 +105,10 @@
             <testResource>
                 <directory>src/main/jsb-system</directory>
                 <targetPath>${org.jsbeans.system.path}</targetPath>
+            </testResource>
+            <testResource>
+                <directory>src/main/jsb-resource</directory>
+                <targetPath>${org.jsbeans.resource.path}</targetPath>
             </testResource>
             <testResource>
                 <directory>src/main/jsb-application</directory>

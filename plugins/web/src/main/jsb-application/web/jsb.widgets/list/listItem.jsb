@@ -7,7 +7,7 @@
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('itemlist.css');
+			this.loadCss('itemList.css');
 			this.addClass('_dwp_listItem');
 			
 			// add close btn

@@ -1,14 +1,14 @@
 /*
  * This file is the part of jsBeans, high-level JavaScript client-server framework.
  * The contents of this file are subject to the MIT License (MIT).
- * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2016
+ * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2017
  *
  * Настоящий файл является частью клиент-сервеной JavaScript платформы.
  * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
- * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
+ * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2017гг.
  */
 
-package org.jsbeans.scripting.jso;
+package org.jsbeans.scripting.jsb;
 
 import akka.actor.ActorRef;
 import akka.util.Timeout;
@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @DependsOn(JsHub.class)
-public class JsoRegistryService extends Service {
+public class JsbRegistryService extends Service {
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
     private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpireTimeout");
 
@@ -59,12 +59,12 @@ public class JsoRegistryService extends Service {
 
     @Override
     protected void onInit() throws PlatformException {
-//        this.self().tell(JsoRegistryMessage.LOAD_JSO, this.getSelf());
-        this.loadJSO();
+        this.loadJsbEngine();
 
         // load server-side JSS from resources
-        String resourcePath = ConfigHelper.getConfigString("kernel.jsb.lookupResourcesPath");
-        this.loadObjects(resourcePath, true);
+        String sysPath = ConfigHelper.getConfigString("kernel.jsb.lookupSystemPath");
+        this.registerBeans(sysPath, true);
+        this.loadBeans();
 
         // Run garbage collection timer to avoid old sessions 
         Core.getActorSystem().scheduler().schedule(
@@ -80,13 +80,9 @@ public class JsoRegistryService extends Service {
     protected void onMessage(Object msg) throws PlatformException {
         if (msg instanceof LookupJsoMessage) {
             this.handleLookupJso((LookupJsoMessage) msg);
-        } else /* if(msg instanceof JsoLoadCompleteMessage){
-            this.handleJSOLoaded((JsoLoadCompleteMessage)msg);
-		} else */ if (msg instanceof RpcMessage) {
+        } else if (msg instanceof RpcMessage) {
             this.handleRpc((RpcMessage) msg);
-        } /*else if (msg instanceof UpdateRpcMessage) {
-            this.handleUpdateRpc((UpdateRpcMessage) msg);
-        } */else if (msg instanceof LoadAdditionalObjectsMessage) {
+        } else if (msg instanceof LoadAdditionalObjectsMessage) {
             this.handleLoadAdditionalObjects((LoadAdditionalObjectsMessage) msg);
         } else if (msg instanceof String && msg.equals(Message.TICK)) {
             this.updateSessionMap();
@@ -96,30 +92,44 @@ public class JsoRegistryService extends Service {
     }
 
     private void handleLoadAdditionalObjects(LoadAdditionalObjectsMessage msg) {
-        // load client-server JSOs
+    	String resPath = ConfigHelper.getConfigString("kernel.jsb.lookupResourcePath");
+    	this.registerBeans(resPath, true);
+        // load client-server JSBs
         for (String path : ConfigHelper.getJssFolders()) {
-            this.loadObjects(path, false);
+            this.registerBeans(path, false);
         }
+        this.loadBeans();
         this.completeInitialization();
     }
-/*
-	private void handleJSOLoaded(JsoLoadCompleteMessage msg) {
-		if(objectsToLoad.contains(msg.getPath())){
-			objectsToLoad.remove(msg.getPath());
-		}
-		if(objectsToLoad.size() == 0){
-			if(!this.coreLoaded){
-				this.coreLoaded = true;
-				// load additional
-				this.self().tell(JsoRegistryMessage.LOAD_ADDITIONAL_OBJECTS, this.getSelf());
-				return;
-			}
-			
-		}
-	}
-*/
+    
+    private void loadBeans() throws PlatformException {
+        // load indexed beans
+        try {
+        	String codeToExecute = "JSB().getRepository().load();";
+            ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
+            if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
+                scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
+            }
+//            scriptMsg.setToken(jsoFile);
+            Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), scriptMsg, ActorHelper.getServiceCommTimeout());
+            Object result = Await.result(f, ActorHelper.getServiceCommTimeout().duration());
+            if (result instanceof UpdateStatusMessage) {
+                UpdateStatusMessage msg = (UpdateStatusMessage) result;
+                if (msg.error != null && msg.error.trim().length() > 0) {
+                    getLog().error(String.format("Failed to load JSB descriptor due to following reson: %s", msg.error));
+                } else {
+                    // jso loaded successfully
+                }
+            } else {
+                throw new PlatformException(String.format("Internal Error: Expected 'ScopeResponseMessage' but found message of type '%s'", result.getClass().getName()));
+            }
+        }catch(Exception e){
+        	getLog().error(String.format("Failed to load JSB descriptor due to following reson: %s", e.toString()));
+        }
 
-    private void loadObjects(final String folder, boolean isServer) throws PlatformException {
+    }
+
+    private void registerBeans(final String folder, boolean isServer) throws PlatformException {
         //String folder = ConfigHelper.getPluginHomeFolder(this);
         Collection<String> jsoPaths = null;
         if (!isServer) {
@@ -151,7 +161,7 @@ public class JsoRegistryService extends Service {
                     }
                 }
 
-                String codeToExecute = String.format("JSB().wrapJSO('%s','%s',function(){ JSB(%s); })", jsoFile, relPath, JsoTemplateEngine.perform(jsoBody, jsoFile));
+                String codeToExecute = String.format("JSB().getRepository().register(%s,'%s');", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath);
                 ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
                 if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                     scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
@@ -162,7 +172,7 @@ public class JsoRegistryService extends Service {
                 if (result instanceof UpdateStatusMessage) {
                     UpdateStatusMessage msg = (UpdateStatusMessage) result;
                     if (msg.error != null && msg.error.trim().length() > 0) {
-                        getLog().error(String.format("Failed to perform JSB descriptor '%s' due to following reson: %s", jsoFile, msg.error));
+                        getLog().error(String.format("Failed to register JSB descriptor '%s' due to following reson: %s", jsoFile, msg.error));
                     } else {
                         // jso loaded successfully
                     }
@@ -170,13 +180,14 @@ public class JsoRegistryService extends Service {
                     throw new PlatformException(String.format("Internal Error: Expected 'ScopeResponseMessage' but found message of type '%s' while loading JSO '%s'", result.getClass().getName(), jsoFile));
                 }
             } catch (Exception e) {
-                getLog().error(String.format("Failed to perform JSB descriptor '%s' due to following reson: %s", jsoFile, e.toString()));
+                getLog().error(String.format("Failed to register JSB descriptor '%s' due to following reson: %s", jsoFile, e.toString()));
             }
         }
+        
     }
 
 
-    private void loadJSO() throws PlatformException {
+    private void loadJsbEngine() throws PlatformException {
         try {
             String jsoPath = ConfigHelper.getConfigString("kernel.jsb.jsbEngineResource");
             String jsoData = FileHelper.readStringFromResource(jsoPath);
@@ -190,7 +201,7 @@ public class JsoRegistryService extends Service {
             if (result instanceof UpdateStatusMessage) {
                 UpdateStatusMessage msg = (UpdateStatusMessage) result;
                 if (msg.error != null && msg.error.trim().length() > 0) {
-                    getLog().error(String.format("Failed to load JSO due to following reason: %s", msg.error));
+                    getLog().error(String.format("Failed to load JSB due to following reason: %s", msg.error));
                 } else {
                     // ok
                 }

@@ -27,7 +27,7 @@
             
             JSB().deferUntil(function(){
             	// proceed to load other objects
-            	Kernel.tell('JsoRegistryService', 'LoadAdditionalObjectsMessage', {});
+            	Kernel.tell('JsbRegistryService', 'LoadAdditionalObjectsMessage', {});
             }, function(){
             	return _checkServerScripts.call(null);
             });

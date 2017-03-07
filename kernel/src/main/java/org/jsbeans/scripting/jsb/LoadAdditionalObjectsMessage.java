@@ -8,36 +8,10 @@
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
  */
 
-package org.jsbeans.scripting.jso;
+package org.jsbeans.scripting.jsb;
 
-public class JsoLoadCompleteMessage extends JsoRegistryMessage {
-    private static final long serialVersionUID = -7294933314755693494L;
+import org.jsbeans.messages.AbstractMessage;
 
-    private boolean success;
-    private String widgetPath;
-    private String error;
-
-    public JsoLoadCompleteMessage(String path) {
-        this.success = true;
-        this.widgetPath = path;
-    }
-
-    public JsoLoadCompleteMessage(String path, Throwable err) {
-        this.error = err.getMessage();
-        this.success = false;
-        this.widgetPath = path;
-    }
-
-    public boolean getSuccess() {
-        return this.success;
-    }
-
-    public String getPath() {
-        return this.widgetPath;
-    }
-
-    public String getError() {
-        return this.error;
-    }
-
+public class LoadAdditionalObjectsMessage extends AbstractMessage<Boolean> {
+    private static final long serialVersionUID = -8384958430026525131L;
 }

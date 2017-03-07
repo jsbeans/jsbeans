@@ -8,7 +8,7 @@
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
  */
 
-package org.jsbeans.scripting.jso;
+package org.jsbeans.scripting.jsb;
 
 import org.jsbeans.types.JsObject;
 
