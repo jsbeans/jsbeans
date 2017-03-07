@@ -4,7 +4,7 @@
 	client: {
 		singleton: true,
 		constructor: function(){
-			this.loadCss('networkindicator.css');
+			this.loadCss('networkIndicator.css');
 			this.element = this.$('<div class="networkConnection"></div>');
 			this.icon = this.$('<div class="icon"></div>');
 			this.element.append(this.icon);
