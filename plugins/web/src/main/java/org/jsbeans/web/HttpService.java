@@ -77,6 +77,10 @@ public class HttpService extends Service {
 
         context.setDescriptor("WEB-INF/web.xml");
         context.setContextPath("/");
+        
+        // prevent directory browsing
+        context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+        
         server.setHandler(context);
         try {
             this.getLog().debug(String.format("Starting Jetty web server at %d", portVal.intValue()));

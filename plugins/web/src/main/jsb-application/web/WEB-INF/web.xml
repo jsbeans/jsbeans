@@ -13,7 +13,7 @@
          xmlns="http://java.sun.com/xml/ns/javaee"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          id="WebApp_ID" version="3.0">
-    <display-name>dWires</display-name>
+    <display-name>jsBeans</display-name>
     <session-config>
         <cookie-config>
             <name>_dSessionId</name>
@@ -27,6 +27,7 @@
         <welcome-file>default.htm</welcome-file>
         <welcome-file>default.jsp</welcome-file>
     </welcome-file-list>
+    
     <filter>
         <filter-name>AuthFilter</filter-name>
         <filter-class>org.jsbeans.web.AuthFilter</filter-class>
