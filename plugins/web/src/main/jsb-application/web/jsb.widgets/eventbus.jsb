@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.EventBus',
 	client: {
 		singleton: true,
@@ -107,4 +107,4 @@ JSB({
 		}
 
 	}
-});
+}

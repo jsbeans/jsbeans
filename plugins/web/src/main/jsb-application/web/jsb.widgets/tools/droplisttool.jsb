@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.DroplistTool',
 	parent: 'JSB.Widgets.Tool',
 	require: {
@@ -30,7 +30,7 @@ JSB({
 		
 		construct: function(){
 			var self = this;
-			this.loadCss('droplisttool.css');
+			this.loadCss('dropListTool.css');
 			this.addClass('_dwp_droplistTool');
 			this.listbox = new ListBox({
 				onSelectionChanged: function(key, item, evt){
@@ -66,4 +66,4 @@ JSB({
 			this.listbox.setFocus();
 		}
 	}
-});
+}

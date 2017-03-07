@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JQuery.UI.Resizable',
 	require: ['JQuery'],
 	client:{
@@ -13,4 +13,4 @@ JSB({
 			}).call(null, JSB().$);
 		}
 	}
-});
+}

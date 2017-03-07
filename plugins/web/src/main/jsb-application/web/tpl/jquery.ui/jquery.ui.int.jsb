@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JQuery.UI.Interactions',
 	require: ['JQuery', 'JQuery.UI.Core'],
 	client:{
@@ -12,4 +12,4 @@ JSB({
 			}).call(null, JSB().$);
 		}
 	}
-});
+}

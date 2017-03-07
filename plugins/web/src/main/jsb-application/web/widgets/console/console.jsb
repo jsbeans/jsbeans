@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'Console',
 	parent: 'JSB.Widgets.Widget',
 	require: {
@@ -166,8 +166,8 @@ JSB({
 
 				// modify existing item
 				idx = parseInt(logItem.attr('idx'));
-				this.items[idx].resultSheet.find('>:not(.toolbar)').remove();
-				this.items[idx].resultSheet.prepend(result);
+				this.items[idx].resultSheet.find('.resultWrap').remove();
+				this.items[idx].resultSheet.prepend(this.$('<div class="resultWrap"></div>').append(result));
 				this.items[idx].item.loader('hide');
 				
 				return idx;
@@ -184,7 +184,7 @@ JSB({
 			var cmdSheet = this.$('<div class="itemSheet cmdSheet"></div>');
 			logItem.append(cmdSheet.append(cmd));
 			var resultSheet = this.$('<div class="itemSheet resultSheet"></div>'); 
-			logItem.append(resultSheet.append(result));
+			logItem.append(resultSheet.append(this.$('<div class="resultWrap"></div>').append(result)));
 			var splitterBox = this.$('<div class="splitterBox"></div>'); 
 			logItem.append(splitterBox);
 			var splitter = this.$('<div class="itemSplitter"><div class="gripIcon"></div></div>');
@@ -741,4 +741,4 @@ JSB({
 		}
 	}
 
-});
+}

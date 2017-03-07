@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.Value',
 	client: {
 		constructor: function(value, type){
@@ -33,4 +33,4 @@ JSB({
 			return '' + this.value;
 		}
 	}
-});
+}

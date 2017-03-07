@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.Widget',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -115,4 +115,4 @@ JSB({
 		}
 
 	}
-});
+}

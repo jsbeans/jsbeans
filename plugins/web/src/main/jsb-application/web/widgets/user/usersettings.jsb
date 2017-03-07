@@ -1,31 +1,4 @@
-JSB({
-	name: 'UserLogout',
-	parent: 'UserMenuItem',
-	require: {
-	},
-	expose: {
-		path: 'User/Menu',
-		displayName: 'Выход',
-		order: 1000,
-		group: 'exit'
-	},
-	client: {
-		constructor: function(){
-		},
-		execute: function(){
-			var self = this;
-			var serverBase = JSO().getProvider().getServerBase();
-			JSO().getProvider().ajax(serverBase + 'logout', {mode: 'json'}, function(status, res){
-				self.publish('userLogout');
-			});
-		}
-	},
-	
-	server: {}
-});
-
-
-JSB({
+{
 	name: 'UserSettings',
 	parent: 'JSB.Widgets.Widget',
 	require: {},
@@ -173,40 +146,4 @@ JSB({
 			}
 		}
 	}
-});
-
-/*
-JSO({
-	name: 'MyPurchase',
-	parent: 'JSB.Widgets.Widget',
-	require: {
-	},
-	
-	expose: {
-		path: 'User/Menu',
-		displayName: 'Мои покупки',
-		order: 100,
-		group: 'shop'
-	}, 
-	client: {
-		constructor: function(opts){
-			var self = this;
-			$base(opts);
-
-			this.append(#dot{{
-				<div jsb="JSB.Widgets.Button" caption="Close" onclick="{{=this.callbackAttr(function(evt){ self.doClose(); })}}"></div>
-			}});
-		},
-		body: {
-			doClose: function(){
-				this.publish('userMenuClose');
-			}
-		}	
-	},
-	
-	server: {
-		body: {
-		}
-	}
-});
-*/
+}

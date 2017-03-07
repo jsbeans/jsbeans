@@ -1,5 +1,5 @@
 /*
-JSB({
+{
 	name:'JSB.Widgets.AjaxProvider',
 	parent: 'JSB.AjaxProvider',
 	singleton: true,
@@ -94,5 +94,5 @@ JSB({
 			}
 		}
 	}
-});
+}
 */

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.WidgetTool',
 	parent: 'JSB.Widgets.Tool',
 	require: {
@@ -25,7 +25,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('widgettool.css');
+			this.loadCss('widgetTool.css');
 			this.addClass('_dwp_widgetTool');
 			
 			this.wc = new WidgetContainer();
@@ -50,4 +50,4 @@ JSB({
 		setFocus: function(){
 		}
 	}
-});
+}

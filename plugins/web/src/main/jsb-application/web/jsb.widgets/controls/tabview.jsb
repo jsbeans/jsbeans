@@ -1,10 +1,10 @@
-JSB({
+{
 	name:'JSB.Widgets.TabView',
 	parent: 'JSB.Widgets.Control',
 	client: {
 		constructor: function(opts){
 			$base(opts);
-			this.loadCss('tabview.css');
+			this.loadCss('tabView.css');
 			this.init();
 		},
 		
@@ -280,4 +280,4 @@ JSB({
 
 		}
 	}
-});
+}

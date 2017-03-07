@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'testwidget',
 	parent: 'JSB.Widgets.Widget',
 	expose: {
@@ -114,4 +114,4 @@ JSB({
 			return this.series[name];
 		}
 	}
-});
+}

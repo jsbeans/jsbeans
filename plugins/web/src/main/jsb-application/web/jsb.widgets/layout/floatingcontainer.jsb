@@ -1,11 +1,11 @@
-JSB({
+{
 	name:'JSB.Widgets.FloatingContainer',
 	parent:'JSB.Widgets.WidgetContainer',
 	client: {
 		constructor: function(opts){
 			// ctor
 			$base(opts);
-			this.loadCss('floatingcontainer.css');
+			this.loadCss('floatingContainer.css');
 			this.getElement().addClass('_dwp_floatingContainer');
 			this.init();
 		},
@@ -430,4 +430,4 @@ JSB({
 			}
 		}
 	}
-});
+}

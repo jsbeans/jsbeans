@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.Actor',
 /*	require: ['JSB.Widgets.AjaxProvider'],*/
 	client: {
@@ -92,4 +92,4 @@ JSB({
 
 		
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'JSB.Widgets.SplitLayoutManager',
 	parent: 'JSB.Widgets.Widget',
 	require: {
@@ -325,4 +325,4 @@ JSB({
 			this.getElement().attr('layout', this.options.defaultLayout);
 		}
 	}
-});
+}

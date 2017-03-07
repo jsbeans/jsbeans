@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.PrimitiveEditor',
 	parent: 'JSB.Widgets.Editor',
 	require: {
@@ -30,7 +30,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('primitiveeditor.css');
+			this.loadCss('primitiveEditor.css');
 			this.addClass('_dwp_primitiveEditor');
 			this.addClass(this.options.mode);
 			
@@ -498,4 +498,4 @@ JSB({
 		}
 			
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.ItemList.BlockView',
 	parent: 'JSB.Widgets.ItemList.View',
 	require: {},
@@ -224,4 +224,4 @@ JSB({
 			});
 		}
 	}
-});
+}

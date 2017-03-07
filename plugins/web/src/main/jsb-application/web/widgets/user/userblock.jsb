@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'UserBlock',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -18,7 +18,7 @@ JSB({
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('userBlock');
-			this.loadCss('userblock.css');
+			this.loadCss('userBlock.css');
 
 			this.append(#dot {{
 				<div class="loggedPanel">
@@ -230,4 +230,4 @@ JSB({
 			return retObj;
 		}
 	}
-});
+}

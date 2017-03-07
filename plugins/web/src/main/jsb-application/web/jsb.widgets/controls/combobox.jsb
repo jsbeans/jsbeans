@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.ComboBox',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -10,7 +10,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('combobox.css');
+			this.loadCss('comboBox.css');
 			this.addClass('_dwp_comboBox');
 			this.init();
 		},
@@ -199,4 +199,4 @@ JSB({
 				this.addClass('disabled');
 		}
 	}
-});
+}

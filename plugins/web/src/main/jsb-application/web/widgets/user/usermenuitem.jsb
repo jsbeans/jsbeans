@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'UserMenuItem',
 	parent: 'JSB.Widgets.Actor',
 	client: {
@@ -11,4 +11,4 @@ JSB({
 			throw 'UserMenuItem: Method execute should be overriden';
 		}
 	}
-});
+}

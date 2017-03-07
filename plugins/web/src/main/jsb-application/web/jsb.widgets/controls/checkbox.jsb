@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.CheckBox',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -8,7 +8,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('checkbox.css');
+			this.loadCss('checkBox.css');
 			this.addClass('_dwp_checkBox');
 			
 			// construct
@@ -101,4 +101,4 @@ JSB({
 			return this.find('> .contents').append(this.resolveElement(c));
 		}
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'JsonView',
 	parent: 'JSB.Widgets.Widget',
 /*	
@@ -11,7 +11,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			$base(opts);
-			this.loadCss('jsonview.css');
+			this.loadCss('jsonView.css');
 			this.preloadImages();
 			this.init(opts);
 		},
@@ -59,7 +59,7 @@ JSB({
 			for(var i in this.embeddedWidgets){
 				this.embeddedWidgets[i].destroy();
 			}
-			this.parent().destroy.call(this);
+			$base();
 		},
 		
 		setData: function(obj){
@@ -235,4 +235,4 @@ JSB({
 			elt.append('<span class="function">function</span>');
 		}
 	}
-});
+}

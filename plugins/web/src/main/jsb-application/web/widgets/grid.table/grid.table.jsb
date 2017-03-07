@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'JSB.Widgets.GridTable',
 	parent: 'JSB.Widgets.Control',
 	require: ['JSB.Widgets.ScrollBox', 'JQuery.UI.Resizable'],
@@ -194,4 +194,4 @@ JSB({
 				this.find('tr[num=' + i + ']').addClass('selected');
 		}
 	}
-});
+}

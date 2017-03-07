@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'JSB.Widgets.Diagram.Node',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -358,4 +358,4 @@ JSB({
 	},
 	
 	server: {}
-});
+}

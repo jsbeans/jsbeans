@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.TreeView',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -8,7 +8,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('treeview.css');
+			this.loadCss('treeView.css');
 			this.addClass('_dwp_treeview');
 			this.scrollBox = new ScrollBox(this.options);
 			this.append(this.scrollBox);
@@ -548,4 +548,4 @@ JSB({
 				}
 		}
 	}
-});
+}

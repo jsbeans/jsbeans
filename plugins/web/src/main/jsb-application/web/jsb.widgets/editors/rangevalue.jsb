@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.RangeValue',
 	parent: 'JSB.Widgets.Value',
 	client: {
@@ -11,4 +11,4 @@ JSB({
 			return val[0] + ' - ' + val[1];
 		}
 	}
-});
+}

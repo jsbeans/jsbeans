@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JQuery',
 	client:{
 		singleton: true,
@@ -19,4 +19,4 @@ JSB({
 			
 		}
 	}
-});
+}

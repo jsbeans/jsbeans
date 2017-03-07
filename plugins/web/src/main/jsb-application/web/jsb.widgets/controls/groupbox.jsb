@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.GroupBox',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -8,7 +8,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			$base(opts);
-			this.loadCss('groupbox.css');
+			this.loadCss('groupBox.css');
 			this.init();
 		},
 		
@@ -187,4 +187,4 @@ JSB({
 			this.getPane().empty();
 		}
 	}
-});
+}

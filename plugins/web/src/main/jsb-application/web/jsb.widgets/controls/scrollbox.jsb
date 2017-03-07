@@ -1,11 +1,11 @@
-JSB({
+{
 	name:'JSB.Widgets.ScrollBox',
 	parent: 'JSB.Widgets.Control',
 	client: {
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('scrollbox.css');
+			this.loadCss('scrollBox.css');
 			JSB().loadScript('tpl/iscroll/iscroll-probe.js', function(){
 				self.init();
 			});
@@ -575,4 +575,4 @@ JSB({
 			}
 		}
 	}
-});
+}

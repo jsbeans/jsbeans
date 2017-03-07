@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'templatewidget',
 	parent: 'JSB.Widgets.Widget',
 	client: {
@@ -31,4 +31,4 @@ JSB({
 	
 	server: {
 	}
-});
+}

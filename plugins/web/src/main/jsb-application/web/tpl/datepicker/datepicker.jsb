@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'DatePicker',
 	parent: 'JSB.Widgets.Control',
 	require:['JQuery.UI'],
@@ -59,4 +59,4 @@ JSB({
 		}
 		
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.NetworkIndicator',
 	require: ['JQuery'],
 	client: {
@@ -68,4 +68,4 @@ JSB({
 			});
 		}
 	}
-});
+}

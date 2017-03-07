@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.DomController',
 	require: ['JQuery'],
 	client: {
@@ -236,4 +236,4 @@ JSB({
 			return jVal;
 		}
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.Tooltip',
 	parent: 'JSB.Widgets.Tool',
 	require: {},
@@ -50,4 +50,4 @@ JSB({
 		setFocus: function(){
 		}
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.MessageTool',
 	parent: 'JSB.Widgets.Tool',
 	require:{
@@ -30,7 +30,7 @@ JSB({
 		
 		construct: function(){
 			var self = this;
-			this.loadCss('messagetool.css');
+			this.loadCss('messageTool.css');
 			var elt = this.getElement();
 			elt.addClass('_dwp_messageTool');
 			this.icon = this.$('<div class="_dwp_messageTool_Icon"></div>');
@@ -96,4 +96,4 @@ JSB({
 		setFocus: function(){
 		}
 	}
-});
+}

@@ -1,11 +1,11 @@
-JSB({
+{
 	name:'WiresTypeInfoProvider',
-	parent: 'DWP.AbstractTypeInfoProvider',
+	parent: 'JSB.AbstractTypeInfoProvider',
 	server: {
 		singleton: true,
 		constructor: function(){
 			var self = this;
-			JSB().lookupSingleton('DWP.TypeInfoRegistry', function(obj){
+			JSB().lookupSingleton('JSB.TypeInfoRegistry', function(obj){
 				obj.setProvider(self);
 			});
 		},
@@ -24,4 +24,4 @@ JSB({
 			return {};
 		}
 	}
-});
+}

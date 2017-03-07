@@ -151,7 +151,7 @@ public class JsoRegistryService extends Service {
                     }
                 }
 
-                String codeToExecute = String.format("JSB().wrapJSO('%s','%s',function(){ %s })", jsoFile, relPath, JsoTemplateEngine.perform(jsoBody, jsoFile));
+                String codeToExecute = String.format("JSB().wrapJSO('%s','%s',function(){ JSB(%s); })", jsoFile, relPath, JsoTemplateEngine.perform(jsoBody, jsoFile));
                 ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
                 if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                     scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JQuery.Placeholder',
 	require:['JQuery'],
 	client:{
@@ -193,4 +193,4 @@ JSB({
 			
 		}
 	}
-});
+}

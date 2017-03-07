@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.ReflectionEditor',
 	parent: 'JSB.Widgets.Editor',
 	
@@ -9,4 +9,4 @@ JSB({
 	server: {
 		constructor: function(){}
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.ItemList.TableView',
 	parent: 'JSB.Widgets.ItemList.View',
 	require:['JQuery.UI.Resizable'],
@@ -8,7 +8,7 @@ JSB({
 			var self = this;
 			$base(opts);
 			
-			this.loadCss('itemlist.tableview.css');
+			this.loadCss('itemList.tableView.css');
 			
 			this.subscribe(['JSB.Widgets.ItemList.insertItem', 'JSB.Widgets.ItemList.deleteItem','JSB.Widgets.ItemList.clear'], function(sender, msg, params){
 				if(self.list !== sender){
@@ -262,4 +262,4 @@ JSB({
 			}
 		}
 	}
-});
+}

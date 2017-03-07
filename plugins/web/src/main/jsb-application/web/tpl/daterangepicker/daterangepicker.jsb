@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'DateRangePicker',
 	parent: 'JSB.Widgets.Control',
 	require:['JQuery', 'JSB.Widgets.ToolManager'],
@@ -73,4 +73,4 @@ JSB({
 			}
 		}
 	}
-});
+}

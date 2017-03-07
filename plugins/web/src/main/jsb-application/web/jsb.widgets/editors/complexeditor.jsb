@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.ComplexEditor',
 	parent: 'JSB.Widgets.Editor',
 	
@@ -13,7 +13,7 @@ JSB({
 		
 		constructor: function(opts){
 			$base(opts);
-			this.loadCss('complexeditor.css');
+			this.loadCss('complexEditor.css');
 			this.addClass('_jsb_complexEditor');
 		},
 		
@@ -150,4 +150,4 @@ JSB({
 			parentElt.addClass('array');
 		}
 	}
-});
+}

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.EnumEditor',
 	parent: 'JSB.Widgets.Editor',
 	require: {
@@ -16,7 +16,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			$base(opts);
-			this.loadCss('enumeditor.css');
+			this.loadCss('enumEditor.css');
 			this.getElement().addClass('_dwp_enumEditor');
 			this.init();
 		},
@@ -38,7 +38,7 @@ JSB({
 				self.createEnumForList(this.options.enum);
 			} else {
 				// obtain type information
-				JSO().lookupSingleton('DWP.TypeInfoRegistry', function(tir){
+				JSO().lookupSingleton('JSB.TypeInfoRegistry', function(tir){
 					tir.lookup(self.options.valueType, function(desc){
 						self.desc = desc;
 						self.createEnumForType(desc);
@@ -152,4 +152,4 @@ JSB({
 		setFocus: function(){
 		}
 	}
-});
+}

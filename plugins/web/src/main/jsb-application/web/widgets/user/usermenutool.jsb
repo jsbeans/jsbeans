@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'UserMenuTool',
 	parent: 'JSB.Widgets.Tool',
 	group: 'dwp',
@@ -27,7 +27,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('usermenutool.css');
+			this.loadCss('userMenuTool.css');
 			this.addClass('_dwp_userMenuTool');
 			
 			// append header
@@ -68,4 +68,4 @@ JSB({
 		setFocus: function(){
 		}
 	}
-});
+}

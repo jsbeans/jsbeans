@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.ListBox',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -7,7 +7,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			$base(opts);
-			this.loadCss('listbox.css');
+			this.loadCss('listBox.css');
 			var self = this;
 			var elt = this.getElement();
 			elt.addClass('_dwp_listBox');
@@ -640,4 +640,4 @@ JSB({
 			}
 		}
 	}
-});
+}

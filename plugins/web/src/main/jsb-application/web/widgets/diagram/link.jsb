@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'JSB.Widgets.Diagram.Link',
 	parent: 'JSB.Widgets.Actor',
 	require: {
@@ -409,4 +409,4 @@ JSB({
 	},
 	
 	server: {}
-});
+}

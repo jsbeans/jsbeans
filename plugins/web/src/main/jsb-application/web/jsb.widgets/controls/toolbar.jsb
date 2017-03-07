@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.ToolBar',
 	parent: 'JSB.Widgets.Control',
 	require: {
@@ -6,7 +6,7 @@ JSB({
 	client: {
 		constructor: function(opts){
 			$base(opts);
-			this.loadCss('toolbar.css');
+			this.loadCss('toolBar.css');
 			this.addClass('_dwp_toolBar');
 			this.itemContainer = this.$('<ul class="_dwp_tbContainer"></ul>');
 			this.append(this.itemContainer);
@@ -208,4 +208,4 @@ JSB({
 			return this.itemList;
 		}
 	}
-});
+}

@@ -1,4 +1,4 @@
-/*! jsBeans v2.2.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.3.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -8,7 +8,7 @@
 
 		if(JSB().isArray(cfg)){
 			var arr = [];
-			for(var i in cfg){
+			for(var i = 0; i < cfg.length; i++){
 				arr.push(JSB(cfg[i]));
 			}
 			return arr;

@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JQuery.UI',
 	require: ['JQuery'],
 	client:{
@@ -12,4 +12,4 @@ JSB({
 			
 		}
 	}
-});
+}

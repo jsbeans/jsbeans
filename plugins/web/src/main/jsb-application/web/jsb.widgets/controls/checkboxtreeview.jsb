@@ -1,4 +1,4 @@
-JSB({
+{
 	name: 'JSB.Widgets.CheckboxTreeView',
 	parent: 'JSB.Widgets.TreeView',
 	require: ['JSB.Widgets.CheckBox'],
@@ -149,4 +149,4 @@ JSB({
 			this.checkedItems[key] = obj;	
 		}
 	}
-})
+}

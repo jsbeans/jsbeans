@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.Control',
 	parent: 'JSB.Widgets.Actor',
 	require: ['JQuery', 'JSB.Widgets.DomController'],
@@ -256,4 +256,4 @@ JSB({
 		}
 
 	}
-});
+}

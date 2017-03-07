@@ -1,4 +1,4 @@
-JSB({
+{
 	name:'JSB.Widgets.WidgetContainer',
 	parent:'JSB.Widgets.Control',
 	require: {
@@ -11,7 +11,7 @@ JSB({
 		constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('widgetcontainer.css');
+			this.loadCss('widgetContainer.css');
 			this.getElement().addClass('_dwp_widgetContainer');
 			
 			var twOpts = {
@@ -139,4 +139,4 @@ JSB({
 		}
 
 	}
-});
+}
