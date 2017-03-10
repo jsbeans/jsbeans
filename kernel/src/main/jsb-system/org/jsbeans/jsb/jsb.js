@@ -3848,15 +3848,27 @@ JSB({
 	common: {
 		items: {},
 		loadList: {},
+		pathMapIndex: {},
 		
 		constructor: function(){
 			JSB().setRepository(this);
 		},
 		
-		register: function(beanCfg, path){
+		registerPath: function(beanCfg){
+			var name = beanCfg.name;
+			var pathFile = beanCfg.pathFile.toLowerCase();
+			if(name && pathFile){
+				this.pathMapIndex[pathFile] = name;
+			}
+		},
+		
+		register: function(beanCfg, opts){
+			if(!beanCfg){
+				return;
+			}
 			if(JSB.isArray(beanCfg)){
 				for(var i = 0; i < beanCfg.length; i++){
-					this.register(beanCfg[i], path);
+					this.register(beanCfg[i], opts);
 				}
 				return;
 			}
@@ -3865,9 +3877,16 @@ JSB({
 				var err = 'Bean has no name: ' + JSON.stringify(beanCfg);
 				throw err;
 			}
+/*			
 			if(path){
 				beanCfg.path = path;
 			}
+			if(pathWithFile){
+				beanCfg.pathWithFile = pathWithFile;
+			}
+*/			
+			JSB.merge(beanCfg, opts);
+			this.registerPath(beanCfg);
 			var locker = JSB().getLocker();
 			if(locker)locker.lock('_jsb_repo');
 			var entry = this.items[name];
@@ -3891,6 +3910,7 @@ JSB({
 			}
 			entry.cfg = beanCfg;
 			entry.jsb = jsb;
+			this.registerPath(beanCfg);
 		},
 		
 		load: function(){
@@ -3912,6 +3932,14 @@ JSB({
 		
 		get: function(name){
 			return this.items[name];
+		},
+		
+		getByPath: function(path){
+			var name = this.pathMapIndex[path];
+			if(!name){
+				return null;
+			}
+			return this.get(name);
 		}
 	},
 	client: {},
@@ -4543,6 +4571,10 @@ JSB({
 			var serverInstance = JSB().constructServerInstanceFromClientId(jsoName, instanceId);
 			if(!serverInstance){
 				throw 'Unable to find Bean server instance: ' + jsoName + '(' + instanceId + ')';
+			}
+			
+			if(!serverInstance[procName]){
+				throw 'Failed to call method "' + procName + '" in bean "' + jsoName + '". Method not existed'
 			}
 			
 			if(JSB().isArray(params)){

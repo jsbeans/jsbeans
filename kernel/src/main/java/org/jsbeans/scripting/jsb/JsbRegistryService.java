@@ -39,7 +39,6 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -52,10 +51,8 @@ public class JsbRegistryService extends Service {
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
     private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpireTimeout");
 
-    private Set<String> objectsToLoad = new HashSet<String>();
 //    private Map<String, SessionEntry> sessionMap = Collections.synchronizedMap(new LinkedHashMap<String, SessionEntry>(16, 0.75F, true));
     private Map<String, SessionEntry> sessionMap = new LinkedHashMap<String, SessionEntry>(16, 0.75F, true);
-    private boolean coreLoaded = false;
 
     @Override
     protected void onInit() throws PlatformException {
@@ -105,7 +102,7 @@ public class JsbRegistryService extends Service {
     private void loadBeans() throws PlatformException {
         // load indexed beans
         try {
-        	String codeToExecute = "JSB().getRepository().load();";
+        	String codeToExecute = "JSB.getRepository().load();";
             ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
             if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                 scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
@@ -133,11 +130,12 @@ public class JsbRegistryService extends Service {
         //String folder = ConfigHelper.getPluginHomeFolder(this);
         Collection<String> jsoPaths = null;
         if (!isServer) {
-            jsoPaths = FileHelper.searchFiles(folder, "**/*.jso|**/*.jss|**/*.jsb");
+        	jsoPaths = FileHelper.searchFiles(folder, "**/*.jsb");
+//            jsoPaths.addAll(FileHelper.searchFiles(folder, "**/*.jsb"));
         } else {
             jsoPaths = new ArrayList<>();
             String prefix = folder.startsWith("/") ? folder : folder.substring(1);
-            ReflectionHelper.getPlatformReflections().getResources(Pattern.compile(".*(\\.jsb|\\.jso|\\.jss)"))
+            ReflectionHelper.getPlatformReflections().getResources(Pattern.compile(".*(\\.jsb)"))
                     .stream().map("/"::concat).filter(n -> n.startsWith(prefix)).forEach(jsoPaths::add);
         }
         for (String jsoPath : jsoPaths) {
@@ -152,16 +150,24 @@ public class JsbRegistryService extends Service {
                 }
                 // obtain relative folder
                 String relPath = "";
+                String relPathWithFile = "";
                 for (String fld : ConfigHelper.getWebFolders()) {
                     try {
-                        Path webPath = jsoFile.endsWith(".jso") ? new File(fld).toPath().normalize() : (new File(folder)).toPath().normalize();
-                        relPath = isServer ? "/server" : FileHelper.getFolderByPath(webPath.relativize(Paths.get(jsoFile)).toString()).replaceAll("\\\\", "/");
+                        Path webPath = jsoFile.endsWith(".jsb") ? new File(fld).toPath().normalize() : (new File(folder)).toPath().normalize();
+                        Path fPath = Paths.get(jsoFile);
+                        
+                        relPath = isServer ? "server" : FileHelper.getFolderByPath(webPath.relativize(fPath).toString()).replaceAll("\\\\", "/");
+                        if(relPath.equals("/")){
+                        	relPathWithFile = fPath.getFileName().toString();
+                        } else {
+                        	relPathWithFile = relPath + '/' + fPath.getFileName().toString();
+                        }
                         if (!relPath.startsWith("..")) break;
                     } catch (Exception ex) {
                     }
                 }
 
-                String codeToExecute = String.format("JSB().getRepository().register(%s,'%s');", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath);
+                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{path:'%s',pathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath, relPathWithFile);
                 ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
                 if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                     scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
@@ -427,8 +433,10 @@ public class JsbRegistryService extends Service {
                     }).add(new CompleteMonad<UpdateStatusMessage>(sessionId, id) {
 	                    @Override
 	                    public void onComplete(Chain<?, UpdateStatusMessage> chain, UpdateStatusMessage result, Throwable fail) throws PlatformException {
+/*	                    	
 	                        String sessionId = this.getArgument(0);
 	                        String id = this.getArgument(1);
+*/	                        
 	                        if (fail != null) {
 	/*                            	
 	                                // fail

@@ -96,7 +96,7 @@ public class JsbServlet extends HttpServlet {
 
     }
 
-    public static String getJsoCode(final String jsoName, final String sessionId, final String clientAddr, final String userName, final String rid, final String userToken) throws Exception {
+    public static String getJsbCode(final String jsoName, final String sessionId, final String clientAddr, final String userName, final String rid, final String userToken) throws Exception {
         Timeout timeout = ActorHelper.getServiceCommTimeout();
         Future<Object> f = ActorHelper.futureAsk(
                 ActorHelper.getActorSelection(JsbRegistryService.class),

@@ -51,19 +51,19 @@
 			this.opts = opts;
 		},
 
-		getJsoCode: function(name){
-			var jsoData = null;
+		getJsbCode: function(name){
+			var jsbData = null;
 			if(!name){
 				// return bootstrap code
 				var jsoPath = Config.get("kernel.jsb.jsbEngineResource");
-				jsoData = Packages.org.jsbeans.helpers.FileHelper.readStringFromResource(jsoPath);
+				jsbData = Packages.org.jsbeans.helpers.FileHelper.readStringFromResource(jsoPath);
 				if(!Config.get('web.debug')){
-					jsoData = '' + Packages.org.jsbeans.web.JsMinifier.minify(jsoData, false);
+					jsbData = '' + Packages.org.jsbeans.web.JsMinifier.minify(jsbData, false);
 				}
 			} else {
-				jsoData = 'JSO(' + Packages.org.jsbeans.web.JsbServlet.getJsoCode(name, Kernel.session(), Kernel.clientAddr(), Kernel.user(), Kernel.clientRequestId(), Kernel.userToken()) + ');';
+				jsbData = 'JSB(' + Packages.org.jsbeans.web.JsbServlet.getJsbCode(name, Kernel.session(), Kernel.clientAddr(), Kernel.user(), Kernel.clientRequestId(), Kernel.userToken()) + ');';
 			}
-			return jsoData;
+			return jsbData;
 		},
 		
 		getRequestHeaders: function(){

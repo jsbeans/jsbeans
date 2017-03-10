@@ -36,10 +36,9 @@
     <filter-mapping>
         <filter-name>AuthFilter</filter-name>
         <servlet-name>JsbServlet</servlet-name>
+        <servlet-name>HttpJsbServlet</servlet-name>
         <servlet-name>ApiServlet</servlet-name>
         <servlet-name>JSEndPointServlet</servlet-name>
-        <servlet-name>BootServlet</servlet-name>
-        <servlet-name>HtmlServlet</servlet-name>
     </filter-mapping>
     <servlet>
         <description></description>
@@ -64,6 +63,16 @@
     </servlet-mapping>
     <servlet>
         <description></description>
+        <display-name>HttpJsbServlet</display-name>
+        <servlet-name>HttpJsbServlet</servlet-name>
+        <servlet-class>org.jsbeans.web.HttpJsbServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HttpJsbServlet</servlet-name>
+        <url-pattern>*.jsb</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <description></description>
         <display-name>AuthServlet</display-name>
         <servlet-name>AuthServlet</servlet-name>
         <servlet-class>org.jsbeans.web.AuthServlet</servlet-class>
@@ -72,26 +81,6 @@
         <servlet-name>AuthServlet</servlet-name>
         <url-pattern>/login</url-pattern>
         <url-pattern>/logout</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <description></description>
-        <display-name>BootServlet</display-name>
-        <servlet-name>BootServlet</servlet-name>
-        <servlet-class>org.jsbeans.web.BootServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BootServlet</servlet-name>
-        <url-pattern>/boot</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <description></description>
-        <display-name>HtmlServlet</display-name>
-        <servlet-name>HtmlServlet</servlet-name>
-        <servlet-class>org.jsbeans.web.HtmlServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>HtmlServlet</servlet-name>
-        <url-pattern>*.html</url-pattern>
     </servlet-mapping>
     <servlet>
         <description></description>
