@@ -3856,6 +3856,12 @@ JSB({
 		
 		registerPath: function(beanCfg){
 			var name = beanCfg.name;
+			if(!beanCfg.pathFile){
+				if(JSB.getLogger()){
+					JSB.getLogger().warn('No pathFile for bean: ' + beanCfg.name);
+				}
+				return;
+			}
 			var pathFile = beanCfg.pathFile.toLowerCase();
 			if(name && pathFile){
 				this.pathMapIndex[pathFile] = name;
