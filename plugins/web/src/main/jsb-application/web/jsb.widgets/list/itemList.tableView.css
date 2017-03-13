@@ -3,27 +3,33 @@
 ._dwp_itemList.tableView {
 }
 
-._dwp_itemList.tableView > .tableViewHeader {
+._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader {
 	display: table;
 	width: 100%;
 }
 
-._dwp_itemList.tableView > .tableViewHeader > .tableViewHeaderRow {
+._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader > .tableViewHeaderRow {
 	display: table-row;
 }
 
-._dwp_itemList.tableView > .tableViewHeader > .tableViewHeaderRow > .cellHeader {
+._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader > .tableViewHeaderRow > .cellHeader {
 	display: table-cell;
 }
 
-._dwp_itemList.tableView > .tableViewHeader.hidden {
+._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader.hidden {
 	display: none;
 }
+._dwp_itemList.tableView .horizontalScrollPane{
+	height: 100%;
+}
 
+._dwp_itemList.tableView  ._dwp_scrollBox.horizontalScrollBox{
+	top: 0px;
+}
 ._dwp_itemList.tableView  ._dwp_scrollBox {
 	position: absolute;
 	left: 0;
-	top: 0;
+	top: 22px;
 	right: 0;
 	bottom: 0;
 	width: auto;

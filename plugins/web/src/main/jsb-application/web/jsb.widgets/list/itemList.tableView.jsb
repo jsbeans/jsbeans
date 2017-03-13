@@ -43,7 +43,8 @@
 		},
 		
 		options: {
-			header: false
+			header: false,
+			headerOverflow: false
 		},
 		columns: [{key: '__main__', opts:{}}],
 		
@@ -102,9 +103,9 @@
 			var tr = null;
 			if(tvh.length === 0){
 				tvh = this.$('<div class="tableViewHeader"></div>');
-				this.list.prepend(tvh);
 				tr = this.$('<div class="tableViewHeaderRow"></div>');
-				tvh.append(tr);
+				tvh.append(tr);				
+				this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').prepend(tvh);
 			} else {
 				tr = tvh.find('> .tableViewHeaderRow');
 			}
@@ -180,15 +181,24 @@
 				}
 			}
 			
-			this.container.resize(function(){
-				tvh.width(self.container.width());
-			});
-			
-			tvh.resize(function(){
-				self.list.find('> ._dwp_scrollBox').css({
-					top: tvh.height()
+			if(this.options.headerOverflow)
+				this.container.resize(function(){
+					$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').width(tvh.width());
+					if($this.list.horizontalScrollBox.getElement().find('.iScrollHorizontalScrollbar').is(":visible")){
+						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox:not(.horizontalScrollPane)').css({
+							padding: '0 0 10px 0'
+						});
+						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').css({
+							height: 'calc(100% - 10px)'
+						});
+					}
 				});
-			});
+			
+//			tvh.resize(function(){
+//				self.list.find('> ._dwp_scrollBox.horizontalScrollBox').css({
+//					top: tvh.height()
+//				});
+//			});
 		},
 		
 		update: function(){
