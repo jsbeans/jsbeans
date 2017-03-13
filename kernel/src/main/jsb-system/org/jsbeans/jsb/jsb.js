@@ -3974,17 +3974,48 @@ JSB({
 		constructor: function(){
 			JSB().setLogger(this);
 		},
+		
+		_prepareObj: function(obj){
+			if($jsb.isObject(obj)){
+				if(obj.message){
+					// prepare message
+					var msg = '';
+					if(obj.name){
+						msg += obj.name;
+					}
+					if(obj.fileName){
+						msg += '(' + obj.fileName;
+						if(!$jsb.isNull(obj.lineNumber)){
+							msg += '#' + obj.lineNumber;
+						}
+						msg += ')'
+					}
+					if(msg.length > 0){
+						msg += ': ';
+					}
+					msg += obj.message;
+					return msg;
+				} else {
+					return JSON.stringify(obj);
+				}
+			} else if($jsb.isArray(obj)){
+				return JSON.stringify(obj);
+			} else {
+				return obj;
+			}
+		},
+		
 		info: function(str){
-			console.log('INFO: ' + str);
+			console.log('INFO: ' + this._prepareObj(str));
 		},
 		debug: function(str){
-			console.log('DEBUG: ' + str);
+			console.log('DEBUG: ' + this._prepareObj(str));
 		},
 		warn: function(str){
-			console.log('WARNING: ' + str);
+			console.log('WARNING: ' + this._prepareObj(str));
 		},
 		error: function(str){
-			console.log('ERROR: ' + str);
+			console.log('ERROR: ' + this._prepareObj(str));
 		}
 	}
 });
@@ -4547,9 +4578,12 @@ JSB({
 				ret = $jsb.substJsoInRpcResult(res);
 			} catch(e){
 				fail = e;
+				if($jsb.getLogger()){
+					$jsb.getLogger().warn(e);
+				}
 				if(!rpcId){
 					throw e;
-				}
+				} 
 			}
 			if(rpcId){
 				var respPacket = {
