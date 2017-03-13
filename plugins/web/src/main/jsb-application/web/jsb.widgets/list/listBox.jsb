@@ -17,8 +17,15 @@
 				this.noItemsElt.text(this.options.emptyText);
 			}
 			elt.append(this.noItemsElt);
+			
+			this.horizontalScrollBox = new ScrollBox();
+			this.horizontalScrollBox.addClass('horizontalScrollBox');
+			this.horizontalScrollBox.find('._dwp_scrollPane').addClass('horizontalScrollPane');
+			elt.append(this.horizontalScrollBox.getElement());
+			
 			this.scrollBox = new ScrollBox(this.options);
-			elt.append(this.scrollBox.getElement());
+			this.horizontalScrollBox.append(this.scrollBox.getElement());
+			
 			this.rootElt = this.$('<ul class="_dwp_listBoxContainer"></ul>');
 			this.scrollBox.append(this.rootElt);
 			this.itemList = [];
