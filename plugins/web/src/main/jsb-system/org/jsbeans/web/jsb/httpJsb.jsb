@@ -21,7 +21,7 @@
 			if(!repoEntry.jsb['$http'] && (!repoEntry.jsb.currentSection() || !repoEntry.jsb.currentSection()['$http'])){
 				throw 'Bean "' + repoEntry.jsb.name + '" does not allow to be called via HTTP. Use "$http" option in bean declaration.';
 			}
-			return $jsb.getProvider().executeClientRpc(repoEntry.jsb.name, '__httpCall__', proc, params);
+			return $jsb.getProvider().executeClientRpc(repoEntry.jsb.name, '__httpCall__' + repoEntry.jsb.name, proc, params);
 		}
 		
 	}

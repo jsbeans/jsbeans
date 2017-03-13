@@ -4573,13 +4573,13 @@ JSB({
 
 
 		executeClientRpc: function(jsoName, instanceId, procName, params){
-			
 			var serverInstance = JSB().constructServerInstanceFromClientId(jsoName, instanceId);
 			if(!serverInstance){
 				throw 'Unable to find Bean server instance: ' + jsoName + '(' + instanceId + ')';
 			}
 			
 			if(!serverInstance[procName]){
+				debugger;
 				throw 'Failed to call method "' + procName + '" in bean "' + jsoName + '". Method not existed'
 			}
 			
