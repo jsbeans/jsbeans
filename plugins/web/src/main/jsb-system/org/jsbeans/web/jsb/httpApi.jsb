@@ -40,7 +40,7 @@
 			if(!procDesc){
 				throw 'Error: No API method found under "' + proc + '" path';
 			}
-			return JSB().getProvider().executeClientRpc(procDesc.jsb.name, '__httpCall__', procDesc.method, params);
+			return JSB().getProvider().executeClientRpc(procDesc.jsb.name, '__httpCall__' + procDesc.jsb.name, procDesc.method, params);
 		}
 		
 	}
