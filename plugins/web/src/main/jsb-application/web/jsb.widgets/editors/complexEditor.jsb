@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.ComplexEditor',
-	parent: 'JSB.Widgets.Editor',
+	$name:'JSB.Widgets.ComplexEditor',
+	$parent: 'JSB.Widgets.Editor',
 	
-	client: {
+	$client: {
 		data: null,
 		options: {
 			readonly: false,
@@ -11,7 +11,7 @@
 			onChange: null,
 		},
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('complexEditor.css');
 			this.addClass('_jsb_complexEditor');

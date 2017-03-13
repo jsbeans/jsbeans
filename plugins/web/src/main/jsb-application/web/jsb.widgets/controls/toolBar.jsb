@@ -1,10 +1,10 @@
 {
-	name:'JSB.Widgets.ToolBar',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.ToolBar',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('toolBar.css');
 			this.addClass('_dwp_toolBar');

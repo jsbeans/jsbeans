@@ -1,21 +1,21 @@
 {
-	name:'JSB.HttpApi',
-	require: ['Kernel','Log', 'Web'],
-	server: {
-		singleton: true,
+	$name:'JSB.HttpApi',
+	$require: ['Kernel','Log', 'Web'],
+	$server: {
+		$singleton: true,
 		httpMap: {},
 		
-		constructor: function(){
+		$constructor: function(){
 			var self = this;
 			JSB().onLoad(function(){
-				if(this.HttpApi || this.server.HttpApi){
+				if(this.HttpApi || this.$server.HttpApi){
 					self.registerBeanHttpMethods(this);
 				}
 			});
 		},
 		
 		registerBeanHttpMethods: function(jsb){
-			var httpApiDesc = jsb.HttpApi || jsb.server.HttpApi;
+			var httpApiDesc = jsb.HttpApi || jsb.$server.HttpApi;
 			var mapping = httpApiDesc.mapping;
 			var prefix = httpApiDesc.alias || '';
 			if(prefix.length > 0 && prefix[prefix.length - 1] != '/'){
@@ -40,7 +40,7 @@
 			if(!procDesc){
 				throw 'Error: No API method found under "' + proc + '" path';
 			}
-			return JSB().getProvider().executeClientRpc(procDesc.jsb.name, '__httpCall__' + procDesc.jsb.name, procDesc.method, params);
+			return JSB().getProvider().executeClientRpc(procDesc.jsb.$name, '__httpCall__' + procDesc.jsb.$name, procDesc.method, params);
 		}
 		
 	}

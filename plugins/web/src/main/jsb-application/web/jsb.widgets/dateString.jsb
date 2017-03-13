@@ -1,9 +1,8 @@
 {
-	name:'JSB.DateString',
-	parent: 'JSB.Widgets.Control',
-	group: 'dwp',
-	client: {
-		constructor: function(opts){
+	$name:'JSB.DateString',
+	$parent: 'JSB.Widgets.Control',
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('dateString.css');

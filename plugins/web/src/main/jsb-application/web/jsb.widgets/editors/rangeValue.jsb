@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.RangeValue',
-	parent: 'JSB.Widgets.Value',
-	client: {
-		constructor: function(value){
+	$name:'JSB.Widgets.RangeValue',
+	$parent: 'JSB.Widgets.Value',
+	$client: {
+		$constructor: function(value){
 			$base(value, 'range');
 		},
 		

@@ -1,9 +1,9 @@
 {
-	name:'JQuery.FitText',
-	require:['JQuery'],
-	client:{
-		singleton: true,
-		bootstrap: function(readyCallback){
+	$name:'JQuery.FitText',
+	$require:['JQuery'],
+	$client:{
+		$singleton: true,
+		$bootstrap: function(readyCallback){
 			
 			/**
 			 * @preserve  textfill

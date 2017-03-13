@@ -1,8 +1,8 @@
 {
-	name:'Cluster',
-	server: {
-		singleton: true,
-		globalize: true,
+	$name:'Cluster',
+	$server: {
+		$singleton: true,
+		$globalize: true,
 			
 		getNodeAddress: function(short){
 			var id = ''+Packages.org.jsbeans.cluster.ClusterHelper.getNodeAddress();

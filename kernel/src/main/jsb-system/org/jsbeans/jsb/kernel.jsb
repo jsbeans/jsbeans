@@ -1,10 +1,10 @@
 {
-	name:'Kernel',
-	server: {
-		singleton: true,
-		globalize: true,
+	$name:'Kernel',
+	$server: {
+		$singleton: true,
+		$globalize: true,
 		
-		constructor: function(){
+		$constructor: function(){
 			JSB().setLocker(this);
 //			JSB().setThreadLocal(this.tls);
 
@@ -142,11 +142,12 @@
 		
 		getClientJSB: function(name){
 			var clientFieldBlacklist = {
-				'server': true,
+				'$server': true,
 				'_clientProcs': true,
 				'_ready': true,
 				'_readyState': true,
 				'_requireCnt': true,
+				'_requireMap': true,
 				'_cls': true,
 				'_ctor': true,
 				'_entryBootstrap': true,

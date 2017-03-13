@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.FloatingContainer',
-	parent:'JSB.Widgets.WidgetContainer',
-	client: {
-		constructor: function(opts){
+	$name:'JSB.Widgets.FloatingContainer',
+	$parent:'JSB.Widgets.WidgetContainer',
+	$client: {
+		$constructor: function(opts){
 			// ctor
 			$base(opts);
 			this.loadCss('floatingContainer.css');
@@ -89,7 +89,7 @@
 						}
 					} else if(tgt.hasClass('dock')){
 						self.publish('widgetDock', {
-							widgetName: self.getWidget().getJsb().name,
+							widgetName: self.getWidget().getJsb().$name,
 							options: self.getWidget().options
 						});
 					}

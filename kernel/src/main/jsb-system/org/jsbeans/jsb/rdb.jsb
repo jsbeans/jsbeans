@@ -1,8 +1,8 @@
 {
-	name:'RDB',
-	server: {
-		singleton: true,
-		globalize: true,
+	$name:'RDB',
+	$server: {
+		$singleton: true,
+		$globalize: true,
 		
 		sql: function(connection, sql, params){
 			var self = this;

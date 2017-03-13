@@ -1,14 +1,14 @@
 {
-	name:'JSB.Widgets.WidgetContainer',
-	parent:'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.WidgetContainer',
+	$parent:'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.TabView': 'TabView'
 	},
-	client: {
+	$client: {
 		widgets: {},
 		
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('widgetContainer.css');

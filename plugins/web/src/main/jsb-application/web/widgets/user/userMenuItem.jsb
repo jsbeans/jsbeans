@@ -1,8 +1,8 @@
 {
-	name: 'UserMenuItem',
-	parent: 'JSB.Widgets.Actor',
-	client: {
-		constructor: function(opts){
+	$name: 'UserMenuItem',
+	$parent: 'JSB.Widgets.Actor',
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 		},
 		

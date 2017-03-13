@@ -1,7 +1,6 @@
 {
-	name:'JSB.TypeInfoRegistry',
-	group: 'dwp',
-	common: {
+	$name:'JSB.TypeInfoRegistry',
+	$common: {
 		register: function(typeId, desc){
 			if(JSO().isNull(this.types)){
 				this.types = {};
@@ -21,8 +20,8 @@
 		}
 	},
 	
-	client: {
-		singleton: true,
+	$client: {
+		$singleton: true,
 		lookup: function(typeId, callback){
 			var self = this;
 			var desc = this.get(typeId);
@@ -39,9 +38,9 @@
 		}
 	},
 	
-	server: {
-		singleton: true,
-		constructor: function(){
+	$server: {
+		$singleton: true,
+		$constructor: function(){
 		},
 		
 		setProvider: function(p){

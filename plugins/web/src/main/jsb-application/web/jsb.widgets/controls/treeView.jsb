@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.TreeView',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.TreeView',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.ScrollBox': 'ScrollBox'
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('treeView.css');

@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.Editor',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.Editor',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.EditorRegistry': 'EditorRegistry'
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.addClass('_dwp_editor');
 		},
@@ -30,7 +30,7 @@
 		clear: function(){}
 	},
 	
-	server: {
-		constructor: function(){}
+	$server: {
+		$constructor: function(){}
 	}
 }

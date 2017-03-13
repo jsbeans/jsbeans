@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.TabView',
-	parent: 'JSB.Widgets.Control',
-	client: {
-		constructor: function(opts){
+	$name:'JSB.Widgets.TabView',
+	$parent: 'JSB.Widgets.Control',
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('tabView.css');
 			this.init();

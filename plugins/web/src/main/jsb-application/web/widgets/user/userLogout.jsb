@@ -1,7 +1,7 @@
 {
-	name: 'UserLogout',
-	parent: 'UserMenuItem',
-	require: {
+	$name: 'UserLogout',
+	$parent: 'UserMenuItem',
+	$require: {
 	},
 	expose: {
 		path: 'User/Menu',
@@ -9,8 +9,8 @@
 		order: 1000,
 		group: 'exit'
 	},
-	client: {
-		constructor: function(){
+	$client: {
+		$constructor: function(){
 		},
 		execute: function(){
 			var self = this;
@@ -21,5 +21,5 @@
 		}
 	},
 	
-	server: {}
+	$server: {}
 }

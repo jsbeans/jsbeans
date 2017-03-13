@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.ToolWrapper',
-	parent:'JSB.Widgets.Control',
-	client: {
-		constructor: function(toolId, toolMgr, w, opts){
+	$name:'JSB.Widgets.ToolWrapper',
+	$parent:'JSB.Widgets.Control',
+	$client: {
+		$constructor: function(toolId, toolMgr, w, opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('toolWrapper.css');

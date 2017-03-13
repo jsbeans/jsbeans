@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.Actor',
+	$name:'JSB.Widgets.Actor',
 /*	require: ['JSB.Widgets.AjaxProvider'],*/
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 		},
 		

@@ -1,6 +1,6 @@
 {
-	name: 'JsonView',
-	parent: 'JSB.Widgets.Widget',
+	$name: 'JsonView',
+	$parent: 'JSB.Widgets.Widget',
 /*	
 	require: {
 		'JSB.Widgets.ScrollBox': 'ScrollBox',
@@ -8,8 +8,8 @@
 		'MultiEditor': 'MultiEditor'
 	},
 */	
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('jsonView.css');
 			this.preloadImages();

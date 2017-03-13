@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.Widget',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.Widget',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.WidgetContainer': 'WidgetContainer'
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('widget.css');
 			this.element.addClass('_dwp_widget');
@@ -78,7 +78,7 @@
 				globe['DWP_PreloadedImageList'] = {};
 			}
 			var preloadScope = globe['DWP_PreloadedImageList'];
-			if(preloadScope[this.getJsb().name]){
+			if(preloadScope[this.getJsb().$name]){
 				return;
 			}
 			
@@ -87,12 +87,12 @@
 					var img = new Image();
 					img.src = imgList[i];
 				}
-				preloadScope[self.getJsb().name] = imgList;
+				preloadScope[self.getJsb().$name] = imgList;
 			});
 		}
 	},
-	server:{
-		constructor: function(){},
+	$server:{
+		$constructor: function(){},
 
 		getResourceList: function(){
 			var ch = Bridge.getConfigHelper();

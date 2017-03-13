@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.WidgetTool',
-	parent: 'JSB.Widgets.Tool',
-	require: {
+	$name:'JSB.Widgets.WidgetTool',
+	$parent: 'JSB.Widgets.Tool',
+	$require: {
 		'JSB.Widgets.WidgetContainer': 'WidgetContainer'
 	},
-	client: {
-		bootstrap: function(){
+	$client: {
+		$bootstrap: function(){
 			// register tooltip
 			var self = this;
 			JSO().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
@@ -22,7 +22,7 @@
 			});
 		},
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('widgetTool.css');

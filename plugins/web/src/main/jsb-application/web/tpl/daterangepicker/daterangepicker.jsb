@@ -1,10 +1,10 @@
 {
-	name:'DateRangePicker',
-	parent: 'JSB.Widgets.Control',
-	require:['JQuery', 'JSB.Widgets.ToolManager'],
-	client:{
+	$name:'DateRangePicker',
+	$parent: 'JSB.Widgets.Control',
+	$require:['JQuery', 'JSB.Widgets.ToolManager'],
+	$client:{
 		
-		bootstrap: function(readyCallback){
+		$bootstrap: function(readyCallback){
 			
 			JSB().loadCss('tpl/daterangepicker/daterangepicker.css');
 			JSB().loadCss('tpl/glyphs/glyphs.css');
@@ -16,7 +16,7 @@
 			
 		},
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			

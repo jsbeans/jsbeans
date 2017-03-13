@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.ListBox',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.ListBox',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.ScrollBox': 'ScrollBox'
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('listBox.css');
 			var self = this;

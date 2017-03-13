@@ -1,13 +1,13 @@
 {
-	name:'JSB.Widgets.ComboBox',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.ComboBox',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.PrimitiveEditor': 'Editor',
 		'JSB.Widgets.ToolManager': 'ToolManager',
 		'JSB.Widgets.DroplistTool': 'DroplistTool'
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('comboBox.css');

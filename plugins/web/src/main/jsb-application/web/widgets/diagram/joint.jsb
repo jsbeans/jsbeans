@@ -1,15 +1,15 @@
 {
-	name: 'JSB.Widgets.Diagram.Joint',
-	parent: 'JSB.Widgets.Actor',
-	require: {},
+	$name: 'JSB.Widgets.Diagram.Joint',
+	$parent: 'JSB.Widgets.Actor',
+	$require: {},
 	
-	client: {
+	$client: {
 		link: null,
 		
 		options: {
 		},
 		
-		constructor: function(link, opts){
+		$constructor: function(link, opts){
 			var self = this;
 			$base();
 			this.link = link;
@@ -29,5 +29,5 @@
 		
 	},
 	
-	server: {}
+	$server: {}
 }

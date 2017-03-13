@@ -1,9 +1,9 @@
 {
-	name: 'JSB.Widgets.Diagram.Connector',
-	parent: 'JSB.Widgets.Actor',
-	require: {},
+	$name: 'JSB.Widgets.Diagram.Connector',
+	$parent: 'JSB.Widgets.Actor',
+	$require: {},
 	
-	client: {
+	$client: {
 		node: null,
 		_lalCallCnt: 0,
 		remoteConnectors: {},
@@ -37,7 +37,7 @@
 			}
 		},
 		
-		constructor: function(node, key, opts){
+		$constructor: function(node, key, opts){
 			var self = this;
 			$base();
 			this.node = node;
@@ -286,5 +286,5 @@
 		
 	},
 	
-	server: {}
+	$server: {}
 }

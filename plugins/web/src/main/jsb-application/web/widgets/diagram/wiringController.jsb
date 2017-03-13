@@ -1,16 +1,16 @@
 {
-	name: 'JSB.Widgets.Diagram.WiringController',
-	parent: 'JSB.Widgets.Diagram.Controller',
-	require: {
+	$name: 'JSB.Widgets.Diagram.WiringController',
+	$parent: 'JSB.Widgets.Diagram.Controller',
+	$require: {
 	},
 	
-	client: {
+	$client: {
 		fromConnector: null,
 		toPt: null,
 		wiringLink: null,
 		wiringType: null,
 
-		constructor: function(opts){
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 		},

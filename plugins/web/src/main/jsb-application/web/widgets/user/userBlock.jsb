@@ -1,20 +1,20 @@
 {
-	name: 'UserBlock',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name: 'UserBlock',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.ListBox': 'ListBox',
 		'JSB.Widgets.ToolManager': 'ToolManager',
 		'UserMenuTool': 'UserMenuTool'
 	},
 	
-	common: {
-		sync: true,
+	$common: {
+		$sync: true,
 		
 		user: null
 	},
 	
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('userBlock');
@@ -203,7 +203,7 @@
 		}
 	},
 	
-	server: {
+	$server: {
 		onSyncCheck: function(){
 			this.user = this.getCurrentUser();
 		},

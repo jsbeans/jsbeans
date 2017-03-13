@@ -1,6 +1,6 @@
 {
-	name: 'testwidget',
-	parent: 'JSB.Widgets.Widget',
+	$name: 'testwidget',
+	$parent: 'JSB.Widgets.Widget',
 	expose: {
 		displayName: 'TestWidget',
 		description: 'This is a first widget in our mega-system created for the test purposes',
@@ -12,8 +12,8 @@
 			'sig': { type: 'org.jsbeans.types.JsonObject' }
 		}
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('testwidget');
@@ -102,7 +102,7 @@
 	
 	},
 	
-	server: {
+	$server: {
 		series: {
 			'Tokyo': [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6],
 			'New York': [-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5],

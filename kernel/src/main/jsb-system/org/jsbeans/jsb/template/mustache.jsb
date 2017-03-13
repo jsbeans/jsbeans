@@ -1,10 +1,10 @@
 {
-	name:'MustacheTemplate',
-	require: {
+	$name:'MustacheTemplate',
+	$require: {
 		'Template': 'Template',
 	},
-	server:{
-		bootstrap: function(){
+	$server:{
+		$bootstrap: function(){
 			/*!
 			 * mustache.js - Logic-less {{mustache}} templates with JavaScript
 			 * http://github.com/janl/mustache.js

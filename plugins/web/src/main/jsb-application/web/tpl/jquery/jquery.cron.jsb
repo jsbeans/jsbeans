@@ -1,9 +1,9 @@
 {
-	name:'JQuery.Cron',
-	require:['JQuery'],
-	client:{
-		singleton: true,
-		bootstrap: function(readyCallback){
+	$name:'JQuery.Cron',
+	$require:['JQuery'],
+	$client:{
+		$singleton: true,
+		$bootstrap: function(readyCallback){
 		
 			JSO().loadCss('tpl/jquery/jquery.cron.css');
 			/*
@@ -913,7 +913,7 @@
 						};
 					}
 				});
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 
 			
 		}

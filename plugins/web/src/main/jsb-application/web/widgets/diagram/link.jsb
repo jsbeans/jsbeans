@@ -1,11 +1,11 @@
 {
-	name: 'JSB.Widgets.Diagram.Link',
-	parent: 'JSB.Widgets.Actor',
-	require: {
+	$name: 'JSB.Widgets.Diagram.Link',
+	$parent: 'JSB.Widgets.Actor',
+	$require: {
 		'JSB.Widgets.Diagram.Joint': 'Joint'
 	},
 	
-	client: {
+	$client: {
 		diagram: null,
 		
 		// pt or connector
@@ -37,7 +37,7 @@
 			}
 		},
 		
-		constructor: function(diagram, key, opts){
+		$constructor: function(diagram, key, opts){
 			var self = this;
 			$base();
 			this.diagram = diagram;
@@ -408,5 +408,5 @@
 
 	},
 	
-	server: {}
+	$server: {}
 }

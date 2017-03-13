@@ -1,9 +1,9 @@
 {
-	name:'Web',
-	require: ['Log'],
-	singleton: true,
+	$name:'Web',
+	$require: ['Log'],
+	$singleton: true,
 	
-	client: {
+	$client: {
 		getCookie: function(name){
 			var matches = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
 			return matches ? decodeURIComponent(matches[1]) : undefined;
@@ -38,11 +38,11 @@
 			document.cookie = updatedCookie;
 		}
 	},
-	server: {
-		constructor: function(){
+	$server: {
+		$constructor: function(){
 			JSO().onLoad(function(){
 				// remove jso from the web cache
-				Packages.org.jsbeans.web.WebCache.remove(this.name);
+				Packages.org.jsbeans.web.WebCache.remove(this.$name);
 			});
 		},
 

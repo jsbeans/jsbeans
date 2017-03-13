@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.EnumEditor',
-	parent: 'JSB.Widgets.Editor',
-	require: {
+	$name:'JSB.Widgets.EnumEditor',
+	$parent: 'JSB.Widgets.Editor',
+	$require: {
 		'JSB.Widgets.ListBox': 'ListBox',
 		'JSB.Widgets.Value': 'Value'
 	},
-	bootstrap: function(){
+	$bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){
 			obj.register(['java.lang.Enum',
 			              'java.lang.Boolean',
@@ -13,8 +13,8 @@
 			              ], this);
 		})
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('enumEditor.css');
 			this.getElement().addClass('_dwp_enumEditor');

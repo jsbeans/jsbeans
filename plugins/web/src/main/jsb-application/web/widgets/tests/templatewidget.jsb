@@ -1,8 +1,8 @@
 {
-	name: 'templatewidget',
-	parent: 'JSB.Widgets.Widget',
-	client: {
-		constructor: function(opts){
+	$name: 'templatewidget',
+	$parent: 'JSB.Widgets.Widget',
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('templatewidget');
@@ -29,6 +29,6 @@
 	
 	},
 	
-	server: {
+	$server: {
 	}
 }

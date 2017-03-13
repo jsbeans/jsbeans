@@ -1,9 +1,9 @@
 {
-	name:'JSB.Widgets.DomController',
-	require: ['JQuery'],
-	client: {
-		singleton: true,
-		constructor: function(opts){
+	$name:'JSB.Widgets.DomController',
+	$require: ['JQuery'],
+	$client: {
+		$singleton: true,
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			var testDwpId = '_testDwpDetection' + JSO().generateUid();

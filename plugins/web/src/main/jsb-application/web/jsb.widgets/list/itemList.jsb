@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.ItemList',
-	parent: 'JSB.Widgets.ListBox',
-	require: {
+	$name:'JSB.Widgets.ItemList',
+	$parent: 'JSB.Widgets.ListBox',
+	$require: {
 		'JSB.Widgets.ItemList.View': 'ItemListView'
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('itemList.css');

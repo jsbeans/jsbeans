@@ -1,6 +1,6 @@
 {
-	name:'Auth',
-	common: {
+	$name:'Auth',
+	$common: {
 //		initSHA: function(){
 //			/*
 //			 A JavaScript implementation of the SHA family of hashes, as
@@ -76,17 +76,17 @@
 //	        return otp;
 //		}
 	},
-	client: {
-		singleton: true,
-		globalize: true,
-		constructor: function(){
+	$client: {
+		$singleton: true,
+		$globalize: true,
+		$constructor: function(){
 //			this.initSHA();
 		},
 	},
-	server: {
-		singleton: true,
-		globalize: true,
-		constructor: function(){
+	$server: {
+		$singleton: true,
+		$globalize: true,
+		$constructor: function(){
 //			this.initSHA();
 		},
 		isSecurityEnabled: function(){

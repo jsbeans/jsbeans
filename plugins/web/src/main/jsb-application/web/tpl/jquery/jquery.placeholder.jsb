@@ -1,9 +1,9 @@
 {
-	name:'JQuery.Placeholder',
-	require:['JQuery'],
-	client:{
-		singleton: true,
-		bootstrap: function(readyCallback){
+	$name:'JQuery.Placeholder',
+	$require:['JQuery'],
+	$client:{
+		$singleton: true,
+		$bootstrap: function(readyCallback){
 			
 			/*! http://mths.be/placeholder v2.0.8 by @mathias */
 			;(function(window, document, $) {

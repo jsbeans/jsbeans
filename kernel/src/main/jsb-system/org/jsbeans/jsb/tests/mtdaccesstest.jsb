@@ -1,9 +1,9 @@
 [{
-	name: 'JSB.Tests.MethodAccessBase1',
-	client: {
+	$name: 'JSB.Tests.MethodAccessBase1',
+	$client: {
 		
 	},
-	server: {
+	$server: {
 		__private1: function(){
 			Log.debug('JSB.Tests.MethodAccessBase1.__private1');
 		},
@@ -13,12 +13,12 @@
 		}
 	}
 },{
-	name: 'JSB.Tests.MethodAccessBase2',
-	parent: 'JSB.Tests.MethodAccessBase1',
-	client: {
+	$name: 'JSB.Tests.MethodAccessBase2',
+	$parent: 'JSB.Tests.MethodAccessBase1',
+	$client: {
 		
 	},
-	server: {
+	$server: {
 		pub: function(){
 			Log.debug('JSB.Tests.MethodAccessBase2.pub');
 			this.__private2();
@@ -38,13 +38,13 @@
 		
 	}
 },{
-	name: 'JSB.Tests.MethodAccessTest',
-	require: ['JSB.Tests.MethodAccessBase2'],
-	client: {
+	$name: 'JSB.Tests.MethodAccessTest',
+	$require: ['JSB.Tests.MethodAccessBase2'],
+	$client: {
 		
 	},
-	server: {
-		constructor: function(){
+	$server: {
+		$constructor: function(){
 			this.base2 = new JSB.Tests.MethodAccessBase2();
 			this.__test5();
 			this._test8();

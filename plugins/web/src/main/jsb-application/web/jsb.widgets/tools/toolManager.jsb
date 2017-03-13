@@ -1,6 +1,6 @@
 {
-	name:'JSB.Widgets.ToolManager',
-	require: {
+	$name:'JSB.Widgets.ToolManager',
+	$require: {
 		'JQuery': 'JQuery', 
 		'JSB.Widgets.EventBus': 'EventBus',
 		'JSB.Widgets.ToolWrapper': 'ToolWrapper',
@@ -8,9 +8,9 @@
 		'JSB.Widgets.WidgetTool': 'WidgetTool',
 		'JSB.Widgets.Tooltip':'Tooltip'
 	},
-	client: {
-		singleton: true,
-		constructor: function(){
+	$client: {
+		$singleton: true,
+		$constructor: function(){
 			var self = this;
 			this.loadCss('toolManager.css');
 			this.tools = {};

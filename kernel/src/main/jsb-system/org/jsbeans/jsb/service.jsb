@@ -1,11 +1,11 @@
 {
-	name:'Service',
-	require: {
+	$name:'Service',
+	$require: {
 		'Kernel': 'Kernel'
 	},
-	server: {
-		singleton: true,
-		globalize: true,
+	$server: {
+		$singleton: true,
+		$globalize: true,
 		
 		list: function(opts){
 			var res = Kernel.ask('ServiceManagerService','svcList');

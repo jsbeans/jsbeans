@@ -1,7 +1,7 @@
 {
-	name: 'UserSettings',
-	parent: 'JSB.Widgets.Widget',
-	require: {},
+	$name: 'UserSettings',
+	$parent: 'JSB.Widgets.Widget',
+	$require: {},
 	expose: {
 		path: 'User/Menu',
 		displayName: 'Настройки',
@@ -9,8 +9,8 @@
 		group: 'settings',
 		renew:true
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('userSettings');
@@ -116,7 +116,7 @@
 		}
 	},
 
-	server: {
+	$server: {
 		getAttributes: function(){
 			var json = Auth.getUserCredentials(Kernel.user()).result.response;
 

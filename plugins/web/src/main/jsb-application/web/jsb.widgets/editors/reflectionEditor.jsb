@@ -1,12 +1,12 @@
 {
-	name:'JSB.Widgets.ReflectionEditor',
-	parent: 'JSB.Widgets.Editor',
+	$name:'JSB.Widgets.ReflectionEditor',
+	$parent: 'JSB.Widgets.Editor',
 	
-	client: {
-		constructor: function(){}
+	$client: {
+		$constructor: function(){}
 	},
 	
-	server: {
-		constructor: function(){}
+	$server: {
+		$constructor: function(){}
 	}
 }

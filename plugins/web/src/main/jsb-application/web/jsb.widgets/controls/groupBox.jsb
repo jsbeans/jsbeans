@@ -1,12 +1,12 @@
 {
-	name:'JSB.Widgets.GroupBox',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.GroupBox',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.PrimitiveEditor': 'PrimitiveEditor'
 	},
 	
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('groupBox.css');
 			this.init();

@@ -1,9 +1,9 @@
 {
-	name:'Log',
-	server: {
-		singleton: true,
-		globalize: true,
-		constructor: function(){
+	$name:'Log',
+	$server: {
+		$singleton: true,
+		$globalize: true,
+		$constructor: function(){
 			JSB().setLogger(this);
 		},
 		

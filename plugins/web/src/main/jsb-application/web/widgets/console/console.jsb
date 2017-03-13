@@ -1,14 +1,14 @@
 {
-	name:'Console',
-	parent: 'JSB.Widgets.Widget',
-	require: {
+	$name:'Console',
+	$parent: 'JSB.Widgets.Widget',
+	$require: {
 		'JQuery.UI.Effects': 'UiEffects',
 		'JSB.Widgets.FloatingContainer': 'FloatingContainer',
 		'JQuery.UI.Interactions': 'UiInteractions'
 		
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			
@@ -726,8 +726,8 @@
 		}
 	},
 	
-	server: {
-		bootstrap: function(){
+	$server: {
+		$bootstrap: function(){
 			widget = function(widget, data){
 				var d = data;
 				if(d == null || d == undefined){

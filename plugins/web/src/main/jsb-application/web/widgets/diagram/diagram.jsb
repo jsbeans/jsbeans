@@ -1,7 +1,7 @@
 {
-	name: 'JSB.Widgets.Diagram',
-	parent: 'JSB.Widgets.Widget',
-	require: {
+	$name: 'JSB.Widgets.Diagram',
+	$parent: 'JSB.Widgets.Widget',
+	$require: {
 		'JQuery.UI.Effects': 'UiEffects',
 		'JSB.Widgets.Diagram.Node': 'Node',
 		'JSB.Widgets.Diagram.Link': 'Link',
@@ -12,7 +12,7 @@
 		'JSB.Widgets.Diagram.DefaultLayoutManager': 'DefaultLayoutManager'
 	},
 	
-	client: {
+	$client: {
 		connectorDescs: {},
 		linkDescs: {},
 		nodeDescs: {},
@@ -51,7 +51,7 @@
 		},
 		
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('diagram.css');
@@ -306,13 +306,13 @@
 		pushController: function(name){
 			var ctrl = this.controllers[name];
 			this.controllerStack.push(ctrl);
-			this.getElement().attr('controller', ctrl.jsb.name);
+			this.getElement().attr('controller', ctrl.jsb.$name);
 		},
 		
 		popController: function(){
 			this.controllerStack.pop();
 			var ctrl = this.getCurrentController();
-			this.getElement().attr('controller', ctrl.jsb.name);
+			this.getElement().attr('controller', ctrl.jsb.$name);
 		},
 		
 		getCurrentController: function(){
@@ -321,7 +321,7 @@
 				ctrl = this.controllerStack[this.controllerStack.length - 1];
 			}
 			if(!this.getElement().attr('controller')){
-				this.getElement().attr('controller', ctrl.jsb.name);
+				this.getElement().attr('controller', ctrl.jsb.$name);
 			}
 			return ctrl;
 		},
@@ -376,7 +376,7 @@
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
 					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.LayoutManager')){
-						throw 'Unable to setup layout "' + key + '": wrong class - ' + cls.jsb.name;
+						throw 'Unable to setup layout "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupLayout(cls);
 				});
@@ -398,7 +398,7 @@
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
 					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.Node')){
-						throw 'Unable to setup node "' + key + '": wrong class - ' + cls.jsb.name;
+						throw 'Unable to setup node "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupNode();
 					self.nodeDescs[key].nodeClass = cls;
@@ -421,7 +421,7 @@
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
 					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.Connector')){
-						throw 'Unable to setup connector "' + key + '": wrong class - ' + cls.jsb.name;
+						throw 'Unable to setup connector "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupConnector();
 					self.connectorDescs[key].connectorClass = cls;
@@ -446,7 +446,7 @@
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
 					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.Link')){
-						throw 'Unable to setup link "' + key + '": wrong class - ' + cls.jsb.name;
+						throw 'Unable to setup link "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupLink();
 					self.linkDescs[key].linkClass = cls;
@@ -528,7 +528,7 @@
 				}
 			} else {
 				if(JSB().isBean(nodeVal)){
-					throw 'ERROR(removeNode): Invalid bean node passed: ' + nodeVal.jsb.name;
+					throw 'ERROR(removeNode): Invalid bean node passed: ' + nodeVal.jsb.$name;
 				} else {
 					throw 'ERROR(removeNode): Unknown node argument passed: ' + JSON.stringify(nodeVal);
 				}
@@ -582,7 +582,7 @@
 				}
 			} else {
 				if(JSB().isBean(linkVal)){
-					throw 'ERROR(removeLink): Invalid bean link passed: ' + linkVal.jsb.name;
+					throw 'ERROR(removeLink): Invalid bean link passed: ' + linkVal.jsb.$name;
 				} else {
 					throw 'ERROR(removeLink): Unknown link argument passed: ' + JSON.stringify(linkVal);
 				}
@@ -837,7 +837,7 @@
 				var layout = item.options.layout;
 				if(layout){
 					if(!JSB().isPlainObject(layout)){
-						throw 'Invalid layout descriptor for node: ' + item.jsb.name;
+						throw 'Invalid layout descriptor for node: ' + item.jsb.$name;
 					}
 					var lmans = [];
 					for(var ln in layout){
@@ -889,5 +889,5 @@
 
 	},
 	
-	server: {}
+	$server: {}
 }

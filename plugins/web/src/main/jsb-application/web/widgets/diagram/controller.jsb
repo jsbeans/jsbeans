@@ -1,10 +1,10 @@
 {
-	name: 'JSB.Widgets.Diagram.Controller',
-	parent: 'JSB.Widgets.Actor',
-	require: {
+	$name: 'JSB.Widgets.Diagram.Controller',
+	$parent: 'JSB.Widgets.Actor',
+	$require: {
 	},
 	
-	client: {
+	$client: {
 		diagram: null,
 		wiringStartPt: null,
 		wiringConnector: null,
@@ -15,7 +15,7 @@
 		isNodeMoving: false,
 		
 
-		constructor: function(d){
+		$constructor: function(d){
 			var self = this;
 			this.diagram = d;
 			$base();

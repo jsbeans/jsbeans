@@ -1,9 +1,9 @@
 {
-	name: 'JSB.Widgets.GridTable',
-	parent: 'JSB.Widgets.Control',
-	require: ['JSB.Widgets.ScrollBox', 'JQuery.UI.Resizable'],
-	client: {
-		constructor: function(opts){
+	$name: 'JSB.Widgets.GridTable',
+	$parent: 'JSB.Widgets.Control',
+	$require: ['JSB.Widgets.ScrollBox', 'JQuery.UI.Resizable'],
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('grid.table.css');
 			var self = this;

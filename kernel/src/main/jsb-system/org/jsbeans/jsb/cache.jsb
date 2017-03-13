@@ -1,8 +1,8 @@
 {
-	name:'Cache',
-	server: {
-		singleton: true,
-		globalize: true,
+	$name:'Cache',
+	$server: {
+		$singleton: true,
+		$globalize: true,
 		// vars
 		globalScope: {},
 		

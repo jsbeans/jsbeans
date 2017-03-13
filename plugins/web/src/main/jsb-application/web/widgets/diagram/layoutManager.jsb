@@ -1,15 +1,15 @@
 {
-	name: 'JSB.Widgets.Diagram.LayoutManager',
-	parent: 'JSB.Widgets.Actor',
-	require: {},
+	$name: 'JSB.Widgets.Diagram.LayoutManager',
+	$parent: 'JSB.Widgets.Actor',
+	$require: {},
 	
-	client: {
+	$client: {
 		busy: false,
 
 		options: {
 		},
 		
-		constructor: function(diagram, opts){
+		$constructor: function(diagram, opts){
 			var self = this;
 			$base();
 			this.diagram = diagram;

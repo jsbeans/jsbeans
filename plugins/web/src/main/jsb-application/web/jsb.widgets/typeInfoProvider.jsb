@@ -1,8 +1,8 @@
 {
-	name:'JSB.AbstractTypeInfoProvider',
-	server: {
-		singleton: true,
-		constructor: function(){
+	$name:'JSB.AbstractTypeInfoProvider',
+	$server: {
+		$singleton: true,
+		$constructor: function(){
 			var self = this;
 			JSB().lookupSingleton('JSB.TypeInfoRegistry', function(obj){
 				obj.setProvider(self);

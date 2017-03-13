@@ -1,10 +1,10 @@
 {
-	name: 'JSB.ClientBootstrap',
-	require: ['Web'],
+	$name: 'JSB.ClientBootstrap',
+	$require: ['Web'],
 	$http: true,
-	singleton: true,
+	$singleton: true,
 	
-	server: {
+	$server: {
 		
 		get: function() {
 			function setupServerPath(){

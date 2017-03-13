@@ -1,13 +1,13 @@
 /*
 {
-	name:'JSB.Widgets.AjaxProvider',
-	parent: 'JSB.AjaxProvider',
-	singleton: true,
-	require: {
+	$name:'JSB.Widgets.AjaxProvider',
+	$parent: 'JSB.AjaxProvider',
+	$singleton: true,
+	$require: {
 		'JSB.Widgets.NetworkIndicator': 'NetworkIndicator'
 	},
-	client: {
-		constructor: function(){
+	$client: {
+		$constructor: function(){
 			this.curDeferTimeout = this.options.minDeferTimeout;
 			var serverBase = JSB().getProvider().getServerBase();
 			$base();

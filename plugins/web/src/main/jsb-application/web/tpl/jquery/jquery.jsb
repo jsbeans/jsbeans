@@ -1,8 +1,8 @@
 {
-	name:'JQuery',
-	client:{
-		singleton: true,
-		bootstrap: function(readyCallback){
+	$name:'JQuery',
+	$client:{
+		$singleton: true,
+		$bootstrap: function(readyCallback){
 			
 			#include 'jquery-1.11.3.min.js';
 			

@@ -1,9 +1,8 @@
 {
-	name:'JSB.MessageDialog',
-	group: 'dwp',
-	client: {
-		singleton: true,
-		constructor: function(){
+	$name:'JSB.MessageDialog',
+	$client: {
+		$singleton: true,
+		$constructor: function(){
 //			this.loadCss('messagedialog.css');
 		},
 		

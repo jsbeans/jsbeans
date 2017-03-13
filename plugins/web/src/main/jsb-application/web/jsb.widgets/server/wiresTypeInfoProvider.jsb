@@ -1,9 +1,9 @@
 {
-	name:'WiresTypeInfoProvider',
-	parent: 'JSB.AbstractTypeInfoProvider',
-	server: {
-		singleton: true,
-		constructor: function(){
+	$name:'WiresTypeInfoProvider',
+	$parent: 'JSB.AbstractTypeInfoProvider',
+	$server: {
+		$singleton: true,
+		$constructor: function(){
 			var self = this;
 			JSB().lookupSingleton('JSB.TypeInfoRegistry', function(obj){
 				obj.setProvider(self);

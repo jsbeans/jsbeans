@@ -1,13 +1,13 @@
 {
-	name:'Repo',
-	require: ['Kernel'],
-	server: {
-		singleton: true,
-		constructor: function(){
+	$name:'Repo',
+	$require: ['Kernel'],
+	$server: {
+		$singleton: true,
+		$constructor: function(){
 			var self = this;
 			// install jso load hook
 			JSB().onLoad(function(){
-				if(!JSB().isNull(this.expose) || !JSB().isNull(this.server.expose)){
+				if(!JSB().isNull(this.expose) || !JSB().isNull(this.$server.expose)){
 					self.add(this);
 				}
 			});
@@ -73,16 +73,16 @@
 		},
 		
 		add: function(jsb){
-			if(!jsb || (!jsb.expose && !jsb.server.expose)){
-				throw 'Unable to expose object "'+jsb.name+'" because no "expose" element found';
+			if(!jsb || (!jsb.expose && !jsb.$server.expose)){
+				throw 'Unable to expose object "'+jsb.$name+'" because no "expose" element found';
 			}
 			var self = this;
 			function _expose(path, opts, jsb){
 				path = path.toLowerCase();
 				Kernel.lock('repo_add');
 				var scope = self.touchScope(path);
-				scope.__items__[jsb.name] = jsb;
-				scope.__options__[jsb.name] = opts;
+				scope.__items__[jsb.$name] = jsb;
+				scope.__options__[jsb.$name] = opts;
 				Kernel.unlock('repo_add');
 				
 				// call subscribers
@@ -104,7 +104,7 @@
 				}
 			}
 			
-			var expose = jsb.expose || jsb.server.expose;
+			var expose = jsb.expose || jsb.$server.expose;
 			
 			if((expose.path && expose.path.length > 0) || (expose.category && expose.category.length > 0)){
 				// old expose format

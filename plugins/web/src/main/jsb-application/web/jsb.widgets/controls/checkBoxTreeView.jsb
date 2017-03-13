@@ -1,8 +1,8 @@
 {
-	name: 'JSB.Widgets.CheckboxTreeView',
-	parent: 'JSB.Widgets.TreeView',
-	require: ['JSB.Widgets.CheckBox'],
-	client: {
+	$name: 'JSB.Widgets.CheckboxTreeView',
+	$parent: 'JSB.Widgets.TreeView',
+	$require: ['JSB.Widgets.CheckBox'],
+	$client: {
 		options:{
 			allowSelect: false
 		},

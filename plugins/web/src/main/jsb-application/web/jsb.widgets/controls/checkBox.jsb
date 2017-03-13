@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.CheckBox',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name:'JSB.Widgets.CheckBox',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 	},
 	
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('checkBox.css');

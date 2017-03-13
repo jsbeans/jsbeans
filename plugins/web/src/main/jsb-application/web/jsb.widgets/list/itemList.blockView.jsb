@@ -1,10 +1,10 @@
 {
-	name:'JSB.Widgets.ItemList.BlockView',
-	parent: 'JSB.Widgets.ItemList.View',
-	require: {},
+	$name:'JSB.Widgets.ItemList.BlockView',
+	$parent: 'JSB.Widgets.ItemList.View',
+	$require: {},
 	
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			JSO().loadScript('tpl/packery/packery.pkgd.min.js', function(){

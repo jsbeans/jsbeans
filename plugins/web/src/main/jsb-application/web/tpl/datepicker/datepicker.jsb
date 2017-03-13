@@ -1,8 +1,8 @@
 {
-	name:'DatePicker',
-	parent: 'JSB.Widgets.Control',
-	require:['JQuery.UI'],
-	client:{
+	$name:'DatePicker',
+	$parent: 'JSB.Widgets.Control',
+	$require:['JQuery.UI'],
+	$client:{
 		
 		options: {
 			inline: false,
@@ -16,11 +16,11 @@
 			onChange: null
 		},
 		
-		bootstrap: function(readyCallback){
+		$bootstrap: function(readyCallback){
 			
 		},
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			

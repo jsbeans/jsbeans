@@ -1,11 +1,11 @@
 {
-	name:'JSB.Widgets.MessageTool',
-	parent: 'JSB.Widgets.Tool',
-	require:{
+	$name:'JSB.Widgets.MessageTool',
+	$parent: 'JSB.Widgets.Tool',
+	$require:{
 		'JSB.Widgets.Button': 'Button'
 	},
-	client: {
-		bootstrap: function(){
+	$client: {
+		$bootstrap: function(){
 			// register tooltip
 			var self = this;
 			JSO().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
@@ -23,7 +23,7 @@
 			});
 		},
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			$base(opts);
 			this.construct();
 		},

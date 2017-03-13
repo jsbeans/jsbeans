@@ -2,12 +2,12 @@
 // 2011-2014, Laura Doktorova, https://github.com/olado/doT
 // Licensed under the MIT license.
 {
-	name:'DotTemplate',
-	require: {
+	$name:'DotTemplate',
+	$require: {
 		'Template': 'Template',
 	},
-	server:{
-		bootstrap: function(){
+	$server:{
+		$bootstrap: function(){
 			"use strict";
 
 			var doT = {

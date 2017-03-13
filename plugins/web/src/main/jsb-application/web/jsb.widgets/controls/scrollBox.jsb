@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.ScrollBox',
-	parent: 'JSB.Widgets.Control',
-	client: {
-		constructor: function(opts){
+	$name:'JSB.Widgets.ScrollBox',
+	$parent: 'JSB.Widgets.Control',
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('scrollBox.css');

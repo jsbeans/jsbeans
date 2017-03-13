@@ -1,10 +1,10 @@
 {
-    name:'Http',
-	require: {
+    $name:'Http',
+	$require: {
 		'HttpConnection': 'HttpConnection'
 	},
-    server: {
-        singleton: true,
+    $server: {
+        $singleton: true,
 
         example: function(){
             // simple GET string

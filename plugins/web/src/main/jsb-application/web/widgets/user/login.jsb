@@ -1,13 +1,13 @@
 {
-	name: 'Login',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name: 'Login',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.Button': 'Button',
 		'JSB.Widgets.PrimitiveEditor': 'TextEditor'
 		
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('loginForm');

@@ -1,7 +1,7 @@
 {
-	name:'JSB.Widgets.Value',
-	client: {
-		constructor: function(value, type){
+	$name:'JSB.Widgets.Value',
+	$client: {
+		$constructor: function(value, type){
 			$base();
 			this.value = value;
 			this.type = type;

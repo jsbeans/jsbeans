@@ -1,14 +1,14 @@
 {
-	name:'JSB.Widgets.DroplistTool',
-	parent: 'JSB.Widgets.Tool',
-	require: {
+	$name:'JSB.Widgets.DroplistTool',
+	$parent: 'JSB.Widgets.Tool',
+	$require: {
 		'JSB.Widgets.ListBox': 'ListBox'
 	},
-	client: {
-		bootstrap: function(){
+	$client: {
+		$bootstrap: function(){
 			// register tooltip
 			var self = this;
-			JSO().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
+			JSB().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
 				toolMgr.registerTool({
 					id: '_dwp_droplistTool',
 					jso: self,
@@ -23,7 +23,7 @@
 			});
 		},
 		
-		constructor: function(opts){
+		$constructor: function(opts){
 			$base(opts);
 			this.construct();
 		},

@@ -1,10 +1,10 @@
 {
-	name:'JSB.HttpJsb',
-	require: ['Kernel', 'Log', 'Web'],
-	server: {
-		singleton: true,
+	$name:'JSB.HttpJsb',
+	$require: ['Kernel', 'Log', 'Web'],
+	$server: {
+		$singleton: true,
 		
-		constructor: function(){
+		$constructor: function(){
 		},
 		
 		exec: function(beanPath, proc, params){
@@ -19,9 +19,9 @@
 				throw 'Unable to find bean: ' + beanPath;
 			}
 			if(!repoEntry.jsb['$http'] && (!repoEntry.jsb.currentSection() || !repoEntry.jsb.currentSection()['$http'])){
-				throw 'Bean "' + repoEntry.jsb.name + '" does not allow to be called via HTTP. Use "$http" option in bean declaration.';
+				throw 'Bean "' + repoEntry.jsb.$name + '" does not allow to be called via HTTP. Use "$http" option in bean declaration.';
 			}
-			return $jsb.getProvider().executeClientRpc(repoEntry.jsb.name, '__httpCall__' + repoEntry.jsb.name, proc, params);
+			return $jsb.getProvider().executeClientRpc(repoEntry.jsb.$name, '__httpCall__' + repoEntry.jsb.$name, proc, params);
 		}
 		
 	}

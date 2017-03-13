@@ -1,16 +1,16 @@
 {
-	name: 'JSB.Widgets.Diagram.Node',
-	parent: 'JSB.Widgets.Control',
-	require: {
+	$name: 'JSB.Widgets.Diagram.Node',
+	$parent: 'JSB.Widgets.Control',
+	$require: {
 		'JSB.Widgets.Diagram.Connector': 'Connector'
 	},
 	
-	client: {
+	$client: {
 		connectors: {},
 		dragHandles: {},
 		resizeHandles: {},
 		
-		constructor: function(diagram, key, opts){
+		$constructor: function(diagram, key, opts){
 			var self = this;
 			this.diagram = diagram;
 			this.key = key;
@@ -357,5 +357,5 @@
 		
 	},
 	
-	server: {}
+	$server: {}
 }

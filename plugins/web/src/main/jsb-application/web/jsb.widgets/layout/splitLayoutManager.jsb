@@ -1,14 +1,14 @@
 {
-	name: 'JSB.Widgets.SplitLayoutManager',
-	parent: 'JSB.Widgets.Widget',
-	require: {
+	$name: 'JSB.Widgets.SplitLayoutManager',
+	$parent: 'JSB.Widgets.Widget',
+	$require: {
 		'JSB.Widgets.SplitBox': 'SplitBox',
 		'JSB.Widgets.TabView': 'TabView',
 		'JSB.Widgets.WidgetContainer': 'WidgetContainer',
 		'JSB.Widgets.FloatingContainer': 'FloatingContainer'
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 			this.construct();
 		},

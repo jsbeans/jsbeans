@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.Tool',
-	parent: 'JSB.Widgets.Widget',
-	client: {
-		constructor: function(opts){
+	$name:'JSB.Widgets.Tool',
+	$parent: 'JSB.Widgets.Widget',
+	$client: {
+		$constructor: function(opts){
 			$base(opts);
 		},
 		

@@ -1,8 +1,8 @@
 {
-	name:'JSB.Widgets.EventBus',
-	client: {
-		singleton: true,
-		constructor: function(){
+	$name:'JSB.Widgets.EventBus',
+	$client: {
+		$singleton: true,
+		$constructor: function(){
 			this.subs = {};
 			this.calls = {};
 			this.emissions = {};

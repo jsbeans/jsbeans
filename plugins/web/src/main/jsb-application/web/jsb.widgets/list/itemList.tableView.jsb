@@ -1,10 +1,10 @@
 {
-	name:'JSB.Widgets.ItemList.TableView',
-	parent: 'JSB.Widgets.ItemList.View',
-	require:['JQuery.UI.Resizable'],
+	$name:'JSB.Widgets.ItemList.TableView',
+	$parent: 'JSB.Widgets.ItemList.View',
+	$require:['JQuery.UI.Resizable'],
 	
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			

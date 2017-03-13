@@ -1,8 +1,7 @@
 {
-	name:'Project',
-	group:'server',
-	client: {
-		singleton: true,
+	$name:'Project',
+	$client: {
+		$singleton: true,
 		run: function(obj, callback){
 			var self = this;
 			this.rpc('run',[obj.project, obj.script, obj.args], function(res){
@@ -19,13 +18,13 @@
 			});
 		}
 	},
-	server: {
-		require: {
+	$server: {
+		$require: {
 			'Kernel': 'Kernel'
 		},
-		singleton: true,
-		globalize: true,
-		constructor: function(){
+		$singleton: true,
+		$globalize: true,
+		$constructor: function(){
 			// create databases
 //			RDB.sql(this.connectionStr, 'create table if not exists projects (id varchar(32) primary key hash, name nvarchar(50), desc nvarchar(255))');
 //			RDB.sql(this.connectionStr, 'create table if not exists processes (id varchar(32) primary key hash');

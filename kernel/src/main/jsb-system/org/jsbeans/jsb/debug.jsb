@@ -1,13 +1,13 @@
 {
-	name:'Debug',
-	require: {
+	$name:'Debug',
+	$require: {
 		'Kernel': 'Kernel'
 	},
-	server: {
-		singleton: true,
-		globalize: true,
+	$server: {
+		$singleton: true,
+		$globalize: true,
 		list: function(template){
-			if(JSO().isNull(template)){
+			if(JSB().isNull(template)){
 				template = {};
 			}
 			return Kernel.ask('ExecutionDebuggerService', 'AccessSignalLogMessage', {

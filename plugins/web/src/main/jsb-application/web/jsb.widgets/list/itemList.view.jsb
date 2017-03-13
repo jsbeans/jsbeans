@@ -1,10 +1,10 @@
 {
-	name:'JSB.Widgets.ItemList.View',
-	parent: 'JSB.Widgets.Actor',
-	require: {},
+	$name:'JSB.Widgets.ItemList.View',
+	$parent: 'JSB.Widgets.Actor',
+	$require: {},
 	
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			JSB.merge(true, this.options, opts);

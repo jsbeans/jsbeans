@@ -29,8 +29,8 @@
 			cfg.format = 'jsb';
 		}
 
-		if(cfg.parent == null || cfg.parent == undefined){
-			cfg.parent = 'JSB.Bean';
+		if(cfg.$parent == null || cfg.$parent == undefined){
+			cfg.$parent = 'JSB.Bean';
 		}
 /*		
 		if(cfg.path == null || cfg.path == undefined){
@@ -44,11 +44,11 @@
 			repo.registerLoaded(cfg, this);
 		}
 		
-		if(cfg.name != 'JSB.Bean'){
-			var parentExisted = this.get(cfg.parent);
-			this.lookup(cfg.parent, function(par){
-				if(!par || !par.jsb || par.jsb.name != cfg.parent){
-					throw 'Unable to create bean "' + cfg.name + '" due to wrong parent specified: "' + cfg.parent + '"' + (par && par.jsb ? '; found: '+par.jsb.name: '');
+		if(cfg.$name != 'JSB.Bean'){
+			var parentExisted = this.get(cfg.$parent);
+			this.lookup(cfg.$parent, function(par){
+				if(!par || !par.jsb || par.jsb.$name != cfg.$parent){
+					throw 'Unable to create bean "' + cfg.$name + '" due to wrong parent specified: "' + cfg.$parent + '"' + (par && par.jsb ? '; found: '+par.jsb.$name: '');
 				}
 				self._create(cfg, par.jsb);
 			});
@@ -148,7 +148,7 @@
 				for(var varName in scopeVars){
 					Packages.org.mozilla.javascript.ScriptableObject.putProperty(scope, varName, scopeVars[varName]);
 				}
-				var res = ctx.evaluateString(scope, '('+script+')', '' + scopeVars['$jsb'].name + '.' + fName, 1, null);
+				var res = ctx.evaluateString(scope, '('+script+')', '' + scopeVars['$jsb'].$name + '.' + fName, 1, null);
 				return res;
 			}
 		},
@@ -166,12 +166,12 @@
 		
 		isSingleton: function(){
 			var s = false;
-			if(this.singleton){
-				s = this.singleton;
+			if(this.$singleton){
+				s = this.$singleton;
 			} else {
 				var e = this.currentSection();
-				if(e.singleton){
-					s = e.singleton;
+				if(e.$singleton){
+					s = e.$singleton;
 				}
 			}
 			return s;
@@ -179,12 +179,12 @@
 		
 		isFixedId: function(){
 			var s = false;
-			if(this.fixedId){
-				s = this.fixedId;
+			if(this.$fixedId){
+				s = this.$fixedId;
 			} else {
 				var e = this.currentSection();
-				if(e.fixedId){
-					s = e.fixedId;
+				if(e.$fixedId){
+					s = e.$fixedId;
 				}
 			}
 			return s;
@@ -198,7 +198,7 @@
 				'JSB.AjaxProvider': true,
 				'JSB.Profiler': true
 			};
-			return sysMap[this.name] ? true: false;
+			return sysMap[this.$name] ? true: false;
 		},
 		
 		register: function(obj, id){
@@ -214,7 +214,7 @@
 			}
 			
 			if(isSingleton){
-				obj.id = jsb.name;
+				obj.id = jsb.$name;
 			} else {
 				if(id){
 					obj.id = id;
@@ -224,7 +224,7 @@
 			}
 			// repeating registration - wrong
 			if(scope[obj.id] && (isSingleton || isFixedId)){
-				var n = jsb.name;
+				var n = jsb.$name;
 				if(isSingleton){
 					this.getLogger().warn('Duplicate singleton instantiation: ' + n);
 				} else {
@@ -337,9 +337,9 @@
 		
 		_create: function(cfg, parent){
 			if(cfg.format == 'jso'){
-				throw 'Unable to create bean "' + cfg.name + '" due to JSO format is no longer supported';
+				throw 'Unable to create bean "' + cfg.$name + '" due to JSO format is no longer supported';
 			}
-			if(!this.isString(cfg.name)){
+			if(!this.isString(cfg.$name)){
 				throw "Class name required to create managed object";
 			}
 			var self = this;
@@ -350,7 +350,7 @@
 			this._readyState = 0;
 
 			// add to objects
-			this.objects[this.name] = this;
+			this.objects[this.$name] = this;
 			
 			this._prepareSections(parent);
 			
@@ -358,7 +358,7 @@
 			var entry = this.currentSection();
 			if(parent){
 				var pe = parent.currentSection();
-				var kfs = ['singleton', 'globalize', 'fixedId', 'disableRpcInstance'];
+				var kfs = ['$singleton', '$globalize', '$fixedId', '$disableRpcInstance'];
 				for(var i = 0; i < kfs.length; i++){
 					var key = kfs[i];
 					if(!JSB().isNull(pe[key])){
@@ -367,7 +367,7 @@
 				}
 			}
 			
-			var commonSection = this.common;
+			var commonSection = this.$common;
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
 				var body = {};
 				
@@ -382,15 +382,15 @@
 				self._matchWaiters(1);
 				
 				// merge common and entry sections
-				if(this.common){
-					this.merge(true, body, this.common);
+				if(this.$common){
+					this.merge(true, body, this.$common);
 				}
 				if(entry){
 					this.merge(true, body, entry);
 				}
 				
 				// clear JSB keyword fields
-				var kfs = ['constructor', 'bootstrap', 'singleton', 'globalize', 'fixedId', 'disableRpcInstance', 'require'];
+				var kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require'];
 				for(var i = 0; i < kfs.length; i++ ){
 					if(body[kfs[i]]){
 						delete body[kfs[i]];
@@ -400,21 +400,21 @@
 				// substitute body methods via checking proxy
 				function checkPrivate(curDesc, ctxStack){
 					if(ctxStack.length == 0){
-						throw 'Private method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' can\'t be called from anywhere';
+						throw 'Private method ' + curDesc.jsb.$name + '.' + curDesc.methodName + ' can\'t be called from anywhere';
 					}
 					var prevDesc = ctxStack[ctxStack.length - 1];
 					if(prevDesc.jsb != curDesc.jsb){
-						throw 'Private method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' is not accessible from ' + prevDesc.jsb.name + '.' + prevDesc.methodName;
+						throw 'Private method ' + curDesc.jsb.$name + '.' + curDesc.methodName + ' is not accessible from ' + prevDesc.jsb.$name + '.' + prevDesc.methodName;
 					}
 				}
 
 				function checkProtected(curDesc, ctxStack){
 					if(ctxStack.length == 0){
-						throw 'Protected method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' can\'t be called from anywhere';
+						throw 'Protected method ' + curDesc.jsb.$name + '.' + curDesc.methodName + ' can\'t be called from anywhere';
 					}
 					var prevDesc = ctxStack[ctxStack.length - 1];
 					if(!prevDesc.jsb.isSubclassOf(curDesc.jsb)){
-						throw 'Protected method ' + curDesc.jsb.name + '.' + curDesc.methodName + ' is not accessible from ' + prevDesc.jsb.name + '.' + prevDesc.methodName;
+						throw 'Protected method ' + curDesc.jsb.$name + '.' + curDesc.methodName + ' is not accessible from ' + prevDesc.jsb.$name + '.' + prevDesc.methodName;
 					}
 				}
 */
@@ -424,7 +424,7 @@
 				var reverseRequireMap = {};
 				var requireVals = {};
 				
-				if(this.require || (entry && entry.require)){
+				if(this.$require || (entry && entry.$require)){
 					
 					var parseReqEntry = function(e){
 						if(JSB().isArray(e)){
@@ -440,10 +440,10 @@
 							// plain object
 							for(var i in e){
 								if(!self.isString(i)){
-									throw 'Invalid required entity declaration "' + JSON.stringify(i) + '" in bean ' + self.name;
+									throw 'Invalid required entity declaration "' + JSON.stringify(i) + '" in bean ' + self.$name;
 								}
 								if(requireMap[i]){
-									throw 'Duplicate require "' + i + '" in bean ' + self.name;
+									throw 'Duplicate require "' + i + '" in bean ' + self.$name;
 								} else {
 									var alias = e[i];
 									if(self.isFunction(alias)){
@@ -457,13 +457,13 @@
 										}
 									}
 									if(!self.isString(alias)){
-										throw 'Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.name+'" requirement';
+										throw 'Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.$name+'" requirement';
 									}
 									if(!/^[A-Za-z_][A-Za-z_\d]*$/.test(alias)){
-										throw 'Invalid alias "' + alias + '" in bean "'+self.name+'" requirement';
+										throw 'Invalid alias "' + alias + '" in bean "'+self.$name+'" requirement';
 									}
 									if(reverseRequireMap[alias]){
-										throw 'Duplicate require alias "' + alias + '" in bean ' + self.name + '. Please choose another alias name';
+										throw 'Duplicate require alias "' + alias + '" in bean ' + self.$name + '. Please choose another alias name';
 									}
 									requireMap[i] = alias;
 									reverseRequireMap[alias] = i;
@@ -472,11 +472,11 @@
 						}
 					}
 
-					if(this.require){
-						parseReqEntry(this.require);
+					if(this.$require){
+						parseReqEntry(this.$require);
 					}
-					if(entry && entry.require){
-						parseReqEntry(entry.require);
+					if(entry && entry.$require){
+						parseReqEntry(entry.$require);
 					}
 				}
 				
@@ -494,9 +494,9 @@
 								var alias = requireMap[req];
 								self._lookupRequire(req, function(cls){
 									
-									if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
+									if(locker)locker.lock('_jsb_lookupRequires_' + self.$name);
 									rcWrap._requireCnt--;
-									if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
+									if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
 									
 									requireVals[alias] = cls;
 									
@@ -606,14 +606,14 @@
 							var protectedMethod = false;
 							if(mtdName[0] == '_'){
 								if(mtdName.length < 2){
-									throw 'Invalid method name "' + mtdName + '" in bean ' + self.name;
+									throw 'Invalid method name "' + mtdName + '" in bean ' + self.$name;
 								}
 								// private or protected method
 								protectedMethod = true;
 								
 								if(mtdName[1] == '_'){
 									if(mtdName.length < 3){
-										throw 'Invalid method name "' + mtdName + '" in bean ' + self.name;
+										throw 'Invalid method name "' + mtdName + '" in bean ' + self.$name;
 									}
 									
 									// private method
@@ -659,21 +659,21 @@
 
 					// perform constructor
 					var ctor = null;
-					if(entry && entry.hasOwnProperty('constructor')){
-						ctor = entry.constructor;
-					} else if(!ctor && commonSection && commonSection.hasOwnProperty('constructor')){
-						ctor = commonSection.constructor;
+					if(entry && entry.hasOwnProperty('$constructor')){
+						ctor = entry.$constructor;
+					} else if(!ctor && commonSection && commonSection.hasOwnProperty('$constructor')){
+						ctor = commonSection.$constructor;
 					} else if(!ctor){
 						ctor = function(){};
 					}
-					self._ctor = _enrichFunction('constructor', ctor, true);
+					self._ctor = _enrichFunction('$constructor', ctor, true);
 					
 					// perform bootstrap
-					if(entry && entry.bootstrap){
-						self._entryBootstrap = _enrichFunction('bootstrap', entry.bootstrap, false, true);
+					if(entry && entry.$bootstrap){
+						self._entryBootstrap = _enrichFunction('$bootstrap', entry.$bootstrap, false, true);
 					}
-					if(self.bootstrap){
-						self._commonBootstrap = _enrichFunction('bootstrap', self.bootstrap, false, true);
+					if(self.$bootstrap){
+						self._commonBootstrap = _enrichFunction('$bootstrap', self.$bootstrap, false, true);
 					}
 					
 					
@@ -731,9 +731,9 @@
 			var locker = this.getLocker();
 			for(var req in wMap){
 				this._pushWaiter(req, function(){
-					if(locker)locker.lock('_jsb_lookupRequires_' + self.name);
+					if(locker)locker.lock('_jsb_lookupRequires_' + self.$name);
 					rcWrap._requireCnt--;
-					if(locker)locker.unlock('_jsb_lookupRequires_' + self.name);
+					if(locker)locker.unlock('_jsb_lookupRequires_' + self.$name);
 					if(rcWrap._requireCnt === 0){
 						callback.call(self);
 					}
@@ -751,61 +751,47 @@
 			var self = this;
 			
 			if(this.isClient()){
-				if(this.client == null || this.client == undefined){
-					this.client = {};
-					if(this.format == 'jso'){
-						this.client.body = {};
-					}
+				if(this.$client == null || this.$client == undefined){
+					this.$client = {};
 				}
 			} else {
-				if(this.server == null || this.server == undefined){
-					this.server = {};
-					if(this.format == 'jso'){
-						this.server.body = {};
-					}
+				if(this.$server == null || this.$server == undefined){
+					this.$server = {};
 				}
 				
 				var blackProcs = {
 					'import': true,
 					'export': true,
 					'rpc': true,
-					'constructor': true,
-					'bootstrap': true
+					'$constructor': true,
+					'$bootstrap': true
 				};
 				
 				// resolve server-side push-proxies
-				if(this.format == 'jsb' && !JSB.isNull(this.server) && !JSB.isNull(this.client)){
-					var serverBody = this.server;
+				if(!JSB.isNull(this.$server) && !JSB.isNull(this.$client)){
+					var serverBody = this.$server;
 					var curJsb = this;
 					var scope = this._clientProcs = this._clientProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
-						if(curJsb.format == 'jso'){
-							if(curJsb.body){
-								bodies.push(curJsb.body);
-							}
-							if(curJsb.client && curJsb.client.body) {
-								bodies.push(curJsb.client.body);
-							}
-						} else {
-							if(curJsb.common){
-								bodies.push(curJsb.common);
-							}
-							if(curJsb.client){
-								bodies.push(curJsb.client);
-							}
+
+						if(curJsb.$common){
+							bodies.push(curJsb.$common);
+						}
+						if(curJsb.$client){
+							bodies.push(curJsb.$client);
 						}
 						for(var b = 0; b < bodies.length; b++){
 							var curBody = bodies[b];
 							for(var procName in curBody){
 								if(this.isJavaObject(curBody[procName])){
-									throw 'Error: Java field "' + procName + '" is not permitted in client-side section of bean ' + this.name;
+									throw 'Error: Java field "' + procName + '" is not permitted in client-side section of bean ' + this.$name;
 								}
 								if(!this.isFunction(curBody[procName])){
 									continue;
 								}
-//								var scope = serverBody.client = serverBody.client || {};
+//								var scope = serverBody.$client = serverBody.$client || {};
 								if(scope[procName] || blackProcs[procName]){
 									continue;
 								}
@@ -826,29 +812,19 @@
 				}
 
 				// resolve client-side rpc proxies
-				if(!JSB().isNull(this.client)){
-					var clientBody = this.client;
-					if(this.format == 'jso'){
-						this.client.body = this.client.body || {};
-						clientBody = this.client.body;
-					}
+				if(!JSB().isNull(this.$client)){
+					var clientBody = this.$client;
 					
 					var curJsb = this;
 					var scope = this._serverProcs = this._serverProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
-						if(curJsb.format == 'jso'){
-							if(curJsb.server && curJsb.server.body){
-								bodies.push(curJsb.server.body);
-							}
-						} else {
-							if(curJsb.common){
-								bodies.push(curJsb.common);
-							}
-							if(curJsb.server){
-								bodies.push(curJsb.server);
-							}
+						if(curJsb.$common){
+							bodies.push(curJsb.$common);
+						}
+						if(curJsb.$server){
+							bodies.push(curJsb.$server);
 						}
 						for(var b in bodies){
 							var curBody = bodies[b];
@@ -862,7 +838,7 @@
 /*								
 								var scope = clientBody;
 								if(this.format == 'jsb'){
-									scope = clientBody.server = clientBody.server || {};
+									scope = clientBody.$server = clientBody.$server || {};
 								}
 */								
 								if(scope[procName] || blackProcs[procName]){
@@ -888,12 +864,12 @@
 			var entry = this.currentSection();
 			if(this.isPlainObject(entry)){
 				// copy global jsb settings into current entry
-				if(this.fixedId){
-					entry.fixedId = this.fixedId;
+				if(this.$fixedId){
+					entry.$fixedId = this.$fixedId;
 				}
 				
-				if(!entry.bootstrap && this.common && this.common.bootstrap){
-					entry.bootstrap = this.common.bootstrap;
+				if(!entry.$bootstrap && this.$common && this.$common.$bootstrap){
+					entry.$bootstrap = this.$common.$bootstrap;
 				}
 				
 			}
@@ -919,9 +895,9 @@
 		
 		currentSection: function(){
 			if(this.isClient() ){
-				return this.client;
+				return this.$client;
 			} else {
-				return this.server;
+				return this.$server;
 			}
 			
 			return null;
@@ -1045,21 +1021,21 @@
 		
 		isSubclassOf: function(str){
 			if(str instanceof JSB){
-				str = str.name;
+				str = str.$name;
 			}
-			if(this.name == str){
+			if(this.$name == str){
 				return true;
 			}
-			if(this.parent == null 
-				|| this.parent == undefined 
-				|| this.parent.length == 0 
-				|| this.parent == 'JSB.Bean'){
+			if(this.$parent == null 
+				|| this.$parent == undefined 
+				|| this.$parent.length == 0 
+				|| this.$parent == 'JSB.Bean'){
 				if(str == 'JSB.Bean'){
 					return true;
 				}
 				return false;
 			}
-			var parentJso = this.get(this.parent);
+			var parentJso = this.get(this.$parent);
 			return parentJso.isSubclassOf(str);
 		},
 		
@@ -1160,9 +1136,9 @@
 			var dumpArr = [];
 			for(var i = 0; i < ctx.length; i++){
 				dumpArr.push({
-					jsb: (ctx[i] && ctx[i].jsb ? ctx[i].jsb.name : null),
+					jsb: (ctx[i] && ctx[i].jsb ? ctx[i].jsb.$name : null),
 					methodName: (ctx[i] ? ctx[i].methodName : null),
-					inst: (ctx[i] && ctx[i].inst && ctx[i].inst.jsb ? ctx[i].inst.jsb.name : null)
+					inst: (ctx[i] && ctx[i].inst && ctx[i].inst.jsb ? ctx[i].inst.jsb.$name : null)
 				});
 			}
 			
@@ -1314,10 +1290,10 @@
 					if(!this.jsb){
 						debugger;
 					}
-					_copyFields(this, /*this.jsb._fieldsArr*/JSB().fieldArrs[this.jsb.name]);
+					_copyFields(this, /*this.jsb._fieldsArr*/JSB().fieldArrs[this.jsb.$name]);
 					
 					// place sync scopes
-					var syncScopes = JSB().syncScopes[this.jsb.name];
+					var syncScopes = JSB().syncScopes[this.jsb.$name];
 					if(syncScopes){
 						this.syncScopes = {};
 						for(var fName in syncScopes){
@@ -1337,7 +1313,7 @@
 				var ctxStack = ss.getCallingContext();
 				ctxStack.push({
 					jsb: ss,
-					methodName: 'constructor',
+					methodName: '$constructor',
 					inst: this
 				});
 				// TODO: perform call check
@@ -1387,7 +1363,7 @@
 					var ctxStack = ss.getCallingContext();
 					ctxStack.push({
 						jsb: ss,
-						methodName: 'constructor',
+						methodName: '$constructor',
 						inst: this
 					});
 					// TODO: perform call check
@@ -1460,7 +1436,7 @@
 			}
 			var wList = this.waiters[name];
 			wList.push({
-				waiter: this.name,
+				waiter: this.$name,
 				callback: callback,
 				readyState: readyState
 			});
@@ -1476,7 +1452,7 @@
 			
 			var locker = this.getLocker();
 			if(locker){ locker.lock('JSB_lookup_waiters'); }
-			var wList = this.waiters[this.name];
+			var wList = this.waiters[this.$name];
 			if(wList && wList.length > 0){
 				var delArr = [];
 
@@ -1494,7 +1470,7 @@
 						wList.splice(idx, 1);
 					}
 					if(wList.length === 0){
-						delete this.waiters[this.name];
+						delete this.waiters[this.$name];
 					}
 				}
 			}
@@ -1576,7 +1552,7 @@
 					// check bean is existed
 					var repoEntry = this.getRepository().get(name);
 					if(!repoEntry){
-						throw 'Bean "'+name+'" is missing in repository' + (this.name ? '; required by "' + this.name + '"' : '');
+						throw 'Bean "'+name+'" is missing in repository' + (this.$name ? '; required by "' + this.$name + '"' : '');
 					}
 				}
 			}
@@ -1584,7 +1560,7 @@
 
 		getInstance: function(key){
 			if(!key && this.isSingleton()){
-				key = this.name;
+				key = this.$name;
 			}
 			var obj = JSB().getGlobalInstancesScope()[key];
 			if(obj == null || obj == undefined){
@@ -1597,7 +1573,7 @@
 			function _buildInstanceMap(scope){
 				var typeMap = {};
 				for(var i in scope){
-				    var jsbName = scope[i].jsb.name;
+				    var jsbName = scope[i].jsb.$name;
 				    if(!typeMap[jsbName]){
 				        typeMap[jsbName] = 1;
 				    } else {
@@ -1697,8 +1673,8 @@
 		_prepareFieldMap: function(){
 			var self = this;
 			var curProto = this.getClass().prototype;
-			var fieldMap = /*this.fieldMaps[this.name] = */{};
-			var syncScopes = this.syncScopes[this.name] = {};
+			var fieldMap = /*this.fieldMaps[this.$name] = */{};
+			var syncScopes = this.syncScopes[this.$name] = {};
 			var protoStack = [];
 			
 			while(curProto){
@@ -1754,21 +1730,18 @@
 			
 			function _collectSyncScopes(curJsb, scope){
 				// collect sync scopes
-				var commonScope = curJsb.common;
-				if(curJsb.format == 'jso'){
-					commonScope = curJsb.body;
-				}
+				var commonScope = curJsb.$common;
 				if(!commonScope){
 					return;
 				}
 				var kfs = {
-					'constructor': true,
-					'bootstrap': true,
-					'singleton': true,
-					'globalize': true,
-					'fixedId': true,
-					'disableRpcInstance': true,
-					'sync': true
+					'$constructor': true,
+					'$bootstrap': true,
+					'$singleton': true,
+					'$globalize': true,
+					'$fixedId': true,
+					'$disableRpcInstance': true,
+					'$sync': true
 				};
 				
 				for(var fieldName in commonScope){
@@ -1793,11 +1766,11 @@
 			}
 			
 			if(Object.keys(syncScopes).length === 0){
-				this.syncScopes[this.name] = null;
+				this.syncScopes[this.$name] = null;
 			}
 			
 			// prepare field arr
-			var fieldArr = this.fieldArrs[this.name] = [];
+			var fieldArr = this.fieldArrs[this.$name] = [];
 			
 			function _convertMapsToArrs(fieldMap, arrMap){
 				for(var fName in fieldMap){
@@ -1861,11 +1834,11 @@
 			var self = this;
 /*			
 			// deploy object into class tree
-			if(this._cls.jsb && this._cls.jsb.name != this.name){
-				throw 'System error: wrong inheritance occured due to loading "' + this.name + '": found "' + this._cls.jsb.name + '"';
+			if(this._cls.jsb && this._cls.jsb.$name != this.$name){
+				throw 'System error: wrong inheritance occured due to loading "' + this.$name + '": found "' + this._cls.jsb.$name + '"';
 			}
 			if(entry){
-				this.deploy(this.name, this._cls);
+				this.deploy(this.$name, this._cls);
 			}
 */
 
@@ -1934,11 +1907,11 @@
 						var f = self._cls;
 						var o = new f();
 						
-						if(entry.globalize){
-							if(self.isString(entry.globalize)){
-								self.deploy(entry.globalize, o, true);
+						if(entry.$globalize){
+							if(self.isString(entry.$globalize)){
+								self.deploy(entry.$globalize, o, true);
 							} else {
-								self.deploy(self.name, o);
+								self.deploy(self.$name, o);
 							}
 						}
 	/*					
@@ -2488,7 +2461,7 @@
 					if(JSB().isBean(res)){
 						// encode jso object
 						return {
-							__jso : res.getJsb().name,
+							__jso : res.getJsb().$name,
 							__id: res.getId()
 						};
 					} else {
@@ -2631,7 +2604,7 @@
 							return null;
 						}
 						var entry = jso.currentSection();
-						if(entry.singleton){
+						if(entry.$singleton){
 							serverInstance = JSB().getInstance(jsoName);
 							if(JSB().isNull(serverInstance)){
 								return null;
@@ -2643,7 +2616,7 @@
 						if(JSB().isNull(serverInstance)){
 							
 							// check for rpc instance creation permission
-							if(entry.disableRpcInstance){
+							if(entry.$disableRpcInstance){
 								JSB().getLogger().warn('Unable to create new instance from RPC call for jsb: "' + jsoName + '('+instanceId+')" due option "disableRpcInstance" set')
 								return null;
 							}
@@ -2651,7 +2624,7 @@
 							var f = jso.getClass();
 							// create server-side instance with client-side id
 							
-							if(entry.fixedId || jso.fixedId){
+							if(entry.$fixedId || jso.$fixedId){
 								JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 									// use this to access current object
 									this.id = instanceId;
@@ -2697,7 +2670,7 @@
 						}
 					} else {
 						// check for fixedId
-						if(cls.jsb.currentSection().fixedId){
+						if(cls.jsb.currentSection().$fixedId){
 							obj = self.getInstance(id);
 						}
 					}
@@ -2705,7 +2678,7 @@
 					if(!obj){
 						JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 							// use this to access current object
-							if(cls.jsb.currentSection().fixedId){
+							if(cls.jsb.currentSection().$fixedId){
 								this.id = id;
 							}
 							this.bindKey = id;
@@ -3025,12 +2998,12 @@
 })();
 
 JSB({
-	name: 'JSB.Bean',
-	parent: null,
-	common: {
+	$name: 'JSB.Bean',
+	$parent: null,
+	$common: {
 /*
 //		Synchronization options:
-		sync: {
+		$sync: {
 			updateClient: true,
 			updateServer: false,
 			updateCheckInterval: 1000,
@@ -3070,9 +3043,9 @@ JSB({
 			var curScope = this.constructor.superclass;
 			while(true){
 				if(JSB().isNull(curScope) || JSB().isNull(curScope.jsb)){
-					throw 'Unable to find className: "' + className + '"in "' + this.jsb.name + '" hierarchy stack';
+					throw 'Unable to find className: "' + className + '"in "' + this.jsb.$name + '" hierarchy stack';
 				}
-				if(curScope.jsb.name == className){
+				if(curScope.jsb.$name == className){
 					return curScope; 
 				}
 				
@@ -3089,13 +3062,13 @@ JSB({
 		},
 		
 		setupSync: function(){
-			if(!this.sync || !this.syncScopes){
+			if(!this.$sync || !this.syncScopes){
 				return;
 			}
 			
 			var defaultVal = 1000;
-			if(JSB().isObject(this.sync) && !JSB().isNull(this.sync.updateCheckInterval)){
-				defaultVal = this.sync.updateCheckInterval;
+			if(JSB().isObject(this.$sync) && !JSB().isNull(this.$sync.updateCheckInterval)){
+				defaultVal = this.$sync.updateCheckInterval;
 			}
 			
 			this.setSyncCheckInterval(defaultVal);
@@ -3105,13 +3078,13 @@ JSB({
 			var self = this;
 			var bUpdateServer = false;
 			var bUpdateClient = true;
-			if(JSB.isObject(this.sync) && this.sync.updateServer){
+			if(JSB.isObject(this.$sync) && this.$sync.updateServer){
 				bUpdateServer = true;
 			}
-			if(JSB.isObject(this.sync) && !JSB.isNull(this.sync.updateClient)){
-				bUpdateClient = this.sync.updateClient;
+			if(JSB.isObject(this.$sync) && !JSB.isNull(this.$sync.updateClient)){
+				bUpdateClient = this.$sync.updateClient;
 			}
-			if(!this.sync 
+			if(!this.$sync 
 				|| (JSB.isClient() && !bUpdateServer)
 				|| (!JSB.isClient() && !bUpdateClient) ){
 				return;
@@ -3147,7 +3120,7 @@ JSB({
 				if(JSB().isBean(realScope)){
 					// fixup realscope if it is Bean
 					realScope = {
-						__jso: realScope.jsb.name,
+						__jso: realScope.jsb.$name,
 						__id: realScope.getId()
 					};
 				}
@@ -3254,7 +3227,7 @@ JSB({
 //						throw 'getScopeSlice: sync error due to out of the realScope';
 					} else if(JSB().isBean(realScope)){
 						realScope = {
-							__jso: realScope.jsb.name,
+							__jso: realScope.jsb.$name,
 							__id: JSB().isClient() ? (realScope.bindKey || realScope.getId()) : realScope.getId()
 						};
 					}
@@ -3467,7 +3440,7 @@ JSB({
 		},
 		
 		getName: function(){
-			return this.getJsb().name;
+			return this.getJsb().$name;
 		},
 		
 		_extendSyncInfo: function(syncInfo){
@@ -3536,11 +3509,11 @@ JSB({
 		}
 		
 	},
-	client:{
-		bootstrap: function(){
+	$client:{
+		$bootstrap: function(){
 			// use 'this' to access members
 		},
-		constructor: function(opts){
+		$constructor: function(opts){
 			JSB().register(this);
 			if(opts){
 				this.bindKey = this.bindKey || opts.bindKey || opts.bind;
@@ -3685,7 +3658,7 @@ JSB({
 			var tJso = this.getJsb();
 			var callCtx = this.jsb.saveCallingContext();
 			JSB().getProvider().enqueueRpc({
-				jsb: tJso.name,
+				jsb: tJso.$name,
 				instance: JSB().isNull(this.bindKey) ? this.id : this.bindKey,
 				proc: procName,
 				params: JSB().substJsoInRpcResult(params),
@@ -3727,15 +3700,15 @@ JSB({
 
 		onBeforeSync: function(syncInfo){
 			var bUpdateClient = true;
-			if(JSB().isPlainObject(this.sync) && !JSB().isNull(this.sync.updateClient)){
-				bUpdateClient = this.sync.updateClient;
+			if(JSB().isPlainObject(this.$sync) && !JSB().isNull(this.$sync.updateClient)){
+				bUpdateClient = this.$sync.updateClient;
 			}
 			return bUpdateClient;
 		}
 	},
 	
-	server: {
-		constructor: function(){
+	$server: {
+		$constructor: function(){
 			JSB().register(this);
 			this.setupSync();
 		},
@@ -3751,7 +3724,7 @@ JSB({
 
 		onBeforeSync: function(syncInfo){
 			var bUpdateServer = false;
-			if(JSB().isPlainObject(this.sync) && this.sync.updateServer){
+			if(JSB().isPlainObject(this.$sync) && this.$sync.updateServer){
 				bUpdateServer = true;
 			}
 			return bUpdateServer;
@@ -3843,22 +3816,22 @@ JSB({
 });
 
 JSB({
-	name: 'JSB.Repository',
-	singleton: true,
-	common: {
+	$name: 'JSB.Repository',
+	$singleton: true,
+	$common: {
 		items: {},
 		loadList: {},
 		pathMapIndex: {},
 		
-		constructor: function(){
+		$constructor: function(){
 			JSB().setRepository(this);
 		},
 		
 		registerPath: function(beanCfg){
-			var name = beanCfg.name;
+			var name = beanCfg.$name;
 			if(!beanCfg.pathFile){
 				if(JSB.getLogger()){
-					JSB.getLogger().warn('No pathFile for bean: ' + beanCfg.name);
+					JSB.getLogger().warn('No pathFile for bean: ' + beanCfg.$name);
 				}
 				return;
 			}
@@ -3878,7 +3851,7 @@ JSB({
 				}
 				return;
 			}
-			var name = beanCfg.name;
+			var name = beanCfg.$name;
 			if(!name || name.length == 0){
 				var err = 'Bean has no name: ' + JSON.stringify(beanCfg);
 				throw err;
@@ -3909,7 +3882,7 @@ JSB({
 		},
 		
 		registerLoaded: function(beanCfg, jsb){
-			var name = beanCfg.name;
+			var name = beanCfg.$name;
 			var entry = this.items[name];
 			if(!entry){
 				entry = this.items[name] = {};
@@ -3948,15 +3921,15 @@ JSB({
 			return this.get(name);
 		}
 	},
-	client: {},
-	server: {}
+	$client: {},
+	$server: {}
 });
 
 JSB({
-	name: 'JSB.Locker',
-	singleton: true,
-	common: {
-		constructor: function(){
+	$name: 'JSB.Locker',
+	$singleton: true,
+	$common: {
+		$constructor: function(){
 			JSB().setLocker(this);
 		},
 
@@ -3968,10 +3941,10 @@ JSB({
 
 
 JSB({
-	name: 'JSB.Logger',
-	singleton: true,
-	client: {
-		constructor: function(){
+	$name: 'JSB.Logger',
+	$singleton: true,
+	$client: {
+		$constructor: function(){
 			JSB().setLogger(this);
 		},
 		
@@ -4021,10 +3994,10 @@ JSB({
 });
 
 JSB({
-	name: 'JSB.AjaxProvider',
-	singleton: true,
-	client:{
-		constructor: function(){
+	$name: 'JSB.AjaxProvider',
+	$singleton: true,
+	$client:{
+		$constructor: function(){
 			$base();
 			this.curDeferTimeout = this.options.minDeferTimeout;
 			if(JSB().getProvider()){
@@ -4098,7 +4071,7 @@ JSB({
 								if(JSB.isNull(JSB().initQueue)){
 									JSB().initQueue = {};
 								}
-								JSB().initQueue[jsoRes[i].name] = true;
+								JSB().initQueue[jsoRes[i].$name] = true;
 							}
 						}
 						for(var i in jsoRes){
@@ -4302,21 +4275,15 @@ JSB({
 		decodeObject: function(obj){
 			if( typeof(obj) === 'object' ){
 				for( var key in obj ) {
+					var newKey = decodeURIComponent(key);
+					if(newKey != key){
+						obj[newKey] = obj[key];
+						delete obj[key];
+						key = newKey;
+					}
 					if(typeof(obj[key]) === 'object'){
-						var newKey = decodeURIComponent(key);
-						if(newKey != key){
-							obj[newKey] = obj[key];
-							delete obj[key];
-							key = newKey;
-						}
 						this.decodeObject(obj[key]);
 					} else if(typeof(obj[key]) === 'string'){
-						var newKey = decodeURIComponent(key);
-						if(newKey != key){
-							obj[newKey] = obj[key];
-							delete obj[key];
-							key = newKey;
-						}
 						obj[key] = decodeURIComponent(obj[key]);
 					}
 				}
@@ -4553,12 +4520,12 @@ JSB({
 
 	},
 	
-	server: {
+	$server: {
 		rpcQueueFirst: null,
 		rpcQueueLast: null,
 		rpcMap: {},
 		
-		constructor: function(){
+		$constructor: function(){
 			$base();
 			if(JSB().getProvider()){
 				JSB().getProvider().enableRpcCleanup(false);
@@ -4766,14 +4733,14 @@ JSB({
 });
 
 JSB({
-	name: 'JSB.Profiler',
-	common: {
-		bootstrap: function(){
+	$name: 'JSB.Profiler',
+	$common: {
+		$bootstrap: function(){
 			var ProfileClass = this.getClass();
 			JSB().setSystemProfiler(new ProfileClass());
 		},
 		
-		constructor: function(){},
+		$constructor: function(){},
 		
 		start: function(key){
 			if(!key){
@@ -4871,11 +4838,11 @@ JSB({
 			var mtdNames = jsb.getMethods(own);
 			var locker = JSB.getLocker();
 			for(var i = 0; i < mtdNames.length; i++){
-				if(mtdNames[i] == 'constructor'){
+				if(mtdNames[i] == '$constructor'){
 					continue;
 				}
 				(function(mtdName){
-					var keyName = jsb.name + '.' + mtdName;
+					var keyName = jsb.$name + '.' + mtdName;
 					jsb.createMethodInterceptor(mtdName, function(originalProc, args){
 						var l = Date.now();
 						var res = originalProc.apply(this, args);

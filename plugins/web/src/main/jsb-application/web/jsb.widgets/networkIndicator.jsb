@@ -1,9 +1,9 @@
 {
-	name:'JSB.Widgets.NetworkIndicator',
-	require: ['JQuery'],
-	client: {
-		singleton: true,
-		constructor: function(){
+	$name:'JSB.Widgets.NetworkIndicator',
+	$require: ['JQuery'],
+	$client: {
+		$singleton: true,
+		$constructor: function(){
 			this.loadCss('networkIndicator.css');
 			this.element = this.$('<div class="networkConnection"></div>');
 			this.icon = this.$('<div class="icon"></div>');

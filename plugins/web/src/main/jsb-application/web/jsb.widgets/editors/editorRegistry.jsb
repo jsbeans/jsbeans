@@ -1,6 +1,6 @@
 {
-	name:'JSB.Widgets.EditorRegistry',
-	common: {
+	$name:'JSB.Widgets.EditorRegistry',
+	$common: {
 		register: function(typeId, jso){
 			if( JSO().isNull( this.editors ) ){
 				this.editors = {};
@@ -18,7 +18,7 @@
 				}
 				var arr = this.editors[t];
 				for(var i in arr){
-					if(arr[i] && arr[i] instanceof JSO && arr[i].name == jso.name){
+					if(arr[i] && arr[i] instanceof JSO && arr[i].name == jso.$name){
 						// already registered, skip
 						return;
 					}
@@ -36,8 +36,8 @@
 		
 		
 	},
-	client: {
-		singleton: true,
+	$client: {
+		$singleton: true,
 		
 		lookup: function(typeId, callback){
 			var self = this;
@@ -60,9 +60,9 @@
 		}
 	},
 	
-	server: {
-		singleton: true,
-		constructor: function(){
+	$server: {
+		$singleton: true,
+		$constructor: function(){
 		},
 		
 		lookup: function(typeId, callback){
@@ -77,7 +77,7 @@
 			var ret = {};
 			var jso = this.get(typeId);
 			if(jso){
-				return jso.name;
+				return jso.$name;
 			}
 			
 			// obtain type info

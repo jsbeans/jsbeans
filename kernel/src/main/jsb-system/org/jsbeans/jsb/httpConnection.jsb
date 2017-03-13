@@ -1,8 +1,8 @@
 {
-    name:'HttpConnection',
+    $name:'HttpConnection',
 
-    server: {
-        constructor: function(options){
+    $server: {
+        $constructor: function(options){
 //            if(!Kernel.isAdmin()) throw new Exception('Has no permissions');
 
             this.URL = Packages.java.net.URL;

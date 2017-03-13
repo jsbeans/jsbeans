@@ -1,17 +1,17 @@
 {
-	name:'JSB.Widgets.RangeEditor',
-	parent: 'JSB.Widgets.Editor',
+	$name:'JSB.Widgets.RangeEditor',
+	$parent: 'JSB.Widgets.Editor',
 	
-	require: {
+	$require: {
 		'JSB.Widgets.RangeValue': 'Value'
 	},
-	bootstrap: function(){
+	$bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){
 			obj.register(['range'], this);
 		})
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('rangeEditor.css');

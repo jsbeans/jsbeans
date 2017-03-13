@@ -1,13 +1,13 @@
 {
-	name:'JSB.Widgets.PrimitiveEditor',
-	parent: 'JSB.Widgets.Editor',
-	require: {
+	$name:'JSB.Widgets.PrimitiveEditor',
+	$parent: 'JSB.Widgets.Editor',
+	$require: {
 		'JSB.Widgets.Value': 'Value',
 		'JSB.Widgets.ListBox': 'ListBox',
 		'JQuery.Placeholder': 'Placeholder',
 		'JSB.Widgets.DroplistTool': 'DroplistTool'
 	},
-	bootstrap: function(){
+	$bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){
 			obj.register([
 			              'java.lang.Object', 
@@ -26,8 +26,8 @@
 			              ], this);
 		})
 	},
-	client: {
-		constructor: function(opts){
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('primitiveEditor.css');

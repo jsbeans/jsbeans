@@ -1,9 +1,9 @@
 {
-	name:'JSB.Widgets.SplitBox',
-	parent: 'JSB.Widgets.Control',
-	require:['JQuery.UI.Interactions'],
-	client: {
-		constructor: function(opts){
+	$name:'JSB.Widgets.SplitBox',
+	$parent: 'JSB.Widgets.Control',
+	$require:['JQuery.UI.Interactions'],
+	$client: {
+		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.loadCss('splitBox.css');

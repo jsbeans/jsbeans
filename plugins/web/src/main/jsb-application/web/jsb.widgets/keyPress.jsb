@@ -1,13 +1,12 @@
 {
-	name:'JSB.KeyPress',
-	group: 'dwp',
-	client: {
-		singleton: true,
-		constructor: function(){
+	$name:'JSB.KeyPress',
+	$client: {
+		$singleton: true,
+		$constructor: function(){
 			var self = this;
 			this.loadScript('keypress.js');
 			
-			JSO().waitForObjectExist('window.keypress',function(){
+			JSB().waitForObjectExist('window.keypress',function(){
 				self.init();
 			});
 		},

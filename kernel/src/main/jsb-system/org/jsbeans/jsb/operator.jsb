@@ -1,8 +1,8 @@
 {
-	name: 'Operator',
+	$name: 'Operator',
 	
-	server: {
-		constructor: function(opts){
+	$server: {
+		$constructor: function(opts){
 			$base(opts);
 		}
 	}

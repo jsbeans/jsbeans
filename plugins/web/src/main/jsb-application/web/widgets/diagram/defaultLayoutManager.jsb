@@ -1,13 +1,13 @@
 {
-	name: 'JSB.Widgets.Diagram.DefaultLayoutManager',
-	parent: 'JSB.Widgets.Diagram.LayoutManager',
-	require: {},
+	$name: 'JSB.Widgets.Diagram.DefaultLayoutManager',
+	$parent: 'JSB.Widgets.Diagram.LayoutManager',
+	$require: {},
 	
-	client: {
+	$client: {
 		options: {
 		},
 		
-		constructor: function(diagram, opts){
+		$constructor: function(diagram, opts){
 			var self = this;
 			$base(diagram, opts);
 		},

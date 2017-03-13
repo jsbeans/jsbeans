@@ -1,9 +1,9 @@
 {
-	name:'Config',
-	server: {
-		singleton: true,
-		globalize: true,
-		constructor: function(){
+	$name:'Config',
+	$server: {
+		$singleton: true,
+		$globalize: true,
+		$constructor: function(){
 			JSB().setServerVersion(this.get('build.version'));
 		},
 		
