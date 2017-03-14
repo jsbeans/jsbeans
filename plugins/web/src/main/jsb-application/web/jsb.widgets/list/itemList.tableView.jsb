@@ -183,7 +183,9 @@
 			
 			if(this.options.headerOverflow)
 				this.container.resize(function(){
-					$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').width(tvh.width());
+					if($this.$($this.container).width() < tvh.width())
+						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').width(tvh.width());
+					
 					if($this.list.horizontalScrollBox.getElement().find('.iScrollHorizontalScrollbar').is(":visible")){
 						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox:not(.horizontalScrollPane)').css({
 							padding: '0 0 10px 0'
@@ -191,14 +193,21 @@
 						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').css({
 							height: 'calc(100% - 10px)'
 						});
+					}else{
+						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox:not(.horizontalScrollPane)').css({
+							padding: '0'
+						});
+						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').css({
+							height: '100%'
+						});
 					}
 				});
 			
-//			tvh.resize(function(){
-//				self.list.find('> ._dwp_scrollBox.horizontalScrollBox').css({
-//					top: tvh.height()
-//				});
-//			});
+			tvh.resize(function(){
+				$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox').css({
+					top: tvh.height()
+				});
+			});
 		},
 		
 		update: function(){
