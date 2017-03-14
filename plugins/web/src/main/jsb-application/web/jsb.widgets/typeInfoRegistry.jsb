@@ -1,25 +1,24 @@
 {
 	$name:'JSB.TypeInfoRegistry',
-	$common: {
-		register: function(typeId, desc){
-			if(JSO().isNull(this.types)){
-				this.types = {};
-			}
-			this.types[typeId] = desc;
-		},
-		
-		get: function(typeId){
-			if(JSO().isNull(this.types)){
-				return null;
-			}
-			var res = this.types[typeId];
-			if(JSO().isNull(res)){
-				return null;
-			}
-			return res;
+	
+	register: function(typeId, desc){
+		if(JSO().isNull(this.types)){
+			this.types = {};
 		}
+		this.types[typeId] = desc;
 	},
 	
+	get: function(typeId){
+		if(JSO().isNull(this.types)){
+			return null;
+		}
+		var res = this.types[typeId];
+		if(JSO().isNull(res)){
+			return null;
+		}
+		return res;
+	},
+
 	$client: {
 		$singleton: true,
 		lookup: function(typeId, callback){

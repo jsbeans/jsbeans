@@ -1,4 +1,4 @@
-/*! jsBeans v2.3.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.4.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -25,18 +25,13 @@
 		var self = this;
 		
 		// enable JSB mode
-		if(!cfg.format){
-			cfg.format = 'jsb';
+		if(!cfg.$format){
+			cfg.$format = 'jsb';
 		}
 
 		if(cfg.$parent == null || cfg.$parent == undefined){
 			cfg.$parent = 'JSB.Bean';
 		}
-/*		
-		if(cfg.path == null || cfg.path == undefined){
-			cfg.path = JSB().lastPath;
-		}
-*/		
 		
 		// insert into repo
 		var repo = this.getRepository();
@@ -72,8 +67,8 @@
 			return arr;
 		}
 		
-		if(!cfg.format){
-			cfg.format = 'jso';
+		if(!cfg.$format){
+			cfg.$format = 'jso';
 		}
 		return JSB(cfg);
 	}
@@ -109,7 +104,6 @@
 		objectsToLoad: [],
 		resourceLoaded: {},
 		resourceScheduled: {},
-		lastPath: '',
 		deferTimeoutMap: {},
 		globalInstances: {},
 		libraryScopes: {},
@@ -164,41 +158,52 @@
 			return session;
 		},
 		
-		isSingleton: function(){
+		getSync: function(){
 			var s = false;
-			if(this.$singleton){
-				s = this.$singleton;
+			if(this.getDescriptor().$sync){
+				s = this.getDescriptor().$sync;
 			} else {
 				var e = this.currentSection();
-				if(e.$singleton){
-					s = e.$singleton;
+				if(e.$sync){
+					s = e.$sync;
 				}
 			}
 			return s;
+		},
+
+		hasKeywordOption: function(opt){
+			if(this[opt]){
+				return this[opt];
+			} else {
+				var e = this.currentSection();
+				if(e[opt]){
+					return e[opt];
+				}
+			}
+			return false;
+		},
+		
+		isSingleton: function(){
+			return this.hasKeywordOption('$singleton');
 		},
 		
 		isFixedId: function(){
-			var s = false;
-			if(this.$fixedId){
-				s = this.$fixedId;
-			} else {
-				var e = this.currentSection();
-				if(e.$fixedId){
-					s = e.$fixedId;
-				}
-			}
-			return s;
+			return this.hasKeywordOption('$fixedId');
 		},
 		
-		isSystem: function(){
+		isSystem: function(name){
+			if(!name){
+				name = this.$name;
+			}
 			var sysMap = {
 				'JSB.Bean': true,
 				'JSB.Locker': true,
 				'JSB.Logger': true,
 				'JSB.AjaxProvider': true,
+				'JSB.Repository': true,
 				'JSB.Profiler': true
 			};
-			return sysMap[this.$name] ? true: false;
+			return sysMap[name] ? true: false;
 		},
 		
 		register: function(obj, id){
@@ -294,16 +299,46 @@
 		},
 		
 		getBasePath: function(){
-			if(this.path == null || this.path == undefined){
+			if(this.$_path == null || this.$_path == undefined){
 				return '';
 			}
-			if(this.path.length > 0 
-					&& this.path[this.path.length] != '\\' 
-					&& this.path[this.path.length] != '/' ){
-				return this.path + '/';
+			if(this.$_path.length > 0 
+					&& this.$_path[this.$_path.length] != '\\' 
+					&& this.$_path[this.$_path.length] != '/' ){
+				return this.$_path + '/';
 			}
-			return this.path;
+			return this.$_path;
 		},
+		
+		getClientJSB: function(name){
+			var clientFieldBlacklist = {
+				'$server': true,
+				'_descriptor': true,
+				'$_clientProcs': true,
+				'_ready': true,
+				'_readyState': true,
+				'_requireCnt': true,
+				'_requireMap': true,
+				'_cls': true,
+				'_ctor': true,
+				'_entryBootstrap': true,
+				'_commonBootstrap': true
+			};
+			var jsb = this.get(name);
+			if(JSB().isNull(jsb)){
+				Log.error('Unable to find JSB: ' + name);
+				return null;
+			}
+			
+			var cJsb = {};
+			for(var f in jsb){
+				if(jsb.hasOwnProperty(f) && !clientFieldBlacklist[f]){
+					cJsb[f] = jsb[f];
+				}
+			}
+			return cJsb;
+		},
+
 		
 		unregister: function(obj){
 			var id = null;
@@ -336,7 +371,7 @@
 		},
 		
 		_create: function(cfg, parent){
-			if(cfg.format == 'jso'){
+			if(cfg.$format == 'jso'){
 				throw 'Unable to create bean "' + cfg.$name + '" due to JSO format is no longer supported';
 			}
 			if(!this.isString(cfg.$name)){
@@ -345,12 +380,30 @@
 			var self = this;
 			var logger = this.getLogger();
 			
-			this.merge(true, this, cfg);
+			// copy all system fields into this
+			for(var f in cfg){
+				if(f && f.length > 0 && f[0] == '$'){
+					this[f] = cfg[f];
+				}
+			}
+			
+			this._descriptor = cfg;
 			this._ready = false;
 			this._readyState = 0;
-
+			
 			// add to objects
 			this.objects[this.$name] = this;
+			
+			// build common section
+			var commonSection = this.$common;
+			if(!commonSection){
+				commonSection = this.$common = {};
+				for(var f in cfg){
+					if(f && f.length > 0 && f[0] != '$' && cfg.hasOwnProperty(f)){
+						commonSection[f] = cfg[f];
+					}
+				}
+			}
 			
 			this._prepareSections(parent);
 			
@@ -358,16 +411,16 @@
 			var entry = this.currentSection();
 			if(parent){
 				var pe = parent.currentSection();
-				var kfs = ['$singleton', '$globalize', '$fixedId', '$disableRpcInstance'];
+				var kfs = ['$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$sync'];
 				for(var i = 0; i < kfs.length; i++){
 					var key = kfs[i];
-					if(!JSB().isNull(pe[key])){
-						entry[key] = pe[key];
+					if(parent.hasKeywordOption(key)){
+						entry[key] = parent.hasKeywordOption(key);
 					}
 				}
 			}
 			
-			var commonSection = this.$common;
+			
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
 				var body = {};
 				
@@ -382,15 +435,15 @@
 				self._matchWaiters(1);
 				
 				// merge common and entry sections
-				if(this.$common){
-					this.merge(true, body, this.$common);
+				if(commonSection && Object.keys(commonSection).length > 0){
+					this.merge(true, body, commonSection);
 				}
-				if(entry){
+				if(entry && Object.keys(entry).length > 0){
 					this.merge(true, body, entry);
 				}
 				
 				// clear JSB keyword fields
-				var kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require'];
+				var kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require'];
 				for(var i = 0; i < kfs.length; i++ ){
 					if(body[kfs[i]]){
 						delete body[kfs[i]];
@@ -532,8 +585,8 @@
 					}
 /*					
 					// propagate $server and $client
-					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb._serverProcs; return new f();}
-					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb._clientProcs; return new f();}
+					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_serverProcs; return new f();}
+					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_clientProcs; return new f();}
 */					
 					
 					var scopeVars = self.merge({
@@ -568,7 +621,7 @@
 						if(parent && !isBootstrap){ 
 							procDecl += 'var $super = new $superFunc(this); ';
 							if(isCtor){
-								procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this._superCalled = true; }; ';
+								procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this.$_superCalled = true; }; ';
 							} else {
 								procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
 							}
@@ -661,8 +714,8 @@
 					var ctor = null;
 					if(entry && entry.hasOwnProperty('$constructor')){
 						ctor = entry.$constructor;
-					} else if(!ctor && commonSection && commonSection.hasOwnProperty('$constructor')){
-						ctor = commonSection.$constructor;
+					} else if(!ctor && self.hasOwnProperty('$constructor')){
+						ctor = self.$constructor;
 					} else if(!ctor){
 						ctor = function(){};
 					}
@@ -771,7 +824,7 @@
 				if(!JSB.isNull(this.$server) && !JSB.isNull(this.$client)){
 					var serverBody = this.$server;
 					var curJsb = this;
-					var scope = this._clientProcs = this._clientProcs || {};
+					var scope = this.$_clientProcs = this.$_clientProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
@@ -816,7 +869,7 @@
 					var clientBody = this.$client;
 					
 					var curJsb = this;
-					var scope = this._serverProcs = this._serverProcs || {};
+					var scope = this.$_serverProcs = this.$_serverProcs || {};
 					
 					while(curJsb) {
 						var bodies = [];
@@ -837,14 +890,14 @@
 								}
 /*								
 								var scope = clientBody;
-								if(this.format == 'jsb'){
+								if(this.$format == 'jsb'){
 									scope = clientBody.$server = clientBody.$server || {};
 								}
 */								
 								if(scope[procName] || blackProcs[procName]){
 									continue;
 								}
-								scope[procName] = eval('function(){JSB().proxyRpcCall.call('+(this.format == 'jso' ? 'this': 'this.__instance' )+', "'+procName+'", arguments);}');
+								scope[procName] = eval('function(){JSB().proxyRpcCall.call('+(this.$format == 'jso' ? 'this': 'this.__instance' )+', "'+procName+'", arguments);}');
 							}
 						}
 						
@@ -868,8 +921,8 @@
 					entry.$fixedId = this.$fixedId;
 				}
 				
-				if(!entry.$bootstrap && this.$common && this.$common.$bootstrap){
-					entry.$bootstrap = this.$common.$bootstrap;
+				if(!entry.$bootstrap && this.$bootstrap){
+					entry.$bootstrap = this.$bootstrap;
 				}
 				
 			}
@@ -892,6 +945,9 @@
 			this.rpc(name, args, callback);
 		},
 
+		getDescriptor: function(){
+			return this._descriptor;
+		},
 		
 		currentSection: function(){
 			if(this.isClient() ){
@@ -1269,9 +1325,9 @@
 			var ss = this;
 			var newFunc = function() {
 				var self = this;
-				var storeSuperCalled = this._superCalled;
+				var storeSuperCalled = this.$_superCalled;
 				// copy all fields into current scope
-				if(!this._fieldsCopied){
+				if(!this.$_fieldsCopied){
 					function _copyFields(targetScope, fieldArr){
 						for(var i = 0; i < fieldArr.length; i++){
 							var fDesc = fieldArr[i];
@@ -1295,20 +1351,20 @@
 					// place sync scopes
 					var syncScopes = JSB().syncScopes[this.jsb.$name];
 					if(syncScopes){
-						this.syncScopes = {};
+						this.$_syncScopes = {};
 						for(var fName in syncScopes){
-							this.syncScopes[fName] = {};
+							this.$_syncScopes[fName] = {};
 						}
 					} else {
-						this.syncScopes = null;
+						this.$_syncScopes = null;
 					}
 					
-					this._fieldsCopied = true;
+					this.$_fieldsCopied = true;
 				}
 				
 				
 				// call ctor
-				this._superCalled = false;
+				this.$_superCalled = false;
 					
 				var ctxStack = ss.getCallingContext();
 				ctxStack.push({
@@ -1323,9 +1379,9 @@
 					if(ss._ctor){
 						ss._ctor.apply(this, arguments);
 					}
-					if (!this._superCalled) {
+					if (!this.$_superCalled) {
 						parent.apply(this, arguments);
-						this._superCalled = true;
+						this.$_superCalled = true;
 					}
 				} finally {
 					// restore prev context
@@ -1333,7 +1389,7 @@
 				}
 					
 				
-				this._superCalled = storeSuperCalled;
+				this.$_superCalled = storeSuperCalled;
 				
 			};
 
@@ -2019,14 +2075,7 @@
 		setSystemProfiler: function(prof){
 			this.systemProfiler = prof;
 		},
-/*		
-		wrapJSO: function(file, path, initJSOCode){
-			var storePath = JSB().lastPath; 
-			JSB().lastPath = path; 
-			initJSOCode.call(this);
-			JSB().lastPath = storePath;
-		},
-*/		
+		
 		injectServerVersion: function(url){
 			if(!this.getServerVersion()){
 				return url;
@@ -2600,11 +2649,10 @@
 					if(JSB().isNull(serverInstance)){
 						var bNeedSync = false;
 						var jso = JSB().get(jsoName);
-						if(jso == null || jso == undefined){
+						if(!jso){
 							return null;
 						}
-						var entry = jso.currentSection();
-						if(entry.$singleton){
+						if(jso.isSingleton()){
 							serverInstance = JSB().getInstance(jsoName);
 							if(JSB().isNull(serverInstance)){
 								return null;
@@ -2616,7 +2664,7 @@
 						if(JSB().isNull(serverInstance)){
 							
 							// check for rpc instance creation permission
-							if(entry.$disableRpcInstance){
+							if(jso.hasKeywordOption('$disableRpcInstance')){
 								JSB().getLogger().warn('Unable to create new instance from RPC call for jsb: "' + jsoName + '('+instanceId+')" due option "disableRpcInstance" set')
 								return null;
 							}
@@ -2624,7 +2672,7 @@
 							var f = jso.getClass();
 							// create server-side instance with client-side id
 							
-							if(entry.$fixedId || jso.$fixedId){
+							if(jso.hasKeywordOption('$fixedId')){
 								JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 									// use this to access current object
 									this.id = instanceId;
@@ -2665,12 +2713,12 @@
 					var obj = null;
 					if(JSB().isBean(cls)){
 						obj = cls;
-						if(obj.bindKey != id && obj.getId() != id){
+						if(obj.$_bindKey != id && obj.getId() != id){
 							throw 'constructInstanceFromRemote: Wrong singleton ID retrieved';
 						}
 					} else {
 						// check for fixedId
-						if(cls.jsb.currentSection().$fixedId){
+						if(cls.jsb.hasKeywordOption('$fixedId')){
 							obj = self.getInstance(id);
 						}
 					}
@@ -2678,17 +2726,17 @@
 					if(!obj){
 						JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 							// use this to access current object
-							if(cls.jsb.currentSection().$fixedId){
+							if(cls.jsb.hasKeywordOption('$fixedId')){
 								this.id = id;
 							}
-							this.bindKey = id;
+							this.$_bindKey = id;
 						});
 						obj = new cls();
 						JSB().getThreadLocal().clear('_jsoRegisterCallback');
 						obj.doSync();
 					}
 					
-					if(!JSB().isNull(obj.syncScopes)){
+					if(!JSB().isNull(obj.$_syncScopes)){
 						if(obj.isSynchronized()){
 							if(callback){ callback(obj); }
 						} else {
@@ -3000,277 +3048,256 @@
 JSB({
 	$name: 'JSB.Bean',
 	$parent: null,
-	$common: {
 /*
-//		Synchronization options:
-		$sync: {
-			updateClient: true,
-			updateServer: false,
-			updateCheckInterval: 1000,
-			include: [],
-			exclude: []
-		},
+//	Synchronization options:
+	$sync: {
+		updateClient: true,
+		updateServer: false,
+		updateCheckInterval: 1000,
+		include: [],
+		exclude: []
+	},
 */
-		destroy: function(){
-			this._destroyed = true;
-			JSB().unregister(this);
-		},
-		
-		isDestroyed: function(){
-			return this._destroyed;
-		},
-		
-		getSuperClass: function(className){
-			if(JSB().isNull(className)){
-				
-				var ctxStack = this.jsb.getCallingContext();
+	destroy: function(){
+		this._destroyed = true;
+		JSB().unregister(this);
+	},
+	
+	isDestroyed: function(){
+		return this._destroyed;
+	},
+	
+	getSuperClass: function(className){
+		if(JSB().isNull(className)){
+			
+			var ctxStack = this.jsb.getCallingContext();
 
-				// get calling proc
-				if(ctxStack.length < 2){
-					throw 'Invalid "getSuperClass" function call';
-				}
+			// get calling proc
+			if(ctxStack.length < 2){
+				throw 'Invalid "getSuperClass" function call';
+			}
 
-				var callerCtx = ctxStack[ctxStack.length - 2];
-				var cls = callerCtx.jsb.getClass();
-				
-				var sClass = cls.superclass;
-				if(JSB().isNull(sClass) || JSB().isNull(sClass.jsb)){
-					throw 'Wrong parent class found';
-				}
-				return sClass;
+			var callerCtx = ctxStack[ctxStack.length - 2];
+			var cls = callerCtx.jsb.getClass();
+			
+			var sClass = cls.superclass;
+			if(JSB().isNull(sClass) || JSB().isNull(sClass.jsb)){
+				throw 'Wrong parent class found';
+			}
+			return sClass;
+		}
+		
+		var curScope = this.constructor.superclass;
+		while(true){
+			if(JSB().isNull(curScope) || JSB().isNull(curScope.jsb)){
+				throw 'Unable to find className: "' + className + '"in "' + this.jsb.$name + '" hierarchy stack';
+			}
+			if(curScope.jsb.$name == className){
+				return curScope; 
 			}
 			
-			var curScope = this.constructor.superclass;
-			while(true){
-				if(JSB().isNull(curScope) || JSB().isNull(curScope.jsb)){
-					throw 'Unable to find className: "' + className + '"in "' + this.jsb.$name + '" hierarchy stack';
-				}
-				if(curScope.jsb.$name == className){
-					return curScope; 
-				}
-				
-				curScope = curScope.constructor.superclass;
-			}
-		},
-		
-		getClass: function(){
-			return this.getJsb().getClass();
-		},
+			curScope = curScope.constructor.superclass;
+		}
+	},
+	
+	getClass: function(){
+		return this.getJsb().getClass();
+	},
 
-		getJsb: function(){
-			return this.jsb;
-		},
+	getJsb: function(){
+		return this.jsb;
+	},
+	
+	setupSync: function(){
+		if(!this.getJsb().getSync() || !this.$_syncScopes){
+			return;
+		}
 		
-		setupSync: function(){
-			if(!this.$sync || !this.syncScopes){
-				return;
-			}
-			
-			var defaultVal = 1000;
-			if(JSB().isObject(this.$sync) && !JSB().isNull(this.$sync.updateCheckInterval)){
-				defaultVal = this.$sync.updateCheckInterval;
-			}
-			
-			this.setSyncCheckInterval(defaultVal);
-		},
+		var defaultVal = 1000;
+		if(JSB().isObject(this.getJsb().getSync()) && !JSB().isNull(this.getJsb().getSync().updateCheckInterval)){
+			defaultVal = this.getJsb().getSync().updateCheckInterval;
+		}
 		
-		setSyncCheckInterval: function(to){
-			var self = this;
-			var bUpdateServer = false;
-			var bUpdateClient = true;
-			if(JSB.isObject(this.$sync) && this.$sync.updateServer){
-				bUpdateServer = true;
+		this.setSyncCheckInterval(defaultVal);
+	},
+	
+	setSyncCheckInterval: function(to){
+		var self = this;
+		var bUpdateServer = false;
+		var bUpdateClient = true;
+		if(JSB.isObject(this.getJsb().getSync()) && this.getJsb().getSync().updateServer){
+			bUpdateServer = true;
+		}
+		if(JSB.isObject(this.getJsb().getSync()) && !JSB.isNull(this.getJsb().getSync().updateClient)){
+			bUpdateClient = this.getJsb().getSync().updateClient;
+		}
+		if(!this.getJsb().getSync() 
+			|| (JSB.isClient() && !bUpdateServer)
+			|| (!JSB.isClient() && !bUpdateClient) ){
+			return;
+		}
+		this.syncCheckInterval = to;
+		function _sync(){
+			if(self.syncCheckInterval && !JSB().isNull(self.$_syncScopes) && !self.isDestroyed()){
+				self.doSync(function(){
+					JSB().defer(function(){
+						_sync();
+					}, self.syncCheckInterval, 'doSync_' + self.getId());
+				});
 			}
-			if(JSB.isObject(this.$sync) && !JSB.isNull(this.$sync.updateClient)){
-				bUpdateClient = this.$sync.updateClient;
-			}
-			if(!this.$sync 
-				|| (JSB.isClient() && !bUpdateServer)
-				|| (!JSB.isClient() && !bUpdateClient) ){
-				return;
-			}
-			this.syncCheckInterval = to;
-			function _sync(){
-				if(self.syncCheckInterval && !JSB().isNull(self.syncScopes) && !self.isDestroyed()){
-					self.doSync(function(){
-						JSB().defer(function(){
-							_sync();
-						}, self.syncCheckInterval, 'doSync_' + self.getId());
-					});
-				}
-			}
-			if(this.syncCheckInterval){
-				JSB().defer(function(){
-					_sync();
-				}, self.syncCheckInterval, 'doSync_' + self.getId());
-			}
-		},
-		
-		updateSyncState: function(){
-			// update local state
-			var timeStamp = Date.now();
-			var updated = false;
+		}
+		if(this.syncCheckInterval){
+			JSB().defer(function(){
+				_sync();
+			}, self.syncCheckInterval, 'doSync_' + self.getId());
+		}
+	},
+	
+	updateSyncState: function(){
+		// update local state
+		var timeStamp = Date.now();
+		var updated = false;
 /*			
 			if(JSB.isInstanceOf(this, 'Ontoed.Model.Function') && this.info['short-uri'] == 'spin:construct'){
 				debugger;
 			}
 */			
-			function updateSyncScope(timeStamp, name, realScope, syncInfoScope){
-				var updated = false;
-				if(JSB().isBean(realScope)){
-					// fixup realscope if it is Bean
+		function updateSyncScope(timeStamp, name, realScope, syncInfoScope){
+			var updated = false;
+			if(JSB().isBean(realScope)){
+				// fixup realscope if it is Bean
+				realScope = {
+					__jso: realScope.jsb.$name,
+					__id: realScope.getId()
+				};
+			}
+			if(JSB().isFunction(realScope)){
+				// this case occurs when users manually fills sync scope with function object
+				// TODO: subject to remove
+				// now skipping
+				return false;
+			} else if(JSB().isPlainObject(realScope)){
+				// iterate over all fields in realScope to find news and changes
+				syncInfoScope.type = 1;
+				syncInfoScope.value = null;
+				if(JSB().isNull(syncInfoScope.data)){
+					syncInfoScope.data = {};
+					updated = true;
+				}
+				for(var realPropName in realScope){
+					if(realScope[realPropName] === undefined){
+						continue;
+					}
+					if(JSB().isNull(syncInfoScope.data[realPropName])){
+						// item to add
+						syncInfoScope.data[realPropName] = {};
+						updated = true;
+					}
+					updated |= updateSyncScope(timeStamp, realPropName, realScope[realPropName], syncInfoScope.data[realPropName]);
+				}
+				// iterate over all fields in syncInfo to find absent entries
+				for(var propName in syncInfoScope.data){
+					if(realScope[propName] === undefined && syncInfoScope.data[propName].existed){
+						syncInfoScope.data[propName].timeStamp = timeStamp;
+						syncInfoScope.data[propName].existed = false;
+						syncInfoScope.data[propName].data = null;
+						syncInfoScope.data[propName].value = null;
+						updated = true;
+					}
+				}
+
+			} else if(JSB().isArray(realScope)){
+				syncInfoScope.type = 2;
+				syncInfoScope.value = null;
+				if(JSB().isNull(syncInfoScope.data)){
+					syncInfoScope.data = {};
+					updated = true;
+				}
+				// new or existed
+				for(var i = 0; i < realScope.length; i++ ){
+					if(JSB().isNull(syncInfoScope.data[i])){
+						syncInfoScope.data[i] = {};
+						updated = true;
+					} 
+					updated |= updateSyncScope(timeStamp, i, realScope[i], syncInfoScope.data[i]);
+				}
+				// removed
+				for(var i in syncInfoScope.data){
+					if(i >= realScope.length && syncInfoScope.data[i].existed){
+						syncInfoScope.data[i].existed = false;
+						syncInfoScope.data[i].timeStamp = timeStamp;
+						syncInfoScope.data[i].data = null;
+						syncInfoScope.data[i].value = null;
+						updated = true;
+					}
+				}
+
+			} else {
+				// number, string or boolean
+				if(realScope != syncInfoScope.value || syncInfoScope.value === undefined){
+					syncInfoScope.value = realScope;
+					syncInfoScope.type = 0;
+					updated = true;
+				} else {
+					return false;
+				}
+			}
+			
+			if(updated){
+				syncInfoScope.existed = true;
+				syncInfoScope.timeStamp = timeStamp;
+			}
+			return updated;
+
+		}
+		
+		for(var scopeName in this.$_syncScopes){
+			updated |= updateSyncScope(timeStamp, scopeName, this[scopeName], this.$_syncScopes[scopeName]);
+		}
+		
+		return updated;
+	},
+
+	getSyncSlice: function(timeStamp) {
+		var slice = {}, minStamp = null, maxStamp = null;
+		
+		function getScopeSlice(timeStamp, syncScope, realScope){
+			if(syncScope.timeStamp < timeStamp){
+				return null;
+			}
+			var slice = {
+				t: syncScope.type,
+				ex: syncScope.existed,
+			}, minStamp = syncScope.timeStamp, maxStamp = syncScope.timeStamp;
+			if(syncScope.existed){
+				if(realScope === undefined){
+//						throw 'getScopeSlice: sync error due to out of the realScope';
+				} else if(JSB().isBean(realScope)){
 					realScope = {
 						__jso: realScope.jsb.$name,
-						__id: realScope.getId()
+						__id: JSB().isClient() ? (realScope.$_bindKey || realScope.getId()) : realScope.getId()
 					};
 				}
-				if(JSB().isFunction(realScope)){
-					// this case occurs when users manually fills sync scope with function object
-					// TODO: subject to remove
-					// now skipping
-					return false;
-				} else if(JSB().isPlainObject(realScope)){
-					// iterate over all fields in realScope to find news and changes
-					syncInfoScope.type = 1;
-					syncInfoScope.value = null;
-					if(JSB().isNull(syncInfoScope.data)){
-						syncInfoScope.data = {};
-						updated = true;
-					}
-					for(var realPropName in realScope){
-						if(realScope[realPropName] === undefined){
-							continue;
-						}
-						if(JSB().isNull(syncInfoScope.data[realPropName])){
-							// item to add
-							syncInfoScope.data[realPropName] = {};
-							updated = true;
-						}
-						updated |= updateSyncScope(timeStamp, realPropName, realScope[realPropName], syncInfoScope.data[realPropName]);
-					}
-					// iterate over all fields in syncInfo to find absent entries
-					for(var propName in syncInfoScope.data){
-						if(realScope[propName] === undefined && syncInfoScope.data[propName].existed){
-							syncInfoScope.data[propName].timeStamp = timeStamp;
-							syncInfoScope.data[propName].existed = false;
-							syncInfoScope.data[propName].data = null;
-							syncInfoScope.data[propName].value = null;
-							updated = true;
-						}
-					}
-
-				} else if(JSB().isArray(realScope)){
-					syncInfoScope.type = 2;
-					syncInfoScope.value = null;
-					if(JSB().isNull(syncInfoScope.data)){
-						syncInfoScope.data = {};
-						updated = true;
-					}
-					// new or existed
-					for(var i = 0; i < realScope.length; i++ ){
-						if(JSB().isNull(syncInfoScope.data[i])){
-							syncInfoScope.data[i] = {};
-							updated = true;
-						} 
-						updated |= updateSyncScope(timeStamp, i, realScope[i], syncInfoScope.data[i]);
-					}
-					// removed
-					for(var i in syncInfoScope.data){
-						if(i >= realScope.length && syncInfoScope.data[i].existed){
-							syncInfoScope.data[i].existed = false;
-							syncInfoScope.data[i].timeStamp = timeStamp;
-							syncInfoScope.data[i].data = null;
-							syncInfoScope.data[i].value = null;
-							updated = true;
-						}
-					}
-
-				} else {
-					// number, string or boolean
-					if(realScope != syncInfoScope.value || syncInfoScope.value === undefined){
-						syncInfoScope.value = realScope;
-						syncInfoScope.type = 0;
-						updated = true;
-					} else {
-						return false;
-					}
-				}
-				
-				if(updated){
-					syncInfoScope.existed = true;
-					syncInfoScope.timeStamp = timeStamp;
-				}
-				return updated;
-
-			}
-			
-			for(var scopeName in this.syncScopes){
-				updated |= updateSyncScope(timeStamp, scopeName, this[scopeName], this.syncScopes[scopeName]);
-			}
-			
-			return updated;
-		},
-
-		getSyncSlice: function(timeStamp) {
-			var slice = {}, minStamp = null, maxStamp = null;
-			
-			function getScopeSlice(timeStamp, syncScope, realScope){
-				if(syncScope.timeStamp < timeStamp){
-					return null;
-				}
-				var slice = {
-					t: syncScope.type,
-					ex: syncScope.existed,
-				}, minStamp = syncScope.timeStamp, maxStamp = syncScope.timeStamp;
-				if(syncScope.existed){
-					if(realScope === undefined){
-//						throw 'getScopeSlice: sync error due to out of the realScope';
-					} else if(JSB().isBean(realScope)){
-						realScope = {
-							__jso: realScope.jsb.$name,
-							__id: JSB().isClient() ? (realScope.bindKey || realScope.getId()) : realScope.getId()
-						};
-					}
-					if(syncScope.type == 0){
-						// primitive
-						slice.v = syncScope.value;
-					} else if(syncScope.type == 1 || syncScope.type == 2){
-						// object & array
-						slice.d = {};
-						for(var fName in syncScope.data){
-							var s = getScopeSlice(timeStamp, syncScope.data[fName], realScope[fName]);
-							if(JSB().isPlainObject(s)){
-								slice.d[fName] = s.slice;
-								if(s.minStamp <= minStamp){
-									minStamp = s.minStamp;
-								}
-								if(s.maxStamp >= maxStamp){
-									maxStamp = s.maxStamp;
-								}
+				if(syncScope.type == 0){
+					// primitive
+					slice.v = syncScope.value;
+				} else if(syncScope.type == 1 || syncScope.type == 2){
+					// object & array
+					slice.d = {};
+					for(var fName in syncScope.data){
+						var s = getScopeSlice(timeStamp, syncScope.data[fName], realScope[fName]);
+						if(JSB().isPlainObject(s)){
+							slice.d[fName] = s.slice;
+							if(s.minStamp <= minStamp){
+								minStamp = s.minStamp;
+							}
+							if(s.maxStamp >= maxStamp){
+								maxStamp = s.maxStamp;
 							}
 						}
-					} else {
-						throw 'getScopeSlice: unknown syncScope.type';
 					}
-				}
-				return {
-					minStamp: minStamp,
-					maxStamp: maxStamp,
-					slice: slice
-				};
-
-			}
-			
-			for(var scopeName in this.syncScopes){
-				var s = getScopeSlice(timeStamp, this.syncScopes[scopeName], this[scopeName]);
-				if(JSB().isPlainObject(s)){
-					slice[scopeName] = s.slice;
-					if(JSB().isNull(minStamp) || s.minStamp <= minStamp){
-						minStamp = s.minStamp;
-					}
-					if(JSB().isNull(maxStamp) || s.maxStamp >= maxStamp){
-						maxStamp = s.maxStamp;
-					}
+				} else {
+					throw 'getScopeSlice: unknown syncScope.type';
 				}
 			}
 			return {
@@ -3278,86 +3305,64 @@ JSB({
 				maxStamp: maxStamp,
 				slice: slice
 			};
-		},
 
-		applySlice: function(slice, callback){
-			var self = this;
-			var completeMap = {};
-			var scope = { needWait: false, iterateComplete: false }
-			function _checkComplete1(){
-				if(!scope.iterateComplete){
-					return;
+		}
+		
+		for(var scopeName in this.$_syncScopes){
+			var s = getScopeSlice(timeStamp, this.$_syncScopes[scopeName], this[scopeName]);
+			if(JSB().isPlainObject(s)){
+				slice[scopeName] = s.slice;
+				if(JSB().isNull(minStamp) || s.minStamp <= minStamp){
+					minStamp = s.minStamp;
 				}
-				for(var i in completeMap){
-					if(!completeMap[i]) return;
-				}
-				if(callback){
-					callback.call(self);
+				if(JSB().isNull(maxStamp) || s.maxStamp >= maxStamp){
+					maxStamp = s.maxStamp;
 				}
 			}
-			
-			function applyScopeSlice(name, syncSlice, parentRealScope, callback){
-				if(!syncSlice.ex){
-					// remove
-					delete parentRealScope[name];
-					return;
-				}
-				if( syncSlice.t == 0 ){
-					parentRealScope[name] = syncSlice.v;
-					return;
-				} else if(syncSlice.t == 1){
-					if(syncSlice.d.__jso && syncSlice.d.__id && JSB().isString(syncSlice.d.__jso.v) && JSB().isString(syncSlice.d.__id.v)){
-						// inject bean
-						JSB().constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
-							parentRealScope[name] = obj;
-							callback.call(self);
-						});
-						return true;
-					} else {
-						if(parentRealScope[name] === undefined || !JSB().isPlainObject(parentRealScope[name])){
-							parentRealScope[name] = {};
-						}
-						var completeMap = {};
-						var scope = {needWait: false, iterateComplete: false};
-						function _checkComplete(){
-							if(!scope.iterateComplete){
-								return;
-							}
-							for(var i in completeMap){
-								if(!completeMap[i]) return;
-							}
-							if(callback){
-								callback.call(self);
-							}
-						}
-						for(var pName in syncSlice.d){
-							if(!syncSlice.d[pName].ex){
-								delete parentRealScope[name][pName];
-							} else {
-								completeMap[pName] = false;
-								(function(pn){
-									if(applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
-										completeMap[pn] = true;
-										_checkComplete();
-									})){
-										scope.needWait = true;
-									} else {
-										delete completeMap[pn];
-									}
-								})(pName);
-								
-							}
-						}
-						scope.iterateComplete = true;
-						if(scope.needWait){
-							_checkComplete();
-							return true;
-						}
-						return;
-					}
-				} else if(syncSlice.t == 2){
-					if(parentRealScope[name] === undefined || !JSB().isArray(parentRealScope[name])){
-						parentRealScope[name] = [];
+		}
+		return {
+			minStamp: minStamp,
+			maxStamp: maxStamp,
+			slice: slice
+		};
+	},
+
+	applySlice: function(slice, callback){
+		var self = this;
+		var completeMap = {};
+		var scope = { needWait: false, iterateComplete: false }
+		function _checkComplete1(){
+			if(!scope.iterateComplete){
+				return;
+			}
+			for(var i in completeMap){
+				if(!completeMap[i]) return;
+			}
+			if(callback){
+				callback.call(self);
+			}
+		}
+		
+		function applyScopeSlice(name, syncSlice, parentRealScope, callback){
+			if(!syncSlice.ex){
+				// remove
+				delete parentRealScope[name];
+				return;
+			}
+			if( syncSlice.t == 0 ){
+				parentRealScope[name] = syncSlice.v;
+				return;
+			} else if(syncSlice.t == 1){
+				if(syncSlice.d.__jso && syncSlice.d.__id && JSB().isString(syncSlice.d.__jso.v) && JSB().isString(syncSlice.d.__id.v)){
+					// inject bean
+					JSB().constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
+						parentRealScope[name] = obj;
+						callback.call(self);
+					});
+					return true;
+				} else {
+					if(parentRealScope[name] === undefined || !JSB().isPlainObject(parentRealScope[name])){
+						parentRealScope[name] = {};
 					}
 					var completeMap = {};
 					var scope = {needWait: false, iterateComplete: false};
@@ -3372,10 +3377,9 @@ JSB({
 							callback.call(self);
 						}
 					}
-					var toRemove = [];
 					for(var pName in syncSlice.d){
 						if(!syncSlice.d[pName].ex){
-							toRemove.push(parseInt(pName));
+							delete parentRealScope[name][pName];
 						} else {
 							completeMap[pName] = false;
 							(function(pn){
@@ -3392,123 +3396,165 @@ JSB({
 						}
 					}
 					scope.iterateComplete = true;
-					if(toRemove.length > 0){
-						toRemove.sort(function(a,b){return b - a;});
-						for(var i in toRemove){
-							parentRealScope[name].splice(toRemove[i], 1);
-						}
-					}
 					if(scope.needWait){
 						_checkComplete();
 						return true;
 					}
 					return;
 				}
-
-			}
-			
-			for(var sName in slice){
-				completeMap[sName] = false;
-				(function(name){
-					if(applyScopeSlice(name, slice[name], self, function(){
-						completeMap[name] = true;
-						_checkComplete1();
-					})){
-						scope.needWait = true;
-					} else {
-						delete completeMap[name];
-					}
-				})(sName);
-			}
-			scope.iterateComplete = true;
-			if(scope.needWait){
-				_checkComplete1();
-			} else {
-				if(callback){
-					callback.call(self);
+			} else if(syncSlice.t == 2){
+				if(parentRealScope[name] === undefined || !JSB().isArray(parentRealScope[name])){
+					parentRealScope[name] = [];
 				}
-			}
-		},
-
-		getId: function(){
-			return this.id;
-		},
-		
-		setId: function(id){
-			JSB().unregister(this);
-			JSB().register(this, id);
-		},
-		
-		getName: function(){
-			return this.getJsb().$name;
-		},
-		
-		_extendSyncInfo: function(syncInfo){
-			syncInfo.isChanged = function(path){
-				var matchedScopes = [this];
-				var parts = path.split('.');
-				for(var i in parts){
-					var p = parts[i];
-					
-					var newScopes = [];
-					for(var j in matchedScopes){
-						var curPtr = matchedScopes[j];
-						if(p == '*'){
-							for(var k in curPtr){
-								if(curPtr[k].ex){
-									if(curPtr[k].d){
-										newScopes.push(curPtr[k].d);
-									}
-								}
+				var completeMap = {};
+				var scope = {needWait: false, iterateComplete: false};
+				function _checkComplete(){
+					if(!scope.iterateComplete){
+						return;
+					}
+					for(var i in completeMap){
+						if(!completeMap[i]) return;
+					}
+					if(callback){
+						callback.call(self);
+					}
+				}
+				var toRemove = [];
+				for(var pName in syncSlice.d){
+					if(!syncSlice.d[pName].ex){
+						toRemove.push(parseInt(pName));
+					} else {
+						completeMap[pName] = false;
+						(function(pn){
+							if(applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
+								completeMap[pn] = true;
+								_checkComplete();
+							})){
+								scope.needWait = true;
+							} else {
+								delete completeMap[pn];
 							}
-						} else {
-							if(curPtr[p]){
-								if(!curPtr[p].ex){
-									return true;
-								}
-								if(curPtr[p].d){
-									newScopes.push(curPtr[p].d);
-								} else {
-									return true;
+						})(pName);
+						
+					}
+				}
+				scope.iterateComplete = true;
+				if(toRemove.length > 0){
+					toRemove.sort(function(a,b){return b - a;});
+					for(var i in toRemove){
+						parentRealScope[name].splice(toRemove[i], 1);
+					}
+				}
+				if(scope.needWait){
+					_checkComplete();
+					return true;
+				}
+				return;
+			}
+
+		}
+		
+		for(var sName in slice){
+			completeMap[sName] = false;
+			(function(name){
+				if(applyScopeSlice(name, slice[name], self, function(){
+					completeMap[name] = true;
+					_checkComplete1();
+				})){
+					scope.needWait = true;
+				} else {
+					delete completeMap[name];
+				}
+			})(sName);
+		}
+		scope.iterateComplete = true;
+		if(scope.needWait){
+			_checkComplete1();
+		} else {
+			if(callback){
+				callback.call(self);
+			}
+		}
+	},
+
+	getId: function(){
+		return this.id;
+	},
+	
+	setId: function(id){
+		JSB().unregister(this);
+		JSB().register(this, id);
+	},
+	
+	getName: function(){
+		return this.getJsb().$name;
+	},
+	
+	_extendSyncInfo: function(syncInfo){
+		syncInfo.isChanged = function(path){
+			var matchedScopes = [this];
+			var parts = path.split('.');
+			for(var i in parts){
+				var p = parts[i];
+				
+				var newScopes = [];
+				for(var j in matchedScopes){
+					var curPtr = matchedScopes[j];
+					if(p == '*'){
+						for(var k in curPtr){
+							if(curPtr[k].ex){
+								if(curPtr[k].d){
+									newScopes.push(curPtr[k].d);
 								}
 							}
 						}
+					} else {
+						if(curPtr[p]){
+							if(!curPtr[p].ex){
+								return true;
+							}
+							if(curPtr[p].d){
+								newScopes.push(curPtr[p].d);
+							} else {
+								return true;
+							}
+						}
 					}
-					if(newScopes.length == 0){
-						return false;
-					}
-					matchedScopes = newScopes;
 				}
-				
-				return true;
+				if(newScopes.length == 0){
+					return false;
+				}
+				matchedScopes = newScopes;
 			}
-		},
-		
-		_onBeforeSync: function(syncInfo){
-			var si = JSB().clone(syncInfo);
-			this._extendSyncInfo(si);
-			return this.onBeforeSync(si);
-		},
-		
-		_onAfterSync: function(syncInfo){
-			var si = JSB().clone(syncInfo);
-			this._extendSyncInfo(si);
-			return this.onAfterSync(si);
-		},
-		
-		onAfterSync: function(syncInfo){},
-		
-		onSyncCheck: function(){},
-		
-		remote: function(){
-			if($jsb.isClient()){
-				return this.server();
-			} else {
-				return this.client();
-			}
+			
+			return true;
 		}
-		
 	},
+	
+	_onBeforeSync: function(syncInfo){
+		var si = JSB().clone(syncInfo);
+		this._extendSyncInfo(si);
+		return this.onBeforeSync(si);
+	},
+	
+	_onAfterSync: function(syncInfo){
+		var si = JSB().clone(syncInfo);
+		this._extendSyncInfo(si);
+		return this.onAfterSync(si);
+	},
+	
+	onAfterSync: function(syncInfo){},
+	
+	onSyncCheck: function(){},
+	
+	remote: function(){
+		if($jsb.isClient()){
+			return this.server();
+		} else {
+			return this.client();
+		}
+	},
+	
 	$client:{
 		$bootstrap: function(){
 			// use 'this' to access members
@@ -3516,9 +3562,9 @@ JSB({
 		$constructor: function(opts){
 			JSB().register(this);
 			if(opts){
-				this.bindKey = this.bindKey || opts.bindKey || opts.bind;
+				this.$_bindKey = this.$_bindKey || opts.bindKey || opts.bind;
 			}
-			this._synchronized = false;
+			this.$_synchronized = false;
 			this.setupSync();
 		},
 		
@@ -3527,37 +3573,37 @@ JSB({
 			var f = function(){
 				this.__instance = $this;
 			};
-			f.prototype = this.jsb._serverProcs;
+			f.prototype = this.jsb.$_serverProcs;
 			return new f();
 		},
 
 		bind: function(key){
-			this.bindKey = key;
+			this.$_bindKey = key;
 		},
 		
 		isSynchronized: function(){
-			return this._synchronized;
+			return this.$_synchronized;
 		},
 		
 		subscribeSynchronized: function(callback){
-			if(!this.syncCallbacks){
-				this.syncCallbacks = [];
+			if(!this.$_syncCallbacks){
+				this.$_syncCallbacks = [];
 			}
-			this.syncCallbacks.push(callback);
+			this.$_syncCallbacks.push(callback);
 		},
 		
 		matchSynchronized: function(){
-			if(!this.isSynchronized() || !this.syncCallbacks){
+			if(!this.isSynchronized() || !this.$_syncCallbacks){
 				return;
 			}
-			for(var i in this.syncCallbacks){
-				this.syncCallbacks[i].call(this);
+			for(var i in this.$_syncCallbacks){
+				this.$_syncCallbacks[i].call(this);
 			}
-			this.syncCallbacks = [];
+			this.$_syncCallbacks = [];
 		},
 
 		doSync: function(){
-			if(this.isDestroyed() || JSB().isNull(this.syncScopes)){
+			if(this.isDestroyed() || JSB().isNull(this.$_syncScopes)){
 				return;
 			}
 			var self = this;
@@ -3576,27 +3622,27 @@ JSB({
 				}
 			}
 			
-			if(JSB().isNull(this.lastDownloadSyncTimeStamp)){
-				this.lastDownloadSyncTimeStamp = 0;
+			if(JSB().isNull(this.$_lastDownloadSyncTimeStamp)){
+				this.$_lastDownloadSyncTimeStamp = 0;
 			}
-			if(JSB().isNull(this.lastUploadSyncTimeStamp)){
-				this.lastUploadSyncTimeStamp = 0;
+			if(JSB().isNull(this.$_lastUploadSyncTimeStamp)){
+				this.$_lastUploadSyncTimeStamp = 0;
 			}
 			
 			// build local slice
 			this.onSyncCheck();
 			var bNeedSync = this.updateSyncState();
-			if(bNeedSync || bForceSync || this.lastDownloadSyncTimeStamp == 0){
+			if(bNeedSync || bForceSync || this.$_lastDownloadSyncTimeStamp == 0){
 				var slice = null;
-				if(this.lastDownloadSyncTimeStamp > 0){
-					slice = JSB().merge(true, JSB().isNull(this.oddSlice) ? {} : this.oddSlice, this.getSyncSlice(this.lastUploadSyncTimeStamp + 1));
-					this.lastUploadSyncTimeStamp = Date.now();
+				if(this.$_lastDownloadSyncTimeStamp > 0){
+					slice = JSB().merge(true, JSB().isNull(this.$_oddSlice) ? {} : this.$_oddSlice, this.getSyncSlice(this.$_lastUploadSyncTimeStamp + 1));
+					this.$_lastUploadSyncTimeStamp = Date.now();
 				}
-				var ts = this.lastDownloadSyncTimeStamp + 1;
+				var ts = this.$_lastDownloadSyncTimeStamp + 1;
 				
 				this.server().requestSyncInfo(ts, slice, function(resp, err){
 					function _syncComplete(){
-						self._synchronized = true;
+						self.$_synchronized = true;
 						self.matchSynchronized();
 						if(callback){
 							callback.call(self);
@@ -3609,14 +3655,14 @@ JSB({
 					}
 					
 					if(!JSB().isNull(resp.maxStamp)){
-						self.lastDownloadSyncTimeStamp = parseInt(resp.maxStamp);
+						self.$_lastDownloadSyncTimeStamp = parseInt(resp.maxStamp);
 						if(!JSB().isNull(resp.minStamp) && self._onBeforeSync(resp.slice)){
 							self.updateSyncState();
-							self.oddSlice = self.getSyncSlice(self.lastUploadSyncTimeStamp + 1);
+							self.$_oddSlice = self.getSyncSlice(self.$_lastUploadSyncTimeStamp + 1);
 							self.applySlice(resp.slice, function(){
 								self._onAfterSync(resp.slice);
 								self.updateSyncState();
-								self.lastUploadSyncTimeStamp = Date.now();
+								self.$_lastUploadSyncTimeStamp = Date.now();
 								_syncComplete();
 							});
 						} else {
@@ -3659,7 +3705,7 @@ JSB({
 			var callCtx = this.jsb.saveCallingContext();
 			JSB().getProvider().enqueueRpc({
 				jsb: tJso.$name,
-				instance: JSB().isNull(this.bindKey) ? this.id : this.bindKey,
+				instance: JSB().isNull(this.$_bindKey) ? this.id : this.$_bindKey,
 				proc: procName,
 				params: JSB().substJsoInRpcResult(params),
 				sync: (sync ? true: false)
@@ -3700,8 +3746,8 @@ JSB({
 
 		onBeforeSync: function(syncInfo){
 			var bUpdateClient = true;
-			if(JSB().isPlainObject(this.$sync) && !JSB().isNull(this.$sync.updateClient)){
-				bUpdateClient = this.$sync.updateClient;
+			if(JSB().isPlainObject(this.getJsb().getSync()) && !JSB().isNull(this.getJsb().getSync().updateClient)){
+				bUpdateClient = this.getJsb().getSync().updateClient;
 			}
 			return bUpdateClient;
 		}
@@ -3718,13 +3764,13 @@ JSB({
 			var f = function(){
 				this.__instance = $this;
 			};
-			f.prototype = this.jsb._clientProcs;
+			f.prototype = this.jsb.$_clientProcs;
 			return new f();
 		},
 
 		onBeforeSync: function(syncInfo){
 			var bUpdateServer = false;
-			if(JSB().isPlainObject(this.$sync) && this.$sync.updateServer){
+			if(JSB().isPlainObject(this.getJsb().getSync()) && this.getJsb().getSync().updateServer){
 				bUpdateServer = true;
 			}
 			return bUpdateServer;
@@ -3733,7 +3779,7 @@ JSB({
 		onSyncRequest: function(){},
 		
 		doSync: function(callback){
-			if(this.isDestroyed() || JSB().isNull(this.syncScopes)){
+			if(this.isDestroyed() || JSB().isNull(this.$_syncScopes)){
 				return;
 			}
 			this.onSyncCheck();
@@ -3748,7 +3794,7 @@ JSB({
 		
 		requestSyncInfo: function(timeSlice, syncInfo){
 			var self = this;
-			if(JSB().isNull(this.syncScopes)){
+			if(JSB().isNull(this.$_syncScopes)){
 				return null;
 			}
 			// perform onSync event call
@@ -3818,108 +3864,102 @@ JSB({
 JSB({
 	$name: 'JSB.Repository',
 	$singleton: true,
-	$common: {
-		items: {},
-		loadList: {},
-		pathMapIndex: {},
-		
-		$constructor: function(){
-			JSB().setRepository(this);
-		},
-		
-		registerPath: function(beanCfg){
-			var name = beanCfg.$name;
-			if(!beanCfg.pathFile){
-				if(JSB.getLogger()){
-					JSB.getLogger().warn('No pathFile for bean: ' + beanCfg.$name);
-				}
-				return;
-			}
-			var pathFile = beanCfg.pathFile.toLowerCase();
-			if(name && pathFile){
-				this.pathMapIndex[pathFile] = name;
-			}
-		},
-		
-		register: function(beanCfg, opts){
-			if(!beanCfg){
-				return;
-			}
-			if(JSB.isArray(beanCfg)){
-				for(var i = 0; i < beanCfg.length; i++){
-					this.register(beanCfg[i], opts);
-				}
-				return;
-			}
-			var name = beanCfg.$name;
-			if(!name || name.length == 0){
-				var err = 'Bean has no name: ' + JSON.stringify(beanCfg);
-				throw err;
-			}
-/*			
-			if(path){
-				beanCfg.path = path;
-			}
-			if(pathWithFile){
-				beanCfg.pathWithFile = pathWithFile;
-			}
-*/			
-			JSB.merge(beanCfg, opts);
-			this.registerPath(beanCfg);
-			var locker = JSB().getLocker();
-			if(locker)locker.lock('_jsb_repo');
-			var entry = this.items[name];
-			if(!entry){
-				entry = this.items[name] = {
-					cfg: beanCfg,
-					jsb: null
-				};
-			} else {
-				entry.cfg = beanCfg;
-			}
-			this.loadList[name] = true;
-			if(locker)locker.unlock('_jsb_repo');
-		},
-		
-		registerLoaded: function(beanCfg, jsb){
-			var name = beanCfg.$name;
-			var entry = this.items[name];
-			if(!entry){
-				entry = this.items[name] = {};
-			}
-			entry.cfg = beanCfg;
-			entry.jsb = jsb;
-			this.registerPath(beanCfg);
-		},
-		
-		load: function(){
-			var locker = JSB().getLocker();
-			var loadArr = Object.keys(this.loadList);
-			for(var i = 0; i < loadArr.length; i++){
-				var name = loadArr[i];
-				var entry = this.items[name];
-				var cfg = entry.cfg;
-				
-				// do load
-				JSB(cfg);
-				
-				if(locker)locker.lock('_jsb_repo');
-				delete this.loadList[name];
-				if(locker)locker.unlock('_jsb_repo');
-			}
-		},
-		
-		get: function(name){
-			return this.items[name];
-		},
-		
-		getByPath: function(path){
-			var name = this.pathMapIndex[path];
-			if(!name){
-				return null;
-			}
-			return this.get(name);
+	
+	items: {},
+	loadList: {},
+	pathMapIndex: {},
+	
+	$constructor: function(){
+		JSB().setRepository(this);
+	},
+	
+	registerPath: function(beanCfg){
+		var name = beanCfg.$name;
+		if(JSB.isSystem(name)){
+			return;
 		}
+		if(!beanCfg.$_pathFile){
+			if(JSB.getLogger()){
+				JSB.getLogger().warn('No "$_pathFile" for bean: ' + beanCfg.$name);
+			}
+			return;
+		}
+		var pathFile = beanCfg.$_pathFile.toLowerCase();
+		if(name && pathFile){
+			this.pathMapIndex[pathFile] = name;
+		}
+	},
+	
+	register: function(beanCfg, opts){
+		if(!beanCfg){
+			return;
+		}
+		if(JSB.isArray(beanCfg)){
+			for(var i = 0; i < beanCfg.length; i++){
+				this.register(beanCfg[i], opts);
+			}
+			return;
+		}
+		var name = beanCfg.$name;
+		if(!name || name.length == 0){
+			var err = 'Bean has no name: ' + JSON.stringify(beanCfg);
+			throw err;
+		}
+		JSB.merge(beanCfg, opts);
+		this.registerPath(beanCfg);
+		var locker = JSB().getLocker();
+		if(locker)locker.lock('_jsb_repo');
+		var entry = this.items[name];
+		if(!entry){
+			entry = this.items[name] = {
+				cfg: beanCfg,
+				jsb: null
+			};
+		} else {
+			entry.cfg = beanCfg;
+		}
+		this.loadList[name] = true;
+		if(locker)locker.unlock('_jsb_repo');
+	},
+	
+	registerLoaded: function(beanCfg, jsb){
+		var name = beanCfg.$name;
+		var entry = this.items[name];
+		if(!entry){
+			entry = this.items[name] = {};
+		}
+		entry.cfg = beanCfg;
+		entry.jsb = jsb;
+		this.registerPath(beanCfg);
+	},
+	
+	load: function(){
+		var locker = JSB().getLocker();
+		var loadArr = Object.keys(this.loadList);
+		for(var i = 0; i < loadArr.length; i++){
+			var name = loadArr[i];
+			var entry = this.items[name];
+			var cfg = entry.cfg;
+			
+			// do load
+			JSB(cfg);
+			
+			if(locker)locker.lock('_jsb_repo');
+			delete this.loadList[name];
+			if(locker)locker.unlock('_jsb_repo');
+		}
+	},
+	
+	get: function(name){
+		return this.items[name];
+	},
+	
+	getByPath: function(path){
+		var name = this.pathMapIndex[path];
+		if(!name){
+			return null;
+		}
+		return this.get(name);
 	},
 	$client: {},
 	$server: {}
@@ -3928,15 +3968,13 @@ JSB({
 JSB({
 	$name: 'JSB.Locker',
 	$singleton: true,
-	$common: {
-		$constructor: function(){
-			JSB().setLocker(this);
-		},
+	$constructor: function(){
+		JSB().setLocker(this);
+	},
 
-		lock: function(){},
-		unlock: function(){},
-		clearLock: function(){}
-	}
+	lock: function(){},
+	unlock: function(){},
+	clearLock: function(){}
 });
 
 
@@ -4734,143 +4772,141 @@ JSB({
 
 JSB({
 	$name: 'JSB.Profiler',
-	$common: {
-		$bootstrap: function(){
-			var ProfileClass = this.getClass();
-			JSB().setSystemProfiler(new ProfileClass());
-		},
-		
-		$constructor: function(){},
-		
-		start: function(key){
-			if(!key){
-				return;
+	$bootstrap: function(){
+		var ProfileClass = this.getClass();
+		JSB().setSystemProfiler(new ProfileClass());
+	},
+	
+	$constructor: function(){},
+	
+	start: function(key){
+		if(!key){
+			return;
+		}
+		if(!this.profiles){
+			this.profiles = {};
+		}
+		if(!this.profiles[key]){
+			this.profiles[key] = {
+				key: key,
+				total: 0,
+				average: 0,
+				count: 0,
+				last: 0
+			};
+		}
+		this.profiles[key].last = Date.now();
+	},
+	stop: function(key){
+		var l = Date.now();
+		if(!this.profiles){
+			this.profiles = {};
+		}
+		if(!key || !this.profiles[key]){
+			return;
+		}
+		this.profiles[key].total += l - this.profiles[key].last;
+		this.profiles[key].count++;
+		this.profiles[key].average = this.profiles[key].total / this.profiles[key].count;
+		this.profiles[key].last = new Date().getTime();
+	},
+	
+	probe: function(key){
+		if(this.lastProbe){
+			this.stop(this.lastProbe);
+		}
+		this.lastProbe = key;
+		if(key){
+			this.start(key);
+		}
+	},
+	
+	clear: function(keys){
+		this.lastProbe = null;
+		if(!keys){
+			this.profiles = {};
+			return;
+		}
+		if(!JSB().isArray(keys)){
+			keys = [keys];
+		}
+		if(!this.profiles){
+			this.profiles = {};
+		}
+		for(var i in keys){
+			if(this.profiles[keys[i]]){
+				delete this.profiles[keys[i]];
 			}
-			if(!this.profiles){
-				this.profiles = {};
-			}
-			if(!this.profiles[key]){
-				this.profiles[key] = {
-					key: key,
-					total: 0,
-					average: 0,
-					count: 0,
-					last: 0
-				};
-			}
-			this.profiles[key].last = Date.now();
-		},
-		stop: function(key){
-			var l = Date.now();
-			if(!this.profiles){
-				this.profiles = {};
-			}
-			if(!key || !this.profiles[key]){
-				return;
-			}
-			this.profiles[key].total += l - this.profiles[key].last;
-			this.profiles[key].count++;
-			this.profiles[key].average = this.profiles[key].total / this.profiles[key].count;
-			this.profiles[key].last = new Date().getTime();
-		},
-		
-		probe: function(key){
-			if(this.lastProbe){
-				this.stop(this.lastProbe);
-			}
-			this.lastProbe = key;
-			if(key){
-				this.start(key);
-			}
-		},
-		
-		clear: function(keys){
-			this.lastProbe = null;
-			if(!keys){
-				this.profiles = {};
-				return;
-			}
+		}
+	},
+	
+	dump: function(keys){
+		var items = [];
+		if(!this.profiles){
+			this.profiles = {};
+		}
+		if(keys){
 			if(!JSB().isArray(keys)){
 				keys = [keys];
 			}
-			if(!this.profiles){
-				this.profiles = {};
-			}
 			for(var i in keys){
-				if(this.profiles[keys[i]]){
-					delete this.profiles[keys[i]];
-				}
+				var key = keys[i];
+				var obj = JSB().clone(this.profiles[key]);
+				delete obj.last;
+				items.push(obj);
 			}
-		},
-		
-		dump: function(keys){
-			var items = [];
-			if(!this.profiles){
-				this.profiles = {};
+		} else {
+			for(var i in this.profiles){
+				var obj = JSB().clone(this.profiles[i]);
+				delete obj.last;
+				items.push(obj);
 			}
-			if(keys){
-				if(!JSB().isArray(keys)){
-					keys = [keys];
-				}
-				for(var i in keys){
-					var key = keys[i];
-					var obj = JSB().clone(this.profiles[key]);
-					delete obj.last;
-					items.push(obj);
-				}
-			} else {
-				for(var i in this.profiles){
-					var obj = JSB().clone(this.profiles[i]);
-					delete obj.last;
-					items.push(obj);
-				}
-			}
-			// sort by total
-			items.sort(function(a, b){
-				return b.total - a.total;
-			});
-			
-			return JSON.stringify(items, null, 2);
-		},
-		
-		performInstrumentation: function(jsb, own){
-			var self = this;
-			var mtdNames = jsb.getMethods(own);
-			var locker = JSB.getLocker();
-			for(var i = 0; i < mtdNames.length; i++){
-				if(mtdNames[i] == '$constructor'){
-					continue;
-				}
-				(function(mtdName){
-					var keyName = jsb.$name + '.' + mtdName;
-					jsb.createMethodInterceptor(mtdName, function(originalProc, args){
-						var l = Date.now();
-						var res = originalProc.apply(this, args);
-						var taken = Date.now() - l;
-
-						locker.lock(keyName);
-						if(!self.profiles){
-							self.profiles = {};
-						}
-						if(!self.profiles[keyName]){
-							self.profiles[keyName] = {
-								key: keyName,
-								total: 0,
-								average: 0,
-								count: 0,
-								last: 0
-							};
-						}
-						self.profiles[keyName].total += taken;
-						self.profiles[keyName].count++;
-						self.profiles[keyName].average = self.profiles[keyName].total / self.profiles[keyName].count;
-						locker.unlock(keyName);
-						
-						return res; 
-					});
-				})(mtdNames[i]);
-			}
-			
 		}
+		// sort by total
+		items.sort(function(a, b){
+			return b.total - a.total;
+		});
+		
+		return JSON.stringify(items, null, 2);
+	},
+	
+	performInstrumentation: function(jsb, own){
+		var self = this;
+		var mtdNames = jsb.getMethods(own);
+		var locker = JSB.getLocker();
+		for(var i = 0; i < mtdNames.length; i++){
+			if(mtdNames[i] == '$constructor'){
+				continue;
+			}
+			(function(mtdName){
+				var keyName = jsb.$name + '.' + mtdName;
+				jsb.createMethodInterceptor(mtdName, function(originalProc, args){
+					var l = Date.now();
+					var res = originalProc.apply(this, args);
+					var taken = Date.now() - l;
+
+					locker.lock(keyName);
+					if(!self.profiles){
+						self.profiles = {};
+					}
+					if(!self.profiles[keyName]){
+						self.profiles[keyName] = {
+							key: keyName,
+							total: 0,
+							average: 0,
+							count: 0,
+							last: 0
+						};
+					}
+					self.profiles[keyName].total += taken;
+					self.profiles[keyName].count++;
+					self.profiles[keyName].average = self.profiles[keyName].total / self.profiles[keyName].count;
+					locker.unlock(keyName);
+					
+					return res; 
+				});
+			})(mtdNames[i]);
+		}
+		
 	}
 });

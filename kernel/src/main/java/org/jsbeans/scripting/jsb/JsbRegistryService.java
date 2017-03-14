@@ -167,7 +167,7 @@ public class JsbRegistryService extends Service {
                     }
                 }
 
-                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{path:'%s',pathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath, relPathWithFile);
+                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath, relPathWithFile);
                 ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
                 if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                     scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
@@ -228,7 +228,7 @@ public class JsbRegistryService extends Service {
                     public Future<Object> run(String name) throws PlatformException {
                         // try to lookup locally via JsHub
                         LookupJsoMessage msg = this.getArgument(0);
-                        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(String.format("Kernel.getClientJSB('%s');", name), false);
+                        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(String.format("JSB.getClientJSB('%s');", name), false);
                         execMsg.setScopePath(msg.getSession());
                         execMsg.setUser(msg.getUser());
                         execMsg.setUserToken(msg.getUserToken());

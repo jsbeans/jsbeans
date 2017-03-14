@@ -140,35 +140,6 @@
 			});
 		},
 		
-		getClientJSB: function(name){
-			var clientFieldBlacklist = {
-				'$server': true,
-				'_clientProcs': true,
-				'_ready': true,
-				'_readyState': true,
-				'_requireCnt': true,
-				'_requireMap': true,
-				'_cls': true,
-				'_ctor': true,
-				'_entryBootstrap': true,
-				'_commonBootstrap': true
-			};
-			var jsb = JSB().get(name);
-			if(JSB().isNull(jsb)){
-				Log.error('Unable to find JSB: ' + name);
-				return null;
-			}
-			
-			var cJsb = {};
-			for(var f in jsb){
-				if(jsb.hasOwnProperty(f) && !clientFieldBlacklist[f]){
-					cJsb[f] = jsb[f];
-				}
-			}
-			return cJsb;
-		},
-
-		
 		restart: function(){
 			return this.ask('RestartService', 'RestartMessage', {});
 		},

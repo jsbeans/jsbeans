@@ -7,11 +7,9 @@
 		'UserMenuTool': 'UserMenuTool'
 	},
 	
-	$common: {
-		$sync: true,
-		
-		user: null
-	},
+	$sync: true,
+	
+	user: null,
 	
 	$client: {
 		$constructor: function(opts){

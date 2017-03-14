@@ -1,41 +1,39 @@
 {
 	$name:'JSB.Widgets.EditorRegistry',
-	$common: {
-		register: function(typeId, jso){
-			if( JSO().isNull( this.editors ) ){
-				this.editors = {};
+	
+	register: function(typeId, jso){
+		if( JSO().isNull( this.editors ) ){
+			this.editors = {};
+		}
+		var typeIdArr = [];
+		if(JSO().isArray(typeId)){
+			typeIdArr = typeId;
+		} else {
+			typeIdArr[typeIdArr.length] = typeId;
+		}
+		for(var j in typeIdArr){
+			var t = typeIdArr[j];
+			if(JSO().isNull(this.editors[t])){
+				this.editors[t] = [];
 			}
-			var typeIdArr = [];
-			if(JSO().isArray(typeId)){
-				typeIdArr = typeId;
-			} else {
-				typeIdArr[typeIdArr.length] = typeId;
-			}
-			for(var j in typeIdArr){
-				var t = typeIdArr[j];
-				if(JSO().isNull(this.editors[t])){
-					this.editors[t] = [];
+			var arr = this.editors[t];
+			for(var i in arr){
+				if(arr[i] && arr[i] instanceof JSO && arr[i].name == jso.$name){
+					// already registered, skip
+					return;
 				}
-				var arr = this.editors[t];
-				for(var i in arr){
-					if(arr[i] && arr[i] instanceof JSO && arr[i].name == jso.$name){
-						// already registered, skip
-						return;
-					}
-				}
-				arr[arr.length] = jso;
 			}
-		},
-		
-		get: function(typeId){
-			if(JSO().isNull( this.editors ) || JSO().isNull(this.editors[typeId]) || this.editors[typeId].length == 0){
-				return null;
-			}
-			return this.editors[typeId][0]; // TODO: better selection logic
-		},
-		
-		
+			arr[arr.length] = jso;
+		}
 	},
+	
+	get: function(typeId){
+		if(JSO().isNull( this.editors ) || JSO().isNull(this.editors[typeId]) || this.editors[typeId].length == 0){
+			return null;
+		}
+		return this.editors[typeId][0]; // TODO: better selection logic
+	},
+	
 	$client: {
 		$singleton: true,
 		

@@ -1,6 +1,5 @@
 {
 	$name:'Auth',
-	$common: {
 //		initSHA: function(){
 //			/*
 //			 A JavaScript implementation of the SHA family of hashes, as
@@ -75,7 +74,7 @@
 //
 //	        return otp;
 //		}
-	},
+	
 	$client: {
 		$singleton: true,
 		$globalize: true,
