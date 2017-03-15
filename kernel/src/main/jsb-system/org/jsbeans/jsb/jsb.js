@@ -191,6 +191,11 @@
 			return this.hasKeywordOption('$fixedId');
 		},
 		
+		isSession: function(){
+			/* TODO: make a valid session check*/
+			return this.isSingleton() || this.isFixedId();
+		},
+		
 		isSystem: function(name){
 			if(!name){
 				name = this.$name;
@@ -3058,13 +3063,19 @@ JSB({
 		exclude: []
 	},
 */
-	destroy: function(){
-		this._destroyed = true;
+	destroy: function(localOnly){
+		if(this.isDestroyed()){
+			return;
+		}
+		this.$_destroyed = true;
 		JSB().unregister(this);
+		if(!localOnly && !this.jsb.isSession()){
+			this.remote().destroy(true);
+		}
 	},
 	
 	isDestroyed: function(){
-		return this._destroyed;
+		return this.$_destroyed;
 	},
 	
 	getSuperClass: function(className){
