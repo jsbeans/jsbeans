@@ -10,8 +10,8 @@
 			JSB().loadCss('tpl/glyphs/glyphs.css');
 			
 			(function(jQuery){
-				#include 'moment.js';
-				#include 'daterangepicker.js';
+				`#include moment.js`;
+				`#include daterangepicker.js`;
 			}).call(null, JSB().$);
 			
 		},

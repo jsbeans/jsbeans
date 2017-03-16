@@ -8,8 +8,8 @@
 			JSB().loadCss('tpl/jquery.ui/jquery.ui.loader.css');
 
 			(function(jQuery){
-				#include 'jquery-ui-effects.min.js';
-				#include 'jquery.ui.loader.js';
+				`#include jquery-ui-effects.min.js`;
+				`#include jquery.ui.loader.js`;
 			}).call(null, JSB().$);
 			
 		}

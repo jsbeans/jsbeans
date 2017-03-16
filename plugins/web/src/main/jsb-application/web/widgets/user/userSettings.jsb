@@ -15,7 +15,7 @@
 			$base(opts);
 			this.getElement().addClass('userSettings');
 
-			this.append(#dot{{
+			this.append(`#dot
 				<style>
 					.userSettings {
 						width: 306px;
@@ -54,7 +54,7 @@
 				</div>
 
 				<div class="apply" jsb="JSB.Widgets.Button" caption="Применить" onclick="{{=this.callbackAttr(function(evt){ self.applyChanges(); })}}"></div>
-			}});
+			`);
 
 			this.server().getAttributes(function(attrs){
 				JSB().deferUntil(function(){

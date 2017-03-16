@@ -11,7 +11,6 @@
 package org.jsbeans.scripting.jsb;
 
 import akka.util.Timeout;
-import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.FileHelper;
 import org.jsbeans.scripting.ExecuteScriptMessage;
@@ -34,17 +33,46 @@ public class JsbTemplateEngine {
         // perform imports
         curJsoText = performImports(curJsoText, jsoFile);
 
+        // perform templates
         curJsoText = performDot(curJsoText, jsoFile);
-
+        
+        // perform multistrings
+        curJsoText = performMultiString(curJsoText, jsoFile);
+        
         return curJsoText;
     }
-
-    private static String performImports(String jsoBody, String jsoFile) throws IOException {
-        Pattern p = Pattern.compile("\\#include\\s+[\\\"\\\']([^\\\"\\\']+)[\\\"\\\']", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNICODE_CASE);
+    
+    private static String performMultiString(String jsoBody, String jsoFile){
+    	Pattern p = Pattern.compile("`([^`]*)`", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNICODE_CASE);
         Matcher m = p.matcher(jsoBody);
         while (m.find()) {
             MatchResult mr = m.toMatchResult();
-            String includeFilePath = mr.group(1);
+            String wholeStr = mr.group(0);
+            String multiString = mr.group(1);
+            int wStart = mr.start();
+            int wEnd = wStart + wholeStr.length();
+            
+            // replace all commas
+            multiString = multiString.replaceAll("\\\"", "\\\\\"");
+            
+            // replace newlines
+            multiString = multiString.replaceAll("\\\r", "\\\\r");
+            multiString = multiString.replaceAll("\\\n", "\\\\n");
+            
+            jsoBody = jsoBody.substring(0, wStart) + "\"" + multiString + "\"" + jsoBody.substring(wEnd);
+            
+            m.reset(jsoBody);
+        }
+        
+    	return jsoBody;
+    }
+
+    private static String performImports(String jsoBody, String jsoFile) throws IOException {
+        Pattern p = Pattern.compile("`\\#include\\s+([^`]+)`", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNICODE_CASE);
+        Matcher m = p.matcher(jsoBody);
+        while (m.find()) {
+            MatchResult mr = m.toMatchResult();
+            String includeFilePath = mr.group(1).trim();
             String folderPath = FileHelper.getFolderByPath(jsoFile);
             String incPath = FileHelper.normalizePath(folderPath + "/" + includeFilePath);
             String fileBody = FileHelper.readStringFromFile(incPath);
@@ -61,37 +89,14 @@ public class JsbTemplateEngine {
     }
 
     private static String performDot(String jsoBody, String jsoFile) throws Exception {
-        Pattern p = Pattern.compile("\\#dot\\s*(\\{\\{)", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNICODE_CASE);
+        Pattern p = Pattern.compile("`\\#dot\\s*([^`]*)`", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNICODE_CASE);
         Matcher m = p.matcher(jsoBody);
         while (m.find()) {
             MatchResult mr = m.toMatchResult();
-            int tStart = mr.start(1);
-
-            // looking for end of template
-            int curPos = tStart + 2;
-            int deep = 1;
-            while (true) {
-                int nextOpen = jsoBody.indexOf("{{", curPos);
-                int nextClose = jsoBody.indexOf("}}", curPos);
-                if (nextOpen == -1 && nextClose == -1) {
-                    throw new PlatformException("Template is not closing in " + jsoFile + "(" + tStart + ")");
-                }
-                if (nextOpen >= 0 && (nextOpen < nextClose || nextClose == -1)) {
-                    deep++;
-                    curPos = nextOpen + 2;
-                    continue;
-                }
-                if (nextClose >= 0 && (nextClose < nextOpen || nextOpen == -1)) {
-                    deep--;
-                    curPos = nextClose + 2;
-                    if (deep == 0) {
-                        break;
-                    }
-                    continue;
-                }
-            }
-
-            String templateBody = jsoBody.substring(tStart + 2, curPos - 2);
+            String wholeStr = mr.group(0);
+            String templateBody = mr.group(1);
+            int wStart = mr.start();
+            int wEnd = wStart + wholeStr.length();
 
             // call JsHub
             ExecuteScriptMessage execMsg = new ExecuteScriptMessage("var t = '' + this.template; Template.doT.template(t);", false);
@@ -108,7 +113,7 @@ public class JsbTemplateEngine {
 
             // do replace
             String repStr = String.format("%s.call(this, this)", usMsg.result.toJS(false));
-            jsoBody = jsoBody.substring(0, mr.start()) + repStr + jsoBody.substring(curPos);
+            jsoBody = jsoBody.substring(0, wStart) + repStr + jsoBody.substring(wEnd);
             m.reset(jsoBody);
         }
 

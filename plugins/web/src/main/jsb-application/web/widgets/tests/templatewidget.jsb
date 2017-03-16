@@ -12,7 +12,7 @@
 		},
 		draw: function(data){
 			
-			var htmlText = #dot{{
+			var htmlText = `#dot
 				<h1>Это пример шаблонного виджета</h2>
 				<ul>
 				{{ for( var i in data ) { }}
@@ -22,7 +22,7 @@
 					</li>
 				{{ } }}
 				</ul>
-			}}
+			`;
 			
 			this.getElement().append(htmlText);
 		}

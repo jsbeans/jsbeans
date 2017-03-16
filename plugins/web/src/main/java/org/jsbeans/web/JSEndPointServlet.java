@@ -14,6 +14,7 @@ import akka.util.Timeout;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.scripting.*;
+import org.jsbeans.scripting.jsb.JsbTemplateEngine;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import scala.concurrent.Await;
@@ -103,7 +104,7 @@ public class JSEndPointServlet extends HttpServlet {
             Object userTokenObj = req.getSession().getAttribute("token");
             String userToken = (userTokenObj != null ? userTokenObj.toString() : null);
             Timeout timeout = ActorHelper.getServiceCommTimeout();
-            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, true);
+            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(JsbTemplateEngine.perform(script, null), true);
             execMsg.setScopePath(req.getSession().getId());
             execMsg.setUserToken(userToken);
             execMsg.setClientAddr(req.getRemoteAddr());

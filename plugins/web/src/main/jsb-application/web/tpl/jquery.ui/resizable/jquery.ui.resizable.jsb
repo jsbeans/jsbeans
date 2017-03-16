@@ -9,7 +9,7 @@
 			JSB().loadCss('tpl/jquery.ui/resizable/jquery-ui.theme.min.css');
 
 			(function(jQuery){
-				#include 'jquery-ui.min.js';
+				`#include jquery-ui.min.js`;
 			}).call(null, JSB().$);
 		}
 	}

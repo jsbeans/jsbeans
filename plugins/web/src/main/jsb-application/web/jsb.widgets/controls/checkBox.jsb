@@ -12,7 +12,7 @@
 			this.addClass('_dwp_checkBox');
 			
 			// construct
-			this.getElement().append(#dot{{
+			this.getElement().append(`#dot
 				<div class="shadowPanel"></div>
 				<label>
 					{{? self.options.check}}
@@ -21,7 +21,7 @@
 					<span class="_dwp_caption"></span>
 				</label>
 				<div class="contents"><div class="shadowPanel"></div></div>
-			}});
+			`);
 			
 			if(this.options.label){
 				this.setLabel(this.options.label);

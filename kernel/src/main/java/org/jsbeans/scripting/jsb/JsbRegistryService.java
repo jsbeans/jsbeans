@@ -146,7 +146,7 @@ public class JsbRegistryService extends Service {
                 }
                 String jsoBody = isServer ? FileHelper.readStringFromResource(jsoFile) : FileHelper.readStringFromFile(jsoFile);
                 if (jsoBody == null || jsoBody.length() == 0) {
-                    throw new PlatformException(String.format("Problem occured due to loading JSO descriptor: '%s'", jsoFile));
+                    throw new PlatformException(String.format("Problem occured due to loading JSB descriptor: '%s'", jsoFile));
                 }
                 // obtain relative folder
                 String relPath = "";

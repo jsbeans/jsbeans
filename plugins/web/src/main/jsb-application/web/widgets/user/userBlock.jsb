@@ -18,7 +18,7 @@
 			this.getElement().addClass('userBlock');
 			this.loadCss('userBlock.css');
 
-			this.append(#dot {{
+			this.append(`#dot
 				<div class="loggedPanel">
 					<div class="icon"></div>
 					<div class="link name"></div>
@@ -32,7 +32,7 @@
 					<div class="link register">Регистрация</div>
 					{{?}}
 				</div>
-			}});
+			`);
 /*			
 			this.getElement().css({display:'none'});
 			this.updateUser(function(){

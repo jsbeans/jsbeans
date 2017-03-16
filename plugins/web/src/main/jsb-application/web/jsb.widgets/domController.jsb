@@ -26,7 +26,7 @@
 			document.addEventListener("MSAnimationStart", insertListener, false); // IE
 			document.addEventListener("webkitAnimationStart", insertListener, false); // Chrome + Safari
 
-			this.$('head').append(#dot{{
+			this.$('head').append(`#dot
 				<style>
 				@keyframes nodeInserted {  
 					from { opacity: 0.99; }
@@ -66,7 +66,7 @@
 				    -webkit-animation-name: nodeInserted;
 				}
 				</style>
-			}});
+			`);
 			
 			// update jQuery fn scope with access function
 			this.$.fn.jsb = function(){
