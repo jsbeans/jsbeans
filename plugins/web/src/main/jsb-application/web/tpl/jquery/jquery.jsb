@@ -4,7 +4,7 @@
 		$singleton: true,
 		$bootstrap: function(readyCallback){
 			
-			`#include jquery-1.11.3.min.js`;
+			`#include 'jquery-1.11.3.min.js'`;
 			
 			JSB().addLibraryScope('$', window.jQuery.noConflict());
 			
@@ -12,9 +12,9 @@
 			var jQuery = JSB().$;
 
 			(function(jQuery){
-				`#include jquery.resize.js`;
-				`#include jquery.mousewheel.js`;
-				`#include jquery.cookie.js`;
+				`#include 'jquery.resize.js'`;
+				`#include 'jquery.mousewheel.js'`;
+				`#include 'jquery.cookie.js'`;
 			}).call(null, JSB().$);
 			
 		}

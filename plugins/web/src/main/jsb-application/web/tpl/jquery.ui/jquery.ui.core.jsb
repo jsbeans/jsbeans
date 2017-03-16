@@ -7,7 +7,7 @@
 			JSB().loadCss('tpl/jquery.ui/jquery-ui-core.min.css');
 			
 			(function(jQuery){
-				`#include jquery-ui-core.min.js`;
+				`#include 'jquery-ui-core.min.js'`;
 			}).call(null, JSB().$);
 			
 		}
