@@ -3,7 +3,7 @@
 	$parent: 'JSB.Widgets.Editor',
 	
 	$require: {
-		'JSB.Widgets.RangeValue': 'Value'
+		Value: 'JSB.Widgets.RangeValue'
 	},
 	$bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){

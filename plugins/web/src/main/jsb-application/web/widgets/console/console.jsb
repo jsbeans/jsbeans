@@ -2,9 +2,9 @@
 	$name:'Console',
 	$parent: 'JSB.Widgets.Widget',
 	$require: {
-		'JQuery.UI.Effects': 'UiEffects',
-		'JSB.Widgets.FloatingContainer': 'FloatingContainer',
-		'JQuery.UI.Interactions': 'UiInteractions'
+		UiEffects: 'JQuery.UI.Effects',
+		FloatingContainer: 'JSB.Widgets.FloatingContainer',
+		UiInteractions: 'JQuery.UI.Interactions'
 		
 	},
 	$client: {

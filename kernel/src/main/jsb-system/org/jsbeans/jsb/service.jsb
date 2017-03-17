@@ -1,8 +1,6 @@
 {
 	$name:'Service',
-	$require: {
-		'Kernel': 'Kernel'
-	},
+	$require: ['Kernel'],
 	$server: {
 		$singleton: true,
 		$globalize: true,

@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.Editor',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.EditorRegistry': 'EditorRegistry'
+		EditorRegistry: 'JSB.Widgets.EditorRegistry'
 	},
 	$client: {
 		$constructor: function(opts){

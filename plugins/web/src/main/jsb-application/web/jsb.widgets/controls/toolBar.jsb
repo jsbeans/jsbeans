@@ -1,8 +1,7 @@
 {
 	$name:'JSB.Widgets.ToolBar',
 	$parent: 'JSB.Widgets.Control',
-	$require: {
-	},
+	
 	$client: {
 		$constructor: function(opts){
 			$base(opts);

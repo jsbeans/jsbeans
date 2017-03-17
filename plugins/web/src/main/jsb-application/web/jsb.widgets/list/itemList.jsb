@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.ItemList',
 	$parent: 'JSB.Widgets.ListBox',
 	$require: {
-		'JSB.Widgets.ItemList.View': 'ItemListView'
+		ItemListView: 'JSB.Widgets.ItemList.View'
 	},
 	$client: {
 		$constructor: function(opts){

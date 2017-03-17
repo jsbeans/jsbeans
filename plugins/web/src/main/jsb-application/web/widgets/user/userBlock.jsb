@@ -2,9 +2,9 @@
 	$name: 'UserBlock',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.ListBox': 'ListBox',
-		'JSB.Widgets.ToolManager': 'ToolManager',
-		'UserMenuTool': 'UserMenuTool'
+		ListBox: 'JSB.Widgets.ListBox',
+		ToolManager: 'JSB.Widgets.ToolManager',
+		UserMenuTool: 'UserMenuTool'
 	},
 	
 	$sync: true,

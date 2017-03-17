@@ -2,7 +2,7 @@
 	$name: 'JSB.Widgets.Diagram.Node',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.Diagram.Connector': 'Connector'
+		Connector: 'JSB.Widgets.Diagram.Connector'
 	},
 	
 	$client: {

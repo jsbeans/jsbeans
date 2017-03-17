@@ -19,9 +19,7 @@
 		}
 	},
 	$server: {
-		$require: {
-			'Kernel': 'Kernel'
-		},
+		$require: ['Kernel'],
 		$singleton: true,
 		$globalize: true,
 		$constructor: function(){

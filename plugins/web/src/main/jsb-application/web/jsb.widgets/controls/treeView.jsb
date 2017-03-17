@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.TreeView',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.ScrollBox': 'ScrollBox'
+		ScrollBox: 'JSB.Widgets.ScrollBox'
 	},
 	$client: {
 		$constructor: function(opts){

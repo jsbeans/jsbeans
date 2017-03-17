@@ -1,8 +1,6 @@
 {
 	$name: 'JSB.Widgets.Diagram.WiringController',
 	$parent: 'JSB.Widgets.Diagram.Controller',
-	$require: {
-	},
 	
 	$client: {
 		fromConnector: null,

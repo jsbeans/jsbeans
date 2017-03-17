@@ -1,12 +1,12 @@
 {
 	$name:'JSB.Widgets.ToolManager',
 	$require: {
-		'JQuery': 'JQuery', 
-		'JSB.Widgets.EventBus': 'EventBus',
-		'JSB.Widgets.ToolWrapper': 'ToolWrapper',
-		'JSB.Widgets.MessageTool': 'MessageTool',
-		'JSB.Widgets.WidgetTool': 'WidgetTool',
-		'JSB.Widgets.Tooltip':'Tooltip'
+		JQuery: 'JQuery', 
+		EventBus: 'JSB.Widgets.EventBus',
+		ToolWrapper: 'JSB.Widgets.ToolWrapper',
+		MessageTool: 'JSB.Widgets.MessageTool',
+		WidgetTool: 'JSB.Widgets.WidgetTool',
+		Tooltip: 'JSB.Widgets.Tooltip'
 	},
 	$client: {
 		$singleton: true,

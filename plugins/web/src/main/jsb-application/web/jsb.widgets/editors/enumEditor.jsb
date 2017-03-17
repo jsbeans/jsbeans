@@ -2,8 +2,8 @@
 	$name:'JSB.Widgets.EnumEditor',
 	$parent: 'JSB.Widgets.Editor',
 	$require: {
-		'JSB.Widgets.ListBox': 'ListBox',
-		'JSB.Widgets.Value': 'Value'
+		ListBox: 'JSB.Widgets.ListBox',
+		Value: 'JSB.Widgets.Value'
 	},
 	$bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){

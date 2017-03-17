@@ -2,10 +2,10 @@
 	$name: 'JSB.Widgets.SplitLayoutManager',
 	$parent: 'JSB.Widgets.Widget',
 	$require: {
-		'JSB.Widgets.SplitBox': 'SplitBox',
-		'JSB.Widgets.TabView': 'TabView',
-		'JSB.Widgets.WidgetContainer': 'WidgetContainer',
-		'JSB.Widgets.FloatingContainer': 'FloatingContainer'
+		SplitBox: 'JSB.Widgets.SplitBox',
+		TabView: 'JSB.Widgets.TabView',
+		WidgetContainer: 'JSB.Widgets.WidgetContainer',
+		FloatingContainer: 'JSB.Widgets.FloatingContainer'
 	},
 	$client: {
 		$constructor: function(opts){

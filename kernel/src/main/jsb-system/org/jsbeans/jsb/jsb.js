@@ -486,34 +486,29 @@
 					
 					var parseReqEntry = function(e){
 						if(JSB().isArray(e)){
-							for(var i in e){
+							for(var i = 0; i < e.length; i++){
 								parseReqEntry(e[i]);
 							}
 							return;
 						} else if(JSB().isString(e)){
 							var rObj = {};
-							rObj[e] = '';
+							// generate alias
+							var alias = e;
+							if(alias.lastIndexOf('.') >= 0){
+								alias = alias.substr(alias.lastIndexOf('.') + 1);
+							}
+							rObj[alias] = e;
 							parseReqEntry(rObj);
 						} else {
 							// plain object
-							for(var i in e){
-								if(!self.isString(i)){
-									throw 'Invalid required entity declaration "' + JSON.stringify(i) + '" in bean ' + self.$name;
+							for(var alias in e){
+								var requiredJsb = e[alias];
+								if(!self.isString(requiredJsb)){
+									throw 'Invalid required entity declaration "' + JSON.stringify(requiredJsb) + '" in bean ' + self.$name;
 								}
-								if(requireMap[i]){
-									throw 'Duplicate require "' + i + '" in bean ' + self.$name;
+								if(requireMap[requiredJsb]){
+									throw 'Duplicate require "' + requiredJsb + '" in bean ' + self.$name;
 								} else {
-									var alias = e[i];
-									if(self.isFunction(alias)){
-										alias = alias.call(self);
-									}
-									if(!alias || alias.length === 0){
-										alias = i;
-										// generate alias
-										if(alias.lastIndexOf('.') >= 0){
-											alias = alias.substr(alias.lastIndexOf('.') + 1);
-										}
-									}
 									if(!self.isString(alias)){
 										throw 'Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.$name+'" requirement';
 									}
@@ -523,8 +518,8 @@
 									if(reverseRequireMap[alias]){
 										throw 'Duplicate require alias "' + alias + '" in bean ' + self.$name + '. Please choose another alias name';
 									}
-									requireMap[i] = alias;
-									reverseRequireMap[alias] = i;
+									requireMap[requiredJsb] = alias;
+									reverseRequireMap[alias] = requiredJsb;
 								}
 							}
 						}

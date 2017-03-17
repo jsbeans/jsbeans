@@ -2,9 +2,9 @@
 	$name:'JSB.Widgets.ComboBox',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.PrimitiveEditor': 'Editor',
-		'JSB.Widgets.ToolManager': 'ToolManager',
-		'JSB.Widgets.DroplistTool': 'DroplistTool'
+		Editor: 'JSB.Widgets.PrimitiveEditor',
+		ToolManager: 'JSB.Widgets.ToolManager',
+		DroplistTool: 'JSB.Widgets.DroplistTool'
 	},
 	$client: {
 		$constructor: function(opts){

@@ -2,7 +2,7 @@
 	$name: 'JSB.Widgets.Diagram.Link',
 	$parent: 'JSB.Widgets.Actor',
 	$require: {
-		'JSB.Widgets.Diagram.Joint': 'Joint'
+		Joint: 'JSB.Widgets.Diagram.Joint'
 	},
 	
 	$client: {

@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.WidgetContainer',
 	$parent:'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.TabView': 'TabView'
+		TabView: 'JSB.Widgets.TabView'
 	},
 	$client: {
 		widgets: {},
