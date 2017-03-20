@@ -8,9 +8,9 @@
 			$base(opts);
 			
 			if(this.options !== this.constructor.superclass.options){
-				this.options = JSO().merge(true, {}, this.constructor.superclass.options, this.options);
+				this.options = JSB.merge(true, {}, this.constructor.superclass.options, this.options);
 			} 
-			this.options = JSO().merge(true, {}, this.options, opts);
+			this.options = JSB.merge(true, {}, this.options, opts);
 			
 			this.loadCss('control.css');
 			if(this.options.element){
