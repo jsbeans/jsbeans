@@ -420,7 +420,6 @@
 					this.rootElt.find('li[key="'+pKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').addClass('hidden');
 				}
 			}
-
 		},
 		
 		sort: function(){
