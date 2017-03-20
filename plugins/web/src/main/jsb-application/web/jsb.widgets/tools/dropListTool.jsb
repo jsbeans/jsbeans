@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.DroplistTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: {
-		'JSB.Widgets.ListBox': 'ListBox'
+		ListBox: 'JSB.Widgets.ListBox'
 	},
 	$client: {
 		$bootstrap: function(){

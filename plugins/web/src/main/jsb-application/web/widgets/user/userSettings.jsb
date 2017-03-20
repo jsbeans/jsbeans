@@ -1,7 +1,7 @@
 {
 	$name: 'UserSettings',
 	$parent: 'JSB.Widgets.Widget',
-	$require: {},
+
 	expose: {
 		path: 'User/Menu',
 		displayName: 'Настройки',

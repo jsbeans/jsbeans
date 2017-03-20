@@ -1,7 +1,6 @@
 {
 	$name:'JSB.Widgets.Tooltip',
 	$parent: 'JSB.Widgets.Tool',
-	$require: {},
 	
 	$client: {
 		$bootstrap: function(){

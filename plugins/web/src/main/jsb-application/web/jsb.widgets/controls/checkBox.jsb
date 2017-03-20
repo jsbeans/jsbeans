@@ -1,8 +1,6 @@
 {
 	$name:'JSB.Widgets.CheckBox',
 	$parent: 'JSB.Widgets.Control',
-	$require: {
-	},
 	
 	$client: {
 		$constructor: function(opts){

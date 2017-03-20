@@ -2,7 +2,7 @@
 	$name:'UserMenuTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: {
-		'JSB.Widgets.FloatingContainer': 'WidgetContainer'
+		WidgetContainer: 'JSB.Widgets.FloatingContainer'
 	},
 	$client: {
 		$bootstrap: function(){

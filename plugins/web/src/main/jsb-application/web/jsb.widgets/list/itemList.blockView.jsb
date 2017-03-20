@@ -1,7 +1,6 @@
 {
 	$name:'JSB.Widgets.ItemList.BlockView',
 	$parent: 'JSB.Widgets.ItemList.View',
-	$require: {},
 	
 	$client: {
 		$constructor: function(opts){

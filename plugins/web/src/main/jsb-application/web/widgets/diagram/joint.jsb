@@ -1,7 +1,6 @@
 {
 	$name: 'JSB.Widgets.Diagram.Joint',
 	$parent: 'JSB.Widgets.Actor',
-	$require: {},
 	
 	$client: {
 		link: null,

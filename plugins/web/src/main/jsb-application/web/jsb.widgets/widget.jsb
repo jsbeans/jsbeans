@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.Widget',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.WidgetContainer': 'WidgetContainer'
+		WidgetContainer: 'JSB.Widgets.WidgetContainer'
 	},
 	$client: {
 		$constructor: function(opts){

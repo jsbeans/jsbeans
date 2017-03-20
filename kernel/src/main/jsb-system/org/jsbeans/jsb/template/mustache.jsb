@@ -1,8 +1,6 @@
 {
 	$name:'MustacheTemplate',
-	$require: {
-		'Template': 'Template',
-	},
+	$require: ['Template'],
 	$server:{
 		$bootstrap: function(){
 			/*!

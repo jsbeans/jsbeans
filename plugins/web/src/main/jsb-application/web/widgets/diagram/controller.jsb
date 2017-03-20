@@ -1,8 +1,6 @@
 {
 	$name: 'JSB.Widgets.Diagram.Controller',
 	$parent: 'JSB.Widgets.Actor',
-	$require: {
-	},
 	
 	$client: {
 		diagram: null,

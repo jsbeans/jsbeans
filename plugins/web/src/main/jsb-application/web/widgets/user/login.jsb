@@ -2,9 +2,8 @@
 	$name: 'Login',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.Button': 'Button',
-		'JSB.Widgets.PrimitiveEditor': 'TextEditor'
-		
+		Button: 'JSB.Widgets.Button',
+		TextEditor: 'JSB.Widgets.PrimitiveEditor'
 	},
 	$client: {
 		$constructor: function(opts){

@@ -1,8 +1,7 @@
 {
 	$name: 'UserLogout',
 	$parent: 'UserMenuItem',
-	$require: {
-	},
+
 	expose: {
 		path: 'User/Menu',
 		displayName: 'Выход',

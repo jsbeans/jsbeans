@@ -4,7 +4,7 @@
 	$parent: 'JSB.AjaxProvider',
 	$singleton: true,
 	$require: {
-		'JSB.Widgets.NetworkIndicator': 'NetworkIndicator'
+		NetworkIndicator: 'JSB.Widgets.NetworkIndicator'
 	},
 	$client: {
 		$constructor: function(){

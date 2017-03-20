@@ -3,9 +3,7 @@
 // Licensed under the MIT license.
 {
 	$name:'DotTemplate',
-	$require: {
-		'Template': 'Template',
-	},
+	$require: ['Template'],
 	$server:{
 		$bootstrap: function(){
 			"use strict";

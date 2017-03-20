@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.GroupBox',
 	$parent: 'JSB.Widgets.Control',
 	$require: {
-		'JSB.Widgets.PrimitiveEditor': 'PrimitiveEditor'
+		PrimitiveEditor: 'JSB.Widgets.PrimitiveEditor'
 	},
 	
 	$client: {

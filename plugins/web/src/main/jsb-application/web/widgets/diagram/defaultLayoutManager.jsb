@@ -1,7 +1,6 @@
 {
 	$name: 'JSB.Widgets.Diagram.DefaultLayoutManager',
 	$parent: 'JSB.Widgets.Diagram.LayoutManager',
-	$require: {},
 	
 	$client: {
 		options: {

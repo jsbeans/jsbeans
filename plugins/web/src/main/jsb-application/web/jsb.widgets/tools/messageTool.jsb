@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.MessageTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require:{
-		'JSB.Widgets.Button': 'Button'
+		Button: 'JSB.Widgets.Button'
 	},
 	$client: {
 		$bootstrap: function(){

@@ -1,9 +1,6 @@
 {
 	$name:'Template',
-	$require: {
-		'Kernel': 'Kernel',
-		'Log': 'Log'
-	},
+	$require: ['Kernel', 'Log'],
 	$server: {
 		$singleton: true,
 		$globalize: true,

@@ -2,10 +2,10 @@
 	$name:'JSB.Widgets.PrimitiveEditor',
 	$parent: 'JSB.Widgets.Editor',
 	$require: {
-		'JSB.Widgets.Value': 'Value',
-		'JSB.Widgets.ListBox': 'ListBox',
-		'JQuery.Placeholder': 'Placeholder',
-		'JSB.Widgets.DroplistTool': 'DroplistTool'
+		Value: 'JSB.Widgets.Value',
+		ListBox: 'JSB.Widgets.ListBox',
+		Placeholder: 'JQuery.Placeholder',
+		DroplistTool: 'JSB.Widgets.DroplistTool'
 	},
 	$bootstrap: function(){
 		this.lookupSingleton('JSB.Widgets.EditorRegistry', function(obj){

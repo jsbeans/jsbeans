@@ -1,7 +1,6 @@
 {
 	$name: 'JSB.Widgets.Diagram.LayoutManager',
 	$parent: 'JSB.Widgets.Actor',
-	$require: {},
 	
 	$client: {
 		busy: false,

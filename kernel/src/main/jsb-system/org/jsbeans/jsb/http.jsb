@@ -1,8 +1,6 @@
 {
     $name:'Http',
-	$require: {
-		'HttpConnection': 'HttpConnection'
-	},
+	$require: ['HttpConnection'],
     $server: {
         $singleton: true,
 

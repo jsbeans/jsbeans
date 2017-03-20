@@ -2,14 +2,14 @@
 	$name: 'JSB.Widgets.Diagram',
 	$parent: 'JSB.Widgets.Widget',
 	$require: {
-		'JQuery.UI.Effects': 'UiEffects',
-		'JSB.Widgets.Diagram.Node': 'Node',
-		'JSB.Widgets.Diagram.Link': 'Link',
-		'JSB.Widgets.Diagram.Joint': 'Joint',
-		'JSB.Widgets.Diagram.Connector': 'Connector',
-		'JSB.Widgets.Diagram.Controller': 'Controller',
-		'JSB.Widgets.Diagram.WiringController': 'WiringController',
-		'JSB.Widgets.Diagram.DefaultLayoutManager': 'DefaultLayoutManager'
+		UiEffects: 'JQuery.UI.Effects',
+		Node: 'JSB.Widgets.Diagram.Node',
+		Link: 'JSB.Widgets.Diagram.Link',
+		Joint: 'JSB.Widgets.Diagram.Joint',
+		Connector: 'JSB.Widgets.Diagram.Connector',
+		Controller: 'JSB.Widgets.Diagram.Controller',
+		WiringController: 'JSB.Widgets.Diagram.WiringController',
+		DefaultLayoutManager: 'JSB.Widgets.Diagram.DefaultLayoutManager'
 	},
 	
 	$client: {

@@ -2,7 +2,7 @@
 	$name:'JSB.Widgets.WidgetTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: {
-		'JSB.Widgets.WidgetContainer': 'WidgetContainer'
+		WidgetContainer: 'JSB.Widgets.WidgetContainer'
 	},
 	$client: {
 		$bootstrap: function(){
