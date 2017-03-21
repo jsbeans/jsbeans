@@ -593,43 +593,51 @@
 				widgetData = obj[dataField];
 				widgetContext = obj[contextField];
 
-				var fc = new FloatingContainer({
-					position: 'fixed',
-					suggested: {
-						width: container.width() / 2,
-						height: container.width() / 2,
-					}
-				});
-
-				var containerElt = fc.getElement();
-				containerElt.addClass('embedded');
-				container.append(containerElt);
-				
-				container.resize(function(evt, w, h){
-					if(container.get(0) != evt.target){
-						return;
-					}
-					fc.updateArea(w - containerElt.position().left, 0);
-				});
 
 				JSO().lookup(widgetToLoad, function(f){
-					var embeddedWidget = new f({
-						data: widgetData,
+					var embeddedWidget = new f(JSB.merge({
 						contextKey: widgetContext
-					});
+					}, widgetData));
 					self.items[idx].embeddedObject = embeddedWidget;
-					fc.attachWidget(embeddedWidget);
+					
+					if(JSB.isInstanceOf(embeddedWidget, 'JSB.Widgets.Widget')){
+						var fc = new FloatingContainer({
+							position: 'fixed',
+							suggested: {
+								width: container.width() / 2,
+								height: container.width() / 2,
+							}
+						});
+
+						var containerElt = fc.getElement();
+						containerElt.addClass('embedded');
+						container.append(containerElt);
+						container.addClass('widget');
+						
+						container.resize(function(evt, w, h){
+							if(container.get(0) != evt.target){
+								return;
+							}
+							fc.updateArea(w - containerElt.position().left, 0);
+						});
+						fc.attachWidget(embeddedWidget);
+						
+					} else if(JSB.isInstanceOf(embeddedWidget, 'JSB.Widgets.Control')){
+						container.addClass('control');
+						container.append(embeddedWidget.getElement());
+					} else {
+//						container.append(embeddedWidget);
+					}
 				}, {
 					forceUpdate: true
 				});
 			} else {
 				widgetToLoad = 'JsonView';
-				widgetData = obj;
 
 				JSO().lookup(widgetToLoad, function(f){
 					var embeddedWidget = new f({
 						container: container,
-						data: widgetData,
+						data: obj,
 						context: widgetContext
 					});
 					self.items[idx].embeddedObject = embeddedWidget;

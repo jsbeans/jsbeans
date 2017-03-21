@@ -58,6 +58,9 @@ public class JsbTemplateEngine {
         		
         		// perform string value
         		int endLinePos = script.indexOf('\n', curPos + 1);
+        		if(endLinePos == -1){
+        			endLinePos = script.length();
+        		}
         		int endStringPos = -1;
         		for(int cPos = curPos + 1; cPos < endLinePos; cPos++){
         			if(script.charAt(cPos) == comma && (cPos == curPos + 1 || script.charAt(cPos - 1) != '\\')){

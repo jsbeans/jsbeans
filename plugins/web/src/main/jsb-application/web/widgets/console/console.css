@@ -315,6 +315,13 @@
 	width: 100%;
 }
 
+.dwpConsole .embeddedObject.control {
+	height: 400px;
+	background: #fff;
+}
+
+.dwpConsole .embeddedObject.widget {}
+
 .dwpConsole .resultSheet > .null {
 	font-style: italic;
     color: #797979;
