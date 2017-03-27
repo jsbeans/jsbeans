@@ -123,6 +123,10 @@ public class ScopeTree {
             }
             return n;
         }
+        
+        public Collection<String> getChildrenIds(){
+        	return this.children.keySet();
+        }
 
         public void put(String key, Scriptable s) {
             this.remove(key);
@@ -142,7 +146,7 @@ public class ScopeTree {
             }
         }
 
-        public void updateEldest(long expireDelta) {
+        public List<String> updateEldest(long expireDelta) {
             long curTime = System.currentTimeMillis();
             List<String> keysToRemove = null;
             
@@ -164,11 +168,15 @@ public class ScopeTree {
                     break;
                 }
             }
+            
+            return keysToRemove;
+/*            
             if (keysToRemove != null) {
                 for (String s : keysToRemove) {
                     this.children.remove(s);
                 }
             }
+*/            
 
         }
 

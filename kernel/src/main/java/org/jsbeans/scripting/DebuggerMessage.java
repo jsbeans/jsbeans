@@ -13,7 +13,9 @@ package org.jsbeans.scripting;
 import org.jsbeans.messages.Message;
 
 public class DebuggerMessage implements Message {
-    private boolean stop;
+	private static final long serialVersionUID = 1691477983144408055L;
+
+	private boolean stop;
 
     private boolean breakOnStart = false;
     private boolean breakOnEnter = false;

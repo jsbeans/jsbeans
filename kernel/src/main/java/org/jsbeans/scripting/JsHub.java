@@ -229,7 +229,42 @@ public class JsHub extends Service {
     }
 
     private void handleRemoveScope(RemoveScopeMessage msg) {
-        JsObjectSerializerHelper.getInstance().getScopeTree().remove(msg.getScopePath());
+        this.clearScope(msg.getScopePath());
+        if(getSender() != ActorRef.noSender()){
+        	getSender().tell(msg.createResponse("ok"), getSelf());
+        }
+    }
+    
+    private void clearScope(String scopePath){
+    	// clear beans
+    	String script = "var sessionScope = JSB().getSessionInstancesScope(); var beanIdsArr = Object.keys(sessionScope); for(var bidx = 0; bidx < beanIdsArr.length; bidx++){ var bInst = sessionScope[beanIdsArr[bidx]]; if(bInst && bInst.destroy){ bInst.destroy(); } }";
+    	try {
+	    	Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(scopePath);
+	    	Context cx = contextFactory.enterContext();
+	        cx.setOptimizationLevel(jsOptimizationLevel);
+	        cx.setLanguageVersion(jsLanguageVersion);
+	        cx.putThreadLocal("session", scopePath);
+	        cx.putThreadLocal("scope", scope);
+	        cx.putThreadLocal("_jsbCallingContext", null);
+	        
+	        cx.evaluateString(scope, script, "session_disposal", 1, null);
+	        
+    	} catch(Throwable e){
+            StringBuilder sb = new StringBuilder("Execute script error: ");
+            sb.append(e.getMessage()).append("\n");
+            sb.append("--> Script executed: ");
+            sb.append(script);
+            if (e instanceof RhinoException) {
+                RhinoException re = (RhinoException) e;
+                sb.append("\n--> Stack trace:\n").append(re.getScriptStackTrace());
+            }
+            getLog().error(e, sb.toString());
+    	} finally {
+            Context.exit();
+		}
+        
+    	// remove from scope tree
+    	JsObjectSerializerHelper.getInstance().getScopeTree().remove(scopePath);
     }
 
     private void utilizeMessage(Object msg) {
@@ -441,7 +476,12 @@ public class JsHub extends Service {
 
     private void updateSessions() {
         try {
-            JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().updateEldest(sessionExpire);
+            List<String> sessionsToRemove = JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().updateEldest(sessionExpire);
+            if(sessionsToRemove != null){
+            	for(String scopeId : sessionsToRemove){
+            		this.clearScope(scopeId);
+            	}
+            }
         } catch (Exception e) {
             getLog().error(e, "JsHub failed to collect garbage sessions with message: " + e.getMessage());
         }
@@ -654,7 +694,7 @@ public class JsHub extends Service {
                 ActorRef self = this.getArgument(3);
                 UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
                 if (msg.isTemporaryScope()) {
-                    self.tell(new RemoveScopeMessage(msg.getScopePath()), self);
+                    self.tell(new RemoveScopeMessage(msg.getScopePath()), ActorRef.noSender());
                 }
                 if (fail != null) {
                     // fail

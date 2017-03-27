@@ -12,7 +12,7 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('jsonView.css');
-			this.preloadImages();
+//			this.preloadImages();
 			this.init(opts);
 		},
 		

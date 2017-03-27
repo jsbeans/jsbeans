@@ -152,6 +152,15 @@
 			return "";
 		},
 		
+		sessions: function(){
+			return Packages.org.jsbeans.serialization.JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().getChildrenIds();
+		},
+		
+		killSession: function(sessionId){
+			this.checkAdminOnly();
+			return Kernel.ask('JsHub', 'RemoveScopeMessage', {scopePath: sessionId});
+		},
+		
 		clientAddr: function(){
 			var ip = '' + Bridge.getClientAddress(); 
 			if(!JSB().isNull(ip) && ip.length > 0){

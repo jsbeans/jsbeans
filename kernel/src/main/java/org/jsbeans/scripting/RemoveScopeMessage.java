@@ -10,9 +10,11 @@
 
 package org.jsbeans.scripting;
 
-public class RemoveScopeMessage {
+import org.jsbeans.messages.AbstractMessage;
 
-    private String scopePath = null;
+public class RemoveScopeMessage extends AbstractMessage<String> {
+	private static final long serialVersionUID = -7045480862887556876L;
+	private String scopePath = null;
 
     public RemoveScopeMessage(String scopePath) {
         this.scopePath = scopePath;

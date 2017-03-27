@@ -153,9 +153,9 @@
 			}
 			var session = Bridge.getCurrentSession();
 			if(session){
-				session = '' + session;
+				return '' + session;
 			}
-			return session;
+			return '';
 		},
 		
 		getSync: function(){
@@ -257,6 +257,9 @@
 		
 		getSessionInstancesScope: function(){
 			var scopeConst = '_jsb_sessionInstances';
+			if(this.isServer()){
+				scopeConst += '_' + this.getCurrentSession();
+			}
 			var globe = this.getGlobe();
 			if(globe[scopeConst] == null || globe[scopeConst] == undefined){
 				globe[scopeConst] = {};
@@ -2594,7 +2597,7 @@
 			if(this.isClient()){
 				return;
 			}
-			var c = '_JSB_ClientServerBindMap';
+			var c = '_jsb_clientServerBindMap_' + this.getCurrentSession();
 			var globe = this.getGlobe();
 			if(this.isNull(globe[c])){
 				globe[c] = {};
@@ -2606,7 +2609,7 @@
 			if(this.isClient()){
 				return;
 			}
-			var c = '_JSB_ClientServerReverseBindMap';
+			var c = '_jsb_clientServerReverseBindMap_' + this.getCurrentSession();
 			var globe = this.getGlobe();
 			if(this.isNull(globe[c])){
 				globe[c] = {};
@@ -3058,15 +3061,28 @@ JSB({
 		exclude: []
 	},
 */
-	destroy: function(localOnly){
+	_destroyLocal: function(){
+		this.$_destroyLocal = true;
+		this.destroy();
+	},
+	
+	destroy: function(){
 		if(this.isDestroyed()){
 			return;
 		}
 		this.$_destroyed = true;
 		JSB().unregister(this);
-		if(!localOnly && !this.jsb.isSession()){
-			this.remote().destroy(true);
+		
+		if(!this.$_destroyLocal && !this.jsb.isSession() && (this.jsb.isServer() || this.$_bindKey)){
+			if(this.remote()._destroyLocal){
+				this.remote()._destroyLocal();
+			}
 		}
+/*		
+		if($jsb.getLogger()){
+			$jsb.getLogger().info(this.jsb.$name + ' destroyed');
+		}
+*/		
 	},
 	
 	isDestroyed: function(){
@@ -3709,9 +3725,12 @@ JSB({
 			}
 			var tJso = this.getJsb();
 			var callCtx = this.jsb.saveCallingContext();
+			if(!this.$_bindKey){
+				this.$_bindKey = this.id;
+			}
 			JSB().getProvider().enqueueRpc({
 				jsb: tJso.$name,
-				instance: JSB().isNull(this.$_bindKey) ? this.id : this.$_bindKey,
+				instance: this.$_bindKey,
 				proc: procName,
 				params: JSB().substJsoInRpcResult(params),
 				sync: (sync ? true: false)
