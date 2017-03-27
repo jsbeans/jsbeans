@@ -466,7 +466,6 @@
 					}
 				}	
 			}
-			
 		},
 		
 		destroy: function(){
@@ -885,8 +884,7 @@
 				}
 				lm.execute(manNodeMap[lman]);
 			}
-		},
-
+		}
 	},
 	
 	$server: {}
