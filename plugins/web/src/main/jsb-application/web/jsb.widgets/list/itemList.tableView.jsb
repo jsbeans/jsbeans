@@ -176,7 +176,8 @@
 					
 					this.$(hCells[i]).resizable({
 						autoHide: true,
-						handles: "e"
+						handles: "e",
+						alsoResize: tvh
 					});
 				}
 			}
@@ -207,6 +208,8 @@
 				$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox').css({
 					top: tvh.height()
 				});
+				if($this.$($this.container).width() < tvh.width())
+					$this.list.horizontalScrollBox.getElement().find('.horizontalScrollPane').width(tvh.width());
 			});
 		},
 		

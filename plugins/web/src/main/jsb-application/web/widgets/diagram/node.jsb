@@ -40,7 +40,6 @@
 				self.updateLinks();
 				self.diagram.updateLayout(self);
 			});
-
 		},
 		
 		destroy: function(){
@@ -130,7 +129,6 @@
 					callback.call(self, res[0]);
 				}
 			});
-			
 		},
 /*		
 		onAppend: function(){
@@ -353,8 +351,6 @@
 			}
 			return false;
 		}
-
-		
 	},
 	
 	$server: {}
