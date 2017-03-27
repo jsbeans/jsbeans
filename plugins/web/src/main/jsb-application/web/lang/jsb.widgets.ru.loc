@@ -1,0 +1,6 @@
+{
+	'JSB.Widgets.GroupBox':[{
+		id: 'title',
+		ru: 'заголовок'
+	}]
+}
