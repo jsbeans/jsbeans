@@ -8,40 +8,40 @@
 		},
 		
 		error: function(a, b){
-			if (typeof a === 'boolean') {
-				Bridge.log('error', this.withStack(b));
+			if (b) {
+				Bridge.log('error', this.withStack(a));
 			} else {
 				Bridge.log('error', a);
 			}
 		},
 
 		debug: function(a, b){
-			if (typeof a === 'boolean') {
-				Bridge.log('debug', this.withStack(b));
+			if (b) {
+				Bridge.log('debug', this.withStack(a));
 			} else {
 				Bridge.log('debug', a);
 			}
 		},
 
 		warn: function(a, b){
-			if (typeof a === 'boolean') {
-				Bridge.log('warning', this.withStack(b));
+			if (b) {
+				Bridge.log('warning', this.withStack(a));
 			} else {
 				Bridge.log('warning', a);
 			}
 		},
 
 		warning: function(a, b){
-			if (typeof a === 'boolean') {
-				Bridge.log('warning', this.withStack(b));
+			if (b) {
+				Bridge.log('warning', this.withStack(a));
 			} else {
 				Bridge.log('warning', a);
 			}
 		},
 
 		info: function(a, b){
-			if (typeof a === 'boolean') {
-				Bridge.log('info', this.withStack(b));
+			if (b) {
+				Bridge.log('info', this.withStack(a));
 			} else {
 				Bridge.log('info', a);
 			}
@@ -49,6 +49,9 @@
 
 		withStack: function(s) {
 			try {___JSdhaKJH.toString()} catch(e) {
+				if(s.stack){
+					s += '\r\n' + s.stack;
+				} 
 				return  s + '\r\n' + e.stack;
 			}
 		}

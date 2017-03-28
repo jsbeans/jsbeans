@@ -4607,9 +4607,10 @@ JSB({
 				var res = this.executeClientRpc(jsoName, instanceId, procName, np.res);
 				ret = $jsb.substJsoInRpcResult(res);
 			} catch(e){
+				debugger;
 				fail = e;
 				if($jsb.getLogger()){
-					$jsb.getLogger().warn(e);
+					$jsb.getLogger().warn(e, true);
 				}
 				if(!rpcId){
 					throw e;

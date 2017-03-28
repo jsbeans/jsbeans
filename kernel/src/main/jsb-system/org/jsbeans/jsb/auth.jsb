@@ -182,7 +182,7 @@
 				permission: permission,
 				use: true
 			});
-			Log.debug(true, 'usePermission: ' + JSON.stringify(result));
+			Log.debug('usePermission: ' + JSON.stringify(result), true);
 			var attrs = result.success && result.result && result.result.response;
 			if (!attrs) throw 'Has no permission: ' + permission;
 			return attrs;
