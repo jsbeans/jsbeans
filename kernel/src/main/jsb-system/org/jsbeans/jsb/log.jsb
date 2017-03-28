@@ -7,53 +7,59 @@
 			JSB().setLogger(this);
 		},
 		
+		_prepareObj: function(a){
+			var str = '' + a;
+			if(a.stack){
+				str += '\r\n' + a.stack;
+			}
+			return str;
+		},
+		
+		_withStack: function(s) {
+			try {___JSdhaKJH.toString()} catch(e) {
+				return  this._prepareObj(s) + '\r\n' + e.stack;
+			}
+		},
+		
 		error: function(a, b){
 			if (b) {
-				Bridge.log('error', this.withStack(a));
+				Bridge.log('error', this._withStack(a));
 			} else {
-				Bridge.log('error', a);
+				Bridge.log('error', this._prepareObj(a));
 			}
 		},
 
 		debug: function(a, b){
 			if (b) {
-				Bridge.log('debug', this.withStack(a));
+				Bridge.log('debug', this._withStack(a));
 			} else {
-				Bridge.log('debug', a);
+				Bridge.log('debug', this._prepareObj(a));
 			}
 		},
 
 		warn: function(a, b){
 			if (b) {
-				Bridge.log('warning', this.withStack(a));
+				Bridge.log('warning', this._withStack(a));
 			} else {
-				Bridge.log('warning', a);
+				Bridge.log('warning', this._prepareObj(a));
 			}
 		},
 
 		warning: function(a, b){
 			if (b) {
-				Bridge.log('warning', this.withStack(a));
+				Bridge.log('warning', this._withStack(a));
 			} else {
-				Bridge.log('warning', a);
+				Bridge.log('warning', this._prepareObj(a));
 			}
 		},
 
 		info: function(a, b){
 			if (b) {
-				Bridge.log('info', this.withStack(a));
+				Bridge.log('info', this._withStack(a));
 			} else {
-				Bridge.log('info', a);
-			}
-		},
-
-		withStack: function(s) {
-			try {___JSdhaKJH.toString()} catch(e) {
-				if(s.stack){
-					s += '\r\n' + s.stack;
-				} 
-				return  s + '\r\n' + e.stack;
+				Bridge.log('info', this._prepareObj(a));
 			}
 		}
+
 	}
 }

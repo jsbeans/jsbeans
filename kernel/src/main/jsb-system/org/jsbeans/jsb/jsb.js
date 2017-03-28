@@ -4030,6 +4030,9 @@ JSB({
 						msg += ': ';
 					}
 					msg += obj.message;
+					if(obj.stack){
+						msg += '\r\n' + obj.stack;
+					}
 					return msg;
 				} else {
 					return JSON.stringify(obj);
@@ -4607,10 +4610,9 @@ JSB({
 				var res = this.executeClientRpc(jsoName, instanceId, procName, np.res);
 				ret = $jsb.substJsoInRpcResult(res);
 			} catch(e){
-				debugger;
 				fail = e;
 				if($jsb.getLogger()){
-					$jsb.getLogger().warn(e, true);
+					$jsb.getLogger().error(e);
 				}
 				if(!rpcId){
 					throw e;
