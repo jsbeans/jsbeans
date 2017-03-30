@@ -1323,10 +1323,43 @@
 			// Return the modified object
 			return target;
 		},
+		
+		_checkBeanReady: function(){
+			if(this._ready || this._readyState >= 2){
+				return;
+			}
+			if(this._readyState == 0){
+				// class function is not created yet - internal error
+				throw 'FATAL: Failed to create instance of bean: "'+this.$name+'" due to class function is not created yet';
+			} else if(this._readyState == 1){
+				var msg = 'ERROR: Failed to create instance of bean: "'+this.$name+'" due to some of its requires has not been initialized:';
+				for(var rName in this._requireMap){
+					var rjsb = this.get(rName);
+					if(rjsb && rjsb._ready){
+						continue;
+					}
+					if(!rjsb){
+						msg += '\r\n\tBean "' + rName + '" is missing';
+					} else if(rjsb._readyState == 0){
+						msg += '\r\n\tBean "' + rName + '" is incomplete';
+					} else if(rjsb._readyState == 1){
+						msg += '\r\n\tBean "' + rName + '" is waiting for its requires to be completed';
+					} else if(rjsb._readyState == 2){
+						msg += '\r\n\tBean "' + rName + '" is waiting for its $bootstrap to be correctly completed';
+					} else if(rjsb._readyState == 3){
+						msg += '\r\n\tBean "' + rName + '" is waiting for its $constructor to be correctly completed';
+					} else {
+						msg += '\r\n\tBean "' + rName + '" is incompleted for unknown reqson';
+					}
+				}
+				throw msg;
+			}
+		},
 
 		_inheritedClass: function(parent) {
 			var ss = this;
 			var newFunc = function() {
+				ss._checkBeanReady();
 				var self = this;
 				var storeSuperCalled = this.$_superCalled;
 				// copy all fields into current scope
@@ -1418,6 +1451,7 @@
 		_simpleClass: function() {
 			var ss = this;
 			var newFunc = function() {
+				ss._checkBeanReady();
 				if (ss._ctor != null && ss._ctor != undefined) {
 					var ctxStack = ss.getCallingContext();
 					ctxStack.push({
