@@ -47,7 +47,12 @@
 				'default': {
 					jsb: 'JSB.Widgets.Diagram.DefaultLayoutManager'
 				}
-			}
+			},
+			
+			// event handlers
+			onChange: function(){},
+			onCreate: function(item){},
+			onRemove: function(item){}
 		},
 		
 		
@@ -57,7 +62,7 @@
 			this.loadCss('diagram.css');
 			this.addClass('_jsb_diagram');
 			
-			JSO().loadScript('tpl/d3/d3.min.js', function(){
+			JSB().loadScript('tpl/d3/d3.min.js', function(){
 				self.init();
 			});
 			
@@ -510,6 +515,13 @@
 			this.nodes[node.getId()] = node;
 			this.sheet.append(node.getElement());
 			
+			if(this.options.onChange){
+				this.options.onChange.call(this);
+			}
+			if(this.options.onCreate){
+				this.options.onCreate.call(this, node);
+			}
+			
 			return node;
 		},
 		
@@ -535,6 +547,13 @@
 			
 			if(node.options.onRemove){
 				node.options.onRemove.call(node);
+			}
+			
+			if(this.options.onChange){
+				this.options.onChange.call(this);
+			}
+			if(this.options.onRemove){
+				this.options.onRemove.call(this, node);
 			}
 			
 			// remove all links
@@ -564,6 +583,13 @@
 			var link = new linkClass(this, linkKey, opts);
 			this.links[link.getId()] = link;
 			
+			if(this.options.onChange){
+				this.options.onChange.call(this);
+			}
+			if(this.options.onCreate){
+				this.options.onCreate.call(this, link);
+			}
+			
 			return link;
 		},
 		
@@ -585,6 +611,16 @@
 				} else {
 					throw 'ERROR(removeLink): Unknown link argument passed: ' + JSON.stringify(linkVal);
 				}
+			}
+			
+			if(link.options.onRemove){
+				link.options.onRemove.call(link);
+			}
+			if(this.options.onChange){
+				this.options.onChange.call(this);
+			}
+			if(this.options.onRemove){
+				this.options.onRemove.call(this, link);
 			}
 			
 			// unselect & unhighlight
