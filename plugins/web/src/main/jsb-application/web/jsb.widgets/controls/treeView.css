@@ -57,6 +57,8 @@
 	border: 1px solid transparent;
 	padding: 0 2px;
 	vertical-align: top;
+	max-width: 100%;
+    box-sizing: border-box;
 }
 
 ._dwp_treeview.allowHover ._dwp_treeViewNode.allowHover > ._dwp_nodeHeader,
@@ -122,6 +124,7 @@
 ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer {
 	display: inline-block;
 	vertical-align: middle;
+	max-width: 100%;
 }
 
 ._dwp_treeViewNode > ._dwp_childContainer {
