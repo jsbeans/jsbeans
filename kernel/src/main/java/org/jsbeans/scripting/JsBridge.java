@@ -20,7 +20,9 @@ import org.jsbeans.serialization.JsObjectSerializerHelper;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.IdScriptableObject;
 import org.mozilla.javascript.NativeObject;
+import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.WrapFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
@@ -111,6 +113,18 @@ public class JsBridge {
     public String setInterval(ScriptableObject callback, long duration) {
         return this.setTimeoutOrInterval(false, callback, duration);
     }
+    
+    public void putPropertyInScope(Context ctx, Scriptable scope, String name, Object value){
+    	if(value != null && !(value instanceof ScriptableObject)){
+    		WrapFactory wf = ctx.getWrapFactory();
+    		if(value instanceof Class<?>){
+    			value = wf.wrapJavaClass(ctx, scope, (Class<?>)value);
+    		} else {
+    			value = wf.wrap(ctx, scope, value, (Class<?>)value);
+    		}
+    	}
+    	org.mozilla.javascript.ScriptableObject.putConstProperty(scope, name, value);
+    }
 
     public String getCurrentUser() {
         Object userObj = Context.getCurrentContext().getThreadLocal("user");
@@ -119,7 +133,7 @@ public class JsBridge {
         }
         return null;
     }
-
+    
     public String getCurrentSession() {
         Object sessionObj = Context.getCurrentContext().getThreadLocal("session");
         if (sessionObj != null) {

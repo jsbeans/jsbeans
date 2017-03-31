@@ -17,6 +17,7 @@ import org.jsbeans.scripting.ScopeTree;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import org.mozilla.javascript.*;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -100,7 +101,8 @@ public class JsObjectSerializerHelper {
             try {
                 retObj = this.serializeObject(obj);
             } catch (Exception ex) {
-                throw new PlatformException(String.format("Unexpected object faced due to serialization to JsObject: '%s'. Serialization failed with: %s", obj.getClass().getName(), ex.getMessage()));
+            	retObj = null;
+            	LoggerFactory.getLogger(this.getClass()).warn(String.format("Unexpected object faced due to serialization to JsObject: '%s'. Serialization failed with: %s", obj.getClass().getName(), ex.getMessage(), ex));
             }
         }
 

@@ -1,4 +1,4 @@
-/*! jsBeans v2.4.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.5.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -140,7 +140,7 @@
 				var ctx = Packages.org.mozilla.javascript.Context.getCurrentContext();
 				var scope = ctx.newObject(ctx.getThreadLocal('scope'));
 				for(var varName in scopeVars){
-					Packages.org.mozilla.javascript.ScriptableObject.putProperty(scope, varName, scopeVars[varName]);
+					Bridge.putPropertyInScope(ctx, scope, varName, scopeVars[varName]);
 				}
 				var res = ctx.evaluateString(scope, '('+script+')', '' + scopeVars['$jsb'].$name + '.' + fName, 1, null);
 				return res;
@@ -318,7 +318,11 @@
 			return this.$_path;
 		},
 		
-		getClientJSB: function(name){
+		constructClientJSB: function(name){
+			var jsb = this.get(name);
+			if(this.isClient()){
+				return jsb;
+			}
 			var clientFieldBlacklist = {
 				'$server': true,
 				'_descriptor': true,
@@ -332,7 +336,6 @@
 				'_entryBootstrap': true,
 				'_commonBootstrap': true
 			};
-			var jsb = this.get(name);
 			if(JSB().isNull(jsb)){
 				Log.error('Unable to find JSB: ' + name);
 				return null;
@@ -341,9 +344,58 @@
 			var cJsb = {};
 			for(var f in jsb){
 				if(jsb.hasOwnProperty(f) && !clientFieldBlacklist[f]){
-					cJsb[f] = jsb[f];
+					cJsb[f] = this.clone(jsb[f]);
 				}
 			}
+			
+			// filter out java requires
+			var self = this;
+			function filterJavaRequires(req){
+				if(self.isArray(req)){
+					for(var i = req.length - 1; i >= 0; i--){
+						if(self.isString(req[i])){
+							if(req[i].toLowerCase().startsWith('java:')){
+								req.splice(i, 1);
+							}
+						} else {
+							filterJavaRequires(req[i]);
+						}
+					}
+				} else if(self.isObject(req)){
+					var alToRemove = [];
+					for(var alias in req){
+						if(self.isString(req[alias]) && req[alias].toLowerCase().startsWith('java:')){
+							alToRemove.push(alias);
+						}
+					}
+					for(var i = 0; i < alToRemove.length; i++){
+						delete req[alToRemove[i]];
+					}
+				} else {
+					throw 'Invalid $require format in bean "'+name+'"';
+				}
+			}
+			
+			if(cJsb.$require){
+				if(this.isString(cJsb.$require)){
+					if(cJsb.$require.toLowerCase().startsWith('java:')){
+						delete cJsb.$require;	
+					}
+				} else {
+					filterJavaRequires(cJsb.$require);
+				}
+			}
+			if(cJsb.$client && cJsb.$client.$require){
+				if(this.isString(cJsb.$client.$require)){
+					if(cJsb.$client.$require.toLowerCase().startsWith('java:')){
+						delete cJsb.$client.$require;
+					}
+				} else {
+					filterJavaRequires(cJsb.$client.$require);
+				}
+			}
+			
+			
 			return cJsb;
 		},
 
@@ -599,16 +651,6 @@
 						'$superFunc': $superFunc
 					}, requireVals);
 					
-					// inject requires into scopeVars
-					function injectRequire(reqAlias){
-						var beanName = reverseRequireMap[reqAlias];
-						return eval('(function '+reqAlias+'(){ var refBean = JSB.get("'+beanName+'"); var refCls = refBean.getClass(); refCls.apply(this, arguments); })');
-					}
-/*					
-					for(var reqAlias in reverseRequireMap){
-						scopeVars[reqAlias] = injectRequire(reqAlias)
-					}
-*/					
 					function _enrichFunction(mtdName, proc, isCtor, isBootstrap){
 						var procStr = proc.toString();
 						// extract proc declaration
@@ -771,6 +813,9 @@
 			var wMap = {};
 			// collect all requires with smaller readyState
 			for(var req in this._requireMap){
+				if(req.toLowerCase().startsWith('java:')){
+					continue;
+				}
 				var jsb = this.objects[req];
 				if(jsb._readyState < readyState){
 					wMap[req] = true;
@@ -1334,6 +1379,10 @@
 			} else if(this._readyState == 1){
 				var msg = 'ERROR: Failed to create instance of bean: "'+this.$name+'" due to some of its requires has not been initialized:';
 				for(var rName in this._requireMap){
+					// skip java requires
+					if(rName.toLowerCase().startsWith('java:')){
+						continue;
+					}
 					var rjsb = this.get(rName);
 					if(rjsb && rjsb._ready){
 						continue;
@@ -1586,23 +1635,46 @@
 			}
 		},
 		
-		
 		_lookupRequire: function(name, callback){
 			var self = this;
-			this.lookup(name, function(cls){
-				if(self.isNull(cls)){
-					throw 'Failed to lookup require: "' + name + '", expecting for object but nothing returned';
+			if(name.toLowerCase().startsWith('java:')){
+				if(this.isClient()){
+					throw 'Failed to load java require "'+name+'" on client side in bean "'+this.$name+'"';
 				}
-				var jsb = cls.jsb;
-				if(self.isNull(jsb)){
-					throw 'Failed to lookup require: "' + name + '", jsb is null';
+				var qualifiedName = name.substr(5).trim();
+				var scopeStr = 'Packages.' + qualifiedName;
+				var curJavaScope = eval(scopeStr);
+				if(!curJavaScope){
+					throw 'Failed to load java require due to missing java object "'+qualifiedName+'"';
 				}
-				if(!jsb._ready && jsb.isSingleton()){
-					self.lookup(name, callback);
-				} else {
-					callback.call(self, cls);
+/*				
+				var qNameParts = qualifiedName.split('.');
+				var curJavaScope = Packages;
+				for(var i = 0; i < qNameParts.length; i++){
+					var part = qNameParts[i];
+					curJavaScope = curJavaScope[part];
+					if(!curJavaScope){
+						throw 'Failed to load java require due to missing java object "'+qualifiedName+'"';
+					}
 				}
-			}, {readyState: 1});
+*/				
+				callback.call(self, curJavaScope);
+			} else {
+				this.lookup(name, function(cls){
+					if(self.isNull(cls)){
+						throw 'Failed to lookup require: "' + name + '", expecting for object but nothing returned';
+					}
+					var jsb = cls.jsb;
+					if(self.isNull(jsb)){
+						throw 'Failed to lookup require: "' + name + '", jsb is null';
+					}
+					if(!jsb._ready && jsb.isSingleton()){
+						self.lookup(name, callback);
+					} else {
+						callback.call(self, cls);
+					}
+				}, {readyState: 1});
+			}
 		},
 
 		

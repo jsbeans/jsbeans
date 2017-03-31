@@ -228,7 +228,7 @@ public class JsbRegistryService extends Service {
                     public Future<Object> run(String name) throws PlatformException {
                         // try to lookup locally via JsHub
                         LookupJsoMessage msg = this.getArgument(0);
-                        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(String.format("JSB.getClientJSB('%s');", name), false);
+                        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(String.format("JSB.constructClientJSB('%s');", name), false);
                         execMsg.setScopePath(msg.getSession());
                         execMsg.setUser(msg.getUser());
                         execMsg.setUserToken(msg.getUserToken());
