@@ -1,4 +1,4 @@
-/*! jsBeans v2.5.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.5.2 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -30,7 +30,7 @@
 		}
 
 		if(cfg.$parent == null || cfg.$parent == undefined){
-			cfg.$parent = 'JSB.Bean';
+			cfg.$parent = 'JSB.Object';
 		}
 		
 		// insert into repo
@@ -39,7 +39,7 @@
 			repo.registerLoaded(cfg, this);
 		}
 		
-		if(cfg.$name != 'JSB.Bean'){
+		if(cfg.$name != 'JSB.Object'){
 			var parentExisted = this.get(cfg.$parent);
 			this.lookup(cfg.$parent, function(par){
 				if(!par || !par.jsb || par.jsb.$name != cfg.$parent){
@@ -201,7 +201,7 @@
 				name = this.$name;
 			}
 			var sysMap = {
-				'JSB.Bean': true,
+				'JSB.Object': true,
 				'JSB.Locker': true,
 				'JSB.Logger': true,
 				'JSB.AjaxProvider': true,
@@ -354,7 +354,7 @@
 				if(self.isArray(req)){
 					for(var i = req.length - 1; i >= 0; i--){
 						if(self.isString(req[i])){
-							if(req[i].toLowerCase().startsWith('java:')){
+							if(req[i].toLowerCase().indexOf('java:') == 0){
 								req.splice(i, 1);
 							}
 						} else {
@@ -364,7 +364,7 @@
 				} else if(self.isObject(req)){
 					var alToRemove = [];
 					for(var alias in req){
-						if(self.isString(req[alias]) && req[alias].toLowerCase().startsWith('java:')){
+						if(self.isString(req[alias]) && req[alias].toLowerCase().indexOf('java:') == 0){
 							alToRemove.push(alias);
 						}
 					}
@@ -378,7 +378,7 @@
 			
 			if(cJsb.$require){
 				if(this.isString(cJsb.$require)){
-					if(cJsb.$require.toLowerCase().startsWith('java:')){
+					if(cJsb.$require.toLowerCase().indexOf('java:') == 0){
 						delete cJsb.$require;	
 					}
 				} else {
@@ -387,7 +387,7 @@
 			}
 			if(cJsb.$client && cJsb.$client.$require){
 				if(this.isString(cJsb.$client.$require)){
-					if(cJsb.$client.$require.toLowerCase().startsWith('java:')){
+					if(cJsb.$client.$require.toLowerCase().indexOf('java:') == 0){
 						delete cJsb.$client.$require;
 					}
 				} else {
@@ -813,7 +813,7 @@
 			var wMap = {};
 			// collect all requires with smaller readyState
 			for(var req in this._requireMap){
-				if(req.toLowerCase().startsWith('java:')){
+				if(req.toLowerCase().indexOf('java:') == 0){
 					continue;
 				}
 				var jsb = this.objects[req];
@@ -1133,8 +1133,8 @@
 			if(this.$parent == null 
 				|| this.$parent == undefined 
 				|| this.$parent.length == 0 
-				|| this.$parent == 'JSB.Bean'){
-				if(str == 'JSB.Bean'){
+				|| this.$parent == 'JSB.Object'){
+				if(str == 'JSB.Object'){
 					return true;
 				}
 				return false;
@@ -1159,8 +1159,8 @@
 			if(this.$parent == null 
 				|| this.$parent == undefined 
 				|| this.$parent.length == 0 
-				|| this.$parent == 'JSB.Bean'){
-				if(str == 'JSB.Bean'){
+				|| this.$parent == 'JSB.Object'){
+				if(str == 'JSB.Object'){
 					return deep;
 				}
 				return null;
@@ -1363,7 +1363,7 @@
 							(this.isPlainObject(copy, true) || (copyIsArray = this.isArray(copy))) && 
 							!this.isJavaObject(copy) && 
 							!(copy instanceof JSB) &&
-							!this.isInstanceOf(copy, 'JSB.Bean') &&
+							!this.isInstanceOf(copy, 'JSB.Object') &&
 							(!JSB().isClient() || (!(copy instanceof HTMLElement))&&(!(copy == document)))) {
 							if (copyIsArray) {
 								copyIsArray = false;
@@ -1406,7 +1406,7 @@
 				var msg = 'ERROR: Failed to create instance of bean: "'+this.$name+'" due to some of its requires has not been initialized:';
 				for(var rName in this._requireMap){
 					// skip java requires
-					if(rName.toLowerCase().startsWith('java:')){
+					if(rName.toLowerCase().indexOf('java:') == 0){
 						continue;
 					}
 					var rjsb = this.get(rName);
@@ -1663,7 +1663,7 @@
 		
 		_lookupRequire: function(name, callback){
 			var self = this;
-			if(name.toLowerCase().startsWith('java:')){
+			if(name.toLowerCase().indexOf('java:') == 0){
 				if(this.isClient()){
 					throw 'Failed to load java require "'+name+'" on client side in bean "'+this.$name+'"';
 				}
@@ -3193,7 +3193,7 @@
 })();
 
 JSB({
-	$name: 'JSB.Bean',
+	$name: 'JSB.Object',
 	$parent: null,
 /*
 //	Synchronization options:
