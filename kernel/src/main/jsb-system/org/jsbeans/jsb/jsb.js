@@ -1143,6 +1143,32 @@
 			return parentJso.isSubclassOf(str);
 		},
 		
+		getSubclassOfDistance: function(str, deep){
+			if(!deep){
+				deep = 0;
+			}
+			if(this.isBean(str, true)){
+				str = str.getJsb().$name;
+			}
+			if(str instanceof JSB){
+				str = str.$name;
+			}
+			if(this.$name == str){
+				return deep;
+			}
+			if(this.$parent == null 
+				|| this.$parent == undefined 
+				|| this.$parent.length == 0 
+				|| this.$parent == 'JSB.Bean'){
+				if(str == 'JSB.Bean'){
+					return deep;
+				}
+				return null;
+			}
+			var parentJso = this.get(this.$parent);
+			return parentJso.getSubclassDistance(str, deep + 1);
+		},
+		
 		stringify: function(obj, callback, name){
 			// TODO: replace implementation to avoid cyclic references
 			var str = '';
@@ -2085,7 +2111,19 @@
 							o.doSync();
 						}
 	*/					
-						keepFinalize();
+						if(self.isClient() && !self.isNull(o.$_syncScopes)){
+							if(o.isSynchronized()){
+								keepFinalize();
+							} else {
+								// wait until object is synchronized
+								o.subscribeSynchronized(function(){
+									keepFinalize();
+								});
+							}
+						} else {
+							keepFinalize();
+						}
+						
 					}
 					if(self.isSystem()){
 						ccall();
