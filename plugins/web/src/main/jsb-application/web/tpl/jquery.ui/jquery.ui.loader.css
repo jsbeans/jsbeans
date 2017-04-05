@@ -20,7 +20,6 @@ div.ajaxloader > div.ajaxloaderInfo {
 
 div.ajaxloader > div.ajaxloaderInfo > .icon {
 	display: inline-block;
-	vertical-align: middle;
 }
 
 div.ajaxloader.gear32 > div.ajaxloaderInfo > .icon {
