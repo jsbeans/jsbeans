@@ -1,4 +1,4 @@
-/*! jsBeans v2.5.2 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.6.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -172,6 +172,18 @@
 		},
 
 		hasKeywordOption: function(opt){
+			if(!this.isNull(this[opt])){
+				return true;
+			} else {
+				var e = this.currentSection();
+				if(!this.isNull(e[opt])){
+					return true;
+				}
+			}
+			return false;
+		},
+		
+		getKeywordOption: function(opt){
 			if(this[opt]){
 				return this[opt];
 			} else {
@@ -184,16 +196,18 @@
 		},
 		
 		isSingleton: function(){
-			return this.hasKeywordOption('$singleton');
+			return this.getKeywordOption('$singleton');
 		},
 		
 		isFixedId: function(){
-			return this.hasKeywordOption('$fixedId');
+			return this.getKeywordOption('$fixedId');
 		},
 		
 		isSession: function(){
-			/* TODO: make a valid session check*/
-			return this.isSingleton() || this.isFixedId();
+			if(this.hasKeywordOption('$session')){
+				return this.getKeywordOption('$session');
+			}
+			return !this.isSingleton() && !this.isFixedId();
 		},
 		
 		isSystem: function(name){
@@ -216,11 +230,12 @@
 			jsb = obj.getJsb();
 			var isSingleton = jsb.isSingleton();
 			var isFixedId = jsb.isFixedId();
+			var isSession = jsb.isSession();
 			
-			if(isSingleton || isFixedId){
-				scope = this.getGlobalInstancesScope();
-			} else {
+			if(isSession){
 				scope = this.getSessionInstancesScope();
+			} else {
+				scope = this.getGlobalInstancesScope();
 			}
 			
 			if(isSingleton){
@@ -401,21 +416,19 @@
 
 		
 		unregister: function(obj){
-			var id = null;
-			if(JSB().isString(obj)){
-				id = obj;
-			} else if(obj.getJsb() && obj.id){
-				id = obj.id;
+			if(!obj || !obj.getId || !obj.getJsb){
+				throw 'Wrong object to unregister';
 			}
+			var id = obj.getId();
 			if(!id){
 				return null;
 			}
-			if(JSB().getGlobalInstancesScope()[id]){
-				var scope = JSB().getGlobalInstancesScope();
-				delete scope[id];
+			var scope = this.getGlobalInstancesScope();
+			if(obj.getJsb().isSession()){
+				scope = this.getSessionInstancesScope();
 			}
-			if(this.getSessionInstancesScope()[id]){
-				var scope = this.getSessionInstancesScope();
+			
+			if(scope[id]){
 				delete scope[id];
 			}
 			
@@ -471,15 +484,14 @@
 			var entry = this.currentSection();
 			if(parent){
 				var pe = parent.currentSection();
-				var kfs = ['$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$sync'];
+				var kfs = ['$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$sync', '$session'];
 				for(var i = 0; i < kfs.length; i++){
 					var key = kfs[i];
 					if(parent.hasKeywordOption(key)){
-						entry[key] = parent.hasKeywordOption(key);
+						entry[key] = parent.getKeywordOption(key);
 					}
 				}
 			}
-			
 			
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
 				var body = {};
@@ -852,11 +864,11 @@
 			var self = this;
 			
 			if(this.isClient()){
-				if(this.$client == null || this.$client == undefined){
+				if(this.isNull(this.$client)){
 					this.$client = {};
 				}
 			} else {
-				if(this.$server == null || this.$server == undefined){
+				if(this.isNull(this.$server)){
 					this.$server = {};
 				}
 				
@@ -963,16 +975,13 @@
 			}
 			
 			var entry = this.currentSection();
-			if(this.isPlainObject(entry)){
-				// copy global jsb settings into current entry
-				if(this.$fixedId){
-					entry.$fixedId = this.$fixedId;
-				}
-				
-				if(!entry.$bootstrap && this.$bootstrap){
-					entry.$bootstrap = this.$bootstrap;
-				}
-				
+			// copy global jsb settings into current entry
+			if(this.isNull(entry.$fixedId) && !this.isNull(this.$fixedId)){
+				entry.$fixedId = this.$fixedId;
+			}
+			
+			if(this.isNull(entry.$singleton) && !this.isNull(this.$singleton)){
+				entry.$singleton = this.$singleton;
 			}
 		},
 		
@@ -1753,9 +1762,9 @@
 			if(!key && this.isSingleton()){
 				key = this.$name;
 			}
-			var obj = JSB().getGlobalInstancesScope()[key];
-			if(obj == null || obj == undefined){
-				obj = JSB().getSessionInstancesScope()[key];
+			var obj = this.getSessionInstancesScope()[key];
+			if(this.isNull(obj)){
+				obj = this.getGlobalInstancesScope()[key];
 			}
 			return obj;
 		},
@@ -2811,7 +2820,7 @@
 						if(JSB().isNull(serverInstance)){
 							
 							// check for rpc instance creation permission
-							if(jso.hasKeywordOption('$disableRpcInstance')){
+							if(jso.getKeywordOption('$disableRpcInstance')){
 								JSB().getLogger().warn('Unable to create new instance from RPC call for jsb: "' + jsoName + '('+instanceId+')" due option "disableRpcInstance" set')
 								return null;
 							}
@@ -2819,7 +2828,7 @@
 							var f = jso.getClass();
 							// create server-side instance with client-side id
 							
-							if(jso.hasKeywordOption('$fixedId')){
+							if(jso.getKeywordOption('$fixedId')){
 								JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 									// use this to access current object
 									this.id = instanceId;
@@ -2865,7 +2874,7 @@
 						}
 					} else {
 						// check for fixedId
-						if(cls.jsb.hasKeywordOption('$fixedId')){
+						if(cls.jsb.getKeywordOption('$fixedId')){
 							obj = self.getInstance(id);
 						}
 					}
@@ -2873,7 +2882,7 @@
 					if(!obj){
 						JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 							// use this to access current object
-							if(cls.jsb.hasKeywordOption('$fixedId')){
+							if(cls.jsb.getKeywordOption('$fixedId')){
 								this.id = id;
 							}
 							this.$_bindKey = id;
@@ -3217,7 +3226,7 @@ JSB({
 		this.$_destroyed = true;
 		JSB().unregister(this);
 		
-		if(!this.$_destroyLocal && !this.jsb.isSession() && (this.jsb.isServer() || this.$_bindKey)){
+		if(!this.$_destroyLocal && this.jsb.isSession() && (this.jsb.isServer() || this.$_bindKey)){
 			if(this.remote()._destroyLocal){
 				this.remote()._destroyLocal();
 			}
@@ -4790,8 +4799,7 @@ JSB({
 			}
 			
 			if(!serverInstance[procName]){
-				debugger;
-				throw 'Failed to call method "' + procName + '" in bean "' + jsoName + '". Method not existed'
+				throw 'Failed to call method "' + procName + '" in bean "' + jsoName + '". Method not exists'
 			}
 			
 			if(JSB().isArray(params)){
