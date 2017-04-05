@@ -19,6 +19,10 @@
 	-ms-transform: translateZ(0);
 	-o-transform: translateZ(0);
 	transform: translateZ(0);
+	
+	min-width: 100%;
+    min-height: 100%;
+    box-sizing: border-box;
 }
 
 ._dwp_scrollBox.vertScrollVisible > ._dwp_scrollPane {
