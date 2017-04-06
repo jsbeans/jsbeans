@@ -53,12 +53,12 @@
 						duration: 400,
 						complete: function(){
 							if(self.enabled){
-								JSO().defer( function(){
+								JSB().defer( function(){
 									self.doPulse();
 								},50);
 							} else {
 								self.element.addClass('connected');
-								JSO().defer(function(){
+								JSB().defer(function(){
 									self.element.fadeOut(1000);
 								},1000);
 							}

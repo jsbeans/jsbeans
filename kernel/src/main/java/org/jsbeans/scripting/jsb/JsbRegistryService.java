@@ -183,7 +183,7 @@ public class JsbRegistryService extends Service {
                         // jso loaded successfully
                     }
                 } else {
-                    throw new PlatformException(String.format("Internal Error: Expected 'ScopeResponseMessage' but found message of type '%s' while loading JSO '%s'", result.getClass().getName(), jsoFile));
+                    throw new PlatformException(String.format("Internal Error: Expected 'ScopeResponseMessage' but found message of type '%s' while loading JSB '%s'", result.getClass().getName(), jsoFile));
                 }
             } catch (Exception e) {
                 getLog().error(String.format("Failed to register JSB descriptor '%s' due to following reson: %s", jsoFile, e.toString()));
@@ -212,7 +212,7 @@ public class JsbRegistryService extends Service {
                     // ok
                 }
             } else {
-                throw new PlatformException(String.format("Internal Error: Expected 'UpdateStatusMessage' but found message of type '%s' while loading JSO", result.getClass().getName()));
+                throw new PlatformException(String.format("Internal Error: Expected 'UpdateStatusMessage' but found message of type '%s' while loading JSB", result.getClass().getName()));
             }
         } catch (Exception e) {
             throw new PlatformException(e);

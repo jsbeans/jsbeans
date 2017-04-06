@@ -1,6 +1,5 @@
 {
 	$name:'JSB.Widgets.Control',
-	$parent: 'JSB.Widgets.Actor',
 	$require: ['JQuery', 'JSB.Widgets.DomController'],
 	$client: {
 		$constructor: function(opts){
@@ -58,7 +57,7 @@
 			var self = this;
 /*				
 				// install tooltip
-				if(!JSO().isNull(this.options.tooltip)){
+				if(!JSB().isNull(this.options.tooltip)){
 					self.installTooltipHandler();
 				}
 */				
@@ -83,7 +82,7 @@
 				this.getElement().bind('DOMNodeInserted', function(evt){
 					console.log('DOMNodeInserted: ' + (evt.target && evt.target.nodeName) || 'noname');
 					if(evt.target.nodeName && evt.target.nodeName.toLowerCase() == 'control'){
-						this.injectControl(JSO().$(evt.target));
+						this.injectControl(JSB().$(evt.target));
 					}
 				});
 */				
@@ -161,7 +160,7 @@
 		},
 		
 		resolveElement: function(c){
-			if(JSO().isInstanceOf(c, 'JSB.Widgets.Control')){
+			if(JSB().isInstanceOf(c, 'JSB.Widgets.Control')){
 				c = c.getElement();
 			} else if(!JSB().isString(c)){
 				c = this.$(c);

@@ -38,7 +38,7 @@
 				self.createEnumForList(this.options.enum);
 			} else {
 				// obtain type information
-				JSO().lookupSingleton('JSB.TypeInfoRegistry', function(tir){
+				JSB().lookupSingleton('JSB.TypeInfoRegistry', function(tir){
 					tir.lookup(self.options.valueType, function(desc){
 						self.desc = desc;
 						self.createEnumForType(desc);
@@ -59,7 +59,7 @@
 			self.listBox.addItem('true');
 			self.listBox.addItem('false');
 			
-			if(!JSO().isNull(this.data.getValue())){
+			if(!JSB().isNull(this.data.getValue())){
 				if(this.data.getValue()){
 					self.listBox.selectItem('true');
 				} else {
@@ -80,7 +80,7 @@
 				var val = desc.enumConstants[i];
 				self.listBox.addItem(val);
 			}
-			if(!JSO().isNull(this.data.getValue())){
+			if(!JSB().isNull(this.data.getValue())){
 				this.dontComplete = true;
 				self.listBox.selectItem(this.data.getValue());
 				this.dontComplete = false;
@@ -99,7 +99,7 @@
 				var val = items[i];
 				self.listBox.addItem(val);
 			}
-			if(!JSO().isNull(this.data.getValue())){
+			if(!JSB().isNull(this.data.getValue())){
 				this.dontComplete = true;
 				self.listBox.selectItem(this.data.getValue());
 				this.dontComplete = false;
@@ -108,14 +108,14 @@
 		
 		setData: function(val){
 			var self = this;
-			if(JSO().isInstanceOf(val, 'JSB.Widgets.Value')){
+			if(JSB().isInstanceOf(val, 'JSB.Widgets.Value')){
 				this.data = val;
 			} else {
 				this.data = new Value(val, this.options.valueType);
 			}
 			
 			this.dontComplete = true;
-			if(!JSO().isNull(this.listBox) && !JSO().isNull(this.data.getValue())){
+			if(!JSB().isNull(this.listBox) && !JSB().isNull(this.data.getValue())){
 				if(this.options.valueType == 'java.lang.Boolean' || this.options.valueType == 'boolean') {
 					if(this.data.getValue()){
 						self.listBox.selectItem('true');

@@ -1,6 +1,5 @@
 {
 	$name: 'JSB.Widgets.Diagram.Link',
-	$parent: 'JSB.Widgets.Actor',
 	$require: {
 		Joint: 'JSB.Widgets.Diagram.Joint'
 	},

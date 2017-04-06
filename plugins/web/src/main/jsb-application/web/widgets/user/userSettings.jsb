@@ -82,7 +82,7 @@
 			var self = this;
 			function passhash(p) {
 				if (p && p.length > 0)
-					return JSO().MD5.md5(self.attrs.login + '@' + p);
+					return JSB().MD5.md5(self.attrs.login + '@' + p);
 				return null;
 			}
 			var name = this.find('.name>div').jsb().getData().getValue();

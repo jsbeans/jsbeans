@@ -44,7 +44,7 @@
 		
 		setData: function(val){
 			var self = this;
-			if(JSO().isInstanceOf(val, 'JSB.Widgets.RangeValue')){
+			if(JSB().isInstanceOf(val, 'JSB.Widgets.RangeValue')){
 				this.data = val;
 			} else {
 				this.data = new Value(val);

@@ -5,14 +5,14 @@
 		run: function(obj, callback){
 			var self = this;
 			this.rpc('run',[obj.project, obj.script, obj.args], function(res){
-				if(!JSO().isNull(callback)){
+				if(!JSB().isNull(callback)){
 					callback.call(self, res.result.response.result);
 				}
 			});
 		}, 
 		exec: function(alias, args, callback){
 			this.rpc('exec', [alias, args], function(resp){
-				if(!JSO().isNull(callback)){
+				if(!JSB().isNull(callback)){
 					callback(resp);
 				}
 			});
@@ -44,8 +44,8 @@
 		
 		run: function(projectTitle, scriptName, args){
 			var arrArgs = [];
-			if(!JSO().isNull(args)){
-				if(!JSO().isArray(args)){
+			if(!JSB().isNull(args)){
+				if(!JSB().isArray(args)){
 					arrArgs.push(args);
 				} else {
 					arrArgs = args;
@@ -62,21 +62,21 @@
 		
 		exec: function(alias, args){
 			var argsArr = [];
-			if(JSO().isArray(args)){
+			if(JSB().isArray(args)){
 				argsArr = args;
 			} else {
 				argsArr.push(args);
 			}
 			alias = alias.replace(/\./gi, '/');
-			var func = this.searchScope(JSO().getGlobe(), alias);
-			if(JSO().isNull(func)){
+			var func = this.searchScope(JSB().getGlobe(), alias);
+			if(JSB().isNull(func)){
 				var err = 'No function have been exported under "'+alias+'"';
 				Log.error(err);
 				throw err;
 				return null;
 			}
 
-			if(!JSO().isFunction(func)){
+			if(!JSB().isFunction(func)){
 				var err = 'Object resides under specified name: "'+alias+'" is not a function, and therefore cannot be called';
 				Log.error(err);
 				throw err;
@@ -90,7 +90,7 @@
 			alias = alias.replace(/\./gi, '/');
 			
 			var ns = alias.substr(0, alias.lastIndexOf('/'));
-			var scope = this.searchScope(JSO().getGlobe(), ns);
+			var scope = this.searchScope(JSB().getGlobe(), ns);
 			
 			var aName = alias.substr(alias.lastIndexOf('/') + 1);
 			if(!scope){
@@ -117,7 +117,7 @@
 		touchScope: function(parentScope, path){
 			var pathParts = path.split('/');
 			if(path[0] == '/'){
-				parentScope = JSO().getGlobe();
+				parentScope = JSB().getGlobe();
 			}
 			var lastScope = parentScope;
 			for(var i in pathParts){
@@ -131,7 +131,7 @@
 					lastScope = lastScope.__parent__;
 				} else {
 					Kernel.lock('touchScope');
-					if(JSO().isNull(lastScope[part])){
+					if(JSB().isNull(lastScope[part])){
 						lastScope[part] = {
 							__parent__: lastScope
 						};
@@ -146,7 +146,7 @@
 		searchScope: function(parentScope, path){
 			var pathParts = path.split('/');
 			if(path[0] == '/'){
-				parentScope = JSO().getGlobe();
+				parentScope = JSB().getGlobe();
 			}
 			var lastScope = parentScope;
 			for(var i in pathParts){
@@ -159,7 +159,7 @@
 				} else if(part == '..'){
 					lastScope = lastScope.__parent__;
 				} else {
-					if(JSO().isNull(lastScope[part])){
+					if(JSB().isNull(lastScope[part])){
 						return null;
 					}
 					lastScope = lastScope[part];
@@ -173,15 +173,15 @@
 			var alias = undefined;
 			var opts = undefined;
 			for(var i = 2; i < arguments.length; i++ ){
-				if(JSO().isString(arguments[i])){
+				if(JSB().isString(arguments[i])){
 					alias = arguments[i];
-				} else if(JSO().isPlainObject(arguments[i])){
+				} else if(JSB().isPlainObject(arguments[i])){
 					opts = arguments[i];
 				}
 			}
 			
-			var parentScope = this.touchScope(JSO().getGlobe(), scopePath);
-			if (!alias && JSO().isFunction(obj)) {
+			var parentScope = this.touchScope(JSB().getGlobe(), scopePath);
+			if (!alias && JSB().isFunction(obj)) {
 				alias = obj.name;
 				if(!alias){
 					var m = obj.toString().match(/function ([^\(]+)/);
@@ -209,7 +209,7 @@
 					scope.__opts__[aName] = opts;
 				}
 			} else {
-				if(JSO().isFunction(obj)){
+				if(JSB().isFunction(obj)){
 					// export anonymous function into script scope
 					var pScope = scope.__parent__;
 					// detect scope name
@@ -232,16 +232,16 @@
 					
 				} else {
 					// export JSON object into script scope
-					JSO().merge(true, scope, obj);
+					JSB().merge(true, scope, obj);
 				}
 			}
 		},
 		
 		import: function(scopePath, alias){
-			var parentScope = this.searchScope(JSO().getGlobe(), scopePath);
+			var parentScope = this.searchScope(JSB().getGlobe(), scopePath);
 			if(parentScope === null){
-				this.touchScope(JSO().getGlobe(), scopePath);
-				parentScope = this.searchScope(JSO().getGlobe(), scopePath);
+				this.touchScope(JSB().getGlobe(), scopePath);
+				parentScope = this.searchScope(JSB().getGlobe(), scopePath);
 			}
 			return this.searchScope(parentScope, alias);
 		},

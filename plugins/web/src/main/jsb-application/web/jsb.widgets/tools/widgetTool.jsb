@@ -8,7 +8,7 @@
 		$bootstrap: function(){
 			// register tooltip
 			var self = this;
-			JSO().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
+			JSB().lookupSingleton('JSB.Widgets.ToolManager', function(toolMgr){
 				toolMgr.registerTool({
 					id: '_dwp_widgetTool',
 					jso: self,

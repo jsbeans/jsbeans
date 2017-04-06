@@ -16,22 +16,22 @@
 				login: '',
 				password: ''
 			};
-			while(JSO().isFunction(connection)){
+			while(JSB().isFunction(connection)){
 				connection = connection.call(this);
 			}
-			if(JSO().isString(connection)){
+			if(JSB().isString(connection)){
 				connectionToken.connectionStr = connection;
 				connectionToken.login = '';
 				connectionToken.password = '';
-			} else if(JSO().isPlainObject(connection)){
-				if(JSO().isNull(connection.connectionStr)){
+			} else if(JSB().isPlainObject(connection)){
+				if(JSB().isNull(connection.connectionStr)){
 					return {
 						success: false,
 						error: 'Invalid connection argument'
 					};
 				}
-				JSO().merge(connectionToken, connection);
-			} else if(JSO().isArray(connection)){
+				JSB().merge(connectionToken, connection);
+			} else if(JSB().isArray(connection)){
 				if(connection.length == 0){
 					return {
 						success: false,
@@ -53,17 +53,17 @@
 				count: 0
 			};
 			
-			if(JSO().isString(sql)){
+			if(JSB().isString(sql)){
 				sqlObj.sql = sql;
-				if(!JSO().isNull(params)){
+				if(!JSB().isNull(params)){
 					
 				}
-			} else if(JSO().isPlainObject(sql) && !JSO().isNull(sql.sql)){
+			} else if(JSB().isPlainObject(sql) && !JSB().isNull(sql.sql)){
 				sqlObj.sql = sql.sql;
-				if(!JSO().isNull(sql.count)){
+				if(!JSB().isNull(sql.count)){
 					sqlObj.count = sql.count;
 				}
-				if(!JSO().isNull(sql.params)){
+				if(!JSB().isNull(sql.params)){
 					params = sql.params;
 				}
 			} else {
@@ -74,8 +74,8 @@
 			}
 			
 			// fill params
-			if(!JSO().isNull(params)){
-				if(!JSO().isArray(params)){
+			if(!JSB().isNull(params)){
+				if(!JSB().isArray(params)){
 					return {
 						success: false,
 						error: 'Invalid command params argument: ' + JSON.stringify(params)
@@ -103,10 +103,10 @@
 			
 			var response = null;
 			
-			if(!JSO().isNull(result.result.response.result)){
+			if(!JSB().isNull(result.result.response.result)){
 				response = result.result.response.result;
 			} else {
-				if(JSO().isArray(result.result.response.dataSets)){
+				if(JSB().isArray(result.result.response.dataSets)){
 					if(result.result.response.dataSets.length == 1){
 						response = result.result.response.dataSets[0];
 					} else {
@@ -134,22 +134,22 @@
 				password: ''
 			};
 			
-			while(JSO().isFunction(connection)){
+			while(JSB().isFunction(connection)){
 				connection = connection.call(this);
 			}
-			if(JSO().isString(connection)){
+			if(JSB().isString(connection)){
 				connectionToken.connectionStr = connection;
 				connectionToken.login = '';
 				connectionToken.password = '';
-			} else if(JSO().isPlainObject(connection)){
-				if(JSO().isNull(connection.connectionStr)){
+			} else if(JSB().isPlainObject(connection)){
+				if(JSB().isNull(connection.connectionStr)){
 					return {
 						success: false,
 						error: 'Invalid connection argument'
 					};
 				}
-				JSO().merge(connectionToken, connection);
-			} else if(JSO().isArray(connection)){
+				JSB().merge(connectionToken, connection);
+			} else if(JSB().isArray(connection)){
 				if(connection.length == 0){
 					return {
 						success: false,

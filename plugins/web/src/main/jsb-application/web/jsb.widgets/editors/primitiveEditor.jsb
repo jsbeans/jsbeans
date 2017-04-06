@@ -55,10 +55,10 @@
 			if(this.options.multiline){
 				this.editBoxElt = this.$('<textarea></textarea>');
 				this.getElement().addClass('multiline');
-				if(!JSO().isNull(this.options.rows)){
+				if(!JSB().isNull(this.options.rows)){
 					this.editBoxElt.attr('rows', this.options.rows);
 				}
-				if(!JSO().isNull(this.options.cols)){
+				if(!JSB().isNull(this.options.cols)){
 					this.editBoxElt.attr('cols', this.options.cols);
 				}
 			} else {
@@ -67,10 +67,10 @@
 					this.editBoxElt.attr('type', 'password');
 				}
 			}
-			if (!JSO().isString(this.options.title)) {
+			if (!JSB().isString(this.options.title)) {
 				this.getElement().attr('title', this.options.title);
 			}
-			if(!JSO().isNull(this.options.placeholder)){
+			if(!JSB().isNull(this.options.placeholder)){
 				this.editBoxElt.attr('placeholder', this.options.placeholder);
 				this.editBoxElt.placeholder();
 			}
@@ -88,14 +88,14 @@
 				});
 				this.plainElt.click(function(evt){
 					evt.stopPropagation();
-					if(!JSO().isNull(self.clickKey)){
-						JSO().Window.clearTimeout(self.clickKey);
+					if(!JSB().isNull(self.clickKey)){
+						JSB().Window.clearTimeout(self.clickKey);
 						self.clickKey = null;
 						return;
 					}
-					self.clickKey = JSO().Window.setTimeout(function(){
+					self.clickKey = JSB().Window.setTimeout(function(){
 						self.clickKey = null;
-						self.plainElt.parent().trigger(new JSO().$.Event('click'));
+						self.plainElt.parent().trigger(new JSB().$.Event('click'));
 						
 					}, 200);
 				});
@@ -125,7 +125,7 @@
 			}
 			
 			this.editBoxElt.bind('input propertychange', function(evt) {
-				if(JSO().isNull(self.options.mode) || self.options.mode != 'inplace'){
+				if(JSB().isNull(self.options.mode) || self.options.mode != 'inplace'){
 					self.trackChanging(evt);
 				}
 			});
@@ -140,7 +140,7 @@
 							self.plainElt.text(self.getData().getValue());
 							self.endEdit();
 						}
-						if(!JSO().isNull(self.options.onChange)){
+						if(!JSB().isNull(self.options.onChange)){
 							self.options.onChange.call(self, self.getData().getValue(), evt);
 						}
 					} 
@@ -157,7 +157,7 @@
 						evt.stopPropagation();
 						self.endEdit();
 					}
-				} else if(evt.which == 40 && !JSO().isNull(self.autoBox) && self.autoBox.isVisible()) {
+				} else if(evt.which == 40 && !JSB().isNull(self.autoBox) && self.autoBox.isVisible()) {
 					// down arrow pressed
 					self.autoBox.setFocus();
 				} else {
@@ -199,7 +199,7 @@
 			});
 
 			this.editBoxElt.focusout(function(evt){
-				if(!JSO().isNull(self.options.onChange) && self.changed ){
+				if(!JSB().isNull(self.options.onChange) && self.changed ){
 					self.changed = false;
 					self.trackChanging(evt);
 				}
@@ -241,7 +241,7 @@
 		setData: function(val){
 			var self = this;
 			this.setMark(false);
-			if(JSO().isInstanceOf(val, 'JSB.Widgets.Value')){
+			if(JSB().isInstanceOf(val, 'JSB.Widgets.Value')){
 				this.data = val;
 			} else {
 				this.data = new Value(val, this.options.valueType);
@@ -348,7 +348,7 @@
 		getData: function(){
 			var val = this.editBoxElt.val();
 			
-			if(JSO().isNull(val) ){
+			if(JSB().isNull(val) ){
 				this.data.setValue(null);
 			} else if(this.options.valueType == 'java.lang.Object'){
 				// detect value type
@@ -420,8 +420,8 @@
 			}
 			this.lastVal = curVal;
 			
-			if(JSO().isNull(this.options.mode) || this.options.mode != 'inplace'){
-				if(!JSO().isNull(this.options.onChange)){
+			if(JSB().isNull(this.options.mode) || this.options.mode != 'inplace'){
+				if(!JSB().isNull(this.options.onChange)){
 					this.options.onChange.call(this, curVal, evt);
 				}
 			}
@@ -439,22 +439,22 @@
 			var self = this;
 			this.beginCheckCalled = false;
 			
-			if(!JSO().isNull(self.options.autocomplete)){
-				JSO().defer(function(){
-					if(JSO().isFunction(self.options.autocomplete)){
+			if(!JSB().isNull(self.options.autocomplete)){
+				JSB().defer(function(){
+					if(JSB().isFunction(self.options.autocomplete)){
 						var afterVal = self.getData().getValue();
 						if(self.autocompleteBeforeVal == afterVal){
 							return;
 						}
 						var res = self.options.autocomplete.call(self, self.getData().getValue(), function(arr, val){
-							if(JSO().isNull(val) || val == self.getData().getValue()){
+							if(JSB().isNull(val) || val == self.getData().getValue()){
 								self.setAutocomplete(arr);
 							}
 						});
-						if(JSO().isArray(res)){
+						if(JSB().isArray(res)){
 							self.setAutocomplete(res);
 						}
-					} else if(JSO().isArray(self.options.autocomplete)){
+					} else if(JSB().isArray(self.options.autocomplete)){
 						self.setAutocomplete(self.options.autocomplete);
 					}
 					
@@ -465,9 +465,9 @@
 		
 		setAutocomplete: function(list){
 			var self = this;
-			var toolMgr = JSO().getInstance('JSB.Widgets.ToolManager');
-			if(!JSO().isNull(this.autoBox) && this.autoBox.isVisible()){
-				if(JSO().isNull(list) || list.length == 0){
+			var toolMgr = JSB().getInstance('JSB.Widgets.ToolManager');
+			if(!JSB().isNull(this.autoBox) && this.autoBox.isVisible()){
+				if(JSB().isNull(list) || list.length == 0){
 					this.autoBox.close();
 					this.autoBox = null;
 				} else {
@@ -478,7 +478,7 @@
 				}
 				return;
 			}
-			if(!JSO().isNull(list) && list.length > 0){
+			if(!JSB().isNull(list) && list.length > 0){
 				this.autoBox = toolMgr.activate({
 					id: '_dwp_droplistTool',
 					cmd: 'show',

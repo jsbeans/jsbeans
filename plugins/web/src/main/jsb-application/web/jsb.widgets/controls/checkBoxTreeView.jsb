@@ -12,7 +12,7 @@
 		wrapItem: function(itemObj){
 			var self = this;
 			
-			if(JSO().isNull(itemObj.element)){
+			if(JSB().isNull(itemObj.element)){
 				return;
 			}
 			var item = itemObj.element;
@@ -31,7 +31,7 @@
 				itemWrapper.addClass(itemObj.cssClass);
 			}
 			
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 				itemWrapper.attr("key", itemObj.key);	
 			}
 			
@@ -76,12 +76,12 @@
 						return;
 					}
 					self.elementUnderCursor = self.$(evt.target);
-					JSO().cancelDefer('treeView_highlight');
+					JSB().cancelDefer('treeView_highlight');
 				    self.highlightItem(itemObj.key);
 				});
 				nodeHeader.mouseout(function(){
 					// check element under cursor has the same parent
-					JSO().defer(function(){
+					JSB().defer(function(){
 						if(self.elementUnderCursor && (self.elementUnderCursor.get(0) == nodeHeader.get(0) || self.elementUnderCursor.closest('._dwp_nodeHeader').get(0) == nodeHeader.get(0))){
 							return;
 						}

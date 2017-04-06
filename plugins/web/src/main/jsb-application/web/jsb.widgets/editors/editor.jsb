@@ -21,7 +21,7 @@
 		setFocus: function(){},
 		
 		isValid: function(){
-			if(!JSO().isNull(this.options.onValidate)){
+			if(!JSB().isNull(this.options.onValidate)){
 				return this.options.onValidate(this.getData().getValue());
 			}
 			return true;

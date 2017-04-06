@@ -18,7 +18,7 @@
 			$base(opts);
 			this.getElement().addClass('testwidget');
 			this.loadCss('testwidget.css');
-			JSO().loadScript('http://code.highcharts.com/highcharts.js', function(){
+			JSB().loadScript('http://code.highcharts.com/highcharts.js', function(){
 				self.init();
 			});
 		},

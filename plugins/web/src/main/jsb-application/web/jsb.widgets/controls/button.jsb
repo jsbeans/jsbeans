@@ -24,9 +24,9 @@
 				var caption = this.$('<div class="_dwp_caption"></div>'); 
 				this.append(caption);
 				
-				if(JSO().isString(this.options.caption)){
+				if(JSB().isString(this.options.caption)){
 					caption.text(this.options.caption);
-				} else if(JSO().isInstanceOf(this.options.caption, 'JSB.Widgets.Control')){
+				} else if(JSB().isInstanceOf(this.options.caption, 'JSB.Widgets.Control')){
 					caption.append(this.options.caption.getElement());
 				}
 			}
@@ -42,7 +42,7 @@
 				this.append(this.$('<div class="_dwp_icon"></div>').addClass(posCls));
 			}
 
-			if(!this.options.tooltip && JSO().isString(this.options.caption)){
+			if(!this.options.tooltip && JSB().isString(this.options.caption)){
 				this.options.tooltip = this.options.caption;
 			}
 			if(this.options.tooltip){

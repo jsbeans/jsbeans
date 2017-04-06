@@ -12,12 +12,12 @@
 			var self = this;
 			$base(opts);
 			
-			JSO().loadCss('tpl/codemirror/lib/codemirror.css');
-			JSO().loadCss('tpl/codemirror/theme/eclipse.css');
+			JSB().loadCss('tpl/codemirror/lib/codemirror.css');
+			JSB().loadCss('tpl/codemirror/theme/eclipse.css');
 			this.loadCss('console.css');
-			JSO().loadScript('tpl/codemirror/lib/codemirror.js', function(){
-				JSO().loadScript('tpl/codemirror/mode/javascript/javascript.js', function(){
-					JSO().loadScript('tpl/codemirror/addon/edit/matchbrackets.js', function(){
+			JSB().loadScript('tpl/codemirror/lib/codemirror.js', function(){
+				JSB().loadScript('tpl/codemirror/mode/javascript/javascript.js', function(){
+					JSB().loadScript('tpl/codemirror/addon/edit/matchbrackets.js', function(){
 						self.init();
 					});
 					
@@ -39,7 +39,7 @@
 			this.element.append(this.logWindow);
 			this.element.append(this.cmdWindow);
 			
-			JSO().deferUntil(function(){
+			JSB().deferUntil(function(){
 				self.initCmdWindow();
 				self.initLogWindow();
 				self.initToolbars();
@@ -133,7 +133,7 @@
 				containment: this.scrollBarWindow,
 				drag: function(evt, data){
 					self.isScrollbarDragging = true;
-					JSO().cancelDefer('scrollBar_fadeOut');
+					JSB().cancelDefer('scrollBar_fadeOut');
 					self.scrollBarWindow.show();
 					self.canvas.css('top', -self.canvas.height() * data.position.top / self.scrollBarWindow.height());
 				},
@@ -145,13 +145,13 @@
 				}
 			});
 			this.scrollBar.mousemove(function(){
-				JSO().cancelDefer('scrollBar_fadeOut');
+				JSB().cancelDefer('scrollBar_fadeOut');
 			});
 			this.scrollBar.mouseout(function(){
 				if(self.isScrollbarDragging || self.isScrolling){
 					return;
 				}
-				JSO().defer(function(){
+				JSB().defer(function(){
 					self.scrollBarWindow.fadeOut();
 				}, 500, 'scrollBar_fadeOut')
 			});
@@ -302,7 +302,7 @@
 			}
 			
 			if(self.wheelScrollInterval == null ) {
-				JSO().deferUntil(function(){
+				JSB().deferUntil(function(){
 					self.isScrolling = true;
 					self.wheelScrollInterval = setInterval(function(){
 						self.updateWheelScrollPosition();
@@ -328,13 +328,13 @@
 				this.isScrolling = false;
 				this.saveScrollState();
 				if(!this.isScrollbarDragging){
-					JSO().defer(function(){
+					JSB().defer(function(){
 						self.scrollBarWindow.fadeOut();
 					}, 100, 'scrollBar_fadeOut');
 				}
 				return;
 			} else {
-				JSO().cancelDefer('scrollBar_fadeOut');
+				JSB().cancelDefer('scrollBar_fadeOut');
 			}
 			var newY = this.ease(curTime, this.scrollPos, this.scrollDelta, dur);
 			this.canvas.css('top', newY);
@@ -389,7 +389,7 @@
 		updateLayout: function(){
 			var self = this;
 			this.allowScroll = this.canvas.height() > this.logWindow.height();
-			JSO().defer(function(){
+			JSB().defer(function(){
 				if(!self.allowScroll){
 					self.scrollBottom();
 				} else {
@@ -489,7 +489,7 @@
 					self.trackTask(obj.token, code);
 				} else {
 					// communication error. retry in 5 secs
-					JSO().defer(function(){
+					JSB().defer(function(){
 						self.post();
 					},5000);
 				}
@@ -517,7 +517,7 @@
 					}
 				} else {
 					// communication error. retry in 5 secs
-					JSO().defer( function(){
+					JSB().defer( function(){
 						self.trackTask(token, cmd);
 					}, 5000 );
 				}
@@ -563,7 +563,7 @@
 					
 					var eltContent = this.$('<div class="embeddedObject"></div>');
 					var idx = this.addItemPair(token, cmd, eltContent, val);
-					JSO().deferUntil(function(){
+					JSB().deferUntil(function(){
 						self.renderEmbeddedObject(token, retObj, eltContent, idx);
 					},function(){
 						return eltContent.width() > 0;
@@ -588,13 +588,13 @@
 				container.append('<div class="null">null</div>');
 				return;
 			}
-			if( !JSO().isNull(obj[embeddedField])) {
+			if( !JSB().isNull(obj[embeddedField])) {
 				widgetToLoad = obj[embeddedField];
 				widgetData = obj[dataField];
 				widgetContext = obj[contextField];
 
 
-				JSO().lookup(widgetToLoad, function(f){
+				JSB().lookup(widgetToLoad, function(f){
 					var embeddedWidget = new f(JSB.merge({
 						contextKey: widgetContext
 					}, widgetData));
@@ -634,7 +634,7 @@
 			} else {
 				widgetToLoad = 'JsonView';
 
-				JSO().lookup(widgetToLoad, function(f){
+				JSB().lookup(widgetToLoad, function(f){
 					var embeddedWidget = new f({
 						container: container,
 						data: obj,

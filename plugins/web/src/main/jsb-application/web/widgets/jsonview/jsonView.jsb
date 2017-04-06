@@ -124,7 +124,7 @@
 			if(obj[embeddedField] != null 
 				&& obj[embeddedField] != undefined ) {
 				var allowedWidth = this.element.width();
-				JSO().lookup('JSB.Widgets.FloatingContainer',function(ff){
+				JSB().lookup('JSB.Widgets.FloatingContainer',function(ff){
 					var container = new ff({
 						position: 'fixed',
 						suggested: {
@@ -146,7 +146,7 @@
 						containerElt.css('display','none');
 					}
 
-					JSO().lookup(obj[embeddedField], function(ff){
+					JSB().lookup(obj[embeddedField], function(ff){
 						var embId = self.embeddedCount;
 						self.embeddedCount++;
 						var embeddedWidget = new ff({

@@ -21,7 +21,7 @@
 			
 			var elt = this.getElement();
 			var posArr = this.options.position;
-			if(!JSO().isArray(posArr)){
+			if(!JSB().isArray(posArr)){
 				posArr = [this.options.position];
 			}
 			

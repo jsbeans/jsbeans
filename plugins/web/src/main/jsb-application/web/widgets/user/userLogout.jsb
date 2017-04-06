@@ -13,8 +13,8 @@
 		},
 		execute: function(){
 			var self = this;
-			var serverBase = JSO().getProvider().getServerBase();
-			JSO().getProvider().ajax(serverBase + 'logout', {mode: 'json'}, function(status, res){
+			var serverBase = JSB().getProvider().getServerBase();
+			JSB().getProvider().ajax(serverBase + 'logout', {mode: 'json'}, function(status, res){
 				self.publish('userLogout');
 			});
 		}

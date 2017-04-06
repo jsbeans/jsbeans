@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			JSO().loadScript('tpl/packery/packery.pkgd.min.js', function(){
+			JSB().loadScript('tpl/packery/packery.pkgd.min.js', function(){
 				self.initPackery(opts);
 			});
 			
@@ -46,7 +46,7 @@
 
 				// apply sizing if needed
 				if(self.blockSizingDesc){
-					JSO().deferUntil(function(){
+					JSB().deferUntil(function(){
 						self.applyBlockSizing(params.item, true);
 					}, function(){
 						return params.item.getElement().width() > 0 && params.item.getElement().height() > 0;
@@ -95,7 +95,7 @@
 				self.lastContainerSize.height = self.getContainer().height();
 			});
 			
-			this.getContainer().packery(JSO().merge({}, opts, {
+			this.getContainer().packery(JSB().merge({}, opts, {
 				containerStyle: null, 
 				itemSelector: 'li._dwp_listBoxItem',
 				stamp: 'li._dwp_listBoxItem.stamp',
@@ -116,7 +116,7 @@
 		
 		stamp: function(elts, bClear){
 			var eltArr = [];
-			if(JSO().isArray(elts)){
+			if(JSB().isArray(elts)){
 				eltArr = elts;
 			} else {
 				eltArr.push(elts);
@@ -154,13 +154,13 @@
 				return;
 			}
 			if(!self.packeryInitialized){
-				JSO().deferUntil(function(){
+				JSB().deferUntil(function(){
 					self.update(doRescan);
 				}, function(){
 					return self.packeryInitialized;
 				});
 			} else {
-				JSO().defer(function(){
+				JSB().defer(function(){
 					if(!self.getContainer()){
 						return;
 					}

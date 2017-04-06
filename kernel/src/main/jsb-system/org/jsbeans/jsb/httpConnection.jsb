@@ -12,7 +12,7 @@
             this.InetSocketAddress = Packages.java.net.InetSocketAddress;
             this.HttpHelper = Packages.org.jsbeans.helpers.HttpHelper;
 
-            this.options = JSO().merge(true, {}, this.defaultOptions, options);
+            this.options = JSB().merge(true, {}, this.defaultOptions, options);
             this.log = this.logger(this.options.id, this.options.debug, this.options.trace);
         },
 
@@ -200,7 +200,7 @@
 //                    this.log.trace('getError() error: ', error);
                 return error;
             } catch(e) {
-//                    this.log.trace('[ERROR] getError(): ' + JSO().stringifyError(e));
+//                    this.log.trace('[ERROR] getError(): ' + JSB().stringifyError(e));
                 return null;
             }
         },
@@ -213,7 +213,7 @@
             this.sendCompleted();
 
             if (!this.isOk()) return null;
-            if (JSO().isNull(bytes)) {
+            if (JSB().isNull(bytes)) {
                 var bytes = -1;
             }
 
@@ -239,7 +239,7 @@
 //                    this.log.trace('readLine() line: ', line);
                 return line;
             } catch(e) {
-//                    this.log.trace('[ERROR] readLine(): ' + JSO().stringifyError(e));
+//                    this.log.trace('[ERROR] readLine(): ' + JSB().stringifyError(e));
                 return null;
             }
         },
@@ -249,20 +249,20 @@
                 debug: function(msg, obj){
                     if (enableDebug) {
                         var s = '';
-                        if (obj) s = obj instanceof Error ? JSO().stringifyError(obj) : JSON.stringify(obj);
+                        if (obj) s = obj instanceof Error ? JSB().stringifyError(obj) : JSON.stringify(obj);
                         Log.debug('Http ('+id+'): ' + msg + s);
                     }
                 },
                 trace: function(msg, obj){
                     if(enableTrace) {
                         var s = '';
-                        if (obj) s = typeof obj === 'object' && obj instanceof Error ? JSO().stringifyError(obj) : JSON.stringify(obj);
+                        if (obj) s = typeof obj === 'object' && obj instanceof Error ? JSB().stringifyError(obj) : JSON.stringify(obj);
                         Log.debug('Http ('+id+'): [TRACE] ' + msg + s);
                     }
                 },
                 error: function(msg, e){
                     var s = '';
-                    if (obj) s = obj instanceof Error ? JSO().stringifyError(obj) : JSON.stringify(obj);
+                    if (obj) s = obj instanceof Error ? JSB().stringifyError(obj) : JSON.stringify(obj);
                     Log.error(!(e instanceof Error), 'Http ('+id+'): [ERROR] ' + msg + s);
                 }
             };

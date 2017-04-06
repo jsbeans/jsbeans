@@ -26,7 +26,7 @@
 			var self = this;
 			this.items = [];
 			this.itemMap = {};
-			if(JSO().isArray(this.options.items)){
+			if(JSB().isArray(this.options.items)){
 				for(var i in this.options.items){
 					this.addItem(this.options.items[i]);
 				}
@@ -62,16 +62,16 @@
 		resolveItem: function(obj){
 			var itemObj = {
 			};
-			if(JSO().isPlainObject(obj) && !JSO().isNull(obj.element)){
-				JSO().merge(itemObj, obj);
-				if(JSO().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
+			if(JSB().isPlainObject(obj) && !JSB().isNull(obj.element)){
+				JSB().merge(itemObj, obj);
+				if(JSB().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
 					itemObj.element = itemObj.element.getElement(); 
-				} else if(JSO().isNull(itemObj.key) && JSO().isString(itemObj.element)){
+				} else if(JSB().isNull(itemObj.key) && JSB().isString(itemObj.element)){
 					itemObj.key = itemObj.element;
 				}
-			} else if(JSO().isInstanceOf(obj, 'JSB.Widgets.Control')){
+			} else if(JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
 				itemObj.element = obj.getElement();
-			} else if(JSO().isString(obj)){
+			} else if(JSB().isString(obj)){
 				itemObj.element = obj;
 				itemObj.key = obj;
 			} else {
@@ -89,9 +89,9 @@
 		
 		showDropList: function(list){
 			var self = this;
-			var toolMgr = JSO().getInstance('JSB.Widgets.ToolManager');
-			if(!JSO().isNull(this.autoBox) && this.autoBox.isVisible()){
-				if(JSO().isNull(list) || list.length == 0){
+			var toolMgr = JSB().getInstance('JSB.Widgets.ToolManager');
+			if(!JSB().isNull(this.autoBox) && this.autoBox.isVisible()){
+				if(JSB().isNull(list) || list.length == 0){
 					this.autoBox.close();
 					this.autoBox = null;
 				} else {
@@ -102,7 +102,7 @@
 				}
 				return;
 			}
-			if(!JSO().isNull(list) && list.length > 0){
+			if(!JSB().isNull(list) && list.length > 0){
 				this.autoBox = toolMgr.activate({
 					id: '_dwp_droplistTool',
 					cmd: 'show',
@@ -145,7 +145,7 @@
 			var valObj = this.resolveItem(val);
 			if(this.options.dropDown){
 				// check the specified data is existed in drop list
-				if(JSO().isNull(this.selectedObject) || this.selectedObject.key != valObj.key) {
+				if(JSB().isNull(this.selectedObject) || this.selectedObject.key != valObj.key) {
 					if(this.itemMap[valObj.key]){
 						valObj = this.itemMap[valObj.key];
 					}
@@ -155,7 +155,7 @@
 					this.getElement().append(innerElt);
 					this.getElement().append('<div class="_dwp_dropBtn"></div>');
 					this.selectedObject = valObj;
-					if(!JSO().isNull(this.options.onChange)){
+					if(!JSB().isNull(this.options.onChange)){
 						this.options.onChange(valObj.key, valObj);
 					}
 				}
@@ -166,7 +166,7 @@
 				}
 				if(this.editor.getData().getValue() != val){
 					this.editor.setData(val);
-					if(!JSO().isNull(this.options.onChange)){
+					if(!JSB().isNull(this.options.onChange)){
 						this.options.onChange(valObj.key, valObj);
 					}
 				}

@@ -51,11 +51,11 @@
 			this.scrollPane.resize(function(evt){
 				self.refresh();
 				self.updateVisibleArea();
-				if(!JSO().isNull(self.scroll)){
+				if(!JSB().isNull(self.scroll)){
 					if(self.scrollPane.width() > self.getElement().width() 
 						|| self.scrollPane.height() > self.getElement().height()){
 						self.scroll._execEvent('scrollStart');
-						JSO().defer(function(){
+						JSB().defer(function(){
 							self.scroll._execEvent('scrollEnd');
 						}, 1000, 'scrollPaneDefer_' + self.getId());
 					}
@@ -80,7 +80,7 @@
 				});
 			}
 			
-			JSO().deferUntil(function(){
+			JSB().deferUntil(function(){
 				self.installScroll();
 			},function(){
 				return self.getElement().width() > 0;
@@ -91,24 +91,24 @@
 		},
 		
 		refresh: function(){
-			if(!JSO().isNull(this.scroll)){
+			if(!JSB().isNull(this.scroll)){
 				this.scroll.refresh();
 			}
 		},
 
 		installScroll: function(){
 			var self = this;
-			this.scroll = new IScroll(this.getElement().get(0), JSO().merge(this.options, {
+			this.scroll = new IScroll(this.getElement().get(0), JSB().merge(this.options, {
 				scrollX: true,
 				scrollY: true,
 				mouseWheel: false,
 				scrollbars: self.options.scrollbars,
 				interactiveScrollbars: true,
 				bounce: false,
-				disableMouse: JSO().isNull(self.options.disableMouse) ? true : self.options.disableMouse,
+				disableMouse: JSB().isNull(self.options.disableMouse) ? true : self.options.disableMouse,
 				mouseWheelSpeed: 40,
-				fadeScrollbars: JSO().isNull(self.options.fadeScrollbars) ? false : self.options.fadeScrollbars,
-				click: JSO().isNull(self.options.click) ? false : self.options.click,
+				fadeScrollbars: JSB().isNull(self.options.fadeScrollbars) ? false : self.options.fadeScrollbars,
+				click: JSB().isNull(self.options.click) ? false : self.options.click,
 				preventDefault: self.options.preventDefault || false,
 				freeScroll: true,
 				probeType: 3
@@ -152,7 +152,7 @@
 		handleOnScroll: function(x, y){
 			var self = this;
 			self.updateVisibleArea();
-			if(!JSO().isNull(self.options.onScroll)){
+			if(!JSB().isNull(self.options.onScroll)){
 				self.options.onScroll(x, y);
 			}
 		},
@@ -183,7 +183,7 @@
 			}
 			
 			if(self.updateScrollInterval == null ) {
-				JSO().deferUntil(function(){
+				JSB().deferUntil(function(){
 					if(!self.scrollDelta){
 						return;
 					}
@@ -203,7 +203,7 @@
 		},
 		
 		setEasing: function(easing){
-			if(JSO().isFunction(easing)){
+			if(JSB().isFunction(easing)){
 				this.easing = easing;
 				return;
 			}
@@ -375,7 +375,7 @@
 			}
 
 			var curScrollHandleTime = new Date().getTime();
-			if(JSO().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 10){
+			if(JSB().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 10){
 				this.handleOnScroll(curPos.x, newY);
 				this.lastScrollHandleTime = curScrollHandleTime;
 			}
@@ -400,7 +400,7 @@
 			this.scroll.scrollTo(newX, newY);
 			
 			var curScrollHandleTime = new Date().getTime();
-			if(JSO().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 10){
+			if(JSB().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 10){
 				this.handleOnScroll(newX, newY);
 				this.lastScrollHandleTime = curScrollHandleTime;
 			}
@@ -410,7 +410,7 @@
 		},
 		
 		stopScrollUpdate: function(method){
-			if(JSO().isNull(this.updateScrollInterval)){
+			if(JSB().isNull(this.updateScrollInterval)){
 				return;
 			}
 			this.scrollDeltaX = null;
@@ -441,7 +441,7 @@
 			this.scrollDeltaX = x - this.scrollPosX;
 
 			if(self.updateScrollInterval == null ) {
-				JSO().deferUntil(function(){
+				JSB().deferUntil(function(){
 					self.scroll._execEvent('scrollStart');
 					self.isScrolling = true;
 					self.updateScrollInterval = setInterval(function(){
@@ -524,7 +524,7 @@
 
 		updateVisibleArea: function(){
 			var self = this;
-			if(JSO().isNull(this.options.onChangeVisible) || JSO().isNull(this.scroll)){
+			if(JSB().isNull(this.options.onChangeVisible) || JSB().isNull(this.scroll)){
 				return;
 			}
 			
@@ -543,11 +543,11 @@
 		
 		append: function(ctrl){
 			var self = this;
-			if(JSO().isNull(this.scrollPane)){
-				JSO().deferUntil(function(){
+			if(JSB().isNull(this.scrollPane)){
+				JSB().deferUntil(function(){
 					self.scrollPane.append(self.resolveElement(ctrl));
 				}, function(){
-					return !JSO().isNull(self.scrollPane);
+					return !JSB().isNull(self.scrollPane);
 				});
 			} else {
 				this.scrollPane.append(this.resolveElement(ctrl));
@@ -557,11 +557,11 @@
 
 		prepend: function(ctrl){
 			var self = this;
-			if(JSO().isNull(this.scrollPane)){
-				JSO().deferUntil(function(){
+			if(JSB().isNull(this.scrollPane)){
+				JSB().deferUntil(function(){
 					self.scrollPane.prepend(self.resolveElement(ctrl));
 				}, function(){
-					return !JSO().isNull(self.scrollPane);
+					return !JSB().isNull(self.scrollPane);
 				});
 			} else {
 				this.scrollPane.prepend(this.resolveElement(ctrl));

@@ -101,7 +101,7 @@
 		
 		showUserMenu: function(evt){
 			var self = this;
-			var toolMgr = JSO().getInstance('JSB.Widgets.ToolManager');
+			var toolMgr = JSB().getInstance('JSB.Widgets.ToolManager');
 			var elt = this.$(evt.currentTarget);
 			var autoBox = toolMgr.activate({
 				id: '_dwp_droplistTool',
@@ -160,7 +160,7 @@
 			var item = this.items[key];
 			if(item.widget){
 				function _showWidget(w){
-					var toolMgr = JSO().getInstance('JSB.Widgets.ToolManager');
+					var toolMgr = JSB().getInstance('JSB.Widgets.ToolManager');
 					var elt = self.$(evt.currentTarget);
 					toolMgr.activate({
 						id: '_dwp_userMenuTool',
@@ -180,7 +180,7 @@
 					w = this.instanceCache[key];
 					_showWidget(w);
 				} else {
-					JSO().lookup(item.jso, function(wcls){
+					JSB().lookup(item.jso, function(wcls){
 						w = new wcls();
 						self.instanceCache[key] = w;
 						_showWidget(w);
@@ -191,7 +191,7 @@
 					w = this.instanceCache[key];
 					w.execute();
 				} else {
-					JSO().lookup(item.jso, function(wcls){
+					JSB().lookup(item.jso, function(wcls){
 						w = new wcls();
 						self.instanceCache[key] = w;
 						w.execute();

@@ -45,7 +45,7 @@
 				this.newTab = this.$('<li class="_dwp_newTab"><div class="_dwp_icon"></div></li>');
 				this.tabPane.append(this.newTab);
 				this.newTab.click(function(){
-					if(!JSO().isNull(self.options.onTabClick)){
+					if(!JSB().isNull(self.options.onTabClick)){
 						self.options.onTabClick();
 					}
 				});
@@ -67,13 +67,13 @@
 		
 		containsTab: function(tab){
 			var entry = this.resolveTab(tab);
-			return !JSO().isNull(entry);
+			return !JSB().isNull(entry);
 		},
 		
 		addTab: function(title, ctrl, opts){
 			var self = this;
 			opts = opts || {};
-			var uid = opts.id || JSO().generateUid();
+			var uid = opts.id || JSB().generateUid();
 			
 			// add tab
 			var tab = this.$('<li class="_dwp_tab" clientId="'+uid+'"></li>');
@@ -131,9 +131,9 @@
 		},
 		
 		resolveTab: function(tab){
-			if(JSO().isString(tab)){
+			if(JSB().isString(tab)){
 				// check for id
-				if(!JSO().isNull(this.tabs[tab])){
+				if(!JSB().isNull(this.tabs[tab])){
 					return this.tabs[tab];
 				}
 				
@@ -145,7 +145,7 @@
 					}
 				}
 			} else {
-				if(!JSO().isNull(tab.id) && !JSO().isNull(tab.tab)){
+				if(!JSB().isNull(tab.id) && !JSB().isNull(tab.tab)){
 					return tab;
 				}
 				for(var i in this.tabs){
@@ -204,15 +204,15 @@
 			var entry = this.resolveTab(tab);
 			var activeTab = this.tabPane.find('.active');
 			var needSwitch = (entry.tab.attr('clientId') == activeTab.attr('clientId'));
-			if(!JSO().isNull(entry.opts.onRemoveCallback)){
+			if(!JSB().isNull(entry.opts.onRemoveCallback)){
 				entry.opts.onRemoveCallback(entry.ctrl, tab);
 			}
-			if(!JSO().isNull(this.options.onRemoveTab)){
+			if(!JSB().isNull(this.options.onRemoveTab)){
 				this.options.onRemove(tab);
 			}
 			entry.wrap.remove();
 			entry.tab.remove();
-			if(entry.ctrl && JSO().isInstanceOf(entry.ctrl, 'JSB.Widgets.Control')) {
+			if(entry.ctrl && JSB().isInstanceOf(entry.ctrl, 'JSB.Widgets.Control')) {
 				entry.ctrl.destroy();
 			}
 			
@@ -233,7 +233,7 @@
 		
 		clear: function(){
 			for(var i in this.tabs){
-				if(this.tabs[i].ctrl && JSO().isInstanceOf(this.tabs[i].ctrl, 'JSB.Widgets.Control')) {
+				if(this.tabs[i].ctrl && JSB().isInstanceOf(this.tabs[i].ctrl, 'JSB.Widgets.Control')) {
 					this.tabs[i].ctrl.destroy();
 				}
 			}

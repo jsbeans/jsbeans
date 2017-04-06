@@ -95,7 +95,7 @@
 				this.pane.css({
 					display: 'block'
 				});
-				JSO().deferUntil(function(){
+				JSB().deferUntil(function(){
 					var originalHeight = self.pane.height();
 					self.pane.css({
 						height: 0,

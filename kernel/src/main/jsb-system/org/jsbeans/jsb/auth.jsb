@@ -30,7 +30,7 @@
 //			var self = this;
 //
 //			// generate secret key
-//			var key = JSO().MD5.md5(userName + '@' + password);
+//			var key = JSB().MD5.md5(userName + '@' + password);
 //
 //			function dec2hex(s) { return (s < 15.5 ? '0' : '') + Math.round(s).toString(16); }
 //		    function hex2dec(s) { return parseInt(s, 16); }

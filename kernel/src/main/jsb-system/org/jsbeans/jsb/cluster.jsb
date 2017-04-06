@@ -39,7 +39,7 @@ Cluster.exec({
 	resourceType: 'server-crawling',
 	script: function () {
 		var self = this;
-		JSO().defer(function(){Log.debug('FREEEEEEEEEEEE'); self.free(); }, 15000)
+		JSB().defer(function(){Log.debug('FREEEEEEEEEEEE'); self.free(); }, 15000)
 		return 'OK';
 	},
 	dontFree: true
@@ -73,13 +73,13 @@ Cluster.exec({
 		},
 		
 		exec: function(desc){
-			var id = JSO().generateUid();
+			var id = JSB().generateUid();
 			
 			var func = desc.proc||desc.script;
 			var args = desc.args||[];
 			
 			var argsStr = Packages.org.jsbeans.serialization.JsObjectSerializerHelper.getInstance().serializeNative(args).toJS(false);
-			var funcStr = JSO().isString(func)
+			var funcStr = JSB().isString(func)
 					? func
 					: Packages.org.jsbeans.serialization.JsObjectSerializerHelper.getInstance().serializeNative(func).toJS(false);
 		    var procStr = 'var _res; try { /*Cluster._startProc("'+id+'", '+funcStr+');*/ _res = (' + funcStr + ').apply({id:"'+id+'", free: function(){ Cluster.free(this.id); }}, '+argsStr+'); }';

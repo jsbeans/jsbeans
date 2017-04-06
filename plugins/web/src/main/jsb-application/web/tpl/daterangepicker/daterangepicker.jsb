@@ -31,7 +31,7 @@
 			
 			JSB().deferUntil(function(){
 				var today = new Date();
-				var ops = JSO().merge(true, {
+				var ops = JSB().merge(true, {
 					parentEl: self.$('._dwp_toolManager_toolArea'),
 					locale: {
 						format: 'DD.MM.YYYY',

@@ -17,7 +17,7 @@
             Exception.prototype = Error.prototype;
             
             function _checkServerScripts(){
-            	// check server-side required scripts are loaded before keep loading other JSO
+            	// check server-side required scripts are loaded before keep loading other JSB
             	if(!this.Template || !this.Template.doT){
             		return false;
             	}

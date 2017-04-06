@@ -7,7 +7,7 @@
 		
 		list: function(opts){
 			var res = Kernel.ask('ServiceManagerService','svcList');
-			if(!JSO().isNull(res) && !JSO().isNull(res.result) && !JSO().isNull(res.result.services)){
+			if(!JSB().isNull(res) && !JSB().isNull(res.result) && !JSB().isNull(res.result.services)){
 				return res.result.services;
 			}
 			return null;

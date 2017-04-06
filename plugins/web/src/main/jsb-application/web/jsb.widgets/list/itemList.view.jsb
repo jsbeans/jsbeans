@@ -1,6 +1,5 @@
 {
 	$name:'JSB.Widgets.ItemList.View',
-	$parent: 'JSB.Widgets.Actor',
 	
 	$client: {
 		$constructor: function(opts){

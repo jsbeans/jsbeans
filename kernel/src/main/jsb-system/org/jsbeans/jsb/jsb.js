@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.1 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.6.2 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -54,27 +54,6 @@
 		return this;
 	}
 	
-	function JSO(cfg){
-		if(cfg == null || cfg == undefined){
-			return JSO.fn;
-		}
-		
-		if(JSB().isArray(cfg)){
-			var arr = [];
-			for(var i in cfg){
-				arr.push(JSO(cfg[i]));
-			}
-			return arr;
-		}
-		
-		if(!cfg.$format){
-			cfg.$format = 'jso';
-		}
-		return JSB(cfg);
-	}
-	
-
-
 	function checkOwnLast(){
 		// check own prop position
 		var tf = function(){this.own = true;}
@@ -91,7 +70,6 @@
 		return lastOwn;
 	}
 	
-	JSO.fn = JSO.prototype =
 	JSB.fn = JSB.prototype = 
 	{
 		looking:{},
@@ -101,6 +79,7 @@
 		waiters: {},
 		provider: null,
 		repository: null,
+		messageBus: null,
 		objectsToLoad: [],
 		resourceLoaded: {},
 		resourceScheduled: {},
@@ -149,7 +128,7 @@
 		
 		getCurrentSession: function(){
 			if(!this.isServer()){
-				return null;
+				return '';
 			}
 			var session = Bridge.getCurrentSession();
 			if(session){
@@ -220,7 +199,8 @@
 				'JSB.Logger': true,
 				'JSB.AjaxProvider': true,
 				'JSB.Repository': true,
-				'JSB.Profiler': true
+				'JSB.Profiler': true,
+				'JSB.MessageBus': true
 			};
 			return sysMap[name] ? true: false;
 		},
@@ -247,6 +227,7 @@
 					obj.id = this.generateUid();
 				}
 			}
+			obj.$_session = jsb.getCurrentSession();
 			// repeating registration - wrong
 			if(scope[obj.id] && (isSingleton || isFixedId)){
 				var n = jsb.$name;
@@ -862,116 +843,75 @@
 		
 		_prepareSections: function(parent){
 			var self = this;
+			var blackProcs = {
+				'import': true,
+				'export': true,
+				'rpc': true,
+				'$constructor': true,
+				'$bootstrap': true
+			};
+			
+			function fillProcs(scope, sec1, sec2){
+				var curJsb = self;
+				while(curJsb) {
+					var bodies = [];
+					if(curJsb[sec1]){
+						bodies.push(curJsb[sec1]);
+					}
+					if(curJsb[sec2]){
+						bodies.push(curJsb[sec2]);
+					}
+					for(var b in bodies){
+						var curBody = bodies[b];
+						if(!curBody){
+							continue;
+						}
+						for(var procName in curBody){
+							if(!JSB().isFunction(curBody[procName])){
+								continue;
+							}
+							if(scope[procName] || blackProcs[procName]){
+								continue;
+							}
+							scope[procName] = eval('(function(){JSB().proxyRpcCall.call(this.__instance, "'+procName+'", arguments);})');
+						}
+					}
+					
+					if(curJsb.getClass()){
+						var s = curJsb.getClass().superclass;
+						if(!s){
+							break;
+						}
+						curJsb = s.jsb;
+					} else {
+						curJsb = parent;
+					}
+				}
+			}
 			
 			if(this.isClient()){
 				if(this.isNull(this.$client)){
 					this.$client = {};
 				}
+				
+				if(this.isNull(this.$_serverProcs)){
+					var scope = this.$_serverProcs = this.$_serverProcs || {};
+					fillProcs(scope, '$common', '$server');
+				}
+				
 			} else {
 				if(this.isNull(this.$server)){
 					this.$server = {};
 				}
 				
-				var blackProcs = {
-					'import': true,
-					'export': true,
-					'rpc': true,
-					'$constructor': true,
-					'$bootstrap': true
-				};
-				
 				// resolve server-side push-proxies
-				if(!JSB.isNull(this.$server) && !JSB.isNull(this.$client)){
-					var serverBody = this.$server;
-					var curJsb = this;
-					var scope = this.$_clientProcs = this.$_clientProcs || {};
-					
-					while(curJsb) {
-						var bodies = [];
-
-						if(curJsb.$common){
-							bodies.push(curJsb.$common);
-						}
-						if(curJsb.$client){
-							bodies.push(curJsb.$client);
-						}
-						for(var b = 0; b < bodies.length; b++){
-							var curBody = bodies[b];
-							for(var procName in curBody){
-								if(this.isJavaObject(curBody[procName])){
-									throw 'Error: Java field "' + procName + '" is not permitted in client-side section of bean ' + this.$name;
-								}
-								if(!this.isFunction(curBody[procName])){
-									continue;
-								}
-//								var scope = serverBody.$client = serverBody.$client || {};
-								if(scope[procName] || blackProcs[procName]){
-									continue;
-								}
-								scope[procName] = eval('function(){JSB().proxyRpcCall.call(this.__instance, "'+procName+'", arguments);}');
-							}
-						}
-						
-						if(curJsb.getClass()){
-							var s = curJsb.getClass().superclass;
-							if(!s){
-								break;
-							}
-							curJsb = s.jsb;
-						} else {
-							curJsb = parent;
-						}
-					}
-				}
+				var scope = this.$_clientProcs = this.$_clientProcs || {};
+				fillProcs(scope, '$common', '$client');
 
 				// resolve client-side rpc proxies
-				if(!JSB().isNull(this.$client)){
-					var clientBody = this.$client;
-					
-					var curJsb = this;
-					var scope = this.$_serverProcs = this.$_serverProcs || {};
-					
-					while(curJsb) {
-						var bodies = [];
-						if(curJsb.$common){
-							bodies.push(curJsb.$common);
-						}
-						if(curJsb.$server){
-							bodies.push(curJsb.$server);
-						}
-						for(var b in bodies){
-							var curBody = bodies[b];
-							if(!curBody){
-								continue;
-							}
-							for(var procName in curBody){
-								if(!JSB().isFunction(curBody[procName])){
-									continue;
-								}
-/*								
-								var scope = clientBody;
-								if(this.$format == 'jsb'){
-									scope = clientBody.$server = clientBody.$server || {};
-								}
-*/								
-								if(scope[procName] || blackProcs[procName]){
-									continue;
-								}
-								scope[procName] = eval('function(){JSB().proxyRpcCall.call('+(this.$format == 'jso' ? 'this': 'this.__instance' )+', "'+procName+'", arguments);}');
-							}
-						}
-						
-						if(curJsb.getClass()){
-							var s = curJsb.getClass().superclass;
-							if(!s){
-								break;
-							}
-							curJsb = s.jsb;
-						} else {
-							curJsb = parent;
-						}
-					}
-				}
+				var scope = this.$_serverProcs = this.$_serverProcs || {};
+				fillProcs(scope, '$common', '$server');
+				
 			}
 			
 			var entry = this.currentSection();
@@ -2120,7 +2060,7 @@
 							o.doSync();
 						}
 	*/					
-						if(self.isClient() && !self.isNull(o.$_syncScopes)){
+						if(self.isClient() && !self.isNull(o.$_syncScopes) && self.getSync()){
 							if(o.isSynchronized()){
 								keepFinalize();
 							} else {
@@ -2194,6 +2134,14 @@
 
 		getRepository: function(){
 			return this.repository;
+		},
+		
+		setMessageBus: function(bus){
+			this.messageBus = bus;
+		},
+		
+		getMessageBus: function(){
+			return this.messageBus;
 		},
 
 		setLogger: function(l){
@@ -2660,15 +2608,25 @@
 		},
 
 		substJsoInRpcResult: function(res){
+			var self = this;
+			var reverseBindMap = this.getReverseBindMap();
+			var isServer = this.isServer();
 			function _substJsoInRpcResult(res){
 				if(JSB().isPlainObject(res)){
 					// check if res is jso
 					if(JSB().isBean(res)){
 						// encode jso object
-						return {
-							__jso : res.getJsb().$name,
-							__id: res.getId()
-						};
+						if(isServer){
+							return {
+								__jso : res.getJsb().$name,
+								__id: !self.isNull(reverseBindMap) && !self.isNull(reverseBindMap[res.getId()]) && Object.keys(reverseBindMap[res.getId()]).length > 0 ? Object.keys(reverseBindMap[res.getId()])[0] : res.getId()
+							};
+						} else {
+							return {
+								__jso : res.getJsb().$name,
+								__id: res.getId()
+							};
+						}
 					} else {
 						// parse json object
 						var nobj = {};
@@ -2725,7 +2683,7 @@
 				}
 			}
 			if(this.isPlainObject(res) && !this.isBean(res)){
-				if(JSB().isString(res.__jso) && JSB().isString(res.__id)){
+				if(this.isString(res.__jso) && this.isString(res.__id)){
 					// this is a server object reference
 					this.constructInstanceFromRemote(res.__jso, res.__id, function(fObj){
 						if(callback){
@@ -2810,11 +2768,16 @@
 						}
 						if(jso.isSingleton()){
 							serverInstance = JSB().getInstance(jsoName);
-							if(JSB().isNull(serverInstance)){
-								return null;
-							}
 						} else {
 							serverInstance = JSB().getInstance(instanceId);
+						}
+						
+						function updateBindMaps(id, sid){
+							bindMapScope[id] = sid;
+							if(!reverseBindMapScope[sid]){
+								reverseBindMapScope[sid] = {};
+							}
+							reverseBindMapScope[sid][id] = true;
 						}
 						
 						if(JSB().isNull(serverInstance)){
@@ -2832,20 +2795,21 @@
 								JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
 									// use this to access current object
 									this.id = instanceId;
+									updateBindMaps(instanceId, instanceId);
 								});
 								serverInstance = new f();
 								JSB().getThreadLocal().clear('_jsoRegisterCallback');
 							} else {
+								JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
+									updateBindMaps(instanceId, this.id);
+								});
 								serverInstance = new f();
+								JSB().getThreadLocal().clear('_jsoRegisterCallback');
 							}
 							bNeedSync = true;
+						} else {
+							updateBindMaps(instanceId, serverInstance.getId());
 						}
-						serverInstanceId = serverInstance.getId();
-						bindMapScope[instanceId] = serverInstanceId;
-						if(!reverseBindMapScope[serverInstanceId]){
-							reverseBindMapScope[serverInstanceId] = {};
-						}
-						reverseBindMapScope[serverInstanceId][instanceId] = true;
 						
 						if(bNeedSync){
 							serverInstance.doSync();
@@ -2874,9 +2838,9 @@
 						}
 					} else {
 						// check for fixedId
-						if(cls.jsb.getKeywordOption('$fixedId')){
+//						if(cls.jsb.getKeywordOption('$fixedId')){
 							obj = self.getInstance(id);
-						}
+//						}
 					}
 					
 					if(!obj){
@@ -2971,8 +2935,7 @@
 		
 	};
 	
-	// expose JSO & JSB
-	(function(){return this;}).call(null).JSO = JSO;
+	// expose JSB
 	(function(){return this;}).call(null).JSB = JSB;
 	
 	// deploy JSB.fn methods into JSB scope
@@ -3224,7 +3187,8 @@ JSB({
 			return;
 		}
 		this.$_destroyed = true;
-		JSB().unregister(this);
+		this.unsubscribe();
+		$jsb.unregister(this);
 		
 		if(!this.$_destroyLocal && this.jsb.isSession() && (this.jsb.isServer() || this.$_bindKey)){
 			if(this.remote()._destroyLocal){
@@ -3278,9 +3242,46 @@ JSB({
 	getClass: function(){
 		return this.getJsb().getClass();
 	},
+	
+	getSession: function(){
+		return this.$_session;
+	},
 
 	getJsb: function(){
 		return this.jsb;
+	},
+	
+	subscribe: function(msg, arg1, arg2){
+		if(!$jsb.getMessageBus()){
+			return;
+		}
+		$jsb.getMessageBus().subscribe(this, msg, arg1, arg2);
+	},
+	
+	unsubscribe: function(msg){
+		if(!$jsb.getMessageBus()){
+			return;
+		}
+		$jsb.getMessageBus().unsubscribe(this, msg);
+	},
+	
+	publish: function(msg, params, arg1, arg2){
+		if(!$jsb.getMessageBus()){
+			return;
+		}
+		return $jsb.getMessageBus().publish(this, msg, params, arg1, arg2);
+	},
+	
+	lock: function(){
+		if($jsb.getLocker()){
+			$jsb.getLocker().lock(this.getId());
+		}
+	},
+	
+	unlock: function(){
+		if($jsb.getLocker()){
+			$jsb.getLocker().unlock(this.getId());
+		}
 	},
 	
 	setupSync: function(){
@@ -3928,7 +3929,12 @@ JSB({
 				bUpdateClient = this.getJsb().getSync().updateClient;
 			}
 			return bUpdateClient;
+		},
+		
+		callbackAttr: function(proc){
+			return $jsb.callbackAttr(proc, this);
 		}
+
 	},
 	
 	$server: {
@@ -4142,6 +4148,268 @@ JSB({
 	$client: {},
 	$server: {}
 });
+
+
+JSB({
+	$name:'JSB.MessageBus',
+	$singleton: true,
+	
+	msgIdx: {},
+	objIdx: {},
+	callIdx: {},
+	
+	$constructor: function(){
+		JSB().setMessageBus(this);
+	},
+		
+	/* methods */
+	
+	_resolveMessage: function(msg, opts){
+		if($jsb.isArray(msg)){
+			throw 'Message objects can only be a string or JSON object';
+		}
+		
+		if(!$jsb.isString(msg)){
+			throw 'Expecting string message';
+		}
+		var msgObj = {
+			message: msg
+		};
+		if(opts){
+			$jsb.merge(msgObj, opts);
+		}
+		if(!msgObj.session){
+			msgObj.session = false;
+			msgObj.local = true;
+		} else {
+			msgObj.session = true;
+			msgObj.local = false;
+		}
+		
+		return msgObj;
+	},
+	
+	_subscribe: function(w, msgObj, callback){
+		var msg = msgObj.message;
+		if(!w.getId()){
+			throw 'Failed to subscribe uninitialized bean';
+		}
+		var objId = w.getSession() + '/' + w.getId();
+		if(!msgObj.callId){
+			msgObj.callId = $jsb.generateUid();
+		}
+		var msgDesc = $jsb.merge({
+			c: callback,
+			w: w
+		}, msgObj);
+		
+		$this.lock();
+		
+		// msgIdx
+		if($jsb.isNull($this.msgIdx[msg])){
+			$this.msgIdx[msg] = {};
+		}
+		if($jsb.isNull($this.msgIdx[msg][objId])){
+			$this.msgIdx[msg][objId] = [];
+		}
+		$this.msgIdx[msg][objId].push(msgDesc);
+		
+		// objIdx
+		if($jsb.isNull($this.objIdx[objId])){
+			$this.objIdx[objId] = {};
+		}
+		$this.objIdx[objId][msg] = true;
+		
+		// callIdx
+		$this.callIdx[msgObj.callId] = msgDesc;
+		
+		$this.unlock();
+		
+		if(msgObj.session && !msgObj.remote){
+			// subscribe remote
+			if($this.remote()._subscribe){
+				msgObj.remote = true;
+				$this.remote()._subscribe(w, msgObj);
+			}
+		}
+	},
+	
+	_unsubscribe: function(w, msgObj){
+		var msg = msgObj.message;
+		var objId = w.getSession() + '/' + w.getId();
+		
+		this.lock();
+		
+		// remove from msgIdx
+		if($this.msgIdx[msg] && $this.msgIdx[msg][objId]){
+			for(var i = 0; i < $this.msgIdx[msg][objId].length; i++){
+				var callId = $this.msgIdx[msg][objId][i].callId;
+				if(callId && $this.callIdx[callId]){
+					delete $this.callIdx[callId];
+				}
+			}
+			delete $this.msgIdx[msg][objId];
+			if(Object.keys($this.msgIdx[msg]).length === 0){
+				delete $this.msgIdx[msg];
+			}
+		}
+		
+		// remove from objIdx
+		if($this.objIdx[objId] && $this.objIdx[objId][msg]){
+			delete $this.objIdx[objId][msg];
+			if(Object.keys($this.objIdx[objId]).length === 0){
+				delete $this.objIdx[objId];
+			}
+		}
+		
+		this.unlock();
+	},
+	
+	subscribe: function(w, msgObj, arg1, arg2){
+		var callback = null, opts = null;
+		if($jsb.isObject(arg1)){
+			opts = arg1, 
+			callback = arg2;
+		} else {
+			callback = arg1;
+		}
+		if(!callback && opts && opts.onMessage && $jsb.isFunction(opts.onMessage)){
+			callback = opts.onMessage;
+			delete opts.onMessage;
+		}
+		if($jsb.isArray(msgObj)){
+			for(var i = 0; i < msgObj.length; i++){
+				this._subscribe(w, this._resolveMessage(msgObj[i], opts), callback);
+			}
+		} else {
+			this._subscribe(w, this._resolveMessage(msgObj, opts), callback);
+		}
+	},
+		
+	unsubscribe: function(w, msgObj){
+		if(!msgObj){
+			// combine all messages from object
+			var objId = w.getSession() + '/' + w.getId();
+			msgObj = [];
+			for(var m in $this.objIdx[objId]){
+				msgObj.push(m);
+			}
+		}
+		if($jsb.isArray(msgObj)){
+			for(var i = 0; i < msgObj.length; i++){
+				this._unsubscribe(w, this._resolveMessage(msgObj[i]));
+			}
+		} else {
+			this._unsubscribe(w, this._resolveMessage(msgObj));
+		}
+	},
+	
+	dispatch: function(callId, w, msg, params){
+		var ret = undefined;
+		var subDesc = this.callIdx[callId];
+		if(subDesc){
+			if(subDesc.c){
+				try {
+					ret = ret || subDesc.c.call(subDesc.w, w, msg, params, subDesc);
+				} catch(e){
+					$jsb.getLogger().error(e);
+				}
+			}
+			if(subDesc.w.onMessage){
+				try {
+					ret = ret || subDesc.w.onMessage.call(subDesc.w, w, msg, params, subDesc);
+				}catch(e){
+					$jsb.getLogger().error(e);
+				}
+			}
+		}
+		return ret;
+	},
+	
+	publish: function(w, msgObj, params, arg1, arg2){
+		if($jsb.isArray(msgObj)){
+			throw 'Publishing array of messages is not supported';
+		}
+		var callback = null, opts = null;
+		if($jsb.isObject(arg1)){
+			opts = arg1, 
+			callback = arg2;
+		} else {
+			callback = arg1;
+		}
+		if(!callback && opts && opts.onComplete && $jsb.isFunction(opts.onComplete)){
+			callback = opts.onComplete;
+			delete opts.onComplete;
+		}
+		msgObj = this._resolveMessage(msgObj, opts);
+		var response = {};
+		var msg = msgObj.message;
+		var objMap = $this.msgIdx[msg];
+		var localIds = [];
+		var remoteIds = [];
+		if(objMap){
+			for(var objId in objMap){
+				var subsArr = objMap[objId];
+				if(!subsArr || subsArr.length == 0){
+					continue;
+				}
+				for(var i = 0; i < subsArr.length; i++){
+					var subDesc = subsArr[i];
+					if(msgObj.local && subDesc.remote){
+						continue;
+					}
+					
+					if(subDesc.remote){
+						remoteIds.push(subDesc.callId);
+					} else {
+						localIds.push(subDesc.callId);
+					}
+				}
+			}
+		}
+		
+		function storeDispatchResult(ret, subDesc){
+			if(!$jsb.isNull(ret)){
+				if(!response[subDesc.w.getId()]){
+					response[subDesc.w.getId()] = [];
+				}
+				response[subDesc.w.getId()].push(ret);
+			}
+		}
+		
+		if(remoteIds.length > 0){
+			var cb = {complete: 0};
+			for(var i = 0; i < remoteIds.length; i++){
+				(function(i){
+					if($this.remote().dispatch){
+						var subDesc = $this.callIdx[remoteIds[i]];
+						$this.remote().dispatch(remoteIds[i], w, msg, params, function(ret){
+							storeDispatchResult(ret, subDesc);
+							cb.complete++;
+							if(cb.complete == remoteIds.length){
+								// complete
+								if(callback){
+									callback.call(w, response);
+								}
+							}
+						});
+					}
+				})(i);
+			}
+		}
+		for(var i = 0; i < localIds.length; i++){
+			var subDesc = $this.callIdx[localIds[i]];
+			var ret = this.dispatch(localIds[i], w, msg, params);
+			storeDispatchResult(ret, subDesc);
+		}
+		
+		if(remoteIds.length == 0){
+			return response;
+		}
+	}
+
+});
+
 
 JSB({
 	$name: 'JSB.Locker',

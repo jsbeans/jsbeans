@@ -114,7 +114,7 @@
 		close: function(){
 			this.getWidget().destroy();
 			this.getElement().remove();
-			JSO().unregister(this);
+			JSB().unregister(this);
 		},
 		
 		maximize: function(){
@@ -148,7 +148,7 @@
 				return;
 			}
 			this.isMaximized = false;
-			this.replacingMark = JSO().$('<div id="'+this.getId()+'_rmark"></div>');
+			this.replacingMark = JSB().$('<div id="'+this.getId()+'_rmark"></div>');
 			this.getElement().after(this.replacingMark);
 			this.getElement().detach();
 
@@ -280,7 +280,7 @@
 		
 		updateBehavior: function(b){
 			var self = this;
-			this.behavior = JSO().clone(b);
+			this.behavior = JSB().clone(b);
 			
 			if(this.options.dockedHorz){
 				this.behavior.allowResize.horizontal = false;
@@ -290,10 +290,10 @@
 			}
 				
 			this.preConstruct();
-			JSO().deferUntil(function(){
+			JSB().deferUntil(function(){
 				self.constructContainer();
 				self.updateGrippers(self.behavior);
-				if(!JSO().isNull(self.storeArea)){
+				if(!JSB().isNull(self.storeArea)){
 //						self.updateArea(self.storeArea.width, self.storeArea.height);
 				}
 			}, function(){
@@ -309,7 +309,7 @@
 			var wcClass = 'simple';
 			if(this.behavior.allowResize.vertical 
 				|| this.behavior.allowResize.horizontal
-				|| !JSO().isNull(this.toolbar)){
+				|| !JSB().isNull(this.toolbar)){
 				wcClass = 'border';
 			}
 			this.getElement().addClass(wcClass);
@@ -342,10 +342,10 @@
 
 			var suggestedWidth = this.behavior.dimensions.defaultWidth;
 			var suggestedHeight = this.behavior.dimensions.defaultHeight;
-			if(JSO().isNull(suggestedWidth)){
+			if(JSB().isNull(suggestedWidth)){
 				suggestedWidth = areaSize.width;
 			}
-			if(JSO().isNull(suggestedHeight)){
+			if(JSB().isNull(suggestedHeight)){
 				suggestedHeight = areaSize.height;
 			}
 			
@@ -359,8 +359,8 @@
 
 			suggestedWidth = this.fixMinWidth( suggestedWidth );
 			suggestedHeight = this.fixMinHeight( suggestedHeight );
-			if(!JSO().isNull(this.options.suggested)){
-				if(!JSO().isNull(this.options.suggested.width) && this.options.suggested.width > 0){
+			if(!JSB().isNull(this.options.suggested)){
+				if(!JSB().isNull(this.options.suggested.width) && this.options.suggested.width > 0){
 					suggestedWidth = this.fixMinWidth( this.options.suggested.width );
 				}
 				if(this.options.suggested.height != undefined){

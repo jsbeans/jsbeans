@@ -184,18 +184,18 @@
 				allowSelect: true,
 				allowHover: true
 			};
-			if(JSO().isPlainObject(obj) && !JSO().isNull(obj.element) && !JSO().isInstanceOf(obj, 'JSB.Widgets.Control')){
-				JSO().merge(itemObj, obj);
-				if(JSO().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
+			if(JSB().isPlainObject(obj) && !JSB().isNull(obj.element) && !JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
+				JSB().merge(itemObj, obj);
+				if(JSB().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
 					itemObj.obj = itemObj.element;
 					itemObj.element = itemObj.element.getElement();
-				} else if(JSO().isNull(itemObj.key) && JSO().isString(itemObj.element)){
+				} else if(JSB().isNull(itemObj.key) && JSB().isString(itemObj.element)){
 					itemObj.key = itemObj.element;
 				}
-			} else if(JSO().isInstanceOf(obj, 'JSB.Widgets.Control')){
+			} else if(JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
 				itemObj.element = obj.getElement();
 				itemObj.obj = obj;
-			} else if(JSO().isString(obj)){
+			} else if(JSB().isString(obj)){
 				itemObj.element = obj;
 				itemObj.key = obj;
 			} else {
@@ -208,7 +208,7 @@
 		
 		wrapItem: function(itemObj){
 			var self = this;
-			if(JSO().isNull(itemObj.element)){
+			if(JSB().isNull(itemObj.element)){
 				return;
 			}
 			var item = itemObj.element;
@@ -219,7 +219,7 @@
 				itemWrapper.addClass(itemObj.cssClass);
 			}
 			
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 				itemWrapper.attr("key", itemObj.key);	
 			}
 
@@ -310,7 +310,7 @@
 			itemObj.wrapper = this.wrapItem(itemObj);
 			this.rootElt.append(itemObj.wrapper);
 			this.itemList.push(itemObj);
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
 			
@@ -320,7 +320,7 @@
 		deleteItem: function(key){
 			// unselect if needed
 			var keyArr = [];
-			if(JSO().isArray(key)){
+			if(JSB().isArray(key)){
 				keyArr = key;
 			} else {
 				keyArr = [key];
@@ -376,7 +376,7 @@
 			for(var i in this.itemList){
 				if(this.itemList[i].key == key){
 					this.itemList.splice(i, 0, itemObj);
-					if(!JSO().isNull(itemObj.key)){
+					if(!JSB().isNull(itemObj.key)){
 					    this.itemMap[itemObj.key] = itemObj;
 					}
 					break;
@@ -398,7 +398,7 @@
 			}
 			
 			var keyArr = [];
-			if(!JSO().isArray(key)){
+			if(!JSB().isArray(key)){
 				keyArr.push(key);
 			} else {
 				keyArr = key;
@@ -465,7 +465,7 @@
 		},
 		
 		notifySelChanged: function(evt){
-			if(!JSO().isNull(this.options.onSelectionChanged)){
+			if(!JSB().isNull(this.options.onSelectionChanged)){
 				var itemArr = [];
 				
 				for(var i = 0; i < this.selected.length; i++ ){
@@ -525,7 +525,7 @@
 		highlightItem: function(key){
 			this.rootElt.find('> li._dwp_listBoxItem').removeClass('highlighted');
 			var keyArr = [];
-			if(!JSO().isArray(key)){
+			if(!JSB().isArray(key)){
 				keyArr.push(key);
 			} else {
 				keyArr = key;

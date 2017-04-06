@@ -34,7 +34,7 @@
 					lastScope = lastScope.__parent__;
 				} else {
 					Kernel.lock('repo_touchScope');
-					if(JSO().isNull(lastScope[part])){
+					if(JSB().isNull(lastScope[part])){
 						lastScope[part] = {
 							__parent__: lastScope,
 							__items__: {},
@@ -62,7 +62,7 @@
 				} else if(part == '..'){
 					lastScope = lastScope.__parent__;
 				} else {
-					if(JSO().isNull(lastScope[part])){
+					if(JSB().isNull(lastScope[part])){
 						return null;
 					}
 					lastScope = lastScope[part];

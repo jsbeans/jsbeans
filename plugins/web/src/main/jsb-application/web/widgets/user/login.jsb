@@ -101,14 +101,14 @@
 				return;
 			}
 			
-			var serverBase = JSO().getProvider().getServerBase();
+			var serverBase = JSB().getProvider().getServerBase();
 			
 			// proceed hash authentication
 			this.lastUser = this.loginElt.getData().getValue().trim();
 			this.lastPass = this.passElt.getData().getValue().trim();
-			var hash = JSO().MD5.md5(this.lastUser + '@' + this.lastPass);
+			var hash = JSB().MD5.md5(this.lastUser + '@' + this.lastPass);
 			
-			JSO().getProvider().ajax(serverBase + 'login', {
+			JSB().getProvider().ajax(serverBase + 'login', {
 				mode: 'json',
 				user: this.lastUser,
 				hash: hash,
@@ -138,7 +138,7 @@
 		
 		show: function(b){
 			var self = this;
-			if(JSO().isNull(b)){
+			if(JSB().isNull(b)){
 				b = true;
 			}
 			if(b){

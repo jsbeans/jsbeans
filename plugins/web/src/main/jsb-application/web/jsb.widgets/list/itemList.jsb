@@ -78,12 +78,12 @@
 		},
 		
 		addItem: function(item, id){
-			if(JSO().isNull(id)){
+			if(JSB().isNull(id)){
 				id = item.getId();
 			}
 			item.key = id;
 			item.list = this;
-			var it = $base(JSO().merge(true, {}, item.options, {
+			var it = $base(JSB().merge(true, {}, item.options, {
 				key: id,
 				element: item
 			}));
@@ -94,12 +94,12 @@
 		},
 
 		insertItem: function(key, item, id){
-			if(JSO().isNull(id)){
-				id = JSO().generateUid();
+			if(JSB().isNull(id)){
+				id = JSB().generateUid();
 			}
 			item.key = id;
 			item.list = this;
-			var it = $base(key, JSO().merge(true, {}, item.options, {
+			var it = $base(key, JSB().merge(true, {}, item.options, {
 				key: id,
 				element: item
 			}));
@@ -147,7 +147,7 @@
 		},
 		
 		append: function(obj){
-			if(JSO().isInstanceOf(obj, 'JSB.Widgets.ListItem')){
+			if(JSB().isInstanceOf(obj, 'JSB.Widgets.ListItem')){
 				this.addItem(obj);
 				return this;
 			} 

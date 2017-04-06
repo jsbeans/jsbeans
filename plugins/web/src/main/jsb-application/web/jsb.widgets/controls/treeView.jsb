@@ -47,18 +47,18 @@
 		
 		resolveItem: function(obj){
 			var itemObj = {};
-			if(JSO().isPlainObject(obj) && !JSO().isNull(obj.element) && !JSO().isInstanceOf(obj, 'JSB.Widgets.Control')){
-				JSO().merge(itemObj, obj);
-				if(JSO().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
+			if(JSB().isPlainObject(obj) && !JSB().isNull(obj.element) && !JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
+				JSB().merge(itemObj, obj);
+				if(JSB().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
 					itemObj.obj = itemObj.element;
 					itemObj.element = itemObj.element.getElement();
-				} else if(JSO().isNull(itemObj.key) && JSO().isString(itemObj.element)){
+				} else if(JSB().isNull(itemObj.key) && JSB().isString(itemObj.element)){
 					itemObj.key = itemObj.element;
 				}
-			} else if(JSO().isInstanceOf(obj, 'JSB.Widgets.Control')){
+			} else if(JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
 				itemObj.element = obj.getElement();
 				itemObj.obj = obj;
-			} else if(JSO().isString(obj)){
+			} else if(JSB().isString(obj)){
 				itemObj.element = obj;
 				itemObj.key = obj;
 			} else {
@@ -75,7 +75,7 @@
 		
 		wrapItem: function(itemObj){
 			var self = this;
-			if(JSO().isNull(itemObj.element)){
+			if(JSB().isNull(itemObj.element)){
 				return;
 			}
 			var item = itemObj.element;
@@ -94,7 +94,7 @@
 				itemWrapper.addClass(itemObj.cssClass);
 			}
 			
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 				itemWrapper.attr("key", itemObj.key);	
 			}
 			
@@ -123,12 +123,12 @@
 						return;
 					}
 					self.elementUnderCursor = self.$(evt.target);
-					JSO().cancelDefer('treeView_highlight');
+					JSB().cancelDefer('treeView_highlight');
 				    self.highlightItem(itemObj.key);
 				});
 				nodeHeader.mouseout(function(){
 					// check element under cursor has the same parent
-					JSO().defer(function(){
+					JSB().defer(function(){
 						if(self.elementUnderCursor && (self.elementUnderCursor.get(0) == nodeHeader.get(0) || self.elementUnderCursor.closest('._dwp_nodeHeader').get(0) == nodeHeader.get(0))){
 							return;
 						}
@@ -195,7 +195,7 @@
 			var itemWrapper = this.rootElt.find('.' +selectedCls);
 			
 			function callChanged(){
-				if(JSO().isNull(self.options.onSelectionChanged)){
+				if(JSB().isNull(self.options.onSelectionChanged)){
 					return;
 				}
 				var itemWrapper = self.rootElt.find('.' +selectedCls);
@@ -313,7 +313,7 @@
 			}
 			parentElt.append(wrappedItem);
 			
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
 			
@@ -336,7 +336,7 @@
 			wrapper.after(wrappedItem);
 			itemObj.parent = parentKey;
 			
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
 			
@@ -363,7 +363,7 @@
 
 			// delete self
 			this.rootElt.find('li[key="'+key+'"]').remove();
-			if(JSO().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
+			if(JSB().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
 				if(this.controls[itemObj.element.getId()]){
 					delete this.controls[itemObj.element.getId()];
 				}

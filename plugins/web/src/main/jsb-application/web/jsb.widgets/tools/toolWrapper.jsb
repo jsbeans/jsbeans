@@ -9,8 +9,8 @@
 			this.toolId = toolId;
 			this.toolManager = toolMgr;
 			this.embeddedWidget = w;
-			JSO().loadScript('tpl/d3/d3.min.js');
-			JSO().waitForObjectExist('window.d3',function(){
+			JSB().loadScript('tpl/d3/d3.min.js');
+			JSB().waitForObjectExist('window.d3',function(){
 				self.init();	
 			});
 		},
@@ -21,7 +21,7 @@
 		init: function(){
 			var elt = this.getElement();
 			elt.addClass('_dwp_toolWrapper');
-			if(!JSO().isNull(this.options.cssClass)){
+			if(!JSB().isNull(this.options.cssClass)){
 				elt.addClass(this.options.cssClass);
 			}
 			this.clientContainer = this.$('<div class="clientContainer"></div>');
@@ -53,7 +53,7 @@
 			var defs = this.svgContainer.append('defs');
 			
 			// add left gradient
-			this.leftGradientId = JSO().generateUid();
+			this.leftGradientId = JSB().generateUid();
 			var leftGradient = defs.append('linearGradient')
 				.attr('id', this.leftGradientId)
 				.attr('x1', '0%')
@@ -68,7 +68,7 @@
 			.attr('class', 'left opaque');
 
 			// add right gradient
-			this.rightGradientId = JSO().generateUid();
+			this.rightGradientId = JSB().generateUid();
 			var rightGradient = defs.append('linearGradient')
 				.attr('id', this.rightGradientId)
 				.attr('x1', '0%')
@@ -83,7 +83,7 @@
 				.attr('class', 'right transparent');
 
 			// add top gradient
-			this.topGradientId = JSO().generateUid();
+			this.topGradientId = JSB().generateUid();
 			var topGradient = defs.append('linearGradient')
 				.attr('id', this.topGradientId)
 				.attr('x1', '0%')
@@ -98,7 +98,7 @@
 				.attr('class', 'top opaque');
 
 			// add bottom gradient
-			this.bottomGradientId = JSO().generateUid();
+			this.bottomGradientId = JSB().generateUid();
 			var bottomGradient = defs.append('linearGradient')
 				.attr('id', this.bottomGradientId)
 				.attr('x1', '0%')
@@ -119,13 +119,13 @@
 			this.getElement().mouseover(function(){
 				self.isMouseInside = true;
 				if(self.options.hideInterval > 0){
-					JSO().cancelDefer('_toolHideInterval_');
+					JSB().cancelDefer('_toolHideInterval_');
 				}
 			});
 			this.getElement().mouseout(function(){
 				self.isMouseInside = false;
 				if(self.options.hideInterval > 0){
-					JSO().defer(function(){
+					JSB().defer(function(){
 						self.close();
 					}, self.options.hideInterval, '_toolHideInterval_');
 				}
@@ -221,10 +221,10 @@
 			this.visible = true;
 			this.params = params;
 			this.scope = null;
-			if(!JSO().isNull(this.options.scope)){
+			if(!JSB().isNull(this.options.scope)){
 				this.scope = this.options.scope;
 			}
-			if(!JSO().isNull(params.scope)){
+			if(!JSB().isNull(params.scope)){
 				this.scope = params.scope;
 			}
 			
@@ -248,7 +248,7 @@
 			elt.animate({
 				'opacity': 1
 			}, 200);
-			if( !JSO().isNull(this.embeddedWidget)){
+			if( !JSB().isNull(this.embeddedWidget)){
 				this.embeddedWidget.setFocus();
 			}
 			
@@ -284,7 +284,7 @@
 		
 		resolveConstraints: function(cArr){
 			var constraints = [];
-			if(!JSO().isNull(cArr)){
+			if(!JSB().isNull(cArr)){
 				for(var i in cArr){
 					var c = cArr[i];
 					var newC = {
@@ -295,8 +295,8 @@
 						height: c.height
 					};
 					
-					var sel = JSO().$(c.selector);
-					if(!JSO().isNull(c.selector) && sel.length > 0){
+					var sel = JSB().$(c.selector);
+					if(!JSB().isNull(c.selector) && sel.length > 0){
 						var selRect = sel.get(0).getBoundingClientRect();
 //							var offs = c.selector.offset();
 						newC.left = selRect.left;
@@ -305,23 +305,23 @@
 						newC.height = selRect.height;
 					}
 					
-					if(JSO().isNull(newC.left) || JSO().isNull(newC.top) || JSO().isNull(newC.width) || JSO().isNull(newC.height)){
+					if(JSB().isNull(newC.left) || JSB().isNull(newC.top) || JSB().isNull(newC.width) || JSB().isNull(newC.height)){
 						continue;	// ignore constraint
 					}
 					
-					if(!JSO().isNull(c.margin)){
-						if(!JSO().isNull(c.margin.left)){
+					if(!JSB().isNull(c.margin)){
+						if(!JSB().isNull(c.margin.left)){
 							newC.left -= c.margin.left;
 							newC.width += c.margin.left;
 						}
-						if(!JSO().isNull(c.margin.right)){
+						if(!JSB().isNull(c.margin.right)){
 							newC.width += c.margin.right;
 						}
-						if(!JSO().isNull(c.margin.top)){
+						if(!JSB().isNull(c.margin.top)){
 							newC.top -= c.margin.top;
 							newC.height += c.margin.top;
 						}
-						if(!JSO().isNull(c.margin.bottom)){
+						if(!JSB().isNull(c.margin.bottom)){
 							newC.height += c.margin.bottom;
 						}
 					}
@@ -338,9 +338,9 @@
 			for(var i in this.targets){
 				var t = this.targets[i];
 				var selRect = null;
-				if(!JSO().isNull(t.selector)){
+				if(!JSB().isNull(t.selector)){
 					var sel = this.$(t.selector);
-					if(JSO().isNull(sel) || sel.length == 0){
+					if(JSB().isNull(sel) || sel.length == 0){
 						throw 'ToolWrapper.show: invalid selector specified';
 						return;
 					}
@@ -376,10 +376,10 @@
 				} else if(t.pivotVert == 'bottom'){
 					pt.y = tRect.bottom;
 				}
-				if(!JSO().isNull(t.offsetHorz)){
+				if(!JSB().isNull(t.offsetHorz)){
 					pt.x += t.offsetHorz;
 				}
-				if(!JSO().isNull(t.offsetVert)){
+				if(!JSB().isNull(t.offsetVert)){
 					pt.y += t.offsetVert;
 				}
 				t.pt = pt;
@@ -397,16 +397,16 @@
 		updatePosition: function(bUpdate){
 			var self = this;
 			var elt = this.getElement();
-			if(JSO().isNull(this.params.distWeight)){
+			if(JSB().isNull(this.params.distWeight)){
 				this.params.distWeight = 0.1;
 			}
-			if(JSO().isNull(this.targets)){
+			if(JSB().isNull(this.targets)){
 				this.targets = [];
 			}
 
 			// merge targets
 			var newTargets = [];
-			if(JSO().isArray(this.params.target)){
+			if(JSB().isArray(this.params.target)){
 				newTargets = this.params.target;
 			} else {
 				newTargets.push( this.params.target ); 
@@ -453,7 +453,7 @@
 				this.targets.push(targetsToAppend[i]);
 			}
 
-			if(this.targets.length > 0 && !JSO().isNull(this.targets[0].dock)){
+			if(this.targets.length > 0 && !JSB().isNull(this.targets[0].dock)){
 				// perform docking
 				var tgt = this.targets[0].selector;
 				var xOffs = this.targets[0].offsetHorz || 0;
@@ -579,7 +579,7 @@
 				
 				// resolve containment
 				if(this.params.containment){
-					this.containmentBox = JSO().$(this.params.containment).get(0).getBoundingClientRect();
+					this.containmentBox = JSB().$(this.params.containment).get(0).getBoundingClientRect();
 				}
 
 				// lookup best position via whirl algorithm
@@ -693,7 +693,7 @@
 				if(Math.abs(w - this.minPt.w) > ((w + this.minPt.w) / 2) * 0.3){
 					self.updatePosition(true);
 				} else {
-					JSO().defer(function(){
+					JSB().defer(function(){
 						self.trackPosition();
 					});
 				}
@@ -804,7 +804,7 @@
 		},
 		
 		removeSvgCallout: function(target){
-			if(!JSO().isNull(target.calloutElt)){
+			if(!JSB().isNull(target.calloutElt)){
 				target.calloutElt.remove();
 				target.calloutElt = undefined;
 			}
@@ -1000,7 +1000,7 @@
 				}
 				
 				
-				if(JSO().isNull(t.calloutElt)){
+				if(JSB().isNull(t.calloutElt)){
 					t.calloutElt = this.svgContainer.append('polyline');
 				}
 				
@@ -1044,7 +1044,7 @@
 					'visibility': 'hidden'
 				});
 				self.embeddedWidget.onHide(bCanceled);
-				if(!JSO().isNull(self.onHide)){
+				if(!JSB().isNull(self.onHide)){
 					self.onHide(bCanceled);
 				}
 				if(self.options.hideInterval > 0){
@@ -1095,13 +1095,13 @@
 		
 		freeze: function(b){
 			var self = this;
-			if(JSO().isNull(b)){
+			if(JSB().isNull(b)){
 				b = true;
 			}
 			this.frozen = b;
 			if(!this.frozen && !self.isMouseInside){
 				if(this.options.hideInterval > 0){
-					JSO().defer(function(){
+					JSB().defer(function(){
 						self.close();
 					}, self.options.hideInterval, '_toolHideInterval_');
 				}

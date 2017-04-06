@@ -2,18 +2,18 @@
 	$name:'JSB.TypeInfoRegistry',
 	
 	register: function(typeId, desc){
-		if(JSO().isNull(this.types)){
+		if(JSB().isNull(this.types)){
 			this.types = {};
 		}
 		this.types[typeId] = desc;
 	},
 	
 	get: function(typeId){
-		if(JSO().isNull(this.types)){
+		if(JSB().isNull(this.types)){
 			return null;
 		}
 		var res = this.types[typeId];
-		if(JSO().isNull(res)){
+		if(JSB().isNull(res)){
 			return null;
 		}
 		return res;
@@ -24,13 +24,13 @@
 		lookup: function(typeId, callback){
 			var self = this;
 			var desc = this.get(typeId);
-			if(!JSO().isNull(desc)){
+			if(!JSB().isNull(desc)){
 				callback.call(this, desc);
 				return;
 			}
 			this.rpc('getInfo', [typeId], function(desc){
 				self.register(typeId, desc);
-				if(!JSO().isNull(callback)){
+				if(!JSB().isNull(callback)){
 					callback.call(self, desc);
 				}
 			});
@@ -49,7 +49,7 @@
 		lookup: function(typeId, callback){
 			var self = this;
 			var desc = this.get(typeId);
-			if(!JSO().isNull(desc)){
+			if(!JSB().isNull(desc)){
 				callback.call(this, desc);
 				return;
 			}
@@ -59,11 +59,11 @@
 		
 		getInfo: function(typeId){
 			var desc = this.get(typeId);
-			if(!JSO().isNull(desc)){
+			if(!JSB().isNull(desc)){
 				return desc; 
 			}
 			
-			if(JSO().isNull(this.provider)){
+			if(JSB().isNull(this.provider)){
 				return null;
 			}
 			desc = this.provider.getDescriptorFor(typeId);

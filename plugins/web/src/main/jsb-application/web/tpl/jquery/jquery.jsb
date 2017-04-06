@@ -8,7 +8,7 @@
 			
 			JSB().addLibraryScope('$', window.jQuery.noConflict());
 			
-			// override global variable to bind all plugins to JSO().$
+			// override global variable to bind all plugins to JSB().$
 			var jQuery = JSB().$;
 
 			(function(jQuery){

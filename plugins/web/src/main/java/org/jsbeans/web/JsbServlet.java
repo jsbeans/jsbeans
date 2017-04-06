@@ -198,7 +198,7 @@ public class JsbServlet extends HttpServlet {
     private void handleGetJsoCommand(final AsyncContext ac, final String clientAddr, final String userName, final String rid, final String userToken) throws IOException {
         final String jsoName = ac.getRequest().getParameter("name");
         if (jsoName == null || jsoName.length() == 0) {
-            LoggerFactory.getLogger(JsbServlet.class).error("Invalid JSO name specified");
+            LoggerFactory.getLogger(JsbServlet.class).error("Invalid JSB name specified");
             responseResult(ac, null);
         }
         if (WebCache.contains(jsoName)) {

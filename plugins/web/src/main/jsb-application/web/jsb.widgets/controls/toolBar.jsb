@@ -26,18 +26,18 @@
 				allowHover: true,
 				group: null
 			};
-			if(JSO().isPlainObject(obj) && !JSO().isNull(obj.element) && !JSO().isInstanceOf(obj, 'JSB.Widgets.Control')){
-				JSO().merge(itemObj, obj);
-				if(JSO().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
+			if(JSB().isPlainObject(obj) && !JSB().isNull(obj.element) && !JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
+				JSB().merge(itemObj, obj);
+				if(JSB().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
 					itemObj.obj = itemObj.element;
 					itemObj.element = itemObj.element.getElement();
-				} else if(JSO().isNull(itemObj.key) && JSO().isString(itemObj.element)){
+				} else if(JSB().isNull(itemObj.key) && JSB().isString(itemObj.element)){
 					itemObj.key = itemObj.element;
 				}
-			} else if(JSO().isInstanceOf(obj, 'JSB.Widgets.Control')){
+			} else if(JSB().isInstanceOf(obj, 'JSB.Widgets.Control')){
 				itemObj.element = obj.getElement();
 				itemObj.obj = obj;
-			} else if(JSO().isString(obj)){
+			} else if(JSB().isString(obj)){
 				itemObj.element = obj;
 				itemObj.key = obj;
 			} else {
@@ -50,7 +50,7 @@
 		
 		wrapItem: function(itemObj){
 			var self = this;
-			if(JSO().isNull(itemObj.element)){
+			if(JSB().isNull(itemObj.element)){
 				return;
 			}
 			var item = itemObj.element;
@@ -63,7 +63,7 @@
 				itemWrapper.addClass('checkbox');
 			}
 			
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 				itemWrapper.attr("key", itemObj.key);	
 			}
 			
@@ -87,7 +87,7 @@
 			itemObj.wrapper = itemWrapper; 
 			this.itemContainer.append(itemWrapper);
 			this.itemList.push(itemObj);
-			if(!JSO().isNull(itemObj.key)){
+			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
 			if(itemObj.disabled){
@@ -108,17 +108,17 @@
 				}
 				if(itemObj.checkbox){
 					self.checkItem(itemObj.key, !self.isChecked(itemObj.key));
-					if(itemObj.click && JSO().isFunction(itemObj.click)){
+					if(itemObj.click && JSB().isFunction(itemObj.click)){
 						itemObj.click.call(this, evt, itemObj.key, itemObj);
 					}
 				} else if(itemObj.group){
 					if(!self.isChecked(itemObj.key)){
 						self.checkItem(itemObj.key, true);
-						if(itemObj.click && JSO().isFunction(itemObj.click)){
+						if(itemObj.click && JSB().isFunction(itemObj.click)){
 							itemObj.click.call(this, evt, itemObj.key, itemObj);
 						}
 					}
-				} else if(itemObj.click && JSO().isFunction(itemObj.click)){
+				} else if(itemObj.click && JSB().isFunction(itemObj.click)){
 					itemObj.click.call(this, evt, itemObj.key, itemObj);
 				}
 			});
@@ -184,7 +184,7 @@
 				itemObj.disabled = true;
 				itemObj.wrapper.addClass('disabled');
 			}
-			if(JSO().isInstanceOf(itemObj.obj, 'JSB.Widgets.Button')){
+			if(JSB().isInstanceOf(itemObj.obj, 'JSB.Widgets.Button')){
 				itemObj.obj.getElement().css('opacity', 1);
 				itemObj.obj.enable(b);
 			}

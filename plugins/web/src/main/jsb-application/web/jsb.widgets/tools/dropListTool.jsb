@@ -37,7 +37,7 @@
 					if(!item.dontClose){
 						self.complete();
 					}
-					if(!JSO().isNull(self.data.callback)){
+					if(!JSB().isNull(self.data.callback)){
 						self.data.callback(key, item, evt);
 					}
 					evt.stopPropagation();

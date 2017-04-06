@@ -5,7 +5,7 @@
 		$singleton: true,
 		$bootstrap: function(readyCallback){
 		
-			JSO().loadCss('tpl/jquery/jquery.cron.css');
+			JSB().loadCss('tpl/jquery/jquery.cron.css');
 			/*
 			 * This file is part of the Arnapou jqCron package.
 			 *
@@ -130,7 +130,7 @@
 				this.jqCronMergeSettings = function(obj) {
 					return extend(extend({}, jqCronDefaultSettings), obj || {});
 				};
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 
 			/**
 			 * Shortcut to get the instance of jqCron instance from one jquery object
@@ -139,7 +139,7 @@
 				$.fn.jqCronGetInstance = function() {
 					return this.data('jqCron');
 				};
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 
 			/**
 			 * Main plugin
@@ -204,7 +204,7 @@
 						$(this).data('jqCron', cron);
 					});
 				};
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 
 			/**
 			 * jqCron class
@@ -564,7 +564,7 @@
 					} catch(e){}
 				}
 				this.jqCron = jqCron;
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 
 
 			/**
@@ -821,7 +821,7 @@
 					_self.clear();
 				}
 				this.jqCronSelector = jqCronSelector;
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 
 			/**
 			 * Generate unique id for each element.
@@ -844,7 +844,7 @@
 						$(this).attr('id', id);
 					});
 				};
-			}).call(null, JSO().$);
+			}).call(null, JSB().$);
 
 
 			/**

@@ -2,7 +2,6 @@
 	$name:'JSB.Widgets.ToolManager',
 	$require: {
 		JQuery: 'JQuery', 
-		EventBus: 'JSB.Widgets.EventBus',
 		ToolWrapper: 'JSB.Widgets.ToolWrapper',
 		MessageTool: 'JSB.Widgets.MessageTool',
 		WidgetTool: 'JSB.Widgets.WidgetTool',
@@ -11,14 +10,15 @@
 	$client: {
 		$singleton: true,
 		$constructor: function(){
+			$base();
 			var self = this;
 			this.loadCss('toolManager.css');
 			this.tools = {};
 			this.visibleInstances = [];
-			EventBus.jsb.getInstance().subscribe(this, 'tool');
+			this.subscribe('tool');
 			
 			// create tool area
-			JSO().deferUntil(function(){
+			JSB().deferUntil(function(){
 				self.toolArea = self.$('<div class="_dwp_toolManager_toolArea"></div>');
 				self.$('body').prepend(self.toolArea);
 				self.$('body').click(function(evt){
@@ -43,17 +43,17 @@
 			var opts = settings.toolOpts;
 			var wrapOpts = settings.wrapperOpts;
 			
-			if( JSO().isNull(toolJso)){
+			if( JSB().isNull(toolJso)){
 				throw 'ToolManager.registerTool: Tool object has not been specified';
 			}
-			if(JSO().isNull(toolId)){
+			if(JSB().isNull(toolId)){
 				throw 'ToolManager.registerTool: Invalid toolId specified';
 			}
-			if(!(toolJso instanceof JSO)){
+			if(!(toolJso instanceof JSB)){
 				throw 'ToolManager.registerTool: Tool object being registered has invalid type';
 			}
 			
-			if(!JSO().isNull(this.tools[toolId])) {
+			if(!JSB().isNull(this.tools[toolId])) {
 				return; // tool has already been registered	
 			}
 			
@@ -78,7 +78,7 @@
 		
 		handleMouseClick: function(x, y){
 			var self= this;
-			if(JSO().isNull(self.visibleInstances) || self.visibleInstances.length == 0){
+			if(JSB().isNull(self.visibleInstances) || self.visibleInstances.length == 0){
 				return;
 			}
 			for(var i = self.visibleInstances.length - 1; i >= 0; i--){
@@ -153,14 +153,14 @@
 			if(!scope){
 				return scope;
 			}
-			if(JSO().isFunction(scope)){
+			if(JSB().isFunction(scope)){
 				scope = scope.call(this);
 				return this.resolveScope(scope);
 			}
-			if(JSO().isString(scope)){
+			if(JSB().isString(scope)){
 				scope = this.$(scope);
 			}
-			if(JSO().isInstanceOf(scope, 'JSB.Widgets.Control')){
+			if(JSB().isInstanceOf(scope, 'JSB.Widgets.Control')){
 				scope = scope.getElement();
 			}
 			return scope;
@@ -171,7 +171,7 @@
 			var scope = this.resolveScope(params.scope);
 			var toolEntry = this.tools[params.id];
 
-			if(JSO().isNull(toolEntry)){
+			if(JSB().isNull(toolEntry)){
 				return;
 			}
 			
@@ -181,11 +181,11 @@
 					// hide all subscopes
 					for(var i = self.visibleInstances.length - 1; i >= 0; i--){
 						var inst = self.visibleInstances[i];
-						if(JSO().isString(toolEntry.wrapperOpts.exclusive )){
-							if(JSO().isString(inst.options.exclusive) && inst.options.exclusive == toolEntry.wrapperOpts.exclusive){
+						if(JSB().isString(toolEntry.wrapperOpts.exclusive )){
+							if(JSB().isString(inst.options.exclusive) && inst.options.exclusive == toolEntry.wrapperOpts.exclusive){
 								inst.hide();
 							}
-						} else if(toolEntry.wrapperOpts.exclusive && (JSO().isNull(scope) || self.isSubScopeOf(this.resolveScope(inst.getScope()), scope))){
+						} else if(toolEntry.wrapperOpts.exclusive && (JSB().isNull(scope) || self.isSubScopeOf(this.resolveScope(inst.getScope()), scope))){
 							inst.hide();
 						}
 					}
@@ -202,11 +202,11 @@
 				}
 			}
 			
-			if(JSO().isNull(chosenInstance)){
+			if(JSB().isNull(chosenInstance)){
 				// create new instance
 				var cls = toolEntry.jso.getClass();
 				var obj = new cls(toolEntry.toolOpts);
-				chosenInstance = new ToolWrapper(params.id, self, obj, JSO().merge(toolEntry.wrapperOpts, params));
+				chosenInstance = new ToolWrapper(params.id, self, obj, JSB().merge(toolEntry.wrapperOpts, params));
 				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
 			}
 			
@@ -214,20 +214,20 @@
 			chosenInstance.setData({data: params.data, callback: params.callback});
 			chosenInstance.compCntr = 0;
 			
-			JSO().deferUntil(function(){
-				chosenInstance.show(JSO().merge({
+			JSB().deferUntil(function(){
+				chosenInstance.show(JSB().merge({
 					scope: scope 
 				}, params));
-				if(!JSO().isNull(params.onShow)){
+				if(!JSB().isNull(params.onShow)){
 					params.onShow.call(self);
 				}
 			},function(){
 				var bRet = true;
-				if(JSO().isNull(chosenInstance.oldW)){
+				if(JSB().isNull(chosenInstance.oldW)){
 					chosenInstance.oldW = chosenInstance.getElement().outerWidth(true);
 					bRet = false;
 				}
-				if(JSO().isNull(chosenInstance.oldH)){
+				if(JSB().isNull(chosenInstance.oldH)){
 					chosenInstance.oldH = chosenInstance.getElement().outerHeight(true);
 					bRet = false;
 				}
@@ -253,18 +253,18 @@
 		
 		onMessage: function(sender, msg, params){
 			var self = this;
-			if(JSO().isNull(params)){
+			if(JSB().isNull(params)){
 				return;
 			}
 			if(msg != 'tool'){
 				throw 'ToolManager.onMessage: Wrong message received';
 			}
-			if(JSO().isNull(params.cmd) || JSO().isNull(params.id)){
+			if(JSB().isNull(params.cmd) || JSB().isNull(params.id)){
 				throw 'ToolManager.onMessage: Message malformed';
 			}
 			
 			// find entry
-			if(JSO().isNull(sender) || JSO().isNull(sender.getJsb()) || !sender.getJsb().isSubclassOf('JSB.Widgets.Control')){
+			if(JSB().isNull(sender) || JSB().isNull(sender.getJsb()) || !sender.getJsb().isSubclassOf('JSB.Widgets.Control')){
 				throw 'ToolManager.onMessage: invalid sender';
 			}
 
@@ -284,7 +284,7 @@
 			    return false;
 			}
 			var toElt = function(scope){
-				if(!JSO().isNull(scope.getElement)){
+				if(!JSB().isNull(scope.getElement)){
 					return scope.getElement();
 				}
 				return self.$(scope);

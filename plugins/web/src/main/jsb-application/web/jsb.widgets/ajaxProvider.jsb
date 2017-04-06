@@ -49,7 +49,7 @@
 							if(self.curDeferTimeout > self.options.maxDeferTimeout) {
 								self.curDeferTimeout = self.options.maxDeferTimeout;
 							}
-							JSO().defer(function(){
+							JSB().defer(function(){
 								self.ajax(url, params, callback);
 							}, self.curDeferTimeout);
 						}
@@ -85,7 +85,7 @@
 							if(self.curDeferTimeout > self.options.maxDeferTimeout) {
 								self.curDeferTimeout = self.options.maxDeferTimeout;
 							}
-							JSO().defer(function(){
+							JSB().defer(function(){
 								self.ajax(url, params, callback);
 							}, self.curDeferTimeout);
 						}

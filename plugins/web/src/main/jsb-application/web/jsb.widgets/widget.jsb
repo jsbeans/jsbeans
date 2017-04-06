@@ -11,7 +11,7 @@
 			this.element.addClass('_dwp_widget');
 			this.container = null;
 			if(opts){
-				if(!JSO().isNull(opts.container)){
+				if(!JSB().isNull(opts.container)){
 					this.attachContainer(opts.container);
 				}
 			}
@@ -39,13 +39,13 @@
 		
 		attachContainer: function( c, desc ){
 			var self = this;
-			if( !JSO().isNull(this.container) ) {
+			if( !JSB().isNull(this.container) ) {
 				this.detachContainer();
 			}
 			
-			if(!JSO().isInstanceOf(c, 'JSB.Widgets.WidgetContainer')){
+			if(!JSB().isInstanceOf(c, 'JSB.Widgets.WidgetContainer')){
 				// create adhoc container
-				JSO().$(c).append(self.getElement());
+				JSB().$(c).append(self.getElement());
 			} else {
 				c.attachWidget(this, desc);
 			}
@@ -53,7 +53,7 @@
 		
 		detachContainer: function(){
 			/* TODO: remove all event handlers which are in common to container */
-			if(!JSO().isNull(this.container)){
+			if(!JSB().isNull(this.container)){
 				this.container.detachWidget(this);
 			}
 		},
@@ -73,7 +73,7 @@
 		
 		preloadImages: function(){
 			var self = this;
-			var globe = JSO().getGlobe();
+			var globe = JSB().getGlobe();
 			if(globe['DWP_PreloadedImageList'] == null || globe['DWP_PreloadedImageList'] == undefined){
 				globe['DWP_PreloadedImageList'] = {};
 			}

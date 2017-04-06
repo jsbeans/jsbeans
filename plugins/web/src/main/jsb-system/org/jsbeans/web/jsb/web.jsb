@@ -40,7 +40,7 @@
 	},
 	$server: {
 		$constructor: function(){
-			JSO().onLoad(function(){
+			JSB().onLoad(function(){
 				// remove jso from the web cache
 				Packages.org.jsbeans.web.WebCache.remove(this.$name);
 			});

@@ -6,7 +6,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			var testDwpId = '_testDwpDetection' + JSO().generateUid();
+			var testDwpId = '_testDwpDetection' + JSB().generateUid();
 			var insertListener = function(evt){
 				if (evt.animationName == "nodeInserted") {
 					var elt = self.$(evt.target);
@@ -96,7 +96,7 @@
 					if(elt.jsb()){
 						readyCallback(elt.jsb());
 					} else {
-						JSO().deferUntil(function(){
+						JSB().deferUntil(function(){
 							readyCallback(elt.jsb());
 						}, function(){
 							return elt.jsb();
