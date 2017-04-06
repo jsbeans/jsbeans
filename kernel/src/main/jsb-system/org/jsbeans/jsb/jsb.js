@@ -1115,7 +1115,7 @@
 				return null;
 			}
 			var parentJso = this.get(this.$parent);
-			return parentJso.getSubclassDistance(str, deep + 1);
+			return parentJso.getSubclassOfDistance(str, deep + 1);
 		},
 		
 		stringify: function(obj, callback, name){
@@ -4200,7 +4200,7 @@ JSB({
 		}
 		var msgDesc = $jsb.merge({
 			c: callback,
-			w: w
+			target: w
 		}, msgObj);
 		
 		$this.lock();
@@ -4310,14 +4310,14 @@ JSB({
 		if(subDesc){
 			if(subDesc.c){
 				try {
-					ret = ret || subDesc.c.call(subDesc.w, w, msg, params, subDesc);
+					ret = ret || subDesc.c.call(subDesc.target, w, msg, params, subDesc);
 				} catch(e){
 					$jsb.getLogger().error(e);
 				}
 			}
-			if(subDesc.w.onMessage){
+			if(subDesc.target.onMessage){
 				try {
-					ret = ret || subDesc.w.onMessage.call(subDesc.w, w, msg, params, subDesc);
+					ret = ret || subDesc.target.onMessage.call(subDesc.target, w, msg, params, subDesc);
 				}catch(e){
 					$jsb.getLogger().error(e);
 				}
@@ -4345,8 +4345,7 @@ JSB({
 		var response = {};
 		var msg = msgObj.message;
 		var objMap = $this.msgIdx[msg];
-		var localIds = [];
-		var remoteIds = [];
+		var subQueue = [];
 		if(objMap){
 			for(var objId in objMap){
 				var subsArr = objMap[objId];
@@ -4358,35 +4357,81 @@ JSB({
 					if(msgObj.local && subDesc.remote){
 						continue;
 					}
-					
-					if(subDesc.remote){
-						remoteIds.push(subDesc.callId);
-					} else {
-						localIds.push(subDesc.callId);
+					if(opts && opts.target && opts.target != subDesc.target){
+						continue;
 					}
+					subQueue.push(subDesc);
 				}
+			}
+		}
+		if(opts && opts.sort && $jsb.isFunction(opts.sort)){
+			subQueue.sort(opts.sort);
+		}
+		var localIds = [];
+		var remoteIds = [];
+		for(var i = 0; i < subQueue.length; i++){
+			var subDesc = subQueue[i];
+			if(subDesc.remote){
+				remoteIds.push(subDesc.callId);
+			} else {
+				localIds.push(subDesc.callId);
 			}
 		}
 		
 		function storeDispatchResult(ret, subDesc){
 			if(!$jsb.isNull(ret)){
-				if(!response[subDesc.w.getId()]){
-					response[subDesc.w.getId()] = [];
+				if(!response[subDesc.target.getId()]){
+					response[subDesc.target.getId()] = [];
 				}
-				response[subDesc.w.getId()].push(ret);
+				response[subDesc.target.getId()].push(ret);
+			}
+		}
+		
+		var cs = {bStopFlag: false};
+		
+		for(var i = 0; i < localIds.length && !cs.bStopFlag; i++){
+			var subDesc = $this.callIdx[localIds[i]];
+			if(opts && opts.onDispatch && $jsb.isFunction(opts.onDispatch)){
+				if(opts.onDispatch.call(w, subDesc.target)){
+					continue;	// skip
+				}
+			}
+			var ret = this.dispatch(localIds[i], w, msg, params);
+			storeDispatchResult(ret, subDesc);
+			if(opts && opts.onRespond && $jsb.isFunction(opts.onRespond)){
+				if(opts.onRespond.call(w, subDesc.target, ret)){
+					cs.bStopFlag = true;
+				}
 			}
 		}
 		
 		if(remoteIds.length > 0){
 			var cb = {complete: 0};
-			for(var i = 0; i < remoteIds.length; i++){
+			for(var i = 0; i < remoteIds.length && !cs.bStopFlag; i++){
 				(function(i){
 					if($this.remote().dispatch){
 						var subDesc = $this.callIdx[remoteIds[i]];
+						if(opts && opts.onDispatch && $jsb.isFunction(opts.onDispatch)){
+							if(opts.onDispatch.call(w, subDesc.target)){
+								cb.complete++;
+								if(cb.complete == remoteIds.length || cs.bStopFlag){
+									// complete
+									if(callback){
+										callback.call(w, response);
+									}
+								}
+								return;	// skip
+							}
+						}
 						$this.remote().dispatch(remoteIds[i], w, msg, params, function(ret){
 							storeDispatchResult(ret, subDesc);
 							cb.complete++;
-							if(cb.complete == remoteIds.length){
+							if(opts && opts.onRespond && $jsb.isFunction(opts.onRespond)){
+								if(opts.onRespond.call(w, subDesc.target, ret)){
+									cs.bStopFlag = true;
+								}
+							}
+							if(cb.complete == remoteIds.length || cs.bStopFlag){
 								// complete
 								if(callback){
 									callback.call(w, response);
@@ -4397,14 +4442,16 @@ JSB({
 				})(i);
 			}
 		}
-		for(var i = 0; i < localIds.length; i++){
-			var subDesc = $this.callIdx[localIds[i]];
-			var ret = this.dispatch(localIds[i], w, msg, params);
-			storeDispatchResult(ret, subDesc);
-		}
 		
 		if(remoteIds.length == 0){
+			if(callback){
+				callback.call(w, response);
+			}
 			return response;
+		} else if(cs.bStopFlag){
+			if(callback){
+				callback.call(w, response);
+			}
 		}
 	}
 

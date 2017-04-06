@@ -79,13 +79,12 @@
 			
 			return itemWrapper;
 		},
-
-		addItem: function(item){
+		
+		_createItem: function(item){
 			var self = this;
 			var itemObj = this.resolveItem(item);
 			var itemWrapper = this.wrapItem(itemObj);
 			itemObj.wrapper = itemWrapper; 
-			this.itemContainer.append(itemWrapper);
 			this.itemList.push(itemObj);
 			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
@@ -125,12 +124,39 @@
 			
 			return itemObj;
 		},
+
+		addItem: function(item){
+			var itemObj = this._createItem(item);
+			this.itemContainer.append(itemObj.wrapper);
+			return itemObj;
+		},
+		
+		insertItem: function(item, beforeKey, afterKey){
+			var itemObj = this._createItem(item);
+			var beforeItem = null, afterItem = null;
+			if(beforeKey){
+				beforeItem = this.itemMap[beforeKey];
+			}
+			if(afterKey){
+				afterItem = this.itemMap[afterKey];
+			}
+			if(beforeItem){
+				itemObj.wrapper.insertBefore(beforeItem.wrapper);
+			} else if(afterItem){
+				itemObj.wrapper.insertAfter(afterItem.wrapper);
+			}
+			
+			return itemObj;
+		},
 		
 		addSeparator: function(desc){
 			var itemWrapper = this.$('<li class="_dwp_toolBarSeparator"></li>');
+			var itemObj = {
+				wrapper: itemWrapper
+			};
 			this.itemContainer.append(itemWrapper);
-			
 			if(desc){
+				$jsb.merge(itemObj, desc);
 				if(desc.key){
 					itemWrapper.attr("key", desc.key);	
 				}
@@ -138,6 +164,13 @@
 					itemWrapper.addClass(desc.cssClass);
 				}
 			}
+			
+			if(itemObj.key){
+				 this.itemMap[itemObj.key] = itemObj;
+				 this.itemList.push(itemObj);
+			}
+			
+			return itemObj;
 		},
 		
 		checkItem: function(key, b){
