@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.2 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.6.3 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -3932,7 +3932,7 @@ JSB({
 		},
 		
 		callbackAttr: function(proc){
-			return $jsb.callbackAttr(proc, this);
+			return JSB().callbackAttr(proc, this);
 		}
 
 	},
