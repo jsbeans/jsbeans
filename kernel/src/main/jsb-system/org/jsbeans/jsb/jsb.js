@@ -2060,19 +2060,21 @@
 							o.doSync();
 						}
 	*/					
+/*						
 						if(self.isClient() && !self.isNull(o.$_syncScopes) && self.getSync()){
 							if(o.isSynchronized()){
 								keepFinalize();
 							} else {
 								// wait until object is synchronized
-								o.subscribeSynchronized(function(){
+								o.ensureSynchronized(function(){
 									keepFinalize();
 								});
 							}
 						} else {
 							keepFinalize();
 						}
-						
+*/						
+						keepFinalize();
 					}
 					if(self.isSystem()){
 						ccall();
@@ -2856,19 +2858,23 @@
 						obj.doSync();
 					}
 					
+					obj.ensureSynchronized(function(){
+						if(callback){ callback(obj); }
+					});
+/*					
 					if(!JSB().isNull(obj.$_syncScopes)){
 						if(obj.isSynchronized()){
 							if(callback){ callback(obj); }
 						} else {
 							// wait until object is synchronized
-							obj.subscribeSynchronized(function(){
+							obj.ensureSynchronized(function(){
 								if(callback){ callback(obj); }
 							});
 						}
 					} else {
 						if(callback){ callback(obj); }
 					}
-					
+*/					
 				});
 			} else {
 				var obj = JSB().constructServerInstanceFromClientId(jsoName, id);
@@ -3761,7 +3767,11 @@ JSB({
 			return this.$_synchronized;
 		},
 		
-		subscribeSynchronized: function(callback){
+		ensureSynchronized: function(callback){
+			if(!this.getJsb().getSync() || $jsb.isNull(this.$_syncScopes) || this.$_synchronized){
+				callback.call(this);
+				return;
+			}
 			if(!this.$_syncCallbacks){
 				this.$_syncCallbacks = [];
 			}
