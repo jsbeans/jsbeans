@@ -484,6 +484,10 @@
 			return null;
 		},
 		
+		getNodes: function(){
+			return this.nodes;
+		},
+		
 		hasNode: function(nodeVal){
 			if(JSB().isString(nodeVal) && this.nodes[nodeVal]){
 				return true;
@@ -629,6 +633,10 @@
 
 			delete this.links[link.getId()];
 			link.destroy();
+		},
+		
+		getLinks: function(){
+			return this.links;
 		},
 		
 		clear: function(){

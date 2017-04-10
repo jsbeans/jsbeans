@@ -3196,7 +3196,7 @@ JSB({
 		this.unsubscribe();
 		$jsb.unregister(this);
 		
-		if(!this.$_destroyLocal && this.jsb.isSession() && (this.jsb.isServer() || this.$_bindKey)){
+		if(!this.$_destroyLocal && (this.jsb.isServer() || (this.jsb.isSession() && this.$_bindKey))){
 			if(this.remote()._destroyLocal){
 				this.remote()._destroyLocal();
 			}
