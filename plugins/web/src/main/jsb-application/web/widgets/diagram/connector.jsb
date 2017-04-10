@@ -42,12 +42,19 @@
 			this.key = key;
 			JSB().merge(this.options, opts);
 			
-			JSB().chain([opts.handle, opts.origin], this.node.resolveSelector, function(selArr){
-				self.options.handle = selArr[0];
-				self.options.origin = selArr[1];
-				
-				self.install();
-			});
+			if(opts.handle){
+				JSB().chain([opts.handle, opts.origin], this.node.resolveSelector, function(selArr){
+					self.options.handle = selArr[0];
+					self.options.origin = selArr[1];
+					
+					self.install();
+				});
+			} else {
+				this.node.resolveSelector(opts.origin, function(sel){
+					self.options.origin = sel;
+					self.install();
+				});
+			}
 		},
 		
 		destroy: function(){

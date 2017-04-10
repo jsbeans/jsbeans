@@ -225,12 +225,10 @@
 			
 			var handle = opts.handle;
 			var origin = opts.origin;
-			if(!handle && origin){
-				handle = origin;
-			} else if(!origin && handle){
+			if(!origin && handle){
 				origin = handle;
 			}
-			if(!origin || !handle){
+			if(!origin){
 				throw 'Invalid connector descriptor specified - either origin or handle should existed';
 			}
 			opts.origin = origin;
