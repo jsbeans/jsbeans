@@ -53,6 +53,10 @@
 			var self = this;
 			var data = this.data.data;
 			
+			// set class
+			if(data.css)
+				this.getElement().addClass(data.css);
+			
 			// set icon
 			this.icon.removeAttr('class');
 			this.icon.addClass('_dwp_messageTool_Icon');
@@ -87,11 +91,8 @@
 					liElt.append(btnElt.getElement());
 					
 				})(btn);
-
 			}
-			
 		},
-		
 		
 		setFocus: function(){
 		}
