@@ -4,6 +4,13 @@
 	$require:['JQuery.UI.Resizable'],
 	
 	$client: {
+		options: {
+			header: false,
+			headerOverflow: false
+		},
+		columns: [{key: '__main__', opts:{}}],
+
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -41,12 +48,6 @@
 				}, 0, '_updateHeader');
 			});
 		},
-		
-		options: {
-			header: false,
-			headerOverflow: false
-		},
-		columns: [{key: '__main__', opts:{}}],
 		
 		addColumn: function(key, opts){
 			this.columns.push({
