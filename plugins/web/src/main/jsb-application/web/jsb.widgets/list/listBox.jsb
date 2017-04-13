@@ -242,7 +242,7 @@
 			
 			itemWrapper.append(item);
 			
-			if(itemObj.allowSelect || self.options.selectMulti){
+			if(itemObj.allowSelect || (self.options.selectMulti && itemObj.allowSelect != false)){
 				itemWrapper.click(function(evt){
 					if(self.isSelecting){
 						return;
