@@ -21,14 +21,17 @@ public class ClusterCommunicationService extends Service {
     @Override
     protected void onInit() throws PlatformException {
         super.onInit();
-
-        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberEvent.class);
-        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberUp.class);
-        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberExited.class);
-        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberRemoved.class);
-        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), UnreachableMember.class);
-        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), ReachableMember.class);
-        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), LeaderChanged.class);
+        try {
+	        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberEvent.class);
+	        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberUp.class);
+	        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberExited.class);
+	        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), MemberRemoved.class);
+	        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), UnreachableMember.class);
+	        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), ReachableMember.class);
+	        Cluster.get(Core.getActorSystem()).subscribe(getSelf(), LeaderChanged.class);
+        } catch(Exception ex){
+        	getLog().info("Cluster mode disabled");
+        }
     }
 
     @Override
