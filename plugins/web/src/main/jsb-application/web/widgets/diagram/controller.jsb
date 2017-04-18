@@ -316,28 +316,30 @@
 						height: maxPt.y - minPt.y
 					});
 					
-					var itemMap = self.diagram.getItemsUnderSelection();
-					
-					// highlight new
-					this.highlight(itemMap, true);
-					
-					// remove highlight old
-					var rItemMap = {};
-					for(var nodeId in this.diagram.nodes){
-						var node = this.diagram.nodes[nodeId];
-						if(itemMap[nodeId]){
-							continue;
+					if(self.diagram.options.highlightSelecting){
+						var itemMap = self.diagram.getItemsUnderSelection();
+						
+						// highlight new
+						this.highlight(itemMap, true);
+						
+						// remove highlight old
+						var rItemMap = {};
+						for(var nodeId in this.diagram.nodes){
+							var node = this.diagram.nodes[nodeId];
+							if(itemMap[nodeId]){
+								continue;
+							}
+							rItemMap[nodeId] = node;
 						}
-						rItemMap[nodeId] = node;
-					}
-					for(var linkId in this.diagram.links){
-						var link = this.diagram.links[linkId];
-						if(itemMap[linkId]){
-							continue;
+						for(var linkId in this.diagram.links){
+							var link = this.diagram.links[linkId];
+							if(itemMap[linkId]){
+								continue;
+							}
+							rItemMap[linkId] = link;
 						}
-						rItemMap[linkId] = link;
+						this.highlight(rItemMap, false);
 					}
-					this.highlight(rItemMap, false);
 				}
 				
 				if(this.nodeMovePt || this.isNodeMoving){

@@ -1073,8 +1073,14 @@
 		},
 		
 		isSubclassOf: function(str){
-			if(str instanceof JSB){
+			if(this.isString(str)){
+				// do nothing
+			} else if(str instanceof JSB){
 				str = str.$name;
+			} else if(this.isFunction(str) && str.jsb){
+				str = str.jsb.$name;
+			} else if(this.isBean(str, true)){
+				str = str.getJsb().$name;
 			}
 			if(this.$name == str){
 				return true;
@@ -1096,12 +1102,16 @@
 			if(!deep){
 				deep = 0;
 			}
-			if(this.isBean(str, true)){
+			if(this.isString(str)){
+				// do nothing
+			} else if(str instanceof JSB){
+				str = str.$name;
+			} else if(this.isFunction(str) && str.jsb){
+				str = str.jsb.$name;
+			} else if(this.isBean(str, true)){
 				str = str.getJsb().$name;
 			}
-			if(str instanceof JSB){
-				str = str.$name;
-			}
+			
 			if(this.$name == str){
 				return deep;
 			}

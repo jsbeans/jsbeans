@@ -9,6 +9,7 @@
 		Connector: 'JSB.Widgets.Diagram.Connector',
 		Controller: 'JSB.Widgets.Diagram.Controller',
 		WiringController: 'JSB.Widgets.Diagram.WiringController',
+		LayoutManager: 'JSB.Widgets.Diagram.LayoutManager',
 		DefaultLayoutManager: 'JSB.Widgets.Diagram.DefaultLayoutManager'
 	},
 	
@@ -37,6 +38,7 @@
 			panY: 0,
 			cellSize: 10,
 			autoLayout: true,
+			highlightSelecting: false,	// highlight elements while selecting
 			
 			links: {
 				'_jsb_diagramUserWiringLink': {
@@ -50,6 +52,7 @@
 			},
 			
 			// event handlers
+			onInit: function(){},
 			onChange: function(){},
 			onCreate: function(item){},
 			onRemove: function(item){}
@@ -57,13 +60,12 @@
 		
 		
 		$constructor: function(opts){
-			var self = this;
 			$base(opts);
 			this.loadCss('diagram.css');
 			this.addClass('_jsb_diagram');
 			
 			JSB().loadScript('tpl/d3/d3.min.js', function(){
-				self.init();
+				$this.init();
 			});
 			
 		},
@@ -215,6 +217,10 @@
 			
 			this.updateViewport();
 			this.useShape('highlightFilter');
+			
+			if($this.options.onInit){
+				$this.options.onInit.call($this);
+			}
 		},
 		
 		registerShape: function(key, createCallback){
@@ -380,7 +386,7 @@
 			
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
-					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.LayoutManager')){
+					if(!cls.jsb.isSubclassOf(LayoutManager)){
 						throw 'Unable to setup layout "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupLayout(cls);
@@ -402,7 +408,7 @@
 			
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
-					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.Node')){
+					if(!cls.jsb.isSubclassOf(Node)){
 						throw 'Unable to setup node "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupNode();
@@ -425,7 +431,7 @@
 			}
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
-					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.Connector')){
+					if(!cls.jsb.isSubclassOf(Connector)){
 						throw 'Unable to setup connector "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupConnector();
@@ -450,7 +456,7 @@
 			
 			if(opts.jsb){
 				JSB().lookup(opts.jsb, function(cls){
-					if(!cls.jsb.isSubclassOf('JSB.Widgets.Diagram.Link')){
+					if(!cls.jsb.isSubclassOf(Link)){
 						throw 'Unable to setup link "' + key + '": wrong class - ' + cls.jsb.$name;
 					}
 					_setupLink();
