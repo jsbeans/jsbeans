@@ -9,7 +9,6 @@
 			headerOverflow: false
 		},
 		columns: [{key: '__main__', opts:{}}],
-
 		
 		$constructor: function(opts){
 			var self = this;
@@ -43,9 +42,14 @@
 				
 				var wrapper = params.item.getElement().parent();
 				self.syncItem(wrapper);
-				JSB.defer(function(){
-					self.updateHeader();
-				}, 0, '_updateHeader');
+//				JSB.defer(function(){
+//					self.updateHeader();
+//				}, 0, '_updateHeader');
+				JSB().deferUntil(function(){
+					$this.updateHeader();
+				}, function(){
+					return $this.isContentReady();
+				});
 			});
 		},
 		
@@ -80,7 +84,11 @@
 			this.list.addClass('tableView');
 			
 			// append header
-			this.updateHeader();
+			JSB().deferUntil(function(){
+				$this.updateHeader();
+			}, function(){
+				return $this.isContentReady();
+			});
 		},
 		
 		deactivate: function(){
@@ -99,6 +107,7 @@
 			if(!this.options.header){
 				return;
 			}
+			
 			var self = this;
 			var tvh = this.list.find('.tableViewHeader');
 			var tr = null;
@@ -106,7 +115,7 @@
 				tvh = this.$('<div class="tableViewHeader"></div>');
 				tr = this.$('<div class="tableViewHeaderRow"></div>');
 				tvh.append(tr);				
-				this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').prepend(tvh);
+				this.list.horizontalScrollBox.getElement().find('> ._dwp_scrollPane').prepend(tvh);
 			} else {
 				tr = tvh.find('> .tableViewHeaderRow');
 			}
@@ -126,10 +135,12 @@
 						col.opts.onCreateCellHeader.call(this, th);
 					}
 				}
-				
 			}
 			
-//			new
+			$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox').css({
+				top: tvh.height()
+			});
+			
 			function findCol(lis, i){
 				var col = {
 						cells: [],
@@ -224,7 +235,24 @@
 				self.syncItem(self.$(this));
 			});
 			
-			this.updateHeader();
+			JSB().deferUntil(function(){
+				$this.updateHeader();
+			}, function(){
+				return $this.isContentReady();
+			});
+		},
+		
+		setColumnOpts: function(key, opts){
+			if(!key)
+				return;
+			
+			for(var i in this.columns)
+				if(this.columns[i].key == key){
+					for(var j in opts)
+						this.columns[i].opts[j] = opts[j];
+					
+					break;
+				}
 		},
 		
 		syncItem: function(wrapper){

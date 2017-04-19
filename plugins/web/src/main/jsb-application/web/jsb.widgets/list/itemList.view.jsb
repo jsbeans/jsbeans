@@ -1,6 +1,6 @@
 {
 	$name:'JSB.Widgets.ItemList.View',
-	
+	$parent: 'JSB.Widgets.Control',
 	$client: {
 		$constructor: function(opts){
 			var self = this;

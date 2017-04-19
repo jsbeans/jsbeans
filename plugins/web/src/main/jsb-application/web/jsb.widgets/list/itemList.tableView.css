@@ -3,27 +3,27 @@
 ._dwp_itemList.tableView {
 }
 
-._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader {
+._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane .tableViewHeader {
 	display: table;
 	width: 100%;
 }
 
-._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader > .tableViewHeaderRow {
+._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane .tableViewHeader > .tableViewHeaderRow {
 	display: table-row;
 }
 
-._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader > .tableViewHeaderRow > .cellHeader {
+._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane .tableViewHeader > .tableViewHeaderRow > .cellHeader {
 	display: table-cell;
 }
 
-._dwp_itemList.tableView .horizontalScrollPane .tableViewHeader.hidden {
+._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane .tableViewHeader.hidden {
 	display: none;
 }
-._dwp_itemList.tableView .horizontalScrollPane{
+._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane{
 	height: 100%;
 }
 
-._dwp_itemList.tableView  ._dwp_scrollBox.horizontalScrollBox{
+._dwp_itemList.tableView >  ._dwp_scrollBox{
 	top: 0px;
 }
 ._dwp_itemList.tableView  ._dwp_scrollBox {

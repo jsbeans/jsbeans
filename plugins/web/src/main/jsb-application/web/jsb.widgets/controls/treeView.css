@@ -10,8 +10,6 @@
 	list-style-type: none;
 }
 
-._dwp_treeViewContainer {}
-
 /* root container */
 ._dwp_treeViewContainer {
 	
@@ -19,7 +17,7 @@
 
 /* top nodes */
 ._dwp_treeViewContainer > ._dwp_treeViewNode {
-	margin-left: 8px !important;
+	margin-left: 8px;
 }
 
 ._dwp_treeViewContainer > ._dwp_treeViewNode:first-child {
