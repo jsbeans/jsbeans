@@ -27,6 +27,7 @@
     <modules>
         <module>web</module>
         <module>textextractors</module>
+        <module>worker</module>
 
         <module>empty</module>
     </modules>
