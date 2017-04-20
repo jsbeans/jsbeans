@@ -2838,9 +2838,9 @@
 
 		},
 		
-		constructInstanceFromRemote: function(jsoName, id, callback){
+		constructInstanceFromRemote: function(jsoName, id, callback, dontSync){
 			var self = this;
-			if(JSB().isClient()){
+			if(this.isClient()){
 				this.lookup(jsoName, function(cls){
 					var obj = null;
 					if(JSB().isBean(cls)){
@@ -2867,27 +2867,16 @@
 						JSB().getThreadLocal().clear('_jsoRegisterCallback');
 						obj.doSync();
 					}
-					
-					obj.ensureSynchronized(function(){
+					if(dontSync){
 						if(callback){ callback(obj); }
-					});
-/*					
-					if(!JSB().isNull(obj.$_syncScopes)){
-						if(obj.isSynchronized()){
-							if(callback){ callback(obj); }
-						} else {
-							// wait until object is synchronized
-							obj.ensureSynchronized(function(){
-								if(callback){ callback(obj); }
-							});
-						}
 					} else {
-						if(callback){ callback(obj); }
+						obj.ensureSynchronized(function(){
+							if(callback){ callback(obj); }
+						});
 					}
-*/					
 				});
 			} else {
-				var obj = JSB().constructServerInstanceFromClientId(jsoName, id);
+				var obj = this.constructServerInstanceFromClientId(jsoName, id);
 				if(callback){ callback(obj); }
 			}
 		},
@@ -3547,10 +3536,14 @@ JSB({
 			} else if(syncSlice.t == 1){
 				if(syncSlice.d.__jso && syncSlice.d.__id && JSB().isString(syncSlice.d.__jso.v) && JSB().isString(syncSlice.d.__id.v)){
 					// inject bean
-					JSB().constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
+					$jsb.constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
 						parentRealScope[name] = obj;
-						callback.call(self);
-					});
+						if(!$this.$_syncBeans){
+							$this.$_syncBeans = {};
+						}
+						$this.$_syncBeans[obj.getId()] = obj;
+						callback.call($this);
+					}, true);
 					return true;
 				} else {
 					if(parentRealScope[name] === undefined || !JSB().isPlainObject(parentRealScope[name])){
@@ -3757,6 +3750,7 @@ JSB({
 				this.$_bindKey = this.$_bindKey || opts.bindKey || opts.bind;
 			}
 			this.$_synchronized = false;
+			this.$_syncState = 0;
 			this.setupSync();
 		},
 		
@@ -3777,25 +3771,41 @@ JSB({
 			return this.$_synchronized;
 		},
 		
-		ensureSynchronized: function(callback){
-			if(!this.getJsb().getSync() || $jsb.isNull(this.$_syncScopes) || this.$_synchronized){
+		ensureSynchronized: function(callback, syncState){
+			if($jsb.isNull(syncState)){
+				syncState = 2;
+			}
+
+			if(!this.getJsb().getSync() || $jsb.isNull(this.$_syncScopes) || this.$_syncState >= syncState){
 				callback.call(this);
 				return;
 			}
 			if(!this.$_syncCallbacks){
 				this.$_syncCallbacks = [];
 			}
-			this.$_syncCallbacks.push(callback);
+			this.$_syncCallbacks.push({callback: callback, syncState: syncState});
 		},
 		
-		matchSynchronized: function(){
-			if(!this.isSynchronized() || !this.$_syncCallbacks){
+		matchSynchronized: function(syncState){
+			if($jsb.isNull(syncState)){
+				syncState = 2;
+			}
+			if(syncState == 2){
+				this.$_synchronized = true;
+			}
+			this.$_syncState = syncState;
+			if(!this.$_syncCallbacks){
 				return;
 			}
-			for(var i in this.$_syncCallbacks){
-				this.$_syncCallbacks[i].call(this);
+			for(var i = this.$_syncCallbacks.length - 1; i>= 0; i--){
+				var syncDesc = this.$_syncCallbacks[i];
+				if(syncState >= syncDesc.syncState){
+					// execute and remove
+					var cb = syncDesc.callback;
+					this.$_syncCallbacks.splice(i, 1);
+					cb.call(this);
+				}
 			}
-			this.$_syncCallbacks = [];
 		},
 
 		doSync: function(){
@@ -3837,11 +3847,25 @@ JSB({
 				var ts = this.$_lastDownloadSyncTimeStamp + 1;
 				
 				this.server().requestSyncInfo(ts, slice, function(resp, err){
+					$this.$_syncBeans = {};
 					function _syncComplete(){
-						self.$_synchronized = true;
-						self.matchSynchronized();
-						if(callback){
-							callback.call(self);
+						if(Object.keys($this.$_syncBeans).length === 0){
+							$this.matchSynchronized();
+							if(callback){
+								callback.call($this);
+							}
+						} else {
+							$this.matchSynchronized(1);
+							// wait all syncBeans are $_syncState == 1
+							$jsb.chain(Object.values($this.$_syncBeans), function(obj, cc){
+								obj.ensureSynchronized(cc, 1);
+							}, function(){
+								$this.$_syncBeans = {};
+								$this.matchSynchronized();
+								if(callback){
+									callback.call($this);
+								}
+							});
 						}
 					}
 
