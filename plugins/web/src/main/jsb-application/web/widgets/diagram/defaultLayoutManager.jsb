@@ -77,6 +77,9 @@
 		layoutNode: function(node, rects){
 			var self = this;
 			var nodeRect = rects[node.getId()];
+			if(!nodeRect){
+				return false;
+			}
 			if(this.evalNodeIntersection(node.getId(), nodeRect, rects) == 0){
 				return false;
 			}

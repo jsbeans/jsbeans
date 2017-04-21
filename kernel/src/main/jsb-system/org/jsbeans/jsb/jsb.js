@@ -1392,7 +1392,7 @@
 
 		_inheritedClass: function(parent) {
 			var ss = this;
-			var newFunc = function() {
+			return function() {
 				ss._checkBeanReady();
 				var self = this;
 				var storeSuperCalled = this.$_superCalled;
@@ -1462,8 +1462,6 @@
 				this.$_superCalled = storeSuperCalled;
 				
 			};
-
-			return newFunc;
 		},
 		
 		_enhanceInherited: function(cls, parent, body) {
@@ -1484,7 +1482,7 @@
 
 		_simpleClass: function() {
 			var ss = this;
-			var newFunc = function() {
+			return function() {
 				ss._checkBeanReady();
 				if (ss._ctor != null && ss._ctor != undefined) {
 					var ctxStack = ss.getCallingContext();
@@ -1503,14 +1501,13 @@
 					}
 					
 				}
-			}
+			};
 /*
 			var F = function() {};
 			F.prototype = body;
 			newFunc.prototype = new F();
 			newFunc.prototype.constructor = newFunc;
 */
-			return newFunc;
 		},
 		
 		_enhanceSimple: function(cls, body){
