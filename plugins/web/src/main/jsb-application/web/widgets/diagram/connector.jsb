@@ -32,7 +32,8 @@
 						}
 					}
 				}
-			}
+			},
+			onChangeConnection: function(){}
 		},
 		
 		$constructor: function(node, key, opts){
