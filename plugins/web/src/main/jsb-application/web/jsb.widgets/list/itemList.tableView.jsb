@@ -6,7 +6,8 @@
 	$client: {
 		options: {
 			header: false,
-			headerOverflow: false
+			headerOverflow: false,
+			headerCellMinSize: 10
 		},
 		columns: [{key: '__main__', opts:{}}],
 		
@@ -195,10 +196,7 @@
 			}
 			
 			if(this.options.headerOverflow)
-				this.container.resize(function(){
-					if($this.$($this.container).width() < tvh.width())
-						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane.horizontalScrollPane').width(tvh.width());
-					
+				this.container.resize(function(){					
 					if($this.list.horizontalScrollBox.getElement().find('.iScrollHorizontalScrollbar').is(":visible")){
 						$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox:not(.horizontalScrollPane)').css({
 							padding: '0 0 10px 0'
@@ -217,11 +215,7 @@
 				});
 			
 			tvh.resize(function(){
-				$this.list.horizontalScrollBox.getElement().find('._dwp_scrollBox').css({
-					top: tvh.height()
-				});
-				if($this.$($this.container).width() < tvh.width())
-					$this.list.horizontalScrollBox.getElement().find('.horizontalScrollPane').width(tvh.width());
+				$this.list.horizontalScrollBox.getElement().find('._dwp_scrollPane').width(tvh.width());
 			});
 		},
 		
