@@ -4602,7 +4602,7 @@ JSB({
 		cmdTimeoutVal: 0,
 		bulkTimeoutVal: 300,
 		updateRpcTimeout: 300,
-		maxBatchSize: 100,
+		maxBatchSize: 30,
 
 		// methods
 		getServerBase: function(){
@@ -5247,6 +5247,7 @@ JSB({
 		
 		getServerClientCallSlice: function(fromId){
 			var slice = [];
+			var maxSliceSize = 30;
 			
 			if(!fromId){
 				if(this.rpcQueueLast){
@@ -5281,8 +5282,15 @@ JSB({
 						params: fromEntry.params,
 						respond: (fromEntry.callback ? true: false)
 					});
+					if(slice.length >= maxSliceSize){
+						break;
+					}
 				}
 				fromEntry = fromEntry.next;
+			}
+			
+			if(slice.length > 0){
+				JSB().getLogger().debug('slice size: ' + slice.length);
 			}
 			
 			return {
