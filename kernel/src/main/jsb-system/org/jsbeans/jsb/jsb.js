@@ -5100,6 +5100,8 @@ JSB({
 		rpcQueueLast: null,
 		rpcMap: {},
 		
+		maxBatchSize: 30,
+		
 		$constructor: function(){
 			$base();
 			if(JSB().getProvider()){
@@ -5247,7 +5249,6 @@ JSB({
 		
 		getServerClientCallSlice: function(fromId){
 			var slice = [];
-			var maxSliceSize = 30;
 			
 			if(!fromId){
 				if(this.rpcQueueLast){
@@ -5282,15 +5283,11 @@ JSB({
 						params: fromEntry.params,
 						respond: (fromEntry.callback ? true: false)
 					});
-					if(slice.length >= maxSliceSize){
+					if(slice.length >= this.maxBatchSize){
 						break;
 					}
 				}
 				fromEntry = fromEntry.next;
-			}
-			
-			if(slice.length > 0){
-				JSB().getLogger().debug('slice size: ' + slice.length);
 			}
 			
 			return {
