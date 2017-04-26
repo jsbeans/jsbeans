@@ -43,14 +43,9 @@
 				
 				var wrapper = params.item.getElement().parent();
 				self.syncItem(wrapper);
-//				JSB.defer(function(){
-//					self.updateHeader();
-//				}, 0, '_updateHeader');
-				JSB().deferUntil(function(){
+				JSB().defer(function(){
 					$this.updateHeader();
-				}, function(){
-					return $this.isContentReady();
-				});
+				}, 300, 'itemList.updateHeader' + $this.getId());
 			});
 		},
 		
@@ -85,11 +80,9 @@
 			this.list.addClass('tableView');
 			
 			// append header
-			JSB().deferUntil(function(){
+			JSB().defer(function(){
 				$this.updateHeader();
-			}, function(){
-				return $this.isContentReady();
-			});
+			}, 300);
 		},
 		
 		deactivate: function(){
@@ -133,7 +126,7 @@
 					tr.append(th);
 					
 					if(col.opts && col.opts.onCreateCellHeader){
-						col.opts.onCreateCellHeader.call(this, th);
+						col.opts.onCreateCellHeader.call(this, th, col.opts);
 					}
 				}
 			}
@@ -229,11 +222,7 @@
 				self.syncItem(self.$(this));
 			});
 			
-			JSB().deferUntil(function(){
-				$this.updateHeader();
-			}, function(){
-				return $this.isContentReady();
-			});
+			$this.updateHeader();
 		},
 		
 		setColumnOpts: function(key, opts){

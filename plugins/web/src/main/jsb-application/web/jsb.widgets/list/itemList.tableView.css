@@ -75,7 +75,7 @@
 
 ._dwp_itemList.tableView  ._dwp_scrollBox > ._dwp_scrollPane > ul._dwp_listBoxContainer > li._dwp_listBoxItem > * {
 	display: inline-block;
-	float: left;
+/* 	float: left; */
 }
 
 ._dwp_itemList.tableView  ._dwp_scrollBox > ._dwp_scrollPane > ul._dwp_listBoxContainer > li._dwp_listBoxItem.selected,
