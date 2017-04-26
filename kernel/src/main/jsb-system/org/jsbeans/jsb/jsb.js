@@ -4602,7 +4602,7 @@ JSB({
 		cmdTimeoutVal: 0,
 		bulkTimeoutVal: 300,
 		updateRpcTimeout: 300,
-		maxBatchSize: 100,
+		maxBatchSize: 30,
 
 		// methods
 		getServerBase: function(){
@@ -5100,6 +5100,8 @@ JSB({
 		rpcQueueLast: null,
 		rpcMap: {},
 		
+		maxBatchSize: 30,
+		
 		$constructor: function(){
 			$base();
 			if(JSB().getProvider()){
@@ -5281,6 +5283,9 @@ JSB({
 						params: fromEntry.params,
 						respond: (fromEntry.callback ? true: false)
 					});
+					if(slice.length >= this.maxBatchSize){
+						break;
+					}
 				}
 				fromEntry = fromEntry.next;
 			}

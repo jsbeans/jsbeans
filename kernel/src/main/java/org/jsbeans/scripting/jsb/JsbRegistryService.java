@@ -430,28 +430,15 @@ public class JsbRegistryService extends Service {
                             execMsg.setClientRequestId(rid);
                             return ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, ActorHelper.getServiceCommTimeout());
                         }
-                    }).add(new CompleteMonad<UpdateStatusMessage>(sessionId, id) {
+                    })/*.add(new CompleteMonad<UpdateStatusMessage>(sessionId, id) {
 	                    @Override
 	                    public void onComplete(Chain<?, UpdateStatusMessage> chain, UpdateStatusMessage result, Throwable fail) throws PlatformException {
-/*	                    	
-	                        String sessionId = this.getArgument(0);
-	                        String id = this.getArgument(1);
-*/	                        
 	                        if (fail != null) {
-	/*                            	
-	                                // fail
-	                                UpdateStatusMessage statusMsg = new UpdateStatusMessage(null);
-	                                statusMsg.error = fail.getMessage();
-	                                statusMsg.status = ExecutionStatus.FAIL;
-	                                getSelf().tell(new UpdateRpcMessage(sessionId, id, statusMsg, true), getSelf());
-	*/                                
 	                            getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
 	                        } else {
-	                            // success
-	  /*                              getSelf().tell(new UpdateRpcMessage(sessionId, id, result, true), getSelf());*/
 	                        }
 	                    }
-                    });
+                    })*/;
             }
 
             this.getSender().tell(new RpcMessage(rpcResult), this.getSelf());
