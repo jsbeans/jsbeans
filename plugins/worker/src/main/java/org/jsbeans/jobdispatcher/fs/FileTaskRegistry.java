@@ -35,8 +35,11 @@ public class FileTaskRegistry implements TaskRegistry {
 
     private void repairWorkingAndLockedToQueued() {
         int repaired = Arrays.stream(State.values())
-                .filter(s -> s.equals(State.Working) || s.equals(State.Locked))
-                .flatMap(s -> lookup(TaskRequest.anyTask(), s).map(task -> changeState(task, s, State.Queued)))
+                .filter(state -> state.equals(State.Working) || state.equals(State.Locked))
+                .flatMap(state -> {
+                    return lookup(TaskRequest.anyTask(), state)
+                            .map(task -> changeState(task, state, State.Queued));
+                })
                 .map(t->t != null ? 1 : 0)
                 .reduce(0, Integer::sum);
 
@@ -60,31 +63,16 @@ public class FileTaskRegistry implements TaskRegistry {
     }
 
     @Override
-    public TaskDescriptor changeState(TaskDescriptor task, State state, State targetState) {
-        return collections.get(state).remove(TaskRequest.byId(task))
+    public TaskDescriptor changeState(TaskDescriptor updatedTask, State state, State targetState) {
+        return collections.get(state)
+                .remove(TaskRequest.byId(updatedTask))
                 .map(removedTask -> {
-                    TaskDescriptor updatedTask = removedTask.updated((put) -> put.apply(TaskDescriptor.PROP_STATE, targetState.name()));
-                    return collections.get(targetState).add(updatedTask);
+                    return collections.get(targetState)
+                            .add(updatedTask.updated((put) -> {
+                                put.apply(TaskDescriptor.PROP_STATE, targetState.name());
+                            }));
                 })
                 .findFirst().orElse(null);
-
-//        return collections.get(state).lookup(request)
-//                .map(task->{
-//                    File removedTaskFile = collections.get(state).getTaskFile(task);
-//                    File newTaskFile = collections.get(targetState).getTaskFile(task);
-//                    collections.get(state).lockIO();
-//                    collections.get(targetState).lockIO();
-//                    try {
-//                        Files.move(removedTaskFile.toPath(), newTaskFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//                        TaskDescriptor removedTask = collections.get(targetState).loadTask(newTaskFile);
-//                        return removedTask.updated((put) -> put.apply(TaskDescriptor.PROP_STATE, targetState.name()));
-//                    } catch (IOException e) {
-//                        throw new RuntimeException("Move task failed: " + task)
-//                    } finally {
-//                        collections.get(state).unlockIO();
-//                        collections.get(targetState).unlockIO();
-//                    }
-//                });
     }
 
     @Override
@@ -95,7 +83,10 @@ public class FileTaskRegistry implements TaskRegistry {
 
     @Override
     public Stream<TaskDescriptor> lookup(TaskRequest request, State state) {
-        return collections.get(state).lookup(request)
-                .map(task -> task.updated((put)->put.apply("state", state.name())));
+        return collections.get(state)
+                .lookup(request)
+                .map(task -> task.updated((put) -> {
+                    put.apply("state", state.name());
+                }));
     }
 }
