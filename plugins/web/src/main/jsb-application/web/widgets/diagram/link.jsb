@@ -74,12 +74,12 @@
 			// unbind connectors
 			if(JSB().isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && this.source.links[this.getId()]){
 				this.source.removeLink(this);
-				this.source.notifyChangeConnection();
+				this.source.notifyChangeConnection(this);
 			}
 			
 			if(JSB().isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector') && this.target.links[this.getId()]){
 				this.target.removeLink(this);
-				this.target.notifyChangeConnection();
+				this.target.notifyChangeConnection(this);
 			}
 
 			// remove from svg
@@ -120,8 +120,8 @@
 			}
 			this.source.addLink(this);
 			this.target.addLink(this);
-			this.source.notifyChangeConnection();
-			this.target.notifyChangeConnection();
+			this.source.notifyChangeConnection(this);
+			this.target.notifyChangeConnection(this);
 		},
 
 		getSourcePosition: function(){
