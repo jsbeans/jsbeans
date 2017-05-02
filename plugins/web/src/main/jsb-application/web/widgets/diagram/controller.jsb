@@ -29,6 +29,9 @@
 		},
 		
 		setCapture: function(){
+			if(this.diagram.captureObj){
+				return;
+			}
 			this.diagram.captureObj = {
 				click: function(evt){
 					$this.diagram.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
