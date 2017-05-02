@@ -32,7 +32,7 @@ public class JobDispatcherImpl implements JobDispatcher {
                 .lookup(request, TaskRegistry.State.Queued)
                 .map(task -> getTaskRegistry().changeState(task, TaskRegistry.State.Queued, TaskRegistry.State.Locked))
                 .limit(size)
-                .map((job) -> startJob(job, getFutureExecution) ? 1 : 0)
+                .map((job) -> startJobAsync(job, getFutureExecution) ? 1 : 0)
                 .reduce(0, Integer::sum);
     }
 
@@ -41,7 +41,7 @@ public class JobDispatcherImpl implements JobDispatcher {
         return dispatchBatch(request, 1, getFutureExecution) == 1;
     }
 
-    private boolean startJob(TaskDescriptor job, Function<DispatchedJob, CompletableFuture<TaskDescriptor>> getFutureExecution) {
+    private boolean startJobAsync(TaskDescriptor job, Function<DispatchedJob, CompletableFuture<TaskDescriptor>> getFutureExecution) {
         if (job != null) {
             try {
                 AtomicReference<TaskDescriptor> workingTask = new AtomicReference<>();
@@ -54,18 +54,18 @@ public class JobDispatcherImpl implements JobDispatcher {
                 }));
                 future.whenComplete((completedTask, error) -> {
                     if (error != null) {
-                        if (completedTask == null) {
-                            completedTask = workingTask.get().updated((put)-> {
-                                try(ByteArrayOutputStream out = new ByteArrayOutputStream();
-                                    PrintStream p = new PrintStream(out)) {
-                                    error.printStackTrace(p);
-                                    put.apply("error.message", error.toString());
-                                    put.apply("error.stackTrace", out.toString());
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
-                        }
+                        logger.debug("Job error: " + error.getMessage(), error);
+
+                        completedTask = (completedTask == null ? workingTask.get() : completedTask).updated((put)-> {
+                            try(ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                PrintStream p = new PrintStream(out)) {
+                                error.printStackTrace(p);
+                                put.apply("error.message", error.toString());
+                                put.apply("error.stackTrace", out.toString());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
                         logger.debug("Task failed: " + completedTask);
                         getTaskRegistry().changeState(
                                 completedTask, TaskRegistry.State.Working, TaskRegistry.State.Failed);

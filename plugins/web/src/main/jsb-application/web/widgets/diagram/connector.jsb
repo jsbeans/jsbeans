@@ -33,7 +33,7 @@
 					}
 				}
 			},
-			onChangeConnection: function(){}
+			onChangeConnection: function(link){}
 		},
 		
 		$constructor: function(node, key, opts){
@@ -240,9 +240,22 @@
 			return this.links;
 		},
 		
-		notifyChangeConnection: function(){
+		hasLink: function(link){
+			var linkId = null;
+			if($jsb.isString(link)){
+				linkId = link;
+			} else {
+				linkId = link.getId();
+			}
+			if(this.links[linkId]){
+				return true;
+			} 
+			return false;
+		},
+		
+		notifyChangeConnection: function(link){
 			if(this.options.onChangeConnection){
-				this.options.onChangeConnection.call(this);
+				this.options.onChangeConnection.call(this, link);
 			}
 		},
 		
@@ -276,18 +289,36 @@
 			return this.options.enabled;
 		},
 		
-		getRemote: function(){
-			var remoteConnArr = [];
-			for(var lId in this.links){
-				var link = this.links[lId];
+		getRemote: function(link){
+			if(link){
+				var linkId = null;
+				if($jsb.isString(link)){
+					linkId = link;
+				} else {
+					linkId = link.getId();
+				}
+				var link = this.links[linkId];
+				if(!link){
+					return null;
+				}
 				var rConn = link.source;
 				if(rConn == this){
 					rConn = link.target;
 				}
-				remoteConnArr.push({connector: rConn, link: link, node: rConn.node});
+				return {connector: rConn, link: link, node: rConn.node};
+			} else {
+				var remoteConnArr = [];
+				for(var lId in this.links){
+					var link = this.links[lId];
+					var rConn = link.source;
+					if(rConn == this){
+						rConn = link.target;
+					}
+					remoteConnArr.push({connector: rConn, link: link, node: rConn.node});
+				}
+				
+				return remoteConnArr;
 			}
-			
-			return remoteConnArr;
 		}
 		
 	},

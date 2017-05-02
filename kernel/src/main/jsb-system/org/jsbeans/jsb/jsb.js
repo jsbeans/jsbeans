@@ -2206,6 +2206,20 @@
 		loadScript: function(curl, callback){
 			var self = this;
 			
+			var scriptArr = [];
+			if(JSB().isArray(curl)){
+				scriptArr = curl;
+			} else {
+				scriptArr.push(curl);
+			}
+			for(var i = 0; i < scriptArr.length; i++){
+				if(this instanceof JSB){
+					scriptArr[i] = this.getBasePath() + scriptArr[i];
+				}
+				scriptArr[i] = self.injectServerVersion(scriptArr[i]);
+			}
+
+			
 			function loadOneScript(url, callback){
 				if(self.resourceLoaded[url]){
 					if(callback && JSB().isFunction(callback)){
@@ -2267,15 +2281,6 @@
 			    _oHead.appendChild( _s);
 			}
 			
-			var scriptArr = [];
-			if(JSB().isArray(curl)){
-				scriptArr = curl;
-			} else {
-				scriptArr.push(curl);
-			}
-			for(var i in scriptArr){
-				scriptArr[i] = self.injectServerVersion(scriptArr[i]);
-			}
 
 			var checkArr = JSB().clone(scriptArr);
 			
@@ -2300,6 +2305,9 @@
 		},
 		
 		loadCss: function(url){
+			if(this instanceof JSB){
+				url = this.getBasePath() + url;
+			}
 			url = this.injectServerVersion(url);
 			
 			if(this.resourceLoaded[url]){
@@ -3951,13 +3959,11 @@ JSB({
 		},
 
 		loadScript: function( relativeUrl, callback ){
-			var callingJsb = $jsb.getCallerJsb();
-			JSB().loadScript( callingJsb.getBasePath() + relativeUrl, callback ); 
+			$jsb.getCallerJsb().loadScript(relativeUrl, callback);
 		},
 
 		loadCss: function( relativeUrl ){
-			var callingJsb = $jsb.getCallerJsb();
-			JSB().loadCss( callingJsb.getBasePath() + relativeUrl );
+			$jsb.getCallerJsb().loadCss(relativeUrl);
 		},
 
 		ajax: function(url, params, callback){

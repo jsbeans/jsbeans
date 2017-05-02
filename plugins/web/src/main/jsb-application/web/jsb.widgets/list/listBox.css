@@ -80,3 +80,11 @@
 	border: 1px solid rgba(152, 96, 78, 0.8);
 	border-radius: 3px;
 }
+
+._dwp_listBox > .horizontalScrollBox {
+	position: relative;
+}
+
+._dwp_listBox > .horizontalScrollBox > .horizontalScrollPane {
+	height: 100%;
+}

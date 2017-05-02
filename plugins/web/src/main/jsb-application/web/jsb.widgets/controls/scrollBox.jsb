@@ -99,8 +99,8 @@
 		installScroll: function(){
 			var self = this;
 			this.scroll = new IScroll(this.getElement().get(0), JSB().merge(this.options, {
-				scrollX: true,
-				scrollY: true,
+				scrollX: JSB().isNull(self.options.scrollX) ? true : self.options.scrollX,
+				scrollY: JSB().isNull(self.options.scrollY) ? true : self.options.scrollY,
 				mouseWheel: false,
 				scrollbars: self.options.scrollbars,
 				interactiveScrollbars: true,
