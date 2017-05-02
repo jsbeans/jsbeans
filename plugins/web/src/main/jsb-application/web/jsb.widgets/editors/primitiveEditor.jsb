@@ -37,19 +37,7 @@
 			if(this.options.multiline && this.options.valueType != 'java.lang.Object' && this.options.valueType != 'java.lang.String' && this.options.valueType != 'string'){
 				this.options.multiline = false;
 			}
-/*			
-			this.applyBehavior({
-				allowResize: {
-					vertical: this.options.multiline,
-					horizontal: true
-				},
-				dimensions: {
-					aspect: (this.options.multiline ? 1.33: null),
-					defaultWidth: (this.options.multiline ? 250: null),
-					defaultHeight: (this.options.multiline ? 150: null),
-				}
-			});
-*/			
+			
 			this.emptyData = this.data = new Value(null, this.options.valueType); 
 			this.isMouseInside = false;
 			if(this.options.multiline){
@@ -143,7 +131,7 @@
 						if(!JSB().isNull(self.options.onChange)){
 							self.options.onChange.call(self, self.getData().getValue(), evt);
 						}
-					} 
+					}
 				}
 				
 				evt.stopPropagation();
@@ -169,8 +157,9 @@
 				if(evt.which != 13 && evt.which != 27 && evt.which != 40 && evt.which != 38 && !self.keyPressedMap['key' + evt.which]){
 					self.changed = true;
 					self.trackChanging(evt);
-					self.beginCheckAutocomplete();
+					$this.updateAutocomplete($this.editBoxElt);
 				}
+				
 				self.keyPressedMap['key' + evt.which] = true;
 				
 				return true;
@@ -185,7 +174,7 @@
 				
 				if((evt.which != 13 || self.options.multiline) && evt.which != 27 && evt.which != 40 && evt.which != 38){
 					self.trackChanging(evt);
-					self.endCheckAutocomplete();
+					$this.updateAutocomplete($this.editBoxElt);
 				}
 				
 				delete self.keyPressedMap['key' + evt.which];
@@ -195,7 +184,7 @@
 			
 			this.editBoxElt.click(function(evt){
 				evt.stopPropagation();
-				self.editBoxElt.focus();
+				$this.editBoxElt.focus();
 			});
 
 			this.editBoxElt.focusout(function(evt){
@@ -203,12 +192,16 @@
 					self.changed = false;
 					self.trackChanging(evt);
 				}
+				if($this.autoBox)
+					$this.autoBox.close();
 				if(self.options.onFocusOut){
 					self.options.onFocusOut.call(self, evt);
 				}
 			});
 			
 			this.editBoxElt.focus(function(evt){
+				$this.updateAutocomplete($this.editBoxElt);
+				
 				if(self.options.onFocus){
 					self.options.onFocus.call(self, evt);
 				}
@@ -427,44 +420,68 @@
 			}
 		},
 		
-		beginCheckAutocomplete: function(){
-			if(this.beginCheckCalled){
+		os: 0,
+		oe: 0,
+		updateAutocomplete: function(editor){
+			if(!this.options.autocomplete)
+				return;
+			
+			var t = editor[0].value,
+				s = this.getSelectionStart(editor[0]),
+				e = this.getSelectionEnd(editor[0]);
+			if (s == this.os && e == this.oe)
+				return;
+			this.beforeCaret = t.substring(0, s).replace(/ /g, '\xa0') || '\xa0';
+			this.beforeCaret = this.beforeCaret.trim();
+			this.afterCaret = t.substring(s).replace(/ /g, '\xa0') || '\xa0';
+			this.afterCaret = this.afterCaret.trim();
+			os = s;
+			oe = e;
+			
+			if(this.afterCaret){
+				if(this.autoBox)
+					this.autoBox.close();
 				return;
 			}
-			this.beginCheckCalled = true;
-			this.autocompleteBeforeVal = this.getData().getValue();
+			
+			var val = this.beforeCaret.split(',');
+			val = val[val.length - 1].trim();
+			var data = this.getData().getValue().split(',').map(function(e){ return e.trim(); });
+			
+			var list = [];
+			if(val == '')
+				for(var i in this.options.autocomplete){
+					if(!data.includes(this.options.autocomplete[i]))
+						list.push(this.options.autocomplete[i]);
+				}
+			else{
+				for(var i in this.options.autocomplete){
+					if(this.options.autocomplete[i].match(val) && !data.includes(this.options.autocomplete[i]))
+						list.push(this.options.autocomplete[i]);
+				}
+			}
+			
+			this.setAutocomplete(list);
 		},
 		
-		endCheckAutocomplete: function(){
-			var self = this;
-			this.beginCheckCalled = false;
-			
-			if(!JSB().isNull(self.options.autocomplete)){
-				JSB().defer(function(){
-					if(JSB().isFunction(self.options.autocomplete)){
-						var afterVal = self.getData().getValue();
-						if(self.autocompleteBeforeVal == afterVal){
-							return;
-						}
-						var res = self.options.autocomplete.call(self, self.getData().getValue(), function(arr, val){
-							if(JSB().isNull(val) || val == self.getData().getValue()){
-								self.setAutocomplete(arr);
-							}
-						});
-						if(JSB().isArray(res)){
-							self.setAutocomplete(res);
-						}
-					} else if(JSB().isArray(self.options.autocomplete)){
-						self.setAutocomplete(self.options.autocomplete);
-					}
-					
-				}, 100, '_autocomplete' + this.getId());
-			}
+		getSelectionStart: function(o) {
+			if (o.createTextRange) {
+				var r = document.selection.createRange().duplicate();
+				r.moveEnd('character', o.value.length);
+				if (r.text == '') return o.value.length;
+				return o.value.lastIndexOf(r.text);
+			} else return o.selectionStart;
+		},
 
+		getSelectionEnd: function(o) {
+			if (o.createTextRange) {
+				var r = document.selection.createRange().duplicate();
+				r.moveStart('character', -o.value.length);
+				return r.text.length;
+			} else return o.selectionEnd;
 		},
 		
 		setAutocomplete: function(list){
-			var self = this;
 			var toolMgr = JSB().getInstance('JSB.Widgets.ToolManager');
 			if(!JSB().isNull(this.autoBox) && this.autoBox.isVisible()){
 				if(JSB().isNull(list) || list.length == 0){
@@ -472,8 +489,16 @@
 					this.autoBox = null;
 				} else {
 					this.autoBox.setData({data: list, callback: function(val){
-						self.changed = true;
-						self.setData(val);
+						$this.changed = true;
+						var oldVal = $this.beforeCaret.split(',');
+						if(!JSB().isArray(oldVal))
+							oldVal = [oldVal];
+						oldVal.pop();
+						oldVal = oldVal.toString();
+						if(oldVal.length > 0)
+							oldVal += ', ';
+						$this.setData(oldVal + val);
+						$this.setFocus();
 					}});
 				}
 				return;
@@ -489,13 +514,19 @@
 						dock: 'bottom'
 					},
 					callback: function(val){
-						self.changed = true;
-						self.setData(val);
+						$this.changed = true;
+						var oldVal = $this.beforeCaret.split(',');
+						if(!JSB().isArray(oldVal))
+							oldVal = [oldVal];
+						oldVal.pop();
+						oldVal = oldVal.toString();
+						if(oldVal.length > 0)
+							oldVal += ', ';
+						$this.setData(oldVal + val);
+						$this.setFocus();
 					}
 				});
 			}
-
 		}
-			
 	}
 }
