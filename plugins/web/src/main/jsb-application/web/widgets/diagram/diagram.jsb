@@ -29,10 +29,6 @@
 		nodes: {},
 		links: {},
 		
-		// save diagram
-		currentDiagram: null,
-		hasUnsavedChanges: false,
-		
 		options: {
 			zoom: 1,
 			zoomStep: 0.05,
@@ -585,9 +581,6 @@
 			node.getElement().remove();
 			delete this.nodes[node.getId()];
 			node.destroy();
-			
-			this.hasUnsavedChanges = true;
-			this.publish('Diagram.hasUnsavedChanges');
 		},
 		
 		createLink: function(linkKey, opts){
@@ -606,9 +599,6 @@
 			if(this.options.onCreate){
 				this.options.onCreate.call(this, link);
 			}
-			
-			this.hasUnsavedChanges = true;
-			this.publish('Diagram.hasUnsavedChanges');
 			
 			return link;
 		},
@@ -649,9 +639,6 @@
 
 			delete this.links[link.getId()];
 			link.destroy();
-			
-			this.hasUnsavedChanges = true;
-			this.publish('Diagram.hasUnsavedChanges');
 		},
 		
 		getLinks: function(){
@@ -673,8 +660,6 @@
 				node.getElement().remove();
 				node.destroy();
 			}
-			
-			this.hasUnsavedChanges = false;
 		},
 		
 		removeSelected: function(){
@@ -949,103 +934,8 @@
 				}
 				lm.execute(manNodeMap[lman]);
 			}
-		},
-		
-		saveDiagram: function(name){
-			var diagram = {
-				nodes: [],
-				links: [],
-				name: name
-			};
-			
-			for(var i in this.nodes){
-				var node = this.nodes[i];
-				var el = {};
-				
-				el.key = node.key;
-				el.iri = node.options.iri;				
-				el.pos = node.getPosition();
-				
-				diagram.nodes.push(el);
-			}
-			
-			for(var i in this.links){
-				var link = {
-					key: this.links[i].key,
-					sourceConnector: this.links[i].source.options.iri,
-					sourceNode: this.links[i].source.node.options.iri,
-					targetConnector: this.links[i].target.options.iri,
-					targetNode: this.links[i].target.node.options.iri
-				}
-				diagram.links.push(link);
-			}
-			
-			this.server().saveDiagram(this.currentOntology, diagram, function(){
-				$this.publish('savedDiagramUpdated');
-			});
-			
-			this.hasUnsavedChanges = false;
-			this.currentDiagram = name;
-			
-			return diagram;
-		},
-		
-		findConnectorByNodeAndConnectorIris: function(nodeIri, connectorIri){
-			var node;
-			for(var i in this.nodes)
-				if(this.nodes[i].options.iri === nodeIri)
-					node = this.nodes[i];
-			
-			if(!node)
-				return;
-			
-			var connectors = node.getConnectors();
-			for(var i in connectors)
-				if(connectors[i].options.iri === connectorIri)
-					return connectors[i];
-		},
-		
-		loadDiagram: function(name){
-			this.server().loadDiagram(this.currentOntology, name, function(diag){
-				$this.clear();
-				
-				if(!diag)
-					return;
-				
-				for(var i in diag.nodes)
-					if(diag.nodes[i].entity != undefined){
-						var node = $this.createNode(diag.nodes[i].key, { entity: diag.nodes[i].entity });
-						node.setPosition(diag.nodes[i].pos);
-					}
-				
-				JSB().deferUntil(function(){
-					for(var i in diag.links){
-						var link = $this.createLink(diag.links[i].key);
-						var obj = $this.findConnectorByNodeAndConnectorIris(diag.links[i].sourceNode, diag.links[i].sourceConnector);
-						if(obj)
-							link.setSource(obj);
-						obj = $this.findConnectorByNodeAndConnectorIris(diag.links[i].targetNode, diag.links[i].targetConnector);
-						if(obj)
-							link.setTarget(obj);
-					}
-					
-					$this.hasUnsavedChanges = false;
-				}, function(){
-					return $this.isContentReady();
-				});
-				
-				$this.currentDiagram = diag.name;
-			});
 		}
 	},
 	
-	$server: {
-		saveDiagram: function(){
-			throw new Error('Method "saveDiagram" should be overwritten');
-		},
-		
-		loadDiagram: function(){
-			throw new Error('Method "loadDiagram" should be overwritten');
-		}
-	}
+	$server: {}
 }
