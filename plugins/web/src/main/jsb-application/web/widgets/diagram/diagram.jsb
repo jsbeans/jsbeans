@@ -647,19 +647,18 @@
 		
 		clear: function(){
 			var oldLinks = this.links;
-			this.links = {};
 			for(var id in oldLinks){
 				var link = oldLinks[id];
 				link.destroy();
 			}
+			this.links = {};
 			
 			var oldNodes = this.nodes;
-			this.nodes = {};
 			for(var id in oldNodes){
 				var node = oldNodes[id];
-				node.getElement().remove();
 				node.destroy();
 			}
+			this.nodes = {};
 		},
 		
 		removeSelected: function(){
