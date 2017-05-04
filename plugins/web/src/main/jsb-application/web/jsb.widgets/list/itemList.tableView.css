@@ -11,7 +11,7 @@
 }
 
 ._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane .tableViewHeader > .tableViewHeaderRow {
-	
+    white-space: nowrap;
 }
 
 ._dwp_itemList.tableView > ._dwp_scrollBox > ._dwp_scrollPane .tableViewHeader > .tableViewHeaderRow > .cellHeader {
