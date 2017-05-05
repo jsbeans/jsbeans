@@ -1,0 +1,18 @@
+@CHARSET "UTF-8";
+
+._dwp_droplistToolWrapper {
+	border-radius: 4px !important;
+	border: none !important;
+	padding: 0 !important;
+	box-shadow: 1px 1px 4px #636363 !important;
+	z-index: 50000;
+}
+
+._dwp_dropTreeTool {
+	max-height: 300px;
+}
+
+._dwp_dropTreeTool ._dwp_treeview {
+	padding: 2px;
+}
+

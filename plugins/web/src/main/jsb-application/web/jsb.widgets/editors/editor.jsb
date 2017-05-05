@@ -28,9 +28,5 @@
 		},
 		
 		clear: function(){}
-	},
-	
-	$server: {
-		$constructor: function(){}
 	}
 }

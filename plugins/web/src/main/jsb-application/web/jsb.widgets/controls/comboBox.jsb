@@ -22,10 +22,12 @@
 			enabled: true,
 			onChange: function(key, obj){}
 		},
+		
 		init: function(){
 			var self = this;
 			this.items = [];
 			this.itemMap = {};
+			this.initialized = false;
 			if(JSB().isArray(this.options.items)){
 				for(var i in this.options.items){
 					this.addItem(this.options.items[i]);
@@ -57,6 +59,7 @@
 			}
 			
 			this.enable(this.options.enabled);
+			this.initialized = true;
 		},
 		
 		resolveItem: function(obj){
@@ -155,7 +158,7 @@
 					this.getElement().append(innerElt);
 					this.getElement().append('<div class="_dwp_dropBtn"></div>');
 					this.selectedObject = valObj;
-					if(!JSB().isNull(this.options.onChange)){
+					if(!JSB().isNull(this.options.onChange) && this.initialized){
 						this.options.onChange(valObj.key, valObj);
 					}
 				}
@@ -166,7 +169,7 @@
 				}
 				if(this.editor.getData().getValue() != val){
 					this.editor.setData(val);
-					if(!JSB().isNull(this.options.onChange)){
+					if(!JSB().isNull(this.options.onChange) && this.initialized){
 						this.options.onChange(valObj.key, valObj);
 					}
 				}

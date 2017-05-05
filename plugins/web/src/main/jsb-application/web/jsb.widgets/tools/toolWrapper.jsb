@@ -182,30 +182,19 @@
 				top: -rect.height + pt.y - rect.top
 			});
 			scopeEl.append(this.modalBack);
-/*			
-			this.modalBack.on({
-				mouseover: function(evt){
-					evt.preventDefault();
-					evt.stopPropagation();
-				},
-				mouseout: function(evt){
-					evt.preventDefault();
-					evt.stopPropagation();
-				},
-				mousemove: function(evt){
-					evt.preventDefault();
-					evt.stopPropagation();
-				},
-				mouseenter: function(evt){
-					evt.preventDefault();
-					evt.stopPropagation();
-				},
-				mouseleave: function(evt){
-					evt.preventDefault();
-					evt.stopPropagation();
-				},
+			var droppables = scopeEl.find('.ui-droppable');
+			var activeDroppables = [];
+			droppables.each(function(){
+				var disabled = $this.$(this).droppable('option', 'disabled');
+				if(!disabled){
+					activeDroppables.push(this);
+				}
 			});
-*/			
+			this.droppables = activeDroppables;
+			for(var i = 0; i < activeDroppables.length; i++){
+				$this.$(activeDroppables[i]).droppable('disable');
+			}
+			
 			this.modalBack.fadeIn();
 		},
 		
@@ -1022,6 +1011,14 @@
 			this.modalBack.fadeOut(function(){
 				self.modalBack.remove();
 				self.modalBack = null;
+				
+				// restore droppables
+				if($this.droppables){
+					for(var i = 0; i < $this.droppables.length; i++){
+						$this.$($this.droppables[i]).droppable('enable');
+					}
+					$this.droppables = null;
+				}
 			});
 		},
 		

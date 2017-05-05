@@ -4,6 +4,8 @@
 		JQuery: 'JQuery', 
 		ToolWrapper: 'JSB.Widgets.ToolWrapper',
 		MessageTool: 'JSB.Widgets.MessageTool',
+		ListTool: 'JSB.Widgets.DroplistTool',
+		TreeTool: 'JSB.Widgets.DropTreeTool',
 		WidgetTool: 'JSB.Widgets.WidgetTool',
 		Tooltip: 'JSB.Widgets.Tooltip'
 	},

@@ -644,6 +644,29 @@
 						'$superFunc': $superFunc
 					}, requireVals);
 					
+/*					
+					// add self class
+					if(self.$name != 'JSB.Object'){
+						var selfAlias = self.$name;
+						if(selfAlias.lastIndexOf('.') >= 0){
+							selfAlias = selfAlias.substr(selfAlias.lastIndexOf('.') + 1);
+						}
+						if(selfAlias != 'Object'){
+							scopeVars[selfAlias] = self.getClass();
+						}
+					}
+					
+					// add parent class
+					if(parent){
+						var parentAlias = parent.$name;
+						if(parentAlias.lastIndexOf('.') >= 0){
+							parentAlias = parentAlias.substr(parentAlias.lastIndexOf('.') + 1);
+						}
+						if(parentAlias != 'Object'){
+							scopeVars[parentAlias] = $parent;
+						}
+					}
+*/					
 					function _enrichFunction(mtdName, proc, isCtor, isBootstrap){
 						var procStr = proc.toString();
 						// extract proc declaration
