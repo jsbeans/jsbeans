@@ -3796,7 +3796,7 @@ JSB({
 		},
 		
 		isSynchronized: function(){
-			return this.$_synchronized;
+			return this.$_synchronized || !this.getJsb().getSync() || $jsb.isNull(this.$_syncScopes);
 		},
 		
 		ensureSynchronized: function(callback, syncState){
@@ -3833,6 +3833,19 @@ JSB({
 					this.$_syncCallbacks.splice(i, 1);
 					cb.call(this);
 				}
+			}
+		},
+		
+		_combineSyncBeans: function(sbMap, performedBeans){
+			if(performedBeans[this.getId()]){
+				return;
+			}
+			performedBeans[this.getId()] = true;
+			for(var id in $this.$_syncBeans){
+				if(!sbMap[id]){
+					sbMap[id] = $this.$_syncBeans[id];
+				}
+				sbMap[id]._combineSyncBeans(sbMap, performedBeans);
 			}
 		},
 
@@ -3876,25 +3889,44 @@ JSB({
 				
 				this.server().requestSyncInfo(ts, slice, function(resp, err){
 					$this.$_syncBeans = {};
-					function _syncComplete(){
+					
+					function _syncIteration(){
 						if(Object.keys($this.$_syncBeans).length === 0){
 							$this.matchSynchronized();
 							if(callback){
 								callback.call($this);
 							}
 						} else {
-							$this.matchSynchronized(1);
 							// wait all syncBeans are $_syncState == 1
 							$jsb.chain(Object.values($this.$_syncBeans), function(obj, cc){
 								obj.ensureSynchronized(cc, 1);
 							}, function(){
-								$this.$_syncBeans = {};
-								$this.matchSynchronized();
-								if(callback){
-									callback.call($this);
+								// combine syncBeans and its descendants
+								var sbMap = {};
+								var performedBeans = {};
+								$this._combineSyncBeans(sbMap, performedBeans);
+								
+								// remove beans that shouldn't be synchronized
+								var idsToRemove = [];
+								for(var id in sbMap){
+									if(sbMap[id].isSynchronized() || sbMap[id].$_syncState >= 1){
+										idsToRemove.push(id);
+									}
 								}
+								for(var i = 0; i < idsToRemove.length; i++){
+									delete sbMap[idsToRemove[i]];
+								}
+								
+								$this.$_syncBeans = sbMap;
+								_syncIteration();
 							});
 						}
+						
+					}
+					
+					function _syncComplete(){
+						$this.matchSynchronized(1);
+						_syncIteration();
 					}
 
 					if(err){
