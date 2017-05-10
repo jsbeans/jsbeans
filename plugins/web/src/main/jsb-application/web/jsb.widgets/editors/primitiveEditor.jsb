@@ -420,8 +420,6 @@
 			}
 		},
 		
-		os: 0,
-		oe: 0,
 		updateAutocomplete: function(editor){
 			if(!this.options.autocomplete)
 				return;
@@ -429,14 +427,11 @@
 			var t = editor[0].value,
 				s = this.getSelectionStart(editor[0]),
 				e = this.getSelectionEnd(editor[0]);
-			if (s == this.os && e == this.oe)
-				return;
+			
 			this.beforeCaret = t.substring(0, s).replace(/ /g, '\xa0') || '\xa0';
 			this.beforeCaret = this.beforeCaret.trim();
 			this.afterCaret = t.substring(s).replace(/ /g, '\xa0') || '\xa0';
 			this.afterCaret = this.afterCaret.trim();
-			os = s;
-			oe = e;
 			
 			if(this.afterCaret){
 				if(this.autoBox)

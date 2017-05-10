@@ -1,6 +1,6 @@
 @CHARSET "UTF-8";
 
-._dwp_droplistToolWrapper {
+._dwp_toolWrapper._dwp_droplistToolWrapper {
 	border-radius: 4px !important;
 	border: none !important;
 	padding: 0 !important;
