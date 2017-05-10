@@ -531,10 +531,18 @@
 				var priorityList = [];
 				switch(this.targets[0].dock){
 				case 'top':
-					priorityList = [posObj.top, posObj.topRight, posObj.bottom, posObj.bottomRight, posObj.right, posObj.left];
+					if(this.targets[0].align == 'right'){
+						priorityList = [posObj.topRight, posObj.bottomRight, posObj.top, posObj.bottom, posObj.right, posObj.left];
+					} else {
+						priorityList = [posObj.top, posObj.topRight, posObj.bottom, posObj.bottomRight, posObj.right, posObj.left];
+					}
 					break;
 				case 'bottom':
-					priorityList = [posObj.bottom, posObj.bottomRight, posObj.top, posObj.topRight, posObj.right, posObj.left];
+					if(this.targets[0].align == 'right'){
+						priorityList = [posObj.bottomRight, posObj.topRight, posObj.bottom, posObj.top, posObj.right, posObj.left];
+					} else {
+						priorityList = [posObj.bottom, posObj.bottomRight, posObj.top, posObj.topRight, posObj.right, posObj.left];
+					}
 					break;
 				case 'left':
 					priorityList = [posObj.left, posObj.leftCenter, posObj.leftBottom, posObj.right, posObj.rightCenter, posObj.rightBottom, posObj.bottom, posObj.top];
