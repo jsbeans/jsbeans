@@ -401,8 +401,37 @@
 			this.editBoxElt.focus();
 		},
 		
-		select: function(){
-			this.editBoxElt.select();
+		select: function(start, end){
+			function createSelection(field, start, end) {
+				if( field.createTextRange ) {
+					var selRange = field.createTextRange();
+					selRange.collapse(true);
+					selRange.moveStart('character', start);
+					selRange.moveEnd('character', end);
+					selRange.select();
+					field.focus();
+				} else if( field.setSelectionRange ) {
+					field.focus();
+					field.setSelectionRange(start, end);
+			    } else if( typeof field.selectionStart != 'undefined' ) {
+			    	field.selectionStart = start;
+			    	field.selectionEnd = end;
+			    	field.focus();
+			    }
+			}
+			
+			if($jsb.isNull(start) && $jsb.isNull(end)){
+				this.editBoxElt.select();
+			} else {
+				var val = this.editBoxElt.val();
+				if($jsb.isNull(start)){
+					start = 0;
+				}
+				if($jsb.isNull(end)){
+					end = val.length;
+				}
+				createSelection(this.editBoxElt.get(0), start, end);
+			}
 		},
 		
 		trackChanging: function(evt){
@@ -460,6 +489,9 @@
 		},
 		
 		getSelectionStart: function(o) {
+			if(!o){
+				o = this.editBoxElt.get(0);
+			}
 			if (o.createTextRange) {
 				var r = document.selection.createRange().duplicate();
 				r.moveEnd('character', o.value.length);
@@ -469,11 +501,18 @@
 		},
 
 		getSelectionEnd: function(o) {
+			if(!o){
+				o = this.editBoxElt.get(0);
+			}
 			if (o.createTextRange) {
 				var r = document.selection.createRange().duplicate();
 				r.moveStart('character', -o.value.length);
 				return r.text.length;
 			} else return o.selectionEnd;
+		},
+		
+		getCaretPosition: function(){
+			return this.getSelectionEnd();
 		},
 		
 		setAutocomplete: function(list){

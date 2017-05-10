@@ -138,13 +138,11 @@
 			function findCol(lis, i){
 				var col = {
 						cells: [],
-						renderers: [],
 						isEmpty: true
 					};
 					
 					for(var j = 0; j < lis.length; j++){
 						col.cells.push($this.$(lis[j].children[i]));
-						col.renderers.push($this.$(lis[j].children[i]).find('._dwp_control.renderer.entityRenderer'));
 						if(lis[j].children[i].innerHTML != '')
 							col.isEmpty = false;
 					}
@@ -168,7 +166,6 @@
 						self.$(hCells[i]).resize(function(){
 							for(var s = 0; s < cols[i].cells.length; s++){
 								cols[i].cells[s].outerWidth(self.$(hCells[i]).outerWidth());
-								cols[i].renderers[s].outerWidth(self.$(hCells[i]).outerWidth());
 							}
 						});	
 						
