@@ -1,7 +1,90 @@
 package org.jsbeans.jobdispatcher.jdbc;
 
-/**
- * Created by user on 28.04.17.
- */
-public class TaskResultSetIterator {
+import org.jsbeans.jobdispatcher.TaskDescriptor;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
+
+public class TaskResultSetIterator implements Iterator<TaskDescriptor> {
+
+    private ResultSet rs;
+    private PreparedStatement ps;
+    private Connection connection;
+    private static final String sql = "SELECT (task_id, task_state, task_body) FROM sql_rdf_tasks";
+    private boolean closeConnection;
+
+    public TaskResultSetIterator(Connection connection, boolean closeConnection) {
+        this.connection = connection;
+        this.closeConnection = closeConnection;
+    }
+
+    public void init() {
+        try {
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+        } catch (SQLException e) {
+            close();
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean hasNext() {
+        if (ps == null) {
+            init();
+        }
+        try {
+            boolean hasMore = rs.next();
+            if (!hasMore) {
+                close();
+            }
+            return hasMore;
+        } catch (SQLException e) {
+            close();
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void close() {
+        try {
+            rs.close();
+            try {
+                ps.close();
+            } catch (SQLException e) {
+                //nothing we can do here
+            }
+            if (closeConnection) try {
+                connection.close();
+            } catch (SQLException e) {
+                //nothing we can do here
+            }
+        } catch (SQLException e) {
+            //nothing we can do here
+        }
+    }
+
+    @Override
+    public TaskDescriptor next() {
+        try {
+            String taskId = rs.getString(1);
+            String taskState = rs.getString(2);
+            String taskBody = rs.getString(3);
+
+            try (ByteArrayInputStream in = new ByteArrayInputStream(taskBody.getBytes())) {
+                return TaskDescriptor.load(in);
+            } catch (IOException e) {
+                throw new RuntimeException("Parse task failed", e);
+            }
+        } catch (SQLException e) {
+            close();
+            throw new RuntimeException("Getting task failed", e);
+        }
+    }
 }

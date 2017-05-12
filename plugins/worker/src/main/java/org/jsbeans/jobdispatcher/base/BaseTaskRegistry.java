@@ -1,5 +1,9 @@
-package org.jsbeans.jobdispatcher;
+package org.jsbeans.jobdispatcher.base;
 
+import org.jsbeans.jobdispatcher.TaskCollection;
+import org.jsbeans.jobdispatcher.TaskDescriptor;
+import org.jsbeans.jobdispatcher.TaskRegistry;
+import org.jsbeans.jobdispatcher.TaskRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +16,7 @@ public abstract class BaseTaskRegistry<TypedTaskCollection extends TaskCollectio
 
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Map<State, TypedTaskCollection> collections;
-
-    public BaseTaskRegistry(){
-        this.collections = new HashMap<>(State.values().length);
-    }
+    private final Map<State, TypedTaskCollection> collections = new HashMap<>(State.values().length);
 
     protected void init() {
         Arrays.stream(State.values())

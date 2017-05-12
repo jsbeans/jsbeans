@@ -1,4 +1,4 @@
-package org.jsbeans.jobdispatcher.local;
+package org.jsbeans.jobdispatcher.base;
 
 import org.jsbeans.jobdispatcher.*;
 import org.slf4j.LoggerFactory;
@@ -11,13 +11,13 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-public class JobDispatcherImpl implements JobDispatcher {
+public class BaseJobDispatcher implements JobDispatcher {
 
     private final org.slf4j.Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final TaskRegistry taskRegistry;
 
-    public JobDispatcherImpl(TaskRegistry taskRegistry){
+    public BaseJobDispatcher(TaskRegistry taskRegistry){
         this.taskRegistry = taskRegistry;
     }
 

@@ -1,11 +1,13 @@
 package org.jsbeans.jobdispatcher;
 
 import org.jsbeans.jobdispatcher.fs.FileTaskRegistry;
-import org.jsbeans.jobdispatcher.local.JobDispatcherImpl;
+import org.jsbeans.jobdispatcher.base.BaseJobDispatcher;
+import org.jsbeans.jobdispatcher.jdbc.SqlTaskCollection;
+import org.jsbeans.jobdispatcher.jdbc.SqlTaskRegistry;
 
 import java.nio.file.Path;
+import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -21,7 +23,17 @@ public interface JobDispatcher {
     int dispatchBatch(TaskRequest request, int size, Function<DispatchedJob, CompletableFuture<TaskDescriptor>> getFutureExecution);
 
     static JobDispatcher createFileSystemJobDispatcher(Path tasksPath) {
-        return new JobDispatcherImpl(new FileTaskRegistry(tasksPath));
+        return new BaseJobDispatcher(
+                new FileTaskRegistry(tasksPath));
     }
 
+    static JobDispatcher createSQLJobDispatcher(String jdbcUrl, Properties props) {
+        return new BaseJobDispatcher(
+                new SqlTaskRegistry(jdbcUrl, props));
+    }
+
+    static JobDispatcher createSQLJobDispatcher(String jdbcUrl, Properties props, SqlTaskCollection.SQLConfig sqlConfig) {
+        return new BaseJobDispatcher(
+                new SqlTaskRegistry(jdbcUrl, props, sqlConfig));
+    }
 }
