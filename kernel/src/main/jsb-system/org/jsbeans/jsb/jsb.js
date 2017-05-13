@@ -3536,7 +3536,7 @@ JSB({
 		};
 	},
 
-	applySlice: function(slice, callback){
+	applySlice: function(slice, syncBeans, callback){
 		var self = this;
 		var completeMap = {};
 		var scope = { needWait: false, iterateComplete: false }
@@ -3566,10 +3566,9 @@ JSB({
 					// inject bean
 					$jsb.constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
 						parentRealScope[name] = obj;
-						if(!$this.$_syncBeans){
-							$this.$_syncBeans = {};
+						if(!obj.isSynchronized()){
+							syncBeans[obj.getId()] = obj;
 						}
-						$this.$_syncBeans[obj.getId()] = obj;
 						callback.call($this);
 					}, true);
 					return true;
@@ -3801,10 +3800,10 @@ JSB({
 		
 		ensureSynchronized: function(callback, syncState){
 			if($jsb.isNull(syncState)){
-				syncState = 2;
+				syncState = null;
 			}
 
-			if(!this.getJsb().getSync() || $jsb.isNull(this.$_syncScopes) || this.$_syncState >= syncState){
+			if(!this.getJsb().getSync() || $jsb.isNull(this.$_syncScopes) || this.$_synchronized || (!$jsb.isNull(syncState) && this.$_syncState >= syncState)){
 				callback.call(this);
 				return;
 			}
@@ -3816,18 +3815,18 @@ JSB({
 		
 		matchSynchronized: function(syncState){
 			if($jsb.isNull(syncState)){
-				syncState = 2;
-			}
-			if(syncState == 2){
 				this.$_synchronized = true;
+				this.$_syncState = null;
+				syncState = null;
+			} else {
+				this.$_syncState = syncState;
 			}
-			this.$_syncState = syncState;
 			if(!this.$_syncCallbacks){
 				return;
 			}
 			for(var i = this.$_syncCallbacks.length - 1; i>= 0; i--){
 				var syncDesc = this.$_syncCallbacks[i];
-				if(syncState >= syncDesc.syncState){
+				if(this.$_synchronized || (!$jsb.isNull(syncDesc.syncState) && syncState >= syncDesc.syncState)){
 					// execute and remove
 					var cb = syncDesc.callback;
 					this.$_syncCallbacks.splice(i, 1);
@@ -3836,19 +3835,6 @@ JSB({
 			}
 		},
 		
-		_combineSyncBeans: function(sbMap, performedBeans){
-			if(performedBeans[this.getId()]){
-				return;
-			}
-			performedBeans[this.getId()] = true;
-			for(var id in $this.$_syncBeans){
-				if(!sbMap[id]){
-					sbMap[id] = $this.$_syncBeans[id];
-				}
-				sbMap[id]._combineSyncBeans(sbMap, performedBeans);
-			}
-		},
-
 		doSync: function(){
 			if(this.isDestroyed() || JSB().isNull(this.$_syncScopes)){
 				return;
@@ -3888,45 +3874,53 @@ JSB({
 				var ts = this.$_lastDownloadSyncTimeStamp + 1;
 				
 				this.server().requestSyncInfo(ts, slice, function(resp, err){
-					$this.$_syncBeans = {};
+					var syncBeans = {};
+					var syncContainer = {
+						curSyncBeans: syncBeans
+					};
 					
-					function _syncIteration(){
-						if(Object.keys($this.$_syncBeans).length === 0){
+					function _syncIteration(s){
+						if(Object.keys(syncContainer.curSyncBeans).length === 0){
 							$this.matchSynchronized();
 							if(callback){
 								callback.call($this);
 							}
 						} else {
+							$this.matchSynchronized(s);
+
 							// wait all syncBeans are $_syncState == 1
-							$jsb.chain(Object.values($this.$_syncBeans), function(obj, cc){
-								obj.ensureSynchronized(cc, 1);
-							}, function(){
-								// combine syncBeans and its descendants
-								var sbMap = {};
-								var performedBeans = {};
-								$this._combineSyncBeans(sbMap, performedBeans);
-								
-								// remove beans that shouldn't be synchronized
-								var idsToRemove = [];
-								for(var id in sbMap){
-									if(sbMap[id].isSynchronized() || sbMap[id].$_syncState >= 1){
-										idsToRemove.push(id);
-									}
-								}
-								for(var i = 0; i < idsToRemove.length; i++){
-									delete sbMap[idsToRemove[i]];
-								}
-								
-								$this.$_syncBeans = sbMap;
-								_syncIteration();
-							});
+							var sCnt = Object.keys(syncContainer.curSyncBeans).length;
+							var cCnt = {
+								ready: 0
+							};
+							for(var sid in syncContainer.curSyncBeans){
+								(function(sid){
+									var obj = syncContainer.curSyncBeans[sid];
+									obj.ensureSynchronized(function(){
+										cCnt.ready++;
+										if(cCnt.ready >= sCnt){
+											var sbMap = {};
+											
+											for(var ssid in syncContainer.curSyncBeans){
+												var robj = syncContainer.curSyncBeans[ssid];
+												
+												if(!robj.isSynchronized() && robj.$_syncState <= $this.$_syncState){
+													sbMap[ssid] = robj;
+												}
+											}
+											
+											syncContainer.curSyncBeans = sbMap;
+											_syncIteration(s + 1);
+										}
+									}, s);
+								})(sid);
+							}
 						}
 						
 					}
 					
 					function _syncComplete(){
-						$this.matchSynchronized(1);
-						_syncIteration();
+						_syncIteration(1);
 					}
 
 					if(err){
@@ -3939,7 +3933,7 @@ JSB({
 						if(!JSB().isNull(resp.minStamp) && self._onBeforeSync(resp.slice)){
 							self.updateSyncState();
 							self.$_oddSlice = self.getSyncSlice(self.$_lastUploadSyncTimeStamp + 1);
-							self.applySlice(resp.slice, function(){
+							self.applySlice(resp.slice, syncBeans, function(){
 								self._onAfterSync(resp.slice);
 								self.updateSyncState();
 								self.$_lastUploadSyncTimeStamp = Date.now();

@@ -56,10 +56,12 @@
 		update: function(){
 			var self = this;
 			var arr = this.data.data;
+			this.listbox.detach();
 			this.listbox.clear();
 			for(var i in arr){
 				this.listbox.addItem(arr[i]);
 			}
+			this.listbox.attach();
 		},
 		
 		setFocus: function(){

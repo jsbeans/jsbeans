@@ -55,6 +55,7 @@
 		update: function(){
 			var self = this;
 			var arr = this.data.data;
+			this.tree.detach();
 			this.tree.clear();
 			
 			function addTreeItem(itemDesc, parent){
@@ -72,6 +73,7 @@
 			for(var i in arr){
 				addTreeItem(arr[i]);
 			}
+			this.tree.attach();
 		},
 		
 		setFocus: function(){
