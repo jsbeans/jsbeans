@@ -331,6 +331,9 @@
 			var wrappedItem = this.wrapItem(itemObj);
 			
 			var oldObj = this.itemMap[oldKey];
+			if(!oldObj){
+				return;
+			}
 			var parentKey = oldObj.parent;
 			var wrapper = oldObj.wrapper;
 			wrapper.after(wrappedItem);
