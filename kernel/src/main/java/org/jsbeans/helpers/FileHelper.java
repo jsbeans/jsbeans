@@ -32,6 +32,7 @@ public class FileHelper {
 
     public static String readStringFromFile(String fName) throws IOException {
         byte[] encoded = Files.readAllBytes(java.nio.file.Paths.get(fName));
+//        return new String(encoded);
         return Charset.forName("UTF-8").decode(ByteBuffer.wrap(encoded)).toString();
     }
 

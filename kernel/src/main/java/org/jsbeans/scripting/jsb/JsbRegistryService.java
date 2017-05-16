@@ -39,6 +39,7 @@ import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
 import java.io.File;
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -148,6 +149,10 @@ public class JsbRegistryService extends Service {
                 if (jsoBody == null || jsoBody.length() == 0) {
                     throw new PlatformException(String.format("Problem occured due to loading JSB descriptor: '%s'", jsoFile));
                 }
+                
+                // obtain pathes
+                String fullPathFile = jsoFile.replaceAll("\\\\", "/");
+                String fullPath = fullPathFile.substring(0, fullPathFile.lastIndexOf("/"));
                 // obtain relative folder
                 String relPath = "";
                 String relPathWithFile = "";
@@ -167,7 +172,7 @@ public class JsbRegistryService extends Service {
                     }
                 }
 
-                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath, relPathWithFile);
+                String codeToExecute = String.format("function wrapJsb(cfg){ if(cfg) return cfg; return null; } JSB.getRepository().register(wrapJsb(%s),{$_path:'%s',$_pathFile:'%s',$_fullPath:'%s',$_fullPathFile:'%s'});", JsbTemplateEngine.perform(jsoBody, jsoFile), relPath, relPathWithFile, fullPath,  fullPathFile);
                 ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
                 if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                     scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
