@@ -3447,7 +3447,7 @@ JSB({
 
 			} else {
 				// number, string or boolean
-				if(realScope != syncInfoScope.value || syncInfoScope.value === undefined){
+				if(realScope != syncInfoScope.value || syncInfoScope.value === undefined || syncInfoScope.type != 0){
 					syncInfoScope.value = realScope;
 					syncInfoScope.type = 0;
 					updated = true;
