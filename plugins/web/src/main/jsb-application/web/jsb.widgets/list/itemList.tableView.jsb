@@ -152,7 +152,7 @@
 			
 			var lis = this.container.find('> li');
 			if(lis.length > 0){
-				// set header width				
+				// set header width
 				var count = lis[0].children.length;
 				var cols = [];
 				
