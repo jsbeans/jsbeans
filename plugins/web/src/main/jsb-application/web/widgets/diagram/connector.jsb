@@ -319,6 +319,10 @@
 				
 				return remoteConnArr;
 			}
+		},
+		
+		getNode: function(){
+			return this.node;
 		}
 		
 	},

@@ -987,6 +987,14 @@
 			return typeof(obj) === 'number';
 		},
 		
+		isFloat: function(n){
+			return Number(n) === n && n % 1 !== 0;
+		},
+		
+		isInteger: function(n){
+			return Number(n) === n && n % 1 === 0;
+		},
+		
 		isBoolean: function(obj){
 			return typeof(obj) === 'boolean';
 		},
@@ -3370,21 +3378,18 @@ JSB({
 		// update local state
 		var timeStamp = Date.now();
 		var updated = false;
-/*			
-			if(JSB.isInstanceOf(this, 'Ontoed.Model.Function') && this.info['short-uri'] == 'spin:construct'){
-				debugger;
-			}
-*/			
 		function updateSyncScope(timeStamp, name, realScope, syncInfoScope){
 			var updated = false;
 			if(JSB().isBean(realScope)){
-				// fixup realscope if it is Bean
-				realScope = {
-					__jso: realScope.jsb.$name,
-					__id: realScope.getId()
-				};
-			}
-			if(JSB().isFunction(realScope)){
+				if(realScope != syncInfoScope.value || syncInfoScope.value === undefined || syncInfoScope.type != 3){
+					syncInfoScope.value = realScope;
+					syncInfoScope.type = 3;
+					syncInfoScope.data = undefined;
+					updated = true;
+				} else {
+					return false;
+				}
+			} else if(JSB().isFunction(realScope)){
 				// this case occurs when users manually fills sync scope with function object
 				// TODO: subject to remove
 				// now skipping
@@ -3483,14 +3488,6 @@ JSB({
 				ex: syncScope.existed,
 			}, minStamp = syncScope.timeStamp, maxStamp = syncScope.timeStamp;
 			if(syncScope.existed){
-				if(realScope === undefined){
-//						throw 'getScopeSlice: sync error due to out of the realScope';
-				} else if(JSB().isBean(realScope)){
-					realScope = {
-						__jso: realScope.jsb.$name,
-						__id: JSB().isClient() ? (realScope.$_bindKey || realScope.getId()) : realScope.getId()
-					};
-				}
 				if(syncScope.type == 0){
 					// primitive
 					slice.v = syncScope.value;
@@ -3509,6 +3506,12 @@ JSB({
 							}
 						}
 					}
+				} else if(syncScope.type == 3) {
+					// bean
+					slice.d = {
+						jsb: syncScope.value.jsb.$name, 
+						id: JSB().isClient() ? (syncScope.value.$_bindKey || syncScope.value.getId()) : syncScope.value.getId()
+					};
 				} else {
 					throw 'getScopeSlice: unknown syncScope.type';
 				}
@@ -3566,58 +3569,46 @@ JSB({
 				parentRealScope[name] = syncSlice.v;
 				return;
 			} else if(syncSlice.t == 1){
-				if(syncSlice.d.__jso && syncSlice.d.__id && JSB().isString(syncSlice.d.__jso.v) && JSB().isString(syncSlice.d.__id.v)){
-					// inject bean
-					$jsb.constructInstanceFromRemote(syncSlice.d.__jso.v, syncSlice.d.__id.v, function(obj){
-						parentRealScope[name] = obj;
-						if(!obj.isSynchronized()){
-							syncBeans[obj.getId()] = obj;
-						}
-						callback.call($this);
-					}, true);
-					return true;
-				} else {
-					if(parentRealScope[name] === undefined || !JSB().isPlainObject(parentRealScope[name])){
-						parentRealScope[name] = {};
-					}
-					var completeMap = {};
-					var scope = {needWait: false, iterateComplete: false};
-					function _checkComplete(){
-						if(!scope.iterateComplete){
-							return;
-						}
-						for(var i in completeMap){
-							if(!completeMap[i]) return;
-						}
-						if(callback){
-							callback.call(self);
-						}
-					}
-					for(var pName in syncSlice.d){
-						if(!syncSlice.d[pName].ex){
-							delete parentRealScope[name][pName];
-						} else {
-							completeMap[pName] = false;
-							(function(pn){
-								if(applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
-									completeMap[pn] = true;
-									_checkComplete();
-								})){
-									scope.needWait = true;
-								} else {
-									delete completeMap[pn];
-								}
-							})(pName);
-							
-						}
-					}
-					scope.iterateComplete = true;
-					if(scope.needWait){
-						_checkComplete();
-						return true;
-					}
-					return;
+				if(parentRealScope[name] === undefined || !JSB().isPlainObject(parentRealScope[name])){
+					parentRealScope[name] = {};
 				}
+				var completeMap = {};
+				var scope = {needWait: false, iterateComplete: false};
+				function _checkComplete(){
+					if(!scope.iterateComplete){
+						return;
+					}
+					for(var i in completeMap){
+						if(!completeMap[i]) return;
+					}
+					if(callback){
+						callback.call(self);
+					}
+				}
+				for(var pName in syncSlice.d){
+					if(!syncSlice.d[pName].ex){
+						delete parentRealScope[name][pName];
+					} else {
+						completeMap[pName] = false;
+						(function(pn){
+							if(applyScopeSlice(pn, syncSlice.d[pn], parentRealScope[name], function(){
+								completeMap[pn] = true;
+								_checkComplete();
+							})){
+								scope.needWait = true;
+							} else {
+								delete completeMap[pn];
+							}
+						})(pName);
+						
+					}
+				}
+				scope.iterateComplete = true;
+				if(scope.needWait){
+					_checkComplete();
+					return true;
+				}
+				return;
 			} else if(syncSlice.t == 2){
 				if(parentRealScope[name] === undefined || !JSB().isArray(parentRealScope[name])){
 					parentRealScope[name] = [];
@@ -3666,6 +3657,16 @@ JSB({
 					return true;
 				}
 				return;
+			} else if(syncSlice.t == 3){
+				// inject bean
+				$jsb.constructInstanceFromRemote(syncSlice.d.jsb, syncSlice.d.id, function(obj){
+					parentRealScope[name] = obj;
+					if(!obj.isSynchronized()){
+						syncBeans[obj.getId()] = obj;
+					}
+					callback.call($this);
+				}, true);
+				return true;
 			}
 
 		}
