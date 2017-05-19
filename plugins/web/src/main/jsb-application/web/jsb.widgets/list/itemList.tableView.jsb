@@ -170,7 +170,7 @@
 						});	
 						
 						for(var j = 0; j < cols[i].cells.length; j++)
-							cols[i].cells[j].outerWidth(self.$(hCells[i]).outerWidth());
+							cols[i].cells[j].outerWidth(self.$(hCells[i]).outerWidth() - 1);
 					})(i);
 					
 					// resizable
