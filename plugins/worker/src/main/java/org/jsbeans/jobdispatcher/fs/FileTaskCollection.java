@@ -85,8 +85,7 @@ public class FileTaskCollection implements TaskCollection {
 
     Stream<File> files() {
         try {
-            Spliterator<Path> paths = Files.newDirectoryStream(collectionPath).spliterator();
-            return StreamSupport.stream(paths, false)
+            return Files.list(collectionPath)
                     .filter(p->p.toString().endsWith(TASK_EXTENSION))
                     .map(Path::toFile);
         } catch (IOException e) {
