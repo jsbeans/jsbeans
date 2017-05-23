@@ -9,8 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -85,10 +87,11 @@ public class FileTaskCollection implements TaskCollection {
 
     Stream<File> files() {
         try {
-            Spliterator<Path> paths = Files.newDirectoryStream(collectionPath).spliterator();
-            return StreamSupport.stream(paths, false)
-                    .filter(p->p.toString().endsWith(TASK_EXTENSION))
-                    .map(Path::toFile);
+            List<File> list = Files.list(collectionPath)
+                    .filter(p -> p.toString().endsWith(TASK_EXTENSION))
+                    .map(Path::toFile).collect(Collectors.toList());
+            // TODO разобраться, почему при прямой работе с потоком отваливается с ошибкой " (Слишком много открытых файлов)"
+            return list.stream();
         } catch (IOException e) {
             throw new RuntimeException("List files failed", e);
         }

@@ -12,5 +12,5 @@ java -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadi
     -Dcom.sun.management.jmxremote.authenticate=false \
     -Dcom.sun.management.jmxremote.ssl=false \
     -Djava.rmi.server.hostname=$(hostname) \
-    -classpath config:libs/$JAR_NAME:libs/* \
+    -classpath config:lib/$JAR_NAME:lib/* \
     org.jsbeans.Starter
