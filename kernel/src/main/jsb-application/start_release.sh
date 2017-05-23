@@ -6,5 +6,5 @@ mkdir -p logs
 java -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadingEnabled \
     -Xms512m -Xmx4096m \
     -Dfile.encoding=UTF-8 \
-    -classpath config:libs/$JAR_NAME:lib/* \
+    -classpath config:lib/$JAR_NAME:lib/* \
     org.jsbeans.Starter
