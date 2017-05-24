@@ -23,7 +23,7 @@ public class FileTaskCollection implements TaskCollection {
     private final ReentrantLock ioLock = new ReentrantLock();
     private final Path collectionPath;
     private final String TASK_EXTENSION = ".task";
-    private final String TASK_PREFIX = "task-";
+    private final String TASK_PREFIX = "";
 
     public FileTaskCollection(Path collectionPath){
         this.collectionPath = collectionPath;
@@ -86,15 +86,13 @@ public class FileTaskCollection implements TaskCollection {
     }
 
     Stream<File> files() {
-        try {
-            List<File> list = Files.list(collectionPath)
-                    .filter(p -> p.toString().endsWith(TASK_EXTENSION))
-                    .map(Path::toFile).collect(Collectors.toList());
-            // TODO разобраться, почему при прямой работе с потоком отваливается с ошибкой " (Слишком много открытых файлов)"
-            return list.stream();
-        } catch (IOException e) {
-            throw new RuntimeException("List files failed", e);
-        }
+        File[] files = collectionPath.toFile().listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(TASK_EXTENSION);
+            }
+        });
+        return files != null ? Stream.of(files) : Stream.empty();
     }
 
     File getTaskFile(String taskId) {
