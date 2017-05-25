@@ -1,5 +1,5 @@
 {
-    $name:'HttpConnection',
+    $name:'JSB.Net.HttpConnection',
 
     $server: {
         $constructor: function(options){

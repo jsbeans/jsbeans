@@ -1,6 +1,6 @@
 {
-    $name:'Http',
-	$require: ['HttpConnection'],
+    $name:'JSB.Net.Http',
+	$require: ['JSB.Net.HttpConnection'],
     $server: {
         $singleton: true,
 
