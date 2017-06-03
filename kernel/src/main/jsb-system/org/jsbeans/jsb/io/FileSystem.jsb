@@ -6,6 +6,7 @@
 	$server: {
 		$require: [
 			'JSB.IO.Stream',
+			'JSB.IO.TextStream',
 			
 			'java:java.lang.System',
 			'java:java.nio.file.Paths',
@@ -26,6 +27,8 @@
 			this.fs = FileSystems.getDefault();
 			this.separator = this.fs.getSeparator();
 			this.separator_rx = this.separator == '/' ? new RegExp(this.separator): new RegExp(this.separator.replace("\\", "\\\\") + "|/");
+			
+			this.security = System.getSecurityManager();
 		},
 		
 		_resolvePath: function(path) {
@@ -132,19 +135,215 @@
 		        nioOptions.push(StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 		    }
 
-		    var stream = new Stream(read ? Files.newInputStream(nioPath, nioOptions) : Files.newOutputStream(nioPath, nioOptions));
 		    if (binary) {
-		        return stream;
+		        return new Stream(read ? Files.newInputStream(nioPath, nioOptions) : Files.newOutputStream(nioPath, nioOptions));
 		    } else if (read || write || append) {
-		        // if charset is undefined, TextStream will use utf8
-//		        return new TextStream(stream, {charset: charset});
-		    	return null;
+		    	return new TextStream(read ? Files.newInputStream(nioPath, nioOptions) : Files.newOutputStream(nioPath, nioOptions), options);
 		    } else if (update) {
 		        // FIXME botic: check for invalid options before returning a stream? See issue #270
 		        throw "update not yet implemented";
 		    }
 
-		}
+		},
 		
+		read: function(path, options){
+			options = options === undefined ? {} : this._checkOptions(options);
+			options.read = true;
+			options.write = false;
+			var stream = this.open(path, options);
+			try {
+				return stream.read();
+			} finally {
+				stream.close();
+			}
+		},
+		
+		write: function(path, data, options){
+			options = options === undefined ? {} : this._checkOptions(options);
+			options.write = true;
+			options.read = false;
+			options.binary = data instanceof ArrayBuffer;
+			var stream = this.open(path, options);
+			try {
+				stream.write(data);
+				stream.flush();
+			} finally {
+				stream.close();
+			}
+		},
+		
+		exists: function(path) {
+		    return Files.exists(this._resolvePath(path));
+		},
+		
+		list: function(path, opts) {
+		    var nioPath = this._resolvePath(path);
+		    
+		    opts = $jsb.merge({files: true, directories: true, links: true, recursive: false}, opts);
+
+		    if (!Files.isDirectory(nioPath)) {
+		        throw 'Expected directory: ' + path;
+		    }
+
+		    var files = [];
+		    var dirStream = null;
+		    try {
+		    	dirStream = Files.newDirectoryStream(nioPath);
+			    var dirIterator = dirStream.iterator();
+			    while (dirIterator.hasNext()) {
+			    	var file = String(dirIterator.next().getFileName());
+			    	if(opts.files && opts.directories && opts.links){
+			    		files.push(file);
+			    	} else {
+				    	var filePath = this.join(nioPath.toString(), file);
+				    	if((opts.files && this.isFile(filePath))
+				    		||(opts.directories && this.isDirectory(filePath))
+				    		||(opts.links && this.isLink(filePath))){
+				    		files.push(file);
+				    	} 
+			    	}
+			        if(opts.recursive){
+			        	var filePath = this.join(nioPath.toString(), file);
+			        	if(this.isDirectory(filePath)){
+			        		var arr = this.list(filePath, opts).map(function(p){return $this.join(file, p)});
+			        		if(arr.length > 0){
+			        			files = files.concat(arr);
+			        		}
+			        	}
+			        }
+			    }
+		    } catch(e){
+		    	return [];
+		    } finally {
+		    	if(dirStream){
+		    		dirStream.close();		
+		    	}
+		    }
+
+		    return files;
+		},
+
+		join: function() {
+		    // filter out empty strings to avoid join("", "foo") -> "/foo"
+		    var args = Array.prototype.filter.call(arguments, function(p) {
+		        return p !== "" && p !== null && p !== undefined;
+		    });
+
+		    return String(Paths.get.apply(this, (args.length > 0 ? args : ["."])));
+		},
+		
+		copy: function(from, to) {
+		    var sourcePath = this._resolvePath(from);
+		    var targetPath = this._resolvePath(to);
+		    
+		    if (String(targetPath) == String(sourcePath)) {
+		        throw "Source and target files are equal";
+		    } else if (String(targetPath).indexOf(String(sourcePath)) == 0) {
+		        throw "Target is a child of source";
+		    }
+		    
+		    if(Files.isDirectory(sourcePath)) {
+		        // make target dir tree
+		    	Files.createDirectories(targetPath);
+
+		        var files = this.list(from);
+		        for(var i = 0; i < files.length; i++) {
+		        	var file = files[i];
+		            var s = this.join(sourcePath.toString(), file);
+		            var t = this.join(targetPath.toString(), file);
+		            if (this.isLink(s)) {
+		                this.createSymbolicLink(this.readLink(s), t);
+		            } else {
+		                this.copy(s, t);
+		            }
+		        }
+		    } else {
+		    	Files.copy(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+		    }
+		},
+		
+		createSymbolicLink: function(existing, link) {
+		    return String(Files.createSymbolicLink(Paths.get(link), Paths.get(existing)));
+		},
+
+		createHardLink: function(existing, link) {
+		    return String(Files.createLink(Paths.get(link), Paths.get(existing)));
+		},
+		
+		readLink: function(path) {
+		    // Throws an exception if there is no symbolic link at the given path or the link cannot be read.
+		    if (!Files.isReadable(Paths.get(path))) {
+		        throw "Path " + path + " is not readable";
+		    }
+
+		    return Files.readSymbolicLink(this._resolvePath(path)).toString();
+		},
+		
+		remove: function(path) {
+		    var nioPath = this._resolvePath(path);
+
+		    if (Files.isDirectory(nioPath)) {
+		        Files.walkFileTree(nioPath, new FileVisitor({
+		            visitFile: function (file, attrs) {
+		                Files.delete(file);
+		                return FileVisitResult.CONTINUE;
+		            },
+		            visitFileFailed: function(file, e) {
+		                throw e;
+		            },
+		            preVisitDirectory: function() {
+		                return FileVisitResult.CONTINUE;
+		            },
+		            postVisitDirectory: function (dir, e) {
+		                if (e == null) {
+		                    Files.delete(dir);
+		                    return FileVisitResult.CONTINUE;
+		                } else {
+		                    throw e;
+		                }
+		            }
+		        }));
+		    } else {
+		    	Files.delete(nioPath);
+		    }
+		},
+
+		
+		getDirectory: function(path) {
+		    return (Paths.get(path).getParent() || Paths.get('.')).toString();
+		},
+
+
+		
+		isDirectory: function(path) {
+		    return Files.isDirectory(this._resolvePath(path));
+		},
+		
+		isLink: function(path) {
+		    return Files.isSymbolicLink(this._resolvePath(path));
+		},
+
+		isFile: function(path) {
+		    return Files.isRegularFile(this._resolvePath(path));
+		},
+		
+		isReadable: function(path) {
+		    return Files.isReadable(this._resolvePath(path));
+		},
+		
+		isWritable: function(path) {
+		    return Files.isWritable(this._resolvePath(path));
+		},
+
+
+		getCurrentDirectory: function() {
+		    return '' + this._resolvePath('' + System.getProperty('user.dir')).toString() + this.separator;
+		},
+		
+		getUserDirectory: function() {
+		    return '' + this._resolvePath('' + System.getProperty('user.home')).toString() + this.separator;
+		}
+
+
 	}
 }

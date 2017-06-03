@@ -318,6 +318,10 @@
 			return this.getRepository().get(this.$name).cfg.$_fullPath;
 		},
 		
+		getFullPathFile: function(){
+			return this.getRepository().get(this.$name).cfg.$_fullPathFile;
+		},
+		
 		constructClientJSB: function(name){
 			var jsb = this.get(name);
 			if(this.isClient()){

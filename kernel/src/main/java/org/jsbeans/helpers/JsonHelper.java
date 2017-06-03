@@ -2,13 +2,12 @@ package org.jsbeans.helpers;
 
 import org.jsbeans.types.JsonArray;
 import org.jsbeans.types.JsonObject;
-import org.jsbeans.types.JsonPrimitive;
 import org.mozilla.javascript.ConsString;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeObject;
-import org.mozilla.javascript.Scriptable;
 
 public class JsonHelper {
+	
 
     public static Object nativeToJsonObject(Object obj){
         if (obj == null) {

@@ -3,6 +3,7 @@
 				
 	$server: {
 		$require: [
+			'java:org.jsbeans.helpers.BufferHelper',
 			'java:java.lang.System',
 			'java:java.io.InputStream',
 			'java:java.io.OutputStream',
@@ -11,7 +12,8 @@
 		
 		input: null,
 		output: null,
-		closed: false,
+		buffer: null,
+		closed: true,
 		
 		$constructor: function(stream){
 			$base();
@@ -27,15 +29,22 @@
 		},
 		
 		destroy: function(){
-			this.close();
 			$base();
+			if(this.buffer){
+				this.buffer = null;
+			}
+			if(!this.closed){
+				this.close();
+			}
 		},
 		
 		_setStream: function(obj){
 			if(obj instanceof InputStream){
 				this.input = obj;
+				this.closed = false;
 			} else if(obj instanceof OutputStream){
 				this.output = obj;
+				this.closed = false;
 			}
 		},
 		
@@ -51,48 +60,99 @@
 			return false;
 		},
 		
-		read: function(limit){
+		available: function(){
 	        if ($jsb.isNull(this.input)) {
 	            throw "No input stream";
 	        }
-	        if(!$jsb.isNull(limit) && $jsb.isNumber(limit) && limit > 0) {
-            	var bytes = Array.newInstance(Byte.TYPE, limit);
-                var read = this.input.read(bytes);
+	        return this.input.available();
+		},
+		
+		read: function(arg, from, to){
+	        if ($jsb.isNull(this.input)) {
+	            throw "No input stream";
+	        }
+	        if(arg instanceof ArrayBuffer){
+	        	var arrayBuffer = arg;
+				from = from || 0;
+				to = to || arrayBuffer.byteLength;
+				if(!this.buffer || this.buffer.length < to - from){
+	        		this.buffer = Array.newInstance(Byte.TYPE, to - from);
+	        	}
+				var count = this.input.read(this.buffer, 0, to - from);
+				BufferHelper.copyToArrayBuffer(this.buffer, 0, arrayBuffer, from, count);
+				
+				return count;
+	        } else if(!$jsb.isNull(arg) && $jsb.isNumber(arg) && arg > 0) {
+	        	var limit = arg;
+	        	if(!this.buffer || this.buffer.length < limit){
+	        		this.buffer = Array.newInstance(Byte.TYPE, limit);
+	        	}
+                var read = this.input.read(this.buffer, 0, limit);
                 if(read > 0){
-	            	var filled = new Uint8Array(read);
-                	for(var i = 0; i < read; i++){
-                		filled[i] = bytes[i];
-                	}
+	            	var filled = new ArrayBuffer(read);
+	            	BufferHelper.copyToArrayBuffer(this.buffer, 0, filled, 0, read);
                 	return filled;
                 } else {
-                	return new Uint8Array(0);
+                	return new ArrayBuffer(0);
                 }
+	        } else if(!$jsb.isNull(arg) && arg.getClass && arg.getClass().getName() == '[B') {
+	        	// check for arg is byte[]
+	        	var byteArray = arg;
+				from = from || 0;
+				to = to || byteArray.length;
+				return this.input.read(byteArray, from, to - from);
+	        } else if(!$jsb.isNull(arg)){
+	        	throw 'Unknown argument passed';
 	        } else {
-	        	var buffer = Array.newInstance(Byte.TYPE, 8192);
+	        	if(!this.buffer || this.buffer.length < 4096){
+	        		this.buffer = Array.newInstance(Byte.TYPE, 4096);
+	        	}
 	            var read, count = 0;
-                while ((read = this.input.read(buffer, count, buffer.length - count)) > -1) {
+                while ((read = this.input.read(this.buffer, count, this.buffer.length - count)) > -1) {
                     count += read;
-                    if (count == buffer.length) {
-                    	var b = Array.newInstance(Byte.TYPE, buffer.length * 2);
-                        System.arraycopy(buffer, 0, b, 0, count);
-                        buffer = b;
+                    if (count == this.buffer.length) {
+                    	var b = Array.newInstance(Byte.TYPE, this.buffer.length * 2);
+                        System.arraycopy(this.buffer, 0, b, 0, count);
+                        this.buffer = b;
                     }
                 }
                 if(count > 0){
-	            	var filled = new Uint8Array(count);
-                	for(var i = 0; i < count; i++){
-                		filled[i] = buffer[i];
-                	}
+	            	var filled = new ArrayBuffer(count);
+	            	BufferHelper.copyToArrayBuffer(this.buffer, 0, filled, 0, count);
                 	return filled;
                 } else {
-                	return new Uint8Array(0);
+                	return new ArrayBuffer(0);
                 }
 	        }
 		},
 		
-		write: function(obj, start, end){
+		write: function(obj, from, to){
 			var bytes = null;
-			
+			var arrayBuffer = null;
+			if($jsb.isString(obj)){
+				arrayBuffer = BufferHelper.toArrayBuffer(obj);
+			} else if(obj instanceof ArrayBuffer){
+				arrayBuffer = obj;
+			} else {
+				throw 'Expected an ArrayBuffer or string as first argument';
+			}
+			from = from || 0;
+			to = to || arrayBuffer.byteLength;
+			this.output.write(BufferHelper.toByteArray(arrayBuffer), from, to - from);
+			return to - from;
+		},
+		
+		copy: function(output){
+			if(!$jsb.isInstanceOf(output, 'JSB.IO.Stream')){
+				throw 'Expected JSB.IO.Stream as first argument';
+			}
+			var buffer = new ArrayBuffer(Math.max(4096, Math.min(this.available(), 65536)));
+			while(this.available()){
+				var count = this.read(buffer);
+				output.write(buffer, 0, count);
+			}
+			output.flush();
+			return this;
 		},
 		
 		flush: function(){
@@ -117,9 +177,9 @@
 				if(!$jsb.isNull(this.output)){
 					this.output.close();
 				}
+				this.closed = true;
+				this.destroy();
 			}
-			this.closed = true;
-			this.destroy();
 		},
 		
 		isClosed: function(){

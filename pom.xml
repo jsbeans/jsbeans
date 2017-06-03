@@ -6,7 +6,7 @@
   ~
   ~ Настоящий файл является частью клиент-сервеной JavaScript платформы.
   ~ Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
-  ~ Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
+  ~ Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2017гг.
   -->
 
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
@@ -99,21 +99,21 @@
         </resources>
         <testResources>
             <testResource>
-                <directory>src/main/java</directory>
+                <directory>src/test/java</directory>
             </testResource>
             <testResource>
-                <directory>src/main/resources</directory>
+                <directory>src/test/resources</directory>
             </testResource>
             <testResource>
-                <directory>src/main/jsb-system</directory>
+                <directory>src/test/jsb-system</directory>
                 <targetPath>${org.jsbeans.system.path}</targetPath>
             </testResource>
             <testResource>
-                <directory>src/main/jsb-resource</directory>
+                <directory>src/test/jsb-resource</directory>
                 <targetPath>${org.jsbeans.resource.path}</targetPath>
             </testResource>
             <testResource>
-                <directory>src/main/jsb-application</directory>
+                <directory>src/test/jsb-application</directory>
                 <targetPath>${org.jsbeans.application.path}</targetPath>
             </testResource>
         </testResources>
