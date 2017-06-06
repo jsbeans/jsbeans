@@ -25,6 +25,8 @@ public class JsObject implements Serializable {
     private double dataDouble;
     private Map<String, JsObject> dataJsonObject = null;
     private List<JsObject> dataJsonArray = null;
+    private byte[] bytes;
+    
     public JsObject(JsObjectType type) {
         this.objType = type;
     }
@@ -42,6 +44,10 @@ public class JsObject implements Serializable {
     public void setFunction(String func) {
         this.objType = JsObjectType.FUNCTION;
         this.dataStr = func;
+    }
+    
+    public void setBytes(byte[] bytes){
+    	this.bytes = bytes;
     }
 
     public void addToObject(String attrName, JsObject jsObj) {
@@ -142,6 +148,8 @@ public class JsObject implements Serializable {
             }
         } else if (this.getResultType() == JsObjectType.STRING) {
             bArr = this.dataStr.getBytes();
+        } else if(this.getResultType() == JsObjectType.ARRAYBUFFER){
+        	bArr = this.bytes;
         } else {
         	String str = this.toJS(false, true);
         	bArr = str.getBytes();
@@ -268,6 +276,7 @@ public class JsObject implements Serializable {
     public enum JsObjectType implements Serializable {
         JSONOBJECT,
         JSONARRAY,
+        ARRAYBUFFER,
         FUNCTION,
         INTEGER,
         STRING,

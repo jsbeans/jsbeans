@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.Principal;
 import java.util.Map;
@@ -122,9 +121,6 @@ public class HttpJsbServlet extends HttpServlet {
                 }
             }
         }
-        if (mode == null || mode.trim().length() == 0) {
-            mode = "text";
-        }
 
         if (respObj != null && respObj.result != null) {
             JsObject execOpts = respObj.result.getAttribute("opts");
@@ -143,7 +139,10 @@ public class HttpJsbServlet extends HttpServlet {
             if (dispObj != null && dispObj.getResultType() == JsObjectType.STRING) {
                 contentDisposition = dispObj.getString();
             }
+        }
 
+        if (mode == null || mode.trim().length() == 0) {
+            mode = "text";
         }
 
         if (mode.equalsIgnoreCase("json")) {

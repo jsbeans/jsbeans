@@ -17,6 +17,7 @@ import org.jsbeans.scripting.ScopeTree;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import org.mozilla.javascript.*;
+import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
@@ -58,11 +59,19 @@ public class JsObjectSerializerHelper {
 
         return jObj;
     }
+    
+    public JsObject serializeArrayBuffer(NativeArrayBuffer arr) throws PlatformException {
+    	JsObject jObj = new JsObject(JsObjectType.ARRAYBUFFER);
+    	jObj.setBytes(arr.getBuffer());
+    	return jObj;
+    }
 
     public JsObject serializeNative(Object obj) throws PlatformException {
         JsObject retObj = null;
         if (obj == null) {
             retObj = new JsObject(JsObjectType.NULL);
+        } else if (obj instanceof NativeArrayBuffer) {
+            retObj = this.serializeArrayBuffer((NativeArrayBuffer) obj);
         } else if (obj instanceof NativeJavaArray) {
             retObj = this.serializeJavaArray((NativeJavaArray) obj);
         } else if (obj instanceof NativeJavaObject) {
