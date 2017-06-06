@@ -2664,23 +2664,23 @@
 			generateForkJoinTask(params);
 		},
 
-		substJsoInRpcResult: function(res){
+		substComplexObjectInRpcResult: function(res){
 			var self = this;
 			var reverseBindMap = this.getReverseBindMap();
 			var isServer = this.isServer();
-			function _substJsoInRpcResult(res){
+			function _substComplexObjectInRpcResult(res){
 				if(JSB().isPlainObject(res)){
 					// check if res is jso
 					if(JSB().isBean(res)){
 						// encode jso object
 						if(isServer){
 							return {
-								__jso : res.getJsb().$name,
+								__jsb : res.getJsb().$name,
 								__id: !self.isNull(reverseBindMap) && !self.isNull(reverseBindMap[res.getId()]) && Object.keys(reverseBindMap[res.getId()]).length > 0 ? Object.keys(reverseBindMap[res.getId()])[0] : res.getId()
 							};
 						} else {
 							return {
-								__jso : res.getJsb().$name,
+								__jsb : res.getJsb().$name,
 								__id: res.getId()
 							};
 						}
@@ -2688,7 +2688,7 @@
 						// parse json object
 						var nobj = {};
 						for(var f in res){
-							nobj[f] = _substJsoInRpcResult(res[f]);
+							nobj[f] = _substComplexObjectInRpcResult(res[f]);
 						}
 						return nobj;
 					}
@@ -2696,17 +2696,17 @@
 					// parse array
 					var nobj = [];
 					for(var f in res){
-						nobj[f] = _substJsoInRpcResult(res[f]);
+						nobj[f] = _substComplexObjectInRpcResult(res[f]);
 					}
 					return nobj;
 				}
 				return res;
 			}
 			
-			return _substJsoInRpcResult(res);
+			return _substComplexObjectInRpcResult(res);
 		},
 		
-		injectJsoInRpcResult: function(res, callback){
+		injectComplexObjectInRpcResult: function(res, callback){
 			var self = this;
 			function iterateResult(obj){
 				// scan field names
@@ -2719,7 +2719,7 @@
 				if(fnCnt > 0){
 					for(var f in fNames ){
 						(function(fn){
-							self.injectJsoInRpcResult(obj[fn], function(r){
+							self.injectComplexObjectInRpcResult(obj[fn], function(r){
 								obj[fn] = r;
 								fNames[fn] = true;
 								for(var i in fNames){
@@ -2740,9 +2740,9 @@
 				}
 			}
 			if(this.isPlainObject(res) && !this.isBean(res)){
-				if(this.isString(res.__jso) && this.isString(res.__id)){
+				if(this.isString(res.__jsb) && this.isString(res.__id)){
 					// this is a server object reference
-					this.constructInstanceFromRemote(res.__jso, res.__id, function(fObj){
+					this.constructInstanceFromRemote(res.__jsb, res.__id, function(fObj){
 						if(callback){
 							callback(fObj);
 						}
@@ -3994,7 +3994,7 @@ JSB({
 				jsb: tJso.$name,
 				instance: this.$_bindKey,
 				proc: procName,
-				params: JSB().substJsoInRpcResult(params),
+				params: JSB().substComplexObjectInRpcResult(params),
 				sync: (sync ? true: false)
 			}, function(res){
 				var inst = this;
@@ -4006,7 +4006,7 @@ JSB({
 						callback.apply(inst, args);	
 					}
 				} else {
-					JSB().injectJsoInRpcResult(res, function(r){
+					JSB().injectComplexObjectInRpcResult(res, function(r){
 						args[0] = r;
 						if(callback){
 							self.jsb.putCallingContext(callCtx);
@@ -4126,7 +4126,7 @@ JSB({
 				callback = arg1;
 				session = arg2;
 			} else {
-				params = JSB().substJsoInRpcResult(arg1);
+				params = JSB().substComplexObjectInRpcResult(arg1);
 				callback = arg2;
 				session = arg3;
 			}
@@ -4135,7 +4135,7 @@ JSB({
 			var wrapCallback = (callback ? function(res){
 				var inst = this;
 				var args = arguments;
-				JSB().injectJsoInRpcResult(res, function(r){
+				JSB().injectComplexObjectInRpcResult(res, function(r){
 					args[0] = r;
 					self.jsb.putCallingContext(callCtx);
 					callback.apply(inst, args);
@@ -5136,7 +5136,7 @@ JSB({
 									if(cInst == self && proc == 'handleRpcResponse'){
 										doCall(params);
 									} else {
-										JSB().injectJsoInRpcResult(params, doCall);
+										JSB().injectComplexObjectInRpcResult(params, doCall);
 									}
 								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
 							}
@@ -5178,13 +5178,13 @@ JSB({
 		
 		performRpc: function(jsoName, instanceId, procName, params, rpcId){
 			var np = {};
-			$jsb.injectJsoInRpcResult(params, function(r){
+			$jsb.injectComplexObjectInRpcResult(params, function(r){
 				np.res = r;
 			});
 			var ret = null, fail = null;
 			try {
 				var res = this.executeClientRpc(jsoName, instanceId, procName, np.res);
-				ret = $jsb.substJsoInRpcResult(res);
+				ret = $jsb.substComplexObjectInRpcResult(res);
 			} catch(e){
 				fail = e;
 				if($jsb.getLogger()){

@@ -19,7 +19,9 @@ import java.util.*;
 
 public class JsObject implements Serializable {
     private static final long serialVersionUID = 4595774280676767552L;
+    
     private JsObjectType objType;
+    
     private String dataStr;
     private long dataInt;
     private double dataDouble;
@@ -141,19 +143,33 @@ public class JsObject implements Serializable {
 
     public byte[] toByteArray() throws UnsupportedEncodingException {
         byte[] bArr = null;
-        if (this.getResultType() == JsObjectType.JSONARRAY) {
-            bArr = new byte[this.dataJsonArray.size()];
+        switch(this.getResultType()){
+        case JSONARRAY:
+        	bArr = new byte[this.dataJsonArray.size()];
             for (int i = 0; i < this.dataJsonArray.size(); i++) {
                 bArr[i] = (byte) this.dataJsonArray.get(i).getInt();
             }
-        } else if (this.getResultType() == JsObjectType.STRING) {
-            bArr = this.dataStr.getBytes();
-        } else if(this.getResultType() == JsObjectType.ARRAYBUFFER){
+        	break;
+        case STRING:
+        	 bArr = this.dataStr.getBytes();
+        	break;
+        case ARRAYBUFFER:
+        case UINT8ARRAY:
+        case UINT8CLAMPEDARRAY:
+        case INT8ARRAY:
+        case UINT16ARRAY:
+        case INT16ARRAY:
+        case UINT32ARRAY:
+        case INT32ARRAY:
+        case FLOAT32ARRAY:
+        case FLOAT64ARRAY:
         	bArr = this.bytes;
-        } else {
+        	break;
+        default:
         	String str = this.toJS(false, true);
         	bArr = str.getBytes();
         }
+        
         return bArr;
     }
 
@@ -182,7 +198,7 @@ public class JsObject implements Serializable {
     public String toJS(boolean urlEncode) throws UnsupportedEncodingException {
         return this.toJS(urlEncode, false);
     }
-
+/*
     public String toJSOld(boolean urlEncode, boolean serializeFunctionAsString) throws UnsupportedEncodingException {
         String result = "";
         switch (this.objType) {
@@ -262,7 +278,7 @@ public class JsObject implements Serializable {
         }
         return result;
     }
-
+*/
 
     public String toJS(boolean urlEncode, boolean serializeFunctionAsString) throws UnsupportedEncodingException {
         String newJson = toJS(this, urlEncode, serializeFunctionAsString);
@@ -276,7 +292,18 @@ public class JsObject implements Serializable {
     public enum JsObjectType implements Serializable {
         JSONOBJECT,
         JSONARRAY,
+        
         ARRAYBUFFER,
+        UINT8ARRAY,
+        UINT8CLAMPEDARRAY,
+        INT8ARRAY,
+        UINT16ARRAY,
+        INT16ARRAY,
+        UINT32ARRAY,
+        INT32ARRAY,
+        FLOAT32ARRAY,
+        FLOAT64ARRAY,
+        
         FUNCTION,
         INTEGER,
         STRING,
@@ -372,6 +399,24 @@ public class JsObject implements Serializable {
                 case BOOLEAN:
                     this.value(jsObject.getBoolean());
                     break;
+                case ARRAYBUFFER:
+                case UINT8ARRAY:
+                case INT8ARRAY:
+                case UINT16ARRAY:
+                case INT16ARRAY:
+                case UINT32ARRAY:
+                case INT32ARRAY:
+                case FLOAT32ARRAY:
+                case FLOAT64ARRAY:
+                case UINT8CLAMPEDARRAY:
+                	this.beginArray();
+                    if (jsObject.bytes.length != 0) {
+                    	for(int i = 0; i < jsObject.bytes.length; i++){
+                    		this.value(jsObject.bytes[i]);
+                    	}
+                    }
+                    this.endArray();
+                	break;
                 case FUNCTION:
                     if (serializeFunctionAsString) {
                         String procStr = jsObject.getString();

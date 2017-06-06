@@ -18,6 +18,16 @@ import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
+import org.mozilla.javascript.typedarrays.NativeArrayBufferView;
+import org.mozilla.javascript.typedarrays.NativeFloat32Array;
+import org.mozilla.javascript.typedarrays.NativeFloat64Array;
+import org.mozilla.javascript.typedarrays.NativeInt16Array;
+import org.mozilla.javascript.typedarrays.NativeInt32Array;
+import org.mozilla.javascript.typedarrays.NativeInt8Array;
+import org.mozilla.javascript.typedarrays.NativeUint16Array;
+import org.mozilla.javascript.typedarrays.NativeUint32Array;
+import org.mozilla.javascript.typedarrays.NativeUint8Array;
+import org.mozilla.javascript.typedarrays.NativeUint8ClampedArray;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
@@ -66,13 +76,44 @@ public class JsObjectSerializerHelper {
     	return jObj;
     }
 
+    public JsObject serializeArrayBufferView(NativeArrayBufferView arr) throws PlatformException {
+    	JsObjectType t = JsObjectType.NULL;
+    	if(arr instanceof NativeUint8Array){
+    		t = JsObjectType.UINT8ARRAY;
+    	} else if(arr instanceof NativeInt8Array){
+    		t = JsObjectType.INT8ARRAY;
+    	} else if(arr instanceof NativeUint16Array){
+    		t = JsObjectType.UINT16ARRAY;
+    	} else if(arr instanceof NativeInt16Array){
+    		t = JsObjectType.INT16ARRAY;
+    	} else if(arr instanceof NativeUint32Array){
+    		t = JsObjectType.UINT32ARRAY;
+    	} else if(arr instanceof NativeInt32Array){
+    		t = JsObjectType.INT32ARRAY;
+    	} else if(arr instanceof NativeFloat32Array){
+    		t = JsObjectType.FLOAT32ARRAY;
+    	} else if(arr instanceof NativeFloat64Array){
+    		t = JsObjectType.FLOAT64ARRAY;
+    	} else if(arr instanceof NativeUint8ClampedArray){
+    		t = JsObjectType.UINT8CLAMPEDARRAY;
+    	} else {
+    		LoggerFactory.getLogger(this.getClass()).error(String.format("Unexpected object faced due to serialization to JsObject: '%s'", arr.getClass().getName()));
+    	}
+    	
+    	JsObject jObj = new JsObject(t);
+    	jObj.setBytes(arr.getBuffer().getBuffer());
+    	return jObj;
+    }
+
     public JsObject serializeNative(Object obj) throws PlatformException {
         JsObject retObj = null;
         if (obj == null) {
             retObj = new JsObject(JsObjectType.NULL);
         } else if (obj instanceof NativeArrayBuffer) {
             retObj = this.serializeArrayBuffer((NativeArrayBuffer) obj);
-        } else if (obj instanceof NativeJavaArray) {
+        } else if (obj instanceof NativeArrayBufferView) {
+            retObj = this.serializeArrayBufferView((NativeArrayBufferView) obj);
+        }else if (obj instanceof NativeJavaArray) {
             retObj = this.serializeJavaArray((NativeJavaArray) obj);
         } else if (obj instanceof NativeJavaObject) {
             retObj = this.serializeJavaObject((NativeJavaObject) obj);
