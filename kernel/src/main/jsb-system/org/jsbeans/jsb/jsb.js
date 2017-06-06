@@ -318,6 +318,10 @@
 			return this.getRepository().get(this.$name).cfg.$_fullPath;
 		},
 		
+		getFullPathFile: function(){
+			return this.getRepository().get(this.$name).cfg.$_fullPathFile;
+		},
+		
 		constructClientJSB: function(name){
 			var jsb = this.get(name);
 			if(this.isClient()){
@@ -2089,9 +2093,10 @@
 						var f = self._cls;
 						var o = new f();
 						
-						if(entry.$globalize){
-							if(self.isString(entry.$globalize)){
-								self.deploy(entry.$globalize, o, true);
+						var globalize = entry.$globalize || self.$globalize;
+						if(globalize){
+							if(self.isString(globalize)){
+								self.deploy(globalize, o, true);
 							} else {
 								self.deploy(self.$name, o);
 							}
