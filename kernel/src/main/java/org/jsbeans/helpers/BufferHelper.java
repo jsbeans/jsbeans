@@ -2,6 +2,8 @@ package org.jsbeans.helpers;
 
 import java.io.UnsupportedEncodingException;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.typedarrays.NativeArrayBuffer;
@@ -34,6 +36,17 @@ public class BufferHelper {
 	
 	public static byte[] toByteArray(NativeArrayBuffer arr){
 		return arr.getBuffer();
+	}
+	
+	public static String base64Encode(NativeArrayBuffer arr){
+		return DatatypeConverter.printBase64Binary(arr.getBuffer());
+	}
+	
+	public static NativeArrayBuffer base64Decode(String base64){
+		byte[] bArr = DatatypeConverter.parseBase64Binary(base64);
+		NativeArrayBuffer nab = new NativeArrayBuffer(bArr.length);
+		copyToArrayBuffer(bArr, 0, nab, 0, bArr.length);
+		return nab;
 	}
 
 }

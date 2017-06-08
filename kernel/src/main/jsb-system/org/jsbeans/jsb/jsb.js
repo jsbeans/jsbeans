@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.3 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.6.4 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
 (function(){
 	
 	function JSB(cfg){
@@ -200,6 +200,7 @@
 				'JSB.AjaxProvider': true,
 				'JSB.Repository': true,
 				'JSB.Profiler': true,
+				'JSB.Base64': true,
 				'JSB.MessageBus': true
 			};
 			return sysMap[name] ? true: false;
@@ -1071,6 +1072,58 @@
 			return Object.prototype.toString.call(obj) === "[object Array]";
 		},
 		
+		isArrayBuffer: function(obj){
+			return Object.prototype.toString.call(obj) === "[object ArrayBuffer]";
+		},
+		
+		isArrayBufferView: function(obj){
+			return this.isInt8Array(obj)
+			|| this.isUint8Array(obj)
+			|| this.isUint8ClampedArray(obj)
+			|| this.isInt16Array(obj)
+			|| this.isUint16Array(obj)
+			|| this.isInt32Array(obj)
+			|| this.isUint32Array(obj)
+			|| this.isFloat32Array(obj)
+			|| this.isFloat64Array(obj);
+		},
+		
+		isInt8Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Int8Array]";
+		},
+		
+		isUint8Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Uint8Array]";
+		},
+
+		isUint8ClampedArray: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Uint8ClampedArray]";
+		},
+
+		isInt16Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Int16Array]";
+		},
+		
+		isUint16Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Uint16Array]";
+		},
+
+		isInt32Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Int32Array]";
+		},
+		
+		isUint32Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Uint32Array]";
+		},
+
+		isFloat32Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Float32Array]";
+		},
+
+		isFloat64Array: function(obj){
+			return Object.prototype.toString.call(obj) === "[object Float64Array]";
+		},
+
 		isString: function(obj){
 			return Object.prototype.toString.call(obj) === "[object String]";
 		},
@@ -1166,6 +1219,73 @@
 			var parentJso = this.get(this.$parent);
 			return parentJso.getSubclassOfDistance(str, deep + 1);
 		},
+		
+		isEqual: function(b1, b2){
+			if(b1 == b2){
+				return true;
+			}
+			if(Object.prototype.toString.call(b1) != Object.prototype.toString.call(b2)){
+				return false;
+			}
+			if(this.isString(b1) || this.isNumber(b1) || this.isBoolean(b1)){
+				return b1 == b2;
+			} else if(this.isArrayBuffer(b1) || this.isArrayBufferView(b1)){
+				if(true/*this.isClient()*/){
+					if(this.isArrayBufferView(b1)){
+						b1 = b1.buffer;
+					}
+					if(this.isArrayBufferView(b2)){
+						b2 = b2.buffer;
+					}
+					if(b1.byteLength != b2.byteLength){
+						return false;
+					}
+					var arr1 = new Uint8Array(b1);
+					var arr2 = new Uint8Array(b2);
+					for(var i = 0; i < arr1.length; i++){
+						if(arr1[i] != arr2[i]){
+							return false;
+						}
+					}
+					return true;
+				} else {
+					// TODO: call server-side routine to increase performance
+				}
+			} else if(this.isArray(b1)){
+				if(b1.length != b2.length){
+					return false;
+				}
+				if(true/*this.isClient()*/){
+					for(var i = 0; i < b1.length; i++){
+						if(!this.isEqual(b1[i], b2[i])){
+							return false;
+						}
+					}
+					return true;
+				} else {
+					// TODO: call server-side routine to increase performance
+				}
+			} else if(this.isBean(b1) || this.isBean(b2)){
+				return b1 == b2;
+			} else if(this.isObject(b1)){
+				if(Object.keys(b1).length != Object.keys(b2).length){
+					return false;
+				}
+				for(var key in b1){
+					if(b2[key] == undefined){
+						return false;
+					}
+					if(!this.isEqual(b1[key], b2[key])){
+						return false;
+					}
+				}
+				return true;
+			} else {
+				return b1 == b2;
+			}
+		},
+		
+		
 		
 		stringify: function(obj, callback, name){
 			// TODO: replace implementation to avoid cyclic references
@@ -2670,16 +2790,67 @@
 			var isServer = this.isServer();
 			function _substComplexObjectInRpcResult(res){
 				if(JSB().isPlainObject(res)){
-					// check if res is jso
-					if(JSB().isBean(res)){
+					if(JSB().isArrayBuffer(res)){
+						return {
+							__type: 'ArrayBuffer',
+							__data: JSB().Base64.encode(res)
+						};
+					} else if(JSB().isInt8Array(res)){
+						return {
+							__type: 'Int8Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isUint8Array(res)){
+						return {
+							__type: 'Uint8Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isUint8ClampedArray(res)){
+						return {
+							__type: 'Uint8ClampedArray',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isInt16Array(res)){
+						return {
+							__type: 'Int16Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isUint16Array(res)){
+						return {
+							__type: 'Uint16Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isInt32Array(res)){
+						return {
+							__type: 'Int32Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isUint32Array(res)){
+						return {
+							__type: 'Uint32Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isFloat32Array(res)){
+						return {
+							__type: 'Float32Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isFloat64Array(res)){
+						return {
+							__type: 'Float64Array',
+							__data: JSB().Base64.encode(res.buffer)
+						};
+					} else if(JSB().isBean(res)){
 						// encode jso object
 						if(isServer){
 							return {
+								__type: 'Bean',
 								__jsb : res.getJsb().$name,
 								__id: !self.isNull(reverseBindMap) && !self.isNull(reverseBindMap[res.getId()]) && Object.keys(reverseBindMap[res.getId()]).length > 0 ? Object.keys(reverseBindMap[res.getId()])[0] : res.getId()
 							};
 						} else {
 							return {
+								__type: 'Bean',
 								__jsb : res.getJsb().$name,
 								__id: res.getId()
 							};
@@ -2740,13 +2911,53 @@
 				}
 			}
 			if(this.isPlainObject(res) && !this.isBean(res)){
-				if(this.isString(res.__jsb) && this.isString(res.__id)){
+				if(res.__type && res.__type == 'Bean' && this.isString(res.__jsb) && this.isString(res.__id)){
 					// this is a server object reference
 					this.constructInstanceFromRemote(res.__jsb, res.__id, function(fObj){
 						if(callback){
 							callback(fObj);
 						}
 					});
+				} else if(res.__type && res.__type == 'ArrayBuffer'){
+					if(callback){
+						callback(JSB().Base64.decode(res.__data));
+					} 
+				} else if(res.__type && res.__type == 'Int8Array'){
+					if(callback){
+						callback(new Int8Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Uint8Array'){
+					if(callback){
+						callback(new Uint8Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Uint8ClampedArray'){
+					if(callback){
+						callback(new Uint8ClampedArray(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Int16Array'){
+					if(callback){
+						callback(new Int16Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Uint16Array'){
+					if(callback){
+						callback(new Uint16Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Int32Array'){
+					if(callback){
+						callback(new Int32Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Uint32Array'){
+					if(callback){
+						callback(new Uint32Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Float32Array'){
+					if(callback){
+						callback(new Float32Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Float64Array'){
+					if(callback){
+						callback(new Float64Array(JSB().Base64.decode(res.__data)));
+					} 
 				} else {
 					// parse json object
 					iterateResult(res);
@@ -2947,8 +3158,6 @@
 			return "(function(){ var procToCall = JSB().callbackAttrs.idMap[&#39;"+id+"&#39;]; if(procToCall){ return procToCall.apply(this, arguments); } })";
 		},
 		
-		
-		
 		/* JSB reflection methods */
 		
 		getMethods: function(own){
@@ -3054,6 +3263,7 @@
 				Bridge.removeThreadLocal(key);
 			}
 		});
+		
 	}
 	
 	
@@ -4563,6 +4773,62 @@ JSB({
 
 });
 
+JSB({
+	$name: 'JSB.Base64',
+	$singleton: true,
+	$constructor: function(){
+		JSB().addLibraryScope('Base64', this);
+	},
+	
+	$client: {
+		encode: function(bytes){
+			var buffer = null;
+			if(bytes instanceof ArrayBuffer){
+				buffer = new Uint8Array(bytes);
+			} else if(bytes instanceof Uint8Array){
+				buffer = bytes;
+			} else if(bytes && bytes.buffer){
+				buffer = new Uint8Array(bytes.buffer);
+			} else {
+				throw 'Error';
+			}
+			var len = buffer.byteLength;
+			var binary = '';
+		    for (var i = 0; i < len; i++) {
+		        binary += String.fromCharCode(buffer[i]);
+		    }
+		    return JSB().Window.btoa( binary );
+		},
+		decode: function(base64){
+			var binary =  JSB().Window.atob(base64);
+		    var len = binary.length;
+		    var bytes = new Uint8Array( len );
+		    for (var i = 0; i < len; i++)        {
+		        bytes[i] = binary.charCodeAt(i);
+		    }
+		    return bytes.buffer;
+		}
+	},
+	
+	$server: {
+		$require: ['java:org.jsbeans.helpers.BufferHelper'],
+		encode: function(bytes){
+			var buffer = null;
+			if(bytes instanceof ArrayBuffer){
+				buffer = bytes;
+			} else if(bytes && bytes.buffer){
+				buffer = bytes.buffer;
+			} else {
+				throw 'Error';
+			}
+			return '' + BufferHelper.base64Encode(buffer);
+		},
+		
+		decode: function(str){
+			return BufferHelper.base64Decode(str);
+		}
+	}
+});
 
 JSB({
 	$name: 'JSB.Locker',
