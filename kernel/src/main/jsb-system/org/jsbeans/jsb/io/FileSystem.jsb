@@ -279,6 +279,10 @@
 		    return Files.readSymbolicLink(this._resolvePath(path)).toString();
 		},
 		
+		createDirectory: function(path){
+			Files.createDirectory(Paths.get(path));
+		},
+		
 		remove: function(path) {
 		    var nioPath = this._resolvePath(path);
 
@@ -309,12 +313,10 @@
 		},
 
 		
-		getDirectory: function(path) {
+		getParentDirectory: function(path) {
 		    return (Paths.get(path).getParent() || Paths.get('.')).toString();
 		},
 
-
-		
 		isDirectory: function(path) {
 		    return Files.isDirectory(this._resolvePath(path));
 		},
