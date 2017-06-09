@@ -4,6 +4,10 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
+			
+			if(opts && opts.cssClass){
+				this.addClass(opts.cssClass);
+			}
 		},
 		
 		setData: function(data){

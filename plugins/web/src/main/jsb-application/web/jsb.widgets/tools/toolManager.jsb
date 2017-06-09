@@ -172,6 +172,7 @@
 			var self = this;
 			var scope = this.resolveScope(params.scope);
 			var toolEntry = this.tools[params.id];
+			toolEntry.toolOpts = params.toolOpts;
 
 			if(JSB().isNull(toolEntry)){
 				return;
