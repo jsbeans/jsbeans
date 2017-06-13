@@ -162,7 +162,7 @@
 			options = options === undefined ? {} : this._checkOptions(options);
 			options.write = true;
 			options.read = false;
-			options.binary = data instanceof ArrayBuffer;
+			options.binary = $jsb.isArrayBuffer(data);
 			var stream = this.open(path, options);
 			try {
 				stream.write(data);

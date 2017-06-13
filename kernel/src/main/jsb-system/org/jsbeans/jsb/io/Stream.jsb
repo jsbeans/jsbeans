@@ -131,7 +131,7 @@
 			var arrayBuffer = null;
 			if($jsb.isString(obj)){
 				arrayBuffer = BufferHelper.toArrayBuffer(obj);
-			} else if(obj instanceof ArrayBuffer){
+			} else if($jsb.isArrayBuffer(obj)){
 				arrayBuffer = obj;
 			} else {
 				throw 'Expected an ArrayBuffer or string as first argument';
