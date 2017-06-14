@@ -12,9 +12,6 @@ package org.jsbeans;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.core.util.StatusPrinter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
@@ -29,9 +26,16 @@ import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.net.SocketException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+//import ch.qos.logback.classic.Level;
+//import ch.qos.logback.classic.LoggerContext;
+//import ch.qos.logback.core.util.StatusPrinter;
+//import org.slf4j.ILoggerFactory;
 
 public class Core {
 
@@ -69,23 +73,25 @@ public class Core {
     private static void configureLogger() {
         // set platform log level to debug
         if (DEBUG) {
-            Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
-            if (logger instanceof ch.qos.logback.classic.Logger) {
-                ch.qos.logback.classic.Logger logbackLogger = ((ch.qos.logback.classic.Logger) logger);
-                if (logbackLogger.getLevel() != null && logbackLogger.getLevel().toInt() > Level.DEBUG.toInt()) {
-                    logbackLogger.setLevel(Level.DEBUG);
-                }
-            }
+//            Logger logger = LoggerFactory.getLogger(Core.PLATFORM_PACKAGE);
+//            if (logger instanceof ch.qos.logback.classic.Logger) {
+//                ch.qos.logback.classic.Logger logbackLogger = ((ch.qos.logback.classic.Logger) logger);
+//                if (logbackLogger.getLevel() != null && logbackLogger.getLevel().toInt() > Level.DEBUG.toInt()) {
+//                    logbackLogger.setLevel(Level.DEBUG);
+//                }
+//            }
         }
 
-        ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
-        if (loggerFactory instanceof LoggerContext) {
-            ch.qos.logback.classic.BasicConfigurator.configureDefaultContext();
+        org.apache.log4j.BasicConfigurator.configure();
 
-            // print Logback internal state
-            LoggerContext logbackLoggerContext = (LoggerContext) loggerFactory;
-            StatusPrinter.printIfErrorsOccured(logbackLoggerContext);
-        }
+//        ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
+//        if (loggerFactory instanceof LoggerContext) {
+//            ch.qos.logback.classic.BasicConfigurator.configureDefaultContext();
+//
+//            // print Logback internal state
+//            LoggerContext logbackLoggerContext = (LoggerContext) loggerFactory;
+//            StatusPrinter.printIfErrorsOccured(logbackLoggerContext);
+//        }
     }
 
     public static Config getConfig() {
