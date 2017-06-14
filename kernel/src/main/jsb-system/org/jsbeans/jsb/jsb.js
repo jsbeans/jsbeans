@@ -1136,6 +1136,10 @@
 			return obj == null || obj == undefined;
 		},
 		
+		isDefined: function(obj){
+			return obj !== undefined;nul
+		},
+		
 		isInstanceOf: function(obj, cls){
 			if(!obj){
 				return false;

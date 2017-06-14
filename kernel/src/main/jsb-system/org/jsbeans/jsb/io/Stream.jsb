@@ -62,14 +62,14 @@
 		
 		available: function(){
 	        if ($jsb.isNull(this.input)) {
-	            throw "No input stream";
+	            throw new Error("No input stream");
 	        }
 	        return this.input.available();
 		},
 		
 		read: function(arg, from, to){
 	        if ($jsb.isNull(this.input)) {
-	            throw "No input stream";
+	            throw new Error("No input stream");
 	        }
 	        if(arg instanceof ArrayBuffer){
 	        	var arrayBuffer = arg;
@@ -102,7 +102,7 @@
 				to = to || byteArray.length;
 				return this.input.read(byteArray, from, to - from);
 	        } else if(!$jsb.isNull(arg)){
-	        	throw 'Unknown argument passed';
+	        	throw new Error('Unknown argument passed');
 	        } else {
 	        	if(!this.buffer || this.buffer.length < 4096){
 	        		this.buffer = Array.newInstance(Byte.TYPE, 4096);
@@ -134,7 +134,7 @@
 			} else if($jsb.isArrayBuffer(obj)){
 				arrayBuffer = obj;
 			} else {
-				throw 'Expected an ArrayBuffer or string as first argument';
+				throw new Error('Expected an ArrayBuffer or string as first argument');
 			}
 			from = from || 0;
 			to = to || arrayBuffer.byteLength;
@@ -144,7 +144,7 @@
 		
 		copy: function(output){
 			if(!$jsb.isInstanceOf(output, 'JSB.IO.Stream')){
-				throw 'Expected JSB.IO.Stream as first argument';
+				throw new Error('Expected JSB.IO.Stream as first argument');
 			}
 			var buffer = new ArrayBuffer(Math.max(4096, Math.min(this.available(), 65536)));
 			while(this.available()){
@@ -157,14 +157,14 @@
 		
 		flush: function(){
 			if($jsb.isNull(this.output)){
-				throw 'No output stream';
+				throw new Error('No output stream');
 			}
 			this.output.flush();
 		},
 		
 		skip: function(num){
 			if($jsb.isNull(this.input)){
-				throw 'No input stream';
+				throw new Error('No input stream');
 			}
 			return this.input.skip(num);
 		},

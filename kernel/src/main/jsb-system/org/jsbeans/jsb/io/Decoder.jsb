@@ -95,7 +95,7 @@
 		read: function(stream){
 			stream = stream || this.stream;
 			if(!stream){
-				throw 'Decoder.read works with streams only';
+				throw new Error('Decoder.read works with streams only');
 			}
 			return this.decode(stream);
 		},
@@ -103,7 +103,7 @@
 		readLine: function(includeNewline, stream){
 			stream = stream || this.stream;
 			if(!stream){
-				throw 'Decoder.readLine works with streams only';
+				throw new Error('Decoder.readLine works with streams only');
 			}
 			var newline = StringHelper.searchNewline(this.outputBuffer, this.mark);
 			while(stream.available() && newline < 0){
