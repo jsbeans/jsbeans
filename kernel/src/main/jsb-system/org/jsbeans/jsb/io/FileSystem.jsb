@@ -287,7 +287,8 @@
 		},
 		
 		createDirectory: function(path){
-			Files.createDirectory(Paths.get(path));
+		    if(!this.exists(path))
+			    Files.createDirectory(Paths.get(path));
 		},
 		
 		remove: function(path) {
