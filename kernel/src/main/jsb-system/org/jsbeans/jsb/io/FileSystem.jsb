@@ -33,7 +33,7 @@
 		
 		_resolvePath: function(path) {
 		    if($jsb.isNull(path) || !$jsb.isString(path)) {
-		        throw 'undefined path argument';
+		        throw new Error('Undefined path argument');
 		    }
 
 		    return Paths.get(path).toAbsolutePath().normalize();
@@ -80,7 +80,7 @@
 			            options.canonical = true;
 			            break;
 			        default:
-			            throw "unsupported mode argument: " + options;
+			            throw new Error('Unsupported mode argument: ' + options);
 			        }
 			    }
 			    return options;
@@ -94,13 +94,13 @@
 		            // if options is a mode string convert it to options object
 		            options = applyMode(options);
 		        } else {
-		            throw 'unsupported options argument';
+		            throw new Error('Unsupported options argument');
 		        }
 		    } else {
 		        // run sanity check on user-provided options object
 		        for (var key in options) {
 		            if (!(key in optionsMask)) {
-		                throw "unsupported option: " + key;
+		                throw new Error('unsupported option: ' + key);
 		            }
 		            options[key] = key == 'charset' ? String(options[key]) : Boolean(options[key]);
 		        }
@@ -116,7 +116,7 @@
 		    var {read, write, append, update, binary, charset} = options;
 
 		    if (read === true && write === true) {
-		        throw "Cannot open a file for reading and writing at the same time";
+		        throw new Error("Cannot open a file for reading and writing at the same time");
 		    }
 
 		    if (!read && !write && !append && !update) {
@@ -141,7 +141,7 @@
 		    	return new TextStream(read ? Files.newInputStream(nioPath, nioOptions) : Files.newOutputStream(nioPath, nioOptions), options);
 		    } else if (update) {
 		        // FIXME botic: check for invalid options before returning a stream? See issue #270
-		        throw "update not yet implemented";
+		        throw new Error("Update not implemented yet");
 		    }
 
 		},
@@ -162,7 +162,7 @@
 			options = options === undefined ? {} : this._checkOptions(options);
 			options.write = true;
 			options.read = false;
-			options.binary = data instanceof ArrayBuffer;
+			options.binary = $jsb.isArrayBuffer(data);
 			var stream = this.open(path, options);
 			try {
 				stream.write(data);
@@ -182,7 +182,7 @@
 		    opts = $jsb.merge({files: true, directories: true, links: true, recursive: false}, opts);
 
 		    if (!Files.isDirectory(nioPath)) {
-		        throw 'Expected directory: ' + path;
+		        throw new Error('Expected directory: ' + path);
 		    }
 
 		    var files = [];
@@ -237,9 +237,9 @@
 		    var targetPath = this._resolvePath(to);
 		    
 		    if (String(targetPath) == String(sourcePath)) {
-		        throw "Source and target files are equal";
+		        throw new Error("Source and target files are equal");
 		    } else if (String(targetPath).indexOf(String(sourcePath)) == 0) {
-		        throw "Target is a child of source";
+		        throw new Error("Target is a child of source");
 		    }
 		    
 		    if(Files.isDirectory(sourcePath)) {
@@ -262,6 +262,13 @@
 		    }
 		},
 		
+		move: function(from, to){
+			var sourcePath = this._resolvePath(from);
+		    var targetPath = this._resolvePath(to);
+		    
+		    Files.move(sourcePath, targetPath, [StandardCopyOption.REPLACE_EXISTING]);
+		},
+		
 		createSymbolicLink: function(existing, link) {
 		    return String(Files.createSymbolicLink(Paths.get(link), Paths.get(existing)));
 		},
@@ -273,10 +280,15 @@
 		readLink: function(path) {
 		    // Throws an exception if there is no symbolic link at the given path or the link cannot be read.
 		    if (!Files.isReadable(Paths.get(path))) {
-		        throw "Path " + path + " is not readable";
+		        throw new Error("Path " + path + " is not readable");
 		    }
 
 		    return Files.readSymbolicLink(this._resolvePath(path)).toString();
+		},
+		
+		createDirectory: function(path){
+		    if(!this.exists(path))
+			    Files.createDirectory(Paths.get(path));
 		},
 		
 		remove: function(path) {
@@ -308,13 +320,7 @@
 		    }
 		},
 
-		
-		getDirectory: function(path) {
-		    return (Paths.get(path).getParent() || Paths.get('.')).toString();
-		},
 
-
-		
 		isDirectory: function(path) {
 		    return Files.isDirectory(this._resolvePath(path));
 		},
@@ -334,8 +340,16 @@
 		isWritable: function(path) {
 		    return Files.isWritable(this._resolvePath(path));
 		},
+		
+		
+		getRelativePath: function(path, base){
+			return '' + this._resolvePath(base).relativize(this._resolvePath(path)).toString();
+		},
 
-
+		getParentDirectory: function(path) {
+		    return '' + (Paths.get(path).getParent() || Paths.get('.')).toString();
+		},
+		
 		getCurrentDirectory: function() {
 		    return '' + this._resolvePath('' + System.getProperty('user.dir')).toString() + this.separator;
 		},
