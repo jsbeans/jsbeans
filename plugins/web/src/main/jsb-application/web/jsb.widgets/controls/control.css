@@ -11,6 +11,7 @@
 	color: #000;
 	display: block;
 	line-height: normal;
+	position: relative;
 	
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;

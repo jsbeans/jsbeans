@@ -4786,21 +4786,25 @@ JSB({
 	
 	$client: {
 		encode: function(bytes){
+			var binary = '';
 			var buffer = null;
-			if(bytes instanceof ArrayBuffer){
+			if($jsb.isArrayBuffer(bytes)){
 				buffer = new Uint8Array(bytes);
-			} else if(bytes instanceof Uint8Array){
+			} else if($jsb.isUint8Array(bytes)){
 				buffer = bytes;
-			} else if(bytes && bytes.buffer){
+			} else if($jsb.isArrayBufferView(bytes)){
 				buffer = new Uint8Array(bytes.buffer);
+			} else if($jsb.isString(bytes)){
+				binary = bytes;
 			} else {
 				throw 'Error';
 			}
-			var len = buffer.byteLength;
-			var binary = '';
-		    for (var i = 0; i < len; i++) {
-		        binary += String.fromCharCode(buffer[i]);
-		    }
+			if(buffer){
+				var len = buffer.byteLength;
+			    for (var i = 0; i < len; i++) {
+			        binary += String.fromCharCode(buffer[i]);
+			    }
+			}
 		    return JSB().Window.btoa( binary );
 		},
 		decode: function(base64){
@@ -4818,10 +4822,12 @@ JSB({
 		$require: ['java:org.jsbeans.helpers.BufferHelper'],
 		encode: function(bytes){
 			var buffer = null;
-			if(bytes instanceof ArrayBuffer){
+			if($jsb.isArrayBuffer(bytes)){
 				buffer = bytes;
-			} else if(bytes && bytes.buffer){
+			} else if($jsb.isArrayBufferView(bytes)){
 				buffer = bytes.buffer;
+			} else if($jsb.isString(bytes)) {
+				buffer = bytes;
 			} else {
 				throw 'Error';
 			}

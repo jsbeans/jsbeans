@@ -83,6 +83,10 @@
 	width: 48.9%;
 }
 
+.dwpConsole .logWindow .canvas .logItem .itemSheet.resultSheet > .resultWrap {
+	word-wrap: break-word;
+}
+
 .dwpConsole .logWindow .canvas .logItem.error .itemSheet.resultSheet {
 	font-family: monospace;
 	font-size: small;

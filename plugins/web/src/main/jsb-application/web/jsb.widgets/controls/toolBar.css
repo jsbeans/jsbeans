@@ -5,12 +5,12 @@
 
 ._dwp_toolBar ul._dwp_tbContainer {
 	list-style-type: none;
-	background: -webkit-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: -moz-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: -o-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: -ms-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	border-bottom: 1px solid #BEBEBE;
+	background: -webkit-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
+    background: -moz-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
+    background: linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
+    background: -o-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
+    background: -ms-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
+    border-bottom: 1px solid #BEBEBE;
 	padding: 3px;
 }
 
@@ -72,7 +72,7 @@
 }
 
 ._dwp_toolBar ul._dwp_tbContainer li._dwp_toolBarSeparator {
-	width: 2px;
+	width: 1px;
 	height: 16px;
 	display: inline-block;
 	margin: 0 3px;
