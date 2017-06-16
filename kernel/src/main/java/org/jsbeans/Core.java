@@ -15,6 +15,7 @@ import akka.actor.ActorSystem;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.NetworkHelper;
 import org.jsbeans.helpers.ReflectionHelper;
@@ -22,7 +23,6 @@ import org.jsbeans.messages.Message;
 import org.jsbeans.plugin.PluginActivationException;
 import org.jsbeans.plugin.PluginActivator;
 import org.jsbeans.services.ServiceManagerService;
-import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +47,8 @@ public class Core {
     public static final String configPath = System.getProperty("jsbeans.configPath", DEBUG ? debugConfigPath : defaultConfigPath);
 
     static {
-        System.setProperty("logback.configurationFile", getConfigPath(configPath, "logback.xml"));
+        DOMConfigurator.configure(
+                Core.class.getResource("/" + getConfigPath(configPath, "log4j.xml")));
     }
 
     private static final Logger log = LoggerFactory.getLogger(Core.class);
@@ -81,8 +82,6 @@ public class Core {
 //                }
 //            }
         }
-
-        org.apache.log4j.BasicConfigurator.configure();
 
 //        ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
 //        if (loggerFactory instanceof LoggerContext) {

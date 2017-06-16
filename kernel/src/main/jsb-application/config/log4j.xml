@@ -4,7 +4,7 @@
 
     <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%16d [%-5p] (%c{1}:%L) - %m%n" />
+            <param name="ConversionPattern" value="%16d [%-5p] (%c:%L) - %m%n" />
         </layout>
     </appender>
 
@@ -70,6 +70,7 @@
     <logger name="net.sf.ehcache" >
         <level value="WARN"/>
     </logger>
+
     <logger name="org.eclipse.jetty" >
         <level value="WARN"/>
     </logger>
@@ -105,4 +106,5 @@
     </root>
 
 </log4j:configuration>
+
 

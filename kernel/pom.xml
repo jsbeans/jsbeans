@@ -79,6 +79,7 @@
                 </dependency>
         -->
         <dependency>
+            <!-- for search files by wildcard -->
             <groupId>com.larrymite</groupId>
             <artifactId>js-class-loader</artifactId>
             <version>1.2.7</version>
