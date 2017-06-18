@@ -1,4 +1,4 @@
-{
+({
 	$name: 'JSB.IO.TextStream',
 	$parent: 'JSB.IO.Stream',
 	
@@ -65,4 +65,4 @@
 			return this.write(str + this.options.newline);
 		}
 	}
-}
+})

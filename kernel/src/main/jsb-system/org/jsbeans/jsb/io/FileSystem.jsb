@@ -1,4 +1,4 @@
-{
+({
 	$name: 'JSB.IO.FileSystem',
 	$singleton: true,
 	$globalize: 'FileSystem',
@@ -360,4 +360,4 @@
 
 
 	}
-}
+})

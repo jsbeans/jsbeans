@@ -661,6 +661,10 @@
 			}
 			node.treeNode = curTreeNode;
 			
+			node.getElement().dblclick(function(){
+				$this.publish('Workspace.Explorer.nodeOpen', node);
+			});
+			
 			node.getElement().draggable({
 				start: function(evt, ui){
 					$this.tree.setOption('allowHover', false);

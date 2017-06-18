@@ -3,3 +3,54 @@
 .workspaceBrowser {
 	background: #fff;
 }
+
+.workspaceBrowser > ._dwp_tabview {}
+
+.workspaceBrowser > ._dwp_tabview > ul._dwp_tabPane {
+	height: 50px;
+	border: none;
+    background: -webkit-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #e6e6e6 100%);
+    background: -moz-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #e6e6e6 100%);
+    background: linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #e6e6e6 100%);
+    background: -o-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #e6e6e6 100%);
+    background: -ms-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #e6e6e6 100%);
+    border-bottom: 1px solid #CCC;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+    padding-right: 10px;
+}
+
+.workspaceBrowser > ._dwp_tabview > ul._dwp_tabPane > li._dwp_tab {
+	height: 50px;
+    font-size: 20px;
+    border-radius: 0;
+	margin-top: -1px;
+    margin-left: -1px;
+    background: -webkit-linear-gradient(top, #EFEDEE 0%, #efedee 50%, #e3e3e3 50%, #DAD7D7 100%);
+    background: -moz-linear-gradient(top, #EFEDEE 0%, #efedee 50%, #e3e3e3 50%, #DAD7D7 100%);
+    background: linear-gradient(top, #EFEDEE 0%, #efedee 50%, #e3e3e3 50%, #DAD7D7 100%);
+    background: -o-linear-gradient(top, #EFEDEE 0%, #efedee 50%, #e3e3e3 50%, #DAD7D7 100%);
+    background: -ms-linear-gradient(top, #EFEDEE 0%, #efedee 50%, #e3e3e3 50%, #DAD7D7 100%);
+    box-sizing: border-box;
+    padding: 10px 10px 0 14px;
+    min-width: 20px;
+    border: 1px solid #ccc;
+    border-top: none;
+    float: right;
+}
+
+.workspaceBrowser > ._dwp_tabview > ul._dwp_tabPane > li._dwp_tab:hover,
+.workspaceBrowser > ._dwp_tabview > ul._dwp_tabPane > li._dwp_tab.active {
+	background: -webkit-linear-gradient(top, #F1F1F1 0%, #F3F3F3 50%, #ECECEC 50%, #FFFFFF 100%) !important;
+    background: -moz-linear-gradient(top, #F1F1F1 0%, #F3F3F3 50%, #ECECEC 50%, #FFFFFF 100%) !important;
+    background: linear-gradient(top, #F1F1F1 0%, #F3F3F3 50%, #ECECEC 50%, #FFFFFF 100%) !important;
+    background: -o-linear-gradient(top, #F1F1F1 0%, #F3F3F3 50%, #ECECEC 50%, #FFFFFF 100%) !important;
+    background: -ms-linear-gradient(top, #F1F1F1 0%, #F3F3F3 50%, #ECECEC 50%, #FFFFFF 100%) !important;
+}
+
+.workspaceBrowser > ._dwp_tabview > ul._dwp_tabPane > li._dwp_tab.active {
+    border-left: 1px solid #CACACA !important;
+    border-right: 1px solid #CACACA !important;
+    border-bottom: 1px solid rgb(255, 255, 255);
+}
