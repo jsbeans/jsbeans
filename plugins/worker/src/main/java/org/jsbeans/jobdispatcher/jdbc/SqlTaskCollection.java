@@ -3,6 +3,7 @@ package org.jsbeans.jobdispatcher.jdbc;
 
 import org.jsbeans.jobdispatcher.TaskCollection;
 import org.jsbeans.jobdispatcher.TaskDescriptor;
+import org.jsbeans.jobdispatcher.TaskRegistry;
 import org.jsbeans.jobdispatcher.TaskRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +33,16 @@ public class SqlTaskCollection implements TaskCollection {
                     ");\n";
         }
 
-        /** SQL insert query with three parametrized string arguments (task_id, task_body, task_state)
+        /** SQL select query with three columns (task_id, task_state, task_body)
+         * */
+        public String getSelectTaskQuery() {
+            return "SELECT task_id, task_state, task_body FROM tasks";
+        }
+
+        /** SQL insert query with three parametrized string arguments (task_id, task_state, task_body)
          * */
         public String getInsertTaskQuery() {
-            return "INSERT INTO tasks(task_id, task_body, task_state) VALUES (?,?,?)";
+            return "INSERT INTO tasks(task_id, task_state, task_body) VALUES (?,?,?)";
         }
 
         /**
@@ -50,15 +57,13 @@ public class SqlTaskCollection implements TaskCollection {
     private static final SQLConfig defaultSQLConfig = new SQLConfig() {};
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final TaskRegistry.State state;
     private final String jdbcURL;
     private final Properties props;
     private final SQLConfig sqlConfig;
 
-    public SqlTaskCollection(String jdbcURL, Properties props){
-        this(jdbcURL, props, null);
-    }
-
-    public SqlTaskCollection(String jdbcURL, Properties props, SQLConfig sqlConfig){
+    public SqlTaskCollection(TaskRegistry.State state, String jdbcURL, Properties props, SQLConfig sqlConfig){
+        this.state = state;
         this.jdbcURL = jdbcURL;
         this.props = props;
         this.sqlConfig = sqlConfig != null ? sqlConfig : defaultSQLConfig;
@@ -78,6 +83,7 @@ public class SqlTaskCollection implements TaskCollection {
     @Override
     public TaskDescriptor add(TaskDescriptor task) {
         try (Connection connection = DriverManager.getConnection(jdbcURL, props)) {
+            connection.setAutoCommit(false);
             try (PreparedStatement st = connection.prepareStatement(sqlConfig.getInsertTaskQuery())) {
                 st.setString(1, task.getId());
                 st.setString(2, task.getState());
@@ -91,6 +97,7 @@ public class SqlTaskCollection implements TaskCollection {
                 if (st.executeUpdate() != 1) {
                     throw new RuntimeException("Task not stored");
                 }
+                connection.commit();
                 return task;
             }
         } catch (SQLException e) {
@@ -102,8 +109,9 @@ public class SqlTaskCollection implements TaskCollection {
     public Stream<TaskDescriptor> lookup(TaskRequest request) {
         try {
             Connection connection = DriverManager.getConnection(jdbcURL, props);
-            Iterator<TaskDescriptor> iterator = new TaskResultSetIterator(connection, true);
+            Iterator<TaskDescriptor> iterator = new TaskResultSetIterator(connection, true, sqlConfig);
             return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false)
+                    .filter(task -> state.toString().equals(task.getState()))
                     .filter(task -> request.getMatcher().compare(task, request.getTemplate()) == 0)
                     .sorted(request.getOrder());
         } catch (SQLException e) {

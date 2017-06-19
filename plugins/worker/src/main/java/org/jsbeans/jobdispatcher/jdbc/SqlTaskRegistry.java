@@ -23,6 +23,6 @@ public class SqlTaskRegistry extends BaseTaskRegistry<SqlTaskCollection> {
 
     @Override
     protected SqlTaskCollection createFileTaskCollection(State state) {
-        return new SqlTaskCollection(jdbcURL, props, sqlConfig);
+        return new SqlTaskCollection(state, jdbcURL, props, sqlConfig);
     }
 }

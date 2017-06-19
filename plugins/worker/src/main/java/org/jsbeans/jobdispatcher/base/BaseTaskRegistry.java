@@ -31,8 +31,7 @@ public abstract class BaseTaskRegistry<TypedTaskCollection extends TaskCollectio
     protected abstract TypedTaskCollection createFileTaskCollection(State state);
 
     private void repairWorkingAndLockedToQueued() {
-        int repaired = Arrays.stream(State.values())
-                .filter(state -> state.equals(State.Working) || state.equals(State.Locked))
+        int repaired = Stream.of(State.Working, State.Locked)
                 .flatMap(state -> {
                     return lookup(TaskRequest.anyTask(), state)
                             .map(task -> changeState(task, state, State.Queued));

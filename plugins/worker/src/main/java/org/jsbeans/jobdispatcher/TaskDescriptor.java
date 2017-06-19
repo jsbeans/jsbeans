@@ -33,19 +33,24 @@ public class TaskDescriptor {
         }
     }
 
+    public String getValue(String key) {
+        String val = values.get(key);
+        return val != null && !val.isEmpty() ? val : null;
+    }
+
     public String getId() {
         if (!values.containsKey(PROP_ID)) {
             throw new IllegalArgumentException("Task id is not defined");
         }
-        return values.get(PROP_ID);
+        return getValue(PROP_ID);
     }
 
     public String getState() {
-        return values.get(PROP_STATE);
+        return getValue(PROP_STATE);
     }
 
     public String getSharedResource() {
-        return values.get(PROP_SHARED_RESOURCE);
+        return getValue(PROP_SHARED_RESOURCE);
     }
 
     public String get(String prop) {
@@ -65,13 +70,13 @@ public class TaskDescriptor {
 
     public int getPriority() {
         return Integer.parseInt(
-                Optional.ofNullable(values.get(PROP_PRIORITY))
+                Optional.ofNullable(getValue(PROP_PRIORITY))
                         .orElse("0"));
     }
 
     public long getStartTimestamp() {
         return Long.parseLong(
-                Optional.ofNullable(values.get(PROP_START_TIMESTAMP))
+                Optional.ofNullable(getValue(PROP_START_TIMESTAMP))
                         .orElse("0"));
     }
 
@@ -95,12 +100,12 @@ public class TaskDescriptor {
     @Override
     public String toString() {
         return "[" + values.size() + "]" +
-                "{" + (get(PROP_ID) != null ? PROP_ID + "=" + get(PROP_ID) : values.keySet().stream().reduce("", (x,k)->x + "," + "=" + values.get(k))) + "}";
+                "{" + (get(PROP_ID) != null ? PROP_ID + "=" + get(PROP_ID) : values.keySet().stream().reduce("", (x,k)->x + "," + "=" + getValue(k))) + "}";
     }
 
     public static int checkTemplateMatched(TaskDescriptor resouce, TaskDescriptor template) {
         for (Map.Entry<String, String> e: template.values.entrySet()) {
-            Object value = resouce.values.get(e.getKey());
+            Object value = resouce.getValue(e.getKey());
             if (e.getValue() != value && !e.getValue().equals(value)) {
                 return -1;
             }
