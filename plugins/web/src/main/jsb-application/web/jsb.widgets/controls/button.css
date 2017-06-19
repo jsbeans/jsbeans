@@ -48,11 +48,12 @@
 	opacity: 1;
 }
 
-._dwp_button > ._dwp_caption {}
+._dwp_button > ._dwp_caption {
+	display: inline-block;
+}
 
 ._dwp_button > ._dwp_separator {
 	display: inline-block;
-	width: 4px;
 	height: 100%;
 }
 

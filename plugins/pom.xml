@@ -26,8 +26,10 @@
 
     <modules>
         <module>web</module>
+        <module>workspace</module>
         <module>textextractors</module>
         <module>worker</module>
+        <module>datacube</module>
 
         <module>empty</module>
     </modules>

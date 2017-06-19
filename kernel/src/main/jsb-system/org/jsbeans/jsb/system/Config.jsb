@@ -1,8 +1,8 @@
 {
-	$name:'Config',
+	$name:'JSB.System.Config',
 	$server: {
 		$singleton: true,
-		$globalize: true,
+		$globalize: 'Config',
 		$constructor: function(){
 			JSB().setServerVersion(this.get('build.version'));
 		},

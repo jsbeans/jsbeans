@@ -1,0 +1,16 @@
+@CHARSET "UTF-8";
+
+.workspaceExplorerNode.uploadNode {}
+
+.workspaceExplorerNode.uploadNode > .icon {
+	 background: url('../images/loading.gif');
+}
+
+.workspaceExplorerNode.uploadNode.error > .icon {
+	background: url('../images/icons16.png');
+	background-position: -112px -16px;
+}
+
+.workspaceExplorerNode.uploadNode > .title {
+	color: #777;
+}
