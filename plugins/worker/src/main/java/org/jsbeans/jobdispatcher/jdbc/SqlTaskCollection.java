@@ -111,7 +111,7 @@ public class SqlTaskCollection implements TaskCollection {
             Connection connection = DriverManager.getConnection(jdbcURL, props);
             Iterator<TaskDescriptor> iterator = new TaskResultSetIterator(connection, true, sqlConfig);
             return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false)
-                    .filter(task -> state.toString().equals(task.getState()))
+                    .filter(task -> task.getState() == null || state.toString().equals(task.getState()))
                     .filter(task -> request.getMatcher().compare(task, request.getTemplate()) == 0)
                     .sorted(request.getOrder());
         } catch (SQLException e) {
