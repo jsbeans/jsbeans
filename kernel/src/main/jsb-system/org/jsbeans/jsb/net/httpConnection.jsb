@@ -107,7 +107,7 @@
                 } else if(JSB.isArray(data)) {
                     this.HttpHelper.streamWriteBytes(outputStream, bytes); // TODO:
                 } else {
-                    throw Exception('Unsupported data type ' + typeof data);
+                    throw new Error('Unsupported data type ' + typeof data);
                 }
 
             } catch (e) {
