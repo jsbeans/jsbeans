@@ -1,6 +1,7 @@
 {
 	$name:'RDB',
 	$server: {
+		$require: 'JSB.System.Kernel',
 		$singleton: true,
 		$globalize: true,
 		

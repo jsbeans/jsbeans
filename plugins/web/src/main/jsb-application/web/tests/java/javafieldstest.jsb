@@ -1,6 +1,6 @@
 [{
 	$name: 'JSB.Tests.JavaFieldsTest1',
-	$require: ['Kernel'],
+	$require: ['JSB.System.Kernel'],
 	$client: {
 	},
 	$server: {

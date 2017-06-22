@@ -202,6 +202,8 @@
 	},
 	
 	$server: {
+		$require: 'JSB.System.Kernel',
+		
 		onSyncCheck: function(){
 			this.user = this.getCurrentUser();
 		},

@@ -12,11 +12,10 @@
 			this.loadCss('FolderNode.css');
 			this.addClass('folderNode');
 			
-			this.icon = this.$('<div class="icon"></div>');
-			this.append(this.icon);
 			
 			this.editor = new Editor({
 				mode:'inplace',
+				dblclick: false,
 				onValidate: function(val){
 					return val && val.trim().length >= 3;
 				},
@@ -42,10 +41,6 @@
 				}
 			});
 			this.append(editBtn);
-/*			
-			this.title = this.$('<span class="title"></span>').text(this.descriptor.name).attr('title',this.descriptor.name);
-			this.append(this.title);
-*/			
 		},
 		
 		setName: function(name){

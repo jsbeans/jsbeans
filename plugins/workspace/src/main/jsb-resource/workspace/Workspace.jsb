@@ -9,6 +9,7 @@
 	
 	wName: null,
 	localId: null,
+	workspaceManager: null,
 	
 	getName: function(){
 		return this.wName;
@@ -19,6 +20,7 @@
 	},
 
 	$server: {
+		$require: ['JSB.Workspace.WorkspaceController'],
 		$disableRpcInstance: true,
 		
 	    MAIN_ARTIFACT: 'workspace.json',
@@ -28,11 +30,12 @@
 			this.id = workspaceManager.workspaceInstanceId(localId);
             this.workspaceManager = workspaceManager;
             $base();
-
+/*
             if (this.workspaceManager.options.entryJsb) {
                 this.Entry = this.workspaceManager.options.entryJsb;
                 Log.debug('ontoed.workspace.Workspace: replace default entry type ' + this.Entry.name);
             }
+*/            
             this.load();
             
             this.wName = this.property('wName');
@@ -161,10 +164,12 @@
 		removeEntry: function(id){
 			if(this.existsEntry(id)){
 				this.entry(id).remove();
+				return true;
 			}
+			return false;
 		},
 
-		entry: function(id){
+		entry: function(id, eType){
 		    var insId = this.entryInstanceId(id);
 		    var entry = JSB().getInstance(insId);
 		    if (!entry) {
@@ -172,7 +177,21 @@
 		        entry = this._locked(insId, function(){
                     var entry = JSB().getInstance(insId);
                     if (!entry) {
-                        entry = new self.Entry(id, self);
+                    	if(!eType){
+                    		eType = $this._getProperty($this.entriesPath(id) + '.eType');
+                    	}
+                    	if($jsb.isString(eType)){
+                    		eJsb = $jsb.get(eType);
+                    		if(!eJsb){
+                    			throw new Error('Failed to find entry type: ' + eType);
+                    		}
+                    		eType = eJsb.getClass();
+                    	} else if(eType instanceof JSB){
+                    		eType = eType.getClass();
+                    	} else if(!eType) {
+                    		eType = Entry;
+                    	}
+                        entry = new eType(id, self);
                     }
                     return entry;
 		        });
@@ -450,9 +469,10 @@
 					}
 					var newNodePath = tPath + source.name;
 					this.renameCategory(source.path, newNodePath);
+				} else if(source.type == 'entry' && source.entry) {
+					source.entry.category(target.path);
 				} else {
-					var onto = this.entry(source.id);
-					onto.category(target.path);
+					throw new Error('Unknown node type');
 				}
 			}
 			
@@ -460,5 +480,28 @@
 			
 			return true;
 		},
+		
+		uploadFile: function(fileDesc){
+			var category = fileDesc.category;
+			var fileName = fileDesc.name;
+			var fileData = fileDesc.content;
+			var entryType = WorkspaceController.queryFileUploadEntryType(this.workspaceManager.wmKey, fileName, fileData);
+			var entryJsb = $jsb.get(entryType);
+			if(!entryJsb){
+				throw new Error('Unable to find entry bean: ' + entryType);
+			}
+			var EntryCls = entryJsb.getClass();
+			var entry = new EntryCls($jsb.generateUid(), this, {
+				fileName: fileName,
+				fileData: fileData
+			});
+			entry.category(category);
+			this.store();
+			return {
+				type: 'entry',
+				entry: entry,
+				name: entry.getName()
+			};
+		}
 	}
 }

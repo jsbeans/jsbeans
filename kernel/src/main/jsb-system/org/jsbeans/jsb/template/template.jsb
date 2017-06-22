@@ -1,6 +1,6 @@
 {
 	$name:'Template',
-	$require: ['Kernel', 'Log'],
+	$require: ['JSB.System.Kernel', 'JSB.System.Log'],
 	$server: {
 		$singleton: true,
 		$globalize: true,

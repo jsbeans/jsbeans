@@ -70,10 +70,12 @@
 			if(this.options.mode == 'inplace'){
 				this.plainElt = this.$('<div class="_dwp_plain"></div>');
 				this.getElement().append(this.plainElt);
-				this.plainElt.dblclick(function(evt){
-					self.beginEdit();
-					evt.stopPropagation();
-				});
+				if(this.options.dblclick){
+					this.plainElt.dblclick(function(evt){
+						self.beginEdit();
+						evt.stopPropagation();
+					});
+				}
 				this.plainElt.click(function(evt){
 					evt.stopPropagation();
 					if(!JSB().isNull(self.clickKey)){
@@ -219,6 +221,7 @@
 			title: '',
 			password: false,
 			autocomplete: null,
+			dblclick: true,
 			
 			valueType: 'string',
 			

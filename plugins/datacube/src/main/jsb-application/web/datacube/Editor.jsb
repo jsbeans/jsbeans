@@ -36,19 +36,9 @@
 							widgets: 'workspaceExplorer',
 							caption: true
 						},{
-							split: 'horizontal',
 							minSize: '50%',
-							key: 'workArea',
-							panes: [{
-								key: 'workspaceBrowser',
-								size: 0.7,
-								minSize: '20%',
-								widgets: 'workspaceBrowser'
-							},{
-								minSize: 100,
-								widgets: [ 'console'],
-								caption: true
-							}]
+							key: 'workspaceBrowser',
+							widgets: 'workspaceBrowser'
 						}]
 					}
 				},
@@ -66,15 +56,23 @@
 						options: {
 							wmKey: 'datacube'
 						}
-					},
-					console: {
-						jsb: 'Console',
-						title: 'Консоль'
-					},
+					}
 				}
 			});
 			this.append(this.layoutManager);
-			$this.publish('JSB.DataCube.editorInitialized');
+			$this.publish('DataCube.Editor.initialized');
+			
+			this.subscribe('Workspace.Explorer.initialized', function(explorer){
+				// inject toolbar buttons
+				explorer.toolbar.insertItem({
+					key: 'createCube',
+					tooltip: 'Создать куб',
+					element: '<div class="icon"></div>',
+					click: function(){
+						explorer.createNewEntry('JSB.DataCube.Model.Cube');
+					}
+				}, 'createSeparator');
+			});
 		}
 	}
 }

@@ -2,9 +2,16 @@
 	$name: 'JSB.Workspace.WorkspaceManager',
 	$require: ['JSB.Workspace.Workspace'],
 	$fixedId: true,
+	$sync: {
+		updateCheckInterval: 0
+	},
+	
+	wmKey: null,
+	exlorerNodeTypes: null,
 	
 	$server: {
-		$require: ['JSB.Workspace.FileArtifactsStore'],
+		$require: ['JSB.Workspace.FileArtifactsStore', 
+		           'JSB.Workspace.WorkspaceController'],
 
 	    WORKSPACES_DIRECTORY: 'workspaces', // ontoed_home/scopeId/workspaces
 
@@ -13,6 +20,7 @@
 
 		    var options = this.options = options || {};
 		    this.scopeId = this.id = options.id || 'global';
+		    this.wmKey = options.wmKey;
 		    $base();
             this.artifactsStore = new FileArtifactsStore(options.artifactsStore);
             
@@ -22,6 +30,7 @@
 				workspace.load();
 				workspace.store();
 			}
+            this.exlorerNodeTypes = WorkspaceController.constructExplorerNodeTypeSlice(this.wmKey);
 		},
 
 		_example: function(){

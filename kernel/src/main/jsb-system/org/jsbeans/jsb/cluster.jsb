@@ -1,6 +1,7 @@
 {
 	$name:'Cluster',
 	$server: {
+		$require: 'JSB.System.Kernel',
 		$singleton: true,
 		$globalize: true,
 			

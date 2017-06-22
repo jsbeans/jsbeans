@@ -7,6 +7,9 @@
 	           'JQuery.UI.Effects'],
 	
 	$client: {
+		node: null,
+		workspace: null,
+		
 		$constructor: function(opts){
 			$base(opts);
 			
@@ -15,9 +18,15 @@
 			
 		},
 		
-		setCurrentNode: function(node){},
+		setCurrentNode: function(node, workspace){
+			this.node = node;
+			this.workspace = workspace;
+			this.refresh();
+		},
 		
-		refresh: function(){},
+		refresh: function(){
+			throw 'This method should be overriden';
+		},
 	},
 	
 	$server: {

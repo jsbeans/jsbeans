@@ -1,7 +1,7 @@
 {
 	$name: 'JSB.Workspace.FileArtifactsStore',
 	$server: {
-
+		$require: 'JSB.IO.FileSystem',
         /// *** constants
 
 	    HOME_PROPERTY: "workspace.home",
@@ -84,7 +84,7 @@
 		},
 
 		readAsBinary: function(path) {
-            throw new Error('UnsupportedOperationException');
+			return FileSystem.read(this.absolutePath(path), {binary:true});
 		},
 
         writeAsText: function(path, content){
@@ -114,8 +114,8 @@
             this.writeAsText(path, JSON.stringify(json,0,2));
         },
 
-		writeAsBinary: function(path) {
-            throw new Error('UnsupportedOperationException');
+		writeAsBinary: function(path, bytes) {
+			FileSystem.write(this.absolutePath(path), bytes);
 		},
 
         remove: function(path) {

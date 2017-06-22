@@ -4,6 +4,7 @@
 	
 	$require: ['JSB.Workspace.WorkspaceController', 
 	           'JSB.Workspace.FolderNode',
+	           'JSB.Workspace.UploadNode',
 	           'JSB.Widgets.ToolBar', 
 	           'JSB.Widgets.TreeView', 
 	           'JSB.Widgets.ToolManager',
@@ -70,26 +71,25 @@
 						parentNode = $this.tree.get(item.parent).obj;
 					}
 				}
-/*				
+				
 				for(var i = 0; i < this.files.length; i++ ){
 					var file = this.files[i];
-					if(/\.((rdf)|(ttl)|(owl))/i.test(file.name)){
-						// upload file
-						var uploadNode = new UploadNode({
-							file: file, 
-							node: parentNode, 
-							item: null, 
-							tree: self.tree,
-							w: self
-						});
-						var curTreeNode = self.tree.addNode({
-							key: JSB().generateUid(),
-							element: uploadNode,
-						}, parentNode ? parentNode.treeNode.key : null);
-						uploadNode.treeNode = curTreeNode;
-					}
+					// upload file
+					var uploadNode = new UploadNode({
+						file: file, 
+						node: parentNode, 
+						item: null, 
+						tree: $this.tree,
+						w: $this,
+						workspace: $this.currentWorkspace
+					});
+					var curTreeNode = $this.tree.addNode({
+						key: JSB().generateUid(),
+						element: uploadNode,
+					}, parentNode ? parentNode.treeNode.key : null);
+					uploadNode.treeNode = curTreeNode;
 				}
-*/				
+				
 			});
 			
 			var downloadItem = this.toolbar.addItem({
@@ -244,6 +244,8 @@
 			if(this.options.wmKey){
 				this.bindManager(this.options.wmKey);
 			}
+			
+			this.publish('Workspace.Explorer.initialized');
 		},
 		
 		refreshWorkspaces: function(){
@@ -279,13 +281,31 @@
 			Web.setCookie('Workspace.'+$this.wmKey+'.currentWorkspace', w.getLocalId(), {expires: 30*24*3600});
 			this.server().setCurrentWorkspace(w, function(){
 				$this.currentWorkspace = w;
-				$this.updateTab();
-				$this.refresh();
-				$this.updateToolbar();
+				$this.publish('Workspace.changeWorkspace', w);
 				
-				if(callback){
-					callback.call($this);
+				// upload all node type beans
+				var nodeTypes = [];
+				for(var eType in $this.currentWorkspace.workspaceManager.exlorerNodeTypes){
+					var nType = $this.currentWorkspace.workspaceManager.exlorerNodeTypes[eType];
+					nodeTypes.push(nType);
 				}
+				
+				// lookup all nodeBeans
+				$jsb.chain(nodeTypes, function(nType, c){
+					$jsb.lookup(nType, function(cls){
+						c.call($this);
+					});
+				}, function(){
+					$this.updateTab();
+					$this.refresh();
+					$this.updateToolbar();
+					
+					if(callback){
+						callback.call($this);
+					}
+					
+				});
+
 			});
 		},
 		
@@ -525,29 +545,25 @@
 					if(!dt || !dt.files){
 						return false;
 					}
-/*					
+					
 					for(var i = 0; i < dt.files.length; i++ ){
 						var file = dt.files[i];
-						var isFile = /\.((rdf)|(ttl)|(owl))/i.test(file.name);
-						var isDir = dt.items ? dt.items[i].webkitGetAsEntry().isDirectory : false;
-						
-						if(isFile || isDir){
-							// upload file
-							var uploadNode = new UploadNode({
-								file: file, 
-								node: node, 
-								item: dt.items ? dt.items[i].webkitGetAsEntry() : null, 
-								tree: self.tree,
-								w: self
-							});
-							var curTreeNode = self.tree.addNode({
-								key: JSB().generateUid(),
-								element: uploadNode,
-							}, node ? node.treeNode.key : null);
-							uploadNode.treeNode = curTreeNode;
-						}
+						// upload file
+						var uploadNode = new UploadNode({
+							file: file, 
+							node: node, 
+							item: dt.items ? dt.items[i].webkitGetAsEntry() : null, 
+							tree: $this.tree,
+							w: $this,
+							workspace: $this.currentWorkspace
+						});
+						var curTreeNode = $this.tree.addNode({
+							key: JSB().generateUid(),
+							element: uploadNode,
+						}, node ? node.treeNode.key : null);
+						uploadNode.treeNode = curTreeNode;
 					}
-*/					
+					
 					return false;
 				}
 			});
@@ -603,6 +619,8 @@
 			if(itemDesc.type == 'node'){
 				node = new FolderNode({
 					descriptor: itemDesc,
+					allowOpen: true,
+					allowEdit: true,
 					onChangeName: function(oldName, newName, evt){
 						var node = this;
 						var path = $this.constructPathFromKey(parent);
@@ -616,6 +634,11 @@
 								// all is ok
 								node.setName(newName);
 								$this.sort();
+								$this.publish('Workspace.renameCategory', {
+									node: node,
+									oldPath: oldPath,
+									newPath: newPath
+								});
 							} else {
 								node.editor.setData(oldName);
 								node.editor.beginEdit();
@@ -628,18 +651,17 @@
 				
 				$this.installDropContainer(node);
 				$this.installUploadContainer(node);
-			} else {
-/*				
-				var params = {
-					node: node,	// should be filled
-					workspaceView: this,
+			} else if(itemDesc.type == 'entry') {
+				var nodeSlice = this.currentWorkspace.workspaceManager.exlorerNodeTypes;
+				var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
+				var nodeCls = $jsb.get(nodeType).getClass();
+				node = new nodeCls({
 					descriptor: itemDesc,
-					workspace: this.currentWorkspace
-				};
-				this.publish('createWorkspaceNode', params);
-				key = itemDesc.id;
-				node = params.node;	// filled by subscribers
-*/				
+					allowOpen: true,
+					allowEdit: true
+				});
+			} else {
+				throw new Error('not implemented');
 			}
 			
 			node.explorer = this;
@@ -661,9 +683,11 @@
 			}
 			node.treeNode = curTreeNode;
 			
-			node.getElement().dblclick(function(){
-				$this.publish('Workspace.Explorer.nodeOpen', node);
-			});
+			if(node.options.allowOpen){
+				node.getElement().dblclick(function(){
+					$this.publish('Workspace.nodeOpen', node);
+				});
+			}
 			
 			node.getElement().draggable({
 				start: function(evt, ui){
@@ -697,11 +721,11 @@
 					
 					if(selected.length <= 3){
 						for(var i = 0; i < selected.length; i++ ){
-							helper.append(selected[i].obj.getElement().clone());
+							helper.append($this.$('<div class="dragItem"></div>').append(selected[i].obj.getElement().clone()));
 						}	
 					} else {
 						for(var i = 0; i < Math.min(selected.length, 2); i++ ){
-							helper.append(selected[i].obj.getElement().clone());
+							helper.append($this.$('<div class="dragItem"></div>').append(selected[i].obj.getElement().clone()));
 						}
 						if(selected.length > 2){
 							var suffix = '';
@@ -771,8 +795,9 @@
 						path: node ? $this.constructPathFromKey(node.treeNode.key) : '',
 						name: node ? node.getName() : ''
 					}
-				} else	return {
+				} else if(node.descriptor.type == 'entry' && node.descriptor.entry ) return {
 						type: node.descriptor.type,
+						entry: node.descriptor.entry,
 						id: node.descriptor.id,
 						path: $this.constructPathFromKey(node.treeNode.parent)
 					}
@@ -788,6 +813,7 @@
 				if(res){
 					for(var i in sourceNodes){
 						$this.tree.moveNode(sourceNodes[i].treeNode.key, targetNode ? targetNode.treeNode.key:null);
+						$this.publish('Workspace.moveEntry', sourceNodes[i]);
 					}
 				}
 			});
@@ -810,20 +836,21 @@
 					if(node.getElement().is('.error')){
 						$this.tree.deleteNode(sel[i].key);
 					}
-				} else if(JSB().isInstanceOf(node, 'JSB.Workspace.ExplorerNode')){
+				} else if(JSB().isInstanceOf(node, 'JSB.Workspace.ExplorerNode') && node.descriptor && node.descriptor.entry){
 					batch.push({
-						type: 'project',
-						id: node.descriptor.id,
+						type: 'entry',
+						entry: node.descriptor.entry,
+						id: node.descriptor.entry.getLocalId(),
 						key: sel[i].key
 					});
 				}
 			}
 			this.server().removeItems(batch, function(removed){
-				for(var i in removed){
-					$this.tree.deleteNode(removed[i].key, function(itemObj){
+				for(var i = 0; i < removed.length; i++){
+					$this.tree.deleteNode(removed[i], function(itemObj){
 						var node = itemObj.obj;
-						if(JSB().isInstanceOf(node, 'JSB.Workspace.ExplorerNode') && node.project){
-							node.project.destroy();
+						if(JSB().isInstanceOf(node, 'JSB.Workspace.ExplorerNode') && node.descriptor && node.descriptor.entry){
+							node.descriptor.entry.destroy();
 						}
 					});
 				}
@@ -915,6 +942,56 @@
 					$this.sort();
 				});
 			});
+		},
+		
+		createNewEntry: function(eType, opts){
+			// resolve parent
+			var item = this.tree.getSelected();
+			var parentKey = null;
+			if(item == null){
+				// choose root
+			} else {
+				if(JSB().isArray(item)){
+					item = item[0];
+				}
+				if(JSB().isInstanceOf(item.obj, 'JSB.Workspace.FolderNode')){
+					parentKey = item.key;
+				} else {
+					// move up to nearest parent
+					parentKey = item.parent;
+				}
+			}
+			this.server().loadEntryNames(function(names){
+				var nameMap = {};
+				for(var i = 0; i < names.length; i++){
+					nameMap[names[i]] = true;
+				}
+				var lastNum = 1;
+				var testName;
+				while(true){
+					// construct current folder path
+					var testName = 'Куб ' + lastNum;
+					if(!nameMap[testName]){
+						break;
+					}
+					lastNum++;
+				}
+				var curPath = $this.constructPathFromKey(parentKey);
+				$this.server().addEntry(eType, opts, testName, curPath, function(desc){
+					if(!desc){
+						// internal error: folder already exists
+						return;
+					}
+					var node = $this.addTreeItem(desc, parentKey);
+					JSB().deferUntil(function(){
+						node.editor.beginEdit();
+					}, function(){
+						return node.getElement().width() > 0 && node.getElement().height() > 0;
+					});
+					
+					$this.sort();
+				});
+			});
 		}
 	},
 	
@@ -956,6 +1033,15 @@
 			return categories;
 		},
 		
+		loadEntryNames: function(){
+			var w = this.currentWorkspace;
+			var nameArr = [];
+			for (var entry, it = w.entries(); entry = it.next();) {
+				nameArr.push(entry.getName());
+			}
+			return nameArr;
+		},
+		
 		createWorkspace: function(){
 			return $this.manager.createWorkspace();
 		},
@@ -974,11 +1060,11 @@
 		
 		removeItems: function(items){
 			var removed = [];
-			// remove ontologies
+			// remove entries
 			for(var i in items){
-				if(items[i].type != 'node'){
-					if(this.currentWorkspace.removeEntry(items[i].id)){
-						removed.push(items[i]);
+				if(items[i].type == 'entry' && items[i].entry){
+					if(this.currentWorkspace.removeEntry(items[i].entry.getLocalId())){
+						removed.push(items[i].key);
 					}
 				}
 			}
@@ -987,16 +1073,35 @@
 			for(var i in items){
 				if(items[i].type == 'node'){
 					if(this.currentWorkspace.removeCategory(items[i].path)){
-						removed.push(items[i]);
+						removed.push(items[i].key);
 					}
 				}
 			}
+			
+			this.currentWorkspace.store();
 			
 			return removed;
 		},
 		
 		addCategory: function(category){
 			return this.currentWorkspace.addCategory(category);
+		},
+		
+		addEntry: function(eType, opts, name, path){
+			var eJsb = $jsb.get(eType);
+			if(!eJsb){
+				throw new Error('Unable to file entry type: ' + eType);
+			}
+			var eCls = eJsb.getClass();
+			var entry = new eCls($jsb.generateUid(), this.currentWorkspace, opts);
+			entry.title(name);
+			entry.category(path);
+			this.currentWorkspace.store();
+			return {
+				type: 'entry',
+				entry: entry,
+				name: name
+			};
 		},
 		
 		loadWorkspaceTree: function(){			
@@ -1035,13 +1140,14 @@
 				touch(cat);
 			}
 			
-			for (var onto, it = w.entries(); entry = it.next();) {
+			for (var entry, it = w.entries(); entry = it.next();) {
 				var treeNode = touch(entry.category());
 				if(!treeNode[entry.getLocalId()]){
 					treeNode[entry.getLocalId()] = {};
 				}
 				treeNode[entry.getLocalId()].type = 'entry';
 				treeNode[entry.getLocalId()].entry = entry;
+				treeNode[entry.getLocalId()].name = entry.getName();
 			}
 			return tree;
 		},

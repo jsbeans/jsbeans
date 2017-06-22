@@ -1,8 +1,8 @@
 {
-	$name:'Kernel',
+	$name:'JSB.System.Kernel',
 	$server: {
 		$singleton: true,
-		$globalize: true,
+		$globalize: 'Kernel',
 		
 		$constructor: function(){
 			JSB().setLocker(this);

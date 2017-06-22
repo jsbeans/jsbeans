@@ -11,8 +11,18 @@
 			
 		},
 		
+		refresh: function(){}
+		
 	},
 	
 	$server: {
+		$require: 'JSB.Workspace.WorkspaceController',
+		$bootstrap: function(){
+			WorkspaceController.registerBrowserView(this, {
+				priority: 0,
+				acceptNode: [null, 'JSB.Workspace.FolderNode'],
+				caption: 'Файлы'
+			});
+		},
 	}
 }

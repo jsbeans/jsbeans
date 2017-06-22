@@ -2,9 +2,9 @@
     $name:'JSB.Net.HttpConnection',
 
     $server: {
+    	$require: 'JSB.System.Log',
+    	
         $constructor: function(options){
-//            if(!Kernel.isAdmin()) throw new Exception('Has no permissions');
-
             this.URL = Packages.java.net.URL;
             this.Proxy = Packages.java.net.Proxy;
             this.Authenticator = Packages.java.net.Authenticator;

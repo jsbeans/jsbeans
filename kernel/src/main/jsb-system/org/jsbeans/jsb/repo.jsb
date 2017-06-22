@@ -1,7 +1,7 @@
 {
 	$name:'Repo',
-	$require: ['Kernel'],
 	$server: {
+		$require: ['JSB.System.Kernel'],
 		$singleton: true,
 		$constructor: function(){
 			var self = this;
