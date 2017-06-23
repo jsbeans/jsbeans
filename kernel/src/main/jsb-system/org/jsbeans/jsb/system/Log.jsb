@@ -1,8 +1,9 @@
 {
-	$name:'Log',
+	$name:'JSB.System.Log',
 	$server: {
 		$singleton: true,
-		$globalize: true,
+		$globalize: 'Log',
+		
 		$constructor: function(){
 			JSB().setLogger(this);
 		},

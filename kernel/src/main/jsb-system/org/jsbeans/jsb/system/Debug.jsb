@@ -1,6 +1,6 @@
 {
-	$name:'Debug',
-	$require: ['Kernel'],
+	$name:'JSB.System.Debug',
+	$require: ['JSB.System.Kernel'],
 	$server: {
 		$singleton: true,
 		$globalize: true,

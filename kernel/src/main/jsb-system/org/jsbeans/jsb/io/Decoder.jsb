@@ -1,4 +1,4 @@
-{
+({
 	$name: 'JSB.IO.Decoder',
 	
 	$server: {
@@ -58,7 +58,7 @@
 		},
 		
 		decode: function(arg1, arg2, arg3){
-			if(arg1 instanceof ArrayBuffer){
+			if($jsb.isArrayBuffer(arg1)){
 				var bytes = arg1;
 				var from = arg2 || 0;
 				var to = arg3 || bytes.byteLength;
@@ -166,4 +166,4 @@
 	        }
 		}
 	}
-}
+})

@@ -1,6 +1,6 @@
 {
 	$name: 'JSB.Tests.JavaReqTest',
-	$require: ['Kernel', 'java:java.lang.System', 'java:java.io.File'],
+	$require: ['JSB.System.Kernel', 'java:java.lang.System', 'java:java.io.File'],
 	$client: {
 	},
 	$server: {

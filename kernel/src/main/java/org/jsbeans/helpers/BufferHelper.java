@@ -41,7 +41,11 @@ public class BufferHelper {
 	public static String base64Encode(NativeArrayBuffer arr){
 		return DatatypeConverter.printBase64Binary(arr.getBuffer());
 	}
-	
+
+	public static String base64Encode(String str){
+		return DatatypeConverter.printBase64Binary(str.getBytes());
+	}
+
 	public static NativeArrayBuffer base64Decode(String base64){
 		byte[] bArr = DatatypeConverter.parseBase64Binary(base64);
 		NativeArrayBuffer nab = new NativeArrayBuffer(bArr.length);

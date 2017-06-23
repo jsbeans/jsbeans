@@ -1,0 +1,39 @@
+@CHARSET "UTF-8";
+
+.workspaceExplorerNode {
+	width: 100%;
+	position: relative;
+}
+
+.workspaceExplorerNode > .icon {
+	width: 20px;
+    height: 20px;
+    position: absolute;
+	left: 2px;
+	top: 50%;
+    margin-top: -10px;
+}
+
+.workspaceExplorerNode > .title {
+    text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
+    padding-left: 26px;
+    height: 20px;
+}
+
+.workspaceExplorerNode > .roundButton.btn10 {
+	position: absolute;
+	top: 50%;
+	margin-top: -8px;
+	display: none;
+}
+
+.workspaceExplorerNode > .btnEdit {
+    right: 5px;
+}
+
+li._dwp_treeViewNode.selected > ._dwp_nodeHeader > ._dwp_itemContainer > .workspaceExplorerNode > .roundButton,
+li._dwp_treeViewNode.highlighted > ._dwp_nodeHeader > ._dwp_itemContainer > .workspaceExplorerNode > .roundButton {
+	display: inline-block;
+}

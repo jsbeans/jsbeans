@@ -83,8 +83,12 @@
 		},
 	},
 	$server: {
+		$require: 'JSB.System.Kernel',
+		
 		$singleton: true,
 		$globalize: true,
+		
+		
 		$constructor: function(){
 //			this.initSHA();
 		},

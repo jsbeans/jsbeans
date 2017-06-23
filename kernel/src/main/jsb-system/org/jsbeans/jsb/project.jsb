@@ -19,7 +19,7 @@
 		}
 	},
 	$server: {
-		$require: ['Kernel'],
+		$require: ['JSB.System.Kernel'],
 		$singleton: true,
 		$globalize: true,
 		$constructor: function(){

@@ -1,4 +1,4 @@
-{
+({
 	$name: 'JSB.IO.Stream',
 				
 	$server: {
@@ -186,4 +186,4 @@
 			return this.closed;
 		}
 	}
-}
+})

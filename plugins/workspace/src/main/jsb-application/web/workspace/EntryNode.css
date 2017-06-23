@@ -1,0 +1,29 @@
+@CHARSET "UTF-8";
+
+.workspaceExplorerNode.entryNode {
+}
+
+.workspaceExplorerNode.entryNode > ._dwp_primitiveEditor {
+	padding-left: 26px;
+	display: block;
+	padding-right: 16px;
+	height: 20px;
+}
+
+.workspaceExplorerNode.entryNode > ._dwp_primitiveEditor > ._dwp_plain {
+	padding: 0;
+	cursor: inherit;
+}
+
+.workspaceExplorerNode.entryNode > ._dwp_primitiveEditor > input {
+}
+
+.workspaceExplorerNode.entryNode > .btnEdit {
+    right: 4px;
+    display: none;
+}
+
+.workspaceExplorerNode.entryNode > .btnOpen {
+    right: 24px;
+    display: none;
+}

@@ -15,17 +15,18 @@ public class TaskResultSetIterator implements Iterator<TaskDescriptor> {
     private ResultSet rs;
     private PreparedStatement ps;
     private Connection connection;
-    private static final String sql = "SELECT (task_id, task_state, task_body) FROM sql_rdf_tasks";
     private boolean closeConnection;
+    private SqlTaskCollection.SQLConfig sqlConfig;
 
-    public TaskResultSetIterator(Connection connection, boolean closeConnection) {
+    public TaskResultSetIterator(Connection connection, boolean closeConnection, SqlTaskCollection.SQLConfig sqlConfig) {
         this.connection = connection;
         this.closeConnection = closeConnection;
+        this.sqlConfig = sqlConfig;
     }
 
     public void init() {
         try {
-            ps = connection.prepareStatement(sql);
+            ps = connection.prepareStatement(sqlConfig.getSelectTaskQuery());
             rs = ps.executeQuery();
 
         } catch (SQLException e) {

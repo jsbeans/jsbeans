@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%16d [%-5p] (%c:%L) - %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="FILE-MAIN" class="org.apache.log4j.RollingFileAppender">
+        <param name="append" value="false" />
+        <param name="maxFileSize" value="100KB" />
+        <param name="maxBackupIndex" value="5" />
+        <param name="file" value="./logs/jsbeans.log" />
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} [%-5p] (%c{1}:%L) - %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="FILE-SCRIPTING" class="org.apache.log4j.RollingFileAppender">
+        <param name="append" value="false" />
+        <param name="maxFileSize" value="100KB" />
+        <param name="maxBackupIndex" value="5" />
+        <param name="file" value="./logs/scripting.log" />
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} [%-5p] (%c{1}:%L) - %m%n" />
+        </layout>
+    </appender>
+
+    <appender name="FILE-AUTH" class="org.apache.log4j.RollingFileAppender">
+        <param name="append" value="false" />
+        <param name="maxFileSize" value="100KB" />
+        <param name="maxBackupIndex" value="5" />
+        <param name="file" value="./logs/auth.log" />
+
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{yyyy-MM-dd HH:mm:ss} [%-5p] (%c{1}:%L) - %m%n" />
+        </layout>
+    </appender>
+
+    <logger name="ru.sis">
+        <level value="INFO"/>
+    </logger>
+
+    <logger name="ru.avicomp">
+        <level value="DEBUG"/>
+    </logger>
+    <logger name="org.semanticweb">
+        <level value="DEBUG"/>
+    </logger>
+
+
+    <!-- System (Akka, Scala, Logback, Reflections, Jetty ...) loggers -->
+    <logger name="akka" >
+        <level value="INFO"/>
+    </logger>
+    <logger name="scala" >
+        <level value="INFO"/>
+    </logger>
+
+    <logger name="ch.qos.logback" >
+        <level value="WARN"/>
+    </logger>
+    <logger name="org.reflections" >
+        <level value="WARN"/>
+    </logger>
+    <logger name="net.sf.ehcache" >
+        <level value="WARN"/>
+    </logger>
+
+    <logger name="org.eclipse.jetty" >
+        <level value="WARN"/>
+    </logger>
+
+    <!-- jsBeans loggers  -->
+    <logger name="org.jsbeans">
+        <level value="INFO"/>
+    </logger>
+    <logger name="Remoting">
+        <level value="INFO"/>
+    </logger>
+    <logger name="Cluster">
+        <level value="INFO"/>
+    </logger>
+
+    <logger name="org.jsbeans.scripting">
+        <level value="DEBUG"/>
+        <appender-ref ref="FILE-SCRIPTING"/>
+    </logger>
+    <logger name="org.jsbeans.security">
+        <level value="INFO"/>
+        <appender-ref ref="FILE-AUTH"/>
+    </logger>
+
+    <logger name="org.jsbeans.cluster.ClusteredDispatcherService">
+        <level value="DEBUG"/>
+    </logger>
+
+    <root>
+        <level value="WARN" />
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="FILE-MAIN" />
+    </root>
+
+</log4j:configuration>
+
+

@@ -1,4 +1,4 @@
-{
+({
 	$name: 'JSB.IO.Encoder',
 	
 	$server: {
@@ -85,4 +85,4 @@
 	        }
 		}
 	}
-}
+})

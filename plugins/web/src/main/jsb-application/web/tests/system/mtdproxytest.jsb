@@ -1,6 +1,6 @@
 {
 	$name: 'JSB.Tests.MethodProxyTest',
-	$require: ['Kernel'],
+	$require: ['JSB.System.Kernel'],
 	$server: {
 		mtd1: function(x){
 			return x + 1;

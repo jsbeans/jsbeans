@@ -117,6 +117,8 @@
 	},
 
 	$server: {
+		$require: 'JSB.System.Kernel',
+		
 		getAttributes: function(){
 			var json = Auth.getUserCredentials(Kernel.user()).result.response;
 
