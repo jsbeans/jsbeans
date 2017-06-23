@@ -1288,6 +1288,45 @@
 				return b1 == b2;
 			}
 		},
+
+		locked: function(){
+	        var id;
+	        var func;
+		    if (arguments.length == 3) {
+		        // locked(this, 'local_name', func) // bean instance with local mutex name
+		        // locked($jsb, 'local_name', func) // bean type with local mutex name
+		        if (JSB.isBean(arguments[0])) {
+		            id = arguments[0].getId() + '.' + arguments[1];
+		        } else if (arguments[0] instanceof JSB) {
+		            id = arguments[0].$name + '.' + arguments[1];
+		        }
+		        func = arguments[2];
+		    } else if (arguments.length == 2){
+		        // locked(this, func) // bean instance
+                // locked($jsb, func) // bean type
+                // locked('global_name', func) // global mutex name
+                if (JSB.isBean(arguments[0])) {
+                    id = arguments[0].getId();
+                } else if (arguments[0] instanceof JSB) {
+                    id = arguments[0].$name;
+                } else {
+                    id = arguments[0];
+                }
+                func = arguments[2];
+		    } else if(arguments.length == 1) {
+		        // locked(func) // global
+                id = 'GLOBAL';
+                func = arguments[0];
+		    }
+
+            var locker = JSB().getLocker();
+            try {
+                locker.lock(id);
+                return func.call(this);
+            } finally {
+                locker.unlock(id);
+            }
+		},
 		
 		
 		
