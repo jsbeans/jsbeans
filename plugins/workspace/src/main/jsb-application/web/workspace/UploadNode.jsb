@@ -40,21 +40,19 @@
 									(function(item){
 										if(item.isFile){
 											item.file(function(file){
-												var isFile = /\.((rdf)|(ttl)|(owl))/i.test(file.name);
-												if(isFile){
-													var uploadNode = new $class({
-														file: file, 
-														node: node, 
-														item: item, 
-														tree: self.options.tree,
-														w: self.options.w
-													});
-													var curTreeNode = self.options.tree.addNode({
-														key: JSB().generateUid(),
-														element: uploadNode,
-													}, node ? node.treeNode.key : null);
-													uploadNode.treeNode = curTreeNode;
-												}
+												var uploadNode = new $class({
+													file: file, 
+													node: node, 
+													item: item, 
+													tree: self.options.tree,
+													w: self.options.w,
+													workspace: self.options.workspace
+												});
+												var curTreeNode = self.options.tree.addNode({
+													key: JSB().generateUid(),
+													element: uploadNode,
+												}, node ? node.treeNode.key : null);
+												uploadNode.treeNode = curTreeNode;
 											});
 										} else if(item.isDirectory){
 											var uploadNode = new $class({
@@ -62,7 +60,8 @@
 												node: node, 
 												item: item, 
 												tree: self.options.tree,
-												w: self.options.w
+												w: self.options.w,
+												workspace: self.options.workspace
 											});
 											var curTreeNode = self.options.tree.addNode({
 												key: JSB().generateUid(),
@@ -84,7 +83,7 @@
 			if(!isDir){
 				var reader = new FileReader();
 				reader.onload = function(){
-					self.options.w.server().loadFromContent({
+					self.options.workspace.server().uploadFile({
 						category: self.options.node ? self.options.w.constructPathFromKey(self.options.node.treeNode.key) : '',
 						name: self.options.file.name,
 						content: reader.result
@@ -102,7 +101,7 @@
 						});
 					});
 				}
-				reader.readAsText(this.options.file);
+				reader.readAsArrayBuffer(this.options.file);
 			}
 			
 		},

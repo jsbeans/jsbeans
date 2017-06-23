@@ -3,7 +3,7 @@
 .workspaceExplorerNode.uploadNode {}
 
 .workspaceExplorerNode.uploadNode > .icon {
-	 background: url('../images/loading.gif');
+	 background: url('images/loading.gif');
 }
 
 .workspaceExplorerNode.uploadNode.error > .icon {

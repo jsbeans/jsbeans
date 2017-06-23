@@ -7,19 +7,35 @@
 	},
 	
 	localId: null,
+	workspace: null,
+	name: null,
 	
 	getLocalId: function(){
 		return this.localId;
 	},
+	
+	getName: function(){
+		return this.name;
+	},
+	
+	$client: {
+		onAfterSync: function(){
+			$this.publish('Workspace.Entry.updated');
+		}
+	},
 
 	$server: {
+		$disableRpcInstance: true,
+		
 		$constructor: function(id, workspace){
 		    this.localId = id;
 			this.id = workspace.entryInstanceId(id);
 			$base();
             this.workspace = workspace;
-            if (!this.property('id')) this.property('id', this.localId);
-            if (!this.property('fullId')) this.property('fullId', this.id);
+            if(!this.property('id')) this.property('id', this.localId);
+            if(!this.property('fullId')) this.property('fullId', this.id);
+            if(!this.property('eType')) this.property('eType', this.getJsb().$name);
+            this.name = this.title();
 		},
 
 		remove: function(){
@@ -43,6 +59,9 @@
 		},
 
 		title: function(title){
+			if(title){
+				this.name = title;
+			}
 		    return this.property('title', title);
 		},
 

@@ -1,6 +1,6 @@
 {
 	$name: 'JSB.Tests.LocalScopeTest',
-	$require: ['Kernel', 'Log'],
+	$require: ['JSB.System.Kernel', 'JSB.System.Log'],
 	$client: {
 		counter: 0,
 		run: function(){

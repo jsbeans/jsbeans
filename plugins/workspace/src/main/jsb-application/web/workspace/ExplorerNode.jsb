@@ -3,6 +3,7 @@
 	$parent: 'JSB.Widgets.Control',
 	
 	descriptor: {},
+	explorer: null,
 	
 	getName: function(){
 		return this.descriptor.name;
@@ -20,6 +21,9 @@
 			}
 			this.loadCss('ExplorerNode.css');
 			this.addClass('workspaceExplorerNode');
+			
+			this.icon = this.$('<div class="icon"></div>');
+			this.append(this.icon);
 		},
 	}
 	

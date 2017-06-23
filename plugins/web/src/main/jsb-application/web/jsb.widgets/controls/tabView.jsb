@@ -105,7 +105,7 @@
 			});
 
 			// add client
-			var clientWrap = this.$('<div id="'+uid+'" class="_dwp_clientPaneWrapper"></div>');
+			var clientWrap = this.$('<div key="'+uid+'" class="_dwp_clientPaneWrapper"></div>');
 			clientWrap.css({display:'none'});
 			clientWrap.append(ctrl.getElement());
 			this.clientPane.append(clientWrap);
@@ -185,9 +185,9 @@
 			}
 			activeTab.removeClass('active');
 			entry.tab.addClass('active');
-			var showArea = self.clientPane.find('#' + entry.tab.attr('clientId'));
+			var showArea = self.clientPane.find('._dwp_clientPaneWrapper[key="' + entry.tab.attr('clientId') + '"]');
 			showArea.css('display','');
-			self.clientPane.find('#' + activeTab.attr('clientId')).css('display','none');
+			self.clientPane.find('._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').css('display','none');
 			self.currentTab = entry;
 			if(this.options.onSwitchTab){
 				this.options.onSwitchTab.call(self, tab);
@@ -278,6 +278,20 @@
 			}
 			this.clientPane.css(css);
 
+		},
+		
+		sortTabs: function(callback){
+			var itemArr = [];
+			
+			for(var uid in this.tabs){
+				itemArr.push(this.tabs[uid]);
+			}
+			itemArr.sort(callback);
+			
+			// rebuild according to new order
+			for(var i = 0; i < itemArr.length; i++ ){
+				this.tabPane.append(itemArr[i].tab);
+			}
 		}
 	}
 }

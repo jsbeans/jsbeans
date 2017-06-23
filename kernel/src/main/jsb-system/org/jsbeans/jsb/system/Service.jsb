@@ -1,9 +1,10 @@
 {
-	$name:'Service',
-	$require: ['Kernel'],
+	$name:'JSB.System.Service',
+
 	$server: {
+		$require: ['JSB.System.Kernel'],
 		$singleton: true,
-		$globalize: true,
+		$globalize: 'Service',
 		
 		list: function(opts){
 			var res = Kernel.ask('ServiceManagerService','svcList');

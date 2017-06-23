@@ -1,6 +1,5 @@
 {
 	$name:'Web',
-	$require: ['Log'],
 	$singleton: true,
 	
 	$client: {
@@ -39,6 +38,8 @@
 		}
 	},
 	$server: {
+		$require: ['JSB.System.Kernel','JSB.System.Log'],
+
 		$constructor: function(){
 			JSB().onLoad(function(){
 				// remove jso from the web cache

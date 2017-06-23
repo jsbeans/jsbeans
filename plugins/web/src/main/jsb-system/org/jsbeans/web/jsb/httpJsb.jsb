@@ -1,7 +1,8 @@
 {
 	$name:'JSB.HttpJsb',
-	$require: ['Kernel', 'Log', 'Web'],
 	$server: {
+		$require: ['JSB.System.Kernel','JSB.System.Log', 'Web'],
+
 		$singleton: true,
 		
 		$constructor: function(){
