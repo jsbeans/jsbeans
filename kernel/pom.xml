@@ -61,6 +61,10 @@
                     <groupId>com.google.guava</groupId>
                 </exclusion>
                 <exclusion>
+                    <artifactId>google-collections</artifactId>
+                    <groupId>com.google.collections</groupId>
+                </exclusion>
+                <exclusion>
                     <artifactId>xml-apis</artifactId>
                     <groupId>xml-apis</groupId>
                 </exclusion>
@@ -70,6 +74,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>18.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>google-collections</artifactId>
+            <groupId>com.google.collections</groupId>
+            <version>1.0</version>
         </dependency>
         <!--
               <dependency>
