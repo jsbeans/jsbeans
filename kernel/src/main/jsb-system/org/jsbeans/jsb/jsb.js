@@ -1004,6 +1004,10 @@
 			return typeof(obj) === 'boolean';
 		},
 		
+		isDate: function(obj){
+			return Object.prototype.toString.call(obj) === '[object Date]';
+		},
+		
 		isFunction: function(obj){
 			return typeof(obj) === 'function';
 		},
@@ -3255,6 +3259,9 @@
 				return Bridge.setInterval(proc, timeout);
 			},
 			clearInterval: function(key){
+				if(!key){
+					return;
+				}
 				Bridge.clearInterval(key);
 			}
 		});

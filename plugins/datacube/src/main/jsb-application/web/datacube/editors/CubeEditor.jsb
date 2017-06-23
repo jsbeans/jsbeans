@@ -31,7 +31,26 @@
 			
 			// create diagram
 			this.diagram = new Diagram({
-				
+				minZoom: 0.25,
+				highlightSelecting: false,
+				onInit: function(){
+					this.publish('DataCube.CubeEditor.diagramInitialized');
+				},
+				nodes: {
+					dataProviderDiagramNode: {
+						jsb: 'JSB.DataCube.DataProviderDiagramNode',
+						layout: {
+							'default': {
+								auto: true,
+								animate: true,
+								nodeExpand: 20
+							}
+						}
+					},
+					
+					connectors: {},
+					links: {}
+				},
 			});
 			this.append(this.diagram);
 			
@@ -96,8 +115,11 @@
 			});
 		},
 		
-		addDataProvider: function(dpEntry, posPt){
-			debugger;
+		addDataProvider: function(dpEntry, pt){
+			this.cubeEntry.server().addDataProvider(dpEntry, function(provider){
+				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:provider});
+				pNode.setPosition(pt.x, pt.y);
+			});
 		}
 	}
 }

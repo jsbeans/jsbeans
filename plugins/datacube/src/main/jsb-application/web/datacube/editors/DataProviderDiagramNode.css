@@ -1,0 +1,130 @@
+@CHARSET "UTF-8";
+
+.dataProviderDiagramNode {
+	box-shadow: 1px 1px 3px #999999;
+	border: 1px solid #000;
+	position: relative;
+	min-width: 256px;
+	width: 256px;
+}
+
+.dataProviderDiagramNode.selected,
+.dataProviderDiagramNode.highlighted
+{
+	box-shadow: 0 0 1px 3px #3c6192;
+}
+
+
+.dataProviderDiagramNode > .caption {
+	background: -webkit-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+	background: -moz-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+    background: linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+	background: -o-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+	background: -ms-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
+	
+	
+    padding: 2px 12px 2px 4px;
+	cursor: url('/jsb.widgets/images/hand.gif'), move;
+    border-bottom: 1px solid #988e5f;
+    position: relative;
+	
+}
+
+.dataProviderDiagramNode.selected > .caption,
+.dataProviderDiagramNode.highlighted > .caption {
+	background: -webkit-linear-gradient(top, #adc8e2 0%, #86b1d4 60%, #4489d0 100%);
+	background: -moz-linear-gradient(top, #adc8e2 0%, #86b1d4 60%, #4489d0 100%);
+    background: linear-gradient(top, #adc8e2 0%, #86b1d4 60%, #4489d0 100%);
+	background: -o-linear-gradient(top, #adc8e2 0%, #86b1d4 60%, #4489d0 100%);
+	background: -ms-linear-gradient(top, #adc8e2 0%, #86b1d4 60%, #4489d0 100%);
+}
+
+.dataProviderDiagramNode > .caption > .icon {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	left: 4px;
+	top: 50%;
+	margin-top: -10px;
+}
+
+.dataProviderDiagramNode > .caption > .name {
+	padding-left: 22px;
+    height: 20px;
+    box-sizing: border-box;
+    padding-top: 2px;
+}
+
+.dataProviderDiagramNode > .gripper {
+	position: absolute;
+}
+
+.dataProviderDiagramNode > .gripper.cornerGripper {
+	width: 10px;
+	height: 10px;
+	background-image: url("/jsb.widgets/images/grip.png");
+	background-repeat: no-repeat;
+}
+
+.dataProviderDiagramNode > .gripper.cornerGripper.rightBottomGripper {
+	right: -1px;
+	bottom: -1px;
+	cursor: se-resize;
+	background-position: -16px -16px;
+}
+
+
+.dataProviderDiagramNode > .body {
+    background: #e8e8e8;
+}
+
+.dataProviderDiagramNode > .status {
+    background: -webkit-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
+    background: -moz-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
+    background: linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
+	background: -o-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
+	background: -ms-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
+    height: 10px;
+	border-top: 1px solid #5f7698;
+}
+
+.dataProviderDiagramNode > .body > .loading {
+	position: relative;
+    padding: 10px 0 10px 6px;
+}
+
+.dataProviderDiagramNode > .body > .loading.hidden {
+	display: none;
+}
+
+.dataProviderDiagramNode > .body > .loading > .icon {
+	width: 20px;
+	height: 20px;
+	position: absolute;
+	top: 50%;
+	margin-top: -10px;
+	background: url('/workspace/images/loading.gif');
+}
+
+.dataProviderDiagramNode > .body > .loading > .text {
+	padding-left: 28px;
+}
+
+
+.dataProviderDiagramNode > .body > ul.fields {
+	list-style: none;
+}
+
+.dataProviderDiagramNode > .body > ul.fields > li.field {
+	padding: 1px 4px;
+	height: 18px;
+	position: relative;
+}
+
+.dataProviderDiagramNode > .body > ul.fields > li.field:nth-child(odd) {
+	background-color: #e0eaef;
+}
+
+.dataProviderDiagramNode > .body > ul.fields > li.field:nth-child(even) {
+	background-color: #eef4f7;
+}
