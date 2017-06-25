@@ -1,10 +1,15 @@
 {
 	$name: 'JSB.DataCube.Editor',
-	$parent: 'JSB.Widgets.Widget',
+	$parent: 'JSB.Widgets.Page',
 	$require: {
 		SplitLayoutManager: 'JSB.Widgets.SplitLayoutManager',
 		ToolBar: 'JSB.Widgets.ToolBar',
 		ToolManager: 'JSB.Widgets.ToolManager',
+	},
+	
+	$html: {
+		title: 'DataCube',
+		favicon: '/datacube/images/datacube.png'
 	},
 	
 	$client: {
@@ -69,10 +74,16 @@
 					tooltip: 'Создать куб',
 					element: '<div class="icon"></div>',
 					click: function(){
-						explorer.createNewEntry('JSB.DataCube.Model.Cube');
+						explorer.createNewEntry('JSB.DataCube.Model.Cube', {}, 'Куб');
 					}
 				}, 'createSeparator');
 			});
 		}
+	},
+	
+	$server: {
+		
 	}
+	
+	
 }

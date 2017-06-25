@@ -35,3 +35,15 @@
 	box-shadow: inset 0 0 2px #6478A0;
     background-color: #C8DDF9;
 }
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="bind"] > path {
+	stroke: #915a96;
+	stroke-width: 2px;
+}
+
+.cubeEditor > ._jsb_diagram > ._jsb_diagramCanvas > svg > .link[key="bind"] > .head.target > .shape {
+	fill: #915a96;
+    stroke: #915a96;
+    transform: scale(0.5);
+    stroke-width: 2px;
+}
