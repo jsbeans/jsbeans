@@ -57,7 +57,9 @@
 				if(params.event.which != 1){
 					return;
 				}
-				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && sender != this.fromConnector){
+				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') 
+						&& sender != this.fromConnector
+						&& (this.fromConnector.node != sender.node || this.fromConnector.options.acceptLocalLinks)){
 					params.event.stopPropagation();
 					// connect link and complete wiring
 					this.diagram.lookupAppropriateLinks(this.fromConnector, sender, function(lMap){
@@ -103,7 +105,10 @@
 					}
 				}
 				
-				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') && sender != this.fromConnector && sender.isEnabled()){
+				if(JSB().isInstanceOf(sender, 'JSB.Widgets.Diagram.Connector') 
+						&& sender != this.fromConnector 
+						&& sender.isEnabled()
+						&& (this.fromConnector.node != sender.node || this.fromConnector.options.acceptLocalLinks)){
 					params.event.stopPropagation();
 					// check current connector
 					this.diagram.lookupAppropriateLinks(this.fromConnector, sender, function(lMap){

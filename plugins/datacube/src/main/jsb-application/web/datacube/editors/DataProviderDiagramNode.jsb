@@ -1,12 +1,12 @@
 {
 	$name: 'JSB.DataCube.DataProviderDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
+	$require: ['JQuery.UI.Resizable'],
 	
 	$client: {
 		ready: false,
 		provider: null,
 		fields: null,
-		leftFieldConnectors: {},
 		rightFieldConnectors: {},
 		
 		options: {
@@ -35,9 +35,14 @@
 			`);
 			this.body = this.$(`
 				<div class="body">
-					<div class="loading">
+					<div class="loading hidden">
 						<div class="icon"></div>
 						<div class="text">Загрузка схемы данных...</div>
+					</div>
+					<div class="failed hidden">
+						<div class="icon"></div>
+						<div class="text">MSG</div>
+						<div class="details"></div>
 					</div>
 				</div>
 			`);
@@ -45,7 +50,7 @@
 			this.append(this.caption);
 			this.append(this.body);
 			this.append(this.status);
-			this.fieldList = this.$('<ul class="fields"></ul>');
+			this.fieldList = this.$('<div class="fields"></div>');
 			this.body.append(this.fieldList);
 
 			// install drag-move selector
@@ -72,20 +77,96 @@
 				});
 			}
 			
+			this.getElement().resize(function(){
+				var nameCell = $this.fieldList.find('.field .cell.name');
+				var typeCell = $this.fieldList.find('.field .cell.type');
+				var sz = nameCell.outerWidth();
+				typeCell.css('width', 'calc(100% - '+sz+'px)');
+			});
 		},
 		
 		loadScheme: function(callback){
-			this.provider.server().extractFields(function(fields){
+			$this.find('.body > .loading').removeClass('hidden');
+			$this.find('.body > .failed').addClass('hidden');
+			this.provider.server().extractFields(function(fields, fail){
 				$this.find('.body > .loading').addClass('hidden');
-				$this.fields = fields;
-				callback.call($this);
+				if(fail){
+					$this.find('.body > .failed').removeClass('hidden');
+					$this.find('.body > .failed > .text').text('Ошибка загрузки схемы');
+					$this.find('.body > .failed > .details').text(fail.message);
+				} else {
+					$this.fields = fields;
+					callback.call($this);
+				}
 			});
 		},
 		
 		refresh: function(){
 			this.fieldList.empty();
+			var fieldNames = Object.keys(this.fields);
+			fieldNames.sort(function(a, b){
+				return a.localeCompare(b);
+			});
+			for(var i = 0; i < fieldNames.length; i++){
+				var f = fieldNames[i];
+				(function(field){
+					var fElt = $this.$('<div class="field" key="'+field+'"></div>');
+					fElt.append(`#dot
+						<div class="cell name">
+							<div class="icon"></div>
+							<div class="text">{{=field}}</div>
+						</div><div class="cell type">
+							<div class="icon"></div>
+							<div class="text">{{=$this.fields[field]}}</div>
+						</div>
+						<div class="connector right"></div>
+					`);
+					$this.fieldList.append(fElt);
+					
+					// create right connector
+					var rightConnector = $this.installConnector('providerFieldRight', {
+						origin: fElt.find('.connector.right'),
+						handle: [fElt.find('.connector.right'), fElt.find('.cell.type')],
+						iri: 'connector/field/right/' + field,
+						field: field,
+						onHighlight: function(bEnable, meta){
+							$this.highlightConnector(this, bEnable, meta);
+						},
+						onChangeConnection: function(link){
+/*							
+							var lnks = this.getLinks();
+							if(Object.keys(lnks).length > 0){
+								rightColumnConnectorElt.addClass('connected');
+							} else {
+								rightColumnConnectorElt.removeClass('connected');
+							}
+							this.publish('Diagram.TableNode.columnMappingSource.onChangeConnection', link);
+*/							
+						}
+					});
+					$this.rightFieldConnectors[field] = rightConnector;
+					
+				})(f);
+			}
 			
-			debugger;
+			var nameCell = this.fieldList.find('.field .cell.name');
+			var typeCell = this.fieldList.find('.field .cell.type');
+			var fieldElt = this.fieldList.find('.field');
+			nameCell.resizable({
+				autoHide: true,
+				handles: "e",
+				alsoResize: nameCell,
+				start: function(evt, ui){
+					nameCell.resizable('option', 'minWidth', fieldElt.width() * 0.3);
+					nameCell.resizable('option', 'maxWidth', fieldElt.width() * 0.7);
+				},
+				resize: function(evt, ui){
+					var sz = nameCell.outerWidth();
+					typeCell.css('width', 'calc(100% - '+ui.size.width+'px)');
+					nameCell.css('height', '');
+				}
+			});
+			
 		},
 		
 		highlightNode: function(bEnable){
@@ -103,5 +184,14 @@
 				this.removeClass('selected');
 			}
 		},
+		
+		highlightConnector: function(connector, bEnable, meta){
+			var elt = connector.options.origin;
+			if(bEnable){
+				elt.addClass('highlighted');
+			} else {
+				elt.removeClass('highlighted');
+			}
+		}
 	}
 }

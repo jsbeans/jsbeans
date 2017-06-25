@@ -39,6 +39,14 @@
     background: #efeee3;
 }
 
+.dataProviderDiagramNode[provider="JSB.DataCube.Providers.JsonFileDataProvider"] > .body > .fields > .field:nth-child(odd) {
+	background-color: #efeee0;
+}
+
+.dataProviderDiagramNode[provider="JSB.DataCube.Providers.JsonFileDataProvider"] > .body > .fields > .field:nth-child(even) {
+	background-color: #f7f6ee;
+}
+
 .dataProviderDiagramNode[provider="JSB.DataCube.Providers.JsonFileDataProvider"] > .status {
     background: -webkit-linear-gradient(top, #efefc1 0%, #dfd7a6 70%, #cec19d 100%);
     background: -moz-linear-gradient(top, #efefc1 0%, #dfd7a6 70%, #cec19d 100%);

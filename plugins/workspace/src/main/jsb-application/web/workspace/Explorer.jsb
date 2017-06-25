@@ -944,7 +944,7 @@
 			});
 		},
 		
-		createNewEntry: function(eType, opts){
+		createNewEntry: function(eType, opts, prefixName){
 			// resolve parent
 			var item = this.tree.getSelected();
 			var parentKey = null;
@@ -970,7 +970,7 @@
 				var testName;
 				while(true){
 					// construct current folder path
-					var testName = 'Куб ' + lastNum;
+					var testName = prefixName + ' ' + lastNum;
 					if(!nameMap[testName]){
 						break;
 					}
@@ -984,6 +984,9 @@
 					}
 					var node = $this.addTreeItem(desc, parentKey);
 					JSB().deferUntil(function(){
+						if(node.options.allowOpen){
+							$this.publish('Workspace.nodeOpen', node);
+						}
 						node.editor.beginEdit();
 					}, function(){
 						return node.getElement().width() > 0 && node.getElement().height() > 0;

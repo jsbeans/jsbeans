@@ -26,6 +26,7 @@
 						$this.descriptor.name = val;
 						$this.publish('Workspace.renameEntry', {
 							node: $this,
+							entry: $this.getEntry(),
 							name: val
 						});
 					});
