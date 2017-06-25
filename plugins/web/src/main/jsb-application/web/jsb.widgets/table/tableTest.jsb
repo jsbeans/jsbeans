@@ -6,22 +6,20 @@
 		$constructor: function(opts){
 			$base(opts);
 
-			this.table = new Table({
-			    table: {
-                    rowHeaders: true,
-                    colHeaders: true,
-                    manualColumnResize: true,
-                    manualRowResize: true
-			    },
+			JSB().defer(function(){
+                $this.table = new Table({
+                    callbacks: {
+                        createHeader: function() {},
+                        preLoader: function(){ $this.preLoader(); }
+                    }
+                });
+                $this.append($this.table);
 
-			    preLoad: function(){ $this.preLoad(); }
-			});
-			this.append(this.table);
-
-            this.table.addColumn('test');
+                $this.table.addColumn('test');
+			}, 500);
 		},
 
-		preLoad: function(){
+		preLoader: function(){
 
 		}
 	}
