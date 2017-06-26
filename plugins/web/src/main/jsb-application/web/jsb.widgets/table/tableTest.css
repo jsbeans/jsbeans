@@ -1,0 +1,5 @@
+.tableControl > .handsontable {
+    height: 100px;
+    width: 200px;
+    overflow: hidden;
+}

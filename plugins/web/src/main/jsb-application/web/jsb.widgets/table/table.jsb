@@ -11,14 +11,22 @@
 		$constructor: function(opts){
 			$base(opts);
 
+			this.loadCss('table.css');
+			this.addClass('tableControl');
+
 			this.table = this.$('<div></div>');
 			this.append(this.table);
 
 			this.handsontable_options = JSB().merge(this.handsontable_options, opts.table);
-			this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
+			//this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
 			this.handsontable = new Handsontable(this.table.get(0), this.handsontable_options);
 
+			// hooks
+			this.handsontable.addHook('afterColumnMove', function(){ $this._afterColumnMove(); });
+
+			//callbacks
+			//this.callbacks = opts.callbacks;
 
 			this.table.scroll(function(evt){
                 var scrollHeight = evt.target.scrollHeight,
@@ -42,21 +50,23 @@
 		columns: [],
 
         handsontable_options: {
-            //data: [],
+            //data: [[]],
             rowHeaders: true,
             colHeaders: true,
+
             manualColumnResize: true,
             manualRowResize: true,
 
-            // empty table if no data
-            startRows: 0,
-            startCols: 0,
+            manualColumnMove: true,
+            manualRowMove: true,
 
-            // ??
-            //colHeaders: function(i){ return $this._createHeaderCellCallback(i); }
+            // empty table if no data
+            startRows: 10,
+            startCols: 10,
         },
 
 		options: {
+		    isInit: false,
 		    preLoadItems: 10
 		},
 
@@ -66,7 +76,7 @@
 
 		addColumn: function(alias, index){
 		    this.handsontable.alter('insert_col', index);
-debugger;
+
 		    if(!index){
 		        this.columns.push(alias);
 		    } else {
@@ -80,7 +90,7 @@ debugger;
 		        return this.callbacks.createHeader.call(i, this.columns[i]);
 		    } else {
 		        console.log(i + " : " + this.columns[i]);
-		        return i;
+		        return i + 1;
 		    }
 		},
 
@@ -89,6 +99,10 @@ debugger;
 		        var rowCount = this.handsontable.countRows();
 		        this.callbacks.preLoader.call(rowCount);
 		    }
+		},
+
+		render: function(){
+            this.handsontable.render();
 		},
 
 		removeColByIndex: function(indexes){
@@ -125,6 +139,13 @@ debugger;
 
             for(var i in indexes)
                 this.handsontable.alter('remove_row', indexes[i]);
+		},
+
+		// hooks
+		_afterColumnMove: function(columns, target){
+		    console.log(columns);
+		    console.log(target);
+		    debugger;
 		}
 	}
 }
