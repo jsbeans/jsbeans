@@ -1312,7 +1312,7 @@
                 } else {
                     id = arguments[0];
                 }
-                func = arguments[2];
+                func = arguments[1];
 		    } else if(arguments.length == 1) {
 		        // locked(func) // global
                 id = 'GLOBAL';
