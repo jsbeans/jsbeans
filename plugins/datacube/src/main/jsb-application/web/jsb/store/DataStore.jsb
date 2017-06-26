@@ -10,14 +10,6 @@
 			this.config = config;
 		},
 
-		connect: function() {
-            // abstract
-		},
-
-		disconnect: function() {
-            // abstract
-		},
-
 		asSQL: function() {
             throw new Error('SQL query not supported for store ' + this.config.name);
 		},

@@ -5,7 +5,10 @@
 	$server: {
 		$require: [
 		    'jsb.store.sql.JDBC',
+		    'jsb.store.sql.SQLSchemaInspector'
 		],
+
+		connections: {},
 
 		$constructor: function(config){
 			$base(JSB.merge({
@@ -22,6 +25,11 @@
                     }
 			    }, config));
 			// init MongoSQL global var
+
+			var console = {
+			    log: function(){ Log.debug.apply(Log, arguments); },
+			    error: function(){ Log.debug.apply(Log, arguments); }
+			};
 			`#include 'thirdparty/mongo-sql-bundle.js'`;
 		},
 
@@ -29,9 +37,9 @@
             function closeConnection(cn) {
                 JSB.locked($this, 'connection', function() {
                     if (cn.jdbcConnection) {
-                        delete this.connections[cn.id];
+                        delete $this.connections[cn.id];
                         if (cn.deferredCloseKey) {
-                            JSB.cancelDefer(conn.deferredCloseKey);
+                            JSB.cancelDefer(cn.deferredCloseKey);
                         }
                         cn.jdbcConnection.close();
                         cn.jdbcConnection = null;
@@ -101,7 +109,12 @@
             };
         },
 
-        // TODO add schema extractor
+
+        extractSchema: function(){
+            return this.asSQL().connectedJDBC(function(conn){
+                return new SQLSchemaInspector().extractSchemas(conn);
+            });
+        },
 
 		asSQL: function() {
 		    // TODO move to SqlStorageInterface
@@ -109,19 +122,19 @@
                 connectedJDBC: function(func){
                     var conn = $this.getConnection();
                     try {
-                        return func.call(null, conn);
+                        return func.call(null, conn.get());
                     } finally {
                         conn.close();
                     }
-                }
+                },
                 query: function(sql, values, types, rowExtractor) {
-                    return this.connectedJDBC(function(){
-                        return JDBC.query(conn.get(), sql, values, types, rowExtractor);
+                    return this.connectedJDBC(function(conn){
+                        return JDBC.query(conn, sql, values, types, rowExtractor);
                     });
                 },
                 execute: function(sql, values, types) {
-                    return this.connectedJDBC(function(){
-                        return JDBC.execute(conn.get(), sql, values, types);
+                    return this.connectedJDBC(function(conn){
+                        return JDBC.execute(conn, sql, values, types);
                     });
                 },
             };
@@ -133,7 +146,7 @@
                 query: function(sql, parameters, rowExtractor) {
                     var conn = $this.getConnection();
                     try {
-                        return JDBC.parametrizedQuery(conn.get(), parameters,
+                        return JDBC.parametrizedQuery(conn.get(), sql,
                                 function getValue(param, sqlIndex) {
                                     return parameters[param];
                                 },
@@ -157,24 +170,41 @@
                     }, query, {});
                     var mosql = MongoSQL.sql(query);
 
-                    var result = $this.sqlDB().query(mosql.query, mosql.values, rowExtractor);
+                    var result = $this.asSQL().query(mosql.query, mosql.values, rowExtractor);
                     return result;
                 },
-                parametrizedQuery: function(table, query, parameters, rowExtractor) {
+                parametrizedQuery: function(query, parameters, rowExtractor) {
                     var query = JSB.merge({
                         type: 'select',
                     }, query, {});
+
                     var mosql = MongoSQL.sql(query);
+                    var parametrizedSQL = mosql.query.replace(/\$(\d?)/g, function(str, param){
+                        var idx = parseInt(param);
+                        return mosql.values[idx - 1];
+                    });
+
                     var result = $this.asParametrizedSQL()
-                            .query(mosql.query, parameters, rowExtractor);
+                            .query(parametrizedSQL, parameters, rowExtractor);
                     return result;
                 },
             };
 		},
 
-		mongoDB: function() {
-		    // TODO move to MongoStorageInterface
-            throw new Error('MongoDB query not supported for store ' + this.config.name);
+		destroy: function(){
+            JSB.locked($this, 'connection', function() {
+                for (var id in this.connections) if ($this.connections.hasOwnProperty(id)) {
+                    var conn = this.connections[conn.id];
+                    if (conn.jdbcConnection) {
+                        if (conn.deferredCloseKey) {
+                            JSB.cancelDefer(conn.deferredCloseKey);
+                        }
+                        cn.jdbcConnection.close();
+                        cn.jdbcConnection = null;
+                    }
+                }
+            });
+		    $base();
 		},
 
 
