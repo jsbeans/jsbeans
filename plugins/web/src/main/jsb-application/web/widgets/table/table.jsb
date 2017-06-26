@@ -4,7 +4,6 @@
 	$require: ['handsontable'],
 	$client: {
         _oldScroll:{
-            x: 0,
             y: 0
         },
 
@@ -17,16 +16,29 @@
 			this.table = this.$('<div></div>');
 			this.append(this.table);
 
+            //callbacks
+            this.callbacks = opts.callbacks;
+
 			this.handsontable_options = JSB().merge(this.handsontable_options, opts.table);
-			//this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
-			this.handsontable = new Handsontable(this.table.get(0), this.handsontable_options);
+			if(this.callbacks.createHeader) // if undefined will set default header
+			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
-			// hooks
-			this.handsontable.addHook('afterColumnMove', function(){ $this._afterColumnMove(); });
+            JSB().deferUntil(function(){    // table not render before DOM ready
+                $this.handsontable = new Handsontable($this.table.get(0), $this.handsontable_options);
 
-			//callbacks
-			//this.callbacks = opts.callbacks;
+                // hooks
+                $this.handsontable.addHook('afterColumnMove', function(columns, target){ $this._afterColumnMove(columns, target); });
+
+                $this.table.resize(function(){
+                    JSB().defer(function(){
+                        $this.handsontable.render();
+                    }, 300, 'handsontable.resize')
+                })
+
+            }, function(){
+                return $this.isContentReady();
+            });
 
 			this.table.scroll(function(evt){
                 var scrollHeight = evt.target.scrollHeight,
@@ -37,14 +49,13 @@
                 if(scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad))
                     $this.preLoad(evt);
 
-                $this._oldScroll.x = scrollLeft;
                 $this._oldScroll.y = scrollTop;
             });
 		},
 
 		callbacks: {
-		    createHeader: null,
-		    preLoader: null
+		    // createHeader: null,
+		    // preLoader: null
 		},
 
 		columns: [],
@@ -84,14 +95,24 @@
 		    }
 		},
 
+		addRow: function(row, col, input){
+            this.handsontable.populateFromArray(row, 0, input, row, this.handsontable.countCols - 1);
+		},
+
 		_createHeaderCellCallback: function(i){
-		debugger;
 		    if(JSB().isFunction(this.callbacks.createHeader)){
-		        return this.callbacks.createHeader.call(i, this.columns[i]);
+		        return this.callbacks.createHeader.call(this, i, this.columns[i]);
 		    } else {
-		        console.log(i + " : " + this.columns[i]);
 		        return i + 1;
 		    }
+		},
+
+		isInit: function(){
+		    return this.options.isInit;
+		},
+
+		loadData: function(data){
+		    this.handsontable.loadData(data);
 		},
 
 		preLoad: function(evt){
@@ -143,9 +164,7 @@
 
 		// hooks
 		_afterColumnMove: function(columns, target){
-		    console.log(columns);
-		    console.log(target);
-		    debugger;
+		    this.columns = this.columns.splice(target, 0, this.columns.slice(columns[0], columns.length));
 		}
 	}
 }
