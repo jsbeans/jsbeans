@@ -20,14 +20,21 @@
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.DataCube.Providers.DataProviderRepository'],
+		           'JSB.DataCube.Providers.DataProviderRepository',
+		           'JSB.DataCube.Model.Slice'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.CubeNode');
 		},
 		
 		dataProviders: {},
+		dataProviderEntries: {},
+		dataProviderFields: {},
+		dataProviderPositions: {},
 		fields: {},
+		slices: {},
+		slicePositions: {},
+		nodePosition: null,
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
@@ -39,7 +46,68 @@
 		
 		load: function(){},
 		
-		store: function(){},
+		store: function(){
+			var mtxName = 'store_' + this.getId();
+			JSB.getLocker().lock(mtxName);
+			// construct snapshot
+			var snapshot = {
+				providers: [],
+				fields: [],
+				slices: [],
+				position: this.nodePosition
+			};
+			
+			// prepare providers
+			for(var pId in this.dataProviders){
+				var provider = this.dataProviders[pId];
+				var pDesc = {
+					id: pId,
+					jsb: provider.getJsb().$name,
+					entry: this.dataProviderEntries[pId].getLocalId(),
+					fields: this.dataProviderFields[pId],
+					position: this.dataProviderPositions[pId]
+				};
+				snapshot.providers.push(pDesc);
+			}
+			
+			// prepare fields
+			for(var fName in this.fields){
+				var fDesc = {
+					field: fName,
+					type: this.fields[fName].type,
+					link: this.fields[fName].link,
+					binding: []
+				};
+				for(var i = 0; i < this.fields[fName].binding.length; i++){
+					var b = this.fields[fName].binding[i];
+					fDesc.binding.push({
+						provider: b.provider.getId(),
+						field: b.field,
+						type: b.type
+					});
+				}
+				snapshot.fields.push(fDesc);
+			}
+			
+			// prepare slices
+			for(var sId in this.slices){
+				var sDesc = {
+					id: this.slices[sId].getId(),
+					name: this.slices[sId].getName(),
+					query: this.slices[sId].getQuery(),
+					position: this.slicePositions[sId]
+				}
+				snapshot.slices.push(sDesc);
+			}
+			
+			this.workspace.writeArtifactAsJson(this.getLocalId() + '.cube', snapshot);
+			JSB.getLocker().unlock(mtxName);
+		},
+		
+		updateCubeNodePosition: function(pt){
+			this.nodePosition = pt;
+			this.store();
+		},
 		
 		addDataProvider: function(providerEntry){
 			var providerDesc = DataProviderRepository.queryDataProviderInfo(providerEntry);
@@ -51,13 +119,37 @@
 			var pId = this.getId() + '|dp_' + JSB.generateUid();
 			var provider = new ProviderCls(pId, providerEntry, this, providerDesc.opts);
 			this.dataProviders[pId] = provider;
+			this.dataProviderEntries[pId] = providerEntry;
 			this.sourceCount = Object.keys(this.dataProviders).length;
 			this.store();
 			this.doSync();
 			return provider;
 		},
 		
-		addField: function(provider, pField, pType){
+		getProviderById: function(pId){
+			if(!this.dataProviders[pId]){
+				throw new Error('Unable to find data provider by id: ' + pId);
+			}
+			return this.dataProviders[pId];
+		},
+		
+		extractDataProviderFields: function(pId){
+			var provider = this.getProviderById(pId);
+			var dpFields = provider.extractFields();
+			this.dataProviderFields[provider.getId()] = dpFields;
+			this.store();
+			this.doSync();
+			return dpFields;
+		},
+		
+		updateDataProviderNodePosition: function(pId, pt){
+			var provider = this.getProviderById(pId);
+			this.dataProviderPositions[provider.getId()] = pt;
+			this.store();
+		},
+		
+		addField: function(pId, pField, pType){
+			var provider = this.getProviderById(pId);
 			var nameCandidate = pField;
 			if(this.fields[nameCandidate]){
 				// lookup appropriate name
@@ -85,10 +177,11 @@
 			return this.fields[nameCandidate];
 		},
 		
-		linkField: function(field, provider, pField, pType){
+		linkField: function(field, pId, pField, pType){
 			if(!this.fields[field]){
 				throw new Error('Field not existed: ' + field);
 			}
+			var provider = this.getProviderById(pId);
 			// check if binding already existed
 			for(var i = 0; i < this.fields[field].binding.length; i++){
 				if(this.fields[field].binding[i].field == pField && this.fields[field].binding[i].provider == provider){
@@ -144,6 +237,66 @@
 			this.store();
 			this.doSync();
 			return true;
-		}
+		},
+		
+		addSlice: function(){
+			// generate slice name map
+			var snMap = {};
+			for(var sId in this.slices){
+				snMap[this.slices[sId].getName()] = true;
+			}
+			var sName = null;
+			for(var cnt = 1; ; cnt++){
+				sName = 'Срез ' + cnt;
+				if(!snMap[sName]){
+					break;
+				}
+			}
+			var sId = this.getId() + '|slice_' + JSB.generateUid();
+			var slice = new Slice(sId, this, sName);
+			this.slices[sId] = slice;
+			this.sliceCount = Object.keys(this.slices).length;
+			this.store();
+			this.doSync();
+			return slice;
+		},
+		
+		getSliceById: function(sId){
+			if(!this.slices[sId]){
+				throw new Error('Unable to find slice with id: ' + sId);
+			}
+			return this.slices[sId];
+		},
+		
+		renameSlice: function(sId, newName){
+			var slice = this.getSliceById(sId);
+			if(slice.getName() == newName){
+				return slice;
+			}
+			for(var ssId in this.slices){
+				if(this.slices[ssId].getName() == newName){
+					return false;
+				}
+			}
+			slice.name = newName;
+			return slice;
+		},
+		
+		updateSliceSettings: function(sId, desc){
+			var slice = this.getSliceById(sId);
+			this.renameSlice(sId, desc.name);
+			if(desc.query){
+				slice.setQuery(desc.query);
+			}
+			this.store();
+			this.doSync();
+		},
+		
+		updateSliceNodePosition: function(sId, pt){
+			var slice = this.getSliceById(sId);
+			this.slicePositions[slice.getId()] = pt;
+			this.store();
+		},
+
 	}
 }

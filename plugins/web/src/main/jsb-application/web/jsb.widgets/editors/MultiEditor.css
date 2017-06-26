@@ -1,0 +1,35 @@
+@CHARSET "UTF-8";
+
+.multiEditor {
+	overflow: initial !important;
+	text-align: left;
+}
+
+.multiEditor .CodeMirror {
+	width: 100% !important;
+	height: 100% !important;
+	max-height: inherit;
+	max-width: inherit;
+	box-sizing: border-box;
+}
+
+.multiEditor .CodeMirror .CodeMirror-scroll {
+	max-height: inherit;
+	box-sizing: border-box;
+/*	overflow: hidden;*/
+}
+
+.multiEditor .CodeMirror .CodeMirror-hscrollbar,
+.multiEditor .CodeMirror .CodeMirror-vscrollbar {
+/*	overflow: hidden; */
+}
+
+.multiEditor div.CodeMirror span.CodeMirror-matchingbracket {
+	outline: none;
+	color: #f00 !important;
+	font-weight: bold;
+}
+
+.CodeMirror-hints, .CodeMirror-lint-tooltip {
+	z-index: 100000 !important;
+}

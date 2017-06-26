@@ -70,6 +70,9 @@
 			
 			this.updateLinks();
 			this.diagram.updateLayout(this);
+			if(this.options.onPositionChanged){
+				this.options.onPositionChanged.call(this, x, y);
+			}
 		},
 		
 		getPosition: function(){

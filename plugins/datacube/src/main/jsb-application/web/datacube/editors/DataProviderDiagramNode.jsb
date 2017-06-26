@@ -6,6 +6,7 @@
 	$client: {
 		ready: false,
 		provider: null,
+		editor: null,
 		fields: null,
 		rightFieldConnectors: {},
 		
@@ -17,12 +18,19 @@
 				this.selectNode(bEnable);
 			},
 			onRemove: function(){},
-			onSaveNode: function(){}
+			onPositionChanged: function(x, y){
+				var self = this;
+				JSB.defer(function(){
+					self.editor.cubeEntry.server().updateDataProviderNodePosition(self.provider.getId(), {x: x, y: y});
+				}, 500, 'posChanged_' + this.getId());
+				
+			}
 		},
 		
 		$constructor: function(diagram, key, opts){
 			$base(diagram, key, opts);
 			this.provider = opts.provider;
+			this.editor = opts.editor;
 			this.loadCss('DataProviderDiagramNode.css');
 			this.addClass('dataProviderDiagramNode');
 			this.attr('provider', this.provider.getJsb().$name);
@@ -88,7 +96,7 @@
 		loadScheme: function(callback){
 			$this.find('.body > .loading').removeClass('hidden');
 			$this.find('.body > .failed').addClass('hidden');
-			this.provider.server().extractFields(function(fields, fail){
+			this.editor.cubeEntry.server().extractDataProviderFields($this.provider.getId(), function(fields, fail){
 				$this.find('.body > .loading').addClass('hidden');
 				if(fail){
 					$this.find('.body > .failed').removeClass('hidden');
@@ -133,15 +141,6 @@
 							$this.highlightConnector(this, bEnable, meta);
 						},
 						onChangeConnection: function(link){
-/*							
-							var lnks = this.getLinks();
-							if(Object.keys(lnks).length > 0){
-								rightColumnConnectorElt.addClass('connected');
-							} else {
-								rightColumnConnectorElt.removeClass('connected');
-							}
-							this.publish('Diagram.TableNode.columnMappingSource.onChangeConnection', link);
-*/							
 						}
 					});
 					$this.rightFieldConnectors[field] = rightConnector;

@@ -1,13 +1,14 @@
 {
-	$name: 'JSB.DataCube.CubeDiagramNode',
+	$name: 'JSB.DataCube.SliceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.ToolManager'],
+	$require: ['JQuery.UI.Resizable', 
+	           'JSB.Widgets.ToolManager',
+	           'JSB.DataCube.Dialogs.SliceOptionsTool'],
 	
 	$client: {
 		ready: false,
-		fields: null,
 		editor: null,
-		entry: null,
+		slice: null,
 		leftFieldConnectors: {},
 		rightFieldConnectors: {},
 		
@@ -22,7 +23,7 @@
 			onPositionChanged: function(x, y){
 				var self = this;
 				JSB.defer(function(){
-					self.entry.server().updateCubeNodePosition({x: x, y: y});
+					self.editor.cubeEntry.server().updateSliceNodePosition(self.slice.getId(), {x: x, y: y});
 				}, 500, 'posChanged_' + this.getId());
 				
 			}
@@ -31,21 +32,23 @@
 		$constructor: function(diagram, key, opts){
 			$base(diagram, key, opts);
 			this.editor = opts.editor;
-			this.entry = opts.entry;
-			this.loadCss('CubeDiagramNode.css');
-			this.addClass('cubeDiagramNode');
+			this.slice = opts.slice;
+			this.loadCss('SliceDiagramNode.css');
+			this.addClass('sliceDiagramNode');
 			
 			this.caption = this.$(`#dot
 				<div class="caption">
 					<div class="icon"></div>
-					<div class="name">{{=this.entry.getName()}}</div>
+					<div class="name">{{=this.slice.getName()}}</div>
 					
-					<div jsb="JSB.Widgets.Button" class="roundButton btnCreate btn10" tooltip="Создать срез"
-						onclick="{{=$this.callbackAttr(function(evt){ $this.editor.addSlice() })}}"></div>
+					<div jsb="JSB.Widgets.Button" class="roundButton btnEdit btn10" tooltip="Редактировать срез"
+						onclick="{{=$this.callbackAttr(function(evt){ $this.showSettings(evt) })}}"></div>
 				</div>
 			`);
 			this.body = this.$(`
-				<div class="body"></div>
+				<div class="body">
+					<div class="message">Редактор срезов пока не реализован. Формируйте запрос в настройках.</div>
+				</div>
 			`);
 			this.status = this.$('<div class="status"></div>');
 			this.append(this.caption);
@@ -70,14 +73,14 @@
 			
 			$this.refresh();
 			$this.ready = true;
-			
+/*			
 			this.getElement().resize(function(){
 				var nameCell = $this.fieldList.find('.field .cell.name');
 				var typeCell = $this.fieldList.find('.field .cell.type');
 				var sz = nameCell.outerWidth();
 				typeCell.css('width', 'calc(100% - '+sz+'px)');
 			});
-			
+*/			
 			this.subscribe('Workspace.renameEntry', function(sender, msg, desc){
 				var entry = desc.entry;
 				if($this.entry != entry){
@@ -87,6 +90,33 @@
 			});
 		},
 		
+		showSettings: function(evt){
+			var elt = this.$(evt.currentTarget);
+			ToolManager.activate({
+				id: 'sliceOptionsTool',
+				cmd: 'show',
+				data: {
+					slice: $this.slice,
+				},
+				scope: $this.$('.cubeEditorView'),
+				target: {
+					selector: elt,
+				},
+				constraints: [{
+					selector: elt,
+					weight: 10.0
+				},{
+					selector: $this.getElement(),
+					weight: 10.0
+				}],
+				callback: function(desc){
+					$this.slice.cube.server().updateSliceSettings($this.slice.getId(), desc, function(res, fail){
+						debugger;
+					});
+				}
+			});
+		},
+/*		
 		addField: function(field, prependElt){
 			var fElt = null;
 			if(field){
@@ -250,7 +280,8 @@
 			
 			return fElt;
 		},
-		
+*/
+/*		
 		isFieldNameValid: function(fName){
 			var n = fName.trim();
 			if(n.length == 0){
@@ -267,12 +298,14 @@
 			}
 			return true;
 		},
-		
+*/
+/*		
 		beginEditField: function(field){
 			var editor = $this.find('.fields > .field[key="'+field+'"] > .cell.name > .text').jsb();
 			editor.beginEdit();
 		},
-		
+*/
+/*		
 		renameField: function(newName, oldName){
 			$this.entry.server().renameField(oldName, newName, function(desc){
 				$this.fields[desc.field] = desc.type;
@@ -281,7 +314,8 @@
 				fElt.attr('key', desc.field);
 			});
 		},
-		
+*/
+/*		
 		removeField: function(field){
 			var fElt = $this.find('.fields > .field[key="'+field+'"]');
 			ToolManager.showMessage({
@@ -312,9 +346,10 @@
 				}
 			});
 		},
-		
+*/		
 		refresh: function(){
 			this.fieldList.empty();
+/*			
 			if(this.fields){
 				var fieldNames = Object.keys(this.fields);
 				fieldNames.sort(function(a, b){
@@ -328,6 +363,7 @@
 			
 			// add welcome field
 			this.addField(null);
+*/			
 			
 		},
 		

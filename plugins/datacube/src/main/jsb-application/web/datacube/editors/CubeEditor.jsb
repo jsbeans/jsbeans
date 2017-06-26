@@ -9,6 +9,7 @@
 		           
 		cubeEntry: null,
 		cubeNode: null,
+		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -51,6 +52,16 @@
 					},
 					cubeDiagramNode: {
 						jsb: 'JSB.DataCube.CubeDiagramNode',
+						layout: {
+							'default': {
+								auto: true,
+								animate: true,
+								nodeExpand: 20
+							}
+						}
+					},
+					sliceDiagramNode: {
+						jsb: 'JSB.DataCube.SliceDiagramNode',
 						layout: {
 							'default': {
 								auto: true,
@@ -209,8 +220,16 @@
 		
 		addDataProvider: function(dpEntry, pt){
 			this.cubeEntry.server().addDataProvider(dpEntry, function(provider){
-				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:provider});
+				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:provider, editor: $this});
 				pNode.setPosition(pt.x, pt.y);
+			});
+		},
+		
+		addSlice: function(){
+			this.cubeEntry.server().addSlice(function(slice){
+				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this});
+				var cubeRect = $this.cubeNode.getRect();
+				sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
 			});
 		}
 	}

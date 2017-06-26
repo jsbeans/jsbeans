@@ -2,6 +2,12 @@
 
 @import "Buttons.css";
 
+.datacubeToolWrapper {
+	border-radius: 3px !important;
+    background: #fcfbf6 !important;
+    border: none !important;
+}
+
 .dataCubeEditor {
 }
 
