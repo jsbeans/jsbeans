@@ -6,13 +6,25 @@
 	},
 	
 	entry: null,
+	cube: null,
+	name: null,
+	
+	getName: function(){
+		return this.name;
+	},
 	
 	$server: {
 		$disableRpcInstance: true,
 		
-		$constructor: function(entry){
+		$constructor: function(id, pEntry, cube, opts){
+			this.entry = pEntry;
+			this.cube = cube;
+			this.id = id;
 			$base();
-			this.entry = entry;
+		},
+		
+		extractFields: function(){
+			throw new Error('Method "extractFields" should be overriden');
 		}
 	}
 }

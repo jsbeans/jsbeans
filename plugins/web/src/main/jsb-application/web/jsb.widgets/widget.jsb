@@ -90,6 +90,7 @@
 				preloadScope[self.getJsb().$name] = imgList;
 			});
 		}
+		
 	},
 	$server:{
 		$constructor: function(){},
@@ -113,6 +114,5 @@
 			}
 			return imgArr;
 		}
-
 	}
 }

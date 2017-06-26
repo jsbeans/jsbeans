@@ -59,6 +59,10 @@
 			} else {
 				this.records = this.property('records');
 			}
+		},
+		
+		read: function(){
+			return this.workspace.readArtifactAsJson(this.getLocalId() + '.data');
 		}
 
 	}

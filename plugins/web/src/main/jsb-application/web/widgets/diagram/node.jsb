@@ -79,12 +79,21 @@
 		},
 		
 		setRect: function(r){
-			this.getElement().css({
-				'left': r.x,
-				'top': r.y,
-				'width': r.w,
-				'height': r.h
-			});
+			var curR = this.getRect();
+			var cssObj = {};
+			if(r.x != curR.x){
+				cssObj.left = r.x;
+			}
+			if(r.y != curR.y){
+				cssObj.top = r.y;
+			}
+			if(r.w != curR.w){
+				cssObj.width = r.w;
+			}
+			if(r.h != curR.h){
+				cssObj.height = r.h;
+			}
+			this.getElement().css(cssObj);
 			
 			this.updateLinks();
 			this.diagram.updateLayout(this);

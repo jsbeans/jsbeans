@@ -512,6 +512,27 @@
 			return false;
 		},
 		
+		isNodeRegistered: function(key){
+			if(this.nodeDescs[key]){
+				return true;
+			}
+			return false;
+		},
+		
+		isConnectorRegistered: function(key){
+			if(this.connectorDescs[key]){
+				return true;
+			}
+			return false;
+		},
+		
+		isLinkRegistered: function(key){
+			if(this.linkDescs[key]){
+				return true;
+			}
+			return false;
+		},
+		
 		createNode: function(key, opts){
 			var nodeDesc = this.nodeDescs[key];
 			if(!nodeDesc){
@@ -711,7 +732,9 @@
 								if(!cDesc.remoteConnectors[target]){
 									cDesc.remoteConnectors[target] = {};
 								}
-								cDesc.remoteConnectors[target][lId] = 'source';
+								if(!cDesc.remoteConnectors[target][lId]){
+									cDesc.remoteConnectors[target][lId] = 'source';
+								}
 							}
 							break;
 						}
@@ -726,7 +749,9 @@
 								if(!cDesc.remoteConnectors[source]){
 									cDesc.remoteConnectors[source] = {};
 								}
-								cDesc.remoteConnectors[source][lId] = 'target';
+								if(!cDesc.remoteConnectors[source][lId]){
+									cDesc.remoteConnectors[source][lId] = 'target';
+								}
 							}
 							break;
 						}
