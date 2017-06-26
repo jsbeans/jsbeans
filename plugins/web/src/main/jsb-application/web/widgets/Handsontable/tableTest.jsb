@@ -1,7 +1,7 @@
 {
 	$name: 'TableTest',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['Table', 'JSB.Widgets.Button'],
+	$require: ['Handsontable', 'JSB.Widgets.Button'],
 	$client: {
 		$constructor: function(opts){
 			$base(opts);

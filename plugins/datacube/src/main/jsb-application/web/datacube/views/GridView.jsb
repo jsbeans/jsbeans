@@ -1,14 +1,14 @@
 {
 	$name: 'JSB.DataCube.GridView',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['Table'],
+	$require: ['Handsontable'],
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
 
 			this.loadCss('GridView.css');
 
-            this.table = new Table({
+            this.table = new Handsontable({
                 table: {
                     readOnly: true,
 

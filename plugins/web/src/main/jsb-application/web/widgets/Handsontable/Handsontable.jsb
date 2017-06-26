@@ -1,5 +1,5 @@
 {
-	$name: 'Table',
+	$name: 'Handsontable',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['handsontable'],
 	$client: {
@@ -10,7 +10,7 @@
 		$constructor: function(opts){
 			$base(opts);
 
-			this.loadCss('table.css');
+			this.loadCss('Handsontable.css');
 			this.addClass('tableControl');
 
 			this.table = this.$('<div></div>');
