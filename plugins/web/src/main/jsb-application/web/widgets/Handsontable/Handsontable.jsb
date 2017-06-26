@@ -1,0 +1,170 @@
+{
+	$name: 'Handsontable',
+	$parent: 'JSB.Widgets.Control',
+	$require: ['handsontable'],
+	$client: {
+        _oldScroll:{
+            y: 0
+        },
+
+		$constructor: function(opts){
+			$base(opts);
+
+			this.loadCss('Handsontable.css');
+			this.addClass('tableControl');
+
+			this.table = this.$('<div></div>');
+			this.append(this.table);
+
+            //callbacks
+            this.callbacks = opts.callbacks;
+
+			this.handsontable_options = JSB().merge(this.handsontable_options, opts.table);
+
+			if(this.callbacks.createHeader) // if undefined will set default header
+			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
+
+            JSB().deferUntil(function(){    // table not render before DOM ready
+                $this.handsontable = new Handsontable($this.table.get(0), $this.handsontable_options);
+
+                // hooks
+                $this.handsontable.addHook('afterColumnMove', function(columns, target){ $this._afterColumnMove(columns, target); });
+
+                $this.table.resize(function(){
+                    JSB().defer(function(){
+                        $this.handsontable.render();
+                    }, 300, 'handsontable.resize')
+                })
+
+            }, function(){
+                return $this.isContentReady();
+            });
+
+			this.table.scroll(function(evt){
+                var scrollHeight = evt.target.scrollHeight,
+                    scrollTop = evt.target.scrollTop,
+                    clientHeight = evt.target.clientHeight;
+
+                // for content preloader
+                if(scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad))
+                    $this.preLoad(evt);
+
+                $this._oldScroll.y = scrollTop;
+            });
+		},
+
+		callbacks: {
+		    // createHeader: null,
+		    // preLoader: null
+		},
+
+		columns: [],
+
+        handsontable_options: {
+            //data: [[]],
+            rowHeaders: true,
+            colHeaders: true,
+
+            manualColumnResize: true,
+            manualRowResize: true,
+
+            manualColumnMove: true,
+            manualRowMove: true,
+
+            // empty table if no data
+            startRows: 10,
+            startCols: 10,
+        },
+
+		options: {
+		    isInit: false,
+		    preLoadItems: 10
+		},
+
+		addCell: function(row, col, data){
+		    this.handsontable.setDataAtCell(row, col, data);
+		},
+
+		addColumn: function(alias, index){
+		    this.handsontable.alter('insert_col', index);
+
+		    if(!index){
+		        this.columns.push(alias);
+		    } else {
+		        this.columns.splice(index, 0, alias);
+		    }
+		},
+
+		addRow: function(row, col, input){
+            this.handsontable.populateFromArray(row, 0, input, row, this.handsontable.countCols - 1);
+		},
+
+		_createHeaderCellCallback: function(i){
+		    if(JSB().isFunction(this.callbacks.createHeader)){
+		        return this.callbacks.createHeader.call(this, i, this.columns[i]);
+		    } else {
+		        return i + 1;
+		    }
+		},
+
+		isInit: function(){
+		    return this.options.isInit;
+		},
+
+		loadData: function(data){
+		    this.handsontable.loadData(data);
+		},
+
+		preLoad: function(evt){
+		    if(JSB().isFunction(this.callbacks.preLoader)){
+		        var rowCount = this.handsontable.countRows();
+		        this.callbacks.preLoader.call(rowCount);
+		    }
+		},
+
+		render: function(){
+            this.handsontable.render();
+		},
+
+		removeColByIndex: function(indexes){
+		    if(!JSB().isArray(indexes)) indexes = [indexes];
+
+		    for(var i in indexes){
+		        this.handsontable.alter('remove_col', indexes[i]);
+		        delete this.columns[i];
+		    }
+
+		    this.columns = this.columns.filter(function(){el
+		        return el !== undefined;
+		    });
+		},
+
+		removeColByName: function(alias){
+            if(!JSB().isArray(alias)) alias = [alias];
+
+            for(var i in alias){
+                var index = this.columns.indexOf(alias[i]);
+                if(index < 0) continue;
+
+                this.handsontable.alter('remove_col', index);
+                delete this.columns[index];
+            }
+
+            this.columns = this.columns.filter(function(){el
+                return el !== undefined;
+            });
+		},
+
+		removeRow: function(indexes){
+            if(!JSB().isArray(indexes)) indexes = [indexes];
+
+            for(var i in indexes)
+                this.handsontable.alter('remove_row', indexes[i]);
+		},
+
+		// hooks
+		_afterColumnMove: function(columns, target){
+		    this.columns = this.columns.splice(target, 0, this.columns.slice(columns[0], columns.length));
+		}
+	}
+}

@@ -24,7 +24,7 @@
 						},{
 							minSize: '100px',
 							key: 'bottomPane',
-							widgets: [ 'console'],
+							widgets: [ 'gridView' ],
 						}]
 					}
 				},
@@ -32,9 +32,9 @@
 					cubeEditor: {
 						jsb: 'JSB.DataCube.CubeEditor',
 					},
-					console: {
-						jsb: 'Console',
-						title: 'Консоль'
+					gridView: {
+						jsb: 'JSB.DataCube.GridView',
+						title: 'Таблица'
 					},
 				}
 			});
