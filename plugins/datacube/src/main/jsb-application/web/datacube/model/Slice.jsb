@@ -31,7 +31,6 @@
 		
 		setQuery: function(q){
 			this.query = q;
-			this.cube.store();
 			this.doSync();
 		},
 		
