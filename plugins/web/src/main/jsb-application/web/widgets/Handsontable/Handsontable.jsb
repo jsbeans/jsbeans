@@ -74,6 +74,8 @@
             // empty table if no data
             startRows: 10,
             startCols: 10,
+
+            stretchH: 'all',    // "last" or "all" or "none"
         },
 
 		options: {
