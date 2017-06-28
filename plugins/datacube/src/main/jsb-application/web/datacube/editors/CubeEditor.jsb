@@ -189,32 +189,93 @@
 			});
 		},
 		
-		setupCubeNode: function(){
-			if(!this.diagram.isNodeRegistered('cubeDiagramNode') 
-				|| !this.diagram.isConnectorRegistered('cubeFieldLeft')
-				|| !this.diagram.isConnectorRegistered('cubeFieldRight')){
+		setupCubeNode: function(desc){
+			function diagramItemsReady(){
+				return $this.diagram.isNodeRegistered('cubeDiagramNode') 
+				&& $this.diagram.isNodeRegistered('dataProviderDiagramNode')
+				&& $this.diagram.isNodeRegistered('sliceDiagramNode')
+				&& $this.diagram.isConnectorRegistered('cubeFieldLeft')
+				&& $this.diagram.isConnectorRegistered('cubeFieldRight')
+				&& $this.diagram.isConnectorRegistered('providerFieldRight');
+			}
+			if(!diagramItemsReady()){
 				JSB.deferUntil(function(){
-					$this.setupCubeNode();
+					$this.setupCubeNode(desc);
 				}, function(){
-					return $this.diagram.isNodeRegistered('cubeDiagramNode') 
-						&& $this.diagram.isConnectorRegistered('cubeFieldLeft')
-						&& $this.diagram.isConnectorRegistered('cubeFieldRight');
+					return diagramItemsReady();
 				});
 				return;
 			}
+			$this.ignoreHandlers = true;
+			// create cube
+			var cubePos = {x: -150, y: -150};
+			if(desc.cubePosition){
+				cubePos = desc.cubePosition;
+			}
 			this.cubeNode = $this.diagram.createNode('cubeDiagramNode', {editor: $this, entry: $this.cubeEntry});
-			this.cubeNode.setPosition(-150, -150);
+			this.cubeNode.setPosition(cubePos.x, cubePos.y);
+			
+			// create providers
+			var dpNodes = [];
+			var pnMap = {};
+			for(var i = 0; i < desc.providers.length; i++){
+				var pDesc = desc.providers[i];
+				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:pDesc.provider, editor: $this});
+				pnMap[pDesc.provider.getId()] = pNode;
+				pNode.setPosition(pDesc.position.x, pDesc.position.y);
+				dpNodes.push(pNode);
+			}
+			JSB.chain(dpNodes, function(node, c){
+				JSB.deferUntil(function(){
+					c.call($this);
+				}, function(){
+					return node.ready;
+				});
+			}, function(){
+				// sort field
+				var fnArr = [];
+				for(var fName in desc.fields){
+					fnArr.push({
+						field: fName,
+						order: desc.fields[fName].order
+					})
+				}
+				fnArr.sort(function(a, b){
+					return a.order - b.order;
+				});
+				// connect fields
+				for(var j = 0; j < fnArr.length; j++){
+					var fName = fnArr[j].field;
+					var fDesc = desc.fields[fName];
+					$this.cubeNode.addField(fDesc.field, fDesc.type, fDesc.link);
+					for(var i = 0; i < fDesc.binding.length; i++){
+						var bDesc = fDesc.binding[i];
+						var link = $this.diagram.createLink('bind');
+						link.setSource($this.cubeNode.leftFieldConnectors[fName]);
+						link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field])
+					}
+				}
+				
+				// draw slices
+				for(var i = 0; i < desc.slices.length; i++){
+					var sDesc = desc.slices[i];
+					var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: sDesc.slice, editor: $this});
+					sNode.setPosition(sDesc.position.x, sDesc.position.y);
+				}
+				
+				$this.ignoreHandlers = false;
+			});
 		},
 		
 		setCurrentEntry: function(entry){
 			if(this.cubeEntry == entry){
 				return;
 			}
-			this.diagram.clear();
 			this.cubeEntry = entry;
-			this.cubeEntry.server().load(function(){
+			this.diagram.clear();
+			this.cubeEntry.server().load(function(desc){
 				// draw in diagram
-				$this.setupCubeNode();
+				$this.setupCubeNode(desc);
 			});
 		},
 		

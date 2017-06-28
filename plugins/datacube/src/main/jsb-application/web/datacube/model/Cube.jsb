@@ -27,11 +27,13 @@
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.CubeNode');
 		},
 		
+		loaded: false,
 		dataProviders: {},
 		dataProviderEntries: {},
 		dataProviderFields: {},
 		dataProviderPositions: {},
 		fields: {},
+		fieldOrder: [],
 		slices: {},
 		slicePositions: {},
 		nodePosition: null,
@@ -44,7 +46,90 @@
 			}
 		},
 		
-		load: function(){},
+		load: function(){
+			if(!this.loaded){
+				if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
+					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.cube');
+					
+					this.nodePosition = snapshot.position;
+					
+					// construct data providers
+					for(var i = 0; i < snapshot.providers.length; i++){
+						var pDesc = snapshot.providers[i];
+						if(!this.workspace.existsEntry(pDesc.entry)){
+							JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
+							continue;
+						}
+						var pEntry = this.workspace.entry(pDesc.entry);
+						var pJsb = JSB.get(pDesc.jsb);
+						if(!pJsb){
+							JSB.getLogger().error('Unable to construct data provider "'+pDesc.jsb+'" due to missing its bean');
+							continue;
+						}
+						var ProviderClass = pJsb.getClass();
+						var providerDesc = DataProviderRepository.queryDataProviderInfo(pEntry);
+						var provider = new ProviderClass(pDesc.id, pEntry, this, providerDesc.opts);
+						this.dataProviders[pDesc.id] = provider;
+						this.dataProviderEntries[pDesc.id] = pEntry;
+						this.dataProviderFields[pDesc.id] = pDesc.fields;
+						this.dataProviderPositions[pDesc.id] = pDesc.position;
+					}
+					
+					// construct fields
+					for(var i = 0; i < snapshot.fields.length; i++){
+						var fDesc = snapshot.fields[i];
+						this.fields[fDesc.field] = {
+							field: fDesc.field,
+							type: fDesc.type,
+							link: fDesc.link,
+							order: fDesc.order,
+							binding: []
+						};
+						for(var j = 0; j < fDesc.binding.length; j++){
+							var bDesc = fDesc.binding[j];
+							this.fields[fDesc.field].binding.push({
+								provider: this.dataProviders[bDesc.provider],
+								field: bDesc.field,
+								type: bDesc.type
+							});
+						}
+					}
+					
+					// construct slices
+					for(var i = 0; i < snapshot.slices.length; i++){
+						var sDesc = snapshot.slices[i];
+						this.slicePositions[sDesc.id] = sDesc.position;
+						var slice = new Slice(sDesc.id, this, sDesc.name);
+						slice.setQuery(sDesc.query);
+						this.slices[sDesc.id] = slice;
+					}
+					
+				}
+				this.loaded = true;
+			}
+			
+			// construct response for drawing
+			var desc = {
+				cubePosition: this.nodePosition,
+				providers: [],
+				fields: this.fields,
+				slices: []
+			};
+			for(var pId in this.dataProviders){
+				desc.providers.push({
+					provider: this.dataProviders[pId],
+					position: this.dataProviderPositions[pId]
+				});
+			}
+			for(var sId in this.slices){
+				desc.slices.push({
+					slice: this.slices[sId],
+					position: this.slicePositions[sId]
+				});
+			}
+			
+			return desc;
+		},
 		
 		store: function(){
 			var mtxName = 'store_' + this.getId();
@@ -76,6 +161,7 @@
 					field: fName,
 					type: this.fields[fName].type,
 					link: this.fields[fName].link,
+					order: this.fields[fName].order,
 					binding: []
 				};
 				for(var i = 0; i < this.fields[fName].binding.length; i++){
@@ -135,6 +221,9 @@
 		
 		extractDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);
+			if(this.dataProviderFields[provider.getId()]){
+				return this.dataProviderFields[provider.getId()];
+			}
 			var dpFields = provider.extractFields();
 			this.dataProviderFields[provider.getId()] = dpFields;
 			this.store();
@@ -160,11 +249,13 @@
 					}
 				}
 			}
+			var order = Object.keys(this.fields).length;
 			this.fields[nameCandidate] = {
 				field: nameCandidate,
 				type: pType,
 				binding: [],
-				link: false
+				link: false,
+				order: order
 			};
 			this.fields[nameCandidate].binding.push({
 				provider: provider,
@@ -232,7 +323,16 @@
 			if(!this.fields[field]){
 				return false;
 			}
+			var order = this.fields[field].order;
 			delete this.fields[field];
+			
+			// fix ordering
+			for(var fName in this.fields){
+				if(this.fields[fName].order >= order){
+					this.fields[fName].order--;
+				}
+			}
+			
 			this.fieldCount = Object.keys(this.fields).length;
 			this.store();
 			this.doSync();

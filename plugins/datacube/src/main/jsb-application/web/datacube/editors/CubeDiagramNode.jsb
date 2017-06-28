@@ -21,6 +21,9 @@
 			onRemove: function(){},
 			onPositionChanged: function(x, y){
 				var self = this;
+				if(this.editor.ignoreHandlers){
+					return;
+				}
 				JSB.defer(function(){
 					self.entry.server().updateCubeNodePosition({x: x, y: y});
 				}, 500, 'posChanged_' + this.getId());
@@ -87,9 +90,14 @@
 			});
 		},
 		
-		addField: function(field, prependElt){
+		addField: function(field, type, isLink){
 			var fElt = null;
 			if(field){
+				if(!$this.fields){
+					$this.fields = {};
+				}
+				$this.fields[field] = type;
+				var prependElt = $this.find('.field[key="__new__"]');
 				// add field
 				var nWidth = null;
 				var tWidth = null;
@@ -100,6 +108,9 @@
 					tWidth = prevCellType.width();
 				}
 				fElt = $this.$('<div class="field" key="'+field+'"></div>');
+				if(isLink){
+					fElt.addClass('link');
+				}
 				fElt.append(`#dot
 					<div class="cell name">
 						<div class="icon"></div>
@@ -235,11 +246,7 @@
 						var provider = rDesc.node.provider;
 						var field = rDesc.connector.options.field;
 						$this.entry.server().addField(provider.getId(), field, rDesc.node.fields[field], function(desc){
-							if(!$this.fields){
-								$this.fields = {};
-							}
-							$this.fields[desc.field] = desc.type;
-							$this.addField(desc.field, fElt);
+							$this.addField(desc.field, desc.type);
 							$this.editor.ignoreHandlers = true;
 							link.setSource($this.leftFieldConnectors[desc.field]);
 							$this.editor.ignoreHandlers = false;
@@ -322,7 +329,7 @@
 				});
 				for(var i = 0; i < fieldNames.length; i++){
 					var f = fieldNames[i];
-					this.addField(f);
+					this.addField(f, this.fields[f]);
 				}
 			}
 			

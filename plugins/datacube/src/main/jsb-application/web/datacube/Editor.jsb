@@ -77,6 +77,15 @@
 						explorer.createNewEntry('JSB.DataCube.Model.Cube', {}, 'Куб');
 					}
 				}, 'createSeparator');
+
+				explorer.toolbar.insertItem({
+					key: 'createDatabaseSource',
+					tooltip: 'Создать подключение к базе данных',
+					element: '<div class="icon"></div>',
+					click: function(){
+						explorer.createNewEntry('JSB.DataCube.Model.DatabaseSource', {}, 'База');
+					}
+				}, 'createSeparator');
 			});
 		}
 	},

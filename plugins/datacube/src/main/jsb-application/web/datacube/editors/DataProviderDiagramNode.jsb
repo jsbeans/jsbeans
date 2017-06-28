@@ -20,6 +20,9 @@
 			onRemove: function(){},
 			onPositionChanged: function(x, y){
 				var self = this;
+				if(this.editor.ignoreHandlers){
+					return;
+				}
 				JSB.defer(function(){
 					self.editor.cubeEntry.server().updateDataProviderNodePosition(self.provider.getId(), {x: x, y: y});
 				}, 500, 'posChanged_' + this.getId());
