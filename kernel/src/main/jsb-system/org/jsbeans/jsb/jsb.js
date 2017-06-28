@@ -1141,7 +1141,7 @@
 		},
 		
 		isDefined: function(obj){
-			return obj !== undefined;nul
+			return obj !== undefined;
 		},
 		
 		isInstanceOf: function(obj, cls){
