@@ -129,6 +129,10 @@
 			var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab');
 			tabs.css('display', 'none');
 			
+			if(viewArr.length == 0){
+				return;
+			}
+			
 			// show visible
 			for(var i = 0; i < viewArr.length; i++){
 				viewArr[i].viewEntry.tab.css('display', '');

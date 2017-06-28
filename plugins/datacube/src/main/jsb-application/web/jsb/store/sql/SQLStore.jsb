@@ -110,9 +110,12 @@
         },
 
 
-        extractSchema: function(){
+        extractSchema: function(stateCallback){
             return this.asSQL().connectedJDBC(function(conn){
-                return new SQLSchemaInspector().extractSchemas(conn);
+            	var schemaInspector = new SQLSchemaInspector();
+                var schemas = schemaInspector.extractSchemas(conn, stateCallback);
+                schemaInspector.destroy();
+                return schemas;
             });
         },
 

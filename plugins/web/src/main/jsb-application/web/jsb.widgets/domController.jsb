@@ -125,10 +125,10 @@
 							optMap[n.toLowerCase()] = n;
 						}
 					}
-					if(!curCtor.superclass){
+					if(!curCtor.$superclass){
 						break;
 					}
-					curCtor = curCtor.superclass.constructor;
+					curCtor = curCtor.$superclass.$constructor;
 				}
 
 				// collect opts from attrs
