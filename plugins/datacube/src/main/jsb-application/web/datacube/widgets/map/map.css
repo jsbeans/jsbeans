@@ -2,3 +2,10 @@
     height: 100%;
     width: 100%;
 }
+
+.mapContainer .catMap_SVG{
+    position: relative;
+    left: 0px;
+    top: 0px;
+    overflow: visible;
+}
