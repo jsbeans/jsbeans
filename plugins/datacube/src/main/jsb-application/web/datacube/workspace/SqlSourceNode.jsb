@@ -11,7 +11,10 @@
 				<div class="status"></div>
 			`);
 			
-			this.subscribe('Workspace.Entry.updated', function(){
+			this.subscribe('Workspace.Entry.updated', function(sender){
+				if(sender != $this.getEntry()){
+					return;
+				}
 				$this.update();
 			});
 			
@@ -21,6 +24,8 @@
 				}
 				$this.update(params.status);
 			});
+			
+			$this.update();
 		},
 		
 		update: function(status){

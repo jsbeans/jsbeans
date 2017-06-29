@@ -66,6 +66,8 @@
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitPane[key="leftPane"] {
 	top: 70px;
+	bottom: 0;
+    height: auto;
 }
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="leftPane"] > ._dwp_tabview > ._dwp_tabPane {

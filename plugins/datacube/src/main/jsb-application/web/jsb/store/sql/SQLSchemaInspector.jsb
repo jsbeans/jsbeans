@@ -3,9 +3,7 @@
 	$parent: 'jsb.store.DataStore',
 
 	$server: {
-		$require: [
-
-		],
+		$require: ['java:java.sql.JDBCType'],
 
 		$constructor: function(){
 		    $base();
@@ -62,7 +60,8 @@
                     tableDesc.columns[columnName] = JSB.merge({
                         entryType: 'column',
                         name: columnName,
-                        datatype: ''+columns.getString("DATA_TYPE"),
+                        datatype: columns.getInt("DATA_TYPE"),
+                        datatypeName: '' + JDBCType.valueOf(columns.getInt("DATA_TYPE")).toString(),
                         size: ''+columns.getString("COLUMN_SIZE"),
                         decimalDigits: ''+columns.getString("DECIMAL_DIGITS"),
                         nullable: columns.getString("IS_NULLABLE").equalsIgnoreCase('YES'),

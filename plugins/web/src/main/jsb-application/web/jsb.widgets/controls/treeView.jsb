@@ -316,10 +316,10 @@
 			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
-			
+/*			
 			if(this.rootElt["0"].firstChild != null)
 				this.classRemove(this.rootElt["0"].firstChild, 'collapsed');
-			
+*/			
 			return itemObj;
 		},
 		

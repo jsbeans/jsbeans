@@ -66,15 +66,27 @@
             	}
 			});
 			$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
-			
-			// TODO: update entries
+
+			// update entries
+			var existedTables = this.getChildren();
 			for(var sName in schema){
 				var sDesc = schema[sName];
 				for(var tName in sDesc.tables){
 					var tDesc = sDesc.tables[tName];
-					var tEntry = new SqlTable(this.getLocalId() + '|' + sName + '|' + tName, this.workspace, tDesc);
+					var tId = this.getLocalId() + '|' + sName + '|' + tName;
+					if(existedTables[tId]){
+						// already exists
+						delete existedTables[tId];
+						continue;
+					}
+					var tEntry = new SqlTable(tId, this.workspace, tDesc);
 					this.addChildEntry(tEntry);
 				}
+			}
+			
+			// remove unexisted
+			for(var tId in existedTables){
+				this.removeChildEntry(tId);
 			}
 			
 			// construct details

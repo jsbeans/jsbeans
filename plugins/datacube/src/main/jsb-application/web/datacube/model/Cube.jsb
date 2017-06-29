@@ -40,10 +40,16 @@
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
-			if(opts){
-			} else {
-				
+			if(this.property('sources')){
+				this.sourceCount = this.property('sources');
 			}
+			if(this.property('fields')){
+				this.fieldCount = this.property('fields');
+			}
+			if(this.property('slices')){
+				this.sliceCount = this.property('slices');
+			}
+
 		},
 		
 		load: function(){
@@ -187,6 +193,16 @@
 			}
 			
 			this.workspace.writeArtifactAsJson(this.getLocalId() + '.cube', snapshot);
+			
+			this.fieldCount = Object.keys(this.fields).length;
+			this.sourceCount = Object.keys(this.dataProviders).length;
+			this.sliceCount = Object.keys(this.slices).length;
+			
+			this.property('sources', this.sourceCount);
+			this.property('fields', this.fieldCount);
+			this.property('slices', this.sliceCount);
+			this.workspace.store();
+			
 			JSB.getLocker().unlock(mtxName);
 		},
 		

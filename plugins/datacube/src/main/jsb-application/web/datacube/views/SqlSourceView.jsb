@@ -5,6 +5,7 @@
 	$client: {
 		$require: 'JSB.Widgets.SplitLayoutManager',
 		ready: false,
+		ignoreHandlers: false,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -80,13 +81,19 @@
 		},
 		
 		fillSettings: function(settings){
+			$this.ignoreHandlers = true;
 			this.find('.connectionString > .editor').jsb().setData(settings && settings.url ? settings.url : '');
 			this.find('.user > .editor').jsb().setData(settings && settings.properties && settings.properties.user ? settings.properties.user : '');
-			this.find('.user > .editor').jsb().setData(settings && settings.properties && settings.properties.password ? settings.properties.password : '');
+			this.find('.password > .editor').jsb().setData(settings && settings.properties && settings.properties.password ? settings.properties.password : '');
+			this.find('.connectionSettings .message').text('');
+			$this.ignoreHandlers = false;
 		},
 		
 		updateSettings: function(){
 			$this.updateButtons();
+			if($this.ignoreHandlers){
+				return;
+			}
 			JSB.defer(function(){
 				var settings = $this.collectSettings();
 				var entry = $this.node.getEntry();

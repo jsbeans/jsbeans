@@ -16,7 +16,10 @@
 				</div>
 			`);
 			
-			this.subscribe('Workspace.Entry.updated', function(){
+			this.subscribe('Workspace.Entry.updated', function(sender){
+				if(sender != $this.descriptor.entry){
+					return;
+				}
 				$this.update();
 			});
 		},
