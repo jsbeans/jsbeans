@@ -1,12 +1,14 @@
 @CHARSET "UTF-8";
 
 .workspaceNavigator {
+/*	
 	padding: 4px 6px;
     background-color: #F8F8F8;
     border-radius: 8px;
     border-bottom: 1px solid #BABABA;
     border-right: 1px solid #bababa;
     box-shadow: inset 1px 1px 1px #9E9E9E;
+*/    
 }
 
 .workspaceNavigator > ul.wnbContainer {
@@ -37,13 +39,15 @@
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .icon {
 	position: absolute;
-	width: 16px;
-	height: 16px;
-	background-size: 100%;
+    width: 24px;
+    height: 24px;
+    background-size: 100%;
+    top: 50%;
+    margin-top: -12px;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .text {
-	padding-left: 20px;
+	padding-left: 28px;
 }
 
 /*

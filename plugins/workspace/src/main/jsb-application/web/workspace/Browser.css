@@ -65,14 +65,15 @@
 }
 
 .workspaceBrowser > .workspaceNavigator > ul.wnbContainer > li.tag {
-	min-height: 20px;
-    min-width: 26px;
+	min-height: 28px;
+    min-width: 34px;
 }
 
 .workspaceBrowser > .workspaceNavigator > ul.wnbContainer > li.tag > .icon {
 	left: 4px;
-    top: 1px;
 }
 
 .workspaceBrowser > .workspaceNavigator > ul.wnbContainer > li.tag > .text {
+	font-size: 16px;
+    padding-top: 1px;
 }

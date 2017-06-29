@@ -1,0 +1,18 @@
+@CHARSET "UTF-8";
+
+.widgetExplorer {
+	padding: 6px;
+}
+
+.widgetExplorer ._dwp_groupBox[category] {
+	margin-bottom: 6px;
+}
+
+.widgetExplorer ._dwp_groupBox[category] > ._dwp_groupBoxPane {
+	padding-top: 12px;
+	background: #f7f5f3;
+}
+
+.widgetExplorer ._dwp_groupBox[category] > ._dwp_groupBoxPane > ._dwp_listBox {
+	background: none;
+}
