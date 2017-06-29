@@ -14,5 +14,10 @@ public class DataCubePluginActivator implements PluginActivator {
         ConfigHelper.addJssFolder(ff);
         ConfigHelper.addWebFolder(ff);
 
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

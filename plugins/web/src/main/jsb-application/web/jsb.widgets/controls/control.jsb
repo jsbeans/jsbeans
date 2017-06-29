@@ -6,8 +6,8 @@
 			opts = opts || {};
 			$base(opts);
 			
-			if(this.options !== this.constructor.superclass.options){
-				this.options = JSB.merge(true, {}, this.constructor.superclass.options, this.options);
+			if(this.options !== this.$constructor.$superclass.options){
+				this.options = JSB.merge(true, {}, this.$constructor.$superclass.options, this.options);
 			} 
 			this.options = JSB.merge(true, {}, this.options, opts);
 			

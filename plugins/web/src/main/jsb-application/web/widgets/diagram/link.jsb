@@ -91,6 +91,10 @@
 		},
 		
 		setSource: function(obj){
+			if(this.source && JSB.isInstanceOf(this.source, 'JSB.Widgets.Diagram.Connector') && this.source != obj){
+				// unbind source
+				this.source.removeLink(this);
+			}
 			if(JSB().isInstanceOf(obj, 'JSB.Widgets.Diagram.Connector')){
 				this.source = obj;
 			} else if(obj && !JSB().isNull(obj.x) && !JSB().isNull(obj.y)){
@@ -103,6 +107,10 @@
 		},
 
 		setTarget: function(obj){
+			if(this.target && JSB.isInstanceOf(this.target, 'JSB.Widgets.Diagram.Connector') && this.target != obj){
+				// unbind source
+				this.target.removeLink(this);
+			}
 			if(JSB().isInstanceOf(obj, 'JSB.Widgets.Diagram.Connector')){
 				this.target = obj;
 			} else if(obj && !JSB().isNull(obj.x) && !JSB().isNull(obj.y)){

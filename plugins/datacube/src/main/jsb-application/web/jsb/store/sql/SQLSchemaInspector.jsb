@@ -3,20 +3,19 @@
 	$parent: 'jsb.store.DataStore',
 
 	$server: {
-		$require: [
-
-		],
+		$require: ['java:java.sql.JDBCType'],
 
 		$constructor: function(){
 		    $base();
 		},
 
 
-		extractSchemas: function(jdbcConnection){
+		extractSchemas: function(jdbcConnection, stageCallback){
 			var schemas = {};
             var databaseMetaData = jdbcConnection.getMetaData();
 
             var tables = databaseMetaData.getTables(null, null, null, ["TABLE"]);
+            var tableArr = [];
             while (tables.next()) {
 
                 var tableSchema = ''+tables.getString("TABLE_SCHEM");
@@ -38,7 +37,21 @@
                     schema: tableSchema,
                     columns: {}
                 }, schemaDesc.tables[tableName]);
-
+                
+                tableArr.push({
+                	table: tableName,
+                	schema: tableSchema
+                });
+            }
+            
+            for(var i = 0; i < tableArr.length; i++){
+            	if(stageCallback){
+            		stageCallback.call(this, i, tableArr.length);
+            	}
+            	var tableSchema = tableArr[i].schema;
+            	var tableName = tableArr[i].table;
+            	var schemaDesc = schemas[tableSchema];
+            	var tableDesc = schemaDesc.tables[tableName];
                 // list columns
                 var columns = databaseMetaData.getColumns(null, tableSchema, tableName, null);
                 while (columns.next()) {
@@ -47,7 +60,8 @@
                     tableDesc.columns[columnName] = JSB.merge({
                         entryType: 'column',
                         name: columnName,
-                        datatype: ''+columns.getString("DATA_TYPE"),
+                        datatype: columns.getInt("DATA_TYPE"),
+                        datatypeName: '' + JDBCType.valueOf(columns.getInt("DATA_TYPE")).toString(),
                         size: ''+columns.getString("COLUMN_SIZE"),
                         decimalDigits: ''+columns.getString("DECIMAL_DIGITS"),
                         nullable: columns.getString("IS_NULLABLE").equalsIgnoreCase('YES'),

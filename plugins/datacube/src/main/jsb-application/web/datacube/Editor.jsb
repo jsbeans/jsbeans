@@ -70,6 +70,15 @@
 			this.subscribe('Workspace.Explorer.initialized', function(explorer){
 				// inject toolbar buttons
 				explorer.toolbar.insertItem({
+					key: 'createSqlSource',
+					tooltip: 'Создать подключение к базе данных',
+					element: '<div class="icon"></div>',
+					click: function(){
+						explorer.createNewEntry('JSB.DataCube.Model.SqlSource', {}, 'База');
+					}
+				}, 'createSeparator');
+				
+				explorer.toolbar.insertItem({
 					key: 'createCube',
 					tooltip: 'Создать куб',
 					element: '<div class="icon"></div>',
@@ -78,12 +87,13 @@
 					}
 				}, 'createSeparator');
 
+				
 				explorer.toolbar.insertItem({
-					key: 'createDatabaseSource',
-					tooltip: 'Создать подключение к базе данных',
+					key: 'createDashboard',
+					tooltip: 'Создать визуализацию',
 					element: '<div class="icon"></div>',
 					click: function(){
-						explorer.createNewEntry('JSB.DataCube.Model.DatabaseSource', {}, 'База');
+						explorer.createNewEntry('JSB.DataCube.Model.Dashboard', {}, 'Визуализация');
 					}
 				}, 'createSeparator');
 			});

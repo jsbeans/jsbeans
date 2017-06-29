@@ -910,7 +910,7 @@
 					}
 					
 					if(curJsb.getClass()){
-						var s = curJsb.getClass().superclass;
+						var s = curJsb.getClass().$superclass;
 						if(!s){
 							break;
 						}
@@ -1045,9 +1045,9 @@
 			if(checkPojo){
 				try {
 					// Not own constructor property must be Object
-					if ( obj.constructor &&
-						!hasOwn.call(obj, 'constructor') &&
-						!hasOwn.call(obj.constructor.prototype,'isPrototypeOf')) {
+					if ( obj.$constructor &&
+						!hasOwn.call(obj, '$constructor') &&
+						!hasOwn.call(obj.$constructor.prototype,'isPrototypeOf')) {
 						return false;
 					}
 				} catch ( e ) {
@@ -1678,11 +1678,11 @@
 				this.merge(cls.prototype, body);
 			}
 
-			cls.prototype.constructor = cls;
-			cls.prototype.parent = function() {
+			cls.prototype.$constructor = cls;
+			cls.prototype.$parent = function() {
 				return parent;
 			};
-			cls.superclass = parent.prototype;
+			cls.$superclass = parent.prototype;
 		},
 
 
@@ -1708,19 +1708,13 @@
 					
 				}
 			};
-/*
-			var F = function() {};
-			F.prototype = body;
-			newFunc.prototype = new F();
-			newFunc.prototype.constructor = newFunc;
-*/
 		},
 		
 		_enhanceSimple: function(cls, body){
 			var F = function() {};
 			F.prototype = body;
 			cls.prototype = new F();
-			cls.prototype.constructor = cls;
+			cls.prototype.$constructor = cls;
 		},
 		
 		create: function(wName, opts, callback){
@@ -2033,8 +2027,8 @@
 			while(curProto){
 				// add to proto stack
 				protoStack.push(curProto);
-				if(curProto.constructor && curProto.constructor.superclass){
-					curProto = curProto.constructor.superclass;
+				if(curProto.$constructor && curProto.$constructor.$superclass){
+					curProto = curProto.$constructor.$superclass;
 				} else {
 					break;
 				}
@@ -3532,14 +3526,14 @@ JSB({
 			var callerCtx = ctxStack[ctxStack.length - 2];
 			var cls = callerCtx.jsb.getClass();
 			
-			var sClass = cls.superclass;
+			var sClass = cls.$superclass;
 			if(JSB().isNull(sClass) || JSB().isNull(sClass.jsb)){
 				throw 'Wrong parent class found';
 			}
 			return sClass;
 		}
 		
-		var curScope = this.constructor.superclass;
+		var curScope = this.$constructor.$superclass;
 		while(true){
 			if(JSB().isNull(curScope) || JSB().isNull(curScope.jsb)){
 				throw 'Unable to find className: "' + className + '"in "' + this.jsb.$name + '" hierarchy stack';
@@ -3548,7 +3542,7 @@ JSB({
 				return curScope; 
 			}
 			
-			curScope = curScope.constructor.superclass;
+			curScope = curScope.$constructor.$superclass;
 		}
 	},
 	

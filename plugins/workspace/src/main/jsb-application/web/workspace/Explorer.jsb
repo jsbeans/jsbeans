@@ -672,13 +672,15 @@
 				curTreeNode = $this.tree.replaceNode({
 					key: key,
 					element: node,
-					cssClass: itemDesc.type
+					cssClass: itemDesc.type,
+					collapsed: itemDesc.type == 'entry'
 				}, parent);
 			} else {
 				curTreeNode = $this.tree.addNode({
 					key: key,
 					element: node,
-					cssClass: itemDesc.type
+					cssClass: itemDesc.type,
+					collapsed: itemDesc.type == 'entry'
 				}, parent);
 			}
 			node.treeNode = curTreeNode;
@@ -859,7 +861,6 @@
 		
 		redrawTree: function(){
 			this.tree.clear();
-			
 			for(var id in this.wtree){
 				var desc = this.wtree[id];
 				this.addTreeItem(desc);
