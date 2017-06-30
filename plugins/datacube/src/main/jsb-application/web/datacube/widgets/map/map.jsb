@@ -22,14 +22,54 @@
 			);
 		},
 
-		//_aggrs: null,
+		/*
+		* data example
+		[
+        	{
+        		id: "",
+        		value: "",
+        		geo: "",
+        		path: {
+                    attrs: {
+
+                    },
+                    styles: {
+
+                    }
+        		},
+        		label: {
+                    attrs: {
+
+                    },
+                    styles: {
+
+                    }
+                },
+        	},
+        	{...},
+        	{...}
+        ]
+		*/
 
 		_aggrs: [
 		    {
 		        id: "Франция",
-		        value: 10
+		        value: 10,
+
 		    }
 		],
+
+		_defaults: {
+		    path: {
+                styles: {
+                    fill: "green",
+                    stroke: "green"
+                }
+		    },
+		    label: {
+
+		    }
+		},
 
         map: {
             // http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png
@@ -121,7 +161,6 @@
                     if(this._zoomInit_ !== this.getZoom()) $this.updateCategories();
                 })
                 .on("zoom",function(){
-                debugger;
                     $this.updateCategories();
                 });
 
@@ -168,41 +207,7 @@
                 //$this.aggrGroup.style("height", height + "px");
             }, 1000)
         },
-/*
-        mapColorScale: function(){
-            var values = this._aggrs.map(function(el){ return el.value; }),
-                            boundMin = d3.min(values),
-                            boundMax = d3.max(values);
-            return d3.scaleLinear().range([0, 9]).domain([boundMin, boundMax]);
-        },
 
-        mapColorQuantize: function(){
-            var colorScale = {
-                converge: [
-                  d3.rgb('#ffffd9'),
-                  d3.rgb('#edf8b1'),
-                  d3.rgb('#c7e9b4'),
-                  d3.rgb('#7fcdbb'),
-                  d3.rgb('#41b6c4'),
-                  d3.rgb('#1d91c0'),
-                  d3.rgb('#225ea8'),
-                  d3.rgb('#253494'),
-                  d3.rgb('#081d58')],
-                diverge: [
-                  d3.rgb('#8c510a'),
-                  d3.rgb('#bf812d'),
-                  d3.rgb('#dfc27d'),
-                  d3.rgb('#f6e8c3'),
-                  d3.rgb('#f5f5f5'),
-                  d3.rgb('#c7eae5'),
-                  d3.rgb('#80cdc1'),
-                  d3.rgb('#35978f'),
-                  d3.rgb('#01665e')]
-            };
-
-            return d3.scaleQuantize().domain([0,9]).range(colorScale.converge);
-        },
-*/
         rebuildCategories: function(){
             this.aggrGroup.selectAll("*").remove();
 
@@ -211,23 +216,80 @@
             this.mapGlyphsLabels = this.aggrGroup.selectAll('g.mapGlyph').append("text").attr("class", "mapGlyphLabel");
 
             // update
-            this.mapGlyphsPaths.data(this._aggrs).attr("d", function(_cat){ return $this.geoPath(_cat.geo); });
-            this.mapGlyphsLabels.data(this._aggrs).text(function(_cat){ return _cat.value; })
-                .attr("transform", function(_cat){
-                   var centroid = $this.geoPath.centroid(_cat.geo);
+            this.mapGlyphsPaths.nodes().forEach(function(item, i, arr){
+                item = d3.select(item);
+
+                item.attr("mapId", $this._aggrs[i].id);
+
+                item.attr("d", $this.geoPath($this._aggrs[i].geo));
+
+                var opts = JSB().merge($this._defaults.path, $this._aggrs[i].path);
+                for(var j in opts.attrs){
+                    item.attr(j, opts.attrs[j]);
+                }
+
+                for(var j in opts.styles){
+                    item.style(j, opts.styles[j]);
+                }
+            });
+
+            this.mapGlyphsLabels.nodes().forEach(function(item, i, arr){
+                item = d3.select(item);
+
+                item.attr("mapId", $this._aggrs[i].id);
+
+                item.text($this._aggrs[i].value);
+
+                item.attr("transform", function(){
+                   var centroid = $this.geoPath.centroid($this._aggrs[i].geo);
                    return "translate("+centroid[0]+","+centroid[1]+")";
-                 });
+                });
+
+                var opts = JSB().merge($this._defaults.label, $this._aggrs[i].label);
+                for(var j in opts.attrs){
+                    item.attr(j, opts.attrs[j]);
+                }
+
+                for(var j in opts.styles){
+                    item.style(j, opts.styles[j]);
+                }
+            });
 
             // exit
             this.aggrGroup.selectAll('g.mapGlyph').data(this._aggrs).exit().remove();
 
-            this.mapGlyphsPaths
-              .attr("fill", function(_cat){
-                return "red";
-              })
-              .attr("stroke", function(_cat){
-                return "red";
-              });
+            // callbacks
+            // this.mapGlyphsPaths.on("", function(){});
+            // this.mapGlyphsLabels.on("", function(){});
+        },
+
+        setNewAttrs: function(attrs){
+            for(var i in attrs){
+                if(attr[i].path){
+                    var obj = d3.select("path[mapId=" + attrs[i].id + "]");
+
+                    var opts = JSB().merge($this._defaults.path, attr[i].path);
+                    for(var j in opts.attrs){
+                        obj.attr(j, opts.attrs[j]);
+                    }
+
+                    for(var j in opts.styles){
+                        obj.style(j, opts.styles[j]);
+                    }
+                }
+                if(attr[i].label){
+                    var obj = d3.select("text[mapId=" + attrs[i].id + "]");
+
+                    var opts = JSB().merge($this._defaults.label, attr[i].label);
+                    for(var j in opts.attrs){
+                        obj.attr(j, opts.attrs[j]);
+                    }
+
+                    for(var j in opts.styles){
+                        obj.style(j, opts.styles[j]);
+                    }
+                }
+            }
         },
 
         updateCategories: function(){
