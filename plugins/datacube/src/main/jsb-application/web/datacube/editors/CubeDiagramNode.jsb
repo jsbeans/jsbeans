@@ -133,6 +133,7 @@
 					
 				`);
 				fElt.find('.cell.type > .text').text($this.fields[field]);
+				fElt.find('.cell.name').attr('title', field);
 				
 				JSB.deferUntil(function(){
 					var nameEditor = fElt.find('.cell.name > .text').jsb();
@@ -265,9 +266,6 @@
 			if(n.length == 0){
 				return false;
 			}
-			if(/\s/.test(n)){
-				return false;
-			}
 			if(/$\d/.test(n)){
 				return false;
 			}
@@ -292,6 +290,7 @@
 				delete $this.fields[oldName];
 				var fElt = $this.find('.fields > .field[key="'+$this.prepareFieldKey(oldName)+'"]');
 				fElt.attr('key', desc.field);
+				fElt.find('.cell.name').attr('title', desc.field);
 			});
 		},
 		

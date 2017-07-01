@@ -133,6 +133,7 @@
 						</div>
 						<div class="connector right"></div>
 					`);
+					fElt.find('.cell.name').attr('title', field);
 					fElt.find('.cell.name > .text').text(field);
 					fElt.find('.cell.type > .text').text($this.fields[field]);
 					$this.fieldList.append(fElt);

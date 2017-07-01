@@ -318,9 +318,6 @@
 			if(n.length == 0){
 				return false;
 			}
-			if(/\s/.test(n)){
-				return false;
-			}
 			if(/$\d/.test(n)){
 				return false;
 			}
