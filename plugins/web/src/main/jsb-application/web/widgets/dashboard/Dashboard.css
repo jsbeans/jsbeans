@@ -1,0 +1,12 @@
+@CHARSET "UTF-8";
+
+._jsb_dashboard {
+	position: relative;
+	box-sizing: border-box;
+}
+
+._jsb_dashboard > ._jsb_dashboardPlaceholder {
+	
+}
+
+._jsb_dashboard > ._jsb_dashboardContainer {}
