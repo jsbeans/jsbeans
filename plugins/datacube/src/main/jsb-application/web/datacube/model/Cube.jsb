@@ -21,7 +21,8 @@
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'JSB.DataCube.Providers.DataProviderRepository',
-		           'JSB.DataCube.Model.Slice'],
+		           'JSB.DataCube.Model.Slice',
+		           'JSB.DataCube.Query.QueryEngine'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.CubeNode');
@@ -50,6 +51,7 @@
 				this.sliceCount = this.property('slices');
 			}
 
+            this.queryEngine = new QueryEngine(this);
 		},
 		
 		load: function(){
