@@ -1,11 +1,11 @@
 ({
-	$name: 'jsb.store.StoreManager',
+	$name: 'JSB.Store.StoreManager',
 	$singleton: true,
 	$globalize: 'StoreManager',
 
 	$server: {
 		$require: [
-		    'jsb.store.sql.SQLStore'
+		    'JSB.Store.Sql.SQLStore'
 		],
 
 		_stores: {},
@@ -40,7 +40,7 @@
 		},
 
 		_getStoreConfigPath: function(name) {
-		    return 'jsb.store.dataStores.' + name;
+		    return 'JSB.Store.dataStores.' + name;
 		},
 
 		_ensureStore: function(config) {
@@ -57,7 +57,7 @@
                 if (!store) {
                     // TODO
 //                    var TypedStore = JSB(config.type).getClass();
-                    if (config.type == 'jsb.store.sql.SQLStore') {
+                    if (config.type == 'JSB.Store.Sql.SQLStore') {
                         var TypedStore = SQLStore;
                     } else {
                         throw new Error('Not supported store type ' + config.type);

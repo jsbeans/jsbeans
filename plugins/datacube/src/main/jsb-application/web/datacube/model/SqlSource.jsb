@@ -11,7 +11,7 @@
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'jsb.store.StoreManager'],
+		           'JSB.Store.StoreManager'],
 		
 		settings: null,
 		
@@ -34,7 +34,7 @@
 		updateSettings: function(settings){
 			this.settings = JSB.merge({
 				name: settings.url,
-				type: 'jsb.store.sql.SQLStore',
+				type: 'JSB.Store.Sql.SQLStore',
 			}, settings);
 			this.property('settings', this.settings);
 			this.workspace.store();

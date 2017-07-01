@@ -1,11 +1,11 @@
 ({
-	$name: 'jsb.store.Example',
+	$name: 'JSB.Store.Example',
 	$singleton: true,
 
 	$server: {
 		$require: [
-		    'jsb.store.StoreManager',
-		    'jsb.store.sql.SQLSchemaInspector'
+		    'JSB.Store.StoreManager',
+		    'JSB.Store.Sql.SQLSchemaInspector'
 		],
 
 		$constructor: function(){
@@ -17,7 +17,7 @@ debugger;
 //		    var store = StoreManager.getStore('MySQLStore'); // DataStore with auto managed connections
 		    var store = StoreManager.getStore({
                 name: 'pdb',
-                type: 'jsb.store.sql.SQLStore',
+                type: 'JSB.Store.Sql.SQLStore',
 		        url: 'jdbc:postgresql://172.16.2.1:5432/passportdb',
 		        properties: {
                     user: 'postgres',
@@ -28,14 +28,14 @@ debugger;
             var schema = store.extractSchema();
 //		    var sqldb = store.asSQL(); // SQL
 //            var schemas = sqldb.connectedJDBC(function(conn){
-//                var SQLSchemaInspector = JSB.get('jsb.store.sql.SQLSchemaInspector').getClass();
+//                var SQLSchemaInspector = JSB.get('JSB.Store.Sql.SQLSchemaInspector').getClass();
 //                return new SQLSchemaInspector().extractSchemas(conn);
 //            });
 
             try {
                 var mosqldb = store.asMoSQL(); // mongo-sql Json to SQL
 //
-                mosqldb.parametrizedQuery({
+                var iterator = mosqldb.iteratedParametrizedQuery({
                       type: 'select'
                     , table: 'artefact'
                     , columns: ['id', 'description', 'length']
@@ -48,6 +48,8 @@ debugger;
                 }, {
                     id: 123
                 });
+                iterator.next();
+                iterator.close();
 
             } finally {
                 db.close();

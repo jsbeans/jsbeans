@@ -1,5 +1,5 @@
 ({
-	$name: 'jsb.store.sql.JDBC',
+	$name: 'JSB.Store.Sql.JDBC',
 	$singleton: true,
 
 	$server: {
@@ -55,7 +55,7 @@
 		},
 
 		loadDrivers: function(skipErrors){
-		    for(var name in this.JDBCDrivers) if (properties.hasOwnProperty(p)) {
+		    for(var name in this.JDBCDrivers) if (this.JDBCDrivers.hasOwnProperty(name)) {
 		        var className = this.JDBCDrivers[name];
 		        this.loadDriver(className, skipErrors);
 		    }
@@ -72,7 +72,7 @@
             }
 		},
 
-		parametrizedQuery: function(connection, parametrizedSQL, getValue, getType, rowExtractor) {
+		iteratedParametrizedQuery: function(connection, parametrizedSQL, getValue, getType, rowExtractor, onClose) {
 		    var getType = getType || function(){
 		        return null;
 		    }
@@ -89,10 +89,10 @@
                 return '?';
 		    });
 
-		    return this.query(connection, sql, values, types, rowExtractor);
+		    return this.query(connection, sql, values, types, rowExtractor, onClose);
 		},
 
-		query: function(connection, sql, values, types, rowExtractor) {
+		iteratedQuery: function(connection, sql, values, types, rowExtractor, onClose) {
 		    var values = values || null;
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
@@ -104,7 +104,6 @@
 		            var value = values[i];
 		            var type = types.length > i && types[i] || null;
 		            var type = this._getJDBCType(value, type);
-debugger;
                     this._setStatementArgument(st, i + 1, value, type);
 		        }
 		        rs = st.executeQuery();
@@ -114,68 +113,37 @@ debugger;
 		    }
 
 		    return {
-		        columns: (function(){
-                    var count = rs.getMetaData().getColumnCount();
-                    var columns = [];
-                    for(var i = 1; i < count + 1; i++) {
-                        columns.push({
-                            index: i,
-                              label : ''+rs.getMetaData().getColumnLabel(i),
-                              name : ''+rs.getMetaData().getColumnName(i),
-                              sqlType : rs.getMetaData().getColumnType(i),
-                              type: '' + JDBCType.valueOf(rs.getMetaData().getColumnType(i))
-                          });
-                      }
-                      return columns;
-                })(),
-                values: (function() {
-                    var resultArray = [];
-                    while(resultSet = rs.next()) {
-                         resultArray.push(rowExtractor.call($this, rs));
-                     }
-                     rs.close();
-                     return resultArray;
-                })()
+//		        columns: (function(){
+//                    var count = rs.getMetaData().getColumnCount();
+//                    var columns = [];
+//                    for(var i = 1; i < count + 1; i++) {
+//                        columns.push({
+//                            index: i,
+//                              label : ''+rs.getMetaData().getColumnLabel(i),
+//                              name : ''+rs.getMetaData().getColumnName(i),
+//                              sqlType : rs.getMetaData().getColumnType(i),
+//                              type: '' + JDBCType.valueOf(rs.getMetaData().getColumnType(i))
+//                          });
+//                      }
+//                      return columns;
+//                })(),
+                next: function(){
+                    var resultSet = rs.next();
+                    var value = rowExtractor.call($this, resultSet);
+                    if (JSB.isNull(value)) {
+                        this.close();
+                    }
+                    return value;
+                },
+                close: function(){
+                    if (!st.isClosed()) {
+                        st.close();
+                        if (JSB.isFunction(onClose)) {
+                            onClose();
+                        }
+                    }
+                },
 		    };
-
-            // TODO: add lazy resultset with lazy connection close
-//		    return {
-//		        columns: function(){
-//		            var count = rs.getMetaData().getColumnCount();
-//		            var columns = [];
-//		            for(var i = 1; i < count + 1; i++) {
-//		                columns.push({
-//		                    index: i,
-//                            label : ''+rs.getMetaData().getColumnLabel(i),
-//                            name : ''+rs.getMetaData().getColumnName(i),
-//                            type : ''+rs.getMetaData().getColumnTypeName(i)
-//                        });
-//                    }
-//                    return columns;
-//		        },
-//
-//		        next: function(){
-//		            var resultSet = rs.next();
-//debugger;
-//		            if (resultSet == null) {
-//		                rs.close();
-//		            }
-//		            return rowExtractor(resultSet);
-//		        },
-//
-//		        close: function() {
-//		            rs.close();
-//		        },
-//
-//		        toArray: function() {
-//		            var resultArray = [];
-//		            while(resultSet = rs.next()) {
-//                        resultArray.push(rowExtractor(resultSet));
-//                    }
-//                    rs.close();
-//                    return resultArray;
-//		        }
-//		    };
 		},
 
 		// createStatement, prepareStatement, query, execute, call
