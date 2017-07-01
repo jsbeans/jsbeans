@@ -9,7 +9,6 @@
 		    $base();
 		},
 
-
 		extractSchemas: function(jdbcConnection, stageCallback){
 			var schemas = {};
             var databaseMetaData = jdbcConnection.getMetaData();

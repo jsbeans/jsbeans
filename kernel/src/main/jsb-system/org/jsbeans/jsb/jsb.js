@@ -334,6 +334,7 @@
 				'$_clientProcs': true,
 				'_ready': true,
 				'_readyState': true,
+				'_reqState': true,
 				'_requireCnt': true,
 				'_requireMap': true,
 				'_cls': true,
@@ -453,6 +454,7 @@
 			this._descriptor = cfg;
 			this._ready = false;
 			this._readyState = 0;
+			this._reqState = 0;
 			
 			// add to objects
 			this.objects[this.$name] = this;
@@ -481,6 +483,112 @@
 						entry[key] = parent.getKeywordOption(key);
 					}
 				}
+			}
+			
+			function _waitRequiresBeforeBootstrap(){
+				var reqBeans = {};
+
+				// collect all requires with smaller readyState
+				for(var req in self._requireMap){
+					if(req.toLowerCase().indexOf('java:') == 0){
+						continue;
+					}
+					var jsb = self.objects[req];
+					if(jsb._readyState < 2){
+						reqBeans[req] = jsb
+					}
+				}
+				
+				var reqContainer = {
+					curReqBeans: reqBeans
+				};
+				
+				function _matchReqSynchronized(state){
+					if(JSB.isNull(state)){
+						self._reqSynchronized = true;
+						self._reqState = null;
+						state = null;
+					} else {
+						self._reqState = state;
+					}
+					if(!self._reqCallbacks){
+						return;
+					}
+					for(var i = self._reqCallbacks.length - 1; i>= 0; i--){
+						var reqDesc = self._reqCallbacks[i];
+						if(self._reqSynchronized || (!JSB.isNull(reqDesc.reqState) && state >= reqDesc.reqState)){
+							// execute and remove
+							var cb = reqDesc.callback;
+							self._reqCallbacks.splice(i, 1);
+							cb.call(self);
+						}
+					}
+				}
+				
+				function _ensureReqSynchronized(jsb, callback, state){
+					if(JSB.isNull(state)){
+						state = null;
+					}
+
+					if(jsb._reqSynchronized || (!JSB.isNull(state) && jsb._reqState >= state)){
+						callback.call(self);
+						return;
+					}
+					if(!jsb._reqCallbacks){
+						jsb._reqCallbacks = [];
+					}
+					jsb._reqCallbacks.push({callback: callback, reqState: state});
+				}
+
+				
+				function _reqIteration(s){
+					if(Object.keys(reqContainer.curReqBeans).length === 0){
+						self._readyState = 2;
+						_matchReqSynchronized();
+						self._proceedBootstrapStage();
+					} else {
+						_matchReqSynchronized(s);
+
+						var sCnt = Object.keys(reqContainer.curReqBeans).length;
+						var cCnt = {
+							ready: 0
+						};
+						for(var sid in reqContainer.curReqBeans){
+							(function(sid){
+								var reqJsb = reqContainer.curReqBeans[sid];
+								
+								_ensureReqSynchronized(reqJsb, function(){
+									cCnt.ready++;
+									if(cCnt.ready >= sCnt){
+										var sbMap = {};
+										
+										for(var ssid in reqContainer.curReqBeans){
+											var rJsb = reqContainer.curReqBeans[ssid];
+											
+											if(!rJsb._reqSynchronized && rJsb._reqState <= self._reqState){
+												sbMap[ssid] = rJsb;
+											}
+										}
+										
+										reqContainer.curReqBeans = sbMap;
+										_reqIteration(s + 1);
+									}
+								}, s);
+							})(sid);
+						}
+					}
+					
+				}
+				
+				_reqIteration(1);
+				
+/*				
+				self._readyState = 2;
+				self._matchWaiters(2);
+				self._waitRequires(2, function(){
+					self._proceedBootstrapStage();
+				});
+*/				
 			}
 			
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
@@ -811,21 +919,11 @@
 					self._prepareFieldMap();
 					self._setupLibraries(self._cls.prototype);
 					
-					self._readyState = 2;
-					self._matchWaiters(2);
-					
-					// wait until all requirements set ready state to 2 or greater
-					self._waitRequires(2, function(){
-						self._proceedBootstrapStage();
-					});
+					_waitRequiresBeforeBootstrap();
 				});
 
 			} else {
-				self._readyState = 2;
-				self._matchWaiters(2);
-				self._waitRequires(2, function(){
-					self._proceedBootstrapStage();
-				});
+				_waitRequiresBeforeBootstrap();
 			}
 		},
 		
@@ -2182,16 +2280,6 @@
 		
 		_proceedBootstrapStage: function(){
 			var self = this;
-/*			
-			// deploy object into class tree
-			if(this._cls.jsb && this._cls.jsb.$name != this.$name){
-				throw 'System error: wrong inheritance occured due to loading "' + this.$name + '": found "' + this._cls.jsb.$name + '"';
-			}
-			if(entry){
-				this.deploy(this.$name, this._cls);
-			}
-*/
-
 			// execute bootstrap and keep initialization
 			function afterBoostrap1(){
 				if(self.isFunction(self._entryBootstrap)){

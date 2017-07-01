@@ -45,12 +45,27 @@
 			return sourceEntry.getStore();
 		},
 		
+		prepareName: function(name){
+			name = name.trim();
+			if(name.length == 0){
+				return name;
+			}
+			if(name[0] == '\"' || name[0] == '\''){
+				name = name.substr(1, name.length - 1);
+			}
+			if(name[name.length - 1] == '\"' || name[name.length - 1] == '\''){
+				name = name.substr(0, name.length - 1);
+			}
+
+			return name;
+		},
+		
 		extractFields: function(){
 			var desc = this.getTableDescriptor();
 			var fields = {};
 			for(var colName in desc.columns){
 				var type = desc.columns[colName].datatypeName;
-				fields[colName] = type;
+				fields[this.prepareName(colName)] = type;
 			}
 			return fields;
 		}

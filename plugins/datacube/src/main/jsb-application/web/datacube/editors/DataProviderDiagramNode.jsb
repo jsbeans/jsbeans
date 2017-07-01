@@ -121,17 +121,21 @@
 			for(var i = 0; i < fieldNames.length; i++){
 				var f = fieldNames[i];
 				(function(field){
-					var fElt = $this.$('<div class="field" key="'+field+'"></div>');
+					var fElt = $this.$('<div class="field"></div>');
+					fElt.attr('key', field);
 					fElt.append(`#dot
 						<div class="cell name">
 							<div class="icon"></div>
-							<div class="text">{{=field}}</div>
+							<div class="text"></div>
 						</div><div class="cell type">
 							<div class="icon"></div>
-							<div class="text">{{=$this.fields[field]}}</div>
+							<div class="text"></div>
 						</div>
 						<div class="connector right"></div>
 					`);
+					fElt.find('.cell.name').attr('title', field);
+					fElt.find('.cell.name > .text').text(field);
+					fElt.find('.cell.type > .text').text($this.fields[field]);
 					$this.fieldList.append(fElt);
 					
 					// create right connector

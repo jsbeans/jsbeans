@@ -1,0 +1,27 @@
+@CHARSET "UTF-8";
+
+._jsb_dashboardPlaceholder {
+	position: relative;
+	border: 2px dotted #5b8a96;
+    border-radius: 6px;
+    background: #e8eef1;
+}
+
+._jsb_dashboardPlaceholder.acceptDraggable {
+	background-color: rgba(156, 92, 29, 0.3);
+    border-color: rgba(105, 45, 0, 0.5);
+}
+
+
+._jsb_dashboardPlaceholder > ._jsb_emptyText {
+	position: relative;
+    text-align: center;
+    top: 50%;
+    font-size: 20px;
+    margin-top: -12px;
+    color: #889ca5;
+}
+
+._jsb_dashboardPlaceholder.acceptDraggable > ._jsb_emptyText {
+	color: #987753;
+}
