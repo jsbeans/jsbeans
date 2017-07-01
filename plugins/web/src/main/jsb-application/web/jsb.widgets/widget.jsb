@@ -17,6 +17,8 @@
 			}
 		},
 		
+		title: null,
+		
 		behavior: {
 			allowResize: {
 				horizontal: true,
@@ -35,6 +37,14 @@
 		destroy: function(){
 			this.detachContainer();
 			$base();
+		},
+		
+		setTitle: function(title){
+			this.title = title;
+		},
+		
+		getTitle: function(){
+			return this.title;
 		},
 		
 		attachContainer: function( c, desc ){
@@ -64,6 +74,10 @@
 		
 		applyBehavior: function(b){
 			this.behavior = this.$.extend(true, {}, this.behavior, b);
+		},
+		
+		getContainer: function(){
+			return this.container;
 		},
 		
 		checkSizes: function(){

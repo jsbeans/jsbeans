@@ -69,7 +69,7 @@
 			
 			w.detachContainer();
 			
-			var title = desc.title || desc.id || w.getId();
+			var title = desc.title || w.getTitle() || desc.id || w.getId();
 			var tab = this.wcView.addTab(title, w, desc);
 			this.widgets[w.getId()] = {tab: tab, w: w};
 			w.container = this;

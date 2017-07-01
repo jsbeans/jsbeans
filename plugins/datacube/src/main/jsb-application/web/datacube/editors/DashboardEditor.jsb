@@ -12,7 +12,7 @@
 			
 			this.loadCss('DashboardEditor.css');
 			this.addClass('dashboardEditor');
-			
+/*			
 			// create toolbar
 			this.toolbar = new ToolBar();
 			this.append(this.toolbar);
@@ -26,7 +26,7 @@
 			});
 			
 			this.toolbar.addSeparator({key: 'createSeparator'});
-			
+*/			
 			this.dashboard = new Dashboard({
 				emptyText: 'Перетащите сюда виджет',
 				onDragAccept: function(d){
@@ -48,6 +48,7 @@
 							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
 								JSB.lookup(obj.descriptor.jsb, function(WidgetClass){
 									var wInst = new WidgetClass();
+									wInst.setTitle(obj.descriptor.name);
 									if(callback){
 										callback.call($this, wInst);
 									}

@@ -2,9 +2,9 @@
 
 ._jsb_dashboardPlaceholder {
 	position: relative;
-	border: 2px dotted #5b8a96;
+	border: 1px dotted #5b8a96;
     border-radius: 6px;
-    background: #e8eef1;
+	background: rgba(129, 174, 197, 0.5);
 }
 
 ._jsb_dashboardPlaceholder.acceptDraggable {
