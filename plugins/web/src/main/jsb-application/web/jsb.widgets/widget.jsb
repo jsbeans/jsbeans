@@ -41,6 +41,10 @@
 		
 		setTitle: function(title){
 			this.title = title;
+			
+			if(this.getContainer()){
+				this.getContainer().renameWidget(this, title);
+			}
 		},
 		
 		getTitle: function(){

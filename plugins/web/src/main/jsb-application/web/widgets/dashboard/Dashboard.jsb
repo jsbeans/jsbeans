@@ -8,6 +8,7 @@
 	    placeholder: null,
 	    container: null,
 	    widgets: {},
+	    widgetStates: {},
 	    
 		$constructor: function(opts){
 			$base(opts);
@@ -47,26 +48,74 @@
 					$this.options.onDragDrop.call($this, d, callback);
 				},
 				onDropWidget: function(widget){
-					$this.placeWidget(widget);
+					$this.dockWidget(widget);
 				}
 			}, opts.placeholder || {}));
 			this.append(this.placeholder);
 		},
 		
-		placeWidget: function(widget){
+		destroy: function(){
+			this.clear();
+			$base();
+		},
+		
+		dockWidget: function(widget){
 			if(!this.container){
 				this.container = new Container($this.options, $this, $this);
 				this.append(this.container);
 				this.placeholder.getElement().css('display', 'none');
 			}
-			this.container.addWidget(widget);
+			this.container.dockWidget(widget, 'center');
 		},
 		
 		isWidgetAccepted: function(widget){
+			if(!JSB.isInstanceOf(widget, 'JSB.Widgets.Widget')){
+				return false;
+			}
 			if(this.widgets[widget.getId()]){
 				return true;
 			}
 			return false;
+		},
+		
+		getLayout: function(){
+			if(this.container){
+				return { 
+					layout: this.container.getLayout(),
+					widgets: this.widgets
+				}
+			}
+			return null;
+		},
+		
+		notifyChanged: function(container, msg, params){
+			if(this.options.onChange){
+				this.options.onChange.call(this);
+			}
+			this.publish(msg, JSB.merge({actor: container}, params));
+		},
+		
+		clear: function(){
+			if(this.container){
+				this.container.destroy();
+				this.container = null;
+			}
+			this.widgets = {};
+			this.widgetStates = {};
+			this.placeholder.getElement().css('display', 'block');
+		},
+		
+		setLayout: function(lDesc){
+			this.clear();
+			if(!lDesc || !lDesc.layout || Object.keys(lDesc.layout).length == 0){
+				return;
+			}
+			this.widgets = lDesc.widgets;
+			
+			this.container = new Container($this.options, $this, $this);
+			this.append(this.container);
+			this.placeholder.getElement().css('display', 'none');
+			this.container.setLayout(lDesc.layout);
 		}
 	}
 }

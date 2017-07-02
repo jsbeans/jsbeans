@@ -1,9 +1,10 @@
 @CHARSET "UTF-8";
 
 ._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem ._dwp_listItem.widgetListItem {
-	margin: 2px;
 	background: none;
 	border: 1px solid rgba(0,0,0,0);
+	max-width: 116px;
+	max-height: 93px;
 }
 
 ._dwp_itemList  ._dwp_scrollBox  ._dwp_scrollPane > ._dwp_listBoxContainer > li._dwp_listBoxItem.selected ._dwp_listItem.widgetListItem {
@@ -34,4 +35,8 @@
     background: #fff;
 }
 
-.widgetListItem > .title {}
+.widgetListItem > .title {
+	white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

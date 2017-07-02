@@ -129,6 +129,15 @@
 			this.wcView.switchTab(tab);
 		},
 		
+		renameWidget: function(w, newName){
+			if(JSB.isString(w)){
+				w = this.widgets[w].w;
+			}
+			w.title = newName;
+			var tab = this.widgets[w.getId()].tab;
+			this.wcView.renameTab(tab, newName);
+		},
+		
 		updateBehavior: function(b){
 			// nothing todo
 			

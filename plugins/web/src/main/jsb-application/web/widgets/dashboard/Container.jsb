@@ -85,6 +85,33 @@
 			}
 		},
 		
+		destroy: function(){
+			if(this.type == 'widget'){
+				var wArr = [];
+				if(this.widgetContainer){
+					for(var wId in this.widgetContainer.widgets){
+						var w = this.widgetContainer.getWidget(wId);
+						wArr.push(w);
+					}
+					for(var i = 0; i < wArr.length; i++){
+						wArr[i].detachContainer();
+					}
+					this.widgetContainer.destroy();
+					this.widgetContainer = null;
+				}
+			} else {
+				if(this.splitBox){
+					for(var i = 0; i < this.childContainers.length; i++){
+						this.childContainers[i].destroy();
+					}
+					this.splitBox.destroy();
+					this.splitBox = null;
+				}
+			}
+			
+			$base();
+		},
+		
 		removeWidget: function(widget){
 			this.widgetContainer.detachWidget(widget);
 			
@@ -96,10 +123,52 @@
 				if(parentContainer == this.dashboard){
 					// remove container from dashboard
 					parentContainer.container = null;
-					this.destroy();
 					parentContainer.placeholder.getElement().css('display', 'block');
+					this.destroy();
+					return {
+						container: parentContainer,
+						side: 'center'
+					};
 				} else {
-					
+					var leftContainer = null;
+					var side = null;
+					if(parentContainer.childContainers[0] == this){
+						leftContainer = parentContainer.childContainers[1];
+						if(parentContainer.splitBox.options.type == 'vertical'){
+							side = 'left';
+						} else {
+							side = 'top';
+						}
+					} else {
+						leftContainer = parentContainer.childContainers[0];
+						if(parentContainer.splitBox.options.type == 'vertical'){
+							side = 'right';
+						} else {
+							side = 'bottom';
+						}
+
+					}
+					leftContainer.getElement().detach();
+					parentContainer.splitBox.destroy();
+					if(leftContainer.widgetContainer){
+						leftContainer.widgetContainer.getElement().detach();
+					}
+					if(leftContainer.splitBox){
+						leftContainer.splitBox.getElement().detach();
+					}
+					parentContainer.setContainer(leftContainer);
+					leftContainer.destroy();
+					this.destroy();
+					return {
+						container: parentContainer,
+						side: side
+					};
+				}
+				
+			} else {
+				return {
+					container: this,
+					side: 'center'
 				}
 			}
 		},
@@ -114,6 +183,7 @@
 			}
 			this.widgetContainer.attachWidget(widget);
 			this.dashboard.widgets[widget.getId()] = widget;
+			this.dashboard.widgetStates[widget.getId()] = 'docked';
 			this.type = 'widget';
 			this.getElement().attr('type', this.type);
 			var tab = this.widgetContainer.getTab(widget.getId());
@@ -124,7 +194,9 @@
 					
 					var wc = widget.getContainer();
 					var cont = wc.getElement().closest('._jsb_dashboardContainer').jsb();
-					cont.removeWidget(widget);
+					this.prevContext = cont.removeWidget(widget);
+					this.draggingItems = [widget];
+					$this.dashboard.widgetStates[widget.getId()] = 'floating';
 
 					// create floating container
 					var fc = new WidgetContainer({
@@ -134,13 +206,17 @@
 					ui.helper.append(fc.getElement());
 				},
 				helper: function(evt){
-					this.draggingItems = [widget];
 					// create drag container
 					var helper = $this.$('<div class="_jsb_dashboardDragHelper"></div>');
 					return helper.get(0);
 				},
 				stop: function(evt, ui){
-					
+					if($this.dashboard.widgetStates[widget.getId()] != 'floating'){
+						return;
+					}
+					if(this.prevContext){
+						this.prevContext.container.dockWidget(widget, this.prevContext.side);
+					}
 				},
 				revert: false,
 				scroll: false,
@@ -152,14 +228,23 @@
 		
 		setContainer: function(container){
 			if(container.type == 'widget'){
+				container.widgetContainer.getElement().detach();
 				this.widgetContainer = container.widgetContainer;
+				container.widgetContainer = null;
 				this.clientContainer.append(this.widgetContainer.getElement());
 				this.type = 'widget';
+				this.childContainers = [];
 				this.getElement().attr('type', this.type);
 			} else {
+				container.splitBox.getElement().detach();
 				this.splitBox = container.splitBox;
+				container.splitBox = null;
 				this.clientContainer.append(this.splitBox.getElement());
 				this.type = 'split';
+				this.childContainers = container.childContainers;
+				container.childContainers = [];
+				this.childContainers[0].parent = this;
+				this.childContainers[1].parent = this;
 				this.getElement().attr('type', this.type);
 			}
 		},
@@ -171,21 +256,17 @@
 				var splitType = (side == 'left' || side == 'right') ? 'vertical' : 'horizontal';
 				var splitBox = new SplitBox({
 					type: splitType,
-					position: 0.5
+					position: 0.5,
+					
+					onChange: function(){
+						$this.dashboard.notifyChanged($this, 'JSB.Widgets.Dashboard.layoutSizeChanged', {});
+					}
 				});
-				if(this.widgetContainer){
-					this.widgetContainer.getElement().detach();
-				}
-				if(this.splitBox){
-					this.splitBox.getElement().detach();
-				}
-				this.clientContainer.append(splitBox.getElement());
 				
 				// create containers
 				var c1 = new $class(this.options, this, this.dashboard);
 				var c2 = new $class(this.options, this, this.dashboard);
 				
-				this.childContainers = [c1, c2];
 				splitBox.addToPane(0, c1);
 				splitBox.addToPane(1, c2);
 				
@@ -196,10 +277,65 @@
 					c1.addWidget(widget);
 					c2.setContainer(this);
 				}
+				this.clientContainer.append(splitBox.getElement());
+				this.childContainers = [c1, c2];
 				this.widgetContainer = null;
 				this.splitBox = splitBox;
 				this.type = 'split';
 				this.getElement().attr('type', this.type);
+			}
+			this.dashboard.notifyChanged(this, 'JSB.Widgets.Dashboard.widgetDocked', {widget: widget, side: side});
+		},
+		
+		getLayout: function(){
+			var desc = {
+				type: this.type
+			};
+			if(this.type == 'widget'){
+				desc.widgets = [];
+				for(var wId in this.widgetContainer.widgets){
+					var w = this.widgetContainer.getWidget(wId);
+					desc.widgets.push(wId);
+				}
+			} else {
+				desc.splitPosition = this.splitBox.getSplitterPosition();
+				desc.splitType = this.splitBox.options.type;
+				desc.containers = [];
+				for(var i = 0; i < this.childContainers.length; i++){
+					desc.containers.push(this.childContainers[i].getLayout());
+				}
+			}
+			return desc;
+		},
+		
+		setLayout: function(layout){
+			if(layout.type == 'widget'){
+				for(var i = 0; i < layout.widgets.length; i++){
+					var wId = layout.widgets[i];
+					var w = this.dashboard.widgets[wId]
+					this.addWidget(w);
+				}
+			} else {
+				this.splitBox = new SplitBox({
+					type: layout.splitType,
+					position: layout.splitPosition,
+					
+					onChange: function(){
+						$this.dashboard.notifyChanged($this, 'JSB.Widgets.Dashboard.layoutSizeChanged', {});
+					}
+				});
+				// create containers
+				var c1 = new $class(this.options, this, this.dashboard);
+				var c2 = new $class(this.options, this, this.dashboard);
+				
+				this.splitBox.addToPane(0, c1);
+				this.splitBox.addToPane(1, c2);
+				
+				this.clientContainer.append(this.splitBox.getElement());
+				this.childContainers = [c1, c2];
+				this.widgetContainer = null;
+				c1.setLayout(layout.containers[0]);
+				c2.setLayout(layout.containers[1]);
 			}
 		}
 	}
