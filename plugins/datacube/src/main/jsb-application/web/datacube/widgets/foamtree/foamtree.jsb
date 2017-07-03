@@ -5,10 +5,13 @@
 	$client: {
         $constructor: function(opts){
             $base(opts);
+            this.foamtreeId = JSB().generateUid();
+
+            this.foamtreeContainer = this.$('<div class="foamtreeWidget" id="' + this.foamtreeId + '"></div>')
 
             JSB().loadScript(['datacube/widgets/foamtree/foamtree.js'],
                 function(){
-
+                    $this.init();
                 }
             );
 
@@ -30,5 +33,14 @@
             );
             */
         },
+
+        init: function(){
+            this.foamtree = new CarrotSearchFoamTree({
+                id: this.foamtreeId,
+                dataObject: {
+                    groups: this.data.groups
+                }
+            });
+        }
 	}
 }
