@@ -193,27 +193,43 @@
 		},
 
 		/*
-		* data example
+		* data structure
 		[
         	{
         		id: "",
         		value: "",
         		geo: "",
         		path: {
-                    attrs: {
+        		    base: {
+                        attrs: {
 
-                    },
-                    styles: {
+                        },
+                        styles: {
 
-                    }
+                        }
+        		    },
+        		    selected: {
+        		        ...
+        		    },
+        		    disabled:{
+        		        ...
+        		    }
         		},
         		label: {
-                    attrs: {
+        		    base: {
+                        attrs: {
 
-                    },
-                    styles: {
+                        },
+                        styles: {
 
-                    }
+                        }
+        		    },
+        		    selected: {
+        		        ...
+        		    },
+        		    disabled:{
+        		        ...
+        		    }
                 },
         	},
         	{...},
@@ -221,20 +237,22 @@
         ]
 		*/
 
+		// example
 		_aggrs: [
 		    {
 		        id: "Франция",
-		        value: 10,
-
+		        value: 10
 		    }
 		],
 
 		_defaults: {
 		    path: {
-                styles: {
-                    fill: "green",
-                    stroke: "green"
-                }
+		        base: {
+                    styles: {
+                        fill: "green",
+                        stroke: "green"
+                    }
+		        }
 		    },
 		    label: {
 
@@ -372,10 +390,17 @@
 
             JSB().defer(function(){
                 var height = $this.mapContainer.height();
-                if($this.catMap_SVG) $this.catMap_SVG.style("height", height + "px");
+                //if($this.catMap_SVG) $this.catMap_SVG.style("height", height + "px");
                 if($this.leafletAttrMap) $this.leafletAttrMap.invalidateSize();
-                //$this.aggrGroup.style("height", height + "px");
-            }, 1000)
+            }, 1000);
+
+            this.mapContainer.resize(function(){
+                JSB().defer(function(){
+                    var height = $this.mapContainer.height();
+                    //if($this.catMap_SVG) $this.catMap_SVG.style("height", height + "px");
+                    if($this.leafletAttrMap) $this.leafletAttrMap.invalidateSize();
+                }, 300, 'map.resize.' + this.getId());
+            })
         },
 
         rebuildCategories: function(){
@@ -393,14 +418,21 @@
 
                 item.attr("d", $this.geoPath($this._aggrs[i].geo));
 
-                var opts = JSB().merge($this._defaults.path, $this._aggrs[i].path);
-                for(var j in opts.attrs){
-                    item.attr(j, opts.attrs[j]);
-                }
+                $this.fillStyle(item, 'path', 'base');
 
-                for(var j in opts.styles){
-                    item.style(j, opts.styles[j]);
-                }
+                // highlight
+                item.on("mouseenter", function(_cat){
+                        $this.fillStyle(item, 'path', 'selected');
+                        $this.onCatEnter(_cat);
+                    })
+                    .on("mouseleave",function(_cat){
+                        $this.fillStyle(item, 'path', 'base');
+                        $this.onCatLeave(_cat);
+                    })
+                // cat click
+                    .on("click", function(_cat){
+                        $this.onCatClick(_cat);
+                    });
             });
 
             this.mapGlyphsLabels.nodes().forEach(function(item, i, arr){
@@ -415,14 +447,15 @@
                    return "translate("+centroid[0]+","+centroid[1]+")";
                 });
 
-                var opts = JSB().merge($this._defaults.label, $this._aggrs[i].label);
-                for(var j in opts.attrs){
-                    item.attr(j, opts.attrs[j]);
-                }
+                $this.fillStyle(item, 'label', 'base');
 
-                for(var j in opts.styles){
-                    item.style(j, opts.styles[j]);
-                }
+                // highlight
+                item.on("mouseenter", function(){
+                        $this.fillStyle(item, 'path', 'selected');
+                    })
+                    .on("mouseleave",function(_cat){
+                        $this.fillStyle(item, 'path', 'base');
+                    });
             });
 
             // exit
@@ -433,31 +466,29 @@
             // this.mapGlyphsLabels.on("", function(){});
         },
 
+        fillStyle: function(item, component, styleType){
+            var opts = JSB().merge($this._defaults[component][styleType], attr[i][component][styleType]);
+
+            for(var j in opts.attrs){
+                item.attr(j, opts.attrs[j]);
+            }
+
+            for(var j in opts.styles){
+                item.style(j, opts.styles[j]);
+            }
+        },
+
         setNewAttrs: function(attrs){
             for(var i in attrs){
                 if(attr[i].path){
                     var obj = d3.select("path[mapId=" + attrs[i].id + "]");
 
-                    var opts = JSB().merge($this._defaults.path, attr[i].path);
-                    for(var j in opts.attrs){
-                        obj.attr(j, opts.attrs[j]);
-                    }
-
-                    for(var j in opts.styles){
-                        obj.style(j, opts.styles[j]);
-                    }
+                    $this.fillStyle(item, 'path', 'base');
                 }
                 if(attr[i].label){
                     var obj = d3.select("text[mapId=" + attrs[i].id + "]");
 
-                    var opts = JSB().merge($this._defaults.label, attr[i].label);
-                    for(var j in opts.attrs){
-                        obj.attr(j, opts.attrs[j]);
-                    }
-
-                    for(var j in opts.styles){
-                        obj.style(j, opts.styles[j]);
-                    }
+                    $this.fillStyle(item, 'label', 'base');
                 }
             }
         },
@@ -469,6 +500,14 @@
                    var centroid = $this.geoPath.centroid(_cat.geo);
                    return "translate("+centroid[0]+","+centroid[1]+")";
                  });
-        }
+        },
+
+        // callbacks
+        onCatClick: function(_cat){
+        },
+        onCatEnter: function(_cat){
+        },
+        onCatLeave: function(_cat){
+        },
 	}
 }

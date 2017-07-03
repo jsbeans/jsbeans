@@ -1,7 +1,6 @@
 {
 	$name: 'Handsontable',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['handsontable'],
 	$client: {
         _oldScroll:{
             y: 0
@@ -24,6 +23,23 @@
 			if(this.callbacks.createHeader) // if undefined will set default header
 			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
+            JSB().loadCss('tpl/handsontable/handsontable.min.css');
+            JSB().loadScript('tpl/handsontable/handsontable.js', function(){
+                $this.handsontable = new Handsontable($this.table.get(0), $this.handsontable_options);
+
+                // hooks
+                $this.handsontable.addHook('afterColumnMove', function(columns, target){ $this._afterColumnMove(columns, target); });
+
+                $this.table.resize(function(){
+                    JSB().defer(function(){
+                        $this.handsontable.render();
+                    }, 300, 'handsontable.resize')
+                });
+
+                $this.options.isInit = true;
+            });
+
+/*
             JSB().deferUntil(function(){    // table not render before DOM ready
                 $this.handsontable = new Handsontable($this.table.get(0), $this.handsontable_options);
 
@@ -34,12 +50,11 @@
                     JSB().defer(function(){
                         $this.handsontable.render();
                     }, 300, 'handsontable.resize')
-                })
-
+                });
             }, function(){
                 return $this.isContentReady();
             });
-
+*/
 			this.table.scroll(function(evt){
                 var scrollHeight = evt.target.scrollHeight,
                     scrollTop = evt.target.scrollTop,
