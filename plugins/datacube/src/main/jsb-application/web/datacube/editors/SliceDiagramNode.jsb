@@ -112,6 +112,7 @@
 				}
 			});
 		},
+		
 		refresh: function(){
 			this.fieldList.empty();
 			// TODO: redraw query editor

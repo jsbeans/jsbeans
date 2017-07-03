@@ -75,6 +75,7 @@
 			w.container = this;
 			
 			this.updateBehavior(w.getBehavior());
+			this.publish('JSB.Widgets.WidgetContainer.widgetAttached', w);
 		},
 		
 		detachWidget: function(w){
@@ -94,6 +95,8 @@
 			delete this.widgets[w.getId()];
 			this.wcView.removeTab(tab);
 			w.container = null;
+			
+			this.publish('JSB.Widgets.WidgetContainer.widgetDetached', w);
 			
 			return w;
 		},

@@ -68,7 +68,6 @@
 				}
 			});
 			this.append(this.dashboard);
-			
 		},
 		
 		setCurrentEntry: function(entry){
@@ -88,7 +87,7 @@
 		},
 		
 		updateLayout: function(dlayout){
-			this.entry.server().updateLayout(dlayout.layout);
+			this.entry.server().updateLayout(dlayout ? dlayout.layout : null);
 		}
 		
 	}

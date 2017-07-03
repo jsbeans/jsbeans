@@ -1,0 +1,31 @@
+@CHARSET "UTF-8";
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText {
+	
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > ._dwp_primitiveEditor {
+	padding-right: 32px;
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > ._dwp_primitiveEditor > ._dwp_plain {
+	
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton {
+	position: absolute;
+    top: 50%;
+    margin-top: -8px;
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnSettings {
+	right: 24px;
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnDelete {
+	right: 4px;
+}
+
+
+
+.widgetWrapper {}
