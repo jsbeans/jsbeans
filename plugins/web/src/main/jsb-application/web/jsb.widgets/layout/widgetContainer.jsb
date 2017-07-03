@@ -69,7 +69,7 @@
 			
 			w.detachContainer();
 			
-			var title = desc.title || desc.id || w.getId();
+			var title = desc.title || w.getTitle() || desc.id || w.getId();
 			var tab = this.wcView.addTab(title, w, desc);
 			this.widgets[w.getId()] = {tab: tab, w: w};
 			w.container = this;
@@ -127,6 +127,15 @@
 			}
 			var tab = this.widgets[w.getId()].tab;
 			this.wcView.switchTab(tab);
+		},
+		
+		renameWidget: function(w, newName){
+			if(JSB.isString(w)){
+				w = this.widgets[w].w;
+			}
+			w.title = newName;
+			var tab = this.widgets[w.getId()].tab;
+			this.wcView.renameTab(tab, newName);
 		},
 		
 		updateBehavior: function(b){

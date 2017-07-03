@@ -37,14 +37,26 @@
 						panes: [{
 							key: 'leftPane',
 							size: 0.2,
+							split: 'horizontal',
 							minSize: 350,
-							widgets: 'workspaceExplorer',
-							caption: true
+							panes: [{
+								key: 'workspaceExplorer',
+								widgets: 'workspaceExplorer',
+								caption: true,
+								size: 0.5,
+								minSize: 200
+							},{
+								widgets: 'widgetExplorer',
+								key: 'widgetExplorer',
+								caption: true,
+								minSize: 200
+							}]
 						},{
 							minSize: '50%',
 							key: 'workspaceBrowser',
 							widgets: 'workspaceBrowser'
 						}]
+						
 					}
 				},
 				widgets: {
@@ -61,10 +73,18 @@
 						options: {
 							wmKey: 'datacube'
 						}
+					},
+					widgetExplorer: {
+						jsb: 'JSB.DataCube.Widgets.WidgetExplorer',
+						title: 'Виджеты'
 					}
 				}
 			});
 			this.append(this.layoutManager);
+			
+			// hide widgets pane
+			$this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb().showPane(1, false);
+			
 			$this.publish('DataCube.Editor.initialized');
 			
 			this.subscribe('Workspace.Explorer.initialized', function(explorer){
@@ -96,6 +116,15 @@
 						explorer.createNewEntry('JSB.DataCube.Model.Dashboard', {}, 'Визуализация');
 					}
 				}, 'createSeparator');
+			});
+			
+			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
+				var leftSplit = $this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb();
+				if(JSB.isInstanceOf(node, 'JSB.DataCube.DashboardNode')){
+					leftSplit.showPane(1, true);
+				} else {
+					leftSplit.showPane(1, false);
+				}
 			});
 		}
 	},

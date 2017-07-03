@@ -52,6 +52,13 @@
 
 		},
 		
+		destroy: function(){
+			if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
+				this.workspace.removeArtifact(this.getLocalId() + '.cube');
+			}
+			$base();
+		},
+		
 		load: function(){
 			if(!this.loaded){
 				if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
@@ -316,9 +323,6 @@
 			}
 			var n = newName.trim();
 			if(n.length == 0){
-				return false;
-			}
-			if(/\s/.test(n)){
 				return false;
 			}
 			if(/$\d/.test(n)){

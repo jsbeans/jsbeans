@@ -107,7 +107,8 @@
 					nWidth = prevCellName.width();
 					tWidth = prevCellType.width();
 				}
-				fElt = $this.$('<div class="field" key="'+field+'"></div>');
+				fElt = $this.$('<div class="field"></div>');
+				fElt.attr('key', field);
 				if(isLink){
 					fElt.addClass('link');
 				}
@@ -122,7 +123,7 @@
 
 					</div><div class="cell type">
 						<div class="icon"></div>
-						<div class="text">{{=$this.fields[field]}}</div>
+						<div class="text"></div>
 					</div>
 					<div class="connector left"></div>
 					<div class="connector right"></div>
@@ -131,6 +132,8 @@
 						onclick="{{=$this.callbackAttr(function(evt){evt.stopPropagation(); $this.removeField(fElt.attr('key'), evt)})}}"></div>
 					
 				`);
+				fElt.find('.cell.type > .text').text($this.fields[field]);
+				fElt.find('.cell.name').attr('title', field);
 				
 				JSB.deferUntil(function(){
 					var nameEditor = fElt.find('.cell.name > .text').jsb();
@@ -142,7 +145,7 @@
 						$this.renameField(val.trim(), fElt.attr('key'));
 					});
 				}, function(){
-					return $this.isContentReady('.field[key="'+field+'"] > .cell.name > .text');
+					return fElt.find('.cell.name > .text').jsb();
 				});
 				
 				if(prependElt){
@@ -263,9 +266,6 @@
 			if(n.length == 0){
 				return false;
 			}
-			if(/\s/.test(n)){
-				return false;
-			}
 			if(/$\d/.test(n)){
 				return false;
 			}
@@ -275,8 +275,12 @@
 			return true;
 		},
 		
+		prepareFieldKey: function(name){
+			return name.replace(/\"/g, '\\"');
+		},
+		
 		beginEditField: function(field){
-			var editor = $this.find('.fields > .field[key="'+field+'"] > .cell.name > .text').jsb();
+			var editor = $this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"] > .cell.name > .text').jsb();
 			editor.beginEdit();
 		},
 		
@@ -284,16 +288,17 @@
 			$this.entry.server().renameField(oldName, newName, function(desc){
 				$this.fields[desc.field] = desc.type;
 				delete $this.fields[oldName];
-				var fElt = $this.find('.fields > .field[key="'+oldName+'"]');
+				var fElt = $this.find('.fields > .field[key="'+$this.prepareFieldKey(oldName)+'"]');
 				fElt.attr('key', desc.field);
+				fElt.find('.cell.name').attr('title', desc.field);
 			});
 		},
 		
 		removeField: function(field){
-			var fElt = $this.find('.fields > .field[key="'+field+'"]');
+			var fElt = $this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]');
 			ToolManager.showMessage({
 				icon: 'removeDialogIcon',
-				text: 'Вы уверены что хотите удалить поле "'+field+'"?',
+				text: 'Вы уверены что хотите удалить поле "'+$this.prepareFieldKey(field)+'"?',
 				buttons: [{text: 'Удалить', value: true},
 				          {text: 'Нет', value: false}],
 				target: {
@@ -308,7 +313,7 @@
 						$this.entry.server().removeField(field, function(res, fail){
 							if(res){
 								delete $this.fields[field];
-								$this.find('.fields > .field[key="'+field+'"]').remove();
+								$this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
 								$this.leftFieldConnectors[field].destroy();
 								delete $this.leftFieldConnectors[field];
 								$this.rightFieldConnectors[field].destroy();

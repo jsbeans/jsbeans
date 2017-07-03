@@ -77,6 +77,17 @@
 		},
 
 		category: function(cat){
+			var children = this.getChildren();
+			if(JSB.isDefined(cat) && children && Object.keys(children).length > 0){
+				for(var cId in children){
+					var cEntry = children[cId];
+					var entryCat = this.getLocalId();
+					if(cat){
+						entryCat = cat + '/' + this.getLocalId();
+					}
+					cEntry.category(entryCat);
+				}
+			}
 		    return this.property('category', cat);
 		},
 

@@ -16,7 +16,7 @@
 			
 			this.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
-			
+/*			
 			// create toolbar
 			this.toolbar = new ToolBar();
 			this.append(this.toolbar);
@@ -30,7 +30,7 @@
 			});
 			
 			this.toolbar.addSeparator({key: 'createSeparator'});
-			
+*/			
 			// create diagram
 			this.diagram = new Diagram({
 				minZoom: 0.25,

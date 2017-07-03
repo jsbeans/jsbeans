@@ -1,0 +1,36 @@
+@CHARSET "UTF-8";
+
+._jsb_dashboardDragHelper {
+	width: 200px;
+	height: 200px;
+	position: relative;
+	opacity: 0.8;
+	z-index: 99999;
+	box-sizing: border-box;
+	cursor: default;
+/*	border: 1px solid #aaa;*/
+	border-radius: 6px;
+}
+
+._jsb_dashboardDragHelper.accepted {
+	opacity: 1;
+}
+
+._jsb_dashboardDragHelper > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane {
+	background: transparent;
+}
+
+._jsb_dashboard {
+	position: relative;
+	box-sizing: border-box;
+}
+
+._jsb_dashboard > ._jsb_dashboardPlaceholder {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+	right: 10px;
+	bottom: 10px;
+}
+
+._jsb_dashboard > ._jsb_dashboardContainer {}
