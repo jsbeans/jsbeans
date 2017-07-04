@@ -171,7 +171,7 @@
 		jgsMcwsP3gAAAABJRU5ErkJggg==`
 	},
 	$scheme: {},
-	$require: [],
+	$require: ['Tipsy'],
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
@@ -194,7 +194,8 @@
 		$lang: {
             ZoomIn: "Приблизить",
             ZoomOut: "Отдалить",
-            ZoomToFit: "Масштаб по содержимому"
+            ZoomToFit: "Масштаб по содержимому",
+            Elements: "элементов"
 		},
 
 		/*
@@ -247,20 +248,51 @@
 		    {
 		        id: "Франция",
 		        value: 10
-		    }
+		    },
+		    {
+                id: "Германия",
+                value: 25
+            },
+            {
+                id: "Россия",
+                value: 100
+            }
 		],
 
 		_defaults: {
 		    path: {
 		        base: {
                     styles: {
-                        fill: "green",
-                        stroke: "green"
+                        fill: "rgb(199, 233, 180)",
+                        stroke: "rgb(34, 94, 168)"
                     }
-		        }
+		        },
+                selected: {
+                    styles: {
+                        "stroke-width": "2px",
+                        stroke: "orangered",
+                        fill: "rgb(255, 181, 153)"
+                    }
+                }
 		    },
 		    label: {
-
+		        base: {
+		            styles: {
+                        color: "black",
+                        fill: "black",
+                        "font-weight": "500",
+                        "text-shadow": "rgb(255, 255, 255) 0px 0px 1px, rgb(255, 255, 239) 0px 0px 1px, rgb(255, 255, 255) 0px 0px 1px, rgb(255, 255, 255) 0px 0px 1px, rgb(255, 255, 255) 0px 0px 8px",
+                        "text-rendering": "geometricPrecision",
+                        "text-anchor": "middle",
+                        "alignment-baseline": "middle",
+                        "paint-order": "stroke",
+                        stroke: "white",
+                        "stroke-width": "2px",
+                        "stroke-linecap": "butt",
+                        "stroke-linejoin": "miter",
+                        "pointer-events": "none"
+		            }
+		        }
 		    }
 		},
 
@@ -344,19 +376,19 @@
                     $this.updateCategories();
                 })
                 .on("movestart",function(){
-                    //me.browser.DOM.root.attr("pointerEvents",false);
                     this._zoomInit_ = this.getZoom();
                     $this.catMap_SVG.style("opacity",0.3);
                 })
                 .on("moveend",function(){
-                    //me.browser.DOM.root.attr("pointerEvents",true);
                     $this.catMap_SVG.style("opacity", null);
                     if(this._zoomInit_ !== this.getZoom()) $this.updateCategories();
-                })
+                });
+                /*
                 .on("zoom",function(){
+                debugger;
                     $this.updateCategories();
                 });
-
+                */
             this.geoPath = d3.geoPath().projection(
                 d3.geoTransform({
                   // Use Leaflet to implement a D3 geometric transformation.
@@ -418,16 +450,14 @@
 
             JSB().defer(function(){
                 var height = $this.mapContainer.height();
-                //if($this.catMap_SVG) $this.catMap_SVG.style("height", height + "px");
                 if($this.leafletAttrMap) $this.leafletAttrMap.invalidateSize();
             }, 1000);
 
             this.mapContainer.resize(function(){
                 JSB().defer(function(){
                     var height = $this.mapContainer.height();
-                    //if($this.catMap_SVG) $this.catMap_SVG.style("height", height + "px");
                     if($this.leafletAttrMap) $this.leafletAttrMap.invalidateSize();
-                }, 300, 'map.resize.' + this.getId());
+                }, 300, 'map.resize.' + $this.getId());
             })
         },
 
@@ -449,13 +479,50 @@
                 var opts = JSB().merge($this._defaults.path.base, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.base : null);
                 $this.fillStyle(item, opts);
 
+                arr[i].tipsy = new Tipsy(arr[i], {
+                  gravity: 'e',
+                  className: 'recordTip',
+                  title: function(){
+                    var str="";
+                    str += "<span class='mapItemName'>" + $this._aggrs[i].id + "</span>";
+                    str += "<span style='font-weight: 300'>";
+                    str += $this._aggrs[i].value + " " + $this.$lang.Elements;
+                    str += "</span>";
+                    return str;
+                  },
+                  rootElement: $this.mapContainer.get(0)
+                });
+
                 // highlight
                 item.on("mouseenter", function(_cat){
+                        if(this.tipsy) {
+                            this.tipsy.show();
+                            var left = (d3.event.pageX - this.tipsy.tipWidth - 10);
+                            var top  = (d3.event.pageY - this.tipsy.tipHeight / 2);
+
+                            var rootPos = $this.mapContainer.get(0).getBoundingClientRect();
+                            left = left - rootPos.left;
+                            top = top - rootPos.top;
+
+                            this.tipsy.jq_tip.node().style.left = left + "px";
+                            this.tipsy.jq_tip.node().style.top = top + "px";
+                        }
                         var opts = JSB().merge($this._defaults.path.selected, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.selected : null);
                         $this.fillStyle(item, opts);
                         $this.onCatEnter(_cat);
                     })
+                    .on("mousemove", function(){
+                        if(this.tipsy) {
+                            var rootPos = $this.mapContainer.get(0).getBoundingClientRect();
+                            var left = (d3.event.pageX - rootPos.left - this.tipsy.tipWidth - 10);
+                            var top = (d3.event.pageY - rootPos.top - this.tipsy.tipHeight / 2);
+
+                            this.tipsy.jq_tip.node().style.left = left + "px";
+                            this.tipsy.jq_tip.node().style.top = top + "px";
+                        }
+                    })
                     .on("mouseleave",function(_cat){
+                        if(this.tipsy) this.tipsy.hide();
                         var opts = JSB().merge($this._defaults.path.base, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.base : null);
                         $this.fillStyle(item, opts);
                         $this.onCatLeave(_cat);
@@ -494,10 +561,6 @@
 
             // exit
             this.aggrGroup.selectAll('g.mapGlyph').data(this._aggrs).exit().remove();
-
-            // callbacks
-            // this.mapGlyphsPaths.on("", function(){});
-            // this.mapGlyphsLabels.on("", function(){});
         },
 
         fillStyle: function(item, opts){
@@ -529,11 +592,17 @@
 
         updateCategories: function(){
             this.mapGlyphsPaths.data(this._aggrs).attr("d", function(_cat){ return $this.geoPath(_cat.geo); });
-            this.mapGlyphsLabels.data(this._aggrs).text(function(_cat){ return _cat.value; })
+            this.mapGlyphsLabels.data(this._aggrs)
                 .attr("transform", function(_cat){
-                   var centroid = $this.geoPath.centroid(_cat.geo);
-                   return "translate("+centroid[0]+","+centroid[1]+")";
-                 });
+                    var centroid = $this.geoPath.centroid(_cat.geo);
+                    return "translate("+centroid[0]+","+centroid[1]+")";
+                })
+                .style("display", function(aggr, i, item){
+                    var bounds = $this.geoPath.bounds(aggr.geo);
+                    var pathWidth = Math.abs(bounds[0][0] - bounds[1][0]);
+                    var textWidth = item[0].getBoundingClientRect().width  * 2;
+                    return pathWidth < textWidth ? "none" : "block";
+                });
         },
 
         zoomToActive: function(){

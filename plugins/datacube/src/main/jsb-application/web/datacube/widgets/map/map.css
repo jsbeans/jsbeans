@@ -8,6 +8,10 @@
     top: 0px;
     overflow: visible;
 }
+.mapWidget .mapContainer g.mapGlyph path{
+    pointer-events: auto;
+    cursor: pointer;
+}
 .mapWidget .mapControl {
   z-index: 1000;
   background-color: white;
@@ -45,4 +49,101 @@
   border-bottom-right-radius: 4px;
   border-bottom: none;
   border-right: none;
+}
+.mapWidget .tipsy {
+  font-size: 10px;
+  position: absolute;
+  padding: 5px;
+  z-index: 100000;
+  pointer-events: none;
+}
+.mapWidget .tipsy .tipsy-inner {
+  background-color: white;
+  font-family: inherit;
+  color: black;
+  text-align: inherit;
+  border: solid 1px lightgray;
+  font-weight: 500;
+  padding: 3px;
+  border-radius: 5px;
+}
+.mapWidget .tipsy > .tipsy-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  line-height: 0;
+  border: 5px dashed #000;
+}
+.mapWidget .tipsy.tipsy-n .tipsy-arrow {
+  top: 0px;
+  left: 50%;
+  margin-left: -5px;
+  border-bottom-style: solid;
+  border-top: none;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.mapWidget .tipsy.tipsy-nw .tipsy-arrow {
+  top: 0;
+  left: 10px;
+  border-bottom-style: solid;
+  border-top: none;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.mapWidget .tipsy.tipsy-ne .tipsy-arrow {
+  top: 0;
+  right: 10px;
+  border-bottom-style: solid;
+  border-top: none;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.mapWidget .tipsy.tipsy-s .tipsy-arrow {
+  bottom: 0;
+  left: 50%;
+  margin-left: -5px;
+  border-top-style: solid;
+  border-bottom: none;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.mapWidget .tipsy.tipsy-sw .tipsy-arrow {
+  bottom: 0;
+  left: 10px;
+  border-top-style: solid;
+  border-bottom: none;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.mapWidget .tipsy.tipsy-se .tipsy-arrow {
+  bottom: 0;
+  right: 10px;
+  border-top-style: solid;
+  border-bottom: none;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+}
+.mapWidget .tipsy.tipsy-e .tipsy-arrow {
+  right: 0;
+  top: 50%;
+  margin-top: -5px;
+  border-left-style: solid;
+  border-right: none;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+.mapWidget .tipsy.tipsy-w .tipsy-arrow {
+  left: 0;
+  top: 50%;
+  margin-top: -5px;
+  border-right-style: solid;
+  border-left: none;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+}
+.mapWidget .tipsy .mapItemName {
+  display: block;
+  border-bottom: solid 1px gray;
+  font-weight: 600;
 }
