@@ -7,13 +7,16 @@
 	},
 	
 	widgetCount: 0,
+	layout: null,
+	wrappers: {},
+	
+	$client: {
+	},
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'JSB.DataCube.Widgets.WidgetWrapper'],
 		
-		layout: null,
-		wrappers: {},
 		loaded: false,
 		
 		$bootstrap: function(){
@@ -47,6 +50,17 @@
 			this.store();
 			this.doSync();
 			return wWrapper;
+		},
+		
+		removeWidgetWrapper: function(wwId){
+			if(!this.wrappers[wwId]){
+				throw new Error('Failed to find widget wrapper with id: ' + wwId);
+			}
+			delete this.wrappers[wwId];
+			this.widgetCount = Object.keys(this.wrappers).length;
+			this.store();
+			this.doSync();
+			return true;
 		},
 		
 		store: function(){

@@ -113,7 +113,14 @@
 		},
 		
 		removeWidget: function(widget){
-			this.widgetContainer.detachWidget(widget);
+			var desc = this.undockWidget(widget);
+			this.dashboard.notifyChanged(this, 'JSB.Widgets.Dashboard.widgetRemoved', {widget: widget, side: desc.side});
+		},
+		
+		undockWidget: function(widget){
+			if(widget){
+				this.widgetContainer.detachWidget(widget);
+			}
 			
 			if(Object.keys(this.widgetContainer.widgets).length == 0){
 				// unwind container hierarchy
@@ -194,7 +201,7 @@
 					
 					var wc = widget.getContainer();
 					var cont = wc.getElement().closest('._jsb_dashboardContainer').jsb();
-					this.prevContext = cont.removeWidget(widget);
+					this.prevContext = cont.undockWidget(widget);
 					this.draggingItems = [widget];
 					$this.dashboard.widgetStates[widget.getId()] = 'floating';
 
@@ -202,6 +209,7 @@
 					var fc = new WidgetContainer({
 						caption: true
 					});
+					fc.addClass('_jsb_dashboardFloatingContainer');
 					fc.attachWidget(widget);
 					ui.helper.append(fc.getElement());
 				},
@@ -312,8 +320,13 @@
 			if(layout.type == 'widget'){
 				for(var i = 0; i < layout.widgets.length; i++){
 					var wId = layout.widgets[i];
-					var w = this.dashboard.widgets[wId]
-					this.addWidget(w);
+					var w = this.dashboard.widgets[wId];
+					if(w){
+						this.addWidget(w);
+					}
+				}
+				if(Object.keys(this.widgetContainer.widgets).length == 0){
+					this.undockWidget();
 				}
 			} else {
 				this.splitBox = new SplitBox({
