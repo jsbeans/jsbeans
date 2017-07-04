@@ -45,6 +45,7 @@
         <dependency>
             <groupId>com.google.javascript</groupId>
             <artifactId>closure-compiler</artifactId>
+            <!--artifactId>closure-compiler-unshaded</artifactId-->
 <!--             <version>v20130411</version> -->
             <version>v20170626</version>
             <exclusions>
@@ -59,6 +60,10 @@
                 <exclusion>
                     <artifactId>google-collections</artifactId>
                     <groupId>com.google.collections</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
