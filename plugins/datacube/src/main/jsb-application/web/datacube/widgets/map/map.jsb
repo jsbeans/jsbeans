@@ -175,21 +175,26 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
+			this.addClass('mapWidget');
 			this.loadCss('map.css');
+			this.loadCss('leaflet/leaflet.css');
 
 			this.mapContainer = this.$('<div class="mapContainer"></div>');
 			this.append(this.mapContainer);
 
-			this.loadCss('leaflet/leaflet.css');
-			// develop
-			//JSB().loadScript(['thirdparty/topojson/topojson.js', 'thirdparty/leaflet/leaflet-src.js']);
-			// production
+			JSB().loadCss('tpl/font-awesome/css/font-awesome.min.css');
 			JSB().loadScript(['tpl/d3/d3.min.js', 'datacube/widgets/map/topojson/topojson.min.js', 'datacube/widgets/map/leaflet/leaflet.js'],
 			    function(){
 			        $this.fillData();
 			        $this.loadGeo();
 			    }
 			);
+		},
+
+		$lang: {
+            ZoomIn: "Приблизить",
+            ZoomOut: "Отдалить",
+            ZoomToFit: "Масштаб по содержимому"
 		},
 
 		/*
@@ -380,6 +385,29 @@
                     .attr('stroke', 'gray')
                     .attr('stroke-width', 1);
 
+            // custom controls
+            var X = d3.select(this.getElement().get(0)).append("div").attr("class", "mapControl");
+            X.append("div")
+                .attr("class","mapControlButton fa fa-plus")
+                .attr("title", $this.$lang.ZoomIn)
+                .on("click",function(){ $this.leafletAttrMap.zoomIn(); });
+            X.append("div")
+                .attr("class","mapControlButton fa fa-minus")
+                .attr("title", $this.$lang.ZoomOut)
+                .on("click",function(){ $this.leafletAttrMap.zoomOut(); });
+            X.append("div")
+                .attr("class","mapControlButton viewFit fa fa-arrows-alt")
+                .attr("title", $this.$lang.ZoomToFit)
+                .on("dblclick",function(){
+                  d3.event.preventDefault();
+                  d3.event.stopPropagation();
+                })
+                .on("click",function(){
+                  $this.zoomToActive();
+                  d3.event.preventDefault();
+                  d3.event.stopPropagation();
+                });
+
             this.aggrGroup = this.catMap_SVG.append("g").attr("class", "leaflet-zoom-hide aggrGroup");
 
             this._aggrs.forEach(function(_cat){
@@ -418,15 +446,18 @@
 
                 item.attr("d", $this.geoPath($this._aggrs[i].geo));
 
-                $this.fillStyle(item, 'path', 'base');
+                var opts = JSB().merge($this._defaults.path.base, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.base : null);
+                $this.fillStyle(item, opts);
 
                 // highlight
                 item.on("mouseenter", function(_cat){
-                        $this.fillStyle(item, 'path', 'selected');
+                        var opts = JSB().merge($this._defaults.path.selected, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.selected : null);
+                        $this.fillStyle(item, opts);
                         $this.onCatEnter(_cat);
                     })
                     .on("mouseleave",function(_cat){
-                        $this.fillStyle(item, 'path', 'base');
+                        var opts = JSB().merge($this._defaults.path.base, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.base : null);
+                        $this.fillStyle(item, opts);
                         $this.onCatLeave(_cat);
                     })
                 // cat click
@@ -444,17 +475,20 @@
 
                 item.attr("transform", function(){
                    var centroid = $this.geoPath.centroid($this._aggrs[i].geo);
-                   return "translate("+centroid[0]+","+centroid[1]+")";
+                   return "translate(" + centroid[0] + "," + centroid[1] + ")";
                 });
 
-                $this.fillStyle(item, 'label', 'base');
+                var opts = JSB().merge($this._defaults.label.base, typeof $this._aggrs[i].label !== 'undefined' ? $this._aggrs[i].label.base : null);
+                $this.fillStyle(item, opts);
 
                 // highlight
                 item.on("mouseenter", function(){
-                        $this.fillStyle(item, 'path', 'selected');
+                        var opts = JSB().merge($this._defaults.label.selected, typeof $this._aggrs[i].label !== 'undefined' ? $this._aggrs[i].label.selected : null);
+                        $this.fillStyle(item, opts);
                     })
                     .on("mouseleave",function(_cat){
-                        $this.fillStyle(item, 'path', 'base');
+                        var opts = JSB().merge($this._defaults.label.base, typeof $this._aggrs[i].label !== 'undefined' ? $this._aggrs[i].label.base : null);
+                        $this.fillStyle(item, opts);
                     });
             });
 
@@ -466,9 +500,7 @@
             // this.mapGlyphsLabels.on("", function(){});
         },
 
-        fillStyle: function(item, component, styleType){
-            var opts = JSB().merge($this._defaults[component][styleType], attr[i][component][styleType]);
-
+        fillStyle: function(item, opts){
             for(var j in opts.attrs){
                 item.attr(j, opts.attrs[j]);
             }
@@ -483,12 +515,14 @@
                 if(attr[i].path){
                     var obj = d3.select("path[mapId=" + attrs[i].id + "]");
 
-                    $this.fillStyle(item, 'path', 'base');
+                    var opts = JSB().merge($this._defaults.path.base, typeof attr[i].path !== 'undefined' ? attr[i].path.base : null);
+                    $this.fillStyle(item, opts);
                 }
                 if(attr[i].label){
                     var obj = d3.select("text[mapId=" + attrs[i].id + "]");
 
-                    $this.fillStyle(item, 'label', 'base');
+                    var opts = JSB().merge($this._defaults.label.base, typeof attr[i].label !== 'undefined' ? attr[i].label.base : null);
+                    $this.fillStyle(item, opts);
                 }
             }
         },
@@ -500,6 +534,23 @@
                    var centroid = $this.geoPath.centroid(_cat.geo);
                    return "translate("+centroid[0]+","+centroid[1]+")";
                  });
+        },
+
+        zoomToActive: function(){
+            var bs = [];
+
+            this._aggrs.forEach(function(_cat){
+                if(typeof _cat.geo === 'undefined') return;
+                var b = d3.geoBounds(_cat.geo);
+                if(isNaN(b[0][0])) return;
+                // Change wrapping
+                if(b[0][0] > $this.map.wrapLongitude) b[0][0] -= 360;
+                if(b[1][0] > $this.map.wrapLongitude) b[1][0] -= 360;
+                bs.push(L.latLng(b[0][1], b[0][0]));
+                bs.push(L.latLng(b[1][1], b[1][0]));
+            });
+
+            this.leafletAttrMap.flyToBounds(new L.latLngBounds(bs), this.map.flyConfig);
         },
 
         // callbacks

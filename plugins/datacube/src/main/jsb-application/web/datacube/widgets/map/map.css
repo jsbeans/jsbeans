@@ -1,11 +1,48 @@
-.mapContainer{
+.mapWidget .mapContainer{
     height: 100%;
     width: 100%;
 }
-
-.mapContainer .catMap_SVG{
+.mapWidget .mapContainer .catMap_SVG{
     position: relative;
     left: 0px;
     top: 0px;
     overflow: visible;
+}
+.mapWidget .mapControl {
+  z-index: 1000;
+  background-color: white;
+  position: absolute;
+  border-radius: 4px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
+  left: 3px;
+  bottom: 5px;
+  font-size: 0.9em;
+}
+.mapWidget .mapControl > .mapControlButton {
+  display: inline-block;
+  border-right: 1px solid #ccc;
+  cursor: pointer;
+  padding: 4px;
+  text-align: center;
+}
+.mapWidget .mapControl > .mapControlButton.fa-plus {
+
+}
+.mapWidget .mapControl > .mapControlButton.fa-square-o {
+  border-left: solid 2px #ccc;
+  padding-left: 5px;
+}
+.mapWidget .mapControl > .mapControlButton:hover {
+  background-color: #EEE;
+  color: #cb5454;
+}
+.mapWidget .mapControl > .mapControlButton:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+.mapWidget .mapControl > .mapControlButton:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  border-bottom: none;
+  border-right: none;
 }
