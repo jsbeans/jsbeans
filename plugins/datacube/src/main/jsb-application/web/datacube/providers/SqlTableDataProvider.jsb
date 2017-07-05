@@ -33,10 +33,10 @@
 			return this.entry.descriptor;
 		},
 
-		getTableCanonicalName:function(){
-		    return this.provider.getTableDescriptor().schema
-		            ? this.provider.getTableDescriptor().schema + '.' + this.provider.getTableDescriptor().name
-		            : this.provider.getTableDescriptor().name;
+		getTableFullName:function(){
+		    return this.getTableDescriptor().schema
+		            ? this.getTableDescriptor().schema + '.' + this.getTableDescriptor().name
+		            : this.getTableDescriptor().name;
         },
 
 		

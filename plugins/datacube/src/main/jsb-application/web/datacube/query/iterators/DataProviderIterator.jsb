@@ -8,21 +8,26 @@
 		    'JSB.DataCube.Query.Translators.MoSQLTranslator',
         ],
 
-		$constructor: function(provider, cube){
+		$constructor: function(provider, queryEngine){
+debugger;
 		    $base();
 		    this.provider = provider;
-		    this.cube = cube;
-
+		    this.queryEngine = queryEngine;
+		    this.cube = queryEngine.cube;
             // select compatible translator
             if (provider instanceof SqlTableDataProvider) {
-                this.translator = new MoSQLTranslator(provider, cube);
+                this.translator = new MoSQLTranslator(provider, this.cube);
             } else {
                 throw new Error('Other translators not supported yet');
             }
 		},
 
+		getDataProvider: function(){
+		    return this.provider;
+		},
+
 		iterate: function(dcQuery, params){
-            this.iterator = translator.translatedQueryIterator(dcQuery, params);
+            this.iterator = this.translator.translatedQueryIterator(dcQuery, params);
 		    return this;
 		},
 

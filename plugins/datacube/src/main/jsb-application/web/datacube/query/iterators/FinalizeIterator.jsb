@@ -3,9 +3,11 @@
 	$parent: 'JSB.DataCube.Query.Iterators.Iterator',
 
 	$server: {
-		$constructor: function(iterator){
+		$constructor: function(iterator, queryEngine){
 		    $base();
 		    this.iterator = iterator;
+		    this.queryEngine = queryEngine;
+		    this.cube = queryEngine.cube;
 		},
 
 		iterate: function(dcQuery, params){
@@ -14,17 +16,14 @@
 		},
 
 		next: function(){
-		    for (var next = this.iterator.next(); !!next; next = this.iterator.next()) {
-		        if (JSB.isFunction(dcQuery.$finalize)) {
-		            var value = dcQuery.$finalize.call(next, next);
-		            if (!JSB.isNull(value)) {
-		                return value;
-		            }
-		        } else {
-		            throw new Error('Invalid $finalize expression');
+		    do {
+		        var next = this.iterator.next();
+		        if (JSB.isNull(next)) {
+		            return null;
 		        }
-		    }
-		    return null;
+		        var value = dcQuery.$finalize.call(next, next);
+		    } while (JSB.isNull(value));
+		    return value;
 		},
 
 		close: function() {

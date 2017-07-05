@@ -114,6 +114,7 @@
 					
 				}
 				this.loaded = true;
+//this.queryEngine.selftTest(); // TODO: remove test
 			}
 			
 			// construct response for drawing
@@ -235,6 +236,11 @@
 				throw new Error('Unable to find data provider by id: ' + pId);
 			}
 			return this.dataProviders[pId];
+		},
+
+		getOrderedDataProviders: function(){
+		    // TODO: support join order
+		    return this.dataProviders;
 		},
 		
 		extractDataProviderFields: function(pId){

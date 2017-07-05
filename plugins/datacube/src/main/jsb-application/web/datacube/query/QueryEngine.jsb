@@ -8,65 +8,64 @@
 		    'JSB.DataCube.Query.Iterators.FinalizeIterator',
         ],
 
-	    cube : {},
-
-	    selftTest: function(){
+	    selftTest: function(cube){
 	        [
 	            // select all fields
-                new QueryEngine(cube).query(
+                this.query(
                     { $select: {} }
                 ),
-                // select id field
-                new QueryEngine(cube).query(
-                    { $select: {
-                        id: 'id',
-                    } }
-                ),
-                //
-                new QueryEngine(cube).query({
-                    // produce values with new names from fields or aggregate functions
-                    // <field_value> : <cube_field_or_function>
-                    $select: {
-                        type: 'user_type',
-                        usersCount: { $sum: 1 },
-                        totalLogins: { $sum: 'user_logins' },
-                        avgLogins: { $avg: 'user_logins' },
-                        maxLogins: { $max: 'user_logins' },
-                        minLogins: { $min: 'user_logins' },
-                        mainRoles: { $array: 'mainRole' },
-                        roles: { $flatArray: 'roles' }
-
-                    },
-                    // filter rows by new or cube fields
-                    // note: aggregated fields not supported yet
-                    $filter: {
-                        user_enabled: { $eq : '${param1}' },
-                        $or: [
-                            { user_enabled: { $eq : '${param1}' } },
-                            { mainRole: { $ne : null } } // not null
-                        ]
-                    },
-
-                    // note: distinct not supported
-                    // $distinct: true,
-
-                    $groupBy: ['user_type'],
-
-                    // sorting by new or old fields
-                    $sort: ['usersCount', 'totalLogins'],
-
-                    // postprocessing with function
-                    $finalize: function(value) {
-                        if (value.minLogins > 0) {
-                            value.newFiled = 'created value';
-                            return value;
-                        }
-                        // without return: filter value
-                    }
-                }, {
-                    param1: true
-                })
+//                // select id field
+//                this.query(
+//                    { $select: {
+//                        id: 'id',
+//                    } }
+//                ),
+//                //
+//                this.query({
+//                    // produce values with new names from fields or aggregate functions
+//                    // <field_value> : <cube_field_or_function>
+//                    $select: {
+//                        type: 'user_type',
+//                        usersCount: { $sum: 1 },
+//                        totalLogins: { $sum: 'user_logins' },
+//                        avgLogins: { $avg: 'user_logins' },
+//                        maxLogins: { $max: 'user_logins' },
+//                        minLogins: { $min: 'user_logins' },
+//                        mainRoles: { $array: 'mainRole' },
+//                        roles: { $flatArray: 'roles' }
+//
+//                    },
+//                    // filter rows by new or cube fields
+//                    // note: aggregated fields not supported yet
+//                    $filter: {
+//                        user_enabled: { $eq : '${param1}' },
+//                        $or: [
+//                            { user_enabled: { $eq : '${param1}' } },
+//                            { mainRole: { $ne : null } } // not null
+//                        ]
+//                    },
+//
+//                    // note: distinct not supported
+//                    // $distinct: true,
+//
+//                    $groupBy: ['user_type'],
+//
+//                    // sorting by new or old fields
+//                    $sort: ['usersCount', 'totalLogins'],
+//
+//                    // postprocessing with function
+//                    $finalize: function(value) {
+//                        if (value.minLogins > 0) {
+//                            value.newFiled = 'created value';
+//                            return value;
+//                        }
+//                        // without return: filter value
+//                    }
+//                }, {
+//                    param1: true
+//                })
             ].forEach(function(it){
+            debugger;
                 for (var val = it.next(); !JSB.isNull(val); val = it.next()) {
                     Log.debug(JSON.stringify(val,0,2));
                 }
@@ -76,11 +75,21 @@
 	    },
 
 		$constructor: function(cube){
-			this.dataProviders = cube.dataProviders;
+		    this.cube = cube;
 		},
 
 		query: function(dcQuery, params){
-		    return produceIterator(dcQuery, params);
+		    dcQuery = this.prepareQuery(dcQuery);
+		    return this.produceIterator(dcQuery, params||{});
+		},
+
+		prepareQuery: function(dcQuery) {
+		    if (Object.keys(dcQuery.$select).length == 0) {
+                for (var f in this.cube.fields) if (this.cube.fields.hasOwnProperty(f)) {
+                    dcQuery.$select[f] = f;
+                }
+            }
+            return dcQuery;
 		},
 
 		extractFields: function(dcQuery) {
@@ -90,22 +99,22 @@
 		        if (JSB.isString(q)) {
 		            cubeFields.push(q);
 		        } else if (JSB.isPlainObject(q)) {
-		            for (var f in q) if (q.hasOwnFields(f)) {
-		                if (f.match(/^\$/)) {
+		            for (var f in q) if (q.hasOwnProperty(f)) {
+		                if (!f.match(/^\$/)) {
 		                    outputFields.push(f);
 		                }
 		                collect(q[f]);
 		            }
 		        }
 		    }
-		    collect(dcQuery);
-		    return {
+            collect(dcQuery.$select);
+            return {
 		        cubeFields: cubeFields,
 		        outputFields : outputFields
 		    };
 		},
 
-		dataProviderHasCubeFields: function(provider, cubeFields) {
+		isDataProviderLinkedWithCubeFields: function(provider, cubeFields, excludeJoinFields) {
 		    var count = 0;
 		    for (var i in cubeFields) {
 		        var field = cubeFields[i];
@@ -114,9 +123,9 @@
 		            var cubeField = this.cube.fields[field];
 		            // iterate binding providers
 		            for(var b in cubeField.binding) {
-		                if (cubeField.binding[b].field
-		                        && provider == cubeField.binding[b].provider) {
-		                    count++;
+		                if (provider == cubeField.binding[b].provider) {
+		                    //var dpField = cubeField.binding[b].field;
+		                    if (!excludeJoinFields) count++;
 		                }
 		            }
 		        }
@@ -124,59 +133,35 @@
 		    return count;
 		},
 
+		setParamType: function(paramName, paramType){
+		    // TODO:
+		},
+
+		getParamType: function(paramName, provider){
+		    // TODO:
+		},
+
 		produceIterator: function(dcQuery, params, configurators) {
-		    // 1) дерево итераторов формируется исходя исключительно из
-		    // конфигурации куба, входящих в него DataProviders и их соединений/joins
-
-		    // 2) join добавляет соответствующие поля в $select часть, чтобы
-		    // по ним потом можно было соединить записи из разных провайдеров данных;
-
-            var cubeFields = this.extractFields(dcQuery).cubeFields;
+            // collect only iterator of used in query providers
+            var usedCubeFields = this.extractFields(dcQuery).cubeFields;
+            var dataProviders = this.cube.getOrderedDataProviders();
             var providerIterators = [];
-            for (var i in this.cube.dataProviders) {
-                if ($this.dataProviderHasCubeFields(provider, cubeFields)) {
-                    providerIterators.push(new DataProviderIterator(provider, this.cube));
+            for (var i in dataProviders) {
+                var provider = dataProviders[i];
+                if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, i > 0)) {
+                    providerIterators.push(new DataProviderIterator(provider, this));
                 }
             }
 
             var joinIterator = providerIterators.length == 1
                     ? providerIterators[0]
-                    : new JoinIterator(providerIterators, this.cube);
+                    : new JoinIterator(providerIterators, this);
 
 		    if (dcQuery.$finalize) {
-		        return new FinalizeIterator(joinIterator).iterate(dcQuery);
+		        return new FinalizeIterator(joinIterator, this).iterate(dcQuery);
 		    }
 
-		    return join.iterate(dcQuery);
+		    return joinIterator.iterate(dcQuery);
 		},
-
-//		toDataProviderFields: function(dcQuery) {
-//		    function mapField(cubeField) {
-//		        if (this.cube.fields[cubeField]) {
-//                    var desc = this.cube.fields[cubeField];
-//                    // iterate binding providers
-//                    for(var b in desc.binding) {
-//                        if (desc.binding[b].field
-//                                && provider == desc.binding[b].provider) {
-//                            count++;
-//                        }
-//                    }
-//                }
-//		    }
-//
-//            if (dcQuery.$filter) {
-//                query.where = doWhere(dcQuery.$filter);
-//            }
-//            if (dcQuery.$select) {
-//                query.columns = doColumns(dcQuery.$select);
-//            }
-//            if (dcQuery.$groupBy) {
-//                query.groupBy = doGroupBy(dcQuery.$groupBy);
-//            }
-//            if (dcQuery.$sort) {
-//                query.sort = doSort(dcQuery.$sort);
-//            }
-//            return query;
-//		}
 	}
 }
