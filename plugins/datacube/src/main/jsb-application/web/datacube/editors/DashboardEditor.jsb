@@ -3,16 +3,19 @@
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
-		$require: ['JSB.Widgets.ToolBar', 'JSB.Widgets.Dashboard.Dashboard'],
+		$require: ['JSB.Widgets.ToolBar', 
+		           'JSB.Widgets.Dashboard.Dashboard',
+		           'JSB.DataCube.Widgets.WidgetWrapper'],
 		
 		entry: null,
+		ignoreHandlers: false,
 		           
 		$constructor: function(opts){
 			$base(opts);
 			
 			this.loadCss('DashboardEditor.css');
 			this.addClass('dashboardEditor');
-			
+/*			
 			// create toolbar
 			this.toolbar = new ToolBar();
 			this.append(this.toolbar);
@@ -26,7 +29,7 @@
 			});
 			
 			this.toolbar.addSeparator({key: 'createSeparator'});
-			
+*/			
 			this.dashboard = new Dashboard({
 				emptyText: 'Перетащите сюда виджет',
 				onDragAccept: function(d){
@@ -46,20 +49,25 @@
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
 							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
-								JSB.lookup(obj.descriptor.jsb, function(WidgetClass){
-									var wInst = new WidgetClass();
+								$this.entry.server().createWidgetWrapper(obj.descriptor.jsb, obj.descriptor.name, function(wWraper){
 									if(callback){
-										callback.call($this, wInst);
+										callback.call($this, wWraper);
 									}
 								});
 								return;
 							}
 						}
 					}
+				},
+				
+				onChange: function(){
+					if($this.ignoreHandlers){
+						return;
+					}
+					$this.updateLayout(this.getLayout());
 				}
 			});
 			this.append(this.dashboard);
-			
 		},
 		
 		setCurrentEntry: function(entry){
@@ -67,6 +75,19 @@
 				return;
 			}
 			this.entry = entry;
+			this.entry.server().load(function(dashboardDesc){
+				var desc = {
+					layout: dashboardDesc.layout,
+					widgets: dashboardDesc.wrappers
+				};
+				$this.ignoreHandlers = true;
+				$this.dashboard.setLayout(desc);
+				$this.ignoreHandlers = false;
+			});
+		},
+		
+		updateLayout: function(dlayout){
+			this.entry.server().updateLayout(dlayout ? dlayout.layout : null);
 		}
 		
 	}

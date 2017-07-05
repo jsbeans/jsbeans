@@ -542,6 +542,9 @@
 
 				
 				function _reqIteration(s){
+/*					if(s > 1000){
+						debugger;
+					}*/
 					if(Object.keys(reqContainer.curReqBeans).length === 0){
 						self._readyState = 2;
 						_matchReqSynchronized();
@@ -581,14 +584,6 @@
 				}
 				
 				_reqIteration(1);
-				
-/*				
-				self._readyState = 2;
-				self._matchWaiters(2);
-				self._waitRequires(2, function(){
-					self._proceedBootstrapStage();
-				});
-*/				
 			}
 			
 			if(this.isPlainObject(entry) || this.isPlainObject(commonSection)){
@@ -4575,7 +4570,6 @@ JSB({
 			var name = loadArr[i];
 			var entry = this.items[name];
 			var cfg = entry.cfg;
-			
 			// do load
 			JSB(cfg);
 			

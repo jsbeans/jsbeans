@@ -54,6 +54,13 @@
             this.queryEngine = new QueryEngine(this);
 		},
 		
+		destroy: function(){
+			if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
+				this.workspace.removeArtifact(this.getLocalId() + '.cube');
+			}
+			$base();
+		},
+		
 		load: function(){
 			if(!this.loaded){
 				if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){

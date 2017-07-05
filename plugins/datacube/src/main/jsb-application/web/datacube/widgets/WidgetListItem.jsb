@@ -11,6 +11,7 @@
 			this.addClass('widgetListItem');
 			this.descriptor = desc;
 			this.attr('key', this.descriptor.jsb);
+			this.attr('title', this.descriptor.name);
 			
 			this.append(`#dot
 				<img class="icon" src="{{=$this.descriptor.thumb}}"></img>

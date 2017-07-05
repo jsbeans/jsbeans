@@ -2,6 +2,10 @@
 	$name: 'JSB.Widgets.Dashboard.Placeholder',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		
+		lastAccepted: false,
+		dragUi: false,
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('Placeholder.css');
@@ -13,55 +17,91 @@
 				`);
 			}
 			
-			this.getElement().droppable({
-				accept: function(d){
-					if($this.options.onDragAccept){
-						return $this.options.onDragAccept.call($this, d);
+			JSB.deferUntil(function(){
+				function dragCallback(evt, ui){
+					if(!$this.dragUi || !$this.lastAccepted){
+						return;
 					}
-/*					
-					if(d && d.length > 0 && d.get(0).draggingItems){
-						var nodes = [];
-						for(var i in d.get(0).draggingItems){
-							var obj = d.get(0).draggingItems[i].obj;
-							if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
-								continue;
-							}
-							nodes.push(obj);
+					// check if over
+					var r = $this.getElement().get(0).getBoundingClientRect();
+					if(evt.pageX >= r.left && evt.pageX < r.left + r.width && evt.pageY >= r.top && evt.pageY < r.top + r.height){
+						if( !$this.dragUi.helper.hasClass('accepted') ){
+							$this.dragUi.helper.addClass('accepted');
 						}
-						// check for dragging items
-						return $this.checkMove(node, nodes);
+						$this.getElement().addClass('acceptDraggable');
+					} else {
+						if( ui.helper.hasClass('accepted') ){
+							ui.helper.removeClass('accepted');
+						}
+						$this.getElement().removeClass('acceptDraggable');
 					}
-*/					
-					return false;
-				},
-				tolerance: 'pointer',
-				greedy: true,
-				over: function(evt, ui){
-					if( !ui.helper.hasClass('accepted') ){
-						ui.helper.addClass('accepted');
+				}
+				
+				$this.getElement().droppable({
+					accept: function(d){
+						$this.lastAccepted = false;
+						if($this.options.onDragAccept){
+							$this.lastAccepted = $this.options.onDragAccept.call($this, d);
+						}
+						return $this.lastAccepted;
+					},
+					activate: function(evt, ui){
+						ui.draggable.bind('drag', dragCallback);
+						$this.dragUi = ui;
+					},
+					tolerance: 'pointer',
+					greedy: true,
+					drop: function(evt, ui){
+						$this.dragUi = null;
+						var d = ui.draggable;
+						$this.getElement().removeClass('acceptDraggable');
+						var widget = null;
+						if($this.options.onDragDrop){
+							$this.options.onDragDrop.call($this, d, function(widget){
+								if($this.options.onDropWidget){
+									$this.options.onDropWidget.call($this, widget);
+								}
+							});
+						}
+					},
+					deactivate: function(evt, ui){
+						ui.draggable.unbind('drag', dragCallback);
+						$this.dragUi = null;
+						if($this.options.onDragStop){
+							$this.options.onDragStop.call($this);
+						}
+					}
+
+				});
+			}, function(){
+				return $this.getElement().width() > 0 && $this.getElement().height() > 0;
+			});
+			
+			
+/*			
+			this.getElement().on({
+				'mouseover': function(evt){
+					if(!$this.dragUi || !$this.lastAccepted){
+						return;
+					}
+					if( !$this.dragUi.helper.hasClass('accepted') ){
+						$this.dragUi.helper.addClass('accepted');
 					}
 					$this.getElement().addClass('acceptDraggable');
 				},
-				out: function(evt, ui){
-					if( ui.helper.hasClass('accepted') ){
-						ui.helper.removeClass('accepted');
+				'mouseout': function(evt){
+					
+					if(!$this.dragUi || !$this.lastAccepted){
+						return;
+					}
+					if( $this.dragUi.helper.hasClass('accepted') ){
+						$this.dragUi.helper.removeClass('accepted');
 					}
 					$this.getElement().removeClass('acceptDraggable');
-				},
-				drop: function(evt, ui){
-					var d = ui.draggable;
-					$this.getElement().removeClass('acceptDraggable');
-					var widget = null;
-					if($this.options.onDragDrop){
-						$this.options.onDragDrop.call($this, d, function(widget){
-							if($this.options.onDropWidget){
-								$this.options.onDropWidget.call($this, widget);
-							}
-						});
-					}
+					
 				}
-
 			});
+*/			
 		}
 	}
 }

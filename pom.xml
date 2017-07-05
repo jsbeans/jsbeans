@@ -63,7 +63,6 @@
     </properties>
 
     <modules>
-        <module>thirdparty/gson</module>
         <module>utils</module>
         <module>kernel</module>
         <module>plugins</module>

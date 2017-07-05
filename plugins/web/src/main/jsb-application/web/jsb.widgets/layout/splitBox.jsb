@@ -14,6 +14,7 @@
 		panes: [],
 		filledPanes: [],
 		splitters: [],
+		splitterPositions: [],
 		hidden:[],
 		
 		init: function(){
@@ -30,112 +31,118 @@
 			this.posArr = posArr;
 			
 			for(var i = 0; i < posArr.length; i++ ){
-				var splitPos = posArr[i];
+				(function(i){
+					var splitPos = posArr[i];
+					$this.splitterPositions[i] = splitPos;
+					// append splitter
+					if(i < posArr.length - 1){
+						pos = Math.floor(splitPos * 100) + '%';
+						var splitter = $this.$('<div class="_dwp_splitter '+$this.options.type+'" idx="'+i+'"><div class="gripIcon"></div></div>');
+						$this.splitters[i] = splitter; 
+						if($this.options.type == 'vertical'){
+							splitter.css({
+								left: pos
+							});
+							splitter.draggable({ 
+								axis: 'x',
+								start: function(evt, data){
+									var splitter = data.helper;
+									var idx = parseInt(splitter.attr('idx'));
+									var firstPane = self.panes[idx];
+									var secondPane = self.panes[idx + 1];
+									splitter.percentWidth = ( firstPane.outerWidth() + secondPane.outerWidth() ) * 100 / elt.width();
+								},
+								drag: function(evt, data){
+									var splitter = data.helper;
+									var idx = parseInt(splitter.attr('idx'));
+									var firstPane = self.panes[idx];
+									var secondPane = self.panes[idx + 1];
+									var deltaX = data.position.left - splitter.position().left;
+									var leftPercent = ( firstPane.outerWidth() + deltaX ) * 100 / elt.width();
+									
+									var rightPercent = splitter.percentWidth - leftPercent;
+									 
+									var percent = data.position.left * 100 / elt.width();
+									splitter.css('left', '' + percent + '%');
+									data.position.left = self.updatePanes()[idx];
+								},
+								stop: function(evt, data){
+									var splitter = data.helper;
+									var percent = data.position.left * 100 / elt.width();
+									splitter.css('left', '' + percent + '%');
+									$this.splitterPositions[i] = data.position.left / elt.width();
+									if($this.options.onChange){
+										$this.options.onChange.call($this);
+									}
+								}
+							});
+							
+						} else {
+							splitter.css({
+								top: pos 
+							});
+							splitter.draggable({
+								axis: 'y',
+								start: function(evt, data){
+									var splitter = data.helper;
+									var idx = parseInt(splitter.attr('idx'));
+									var firstPane = self.panes[idx];
+									var secondPane = self.panes[idx + 1];
+									splitter.percentHeight = ( firstPane.outerHeight() + secondPane.outerHeight() ) * 100 / elt.height();
+								},
+								drag: function(evt, data){
+									var splitter = data.helper;
+									var idx = parseInt(splitter.attr('idx'));
+									var firstPane = self.panes[idx];
+									var secondPane = self.panes[idx + 1];
+									var deltaX = data.position.top - splitter.position().top;
+									var leftPercent = ( firstPane.outerHeight() + deltaX ) * 100 / elt.height();
+									
+									var rightPercent = splitter.percentHeight - leftPercent;
+									 
+									var percent = data.position.top * 100 / elt.height();
+									splitter.css('top', '' + percent + '%');
+									data.position.top = self.updatePanes()[idx];
+								},
+								stop: function(evt, data){
+									var splitter = data.helper;
+									var percent = data.position.top * 100 / elt.height();
+									splitter.css('top', '' + percent + '%');
+									$this.splitterPositions[i] = data.position.top / elt.height();
+									if($this.options.onChange){
+										$this.options.onChange.call($this);
+									}
 
-				// append splitter
-				if(i < posArr.length - 1){
-					pos = Math.floor(splitPos * 100) + '%';
-					var splitter = this.$('<div class="_dwp_splitter '+this.options.type+'" idx="'+i+'"><div class="gripIcon"></div></div>');
-					this.splitters[i] = splitter; 
-					if(this.options.type == 'vertical'){
-						splitter.css({
-							left: pos
-						});
-						splitter.draggable({ 
-							axis: 'x',
-//								containment: splitterBox,
-							start: function(evt, data){
-								var splitter = data.helper;
-								var idx = parseInt(splitter.attr('idx'));
-								var firstPane = self.panes[idx];
-								var secondPane = self.panes[idx + 1];
-								splitter.percentWidth = ( firstPane.outerWidth() + secondPane.outerWidth() ) * 100 / elt.width();
-							},
-							drag: function(evt, data){
-								var splitter = data.helper;
-								var idx = parseInt(splitter.attr('idx'));
-								var firstPane = self.panes[idx];
-								var secondPane = self.panes[idx + 1];
-								var deltaX = data.position.left - splitter.position().left;
-								var leftPercent = ( firstPane.outerWidth() + deltaX ) * 100 / elt.width();
-//									firstPane.css('width', '' + leftPercent + '%');
-								
-								var rightPercent = splitter.percentWidth - leftPercent;
-//									secondPane.css('width', '' + rightPercent + '%');
-								 
-								var percent = data.position.left * 100 / elt.width();
-								splitter.css('left', '' + percent + '%');
-								data.position.left = self.updatePanes()[idx];
-							},
-							stop: function(evt, data){
-								var splitter = data.helper;
-								var percent = data.position.left * 100 / elt.width();
-								splitter.css('left', '' + percent + '%');
-							}
-						});
-						
-					} else {
-						splitter.css({
-							top: pos 
-						});
-						splitter.draggable({
-							axis: 'y',
-//								containment: splitterBox,
-							start: function(evt, data){
-								var splitter = data.helper;
-								var idx = parseInt(splitter.attr('idx'));
-								var firstPane = self.panes[idx];
-								var secondPane = self.panes[idx + 1];
-								splitter.percentHeight = ( firstPane.outerHeight() + secondPane.outerHeight() ) * 100 / elt.height();
-							},
-							drag: function(evt, data){
-								var splitter = data.helper;
-								var idx = parseInt(splitter.attr('idx'));
-								var firstPane = self.panes[idx];
-								var secondPane = self.panes[idx + 1];
-								var deltaX = data.position.top - splitter.position().top;
-								var leftPercent = ( firstPane.outerHeight() + deltaX ) * 100 / elt.height();
-//									firstPane.css('height', '' + leftPercent + '%');
-								
-								var rightPercent = splitter.percentHeight - leftPercent;
-//									secondPane.css('height', '' + rightPercent + '%');
-								 
-								var percent = data.position.top * 100 / elt.height();
-								splitter.css('top', '' + percent + '%');
-								data.position.top = self.updatePanes()[idx];
-							},
-							stop: function(evt, data){
-								var splitter = data.helper;
-								var percent = data.position.top * 100 / elt.height();
-								splitter.css('top', '' + percent + '%');
-							}
-						});
+								}
+							});
 
+						}
+						elt.append(splitter);
+						splitter.css('position','');
 					}
-					elt.append(splitter);
-					splitter.css('position','');
-				}
-				
-				var fromPos = curPos;
-				var toPos = splitPos;
-				var paneElt = this.$('<div class="_dwp_splitPane '+this.options.type+'"></div>');
-				if(this.options.type == 'vertical'){
-					paneElt.css({
-						left: fromPos * elt.width(),
-						width: (toPos - fromPos) * elt.width()
-					});
-				} else {
-					paneElt.css({
-						top: fromPos * elt.height(),
-						height: (toPos - fromPos) * elt.height()
-					});
-				}
-				
-				elt.append(paneElt);
-				this.panes.push(paneElt);
-				this.filledPanes.push(false);
+					
+					var fromPos = curPos;
+					var toPos = splitPos;
+					var paneElt = $this.$('<div class="_dwp_splitPane '+$this.options.type+'"></div>');
+					if($this.options.type == 'vertical'){
+						paneElt.css({
+							left: fromPos * elt.width(),
+							width: (toPos - fromPos) * elt.width()
+						});
+					} else {
+						paneElt.css({
+							top: fromPos * elt.height(),
+							height: (toPos - fromPos) * elt.height()
+						});
+					}
+					
+					elt.append(paneElt);
+					$this.panes.push(paneElt);
+					$this.filledPanes.push(false);
 
-				curPos = splitPos;
+					curPos = splitPos;
+
+				})(i);
 			}
 			
 			elt.resize(function(){
@@ -219,6 +226,7 @@
 							var spos = splitter.position().left - (paneElt.width() - nw);
 							splittersPos[i-1] = spos;
 							var ppos = spos * 100 / elt.width();
+							$this.splitterPositions[i-1] = spos / elt.width();
 							splitter.css({left: ''+ ppos + '%'})
 							paneElt.css({
 								left: splitter.position().left + splitter.outerWidth()
@@ -228,6 +236,7 @@
 							var spos = splitter.position().left + (paneElt.width() - nw);
 							splittersPos[i] = spos;
 							var ppos = spos * 100 / elt.width();
+							$this.splitterPositions[i] = spos / elt.width();
 							splitter.css({left: ''+ ppos + '%'})
 						}
 						nextPos = splitter.position().left + splitter.outerWidth(); 
@@ -246,6 +255,7 @@
 							var spos = splitter.position().top - (paneElt.height() - nh);
 							splittersPos[i-1] = spos;
 							var ppos = spos * 100 / elt.height();
+							$this.splitterPositions[i-1] = spos / elt.height();
 							splitter.css({top: ''+ ppos + '%'})
 							paneElt.css({
 								top: splitter.position().top + splitter.outerHeight()
@@ -255,6 +265,7 @@
 							var spos = splitter.position().top + (paneElt.height() - nh);
 							splittersPos[i] = spos;
 							var ppos = spos * 100 / elt.height();
+							$this.splitterPositions[i] = spos / elt.height();
 							splitter.css({top: ''+ ppos + '%'})
 						}
 						nextPos = splitter.position().top + splitter.outerHeight(); 
@@ -289,6 +300,13 @@
 				}
 			}
 			return this;
+		},
+		
+		getSplitterPosition: function(idx){
+			if(!idx){
+				idx = 0;
+			}
+			return this.splitterPositions[idx];
 		}
 	}
 }

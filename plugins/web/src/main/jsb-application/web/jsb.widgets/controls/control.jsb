@@ -200,6 +200,10 @@
 			return this.getElement().removeClass(c);
 		},
 		
+		hasClass: function(cls){
+			return this.getElement().hasClass(cls);
+		},
+		
 		setFocus: function(){
 			this.publish('setFocus');
 			this._isFocused = true;
