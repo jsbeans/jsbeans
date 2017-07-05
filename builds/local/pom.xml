@@ -30,7 +30,28 @@
     </dependencies>
 
     <build>
+        <finalName>jsbeans-local-${maven.build.timestamp}</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>build-classpath </id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputFile>.classpath_jars</outputFile>
+                    <prefix>lib</prefix>
+                    <pathSeparator>:</pathSeparator>
+                    <excludeClassifiers>jsb-application</excludeClassifiers>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -45,7 +66,6 @@
                             <descriptors>
                                 <descriptor>src/assembly.xml</descriptor>
                             </descriptors>
-                            <finalName>jsbeans-local-${maven.build.timestamp}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>

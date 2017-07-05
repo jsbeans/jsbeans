@@ -1,10 +1,10 @@
 #!/bin/sh
 
-JAR_NAME=kernel-1.0-SNAPSHOT.jar
+JARS="$(cat .classpath_jars)"
 
 mkdir -p logs
 java -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadingEnabled \
     -Xms512m -Xmx4096m \
     -Dfile.encoding=UTF-8 \
-    -classpath config:lib/$JAR_NAME:lib/* \
+    -classpath config:$JARS \
     org.jsbeans.Starter

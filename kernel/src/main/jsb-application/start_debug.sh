@@ -1,6 +1,6 @@
 #!/bin/sh
 
-JAR_NAME=kernel-1.0-SNAPSHOT.jar
+JARS="$(cat .classpath_jars)"
 
 mkdir -p logs
 java -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadingEnabled \
@@ -12,5 +12,5 @@ java -XX:+UseConcMarkSweepGC -XX:+CMSPermGenSweepingEnabled -XX:+CMSClassUnloadi
     -Dcom.sun.management.jmxremote.authenticate=false \
     -Dcom.sun.management.jmxremote.ssl=false \
     -Djava.rmi.server.hostname=$(hostname) \
-    -classpath config:lib/$JAR_NAME:lib/* \
+    -classpath config:$JARS \
     org.jsbeans.Starter
