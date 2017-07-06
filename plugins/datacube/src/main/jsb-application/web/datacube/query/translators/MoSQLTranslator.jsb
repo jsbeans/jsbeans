@@ -92,7 +92,7 @@
         },
 
         _quotedName: function(name) {
-            return '`' + name + '`';
+            return escape(name) == name ? name : '`' + name + '`';
         },
 
         _translateWhere: function(dcQuery) {
@@ -128,7 +128,7 @@
                 var key = Object.keys(exp)[0];
                 // is field
                 if (!key.match(/^\$/)) {
-                    return this._translateField(dcQuery, key);
+                    return $this._translateField(dcQuery, key);
                 }
                 // or expression
 
@@ -171,8 +171,8 @@
                 if (exp.$min) return { type: 'MIN', expression: translateExpressions(filter.$sum) }
                 if (exp.$avg) return { type: 'AVG', expression: translateExpressions(filter.$sum) }
 
-                if (exp.$array) {} // TODO
-                if (exp.$flatArray) {} // TODO
+                if (exp.$array) return { type: 'ARRAY_AGG', expression: translateExpressions(filter.$array) }
+                if (exp.$flatArray) return { type: 'ARRAY_AGG', expression: translateExpressions(filter.$flatArray) }
 
                 throw new Error('Unsupported select expression');
             }

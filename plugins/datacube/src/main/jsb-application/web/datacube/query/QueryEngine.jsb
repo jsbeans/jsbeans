@@ -17,12 +17,12 @@
                 // select id field
 //                this.query({
 //                    $select: {
-//                        Subject: 'Субъект',
+//                        Subject: 'Cубъект',
 //                    },
 //                    $filter: {
 //                        $and: [
 //                            { Subject: {$eq: '${subj1}'} },
-//                            { Subject: {$eq: '${subj2}'} },
+//                            { Cубъект: {$eq: '${subj2}'} },
 //                        ]
 //                    }
 //                }, {

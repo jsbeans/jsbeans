@@ -214,7 +214,7 @@
                         return mosql.values[idx - 1];
                     });
                     parametrizedSQL = parametrizedSQL.replace(new RegExp('`','g'), "\"\"");
-//debugger;
+                    Log.debug('Parametrized SQL Query: ' + parametrizedSQL);
                     var result = $this.asSQL().iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);
                     return result;
                 },

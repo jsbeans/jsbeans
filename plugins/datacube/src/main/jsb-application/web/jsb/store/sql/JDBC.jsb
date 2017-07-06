@@ -96,6 +96,8 @@
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
 
+            Log.debug('Native SQL Query: ' + sql);
+
 		    var rs;
 		    if (JSB.isArray(values)) {
 		        var st = connection.prepareStatement(sql);
@@ -127,8 +129,8 @@
 //                      return columns;
 //                })(),
                 next: function(){
-                    var resultSet = rs.next();
-                    var value = rowExtractor.call($this, rs);
+                    var hasNext = rs.next();
+                    var value = hasNext ? rowExtractor.call($this, rs): null;
                     if (JSB.isNull(value)) {
                         this.close();
                     }
