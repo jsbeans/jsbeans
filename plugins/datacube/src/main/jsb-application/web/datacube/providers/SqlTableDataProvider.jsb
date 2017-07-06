@@ -10,12 +10,18 @@
 	},
 	
 	$server: {
-		$require: 'JSB.DataCube.Providers.DataProviderRepository',
+		$require: [
+		    'JSB.DataCube.Providers.DataProviderRepository',
+		    'JSB.Store.Sql.JDBC'
+        ],
 		
 		$bootstrap: function(){
 			DataProviderRepository.registerDataProvider(this, {
 				accepts: 'JSB.DataCube.Model.SqlTable'
 			});
+
+            // try load all installed (in classpath)
+			JDBC.loadDrivers(true);
 		},
 		
 		$constructor: function(id, pEntry, cube, opts){
@@ -26,9 +32,16 @@
 		getTableDescriptor: function(){
 			return this.entry.descriptor;
 		},
-		
+
+		getTableFullName:function(){
+		    return this.getTableDescriptor().schema
+		            ? this.getTableDescriptor().schema + '.' + this.getTableDescriptor().name
+		            : this.getTableDescriptor().name;
+        },
+
+
 		getStore: function(){
-			var sourceEntry = this.workspace.entry(this.parent);
+			var sourceEntry = this.entry.workspace.entry(this.entry.parent);
 			return sourceEntry.getStore();
 		},
 		

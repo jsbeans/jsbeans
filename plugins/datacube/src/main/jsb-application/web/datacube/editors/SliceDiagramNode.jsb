@@ -129,6 +129,7 @@
 		selectNode: function(bEnable){
 			if(bEnable){
 				this.addClass('selected');
+				this.editor.publish('DataCube.CubeEditor.sliceNodeSelected', this.slice);
 			} else {
 				this.removeClass('selected');
 			}

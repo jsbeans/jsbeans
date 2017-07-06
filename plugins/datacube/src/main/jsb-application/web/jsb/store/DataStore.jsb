@@ -1,5 +1,5 @@
 ({
-	$name: 'jsb.store.DataStore',
+	$name: 'JSB.Store.DataStore',
 
 	$server: {
 		$require: [

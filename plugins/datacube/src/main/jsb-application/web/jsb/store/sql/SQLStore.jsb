@@ -1,18 +1,18 @@
 ({
-	$name: 'jsb.store.sql.SQLStore',
-	$parent: 'jsb.store.DataStore',
+	$name: 'JSB.Store.Sql.SQLStore',
+	$parent: 'JSB.Store.DataStore',
 
 	$server: {
 		$require: [
-		    'jsb.store.sql.JDBC',
-		    'jsb.store.sql.SQLSchemaInspector'
+		    'JSB.Store.Sql.JDBC',
+		    'JSB.Store.Sql.SQLSchemaInspector'
 		],
 
 		connections: {},
 
 		$constructor: function(config){
 			$base(JSB.merge({
-//                    type: jsb.store.sql.SQLStore,
+//                    type: JSB.Store.Sql.SQLStore,
 //                    url: '',
 //                    properties: {
 //                        user: '',
@@ -120,7 +120,6 @@
         },
 
 		asSQL: function() {
-		    // TODO move to SqlStorageInterface
             return {
                 connectedJDBC: function(func){
                     var conn = $this.getConnection();
@@ -130,33 +129,47 @@
                         conn.close();
                     }
                 },
-                query: function(sql, values, types, rowExtractor) {
-                    return this.connectedJDBC(function(conn){
-                        return JDBC.query(conn, sql, values, types, rowExtractor);
-                    });
-                },
-                execute: function(sql, values, types) {
-                    return this.connectedJDBC(function(conn){
-                        return JDBC.execute(conn, sql, values, types);
-                    });
-                },
-            };
-		},
-
-		asParametrizedSQL: function() {
-            // TODO move to PSqlStorageInterface
-            return {
-                query: function(sql, parameters, rowExtractor) {
+                iteratedQuery: function(sql, values, types, rowExtractor, onClose) {
                     var conn = $this.getConnection();
                     try {
-                        return JDBC.parametrizedQuery(conn.get(), sql,
-                                function getValue(param, sqlIndex) {
-                                    return parameters[param];
-                                },
-                                function getTypes(param, sqlIndex) {
-                                    return $this.config.argumentTypes[param];
-                                },
-                                rowExtractor);
+                        return JDBC.iteratedQuery(conn, sql, values, types, rowExtractor, function onClose2() {
+                            conn.close();
+                            if (JSB.isFunction(onClose)) {
+                                onClose();
+                            }
+                        });
+                    } finally {
+                        conn.close();
+                    }
+                },
+
+                iteratedParametrizedQuery: function(sql, parameters, rowExtractor, onClose) {
+                    try {
+                        return this.iteratedParametrizedQuery2(
+                            sql,
+                            function getValue(param, sqlIndex) {
+                                return parameters[param];
+                            },
+                            function getTypes(param, sqlIndex) {
+                                return $this.config.argumentTypes[param];
+                            },
+                            rowExtractor,
+                            onClose
+                        );
+                    } finally {
+                        conn.close();
+                    }
+                },
+
+                iteratedParametrizedQuery2: function(sql, getValue, getType, rowExtractor, onClose) {
+                    var conn = $this.getConnection();
+                    try {
+                        return JDBC.iteratedParametrizedQuery(conn.get(), sql, getValue, getType, rowExtractor, function onClose2() {
+                            conn.close();
+                            if (JSB.isFunction(onClose)) {
+                                onClose();
+                            }
+                        });
                     } finally {
                         conn.close();
                     }
@@ -165,18 +178,17 @@
 		},
 
 		asMoSQL: function() {
-            // TODO move to MoSqlStorageInterface
             return {
-                query: function(query, rowExtractor) {
+                iteratedQuery: function(query, rowExtractor, onClose) {
                     var query = JSB.merge({
                         type: 'select',
                     }, query, {});
                     var mosql = MongoSQL.sql(query);
 
-                    var result = $this.asSQL().query(mosql.query, mosql.values, rowExtractor);
+                    var result = $this.asSQL().iteratedQuery(mosql.query, mosql.values, rowExtractor, onClose);
                     return result;
                 },
-                parametrizedQuery: function(query, parameters, rowExtractor) {
+                iteratedParametrizedQuery: function(query, parameters, rowExtractor) {
                     var query = JSB.merge({
                         type: 'select',
                     }, query, {});
@@ -187,8 +199,23 @@
                         return mosql.values[idx - 1];
                     });
 
-                    var result = $this.asParametrizedSQL()
-                            .query(parametrizedSQL, parameters, rowExtractor);
+                    var result = $this.asSQL().iteratedParametrizedQuery(parametrizedSQL, parameters, rowExtractor, onClose);
+                    return result;
+                },
+                iteratedParametrizedQuery2: function(query, getValue, getType, rowExtractor, onClose) {
+                    var query = JSB.merge({
+                        type: 'select',
+                    }, query, {});
+
+                    var mosql = MongoSQL.sql(query);
+                    var parametrizedSQL = mosql.query;
+                    parametrizedSQL = parametrizedSQL.replace(/\$(\d?)/g, function(str, param){
+                        var idx = parseInt(param);
+                        return mosql.values[idx - 1];
+                    });
+                    parametrizedSQL = parametrizedSQL.replace(new RegExp('`','g'), "\"\"");
+//debugger;
+                    var result = $this.asSQL().iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);
                     return result;
                 },
             };

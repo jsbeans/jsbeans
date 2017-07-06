@@ -3,8 +3,11 @@
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager', 
 	           'JSB.Widgets.PrimitiveEditor',
-	           'JSB.Widgets.ScrollBox'],
+	           'JSB.Widgets.ScrollBox',
+	           'JSB.DataCube.Widgets.WidgetSchemeRenderer'],
 	$client: {
+		renderer: null,
+		
 		$bootstrap: function(){
 			// register tooltip
 			var self = this;
@@ -36,9 +39,7 @@
 					</div>
 				</div>
 				
-				<div jsb="JSB.Widgets.GroupBox" caption="Текст запроса">
-					<div jsb="JSB.Widgets.MultiEditor" class="queryEditor" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
-				</div>
+				<div jsb="JSB.Widgets.ScrollBox"></div>
 				
 				<div class="buttons">
 					<div 
@@ -69,7 +70,30 @@
 		},
 		
 		construct: function(){
-			var slice = this.data.data.slice;
+			var wrapper = this.data.data.wrapper;
+			var widget = wrapper.getWidget();
+			var scheme = wrapper.extractWidgetScheme();
+			
+			var scroll = this.find('div[jsb="JSB.Widgets.ScrollBox"]').jsb();
+			scroll.clear();
+			
+			if(this.renderer){
+				this.renderer.destroy();
+			}
+			
+			// TODO: load values from wrapper
+			var values = {};
+			
+			// create scheme renderer
+			this.renderer = new WidgetSchemeRenderer({
+				scheme: scheme,
+				values: values,
+				tool: $this,
+				onChange: function(){
+					$this.updateButtons();
+				}
+			});
+			scroll.append(this.renderer);
 /*			
 			this.find('.name._dwp_primitiveEditor').jsb().setData(slice.getName());
 			this.find('.queryEditor').jsb().setData(JSON.stringify(slice.getQuery(), null, 4));

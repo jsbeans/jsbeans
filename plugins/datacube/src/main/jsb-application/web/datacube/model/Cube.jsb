@@ -21,7 +21,8 @@
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'JSB.DataCube.Providers.DataProviderRepository',
-		           'JSB.DataCube.Model.Slice'],
+		           'JSB.DataCube.Model.Slice',
+		           'JSB.DataCube.Query.QueryEngine'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.CubeNode');
@@ -50,6 +51,7 @@
 				this.sliceCount = this.property('slices');
 			}
 
+            this.queryEngine = new QueryEngine(this);
 		},
 		
 		destroy: function(){
@@ -119,6 +121,7 @@
 					
 				}
 				this.loaded = true;
+//this.queryEngine.selftTest(); // TODO: remove test
 			}
 			
 			// construct response for drawing
@@ -240,6 +243,11 @@
 				throw new Error('Unable to find data provider by id: ' + pId);
 			}
 			return this.dataProviders[pId];
+		},
+
+		getOrderedDataProviders: function(){
+		    // TODO: support join order
+		    return this.dataProviders;
 		},
 		
 		extractDataProviderFields: function(pId){
