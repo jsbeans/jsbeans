@@ -8684,7 +8684,7 @@ function Core(rootElement, userSettings) {
           clen,
           setData = [],
           current = {};
-
+debugger;
       rlen = input.length;
 
       if (rlen === 0) {
@@ -9661,7 +9661,7 @@ function Core(rootElement, userSettings) {
    */
   this.populateFromArray = function (row, col, input, endRow, endCol, source, method, direction, deltas) {
     var c;
-
+debugger;
     if (!((typeof input === 'undefined' ? 'undefined' : _typeof(input)) === 'object' && _typeof(input[0]) === 'object')) {
       throw new Error('populateFromArray parameter `input` must be an array of arrays'); // API changed in 0.9-beta2, let's check if you use it correctly
     }
