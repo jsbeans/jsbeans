@@ -49,3 +49,4 @@ logs
 .cache
 nohup.out
 ws-artifacts
+.classpath_jars
