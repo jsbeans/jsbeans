@@ -32,9 +32,9 @@
                 this.query({
                     $select: {
                         Subject: 'Cубъект',
-                        Values: { $array: 'Значение'},
-                        minValue: { $min: 'Значение'},
-                        maxValue: { $max: 'Значение'},
+                        Values: { $array: {$toInt: {$toDouble: 'Значение'}}},
+                        minValue: { $min: {$toDouble: 'Значение'} },
+                        maxValue: { $max: {$toDouble: 'Значение'}},
                     },
                     $filter: {
                         $and: [

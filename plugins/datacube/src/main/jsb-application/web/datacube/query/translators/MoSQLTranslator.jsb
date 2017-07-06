@@ -164,7 +164,7 @@
         _translateColumns: function(dcQuery) {
             function translateExpression(key, exp) {
                 if (JSB.isString(exp)) {
-                    return key ? {name: $this._quotedName(exp), alias: key } : $this._quotedName(exp);
+                    return key ? {name: $this._translateField(dcQuery, exp), alias: key } : $this._translateField(dcQuery, exp);
                 }
                 if (exp.$sum && exp.$sum == 1) return { type: 'SUM', expression: '1', alias: key }
                 if (exp.$sum) return { type: 'SUM', expression: translateExpression(null, exp.$sum), alias: key }
@@ -175,6 +175,13 @@
 
                 if (exp.$array) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$array), alias: key }
                 if (exp.$flatArray) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$flatArray), alias: key }
+
+                // { type: 'function', function: 'min', expression: [1, "'foo'"] }
+
+                if (exp.$toInt) return "CAST(( " + translateExpression(null, exp.$toInt) + " ) as int)"
+                if (exp.$toDouble) return "CAST(( " + translateExpression(null, exp.$toDouble) + " ) as double precision)"
+                if (exp.$toBoolean) return "CAST(( " + translateExpression(null, exp.$toBoolean) + " ) as boolean)"
+                if (exp.$toString) return "CAST((" + translateExpression(null, exp.$toString) + " ) as string)"
 
                 throw new Error('Unsupported select expression');
             }
@@ -199,7 +206,7 @@
             var sort = [];
             for(var i in dcQuery.$sort) {
                 var field = Object.keys(dcQuery.$sort[i])[0];
-                var key = dcQuery.$sort[i] > 0 ? 'DESC' : 'ASC';
+                var key = dcQuery.$sort[i] < 0 ? 'DESC' : 'ASC';
                 sort.push('"' + this._translateField(dcQuery, field) + '" ' + key);
             }
             return sort;
