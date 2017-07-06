@@ -28,7 +28,7 @@
 		},
 		
 		getStore: function(){
-			var sourceEntry = this.workspace.entry(this.parent);
+			var sourceEntry = this.entry.workspace.entry(this.entry.parent);
 			return sourceEntry.getStore();
 		},
 		

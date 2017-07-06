@@ -56,6 +56,26 @@
 			$base();
 		},
 		
+		getWidget: function(){
+			return this.widget;
+		},
+		
+		extractWidgetScheme: function(){
+			var scheme = {};
+			var curWidgetJsb = this.widget.getJsb();
+			while(curWidgetJsb){
+				if(!curWidgetJsb.isSubclassOf('JSB.DataCube.Widgets.Widget')){
+					break;
+				}
+				var wScheme = curWidgetJsb.getDescriptor().$scheme;
+				if( wScheme && Object.keys(wScheme).length > 0){
+					JSB.merge(true, scheme, wScheme);
+				}
+				curWidgetJsb = curWidgetJsb.getParent();
+			}
+			return scheme;
+		},
+		
 		updateTabHeader: function(){
 			if(!this.getContainer() || this.getContainer().hasClass('_jsb_dashboardFloatingContainer')){
 				return;
