@@ -4,9 +4,7 @@
 	
 	cube: null,
 	name: null,
-	query: {
-		test: 1
-	},
+	query: {},
 	
 	getName: function(){
 		return this.name;
