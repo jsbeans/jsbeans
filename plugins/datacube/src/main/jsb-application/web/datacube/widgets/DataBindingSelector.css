@@ -2,4 +2,25 @@
 
 .dataBindingSelector {
 	display: inline-block;
+	border: 1px solid rgba(2, 47, 78, 0.2);
+    background-color: rgba(24, 108, 138, 0.2);
+    padding: 0 2px;
+    border-radius: 6px;
 }
+
+.dataBindingSelector.acceptDraggable {
+	background-color: rgba(156, 92, 29, 0.3);
+    border-color: rgba(105, 45, 0, 0.5);
+}
+
+.dataBindingSelector > .hidden {
+	display: none;
+}
+
+.dataBindingSelector > .placeholder {
+	padding: 2px;
+    color: #6c7786;
+    font-size: 10px;
+}
+
+.dataBindingSelector > .binding {}

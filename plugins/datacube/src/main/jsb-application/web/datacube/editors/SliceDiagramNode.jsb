@@ -26,7 +26,7 @@
 					return;
 				}
 				JSB.defer(function(){
-					self.editor.cubeEntry.server().updateSliceNodePosition(self.slice.getId(), {x: x, y: y});
+					self.editor.cubeEntry.server().updateSliceNodePosition(self.slice.getLocalId(), {x: x, y: y});
 				}, 500, 'posChanged_' + this.getId());
 				
 			}
@@ -106,7 +106,7 @@
 					weight: 10.0
 				}],
 				callback: function(desc){
-					$this.slice.cube.server().updateSliceSettings($this.slice.getId(), desc, function(res, fail){
+					$this.slice.cube.server().updateSliceSettings($this.slice.getLocalId(), desc, function(res, fail){
 						// TODO: redraw query editor
 					});
 				}

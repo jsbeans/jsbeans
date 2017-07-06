@@ -6,16 +6,22 @@
 
 .widgetSchemeRenderer > .header {
 	position: relative;
-	padding: 2px 0;
+	padding: 2px 20px 2px 0;
 }
 
-.widgetSchemeRenderer > .header > .caption {}
+.widgetSchemeRenderer > .header > .caption {
+	display: inline-block;
+}
 
 .widgetSchemeRenderer > .header > .btnCreate {
 	position: absolute;
 	right: 2px;
 	top: 50%;
 	margin-top: -8px;
+}
+
+.widgetSchemeRenderer > .header > .dataBindingSelector {
+	margin-left: 10px;
 }
 
 .widgetSchemeRenderer > .groupBody {

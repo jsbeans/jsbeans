@@ -61,7 +61,7 @@
 			$base();
 		},
 		
-		load: function(){
+		load: function(bRespond){
 			if(!this.loaded){
 				if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
 					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.cube');
@@ -114,7 +114,7 @@
 					for(var i = 0; i < snapshot.slices.length; i++){
 						var sDesc = snapshot.slices[i];
 						this.slicePositions[sDesc.id] = sDesc.position;
-						var slice = new Slice(sDesc.id, this, sDesc.name);
+						var slice = this.workspace.entry(sDesc.id);
 						slice.setQuery(sDesc.query);
 						this.slices[sDesc.id] = slice;
 					}
@@ -122,6 +122,10 @@
 				}
 				this.loaded = true;
 //this.queryEngine.selftTest(); // TODO: remove test
+			}
+			
+			if(!bRespond){
+				return;
 			}
 			
 			// construct response for drawing
@@ -194,7 +198,7 @@
 			// prepare slices
 			for(var sId in this.slices){
 				var sDesc = {
-					id: this.slices[sId].getId(),
+					id: sId,
 					name: this.slices[sId].getName(),
 					query: this.slices[sId].getQuery(),
 					position: this.slicePositions[sId]
@@ -381,9 +385,10 @@
 				}
 			}
 			var sId = this.getId() + '|slice_' + JSB.generateUid();
-			var slice = new Slice(sId, this, sName);
+			var slice = new Slice(sId, this.workspace, this, sName);
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
+			this.addChildEntry(slice);
 			this.store();
 			this.doSync();
 			return slice;
@@ -422,7 +427,7 @@
 		
 		updateSliceNodePosition: function(sId, pt){
 			var slice = this.getSliceById(sId);
-			this.slicePositions[slice.getId()] = pt;
+			this.slicePositions[sId] = pt;
 			this.store();
 		},
 

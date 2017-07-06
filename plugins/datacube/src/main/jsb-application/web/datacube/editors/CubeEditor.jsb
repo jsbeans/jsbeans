@@ -273,7 +273,7 @@
 			}
 			this.cubeEntry = entry;
 			this.diagram.clear();
-			this.cubeEntry.server().load(function(desc){
+			this.cubeEntry.server().load(true, function(desc){
 				// draw in diagram
 				$this.setupCubeNode(desc);
 			});
