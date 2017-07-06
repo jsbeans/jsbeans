@@ -2,7 +2,7 @@
 	$name: 'JSB.DataCube.Widgets.PieChart',
 	$parent: 'JSB.DataCube.Widgets.Widget',
 	$expose: {
-		name: 'Пирог',
+		name: 'Круговая диаграмма',
 		description: '',
 		category: 'Highcharts',
 		thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABACAIAAABjvUUjAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAK

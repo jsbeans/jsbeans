@@ -186,6 +186,7 @@
 		selectNode: function(bEnable){
 			if(bEnable){
 				this.addClass('selected');
+				this.editor.publish('DataCube.CubeEditor.providerNodeSelected', this.provider);
 			} else {
 				this.removeClass('selected');
 			}

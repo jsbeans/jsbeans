@@ -39,9 +39,9 @@
 		            : this.getTableDescriptor().name;
         },
 
-		
+
 		getStore: function(){
-		    var sourceEntry = this.entry.workspace.entry(this.entry.parent);
+			var sourceEntry = this.entry.workspace.entry(this.entry.parent);
 			return sourceEntry.getStore();
 		},
 		

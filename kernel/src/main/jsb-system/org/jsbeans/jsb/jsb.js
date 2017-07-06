@@ -1071,6 +1071,13 @@
 			return this._descriptor;
 		},
 		
+		getParent: function(){
+			if(this.$parent){
+				return JSB.get(this.$parent);
+			}
+			return null;
+		},
+		
 		currentSection: function(){
 			if(this.isClient() ){
 				return this.$client;
