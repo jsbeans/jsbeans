@@ -32,7 +32,6 @@
 		    },
 
 		    Json: function(rs){
-		        debugger;
 		        var json = {};
                 var count = rs.getMetaData().getColumnCount();
                 for(var i = 1; i < count + 1; i++) {
@@ -89,7 +88,7 @@
                 return '?';
 		    });
 
-		    return this.query(connection, sql, values, types, rowExtractor, onClose);
+		    return this.iteratedQuery(connection, sql, values, types, rowExtractor, onClose);
 		},
 
 		iteratedQuery: function(connection, sql, values, types, rowExtractor, onClose) {
@@ -129,7 +128,7 @@
 //                })(),
                 next: function(){
                     var resultSet = rs.next();
-                    var value = rowExtractor.call($this, resultSet);
+                    var value = rowExtractor.call($this, rs);
                     if (JSB.isNull(value)) {
                         this.close();
                     }

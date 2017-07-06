@@ -14,12 +14,21 @@
                 this.query(
                     { $select: {} }
                 ),
-//                // select id field
-//                this.query(
-//                    { $select: {
-//                        id: 'id',
-//                    } }
-//                ),
+                // select id field
+//                this.query({
+//                    $select: {
+//                        Subject: 'Субъект',
+//                    },
+//                    $filter: {
+//                        $and: [
+//                            { Subject: {$eq: '${subj1}'} },
+//                            { Subject: {$eq: '${subj2}'} },
+//                        ]
+//                    }
+//                }, {
+//                    subj1: 'Открытое акционерное общество "Монолит"',
+//                    subj2: 'Федеральное казенное предприятие "Авангард"'
+//                }),
 //                //
 //                this.query({
 //                    // produce values with new names from fields or aggregate functions
@@ -65,11 +74,11 @@
 //                    param1: true
 //                })
             ].forEach(function(it){
-            debugger;
-                for (var val = it.next(); !JSB.isNull(val); val = it.next()) {
+debugger;
+                for (var val = it.next(), i=0; !JSB.isNull(val) && i < 5; val = it.next(), i++) {
                     Log.debug(JSON.stringify(val,0,2));
                 }
-                a.close();
+                it.close();
             });
 
 	    },
@@ -78,9 +87,9 @@
 		    this.cube = cube;
 		},
 
-		query: function(dcQuery, params){
+		query: function(dcQuery, params, dataProvider){
 		    dcQuery = this.prepareQuery(dcQuery);
-		    return this.produceIterator(dcQuery, params||{});
+		    return this.produceIterator(dcQuery, params||{}, dataProvider);
 		},
 
 		prepareQuery: function(dcQuery) {
@@ -115,6 +124,7 @@
 		},
 
 		isDataProviderLinkedWithCubeFields: function(provider, cubeFields, excludeJoinFields) {
+//debugger;
 		    var count = 0;
 		    for (var i in cubeFields) {
 		        var field = cubeFields[i];
@@ -141,16 +151,20 @@
 		    // TODO:
 		},
 
-		produceIterator: function(dcQuery, params, configurators) {
+		produceIterator: function(dcQuery, params, dataProvider) {
             // collect only iterator of used in query providers
             var usedCubeFields = this.extractFields(dcQuery).cubeFields;
             var dataProviders = this.cube.getOrderedDataProviders();
             var providerIterators = [];
-            for (var i in dataProviders) {
-                var provider = dataProviders[i];
-                if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, i > 0)) {
-                    providerIterators.push(new DataProviderIterator(provider, this));
+            if (!dataProvider) {
+                for (var i in dataProviders) {
+                    var provider = dataProviders[i];
+                    if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, i > 0)) {
+                        providerIterators.push(new DataProviderIterator(provider, this));
+                    }
                 }
+            } else {
+                providerIterators.push(new DataProviderIterator(dataProvider, this));
             }
 
             var joinIterator = providerIterators.length == 1

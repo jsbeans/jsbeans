@@ -16,7 +16,7 @@
 		    this.dcQuery = dcQuery;
 		    this.params = params;
 
-debugger;
+//debugger;
 		    // include join condition fields to $select
 		    for (var i in this.iterators) {
                 var fields = [];

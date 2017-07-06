@@ -9,7 +9,6 @@
         ],
 
 		$constructor: function(provider, queryEngine){
-debugger;
 		    $base();
 		    this.provider = provider;
 		    this.queryEngine = queryEngine;

@@ -132,7 +132,7 @@
                 iteratedQuery: function(sql, values, types, rowExtractor, onClose) {
                     var conn = $this.getConnection();
                     try {
-                        return JDBC.iteratedQuery(conn, sql, values, types, rowExtractor, function onClose() {
+                        return JDBC.iteratedQuery(conn, sql, values, types, rowExtractor, function onClose2() {
                             conn.close();
                             if (JSB.isFunction(onClose)) {
                                 onClose();
@@ -164,7 +164,7 @@
                 iteratedParametrizedQuery2: function(sql, getValue, getType, rowExtractor, onClose) {
                     var conn = $this.getConnection();
                     try {
-                        return JDBC.iteratedParametrizedQuery(conn.get(), sql, getValue, getTypes, rowExtractor, function onClose() {
+                        return JDBC.iteratedParametrizedQuery(conn.get(), sql, getValue, getType, rowExtractor, function onClose2() {
                             conn.close();
                             if (JSB.isFunction(onClose)) {
                                 onClose();
@@ -199,7 +199,7 @@
                         return mosql.values[idx - 1];
                     });
 
-                    var result = $this.iteratedParametrizedQuery(parametrizedSQL, parameters, rowExtractor, onClose);
+                    var result = $this.asSQL().iteratedParametrizedQuery(parametrizedSQL, parameters, rowExtractor, onClose);
                     return result;
                 },
                 iteratedParametrizedQuery2: function(query, getValue, getType, rowExtractor, onClose) {
@@ -208,12 +208,14 @@
                     }, query, {});
 
                     var mosql = MongoSQL.sql(query);
-                    var parametrizedSQL = mosql.query.replace(/\$(\d?)/g, function(str, param){
+                    var parametrizedSQL = mosql.query;
+                    parametrizedSQL = parametrizedSQL.replace(/\$(\d?)/g, function(str, param){
                         var idx = parseInt(param);
                         return mosql.values[idx - 1];
                     });
-
-                    var result = $this.iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);
+                    parametrizedSQL = parametrizedSQL.replace(new RegExp('`','g'), "\"\"");
+//debugger;
+                    var result = $this.asSQL().iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);
                     return result;
                 },
             };

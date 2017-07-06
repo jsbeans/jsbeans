@@ -14,7 +14,6 @@
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
-debugger;
 		    if (this.iterator) {
 		        // close previous iterator
 		        this.iterator.close();
@@ -23,6 +22,7 @@ debugger;
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
 		    var store = this.provider.getStore();
+//debugger;
 		    this.iterator = store.asMoSQL().iteratedParametrizedQuery2(
 		        mosqlQuery,
 		        function getValue(param) {
@@ -53,7 +53,7 @@ debugger;
 		},
 
 		translateQuery: function(dcQuery, params) {
-debugger;
+//debugger;
             var query = {
                 type: 'select',
                 table: this.provider.getTableFullName()
@@ -85,10 +85,14 @@ debugger;
             var binding = this.cube.fields[field].binding;
             for (var b in binding) {
                 if (binding[b].provider == this.provider) {
-                    return binding[b].field;
+                    return this._quotedName(binding[b].field);
                 }
             }
             throw new Error('Cube has no lined DataProvider for field ' + field);
+        },
+
+        _quotedName: function(name) {
+            return '`' + name + '`';
         },
 
         _translateWhere: function(dcQuery) {
@@ -150,7 +154,7 @@ debugger;
                 throw new Error('Unsupported select expression');
             }
 
-debugger;
+//debugger;
             var filter = dcQuery.$filter;
             return translateExpressions(filter, translateExpression);
         },
@@ -158,7 +162,7 @@ debugger;
         _translateColumns: function(dcQuery) {
             function translateExpression(key, exp) {
                 if (JSB.isString(exp)) {
-                    return {name: exp, alias: key };
+                    return {name: $this._quotedName(exp), alias: key };
                 }
                 if (exp.$sum && exp.$sum == 1) return { type: 'SUM', expression: '1' }
                 if (exp.$sum) return { type: 'SUM', expression: translateExpressions(filter.$sum) }
@@ -184,7 +188,7 @@ debugger;
                 return array;
             }
 
-debugger;
+//debugger;
             var select = dcQuery.$select;
             var columns = [];
             for (var p in select) if (select.hasOwnProperty(p)) {
