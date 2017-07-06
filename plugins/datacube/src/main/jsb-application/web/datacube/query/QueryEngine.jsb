@@ -88,6 +88,7 @@ debugger;
 		},
 
 		query: function(dcQuery, params, dataProvider){
+			this.cube.load();
 		    dcQuery = this.prepareQuery(dcQuery);
 		    return this.produceIterator(dcQuery, params||{}, dataProvider);
 		},

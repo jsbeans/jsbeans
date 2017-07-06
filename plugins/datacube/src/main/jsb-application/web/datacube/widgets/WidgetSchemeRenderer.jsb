@@ -4,7 +4,8 @@
 	$require: ['JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.ComboBox',
 	           'JSB.Widgets.Button',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'JSB.DataCube.Widgets.DataBindingSelector'],
 	
 	$client: {
 		options: {
@@ -65,6 +66,13 @@
 				} else {
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+				}
+				if(this.scheme.binding){
+					var bindingSelector = new DataBindingSelector({
+						scheme: this.scheme,
+						values: this.values
+					});
+					header.append(bindingSelector.getElement());
 				}
 				if(this.scheme.multiple){
 					// create append button
