@@ -22,7 +22,6 @@
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
 		    var store = this.provider.getStore();
-//debugger;
 		    this.iterator = store.asMoSQL().iteratedParametrizedQuery2(
 		        mosqlQuery,
 		        function getValue(param) {
@@ -69,7 +68,7 @@
                 query.groupBy = this._translateGroupBy(dcQuery);
             }
             if (dcQuery.$sort) {
-                query.sort = this._translateSort(dcQuery);
+                query.order = this._translateSort(dcQuery);
             }
             return query;
         },
@@ -113,13 +112,13 @@
                     }
                     return res;
                 } else if (JSB.isString(exps)) {
-                    // is parameter or other field
-                    if (key.match(/^\$\{.*\}/g)) {
+                    // is parameter value
+                    if (exps.match(/^\$\{.*\}/g)) {
                         return exps;
-                    } else {
-                        var field = exps;
-                        // todo: support field == field
                     }
+                    // or field compared with other field
+                    var field = exps;
+                    return '$' + $this._translateField(dcQuery, field) + '$';
                 }
 
                 throw new Error('Unsupported select expression');
@@ -128,7 +127,10 @@
                 var key = Object.keys(exp)[0];
                 // is field
                 if (!key.match(/^\$/)) {
-                    return $this._translateField(dcQuery, key);
+                    var res = {};
+                    var field = $this._translateField(dcQuery, key);
+                    res[field] = translateExpression(exp[key]);
+                    return res;
                 }
                 // or expression
 
@@ -162,33 +164,21 @@
         _translateColumns: function(dcQuery) {
             function translateExpression(key, exp) {
                 if (JSB.isString(exp)) {
-                    return {name: $this._quotedName(exp), alias: key };
+                    return key ? {name: $this._quotedName(exp), alias: key } : $this._quotedName(exp);
                 }
-                if (exp.$sum && exp.$sum == 1) return { type: 'SUM', expression: '1' }
-                if (exp.$sum) return { type: 'SUM', expression: translateExpressions(filter.$sum) }
+                if (exp.$sum && exp.$sum == 1) return { type: 'SUM', expression: '1', alias: key }
+                if (exp.$sum) return { type: 'SUM', expression: translateExpression(null, exp.$sum), alias: key }
 
-                if (exp.$max) return { type: 'MAX', expression: translateExpressions(filter.$sum) }
-                if (exp.$min) return { type: 'MIN', expression: translateExpressions(filter.$sum) }
-                if (exp.$avg) return { type: 'AVG', expression: translateExpressions(filter.$sum) }
+                if (exp.$max) return { type: 'MAX', expression: translateExpression(null, exp.$max), alias: key }
+                if (exp.$min) return { type: 'MIN', expression: translateExpression(null, exp.$min), alias: key }
+                if (exp.$avg) return { type: 'AVG', expression: translateExpression(null, exp.$avg), alias: key }
 
-                if (exp.$array) return { type: 'ARRAY_AGG', expression: translateExpressions(filter.$array) }
-                if (exp.$flatArray) return { type: 'ARRAY_AGG', expression: translateExpressions(filter.$flatArray) }
+                if (exp.$array) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$array), alias: key }
+                if (exp.$flatArray) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$flatArray), alias: key }
 
                 throw new Error('Unsupported select expression');
             }
-            function translateExpressions(exps) {
-                if (!JSB.isArray(exps)) {
-                    throw new Error('Invalid expression type');
-                }
 
-                var array = [];
-                for (var p in exps) if (exps.hasOwnProperty(p)) {
-                    array.push(translateExpression(p, exps[p]));
-                }
-                return array;
-            }
-
-//debugger;
             var select = dcQuery.$select;
             var columns = [];
             for (var p in select) if (select.hasOwnProperty(p)) {
@@ -206,9 +196,11 @@
         },
 
         _translateSort: function(dcQuery) {
-            var sort = dcQuery.$sort;
-            for(var i in sort) {
-                sort[i] = this._translateField(dcQuery, sort[i]);
+            var sort = [];
+            for(var i in dcQuery.$sort) {
+                var field = Object.keys(dcQuery.$sort[i])[0];
+                var key = dcQuery.$sort[i] > 0 ? 'DESC' : 'ASC';
+                sort.push('"' + this._translateField(dcQuery, field) + '" ' + key);
             }
             return sort;
         },

@@ -11,9 +11,9 @@
 	    selftTest: function(cube){
 	        [
 	            // select all fields
-                this.query(
-                    { $select: {} }
-                ),
+//                this.query(
+//                    { $select: {} }
+//                ),
                 // select id field
 //                this.query({
 //                    $select: {
@@ -21,7 +21,7 @@
 //                    },
 //                    $filter: {
 //                        $and: [
-//                            { Subject: {$eq: '${subj1}'} },
+//                            { Cубъект: {$eq: '${subj1}'} },
 //                            { Cубъект: {$eq: '${subj2}'} },
 //                        ]
 //                    }
@@ -29,6 +29,25 @@
 //                    subj1: 'Открытое акционерное общество "Монолит"',
 //                    subj2: 'Федеральное казенное предприятие "Авангард"'
 //                }),
+                this.query({
+                    $select: {
+                        Subject: 'Cубъект',
+                        Values: { $array: 'Значение'},
+                        minValue: { $min: 'Значение'},
+                        maxValue: { $max: 'Значение'},
+                    },
+                    $filter: {
+                        $and: [
+                            { Cубъект: {$eq: '${subj1}'} },
+                            { Cубъект: {$eq: '${subj2}'} },
+                        ]
+                    },
+                    $groupBy: ['Cубъект'],
+                    $sort: [{'maxValue': -1}] // -1 = DESC, 1 = ASC
+                }, {
+                    subj1: 'Открытое акционерное общество "Монолит"',
+                    subj2: 'Федеральное казенное предприятие "Авангард"'
+                }),
 //                //
 //                this.query({
 //                    // produce values with new names from fields or aggregate functions
@@ -85,6 +104,7 @@ debugger;
 
 		$constructor: function(cube){
 		    this.cube = cube;
+		    this.paramTypes = {};
 		},
 
 		query: function(dcQuery, params, dataProvider){
@@ -145,11 +165,12 @@ debugger;
 		},
 
 		setParamType: function(paramName, paramType){
-		    // TODO:
+            this.paramTypes[paramName] = paramType;
 		},
 
 		getParamType: function(paramName, provider){
-		    // TODO:
+		    // TODO: return this.paramTypes[paramName] || this.cube.getParamType(paramName, provider);
+		    return this.paramTypes[paramName];
 		},
 
 		produceIterator: function(dcQuery, params, dataProvider) {
@@ -173,10 +194,10 @@ debugger;
                     : new JoinIterator(providerIterators, this);
 
 		    if (dcQuery.$finalize) {
-		        return new FinalizeIterator(joinIterator, this).iterate(dcQuery);
+		        return new FinalizeIterator(joinIterator, this).iterate(dcQuery, params);
 		    }
 
-		    return joinIterator.iterate(dcQuery);
+		    return joinIterator.iterate(dcQuery, params);
 		},
 	}
 }

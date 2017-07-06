@@ -78,7 +78,7 @@
 
 		    var values = [];
 		    var types = [];
-		    var sql = parametrizedSQL.replace(/\$\{(.*)\}/, function(str, param){
+		    var sql = parametrizedSQL.replace(/\$\{(.*?)\}/g, function(str, param){
                 var sqlIdx = values.length+1;
 
                 values.push(getValue(param, sqlIdx));
@@ -96,7 +96,8 @@
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
 
-            Log.debug('Native SQL Query: ' + sql);
+            Log.debug('Native SQL query: ' + sql);
+            Log.debug('Native SQL parameters: ' + JSON.stringify(values));
 
 		    var rs;
 		    if (JSB.isArray(values)) {
@@ -253,6 +254,14 @@
                     var date = new Date();
                     date.setTime(resultSet.getTimestamp(i).getTime());
                     return date;
+                case 0+Types.ARRAY: {
+                        var array = [];
+                        var arrayRS = resultSet.getArray(i).getResultSet();
+                        while(arrayRS.next()) {
+                            array.push(this._getColumnValue(arrayRS, 2));
+                        }
+                        return array;
+                    }
                 case 0+Types.NULL:
                     return null;
                 default:
