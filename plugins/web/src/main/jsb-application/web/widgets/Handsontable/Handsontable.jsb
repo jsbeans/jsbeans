@@ -37,34 +37,18 @@
                 });
 
                 $this.options.isInit = true;
-            });
 
-/*
-            JSB().deferUntil(function(){    // table not render before DOM ready
-                $this.handsontable = new Handsontable($this.table.get(0), $this.handsontable_options);
+                $this.find('.ht_master.handsontable > div.wtHolder').scroll(function(evt){
+                    var scrollHeight = evt.target.scrollHeight,
+                      scrollTop = evt.target.scrollTop,
+                      clientHeight = evt.target.clientHeight;
 
-                // hooks
-                $this.handsontable.addHook('afterColumnMove', function(columns, target){ $this._afterColumnMove(columns, target); });
+                    // for content preloader
+                    if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight)
+                      $this.preLoad(evt);
 
-                $this.table.resize(function(){
-                    JSB().defer(function(){
-                        $this.handsontable.render();
-                    }, 300, 'handsontable.resize')
+                    $this._oldScroll.y = scrollTop;
                 });
-            }, function(){
-                return $this.isContentReady();
-            });
-*/
-			this.table.scroll(function(evt){
-                var scrollHeight = evt.target.scrollHeight,
-                    scrollTop = evt.target.scrollTop,
-                    clientHeight = evt.target.clientHeight;
-
-                // for content preloader
-                if(scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad))
-                    $this.preLoad(evt);
-
-                $this._oldScroll.y = scrollTop;
             });
 		},
 
@@ -112,8 +96,18 @@
 		    }
 		},
 
-		addRow: function(row, col, input){
-            this.handsontable.populateFromArray(row, 0, input, row, this.handsontable.countCols - 1);
+		addRow: function(row, input){
+		    this.handsontable.populateFromArray(row, 0, input, row, this.handsontable.countCols - 1);
+		},
+
+		addArray: function(row, input){
+            if(!JSB().isArray(input[0])){
+                debugger;
+                input = this.restructArray(input);
+            }
+
+            //this.handsontable.alter('insert_row', row, input.length);
+		    this.handsontable.populateFromArray(row, 0, input);
 		},
 
 		_createHeaderCellCallback: function(i){
@@ -130,13 +124,16 @@
 
 		loadData: function(data){
 		    this.handsontable.loadData(data);
+		    this.handsontable.loadData(data);
 		},
 
 		preLoad: function(evt){
-		    if(JSB().isFunction(this.callbacks.preLoader)){
-		        var rowCount = this.handsontable.countRows();
-		        this.callbacks.preLoader.call(rowCount);
-		    }
+		    JSB().defer(function(){
+                if(JSB().isFunction($this.callbacks.preLoader)){
+                    var rowCount = $this.handsontable.countRows();
+                    $this.callbacks.preLoader.call($this, rowCount);
+                }
+		    }, 300, 'Handsontable.scroll_' + this.getId());
 		},
 
 		render: function(){
@@ -182,6 +179,20 @@
 		// hooks
 		_afterColumnMove: function(columns, target){
 		    this.columns = this.columns.splice(target, 0, this.columns.slice(columns[0], columns.length));
+		},
+
+		// utils
+		restructArray: function(arr){
+		    var newArr = [];
+
+		    for(var i in arr){
+		        newArr.push([]);
+		        for(var j in arr[i]){
+		            newArr[i].push(arr[i][j]);
+		        }
+		    }
+
+		    return newArr;
 		}
 	}
 }
