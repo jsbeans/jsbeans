@@ -453,7 +453,7 @@
         init: function(){
             this.getElement().loader();
             JSB().defer(function(){
-                $this.getElement().loader('');
+                $this.getElement().loader('hide');
                 $this.foamtree = new CarrotSearchFoamTree({
                     id: $this.foamtreeId,
                     dataObject: {
