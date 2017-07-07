@@ -11,24 +11,26 @@
 	    selftTest: function(cube){
 	        [
 	            // select all fields
-//                this.query(
-//                    { $select: {} }
-//                ),
+                this.query(
+                    { $select: {} }
+                ),
                 // select id field
-//                this.query({
-//                    $select: {
-//                        Subject: 'Cубъект',
-//                    },
-//                    $filter: {
-//                        $and: [
-//                            { Cубъект: {$eq: '${subj1}'} },
-//                            { Cубъект: {$eq: '${subj2}'} },
-//                        ]
-//                    }
-//                }, {
-//                    subj1: 'Открытое акционерное общество "Монолит"',
-//                    subj2: 'Федеральное казенное предприятие "Авангард"'
-//                }),
+                this.query({
+                    $select: {
+                        Subject: 'Cубъект',
+                        "Тип ПКЗ": "Тип ПКЗ"
+
+                    },
+                    $filter: {
+                        $and: [
+                            { Cубъект: {$eq: '${subj1}'} },
+                            { Cубъект: {$eq: '${subj2}'} },
+                        ]
+                    }
+                }, {
+                    subj1: 'Открытое акционерное общество "Монолит"',
+                    subj2: 'Федеральное казенное предприятие "Авангард"'
+                }),
                 this.query({
                     $select: {
                         Subject: 'Cубъект',

@@ -21,6 +21,7 @@
 
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
+		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery, 0, 2));
 		    var store = this.provider.getStore();
 		    this.iterator = store.asMoSQL().iteratedParametrizedQuery2(
 		        mosqlQuery,
@@ -74,9 +75,10 @@
         },
 
         _translateField: function(dcQuery, field) {
-            // replace only if not alias
+//debugger;
+            // if alias return as is
             if (dcQuery.$select && dcQuery.$select[field]) {
-                return field;
+                return this._quotedName(field);
             }
             if (!this.cube.fields[field]) {
                 throw new Error('Cube has no field ' + field);
