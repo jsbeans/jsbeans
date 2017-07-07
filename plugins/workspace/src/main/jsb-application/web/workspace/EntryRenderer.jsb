@@ -24,6 +24,20 @@
 			} else {
 				this.append(this.$('<div class="title"></div>').text(entry.getName()));
 			}
+			
+			this.subscribe('Workspace.Entry.updated', function(sender){
+				if(sender == entry){
+					$this.update();
+				}
+			});
+		},
+		
+		update: function(){
+			if(this.editor){
+				this.editor.setData(this.object.getName());
+			} else {
+				this.find('> .title').text(this.object.getName());
+			}
 		},
 		
 		beginEdit: function(){

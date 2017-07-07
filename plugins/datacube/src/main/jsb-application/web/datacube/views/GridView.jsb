@@ -124,7 +124,11 @@
             if(!source.query) return;
 
             $this.getElement().loader();
-            $this.server().loadSlice(source.cube, source.query, function(res){
+            var preparedQuery = source.query;
+            if(preparedQuery || Object.keys(preparedQuery).length == 0){
+            	preparedQuery = { $select: {}};
+            }
+            $this.server().loadSlice(source.cube, preparedQuery, function(res){
                 $this.getElement().loader('hide');
 
                 if(!res) return;
