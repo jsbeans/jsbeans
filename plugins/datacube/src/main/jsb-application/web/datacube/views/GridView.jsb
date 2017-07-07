@@ -70,6 +70,11 @@
                 $this.getElement().loader('hide');
 
                 if(!res) return;
+                if(res.error){
+                    $this.errorText.text(res.error.message);
+                    $this.error.removeClass('hidden');
+                    return;
+                }
 
                 $this.table.addArray(rowCount, res.result);
 
@@ -87,8 +92,10 @@
 
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Cube')){
 				// update data from cube
-            	debugger;
-
+            	this.updateSlice({
+            	cube: source,
+            	query: { $select: {}}
+            	});
 			} else {
 				throw new Error('Unsupported node type: ' + source.getJsb().$name);
 			}
@@ -145,27 +152,35 @@
 	    },
 
 	    loadMore: function(){
-	        var res = [],
-	            max = this.counter + 20,
-	            allLoaded = false;
+            try{
+                var res = [],
+                    max = this.counter + 20,
+                    allLoaded = false;
 
-	        while(this.counter < max){
-	            var el = this.it.next();
+                while(this.counter < max){
+                    var el = this.it.next();
 
-	            if(!el) {
-	                allLoaded = true;
-	                break;
-	            }
+                    if(!el) {
+                        allLoaded = true;
+                        break;
+                    }
 
-	            this.counter++;
-	            res.push(el);
-	        }
+                    this.counter++;
+                    res.push(el);
+                }
 
-	        return {
-	            result: res,
-	            allLoaded: allLoaded,
-	            error: null
-	        };
+                return {
+                    result: res,
+                    allLoaded: allLoaded,
+                    error: null
+                };
+            } catch(e){
+                return {
+                    result: null,
+                     allLoaded: true,
+                     error: e
+                }
+            }
 	    }
 	}
 }
