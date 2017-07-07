@@ -3,19 +3,14 @@
 .workspaceExplorerNode.entryNode {
 }
 
-.workspaceExplorerNode.entryNode > ._dwp_primitiveEditor {
-	padding-left: 26px;
+.workspaceExplorerNode.entryNode > .icon,
+.workspaceExplorerNode.entryNode > .title {
+	display: none;
+}
+
+.workspaceExplorerNode.entryNode > .entryRenderer {
 	display: block;
-	padding-right: 16px;
-	height: 20px;
-}
-
-.workspaceExplorerNode.entryNode > ._dwp_primitiveEditor > ._dwp_plain {
-	padding: 0;
-	cursor: inherit;
-}
-
-.workspaceExplorerNode.entryNode > ._dwp_primitiveEditor > input {
+	max-width: 100%;
 }
 
 .workspaceExplorerNode.entryNode > .btnEdit {

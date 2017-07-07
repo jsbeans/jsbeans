@@ -1,6 +1,8 @@
 {
 	$name: 'JSB.DataCube.Widgets.DataBindingSelector',
 	$parent: 'JSB.Widgets.Control',
+	$require: ['JSB.DataCube.Providers.DataProviderRepository',
+	           'JSB.Widgets.RendererRepository'],
 	
 	$client: {
 		$constructor: function(opts){
@@ -24,10 +26,17 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i].obj;
-							if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+							if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 								continue;
 							}
-							return true;
+							var entry = obj.getEntry();
+							if(JSB.isInstanceOf(entry,'JSB.DataCube.Model.Slice')){
+								return true;
+							}
+							var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
+							if(dpInfo){
+								return true;
+							}
 						}
 						
 					}
@@ -55,11 +64,38 @@
 						if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 							continue;
 						}
-						
+						$this.setSource(obj.getEntry());
+						break;
 					}
 				}
 			});
 			
+		},
+		
+		setSource: function(entry){
+			this.values.source = entry.getLocalId();
+			this.bindingElt.empty().append(RendererRepository.createRendererFor(entry, {showCube: true}).getElement());
+			this.placeholderElt.addClass('hidden');
+			this.bindingElt.removeClass('hidden');
+			if(JSB.isInstanceOf(entry,'JSB.DataCube.Model.Slice')){
+				// add slice
+				this.source = entry;
+			} else {
+				var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
+				if(dpInfo){
+					// add provider
+					debugger;
+				}
+				
+			}
+			if(this.options.onChange){
+				this.options.onChange.call(this);
+			}
+
+		},
+		
+		isFilled: function(){
+			return !JSB.isNull(this.source);
 		}
 	}
 }

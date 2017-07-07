@@ -6,11 +6,12 @@
 
 .widgetSchemeRenderer > .header {
 	position: relative;
-	padding: 2px 20px 2px 0;
+	padding: 1px 20px 1px 0;
 }
 
 .widgetSchemeRenderer > .header > .caption {
 	display: inline-block;
+	vertical-align: middle;
 }
 
 .widgetSchemeRenderer > .header > .btnCreate {
@@ -21,13 +22,45 @@
 }
 
 .widgetSchemeRenderer > .header > .dataBindingSelector {
-	margin-left: 10px;
+	margin-left: 6px;
+	display: inline-block;
+	vertical-align: middle;
 }
 
-.widgetSchemeRenderer > .groupBody {
+.widgetSchemeRenderer > .header > ._dwp_comboBox {
+	margin-left: 6px;
+	padding: 1px 4px;
+	vertical-align: middle;
+}
+
+.widgetSchemeRenderer > .header > ._dwp_comboBox:active {
+	padding: 2px 3px 0 5px;
+}
+
+
+
+.widgetSchemeRenderer > .body {
+	
+}
+
+.widgetSchemeRenderer.hasHeader > .body {
+}
+
+
+.widgetSchemeRenderer > .body > .items {}
+
+.widgetSchemeRenderer.hasMultiple > .body > .items {
 	padding-left: 10px;
 }
 
-.widgetSchemeRenderer > .groupBody > .items {}
+.widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(even) {
+	background-color: #F7F2EE;
+}
 
-.widgetSchemeRenderer > .groupBody > .items > .item {}
+.widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(odd) {
+	background-color: #EFE9E0;
+}
+
+.widgetSchemeRenderer > .body > .items > .item {}
+
+.widgetSchemeRenderer.hasMultiple > .body > .items > .item {}

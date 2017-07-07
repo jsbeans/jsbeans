@@ -97,7 +97,16 @@
 						explorer.createNewEntry('JSB.DataCube.Model.SqlSource', {}, 'База');
 					}
 				}, 'createSeparator');
-				
+
+				explorer.toolbar.insertItem({
+					key: 'createHttpServer',
+					tooltip: 'Создать подключение к серверу',
+					element: '<div class="icon"></div>',
+					click: function(){
+						explorer.createNewEntry('JSB.DataCube.Model.HttpServer', {}, 'Сервер');
+					}
+				}, 'createSeparator');
+
 				explorer.toolbar.insertItem({
 					key: 'createCube',
 					tooltip: 'Создать куб',

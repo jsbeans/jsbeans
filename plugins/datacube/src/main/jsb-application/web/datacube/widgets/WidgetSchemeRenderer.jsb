@@ -47,18 +47,17 @@
 				this.constructItem();
 				break;
 			case 'select':
-//				this.constructSelect();
+				this.constructSelect();
 				break;
 			}
 		},
 		
 		constructGroup: function(){
 			this.attr('entry', 'group');
-			if(this.options.showHeader){
+			if(this.options.showHeader && this.scheme.name){
+				this.addClass('hasHeader');
 				var header = this.$('<div class="header"></div>');
 				this.append(header);
-				var groupBody = this.$('<div class="groupBody"></div>');
-				this.append(groupBody);
 				
 				if(this.scheme.mandatory){
 					// show simple caption
@@ -68,13 +67,17 @@
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
 				}
 				if(this.scheme.binding){
-					var bindingSelector = new DataBindingSelector({
+					this.bindingSelector = new DataBindingSelector({
 						scheme: this.scheme,
-						values: this.values
+						values: this.values,
+						onChange: function(){
+							fillGroup();
+						}
 					});
-					header.append(bindingSelector.getElement());
+					header.append(this.bindingSelector.getElement());
 				}
 				if(this.scheme.multiple){
+					this.addClass('hasMultiple');
 					// create append button
 					var btnAdd = new Button({
 						cssClass: 'roundButton btn10 btnCreate',
@@ -86,9 +89,13 @@
 				}
 			}
 			
+			this.bodyElt = this.$('<div class="body"></div>');
+			this.append(this.bodyElt);
+
+			
 			function fillGroupItems(groupIdx){
 				var ul = $this.$('<div class="items"></div>');
-				groupBody.append(ul);
+				$this.bodyElt.append(ul);
 				$this.values.used = true;
 				if(!$this.values.groups){
 					$this.values.groups = [];
@@ -129,7 +136,19 @@
 
 			}
 			
-			fillGroupItems(0);
+			function fillGroup(){
+				if($this.values && $this.values.groups && $this.values.groups.length > 0){
+					for(var i = 0; i < $this.values.groups.length; i++){
+						fillGroupItems(i);
+					}
+				} else {
+					fillGroupItems(0);
+				}
+			}
+			
+			if(!$this.scheme.binding || $this.bindingSelector.isFilled()){
+				fillGroup();
+			}
 			
 		},
 		
@@ -283,6 +302,87 @@
 				}
 			});
 			*/
+		},
+		
+		constructSelect: function(){
+			this.attr('entry', 'select');
+			this.addClass('hasHeader');
+			
+			// fill items
+			var items = [];
+			var val = 0;
+			if(!JSB.isNull(this.values.chosenIdx)){
+				val = this.values.chosenIdx;
+			}
+			for(var i = 0; i < this.scheme.items.length; i++ ){
+				var item = this.scheme.items[i];
+				items.push({
+					key: '' + i,
+					element: item.name
+				});
+			}
+			
+			function setupValue(idx){
+				$this.destroyRenderers();
+				$this.values.chosenIdx = idx;
+				var item = $this.scheme.items[$this.values.chosenIdx];
+				if(!$this.values.items){
+					$this.values.items = [];
+				}
+				if(!$this.values.items[idx]){
+					$this.values.items[idx] = {};
+				}
+				var itemRenderer = new $class({
+					scheme: item,
+					values: $this.values.items[idx],
+					showHeader: false,
+					onChange: $this.options.onChange
+				});
+				$this.renderers.push(itemRenderer);
+				$this.bodyElt.empty();
+				$this.bodyElt.append(itemRenderer.getElement());
+			}
+			
+			var header = this.$('<div class="header"></div>');
+			this.append(header);
+			
+			if(this.scheme.mandatory){
+				// show simple caption
+				header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
+			} else {
+				// show checkbox caption
+				header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+			}
+			
+			if(this.scheme.multiple){
+				// create append button
+				var btnAdd = new Button({
+					cssClass: 'roundButton btn10 btnCreate',
+					tooltip: 'Добавить значение',
+					onClick: function(){
+					}
+				});
+				header.append(btnAdd.getElement());
+			}
+			
+			this.selector = new ComboBox({
+				items: items,
+				value: '' + val,
+				onChange: function(key){
+					var idx = parseInt(key);
+					setupValue(idx)
+					if($this.options.onChange){
+						$this.options.onChange.call($this, idx);
+					}
+				}
+			});
+			header.append(this.selector.getElement());
+			
+			// add value
+			this.bodyElt = this.$('<div class="body"></div>');
+			this.append(this.bodyElt);
+			
+			setupValue(val);
 		},
 	}
 }

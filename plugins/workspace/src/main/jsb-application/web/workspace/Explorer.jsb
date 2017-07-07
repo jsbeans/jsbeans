@@ -3,6 +3,7 @@
 	$parent: 'JSB.Widgets.Widget',
 	
 	$require: ['JSB.Workspace.WorkspaceController', 
+	           'JSB.Widgets.RendererRepository',
 	           'JSB.Workspace.FolderNode',
 	           'JSB.Workspace.UploadNode',
 	           'JSB.Widgets.ToolBar', 
@@ -721,13 +722,21 @@
 					// create drag container
 					var helper = $this.$('<div class="dragHelper workspaceItems"></div>');
 					
+					function prepareNodeForDragging(node){
+						if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
+							return RendererRepository.createRendererFor(node.getEntry()).getElement();
+						} else {
+							return node.getElement().clone();
+						}
+					}
+					
 					if(selected.length <= 3){
 						for(var i = 0; i < selected.length; i++ ){
-							helper.append($this.$('<div class="dragItem"></div>').append(selected[i].obj.getElement().clone()));
+							helper.append($this.$('<div class="dragItem"></div>').append(prepareNodeForDragging(selected[i].obj)));
 						}	
 					} else {
 						for(var i = 0; i < Math.min(selected.length, 2); i++ ){
-							helper.append($this.$('<div class="dragItem"></div>').append(selected[i].obj.getElement().clone()));
+							helper.append($this.$('<div class="dragItem"></div>').append(prepareNodeForDragging(selected[i].obj)));
 						}
 						if(selected.length > 2){
 							var suffix = '';
@@ -988,9 +997,12 @@
 						if(node.options.allowOpen){
 							$this.publish('Workspace.nodeOpen', node);
 						}
-						node.editor.beginEdit();
+						if(node.renderer && node.renderer.editor){
+							node.renderer.editor.beginEdit();	
+						}
+						
 					}, function(){
-						return node.getElement().width() > 0 && node.getElement().height() > 0;
+						return node.getElement().width() > 0 && node.getElement().height() > 0 && node.renderer;
 					});
 					
 					$this.sort();

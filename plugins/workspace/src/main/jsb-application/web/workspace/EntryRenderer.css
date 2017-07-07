@@ -1,0 +1,42 @@
+@CHARSET "UTF-8";
+
+.entryRenderer {
+}
+
+.entryRenderer > .icon {
+	width: 20px;
+    height: 20px;
+    position: absolute;
+	left: 2px;
+	top: 50%;
+    margin-top: -10px;
+}
+
+.entryRenderer > .title {
+	text-overflow: ellipsis;
+    display: inline-block;
+    overflow: hidden;
+    padding-left: 26px;
+	display: block;
+	box-sizing: border-box;
+	padding-top: 1px;
+    padding-bottom: 1px;
+    white-space: nowrap;
+}
+
+.entryRenderer > .title._dwp_primitiveEditor {
+	padding-top: 0;
+	padding-bottom: 0;
+	height: auto !important;
+}
+
+.entryRenderer > ._dwp_primitiveEditor > ._dwp_plain {
+	padding: 0;
+	cursor: inherit;
+	vertical-align: top;
+	height: 18px;
+}
+
+.entryRenderer > ._dwp_primitiveEditor > input {
+	height: 18px !important;
+}
