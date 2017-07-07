@@ -70,6 +70,8 @@
                         }
                         break;
                     }
+                } else {
+                    conn = null;
                 }
             }
 
