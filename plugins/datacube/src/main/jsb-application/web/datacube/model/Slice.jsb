@@ -55,6 +55,15 @@
 			this.property('query', this.query);
 			this.cube.store();
 			this.doSync();
+		},
+		
+		executeQuery: function(){
+			var preparedQuery = this.query;
+            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
+            	preparedQuery = { $select: {}};
+            }
+            this.cube.load();
+            return this.cube.queryEngine.query(preparedQuery);
 		}
 		
 	}

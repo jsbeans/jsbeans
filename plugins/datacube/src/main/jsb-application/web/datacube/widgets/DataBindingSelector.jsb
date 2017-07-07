@@ -5,12 +5,15 @@
 	           'JSB.Widgets.RendererRepository'],
 	
 	$client: {
+		dataScheme: null,
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('dataBindingSelector');
 			this.loadCss('DataBindingSelector.css');
 			this.scheme = opts.scheme;
 			this.values = opts.values;
+			this.wrapper = opts.wrapper;
 			
 			this.placeholderElt = this.$('<div class="placeholder">Перетащите сюда источник</div>');
 			this.append(this.placeholderElt);
@@ -88,14 +91,27 @@
 				}
 				
 			}
-			if(this.options.onChange){
-				this.options.onChange.call(this);
-			}
+			
+			this.wrapper.server().combineDataScheme(this.source, function(dataScheme, fail){
+				if(fail){
+					
+				} else {
+					$this.dataScheme = dataScheme;
+					if($this.options.onChange){
+						$this.options.onChange.call($this);
+					}
+				}
+			});
 
 		},
 		
 		isFilled: function(){
-			return !JSB.isNull(this.source);
+			return !JSB.isNull(this.dataScheme);
+		},
+		
+		getDataScheme: function(){
+			return this.dataScheme;
 		}
+		
 	}
 }

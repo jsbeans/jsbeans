@@ -18,6 +18,9 @@
 			$base(opts);
 			this.scheme = opts.scheme;
 			this.values = opts.values;
+			this.wrapper = opts.wrapper;
+			this.tool = opts.tool;
+			this.binding = opts.binding;
 			this.addClass('widgetSchemeRenderer');
 			this.loadCss('WidgetSchemeRenderer.css');
 			this.update();
@@ -70,7 +73,10 @@
 					this.bindingSelector = new DataBindingSelector({
 						scheme: this.scheme,
 						values: this.values,
+						wrapper: this.wrapper,
 						onChange: function(){
+							$this.binding = $this.bindingSelector.getDataScheme();
+							debugger;
 							fillGroup();
 						}
 					});
@@ -111,6 +117,9 @@
 					var itemRenderer = new $class({
 						scheme: item,
 						values: values,
+						wrapper: $this.wrapper,
+						tool: $this.tool,
+						binding: $this.binding,
 						onChange: $this.options.onChange,
 						onRemove: function(){
 							values.used = false;
@@ -137,6 +146,9 @@
 			}
 			
 			function fillGroup(){
+				if(!$this.values.binding && $this.scheme.binding && $this.bindingSelector.isFilled()){
+					$this.values.binding = $this.bindingSelector.getDataScheme();
+				}
 				if($this.values && $this.values.groups && $this.values.groups.length > 0){
 					for(var i = 0; i < $this.values.groups.length; i++){
 						fillGroupItems(i);
@@ -335,6 +347,8 @@
 				var itemRenderer = new $class({
 					scheme: item,
 					values: $this.values.items[idx],
+					wrapper: $this.wrapper,
+					tool: $this.tool,
 					showHeader: false,
 					onChange: $this.options.onChange
 				});

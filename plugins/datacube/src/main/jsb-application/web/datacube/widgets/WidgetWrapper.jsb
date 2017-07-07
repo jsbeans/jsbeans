@@ -219,6 +219,60 @@
 			this.entry.store();
 			this.doSync();
 			return true;
+		},
+		
+		combineDataScheme: function(source){
+			var iterator = null;
+			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
+				iterator = source.executeQuery();
+			} else {
+				
+			}
+			if(!iterator){
+				return null;
+			}
+			var recordTypes = {};
+			function processObject(el, scope){
+				for(var f in el){
+					var val = el[f];
+					if(JSB.isNull(val)){
+						if(!scope[f]){
+							scope[f] = {type: 'null', source: f};
+						}
+					} else if(JSB.isObject(val)){
+						scope[f] = {type: 'object', source: f, record: {}};
+						processObject(val, scope[f].record);
+					} else if(JSB.isArray(val)){
+						scope[f] = {type: 'array', source: f, record: {}};
+						for(var i = 0; i < val.length; i++){
+							processObject(val[i], scope[f].record);
+						}
+					} else if(JSB.isString(val)){
+						scope[f] = {type: 'string', source: f};
+					} else if(JSB.isFloat(val)){
+						scope[f] = {type: 'float', source: f};
+					} else if(JSB.isInteger(val)){
+						scope[f] = {type: 'integer', source: f};
+					} else if(JSB.isBoolean(val)){
+						scope[f] = {type: 'boolean', source: f};
+					} else if(JSB.isDate(val)){
+						scope[f] = {type: 'date', source: f};
+					}
+				}
+			}
+			for(var j = 0; j < 100; j++){
+				var el = iterator.next();
+				if(!el){
+					break;
+				}
+				processObject(el, recordTypes);
+			}
+			iterator.close();
+			return {
+				type: 'array',
+				source: source,
+				record: recordTypes
+			}
 		}
 	}
 }

@@ -60,7 +60,7 @@
 		    if(this.header) return this.header[i];
 		    return i + 1;
 		},
-
+		
 		// get number of lines
 		preLoader: function(rowCount){
 		    if(this.allLoaded) return;
@@ -125,7 +125,7 @@
 
             $this.getElement().loader();
             var preparedQuery = source.query;
-            if(preparedQuery || Object.keys(preparedQuery).length == 0){
+            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
             	preparedQuery = { $select: {}};
             }
             $this.server().loadSlice(source.cube, preparedQuery, function(res){
@@ -185,6 +185,17 @@
 	    },
 
 	    loadMore: function(){
+	    	function prepareElement(el){
+	    		var nEl = {};
+	    		for(var f in el){
+	    			var val = el[f];
+	    			if(JSB.isObject(val) || JSB.isArray(val)){
+	    				val = JSON.stringify(val, null, 4);
+	    			}
+	    			nEl[f] = val;
+	    		}
+	    		return nEl;
+	    	}
             try{
                 var res = [],
                     max = this.counter + 20,
@@ -199,7 +210,7 @@
                     }
 
                     this.counter++;
-                    res.push(el);
+                    res.push(prepareElement(el));
                 }
 
                 return {
