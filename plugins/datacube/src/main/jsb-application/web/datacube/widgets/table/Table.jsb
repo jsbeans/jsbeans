@@ -9,7 +9,6 @@
 	},
 	$scheme: {
 		type: 'group',
-		name: 'Настройки',
 		mandatory: true,
 		items: [{
 			type: 'group',
@@ -27,26 +26,25 @@
 					editor: 'string',
 					mandatory: true,
 				},{
-					name: 'Значение',
-					type: 'item',
-					binding: 'field',
-					mandatory: true
-				},{
-					name: 'Визуализатор',
+					name: 'Отображение',
 					type: 'select',
 					mandatory: true,
-					items: [{
-						name: 'Виджет',
-						type: 'item',
-						editor: 'widget'
-					}, {
-						name: 'Значение',
+					items:[{
+						name: 'Поле',
 						type: 'group',
 						items: [{
+							name: 'Источник',
+							type: 'item',
+							mandatory: true,
+							binding: 'field'
+						},{
 							name: 'Задать функцию преобразования типа',
 							type: 'item',
 							editor: 'converter'
 						}]
+					},{
+						name: 'Виджет',
+						type: 'widget'
 					}]
 				}]
 			}]

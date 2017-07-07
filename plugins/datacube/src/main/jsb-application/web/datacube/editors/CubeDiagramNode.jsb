@@ -354,6 +354,7 @@
 		selectNode: function(bEnable){
 			if(bEnable){
 				this.addClass('selected');
+				this.editor.publish('DataCube.CubeEditor.cubeNodeSelected', this.entry);
 			} else {
 				this.removeClass('selected');
 			}

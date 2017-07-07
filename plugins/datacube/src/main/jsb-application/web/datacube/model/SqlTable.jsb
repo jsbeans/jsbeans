@@ -15,7 +15,7 @@
 			if(opts){
 				this.descriptor = opts;
 				this.property('descriptor', this.descriptor);
-				this.title(this.descriptor.name);
+				this.title(this.descriptor.schema + '.' + this.descriptor.name);
 			} else {
 				this.descriptor = this.property('descriptor');
 			}

@@ -2,7 +2,8 @@
 	$name: 'JSB.Workspace.Navigator',
 	$parent: 'JSB.Widgets.Control',
 	
-	$require: ['JSB.Workspace.WorkspaceController'],
+	$require: ['JSB.Workspace.WorkspaceController',
+	           'JSB.Widgets.RendererRepository'],
 	
 	$client: {
 		wmKey: null,
@@ -82,12 +83,16 @@
 						$this.wnbContainer.append('<li class="separator"></li>');
 						
 						// add node
-						var nodeElt = $this.$(`#dot
-							<li class="tag">
-								<div class="icon"></div>
-								<div class="text">{{=curNode.getName()}}</div>
-							</li>
-						`);
+						var nodeElt = $this.$('<li class="tag"></li>');
+						
+						if(JSB.isInstanceOf(curNode, 'JSB.Workspace.EntryNode')){
+							nodeElt.append(RendererRepository.createRendererFor(curNode.getEntry()).getElement());
+						} else {
+							nodeElt.append('<div class="icon"></div>');
+							nodeElt.append(`#dot <div class="text">{{=curNode.getName()}}</div>`);
+						}
+						nodeElt.attr('key', curNode.getJsb().$name);
+						
 						$this.wnbContainer.append(nodeElt);
 						
 						if(i > 0){
@@ -96,10 +101,10 @@
 								$this.publish('Workspace.nodeOpen', curNode);
 							});
 						}
-						
+/*						
 						var img = curNode.find('.icon').css('background-image');
 						nodeElt.find('.icon').css('background-image', img);
-						
+*/						
 						return nodeElt;
 					})(path[i], i);
 					

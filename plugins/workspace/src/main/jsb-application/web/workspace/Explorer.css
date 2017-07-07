@@ -106,13 +106,24 @@
     background: linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
 	background: -o-linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
 	background: -ms-linear-gradient(top, #FFF5E0 0%, #EFDACA 15%, #EFD8AF 95%, #ECCA9D 100%);
-	
+	font-size: 13px;
 	padding: 2px;
-	font-size: 11px;
 	display: block;
+	white-space: nowrap;
+	min-width: 100px;
+	max-width: 300px;
 } 
 
+.dragHelper .dragItem > .renderer {
+	display: block;
+}
+
+.dragHelper .dragItem > .renderer > .title {
+	overflow: auto;
+}
+
 .dragHelper .odd em {
+	font-size: 11px;
 	font-style: normal;
 	font-weight: bold;
 	color: #803C00;

@@ -35,7 +35,13 @@
             		$this.updateData(slice);
             	}, 300, 'updateData_' + $this.getId());
             });
-            
+
+            this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, cube){
+            	JSB.defer(function(){
+            		$this.updateData(cube);
+            	}, 300, 'updateData_' + $this.getId());
+            });
+
             this.subscribe('DataCube.CubeEditor.providerNodeSelected', function(editor, msg, provider){
             	JSB.defer(function(){
             		$this.updateData(provider);
@@ -77,6 +83,10 @@
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Providers.DataProvider')){
 				// update data from provider
 				this.error.addClass('hidden');
+            	debugger;
+
+			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Cube')){
+				// update data from cube
             	debugger;
 
 			} else {
