@@ -87,9 +87,25 @@
 			    this.updateSlice(source);
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Providers.DataProvider')){
 				// update data from provider
-				this.error.addClass('hidden');
-            	debugger;
+                this.error.addClass('hidden');
 
+                $this.getElement().loader();
+                $this.server().loadData(source.cube, source, { $select: {}}, function(res){
+                    $this.getElement().loader('hide');
+
+                    if(!res) return;
+                    if(res.error){
+                        $this.errorText.text(res.error.message);
+                        $this.error.removeClass('hidden');
+                        return;
+                    }
+
+                    $this.header = Object.keys(res.result[0]);
+
+                    $this.table.loadData(res.result);
+
+                    $this.allLoaded = res.allLoaded;
+                });
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Cube')){
 				// update data from cube
             	this.updateSlice({
@@ -147,8 +163,21 @@
 	        }
 	    },
 
-	    loadData: function(cube) {
+	    loadData: function(cube, provider, query) {
+            try{
+                if(this.it) this.it.close();
 
+                this.it = cube.queryEngine.query(query, null, provider);
+                this.counter = 0;
+
+                return this.loadMore();
+            } catch(e){
+                return {
+                    result: null,
+                    allLoaded: true,
+                    error: e
+                }
+            }
 	    },
 
 	    loadMore: function(){
