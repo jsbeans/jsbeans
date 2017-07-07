@@ -8,7 +8,7 @@
 
 		$constructor: function(opts){
 			$base(opts);
-
+			this.addClass('gridView');
 			this.loadCss('GridView.css');
 
             this.table = new Handsontable({
@@ -23,6 +23,12 @@
                 }
             });
             this.append($this.table);
+
+            this.error = this.$('<div class="errorMessage hidden"></div>');
+            this.error.append('<div class="errorIcon"></div><span class="errorTitle">Ошибка!</span>');
+            this.errorText = this.$('<span class="errorText"></span>');
+            this.error.append(this.errorText);
+            this.append(this.error);
             
             this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, slice){
             	JSB.defer(function(){
@@ -34,6 +40,12 @@
             	JSB.defer(function(){
             		$this.updateData(provider);
             	}, 300, 'updateData_' + $this.getId());
+            });
+
+            this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
+                JSB.defer(function(){
+                    $this.updateSlice(slice);
+                }, 300, 'sliceNodeEdit' + $this.getId());
             });
 		},
 
@@ -61,27 +73,40 @@
 		
 		updateData: function(source){
 			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
-				// update data from slice
-            	$this.getElement().loader();
-            	$this.server().loadSlice(source.cube, source.query, function(res){
-            	    $this.getElement().loader('hide');
-
-            	    if(!res) return;
-
-            	    $this.header = Object.keys(res.result[0]);
-
-            	    $this.table.loadData(res.result);
-
-            	    $this.allLoaded = res.allLoaded;
-            	})
-
+			    this.updateSlice(source);
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Providers.DataProvider')){
 				// update data from provider
+				this.error.addClass('hidden');
             	debugger;
 
 			} else {
 				throw new Error('Unsupported node type: ' + source.getJsb().$name);
 			}
+		},
+
+		updateSlice: function(source){
+            // update data from slice
+            this.error.addClass('hidden');
+
+            if(!source.query) return;
+
+            $this.getElement().loader();
+            $this.server().loadSlice(source.cube, source.query, function(res){
+                $this.getElement().loader('hide');
+
+                if(!res) return;
+                if(res.error){
+                    $this.errorText.text(res.error.message);
+                    $this.error.removeClass('hidden');
+                    return;
+                }
+
+                $this.header = Object.keys(res.result[0]);
+
+                $this.table.loadData(res.result);
+
+                $this.allLoaded = res.allLoaded;
+            });
 		}
 	},
 
@@ -89,10 +114,20 @@
 	    it: null,
 
 	    loadSlice: function(cube, query){
-	        this.it = cube.queryEngine.query(query);
-	        this.counter = 0;
+	        try{
+                if(this.it) this.it.close();
 
-	        return this.loadMore();
+                this.it = cube.queryEngine.query(query);
+                this.counter = 0;
+
+                return this.loadMore();
+	        } catch(e){
+	            return {
+	                result: null,
+                    allLoaded: true,
+                    error: e
+	            }
+	        }
 	    },
 
 	    loadData: function(cube) {
@@ -118,7 +153,8 @@
 
 	        return {
 	            result: res,
-	            allLoaded: allLoaded
+	            allLoaded: allLoaded,
+	            error: null
 	        };
 	    }
 	}

@@ -74,6 +74,8 @@
             startRows: 10,
             startCols: 10,
 
+            renderAllRows: true,
+
             stretchH: 'all',    // "last" or "all" or "none"
         },
 
@@ -97,17 +99,23 @@
 		},
 
 		addRow: function(row, input){
-		    this.handsontable.populateFromArray(row, 0, input, row, this.handsontable.countCols - 1);
+		    this.handsontable.alter('insert_row', row);
+		    for(var j = 0; j < input.length; j++){
+                this.handsontable.setDataAtCell(row, j, input[j]);
+            }
 		},
 
 		addArray: function(row, input){
             if(!JSB().isArray(input[0])){
-                debugger;
                 input = this.restructArray(input);
             }
 
-            //this.handsontable.alter('insert_row', row, input.length);
-		    this.handsontable.populateFromArray(row, 0, input);
+            this.handsontable.alter('insert_row', row, input.length);
+            for(var i = 0; i < input.length; i++){
+                for(var j = 0; j < input[i].length; j++){
+                    this.handsontable.setDataAtCell(row + i, j, input[i][j]);
+                }
+            }
 		},
 
 		_createHeaderCellCallback: function(i){
