@@ -4,8 +4,13 @@
 
 	$server: {
 		$require: [
+		    'JSB.DataCube.Query.Translators.TranslatorRegistry',
 		    'JSB.DataCube.Providers.SqlTableDataProvider'
         ],
+
+		$bootstrap: function(){
+			TranslatorRegistry.register(this, 'JSB.DataCube.Providers.SqlTableDataProvider');
+		},
 
 		$constructor: function(provider, cube){
 		    $base(provider);

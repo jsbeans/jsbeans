@@ -228,7 +228,9 @@ debugger;
 		            }
 		            return next;
 		        },
-		        close: it.close
+		        close: function(){
+		            it.close();
+		        }
 		    };
 		},
 	}
