@@ -21,7 +21,7 @@
 
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
-		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery));
+//		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery));
 		    var store = this.provider.getStore();
 		    this.iterator = store.asMoSQL().iteratedParametrizedQuery2(
 		        mosqlQuery,

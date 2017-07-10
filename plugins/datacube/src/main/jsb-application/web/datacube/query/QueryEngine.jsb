@@ -214,7 +214,18 @@ debugger;
 		        return new FinalizeIterator(joinIterator, this).iterate(dcQuery, params);
 		    }
 
-		    return joinIterator.iterate(dcQuery, params);
+		    var it = joinIterator.iterate(dcQuery, params);
+
+		    return {
+		        next: function(){
+		            var next = it.next();
+		            if (next) {
+		                Log.debug(JSON.stringify(next,0,2));
+		            }
+		            return next;
+		        },
+		        close: it.close
+		    };
 		},
 	}
 }
