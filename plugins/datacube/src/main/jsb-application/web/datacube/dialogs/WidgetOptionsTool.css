@@ -31,6 +31,6 @@
 	display: block;
 }
 
-.widgetOptionsTool > div[jsb="JSB.Widgets.GroupBox"] {
-	margin: 10px 0;
+.widgetOptionsTool > div[jsb="JSB.Widgets.ScrollBox"] {
+	max-height: 500px;
 }

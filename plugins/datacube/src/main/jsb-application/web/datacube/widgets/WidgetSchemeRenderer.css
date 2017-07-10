@@ -6,7 +6,13 @@
 
 .widgetSchemeRenderer > .header {
 	position: relative;
+	padding: 1px 0 1px 0;
+	display: inline-block;
+}
+
+.widgetSchemeRenderer.hasMultiple > .header {
 	padding: 1px 20px 1px 0;
+	display: block;
 }
 
 .widgetSchemeRenderer > .header > .caption {
@@ -47,7 +53,10 @@
 }
 
 
-.widgetSchemeRenderer > .body > .items {}
+.widgetSchemeRenderer > .body > .items {
+	padding-top: 1px;
+    padding-bottom: 1px;
+}
 
 .widgetSchemeRenderer.hasMultiple > .body > .items {
 	padding-left: 10px;
@@ -64,3 +73,22 @@
 .widgetSchemeRenderer > .body > .items > .item {}
 
 .widgetSchemeRenderer.hasMultiple > .body > .items > .item {}
+
+
+/* items */
+.widgetSchemeRenderer[entry="item"] {}
+
+.widgetSchemeRenderer[entry="item"] > .header {}
+
+.widgetSchemeRenderer[entry="item"] > .value {
+	display: inline-block;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
+.widgetSchemeRenderer[entry="item"].hasMultiple > .value {
+	display: block;
+	margin-left: 0;
+}
+
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer {}
