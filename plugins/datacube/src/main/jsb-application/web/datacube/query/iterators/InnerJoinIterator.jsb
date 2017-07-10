@@ -21,11 +21,13 @@
                 var fields = [];
                 for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
                    var binding = this.cube.fields[field].binding;
-                   for(var b in binding) {
-                       if (binding[b].provider == this.iterators[i].getDataProvider()) {
-                            if (!this.dcQuery.$select[field]){
-                                this.dcQuery.$select[field] = binding[b].field;
-                            }
+                   if (binding.length > 1) {
+                       for(var b in binding) {
+                           if (binding[b].provider == this.iterators[i].getDataProvider()) {
+                                if (!this.dcQuery.$select[field]){
+                                    this.dcQuery.$select[field] = binding[b].field;
+                                }
+                           }
                        }
                    }
                 }

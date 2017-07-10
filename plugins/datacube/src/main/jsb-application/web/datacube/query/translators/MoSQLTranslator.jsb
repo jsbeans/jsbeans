@@ -18,7 +18,7 @@
 		        // close previous iterator
 		        this.iterator.close();
 		    }
-
+//debugger;
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
 //		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery));
@@ -203,8 +203,17 @@
                 if (provs.length > 1) {
                     throw new Error('Multiprovider selection not supported: ' + JSON.stringify(select[p]));
                 }
-                // use only current provider fields
-                if(provs[0] == this.provider) {
+                if (provs.length == 0) {
+                    // sum:1 - find groupBy provider
+                    if (dcQuery.$groupBy && dcQuery.$groupBy[0]) {
+                        var provider = this._extractUsedProviders(dcQuery.$groupBy[0], false, true)[0];
+                        if (provider == this.provider) {
+                            columns.push(translateExpression(p, select[p]));
+                        }
+                    }
+                    //columns.push(translateExpression(p, select[p]));
+                } else if(provs[0] == this.provider) {
+                    // use only current provider fields
                     columns.push(translateExpression(p, select[p]));
                 }
             }

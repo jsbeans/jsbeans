@@ -251,7 +251,11 @@
 
 		getOrderedDataProviders: function(){
 		    // TODO: support join order
-		    return this.dataProviders;
+		    var providers = [];
+		    for(var id in this.dataProviders) {
+		        providers.push(this.dataProviders[id]);
+		    }
+		    return providers;
 		},
 		
 		extractDataProviderFields: function(pId){

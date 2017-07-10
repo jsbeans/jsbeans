@@ -31,6 +31,7 @@
 		},
 
 		iterate: function(dcQuery, params){
+		    Log.debug('DataProviderIterator.iterate: ' + JSON.stringify(dcQuery,0,2));
             this.iterator = this.translator.translatedQueryIterator(dcQuery, params);
 		    return this;
 		},

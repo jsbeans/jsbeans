@@ -112,7 +112,10 @@ debugger;
 		query: function(dcQuery, params, dataProvider){
 			this.cube.load();
 		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
-		    return this.produceIterator(dcQuery, params||{}, dataProvider);
+//debugger;
+		    Log.debug('QueryEngine.query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
+		    var it = this.produceIterator(dcQuery, params||{}, dataProvider);
+		    return it;
 		},
 
 		prepareQuery: function(dcQuery, dataProvider) {
@@ -183,6 +186,7 @@ debugger;
 		},
 
 		produceIterator: function(dcQuery, params, dataProvider) {
+//debugger;
             // collect only iterator of used in query providers
             var usedCubeFields = this.extractFields(dcQuery).cubeFields;
             var dataProviders = this.cube.getOrderedDataProviders();
@@ -220,7 +224,7 @@ debugger;
 		        next: function(){
 		            var next = it.next();
 		            if (next) {
-		                Log.debug(JSON.stringify(next,0,2));
+		                Log.debug(JSON.stringify(next));
 		            }
 		            return next;
 		        },
