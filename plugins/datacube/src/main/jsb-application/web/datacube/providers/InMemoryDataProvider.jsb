@@ -60,6 +60,10 @@
 			}
 			this.collection.insert(r);
 
+		},
+		
+		find: function(q){
+			return this.collection.find(q);
 		}
 	}
 }

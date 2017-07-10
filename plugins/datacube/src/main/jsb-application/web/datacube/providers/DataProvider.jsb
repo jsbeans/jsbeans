@@ -25,6 +25,10 @@
 		
 		extractFields: function(){
 			throw new Error('Method "extractFields" should be overriden');
+		},
+		
+		find: function(q){
+			throw new Error('Method "find" should be overriden');
 		}
 	}
 }

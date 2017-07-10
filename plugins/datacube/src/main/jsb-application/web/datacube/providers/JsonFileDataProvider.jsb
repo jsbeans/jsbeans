@@ -73,6 +73,13 @@
 				this.fill();
 			}
 			return $base();
+		},
+		
+		find: function(q){
+			if(!this.filled){
+				this.fill();
+			}
+			return $base(q);
 		}
 	}
 }

@@ -4,8 +4,14 @@
 
 	$server: {
 		$require: [
+		    'JSB.DataCube.Query.Translators.TranslatorRegistry',
 		    'JSB.DataCube.Providers.InMemoryDataProvider'
         ],
+
+		$bootstrap: function(){
+			TranslatorRegistry.register(this, 'JSB.DataCube.Providers.InMemoryDataProvider');
+			TranslatorRegistry.register(this, 'JSB.DataCube.Providers.JsonFileDataProvider');
+		},
 
 		$constructor: function(provider, cube){
 		    $base(provider);
@@ -14,47 +20,24 @@
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
-		    if (this.iterator) {
-		        // close previous iterator
-		        this.iterator.close();
-		    }
-
-            var loki = { };
+		    // TODO: translate query to loki
+            var result = this.provider.find();
+            var i = 0;
 		    return {
 		        next: function(){
-                    if (!loki.data) {
-                        loki.data = $this._prepareData(dcQuery, params)
-                        loki.pos = 0;
+                    if (i < result.length) {
+                        return result[i];
                     }
-
+                    return null;
 		        },
 		        close: function(){
-		            if (loki.data) delete loki.data;
+
 		        }
 		    };
 		},
 
 		close: function() {
-		    this.iterator.close();
 		},
 
-		_prepareData: function(dcQuery, params){
-            var dpQuery = this._translateToDataProviderFields(dcQuery);
-
-		    var data = dpQuery.$filter
-                    ? provider.collection.find(this._translateFind(dpQuery, params))
-                    : provider.collection.find();
-
-            // TODO
-            return data;
-		},
-
-		_translateToDataProviderFields: function(dcQuery){
-		},
-
-		_translateFind: function(dcQuery, params) {
-debugger;
-            return query;
-        },
 	}
 }

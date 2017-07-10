@@ -202,6 +202,8 @@
 	},
 	
 	$server: {
+		$require: ['JSB.DataCube.Providers.DataProviderRepository',
+		           'JSB.DataCube.Query.QueryEngine'],
 		
 		$constructor: function(id, entry, wType){
 			this.id = id;
@@ -226,52 +228,85 @@
 			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
 				iterator = source.executeQuery();
 			} else {
-				
+				// TODO
+				var dpInfo = DataProviderRepository.queryDataProviderInfo(source);
+				var ProviderClass = JSB.get(dpInfo.pType).getClass();
+				var provider = new ProviderClass(JSB.generateUid(), source, null);
+				provider.extractFields();
+/*				var qe = new QueryEngine(null);
+				iterator = qe.query({$select:{}}, {}, provider);
+*/
+				var buffer = provider.find();
+				iterator = {
+					buffer: buffer,
+					total: buffer.length,
+					pos: 0,
+					next: function(){
+						if(this.pos >= this.total){
+							return null;
+						}
+						return this.buffer[this.pos++];
+					},
+					close: function(){
+						this.buffer = [];
+						this.total = 0;
+						this.pos = 0;
+					}
+				}
 			}
 			if(!iterator){
 				return null;
 			}
-			var recordTypes = {};
-			function processObject(el, scope){
-				for(var f in el){
-					var val = el[f];
-					if(JSB.isNull(val)){
-						if(!scope[f]){
-							scope[f] = {type: 'null', source: f};
+			function processElement(val){
+				if(JSB.isNull(val)){
+					return {type: 'null'};
+				} else if(JSB.isObject(val)){
+					var rDesc = {type: 'object', record: {}};
+					for(var f in val){
+						var cVal = val[f];
+						var r = processElement(cVal);
+						if(r.type != 'null' || !rDesc.record[f]){
+							rDesc.record[f] = JSB.merge(true, rDesc.record[f] || {}, r);
 						}
-					} else if(JSB.isObject(val)){
-						scope[f] = {type: 'object', source: f, record: {}};
-						processObject(val, scope[f].record);
-					} else if(JSB.isArray(val)){
-						scope[f] = {type: 'array', source: f, record: {}};
-						for(var i = 0; i < val.length; i++){
-							processObject(val[i], scope[f].record);
-						}
-					} else if(JSB.isString(val)){
-						scope[f] = {type: 'string', source: f};
-					} else if(JSB.isFloat(val)){
-						scope[f] = {type: 'float', source: f};
-					} else if(JSB.isInteger(val)){
-						scope[f] = {type: 'integer', source: f};
-					} else if(JSB.isBoolean(val)){
-						scope[f] = {type: 'boolean', source: f};
-					} else if(JSB.isDate(val)){
-						scope[f] = {type: 'date', source: f};
+						rDesc.record[f].field = f;
 					}
+					return rDesc;
+				} else if(JSB.isArray(val)){
+					var rDesc = {type:'array', arrayType: {type:'null'}};
+					for(var i = 0; i < val.length; i++){
+						var r = processElement(val[i]);
+						if(r && r.type != 'null'){
+							rDesc.arrayType = r;
+						}
+					}
+					return rDesc;
+				} else if(JSB.isString(val)){
+					return {type: 'string'};
+				} else if(JSB.isFloat(val)){
+					return {type: 'float'};
+				} else if(JSB.isInteger(val)){
+					return {type: 'integer'};
+				} else if(JSB.isBoolean(val)){
+					return {type: 'boolean'};
+				} else if(JSB.isDate(val)){
+					return {type: 'date'};
 				}
 			}
+			
+			var recordTypes = {};
 			for(var j = 0; j < 100; j++){
 				var el = iterator.next();
 				if(!el){
 					break;
 				}
-				processObject(el, recordTypes);
+				var r = processElement(el);
+				JSB.merge(true, recordTypes, r);
 			}
 			iterator.close();
 			return {
 				type: 'array',
 				source: source,
-				record: recordTypes
+				arrayType: recordTypes
 			}
 		}
 	}
