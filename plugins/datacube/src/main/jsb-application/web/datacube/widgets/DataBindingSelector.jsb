@@ -86,8 +86,7 @@
 			} else {
 				var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
 				if(dpInfo){
-					// add provider
-					debugger;
+					this.source = entry;
 				}
 				
 			}
