@@ -4,7 +4,7 @@
 	$server: {
 		$require: [
 		    'JSB.DataCube.Query.Iterators.DataProviderIterator',
-		    'JSB.DataCube.Query.Iterators.JoinIterator',
+		    'JSB.DataCube.Query.Iterators.InnerJoinIterator',
 		    'JSB.DataCube.Query.Iterators.FinalizeIterator',
         ],
 
@@ -111,14 +111,21 @@ debugger;
 
 		query: function(dcQuery, params, dataProvider){
 			this.cube.load();
-		    dcQuery = this.prepareQuery(dcQuery);
+		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
 		    return this.produceIterator(dcQuery, params||{}, dataProvider);
 		},
 
-		prepareQuery: function(dcQuery) {
+		prepareQuery: function(dcQuery, dataProvider) {
+		    // fill all cube fields (or linked with dataProvider) for default $select={}
 		    if (Object.keys(dcQuery.$select).length == 0) {
                 for (var f in this.cube.fields) if (this.cube.fields.hasOwnProperty(f)) {
-                    dcQuery.$select[f] = f;
+                    var binding = this.cube.fields[f].binding;
+                    for(var b in binding) {
+                        if (!dataProvider || binding[b].provider == dataProvider) {
+                            dcQuery.$select[f] = f;
+                            break;
+                        }
+                    }
                 }
             }
             return dcQuery;
@@ -191,9 +198,17 @@ debugger;
                 providerIterators.push(new DataProviderIterator(dataProvider, this));
             }
 
+            if (providerIterators.length == 0) {
+                // empty iterator
+                return {
+                    next: function(){},
+                    close: function(){}
+                };
+            }
+
             var joinIterator = providerIterators.length == 1
                     ? providerIterators[0]
-                    : new JoinIterator(providerIterators, this);
+                    : new InnerJoinIterator(providerIterators, this);
 
 		    if (dcQuery.$finalize) {
 		        return new FinalizeIterator(joinIterator, this).iterate(dcQuery, params);

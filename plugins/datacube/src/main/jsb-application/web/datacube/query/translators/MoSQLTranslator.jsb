@@ -21,7 +21,7 @@
 
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
-		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery, 0, 2));
+		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery));
 		    var store = this.provider.getStore();
 		    this.iterator = store.asMoSQL().iteratedParametrizedQuery2(
 		        mosqlQuery,
@@ -104,7 +104,14 @@
                     for (var p in exps) if (exps.hasOwnProperty(p)) {
                         var exp = {};
                         exp[p] = exps[p];
-                        JSB.merge(res, translateExpression(exp));
+                        var provs = $this._extractUsedProviders(exp, true, false);
+                        if (provs.length > 1) {
+                            throw new Error('Multiprovider condition not supported: ' + JSON.stringify(exp));
+                        }
+                        // use only current provider fields
+                        if(provs[0] == $this.provider) {
+                            JSB.merge(res, translateExpression(exp));
+                        }
                     }
                     return res;
                 } else if (JSB.isArray(exps)) {
@@ -137,7 +144,7 @@
                 // or expression
 
                 if (exp.$or) return { $or: translateExpressions(exp.$or) };
-                if (exp.$and) return { $or: translateExpressions(exp.$and) };
+                if (exp.$and) return { $and: translateExpressions(exp.$and) };
 
                 if (exp.$eq) return { $equals: translateExpressions(exp.$eq) };
                 if (exp.$eq && exp.$eq == null) return { $null: true };
@@ -145,20 +152,21 @@
                 if (exp.$ne) return { $ne: translateExpressions(exp.$eq) };
                 if (exp.$ne && exp.$ne == null) return { $notNull: true };
 
-                if (exp.$gt) return { $ne: translateExpressions(exp.$gt) };
-                if (exp.$gte) return { $ne: translateExpressions(exp.$gte) };
-                if (exp.$lt) return { $ne: translateExpressions(exp.$lt) };
-                if (exp.$lte) return { $ne: translateExpressions(exp.$lte) };
+                if (exp.$gt) return { $gt: translateExpressions(exp.$gt) };
+                if (exp.$gte) return { $gte: translateExpressions(exp.$gte) };
+                if (exp.$lt) return { $lt: translateExpressions(exp.$lt) };
+                if (exp.$lte) return { $lte: translateExpressions(exp.$lte) };
 
                 if (exp.$like) return { $like: translateExpressions(exp.$like) };
-                if (exp.$ilike) return { $like: translateExpressions(exp.$ilike) };
+                if (exp.$ilike) return { $ilike: translateExpressions(exp.$ilike) };
                 if (exp.$in) return { $in: translateExpressions(exp.$in) };
-                if (exp.$nin) return { $in: translateExpressions(exp.$nin) };
+                if (exp.$nin) return { $nin: translateExpressions(exp.$nin) };
 
                 throw new Error('Unsupported select expression');
             }
 
 //debugger;
+            // TODO оставить только часть запроса для данного провайдера
             var filter = dcQuery.$filter;
             return translateExpressions(filter, translateExpression);
         },
@@ -191,7 +199,14 @@
             var select = dcQuery.$select;
             var columns = [];
             for (var p in select) if (select.hasOwnProperty(p)) {
-                columns.push(translateExpression(p, select[p]));
+                var provs = this._extractUsedProviders(select[p], false, true);
+                if (provs.length > 1) {
+                    throw new Error('Multiprovider selection not supported: ' + JSON.stringify(select[p]));
+                }
+                // use only current provider fields
+                if(provs[0] == this.provider) {
+                    columns.push(translateExpression(p, select[p]));
+                }
             }
             return columns;
         },
@@ -213,5 +228,42 @@
             }
             return sort;
         },
+
+        _getCubeFieldProviders: function(field) {
+            // return providers of cube field or current provider for join fields
+            var providers = [];
+            var binding = this.cube.fields[field].binding;
+            for (var b in binding) {
+                if (binding[b].provider == this.provider) {
+                    return [this.provider];
+                }
+                providers.push(binding[b].provider);
+            }
+            return providers;
+        },
+
+        _extractUsedProviders: function(exp, byKey, byValue){
+            // input exp - expression with cube fields
+            // result - array with providers connected with current expression
+            var providers = [];
+            if (JSB.isPlainObject(exp)) {
+                for(var p in exp) if (exp.hasOwnProperty(p)) {
+                    if (!p.match(/^\$/) && byKey) {
+                        providers = providers.concat(this._getCubeFieldProviders(p));
+                    } else {
+                        providers = providers.concat(this._extractUsedProviders(exp[p], byKey, byValue));
+                    }
+                }
+            } else if (JSB.isArray(exp)) {
+                for(var i in exp) {
+                    providers = providers.concat(this._extractUsedProviders(exp[i], byKey, byValue));
+                }
+            } else if (JSB.isString(exp)) {
+                if (!exp.match(/^\$/) && byValue) {
+                    providers = providers.concat(this._getCubeFieldProviders(exp));
+                }
+            }
+            return providers;
+        }
 	}
 }

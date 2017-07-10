@@ -5,7 +5,10 @@
 	$server: {
 		$require: [
 		    'JSB.DataCube.Providers.SqlTableDataProvider',
+		    'JSB.DataCube.Providers.InMemoryDataProvider',
+
 		    'JSB.DataCube.Query.Translators.MoSQLTranslator',
+		    'JSB.DataCube.Query.Translators.LockiTranslator',
         ],
 
 		$constructor: function(provider, queryEngine){
@@ -16,6 +19,8 @@
             // select compatible translator
             if (provider instanceof SqlTableDataProvider) {
                 this.translator = new MoSQLTranslator(provider, this.cube);
+            } else if (provider instanceof InMemoryDataProvider) {
+                this.translator = new LockiTranslator(provider, this.cube);
             } else {
                 throw new Error('Other translators not supported yet');
             }

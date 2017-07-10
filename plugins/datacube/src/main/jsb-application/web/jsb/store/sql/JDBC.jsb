@@ -3,14 +3,14 @@
 	$singleton: true,
 
 	$server: {
-		$require: [
-		    'java:java.lang.Class',
-		    'java:java.util.Properties',
-			'java:java.sql.DriverManager',
-			'java:java.sql.JDBCType',
-			'java:java.sql.Types',
-			'java:java.sql.Date',
-		],
+		$require: {
+		    Class:          'java:java.lang.Class',
+		    Properties:     'java:java.util.Properties',
+			DriverManager:  'java:java.sql.DriverManager',
+			JDBCType:       'java:java.sql.JDBCType',
+			Types:          'java:java.sql.Types',
+			SqlDate:        'java:java.sql.Date',
+		},
 
 		$constructor: function(){
 			$base();
@@ -63,7 +63,7 @@
 		loadDriver: function(driverClassName, skipError) {
             try {
                 Class.forName(driverClassName);
-                Log.debug('JDBC driver ' + driverClassName + ' registered');
+//                Log.debug('JDBC driver ' + driverClassName + ' registered');
             } catch (e) {
                 if (!skipError) {
                     throw new Error('Registering JDBC driver ' + driverClassName + ' failed: ' + e);
@@ -96,10 +96,11 @@
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
 
-            Log.debug('Native SQL query: ' + sql);
-            Log.debug('Native SQL parameters: ' + JSON.stringify(values));
+//            Log.debug('Native SQL query: ' + sql);
+//            Log.debug('Native SQL parameters: ' + JSON.stringify(values) + ', ' + JSON.stringify(types));
 
 		    var rs;
+		    connection.setAutoCommit(false);
 		    if (JSB.isArray(values)) {
 		        var st = connection.prepareStatement(sql);
 		        for (var i = 0; i < values.length; i++) {
@@ -108,11 +109,14 @@
 		            var type = this._getJDBCType(value, type);
                     this._setStatementArgument(st, i + 1, value, type);
 		        }
+		        st.setFetchSize(10);
 		        rs = st.executeQuery();
 		    } else {
 		        var st = connection.createStatement();
+		        st.setFetchSize(10);
 		        rs = st.executeQuery(sql);
 		    }
+//		        Log.debug('SQL query executed');
 
 		    return {
 //		        columns: (function(){
@@ -179,7 +183,8 @@
             if (JSB.isNull(value)) {
                 st.setNull(idx, type.getVendorTypeNumber());
             } else {
-                switch(0+type.getVendorTypeNumber()) {
+                var sqlType = 0 + type.getVendorTypeNumber().intValue();
+                switch(sqlType) {
                     case 0+Types.BIT:
                     case 0+Types.BOOLEAN:
                         st.setBoolean(idx, value);
@@ -210,7 +215,7 @@
                     case 0+Types.DATE:
                     case 0+Types.TIME:
                     case 0+Types.TIMESTAMP:
-                        st.setDate(idx, new Date(value.getTime()));
+                        st.setDate(idx, new SqlDate(value.getTime()));
                         break;
                     case 0+Types.NULL:
                         st.setNull(idx, 0);

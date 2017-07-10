@@ -47,15 +47,13 @@
 		    if (!JSB.isString(config.name)) {
 		        throw new Error('Store name is not configured');
 		    }
-		    var store = this._stores[config.name];
-            if (store) {
-                return store;
-            }
 
             return JSB.locked(this, function(){
                 var store = $this._stores[config.name];
+                if (store && !JSB.isEqual(store.config, config) ) {
+                    store = null;
+                }
                 if (!store) {
-                    // TODO
 //                    var TypedStore = JSB(config.type).getClass();
                     if (config.type == 'JSB.Store.Sql.SQLStore') {
                         var TypedStore = SQLStore;

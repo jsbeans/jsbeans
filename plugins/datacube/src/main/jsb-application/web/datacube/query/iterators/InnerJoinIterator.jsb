@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Query.Iterators.JoinIterator',
+	$name: 'JSB.DataCube.Query.Iterators.InnerJoinIterator',
 	$parent: 'JSB.DataCube.Query.Iterators.Iterator',
 
 	$server: {
@@ -16,14 +16,13 @@
 		    this.dcQuery = dcQuery;
 		    this.params = params;
 
-//debugger;
 		    // include join condition fields to $select
 		    for (var i in this.iterators) {
                 var fields = [];
                 for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
                    var binding = this.cube.fields[field].binding;
                    for(var b in binding) {
-                       if (binding[b].provider == leftProvider) {
+                       if (binding[b].provider == this.iterators[i].getDataProvider()) {
                             if (!this.dcQuery.$select[field]){
                                 this.dcQuery.$select[field] = binding[b].field;
                             }
@@ -49,11 +48,12 @@
                 query: {},
                 params: {}
             };
-            var leftCValues = this.getLeftConditionFieldValues(i);
+            var leftCFValues = this.getLeftConditionFieldValues(i);
             for (var f in leftCFValues) if (leftCFValues.hasOwnProperty(f)) {
-                condition.query[f] = {$eq: '${joinParam_' + f + '}'};
-                params['${joinParam_' + f + '}'] = leftCFValues[f];
-                this.queryEngine.setParamType('joinParam_' + f, this.cube.fields[f].type);
+                var paramName = 'joinParam_' + f;
+                condition.query[f] = {$eq: '${' + paramName + '}'};
+                condition.params[paramName] = leftCFValues[f];
+                this.queryEngine.setParamType(paramName, this.cube.fields[f].type);
             }
 
             if (Object.keys(condition.query).length > 0) {
@@ -61,6 +61,7 @@
                 dcQuery.$filter.$and = dcQuery.$filter.$and || [];
                 dcQuery.$filter.$and.push(condition.query);
             }
+//            Log.debug('Restart iterator [' + i + '] : ' + JSON.stringify(condition.query));
 
 		    // merge params
 		    var params = JSB.merge({}, this.params, condition.params);
@@ -80,7 +81,7 @@
                 }
 		        return true;
 		    }
-
+//debugger;
             // left to right fill values and right to left for get next
 		    for (var i = this.values.length; i < this.iterators.length; ) {
 		        var iterator = this.iterators[i];
@@ -91,16 +92,21 @@
                 }
 
                 // get next matched value
-		        var leftCFValues = $this.getLeftConditionFieldValues(i);
-		        for (
-		             values[i] = iterator.next();
-		             !JSB.isNull(values[i]) && !checkCondition(i, leftCFValues);
-		             values[i] = iterator.next()) {
+		        var leftCFValues = i > 0 ? this.getLeftConditionFieldValues(i) : null;
+		        for (;;) {
+		             this.values[i] = iterator.next();
+		             if (JSB.isNull(this.values[i])) break;
+		             // test value for join
+		             if (leftCFValues && !checkCondition(i, leftCFValues)) {
+		                // next value
+		                continue;
+		             }
+		             break;
 		        }
 
-		        if (JSB.isNull(values[i])) {
+		        if (JSB.isNull($this.values[i])) {
 		            if (i > 0) {
-		                this.restartIterator(i);
+                        this.initialized[i] = false;
 		                // jump to prev iterator and next value
                         i--;
                         continue;
@@ -111,8 +117,11 @@
 		        }
                 i++;
 		    }
+//debugger;
 		    // return merged copy
-		    return JSB.merge({}, JSB.merge.apply(null, values));
+		    var value = JSB.merge.apply(null, [{}].concat(this.values));
+		    this.values.pop();
+		    return value;
 		},
 
 		close: function() {
@@ -127,17 +136,24 @@
 		},
 
 		getLeftConditionFieldValues: function(i) {
-            var leftProvider = this.iterators[i-1];
+            var rightProvider = this.iterators[i].getDataProvider();
             var leftCValues = {};
             for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
-               var binding = this.cube.fields[field].binding;
-               for(var b in binding) {
-                   if (binding[b].provider == leftProvider) {
-                        leftCValues[field] = this.values[i-1];
-                        break;
-                   }
-               }
+                for (var ii = i-1; ii >= 0; ii--) {
+                    var leftProvider = this.iterators[ii].getDataProvider();
+                    var binding = this.cube.fields[field].binding;
+                    var leftMatched = false;
+                    var rightMatched = false;
+                    for(var b in binding) {
+                        leftMatched = leftMatched || binding[b].provider == leftProvider;
+                        rightMatched = rightMatched || binding[b].provider == rightProvider;
+                    }
+                    if (leftMatched && rightMatched) {
+                        leftCValues[field] = this.values[ii][field];
+                    }
+                }
             }
+            return leftCValues;
 		}
 	}
 }
