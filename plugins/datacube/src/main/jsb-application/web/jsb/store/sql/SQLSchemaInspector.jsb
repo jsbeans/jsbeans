@@ -13,12 +13,13 @@
 			var schemas = {};
             var databaseMetaData = jdbcConnection.getMetaData();
 
-            var tables = databaseMetaData.getTables(null, null, null, ["TABLE"]);
+            var tables = databaseMetaData.getTables(null, null, null, ["TABLE", "VIEW"]);
             var tableArr = [];
             while (tables.next()) {
 
                 var tableSchema = ''+tables.getString("TABLE_SCHEM");
                 var tableName = ''+tables.getString("TABLE_NAME");
+                var tableType = ''+tables.getString("TABLE_TYPE");
 
                 if (!schemas[tableSchema]) {
                     schemas[tableSchema] = {
@@ -33,6 +34,8 @@
                 var tableDesc = schemaDesc.tables[tableName] = JSB.merge({
                     entryType: 'table',
                     name: tableName,
+                    type: tableType,
+                    isView: tableType == "VIEW",
                     schema: tableSchema,
                     columns: {}
                 }, schemaDesc.tables[tableName]);
