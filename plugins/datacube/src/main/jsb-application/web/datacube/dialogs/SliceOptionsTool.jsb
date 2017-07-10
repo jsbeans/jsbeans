@@ -166,6 +166,9 @@
 				query: this.find('.queryEditor').jsb().getData().getValue()
 			};
 			this.data.callback.call(this, resp);
+
+			this.publish('DataCube.CubeEditor.sliceNodeEdit', resp);
+
 			$this.close();
 		}
 		

@@ -89,6 +89,7 @@
 				scheme: scheme,
 				values: values,
 				tool: $this,
+				wrapper: wrapper,
 				onChange: function(){
 					$this.updateButtons();
 				}

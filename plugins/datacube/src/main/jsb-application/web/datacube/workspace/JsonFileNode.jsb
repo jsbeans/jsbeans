@@ -9,7 +9,7 @@
 			this.addClass('jsonFileNode');
 			
 			this.append(`#dot
-				<div class="records">
+				<div class="status">
 					Записей: <span class="count">{{=this.descriptor.entry.getRecordsCount()}}</span>
 				</div>
 			`);

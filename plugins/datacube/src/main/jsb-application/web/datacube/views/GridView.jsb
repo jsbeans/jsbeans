@@ -8,7 +8,7 @@
 
 		$constructor: function(opts){
 			$base(opts);
-
+			this.addClass('gridView');
 			this.loadCss('GridView.css');
 
             this.table = new Handsontable({
@@ -23,17 +23,35 @@
                 }
             });
             this.append($this.table);
+
+            this.error = this.$('<div class="errorMessage hidden"></div>');
+            this.error.append('<div class="errorIcon"></div><span class="errorTitle">Ошибка!</span>');
+            this.errorText = this.$('<span class="errorText"></span>');
+            this.error.append(this.errorText);
+            this.append(this.error);
             
             this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, slice){
             	JSB.defer(function(){
             		$this.updateData(slice);
             	}, 300, 'updateData_' + $this.getId());
             });
-            
+
+            this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, cube){
+            	JSB.defer(function(){
+            		$this.updateData(cube);
+            	}, 300, 'updateData_' + $this.getId());
+            });
+
             this.subscribe('DataCube.CubeEditor.providerNodeSelected', function(editor, msg, provider){
             	JSB.defer(function(){
             		$this.updateData(provider);
             	}, 300, 'updateData_' + $this.getId());
+            });
+
+            this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
+                JSB.defer(function(){
+                    $this.updateSlice(slice);
+                }, 300, 'sliceNodeEdit' + $this.getId());
             });
 		},
 
@@ -42,7 +60,7 @@
 		    if(this.header) return this.header[i];
 		    return i + 1;
 		},
-
+		
 		// get number of lines
 		preLoader: function(rowCount){
 		    if(this.allLoaded) return;
@@ -52,6 +70,11 @@
                 $this.getElement().loader('hide');
 
                 if(!res) return;
+                if(res.error){
+                    $this.errorText.text(res.error.message);
+                    $this.error.removeClass('hidden');
+                    return;
+                }
 
                 $this.table.addArray(rowCount, res.result);
 
@@ -61,27 +84,66 @@
 		
 		updateData: function(source){
 			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
-				// update data from slice
-            	$this.getElement().loader();
-            	$this.server().loadSlice(source.cube, source.query, function(res){
-            	    $this.getElement().loader('hide');
-
-            	    if(!res) return;
-
-            	    $this.header = Object.keys(res.result[0]);
-
-            	    $this.table.loadData(res.result);
-
-            	    $this.allLoaded = res.allLoaded;
-            	})
-
+			    this.updateSlice(source);
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Providers.DataProvider')){
 				// update data from provider
-            	debugger;
+                this.error.addClass('hidden');
 
+                $this.getElement().loader();
+                $this.server().loadData(source.cube, source, { $select: {}}, function(res){
+                    $this.getElement().loader('hide');
+
+                    if(!res) return;
+                    if(res.error){
+                        $this.errorText.text(res.error.message);
+                        $this.error.removeClass('hidden');
+                        return;
+                    }
+
+                    $this.header = Object.keys(res.result[0]);
+
+                    $this.table.loadData(res.result);
+
+                    $this.allLoaded = res.allLoaded;
+                });
+			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Cube')){
+				// update data from cube
+            	this.updateSlice({
+            	cube: source,
+            	query: { $select: {}}
+            	});
 			} else {
 				throw new Error('Unsupported node type: ' + source.getJsb().$name);
 			}
+		},
+
+		updateSlice: function(source){
+            // update data from slice
+            this.error.addClass('hidden');
+
+            if(!source.query) return;
+
+            $this.getElement().loader();
+            var preparedQuery = source.query;
+            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
+            	preparedQuery = { $select: {}};
+            }
+            $this.server().loadSlice(source.cube, preparedQuery, function(res){
+                $this.getElement().loader('hide');
+
+                if(!res) return;
+                if(res.error){
+                    $this.errorText.text(res.error.message);
+                    $this.error.removeClass('hidden');
+                    return;
+                }
+
+                $this.header = Object.keys(res.result[0]);
+
+                $this.table.loadData(res.result);
+
+                $this.allLoaded = res.allLoaded;
+            });
 		}
 	},
 
@@ -89,37 +151,80 @@
 	    it: null,
 
 	    loadSlice: function(cube, query){
-	        this.it = cube.queryEngine.query(query);
-	        this.counter = 0;
+	        try{
+                if(this.it) this.it.close();
 
-	        return this.loadMore();
+                this.it = cube.queryEngine.query(query);
+                this.counter = 0;
+
+                return this.loadMore();
+	        } catch(e){
+	            return {
+	                result: null,
+                    allLoaded: true,
+                    error: e
+	            }
+	        }
 	    },
 
-	    loadData: function(cube) {
+	    loadData: function(cube, provider, query) {
+            try{
+                if(this.it) this.it.close();
 
+                this.it = cube.queryEngine.query(query, null, provider);
+                this.counter = 0;
+
+                return this.loadMore();
+            } catch(e){
+                return {
+                    result: null,
+                    allLoaded: true,
+                    error: e
+                }
+            }
 	    },
 
 	    loadMore: function(){
-	        var res = [],
-	            max = this.counter + 20,
-	            allLoaded = false;
+	    	function prepareElement(el){
+	    		var nEl = {};
+	    		for(var f in el){
+	    			var val = el[f];
+	    			if(JSB.isObject(val) || JSB.isArray(val)){
+	    				val = JSON.stringify(val, null, 4);
+	    			}
+	    			nEl[f] = val;
+	    		}
+	    		return nEl;
+	    	}
+            try{
+                var res = [],
+                    max = this.counter + 20,
+                    allLoaded = false;
 
-	        while(this.counter < max){
-	            var el = this.it.next();
+                while(this.counter < max){
+                    var el = this.it.next();
 
-	            if(!el) {
-	                allLoaded = true;
-	                break;
-	            }
+                    if(!el) {
+                        allLoaded = true;
+                        break;
+                    }
 
-	            this.counter++;
-	            res.push(el);
-	        }
+                    this.counter++;
+                    res.push(prepareElement(el));
+                }
 
-	        return {
-	            result: res,
-	            allLoaded: allLoaded
-	        };
+                return {
+                    result: res,
+                    allLoaded: allLoaded,
+                    error: null
+                };
+            } catch(e){
+                return {
+                    result: null,
+                     allLoaded: true,
+                     error: e
+                }
+            }
 	    }
 	}
 }

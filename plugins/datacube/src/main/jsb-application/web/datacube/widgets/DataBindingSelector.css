@@ -4,7 +4,7 @@
 	display: inline-block;
 	border: 1px solid rgba(2, 47, 78, 0.2);
     background-color: rgba(24, 108, 138, 0.2);
-    padding: 0 2px;
+    padding: 0 4px;
     border-radius: 6px;
 }
 
@@ -18,9 +18,46 @@
 }
 
 .dataBindingSelector > .placeholder {
-	padding: 2px;
+	padding: 3px 2px;
     color: #6c7786;
     font-size: 10px;
 }
 
 .dataBindingSelector > .binding {}
+
+.dataBindingSelector > .binding > .renderer {
+	display: block;
+}
+
+.dataBindingSelector > .binding > .renderer > .icon {
+	width: 16px;
+	height: 16px;
+	margin-top: -8px;
+}
+
+.dataBindingSelector > .binding > .renderer > .title {
+	padding-left: 20px;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+.dataBindingSelector > .binding > .renderer > .leftParen,
+.dataBindingSelector > .binding > .renderer > .rightParen,
+.dataBindingSelector > .binding > .renderer > .cubeRenderer {
+	vertical-align: middle;
+}
+
+.dataBindingSelector > .binding > .renderer > .leftParen {
+	margin-left: 2px;
+}
+
+.dataBindingSelector > .binding > .renderer > .cubeRenderer > .icon {
+	width: 14px;
+	height: 14px;
+	margin-top: -7px;
+}
+
+.dataBindingSelector > .binding > .renderer > .cubeRenderer > .title {
+	font-size: 10px;
+    padding-left: 20px;
+}

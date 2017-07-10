@@ -3,3 +3,28 @@
     width: 100%;
     overflow: hidden;
 }
+.gridView .errorMessage{
+    position: absolute;
+    top: 25%;
+    left: calc(50% - 200px);
+    background: whitesmoke;
+    border: 2px solid #b7b7b7;
+    border-radius: 4px;
+    padding: 10px;
+    width: 400px;
+}
+.gridView .errorMessage > .errorIcon{
+
+}
+.gridView .errorMessage > .errorTitle{
+    display: block;
+    text-align: center;
+    font-size: 1.2em;
+    color: red;
+    margin-bottom: 5px;
+}
+.gridView .errorMessage > .errorText{
+    color: firebrick;
+    text-align: justify;
+    font-size: 1.1em;
+}
