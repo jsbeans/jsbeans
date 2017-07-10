@@ -152,6 +152,7 @@
 
 	    loadSlice: function(cube, query){
 	        try{
+	        debugger;
                 if(this.it) this.it.close();
 
                 this.it = cube.queryEngine.query(query);
@@ -196,6 +197,7 @@
 	    		}
 	    		return nEl;
 	    	}
+
             try{
                 var res = [],
                     max = this.counter + 20,
@@ -211,6 +213,7 @@
 
                     this.counter++;
                     res.push(prepareElement(el));
+                    //res.push(el);
                 }
 
                 return {

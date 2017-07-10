@@ -52,8 +52,16 @@
 			if(opts && opts['data'] != null && opts['data'] != undefined){
 				this.setData(opts['data']);
 			}
+
+            if(this.options.data){
+                this.setData(this.options.data);
+            }
 //				self.tabView.switchTab(generalTab);
 		},
+
+        options: {
+            data: null
+        },
 		
 		destroy: function(){
 			for(var i in this.embeddedWidgets){

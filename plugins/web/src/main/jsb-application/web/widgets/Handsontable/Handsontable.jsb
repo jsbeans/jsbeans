@@ -1,6 +1,7 @@
 {
 	$name: 'Handsontable',
 	$parent: 'JSB.Widgets.Control',
+	$require: ['JsonView'],
 	$client: {
         _oldScroll:{
             y: 0
@@ -60,7 +61,6 @@
 		columns: [],
 
         handsontable_options: {
-            //data: [[]],
             rowHeaders: true,
             colHeaders: true,
 
@@ -75,8 +75,18 @@
             startCols: 10,
 
             renderAllRows: true,
+            allowEmpty: true,
 
-            stretchH: 'all',    // "last" or "all" or "none"
+            stretchH: 'all',    // "last" or "all" or "none",
+
+            cells: function (row, col, prop) {
+                return {
+                    allowHtml: true,
+                    allowEmpty: true,
+                    renderer: "html"
+                };
+            }
+
         },
 
 		options: {
@@ -110,10 +120,24 @@
                 input = this.restructArray(input);
             }
 
+            input = this.prepareData(input);
+
             this.handsontable.alter('insert_row', row, input.length);
+
             for(var i = 0; i < input.length; i++){
                 for(var j = 0; j < input[i].length; j++){
-                    this.handsontable.setDataAtCell(row + i, j, input[i][j]);
+                /*
+                    if(JSB.isObject(input[i][j]) || JSB.isArray(input[i][j])){
+                        // this.handsontable.setDataAtCell(row + i, j, new JsonView({ data: input[i][j] }).getElement().get(0).outerHTML);
+                        var str = this.shieldArray(data[i][j]);
+                        this.handsontable.setDataAtCell(row + i, j, `#dot <div jsb="JsonView" data="{{=str}}"></div>`);
+
+                        // new JsonView({ data: input[i][j] }).getElement().get(0).outerHTML);
+                    } else {
+                        this.handsontable.setDataAtCell(row + i, j, input[i][j]);
+                    }
+                */
+                this.handsontable.setDataAtCell(row + i, j, input[i][j]);
                 }
             }
 		},
@@ -131,6 +155,7 @@
 		},
 
 		loadData: function(data){
+		    data = this.prepareData(data);
 		    this.handsontable.loadData(data);
 		    this.handsontable.loadData(data);
 		},
@@ -201,6 +226,33 @@
 		    }
 
 		    return newArr;
+		},
+
+		prepareData: function(data){
+            for(var i in data){
+                for(var j in data[i]){
+                    if((JSB.isObject(data[i][j]) && Object.keys(data[i][j]).length === 0) || (JSB.isArray(data[i][j]) && data[i][j].length === 0)){
+                        data[i][j] = " ";
+                        continue;
+                    }
+                    /*
+                    if(JSB.isObject(data[i][j]) || JSB.isArray(data[i][j])){
+                        //data[i][j] = new JsonView({ data: data[i][j] }).getElement().get(0).outerHTML;
+                        //var str = this.shieldArray(data[i][j]);
+                        data[i][j] = `#dot <div jsb="JsonView" data='{{=[data[i][j]]}}'></div>`;
+                    }
+                    */
+                }
+            }
+
+            return data;
+		},
+
+		shieldArray: function(arr){
+		    for(var i in arr){
+		        arr[i] = arr[i].replace(/\"/g, '\\"');
+		    }
+		    return arr;
 		}
 	}
 }

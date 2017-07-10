@@ -70,7 +70,7 @@
 		
 		construct: function(){
 			var slice = this.data.data.slice;
-			
+
 			this.find('.name._dwp_primitiveEditor').jsb().setData(slice.getName());
 			this.find('.queryEditor').jsb().setData(JSON.stringify(slice.getQuery(), null, 4));
 			
@@ -161,13 +161,10 @@
 		
 		apply: function(){
 			// construct response
-			var resp = {
-				name: this.find('.name._dwp_primitiveEditor').jsb().getData().getValue(),
-				query: this.find('.queryEditor').jsb().getData().getValue()
-			};
-			this.data.callback.call(this, resp);
-
-			this.publish('DataCube.CubeEditor.sliceNodeEdit', resp);
+			this.data.callback.call(this, {
+			    name: this.find('.name._dwp_primitiveEditor').jsb().getData().getValue(),
+                query: this.find('.queryEditor').jsb().getData().getValue()
+			});
 
 			$this.close();
 		}
