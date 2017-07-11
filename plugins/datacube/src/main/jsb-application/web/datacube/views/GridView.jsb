@@ -140,7 +140,7 @@
                     return;
                 }
 
-                $this.header = Object.keys(res.result[0]);
+                if(res.result.length !== 0) $this.header = Object.keys(res.result[0]);
 
                 $this.table.loadData(res.result);
 
@@ -188,15 +188,12 @@
 
 	    loadMore: function(){
 	    	function prepareElement(el){
-	    		var nEl = {};
 	    		for(var f in el){
-	    			var val = el[f];
-	    			if(JSB.isObject(val) || JSB.isArray(val)){
-	    				val = JSON.stringify(val, null, 4);
-	    			}
-	    			nEl[f] = val;
+	    		    if(el[f] instanceof Date){
+	    		        el[f] = el[f].toUTCString();
+	    		    }
 	    		}
-	    		return nEl;
+	    		return el;
 	    	}
 
             try{
@@ -213,10 +210,10 @@
                     }
 
                     this.counter++;
-                    //res.push(prepareElement(el));
-                    res.push(el);
+                    res.push(prepareElement(el));
+                    // res.push(el);
                 }
-debugger;
+
                 return {
                     result: res,
                     allLoaded: allLoaded,
