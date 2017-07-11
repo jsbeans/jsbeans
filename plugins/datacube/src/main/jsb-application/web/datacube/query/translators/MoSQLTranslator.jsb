@@ -109,7 +109,7 @@
                     for (var p in exps) if (exps.hasOwnProperty(p)) {
                         var exp = {};
                         exp[p] = exps[p];
-                        var provs = $this._extractUsedProviders(exp, true, false);
+                        var provs = $this._extractUsedProviders(dcQuery, exp, true, false);
                         if (provs.length > 1) {
                             throw new Error('Multiprovider condition not supported: ' + JSON.stringify(exp));
                         }
@@ -181,6 +181,7 @@
                 if (JSB.isString(exp)) {
                     return key ? {name: $this._translateField(dcQuery, exp), alias: key } : $this._translateField(dcQuery, exp);
                 }
+                if (exp.$count) return { type: 'COUNT', expression: translateExpression(null, exp.$count), alias: key }
                 if (exp.$sum && exp.$sum == 1) return { type: 'SUM', expression: '1', alias: key }
                 if (exp.$sum) return { type: 'SUM', expression: translateExpression(null, exp.$sum), alias: key }
 
@@ -204,14 +205,14 @@
             var select = dcQuery.$select;
             var columns = [];
             for (var p in select) if (select.hasOwnProperty(p)) {
-                var provs = this._extractUsedProviders(select[p], false, true);
+                var provs = this._extractUsedProviders(dcQuery, select[p], false, true);
                 if (provs.length > 1) {
                     throw new Error('Multiprovider selection not supported: ' + JSON.stringify(select[p]));
                 }
                 if (provs.length == 0) {
                     // sum:1 - find groupBy provider
                     if (dcQuery.$groupBy && dcQuery.$groupBy[0]) {
-                        var provider = this._extractUsedProviders(dcQuery.$groupBy[0], false, true)[0];
+                        var provider = this._extractUsedProviders(dcQuery, dcQuery.$groupBy[0], false, true)[0];
                         if (provider == this.provider) {
                             columns.push(translateExpression(p, select[p]));
                         }
@@ -246,6 +247,10 @@
         _getCubeFieldProviders: function(field) {
             // return providers of cube field or current provider for join fields
             var providers = [];
+            if (!this.cube.fields[field]) {
+                throw new Error('Cube has no field ' + field);
+            }
+
             var binding = this.cube.fields[field].binding;
             for (var b in binding) {
                 if (binding[b].provider == this.provider) {
@@ -256,25 +261,37 @@
             return providers;
         },
 
-        _extractUsedProviders: function(exp, byKey, byValue){
+        _extractUsedProviders: function(dcQuery, exp, byKey, byValue){
             // input exp - expression with cube fields
             // result - array with providers connected with current expression
             var providers = [];
             if (JSB.isPlainObject(exp)) {
                 for(var p in exp) if (exp.hasOwnProperty(p)) {
                     if (!p.match(/^\$/) && byKey) {
-                        providers = providers.concat(this._getCubeFieldProviders(p));
+                        if (!this.cube.fields[p]) {
+                            // may be alias
+                            providers = providers.concat(
+                                    this._extractUsedProviders(dcQuery, dcQuery.$select[field], false, true));
+                        } else {
+                            providers = providers.concat(this._getCubeFieldProviders(p));
+                        }
                     } else {
-                        providers = providers.concat(this._extractUsedProviders(exp[p], byKey, byValue));
+                        providers = providers.concat(this._extractUsedProviders(dcQuery, exp[p], byKey, byValue));
                     }
                 }
             } else if (JSB.isArray(exp)) {
                 for(var i in exp) {
-                    providers = providers.concat(this._extractUsedProviders(exp[i], byKey, byValue));
+                    providers = providers.concat(this._extractUsedProviders(dcQuery, exp[i], byKey, byValue));
                 }
             } else if (JSB.isString(exp)) {
                 if (!exp.match(/^\$/) && byValue) {
-                    providers = providers.concat(this._getCubeFieldProviders(exp));
+                    if (!this.cube.fields[exp]) {
+                        // may be alias
+                        providers = providers.concat(
+                                this._extractUsedProviders(dcQuery, dcQuery.$select[exp], false, true));
+                    } else {
+                        providers = providers.concat(this._getCubeFieldProviders(exp));
+                    }
                 }
             }
             return providers;
