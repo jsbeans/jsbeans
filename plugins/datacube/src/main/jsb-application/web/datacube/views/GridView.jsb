@@ -212,8 +212,8 @@
                     }
 
                     this.counter++;
-                    res.push(prepareElement(el));
-                    //res.push(el);
+                    //res.push(prepareElement(el));
+                    res.push(el);
                 }
 
                 return {
