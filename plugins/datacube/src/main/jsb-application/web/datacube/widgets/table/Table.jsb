@@ -9,38 +9,34 @@
 	},
 	$scheme: {
 		type: 'group',
-		mandatory: true,
 		items: [{
 			type: 'group',
 			name: 'Строки',
 			binding: 'array',
-			mandatory: true,
 			items: [{
 				name: 'Столбцы',
 				type: 'group',
-				multiple: true,
-				mandatory: true,
+				multiple: 'auto',
 				items: [{
 					name: 'Название',
 					type: 'item',
 					editor: 'string',
-					mandatory: true,
+					value: '$field'
 				},{
 					name: 'Отображение',
 					type: 'select',
-					mandatory: true,
 					items:[{
 						name: 'Поле',
 						type: 'group',
 						items: [{
 							name: 'Источник',
 							type: 'item',
-							mandatory: true,
 							binding: 'field'
 						},{
 							name: 'Задать функцию преобразования типа',
 							type: 'item',
-							editor: 'converter'
+//							editor: 'converter',
+							optional: true
 						}]
 					},{
 						name: 'Виджет',
