@@ -1,7 +1,7 @@
 {
 	$name: 'JSB.DataCube.DataProviderDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable'],
+	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository'],
 	
 	$client: {
 		ready: false,
@@ -38,12 +38,9 @@
 			this.addClass('dataProviderDiagramNode');
 			this.attr('provider', this.provider.getJsb().$name);
 			
-			this.caption = this.$(`#dot
-				<div class="caption">
-					<div class="icon"></div>
-					<div class="name">{{=this.provider.getName()}}</div>
-				</div>
-			`);
+			this.caption = this.$('<div class="caption"></div>');
+			var renderer = RendererRepository.createRendererFor(this.provider.entry);
+			this.caption.append(renderer.getElement());
 			this.body = this.$(`
 				<div class="body">
 					<div class="loading hidden">

@@ -152,7 +152,6 @@
 
 	    loadSlice: function(cube, query){
 	        try{
-	        debugger;
                 if(this.it) this.it.close();
 
                 this.it = cube.queryEngine.query(query);

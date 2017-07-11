@@ -2,6 +2,8 @@
 	$name: 'JSB.DataCube.Model.SqlTable',
 	$parent: 'JSB.Workspace.Entry',
 	
+	descriptor: null,
+	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
 		
