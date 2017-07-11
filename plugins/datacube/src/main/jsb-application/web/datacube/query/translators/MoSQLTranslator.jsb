@@ -76,6 +76,7 @@
             if (dcQuery.$sort) {
                 query.order = this._translateSort(dcQuery);
             }
+            //Log.debug('Translated MoSQL: ' + JSON.stringify(query, 0, 2));
             return query;
         },
 
@@ -177,22 +178,61 @@
         },
 
         _translateColumns: function(dcQuery) {
+            function functionExpression(func, subExp, alias, distinct) {
+                return {
+                    type: func,
+                    expression: subExp,
+                    distinct: distinct,
+                    alias: alias
+                };
+            }
+
             function translateExpression(key, exp) {
                 if (JSB.isString(exp)) {
                     return key ? {name: $this._translateField(dcQuery, exp), alias: key } : $this._translateField(dcQuery, exp);
                 }
-                if (exp.$count) return { type: 'COUNT', expression: translateExpression(null, exp.$count), alias: key }
-                if (exp.$sum && exp.$sum == 1) return { type: 'SUM', expression: '1', alias: key }
-                if (exp.$sum) return { type: 'SUM', expression: translateExpression(null, exp.$sum), alias: key }
 
-                if (exp.$max) return { type: 'MAX', expression: translateExpression(null, exp.$max), alias: key }
-                if (exp.$min) return { type: 'MIN', expression: translateExpression(null, exp.$min), alias: key }
-                if (exp.$avg) return { type: 'AVG', expression: translateExpression(null, exp.$avg), alias: key }
+                if (exp.$distinct) {
+                    var e = translateExpression(null, exp.$distinct);
+                    if (!JSB.isString(e)) {
+                        throw new Error('Operator $distinct support only field value');
+                    }
+                    return 'DISTINCT( ' + e + ' )';
+                }
 
-                if (exp.$array) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$array), alias: key }
-                if (exp.$flatArray) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$flatArray), alias: key }
+                if (exp.$count && exp.$count == 1) return functionExpression('COUNT', '1', key);
+                if (exp.$count)                    return functionExpression('COUNT', translateExpression(null, exp.$count), key);
+                if (exp.$sum && exp.$sum == 1)     return functionExpression('SUM', '1', key);
+                if (exp.$sum)                      return functionExpression('SUM', translateExpression(null, exp.$sum), key);
+
+                if (exp.$max) return functionExpression('MAX', translateExpression(null, exp.$max), key);
+                if (exp.$min) return functionExpression('MIN', translateExpression(null, exp.$min), key);
+                if (exp.$avg) return functionExpression('AVG', translateExpression(null, exp.$avg), key);
+
+                if (exp.$array)     return functionExpression('ARRAY_AGG', translateExpression(null, exp.$array), key);
+                if (exp.$flatArray) return functionExpression('ARRAY_AGG', translateExpression(null, exp.$flatArray), key);
 
                 // { type: 'function', function: 'min', expression: [1, "'foo'"] }
+                if (exp.$gmax) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gmax),
+                    columns:[{ expression: functionExpression('MAX', translateExpression(null, exp.$gmax)) }]
+                }
+                if (exp.$gmin) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gmin),
+                    columns:[{ expression: functionExpression('MIN', translateExpression(null, exp.$gmin)) }]
+                }
+                if (exp.$gcount && exp.$gcount == 1) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gcount),
+                    columns:[{ expression: functionExpression('COUNT', '1') }]
+                }
+                if (exp.$gcount) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gcount),
+                    columns:[{ expression: functionExpression('COUNT', translateExpression(null, exp.$gcount), null) }]
+                }
 
                 if (exp.$toInt) return "CAST(( " + translateExpression(null, exp.$toInt) + " ) as int)"
                 if (exp.$toDouble) return "CAST(( " + translateExpression(null, exp.$toDouble) + " ) as double precision)"
@@ -242,6 +282,12 @@
                 sort.push('"' + this._translateField(dcQuery, field) + '" ' + key);
             }
             return sort;
+        },
+
+        _subQueryTranslateWhere: function(dcQuery, subExpression) {
+            if (!dcQuery.$filter) return null;
+            // todo only subExpression fields
+            return this._translateWhere(dcQuery);
         },
 
         _getCubeFieldProviders: function(field) {
