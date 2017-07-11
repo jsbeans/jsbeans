@@ -22,21 +22,57 @@
 		$require: ['JSB.Widgets.Button', 
 		           'JSB.Widgets.PrimitiveEditor',
 		           'JSB.Widgets.ToolManager',
-		           'JSB.DataCube.Dialogs.WidgetOptionsTool'],
+		           'JSB.DataCube.Dialogs.WidgetOptionsTool',
+		           'JSB.DataCube.Widgets.WidgetSchemeRenderer'],
 		
 		editor: null,
 		widget: null,
+		settingsVisible: false,
 		
 		$constructor: function(){
 			$base();
 			this.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
+			this.settingsContainer = this.$(`#dot
+			<div class="settingsContainer">
+				<div class="header">
+					<div class="caption">Настройки виджета</div>
+					<div class="buttons">
+						<div jsb="JSB.Widgets.Button" 
+							class="roundButton btnOk btn16" 
+							onclick="{{=this.callbackAttr(function(evt){ $this.applySettings(evt); })}}" >
+						</div>
+						<div jsb="JSB.Widgets.Button" 
+							class="roundButton btnCancel btn16" 
+							onclick="{{=this.callbackAttr(function(evt){ $this.closeSettings(); })}}" >
+						</div>
+					</div>
+				</div>
+				
+				<div jsb="JSB.Widgets.ScrollBox"></div>
+
+			</div>`);
+			this.widgetContainer = this.$('<div class="widgetContainer"></div>');
+			this.append(this.widgetContainer);
+			this.append(this.settingsContainer);
+			
+			this.settingsContainer.on({
+				'transitionend': function(evt){
+					var elt = $this.$(evt.currentTarget);
+					if($this.settingsVisible){
+						elt.css('height', 'auto');
+					} else {
+						elt.css('visibility', '');
+					}
+				}
+			});
+			
 			this.ensureSynchronized(function(){
 				$this.setTitle($this.getName());
 				$this.updateTabHeader();
 				JSB.lookup($this.wType, function(WidgetClass){
 					$this.widget = new WidgetClass();
-					$this.append($this.widget);
+					$this.widgetContainer.append($this.widget.getElement());
 				});
 			});
 
@@ -172,6 +208,31 @@
 		
 		showSettings: function(evt){
 			var elt = this.$(evt.currentTarget);
+			
+			var scheme = this.extractWidgetScheme();
+			var scroll = this.settingsContainer.find('div[jsb="JSB.Widgets.ScrollBox"]').jsb();
+			scroll.clear();
+			
+			// TODO: load values from wrapper
+			var values = {};
+			
+			// create scheme renderer
+			this.settingsRenderer = new WidgetSchemeRenderer({
+				scheme: scheme,
+				values: values,
+				wrapper: $this,
+				onChange: function(){
+//					$this.updateButtons();
+				}
+			});
+			scroll.append(this.settingsRenderer);
+			this.settingsVisible = true;
+			this.settingsContainer.css({
+				height: this.getElement().height(),
+				visibility: 'visible'
+			});
+			
+/*			
 			ToolManager.activate({
 				id: 'widgetOptionsTool',
 				cmd: 'show',
@@ -196,9 +257,17 @@
 					debugger;
 				}
 			});
+*/			
 		},
 		
-		
+		closeSettings: function(){
+			this.settingsVisible = false;
+			this.settingsContainer.css('height',this.getElement().height());
+			JSB.defer(function(){
+				$this.settingsContainer.css('height','');
+			}, 0);
+			
+		}
 	},
 	
 	$server: {

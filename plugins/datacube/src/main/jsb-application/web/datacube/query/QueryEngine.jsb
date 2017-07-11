@@ -50,6 +50,29 @@
                     subj1: 'Открытое акционерное общество "Монолит"',
                     subj2: 'Федеральное казенное предприятие "Авангард"'
                 }),
+                this.query({
+                    "$groupBy": [
+                        "Код отрасли"
+                    ],
+                    "$select": {
+                        "gcountAll": {
+                            "$gcount": 1
+                        },
+                        "count": {
+                            "$count": "Код отрасли"
+                        },
+                        "gmax": {
+                            "$gmax": {
+                                "$toInt": "Код отрасли"
+                            }
+                        },
+                        "gcountOtr": {
+                            "$gcount": {
+                                "$distinct": "Код отрасли"
+                            }
+                        }
+                    }
+                }),
 //                //
 //                this.query({
 //                    // produce values with new names from fields or aggregate functions

@@ -76,6 +76,7 @@
             if (dcQuery.$sort) {
                 query.order = this._translateSort(dcQuery);
             }
+            //Log.debug('Translated MoSQL: ' + JSON.stringify(query, 0, 2));
             return query;
         },
 
@@ -109,7 +110,7 @@
                     for (var p in exps) if (exps.hasOwnProperty(p)) {
                         var exp = {};
                         exp[p] = exps[p];
-                        var provs = $this._extractUsedProviders(exp, true, false);
+                        var provs = $this._extractUsedProviders(dcQuery, exp, true, false);
                         if (provs.length > 1) {
                             throw new Error('Multiprovider condition not supported: ' + JSON.stringify(exp));
                         }
@@ -177,21 +178,61 @@
         },
 
         _translateColumns: function(dcQuery) {
+            function functionExpression(func, subExp, alias, distinct) {
+                return {
+                    type: func,
+                    expression: subExp,
+                    distinct: distinct,
+                    alias: alias
+                };
+            }
+
             function translateExpression(key, exp) {
                 if (JSB.isString(exp)) {
                     return key ? {name: $this._translateField(dcQuery, exp), alias: key } : $this._translateField(dcQuery, exp);
                 }
-                if (exp.$sum && exp.$sum == 1) return { type: 'SUM', expression: '1', alias: key }
-                if (exp.$sum) return { type: 'SUM', expression: translateExpression(null, exp.$sum), alias: key }
 
-                if (exp.$max) return { type: 'MAX', expression: translateExpression(null, exp.$max), alias: key }
-                if (exp.$min) return { type: 'MIN', expression: translateExpression(null, exp.$min), alias: key }
-                if (exp.$avg) return { type: 'AVG', expression: translateExpression(null, exp.$avg), alias: key }
+                if (exp.$distinct) {
+                    var e = translateExpression(null, exp.$distinct);
+                    if (!JSB.isString(e)) {
+                        throw new Error('Operator $distinct support only field value');
+                    }
+                    return 'DISTINCT( ' + e + ' )';
+                }
 
-                if (exp.$array) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$array), alias: key }
-                if (exp.$flatArray) return { type: 'ARRAY_AGG', expression: translateExpression(null, exp.$flatArray), alias: key }
+                if (exp.$count && exp.$count == 1) return functionExpression('COUNT', '1', key);
+                if (exp.$count)                    return functionExpression('COUNT', translateExpression(null, exp.$count), key);
+                if (exp.$sum && exp.$sum == 1)     return functionExpression('SUM', '1', key);
+                if (exp.$sum)                      return functionExpression('SUM', translateExpression(null, exp.$sum), key);
+
+                if (exp.$max) return functionExpression('MAX', translateExpression(null, exp.$max), key);
+                if (exp.$min) return functionExpression('MIN', translateExpression(null, exp.$min), key);
+                if (exp.$avg) return functionExpression('AVG', translateExpression(null, exp.$avg), key);
+
+                if (exp.$array)     return functionExpression('ARRAY_AGG', translateExpression(null, exp.$array), key);
+                if (exp.$flatArray) return functionExpression('ARRAY_AGG', translateExpression(null, exp.$flatArray), key);
 
                 // { type: 'function', function: 'min', expression: [1, "'foo'"] }
+                if (exp.$gmax) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gmax),
+                    columns:[{ expression: functionExpression('MAX', translateExpression(null, exp.$gmax)) }]
+                }
+                if (exp.$gmin) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gmin),
+                    columns:[{ expression: functionExpression('MIN', translateExpression(null, exp.$gmin)) }]
+                }
+                if (exp.$gcount && exp.$gcount == 1) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gcount),
+                    columns:[{ expression: functionExpression('COUNT', '1') }]
+                }
+                if (exp.$gcount) return {
+                    type: 'select', table: $this.provider.getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gcount),
+                    columns:[{ expression: functionExpression('COUNT', translateExpression(null, exp.$gcount), null) }]
+                }
 
                 if (exp.$toInt) return "CAST(( " + translateExpression(null, exp.$toInt) + " ) as int)"
                 if (exp.$toDouble) return "CAST(( " + translateExpression(null, exp.$toDouble) + " ) as double precision)"
@@ -204,14 +245,14 @@
             var select = dcQuery.$select;
             var columns = [];
             for (var p in select) if (select.hasOwnProperty(p)) {
-                var provs = this._extractUsedProviders(select[p], false, true);
+                var provs = this._extractUsedProviders(dcQuery, select[p], false, true);
                 if (provs.length > 1) {
                     throw new Error('Multiprovider selection not supported: ' + JSON.stringify(select[p]));
                 }
                 if (provs.length == 0) {
                     // sum:1 - find groupBy provider
                     if (dcQuery.$groupBy && dcQuery.$groupBy[0]) {
-                        var provider = this._extractUsedProviders(dcQuery.$groupBy[0], false, true)[0];
+                        var provider = this._extractUsedProviders(dcQuery, dcQuery.$groupBy[0], false, true)[0];
                         if (provider == this.provider) {
                             columns.push(translateExpression(p, select[p]));
                         }
@@ -243,9 +284,19 @@
             return sort;
         },
 
+        _subQueryTranslateWhere: function(dcQuery, subExpression) {
+            if (!dcQuery.$filter) return null;
+            // todo only subExpression fields
+            return this._translateWhere(dcQuery);
+        },
+
         _getCubeFieldProviders: function(field) {
             // return providers of cube field or current provider for join fields
             var providers = [];
+            if (!this.cube.fields[field]) {
+                throw new Error('Cube has no field ' + field);
+            }
+
             var binding = this.cube.fields[field].binding;
             for (var b in binding) {
                 if (binding[b].provider == this.provider) {
@@ -256,25 +307,37 @@
             return providers;
         },
 
-        _extractUsedProviders: function(exp, byKey, byValue){
+        _extractUsedProviders: function(dcQuery, exp, byKey, byValue){
             // input exp - expression with cube fields
             // result - array with providers connected with current expression
             var providers = [];
             if (JSB.isPlainObject(exp)) {
                 for(var p in exp) if (exp.hasOwnProperty(p)) {
                     if (!p.match(/^\$/) && byKey) {
-                        providers = providers.concat(this._getCubeFieldProviders(p));
+                        if (!this.cube.fields[p]) {
+                            // may be alias
+                            providers = providers.concat(
+                                    this._extractUsedProviders(dcQuery, dcQuery.$select[field], false, true));
+                        } else {
+                            providers = providers.concat(this._getCubeFieldProviders(p));
+                        }
                     } else {
-                        providers = providers.concat(this._extractUsedProviders(exp[p], byKey, byValue));
+                        providers = providers.concat(this._extractUsedProviders(dcQuery, exp[p], byKey, byValue));
                     }
                 }
             } else if (JSB.isArray(exp)) {
                 for(var i in exp) {
-                    providers = providers.concat(this._extractUsedProviders(exp[i], byKey, byValue));
+                    providers = providers.concat(this._extractUsedProviders(dcQuery, exp[i], byKey, byValue));
                 }
             } else if (JSB.isString(exp)) {
                 if (!exp.match(/^\$/) && byValue) {
-                    providers = providers.concat(this._getCubeFieldProviders(exp));
+                    if (!this.cube.fields[exp]) {
+                        // may be alias
+                        providers = providers.concat(
+                                this._extractUsedProviders(dcQuery, dcQuery.$select[exp], false, true));
+                    } else {
+                        providers = providers.concat(this._getCubeFieldProviders(exp));
+                    }
                 }
             }
             return providers;
