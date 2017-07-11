@@ -80,6 +80,8 @@
             manualColumnMove: true,
             manualRowMove: true,
 
+            autoRowSize: true,
+
             // empty table if no data
             startRows: 10,
             startCols: 10,
@@ -126,9 +128,10 @@
 		},
 
 		addArray: function(row, input){
-            if(!JSB().isArray(input[0])){
-                input = this.restructArray(input);
-            }
+		    if(JSB().isArray(input)) this.data = this.data.concat(JSB().clone(input));
+            if(JSB().isObject(input)) this.data = Object.assign(this.data, JSB().clone(input));
+
+		    input = this.prepareData(input);
 
             this.handsontable.alter('insert_row', row, input.length);
 
@@ -148,20 +151,31 @@
 		},
 
 		customRenderer: function(hotInstance, td, row, column, prop, value, cellProperties){
-		debugger;
+		    if(!this.data) return td;
+		    if(typeof prop === 'number') return td;
+
+		    var val = this.data[row][prop];
+
+		    // if(prop == 'meta') debugger;
+
             // empty object or array
-            if((JSB.isObject(value) && Object.keys(value).length === 0) || (JSB.isArray(value) && value.length === 0)){
+            if((JSB.isObject(val) && Object.keys(val).length === 0) || (JSB.isArray(val) && val.length === 0)){
                 td.innerHTML = " ";
                 return td;
             }
 
             // object or array
-            if(JSB.isObject(value) || JSB.isArray(value)){
-                td.innerHTML = `#dot <div jsb="JsonView"></div>`;
-
+            if(JSB.isObject(val) || JSB.isArray(val)){
+                td.innerHTML = `#dot <div jsb="JsonView" collapsed="true"></div>`;
+/*
+                $this.$(td).resize(function(){
+                    $this.find('.ht_clone_left table tbody tr:nth-child(' + (row + 1) + ')').height($this.$(this).height());
+                });
+*/
                 JSB().deferUntil(function(){
-                    var bean = $this.$(td).find('div[jsb="JsonView"]').jsb();
-                    bean.setData(value);
+                    var bean = $this.$(td.innerHTML).jsb();
+                    if(!bean) return;
+                    bean.setData(val);
                 }, function(){
                     return $this.isContentReady();
                 });
@@ -170,7 +184,7 @@
             }
 
             // basic types
-            td.innerHTML = value;
+            td.innerHTML = val;
             return td;
 		},
 
@@ -179,7 +193,8 @@
 		},
 
 		loadData: function(data){
-		debugger;
+		    this.data = JSB().clone(data);
+		    data = this.prepareData(data);
 		    this.handsontable.loadData(data);
 		    this.handsontable.loadData(data);
 		},
@@ -239,17 +254,23 @@
 		},
 
 		// utils
-		restructArray: function(arr){
-		    var newArr = [];
+		prepareData: function(data){
+		    for(var i in data){
+		        for(var j in data[i]){
+                    // empty object or array
+                    if((JSB.isObject(data[i][j]) && Object.keys(data[i][j]).length === 0) || (JSB.isArray(data[i][j]) && data[i][j].length === 0)){
+                        data[i][j] = " ";
+                        continue;
+                    }
 
-		    for(var i in arr){
-		        newArr.push([]);
-		        for(var j in arr[i]){
-		            newArr[i].push(arr[i][j]);
+                    // object or array
+                    if(JSB.isObject(data[i][j]) || JSB.isArray(data[i][j])){
+                        data[i][j] = null;
+                    }
 		        }
 		    }
 
-		    return newArr;
+		    return data;
 		}
 	}
 }

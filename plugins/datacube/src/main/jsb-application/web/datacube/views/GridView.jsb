@@ -15,7 +15,9 @@
                 table: {
                     readOnly: true,
 
-                    manualRowMove: false
+                    manualRowMove: false,
+
+                    // colWidths: 300
                 },
                 callbacks: {
                     createHeader: function(i) { return $this.createHeader(i); },
@@ -214,7 +216,7 @@
                     //res.push(prepareElement(el));
                     res.push(el);
                 }
-
+debugger;
                 return {
                     result: res,
                     allLoaded: allLoaded,

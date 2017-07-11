@@ -60,7 +60,8 @@
 		},
 
         options: {
-            data: null
+            data: null,
+            collapsed: false
         },
 		
 		destroy: function(){
@@ -125,6 +126,9 @@
 				if(deep >= this.defVisibleDeep){
 					expColCls = 'collapsed';
 				}
+				if(this.options.collapsed){
+				    expColCls = 'collapsed';
+				}
 				elt.append('<span class="expandCollapseToggle '+expColCls+'"></span>');
 			}
 			var embeddedField = '_embeddedType_';
@@ -153,6 +157,9 @@
 					if(deep >= self.defVisibleDeep){
 						containerElt.css('display','none');
 					}
+					if($this.options.collapsed){
+                        containerElt.css('display','none');
+                    }
 
 					JSB().lookup(obj[embeddedField], function(ff){
 						var embId = self.embeddedCount;
@@ -171,6 +178,9 @@
 						if(deep >= this.defVisibleDeep){
 							objBody.css('display','none');
 						}
+						if($this.options.collapsed){
+                            objBody.css('display','none');
+                        }
 						elt.append(objBody);
 					}
 					var idElt = this.$('<span class="key"></span>');
@@ -198,11 +208,17 @@
 				if(deep >= this.defVisibleDeep){
 					expColCls = 'collapsed';
 				}
+				if(this.options.collapsed){
+                    expColCls = 'collapsed';
+                }
 				elt.append('<span class="expandCollapseToggle '+expColCls+'"></span>');
 				var objBody = this.$('<ul class="objBody"></ul>');
 				if(deep >= this.defVisibleDeep){
 					objBody.css('display','none');
 				}
+				if($this.options.collapsed){
+                    objBody.css('display','none');
+                }
 				for(var i = 0; i < obj.length; i++ ){
 					var itemElt = this.$('<li></li>');
 					objBody.append(itemElt);
