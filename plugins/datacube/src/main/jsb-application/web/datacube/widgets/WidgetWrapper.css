@@ -28,4 +28,44 @@
 
 
 
-.widgetWrapper {}
+.widgetWrapper {
+	position: relative;
+	box-sizing: border-box;
+}
+
+.widgetWrapper > .settingsContainer {
+	position: absolute;
+	z-index: 1;
+	overflow: hidden;
+	opacity: 0.9;
+	top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px;
+    height: 0;
+    box-sizing: border-box;
+    background-color: #f5efd6;
+    transition: height 300ms;
+    visibility: hidden;
+}
+
+.widgetWrapper > .settingsContainer > .header {
+	position: relative;
+	height: 30px;
+}
+
+.widgetWrapper > .settingsContainer > .header > .buttons {
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+.widgetWrapper > .settingsContainer > div[jsb="JSB.Widgets.ScrollBox"] {
+	height: calc(100% - 30px);
+}
+
+.widgetWrapper > .widgetContainer {
+	width: 100%;
+	height: 100%;
+}

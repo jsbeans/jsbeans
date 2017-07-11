@@ -98,6 +98,9 @@
 			
 			this.bodyElt = this.$('<div class="body"></div>');
 			this.append(this.bodyElt);
+			if(this.scheme.multiple){
+				this.bodyElt.sortable();
+			}
 
 			
 			function fillGroupItems(groupIdx, binding){
