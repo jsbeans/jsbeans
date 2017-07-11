@@ -21,6 +21,7 @@
 			this.wrapper = opts.wrapper;
 			this.tool = opts.tool;
 			this.binding = opts.binding;
+			this.supply = opts.supply;
 			this.addClass('widgetSchemeRenderer');
 			this.loadCss('WidgetSchemeRenderer.css');
 			this.update();
@@ -57,6 +58,10 @@
 		
 		constructGroup: function(){
 			this.attr('entry', 'group');
+			if(this.scheme.binding){
+				this.addClass('hasBinding');
+			}
+
 			if(this.options.showHeader && this.scheme.name){
 				this.addClass('hasHeader');
 				var header = this.$('<div class="header"></div>');
@@ -72,12 +77,12 @@
 				if(this.scheme.binding){
 					if(this.scheme.binding == 'array'){
 						this.bindingSelector = new DataBindingSelector({
-							scheme: this.scheme,
-							values: this.values,
+							scope: $this.binding,
+							value: $this.values.binding,
 							wrapper: this.wrapper,
 							onChange: function(){
-								$this.binding = $this.bindingSelector.getDataScheme();
-								fillGroup();
+								$this.values.binding = this.getDataScheme();
+								fillGroup(this.getDataScheme());
 							}
 						});
 						header.append(this.bindingSelector.getElement());
@@ -103,10 +108,7 @@
 			}
 
 			
-			function fillGroupItems(groupIdx, binding){
-				if(!binding){
-					binding = $this.binding;
-				}
+			function fillGroupItems(groupIdx, binding, supply){
 				var ul = $this.$('<div class="items"></div>');
 				$this.bodyElt.append(ul);
 				$this.values.used = true;
@@ -126,7 +128,8 @@
 						values: values,
 						wrapper: $this.wrapper,
 						tool: $this.tool,
-						binding: binding,
+						binding: binding || $this.binding,
+						supply: supply || $this.supply,
 						onChange: $this.options.onChange,
 						onRemove: function(){
 							values.used = false;
@@ -152,43 +155,47 @@
 
 			}
 			
-			function fillGroup(){
+			function fillGroup(childBinding){
 				if(!$this.values.binding && $this.scheme.binding){
-					$this.values.binding = $this.binding;
+					$this.values.binding = childBinding;
 				}
 				if($this.values && $this.values.groups && $this.values.groups.length > 0){
 					for(var i = 0; i < $this.values.groups.length; i++){
-						fillGroupItems(i);
+						fillGroupItems(i, childBinding);
 					}
 				} else {
 					if($this.scheme.multiple == 'auto'){
 						var record = null;
-						if($this.binding.type == 'array' && $this.binding.arrayType.type == 'object'){
-							record = $this.binding.arrayType.record;
-						} else if($this.binding.type == 'object'){
-							record = $this.binding.record;
+						if(childBinding.type == 'array' && childBinding.arrayType.type == 'object'){
+							record = childBinding.arrayType.record;
+						} else if(childBinding.type == 'object'){
+							record = childBinding.record;
 						}
 						if(record){
 							var fieldArr = Object.keys(record);
 							for(var i = 0; i < fieldArr.length; i++){
-								fillGroupItems(i, record[fieldArr[i]]);
+								fillGroupItems(i, childBinding, record[fieldArr[i]]);
 							}
 						}
 					} else {
-						fillGroupItems(0);
+						fillGroupItems(0, childBinding);
 					}
 				}
 			}
 			
-			if(!$this.scheme.binding || $this.bindingSelector.isFilled()){
-				fillGroup();
+			if(!$this.scheme.binding){
+				fillGroup($this.binding);
+			} else if($this.bindingSelector && $this.bindingSelector.isFilled()){
+				fillGroup($this.bindingSelector.getDataScheme());
 			}
-			
 		},
 		
 		constructItem: function(){
 			this.attr('entry', 'item');
-			if(this.options.showHeader){
+			if(this.scheme.binding){
+				this.addClass('hasBinding');
+			}
+			if(this.options.showHeader && this.scheme.name){
 				var header = this.$('<div class="header"></div>');
 				this.append(header);
 				
@@ -269,11 +276,11 @@
 				}
 			}
 */			
-			function appendEditor(value){
+			function appendEditor(value, binding){
 				var opts = {
 					tool: $this.tool,
 					onChange: function(){
-						collectDataFromEditors();
+//						collectDataFromEditors();
 					}
 				};
 				if($this.editorOptions){
@@ -286,6 +293,18 @@
 				var valContainer = $this.$('<div class="valueContainer"></div>');
 				valElt.append(valContainer);
 				valContainer.append(editor.getElement());
+				
+				if($this.scheme.binding == 'field'){
+					var bindingSelector = new DataBindingSelector({
+						scope: $this.binding,
+						value: binding,
+						wrapper: $this.wrapper,
+						
+						onChange: function(){
+						}
+					});
+					valContainer.append(bindingSelector.getElement());
+				}
 				
 				if($this.options.optional || $this.scheme.multiple){
 					var removeButton = new Button({
@@ -315,7 +334,7 @@
 				return editor;
 			}
 			
-			if($this.scheme.editor){
+			if($this.scheme.itemType){
 				lookupItemEditor(function(editorCls, options){
 					$this.editorCls = editorCls;
 					$this.editorOptions = options;
@@ -329,11 +348,11 @@
 					if(values.length == 0){
 						// create empty editor
 						var value = null;
-						if($this.scheme.value){
-							value = $this.scheme.value;
+						if($this.scheme.itemValue){
+							value = $this.scheme.itemValue;
 						}
-						if(value == '$field' && $this.binding && $this.binding.field){
-							value = $this.binding.field;
+						if(value == '$field' && $this.supply && $this.supply.field){
+							value = $this.supply.field;
 						}
 						appendEditor(value);
 					} else {
@@ -379,6 +398,8 @@
 					values: $this.values.items[idx],
 					wrapper: $this.wrapper,
 					tool: $this.tool,
+					binding: $this.binding,
+					supply: $this.supply,
 					showHeader: false,
 					onChange: $this.options.onChange
 				});

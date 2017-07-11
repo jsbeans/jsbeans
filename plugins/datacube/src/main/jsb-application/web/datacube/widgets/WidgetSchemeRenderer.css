@@ -92,3 +92,9 @@
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer {}
+
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > div {
+	vertical-align: middle;
+}
+
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .dataBindingSelector {}
