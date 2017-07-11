@@ -9,6 +9,13 @@
 			$base(entry, opts);
 			this.addClass('sqlTableRenderer');
 			this.loadCss('SqlTableRenderer.css');
+			this.ensureSynchronized(function(){
+				var e = $this.getEntry();
+				if(e.descriptor.isView){
+					$this.addClass('view');
+				}
+				
+			});
 		}
 	},
 	

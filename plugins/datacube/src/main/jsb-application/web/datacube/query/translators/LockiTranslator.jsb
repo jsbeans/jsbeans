@@ -26,7 +26,7 @@
 		    return {
 		        next: function(){
                     if (i < result.length) {
-                        return result[i];
+                        return result[i++];
                     }
                     return null;
 		        },

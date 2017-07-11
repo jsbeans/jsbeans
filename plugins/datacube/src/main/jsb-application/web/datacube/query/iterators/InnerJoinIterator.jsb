@@ -23,7 +23,7 @@
                    var binding = this.cube.fields[field].binding;
                    if (binding.length > 1) {
                        for(var b in binding) {
-                           if (binding[b].provider == this.iterators[i].getDataProvider()) {
+                           if (this.iterators[i].getDataProviders().indexOf(binding[b].provider) != -1) {
                                 if (!this.dcQuery.$select[field]){
                                     this.dcQuery.$select[field] = binding[b].field;
                                 }
@@ -138,17 +138,17 @@
 		},
 
 		getLeftConditionFieldValues: function(i) {
-            var rightProvider = this.iterators[i].getDataProvider();
+            var rightProviders = this.iterators[i].getDataProviders();
             var leftCValues = {};
             for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
                 for (var ii = i-1; ii >= 0; ii--) {
-                    var leftProvider = this.iterators[ii].getDataProvider();
+                    var leftProviders = this.iterators[ii].getDataProviders();
                     var binding = this.cube.fields[field].binding;
                     var leftMatched = false;
                     var rightMatched = false;
                     for(var b in binding) {
-                        leftMatched = leftMatched || binding[b].provider == leftProvider;
-                        rightMatched = rightMatched || binding[b].provider == rightProvider;
+                        leftMatched = leftMatched || leftProviders.indexOf(binding[b].provider) != -1 ;
+                        rightMatched = rightMatched || rightProviders.indexOf(binding[b].provider) != -1;
                     }
                     if (leftMatched && rightMatched) {
                         leftCValues[field] = this.values[ii][field];

@@ -39,6 +39,7 @@
 	background: -ms-linear-gradient(top, #adc8e2 0%, #86b1d4 60%, #4489d0 100%);
 }
 
+/*
 .dataProviderDiagramNode > .caption > .icon {
 	position: absolute;
 	width: 20px;
@@ -54,6 +55,15 @@
     box-sizing: border-box;
     padding-top: 2px;
 }
+*/
+
+.dataProviderDiagramNode > .caption > .renderer {
+	padding-bottom: 1px;
+}
+
+.dataProviderDiagramNode > .caption > .renderer > .icon {}
+
+.dataProviderDiagramNode > .caption > .renderer > .title {}
 
 .dataProviderDiagramNode > .gripper {
 	position: absolute;

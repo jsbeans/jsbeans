@@ -62,25 +62,26 @@
 				var header = this.$('<div class="header"></div>');
 				this.append(header);
 				
-				if(this.scheme.mandatory){
-					// show simple caption
-					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
-				} else {
+				if(this.scheme.optional){
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+				} else {
+					// show simple caption
+					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
 				}
 				if(this.scheme.binding){
-					this.bindingSelector = new DataBindingSelector({
-						scheme: this.scheme,
-						values: this.values,
-						wrapper: this.wrapper,
-						onChange: function(){
-							$this.binding = $this.bindingSelector.getDataScheme();
-							debugger;
-							fillGroup();
-						}
-					});
-					header.append(this.bindingSelector.getElement());
+					if(this.scheme.binding == 'array'){
+						this.bindingSelector = new DataBindingSelector({
+							scheme: this.scheme,
+							values: this.values,
+							wrapper: this.wrapper,
+							onChange: function(){
+								$this.binding = $this.bindingSelector.getDataScheme();
+								fillGroup();
+							}
+						});
+						header.append(this.bindingSelector.getElement());
+					} 
 				}
 				if(this.scheme.multiple){
 					this.addClass('hasMultiple');
@@ -99,7 +100,10 @@
 			this.append(this.bodyElt);
 
 			
-			function fillGroupItems(groupIdx){
+			function fillGroupItems(groupIdx, binding){
+				if(!binding){
+					binding = $this.binding;
+				}
 				var ul = $this.$('<div class="items"></div>');
 				$this.bodyElt.append(ul);
 				$this.values.used = true;
@@ -119,7 +123,7 @@
 						values: values,
 						wrapper: $this.wrapper,
 						tool: $this.tool,
-						binding: $this.binding,
+						binding: binding,
 						onChange: $this.options.onChange,
 						onRemove: function(){
 							values.used = false;
@@ -146,15 +150,30 @@
 			}
 			
 			function fillGroup(){
-				if(!$this.values.binding && $this.scheme.binding && $this.bindingSelector.isFilled()){
-					$this.values.binding = $this.bindingSelector.getDataScheme();
+				if(!$this.values.binding && $this.scheme.binding){
+					$this.values.binding = $this.binding;
 				}
 				if($this.values && $this.values.groups && $this.values.groups.length > 0){
 					for(var i = 0; i < $this.values.groups.length; i++){
 						fillGroupItems(i);
 					}
 				} else {
-					fillGroupItems(0);
+					if($this.scheme.multiple == 'auto'){
+						var record = null;
+						if($this.binding.type == 'array' && $this.binding.arrayType.type == 'object'){
+							record = $this.binding.arrayType.record;
+						} else if($this.binding.type == 'object'){
+							record = $this.binding.record;
+						}
+						if(record){
+							var fieldArr = Object.keys(record);
+							for(var i = 0; i < fieldArr.length; i++){
+								fillGroupItems(i, record[fieldArr[i]]);
+							}
+						}
+					} else {
+						fillGroupItems(0);
+					}
 				}
 			}
 			
@@ -170,15 +189,16 @@
 				var header = this.$('<div class="header"></div>');
 				this.append(header);
 				
-				if(this.scheme.mandatory){
-					// show simple caption
-					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
-				} else {
+				if(this.scheme.optional){
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+				} else {
+					// show simple caption
+					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
 				}
 				
 				if(this.scheme.multiple){
+					this.addClass('hasMultiple');
 					// create append button
 					var btnAdd = new Button({
 						cssClass: 'roundButton btn10 btnCreate',
@@ -191,22 +211,24 @@
 			}
 			var valElt = this.$('<div class="value"></div>');
 			this.append(valElt);
-/*			
+			
 			function lookupItemEditor(callback){
-				if($this.data.editor){
-					if($jsb.isString($this.data.editor)){
-						$jsb.lookup($this.data.editor, function(cls){
-							callback(cls, $this.data.options);
+				if($this.scheme.editor){
+					if($this.scheme.editor == 'string'){
+						callback(PrimitiveEditor, $this.scheme.options);
+					} else if($jsb.isString($this.scheme.editor)){
+						$jsb.lookup($this.scheme.editor, function(cls){
+							callback(cls, $this.scheme.options);
 						});
-					} else if($jsb.isFunction($this.data.editor)){
-						var cls = $this.data.editor;
-						callback(cls, $this.data.options);
+					} else if($jsb.isFunction($this.scheme.editor)){
+						var cls = $this.scheme.editor;
+						callback(cls, $this.scheme.options);
 					}
 				} else {
-					callback(PrimitiveEditor, $this.data.options);
+					callback(PrimitiveEditor, $this.scheme.options);
 				}
 			}
-			
+/*			
 			function updateRemoveButtonsState(){
 				var valContainers = $this.find('.value > .valueContainer');
 				if($this.options.optional){
@@ -243,14 +265,10 @@
 					$this.options.onChange.call($this, $this.data.value);
 				}
 			}
-			
+*/			
 			function appendEditor(value){
 				var opts = {
-					ontology: $this.ontology,
-					diagram: $this.diagram,
-					node: $this.node,
 					tool: $this.tool,
-					entity: $this.entity,
 					onChange: function(){
 						collectDataFromEditors();
 					}
@@ -266,12 +284,12 @@
 				valElt.append(valContainer);
 				valContainer.append(editor.getElement());
 				
-				if($this.options.optional || $this.data.multiple){
+				if($this.options.optional || $this.scheme.multiple){
 					var removeButton = new Button({
 						cssClass: 'roundButton btn10 btnCancel',
 						tooltip: 'Удалить',
 						onClick: function(){
-							valContainer.remove();
+/*							valContainer.remove();
 							removeButton.destroy();
 							editor.destroy();
 							updateRemoveButtonsState();
@@ -279,12 +297,12 @@
 							if(valContainers.length == 0 && $this.options.onRemove){
 								$this.options.onRemove();
 							}
-							collectDataFromEditors();
+							collectDataFromEditors();*/
 						}
 					});
 					
 					valContainer.append(removeButton.getElement());
-					updateRemoveButtonsState();
+//					updateRemoveButtonsState();
 				}
 				
 				if(value){
@@ -294,26 +312,35 @@
 				return editor;
 			}
 			
-			lookupItemEditor(function(editorCls, options){
-				$this.editorCls = editorCls;
-				$this.editorOptions = options;
-				var values = $this.data.value;
-				if(!values){
-					values = [];
-				}
-				if(!$jsb.isArray(values)){
-					values = [values];
-				}
-				if(values.length == 0){
-					// create empty editor
-					appendEditor();
-				} else {
-					for(var i = 0; i < values.length; i++){
-						appendEditor(values[i]);
+			if($this.scheme.editor){
+				lookupItemEditor(function(editorCls, options){
+					$this.editorCls = editorCls;
+					$this.editorOptions = options;
+					var values = $this.values.values;
+					if(!values){
+						values = [];
 					}
-				}
-			});
-			*/
+					if(!$jsb.isArray(values)){
+						values = [values];
+					}
+					if(values.length == 0){
+						// create empty editor
+						var value = null;
+						if($this.scheme.value){
+							value = $this.scheme.value;
+						}
+						if(value == '$field' && $this.binding && $this.binding.field){
+							value = $this.binding.field;
+						}
+						appendEditor(value);
+					} else {
+						for(var i = 0; i < values.length; i++){
+							appendEditor(values[i]);
+						}
+					}
+				});
+			}
+			
 		},
 		
 		constructSelect: function(){
@@ -360,12 +387,12 @@
 			var header = this.$('<div class="header"></div>');
 			this.append(header);
 			
-			if(this.scheme.mandatory){
-				// show simple caption
-				header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
-			} else {
+			if(this.scheme.optional){
 				// show checkbox caption
 				header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+			} else {
+				// show simple caption
+				header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
 			}
 			
 			if(this.scheme.multiple){
