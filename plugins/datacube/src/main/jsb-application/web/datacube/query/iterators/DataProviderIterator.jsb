@@ -30,8 +30,8 @@
 //            }
 		},
 
-		getDataProvider: function(){
-		    return this.provider;
+		getDataProviders: function(){
+		    return [this.provider];
 		},
 
 		iterate: function(dcQuery, params){

@@ -226,9 +226,9 @@
         },
 
         _translateGroupBy: function(dcQuery) {
-            var groupBy = dcQuery.$groupBy;
-            for(var i in groupBy) {
-                groupBy[i] = this._translateField(dcQuery, groupBy[i]);
+            var groupBy = [];
+            for(var i in dcQuery.$groupBy) {
+                groupBy.push(this._translateField(dcQuery, dcQuery.$groupBy[i]));
             }
             return groupBy;
         },
