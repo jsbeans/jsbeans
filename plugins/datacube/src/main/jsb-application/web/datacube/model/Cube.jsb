@@ -33,8 +33,8 @@
 		dataProviderEntries: {},
 		dataProviderFields: {},
 		dataProviderPositions: {},
-		fields: {},
 		fieldOrder: [],
+		fields: {},
 		slices: {},
 		slicePositions: {},
 		nodePosition: null,
@@ -116,6 +116,7 @@
 						this.slicePositions[sDesc.id] = sDesc.position;
 						var slice = this.workspace.entry(sDesc.id);
 						slice.setQuery(sDesc.query);
+						slice.setQueryParams(sDesc.queryParams);
 						this.slices[sDesc.id] = slice;
 					}
 					
@@ -202,6 +203,7 @@
 					id: sId,
 					name: this.slices[sId].getName(),
 					query: this.slices[sId].getQuery(),
+					queryParams: this.slices[sId].getQueryParams(),
 					position: this.slicePositions[sId]
 				}
 				snapshot.slices.push(sDesc);
@@ -425,6 +427,9 @@
 			this.renameSlice(sId, desc.name);
 			if(desc.query){
 				slice.setQuery(desc.query);
+			}
+			if(desc.queryParams){
+			    slice.setQueryParams(desc.queryParams);
 			}
 			this.store();
 			this.doSync();

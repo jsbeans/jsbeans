@@ -39,6 +39,10 @@
 				<div jsb="JSB.Widgets.GroupBox" caption="Текст запроса">
 					<div jsb="JSB.Widgets.MultiEditor" class="queryEditor" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
 				</div>
+
+				<div jsb="JSB.Widgets.GroupBox" caption="Параметры запроса">
+                    <div jsb="JSB.Widgets.MultiEditor" class="queryParameters" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
+                </div>
 				
 				<div class="buttons">
 					<div 
@@ -72,7 +76,27 @@
 			var slice = this.data.data.slice;
 
 			this.find('.name._dwp_primitiveEditor').jsb().setData(slice.getName());
-			this.find('.queryEditor').jsb().setData(JSON.stringify(slice.getQuery(), null, 4));
+			this.find('.queryParameters').jsb().setData(JSON.stringify(slice.getQueryParams(), null, 4));
+
+			var query = slice.getQuery();
+
+            if(!query || Object.keys(query).length == 0){
+                query = {
+                    $select: {}
+                }
+
+                slice.cube.server().load(true, function(desc){
+                    if(!desc) return;
+
+                    for(var i in desc.fields){
+                        query.$select[i] = i;
+                    }
+
+                    $this.find('.queryEditor').jsb().setData(JSON.stringify(query, null, 4));
+                });
+            } else {
+                this.find('.queryEditor').jsb().setData(JSON.stringify(query, null, 4));
+            }
 			
 /*			
 			var node = this.data.data.node;
@@ -163,7 +187,8 @@
 			// construct response
 			this.data.callback.call(this, {
 			    name: this.find('.name._dwp_primitiveEditor').jsb().getData().getValue(),
-                query: this.find('.queryEditor').jsb().getData().getValue()
+                query: this.find('.queryEditor').jsb().getData().getValue(),
+                queryParams: this.find('.queryParameters').jsb().getData().getValue()
 			});
 
 			$this.close();
