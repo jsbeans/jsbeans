@@ -122,6 +122,7 @@
 					
 				}
 				this.loaded = true;
+				this.doSync();
 //this.queryEngine.selftTest(); // TODO: remove test
 			}
 			

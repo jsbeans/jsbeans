@@ -69,24 +69,23 @@
 				
 				if(this.scheme.optional){
 					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
+					this.values.used = true;
 				}
-				if(this.scheme.binding){
-					if(this.scheme.binding == 'array'){
-						this.bindingSelector = new DataBindingSelector({
-							scope: $this.binding,
-							value: $this.values.binding,
-							wrapper: this.wrapper,
-							onChange: function(){
-								$this.values.binding = this.getDataScheme();
-								fillGroup(this.getDataScheme());
-							}
-						});
-						header.append(this.bindingSelector.getElement());
-					} 
+				if((this.scheme.binding == 'array' || this.scheme.binding == 'record') && !this.binding){
+					this.bindingSelector = new DataBindingSelector({
+						scope: $this.binding,
+						value: $this.values.binding,
+						wrapper: this.wrapper,
+						onChange: function(){
+							$this.values.binding = this.getDataScheme();
+							fillGroup(this.getDataScheme());
+						}
+					});
+					header.append(this.bindingSelector.getElement());
 				}
 				if(this.scheme.multiple){
 					this.addClass('hasMultiple');
@@ -187,6 +186,8 @@
 				fillGroup($this.binding);
 			} else if($this.bindingSelector && $this.bindingSelector.isFilled()){
 				fillGroup($this.bindingSelector.getDataScheme());
+			} else if($this.binding){
+				fillGroup($this.binding);
 			}
 		},
 		
@@ -276,9 +277,10 @@
 				}
 			}
 */			
-			function appendEditor(value, binding){
+			function appendEditor(valueDesc){
 				var opts = {
 					tool: $this.tool,
+					placeholder: 'Задайте константу',
 					onChange: function(){
 //						collectDataFromEditors();
 					}
@@ -288,6 +290,7 @@
 				}
 				var editorCls = $this.editorCls;
 				var editor = new editorCls(opts);
+				editor.addClass('valueEditor');
 				$this.renderers.push(editor);
 				
 				var valContainer = $this.$('<div class="valueContainer"></div>');
@@ -297,12 +300,17 @@
 				if($this.scheme.binding == 'field'){
 					var bindingSelector = new DataBindingSelector({
 						scope: $this.binding,
-						value: binding,
+						value: valueDesc.binding || $this.supply,
 						wrapper: $this.wrapper,
 						
 						onChange: function(){
+							valueDesc.binding = this.getDataScheme();
+							if(valueDesc.binding){
+								valContainer.addClass('isBound');
+							}
 						}
 					});
+					valContainer.append('<div class="separator">или</div>');
 					valContainer.append(bindingSelector.getElement());
 				}
 				
@@ -327,8 +335,8 @@
 //					updateRemoveButtonsState();
 				}
 				
-				if(value){
-					editor.setData(value, true);
+				if(JSB.isDefined(valueDesc.value)){
+					editor.setData(valueDesc.value, true);
 				}
 				
 				return editor;
@@ -338,26 +346,27 @@
 				lookupItemEditor(function(editorCls, options){
 					$this.editorCls = editorCls;
 					$this.editorOptions = options;
-					var values = $this.values.values;
-					if(!values){
-						values = [];
+					if(!$this.values.values){
+						$this.values.values = [];
 					}
-					if(!$jsb.isArray(values)){
-						values = [values];
-					}
-					if(values.length == 0){
+					
+					if($this.values.values.length == 0){
 						// create empty editor
 						var value = null;
-						if($this.scheme.itemValue){
+						if(JSB.isDefined($this.scheme.itemValue)){
 							value = $this.scheme.itemValue;
 						}
 						if(value == '$field' && $this.supply && $this.supply.field){
 							value = $this.supply.field;
 						}
-						appendEditor(value);
+						$this.values.values[0] = {
+							value: value,
+							binding: null
+						};
+						appendEditor($this.values.values[0]);
 					} else {
-						for(var i = 0; i < values.length; i++){
-							appendEditor(values[i]);
+						for(var i = 0; i < $this.values.values.length; i++){
+							appendEditor($this.values.values[i]);
 						}
 					}
 				});
