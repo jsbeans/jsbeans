@@ -167,11 +167,7 @@
             // object or array
             if(JSB.isObject(val) || JSB.isArray(val)){
                 td.innerHTML = `#dot <div jsb="JsonView" collapsed="true"></div>`;
-/*
-                $this.$(td).resize(function(){
-                    $this.find('.ht_clone_left table tbody tr:nth-child(' + (row + 1) + ')').height($this.$(this).height());
-                });
-*/
+
                 JSB().deferUntil(function(){
                     var bean = $this.$(td.innerHTML).jsb();
                     if(!bean) return;

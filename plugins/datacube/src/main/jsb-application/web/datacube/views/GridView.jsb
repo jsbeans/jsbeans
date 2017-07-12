@@ -13,11 +13,10 @@
 
             this.table = new Handsontable({
                 table: {
+                    rowHeaders: false,
                     readOnly: true,
-
                     manualRowMove: false,
-
-                    // colWidths: 300
+                    colWidths: 300
                 },
                 callbacks: {
                     createHeader: function(i) { return $this.createHeader(i); },
@@ -190,7 +189,7 @@
 	    	function prepareElement(el){
 	    		for(var f in el){
 	    		    if(el[f] instanceof Date){
-	    		        el[f] = el[f].toUTCString();
+	    		        el[f] = el[f].toLocaleDateString();
 	    		    }
 	    		}
 	    		return el;
