@@ -20,8 +20,8 @@
 				items: [{
 					name: 'Название',
 					type: 'item',
-					editor: 'string',
-					value: '$field'
+					itemType: 'string',
+					itemValue: '$field'
 				},{
 					name: 'Отображение',
 					type: 'select',
@@ -29,9 +29,10 @@
 						name: 'Поле',
 						type: 'group',
 						items: [{
-							name: 'Источник',
+							name: 'Значение',
 							type: 'item',
-							binding: 'field'
+							binding: 'field',
+							itemType: 'any'
 						},{
 							name: 'Задать функцию преобразования типа',
 							type: 'item',

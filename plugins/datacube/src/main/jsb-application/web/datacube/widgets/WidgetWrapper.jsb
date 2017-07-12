@@ -36,7 +36,10 @@
 			this.settingsContainer = this.$(`#dot
 			<div class="settingsContainer">
 				<div class="header">
-					<div class="caption">Настройки виджета</div>
+					<div class="caption">
+						<div class="icon"></div>
+						<div class="title" jsb="JSB.Widgets.PrimitiveEditor"></div>
+					</div>
 					<div class="buttons">
 						<div jsb="JSB.Widgets.Button" 
 							class="roundButton btnOk btn16" 
@@ -49,7 +52,7 @@
 					</div>
 				</div>
 				
-				<div jsb="JSB.Widgets.ScrollBox"></div>
+				<div class="scroll" jsb="JSB.Widgets.ScrollBox"></div>
 
 			</div>`);
 			this.widgetContainer = this.$('<div class="widgetContainer"></div>');
@@ -210,8 +213,11 @@
 			var elt = this.$(evt.currentTarget);
 			
 			var scheme = this.extractWidgetScheme();
-			var scroll = this.settingsContainer.find('div[jsb="JSB.Widgets.ScrollBox"]').jsb();
+			var scroll = this.settingsContainer.find('> .scroll').jsb();
 			scroll.clear();
+			
+			var titleEditor = this.settingsContainer.find('> .header > .caption > .title').jsb();
+			titleEditor.setData(this.getName());
 			
 			// TODO: load values from wrapper
 			var values = {};

@@ -11,16 +11,21 @@
 			$base(opts);
 			this.addClass('dataBindingSelector');
 			this.loadCss('DataBindingSelector.css');
-			this.scheme = opts.scheme;
-			this.values = opts.values;
 			this.wrapper = opts.wrapper;
 			
-			this.placeholderElt = this.$('<div class="placeholder">Перетащите сюда источник</div>');
-			this.append(this.placeholderElt);
-			this.bindingElt = this.$('<div class="binding hidden"></div>');
-			this.append(this.bindingElt);
-			
-			this.setupDroppable();
+			if(!this.options.scope){
+				this.placeholderElt = this.$('<div class="placeholder">Перетащите сюда источник</div>');
+				this.append(this.placeholderElt);
+				this.bindingElt = this.$('<div class="binding hidden"></div>');
+				this.append(this.bindingElt);
+				
+				this.setupDroppable();
+			} else {
+				this.placeholderElt = this.$('<div class="placeholder">Выберите поле</div>');
+				this.append(this.placeholderElt);
+				this.bindingElt = this.$('<div class="binding hidden"></div>');
+				this.append(this.bindingElt);
+			}
 		},
 		
 		setupDroppable: function(){
@@ -76,7 +81,6 @@
 		},
 		
 		setSource: function(entry){
-			this.values.source = entry.getLocalId();
 			this.bindingElt.empty().append(RendererRepository.createRendererFor(entry, {showCube: true}).getElement());
 			this.placeholderElt.addClass('hidden');
 			this.bindingElt.removeClass('hidden');
