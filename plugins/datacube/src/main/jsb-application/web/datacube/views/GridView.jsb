@@ -15,9 +15,10 @@
             this.table = new Handsontable({
                 table: {
                     rowHeaders: false,
-                    readOnly: true,
+                    readOnly: false,
                     manualRowMove: false,
-                    colWidths: 300
+                    //colWidths: 300,
+                    //stretchH: 'none'
                 },
                 callbacks: {
                     createHeader: function(i) { return $this.createHeader(i); },
@@ -139,7 +140,7 @@
             if(!preparedQuery || Object.keys(preparedQuery).length == 0){
             	preparedQuery = { $select: {}};
             }
-            $this.server().loadSlice( { cube: source.cube, query: preparedQuery, id: this.curLoadId }, function(res){
+            $this.server().loadSlice( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, id: this.curLoadId }, function(res){
                 if(res.id !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
@@ -167,11 +168,13 @@
 	        try{
                 if(this.it) this.it.close();
 
-                this.it = obj.cube.queryEngine.query(obj.query);
+                this.it = obj.cube.queryEngine.query(obj.query, obj.queryParams);
                 this.counter = 0;
 
                 return this.loadMore(obj.id);
 	        } catch(e){
+	            JSB().getLogger().error(e);
+
 	            return {
 	                result: null,
                     allLoaded: true,
@@ -190,6 +193,8 @@
 
                 return this.loadMore(obj.id);
             } catch(e){
+                JSB().getLogger().error(e);
+
                 return {
                     result: null,
                     allLoaded: true,
@@ -234,6 +239,8 @@
                     id: id
                 };
             } catch(e){
+                JSB().getLogger().error(e);
+
                 return {
                     result: null,
                      allLoaded: true,

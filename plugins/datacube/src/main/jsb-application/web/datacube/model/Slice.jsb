@@ -5,6 +5,7 @@
 	cube: null,
 	name: null,
 	query: {},
+	queryParams: {},
 	
 	getName: function(){
 		return this.name;
@@ -12,6 +13,10 @@
 	
 	getQuery: function(){
 		return this.query;
+	},
+
+	getQueryParams: function(){
+	    return this.queryParams;
 	},
 	
 	$client: {},
@@ -46,6 +51,12 @@
 			this.query = q;
 			this.property('query', this.query);
 			this.doSync();
+		},
+
+		setQueryParams: function(q){
+		    this.queryParams = q;
+            this.property('queryParams', this.queryParams);
+            this.doSync();
 		},
 		
 		updateSettings: function(desc){

@@ -169,6 +169,62 @@
 		R0fn5+dv28R9k2GtVTSXy6XVasfHx7lcLp/PVygUys+KWCzmcDgKhUKj0aAo2tyCSKt8i6ZSqWQy
 		mWg0GgqFAoFAIBAIhUIrKyvNHTBrUVh3hPx3AMqK3DMWVQ2dAAAAAElFTkSuQmCC`
 	},
+	$scheme: {
+		type: 'group',
+		items: [{
+			type: 'group',
+			name: 'Заголовок',
+			optional: true,
+			items: [{
+				type: 'item',
+				name: 'Текст',
+				itemType: 'string'
+			}]
+		},{
+			type: 'group',
+			name: 'Панель',
+			items: [{
+				type: 'item',
+				name: 'Левый угол',
+				itemType: 'integer',
+				itemValue: -150
+			},{
+				type: 'item',
+				name: 'Правый угол',
+				itemType: 'integer',
+				itemValue: 150
+			}]
+		},{
+			type: 'group',
+			name: 'Данные',
+			binding: 'record',
+			items: [{
+				type: 'item',
+				name: 'Минимум',
+				itemType: 'integer',
+				itemValue: 0,
+				binding: 'field'
+			},{
+				type: 'item',
+				name: 'Максимум',
+				itemType: 'integer',
+				itemValue: 100,
+				binding: 'field'
+			},{
+				type: 'item',
+				name: 'Значение',
+				itemType: 'integer',
+				itemValue: 50,
+				binding: 'field'
+			},{
+				type: 'item',
+				name: 'Показатель',
+				itemType: 'string',
+				binding: 'field',
+				optional: true
+			}]
+		}]
+	},
 	
 	$client: {
 		$constructor: function(opts){

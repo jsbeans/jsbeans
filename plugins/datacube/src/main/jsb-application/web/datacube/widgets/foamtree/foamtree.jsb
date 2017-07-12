@@ -413,12 +413,17 @@
     $scheme: {},
 	$require: [],
 	$client: {
+	    isContainerReady: false,
+
         $constructor: function(opts){
             $base(opts);
             this.loadCss('foamtree.css');
             this.foamtreeId = "foamtree_" + JSB().generateUid();
 
             this.foamtreeContainer = this.$('<div class="foamtreeWidget" id="' + this.foamtreeId + '"></div>');
+            this.foamtreeContainer.ready(function(){
+                $this.isContainerReady = true;
+            });
             this.append(this.foamtreeContainer);
 
             JSB().loadScript(['datacube/widgets/foamtree/foamtree.js'],
@@ -452,7 +457,7 @@
 
         init: function(){
             this.getElement().loader();
-            JSB().defer(function(){
+            JSB().deferUntil(function(){
                 $this.getElement().loader('hide');
                 $this.foamtree = new CarrotSearchFoamTree({
                     id: $this.foamtreeId,
@@ -468,25 +473,9 @@
                         $this.foamtree.resize();
                     }, 300, 'foamtree.resize.' + $this.getId())
                 });
-            }, 500);
-/*
-            this.foamtreeContainer.ready(function(){
-                $this.foamtree = new CarrotSearchFoamTree({
-                    id: $this.foamtreeId,
-                    dataObject: {
-                        groups: $this._aggrs.groups
-                    },
-                    onGroupHover: function(evt){
-                        $this.onGroupHover(evt);
-                    },
-                });
-                $this.foamtreeContainer.resize(function(){
-                    JSB().defer(function(){
-                        $this.foamtree.resize();
-                    }, 300, 'foamtree.resize.' + $this.getId())
-                });
+            }, function(){
+                return $this.isContainerReady;
             });
-*/
         },
 
         onGroupHover: function(evt){

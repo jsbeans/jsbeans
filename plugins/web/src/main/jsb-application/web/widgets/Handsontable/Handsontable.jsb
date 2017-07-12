@@ -160,7 +160,7 @@
 
             // empty object or array
             if((JSB.isObject(val) && Object.keys(val).length === 0) || (JSB.isArray(val) && val.length === 0)){
-                td.innerHTML = " ";
+                td.innerHTML = '<div class="tableCell"> </div>';
                 return td;
             }
 
@@ -180,7 +180,7 @@
             }
 
             // basic types
-            td.innerHTML = val;
+            td.innerHTML = '<div class="tableCell">' + val + '</div>';
             return td;
 		},
 
