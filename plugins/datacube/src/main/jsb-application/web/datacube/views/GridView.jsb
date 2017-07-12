@@ -15,7 +15,7 @@
             this.table = new Handsontable({
                 table: {
                     rowHeaders: false,
-                    readOnly: true,
+                    readOnly: false,
                     manualRowMove: false,
                     //colWidths: 300,
                     //stretchH: 'none'

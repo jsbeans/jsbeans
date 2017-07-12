@@ -35,3 +35,6 @@
 .gridView .handsontable .htDimmed{
     word-wrap: break-word;
 }
+.gridView .handsontable .tableCell{
+    max-height: 300px;
+}
