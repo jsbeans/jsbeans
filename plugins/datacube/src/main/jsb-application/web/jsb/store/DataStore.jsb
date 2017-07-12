@@ -10,6 +10,10 @@
 			this.config = config;
 		},
 
+		getName: function(){
+		    return this.config.name;
+		},
+
 		asSQL: function() {
             throw new Error('SQL query not supported for store ' + this.config.name);
 		},

@@ -274,6 +274,10 @@
                 throw new Error('Unsupported select expression');
             }
             function translateExpression(exp) {
+                // is param
+                if (JSB.isString(exp) && exp.match(/^\$/)) {
+                    return exp;
+                }
                 var key = Object.keys(exp)[0];
                 // is field
                 if (!key.match(/^\$/)) {
@@ -369,9 +373,9 @@
                 for(var p in exp) if (exp.hasOwnProperty(p)) {
                     if (!p.match(/^\$/) && byKey) {
                         if (!this.cube.fields[p]) {
-                            // may be alias
+                            // may be alias or provider field
                             providers = providers.concat(
-                                    this._extractUsedProviders(dcQuery, dcQuery.$select[field], false, true));
+                                    this._extractUsedProviders(dcQuery, dcQuery.$select[p], false, true));
                         } else {
                             providers = providers.concat(this._getCubeFieldProviders(p));
                         }
@@ -386,6 +390,12 @@
             } else if (JSB.isString(exp)) {
                 if (!exp.match(/^\$/) && byValue) {
                     if (!this.cube.fields[exp]) {
+                        // may be provider
+                        for(var pp in this.providers) {
+                            if (this.providers[pp].extractFields()[exp]) {
+                                return [this.providers[pp]];
+                            }
+                        }
                         // may be alias
                         providers = providers.concat(
                                 this._extractUsedProviders(dcQuery, dcQuery.$select[exp], false, true));

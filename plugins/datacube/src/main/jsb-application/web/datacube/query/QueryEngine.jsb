@@ -145,12 +145,19 @@ debugger;
 		prepareQuery: function(dcQuery, dataProvider) {
 		    // fill all cube fields (or linked with dataProvider) for default $select={}
 		    if (Object.keys(dcQuery.$select).length == 0) {
-                for (var f in this.cube.fields) if (this.cube.fields.hasOwnProperty(f)) {
-                    var binding = this.cube.fields[f].binding;
-                    for(var b in binding) {
-                        if (!dataProvider || binding[b].provider == dataProvider) {
-                            dcQuery.$select[f] = f;
-                            break;
+		        if (dataProvider) {
+		            var fields = dataProvider.extractFields();
+		            for(var field in fields) if (fields.hasOwnProperty(field)){
+		                 dcQuery.$select[field] = field;
+		            }
+		        } else {
+                    for (var f in this.cube.fields) if (this.cube.fields.hasOwnProperty(f)) {
+                        var binding = this.cube.fields[f].binding;
+                        for(var b in binding) {
+                            if (!dataProvider || binding[b].provider == dataProvider) {
+                                dcQuery.$select[f] = f;
+                                break;
+                            }
                         }
                     }
                 }
