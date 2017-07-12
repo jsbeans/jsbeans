@@ -45,7 +45,7 @@
 					<div class="name">{{=this.slice.getName()}}</div>
 					
 					<div jsb="JSB.Widgets.Button" class="roundButton btnEdit btn10" tooltip="Редактировать срез"
-						onclick="{{=$this.callbackAttr(function(evt){ $this.showSettings(evt) })}}"></div>
+						onclick="{{=$this.callbackAttr(function(evt){ $this.showSettings(evt); evt.stopPropagation(); })}}"></div>
 				</div>
 			`);
 			this.body = this.$(`
