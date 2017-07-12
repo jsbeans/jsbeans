@@ -72,7 +72,26 @@
 			var slice = this.data.data.slice;
 
 			this.find('.name._dwp_primitiveEditor').jsb().setData(slice.getName());
-			this.find('.queryEditor').jsb().setData(JSON.stringify(slice.getQuery(), null, 4));
+
+			var query = slice.getQuery();
+
+            if(!query || Object.keys(query).length == 0){
+                query = {
+                    $select: {}
+                }
+
+                slice.cube.server().load(true, function(desc){
+                    if(!desc) return;
+
+                    for(var i in desc.fields){
+                        query.$select[i] = i;
+                    }
+
+                    $this.find('.queryEditor').jsb().setData(JSON.stringify(query, null, 4));
+                });
+            } else {
+                this.find('.queryEditor').jsb().setData(JSON.stringify(query, null, 4));
+            }
 			
 /*			
 			var node = this.data.data.node;

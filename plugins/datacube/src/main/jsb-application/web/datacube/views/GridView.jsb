@@ -5,6 +5,7 @@
 	$client: {
 	    allLoaded: false,
 	    header: null,
+	    curLoadId: null,
 
 		$constructor: function(opts){
 			$base(opts);
@@ -66,8 +67,11 @@
 		preLoader: function(rowCount){
 		    if(this.allLoaded) return;
 
+            this.curLoadId = JSB().generateUid();
 		    $this.getElement().loader();
-            $this.server().loadMore(function(res){
+            $this.server().loadMore(this.curLoadId, function(res){
+                if(res.id !== $this.curLoadId) return;
+
                 $this.getElement().loader('hide');
 
                 if(!res) return;
@@ -90,8 +94,12 @@
 				// update data from provider
                 this.error.addClass('hidden');
 
+                this.curLoadId = JSB().generateUid();
+
                 $this.getElement().loader();
-                $this.server().loadData(source.cube, source, { $select: {}}, function(res){
+                $this.server().loadData({ cube: source.cube, provider: source, query: { $select: {}}, id: this.curLoadId }, function(res){
+                    if(res.id !== $this.curLoadId) return;
+
                     $this.getElement().loader('hide');
 
                     if(!res) return;
@@ -124,12 +132,16 @@
 
             if(!source.query) return;
 
+            this.curLoadId = JSB().generateUid();
+
             $this.getElement().loader();
             var preparedQuery = source.query;
             if(!preparedQuery || Object.keys(preparedQuery).length == 0){
             	preparedQuery = { $select: {}};
             }
-            $this.server().loadSlice(source.cube, preparedQuery, function(res){
+            $this.server().loadSlice( { cube: source.cube, query: preparedQuery, id: this.curLoadId }, function(res){
+                if(res.id !== $this.curLoadId) return;
+
                 $this.getElement().loader('hide');
 
                 if(!res) return;
@@ -151,45 +163,47 @@
 	$server: {
 	    it: null,
 
-	    loadSlice: function(cube, query){
+	    loadSlice: function(obj){
 	        try{
                 if(this.it) this.it.close();
 
-                this.it = cube.queryEngine.query(query);
+                this.it = obj.cube.queryEngine.query(obj.query);
                 this.counter = 0;
 
-                return this.loadMore();
+                return this.loadMore(obj.id);
 	        } catch(e){
 	            return {
 	                result: null,
                     allLoaded: true,
-                    error: e
+                    error: e,
+                    id: obj.id
 	            }
 	        }
 	    },
 
-	    loadData: function(cube, provider, query) {
+	    loadData: function(obj) {
             try{
                 if(this.it) this.it.close();
 
-                this.it = cube.queryEngine.query(query, null, provider);
+                this.it = obj.cube.queryEngine.query(obj.query, null, obj.provider);
                 this.counter = 0;
 
-                return this.loadMore();
+                return this.loadMore(obj.id);
             } catch(e){
                 return {
                     result: null,
                     allLoaded: true,
-                    error: e
+                    error: e,
+                    id: obj.id
                 }
             }
 	    },
 
-	    loadMore: function(){
+	    loadMore: function(id){
 	    	function prepareElement(el){
 	    		for(var f in el){
 	    		    if(el[f] instanceof Date){
-	    		        el[f] = el[f].toLocaleDateString();
+	    		        el[f] = el[f].toLocaleString();
 	    		    }
 	    		}
 	    		return el;
@@ -216,13 +230,15 @@
                 return {
                     result: res,
                     allLoaded: allLoaded,
-                    error: null
+                    error: null,
+                    id: id
                 };
             } catch(e){
                 return {
                     result: null,
                      allLoaded: true,
-                     error: e
+                     error: e,
+                     id: id
                 }
             }
 	    }
