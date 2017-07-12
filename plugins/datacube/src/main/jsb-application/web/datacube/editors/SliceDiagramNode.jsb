@@ -106,7 +106,7 @@
 					weight: 10.0
 				}],
 				callback: function(desc){
-                    this.publish('DataCube.CubeEditor.sliceNodeEdit', { cube: $this.slice.cube, query: desc.query });
+                    this.publish('DataCube.CubeEditor.sliceNodeEdit', { cube: $this.slice.cube, query: desc.query, queryParams: desc.queryParams });
 					$this.slice.cube.server().updateSliceSettings($this.slice.getLocalId(), desc, function(res, fail){
 						// TODO: redraw query editor
 					});
