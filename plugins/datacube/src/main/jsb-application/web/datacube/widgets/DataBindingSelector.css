@@ -39,7 +39,10 @@
 
 /* binding value */
 
-.dataBindingSelector > .binding {}
+.dataBindingSelector > .binding {
+	padding: 0 2px;
+    height: 18px;
+}
 
 .dataBindingSelector > .binding > .renderer {
 	display: block;

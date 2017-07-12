@@ -34,7 +34,6 @@
 					$this.showTool(evt);
 				});
 				if(this.options.value){
-					debugger;
 					var path = this.wrapper.getBindingRelativePath(this.options.scope, this.options.value);
 					this.setField(path, this.options.value);
 				}
