@@ -18,6 +18,33 @@
 		return this.wType;
 	},
 	
+	getBindingRelativePath: function(parent, child){
+		function searchChild(p, c){
+			if(JSB.isEqual(p, c)){
+				return '';
+			}
+			if(p.type == 'array'){
+				return searchChild(p.arrayType, c);
+			} else if(p.type == 'object'){
+				for(var f in p.record){
+					var rf = p.record[f];
+					var cc = searchChild(rf, c);
+					if(JSB.isDefined(cc)){
+						if(cc.length > 0){
+							return rf.field + '.' + cc;
+						}
+						return rf.field;
+					}
+				}
+				return undefined;
+			} else {
+				return undefined;
+			}
+		}
+		
+		return searchChild(parent, child);
+	},
+	
 	$client: {
 		$require: ['JSB.Widgets.Button', 
 		           'JSB.Widgets.PrimitiveEditor',

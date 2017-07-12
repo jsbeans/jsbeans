@@ -50,6 +50,7 @@
 }
 
 .widgetSchemeRenderer.hasHeader > .body {
+	padding-left: 16px;
 }
 
 
@@ -59,7 +60,12 @@
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items {
-	padding-left: 10px;
+	border-top: 1px solid #ded7cb;
+	cursor: url(/jsb.widgets/images/hand.gif), move;
+}
+
+.widgetSchemeRenderer.hasMultiple > .body > .items:first-child {
+	border-top: none;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(even) {
@@ -93,8 +99,26 @@
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer {}
 
-.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > div {
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .valueEditor {
 	vertical-align: middle;
 }
 
-.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .dataBindingSelector {}
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .dataBindingSelector {
+	vertical-align: middle;
+}
+
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .separator {
+	vertical-align: middle;
+	display: inline-block;
+    margin: 0 6px;
+}
+
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer.isBound > .valueEditor,
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer.isBound > .separator {
+	display: none;
+}
+
+
+.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .valueEditor {
+	max-width: 140px;
+}

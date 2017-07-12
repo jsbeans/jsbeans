@@ -2,7 +2,8 @@
 	$name: 'JSB.DataCube.Widgets.DataBindingSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.DataCube.Providers.DataProviderRepository',
-	           'JSB.Widgets.RendererRepository'],
+	           'JSB.Widgets.RendererRepository',
+	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
 		dataScheme: null,
@@ -13,7 +14,9 @@
 			this.loadCss('DataBindingSelector.css');
 			this.wrapper = opts.wrapper;
 			
+			
 			if(!this.options.scope){
+				this.attr('title', 'Перетащите сюда источник');
 				this.placeholderElt = this.$('<div class="placeholder">Перетащите сюда источник</div>');
 				this.append(this.placeholderElt);
 				this.bindingElt = this.$('<div class="binding hidden"></div>');
@@ -21,10 +24,20 @@
 				
 				this.setupDroppable();
 			} else {
+				this.addClass('selectable');
+				this.attr('title', 'Выберите поле');
 				this.placeholderElt = this.$('<div class="placeholder">Выберите поле</div>');
 				this.append(this.placeholderElt);
 				this.bindingElt = this.$('<div class="binding hidden"></div>');
 				this.append(this.bindingElt);
+				this.getElement().click(function(evt){
+					$this.showTool(evt);
+				});
+				if(this.options.value){
+					debugger;
+					var path = this.wrapper.getBindingRelativePath(this.options.scope, this.options.value);
+					this.setField(path, this.options.value);
+				}
 			}
 		},
 		
@@ -106,6 +119,63 @@
 				}
 			});
 
+		},
+		
+		setField: function(field, binding){
+			this.bindingElt.empty().text(field);
+			this.placeholderElt.addClass('hidden');
+			this.bindingElt.removeClass('hidden');
+			
+			$this.dataScheme = binding;
+			if($this.options.onChange){
+				$this.options.onChange.call($this);
+			}
+		},
+		
+		prepareItems: function(type){
+			var items = [];
+			var scope = this.options.scope;
+			
+			function collectFields(desc, items, path){
+				if(desc.type == 'array'){
+					collectFields(desc.arrayType, items);
+				} else if(desc.type == 'object'){
+					for(var f in desc.record){
+						var rf = desc.record[f];
+						var curPath = (path ? path + '.' : '') + rf.field;
+						var itemDesc = {
+							key: curPath,
+							element: $this.$('<div class="dataBindingField"></div>').text(rf.field),
+							binding: rf,
+							children: []
+						}
+						items.push(itemDesc);
+						collectFields(rf, itemDesc.children, curPath);
+					}
+				}
+			}
+			
+			collectFields(scope, items, '');
+			return items;
+		},
+		
+		showTool: function(evt){
+			var items = [];
+			ToolManager.activate({
+				id: '_dwp_dropTreeTool',
+				cmd: 'show',
+				data: $this.prepareItems(),
+				target: {
+					selector: $this.getElement(),
+					dock: 'bottom'
+				},
+				callback: function(key, item, evt){
+					if(item){
+						$this.setField(key, item.binding);
+					}
+					
+				}
+			});
 		},
 		
 		isFilled: function(){
