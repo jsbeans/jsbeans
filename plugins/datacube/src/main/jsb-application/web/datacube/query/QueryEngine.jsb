@@ -6,6 +6,7 @@
 		    'JSB.DataCube.Query.Iterators.DataProviderIterator',
 		    'JSB.DataCube.Query.Iterators.InnerJoinIterator',
 		    'JSB.DataCube.Query.Iterators.FinalizeIterator',
+		    'JSB.DataCube.Providers.SqlTableDataProvider'
         ],
 
 	    selftTest: function(cube){
@@ -190,8 +191,9 @@ debugger;
 		            // iterate binding providers
 		            for(var b in cubeField.binding) {
 		                if (provider == cubeField.binding[b].provider) {
-		                    //var dpField = cubeField.binding[b].field;
-		                    if (!excludeJoinFields) count++;
+		                    if (!excludeJoinFields || cubeField.binding.length == 1) {
+		                        count++;
+		                    }
 		                }
 		            }
 		        }
@@ -209,15 +211,26 @@ debugger;
 		},
 
 		produceIterator: function(dcQuery, params, dataProvider) {
-//debugger;
             // collect only iterator of used in query providers
             var usedCubeFields = this.extractFields(dcQuery).cubeFields;
             var dataProviders = this.cube.getOrderedDataProviders();
             var providerIterators = [];
+
             if (!dataProvider) {
-                for (var i in dataProviders) {
+                for (var i = 0; i < dataProviders.length; i++) {
                     var provider = dataProviders[i];
                     if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, i > 0)) {
+                        if (i > 0) {
+                            var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
+                            if (provider instanceof SqlTableDataProvider
+                                && prev.getJsb().$name == provider.getJsb().$name
+                                && prev.getStore().getName() == provider.getStore().getName()) {
+                                // merge provider
+                                providerIterators[providerIterators.length - 1] = new DataProviderIterator(
+                                    providerIterators[providerIterators.length - 1].getDataProviders().concat(provider), this);
+                                continue;
+                            }
+                        }
                         providerIterators.push(new DataProviderIterator(provider, this));
                     }
                 }

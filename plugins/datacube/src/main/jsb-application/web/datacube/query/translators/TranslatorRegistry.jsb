@@ -20,13 +20,14 @@
 		    this._dataProviderTranslator[dataProviderName] = translatorJsb;
 		},
 
-		newTranslator: function(dataProvider, cube){
+		newTranslator: function(providerOrProviders, cube){
+		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
 		    var translatorName = this._dataProviderTranslator[dataProvider.getJsb().$name];
 		    if (!translatorName) {
 		        throw new Error('Translator not found for ' + dataProvider.getJsb().$name);
 		    }
 		    var Translator = JSB.get(translatorName).getClass();
-		    return new Translator(dataProvider, cube);
+		    return new Translator(providerOrProviders, cube);
 		}
 	}
 }
