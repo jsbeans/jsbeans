@@ -28,4 +28,10 @@
     text-align: justify;
     font-size: 1.1em;
 }
-.
+.gridView th,
+.gridView td{
+    max-width: 300px;
+}
+.gridView .handsontable .htDimmed{
+    word-wrap: break-word;
+}

@@ -17,7 +17,8 @@
                     rowHeaders: false,
                     readOnly: true,
                     manualRowMove: false,
-                    colWidths: 300
+                    //colWidths: 300,
+                    //stretchH: 'none'
                 },
                 callbacks: {
                     createHeader: function(i) { return $this.createHeader(i); },
