@@ -101,6 +101,8 @@
 
 		sortButtonClick: function(evt, obj){
 		    if(this.$(evt.target).hasClass('upSort')){
+		        this.$(evt.target).removeClass('upSort').addClass('downSort');
+
 		        var q = {
 		            $sort: [{}]
 		        };
@@ -112,6 +114,8 @@
                     direction: 1
                 };
 		    } else {
+		        this.$(evt.target).removeClass('downSort').addClass('upSort');
+
                 var q = {
                     $sort: [{}]
                 };
