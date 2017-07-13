@@ -8,6 +8,15 @@
 	position: relative;
 	padding: 1px 0 1px 0;
 	display: inline-block;
+	margin-left: 6px;
+}
+
+.widgetSchemeRenderer > .header.hidden {
+	display: none;
+}
+
+.widgetSchemeRenderer > .header:first-child {
+	margin-left: 0;
 }
 
 .widgetSchemeRenderer.hasMultiple > .header {
@@ -18,6 +27,7 @@
 .widgetSchemeRenderer > .header > .caption {
 	display: inline-block;
 	vertical-align: middle;
+	min-width: 100px;
 }
 
 .widgetSchemeRenderer > .header > .btnCreate {
@@ -25,12 +35,21 @@
 	right: 2px;
 	top: 50%;
 	margin-top: -8px;
+	display: none;
+}
+
+.widgetSchemeRenderer.used > .header > .btnCreate {
+	display: block;
 }
 
 .widgetSchemeRenderer > .header > .dataBindingSelector {
 	margin-left: 6px;
-	display: inline-block;
+	display: none;
 	vertical-align: middle;
+}
+
+.widgetSchemeRenderer.used > .header > .dataBindingSelector {
+	display: inline-block;
 }
 
 .widgetSchemeRenderer > .header > ._dwp_comboBox {
@@ -44,10 +63,16 @@
 }
 
 
+/* group */
 
 .widgetSchemeRenderer > .body {
-	
+	display: none;
 }
+
+.widgetSchemeRenderer.used > .body {
+	display: block;
+}
+
 
 .widgetSchemeRenderer.hasHeader > .body {
 	padding-left: 16px;
@@ -55,13 +80,12 @@
 
 
 .widgetSchemeRenderer > .body > .items {
-	padding-top: 1px;
-    padding-bottom: 1px;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items {
 	border-top: 1px solid #ded7cb;
 	cursor: url(/jsb.widgets/images/hand.gif), move;
+	padding: 2px 6px;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:first-child {
@@ -87,12 +111,20 @@
 .widgetSchemeRenderer[entry="item"] > .header {}
 
 .widgetSchemeRenderer[entry="item"] > .value {
-	display: inline-block;
-    vertical-align: middle;
-    margin-left: 6px;
+	display: none;
 }
 
-.widgetSchemeRenderer[entry="item"].hasMultiple > .value {
+.widgetSchemeRenderer[entry="item"].used > .value {
+    vertical-align: middle;
+    margin-left: 6px;
+	display: inline-block;
+}
+
+.widgetSchemeRenderer[entry="item"].used > .value:first-child {
+	margin-left: 0;
+}
+
+.widgetSchemeRenderer[entry="item"].used.hasMultiple > .value {
 	display: block;
 	margin-left: 0;
 }
@@ -111,6 +143,7 @@
 	vertical-align: middle;
 	display: inline-block;
     margin: 0 6px;
+    color: #555;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer.isBound > .valueEditor,
@@ -122,3 +155,16 @@
 .widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .valueEditor {
 	max-width: 140px;
 }
+
+/* select */
+
+.widgetSchemeRenderer[entry="select"].hasHeader > .body {
+	padding-left: 0;
+}
+
+.widgetSchemeRenderer[entry="select"].hasHeader > .body[item="item"] {
+	display: inline-block;
+	vertical-align: top;
+	margin-left: 6px;
+}
+

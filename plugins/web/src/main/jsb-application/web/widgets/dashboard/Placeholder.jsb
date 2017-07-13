@@ -50,7 +50,6 @@
 						$this.dragUi = ui;
 					},
 					tolerance: 'pointer',
-					greedy: true,
 					drop: function(evt, ui){
 						$this.dragUi = null;
 						var d = ui.draggable;

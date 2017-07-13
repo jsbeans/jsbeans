@@ -1,0 +1,57 @@
+@CHARSET "UTF-8";
+
+.embeddedWidgetSelector {
+	display: inline-block;
+	border: 1px solid rgba(2, 47, 78, 0.2);
+    background-color: rgba(24, 108, 138, 0.2);
+    padding: 0 4px;
+    border-radius: 6px;
+}
+
+.embeddedWidgetSelector.acceptDraggable,
+.embeddedWidgetSelector.selectable:hover {
+	background-color: rgba(156, 92, 29, 0.3);
+    border-color: rgba(105, 45, 0, 0.5);
+}
+
+
+/* placeholder */
+
+.embeddedWidgetSelector > .hidden {
+	display: none;
+}
+
+.embeddedWidgetSelector > .placeholder {
+	padding: 3px 2px;
+    color: #6c7786;
+    font-size: 10px;
+}
+
+.embeddedWidgetSelector.acceptDraggable > .placeholder,
+.embeddedWidgetSelector.selectable:hover > .placeholder {
+	color: #7b592d;
+}
+
+
+/* binding value */
+
+.embeddedWidgetSelector > .binding {
+	padding: 0 2px;
+    height: 18px;
+}
+
+.embeddedWidgetSelector > .binding > .renderer {
+	display: block;
+}
+
+.embeddedWidgetSelector > .binding > .renderer > .icon {
+	width: 16px;
+	height: 16px;
+	margin-top: -8px;
+}
+
+.embeddedWidgetSelector > .binding > .renderer > .title {
+	padding-left: 20px;
+	display: inline-block;
+	vertical-align: middle;
+}

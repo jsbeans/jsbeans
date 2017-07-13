@@ -5,7 +5,8 @@
 	           'JSB.Widgets.ComboBox',
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.ToolManager',
-	           'JSB.DataCube.Widgets.DataBindingSelector'],
+	           'JSB.DataCube.Widgets.DataBindingSelector',
+	           'JSB.DataCube.Widgets.EmbeddedWidgetSelector'],
 	
 	$client: {
 		options: {
@@ -53,6 +54,9 @@
 			case 'select':
 				this.constructSelect();
 				break;
+			case 'widget':
+				this.constructWidget();
+				break;
 			}
 		},
 		
@@ -61,20 +65,37 @@
 			if(this.scheme.binding){
 				this.addClass('hasBinding');
 			}
+			
+			function updateGroupUsedVisibility(){
+				if($this.values.used){
+					$this.addClass('used');	
+				} else {
+					$this.removeClass('used');
+				}
+			}
 
+			var header = null;
 			if(this.options.showHeader && this.scheme.name){
 				this.addClass('hasHeader');
-				var header = this.$('<div class="header"></div>');
+				header = this.$('<div class="header"></div>');
 				this.append(header);
 				
 				if(this.scheme.optional){
 					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateGroupUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
 					this.values.used = true;
 				}
+			} else {
+				this.values.used = true;
+				header = this.options.outletHeader;
+			}
+			
+			updateGroupUsedVisibility();
+
+			if(header){
 				if((this.scheme.binding == 'array' || this.scheme.binding == 'record') && !this.binding){
 					this.bindingSelector = new DataBindingSelector({
 						scope: $this.binding,
@@ -86,6 +107,8 @@
 						}
 					});
 					header.append(this.bindingSelector.getElement());
+					header.removeClass('hidden');
+
 				}
 				if(this.scheme.multiple){
 					this.addClass('hasMultiple');
@@ -97,8 +120,11 @@
 						}
 					});
 					header.append(btnAdd.getElement());
+					header.removeClass('hidden');
+
 				}
 			}
+			
 			
 			this.bodyElt = this.$('<div class="body"></div>');
 			this.append(this.bodyElt);
@@ -110,7 +136,6 @@
 			function fillGroupItems(groupIdx, binding, supply){
 				var ul = $this.$('<div class="items"></div>');
 				$this.bodyElt.append(ul);
-				$this.values.used = true;
 				if(!$this.values.groups){
 					$this.values.groups = [];
 				}
@@ -120,7 +145,6 @@
 				var groupValues = $this.values.groups[groupIdx];
 				
 				function addItem(item, values){
-					values.used = true;
 					var liElt = $this.$('<div class="item"></div>');
 					var itemRenderer = new $class({
 						scheme: item,
@@ -196,18 +220,37 @@
 			if(this.scheme.binding){
 				this.addClass('hasBinding');
 			}
+			
+			function updateItemUsedVisibility(){
+				if($this.values.used){
+					$this.addClass('used');	
+				} else {
+					$this.removeClass('used');
+				}
+			}
+
+			var header = null;
 			if(this.options.showHeader && this.scheme.name){
-				var header = this.$('<div class="header"></div>');
+				header = this.$('<div class="header"></div>');
 				this.append(header);
 				
 				if(this.scheme.optional){
 					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateItemUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
+					this.values.used = true;
 				}
 				
+			} else {
+				this.values.used = true;
+				header = this.options.outletHeader;
+			}
+
+			updateItemUsedVisibility();
+			
+			if(header){
 				if(this.scheme.multiple){
 					this.addClass('hasMultiple');
 					// create append button
@@ -218,8 +261,10 @@
 						}
 					});
 					header.append(btnAdd.getElement());
+					header.removeClass('hidden');
 				}
 			}
+
 			var valElt = this.$('<div class="value"></div>');
 			this.append(valElt);
 			
@@ -392,6 +437,14 @@
 				});
 			}
 			
+			function updateSelectUsedVisibility(){
+				if($this.values.used){
+					$this.addClass('used');	
+				} else {
+					$this.removeClass('used');
+				}
+			}
+			
 			function setupValue(idx){
 				$this.destroyRenderers();
 				$this.values.chosenIdx = idx;
@@ -402,61 +455,127 @@
 				if(!$this.values.items[idx]){
 					$this.values.items[idx] = {};
 				}
+				$this.outletHeader.empty();
 				var itemRenderer = new $class({
 					scheme: item,
 					values: $this.values.items[idx],
 					wrapper: $this.wrapper,
-					tool: $this.tool,
 					binding: $this.binding,
 					supply: $this.supply,
 					showHeader: false,
+					outletHeader: $this.outletHeader,
 					onChange: $this.options.onChange
 				});
 				$this.renderers.push(itemRenderer);
 				$this.bodyElt.empty();
 				$this.bodyElt.append(itemRenderer.getElement());
+				$this.bodyElt.attr('item', item.type);
+
 			}
 			
-			var header = this.$('<div class="header"></div>');
-			this.append(header);
-			
-			if(this.scheme.optional){
-				// show checkbox caption
-				header.append(`#dot <div jsb="JSB.Widgets.CheckBox" onchange="{{=this.callbackAttr(function(){  })}}" label="{{=$this.scheme.name}}"></div>`);
+			var header = null;
+			if(this.options.showHeader && this.scheme.name){
+				header = this.$('<div class="header"></div>');
+				this.append(header);
+				
+				if(this.scheme.optional){
+					// show checkbox caption
+					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateSelectUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+				} else {
+					// show simple caption
+					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
+					this.values.used = true;
+				}
 			} else {
-				// show simple caption
-				header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
+				header = this.options.outletHeader;
+				this.values.used = true;
 			}
 			
-			if(this.scheme.multiple){
-				// create append button
-				var btnAdd = new Button({
-					cssClass: 'roundButton btn10 btnCreate',
-					tooltip: 'Добавить значение',
-					onClick: function(){
+			updateSelectUsedVisibility();
+			
+			if(header){
+				if(this.scheme.multiple){
+					// create append button
+					var btnAdd = new Button({
+						cssClass: 'roundButton btn10 btnCreate',
+						tooltip: 'Добавить значение',
+						onClick: function(){
+						}
+					});
+					header.append(btnAdd.getElement());
+				}
+				
+				this.selector = new ComboBox({
+					items: items,
+					value: '' + val,
+					onChange: function(key){
+						var idx = parseInt(key);
+						setupValue(idx)
+						if($this.options.onChange){
+							$this.options.onChange.call($this, idx);
+						}
 					}
 				});
-				header.append(btnAdd.getElement());
+				header.append(this.selector.getElement());
+				header.removeClass('hidden');
+				this.outletHeader = this.$('<div class="header hidden"></div>');
+				header.after(this.outletHeader);
 			}
-			
-			this.selector = new ComboBox({
-				items: items,
-				value: '' + val,
-				onChange: function(key){
-					var idx = parseInt(key);
-					setupValue(idx)
-					if($this.options.onChange){
-						$this.options.onChange.call($this, idx);
-					}
-				}
-			});
-			header.append(this.selector.getElement());
-			
 			// add value
 			this.bodyElt = this.$('<div class="body"></div>');
 			this.append(this.bodyElt);
 			
 			setupValue(val);
 		},
+		
+		constructWidget: function(){
+			this.attr('entry', 'widget');
+			if(this.scheme.binding){
+				this.addClass('hasBinding');
+			}
+			
+			function updateWidgetUsedVisibility(){
+				if($this.values.used){
+					$this.addClass('used');	
+				} else {
+					$this.removeClass('used');
+				}
+			}
+
+			var header = null;
+			if(this.options.showHeader && this.scheme.name){
+				header = this.$('<div class="header"></div>');
+				this.append(header);
+				
+				if(this.scheme.optional){
+					// show checkbox caption
+					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateWidgetUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+				} else {
+					// show simple caption
+					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
+					this.values.used = true;
+				}
+			} else {
+				this.values.used = true;
+				header = this.options.outletHeader;
+			}
+			
+			updateWidgetUsedVisibility();
+			
+			if(header){
+				this.widgetSelector = new EmbeddedWidgetSelector({
+					value: $this.values.widget,
+					wrapper: this.wrapper,
+					onChange: function(){
+						debugger;
+					}
+				});
+				header.append(this.widgetSelector.getElement());
+				header.removeClass('hidden');
+			}
+			
+			var bodyElt = this.$('<div class="body"></div>');
+			this.append(bodyElt);
+		}
 	}
 }

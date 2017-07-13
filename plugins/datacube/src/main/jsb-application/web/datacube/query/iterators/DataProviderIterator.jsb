@@ -13,26 +13,21 @@
 		    'JSB.DataCube.Query.Translators.LockiTranslator',
         ],
 
-		$constructor: function(provider, queryEngine){
+		$constructor: function(providerOrProviders, queryEngine){
 		    $base();
-		    this.provider = provider;
+		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
 		    this.queryEngine = queryEngine;
 		    this.cube = queryEngine.cube;
+		    this.translator = TranslatorRegistry.newTranslator(providerOrProviders, this.cube);
+		},
 
-		    this.translator = TranslatorRegistry.newTranslator(provider, this.cube);
-//            // select compatible translator
-//            if (provider instanceof SqlTableDataProvider) {
-//                this.translator = new MoSQLTranslator(provider, this.cube);
-//            } else if (provider instanceof InMemoryDataProvider) {
-//                this.translator = new LockiTranslator(provider, this.cube);
-//            } else {
-//                throw new Error('Other translators not supported yet');
-//            }
+		matchDataProvider: function(dataProvider){
+		    return this.providers.indexOf(dataProvider) != -1;
 		},
 
 		getDataProviders: function(){
-		    return [this.provider];
-		},
+            return this.providers;
+        },
 
 		iterate: function(dcQuery, params){
 		    Log.debug('DataProviderIterator.iterate: ' + JSON.stringify(dcQuery,0,2));
