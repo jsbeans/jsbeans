@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.DataCube.Providers.DataProviderRepository',
 	           'JSB.Widgets.RendererRepository',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'JSB.Widgets.Button'],
 	
 	$client: {
 		dataScheme: null,
@@ -15,12 +16,26 @@
 			this.loadCss('DataBindingSelector.css');
 			this.wrapper = opts.wrapper;
 			
+			var removeButton = new Button({
+				cssClass: 'roundButton btn10 btnDelete',
+				tooltip: 'Удалить',
+				onClick: function(evt){
+					evt.stopPropagation();
+					$this.dataScheme = null;
+					$this.removeClass('filled');
+					if($this.options.onChange && $this.ready){
+						$this.options.onChange.call($this);
+					}
+				}
+			});
+			
+			this.append(removeButton);
 			
 			if(!this.options.scope){
 				this.attr('title', 'Перетащите сюда источник');
 				this.placeholderElt = this.$('<div class="placeholder">Перетащите сюда источник</div>');
 				this.append(this.placeholderElt);
-				this.bindingElt = this.$('<div class="binding hidden"></div>');
+				this.bindingElt = this.$('<div class="binding"></div>');
 				this.append(this.bindingElt);
 				
 				this.setupDroppable();
@@ -32,7 +47,7 @@
 				this.attr('title', 'Выберите поле');
 				this.placeholderElt = this.$('<div class="placeholder">Выберите поле</div>');
 				this.append(this.placeholderElt);
-				this.bindingElt = this.$('<div class="binding hidden"></div>');
+				this.bindingElt = this.$('<div class="binding"></div>');
 				this.append(this.bindingElt);
 				this.getElement().click(function(evt){
 					$this.showTool(evt);
@@ -103,8 +118,7 @@
 			
 			function setupSource(source){
 				$this.bindingElt.empty().append(RendererRepository.createRendererFor(source, {showCube: true}).getElement());
-				$this.placeholderElt.addClass('hidden');
-				$this.bindingElt.removeClass('hidden');
+				$this.addClass('filled');
 				
 				if($this.options.onChange && ready){
 					$this.options.onChange.call($this);
@@ -144,8 +158,7 @@
 		
 		setField: function(field, binding){
 			this.bindingElt.empty().text(field);
-			this.placeholderElt.addClass('hidden');
-			this.bindingElt.removeClass('hidden');
+			this.addClass('filled');
 			
 			$this.dataScheme = binding;
 			if($this.options.onChange && $this.ready){

@@ -286,13 +286,18 @@
 		},
 		
 		applySettings: function(){
-			this.closeSettings();
 			this.values = this.settingsRenderer.getValues();
 			
 			// store data in wrapper
 			this.server().storeValues(this.values, function(){
-				debugger;
+				$this.refreshWidget();
 			});
+			
+			this.closeSettings();
+		},
+		
+		refreshWidget: function(){
+			
 		}
 	},
 	

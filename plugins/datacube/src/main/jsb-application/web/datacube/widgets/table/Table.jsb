@@ -33,35 +33,6 @@
 					},{
 						name: 'Виджет',
 						type: 'widget'
-					},{
-						type: 'group',
-						name: 'Данные',
-						binding: 'record',
-						items: [{
-							type: 'item',
-							name: 'Минимум',
-							itemType: 'integer',
-							itemValue: 0,
-							binding: 'field'
-						},{
-							type: 'item',
-							name: 'Максимум',
-							itemType: 'integer',
-							itemValue: 100,
-							binding: 'field'
-						},{
-							type: 'item',
-							name: 'Значение',
-							itemType: 'integer',
-							itemValue: 50,
-							binding: 'field'
-						},{
-							type: 'item',
-							name: 'Показатель',
-							itemType: 'string',
-							binding: 'field',
-							optional: true
-						}]
 					}]
 				}]
 			}]

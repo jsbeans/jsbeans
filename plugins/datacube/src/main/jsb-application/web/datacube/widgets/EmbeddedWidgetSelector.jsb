@@ -1,7 +1,7 @@
 {
 	$name: 'JSB.DataCube.Widgets.EmbeddedWidgetSelector',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.Widgets.ToolManager', 'JSB.DataCube.Renderers.WidgetRenderer'],
+	$require: ['JSB.Widgets.ToolManager', 'JSB.DataCube.Renderers.WidgetRenderer', 'JSB.Widgets.Button'],
 	
 	$client: {
 		
@@ -17,10 +17,25 @@
 			this.loadCss('EmbeddedWidgetSelector.css');
 			this.wrapper = opts.wrapper;
 			
+			var removeButton = new Button({
+				cssClass: 'roundButton btn10 btnDelete',
+				tooltip: 'Удалить',
+				onClick: function(evt){
+					evt.stopPropagation();
+					$this.wDesc = null;
+					$this.removeClass('filled');
+					if($this.options.onChange && $this.ready){
+						$this.options.onChange.call($this, null);
+					}
+				}
+			});
+			
+			this.append(removeButton);
+			
 			this.attr('title', 'Перетащите сюда виджет');
 			this.placeholderElt = this.$('<div class="placeholder">Перетащите сюда виджет</div>');
 			this.append(this.placeholderElt);
-			this.bindingElt = this.$('<div class="binding hidden"></div>');
+			this.bindingElt = this.$('<div class="binding"></div>');
 			this.append(this.bindingElt);
 			
 			this.setupDroppable();
@@ -111,8 +126,7 @@
 			}
 			this.renderer = new WidgetRenderer($this.wDesc, {});
 			this.bindingElt.empty().append(this.renderer.getElement());
-			this.placeholderElt.addClass('hidden');
-			this.bindingElt.removeClass('hidden');
+			this.addClass('filled');
 			
 			if(this.options.onChange && this.ready){
 				this.options.onChange.call(this, $this.wDesc);

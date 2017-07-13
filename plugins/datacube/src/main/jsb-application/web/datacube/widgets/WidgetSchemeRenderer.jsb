@@ -52,6 +52,9 @@
 		
 		update: function(){
 			this.getElement().empty();
+			if(this.options.outletHeader){
+				this.options.outletHeader.empty();
+			}
 			this.destroyRenderers();
 			
 			switch(this.scheme.type){
@@ -74,6 +77,10 @@
 			this.attr('entry', 'group');
 			if(this.scheme.binding){
 				this.addClass('hasBinding');
+			}
+			
+			if(!$this.values.groups){
+				$this.values.groups = [];
 			}
 			
 			function updateGroupUsedVisibility(){
@@ -113,6 +120,10 @@
 						wrapper: this.wrapper,
 						onChange: function(){
 							$this.values.binding = this.getDataScheme();
+							if(!$this.values.binding){
+								$this.update();
+								return;
+							}
 							fillGroup(this.getDataScheme());
 						}
 					});
@@ -125,8 +136,11 @@
 					// create append button
 					var btnAdd = new Button({
 						cssClass: 'roundButton btn10 btnCreate',
-						tooltip: 'Добавить значение',
+						tooltip: 'Добавить запись',
+						enabled: false,
 						onClick: function(){
+							fillGroupItems($this.values.groups.length, $this.values.binding || $this.binding);
+							updateGroupButtons();
 						}
 					});
 					header.append(btnAdd.getElement());
@@ -135,26 +149,77 @@
 				}
 			}
 			
+			////////
 			
-			this.bodyElt = this.$('<div class="body"></div>');
-			this.append(this.bodyElt);
-			if(this.scheme.multiple){
-				this.bodyElt.sortable();
+			function updateGroupButtons(){
+				if(!$this.scheme.multiple){
+					return;
+				}
+				if(header){
+					var btnAdd = header.find('> .btnCreate').jsb();
+					if(btnAdd){
+						btnAdd.enable($this.values.groups.length > 0);
+					}
+				}
+				var btns = $this.bodyElt.find('> .items > .btnDelete');
+				for(var i = 0; i < btns.length; i++){
+					$this.$(btns.get(i)).jsb().enable(btns.length > 1);
+				}
+			}
+			
+			function reorderGroups(){
+				var groups = $this.bodyElt.find('> .items');
+				for(var i = 0; i < groups.length; i++){
+					$this.$(groups.get(i)).attr('idx', i);
+				}
+			}
+			
+			function reorderValues(){
+				var groups = $this.bodyElt.find('> .items');
+				for(var i = 0; i < groups.length; i++){
+					var oldIdx = parseInt($this.$(groups.get(i)).attr('idx'));
+					if(oldIdx == i){
+						continue;
+					}
+					$this.$(groups.get(i)).attr('idx', i);
+					if(oldIdx < i){
+						continue;
+					}
+					var gg = $this.values.groups[oldIdx];
+					$this.values.groups.splice(oldIdx, 1);
+					$this.values.groups.splice(i, 0, gg);
+				}
 			}
 
 			
 			function fillGroupItems(groupIdx, binding, supply){
 				var ul = $this.$('<div class="items"></div>');
+				ul.attr('idx', groupIdx);
 				$this.bodyElt.append(ul);
-				if(!$this.values.groups){
-					$this.values.groups = [];
-				}
 				if(!$this.values.groups[groupIdx]){
 					$this.values.groups[groupIdx] = {
 						items: []
 					};
 				}
 				var groupValues = $this.values.groups[groupIdx];
+				
+				if($this.scheme.multiple){
+					var removeButton = new Button({
+						cssClass: 'roundButton btn10 btnDelete',
+						tooltip: 'Удалить запись',
+						onClick: function(evt){
+							var gIdx = parseInt(ul.attr('idx'));
+							if(JSB.isNull(gIdx)){
+								return;
+							}
+							$this.values.groups.splice(gIdx, 1);
+							ul.remove();
+							reorderGroups();
+							updateGroupButtons();
+						}
+					});
+					ul.append(removeButton.getElement());
+				}
 				
 				function addItem(item, values){
 					var liElt = $this.$('<div class="item"></div>');
@@ -191,6 +256,7 @@
 			}
 			
 			function fillGroup(childBinding){
+				$this.bodyElt.empty();
 				if(!$this.values.binding && $this.scheme.binding){
 					$this.values.binding = childBinding;
 				}
@@ -216,6 +282,19 @@
 						fillGroupItems(0, childBinding);
 					}
 				}
+				updateGroupButtons();
+			}
+			
+			//////
+			
+			this.bodyElt = this.$('<div class="body"></div>');
+			this.append(this.bodyElt);
+			if(this.scheme.multiple){
+				this.bodyElt.sortable({
+					update: function(evt, ui){
+						reorderValues();
+					}
+				});
 			}
 			
 			if(!$this.scheme.binding){
@@ -262,21 +341,6 @@
 
 			updateItemUsedVisibility();
 			
-			if(header){
-				if(this.scheme.multiple){
-					this.addClass('hasMultiple');
-					// create append button
-					var btnAdd = new Button({
-						cssClass: 'roundButton btn10 btnCreate',
-						tooltip: 'Добавить значение',
-						onClick: function(){
-						}
-					});
-					header.append(btnAdd.getElement());
-					header.removeClass('hidden');
-				}
-			}
-
 			var valElt = this.$('<div class="value"></div>');
 			this.append(valElt);
 			
@@ -296,45 +360,33 @@
 					callback(PrimitiveEditor, $this.scheme.options);
 				}
 			}
-/*			
-			function updateRemoveButtonsState(){
-				var valContainers = $this.find('.value > .valueContainer');
-				if($this.options.optional){
-					valContainers.addClass('removable');
-				} else if($this.data.multiple){
-					if(valContainers.length > 1){
-						valContainers.addClass('removable');
-					} else {
-						valContainers.removeClass('removable');
-					}
-				} else {
-					valContainers.removeClass('removable');
+			
+			function reorderItemValues(){
+				var contElts = valElt.find('> .valueContainer');
+				for(var i = 0; i < contElts.length; i++){
+					$this.$(contElts.get(i)).attr('idx', i);
 				}
 			}
 			
-			function collectDataFromEditors(){
-				var editors = $this.find('.value > .valueContainer > ._dwp_editor');
-				$this.data.value = null;
-				editors.each(function(){
-					var editor = $this.$(this).jsb();
-					var val = editor.getData();
-					if($jsb.isObject(val) && val.getValue){	// in case of primitive editor
-						val = val.getValue();
+			function updateItemButtons(){
+				if(!$this.scheme.multiple){
+					return;
+				}
+				if(header){
+					var btnAdd = header.find('> .btnCreate').jsb();
+					if(btnAdd){
+						btnAdd.enable($this.values.values.length > 0);
 					}
-					if(!$this.data.value){
-						$this.data.value = val;
-					} else if(!$jsb.isArray($this.data.value)){
-						$this.data.value = [$this.data.value, val];
-					} else {
-						$this.data.value.push(val);
-					}
-				});
-				if($this.options.onChange){
-					$this.options.onChange.call($this, $this.data.value);
+				}
+				var btns = valElt.find('> .valueContainer > .btnDelete');
+				for(var i = 0; i < btns.length; i++){
+					$this.$(btns.get(i)).jsb().enable(btns.length > 1);
 				}
 			}
-*/			
-			function appendEditor(valueDesc){
+
+
+			function setupEditor(idx){
+				var valueDesc = $this.values.values[idx];
 				var editorCls = $this.editorCls;
 				var editor = new editorCls(JSB.merge({
 					placeholder: 'Задайте константу'
@@ -347,6 +399,7 @@
 				$this.renderers.push(editor);
 				
 				var valContainer = $this.$('<div class="valueContainer"></div>');
+				valContainer.attr('idx', idx);
 				valElt.append(valContainer);
 				valContainer.append(editor.getElement());
 				
@@ -360,6 +413,8 @@
 							valueDesc.binding = this.getDataScheme();
 							if(valueDesc.binding){
 								valContainer.addClass('isBound');
+							} else {
+								valContainer.removeClass('isBound');
 							}
 						}
 					});
@@ -373,25 +428,20 @@
 					}
 				}
 				
-				if($this.options.optional || $this.scheme.multiple){
+				if($this.scheme.multiple){
 					var removeButton = new Button({
-						cssClass: 'roundButton btn10 btnCancel',
-						tooltip: 'Удалить',
+						cssClass: 'roundButton btn10 btnDelete',
+						tooltip: 'Удалить значение',
 						onClick: function(){
-/*							valContainer.remove();
-							removeButton.destroy();
-							editor.destroy();
-							updateRemoveButtonsState();
-							var valContainers = $this.find('.value > .valueContainer');
-							if(valContainers.length == 0 && $this.options.onRemove){
-								$this.options.onRemove();
-							}
-							collectDataFromEditors();*/
+							var idx = parseInt(valContainer.attr('idx'));
+							$this.values.values.splice(idx, 1);
+							valContainer.remove();
+							reorderItemValues();
+							updateItemButtons();
 						}
 					});
 					
 					valContainer.append(removeButton.getElement());
-//					updateRemoveButtonsState();
 				}
 				
 				if(JSB.isDefined(valueDesc.value)){
@@ -400,6 +450,28 @@
 				
 				return editor;
 			}
+			
+			if(header){
+				if(this.scheme.multiple){
+					this.addClass('hasMultiple');
+					// create append button
+					var btnAdd = new Button({
+						cssClass: 'roundButton btn10 btnCreate',
+						tooltip: 'Добавить значение',
+						onClick: function(){
+							$this.values.values.push({
+								value: '',
+								binding: null
+							});
+							setupEditor($this.values.values.length - 1);
+							updateItemButtons();
+						}
+					});
+					header.append(btnAdd.getElement());
+					header.removeClass('hidden');
+				}
+			}
+
 			
 			if($this.scheme.itemType){
 				lookupItemEditor(function(editorCls, options){
@@ -418,16 +490,20 @@
 						if(value == '$field' && $this.supply && $this.supply.field){
 							value = $this.supply.field;
 						}
+						if(value == '$field'){
+							value = '';
+						}
 						$this.values.values[0] = {
 							value: value,
 							binding: null
 						};
-						appendEditor($this.values.values[0]);
+						setupEditor(0);
 					} else {
 						for(var i = 0; i < $this.values.values.length; i++){
-							appendEditor($this.values.values[i]);
+							setupEditor(i);
 						}
 					}
+					updateItemButtons();
 				});
 			}
 			
@@ -600,6 +676,10 @@
 					wrapper: this.wrapper,
 					onChange: function(){
 						$this.values.widget = this.getDescriptor();
+						if(!$this.values.widget){
+							$this.update();
+							return;
+						}
 						fillWidgetPane();
 					}
 				});
