@@ -25,6 +25,12 @@
 			this.supply = opts.supply;
 			this.addClass('widgetSchemeRenderer');
 			this.loadCss('WidgetSchemeRenderer.css');
+			if(this.scheme.name){
+				this.values.name = this.scheme.name;
+			}
+			if(this.scheme.key){
+				this.values.key = this.scheme.key;
+			}
 			this.update();
 		},
 		
@@ -38,6 +44,10 @@
 				this.renderers[i].destroy();
 			}
 			this.renderers = [];
+		},
+		
+		getValues: function(){
+			return this.values;
 		},
 		
 		update: function(){
@@ -140,7 +150,9 @@
 					$this.values.groups = [];
 				}
 				if(!$this.values.groups[groupIdx]){
-					$this.values.groups[groupIdx] = [];
+					$this.values.groups[groupIdx] = {
+						items: []
+					};
 				}
 				var groupValues = $this.values.groups[groupIdx];
 				
@@ -170,10 +182,10 @@
 
 				for(var i = 0; i < $this.scheme.items.length; i++){
 					var item = $this.scheme.items[i];
-					if(!groupValues[i]){
-						groupValues[i] = {};
+					if(!groupValues.items[i]){
+						groupValues.items[i] = {};
 					}
-					addItem(item, groupValues[i]);
+					addItem(item, groupValues.items[i]);
 				}
 
 			}
@@ -323,18 +335,14 @@
 			}
 */			
 			function appendEditor(valueDesc){
-				var opts = {
-					tool: $this.tool,
-					placeholder: 'Задайте константу',
-					onChange: function(){
-//						collectDataFromEditors();
-					}
-				};
-				if($this.editorOptions){
-					$jsb.merge(opts, $this.editorOptions);
-				}
 				var editorCls = $this.editorCls;
-				var editor = new editorCls(opts);
+				var editor = new editorCls(JSB.merge({
+					placeholder: 'Задайте константу'
+				},$this.editorOptions || {}, {
+					onChange: function(val){
+						valueDesc.value = val;
+					}
+				}));
 				editor.addClass('valueEditor');
 				$this.renderers.push(editor);
 				
@@ -357,6 +365,12 @@
 					});
 					valContainer.append('<div class="separator">или</div>');
 					valContainer.append(bindingSelector.getElement());
+					if(bindingSelector.isFilled()){
+						valueDesc.binding = bindingSelector.getDataScheme();
+					}
+					if(valueDesc.binding){
+						valContainer.addClass('isBound');
+					}
 				}
 				
 				if($this.options.optional || $this.scheme.multiple){
@@ -562,12 +576,31 @@
 			
 			updateWidgetUsedVisibility();
 			
+			function fillWidgetPane(){
+				var bodyElt = $this.find('> .body');
+				
+				JSB.lookup($this.values.widget.jsb, function(wCls){
+					var wScheme = $this.wrapper.extractWidgetScheme(wCls.jsb);
+					var wSchemeRenderer = new $class({
+						scheme: wScheme,
+						values: $this.values,
+						wrapper: $this.wrapper,
+						binding: $this.binding,
+						supply: $this.supply,
+						onChange: $this.options.onChange
+					});
+					$this.renderers.push(wSchemeRenderer);
+					bodyElt.empty().append(wSchemeRenderer.getElement());
+				});
+			}
+			
 			if(header){
 				this.widgetSelector = new EmbeddedWidgetSelector({
 					value: $this.values.widget,
 					wrapper: this.wrapper,
 					onChange: function(){
-						debugger;
+						$this.values.widget = this.getDescriptor();
+						fillWidgetPane();
 					}
 				});
 				header.append(this.widgetSelector.getElement());
@@ -576,6 +609,9 @@
 			
 			var bodyElt = this.$('<div class="body"></div>');
 			this.append(bodyElt);
+			if($this.values.widget){
+				fillWidgetPane();
+			}
 		}
 	}
 }

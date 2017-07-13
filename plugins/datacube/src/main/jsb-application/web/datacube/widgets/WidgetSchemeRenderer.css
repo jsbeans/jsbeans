@@ -168,3 +168,7 @@
 	margin-left: 6px;
 }
 
+/* widget */
+.widgetSchemeRenderer[entry="widget"] > .body {
+	padding-left: 16px;
+}

@@ -101,6 +101,19 @@
 				}
 			});
 */			
+		},
+		
+		enable: function(b){
+			if(!JSB.isDefined(b)){
+				b = true;
+			}
+			if(b){
+				this.removeClass('hidden');
+				this.getElement().droppable('enable');
+			} else {
+				this.getElement().droppable('disable');
+				this.addClass('hidden');
+			}
 		}
 	}
 }

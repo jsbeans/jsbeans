@@ -7,6 +7,7 @@
 	
 	$client: {
 		dataScheme: null,
+		ready: false,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -23,6 +24,9 @@
 				this.append(this.bindingElt);
 				
 				this.setupDroppable();
+				if(this.options.value){
+					this.setDataScheme(this.options.value);
+				}
 			} else {
 				this.addClass('selectable');
 				this.attr('title', 'Выберите поле');
@@ -38,6 +42,7 @@
 					this.setField(path, this.options.value);
 				}
 			}
+			this.ready = true;
 		},
 		
 		setupDroppable: function(){
@@ -92,32 +97,49 @@
 			
 		},
 		
+		setDataScheme: function(ds, source){
+			$this.dataScheme = ds;
+			var ready = $this.ready;
+			
+			function setupSource(source){
+				$this.bindingElt.empty().append(RendererRepository.createRendererFor(source, {showCube: true}).getElement());
+				$this.placeholderElt.addClass('hidden');
+				$this.bindingElt.removeClass('hidden');
+				
+				if($this.options.onChange && ready){
+					$this.options.onChange.call($this);
+				}
+			}
+			
+			if(source){
+				setupSource(source);
+			} else {
+				this.wrapper.server().getDataSchemeSource(ds, function(source){
+					setupSource(source);
+				});
+			}
+		},
+		
 		setSource: function(entry){
-			this.bindingElt.empty().append(RendererRepository.createRendererFor(entry, {showCube: true}).getElement());
-			this.placeholderElt.addClass('hidden');
-			this.bindingElt.removeClass('hidden');
+			var source = null;
 			if(JSB.isInstanceOf(entry,'JSB.DataCube.Model.Slice')){
 				// add slice
-				this.source = entry;
+				source = entry;
 			} else {
 				var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
 				if(dpInfo){
-					this.source = entry;
+					source = entry;
 				}
 				
 			}
 			
-			this.wrapper.server().combineDataScheme(this.source, function(dataScheme, fail){
+			this.wrapper.server().combineDataScheme(source, function(dataScheme, fail){
 				if(fail){
 					
 				} else {
-					$this.dataScheme = dataScheme;
-					if($this.options.onChange){
-						$this.options.onChange.call($this);
-					}
+					$this.setDataScheme(dataScheme, source);
 				}
 			});
-
 		},
 		
 		setField: function(field, binding){
@@ -126,7 +148,7 @@
 			this.bindingElt.removeClass('hidden');
 			
 			$this.dataScheme = binding;
-			if($this.options.onChange){
+			if($this.options.onChange && $this.ready){
 				$this.options.onChange.call($this);
 			}
 		},
