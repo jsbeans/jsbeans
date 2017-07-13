@@ -110,6 +110,8 @@
 		    this.handsontable.setDataAtCell(row, col, data);
 		},
 
+		// change this.columns mechanism
+/*
 		addColumn: function(alias, index){
 		    this.handsontable.alter('insert_col', index);
 
@@ -119,7 +121,7 @@
 		        this.columns.splice(index, 0, alias);
 		    }
 		},
-
+*/
 		addRow: function(row, input){
 		    this.handsontable.alter('insert_row', row);
 		    for(var j = 0; j < input.length; j++){
@@ -143,11 +145,7 @@
 		},
 
 		_createHeaderCellCallback: function(i){
-		    if(JSB().isFunction(this.callbacks.createHeader)){
-		        return this.callbacks.createHeader.call(this, i, this.columns[i]);
-		    } else {
-		        return i + 1;
-		    }
+            return this.callbacks.createHeader.call(this, i, this.columns[i]);
 		},
 
 		customRenderer: function(hotInstance, td, row, column, prop, value, cellProperties){
@@ -191,6 +189,9 @@
 		loadData: function(data){
 		    this.data = JSB().clone(data);
 		    data = this.prepareData(data);
+
+		    this.columns = Object.keys(data[0]);
+
 		    this.handsontable.loadData(data);
 		    this.handsontable.loadData(data);
 		},

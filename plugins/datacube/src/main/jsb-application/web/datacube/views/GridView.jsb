@@ -4,8 +4,9 @@
 	$require: ['Handsontable'],
 	$client: {
 	    allLoaded: false,
-	    header: null,
 	    curLoadId: null,
+	    curData: null,
+	    params: {},
 
 		$constructor: function(opts){
 			$base(opts);
@@ -21,7 +22,7 @@
                     //stretchH: 'none'
                 },
                 callbacks: {
-                    createHeader: function(i) { return $this.createHeader(i); },
+                    createHeader: function(i, header) { return $this.createHeader(i, header); },
                     preLoader: function(rowCount){ $this.preLoader(rowCount); }
                 }
             });
@@ -59,9 +60,19 @@
 		},
 
 		// get column number; return header cell content
-		createHeader: function(i){
-		    if(this.header) return this.header[i];
-		    return i + 1;
+		createHeader: function(i, header){
+		    if(!header) return i + 1;
+
+		    var cssClass = "btnSort upSort";
+
+		    if(this.curSortCol && this.curSortCol.column === i) cssClass = this.curSortCol.direction === 1 ? "btnSort downSort" : "btnSort upSort";
+
+		    var sortButton = `#dot <div
+                                        jsb="JSB.Widgets.Button"
+                                        class="{{=cssClass}}"
+                                        onclick="{{=$this.callbackAttr(function(evt){ $this.sortButtonClick(evt, { column: i, header: header }); })}}" >
+                                    </div>`;
+		    return '<div>' + header + sortButton + '</div>';
 		},
 		
 		// get number of lines
@@ -87,38 +98,46 @@
                 $this.allLoaded = res.allLoaded;
             });
 		},
+
+		sortButtonClick: function(evt, obj){
+		    if(this.$(evt.target).hasClass('upSort')){
+		        var q = {
+		            $sort: [{}]
+		        };
+		        q.$sort[0][obj.header] = 1;
+
+                this.curData.query = JSB().merge(this.curData.query, q);
+                this.curSortCol = {
+                    column: obj.column,
+                    direction: 1
+                };
+		    } else {
+                var q = {
+                    $sort: [{}]
+                };
+                q.$sort[0][obj.header] = -1;
+
+                this.curData.query = JSB().merge(this.curData.query, q);
+                this.curSortCol = {
+                    column: obj.column,
+                    direction: -1
+                };
+		    }
+
+            this._updateData(this.curData);
+		},
 		
 		updateData: function(source){
 			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
-			    this.updateSlice(source);
+			    this._updateData(source);
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Providers.DataProvider')){
-				// update data from provider
-                this.error.addClass('hidden');
-
-                this.curLoadId = JSB().generateUid();
-
-                $this.getElement().loader();
-                $this.server().loadData({ cube: source.cube, provider: source, query: { $select: {}}, id: this.curLoadId }, function(res){
-                    if(res.id !== $this.curLoadId) return;
-
-                    $this.getElement().loader('hide');
-
-                    if(!res) return;
-                    if(res.error){
-                        $this.errorText.text(res.error.message);
-                        $this.error.removeClass('hidden');
-                        return;
-                    }
-
-                    $this.header = Object.keys(res.result[0]);
-
-                    $this.table.loadData(res.result);
-
-                    $this.allLoaded = res.allLoaded;
-                });
+			    this._updateData({
+			        cube: source.cube,
+			        provider: source,
+                    query: { $select: {}}
+			    });
 			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Cube')){
-				// update data from cube
-            	this.updateSlice({
+            	this._updateData({
             	cube: source,
             	query: { $select: {}}
             	});
@@ -127,20 +146,21 @@
 			}
 		},
 
-		updateSlice: function(source){
-            // update data from slice
+		_updateData: function(source){
             this.error.addClass('hidden');
 
             if(!source.query) return;
 
             this.curLoadId = JSB().generateUid();
+            this.curData = source;
 
             $this.getElement().loader();
             var preparedQuery = source.query;
             if(!preparedQuery || Object.keys(preparedQuery).length == 0){
             	preparedQuery = { $select: {}};
             }
-            $this.server().loadSlice( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, id: this.curLoadId }, function(res){
+
+            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, id: this.curLoadId }, function(res){
                 if(res.id !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
@@ -152,8 +172,6 @@
                     return;
                 }
 
-                if(res.result.length !== 0) $this.header = Object.keys(res.result[0]);
-
                 $this.table.loadData(res.result);
 
                 $this.allLoaded = res.allLoaded;
@@ -164,31 +182,11 @@
 	$server: {
 	    it: null,
 
-	    loadSlice: function(obj){
-	        try{
-                if(this.it) this.it.close();
-
-                this.it = obj.cube.queryEngine.query(obj.query, obj.queryParams);
-                this.counter = 0;
-
-                return this.loadMore(obj.id);
-	        } catch(e){
-	            JSB().getLogger().error(e);
-
-	            return {
-	                result: null,
-                    allLoaded: true,
-                    error: e,
-                    id: obj.id
-	            }
-	        }
-	    },
-
 	    loadData: function(obj) {
             try{
                 if(this.it) this.it.close();
 
-                this.it = obj.cube.queryEngine.query(obj.query, null, obj.provider);
+                this.it = obj.cube.queryEngine.query(obj.query, obj.queryParams, obj.provider);
                 this.counter = 0;
 
                 return this.loadMore(obj.id);
