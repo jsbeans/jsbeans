@@ -187,25 +187,28 @@ debugger;
 		    };
 		},
 
-		isDataProviderLinkedWithCubeFields: function(provider, cubeFields, excludeJoinFields) {
-//debugger;
+		isDataProviderLinkedWithCubeFields: function(provider, cubeFields, useJoinFields) {
 		    var count = 0;
+		    var joinCount = 0;
 		    for (var i in cubeFields) {
 		        var field = cubeFields[i];
 
 		        if (this.cube.fields[field]) {
-		            var cubeField = this.cube.fields[field];
+		            var binding = this.cube.fields[field].binding;
+
 		            // iterate binding providers
-		            for(var b in cubeField.binding) {
-		                if (provider == cubeField.binding[b].provider) {
-		                    if (!excludeJoinFields || cubeField.binding.length == 1) {
+		            for(var b in binding) {
+		                if (provider == binding[b].provider) {
+		                    if (binding.length == 1 || useJoinFields) {
 		                        count++;
+		                    } else {
+		                        joinCount++;
 		                    }
 		                }
 		            }
 		        }
 		    }
-		    return count;
+		    return count || joinCount > 1 && joinCount;
 		},
 
 		setParamType: function(paramName, paramType){
@@ -226,7 +229,7 @@ debugger;
             if (!dataProvider) {
                 for (var i = 0; i < dataProviders.length; i++) {
                     var provider = dataProviders[i];
-                    if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, i > 0)) {
+                    if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, providerIterators.length == 0)) {
                         if (i > 0) {
                             var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
                             if (provider instanceof SqlTableDataProvider

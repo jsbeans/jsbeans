@@ -24,7 +24,7 @@
 		        // close previous iterator
 		        this.iterator.close();
 		    }
-//debugger;
+
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
 		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery,0,2));
@@ -88,6 +88,7 @@
 
         translateJoins: function(dcQuery, params){
             var joins = [];
+            var joinedProviders = this.providers.slice(0,1);
             for(var i=1; i < this.providers.length; i++) {
                 var provider = this.providers[i];
                 var join = {
@@ -99,16 +100,21 @@
                     var binding = this.cube.fields[f].binding;
                     var left = null, right = null;
                     for(var b in binding) {
-                        if (binding[b].provider == this.providers[i-1]) {
-                            left = binding[b];
-                        }
                         if (binding[b].provider == provider) {
                             right = binding[b];
                         }
                     }
-                    if (left && right) {
-                        join.on[this._quotedName(right.field)] = '$' + left.provider.getTableFullName() + '.' + this._quotedName(left.field) + '$';
+                    if (right) for(var b in binding) {
+                        if (joinedProviders.indexOf(binding[b].provider) != -1) {
+                            left = binding[b];
+                            join.on[this._quotedName(right.field)] =
+                                '$' + left.provider.getTableFullName() + '.' + this._quotedName(left.field) + '$';
+                            joinedProviders.push(right.provider);
+                        }
                     }
+                }
+                if (Object.keys(join.on).length == 0) {
+                    throw Error('Join condition is not defined');
                 }
                 joins.push(join);
             }
