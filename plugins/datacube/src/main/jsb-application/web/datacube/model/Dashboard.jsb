@@ -43,7 +43,7 @@
 		
 		createWidgetWrapper: function(wType, wName){
 			var wwId = 'wWrap_' + JSB.generateUid();
-			var wWrapper = new WidgetWrapper(wwId, this, wType);
+			var wWrapper = new WidgetWrapper(wwId, this, wType, {});
 			wWrapper.setName(wName);
 			this.wrappers[wwId] = wWrapper;
 			this.widgetCount = Object.keys(this.wrappers).length;
@@ -75,7 +75,8 @@
 				var wWrapper = this.wrappers[wId];
 				desc.wrappers[wId] = {
 					jsb: wWrapper.getWidgetType(),
-					name: wWrapper.getName()
+					name: wWrapper.getName(),
+					values: wWrapper.getValues()
 				}
 			}
 			this.widgetCount = Object.keys(this.wrappers).length;
@@ -95,7 +96,7 @@
 					this.wrappers = {};
 					for(var wId in snapshot.wrappers){
 						var wDesc = snapshot.wrappers[wId];
-						var wWrapper = new WidgetWrapper(wId, this, wDesc.jsb);
+						var wWrapper = new WidgetWrapper(wId, this, wDesc.jsb, wDesc.values);
 						wWrapper.setName(wDesc.name);
 						this.wrappers[wId] = wWrapper;
 					}

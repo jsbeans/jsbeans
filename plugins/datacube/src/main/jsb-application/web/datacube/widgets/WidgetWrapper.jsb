@@ -9,6 +9,7 @@
 	entry: null,
 	wType: null,
 	name: null,
+	values: {},
 	
 	getName: function(){
 		return this.name;
@@ -16,6 +17,10 @@
 	
 	getWidgetType: function(){
 		return this.wType;
+	},
+	
+	getValues: function(){
+		return this.values;
 	},
 	
 	getBindingRelativePath: function(parent, child){
@@ -126,9 +131,11 @@
 			return this.widget;
 		},
 		
-		extractWidgetScheme: function(){
+		extractWidgetScheme: function(curWidgetJsb){
 			var scheme = {};
-			var curWidgetJsb = this.widget.getJsb();
+			if(!curWidgetJsb){
+				curWidgetJsb = this.widget.getJsb();
+			}
 			while(curWidgetJsb){
 				if(!curWidgetJsb.isSubclassOf('JSB.DataCube.Widgets.Widget')){
 					break;
@@ -239,6 +246,9 @@
 		showSettings: function(evt){
 			var elt = this.$(evt.currentTarget);
 			
+			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
+			dashboardContainer.placeholders['center'].enable(false);
+			
 			var scheme = this.extractWidgetScheme();
 			var scroll = this.settingsContainer.find('> .scroll').jsb();
 			scroll.clear();
@@ -246,13 +256,10 @@
 			var titleEditor = this.settingsContainer.find('> .header > .caption > .title').jsb();
 			titleEditor.setData(this.getName());
 			
-			// TODO: load values from wrapper
-			var values = {};
-			
 			// create scheme renderer
 			this.settingsRenderer = new WidgetSchemeRenderer({
 				scheme: scheme,
-				values: values,
+				values: JSB.clone(this.values),
 				wrapper: $this,
 				onChange: function(){
 //					$this.updateButtons();
@@ -265,41 +272,27 @@
 				visibility: 'visible'
 			});
 			
-/*			
-			ToolManager.activate({
-				id: 'widgetOptionsTool',
-				cmd: 'show',
-				data: {
-					wrapper: $this,
-				},
-				scope: $this.$('.dashboardEditorView'),
-				target: {
-					selector: elt,
-				},
-				constraints: [{
-					selector: elt,
-					weight: 10.0
-				},{
-					selector: $this.getElement(),
-					weight: 10.0
-				},{
-					selector: $this.$('.workspaceExplorer'),
-					weight: 10.0
-				}],
-				callback: function(desc){
-					debugger;
-				}
-			});
-*/			
 		},
 		
 		closeSettings: function(){
 			this.settingsVisible = false;
 			this.settingsContainer.css('height',this.getElement().height());
+			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
+			dashboardContainer.placeholders['center'].enable(true);
 			JSB.defer(function(){
 				$this.settingsContainer.css('height','');
 			}, 0);
 			
+		},
+		
+		applySettings: function(){
+			this.closeSettings();
+			this.values = this.settingsRenderer.getValues();
+			
+			// store data in wrapper
+			this.server().storeValues(this.values, function(){
+				debugger;
+			});
 		}
 	},
 	
@@ -307,10 +300,11 @@
 		$require: ['JSB.DataCube.Providers.DataProviderRepository',
 		           'JSB.DataCube.Query.QueryEngine'],
 		
-		$constructor: function(id, entry, wType){
+		$constructor: function(id, entry, wType, values){
 			this.id = id;
 			this.entry = entry;
 			this.wType = wType;
+			this.values = values || {};
 			$base();
 		},
 		
@@ -323,6 +317,20 @@
 			this.entry.store();
 			this.doSync();
 			return true;
+		},
+		
+		storeValues: function(values){
+			this.values = values;
+			this.entry.store();
+			this.doSync();
+			return true;
+		},
+		
+		getDataSchemeSource: function(ds){
+			if(!ds || !ds.source){
+				throw new Error('Invalid datascheme passed');
+			}
+			return this.entry.workspace.entry(ds.source);
 		},
 		
 		combineDataScheme: function(source){
@@ -407,7 +415,7 @@
 			iterator.close();
 			return {
 				type: 'array',
-				source: source,
+				source: source.getLocalId(),
 				arrayType: recordTypes
 			}
 		}

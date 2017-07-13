@@ -26,22 +26,42 @@
 					name: 'Отображение',
 					type: 'select',
 					items:[{
-						name: 'Поле',
-						type: 'group',
-						items: [{
-							name: 'Значение',
-							type: 'item',
-							binding: 'field',
-							itemType: 'any'
-						},{
-							name: 'Задать функцию преобразования типа',
-							type: 'item',
-//							editor: 'converter',
-							optional: true
-						}]
+						name: 'Значение',
+						type: 'item',
+						binding: 'field',
+						itemType: 'any'
 					},{
 						name: 'Виджет',
 						type: 'widget'
+					},{
+						type: 'group',
+						name: 'Данные',
+						binding: 'record',
+						items: [{
+							type: 'item',
+							name: 'Минимум',
+							itemType: 'integer',
+							itemValue: 0,
+							binding: 'field'
+						},{
+							type: 'item',
+							name: 'Максимум',
+							itemType: 'integer',
+							itemValue: 100,
+							binding: 'field'
+						},{
+							type: 'item',
+							name: 'Значение',
+							itemType: 'integer',
+							itemValue: 50,
+							binding: 'field'
+						},{
+							type: 'item',
+							name: 'Показатель',
+							itemType: 'string',
+							binding: 'field',
+							optional: true
+						}]
 					}]
 				}]
 			}]

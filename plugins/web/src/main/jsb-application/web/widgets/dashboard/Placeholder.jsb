@@ -50,7 +50,6 @@
 						$this.dragUi = ui;
 					},
 					tolerance: 'pointer',
-					greedy: true,
 					drop: function(evt, ui){
 						$this.dragUi = null;
 						var d = ui.draggable;
@@ -102,6 +101,19 @@
 				}
 			});
 */			
+		},
+		
+		enable: function(b){
+			if(!JSB.isDefined(b)){
+				b = true;
+			}
+			if(b){
+				this.removeClass('hidden');
+				this.getElement().droppable('enable');
+			} else {
+				this.getElement().droppable('disable');
+				this.addClass('hidden');
+			}
 		}
 	}
 }

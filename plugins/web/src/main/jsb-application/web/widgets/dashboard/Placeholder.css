@@ -7,6 +7,10 @@
 	background: rgba(129, 174, 197, 0.5);
 }
 
+._jsb_dashboardPlaceholder.hidden {
+	display: none;
+}
+
 ._jsb_dashboardPlaceholder.acceptDraggable {
 	background-color: rgba(156, 92, 29, 0.3);
     border-color: rgba(105, 45, 0, 0.5);
