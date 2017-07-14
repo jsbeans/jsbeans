@@ -210,6 +210,16 @@
                     where: $this._subQueryTranslateWhere(dcQuery, exp.$gcount),
                     columns:[{ expression: functionExpression('COUNT', translateExpression(null, exp.$gcount, true), null) }]
                 }
+                if (exp.$gsum && exp.$gsum == 1) return {
+                    type: 'select', table: $this.providers[0].getTableFullName(), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gsum),
+                    columns:[{ expression: functionExpression('SUM', '1') }]
+                }
+                if (exp.$gsum) return {
+                    type: 'select', table: $this._extractTable(dcQuery, exp.$gsum), alias: key,
+                    where: $this._subQueryTranslateWhere(dcQuery, exp.$gsum),
+                    columns:[{ expression: functionExpression('SUM', translateExpression(null, exp.$gsum, true), null) }]
+                }
 
                 if (exp.$toInt) return "CAST(( " + translateExpression(null, exp.$toInt, useDefaultTable) + " ) as int)"
                 if (exp.$toDouble) return "CAST(( " + translateExpression(null, exp.$toDouble, useDefaultTable) + " ) as double precision)"
