@@ -87,38 +87,84 @@
         },
 
         translateJoins: function(dcQuery, params){
+            var joinedProviders = this.providers.slice(0,1);
+
+            function translateJoin(leftProvider, joinedProviders){
+                var joins = [];
+                for(var p in $this.providers) if ($this.providers[p] != leftProvider) {
+                    var rightProvider = $this.providers[p];
+                    var join = {
+                        type: 'left',
+                        target: rightProvider.getTableFullName(),
+                        on: {}
+                    };
+
+                    for(var f in $this.cube.fields){
+                        var binding = $this.cube.fields[f].binding;
+                        var leftPosition = binding.length;
+                        for(var b = 0; b < binding.length; b++) {
+                            if (binding[b].provider == leftProvider) {
+                                leftPosition = b;
+                            }
+                        }
+                        for(var b = leftPosition; b < binding.length; b++) {
+                            if (binding[b].provider == rightProvider) {
+                                joinedProviders.push(rightProvider);
+                                join.on[$this._quotedName(binding[b].field)] =
+                                        '$' + leftProvider.getTableFullName() + '.' + $this._quotedName(binding[leftPosition].field) + '$';
+                            }
+                        }
+                    }
+                    if (Object.keys(join.on).length > 0) {
+                        joins.push(join);
+                    }
+                }
+                return joins;
+            }
+
             var joins = [];
             var joinedProviders = this.providers.slice(0,1);
-            for(var i=1; i < this.providers.length; i++) {
-                var provider = this.providers[i];
-                var join = {
-                    type: 'left',
-                    target: provider.getTableFullName(),
-                    on: {}
-                };
-                for(var f in this.cube.fields){
-                    var binding = this.cube.fields[f].binding;
-                    var left = null, right = null;
-                    for(var b in binding) {
-                        if (binding[b].provider == provider) {
-                            right = binding[b];
-                        }
-                    }
-                    if (right) for(var b in binding) {
-                        if (joinedProviders.indexOf(binding[b].provider) != -1) {
-                            left = binding[b];
-                            join.on[this._quotedName(right.field)] =
-                                '$' + left.provider.getTableFullName() + '.' + this._quotedName(left.field) + '$';
-                            joinedProviders.push(right.provider);
-                        }
-                    }
+            for(var p in this.providers) {
+                joins = joins.concat(translateJoin(this.providers[p], joinedProviders));
+            }
+            for(var p in this.providers) {
+                if (joinedProviders.indexOf(this.providers[p]) == -1) {
+                    throw new Error('Join condition is not defined');
                 }
-                if (Object.keys(join.on).length == 0) {
-                    throw Error('Join condition is not defined');
-                }
-                joins.push(join);
             }
             return joins;
+
+//            var joins = [];
+//            var joinedProviders = this.providers.slice(0,1);
+//            for(var i=1; i < this.providers.length; i++) {
+//                var provider = this.providers[i];
+//                var join = {
+//                    type: 'left',
+//                    target: provider.getTableFullName(),
+//                    on: {}
+//                };
+//                for(var f in this.cube.fields){
+//                    var binding = this.cube.fields[f].binding;
+//                    var left = null, right = null, rightPosition = binding.length;
+//                    for(var b in binding) {
+//                        if (binding[b].provider == provider) {
+//                            right = binding[b];
+//                            rightPosition = b;
+//                        }
+//                    }
+//                    if (right) for(var b = 0; b < rightPosition; b++) {
+//                        left = binding[b];
+//                        join.on[this._quotedName(right.field)] =
+//                            '$' + left.provider.getTableFullName() + '.' + this._quotedName(left.field) + '$';
+//                        joinedProviders.push(right.provider);
+//                    }
+//                }
+//                if (Object.keys(join.on).length == 0) {
+//                    throw new Error('Join condition is not defined');
+//                }
+//                joins.push(join);
+//            }
+//            return joins;
         },
 
         _translateField: function(dcQuery, field, useDefaultTable) {
@@ -352,7 +398,7 @@
             var sort = [];
             for(var i in dcQuery.$sort) {
                 var field = Object.keys(dcQuery.$sort[i])[0];
-                var key = dcQuery.$sort[i] < 0 ? 'DESC' : 'ASC';
+                var key = dcQuery.$sort[i][field] < 0 ? 'DESC' : 'ASC';
                 sort.push('"' + this._translateField(dcQuery, field) + '" ' + key);
             }
             return sort;

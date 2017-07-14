@@ -253,11 +253,35 @@
 		},
 
 		getOrderedDataProviders: function(){
-		    // TODO: support join order
+		    function compareProviders(leftProvider, rightProvider){
+		        for(var f in $this.fields){
+                    var binding = $this.fields[f].binding;
+                    if (binding.length > 1) {
+                        var leftPosition = binding.length;
+                        for(var b = 0; b < binding.length; b++) {
+                            if (binding[b].provider == leftProvider) {
+                                leftPosition = b;
+                            }
+                        }
+                        var rightPosition = binding.length;
+                        for(var b = 0; b < binding.length; b++) {
+                            if (binding[b].provider == rightProvider) {
+                                rightPosition = b;
+                            }
+                        }
+                        if (leftPosition != binding.length && rightPosition != binding.length) {
+                            return leftPosition - rightPosition;
+                        }
+                    }
+                }
+                return 0;
+		    }
+
 		    var providers = [];
 		    for(var id in this.dataProviders) {
 		        providers.push(this.dataProviders[id]);
 		    }
+		    providers.sort(compareProviders);
 		    return providers;
 		},
 		

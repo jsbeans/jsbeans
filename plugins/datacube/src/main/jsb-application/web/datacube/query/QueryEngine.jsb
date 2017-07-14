@@ -6,7 +6,8 @@
 		    'JSB.DataCube.Query.Iterators.DataProviderIterator',
 		    'JSB.DataCube.Query.Iterators.InnerJoinIterator',
 		    'JSB.DataCube.Query.Iterators.FinalizeIterator',
-		    'JSB.DataCube.Providers.SqlTableDataProvider'
+		    'JSB.DataCube.Providers.SqlTableDataProvider',
+		    'JSB.DataCube.Query.QuerySyntax'
         ],
 
 	    selftTest: function(cube){
@@ -160,6 +161,54 @@ debugger;
                             }
                         }
                     }
+                }
+            }
+
+            // generate $groupBy if not defined
+            if (!dcQuery.$groupBy) {
+                var aggregateFunctions = QuerySyntax.aggregateFunctions();
+                function findField(exp, aggregated){
+                    if (JSB.isString(exp)) {
+                        return {
+                            field: exp,
+                            aggregated: aggregated || false
+                        };
+                    }
+                    if (JSB.isPlainObject(exp)) {
+                        var op = Object.keys(exp)[0];
+                        if (aggregateFunctions[op]) {
+                            return findField(exp[op], true);
+                        }
+                        return findField(exp[op], aggregated);
+                    }
+                    return {
+                        field: null,
+                        aggregated: aggregated || false
+                    };
+                }
+
+                var aggregatedFields = [];
+                var groupFields = [];
+                var unknownAggregate = false;
+                for (var alias in dcQuery.$select) {
+                    var field = findField(dcQuery.$select[alias], false);
+                    if (field.aggregated && field.field){
+                        if (aggregatedFields.indexOf() == -1)
+                            aggregatedFields.push(field.field);
+                    } else if (field.field) {
+                        if (groupFields.indexOf() == -1)
+                            groupFields.push(field.field);
+                    } else {
+                        unknownAggregate = true;
+                    }
+                }
+                if (groupFields.length == 0 && unknownAggregate) {
+                    throw new Error("Define $groupBy");
+                }
+                // if not group by all fields
+                if (Object.keys(dcQuery.$select).length != aggregatedFields.length
+                    && Object.keys(dcQuery.$select).length != groupFields.length) {
+                    dcQuery.$groupBy = groupFields;
                 }
             }
             return dcQuery;
