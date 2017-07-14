@@ -13,12 +13,15 @@
 			type: 'group',
 			name: 'Строки',
 			binding: 'array',
+			key: 'rows',
 			items: [{
 				name: 'Столбцы',
 				type: 'group',
 				multiple: 'auto',
+				key: 'columns',
 				items: [{
 					name: 'Название',
+					key: 'title',
 					type: 'item',
 					itemType: 'string',
 					itemValue: '$field'
@@ -46,6 +49,24 @@
 			$base(opts);
 			
 			
+		},
+		
+		refresh: function(){
+/*			
+			var rowsContext = this.getRootContext().find('rows');
+			rowsContext.reset();
+			rowsContext.fetch(10, function(readCount){
+				while(rowsContext.next()){
+					var colsContext = rowsContext.find('columns');
+					for(var i = 0; i < colsContext.groups(); i++){
+						var colContext = colsContext.group(i);
+						var colTitle = colContext.find('title').value();
+						
+					}
+					
+				}
+			});
+*/			
 		}
 	},
 	

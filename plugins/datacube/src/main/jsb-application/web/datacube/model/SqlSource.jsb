@@ -8,7 +8,7 @@
 	getDetails: function(){
 		return this.details;
 	},
-
+	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'JSB.Store.StoreManager'],
@@ -29,7 +29,6 @@
 		getSettings: function(){
 			return this.settings;
 		},
-		
 		
 		updateSettings: function(settings){
 			this.settings = JSB.merge({

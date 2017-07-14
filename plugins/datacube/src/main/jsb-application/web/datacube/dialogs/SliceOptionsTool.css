@@ -38,3 +38,7 @@
 .sliceOptionsTool .queryEditor {
 	max-height: 200px;
 }
+
+.sliceOptionsTool .error{
+    color: darkred;
+}

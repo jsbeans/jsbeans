@@ -45,22 +45,28 @@
 		},
 		
 		registerExplorerNode: function(wmKeys, entryType, priority, nodeType){
-			if(!$jsb.isArray(wmKeys)){
-				wmKeys = [wmKeys||null];
-			}
-			for(var i = 0; i < wmKeys.length; i++){
-				var wmKey = wmKeys[i];
-				if(!this.explorerNodeRegistry[wmKey]){
-					this.explorerNodeRegistry[wmKey] = {};
+			var locker = JSB.getLocker();
+			locker.lock('registerExplorerNode_' + this.getId());
+			try {
+				if(!$jsb.isArray(wmKeys)){
+					wmKeys = [wmKeys||null];
 				}
-				var regEntry = this.explorerNodeRegistry[wmKey];
-				if(entryType instanceof JSB){
-					entryType = entryType.$name;
+				for(var i = 0; i < wmKeys.length; i++){
+					var wmKey = wmKeys[i];
+					if(!this.explorerNodeRegistry[wmKey]){
+						this.explorerNodeRegistry[wmKey] = {};
+					}
+					var regEntry = this.explorerNodeRegistry[wmKey];
+					if(entryType instanceof JSB){
+						entryType = entryType.$name;
+					}
+					if(!regEntry[entryType]){
+						regEntry[entryType] = [];
+					}
+					regEntry[entryType].push({priority:priority, nodeType:nodeType});
 				}
-				if(!regEntry[entryType]){
-					regEntry[entryType] = [];
-				}
-				regEntry[entryType].push({priority:priority, nodeType:nodeType});
+			} finally {
+				locker.unlock('registerExplorerNode_' + this.getId());
 			}
 		},
 		
@@ -133,22 +139,28 @@
 		},
 		
 		registerFileUploadCallback: function(wmKeys, entryType, priority, callback){
-			if(!$jsb.isArray(wmKeys)){
-				wmKeys = [wmKeys||null];
-			}
-			for(var i = 0; i < wmKeys.length; i++){
-				var wmKey = wmKeys[i];
-				if(!this.fileUploadCallbackRegistry[wmKey]){
-					this.fileUploadCallbackRegistry[wmKey] = {};
+			var locker = JSB.getLocker();
+			locker.lock('registerFileUploadCallback_' + this.getId());
+			try {
+				if(!$jsb.isArray(wmKeys)){
+					wmKeys = [wmKeys||null];
 				}
-				var regEntry = this.fileUploadCallbackRegistry[wmKey];
-				if(entryType instanceof JSB){
-					entryType = entryType.$name;
+				for(var i = 0; i < wmKeys.length; i++){
+					var wmKey = wmKeys[i];
+					if(!this.fileUploadCallbackRegistry[wmKey]){
+						this.fileUploadCallbackRegistry[wmKey] = {};
+					}
+					var regEntry = this.fileUploadCallbackRegistry[wmKey];
+					if(entryType instanceof JSB){
+						entryType = entryType.$name;
+					}
+					if(!regEntry[entryType]){
+						regEntry[entryType] = [];
+					}
+					regEntry[entryType].push({priority:priority, callback:callback});
 				}
-				if(!regEntry[entryType]){
-					regEntry[entryType] = [];
-				}
-				regEntry[entryType].push({priority:priority, callback:callback});
+			} finally {
+				locker.unlock('registerFileUploadCallback_' + this.getId());
 			}
 		},
 		
@@ -182,41 +194,47 @@
 		},
 		
 		registerBrowserView: function(viewType, viewOpts){
-			var wmKeys = viewOpts.wmKey;
-			if(!JSB.isArray(wmKeys)){
-				wmKeys = [wmKeys||null];
-			}
-			if(viewType instanceof JSB){
-				viewType = viewType.$name;
-			} else if(JSB.isBean(viewType)){
-				viewType = viewType.getJsb().$name;
-			} else if(!JSB.isString(viewType)){
-				throw new Error('Invalid viewType');
-			}
-			var acceptNodes = viewOpts.acceptNode;
-			if(!acceptNodes){
-				acceptNodes = null;
-			}
-			if(!JSB.isArray(acceptNodes)){
-				acceptNodes = [acceptNodes];
-			}
-			
-			for(var j = 0; j < wmKeys.length; j++){
-				var wmKey = wmKeys[j];
-				if(!this.browserViewRegistry[wmKey]){
-					this.browserViewRegistry[wmKey] = {};
+			var locker = JSB.getLocker();
+			locker.lock('registerBrowserView_' + this.getId());
+			try {
+				var wmKeys = viewOpts.wmKey;
+				if(!JSB.isArray(wmKeys)){
+					wmKeys = [wmKeys||null];
 				}
-				for(var n = 0; n < acceptNodes.length; n++){
-					var aNode = acceptNodes[n];
-					if(!this.browserViewRegistry[wmKey][aNode]){
-						this.browserViewRegistry[wmKey][aNode] = [];
+				if(viewType instanceof JSB){
+					viewType = viewType.$name;
+				} else if(JSB.isBean(viewType)){
+					viewType = viewType.getJsb().$name;
+				} else if(!JSB.isString(viewType)){
+					throw new Error('Invalid viewType');
+				}
+				var acceptNodes = viewOpts.acceptNode;
+				if(!acceptNodes){
+					acceptNodes = null;
+				}
+				if(!JSB.isArray(acceptNodes)){
+					acceptNodes = [acceptNodes];
+				}
+				
+				for(var j = 0; j < wmKeys.length; j++){
+					var wmKey = wmKeys[j];
+					if(!this.browserViewRegistry[wmKey]){
+						this.browserViewRegistry[wmKey] = {};
 					}
-					this.browserViewRegistry[wmKey][aNode].push({
-						viewType: viewType,
-						priority: viewOpts.priority || 0,
-						caption: viewOpts.caption
-					});
+					for(var n = 0; n < acceptNodes.length; n++){
+						var aNode = acceptNodes[n];
+						if(!this.browserViewRegistry[wmKey][aNode]){
+							this.browserViewRegistry[wmKey][aNode] = [];
+						}
+						this.browserViewRegistry[wmKey][aNode].push({
+							viewType: viewType,
+							priority: viewOpts.priority || 0,
+							caption: viewOpts.caption
+						});
+					}
 				}
+			} finally {
+				locker.unlock('registerBrowserView_' + this.getId());
 			}
 		},
 		

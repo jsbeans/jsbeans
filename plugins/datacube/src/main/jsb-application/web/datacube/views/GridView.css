@@ -32,6 +32,10 @@
 .gridView td{
     max-width: 300px;
 }
+.gridView th > *,
+.gridView td > *{
+    max-width: initial;
+}
 .gridView .handsontable .htDimmed{
     word-wrap: break-word;
 }

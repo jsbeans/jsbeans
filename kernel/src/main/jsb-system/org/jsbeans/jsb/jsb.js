@@ -3804,7 +3804,7 @@ JSB({
 
 			} else {
 				// number, string or boolean
-				if(realScope != syncInfoScope.value || syncInfoScope.value === undefined || syncInfoScope.type != 0){
+				if(realScope != syncInfoScope.value || (syncInfoScope.value === undefined && realScope !== undefined)|| syncInfoScope.type != 0){
 					syncInfoScope.value = realScope;
 					syncInfoScope.type = 0;
 					updated = true;
@@ -4453,10 +4453,20 @@ JSB({
 				this.applySlice(syncInfo.slice);
 				this._onAfterSync(syncInfo.slice);
 				retSlice.maxStamp = Date.now();
-				needUpdate |= this.updateSyncState()
+				needUpdate |= this.updateSyncState();
 			}
 			
 			if(needUpdate){
+/*				
+				if(!JSB.isDefined(this.sscount)){
+					this.sscount = 0;
+				}
+				this.sscount++;
+				if(this.sscount > 300){
+					debugger;
+					this.updateSyncState()
+				}
+*/				
 				JSB.defer(function(){
 					self.client().doSync(true);	
 				}, 0);

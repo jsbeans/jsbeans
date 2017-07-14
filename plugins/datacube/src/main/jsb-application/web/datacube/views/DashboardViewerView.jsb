@@ -13,7 +13,6 @@
 		},
 		
 		refresh: function(){
-			this.editor.setCurrentEntry(this.node.getEntry());
 		}
 		
 	},

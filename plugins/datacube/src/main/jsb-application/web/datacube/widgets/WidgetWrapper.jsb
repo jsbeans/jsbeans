@@ -108,6 +108,7 @@
 				JSB.lookup($this.wType, function(WidgetClass){
 					$this.widget = new WidgetClass();
 					$this.widgetContainer.append($this.widget.getElement());
+					$this.widget.setWrapper($this);
 				});
 			});
 
@@ -297,7 +298,7 @@
 		},
 		
 		refreshWidget: function(){
-			
+			this.getWidget().refresh();
 		}
 	},
 	
