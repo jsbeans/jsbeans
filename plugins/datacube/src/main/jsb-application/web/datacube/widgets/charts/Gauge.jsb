@@ -221,7 +221,8 @@
 				name: 'Показатель',
 				itemType: 'string',
 				binding: 'field',
-				optional: true
+				optional: true,
+				multiple: true
 			}]
 		}]
 	},

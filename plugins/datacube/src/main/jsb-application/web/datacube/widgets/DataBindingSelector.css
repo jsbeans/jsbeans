@@ -6,7 +6,25 @@
     background-color: rgba(24, 108, 138, 0.2);
     padding: 0 4px;
     border-radius: 6px;
+    position: relative;
 }
+
+.dataBindingSelector > .btnDelete {
+	position: absolute;
+	right: 2px;
+	top: 50%;
+	margin-top: -8px;
+	display: none;
+}
+
+.dataBindingSelector.filled {
+	padding: 0 20px 0 4px;
+}
+
+.dataBindingSelector.filled > .btnDelete {
+	display: block;
+}
+
 
 .dataBindingSelector.selectable {
 	cursor: pointer;
@@ -21,14 +39,14 @@
 
 /* placeholder */
 
-.dataBindingSelector > .hidden {
-	display: none;
-}
-
 .dataBindingSelector > .placeholder {
 	padding: 3px 2px;
     color: #6c7786;
     font-size: 10px;
+}
+
+.dataBindingSelector.filled > .placeholder {
+	display: none;
 }
 
 .dataBindingSelector.acceptDraggable > .placeholder,
@@ -42,6 +60,11 @@
 .dataBindingSelector > .binding {
 	padding: 0 2px;
     height: 18px;
+    display: none;
+}
+
+.dataBindingSelector.filled > .binding {
+	display: block;
 }
 
 .dataBindingSelector > .binding > .renderer {

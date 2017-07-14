@@ -8,6 +8,22 @@
     border-radius: 6px;
 }
 
+.embeddedWidgetSelector > .btnDelete {
+	position: absolute;
+	right: 2px;
+	top: 50%;
+	margin-top: -8px;
+	display: none;
+}
+
+.embeddedWidgetSelector.filled {
+	padding: 0 20px 0 4px;
+}
+
+.embeddedWidgetSelector.filled > .btnDelete {
+	display: block;
+}
+
 .embeddedWidgetSelector.acceptDraggable,
 .embeddedWidgetSelector.selectable:hover {
 	background-color: rgba(156, 92, 29, 0.3);
@@ -17,14 +33,14 @@
 
 /* placeholder */
 
-.embeddedWidgetSelector > .hidden {
-	display: none;
-}
-
 .embeddedWidgetSelector > .placeholder {
 	padding: 3px 2px;
     color: #6c7786;
     font-size: 10px;
+}
+
+.embeddedWidgetSelector.filled > .placeholder {
+	display: none;
 }
 
 .embeddedWidgetSelector.acceptDraggable > .placeholder,
@@ -38,6 +54,11 @@
 .embeddedWidgetSelector > .binding {
 	padding: 0 2px;
     height: 18px;
+    display: none;
+}
+
+.embeddedWidgetSelector.filled > .binding {
+	display: block;
 }
 
 .embeddedWidgetSelector > .binding > .renderer {

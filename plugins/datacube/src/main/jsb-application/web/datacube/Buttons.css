@@ -185,7 +185,7 @@
 /* delete */
 
 ._dwp_button.roundButton.btnDelete {
-	box-shadow: 0 0 0 1px rgba(142, 0, 0, 0.5);
+	box-shadow: 0 0 0 1px rgba(142, 60, 0, 0.5);
 }
 
 ._dwp_button.roundButton.btnDelete > ._dwp_icon {
@@ -193,7 +193,7 @@
 }
 
 ._dwp_button.roundButton.btn10.btnDelete {
-	background: #caa37a !important;
+	background: #d2c5b8 !important;
 }
 
 ._dwp_button.enabled.roundButton.btn10.btnDelete:hover,
