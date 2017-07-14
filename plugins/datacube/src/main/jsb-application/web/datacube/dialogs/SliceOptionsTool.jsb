@@ -40,9 +40,13 @@
 					<div jsb="JSB.Widgets.MultiEditor" class="queryEditor" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
 				</div>
 
+				<span class="error json1 hidden">Невалидный json текста запроса!</span>
+
 				<div jsb="JSB.Widgets.GroupBox" caption="Параметры запроса">
                     <div jsb="JSB.Widgets.MultiEditor" class="queryParameters" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
                 </div>
+
+                <span class="error json2 hidden">Невалидный json параметров запроса!</span>
 				
 				<div class="buttons">
 					<div 
@@ -184,14 +188,34 @@
 		},
 		
 		apply: function(){
-			// construct response
-			this.data.callback.call(this, {
-			    name: this.find('.name._dwp_primitiveEditor').jsb().getData().getValue(),
-                query: this.find('.queryEditor').jsb().getData().getValue(),
-                queryParams: this.find('.queryParameters').jsb().getData().getValue()
-			});
+		    var flag1 = false,
+		        flag2 = false;
+		    try{
+		        var json1 = this.find('.queryEditor').jsb().getData().getValue();
+		        this.find('.error.json1').addClass('hidden');
+		        flag1 = true;
+		    } catch (ex){
+		        this.find('.error.json1').removeClass('hidden');
+		    }
 
-			$this.close();
+		    try{
+                var json2 = this.find('.queryParameters').jsb().getData().getValue();
+                this.find('.error.json2').addClass('hidden');
+                flag2 = true;
+            } catch (ex){
+                this.find('.error.json2').removeClass('hidden');
+            }
+
+            if(flag1 && flag2){
+                // construct response
+                this.data.callback.call(this, {
+                    name: this.find('.name._dwp_primitiveEditor').jsb().getData().getValue(),
+                    query: json1,
+                    queryParams: json2
+                });
+
+                $this.close();
+            }
 		}
 		
 	},

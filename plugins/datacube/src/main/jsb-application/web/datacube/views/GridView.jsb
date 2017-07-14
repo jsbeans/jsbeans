@@ -54,7 +54,7 @@
 
             this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
                 JSB.defer(function(){
-                    $this.updateSlice(slice);
+                    $this._updateData(slice);
                 }, 300, 'sliceNodeEdit' + $this.getId());
             });
 		},
@@ -176,7 +176,11 @@
                     return;
                 }
 
-                $this.table.loadData(res.result);
+                if(res.result.length !== 0) {
+                    $this.table.loadData(res.result);
+                } else {
+                    $this.table.loadData(null);
+                }
 
                 $this.allLoaded = res.allLoaded;
             });

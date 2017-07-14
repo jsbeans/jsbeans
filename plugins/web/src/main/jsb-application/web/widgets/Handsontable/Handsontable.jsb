@@ -13,6 +13,9 @@
 			this.loadCss('Handsontable.css');
 			this.addClass('tableControl');
 
+            this.noData = this.$('<div class="noData hidden">Нет данных</div>');
+            this.append(this.noData);
+
 			this.table = this.$('<div></div>');
 			this.append(this.table);
 
@@ -36,9 +39,6 @@
                 Handsontable.renderers.registerRenderer('customRenderer', customRenderer);
 
                 $this.handsontable = new Handsontable($this.table.get(0), $this.handsontable_options);
-
-                // hooks
-                $this.handsontable.addHook('afterColumnMove', function(columns, target){ $this._afterColumnMove(columns, target); });
 
                 $this.table.resize(function(){
                     JSB().defer(function(){
@@ -187,6 +187,14 @@
 		},
 
 		loadData: function(data){
+		    if(!data){
+                this.noData.removeClass('hidden');
+                this.table.addClass('hidden');
+                return;
+		    }
+		    this.noData.addClass('hidden');
+		    this.table.removeClass('hidden');
+
 		    this.data = JSB().clone(data);
 		    data = this.prepareData(data);
 
@@ -243,11 +251,6 @@
 
             for(var i in indexes)
                 this.handsontable.alter('remove_row', indexes[i]);
-		},
-
-		// hooks
-		_afterColumnMove: function(columns, target){
-		    this.columns = this.columns.splice(target, 0, this.columns.slice(columns[0], columns.length));
 		},
 
 		// utils
