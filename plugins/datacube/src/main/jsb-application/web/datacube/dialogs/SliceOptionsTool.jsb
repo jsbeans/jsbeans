@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager', 
 	           'JSB.Widgets.PrimitiveEditor',
-	           'JSB.Widgets.ScrollBox'],
+	           'JSB.Widgets.ScrollBox',
+	           'JQuery.UI.Resizable'],
 	$client: {
 		$bootstrap: function(){
 			// register tooltip
@@ -64,6 +65,20 @@
 					</div>
 				</div>
 			`);
+
+            this.find('div.queryEditor').resizable({
+                handles: "n, s",
+                // containment: this.getElement(),
+                minHeight: 20,
+                minWidth: 320
+            });
+
+            this.find('div.queryParameters').resizable({
+                handles: "n, s",
+                // containment: this.getElement(),
+                minHeight: 20,
+                minWidth: 320
+            });
 		},
 		
 		
@@ -176,6 +191,8 @@
 			});
 			scroll.append(this.renderer);
 */
+
+            // this.$('.datacubeToolWrapper').draggable();
 		},
 		
 		isValid: function(){
