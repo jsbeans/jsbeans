@@ -31,6 +31,9 @@
 			if(this.scheme.key){
 				this.values.key = this.scheme.key;
 			}
+			if(this.scheme.type){
+				this.values.type = this.scheme.type;
+			}
 			this.update();
 		},
 		
@@ -113,18 +116,25 @@
 			updateGroupUsedVisibility();
 
 			if(header){
-				if((this.scheme.binding == 'array' || this.scheme.binding == 'record') && !this.binding){
+				if((this.scheme.binding == 'field') || ((this.scheme.binding == 'array' || this.scheme.binding == 'record') && !this.binding)){
 					this.bindingSelector = new DataBindingSelector({
 						scope: $this.binding,
 						value: $this.values.binding,
 						wrapper: this.wrapper,
 						onChange: function(){
-							$this.values.binding = this.getDataScheme();
-							if(!$this.values.binding){
+							var binding = this.getDataScheme();
+							if(!binding){
+								$this.values.binding = null;
 								$this.update();
 								return;
 							}
-							fillGroup(this.getDataScheme());
+							if(binding.source){
+								$this.values.binding = binding;
+							} else {
+								$this.values.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
+							}
+							 
+							fillGroup(binding);
 						}
 					});
 					header.append(this.bindingSelector.getElement());
@@ -227,7 +237,6 @@
 						scheme: item,
 						values: values,
 						wrapper: $this.wrapper,
-						tool: $this.tool,
 						binding: binding || $this.binding,
 						supply: supply || $this.supply,
 						onChange: $this.options.onChange,
@@ -258,7 +267,11 @@
 			function fillGroup(childBinding){
 				$this.bodyElt.empty();
 				if(!$this.values.binding && $this.scheme.binding){
-					$this.values.binding = childBinding;
+					if(!childBinding || childBinding.source){
+						$this.values.binding = childBinding;
+					} else {
+						$this.values.binding = $this.wrapper.getBindingRelativePath($this.binding, childBinding);
+					}
 				}
 				if($this.values && $this.values.groups && $this.values.groups.length > 0){
 					for(var i = 0; i < $this.values.groups.length; i++){
@@ -410,7 +423,18 @@
 						wrapper: $this.wrapper,
 						
 						onChange: function(){
-							valueDesc.binding = this.getDataScheme();
+							var binding = this.getDataScheme();
+							if(!binding){
+								valueDesc.binding = null;
+								valContainer.removeClass('isBound');
+								return;
+							}
+							if(binding.source){
+								valueDesc.binding = binding;
+							} else {
+								valueDesc.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
+							}
+							 
 							if(valueDesc.binding){
 								valContainer.addClass('isBound');
 							} else {
@@ -421,7 +445,12 @@
 					valContainer.append('<div class="separator">или</div>');
 					valContainer.append(bindingSelector.getElement());
 					if(bindingSelector.isFilled()){
-						valueDesc.binding = bindingSelector.getDataScheme();
+						var binding = bindingSelector.getDataScheme();
+						if(binding.source){
+							valueDesc.binding = binding;
+						} else {
+							valueDesc.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
+						}
 					}
 					if(valueDesc.binding){
 						valContainer.addClass('isBound');
@@ -654,12 +683,15 @@
 			
 			function fillWidgetPane(){
 				var bodyElt = $this.find('> .body');
+				if(!$this.values.values){
+					$this.values.values = {};
+				}
 				
 				JSB.lookup($this.values.widget.jsb, function(wCls){
 					var wScheme = $this.wrapper.extractWidgetScheme(wCls.jsb);
 					var wSchemeRenderer = new $class({
 						scheme: wScheme,
-						values: $this.values,
+						values: $this.values.values,
 						wrapper: $this.wrapper,
 						binding: $this.binding,
 						supply: $this.supply,

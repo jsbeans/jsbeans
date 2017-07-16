@@ -53,8 +53,15 @@
 					$this.showTool(evt);
 				});
 				if(this.options.value){
-					var path = this.wrapper.getBindingRelativePath(this.options.scope, this.options.value);
-					this.setField(path, this.options.value);
+					var val, path;
+					if(JSB.isString(this.options.value)){
+						path = this.options.value;
+						val = this.wrapper.applyBindingRelativePath(this.options.scope, path);
+					} else {
+						val = this.options.value;
+						path = this.wrapper.getBindingRelativePath(this.options.scope, val);
+					}
+					this.setField(path, val);
 				}
 			}
 			this.ready = true;

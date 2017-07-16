@@ -28,6 +28,7 @@
 				},{
 					name: 'Отображение',
 					type: 'select',
+					key: 'view',
 					items:[{
 						name: 'Значение',
 						type: 'item',
@@ -51,9 +52,58 @@
 			
 		},
 		
+		getColumnNames: function(){
+			var names = [];
+			this.getContext().find('title').each(function(){
+				names.push(this.value());
+			});
+			return names;
+		},
+		
+		readRows: function(){
+			var rowsContext = this.getContext().find('rows');
+			var gArr = this.getContext().find('columns').values();
+			
+			function iterateRows(){
+				while(rowsContext.next()){
+					
+					// iterate by cells
+					for(var i = 0; i < gArr.length; i++){
+						var title = gArr[i].get(0).value();
+						var view = gArr[i].get(1).value();
+						var val = view.value();
+						console.log(title + ':' + val);
+					}
+				}
+				
+				rowsContext.fetch(function(data){
+					if(data && data.length){
+						iterateRows();
+					}
+				})
+			}
+			
+			iterateRows();
+		},
+		
 		refresh: function(){
+			
+			// get column names
+			var colNames = this.getColumnNames();
+			
+			// get columns
+			var gArr = this.getContext().find('columns').values();
+			for(var i = 0; i < gArr.length; i++){
+				var val = gArr[i].find('title').value();
+				var view = gArr[i].get(1).value();
+			}
+			
+			// get rows
+			debugger;
+			this.readRows();
+			
 /*			
-			var rowsContext = this.getRootContext().find('rows');
+			var rowsContext = this.getContext().find('rows');
 			rowsContext.reset();
 			rowsContext.fetch(10, function(readCount){
 				while(rowsContext.next()){

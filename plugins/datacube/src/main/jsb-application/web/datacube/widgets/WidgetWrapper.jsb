@@ -23,6 +23,10 @@
 		return this.values;
 	},
 	
+	getDashboard: function(){
+		return this.entry;
+	},
+	
 	getBindingRelativePath: function(parent, child){
 		function searchChild(p, c){
 			if(JSB.isEqual(p, c)){
@@ -48,6 +52,29 @@
 		}
 		
 		return searchChild(parent, child);
+	},
+	
+	applyBindingRelativePath: function(parent, path){
+		var curVal = parent;
+		if(!path || path.length == 0){
+			return curVal;
+		}
+		var parts = path.split(/[\.\/]/);
+		
+		for(var i = 0; i < parts.length; i++){
+			while(curVal.type == 'array'){
+				curVal = curVal.arrayType;
+			}
+			if(curVal.type != 'object'){
+				return null;
+			}
+			if(!curVal.record || !JSB.isDefined(curVal.record[parts[i]])){
+				return null;
+			}
+			curVal = curVal.record[parts[i]];
+		}
+		
+		return curVal;
 	},
 	
 	$client: {
@@ -291,14 +318,14 @@
 			
 			// store data in wrapper
 			this.server().storeValues(this.values, function(){
-				$this.refreshWidget();
+				$this.updateWidgetSelectors();
 			});
 			
 			this.closeSettings();
 		},
 		
-		refreshWidget: function(){
-			this.getWidget().refresh();
+		updateWidgetSelectors: function(){
+			this.getWidget().updateSelectors();
 		}
 	},
 	
