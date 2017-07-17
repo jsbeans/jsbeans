@@ -98,7 +98,15 @@
 				},
 				
 				reset: function(){
-					// reset data cursor to 0 position
+					if(this.selector.length == 0){
+						return;
+					}
+					
+					var item = this.selector[0];
+					if(!item.fetchOpts){
+						item.fetchOpts = {};
+					}
+					item.fetchOpts.reset = true;
 				},
 				
 				fetch: function(opts, callback){
@@ -121,7 +129,13 @@
 					if(!item.binding || !item.binding.source){
 						return false;
 					}
-					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), opts, function(data){
+					if(!item.fetchOpts){
+						item.fetchOpts = {
+							reset: true
+						};
+					}
+					JSB.merge(item.fetchOpts, opts);
+					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data){
 						if(opts.reset){
 							item.cursor = 0;
 							if(item.data){
@@ -337,7 +351,7 @@
 			}
 			
 			var data = [];
-			for(var i = 0; i < batchSize; i++){
+			for(var i = 0; i < batchSize || opts.readAll; i++){
 				var el = this.iterators[sourceId].next();
 				if(!el){
 					break;

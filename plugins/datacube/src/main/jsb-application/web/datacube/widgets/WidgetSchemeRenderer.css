@@ -116,14 +116,16 @@
 /* items */
 .widgetSchemeRenderer[entry="item"] {}
 
-.widgetSchemeRenderer[entry="item"] > .header {}
+.widgetSchemeRenderer[entry="item"] > .header {
+	vertical-align: top;
+}
 
 .widgetSchemeRenderer[entry="item"] > .value {
 	display: none;
 }
 
 .widgetSchemeRenderer[entry="item"].used > .value {
-    vertical-align: middle;
+    vertical-align: top;
     margin-left: 6px;
 	display: inline-block;
 }
@@ -153,15 +155,22 @@
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .valueEditor {
-	vertical-align: middle;
+	vertical-align: top;
+}
+
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .valueEditor.multiEditor {
+	min-width: 400px;
+    position: relative;
+    max-height: 400px;
+    border: 1px solid #cecece;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .dataBindingSelector {
-	vertical-align: middle;
+	vertical-align: top;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .separator {
-	vertical-align: middle;
+	vertical-align: top;
 	display: inline-block;
     margin: 0 6px;
     color: #555;
