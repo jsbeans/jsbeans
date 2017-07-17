@@ -94,7 +94,12 @@
 				},
 				
 				used: function(){
-					// returns if selector part used
+					if(this.selector.length == 0){
+						return false;
+					}
+					
+					var item = this.selector[0];
+					return item.used;
 				},
 				
 				reset: function(){

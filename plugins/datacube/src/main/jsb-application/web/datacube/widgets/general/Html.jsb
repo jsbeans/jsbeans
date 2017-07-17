@@ -44,7 +44,8 @@
 		},{
 			name: 'Использовать iframe',
 			type: 'item',
-			optional: true
+			key: 'useIframe',
+			optional: 'checked'
 		}]
 	},
 	
@@ -188,6 +189,9 @@
 			$this.doT = doT;
 			
 			$base(opts);
+			
+			this.addClass('htmlWidget');
+			this.loadCss('Html.css');
 		},
 		
 		refresh: function(){
@@ -203,7 +207,6 @@
 		},
 		
 		draw: function(){
-			this.getElement().empty();
 			var args = this.getContext().find('args').values();
 			var template = this.getContext().find('template').value();
 			var data = {};
@@ -214,7 +217,85 @@
 			}
 			var templateProc = this.doT.template(template);
 			var html = templateProc(data);
-			this.append(html);
+			
+			if(this.getContext().find('useIframe').used()){
+				this.renderIframe(html);
+			} else {
+				this.renderSimple(html);
+			}
+		},
+		
+		setIframeMode: function(callback){
+			var self = this;
+			if(this.currentRender == 'iframe'){
+				callback(this.iframe);
+			} else {
+				this.currentRender = 'iframe';
+				if(JSB.isNull(this.iframe)){
+					this.iframe = this.$('<iframe class="innerDoc"></iframe>');
+					this.getElement().append(this.iframe);
+					
+					JSB.deferUntil(function(){
+						// enable content editing
+						var iframeNode = self.iframe.get(0); 
+						iframeNode.contentDocument.designMode = "on";
+						callback(self.iframe);
+						iframeNode.contentDocument.designMode = "off";
+					},function(){
+						return self.iframe.width() > 0 && self.iframe.height() > 0; 
+					});
+				} else {
+					this.iframe.css({
+						display: ''
+					});
+					if(!JSB.isNull(this.simpleContainer)){
+						this.simpleContainer.css({
+							display: 'none'
+						});
+					}
+					
+					callback(self.iframe);
+				}
+			}
+		},
+		
+		setSimpleMode: function(callback){
+			if(this.currentRender == 'simple'){
+				callback(this.simpleContainer);
+				return;
+			}
+			this.currentRender = 'simple';
+			if(!JSB.isNull(this.iframe)){
+				this.iframe.css({
+					display: 'none'
+				});
+			}
+			if(JSB.isNull(this.simpleContainer)){
+				this.simpleContainer = this.$('<div class="simpleContainer"></div>');
+				this.getElement().append(this.simpleContainer);
+			}
+			this.simpleContainer.css({
+				display: ''
+			});
+			callback(this.simpleContainer);
+		},
+		
+		renderIframe: function(html){
+			var self = this;
+			this.setIframeMode(function(iframe){
+				var doc = iframe.get(0).contentDocument;
+				doc.open();
+				doc.write(html);
+				doc.close();
+			});
+		},
+		
+		renderSimple: function(html){
+			var self = this;
+			this.setSimpleMode(function(container){
+				container.empty();
+				container.html(html);
+			});
 		}
 	},
 	
