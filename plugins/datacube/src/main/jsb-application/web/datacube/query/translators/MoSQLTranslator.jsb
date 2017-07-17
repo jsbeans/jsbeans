@@ -177,7 +177,8 @@
 //            }
             // if new alias return as is
             if (!this.cube.fields[field]) {
-                return this._quotedName(field);
+                //return this._quotedName(field);
+                return field;
             }
             var binding = this.cube.fields[field].binding;
             for (var b in binding) {
@@ -207,11 +208,18 @@
 
             function translateExpression(key, exp, useDefaultTable) {
                 if (JSB.isString(exp)) {
-                    return key ? {
+                    if (key) {
+                        var provs = $this._extractUsedProviders(dcQuery, exp, false, true);
+                        if (provs.length == 0) throw new Error('Unknown provider for ' + JSON.stringify(exp));
+                        return {
                             name: $this._translateField(dcQuery, exp),
-                            table: !useDefaultTable && $this._extractUsedProviders(dcQuery, exp, false, true)[0].getTableFullName(),
+                            table: !useDefaultTable && provs[0].getTableFullName(),
                             alias: key
-                        } : $this._translateField(dcQuery, exp, useDefaultTable);
+                        };
+                    } else {
+                        return $this._translateField(dcQuery, exp, useDefaultTable);;
+                    }
+                    return key ?  :
                 }
 
                 if (exp.$distinct) {
