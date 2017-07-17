@@ -219,7 +219,6 @@
                     } else {
                         return $this._translateField(dcQuery, exp, useDefaultTable);;
                     }
-                    return key ?  :
                 }
 
                 if (exp.$distinct) {
