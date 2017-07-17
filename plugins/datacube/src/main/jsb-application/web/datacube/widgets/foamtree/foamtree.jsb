@@ -410,7 +410,41 @@
                                       Euz32zog2/xBJG5WbxYbGjdw0HpAfE6KfXuKmt9T9PY9bWJaR8dGv0hfCf7/01A+Z7PZ+P8Dsqf6
                                       ElFZljYAAAAASUVORK5CYII=`
     },
-    $scheme: {},
+    $scheme: {
+        type: 'group',
+        items: [{
+            type: 'group',
+            name: 'Источник',
+            key: 'source',
+            binding: 'array',
+            items: [{
+                type: 'group',
+                name: 'Уровни',
+                key: 'levels',
+                multiple: 'auto',
+                items: [
+                {
+                    name: 'Имя поля',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
+                },{
+                    name: 'Вес',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'number',
+                    itemValue: ''
+                }
+                ]
+            },{
+                type: 'item',
+                key: 'autoSize',
+                name: 'Автоматически считать размеры',
+                optional: true
+            }]
+        }]
+    },
 	$require: [],
 	$client: {
 	    isContainerReady: false,
@@ -428,7 +462,8 @@
 
             JSB().loadScript(['datacube/widgets/foamtree/foamtree.js'],
                 function(){
-                    $this.init();
+                    // $this.init();
+                    $this.isScriptLoaded = true;
                 }
             );
         },
@@ -448,15 +483,16 @@
         // data example
         _aggrs: {
             groups: [
-                { label: "Your", weight: 1.0 },
-                { label: "First", weight: 3.0 },
-                { label: "FoamTree", weight: 2.0 },
-                { label: "Visualization", weight: 4.0 }
+                { label: "Добавьте", weight: 1.0 },
+                { label: "Свои", weight: 3.0 },
+                { label: "Данные", weight: 2.0 },
+                { label: "Маппированием", weight: 4.0 }
             ]
         },
 
         init: function(){
             this.getElement().loader();
+
             JSB().deferUntil(function(){
                 $this.getElement().loader('hide');
                 $this.foamtree = new CarrotSearchFoamTree({
@@ -480,6 +516,94 @@
 
         onGroupHover: function(evt){
             // debugger;
+        },
+
+        refresh: function(){
+            if(this.getContext().find('source').length() !== 0){
+                this.getElement().loader();
+
+                this.isDataLoaded = false;
+
+                var data = this.getData();
+
+                if(this.foamtree){
+                    JSB().deferUntil(function(){
+                        $this.getElement().loader('hide');
+
+                        $this.foamtree.set({
+                            dataObject: {
+                                groups: data
+                            }
+                        });
+                    }, function(){
+                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded;
+                    });
+                } else {
+                    JSB().deferUntil(function(){
+                        $this.getElement().loader('hide');
+
+                        $this.foamtree = new CarrotSearchFoamTree({
+                            id: $this.foamtreeId,
+                            dataObject: {
+                                groups: data
+                            },
+                            onGroupHover: function(evt){
+                                $this.onGroupHover(evt);
+                            },
+                        });
+                        $this.foamtreeContainer.resize(function(){
+                            JSB().defer(function(){
+                                $this.foamtree.resize();
+                            }, 300, 'foamtree.resize.' + $this.getId())
+                        });
+                    }, function(){
+                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded;
+                    });
+                }
+            }
+        },
+
+        getData: function(){
+            var context = this.getContext().find('source');
+            var levels = this.getContext().find('levels').values();
+            var data = [];
+
+            var autoSize = this.getContext().find('autoSize').used();
+
+            context.fetch({readAll: true}, function(){
+                while(context.next()){
+                    var el = data;
+
+                    for(var i = 0; i < levels.length; i++){
+                        var label = levels[i].get(0).value();
+                        var weight = levels[i].get(1).value();
+
+                        var e = el.find(function(element){
+                            if(element.label === label) return true;
+                            return false;
+                        });
+
+                        if(!e){
+                            el.push({
+                                label: label,
+                                weight: weight,
+                                groups: []
+                            });
+
+                            if(autoSize) el[el.length - 1].weight = 0;
+
+                            el = el[el.length - 1].groups;
+                        } else {
+                            if(autoSize) e.weight++;
+                            el = e.groups;
+                        }
+                    }
+                }
+
+                $this.isDataLoaded = true;
+            });
+
+            return data;
         }
 	}
 }

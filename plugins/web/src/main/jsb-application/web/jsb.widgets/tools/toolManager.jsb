@@ -225,30 +225,29 @@
 					params.onShow.call(self);
 				}
 			},function(){
-				var bRet = true;
 				if(JSB().isNull(chosenInstance.oldW)){
 					chosenInstance.oldW = chosenInstance.getElement().outerWidth(true);
-					bRet = false;
+					return false;
 				}
 				if(JSB().isNull(chosenInstance.oldH)){
 					chosenInstance.oldH = chosenInstance.getElement().outerHeight(true);
-					bRet = false;
+					return false;
 				}
 				if(chosenInstance.getElement().outerWidth(true) != chosenInstance.oldW || chosenInstance.getElement().outerHeight(true) != chosenInstance.oldH){
 					chosenInstance.oldW = chosenInstance.getElement().outerWidth(true);
 					chosenInstance.oldH = chosenInstance.getElement().outerHeight(true);
 					chosenInstance.compCntr = 0;
-					bRet = false;
+					return false;
 				} else {
 					chosenInstance.compCntr++;
 					if(chosenInstance.compCntr < 5){
-						bRet = false;
+						return false;
 					}
 				}
 				if( chosenInstance.getElement().width() == 0 || chosenInstance.getElement().height() == 0 ){
-					bRet = false;
+					return false;
 				}
-				return bRet;
+				return true;
 			}, 50);
 			
 			return chosenInstance;

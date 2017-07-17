@@ -51,7 +51,11 @@
 					]
 				};
 			}
-
+			/*
+			if(this.options.valueType == 'org.jsbeans.types.JsonObject'){
+                mode = 'application/json';
+            }
+            */
 			JSB.loadCss('tpl/codemirror/lib/codemirror.css');
 			JSB.loadCss('tpl/codemirror/theme/eclipse.css');
 			JSB.loadCss('tpl/codemirror/theme/xq-light.css');
@@ -64,7 +68,7 @@
 				JSB.loadScript('tpl/codemirror/addon/search/search.js');
 				JSB.loadScript('tpl/codemirror/addon/search/searchcursor.js');
 				JSB.loadScript('tpl/codemirror/addon/dialog/dialog.js');
-				
+
 				if(mode == 'javascript'){
 					JSB.loadCss('tpl/codemirror/addon/lint/lint.css');
 					
@@ -108,7 +112,25 @@
 						});
 						$this.ready = true;
 					});
-				} else if(mode == 'application/x-sparql-query'){
+                }
+                /*
+                else if(mode === 'application/json'){
+                    JSB.loadCss('tpl/codemirror/addon/lint/lint.css');
+                    var scripts = ['tpl/jshint/jshint.js',
+                        'tpl/codemirror/addon/lint/jsonlint.js',
+                        'tpl/codemirror/addon/lint/json-lint.js',
+                        'tpl/codemirror/addon/lint/lint.js',
+                    ];
+                    JSB.loadScript(scripts, function(){
+                        $this.init(mode, theme, {
+                            lint: true,
+                            gutters: ['CodeMirror-lint-markers']
+                        });
+                        $this.ready = true;
+                    });
+				}
+				*/
+				else if(mode == 'application/x-sparql-query'){
 					JSB.loadScript('tpl/codemirror/mode/sparql/sparql.js', function(){
 						$this.init(mode, theme);
 						$this.ready = true;
@@ -139,6 +161,7 @@
 		options: {
 			valueType: 'org.jsbeans.types.JavaScript',
 			showHints: true,
+			validation: true
 		},
 		
 		behavior: {

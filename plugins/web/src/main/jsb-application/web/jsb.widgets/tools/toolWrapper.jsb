@@ -16,8 +16,10 @@
 		},
 		
 		options: {
-			hideByEsc: true
+			hideByEsc: true,
+			draggable: false
 		},
+
 		init: function(){
 			var elt = this.getElement();
 			elt.addClass('_dwp_toolWrapper');
@@ -116,13 +118,16 @@
 		
 		initHandlers: function(){
 			var self = this;
-			this.getElement().mouseover(function(){
+			var elt = this.getElement();
+
+			elt.mouseover(function(){
 				self.isMouseInside = true;
 				if(self.options.hideInterval > 0){
 					JSB().cancelDefer('_toolHideInterval_');
 				}
 			});
-			this.getElement().mouseout(function(){
+
+			elt.mouseout(function(){
 				self.isMouseInside = false;
 				if(self.options.hideInterval > 0){
 					JSB().defer(function(){
@@ -130,6 +135,26 @@
 					}, self.options.hideInterval, '_toolHideInterval_');
 				}
 			});
+
+            this.$(window).resize(function(){
+                $this.updatePosition();
+            });
+/*
+            if(this.options.draggable){
+                elt.draggable({
+                    drag: function( event, ui ) {
+                        // $this.updatePosition();
+                        // $this.svgContainer.remove();
+                        // $this.initSvg();
+                        // $this.trackPosition();
+                        // $this.updateSvgCallouts();
+                    },
+                    stop: function( event, ui ) {
+                        $this.updateSvgCallouts();
+                    }
+                });
+            }
+*/
 		},
 		
 		getScope: function(){
