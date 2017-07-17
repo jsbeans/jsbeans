@@ -166,7 +166,7 @@ debugger;
 
             // generate $groupBy if not defined
             if (!dcQuery.$groupBy) {
-                var aggregateFunctions = QuerySyntax.aggregateFunctions();
+                var aggregateFunctions = QuerySyntax.schemaAggregateOperators;
                 function findField(exp, aggregated){
                     if (JSB.isString(exp)) {
                         return {
