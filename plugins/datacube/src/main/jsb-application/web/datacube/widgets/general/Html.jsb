@@ -297,7 +297,5 @@
 				container.html(html);
 			});
 		}
-	},
-	
-	$server: {}
+	}
 }

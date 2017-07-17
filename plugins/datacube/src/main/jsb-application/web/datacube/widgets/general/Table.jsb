@@ -102,23 +102,6 @@
 			debugger;
 			this.readRows();
 			
-/*			
-			var rowsContext = this.getContext().find('rows');
-			rowsContext.reset();
-			rowsContext.fetch(10, function(readCount){
-				while(rowsContext.next()){
-					var colsContext = rowsContext.find('columns');
-					for(var i = 0; i < colsContext.groups(); i++){
-						var colContext = colsContext.group(i);
-						var colTitle = colContext.find('title').value();
-						
-					}
-					
-				}
-			});
-*/			
 		}
-	},
-	
-	$server: {}
+	}
 }
