@@ -41,13 +41,13 @@
 					<div jsb="JSB.Widgets.MultiEditor" class="queryEditor" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
 				</div>
 
-				<span class="error json1 hidden">Невалидный json текста запроса!</span>
+				<span class="error json1 hidden">Некорректный JSON текста запроса!</span>
 
 				<div jsb="JSB.Widgets.GroupBox" caption="Параметры запроса">
                     <div jsb="JSB.Widgets.MultiEditor" class="queryParameters" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
                 </div>
 
-                <span class="error json2 hidden">Невалидный json параметров запроса!</span>
+                <span class="error json2 hidden">Некорректный JSON параметров запроса!</span>
 				
 				<div class="buttons">
 					<div 
