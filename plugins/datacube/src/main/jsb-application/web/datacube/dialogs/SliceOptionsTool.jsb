@@ -191,8 +191,6 @@
 			});
 			scroll.append(this.renderer);
 */
-
-            // this.$('.datacubeToolWrapper').draggable();
 		},
 		
 		isValid: function(){

@@ -63,7 +63,7 @@
 		readRows: function(){
 			var rowsContext = this.getContext().find('rows');
 			var gArr = this.getContext().find('columns').values();
-			
+
 			function iterateRows(){
 				while(rowsContext.next()){
 					
@@ -75,7 +75,7 @@
 						console.log(title + ':' + val);
 					}
 				}
-				
+
 				rowsContext.fetch(function(data){
 					if(data && data.length){
 						iterateRows();
