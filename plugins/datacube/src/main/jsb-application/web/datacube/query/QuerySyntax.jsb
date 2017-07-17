@@ -32,7 +32,7 @@
 
             $sort: {
 		        type: 'array',
-                values: ['$field']
+                values: ['$field', '$alias']
             },
 
             $finalize: [
