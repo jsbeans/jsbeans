@@ -100,7 +100,7 @@
 			
 			// get rows
 			debugger;
-			this.readRows();
+//			this.readRows();
 			
 		}
 	}

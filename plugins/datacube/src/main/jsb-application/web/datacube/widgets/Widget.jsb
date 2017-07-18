@@ -108,10 +108,29 @@
 					}
 					
 					var item = this.selector[0];
-					if(!item.used || !item.binding){
+					if(!item.used){
 						return false;
 					}
-					return true;
+					if(item.type == 'group' || item.type == 'select'){
+						if(!item.binding){
+							return false;
+						}
+						return true;
+					} else if(item.type == 'item'){
+						var bArr = [];
+						for(var i = 0; i < item.values.length; i++){
+							bArr.push(item.values[i].binding ? true : false);
+						}
+						return bArr;
+					} else if(item.type == 'widget'){
+						if(item.widget && item.widget.jsb){
+							return true;
+						}
+						return false;
+					} else {
+						return false;	
+					}
+					
 				},
 				
 				name: function(){
@@ -152,9 +171,24 @@
 					}
 					
 					var item = this.selector[0];
-					if(!item.binding || !item.binding.source){
+					if(!item.binding){
 						return false;
 					}
+					
+					if(!item.binding.source){
+						if(item.data){
+							if(opts.reset){
+								item.cursor = 0;
+							}
+							if(callback){
+								callback.call($this, item.data);
+							}
+							return true;
+						} else {
+							return false;
+						}
+					}
+					
 					if(!item.fetchOpts){
 						item.fetchOpts = {
 							reset: true
