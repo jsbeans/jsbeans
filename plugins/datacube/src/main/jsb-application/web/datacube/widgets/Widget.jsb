@@ -102,6 +102,18 @@
 					return item.used;
 				},
 				
+				bound: function(){
+					if(this.selector.length == 0){
+						return false;
+					}
+					
+					var item = this.selector[0];
+					if(!item.used || !item.binding){
+						return false;
+					}
+					return true;
+				},
+				
 				reset: function(){
 					if(this.selector.length == 0){
 						return;
