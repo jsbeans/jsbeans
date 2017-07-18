@@ -170,7 +170,36 @@
 		i+Ujx7N6Z2IpRWEq0qdMv/B6vwRD5KslQ7Zkip8+Y8Qbbwy5iuD7BgQ3wLoB1g2wboD16aT/NwBz
 		jgsMcwsP3gAAAABJRU5ErkJggg==`
 	},
-	$scheme: {},
+	$scheme: {
+        type: 'group',
+        items: [{
+            type: 'group',
+            name: 'Источник',
+            key: 'source',
+            binding: 'array',
+            items: [
+            {
+                name: 'Имя поля',
+                type: 'item',
+                binding: 'field',
+                itemType: 'string',
+                itemValue: '$field'
+            },
+            {
+                name: 'Количество',
+                type: 'item',
+                binding: 'field',
+                itemType: 'number',
+                itemValue: ''
+            },
+            {
+                type: 'item',
+                key: 'autoSize',
+                name: 'Автоматически считать количество',
+                optional: true
+            }]
+        }]
+	},
 	$require: ['Tipsy'],
 	$client: {
 		$constructor: function(opts){
@@ -244,20 +273,7 @@
 		*/
 
 		// example
-		_aggrs: [
-		    {
-		        id: "Франция",
-		        value: 10
-		    },
-		    {
-                id: "Германия",
-                value: 25
-            },
-            {
-                id: "Россия",
-                value: 100
-            }
-		],
+		_aggrs: [],
 
 		_defaults: {
 		    path: {
@@ -442,11 +458,9 @@
 
             this.aggrGroup = this.catMap_SVG.append("g").attr("class", "leaflet-zoom-hide aggrGroup");
 
-            this._aggrs.forEach(function(_cat){
-                _cat.geo = $this.countries.index_name[_cat.id].geo.geometry;
-            });
+            this.isInit = true;
 
-            this.rebuildCategories();
+            // this.rebuildCategories();
 
             JSB().defer(function(){
                 var height = $this.mapContainer.height();
@@ -458,6 +472,60 @@
                     var height = $this.mapContainer.height();
                     if($this.leafletAttrMap) $this.leafletAttrMap.invalidateSize();
                 }, 300, 'map.resize.' + $this.getId());
+            })
+        },
+
+        refresh: function(){
+            var context = this.getContext().find('source');
+            if(!context) return;
+
+            this.getElement().loader();
+            JSB().deferUntil(function(){
+                var rows = $this.getContext().find('source').values();
+
+                var autoSize = $this.getContext().find('autoSize').used();
+
+                context.fetch({readAll: true}, function(){
+                    $this.getElement().loader('hide');
+
+                    var data = [];
+
+                    while(context.next()){
+                        var id = rows[0].get(0).value();
+                        var w = rows[0].get(1).value();
+
+                        var e = data.find(function(element){
+                            if(element.id === id) return true;
+                            return false;
+                        });
+
+                        if(!e){
+                            data.push({
+                                id: rows[0].get(0).value(),
+                                value: rows[0].get(1).value()
+                            });
+
+                            if(autoSize){
+                                data[data.length - 1].value = 1;
+                            }
+                        } else {
+                            if(autoSize){
+                                e.value++;
+                            }
+                        }
+                    }
+
+                    $this._aggrs = data;
+
+                    $this._aggrs.forEach(function(_cat){
+                        if($this.countries.index_name[_cat.id])
+                            _cat.geo = $this.countries.index_name[_cat.id].geo.geometry;
+                    });
+
+                    $this.rebuildCategories();
+                });
+            }, function(){
+                return $this.isInit;
             })
         },
 
@@ -591,6 +659,8 @@
         },
 
         updateCategories: function(){
+            if(!this.mapGlyphsPaths) return;
+
             this.mapGlyphsPaths.data(this._aggrs).attr("d", function(_cat){ return $this.geoPath(_cat.geo); });
             this.mapGlyphsLabels.data(this._aggrs)
                 .attr("transform", function(_cat){
