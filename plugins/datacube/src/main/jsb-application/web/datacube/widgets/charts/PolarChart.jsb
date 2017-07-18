@@ -143,7 +143,83 @@
 		Op3OgVb17lDWp0gOrIR7Rw6esjrbwJhPydw59G/e5d9M+/nvAwBHTAz8DNyofQAAAABJRU5ErkJg
 		gg==`
 	},
-	
+    $scheme: {
+        type: 'group',
+        items: [
+        {
+            name: 'Заголовок',
+            type: 'item',
+            key: 'title',
+            binding: 'field',
+            itemType: 'string',
+            itemValue: ''
+        },
+        {
+            type: 'group',
+            name: 'Источник',
+            key: 'source',
+            binding: 'array',
+            items: [
+            {
+                type: 'group',
+                name: 'Серии',
+                key: 'series',
+                multiple: 'auto',
+                items: [
+                {
+                    name: 'Имя поля',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: ''
+                },
+                {
+                    name: 'Данные',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
+                },
+                {
+                    name: 'Тип отображения',
+                    type: 'select',
+                    items:[
+                    {
+                        name: 'column',
+                        type: 'group',
+                        items: [{
+                            name: 'Положение точек',
+                            key: 'pointPlacement',
+                            type: 'select',
+                            items: [
+                            {
+                                name: 'between',
+                                type: 'item',
+                            },
+                            {
+                                name: 'null',
+                                type: 'item',
+                            },
+                            {
+                                name: 'on',
+                                type: 'item',
+                            }
+                            ]
+                        }]
+                    },
+                    {
+                        name: 'line',
+                        type: 'item',
+                    },
+                    {
+                        name: 'area',
+                        type: 'item',
+                    }
+                    ]
+                }
+                ]
+            }]
+        }]
+    },
 	$client: {
 		$constructor: function(opts){
 			var self = this;
@@ -156,76 +232,109 @@
 				});
 			});
 		},
+
 		init: function(){
-			var self = this;
-			this.hc = this.$('<div class="container"></div>');
-			this.getElement().append(this.hc);
+			this.container = this.$('<div class="container"></div>');
+			this.append(this.container);
+
 			this.getElement().resize(function(){
-				if(self.chart){
-					self.chart.setSize(self.getElement().width(), self.getElement().height(), false);
+				if($this.highcharts){
+					$this.highcharts.setSize(self.getElement().width(), $this.getElement().height(), false);
 				}
 			});
-			this.hc.highcharts({
-				chart: {
-			        polar: true
-			    },
 
-			    title: {
-			        text: 'Highcharts Polar Chart'
-			    },
+			this.isInit = true;
+		},
 
-			    pane: {
-			        startAngle: 0,
-			        endAngle: 360
-			    },
+		refresh: function(){
+		    var source = this.getContext().find('source');
+		    if(!source.bound()) return;
 
-			    xAxis: {
-			        tickInterval: 45,
-			        min: 0,
-			        max: 360,
-			        labels: {
-			            formatter: function () {
-			                return this.value + '°';
-			            }
-			        }
-			    },
+		    var seriesContext = this.getContext().find('series').values();
 
-			    yAxis: {
-			        min: 0
-			    },
+		    $this.getElement().loader();
+		    JSB().deferUntil(function(){
+                source.fetch({readAll: true}, function(){
+                    var series = [];
 
-			    plotOptions: {
-			        series: {
-			            pointStart: 0,
-			            pointInterval: 45
-			        },
-			        column: {
-			            pointPadding: 0,
-			            groupPadding: 0
-			        }
-			    },
+                    while(source.next()){
+                        for(var i = 0; i < seriesContext.length; i++){
+                            if(!series[i]){
+                                if(seriesContext[i].get(0).value() === 'column'){
+                                    series[i] = {
+                                        type: seriesContext[i].get(2).value().name(),
+                                        name: seriesContext[i].get(0).value(),
+                                        pointPlacement: $this.getContext().find("pointPlacement").value().name(),
+                                        data: []
+                                    };
+                                } else {
+                                    series[i] = {
+                                        type: seriesContext[i].get(2).value().name(),
+                                        name: seriesContext[i].get(0).value(),
+                                        data: []
+                                    };
+                                }
+                            }
 
-			    series: [{
-			        type: 'column',
-			        name: 'Column',
-			        data: [8, 7, 6, 5, 4, 3, 2, 1],
-			        pointPlacement: 'between'
-			    }, {
-			        type: 'line',
-			        name: 'Line',
-			        data: [1, 2, 3, 4, 5, 6, 7, 8]
-			    }, {
-			        type: 'area',
-			        name: 'Area',
-			        data: [1, 8, 2, 7, 3, 6, 4, 5]
-			    }]
-			});
-			
-			this.chart =  this.hc.highcharts();
+                            var a = seriesContext[i].get(1).value();
+                            if(JSB().isArray(a)){
+                                series[i].data = a;
+                            } else {
+                                series[i].data.push(a);
+                            }
+                        }
+                    }
+
+                    $this.container.highcharts({
+                        chart: {
+                            polar: true
+                        },
+
+                        title: {
+                            text: this.getContext().find('title').value()
+                        },
+
+                        pane: {
+                            startAngle: 0,
+                            endAngle: 360
+                        },
+
+                        xAxis: {
+                            tickInterval: 45,
+                            min: 0,
+                            max: 360,
+                            labels: {
+                                formatter: function () {
+                                    return this.value + '°';
+                                }
+                            }
+                        },
+
+                        yAxis: {
+                            min: 0
+                        },
+
+                        plotOptions: {
+                            series: {
+                                pointStart: 0,
+                                pointInterval: 45
+                            },
+                            column: {
+                                pointPadding: 0,
+                                groupPadding: 0
+                            }
+                        },
+
+                        series: series
+                    });
+
+                    $this.chart =  $this.container.highcharts();
+                });
+
+                $this.getElement().loader('hide');
+		    }, function(){
+		        return $this.isInit;
+		    });
 		}
-		
-	},
-	
-	$server: {
 	}
 }

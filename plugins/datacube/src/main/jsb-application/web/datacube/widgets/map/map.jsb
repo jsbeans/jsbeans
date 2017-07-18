@@ -477,7 +477,7 @@
 
         refresh: function(){
             var context = this.getContext().find('source');
-            if(!context) return;
+            if(!context.bound()) return;
 
             this.getElement().loader();
             JSB().deferUntil(function(){
@@ -485,9 +485,8 @@
 
                 var autoSize = $this.getContext().find('autoSize').used();
 
-                context.fetch({readAll: true}, function(){
+                var flag = context.fetch({readAll: true}, function(){
                     $this.getElement().loader('hide');
-
                     var data = [];
 
                     while(context.next()){
@@ -524,8 +523,10 @@
 
                     $this.rebuildCategories();
                 });
+
+                if(!flag) $this.getElement().loader('hide');
             }, function(){
-                return $this.isInit;
+                return $this.isInit && $this.getElement().is(':visible');
             })
         },
 
@@ -538,6 +539,8 @@
 
             // update
             this.mapGlyphsPaths.nodes().forEach(function(item, i, arr){
+                if(!$this._aggrs[i].geo) return;
+
                 item = d3.select(item);
 
                 item.attr("mapId", $this._aggrs[i].id);
@@ -602,6 +605,8 @@
             });
 
             this.mapGlyphsLabels.nodes().forEach(function(item, i, arr){
+                if(!$this._aggrs[i].geo) return;
+                
                 item = d3.select(item);
 
                 item.attr("mapId", $this._aggrs[i].id);

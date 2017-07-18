@@ -455,14 +455,13 @@
             this.foamtreeId = "foamtree_" + JSB().generateUid();
 
             this.foamtreeContainer = this.$('<div class="foamtreeWidget" id="' + this.foamtreeId + '"></div>');
+            this.append(this.foamtreeContainer);
             this.foamtreeContainer.ready(function(){
                 $this.isContainerReady = true;
             });
-            this.append(this.foamtreeContainer);
 
             JSB().loadScript(['datacube/widgets/foamtree/foamtree.js'],
                 function(){
-                    // $this.init();
                     $this.isScriptLoaded = true;
                 }
             );
@@ -490,36 +489,12 @@
             ]
         },
 
-        init: function(){
-            this.getElement().loader();
-
-            JSB().deferUntil(function(){
-                $this.getElement().loader('hide');
-                $this.foamtree = new CarrotSearchFoamTree({
-                    id: $this.foamtreeId,
-                    dataObject: {
-                        groups: $this._aggrs.groups
-                    },
-                    onGroupHover: function(evt){
-                        $this.onGroupHover(evt);
-                    },
-                });
-                $this.foamtreeContainer.resize(function(){
-                    JSB().defer(function(){
-                        $this.foamtree.resize();
-                    }, 300, 'foamtree.resize.' + $this.getId())
-                });
-            }, function(){
-                return $this.isContainerReady;
-            });
-        },
-
         onGroupHover: function(evt){
             // debugger;
         },
 
         refresh: function(){
-            if(this.getContext().find('source').length() !== 0){
+            if(this.getContext().find('source').bound()){
                 this.getElement().loader();
 
                 this.isDataLoaded = false;
@@ -536,7 +511,7 @@
                             }
                         });
                     }, function(){
-                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded;
+                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded && $this.getElement().is(':visible');
                     });
                 } else {
                     JSB().deferUntil(function(){
@@ -557,7 +532,7 @@
                             }, 300, 'foamtree.resize.' + $this.getId())
                         });
                     }, function(){
-                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded;
+                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded && $this.getElement().is(':visible');
                     });
                 }
             }
