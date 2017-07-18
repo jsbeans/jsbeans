@@ -137,7 +137,8 @@
 			});
 
             this.$(window).resize(function(){
-                $this.updatePosition();
+                if($this.params)
+                    $this.updatePosition();
             });
 /*
             if(this.options.draggable){
@@ -411,6 +412,7 @@
 		updatePosition: function(bUpdate){
 			var self = this;
 			var elt = this.getElement();
+
 			if(JSB().isNull(this.params.distWeight)){
 				this.params.distWeight = 0.1;
 			}

@@ -477,7 +477,7 @@
 
         refresh: function(){
             var context = this.getContext().find('source');
-            if(!context) return;
+            if(!context.bound()) return;
 
             this.getElement().loader();
             JSB().deferUntil(function(){
