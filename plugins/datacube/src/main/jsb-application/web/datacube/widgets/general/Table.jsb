@@ -10,6 +10,11 @@
 	$scheme: {
 		type: 'group',
 		items: [{
+			type: 'item',
+			optional: 'checked',
+			key: 'showHeader',
+			name: 'Показывать заголовок'
+		},{
 			type: 'group',
 			name: 'Строки',
 			binding: 'array',
@@ -44,12 +49,28 @@
 	},
 	
 	$client: {
+		$require: ['JSB.Widgets.ScrollBox'],
 		
+		ready: false,
+		headerDesc: [],
+		colSizes: {},
 		
 		$constructor: function(opts){
 			$base(opts);
 			
+			JSB.loadScript('tpl/d3/d3.min.js', function(){
+				$this.ready = true;
+			});
 			
+			this.addClass('tableWidget');
+			this.loadCss('Table.css');
+			
+			this.header = this.$('<div class="header"></div>');
+			this.append(this.header);
+			
+			this.scroll = new ScrollBox();
+			this.scroll.addClass('pane');
+			this.append(this.scroll);
 		},
 		
 		getColumnNames: function(){
@@ -60,22 +81,47 @@
 			return names;
 		},
 		
-		readRows: function(){
+		updateRows: function(){
 			var rowsContext = this.getContext().find('rows');
 			var gArr = this.getContext().find('columns').values();
+			var rows = [];
 
 			function iterateRows(){
 				while(rowsContext.next()){
-					
+					var row = [];
 					// iterate by cells
 					for(var i = 0; i < gArr.length; i++){
 						var title = gArr[i].get(0).value();
 						var view = gArr[i].get(1).value();
-						var val = view.value();
-						console.log(title + ':' + val);
+						var value = view.value();
+						row.push({
+							column: title,
+							value: value
+						});	// push cell
 					}
+					rows.push(row);
 				}
-
+				
+				if(rows.length > 0){
+					debugger;
+					// accociate with DOM
+					var scrollPane = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane');
+					var rowsSel = scrollPane.selectAll('div.row').data(rows);
+					rowsSel
+						.enter()
+							.append('div')
+								.classed('row', true)
+								.selectAll('div.col')
+								.data(function(d){ return d; })
+								.enter()
+									.append('div')
+									.classed('col', true)
+									.style('width', function(d){ return '' + $this.colSizes[d.column] + '%'})
+									.text(function(d){ return d.value})
+							
+					
+					return;
+				}
 				rowsContext.fetch(function(data){
 					if(data && data.length){
 						iterateRows();
@@ -87,9 +133,61 @@
 		},
 		
 		refresh: function(){
+			if(!this.ready){
+				JSB.deferUntil(function(){
+					$this.refresh();
+				}, function(){
+					return $this.ready;
+				});
+				return;
+			}
 			
+			// update col sizes
+			var gArr = this.getContext().find('columns').values();
+			var colSzPrc = 100.0 / gArr.length;
+			this.colSizes = {};
+			for(var i = 0; i < gArr.length; i++){
+				var colTitle = gArr[i].find('title').value();
+				this.colSizes[colTitle] = colSzPrc;
+			}
+			
+			
+			// update header
+			if(this.getContext().find('showHeader').used()){
+				if(this.getContext().find('columns').used()){
+					this.attr('header', true);
+					
+					// fill column heads
+					var gArr = this.getContext().find('columns').values();
+					if(gArr.length != this.headerDesc.length){
+						// rebuild headers
+						this.header.empty();
+						this.headerDesc = [];
+						for(var i = 0; i < gArr.length; i++){
+							var colTitle = gArr[i].find('title').value();
+							var colHeader = $this.$('<div class="colHeader"></div>').text(colTitle);
+							this.header.append(colHeader);
+							this.headerDesc.push({
+								elt: colHeader,
+								size: 0
+							});
+						}
+					}
+					for(var i = 0; i < gArr.length; i++){
+						var val = gArr[i].find('title').value();
+						var view = gArr[i].get(1).value();
+					}
+				}
+			} else {
+				this.attr('header', false);
+			}
+			
+			// update rows
+			this.updateRows();
+/*			
 			// get column names
 			var colNames = this.getColumnNames();
+			
 			
 			// get columns
 			var gArr = this.getContext().find('columns').values();
@@ -101,7 +199,7 @@
 			// get rows
 			debugger;
 //			this.readRows();
-			
+*/			
 		}
 	}
 }

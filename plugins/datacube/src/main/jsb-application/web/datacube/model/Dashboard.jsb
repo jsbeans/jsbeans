@@ -7,13 +7,14 @@
 	},
 	
 	widgetCount: 0,
-	layout: null,
-	wrappers: {},
 	
 	$client: {
 	},
 	
 	$server: {
+		layout: null,
+		wrappers: {},
+		
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'JSB.DataCube.Widgets.WidgetWrapper'],
 		
