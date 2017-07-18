@@ -114,6 +114,15 @@
 					return true;
 				},
 				
+				name: function(){
+					if(this.selector.length == 0){
+						return null;
+					}
+					
+					var item = this.selector[0];
+					return item.name;
+				},
+				
 				reset: function(){
 					if(this.selector.length == 0){
 						return;
