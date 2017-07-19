@@ -65,7 +65,9 @@
                         {
                             type: 'item',
                             name: 'Цвет',
-                            itemType: 'string',
+                            binding: 'field',
+                            itemType: 'color',
+                            editor: 'JSB.Widgets.ColorEditor'
                         }
                         ]
                     }
@@ -87,7 +89,9 @@
                         {
                             type: 'item',
                             name: 'Цвет',
-                            itemType: 'string',
+                            binding: 'field',
+                            itemType: 'color',
+                            editor: 'JSB.Widgets.ColorEditor'
                         }
                         ]
                     }
@@ -202,7 +206,9 @@
                 {
                     name: 'Цвет',
                     type: 'item',
-                    itemType: 'string',
+                    binding: 'field',
+                    itemType: 'color',
+                    editor: 'JSB.Widgets.ColorEditor'
                 }
                 ]
             }
@@ -219,6 +225,7 @@
 				self.init();
 			});
 		},
+
 		init: function(){
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);

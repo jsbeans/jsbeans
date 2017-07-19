@@ -124,7 +124,45 @@
 		ZXvxDZx35lNhOgOWPpQ7pZwJ5U6jV0fnnHIngZBxA4RtlJZxu4ubJaO0hOcrDDo8Og/WFTQ+/pSj
 		32D87wCdIs7XaNuRKgAAAABJRU5ErkJggg==`
 	},
-	
+	$scheme: {
+        type: 'group',
+        items: [
+        {
+            name: 'Заголовок',
+            type: 'item',
+            key: 'title',
+            itemType: 'string',
+            itemValue: ''
+        },
+        {
+            type: 'group',
+            name: 'Источник',
+            binding: 'field',
+            key: 'source',
+            items: [
+            {
+                type: 'group',
+                name: 'Серии',
+                key: 'series',
+                items: [
+                {
+                    name: 'Имя',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: ''
+                },
+                {
+                    name: 'Данные',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
+                }
+                ]
+            }
+            ]
+        }]
+    },
 	$client: {
 		$constructor: function(opts){
 			var self = this;
@@ -135,70 +173,87 @@
 				self.init();
 			});
 		},
-		init: function(){
-			var self = this;
-			this.hc = this.$('<div class="container"></div>');
-			this.getElement().append(this.hc);
-			this.getElement().resize(function(){
-				if(self.chart){
-					self.chart.setSize(self.getElement().width(), self.getElement().height(), false);
-				}
-			});
-			this.hc.highcharts({
-				chart: {
-		            plotBackgroundColor: null,
-		            plotBorderWidth: null,
-		            plotShadow: false,
-		            type: 'pie'
-		        },
-		        title: {
-		            text: 'Browser market shares January, 2015 to May, 2015'
-		        },
-		        tooltip: {
-		            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-		        },
-		        plotOptions: {
-		            pie: {
-		                allowPointSelect: true,
-		                cursor: 'pointer',
-		                dataLabels: {
-		                    enabled: false
-		                },
-		                showInLegend: true
-		            }
-		        },
-		        series: [{
-		            name: 'Brands',
-		            colorByPoint: true,
-		            data: [{
-		                name: 'Microsoft Internet Explorer',
-		                y: 56.33
-		            }, {
-		                name: 'Chrome',
-		                y: 24.03,
-		                sliced: true,
-		                selected: true
-		            }, {
-		                name: 'Firefox',
-		                y: 10.38
-		            }, {
-		                name: 'Safari',
-		                y: 4.77
-		            }, {
-		                name: 'Opera',
-		                y: 0.91
-		            }, {
-		                name: 'Proprietary or Undetectable',
-		                y: 0.2
-		            }]
-		        }]
-			});
-			
-			this.chart =  this.hc.highcharts();
-		}
-		
-	},
-	
-	$server: {
+
+        init: function(){
+            this.container = this.$('<div class="container"></div>');
+            this.append(this.container);
+
+            this.getElement().resize(function(){
+                if($this.highcharts){
+                    $this.highcharts.setSize(self.getElement().width(), $this.getElement().height(), false);
+                }
+            });
+
+            this.isInit = true;
+        },
+
+        refresh: function(){
+            var source = this.getContext().find('source');
+            if(!source.bound()) return;
+
+            var seriesContext = this.getContext().find('series').values();
+
+            $this.getElement().loader();
+            JSB().deferUntil(function(){
+                source.fetch({readAll: true}, function(){
+                    var series = [];
+
+                    while(source.next()){
+                        for(var i = 0; i < seriesContext.length; i++){
+                            if(!series[i]){
+                                series[i] = {
+                                    name: seriesContext[i].get(0).value(),
+                                    data: [],
+                                    colorByPoint: true
+                                };
+                            }
+
+                            var a = seriesContext[i].get(1).value();
+                            if(JSB().isArray(a)){
+                                series[i].data = a;
+                            } else {
+                                series[i].data.push(a);
+                            }
+                        }
+                    }
+
+                    $this.container.highcharts({
+                        chart: {
+                            plotBackgroundColor: null,
+                            plotBorderWidth: null,
+                            plotShadow: false,
+                            type: 'pie'
+                        },
+
+                        title: {
+                            text: this.getContext().find('title').value()
+                        },
+
+                        plotOptions: {
+                            pie: {
+                                allowPointSelect: true,
+                                cursor: 'pointer',
+                                dataLabels: {
+                                    enabled: false
+                                },
+                                showInLegend: true
+                            }
+                        },
+
+                        tooltip: {
+                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        },
+
+                        series: series
+                    });
+
+                    $this.chart =  $this.container.highcharts();
+                });
+
+                $this.getElement().loader('hide');
+            }, function(){
+                return $this.isInit;
+            });
+        }
 	}
 }

@@ -202,3 +202,7 @@
 .widgetSchemeRenderer[entry="widget"] > .body {
 	padding-left: 16px;
 }
+
+.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .colorEditor{
+    display: inline-block;
+}
