@@ -5672,7 +5672,7 @@ JSB({
 		rpcQueueLast: null,
 		rpcMap: {},
 		
-		maxBatchSize: 30,
+		maxBatchSize: 10,
 		
 		$constructor: function(){
 			$base();
