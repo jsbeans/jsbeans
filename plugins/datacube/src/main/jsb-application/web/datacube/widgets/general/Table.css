@@ -21,6 +21,10 @@
 .tableWidget > .pane > ._dwp_scrollPane > .row > .col {
 	display: inline-block;
 	vertical-align: top;
+	overflow: hidden;
+    text-overflow: ellipsis;
+	box-sizing: border-box;
+    padding: 2px;
 }
 
 .tableWidget[header="true"] > .header {}

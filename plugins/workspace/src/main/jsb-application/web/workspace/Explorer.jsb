@@ -103,56 +103,8 @@
 					if(!sel){
 						return;
 					}
-/*					
-					var node = sel.obj;
-					var items = null;
-					if(!JSB().isInstanceOf(node, 'Ontoed.OntologyNode')){
-						return;
-					}
 					
-					if(node.descriptor.type == 'spinontology'){
-						items = [{
-							key: 'TURTLE',
-							element: 'TURTLE'
-						},{
-							key: 'RDF/XML',
-							element: 'RDF'
-						}];
-					} else {
-						items = [{
-							key: 'TURTLE',
-							element: 'TURTLE'
-						},{
-							key: 'RDF/XML',
-							element: 'RDF'
-						},{
-							key: 'OWL/XML',
-							element: 'OWL'
-						},{
-							key: 'ManchesterSyntax',
-							element: 'ManchesterSyntax'
-						},{
-							key: 'FunctionalSyntax',
-							element: 'FunctionalSyntax'
-						}];
-					}
-					
-					ToolManager.activate({
-						id: '_dwp_droplistTool',
-						cmd: 'show',
-						data: items,
-						target: {
-							selector: elt,
-							dock: 'bottom'
-						},
-						callback: function(key, item, evt){
-							var format = key;
-							var oId = node.descriptor.id;
-							var wId = self.currentWorkspace.getId();
-							window.open('/api/exportProject?wId='+wId+'&oId='+oId+'&format='+format, '_blank');
-						}
-					});
-					*/
+					// TODO: export
 				}
 			});
 			
@@ -481,8 +433,13 @@
 						var nodes = [];
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i].obj;
-							if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+							if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 								continue;
+							}
+							if(JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
+								if(obj.getEntry().getParent()){
+									continue;	// node has a fixed parent - skipping
+								}
 							}
 							nodes.push(obj);
 						}
@@ -669,10 +626,26 @@
 			node.workspace = this.currentWorkspace;
 			
 			var curTreeNode = null;
+			function onNodeExpand(treeNode){
+				if(!treeNode.dynamicChildren){
+					return;
+				}
+				$this.server().loadEntryChildren(itemDesc.entry, function(chArr){
+					var parentKey = treeNode.key;
+					for(var i = 0; i < chArr.length; i++){
+						var chDesc = chArr[i];
+						$this.addTreeItem(chDesc, parentKey);
+					}
+				})
+				
+			}
 			if(bReplace){
 				curTreeNode = $this.tree.replaceNode({
 					key: key,
 					element: node,
+					dynamicChildren: itemDesc.hasEntryChildren,
+					childrenLoadingText: 'Загрузка',
+					onExpand: onNodeExpand,
 					cssClass: itemDesc.type,
 					collapsed: itemDesc.type == 'entry'
 				}, parent);
@@ -680,6 +653,9 @@
 				curTreeNode = $this.tree.addNode({
 					key: key,
 					element: node,
+					dynamicChildren: itemDesc.hasEntryChildren,
+					childrenLoadingText: 'Загрузка',
+					onExpand: onNodeExpand,
 					cssClass: itemDesc.type,
 					collapsed: itemDesc.type == 'entry'
 				}, parent);
@@ -1120,6 +1096,24 @@
 			};
 		},
 		
+		loadEntryChildren: function(entry){
+			var children = entry.getChildren();
+			var chArr = [];
+			for(var chId in children){
+				var chEntry = children[chId];
+				
+				chArr.push({
+					type: 'entry',
+					children: {},
+					name: chEntry.getName(),
+					entry: chEntry,
+					hasEntryChildren: chEntry.children && Object.keys(chEntry.children).length > 0
+				});
+			}
+			
+			return chArr;
+		},
+		
 		loadWorkspaceTree: function(){			
 			var tree = {};
 			var w = this.currentWorkspace;
@@ -1157,6 +1151,9 @@
 			}
 			
 			for (var entry, it = w.entries(); entry = it.next();) {
+				if(entry.getParent()){
+					continue;
+				}
 				var treeNode = touch(entry.category());
 				if(!treeNode[entry.getLocalId()]){
 					treeNode[entry.getLocalId()] = {};
@@ -1164,6 +1161,10 @@
 				treeNode[entry.getLocalId()].type = 'entry';
 				treeNode[entry.getLocalId()].entry = entry;
 				treeNode[entry.getLocalId()].name = entry.getName();
+				if(entry.children && Object.keys(entry.children).length > 0){
+					treeNode[entry.getLocalId()].hasEntryChildren = true;
+				}
+				
 			}
 			return tree;
 		},
