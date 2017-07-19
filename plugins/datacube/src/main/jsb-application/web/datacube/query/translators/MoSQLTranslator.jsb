@@ -281,7 +281,7 @@
 
                 throw new Error('Unsupported select expression');
             }
-
+//debugger;
             var select = dcQuery.$select;
             var columns = [];
             for (var p in select) if (select.hasOwnProperty(p)) {
@@ -363,7 +363,7 @@
                 if (exp.$eq) return { $equals: translateExpressions(exp.$eq) };
                 if (exp.$eq && exp.$eq == null) return { $null: true };
 
-                if (exp.$ne) return { $ne: translateExpressions(exp.$eq) };
+                if (exp.$ne) return { $ne: translateExpressions(exp.$ne) };
                 if (exp.$ne && exp.$ne == null) return { $notNull: true };
 
                 if (exp.$gt) return { $gt: translateExpressions(exp.$gt) };
@@ -394,6 +394,7 @@
         },
 
         _translateGroupBy: function(dcQuery) {
+//debugger;
             var groupBy = [];
             for(var i in dcQuery.$groupBy) {
                 groupBy.push(this._translateField(dcQuery, dcQuery.$groupBy[i]));
