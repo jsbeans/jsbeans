@@ -104,6 +104,15 @@
 				// toggle expand/collapse
 				itemWrapper.toggleClass('collapsed');
 				evt.stopPropagation();
+				if(itemWrapper.hasClass('collapsed')){
+					if(itemObj.onCollapse){
+						itemObj.onCollapse.call(this, itemObj);
+					}
+				} else {
+					if(itemObj.onExpand){
+						itemObj.onExpand.call(this, itemObj);
+					}
+				}
 			}).mouseover(function(evt){
 				evt.stopPropagation();
 			});
@@ -296,17 +305,13 @@
 					return;
 				}
 				parentElt = parentObj.childContainerElt;
-/*				
-				// search for another parent
-				parentElt = this.rootElt.find('li[key="'+parentKey+'"] > ul._dwp_childContainer');
-				if(parentElt.length === 0){
-					return;
-				}
-*/
 				if(!itemObj.filtered){
 					parentObj.ecToggleElt.removeClass('hidden');
 				}
-//				this.rootElt.find('li[key="'+parentKey+'"] > ._dwp_nodeHeader > ._dwp_expandCollapseToggle').removeClass('hidden');
+				if(parentObj.dynamicChildren && itemObj.key != parentKey + '_dummy'){
+					parentObj.dynamicChildren = false;
+					this.deleteNode(parentKey + '_dummy');
+				}
 				itemObj.parent = parentKey;
 			} else {
 				itemObj.parent = null;
@@ -316,10 +321,16 @@
 			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
-/*			
-			if(this.rootElt["0"].firstChild != null)
-				this.classRemove(this.rootElt["0"].firstChild, 'collapsed');
-*/			
+			if(itemObj.dynamicChildren && itemObj.key){
+				// insert dummy loader
+				var loadingText = itemObj.childrenLoadingText || 'Loading';
+				this.addNode({
+					allowHover: false,
+					allowSelect: false,
+					key: itemObj.key + '_dummy',
+					element: '<div class="_dwp_dummyChild"><div class="icon"></div><div class="text">'+loadingText+'</div></div>'
+				}, itemObj.key);
+			}
 			return itemObj;
 		},
 		
@@ -470,13 +481,21 @@
 		},
 		
 		expandNode: function(key){
-			var wrapper = this.get(key).wrapper;
+			var itemObj = this.get(key);
+			var wrapper = itemObj.wrapper;
 			wrapper.removeClass('collapsed');
+			if(itemObj.onExpand){
+				itemObj.onExpand.call(this, itemObj);
+			}
 		},
 
 		collapseNode: function(key){
-			var wrapper = this.get(key).wrapper;
+			var itemObj = this.get(key);
+			var wrapper = itemObj.wrapper;
 			wrapper.addClass('collapsed');
+			if(itemObj.onCollapse){
+				itemObj.onCollapse.call(this, itemObj);
+			}
 		},
 		
 		expandToNode: function(key){

@@ -130,3 +130,23 @@
 ._dwp_treeViewNode.collapsed > ._dwp_childContainer {
 	display: none;
 }
+
+._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer > ._dwp_dummyChild {
+	position: relative;
+}
+
+._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer > ._dwp_dummyChild > .icon {
+	width: 16px;
+	height: 16px;
+	background-image: url('../images/loading.gif');
+	position: absolute;
+    top: 50%;
+    margin-top: -8px;
+    left: 0;
+}
+
+._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_itemContainer > ._dwp_dummyChild > .text {
+	padding-left: 20px;
+    font-style: italic;
+    color: #696969;
+}
