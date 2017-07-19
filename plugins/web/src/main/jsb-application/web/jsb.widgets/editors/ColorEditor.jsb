@@ -18,7 +18,7 @@
 
             this.editBoxElt.change(function(evt){
                 if(self.options.onChange){
-                    self.options.onChange.call(self, evt);
+                    self.options.onChange.call(self, $this.editBoxElt.val());
                 }
             });
 
