@@ -1,0 +1,28 @@
+@CHARSET "UTF-8";
+
+.tableWidget {}
+
+.tableWidget > .header {}
+
+.tableWidget > .header > .colHeader {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.tableWidget > .pane {}
+
+.tableWidget > .pane > ._dwp_scrollPane {}
+
+.tableWidget > .pane > ._dwp_scrollPane > .row {
+	position: relative;
+	display: block;
+}
+
+.tableWidget > .pane > ._dwp_scrollPane > .row > .col {
+	display: inline-block;
+	vertical-align: top;
+}
+
+.tableWidget[header="true"] > .header {}
+
+.tableWidget[header="true"] > .pane {}
