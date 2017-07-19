@@ -606,7 +606,7 @@
 
             this.mapGlyphsLabels.nodes().forEach(function(item, i, arr){
                 if(!$this._aggrs[i].geo) return;
-                
+
                 item = d3.select(item);
 
                 item.attr("mapId", $this._aggrs[i].id);

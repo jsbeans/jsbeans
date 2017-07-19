@@ -32,6 +32,76 @@
             items: [
             {
                 type: 'group',
+                name: 'Ось Х',
+                key: 'xAxis',
+                items: [
+                {
+                    name: 'Катагории',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'any',
+                }
+                ]
+            },
+            {
+                type: 'group',
+                name: 'Ось Y',
+                key: 'yAxis',
+                multiple: 'true',
+                items: [
+                {
+                    type: 'group',
+                    name: 'Заголовок',
+                    items: [
+                    {
+                        type: 'item',
+                        name: 'Текст',
+                        itemType: 'string',
+                    },
+                    {
+                        type: 'group',
+                        name: 'Стиль',
+                        items: [
+                        {
+                            type: 'item',
+                            name: 'Цвет',
+                            itemType: 'string',
+                        }
+                        ]
+                    }
+                    ]
+                },
+                {
+                    type: 'group',
+                    name: 'Значения',
+                    items: [
+                    {
+                        type: 'item',
+                        name: 'Формат',
+                        itemType: 'string',
+                    },
+                    {
+                        type: 'group',
+                        name: 'Стиль',
+                        items: [
+                        {
+                            type: 'item',
+                            name: 'Цвет',
+                            itemType: 'string',
+                        }
+                        ]
+                    }
+                    ]
+                },
+                {
+                    type: 'item',
+                    name: 'Справа',
+                    optional: true
+                }
+                ]
+            },
+            {
+                type: 'group',
                 name: 'Серии',
                 key: 'series',
                 multiple: 'auto',
@@ -55,39 +125,88 @@
                     items:[
                     {
                         name: 'column',
-                        type: 'group',
-                        items: [{
-                            name: 'Положение точек',
-                            key: 'pointPlacement',
-                            type: 'select',
-                            items: [
-                            {
-                                name: 'between',
-                                type: 'item',
-                            },
-                            {
-                                name: 'null',
-                                type: 'item',
-                            },
-                            {
-                                name: 'on',
-                                type: 'item',
-                            }
-                            ]
-                        }]
-                    },
-                    {
-                        name: 'line',
                         type: 'item',
                     },
                     {
-                        name: 'area',
+                        name: 'spline',
                         type: 'item',
                     }
                     ]
+                },
+                {
+                    type: 'group',
+                    name: 'Tooltip',
+                    items: [
+                    {
+                        type: 'item',
+                        name: 'Суффикс значения',
+                        itemType: 'string',
+                    }
+                    ]
+                },
+                {
+                    name: 'yAxis',
+                    type: 'item',
+                    itemType: 'string',
+                },
+                {
+                    name: 'Тип линии',
+                    type: 'select',
+                    items:[
+                    {
+                        name: 'Solid',
+                        type: 'item',
+                    },
+                    {
+                        name: 'ShortDash',
+                        type: 'item',
+                    },
+                    {
+                        name: 'ShortDot',
+                        type: 'item',
+                    },
+                    {
+                        name: 'ShortDashDot',
+                        type: 'item',
+                    },
+                    {
+                        name: 'ShortDashDotDot',
+                        type: 'item',
+                    },
+                    {
+                        name: 'Dot',
+                        type: 'item',
+                    },
+                    {
+                        name: 'Dash',
+                        type: 'item',
+                    },
+                    {
+                        name: 'LongDash',
+                        type: 'item',
+                    },
+                    {
+                        name: 'DashDot',
+                        type: 'item',
+                    },
+                    {
+                        name: 'LongDashDot',
+                        type: 'item',
+                    },
+                    {
+                        name: 'LongDashDotDot',
+                        type: 'item',
+                    }
+                    ]
+                },
+                {
+                    name: 'Цвет',
+                    type: 'item',
+                    itemType: 'string',
                 }
                 ]
-            }]
+            }
+            ]
         }]
     },
 	$client: {
@@ -114,35 +233,32 @@
 		},
 
         refresh: function(){
-            return;
-
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
             var seriesContext = this.getContext().find('series').values();
+            var yAxisContext = this.getContext().find('yAxis').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true}, function(){
                     var series = [];
+                    var yAxis = [];
 
                     while(source.next()){
                         for(var i = 0; i < seriesContext.length; i++){
                             if(!series[i]){
-                                if(seriesContext[i].get(0).value() === 'column'){
-                                    series[i] = {
-                                        type: seriesContext[i].get(2).value().name(),
-                                        name: seriesContext[i].get(0).value(),
-                                        pointPlacement: $this.getContext().find("pointPlacement").value().name(),
-                                        data: []
-                                    };
-                                } else {
-                                    series[i] = {
-                                        type: seriesContext[i].get(2).value().name(),
-                                        name: seriesContext[i].get(0).value(),
-                                        data: []
-                                    };
-                                }
+                                series[i] = {
+                                    name: seriesContext[i].get(0).value(),
+                                    data: [],
+                                    type: seriesContext[i].get(2).value().name(),
+                                    tooltip: {
+                                        valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                                    },
+                                    yAxis: seriesContext[i].get(4).value() === null ? undefined : parseInt(seriesContext[i].get(4).value()),
+                                    dashStyle: seriesContext[i].get(5).value().name(),
+                                    color: seriesContext[i].get(6).value() === null ? undefined : seriesContext[i].get(6).value()
+                                };
                             }
 
                             var a = seriesContext[i].get(1).value();
@@ -152,23 +268,59 @@
                                 series[i].data.push(a);
                             }
                         }
+
+                        for(var i = 0; i < yAxisContext.length; i++){
+                            yAxis[i] = {
+                                title: {
+                                    text: yAxisContext[i].get(0).value().get(0).value(),
+                                    style: {
+                                        color: yAxisContext[i].get(0).value().get(1).value().get(0).value() === null ? undefined : yAxisContext[i].get(0).value().get(1).value().get(0).value()
+                                    }
+                                },
+                                labels: {
+                                    format: yAxisContext[i].get(1).value().get(0).value() === null ? undefined : yAxisContext[i].get(1).value().get(0).value(),
+                                    style: {
+                                        color: yAxisContext[i].get(1).value().get(1).value().get(0).value() === null ? undefined : yAxisContext[i].get(1).value().get(1).value().get(0).value()
+                                    }
+                                },
+                                opposite: yAxisContext[i].get(2).used()
+                            };
+                        }
                     }
 
                     $this.container.highcharts({
                         chart: {
                             zoomType: 'xy'
                         },
+
                         title: {
                             text: this.getContext().find('title').value()
                         },
+
                         subtitle: {
                             text: this.getContext().find('subtitle').value()
                         },
+
                         xAxis: [{
-                            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                            categories: this.getContext().find('xAxis').value().get(0).value(),
                             crosshair: true
                         }],
+
+                        yAxis: yAxis,
+
+                        tooltip: {
+                            shared: true
+                        },
+
+                        legend: {
+                            layout: 'vertical',
+                            align: 'left',
+                            x: 80,
+                            verticalAlign: 'top',
+                            y: 55,
+                            floating: true,
+                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                        },
 
                         series: series
                     });
