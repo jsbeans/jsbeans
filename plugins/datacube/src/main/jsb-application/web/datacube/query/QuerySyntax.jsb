@@ -132,6 +132,10 @@
                 type: 'object',
                 values: ['$field', '$$functionOperators' ]
             },
+            $splitString: {
+                type: 'object',
+                values: ['$splitParams'] // TODO
+            },
             $distinct: {
                 type: 'object',
                 values: ['$field']
