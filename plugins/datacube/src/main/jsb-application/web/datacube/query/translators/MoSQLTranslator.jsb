@@ -241,6 +241,10 @@
                 if (exp.$array)     return functionExpression('ARRAY_AGG', translateExpression(null, exp.$array), key);
                 if (exp.$flatArray) return functionExpression('ARRAY_AGG', translateExpression(null, exp.$flatArray), key);
 
+                if (exp.$splitString) {
+                    return functionExpression('string_to_array', translateExpression(null, exp.$splitString.$field) + ", '" + exp.$splitString.$separator + "'", key);
+                }
+
                 // { type: 'function', function: 'min', expression: [1, "'foo'"] }
 
                 if (exp.$gmax) return {
