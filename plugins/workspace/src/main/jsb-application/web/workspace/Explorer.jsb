@@ -263,7 +263,7 @@
 		},
 		
 		updateTab: function(){
-			var tab = this.container.getTab(this.getId());
+			var tab = this.getContainer().getTab(this.getId());
 			var textElt = tab.tab.find('._dwp_tabText');
 			var editor = textElt.find('> ._dwp_primitiveEditor');
 			if(editor.length > 0){
@@ -317,7 +317,7 @@
 		},
 
 		showWorkspaceMenu: function(){
-			var tab = this.container.getTab(this.getId());
+			var tab = this.getContainer().getTab(this.getId());
 			var btnElt = tab.tab.find('.btnMenu');
 			
 			this.server().getWorkspaces(function(wMap){

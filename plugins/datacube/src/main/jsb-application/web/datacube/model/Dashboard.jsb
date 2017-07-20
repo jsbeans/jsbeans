@@ -26,6 +26,9 @@
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
+			if(this.property('widgets')){
+				this.widgetCount = this.property('widgets');
+			}
 		},
 		
 		destroy: function(){
@@ -81,9 +84,12 @@
 				}
 			}
 			this.widgetCount = Object.keys(this.wrappers).length;
+			this.property('widgets', this.widgetCount);
 			this.workspace.writeArtifactAsJson(this.getLocalId() + '.dashboard', desc);
 			
 			JSB.getLocker().unlock(mtxName);
+			this.workspace.store();
+
 		},
 		
 		load: function(){
@@ -101,6 +107,7 @@
 						wWrapper.setName(wDesc.name);
 						this.wrappers[wId] = wWrapper;
 					}
+					this.widgetCount = Object.keys(this.wrappers).length;
 				}
 				this.loaded = true;
 			}

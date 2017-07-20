@@ -15,6 +15,11 @@
 			key: 'showHeader',
 			name: 'Показывать заголовок'
 		},{
+			type: 'item',
+			optional: 'checked',
+			key: 'showGrid',
+			name: 'Показывать сетку'
+		},{
 			type: 'group',
 			name: 'Строки',
 			binding: 'array',
@@ -35,13 +40,58 @@
 					type: 'select',
 					key: 'view',
 					items:[{
-						name: 'Значение',
-						type: 'item',
-						binding: 'field',
-						itemType: 'any'
+						type: 'group',
+						name: 'Текст',
+						key: 'text',
+						items:[{
+							name: 'Значение',
+							type: 'item',
+							binding: 'field',
+							itemType: 'any'
+						},{
+							name: 'Выравнивание',
+							type: 'group',
+							items:[{
+								name: 'По горизонтали',
+								type: 'select',
+								key: 'alignHorz',
+								items: [{
+									type: 'item',
+									name: 'По левому карю',
+									itemValue: 'left'
+								},{
+									type: 'item',
+									name: 'Посередине',
+									itemValue: 'center'
+								},{
+									type: 'item',
+									name: 'По правому краю',
+									itemValue: 'right'
+								}]
+							},{
+								name: 'По вертикали',
+								type: 'select',
+								key: 'alignVert',
+								items: [{
+									type: 'item',
+									name: 'Сверху',
+									itemValue: 'top'
+								},{
+									type: 'item',
+									name: 'Посередине',
+									itemValue: 'middle'
+								},{
+									type: 'item',
+									name: 'Снизу',
+									itemValue: 'bottom'
+								}]
+							}]
+							
+						}]
 					},{
 						name: 'Виджет',
-						type: 'widget'
+						type: 'widget',
+						key: 'widget'
 					}]
 				}]
 			}]
@@ -53,24 +103,34 @@
 		
 		ready: false,
 		headerDesc: [],
-		colSizes: {},
+		colSizes: [],
 		
 		$constructor: function(opts){
 			$base(opts);
+			
+			this.addClass('tableWidget');
+			this.loadCss('Table.css');
+			
+			this.header = this.$('<table class="header" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr></tr></thead></table>');
+			this.append(this.header);
+			
+			this.scroll = new ScrollBox();
+			this.scroll.append('<table class="rows" cellpadding="0" cellspacing="0"><colgroup></colgroup><tbody></tbody></table>');
+			this.scroll.addClass('pane');
+			this.append(this.scroll);
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.ready = true;
 			});
 			
-			this.addClass('tableWidget');
-			this.loadCss('Table.css');
-			
-			this.header = this.$('<div class="header"></div>');
-			this.append(this.header);
-			
-			this.scroll = new ScrollBox();
-			this.scroll.addClass('pane');
-			this.append(this.scroll);
+			$this.header.resize(function(){
+				$this.updateHeaderSize();
+			});
+
+		},
+		
+		updateHeaderSize: function(){
+			$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
 		},
 		
 		getColumnNames: function(){
@@ -83,9 +143,19 @@
 		
 		updateRows: function(){
 			var rowsContext = this.getContext().find('rows');
+			rowsContext.reset();
 			var gArr = this.getContext().find('columns').values();
 			var rows = [];
-
+			
+			var colGroup = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('colgroup');
+			var colGroupData = colGroup.selectAll('col').data($this.colSizes);
+			
+			colGroupData.enter()
+				.append('col')
+					.style('width', function(d){ return '' + d.size + '%'});
+			
+			colGroupData.exit().remove();
+			
 			function iterateRows(){
 				while(rowsContext.next()){
 					var row = [];
@@ -93,32 +163,43 @@
 					for(var i = 0; i < gArr.length; i++){
 						var title = gArr[i].get(0).value();
 						var view = gArr[i].get(1).value();
-						var value = view.value();
-						row.push({
-							column: title,
-							value: value
-						});	// push cell
+						if(view.key() == 'text'){
+							var value = view.value().get(0).value();
+							row.push({
+								column: title,
+								value: value
+							});	// push cell
+						}
 					}
 					rows.push(row);
 				}
 				
 				if(rows.length > 0){
-					debugger;
 					// accociate with DOM
-					var scrollPane = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane');
-					var rowsSel = scrollPane.selectAll('div.row').data(rows);
-					rowsSel
+					var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
+					var rowsSel = tbody.selectAll('tr.row');
+					var rowsSelData = rowsSel.data(rows);
+					var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d; });
+					rowsSelDataColData.enter()
+						.append('td')
+							.classed('col', true)
+							.text(function(d){ return d.value});
+					
+					rowsSelDataColData.exit().remove();
+					
+					rowsSelData
 						.enter()
-							.append('div')
+							.append('tr')
 								.classed('row', true)
-								.selectAll('div.col')
+								.selectAll('td.col')
 								.data(function(d){ return d; })
 								.enter()
-									.append('div')
-									.classed('col', true)
-									.style('width', function(d){ return '' + $this.colSizes[d.column] + '%'})
-									.text(function(d){ return d.value})
-							
+									.append('td')
+										.classed('col', true)
+										.text(function(d){ return d.value});
+					rowsSel
+						.exit()
+							.remove();
 					
 					return;
 				}
@@ -130,6 +211,38 @@
 			}
 			
 			iterateRows();
+		},
+		
+		updateHeader: function(){
+			if(this.getContext().find('showHeader').used()){
+				if(this.getContext().find('columns').used()){
+					this.addClass('hasHeader');
+
+					var headerTable = d3.select($this.header.get(0));
+					var colGroup = headerTable.select('colgroup').selectAll('col');
+
+					var dataColGroup = colGroup.data($this.colSizes, function(d){ return d.title});
+					dataColGroup.enter()
+						.append('col')
+							.style('width', function(d){ return '' + d.size + '%'});
+					dataColGroup.exit()
+						.remove();
+					
+					var rowsBody = headerTable.select('thead').select('tr');
+					var colData = rowsBody.selectAll('th.col').data($this.colSizes);
+					colData.enter()
+						.append('th')
+							.classed('col', true)
+							.text(function(d){ return d.title});
+					colData.exit()
+						.remove();
+						
+				}
+				
+			} else {
+				this.removeClass('hasHeader');
+			}
+			$this.updateHeaderSize();
 		},
 		
 		refresh: function(){
@@ -145,61 +258,27 @@
 			// update col sizes
 			var gArr = this.getContext().find('columns').values();
 			var colSzPrc = 100.0 / gArr.length;
-			this.colSizes = {};
+			this.colSizes = [];
 			for(var i = 0; i < gArr.length; i++){
 				var colTitle = gArr[i].find('title').value();
-				this.colSizes[colTitle] = colSzPrc;
+				this.colSizes.push({
+					title: colTitle,
+					size: colSzPrc
+				});
 			}
 			
+			// update grid
+			if(this.getContext().find('showGrid').used()){
+				this.addClass('hasBorder');
+			} else {
+				this.removeClass('hasBorder');
+			}
 			
 			// update header
-			if(this.getContext().find('showHeader').used()){
-				if(this.getContext().find('columns').used()){
-					this.attr('header', true);
-					
-					// fill column heads
-					var gArr = this.getContext().find('columns').values();
-					if(gArr.length != this.headerDesc.length){
-						// rebuild headers
-						this.header.empty();
-						this.headerDesc = [];
-						for(var i = 0; i < gArr.length; i++){
-							var colTitle = gArr[i].find('title').value();
-							var colHeader = $this.$('<div class="colHeader"></div>').text(colTitle);
-							this.header.append(colHeader);
-							this.headerDesc.push({
-								elt: colHeader,
-								size: 0
-							});
-						}
-					}
-					for(var i = 0; i < gArr.length; i++){
-						var val = gArr[i].find('title').value();
-						var view = gArr[i].get(1).value();
-					}
-				}
-			} else {
-				this.attr('header', false);
-			}
+			this.updateHeader();
 			
 			// update rows
 			this.updateRows();
-/*			
-			// get column names
-			var colNames = this.getColumnNames();
-			
-			
-			// get columns
-			var gArr = this.getContext().find('columns').values();
-			for(var i = 0; i < gArr.length; i++){
-				var val = gArr[i].find('title').value();
-				var view = gArr[i].get(1).value();
-			}
-			
-			// get rows
-			debugger;
-//			this.readRows();
-*/			
 		}
 	}
 }

@@ -44,8 +44,18 @@
                 {
                     type: 'object',
                     property: '$alias',
-                    values: ['$mergeFields']
-                }
+                    values: ['$replace']
+                },
+                {
+                    type: 'object',
+                    property: '$alias',
+                    values: ['$groupFields']
+                },
+//                {
+//                    type: 'object',
+//                    property: '$alias',
+//                    values: ['$mergeFields']
+//                }
             ],
         },
 
@@ -122,6 +132,10 @@
                 type: 'object',
                 values: ['$field', '$$functionOperators' ]
             },
+            $splitString: {
+                type: 'object',
+                values: ['$splitParams'] // TODO
+            },
             $distinct: {
                 type: 'object',
                 values: ['$field']
@@ -183,39 +197,59 @@
         },
 
         schemaFinalizeOperators: {
-            $mergeFields: {
-                type: 'array',
-                values: ['$field']
-            },
-            $normalize: {
+//            $mergeFields: {
+//                type: 'array',
+//                values: ['$field']
+//            },
+            $replace: {
                 type: 'object',
-                property: '$alias',
-                values: ['$thresholdFields']
+                property: '$pattern',
+                values: ['$value']
             },
-            $thresholdFields: {
+            $groupFields: {
                 type: 'array',
                 values: ['$alias']
             }
+//            $normalize: {
+//                type: 'object',
+//                property: '$alias',
+//                values: ['$thresholdFields']
+//            },
+//            $thresholdFields: {
+//                type: 'array',
+//                values: ['$alias']
+//            }
         },
 
         schemaLeafs: {
             $field: {
-                left: true,
+                leaf: true,
                 type: 'string',
             },
             $alias: {
-                left: true,
+                leaf: true,
                 type: 'string',
             },
             $1: {
-                left: true,
+                leaf: true,
                 type: 'number',
                 const: 1,
             },
             $param: {
-                left: true,
+                leaf: true,
                 type: 'string',
                 param: true,
+            },
+            $value: {
+                leaf: true,
+                type: null,
+                value: true,
+            },
+            $pattern: {
+                leaf: true,
+                type: 'string',
+                description: 'String value or regex pattern, ex: "Asd", "/asd/i" ',
+                value: true,
             },
 		},
 

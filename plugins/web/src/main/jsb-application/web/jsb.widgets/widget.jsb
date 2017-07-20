@@ -5,11 +5,12 @@
 		WidgetContainer: 'JSB.Widgets.WidgetContainer'
 	},
 	$client: {
+		_widgetContainer: null,
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('widget.css');
 			this.element.addClass('_dwp_widget');
-			this.container = null;
 			if(opts){
 				if(!JSB().isNull(opts.container)){
 					this.attachContainer(opts.container);
@@ -53,7 +54,7 @@
 		
 		attachContainer: function( c, desc ){
 			var self = this;
-			if( !JSB().isNull(this.container) ) {
+			if( !JSB().isNull(this.getContainer()) ) {
 				this.detachContainer();
 			}
 			
@@ -67,8 +68,8 @@
 		
 		detachContainer: function(){
 			/* TODO: remove all event handlers which are in common to container */
-			if(!JSB().isNull(this.container)){
-				this.container.detachWidget(this);
+			if(!JSB().isNull(this.getContainer())){
+				this.getContainer().detachWidget(this);
 			}
 		},
 		
@@ -81,7 +82,11 @@
 		},
 		
 		getContainer: function(){
-			return this.container;
+			return this._widgetContainer;
+		},
+		
+		setContainer: function(wc){
+			this._widgetContainer = wc;
 		},
 		
 		checkSizes: function(){
