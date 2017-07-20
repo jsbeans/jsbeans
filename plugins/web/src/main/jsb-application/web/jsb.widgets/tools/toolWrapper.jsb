@@ -1043,17 +1043,21 @@
 		
 		hideModalBackground: function(){
 			var self = this;
+			
+			// restore droppables
+			if($this.droppables){
+				for(var i = 0; i < $this.droppables.length; i++){
+					try {
+						$this.$($this.droppables[i]).droppable('enable');
+					}catch(e){}
+				}
+				$this.droppables = null;
+			}
+
 			this.modalBack.fadeOut(function(){
 				self.modalBack.remove();
 				self.modalBack = null;
 				
-				// restore droppables
-				if($this.droppables){
-					for(var i = 0; i < $this.droppables.length; i++){
-						$this.$($this.droppables[i]).droppable('enable');
-					}
-					$this.droppables = null;
-				}
 			});
 		},
 		

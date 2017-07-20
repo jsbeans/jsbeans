@@ -61,7 +61,7 @@
 			if(!w || !JSB().isInstanceOf(w, 'JSB.Widgets.Widget')){
 				throw 'WidgetContainer: Failed to attach widget';
 			}
-			if(w.container == this){
+			if(w.getContainer() == this){
 				return;	// already attached
 			}
 			
@@ -72,7 +72,7 @@
 			var title = desc.title || w.getTitle() || desc.id || w.getId();
 			var tab = this.wcView.addTab(title, w, desc);
 			this.widgets[w.getId()] = {tab: tab, w: w};
-			w.container = this;
+			w.setContainer(this);
 			
 			this.updateBehavior(w.getBehavior());
 			this.publish('JSB.Widgets.WidgetContainer.widgetAttached', w);
@@ -94,7 +94,7 @@
 			
 			delete this.widgets[w.getId()];
 			this.wcView.removeTab(tab);
-			w.container = null;
+			w.setContainer(null);
 			
 			this.publish('JSB.Widgets.WidgetContainer.widgetDetached', w);
 			
