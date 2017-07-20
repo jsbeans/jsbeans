@@ -2,31 +2,65 @@
 
 .tableWidget {}
 
-.tableWidget > .header {}
+/* header */
 
-.tableWidget > .header > .colHeader {
-	display: inline-block;
-	vertical-align: top;
+.tableWidget > table.header {
+	width: 100%;
+	table-layout: fixed;
+	display: none;
 }
+
+.tableWidget.hasHeader > table.header {
+	display: table;
+}
+
+.tableWidget > table.header > thead {}
+
+.tableWidget > table.header > thead > tr {}
+
+.tableWidget > table.header > thead > tr > th.col {}
+
 
 .tableWidget > .pane {}
 
 .tableWidget > .pane > ._dwp_scrollPane {}
 
-.tableWidget > .pane > ._dwp_scrollPane > .row {
-	position: relative;
-	display: block;
+.tableWidget > .pane > ._dwp_scrollPane > table.rows {
+	table-layout: fixed;
+	border-collapse: separate;
+	outline-width: 0;
+    max-width: none;
+    max-height: none;
+    width: 100%;
 }
 
-.tableWidget > .pane > ._dwp_scrollPane > .row > .col {
-	display: inline-block;
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody {}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row {
+	position: relative;
+}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col {
+	position: relative;
 	vertical-align: top;
 	overflow: hidden;
     text-overflow: ellipsis;
-	box-sizing: border-box;
     padding: 2px;
 }
 
-.tableWidget[header="true"] > .header {}
 
-.tableWidget[header="true"] > .pane {}
+/* border */
+
+.tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col {
+	border-right: 1px solid #dadada;
+	border-bottom: 1px solid #dadada;
+}
+
+.tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col:first-child {
+	border-left: 1px solid #dadada;
+}
+
+.tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row:first-child > td.col {
+	border-top: 1px solid #dadada;
+}
+
