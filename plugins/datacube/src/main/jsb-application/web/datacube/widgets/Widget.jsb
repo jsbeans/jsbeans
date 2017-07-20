@@ -141,7 +141,16 @@
 					var item = this.selector[0];
 					return item.name;
 				},
-				
+
+				key: function(){
+					if(this.selector.length == 0){
+						return null;
+					}
+					
+					var item = this.selector[0];
+					return item.key;
+				},
+
 				reset: function(){
 					if(this.selector.length == 0){
 						return;
@@ -152,6 +161,9 @@
 						item.fetchOpts = {};
 					}
 					item.fetchOpts.reset = true;
+					if(item.data){
+						delete item.data;
+					}
 				},
 				
 				fetch: function(opts, callback){
