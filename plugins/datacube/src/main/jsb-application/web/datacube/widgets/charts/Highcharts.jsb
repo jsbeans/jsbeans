@@ -65,7 +65,9 @@
                         {
                             type: 'item',
                             name: 'Цвет',
-                            itemType: 'string',
+                            binding: 'field',
+                            itemType: 'color',
+                            editor: 'JSB.Widgets.ColorEditor'
                         }
                         ]
                     }
@@ -87,7 +89,9 @@
                         {
                             type: 'item',
                             name: 'Цвет',
-                            itemType: 'string',
+                            binding: 'field',
+                            itemType: 'color',
+                            editor: 'JSB.Widgets.ColorEditor'
                         }
                         ]
                     }
@@ -202,7 +206,9 @@
                 {
                     name: 'Цвет',
                     type: 'item',
-                    itemType: 'string',
+                    binding: 'field',
+                    itemType: 'color',
+                    editor: 'JSB.Widgets.ColorEditor'
                 }
                 ]
             }
@@ -219,6 +225,7 @@
 				self.init();
 			});
 		},
+
 		init: function(){
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);
@@ -238,12 +245,14 @@
 
             var seriesContext = this.getContext().find('series').values();
             var yAxisContext = this.getContext().find('yAxis').values();
+            var xAxisContext = this.getContext().find('xAxis').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true}, function(){
                     var series = [];
                     var yAxis = [];
+                    var xAxis = [];
 
                     while(source.next()){
                         for(var i = 0; i < seriesContext.length; i++){
@@ -266,6 +275,15 @@
                                 series[i].data = a;
                             } else {
                                 series[i].data.push(a);
+                            }
+                        }
+
+                        for(var i = 0; i < xAxisContext.length; i++){
+                            var a = xAxisContext[i].get(0).value();
+                            if(JSB().isArray(a)){
+                                xAxis = a;
+                            } else {
+                                xAxis.push(a);
                             }
                         }
 
@@ -302,7 +320,7 @@
                         },
 
                         xAxis: [{
-                            categories: this.getContext().find('xAxis').value().get(0).value(),
+                            categories: xAxis,
                             crosshair: true
                         }],
 
