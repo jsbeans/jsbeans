@@ -139,6 +139,7 @@
             name: 'Источник',
             binding: 'field',
             key: 'source',
+            binding: 'array',
             items: [
             {
                 type: 'group',
@@ -148,6 +149,7 @@
                 {
                     name: 'Имя',
                     type: 'item',
+                    key: 'seriesName',
                     itemType: 'string',
                     itemValue: ''
                 },
@@ -202,49 +204,29 @@
         },
 
         refresh: function(){
-        return;
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
-            var seriesContext = this.getContext().find('series').values();
             var dataContext = this.getContext().find('data').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true}, function(){
-                    var series = [];
-
                     while(source.next()){
-                        for(var i = 0; i < seriesContext.length; i++){
-                            if(!series[i]){
-                                debugger;
+                        var data = [];
 
-                                series[i] = {
-                                    name: seriesContext[i].get(0).value(),
-                                    data: [
-                                    {
-                                        name: dataContext[0].get(0).value(),
-                                        y: dataContext[0].get(1).value()
-                                    }
-                                    ],
-                                    colorByPoint: true
-                                };
-                            }
-/*
-                            var data = [];
-
-                            for(var i = 0; i < dataContext.length; i++){
-                                data.push({
-                                    name: dataContext[i].get(0).value(),
-                                    y: dataContext[i].get(1).value()
-                                });
-                            }
-
-                            series[i].data = data;
-*/
+                        for(var i = 0; i < dataContext.length; i++){
+                            data.push({
+                                name: dataContext[i].get(0).value(),
+                                y: dataContext[i].get(1).value()
+                            });
                         }
                     }
 
+                    debugger;
+
+
+/*
                     $this.container.highcharts({
                         chart: {
                             plotBackgroundColor: null,
@@ -272,10 +254,15 @@
                             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
                         },
 
-                        series: series
+                        series: {
+                            name: this.getContext().find('seriesName').value(),
+                            data: data,
+                            colorByPoint: true
+                        }
                     });
 
                     $this.chart =  $this.container.highcharts();
+*/
                 });
 
                 $this.getElement().loader('hide');
