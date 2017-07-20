@@ -153,10 +153,24 @@
                 },
                 {
                     name: 'Данные',
-                    type: 'item',
-                    binding: 'field',
-                    itemType: 'string',
-                    itemValue: '$field'
+                    type: 'group',
+                    key: 'data',
+                    items: [
+                    {
+                        type: 'item',
+                        name: 'Имена частей',
+                        binding: 'field',
+                        itemType: 'string',
+                        itemValue: '$field',
+                    },
+                    {
+                        type: 'item',
+                        name: 'Размеры частей',
+                        binding: 'field',
+                        itemType: 'string',
+                        itemValue: '$field',
+                    }
+                    ]
                 }
                 ]
             }
@@ -188,10 +202,12 @@
         },
 
         refresh: function(){
+        return;
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
             var seriesContext = this.getContext().find('series').values();
+            var dataContext = this.getContext().find('data').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
@@ -201,19 +217,31 @@
                     while(source.next()){
                         for(var i = 0; i < seriesContext.length; i++){
                             if(!series[i]){
+                                debugger;
+
                                 series[i] = {
                                     name: seriesContext[i].get(0).value(),
-                                    data: [],
+                                    data: [
+                                    {
+                                        name: dataContext[0].get(0).value(),
+                                        y: dataContext[0].get(1).value()
+                                    }
+                                    ],
                                     colorByPoint: true
                                 };
                             }
+/*
+                            var data = [];
 
-                            var a = seriesContext[i].get(1).value();
-                            if(JSB().isArray(a)){
-                                series[i].data = a;
-                            } else {
-                                series[i].data.push(a);
+                            for(var i = 0; i < dataContext.length; i++){
+                                data.push({
+                                    name: dataContext[i].get(0).value(),
+                                    y: dataContext[i].get(1).value()
+                                });
                             }
+
+                            series[i].data = data;
+*/
                         }
                     }
 

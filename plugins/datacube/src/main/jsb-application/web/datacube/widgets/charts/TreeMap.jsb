@@ -73,7 +73,112 @@
 		S1jRNL1jY2BgQBoVGSCfsMFtGI14Ei2RIE6hAEEVSmh8cTgLMADfHw/zyK4h3wAAAABJRU5ErkJg
 		gg==`
 	},
-	
+    $scheme: {
+        type: 'group',
+        items: [
+        {
+            name: 'Заголовок',
+            type: 'item',
+            key: 'title',
+            itemType: 'string',
+            itemValue: ''
+        },
+        {
+            type: 'group',
+            name: 'Источник',
+            binding: 'field',
+            key: 'source',
+            items: [
+            {
+                type: 'group',
+                name: 'Серии',
+                key: 'series',
+                items: [
+                {
+                    name: 'Алгоритм построения',
+                    type: 'select',
+                    items:[
+                    {
+                        name: 'sliceAndDice',
+                        type: 'item',
+                    },
+                    {
+                        name: 'squarified',
+                        type: 'item',
+                    },
+                    {
+                        name: 'stripes',
+                        type: 'item',
+                    },
+                    {
+                        name: 'strip',
+                        type: 'item',
+                    }
+                    ]
+                },
+                {
+                    type: 'item',
+                    name: 'Альтернативное направление',
+                    optional: true
+                },
+                {
+                    type: 'group',
+                    name: 'Уровни',
+                    key: 'levels',
+                    items: [
+                    {
+                        name: 'Уровень',
+                        type: 'item',
+                        itemType: 'string'
+                    },
+                    {
+                        name: 'Алгоритм построения',
+                        type: 'select',
+                        items:[
+                        {
+                            name: 'sliceAndDice',
+                            type: 'item',
+                        },
+                        {
+                            name: 'squarified',
+                            type: 'item',
+                        },
+                        {
+                            name: 'stripes',
+                            type: 'item',
+                        },
+                        {
+                            name: 'strip',
+                            type: 'item',
+                        }
+                        ]
+                    },
+                    {
+                        type: 'group',
+                        name: 'dataLabels',
+                        key: 'levels',
+                        items: [
+                        {
+                            type: 'item',
+                            name: 'Активны',
+                            optional: true
+                        }
+                        ]
+                    }
+                    ]
+                },
+                {
+                    name: 'Данные',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
+                }
+                ]
+            }
+            ]
+        }]
+    },
 	$client: {
 		$constructor: function(opts){
 			var self = this;
@@ -86,98 +191,84 @@
 				});
 			});
 		},
-		init: function(){
-			var self = this;
-			this.hc = this.$('<div class="container"></div>');
-			this.getElement().append(this.hc);
-			this.getElement().resize(function(){
-				if(self.chart){
-					self.chart.setSize(self.getElement().width(), self.getElement().height(), false);
-				}
-			});
-			this.hc.highcharts({
-				series: [{
-			        type: "treemap",
-			        layoutAlgorithm: 'stripes',
-			        alternateStartingDirection: true,
-			        levels: [{
-			            level: 1,
-			            layoutAlgorithm: 'sliceAndDice',
-			            dataLabels: {
-			                enabled: true,
-			                align: 'left',
-			                verticalAlign: 'top',
-			                style: {
-			                    fontSize: '15px',
-			                    fontWeight: 'bold'
-			                }
-			            }
-			        }],
-			        data: [{
-			            id: 'A',
-			            name: 'Apples',
-			            color: "#EC2500"
-			        }, {
-			            id: 'B',
-			            name: 'Bananas',
-			            color: "#ECE100"
-			        }, {
-			            id: 'O',
-			            name: 'Oranges',
-			            color: '#EC9800'
-			        }, {
-			            name: 'Anne',
-			            parent: 'A',
-			            value: 5
-			        }, {
-			            name: 'Rick',
-			            parent: 'A',
-			            value: 3
-			        }, {
-			            name: 'Peter',
-			            parent: 'A',
-			            value: 4
-			        }, {
-			            name: 'Anne',
-			            parent: 'B',
-			            value: 4
-			        }, {
-			            name: 'Rick',
-			            parent: 'B',
-			            value: 10
-			        }, {
-			            name: 'Peter',
-			            parent: 'B',
-			            value: 1
-			        }, {
-			            name: 'Anne',
-			            parent: 'O',
-			            value: 1
-			        }, {
-			            name: 'Rick',
-			            parent: 'O',
-			            value: 3
-			        }, {
-			            name: 'Peter',
-			            parent: 'O',
-			            value: 3
-			        }, {
-			            name: 'Susanne',
-			            parent: 'Kiwi',
-			            value: 2,
-			            color: '#9EDE00'
-			        }]
-			    }],
-			    title: {
-			        text: 'Fruit consumption'
-			    }
-			});
-			
-			this.chart =  this.hc.highcharts();
-		}
-		
-	},
-	
-	$server: {
+
+        init: function(){
+            this.container = this.$('<div class="container"></div>');
+            this.append(this.container);
+
+            this.getElement().resize(function(){
+                if($this.highcharts){
+                    $this.highcharts.setSize(self.getElement().width(), $this.getElement().height(), false);
+                }
+            });
+
+            this.isInit = true;
+        },
+
+        refresh: function(){
+        return;
+            var source = this.getContext().find('source');
+            if(!source.bound()) return;
+
+            var seriesContext = this.getContext().find('series').values();
+
+            $this.getElement().loader();
+            JSB().deferUntil(function(){
+                source.fetch({readAll: true}, function(){
+                    var series = [];
+
+                    while(source.next()){
+                        for(var i = 0; i < seriesContext.length; i++){
+                            if(!series[i]){
+                                series[i] = {
+                                    name: seriesContext[i].get(0).value(),
+                                    data: [],
+                                    colorByPoint: true
+                                };
+                            }
+
+                            var a = seriesContext[i].get(1).value();
+                            if(JSB().isArray(a)){
+                                series[i].data = a;
+                            } else {
+                                series[i].data.push(a);
+                            }
+                        }
+                    }
+
+                    $this.container.highcharts({
+                        title: {
+                            text: this.getContext().find('title').value()
+                        },
+
+                        series: [{
+                            type: "treemap",
+                            layoutAlgorithm: 'stripes',
+                            alternateStartingDirection: true,
+                            levels: [{
+                                level: 1,
+                                layoutAlgorithm: 'sliceAndDice',
+                                dataLabels: {
+                                    enabled: true,
+                                    align: 'left',
+                                    verticalAlign: 'top',
+                                    style: {
+                                        fontSize: '15px',
+                                        fontWeight: 'bold'
+                                    }
+                                }
+                            }],
+                            data: series
+                        }]
+                    });
+
+                    $this.chart =  $this.container.highcharts();
+                });
+
+                $this.getElement().loader('hide');
+            }, function(){
+                return $this.isInit;
+            });
+        }
 	}
 }
