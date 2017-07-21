@@ -442,6 +442,7 @@
 			var colSzPrc = 100.0 / gArr.length;
 			this.colDesc = [];
 			this.keyIndexes = [];
+			var widgetTypes = [];
 			
 			function prepareCss(cssText){
 				if(cssText.indexOf('{') >= 0){
@@ -479,7 +480,7 @@
 					cssStyle = prepareCss(cssSelector.value());
 				}
 				
-				this.colDesc.push({
+				var desc = {
 					key: MD5.md5(colTitle),
 					keyColumn: keyColumn,
 					title: colTitle,
@@ -488,8 +489,24 @@
 						alignHorz: alignHorz,
 						alignVert: alignVert,
 						cssStyle: cssStyle
-					}
-				});
+					},
+					widget: null
+				};
+				
+				// check for widget
+				var viewSelector = gArr[i].find('view').value();
+				if(viewSelector.key() == 'widget'){
+					var wType = viewSelector.unwrap().widget.jsb;
+					var wName = viewSelector.unwrap().widget.name;
+					widgetTypes.push(wType);
+					desc.widget = {
+						jsb: wType,
+						name: wName,
+						values: viewSelector.value()
+					};
+				}
+				
+				this.colDesc.push(desc);
 
 			}
 			
@@ -502,9 +519,14 @@
 			
 			// update header
 			this.updateHeader();
+
 			
-			// update rows
-			this.updateRows();
+			if(widgetTypes.length > 0){
+				
+			} else {
+				// update rows
+				this.updateRows();
+			}
 		}
 	}
 }

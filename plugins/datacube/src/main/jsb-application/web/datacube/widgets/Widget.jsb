@@ -344,7 +344,7 @@
 					} else if(item.type == 'select'){
 						vals.push(new $this.Selector(item.items[item.chosenIdx]));
 					} else if(item.type == 'widget'){
-						// TODO: construct embedded widget
+						vals.push(new $this.Selector(item.values));
 					}
 					return vals;
 				},
@@ -379,8 +379,7 @@
 						}
 						return new $this.Selector(items)
 					} else if(item.type == 'widget'){
-						// TODO: construct embedded widget
-						return null;
+						return new $this.Selector(item.values);
 					}
 				}
 			};
