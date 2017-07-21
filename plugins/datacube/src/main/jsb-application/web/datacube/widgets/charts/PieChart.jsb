@@ -137,42 +137,33 @@
         {
             type: 'group',
             name: 'Источник',
-            binding: 'field',
-            key: 'source',
             binding: 'array',
+            key: 'source',
             items: [
             {
+                name: 'Имя',
+                type: 'item',
+                itemType: 'string',
+                itemValue: ''
+            },
+            {
+                name: 'Данные',
                 type: 'group',
-                name: 'Серии',
-                key: 'series',
+                key: 'data',
                 items: [
                 {
-                    name: 'Имя',
                     type: 'item',
-                    key: 'seriesName',
+                    name: 'Имена частей',
+                    binding: 'field',
                     itemType: 'string',
-                    itemValue: ''
+                    itemValue: '$field',
                 },
                 {
-                    name: 'Данные',
-                    type: 'group',
-                    key: 'data',
-                    items: [
-                    {
-                        type: 'item',
-                        name: 'Имена частей',
-                        binding: 'field',
-                        itemType: 'string',
-                        itemValue: '$field',
-                    },
-                    {
-                        type: 'item',
-                        name: 'Размеры частей',
-                        binding: 'field',
-                        itemType: 'string',
-                        itemValue: '$field',
-                    }
-                    ]
+                    type: 'item',
+                    name: 'Размеры частей',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
                 }
                 ]
             }
@@ -207,26 +198,28 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
-            var dataContext = this.getContext().find('data').values();
+            var dataValue = this.getContext().find('data').value();
+            // var dataContextValues = this.getContext().find('data').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true}, function(){
-                    while(source.next()){
-                        var data = [];
+                    var data = [];
 
-                        for(var i = 0; i < dataContext.length; i++){
-                            data.push({
-                                name: dataContext[i].get(0).value(),
-                                y: dataContext[i].get(1).value()
-                            });
+                    while(source.next()){
+                        var name = dataValue.get(0).value();
+                        var y = dataValue.get(1).value();
+
+                        if(JSB().isArray(name)){
+                            for(var j = 0; j < name.length; j++){
+                                data.push({
+                                    name: name[j],
+                                    y: y[j]
+                                });
+                            }
                         }
                     }
 
-                    debugger;
-
-
-/*
                     $this.container.highcharts({
                         chart: {
                             plotBackgroundColor: null,
@@ -254,18 +247,18 @@
                             pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
                         },
 
-                        series: {
-                            name: this.getContext().find('seriesName').value(),
+                        series: [{
                             data: data,
                             colorByPoint: true
-                        }
+                        }]
                     });
 
+                    $this.getElement().loader('hide');
+
                     $this.chart =  $this.container.highcharts();
-*/
                 });
 
-                $this.getElement().loader('hide');
+
             }, function(){
                 return $this.isInit;
             });

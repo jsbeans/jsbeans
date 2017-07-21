@@ -252,7 +252,17 @@
 							var parts = path.split(/[\.\/]/);
 							var curVal = val;
 							for(var i = 0; i < parts.length; i++){
-								curVal = curVal[parts[i]];
+							    if(JSB.isArray(curVal)){
+							        var newVal = [];
+							        for(var j = 0; j < curVal.length; j++){
+							            if(JSB.isDefined(curVal[j][parts[i]])){
+							                newVal.push(curVal[j][parts[i]]);
+							            }
+							        }
+							        curVal = newVal;
+							    } else {
+								    curVal = curVal[parts[i]];
+								}
 								if(!JSB.isDefined(curVal)){
 									break;
 								}
