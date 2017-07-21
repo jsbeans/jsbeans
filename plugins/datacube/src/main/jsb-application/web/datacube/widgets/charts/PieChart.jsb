@@ -199,7 +199,6 @@
             if(!source.bound()) return;
 
             var dataValue = this.getContext().find('data').value();
-            // var dataContextValues = this.getContext().find('data').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
