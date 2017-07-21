@@ -270,8 +270,12 @@
 							}
 							return curVal;
 						}
-						if(curItem.binding && JSB.isString(curItem.binding)){
-							curItem.data = drillDownValue(val, curItem.binding);
+						if(curItem.binding){
+							if(JSB.isString(curItem.binding)){
+								curItem.data = drillDownValue(val, curItem.binding);
+							} else {
+								curItem.data = val;
+							}
 							return curItem.data;
 						} else if(curItem.values && curItem.values.length > 0){
 							for(var i = 0; i < curItem.values.length; i++){
@@ -385,17 +389,23 @@
 			};
 		},
 		
-		setWrapper: function(w){
+		setWrapper: function(w, values){
 			this.wrapper = w;
-			this.updateSelectors();
+			this.updateSelectors(values);
 		},
 		
 		getWrapper: function(){
 			return this.wrapper;
 		},
 		
-		updateSelectors: function(){
-			this.values = JSB.clone(this.wrapper.values);
+		updateSelectors: function(values){
+			if(!values){
+				values = JSB.clone(this.wrapper.values);
+			}
+			this.values = values;
+			if(this.values instanceof this.Selector){
+				this.values = this.values.unwrap();
+			}
 			this.context = new this.Selector(this.values);
 			this.refresh();
 		},

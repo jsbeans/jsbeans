@@ -18,7 +18,28 @@
 
 .tableWidget > table.header > thead > tr {}
 
-.tableWidget > table.header > thead > tr > th.col {}
+.tableWidget > table.header > thead > tr > th.col {
+	background: -webkit-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
+    background: -moz-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
+    background: linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
+    background: -o-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
+    background: -ms-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
+    
+    font-family: 'arial';
+	font-size: 18px;
+    padding: 2px;
+    color: #6b6b6b;
+    text-shadow: 1px 1px #fbfbfb;
+    font-weight: normal;
+}
+
+.tableWidget.hasBorder > table.header > thead > tr > th.col {
+	border-right: 1px solid #d2d2d2;
+}
+
+.tableWidget.hasBorder > table.header > thead > tr > th.col:last-child {
+	border-right: none;
+}
 
 
 .tableWidget > .pane {}
@@ -45,9 +66,11 @@
 	overflow: hidden;
 	padding: 0 !important;
 	margin: 0 !important;
+	background: #fff;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col > div.cell {
+	font-family: 'arial';
 	position: relative;
 	overflow: hidden;
     padding: 2px;
@@ -60,15 +83,10 @@
 /* border */
 
 .tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col {
-	border-right: 1px solid #dadada;
-	border-bottom: 1px solid #dadada;
+	border-right: 1px dotted #d0d0d0;
+	border-bottom: 1px dotted #d0d0d0;
 }
 
-.tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col:first-child {
-	border-left: 1px solid #dadada;
+.tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col:last-child {
+	border-right: none;
 }
-
-.tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row:first-child > td.col {
-	border-top: 1px solid #dadada;
-}
-

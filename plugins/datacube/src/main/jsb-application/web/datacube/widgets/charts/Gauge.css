@@ -1,8 +1,6 @@
 @CHARSET "UTF-8";
 
 .gauge {
-	min-width: 300px;
-	min-height: 300px;
 }
 
 .gauge .container {
