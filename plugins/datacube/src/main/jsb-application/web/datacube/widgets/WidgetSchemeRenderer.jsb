@@ -534,6 +534,16 @@
 					}
 					updateItemButtons();
 				});
+			} else if(JSB.isDefined($this.scheme.itemValue)){
+				if(!$this.values.values){
+					$this.values.values = [];
+				}
+				if($this.values.values.length == 0){
+					$this.values.values[0] = {
+						value: $this.scheme.itemValue,
+						binding: null
+					};
+				}
 			}
 			
 		},

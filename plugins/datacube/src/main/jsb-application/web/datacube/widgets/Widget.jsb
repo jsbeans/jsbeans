@@ -214,6 +214,7 @@
 								delete item.data;
 							}
 						}
+						item.fetchOpts.reset = false;
 						if(!item.data){
 							item.data = data;
 						} else {
@@ -299,7 +300,11 @@
 				},
 				
 				position: function(){
-					// returns current cursor position
+					if(this.selector.length == 0){
+						return;
+					}
+					var item = this.selector[0];
+					return item.cursor;
 				},
 				
 				values: function(){

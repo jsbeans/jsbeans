@@ -149,6 +149,10 @@
 			}
 		},
 		
+		getPane: function(){
+			return this.scrollPane;
+		},
+		
 		handleOnScroll: function(x, y){
 			var self = this;
 			self.updateVisibleArea();

@@ -13,7 +13,8 @@
 			              'org.jsbeans.types.XQuery',
 			              'org.jsbeans.types.Xml',
 			              'org.jsbeans.types.SparqlString',
-			              'org.jsbeans.types.Html'], this);
+			              'org.jsbeans.types.Html',
+			              'org.jsbeans.types.Css'], this);
 		})
 	},
 	$client: {
@@ -42,7 +43,8 @@
 				mode = 'xquery';
 				theme = 'xq-light';
 			}
-			if(this.options.valueType == 'org.jsbeans.types.Html' || this.options.valueType == 'org.jsbeans.types.Xml'){
+			if(this.options.valueType == 'org.jsbeans.types.Html' 
+				|| this.options.valueType == 'org.jsbeans.types.Xml'){
 				mode = {
 					name: 'htmlmixed',
 					scriptTypes: [
@@ -50,6 +52,9 @@
 						{matches: /(text|application)\/(x-)?vb(a|script)/i, mode: "vbscript"}
 					]
 				};
+			}
+			if(this.options.valueType == 'org.jsbeans.types.Css'){
+				mode = 'text/css';
 			}
 			/*
 			if(this.options.valueType == 'org.jsbeans.types.JsonObject'){
@@ -153,6 +158,15 @@
 
 						$this.init(mode, theme, {});
 						$this.ready = true;
+					});
+				} else if($this.options.valueType == 'org.jsbeans.types.Css') {
+					JSB.loadScript('tpl/codemirror/mode/css/css.js', function(){
+						JSB.loadScript('tpl/codemirror/addon/hint/show-hint.js', function(){
+							JSB.loadScript('tpl/codemirror/addon/hint/css-hint.js', function(){
+								$this.init(mode, theme, {});
+								$this.ready = true;
+							});
+						});
 					});
 				}
 			});
