@@ -178,6 +178,18 @@
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field',
+            },
+            {
+                name: 'CSS стиль',
+                type: 'item',
+                optional: true,
+                itemType: 'string',
+                itemValue: `/* Заполните объект CSS значениями */`,
+                key: 'css',
+                editor: 'JSB.Widgets.MultiEditor',
+                options: {
+                    valueType: 'org.jsbeans.types.Css'
+                }
             }
             ]
         }]
@@ -196,7 +208,7 @@
 		    var source = this.getContext().find('source');
             if(!source.bound()) return;
 
-            $this.getElement().loader();
+            this.getElement().loader();
 
             if(source.data()){
                 $this.update();
@@ -238,6 +250,22 @@
             }
 
             this.redraw();
+
+            function prepareCss(cssText){
+                if(!cssText) return "";
+                if(cssText.indexOf('{') >= 0){
+                    var m = cssText.match(/\{([^\}]*)\}/i);
+                    if(m && m.length > 1){
+                        cssText = m[1];
+                    }
+                }
+                return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
+            }
+
+            var cssSelector = this.getContext().find('css');
+            if(cssSelector.used()){
+                this.getElement().attr("style", prepareCss(cssSelector.value()));
+            }
 
             $this.getElement().loader('hide');
         },
