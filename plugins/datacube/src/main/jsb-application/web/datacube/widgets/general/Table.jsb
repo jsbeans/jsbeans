@@ -141,28 +141,32 @@
 			type: 'item',
 			optional: 'checked',
 			key: 'showHeader',
-			name: 'Показывать заголовки столбцов'
+			name: 'Показывать заголовки столбцов',
+			editor: 'none'
 		},{
 			type: 'item',
 			optional: 'checked',
 			key: 'showGrid',
-			name: 'Показывать сетку'
+			name: 'Показывать сетку',
+			editor: 'none'
 		},{
 			type: 'group',
 			name: 'Строки',
 			binding: 'array',
 			key: 'rows',
 			items: [{
+				name: 'Идентификация',
+				type: 'item',
+				multiple: true,
+				key: 'rowKey',
+				binding: 'field',
+				editor: 'none'
+			},{
 				name: 'Столбцы',
 				type: 'group',
 				multiple: 'auto',
 				key: 'columns',
 				items: [{
-					name: 'Ключевой столбец',
-					key: 'keyColumn',
-					type: 'item',
-					optional: true
-				},{
 					name: 'Название',
 					key: 'title',
 					type: 'item',
@@ -193,15 +197,18 @@
 						items: [{
 							type: 'item',
 							name: 'По левому карю',
-							itemValue: 'left'
+							itemValue: 'left',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
-							itemValue: 'center'
+							itemValue: 'center',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
-							itemValue: 'right'
+							itemValue: 'right',
+							editor: 'none'
 						}]
 					},{
 						name: 'По вертикали',
@@ -210,15 +217,18 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
-							itemValue: 'top'
+							itemValue: 'top',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
-							itemValue: 'middle'
+							itemValue: 'middle',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
-							itemValue: 'bottom'
+							itemValue: 'bottom',
+							editor: 'none'
 						}]
 					}]
 					
@@ -246,15 +256,18 @@
 						items: [{
 							type: 'item',
 							name: 'По левому карю',
-							itemValue: 'left'
+							itemValue: 'left',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
-							itemValue: 'center'
+							itemValue: 'center',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
-							itemValue: 'right'
+							itemValue: 'right',
+							editor: 'none'
 						}]
 					},{
 						name: 'По вертикали',
@@ -263,15 +276,18 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
-							itemValue: 'top'
+							itemValue: 'top',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
-							itemValue: 'middle'
+							itemValue: 'middle',
+							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
-							itemValue: 'bottom'
+							itemValue: 'bottom',
+							editor: 'none'
 						}]
 					}]
 					
@@ -304,7 +320,6 @@
 		rows: [],
 		rowKeyMap: {},
 		widgetMap: {},
-		keyIndexes: [],
 		appendRowsReady: false,
 		preFetching: false,
 		stopPreFetch: false,
@@ -419,16 +434,17 @@
 				// prepare rows
 				var pRows = [];
 				for(var i = 0; i < rows.length; i++){
-					var row = rows[i];
-					var key = constructRowKey(row);
-					if(!key){
-						key = i;
+					var rowDesc = rows[i];
+					var row = rowDesc.row;
+					if(!rowDesc.key){
+						rowDesc.key = $this.rows.length + i;
 					}
+					var key = rowDesc.key;
 					if($this.rowKeyMap[key]){
 						continue;
 					}
-					pRows.push({row: row, key: key});
-					$this.rowKeyMap[key] = row;
+					pRows.push(rowDesc);
+					$this.rowKeyMap[key] = rowDesc;
 					
 					// proceed widgets
 					for(var j = 0; j < $this.colDesc.length; j++){
@@ -437,7 +453,7 @@
 							continue;
 						}
 						var colName = $this.colDesc[j].title;
-						if($this.widgetMap[key] && $this.widgetMap[key][colName]){
+						if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
 							$this.widgetMap[key][colName].setWrapper($this.getWrapper(), row[j].value);
 						} else {
 							var WidgetCls = $this.colDesc[j].widget.cls;
@@ -454,52 +470,88 @@
 				$this.rows = $this.rows.concat(pRows);
 				// accociate with DOM
 				var rowsSel = tbody.selectAll('tr.row');
-				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : this.attr('key');});
-				var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: this.attr('key')});
-				
-				rowsSelDataColData
-					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
-					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
-				
-				rowsSelDataColData.selectAll('div.cell')
-					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-					.each(function(d){
-						if($this.colDesc[d.colIdx].widget){
-//							debugger;
-//							d.value.refresh();
-						} else {
-							$this.$(this).text(d.value);
-						}
-					});
-
-				
-				rowsSelDataColData.enter()
-					.append('td')
-						.classed('col', true)
-						.attr('key', function(d){ return d.key;})
-						.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-						.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
-						.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
-							.append('div')
-								.classed('cell', true)
-								.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-								.each(function(d){
-									if($this.colDesc[d.colIdx].widget){
-										var widget = $this.widgetMap[d.rowKey][$this.colDesc[d.colIdx].title];
-										$this.$(this).append(widget.getElement());
-									} else {
-										$this.$(this).text(d.value);
-									}
-								});
+				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
+				var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
 				
 				rowsSelDataColData.exit()
 					.each(function(d){
-						if($this.colDesc[d.colIdx].widget){
-							d.value.destroy();
+						var cell = d3.select(this).select('div.cell');
+						var cellEl = $this.$(cell.node());
+						
+						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+							$this.widgetMap[d.rowKey][d.column].destroy();
+							delete $this.widgetMap[d.rowKey][d.column];
+							if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+								delete $this.widgetMap[d.rowKey];
+							}
 						}
 					})
 					.remove();
+					
+				rowsSelDataColData.enter()
+				.append('td')
+					.classed('col', true)
+					.attr('key', function(d){ return d.key;})
+					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
+					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
+						.append('div')
+							.classed('cell', true)
+							.attr('key', function(d){ return d.key;})
+							.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+							.each(function(d){
+								var cellEl = $this.$(this);
+								if($this.colDesc[d.colIdx].widget){
+									var widget = $this.widgetMap[d.rowKey][d.column];
+									cellEl.append(widget.getElement());
+									cellEl.attr('widget', widget.getId());
+								} else {
+									cellEl.text(d.value);
+								}
+							});
+					
+				rowsSelDataColData
+					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
+					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert});
+				
+				rowsSelDataColData.each(function(d){
+					var cell = d3.select(this).select('div.cell');
+					cell.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle});
+					var cellEl = $this.$(cell.node());
+					
+					if($this.colDesc[d.colIdx].widget){
+						var widget = $this.widgetMap[d.rowKey][d.column];
+						var cellWidget = cellEl.attr('widget');
+						if(cellWidget){
+							if(widget.getId() != cellWidget){
+								var oldWidget = JSB.getInstance(cellWidget);
+								if(oldWidget){
+									oldWidget.destroy();
+								}
+								cellEl.empty().append(widget.getElement());
+								cellEl.attr('widget', widget.getId());
+							}
+						} else {
+							cellEl.empty().append(widget.getElement());
+							cellEl.attr('widget', widget.getId());
+						}
+					} else {
+						cellEl.text(d.value);
+						if(cellEl.attr('widget')){
+							cellEl.removeAttr('widget');
+						}
+						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+							var widget = $this.widgetMap[d.rowKey][d.column];
+							widget.destroy();
+							delete $this.widgetMap[d.rowKey][d.column];
+							if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+								delete $this.widgetMap[d.rowKey];
+							}
+						}
+					}
+				});
+				
 				rowsSelDataColData.order();
 				
 				rowsSelData
@@ -507,7 +559,7 @@
 						.append('tr')
 							.classed('row', true)
 							.attr('key', function(d){ return d.key;})
-							.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: this.attr('key')})
+							.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
 							.enter()
 								.append('td')
 									.classed('col', true)
@@ -517,22 +569,33 @@
 									.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
 									.append('div')
 									.classed('cell', true)
+										.attr('key', function(d){return d.key})
 										.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
 										.each(function(d){
+											var cellEl = $this.$(this);
 											if($this.colDesc[d.colIdx].widget){
-												var widget = $this.widgetMap[d.rowKey][$this.colDesc[d.colIdx].title];
-												$this.$(this).append(widget.getElement());
+												var widget = $this.widgetMap[d.rowKey][d.column];
+												cellEl.append(widget.getElement());
+												cellEl.attr('widget', widget.getId());
 											} else {
-												$this.$(this).text(d.value);
+												cellEl.text(d.value);
 											}
 										});
+
 				
 				// destroy widgets
 				rowsSel.exit()
-					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: this.attr('key')})
+					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
 						.each(function(d){
-							if($this.colDesc[d.colIdx].widget){
-								d.value.destroy();
+							var cell = d3.select(this).select('div.cell');
+							var cellEl = $this.$(cell.node());
+							
+							if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+								$this.widgetMap[d.rowKey][d.column].destroy();
+								delete $this.widgetMap[d.rowKey][d.column];
+								if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+									delete $this.widgetMap[d.rowKey];
+								}
 							}
 						});
 						
@@ -561,14 +624,14 @@
 			var rows = [];
 			var cols = [];
 			var rowsContext = this.getContext().find('rows');
+			var rowKeySelector = this.getContext().find('rowKey');
 			var gArr = this.getContext().find('columns').values();
 			for(var i = 0; i < gArr.length; i++){
-				var valueSelector = gArr[i].get(2).value();
+				var valueSelector = gArr[i].get(1).value();
 				var colType = valueSelector.key();
 				cols.push({
 					colName: $this.colDesc[i].title,
 					colKey: $this.colDesc[i].key,
-					keyColumn: $this.colDesc[i].keyColumn,
 					colType: colType,
 					valueSelector: valueSelector
 				});
@@ -592,13 +655,22 @@
 			function iterateRows(){
 				while(rowsContext.next()){
 					var row = [];
+					// construct key
+					var rowKey = null;
+					var keyVals = rowKeySelector.values();
+					if(keyVals.length > 0){
+						rowKey = '';
+						for(var i = 0; i < keyVals.length; i++){
+							rowKey += MD5.md5(keyVals[i]);
+						}	
+					}
+					
 					// iterate by cells
 					for(var i = 0; i < gArr.length; i++){
 						var rDesc = {
 							key: cols[i].colKey,
 							column: cols[i].colName,
-							colIdx: i,
-							keyColumn: cols[i].keyColumn
+							colIdx: i
 						};
 						if(cols[i].colType == 'text'){
 							rDesc.value = cols[i].valueSelector.value();
@@ -610,7 +682,7 @@
 						row.push(rDesc);	// push cell
 
 					}
-					rows.push(row);
+					rows.push({row: row, key: rowKey});
 					if(rows.length >= batchSize){
 						$this.stopPreFetch = false;
 						
@@ -636,7 +708,6 @@
 		updateRows: function(){
 			var rowsContext = this.getContext().find('rows');
 			rowsContext.reset();
-			var gArr = this.getContext().find('columns').values();
 			
 			var colGroup = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('colgroup');
 			var colGroupData = colGroup.selectAll('col').data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
@@ -708,11 +779,13 @@
 				return;
 			}
 			
+			if(!this.getContext().find('columns').used()){
+				return;
+			}
 			// update col sizes
 			var gArr = this.getContext().find('columns').values();
 			var colSzPrc = 100.0 / gArr.length;
 			this.colDesc = [];
-			this.keyIndexes = [];
 			var widgetTypes = [];
 			
 			function prepareCss(cssText){
@@ -727,10 +800,6 @@
 			
 			for(var i = 0; i < gArr.length; i++){
 				var colTitle = gArr[i].find('title').value();
-				var keyColumn = gArr[i].find('keyColumn').used();
-				if(keyColumn){
-					this.keyIndexes.push(i);
-				}
 				
 				// fill styles
 				var alignHorz = 'left';
@@ -772,7 +841,6 @@
 
 				var desc = {
 					key: MD5.md5(colTitle),
-					keyColumn: keyColumn,
 					title: colTitle,
 					size: colSzPrc,
 					style: {

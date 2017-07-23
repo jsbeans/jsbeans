@@ -361,6 +361,8 @@
 				if($this.scheme.editor){
 					if($this.scheme.editor == 'string'){
 						callback(PrimitiveEditor, $this.scheme.options);
+					} else if($this.scheme.editor == 'none'){
+						callback(null, null);
 					} else if($jsb.isString($this.scheme.editor)){
 						$jsb.lookup($this.scheme.editor, function(cls){
 							callback(cls, $this.scheme.options);
@@ -401,20 +403,23 @@
 			function setupEditor(idx){
 				var valueDesc = $this.values.values[idx];
 				var editorCls = $this.editorCls;
-				var editor = new editorCls(JSB.merge({
-					placeholder: 'Задайте константу'
-				},$this.editorOptions || {}, {
-					onChange: function(val){
-						valueDesc.value = val;
-					}
-				}));
-				editor.addClass('valueEditor');
-				$this.renderers.push(editor);
-				
+
 				var valContainer = $this.$('<div class="valueContainer"></div>');
 				valContainer.attr('idx', idx);
 				valElt.append(valContainer);
-				valContainer.append(editor.getElement());
+				
+				if(editorCls){
+					var editor = new editorCls(JSB.merge({
+						placeholder: 'Задайте константу'
+					},$this.editorOptions || {}, {
+						onChange: function(val){
+							valueDesc.value = val;
+						}
+					}));
+					editor.addClass('valueEditor');
+					$this.renderers.push(editor);
+					valContainer.append(editor.getElement());
+				}
 				
 				if($this.scheme.binding == 'field'){
 					var bindingSelector = new DataBindingSelector({
@@ -442,7 +447,9 @@
 							}
 						}
 					});
-					valContainer.append('<div class="separator">или</div>');
+					if(editorCls){
+						valContainer.append('<div class="separator">или</div>');
+					}
 					valContainer.append(bindingSelector.getElement());
 					if(bindingSelector.isFilled()){
 						var binding = bindingSelector.getDataScheme();
@@ -473,7 +480,7 @@
 					valContainer.append(removeButton.getElement());
 				}
 				
-				if(JSB.isDefined(valueDesc.value)){
+				if(JSB.isDefined(valueDesc.value) && editor){
 					editor.setData(valueDesc.value, true);
 				}
 				
@@ -502,49 +509,37 @@
 			}
 
 			
-			if($this.scheme.itemType){
-				lookupItemEditor(function(editorCls, options){
-					$this.editorCls = editorCls;
-					$this.editorOptions = options;
-					if(!$this.values.values){
-						$this.values.values = [];
-					}
-					
-					if($this.values.values.length == 0){
-						// create empty editor
-						var value = null;
-						if(JSB.isDefined($this.scheme.itemValue)){
-							value = $this.scheme.itemValue;
-						}
-						if(value == '$field' && $this.supply && $this.supply.field){
-							value = $this.supply.field;
-						}
-						if(value == '$field'){
-							value = '';
-						}
-						$this.values.values[0] = {
-							value: value,
-							binding: null
-						};
-						setupEditor(0);
-					} else {
-						for(var i = 0; i < $this.values.values.length; i++){
-							setupEditor(i);
-						}
-					}
-					updateItemButtons();
-				});
-			} else if(JSB.isDefined($this.scheme.itemValue)){
+			lookupItemEditor(function(editorCls, options){
+				$this.editorCls = editorCls;
+				$this.editorOptions = options;
 				if(!$this.values.values){
 					$this.values.values = [];
 				}
+				
 				if($this.values.values.length == 0){
+					// create empty editor
+					var value = null;
+					if(JSB.isDefined($this.scheme.itemValue)){
+						value = $this.scheme.itemValue;
+					}
+					if(value == '$field' && $this.supply && $this.supply.field){
+						value = $this.supply.field;
+					}
+					if(value == '$field'){
+						value = '';
+					}
 					$this.values.values[0] = {
-						value: $this.scheme.itemValue,
+						value: value,
 						binding: null
 					};
+					setupEditor(0);
+				} else {
+					for(var i = 0; i < $this.values.values.length; i++){
+						setupEditor(i);
+					}
 				}
-			}
+				updateItemButtons();
+			});
 			
 		},
 		
