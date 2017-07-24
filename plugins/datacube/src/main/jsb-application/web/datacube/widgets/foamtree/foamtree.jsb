@@ -421,7 +421,7 @@
                 type: 'group',
                 name: 'Уровни',
                 key: 'levels',
-                multiple: 'auto',
+                multiple: 'true',
                 items: [
                 {
                     name: 'Имя поля',
@@ -441,7 +441,14 @@
                 type: 'item',
                 key: 'autoSize',
                 name: 'Автоматически считать размеры',
-                optional: true
+                optional: true,
+                editor: 'none'
+            },{
+                type: 'item',
+                key: 'skipSmallGroups',
+                name: 'Опускать группы с одним элементом',
+                optional: true,
+                editor: 'none'
             }]
         }]
     },
@@ -510,6 +517,9 @@
                                 groups: data
                             }
                         });
+
+                        debugger;
+
                     }, function(){
                         return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded && $this.getElement().is(':visible');
                     });
@@ -543,7 +553,8 @@
             var levels = this.getContext().find('levels').values();
             var data = [];
 
-            var autoSize = this.getContext().find('autoSize').used();
+            var autoSize = this.getContext().find('autoSize').used(),
+                skipSmallGroups = this.getContext().find('skipSmallGroups').used()
 
             context.fetch({readAll: true}, function(){
                 while(context.next()){
@@ -554,31 +565,65 @@
                         var weight = levels[i].get(1).value();
 
                         var e = el.find(function(element){
-                            if(element.label === label) return true;
+                            if(element.label == label) return true;
                             return false;
                         });
 
                         if(!e){
                             el.push({
                                 label: label,
-                                weight: weight,
+                                weight: parseInt(weight),
                                 groups: []
                             });
 
-                            if(autoSize) el[el.length - 1].weight = 0;
-
                             el = el[el.length - 1].groups;
                         } else {
-                            if(autoSize) e.weight++;
                             el = e.groups;
                         }
                     }
                 }
 
+                data = $this.procData(data, autoSize, skipSmallGroups);
+
                 $this.isDataLoaded = true;
             });
 
             return data;
+        },
+
+        procData: function(data, autoSize, skipSmallGroups){
+            for(var i = 0; i < data.length; i++){
+                if(skipSmallGroups && data[i].groups.length === 1){
+                    data[i] = data[i].groups[0];
+                }
+
+                if((data[i].weight !== data[i].weight) && autoSize){
+                    data[i].weight = this.countWeight(data[i]);
+                }
+
+                data[i].groups = this.procData(data[i].groups, autoSize, skipSmallGroups);
+            }
+
+            data = data.filter(function(el){
+                return el.label !== "";
+            });
+
+            return data;
+        },
+
+        // utils
+        countWeight: function(a){
+            if(a.weight === a.weight) return a.weight;
+
+            if(a.groups.length !== 0){
+                var b = 0;
+                for(var i = 0; i < a.groups.length; i++){
+                    b += countWeight(a.groups[i]);
+                }
+                return b;
+            } else {
+                return 1;
+            }
         }
 	}
 }
