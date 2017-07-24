@@ -661,6 +661,9 @@
 					if(keyVals.length > 0){
 						rowKey = '';
 						for(var i = 0; i < keyVals.length; i++){
+							if(!keyVals[i]){
+								continue;
+							}
 							rowKey += MD5.md5(keyVals[i]);
 						}	
 					}
