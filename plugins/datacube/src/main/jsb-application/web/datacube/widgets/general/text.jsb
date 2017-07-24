@@ -116,7 +116,10 @@
                 type: 'item',
                 optional: true,
                 itemType: 'string',
-                itemValue: `/* Заполните объект CSS значениями */`,
+                itemValue: `/* Заполните объект CSS значениями */
+{
+    font-family: 'arial';
+}`,
                 key: 'css',
                 editor: 'JSB.Widgets.MultiEditor',
                 options: {
