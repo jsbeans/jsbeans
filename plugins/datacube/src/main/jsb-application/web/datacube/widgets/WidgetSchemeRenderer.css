@@ -203,11 +203,11 @@
 	padding-left: 16px;
 }
 
-.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .colorEditor{
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor{
     display: inline-block;
 }
 
-.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .colorEditor > input[type="color"]{
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > input[type="color"]{
     height: 18px;
     border: 1px solid rgba(2, 47, 78, 0.2);
     background-color: rgba(24, 108, 138, 0.2);
@@ -215,6 +215,6 @@
     border-radius: 6px;
 }
 
-.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .colorEditor > input[type="color"]:focus{
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > input[type="color"]:focus{
     outline: none;
 }
