@@ -17,13 +17,31 @@
 	display: none;
 }
 
+.dataBindingSelector > .btnRefresh {
+	position: absolute;
+	right: 22px;
+	top: 50%;
+	margin-top: -8px;
+	display: none;
+}
+
+
 .dataBindingSelector.filled {
 	padding: 0 20px 0 4px;
+}
+
+.dataBindingSelector.refreshable.filled {
+	padding: 0 40px 0 4px;
 }
 
 .dataBindingSelector.filled > .btnDelete {
 	display: block;
 }
+
+.dataBindingSelector.filled.refreshable > .btnRefresh {
+	display: block;
+}
+
 
 
 .dataBindingSelector.selectable {
@@ -54,6 +72,34 @@
 	color: #7b592d;
 }
 
+/* refresh */
+.dataBindingSelector > .refresh {
+	padding: 3px 20px 3px 2px;
+    color: #272f3a;
+    font-size: 10px;
+	display: none;
+}
+
+.dataBindingSelector > .refresh > .icon {
+	width: 16px;
+	height: 16px;
+	position: absolute;
+	right: 2px;
+	top: 50%;
+	margin-top: -8px;
+	background-image: url('/jsb.widgets/images/loading.gif');
+}
+
+.dataBindingSelector.refreshing > .refresh {
+	display: block;
+}
+
+.dataBindingSelector.refreshing > .placeholder,
+.dataBindingSelector.refreshing > .binding,
+.dataBindingSelector.refreshing > .btnDelete,
+.dataBindingSelector.refreshing > .btnRefresh {
+	display: none !important;
+}
 
 /* binding value */
 

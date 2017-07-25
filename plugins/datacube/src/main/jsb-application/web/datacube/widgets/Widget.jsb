@@ -133,6 +133,30 @@
 					
 				},
 				
+				binding: function(){
+					if(this.selector.length == 0){
+						return;
+					}
+					
+					var item = this.selector[0];
+					if(!item.used){
+						return;
+					}
+					if(item.type == 'group' || item.type == 'select'){
+						return item.binding;
+					} else if(item.type == 'item'){
+						var bArr = [];
+						for(var i = 0; i < item.values.length; i++){
+							bArr.push(item.values[i].binding);
+						}
+						return bArr;
+					} else if(item.type == 'widget'){
+						if(item.widget && item.widget.jsb){
+							return item.widget;
+						}
+					}
+				},
+				
 				name: function(){
 					if(this.selector.length == 0){
 						return null;
@@ -207,7 +231,7 @@
 						};
 					}
 					JSB.merge(item.fetchOpts, opts);
-					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data){
+					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(opts.reset){
 							item.cursor = 0;
 							if(item.data){
@@ -215,13 +239,15 @@
 							}
 						}
 						item.fetchOpts.reset = false;
-						if(!item.data){
-							item.data = data;
-						} else {
-							item.data = item.data.concat(data);
+						if(data){
+							if(!item.data){
+								item.data = data;
+							} else {
+								item.data = item.data.concat(data);
+							}
 						}
 						if(callback){
-							callback.call($this, data);
+							callback.call($this, data, fail);
 						}
 					});
 					return true; 
@@ -448,7 +474,12 @@
 			
 			var data = [];
 			for(var i = 0; i < batchSize || opts.readAll; i++){
-				var el = this.iterators[sourceId].next();
+				var el = null;
+				try {
+					el = this.iterators[sourceId].next();
+				}catch(e){
+					el = null;
+				}
 				if(!el){
 					break;
 				}

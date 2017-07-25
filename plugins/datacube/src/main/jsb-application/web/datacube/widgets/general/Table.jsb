@@ -196,7 +196,7 @@
 						key: 'alignHorz',
 						items: [{
 							type: 'item',
-							name: 'По левому карю',
+							name: 'По левому краю',
 							itemValue: 'left',
 							editor: 'none'
 						},{
@@ -255,7 +255,7 @@
 						key: 'hAlignHorz',
 						items: [{
 							type: 'item',
-							name: 'По левому карю',
+							name: 'По левому краю',
 							itemValue: 'left',
 							editor: 'none'
 						},{
@@ -305,7 +305,20 @@
 					options: {
 						valueType: 'org.jsbeans.types.Css'
 					}
+				},{
+					name: 'Ширина столбца',
+					type: 'item',
+					itemType: 'string',
+					itemValue: 'auto',
+					key: 'colWidth'
 				}]
+			},{
+				name: 'Фильтрующие поля',
+				type: 'item',
+				multiple: true,
+				key: 'rowFilter',
+				binding: 'field',
+				editor: 'none'
 			}]
 		}]
 	},
@@ -319,6 +332,7 @@
 		colDesc: [],
 		rows: [],
 		rowKeyMap: {},
+		rowFilterFields: [],
 		widgetMap: {},
 		appendRowsReady: false,
 		preFetching: false,
@@ -393,7 +407,7 @@
 		},
 		
 		appendRows: function(bUseExisting){
-			if(!this.appendRowsReady){
+			if(!this.appendRowsReady || !$this.scroll.getElement().is(':visible')){
 				return;
 			}
 			this.appendRowsReady = false;
@@ -407,7 +421,11 @@
 				this.rowKeyMap = {};
 			} else {
 				// check scroll
-				var scrollY = $this.scroll.getScrollPosition().y;
+				var scrollPos = $this.scroll.getScrollPosition();
+				if(!scrollPos){
+					return;
+				}
+				var scrollY = scrollPos.y;
 				if( $this.paneHeight - ($this.scrollHeight - scrollY) > 2 * $this.scrollHeight){
 					this.appendRowsReady = true;
 					return;
@@ -471,6 +489,10 @@
 				// accociate with DOM
 				var rowsSel = tbody.selectAll('tr.row');
 				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
+				rowsSelData.each(function(d){
+					d3.select(this).classed('rowFilter', d.filter && d.filter.length > 0);
+				});
+				
 				var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
 				
 				rowsSelDataColData.exit()
@@ -506,6 +528,7 @@
 									cellEl.append(widget.getElement());
 									cellEl.attr('widget', widget.getId());
 								} else {
+									cellEl.attr('title', d.value);
 									cellEl.text(d.value);
 								}
 							});
@@ -538,6 +561,7 @@
 						}
 					} else {
 						cellEl.text(d.value);
+						cellEl.attr('title', d.value);
 						if(cellEl.attr('widget')){
 							cellEl.removeAttr('widget');
 						}
@@ -558,6 +582,7 @@
 					.enter()
 						.append('tr')
 							.classed('row', true)
+							.classed('rowFilter', function(d){return d.filter && d.filter.length > 0})
 							.attr('key', function(d){ return d.key;})
 							.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
 							.enter()
@@ -579,6 +604,7 @@
 												cellEl.attr('widget', widget.getId());
 											} else {
 												cellEl.text(d.value);
+												cellEl.attr('title', d.value);
 											}
 										});
 
@@ -625,6 +651,8 @@
 			var cols = [];
 			var rowsContext = this.getContext().find('rows');
 			var rowKeySelector = this.getContext().find('rowKey');
+			var rowFilterSelector = this.getContext().find('rowFilter');
+			var rowFilterBinding = rowFilterSelector.binding();
 			var gArr = this.getContext().find('columns').values();
 			for(var i = 0; i < gArr.length; i++){
 				var valueSelector = gArr[i].get(1).value();
@@ -667,6 +695,14 @@
 							rowKey += MD5.md5(keyVals[i]);
 						}	
 					}
+					// construct row filter
+					var rowFilter = [];
+					var rowFilterVals = rowFilterSelector.values();
+					if(rowFilterVals && rowFilterVals.length > 0){
+						for(var i = 0; i < rowFilterVals.length; i++){
+							rowFilter.push({field: rowFilterBinding[i], value: rowFilterVals[i]});
+						}
+					}
 					
 					// iterate by cells
 					for(var i = 0; i < gArr.length; i++){
@@ -685,7 +721,7 @@
 						row.push(rDesc);	// push cell
 
 					}
-					rows.push({row: row, key: rowKey});
+					rows.push({row: row, key: rowKey, filter: rowFilter});
 					if(rows.length >= batchSize){
 						$this.stopPreFetch = false;
 						
@@ -721,6 +757,9 @@
 					.style('width', function(d){ return '' + d.size + '%'});
 			
 			colGroupData.exit().remove();
+			colGroupData.each(function(d){
+				d3.select(this).style('width', function(d){ return '' + d.size + '%'});
+			});
 			colGroupData.order();
 			this.appendRowsReady = true;
 			
@@ -741,6 +780,9 @@
 							.style('width', function(d){ return '' + d.size + '%'});
 					dataColGroup.exit()
 						.remove();
+					dataColGroup.each(function(d){
+						d3.select(this).style('width', function(d){ return '' + d.size + '%'});
+					});
 					dataColGroup.order();
 
 					var rowsBody = headerTable.select('thead').select('tr');
@@ -786,8 +828,25 @@
 				return;
 			}
 			// update col sizes
+			var colSizes = [];
+			var fixedSize = 0;
+			var fixedCount = 0;
 			var gArr = this.getContext().find('columns').values();
-			var colSzPrc = 100.0 / gArr.length;
+			for(var i = 0; i < gArr.length; i++){
+				var colSize = gArr[i].find('colWidth').value();
+				if(colSize && colSize != 'auto' || !isNaN(parseFloat(colSize))){
+					colSize = parseFloat(colSize);
+					fixedSize += colSize;
+					fixedCount++;
+					colSizes.push(colSize);
+				} else {
+					colSizes.push(0);
+				}
+			}
+			var colSzPrc = 0;
+			if(gArr.length - fixedCount > 0){
+				colSzPrc = (100.0 - fixedSize) / (gArr.length - fixedCount);
+			}
 			this.colDesc = [];
 			var widgetTypes = [];
 			
@@ -803,6 +862,10 @@
 			
 			for(var i = 0; i < gArr.length; i++){
 				var colTitle = gArr[i].find('title').value();
+				var colSize = colSizes[i];
+				if(colSize == 0){
+					colSize = colSzPrc;
+				}
 				
 				// fill styles
 				var alignHorz = 'left';
@@ -845,7 +908,7 @@
 				var desc = {
 					key: MD5.md5(colTitle),
 					title: colTitle,
-					size: colSzPrc,
+					size: colSize,
 					style: {
 						alignHorz: alignHorz,
 						alignVert: alignVert,
@@ -875,6 +938,8 @@
 				this.colDesc.push(desc);
 
 			}
+			
+			// update row filters
 			
 			// update grid
 			if(this.getContext().find('showGrid').used()){

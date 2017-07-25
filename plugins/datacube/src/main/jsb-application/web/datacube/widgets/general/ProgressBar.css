@@ -1,13 +1,25 @@
 @CHARSET "UTF-8";
 
-.progressBar {}
+.progressBar {
+	min-height: 12px;
+}
 
 .progressBar > div.serie {
 	padding: 2px;
 	
 }
 
-.progressBar > div.serie > svg {}
+.progressBar > div.serie > svg {
+	min-height: 8px;
+}
+
+.progressBar > div.serie > svg > path {}
+
+.progressBar > div.serie > svg > path:first-child {}
+
+.progressBar > div.serie > svg > path:last-child {
+	stroke-linecap: round;
+}
 
 .progressBar > div.serie > .progressbar-text {
 	position: absolute;

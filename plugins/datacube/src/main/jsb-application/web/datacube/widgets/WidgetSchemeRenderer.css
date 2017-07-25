@@ -128,6 +128,7 @@
     vertical-align: top;
     margin-left: 6px;
 	display: inline-block;
+	max-width: 100%;
 }
 
 .widgetSchemeRenderer[entry="item"].used > .value:first-child {
@@ -145,7 +146,15 @@
 }
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer {
-	margin: 1px 0;
+	margin: 2px 0;
+}
+
+.widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:nth-child(even) {
+	background-color: #F7F2EE;
+}
+
+.widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:nth-child(odd) {
+	background-color: #EFE9E0;
 }
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer > .btnDelete {

@@ -127,7 +127,14 @@
 				type: 'item',
 				key: 'template',
 				itemType: 'string',
-				itemValue: '<div>{{=JSON.stringify(it)}}</div>',
+				itemValue: `<ul style="padding-left:20px; list-style-type: disc;">
+{{for(var f in it) { }}
+	<li>
+		<strong style="font-style:italic;">{{=f}}</strong>:
+		<span>{{=it[f]}}</span>
+	</li>
+{{ } }}
+</ul>`,
 				editor: 'JSB.Widgets.MultiEditor',
 				options: {
 					valueType: 'org.jsbeans.types.Html'

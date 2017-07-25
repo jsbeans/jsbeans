@@ -103,6 +103,12 @@
 				if(this.scheme.optional){
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateGroupUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					JSB.deferUntil(function(){
+						header.find('> div.caption').jsb().setChecked(true);	
+						}, function(){
+						return header.find('> div.caption').jsb();
+					});
+
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
@@ -341,6 +347,13 @@
 				if(this.scheme.optional){
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateItemUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					if(!JSB.isDefined(this.values.used) && this.scheme.optional == 'checked'){
+						JSB.deferUntil(function(){
+							header.find('> div.caption').jsb().setChecked(true);	
+							}, function(){
+							return header.find('> div.caption').jsb();
+						});
+					}
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
@@ -605,6 +618,11 @@
 				if(this.scheme.optional){
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateSelectUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					JSB.deferUntil(function(){
+						header.find('> div.caption').jsb().setChecked(true);	
+						}, function(){
+						return header.find('> div.caption').jsb();
+					});
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
@@ -674,6 +692,12 @@
 				if(this.scheme.optional){
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateWidgetUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					JSB.deferUntil(function(){
+						header.find('> div.caption').jsb().setChecked(true);	
+						}, function(){
+						return header.find('> div.caption').jsb();
+					});
+
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
