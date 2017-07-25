@@ -364,7 +364,15 @@
 			this.append(this.scroll);
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
-				$this.ready = true;
+				if($this.scroll.isReady()){
+					$this.ready = true;	
+				} else {
+					JSB.deferUntil(function(){
+						$this.ready = true;
+					}, function(){
+						return $this.scroll.isReady();
+					});
+				}
 			});
 			
 			$this.header.resize(function(){
@@ -407,7 +415,7 @@
 		},
 		
 		appendRows: function(bUseExisting){
-			if(!this.appendRowsReady || !$this.scroll.getElement().is(':visible')){
+			if(!$this.ready || !this.appendRowsReady || !$this.scroll.getElement().is(':visible')){
 				return;
 			}
 			this.appendRowsReady = false;

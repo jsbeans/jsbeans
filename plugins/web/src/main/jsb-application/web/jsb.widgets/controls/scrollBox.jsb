@@ -2,6 +2,8 @@
 	$name:'JSB.Widgets.ScrollBox',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		ready: false,
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -13,6 +15,10 @@
 		
 		options: {
 			scrollbars: true
+		},
+		
+		isReady: function(){
+			return $this.ready;
 		},
 		
 		init: function(){
@@ -81,13 +87,14 @@
 			}
 			
 			JSB().deferUntil(function(){
-				self.installScroll();
+				$this.installScroll();
+				$this.setEasing('default');
+				$this.updateScrollbars();
+				$this.ready = true;
 			},function(){
-				return self.getElement().width() > 0;
+				return $this.getElement().width() > 0;
 			});
 
-			this.setEasing('default');
-			this.updateScrollbars();
 		},
 		
 		refresh: function(){
