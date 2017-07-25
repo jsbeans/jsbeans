@@ -602,7 +602,7 @@
 
             for(var i = 0; i < data.length; i++){
                 if((skipEmptyNamedGroups && data[i].label === "") || (skipSmallGroups && data[i].groups.length === 1)){
-                    newData = newData.concat(this.procData(data[i].groups, autoSize, skipSmallGroups));
+                    newData = newData.concat(this.procData(data[i].groups, autoSize, skipSmallGroups, skipEmptyNamedGroups));
                     continue;
                 }
 
@@ -610,14 +610,10 @@
                     data[i].weight = this.countWeight(data[i]);
                 }
 
-                data[i].groups = this.procData(data[i].groups, autoSize, skipSmallGroups);
+                data[i].groups = this.procData(data[i].groups, autoSize, skipSmallGroups, skipEmptyNamedGroups);
 
                 newData.push(data[i]);
             }
-
-            newData = newData.filter(function(el){
-                return el !== undefined;
-            });
 
             return newData;
         },
