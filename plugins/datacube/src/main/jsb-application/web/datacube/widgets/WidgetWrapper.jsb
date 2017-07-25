@@ -145,6 +145,13 @@
 					$this.updateTabHeader();
 				}
 			});
+			
+			this.subscribe('DataCube.Model.Dashboard.filterChanged', function(sender){
+				if(sender != $this.getDashboard()){
+					return;
+				}
+				$this.getWidget().refresh();
+			});
 		},
 		
 		destroy: function(){

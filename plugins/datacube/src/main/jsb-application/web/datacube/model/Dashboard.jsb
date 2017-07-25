@@ -9,6 +9,41 @@
 	widgetCount: 0,
 	
 	$client: {
+		filterBySource: {},
+		
+		
+		addFilter: function(filterDesc){
+			// acquire cube slices by current source
+			this.server().acquireAssiciatedSources(filterDesc.source, function(sourceArr){
+				for(var i = 0; i < sourceArr.length; i++){
+					var sourceId = sourceArr[i];
+					if(!$this.filterBySource[sourceId]){
+						$this.filterBySource[sourceId] = [];
+					}
+					$this.filterBySource[sourceId].push({
+						filter: filterDesc.filter,
+						type: filterDesc.type
+					});
+				}
+				$this.publish('DataCube.Model.Dashboard.filterChanged');
+			})
+		},
+		
+		constructFilter: function(sourceId){
+			var filterArr = this.filterBySource[sourceId];
+			if(!filterArr || filterArr.length == 0){
+				return null;
+			}
+			var filter = {};
+			for(var i = 0; i < filterArr.length; i++){
+				var filterDesc = filterArr[i];
+				for(var j = 0; j < filterDesc.filter.length; j++){
+					var fFieldDesc = filterDesc.filter[j];
+					filter[fFieldDesc.field] = {$eq: fFieldDesc.value};
+				}
+			}
+			return filter;
+		}
 	},
 	
 	$server: {
@@ -116,6 +151,22 @@
 				layout: this.layout,
 				wrappers: this.wrappers
 			}
+		},
+		
+		acquireAssiciatedSources: function(sourceId){
+			var sourceArr = [];
+			var source = this.workspace.entry(sourceId);
+			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
+				var cube = source.getCube();
+				var sliceMap = cube.getSlices();
+				for(var sId in sliceMap){
+					sourceArr.push(sId);
+				}
+			} else {
+				sourceArr.push(sourceId);
+			}
+			
+			return sourceArr;
 		}
 	}
 }

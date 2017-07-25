@@ -289,8 +289,6 @@
 		draw: function(series){
 			var seriesSel = d3.select(this.getElement().get(0)).selectAll('div.serie');
 			
-
-			
 			var seriesSelData = seriesSel.data(series);
 			
 			// remove old
@@ -322,6 +320,9 @@
 								easing: 'easeInOut'
 							});
 						}, 0)
+						if(JSB.isFloat(val)){
+							val = val.toFixed(2);
+						}
 						widget.setText('' + val);
 						d3.select(this).select('.progressbar-text').attr('style', d.textCss);
 						
@@ -356,6 +357,9 @@
 					duration: 800,
 					easing: 'easeInOut'
 				});
+				if(JSB.isFloat(val)){
+					val = val.toFixed(2);
+				}
 				widget.setText('' + val);
 				
 				d3.select(this).select('svg > path:first-child')

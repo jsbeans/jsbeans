@@ -26,7 +26,7 @@
     background: -ms-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
     
     font-family: 'arial';
-	font-size: 18px;
+	font-size: 13px;
     padding: 2px;
     color: #6b6b6b;
     text-shadow: 1px 1px #fbfbfb;
@@ -92,6 +92,7 @@
 	text-overflow: ellipsis;
 	width: 100%;
 	height: 100%;
+	box-sizing: border-box;
 }
 
 

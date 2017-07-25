@@ -612,7 +612,10 @@
 			} else if(itemDesc.type == 'entry') {
 				var nodeSlice = this.currentWorkspace.workspaceManager.exlorerNodeTypes;
 				var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
-				var nodeCls = $jsb.get(nodeType).getClass();
+				if(!nodeType || !JSB.get(nodeType)){
+					return null;
+				}
+				var nodeCls = JSB.get(nodeType).getClass();
 				node = new nodeCls({
 					descriptor: itemDesc,
 					allowOpen: true,
@@ -919,6 +922,9 @@
 						return;
 					}
 					var node = $this.addTreeItem(desc, parentKey);
+					if(!node){
+						return;
+					}
 					JSB().deferUntil(function(){
 						node.editor.beginEdit();
 					}, function(){
@@ -969,6 +975,9 @@
 						return;
 					}
 					var node = $this.addTreeItem(desc, parentKey);
+					if(!node){
+						return;
+					}
 					JSB().deferUntil(function(){
 						if(node.options.allowOpen){
 							$this.publish('Workspace.nodeOpen', node);

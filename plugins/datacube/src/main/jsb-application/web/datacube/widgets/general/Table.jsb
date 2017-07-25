@@ -439,16 +439,6 @@
 					return;
 				}
 
-				function constructRowKey(d){
-					var key = '';
-					for(var i = 0; i < $this.keyIndexes.length; i++){
-						key += MD5.md5(d[$this.keyIndexes[i]].value);
-					}
-					if(key && key.length > 0){
-						return key;
-					}
-				}
-				
 				// prepare rows
 				var pRows = [];
 				for(var i = 0; i < rows.length; i++){
@@ -490,7 +480,14 @@
 				var rowsSel = tbody.selectAll('tr.row');
 				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
 				rowsSelData.each(function(d){
-					d3.select(this).classed('rowFilter', d.filter && d.filter.length > 0);
+					d3.select(this)
+						.classed('rowFilter', d.filter && d.filter.length > 0)
+						.on('click',function(d){
+							if(!d.filter || d.filter.length == 0){
+								return;
+							}
+							$this.onRowClick(d);
+						});
 				});
 				
 				var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
@@ -583,6 +580,12 @@
 						.append('tr')
 							.classed('row', true)
 							.classed('rowFilter', function(d){return d.filter && d.filter.length > 0})
+							.on('click',function(d){
+								if(!d.filter || d.filter.length == 0){
+									return;
+								}
+								$this.onRowClick(d);
+							})
 							.attr('key', function(d){ return d.key;})
 							.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
 							.enter()
@@ -610,7 +613,7 @@
 
 				
 				// destroy widgets
-				rowsSel.exit()
+				rowsSelData.exit()
 					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
 						.each(function(d){
 							var cell = d3.select(this).select('div.cell');
@@ -625,7 +628,7 @@
 							}
 						});
 						
-				rowsSel.exit()
+				rowsSelData.exit()
 					.remove();
 				
 				$this.appendRowsReady = true;
@@ -692,7 +695,7 @@
 							if(!keyVals[i]){
 								continue;
 							}
-							rowKey += MD5.md5(keyVals[i]);
+							rowKey += MD5.md5('' + keyVals[i]);
 						}	
 					}
 					// construct row filter
@@ -700,7 +703,9 @@
 					var rowFilterVals = rowFilterSelector.values();
 					if(rowFilterVals && rowFilterVals.length > 0){
 						for(var i = 0; i < rowFilterVals.length; i++){
-							rowFilter.push({field: rowFilterBinding[i], value: rowFilterVals[i]});
+							if(rowFilterBinding[i]){
+								rowFilter.push({field: rowFilterBinding[i], value: rowFilterVals[i]});
+							}
 						}
 					}
 					
@@ -742,6 +747,18 @@
 			}
 			
 			iterateRows();
+		},
+		
+		onRowClick: function(d){
+			var binding = this.getContext().find('rows').binding();
+			if(!binding.source){
+				return;
+			}
+			this.addFilter({
+				type: 'and',
+				source: binding.source,
+				filter: d.filter
+			});
 		},
 		
 		updateRows: function(){
@@ -906,7 +923,7 @@
 				}
 
 				var desc = {
-					key: MD5.md5(colTitle),
+					key: MD5.md5('' + colTitle),
 					title: colTitle,
 					size: colSize,
 					style: {

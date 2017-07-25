@@ -231,8 +231,9 @@
 						};
 					}
 					JSB.merge(item.fetchOpts, opts);
+					item.fetchOpts.filter = $this.getWrapper().getDashboard().constructFilter(item.binding.source);
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
-						if(opts.reset){
+						if(item.fetchOpts.reset){
 							item.cursor = 0;
 							if(item.data){
 								delete item.data;
@@ -442,6 +443,10 @@
 		
 		refresh: function(){
 //			throw new Error('This method should be overriden');
+		},
+		
+		addFilter: function(filterDesc){
+			this.getWrapper().getDashboard().addFilter(filterDesc);
 		}
 	},
 	
@@ -466,7 +471,11 @@
 			if(!this.iterators[sourceId]){
 				// figure out data provider
 				if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
-					this.iterators[sourceId] = source.executeQuery();
+					var extQuery = {};
+					if(opts.filter){
+						extQuery.$filter = opts.filter;
+					}
+					this.iterators[sourceId] = source.executeQuery(extQuery);
 				} else {
 					// TODO
 				}
