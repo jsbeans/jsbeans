@@ -1,0 +1,6 @@
+@CHARSET "UTF-8";
+
+.filterSelector {
+	position: relative;
+	box-sizing: border-box;
+}

@@ -15,21 +15,7 @@
 			
 			this.loadCss('DashboardEditor.css');
 			this.addClass('dashboardEditor');
-/*			
-			// create toolbar
-			this.toolbar = new ToolBar();
-			this.append(this.toolbar);
 			
-			this.toolbar.addItem({
-				key: 'addSource',
-				tooltip: 'Добавить источник данных',
-				element: '<div class="icon"></div>',
-				click: function(){
-				}
-			});
-			
-			this.toolbar.addSeparator({key: 'createSeparator'});
-*/			
 			this.dashboard = new Dashboard({
 				emptyText: 'Перетащите сюда виджет',
 				onDragAccept: function(d){
