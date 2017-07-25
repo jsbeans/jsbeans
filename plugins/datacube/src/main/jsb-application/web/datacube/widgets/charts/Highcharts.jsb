@@ -343,10 +343,9 @@
                         series: series
                     });
 
+                    $this.getElement().loader('hide');
                     $this.chart =  $this.container.highcharts();
                 });
-
-                $this.getElement().loader('hide');
             }, function(){
                 return $this.isInit;
             });

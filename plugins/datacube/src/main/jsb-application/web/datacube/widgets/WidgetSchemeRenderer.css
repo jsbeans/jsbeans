@@ -207,14 +207,17 @@
     display: inline-block;
 }
 
-.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > input[type="color"]{
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer{
+    height: 20px;
+    box-sizing: border-box;
     height: 18px;
     border: 1px solid rgba(2, 47, 78, 0.2);
     background-color: rgba(24, 108, 138, 0.2);
-    padding: 0 4px;
     border-radius: 6px;
 }
-
-.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > input[type="color"]:focus{
-    outline: none;
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer > .sp-preview{
+    height: 8px;
+}
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer > .sp-dd{
+    line-height: 4px;
 }

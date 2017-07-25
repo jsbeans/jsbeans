@@ -449,6 +449,12 @@
                 name: 'Опускать группы с одним элементом',
                 optional: true,
                 editor: 'none'
+            },{
+                type: 'item',
+                key: 'skipEmptyNamedGroups',
+                name: 'Опускать группы с пустыми именами',
+                optional: true,
+                editor: 'none'
             }]
         }]
     },
@@ -504,47 +510,7 @@
             if(this.getContext().find('source').bound()){
                 this.getElement().loader();
 
-                this.isDataLoaded = false;
-
-                var data = this.getData();
-
-                if(this.foamtree){
-                    JSB().deferUntil(function(){
-                        $this.getElement().loader('hide');
-
-                        $this.foamtree.set({
-                            dataObject: {
-                                groups: data
-                            }
-                        });
-
-                        debugger;
-
-                    }, function(){
-                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded && $this.getElement().is(':visible');
-                    });
-                } else {
-                    JSB().deferUntil(function(){
-                        $this.getElement().loader('hide');
-
-                        $this.foamtree = new CarrotSearchFoamTree({
-                            id: $this.foamtreeId,
-                            dataObject: {
-                                groups: data
-                            },
-                            onGroupHover: function(evt){
-                                $this.onGroupHover(evt);
-                            },
-                        });
-                        $this.foamtreeContainer.resize(function(){
-                            JSB().defer(function(){
-                                $this.foamtree.resize();
-                            }, 300, 'foamtree.resize.' + $this.getId())
-                        });
-                    }, function(){
-                        return $this.isContainerReady && $this.isScriptLoaded && $this.isDataLoaded && $this.getElement().is(':visible');
-                    });
-                }
+                this.getData();
             }
         },
 
@@ -554,7 +520,8 @@
             var data = [];
 
             var autoSize = this.getContext().find('autoSize').used(),
-                skipSmallGroups = this.getContext().find('skipSmallGroups').used()
+                skipSmallGroups = this.getContext().find('skipSmallGroups').used(),
+                skipEmptyNamedGroups = this.getContext().find('skipEmptyNamedGroups').used();
 
             context.fetch({readAll: true}, function(){
                 while(context.next()){
@@ -583,18 +550,60 @@
                     }
                 }
 
-                data = $this.procData(data, autoSize, skipSmallGroups);
+                data = $this.procData(data, autoSize, skipSmallGroups, skipEmptyNamedGroups);
 
-                $this.isDataLoaded = true;
+                $this.updateFoamtree(data);
             });
-
-            return data;
         },
 
-        procData: function(data, autoSize, skipSmallGroups){
+        updateFoamtree: function(data){
+            if(this.foamtree){
+                JSB().deferUntil(function(){
+                    $this.getElement().loader('hide');
+
+                    $this.foamtree.set({
+                        dataObject: {
+                            groups: data
+                        }
+                    });
+
+                }, function(){
+                    return $this.isContainerReady && $this.isScriptLoaded && $this.getElement().is(':visible');
+                });
+            } else {
+                JSB().deferUntil(function(){
+                    $this.getElement().loader('hide');
+
+                    $this.foamtree = new CarrotSearchFoamTree({
+                        id: $this.foamtreeId,
+                        dataObject: {
+                            groups: data
+                        },
+                        onGroupHover: function(evt){
+                            $this.onGroupHover(evt);
+                        },
+                    });
+                    $this.foamtreeContainer.resize(function(){
+                        JSB().defer(function(){
+                            $this.foamtree.resize();
+                        }, 300, 'foamtree.resize.' + $this.getId())
+                    });
+                }, function(){
+                    return $this.isContainerReady && $this.isScriptLoaded && $this.getElement().is(':visible');
+                });
+            }
+        },
+
+        // utils
+        procData: function(data, autoSize, skipSmallGroups, skipEmptyNamedGroups){
+            if(!data) return;
+
+            var newData = [];
+
             for(var i = 0; i < data.length; i++){
-                if(skipSmallGroups && data[i].groups.length === 1){
-                    data[i] = data[i].groups[0];
+                if((skipEmptyNamedGroups && data[i].label === "") || (skipSmallGroups && data[i].groups.length === 1)){
+                    newData = newData.concat(this.procData(data[i].groups, autoSize, skipSmallGroups));
+                    continue;
                 }
 
                 if((data[i].weight !== data[i].weight) && autoSize){
@@ -602,16 +611,17 @@
                 }
 
                 data[i].groups = this.procData(data[i].groups, autoSize, skipSmallGroups);
+
+                newData.push(data[i]);
             }
 
-            data = data.filter(function(el){
-                return el.label !== "";
+            newData = newData.filter(function(el){
+                return el !== undefined;
             });
 
-            return data;
+            return newData;
         },
 
-        // utils
         countWeight: function(a){
             if(a.weight === a.weight) return a.weight;
 
