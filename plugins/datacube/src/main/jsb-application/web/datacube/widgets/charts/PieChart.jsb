@@ -202,7 +202,7 @@
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
-                source.fetch({readAll: true}, function(){
+                source.fetch({readAll: true, reset: true}, function(){
                     var data = [];
 
                     while(source.next()){

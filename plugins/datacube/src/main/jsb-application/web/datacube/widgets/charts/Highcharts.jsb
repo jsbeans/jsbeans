@@ -67,7 +67,10 @@
                             name: 'Цвет',
                             binding: 'field',
                             itemType: 'color',
-                            editor: 'JSB.Widgets.ColorEditor'
+                            editor: 'JSB.Widgets.ColorEditor',
+                            options: {
+                                mode: 'hexagon'
+                            }
                         }
                         ]
                     }
@@ -249,7 +252,7 @@
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
-                source.fetch({readAll: true}, function(){
+                source.fetch({readAll: true, reset: true}, function(){
                     var series = [];
                     var yAxis = [];
                     var xAxis = [];
@@ -346,6 +349,7 @@
                     $this.getElement().loader('hide');
                     $this.chart =  $this.container.highcharts();
                 });
+
             }, function(){
                 return $this.isInit;
             });
