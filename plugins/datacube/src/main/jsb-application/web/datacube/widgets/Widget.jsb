@@ -133,6 +133,30 @@
 					
 				},
 				
+				binding: function(){
+					if(this.selector.length == 0){
+						return;
+					}
+					
+					var item = this.selector[0];
+					if(!item.used){
+						return;
+					}
+					if(item.type == 'group' || item.type == 'select'){
+						return item.binding;
+					} else if(item.type == 'item'){
+						var bArr = [];
+						for(var i = 0; i < item.values.length; i++){
+							bArr.push(item.values[i].binding);
+						}
+						return bArr;
+					} else if(item.type == 'widget'){
+						if(item.widget && item.widget.jsb){
+							return item.widget;
+						}
+					}
+				},
+				
 				name: function(){
 					if(this.selector.length == 0){
 						return null;
@@ -207,20 +231,24 @@
 						};
 					}
 					JSB.merge(item.fetchOpts, opts);
-					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data){
-						if(opts.reset){
+					item.fetchOpts.filter = $this.getWrapper().getDashboard().constructFilter(item.binding.source);
+					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+						if(item.fetchOpts.reset){
 							item.cursor = 0;
 							if(item.data){
 								delete item.data;
 							}
 						}
-						if(!item.data){
-							item.data = data;
-						} else {
-							item.data = item.data.concat(data);
+						item.fetchOpts.reset = false;
+						if(data){
+							if(!item.data){
+								item.data = data;
+							} else {
+								item.data = item.data.concat(data);
+							}
 						}
 						if(callback){
-							callback.call($this, data);
+							callback.call($this, data, fail);
 						}
 					});
 					return true; 
@@ -252,15 +280,29 @@
 							var parts = path.split(/[\.\/]/);
 							var curVal = val;
 							for(var i = 0; i < parts.length; i++){
-								curVal = curVal[parts[i]];
+							    if(JSB.isArray(curVal)){
+							        var newVal = [];
+							        for(var j = 0; j < curVal.length; j++){
+							            if(JSB.isDefined(curVal[j][parts[i]])){
+							                newVal.push(curVal[j][parts[i]]);
+							            }
+							        }
+							        curVal = newVal;
+							    } else {
+								    curVal = curVal[parts[i]];
+								}
 								if(!JSB.isDefined(curVal)){
 									break;
 								}
 							}
 							return curVal;
 						}
-						if(curItem.binding && JSB.isString(curItem.binding)){
-							curItem.data = drillDownValue(val, curItem.binding);
+						if(curItem.binding){
+							if(JSB.isString(curItem.binding)){
+								curItem.data = drillDownValue(val, curItem.binding);
+							} else {
+								curItem.data = val;
+							}
 							return curItem.data;
 						} else if(curItem.values && curItem.values.length > 0){
 							for(var i = 0; i < curItem.values.length; i++){
@@ -299,7 +341,11 @@
 				},
 				
 				position: function(){
-					// returns current cursor position
+					if(this.selector.length == 0){
+						return;
+					}
+					var item = this.selector[0];
+					return item.cursor;
 				},
 				
 				values: function(){
@@ -329,7 +375,7 @@
 					} else if(item.type == 'select'){
 						vals.push(new $this.Selector(item.items[item.chosenIdx]));
 					} else if(item.type == 'widget'){
-						// TODO: construct embedded widget
+						vals.push(new $this.Selector(item.values));
 					}
 					return vals;
 				},
@@ -364,24 +410,29 @@
 						}
 						return new $this.Selector(items)
 					} else if(item.type == 'widget'){
-						// TODO: construct embedded widget
-						return null;
+						return new $this.Selector(item.values);
 					}
 				}
 			};
 		},
 		
-		setWrapper: function(w){
+		setWrapper: function(w, values){
 			this.wrapper = w;
-			this.updateSelectors();
+			this.updateSelectors(values);
 		},
 		
 		getWrapper: function(){
 			return this.wrapper;
 		},
 		
-		updateSelectors: function(){
-			this.values = JSB.clone(this.wrapper.values);
+		updateSelectors: function(values){
+			if(!values){
+				values = JSB.clone(this.wrapper.values);
+			}
+			this.values = values;
+			if(this.values instanceof this.Selector){
+				this.values = this.values.unwrap();
+			}
 			this.context = new this.Selector(this.values);
 			this.refresh();
 		},
@@ -392,6 +443,10 @@
 		
 		refresh: function(){
 //			throw new Error('This method should be overriden');
+		},
+		
+		addFilter: function(filterDesc){
+			this.getWrapper().getDashboard().addFilter(filterDesc);
 		}
 	},
 	
@@ -416,7 +471,11 @@
 			if(!this.iterators[sourceId]){
 				// figure out data provider
 				if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
-					this.iterators[sourceId] = source.executeQuery();
+					var extQuery = {};
+					if(opts.filter){
+						extQuery.$filter = opts.filter;
+					}
+					this.iterators[sourceId] = source.executeQuery(extQuery);
 				} else {
 					// TODO
 				}
@@ -424,7 +483,12 @@
 			
 			var data = [];
 			for(var i = 0; i < batchSize || opts.readAll; i++){
-				var el = this.iterators[sourceId].next();
+				var el = null;
+				try {
+					el = this.iterators[sourceId].next();
+				}catch(e){
+					el = null;
+				}
 				if(!el){
 					break;
 				}

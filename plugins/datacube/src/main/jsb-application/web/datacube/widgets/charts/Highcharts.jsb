@@ -264,9 +264,9 @@
                                     tooltip: {
                                         valueSuffix: seriesContext[i].get(3).value().get(0).value()
                                     },
-                                    yAxis: seriesContext[i].get(4).value() === null ? undefined : parseInt(seriesContext[i].get(4).value()),
+                                    yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
                                     dashStyle: seriesContext[i].get(5).value().name(),
-                                    color: seriesContext[i].get(6).value() === null ? undefined : seriesContext[i].get(6).value()
+                                    color: $this.isNull(seriesContext[i].get(6).value())
                                 };
                             }
 
@@ -292,13 +292,13 @@
                                 title: {
                                     text: yAxisContext[i].get(0).value().get(0).value(),
                                     style: {
-                                        color: yAxisContext[i].get(0).value().get(1).value().get(0).value() === null ? undefined : yAxisContext[i].get(0).value().get(1).value().get(0).value()
+                                        color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
                                     }
                                 },
                                 labels: {
-                                    format: yAxisContext[i].get(1).value().get(0).value() === null ? undefined : yAxisContext[i].get(1).value().get(0).value(),
+                                    format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
                                     style: {
-                                        color: yAxisContext[i].get(1).value().get(1).value().get(0).value() === null ? undefined : yAxisContext[i].get(1).value().get(1).value().get(0).value()
+                                        color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
                                     }
                                 },
                                 opposite: yAxisContext[i].get(2).used()
@@ -343,13 +343,18 @@
                         series: series
                     });
 
+                    $this.getElement().loader('hide');
                     $this.chart =  $this.container.highcharts();
                 });
-
-                $this.getElement().loader('hide');
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        // utils
+        isNull: function(a, b){
+            if(b) return a === null ? undefined : parseInt(a);
+            return a === null ? undefined : a;
         }
 	}
 }

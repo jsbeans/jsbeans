@@ -432,6 +432,10 @@
 			return this.slices[sId];
 		},
 		
+		getSlices: function(){
+			return this.slices;
+		},
+		
 		renameSlice: function(sId, newName){
 			var slice = this.getSliceById(sId);
 			if(slice.getName() == newName){
@@ -442,7 +446,7 @@
 					return false;
 				}
 			}
-			slice.name = newName;
+			slice.setName(newName);
 			return slice;
 		},
 		

@@ -1,8 +1,6 @@
 @CHARSET "UTF-8";
 
 .pieChart {
-	min-width: 300px;
-	min-height: 300px;
 }
 
 .pieChart .container {

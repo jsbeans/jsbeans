@@ -1,0 +1,48 @@
+@CHARSET "UTF-8";
+
+.progressBar {
+	min-height: 12px;
+}
+
+.progressBar > div.serie {
+	padding: 2px;
+	
+}
+
+.progressBar > div.serie > svg {
+	min-height: 8px;
+}
+
+.progressBar > div.serie > svg > path {}
+
+.progressBar > div.serie > svg > path:first-child {}
+
+.progressBar > div.serie > svg > path:last-child {
+	stroke-linecap: round;
+}
+
+.progressBar > div.serie > .progressbar-text {
+	position: absolute;
+    
+	margin-top: -6px;
+    font-size: 10px;
+	background: #777;
+    color: #fff;
+    border-radius: 4px;
+    padding: 0 2px;
+}
+
+.progressBar > div.serie[type="Line"] > .progressbar-text {
+	top: 50%;
+	right: 2px;
+}
+
+.progressBar > div.serie[type="Circle"] > .progressbar-text {
+	top: 50%;
+	left: 50%;
+}
+
+.progressBar > div.serie[type="SemiCircle"] > .progressbar-text {
+	left: 50%;
+	bottom: 0;
+}

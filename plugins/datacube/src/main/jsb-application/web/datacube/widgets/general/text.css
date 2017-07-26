@@ -1,0 +1,34 @@
+@CHARSET "UTF-8";
+
+.textWidget {
+	padding: 4px;
+	text-align: left;
+}
+
+.textWidget > p {
+	margin: 6px 0;
+}
+
+.textWidget > p:first-child{
+	margin: 0;
+}
+
+.textWidget > p > span.highlight,
+.textWidget > span.highlight {
+	background: #decca5;
+	cursor: pointer;
+	padding: 0 1px;
+    border-radius: 3px;
+
+    transition: background 200ms;
+}
+
+.textWidget > p > span.highlight:hover,
+.textWidget > span.highlight:hover {
+	background: #d4b572;
+}
+
+.textWidget > p > span.highlight.active,
+.textWidget > span.highlight.active {
+	background: #d4a540;
+}

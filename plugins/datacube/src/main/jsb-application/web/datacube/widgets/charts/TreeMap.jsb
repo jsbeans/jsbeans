@@ -84,95 +84,86 @@
             itemValue: ''
         },
         {
+            name: 'Подзаголовок',
+            type: 'item',
+            key: 'subtitle',
+            itemType: 'string',
+            itemValue: ''
+        },
+        {
+            name: 'Алгоритм построения',
+            type: 'select',
+            key: 'layoutAlgorithm',
+            editor: 'none',
+            items:[
+            {
+                name: 'sliceAndDice',
+                type: 'item',
+            },
+            {
+                name: 'squarified',
+                type: 'item',
+            },
+            {
+                name: 'stripes',
+                type: 'item',
+            },
+            {
+                name: 'strip',
+                type: 'item',
+            }
+            ]
+        },
+        {
+            type: 'item',
+            name: 'Альтернативное направление',
+            optional: true
+        },
+        {
+            type: 'item',
+            key: 'autoSize',
+            name: 'Автоматически считать размеры',
+            optional: true,
+            editor: 'none'
+        },
+        {
+            type: 'item',
+            key: 'skipSmallGroups',
+            name: 'Опускать группы с одним элементом',
+            optional: true,
+            editor: 'none'
+        },
+        {
+            type: 'item',
+            key: 'skipEmptyNamedGroups',
+            name: 'Опускать группы с пустыми именами',
+            optional: true,
+            editor: 'none'
+        },
+        {
             type: 'group',
             name: 'Источник',
-            binding: 'field',
+            binding: 'array',
             key: 'source',
             items: [
             {
                 type: 'group',
                 name: 'Серии',
                 key: 'series',
+                multiple: 'true',
                 items: [
                 {
-                    name: 'Алгоритм построения',
-                    type: 'select',
-                    items:[
-                    {
-                        name: 'sliceAndDice',
-                        type: 'item',
-                    },
-                    {
-                        name: 'squarified',
-                        type: 'item',
-                    },
-                    {
-                        name: 'stripes',
-                        type: 'item',
-                    },
-                    {
-                        name: 'strip',
-                        type: 'item',
-                    }
-                    ]
-                },
-                {
-                    type: 'item',
-                    name: 'Альтернативное направление',
-                    optional: true
-                },
-                {
-                    type: 'group',
-                    name: 'Уровни',
-                    key: 'levels',
-                    items: [
-                    {
-                        name: 'Уровень',
-                        type: 'item',
-                        itemType: 'string'
-                    },
-                    {
-                        name: 'Алгоритм построения',
-                        type: 'select',
-                        items:[
-                        {
-                            name: 'sliceAndDice',
-                            type: 'item',
-                        },
-                        {
-                            name: 'squarified',
-                            type: 'item',
-                        },
-                        {
-                            name: 'stripes',
-                            type: 'item',
-                        },
-                        {
-                            name: 'strip',
-                            type: 'item',
-                        }
-                        ]
-                    },
-                    {
-                        type: 'group',
-                        name: 'dataLabels',
-                        key: 'levels',
-                        items: [
-                        {
-                            type: 'item',
-                            name: 'Активны',
-                            optional: true
-                        }
-                        ]
-                    }
-                    ]
-                },
-                {
-                    name: 'Данные',
+                    name: 'Имя поля',
                     type: 'item',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
+                },{
+                    name: 'Вес',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'number',
+                    itemValue: ''
                 }
                 ]
             }
@@ -206,69 +197,142 @@
         },
 
         refresh: function(){
-        return;
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
-            var seriesContext = this.getContext().find('series').values();
+            var data = [],
+                series = this.getContext().find('series').values(),
+                autoSize = this.getContext().find('autoSize').used(),
+                skipSmallGroups = this.getContext().find('skipSmallGroups').used(),
+                skipEmptyNamedGroups = this.getContext().find('skipEmptyNamedGroups').used();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true}, function(){
-                    var series = [];
-
                     while(source.next()){
-                        for(var i = 0; i < seriesContext.length; i++){
-                            if(!series[i]){
-                                series[i] = {
-                                    name: seriesContext[i].get(0).value(),
-                                    data: [],
-                                    colorByPoint: true
-                                };
-                            }
+                        var el = data;
 
-                            var a = seriesContext[i].get(1).value();
-                            if(JSB().isArray(a)){
-                                series[i].data = a;
+                        for(var i = 0; i < series.length; i++){
+                            var label = series[i].get(0).value();
+                            var weight = series[i].get(1).value();
+
+                            var e = el.find(function(element){
+                                if(element.label == label) return true;
+                                return false;
+                            });
+
+                            if(!e){
+                                el.push({
+                                    label: label,
+                                    weight: parseInt(weight),
+                                    groups: []
+                                });
+
+                                el = el[el.length - 1].groups;
                             } else {
-                                series[i].data.push(a);
+                                el = e.groups;
                             }
                         }
                     }
+                    data = $this.procData(data, autoSize, skipSmallGroups, skipEmptyNamedGroups);
+
+                    data = $this.convertToTreemapFormat(data);
 
                     $this.container.highcharts({
                         title: {
                             text: this.getContext().find('title').value()
                         },
-
+                        subtitle: {
+                            text: this.getContext().find('subtitle').value()
+                        },
                         series: [{
-                            type: "treemap",
-                            layoutAlgorithm: 'stripes',
-                            alternateStartingDirection: true,
+                            type: 'treemap',
+                            layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),
+                            allowDrillToNode: true,
+                            animationLimit: 1000,
+                            dataLabels: {
+                                enabled: false
+                            },
+                            levelIsConstant: false,
                             levels: [{
                                 level: 1,
-                                layoutAlgorithm: 'sliceAndDice',
                                 dataLabels: {
-                                    enabled: true,
-                                    align: 'left',
-                                    verticalAlign: 'top',
-                                    style: {
-                                        fontSize: '15px',
-                                        fontWeight: 'bold'
-                                    }
-                                }
+                                    enabled: true
+                                },
+                                borderWidth: 3
                             }],
-                            data: series
+                            data: data,
+                            turboThreshold: 0
                         }]
                     });
 
                     $this.chart =  $this.container.highcharts();
-                });
 
-                $this.getElement().loader('hide');
+                    $this.getElement().loader('hide');
+                });
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        // utils
+        procData: function(data, autoSize, skipSmallGroups, skipEmptyNamedGroups){
+            if(!data) return;
+
+            var newData = [];
+
+            for(var i = 0; i < data.length; i++){
+                if((skipEmptyNamedGroups && data[i].label === "") || (skipSmallGroups && data[i].groups.length === 1)){
+                    newData = newData.concat(this.procData(data[i].groups, autoSize, skipSmallGroups));
+                    continue;
+                }
+
+                if((data[i].weight !== data[i].weight) && autoSize){
+                    data[i].weight = this.countWeight(data[i]);
+                }
+
+                data[i].groups = this.procData(data[i].groups, autoSize, skipSmallGroups);
+
+                newData.push(data[i]);
+            }
+
+            newData = newData.filter(function(el){
+                return el !== undefined;
+            });
+
+            return newData;
+        },
+
+        countWeight: function(a){
+            if(a.weight === a.weight) return a.weight;
+
+            if(a.groups.length !== 0){
+                var b = 0;
+                for(var i = 0; i < a.groups.length; i++){
+                    b += countWeight(a.groups[i]);
+                }
+                return b;
+            } else {
+                return 1;
+            }
+        },
+
+        convertToTreemapFormat: function(data, array, parent){
+            if(!array) array = [];
+            for(var i = 0; i < data.length; i++){
+                var id = JSB().generateUid();
+
+                array.push({
+                    id: id,
+                    name: data[i].label,
+                    parent: parent,
+                    value: data[i].weight
+                });
+
+                this.convertToTreemapFormat(data[i].groups, array, id);
+            }
+
+            return array;
         }
 	}
 }

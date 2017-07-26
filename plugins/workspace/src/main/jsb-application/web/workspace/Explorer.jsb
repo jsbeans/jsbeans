@@ -263,7 +263,7 @@
 		},
 		
 		updateTab: function(){
-			var tab = this.container.getTab(this.getId());
+			var tab = this.getContainer().getTab(this.getId());
 			var textElt = tab.tab.find('._dwp_tabText');
 			var editor = textElt.find('> ._dwp_primitiveEditor');
 			if(editor.length > 0){
@@ -317,7 +317,7 @@
 		},
 
 		showWorkspaceMenu: function(){
-			var tab = this.container.getTab(this.getId());
+			var tab = this.getContainer().getTab(this.getId());
 			var btnElt = tab.tab.find('.btnMenu');
 			
 			this.server().getWorkspaces(function(wMap){
@@ -612,7 +612,10 @@
 			} else if(itemDesc.type == 'entry') {
 				var nodeSlice = this.currentWorkspace.workspaceManager.exlorerNodeTypes;
 				var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
-				var nodeCls = $jsb.get(nodeType).getClass();
+				if(!nodeType || !JSB.get(nodeType)){
+					return null;
+				}
+				var nodeCls = JSB.get(nodeType).getClass();
 				node = new nodeCls({
 					descriptor: itemDesc,
 					allowOpen: true,
@@ -919,6 +922,9 @@
 						return;
 					}
 					var node = $this.addTreeItem(desc, parentKey);
+					if(!node){
+						return;
+					}
 					JSB().deferUntil(function(){
 						node.editor.beginEdit();
 					}, function(){
@@ -969,6 +975,9 @@
 						return;
 					}
 					var node = $this.addTreeItem(desc, parentKey);
+					if(!node){
+						return;
+					}
 					JSB().deferUntil(function(){
 						if(node.options.allowOpen){
 							$this.publish('Workspace.nodeOpen', node);

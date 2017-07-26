@@ -305,12 +305,12 @@
 					return;
 				}
 				parentElt = parentObj.childContainerElt;
-				if(!itemObj.filtered){
-					parentObj.ecToggleElt.removeClass('hidden');
-				}
 				if(parentObj.dynamicChildren && itemObj.key != parentKey + '_dummy'){
 					parentObj.dynamicChildren = false;
 					this.deleteNode(parentKey + '_dummy');
+				}
+				if(!itemObj.filtered){
+					parentObj.ecToggleElt.removeClass('hidden');
 				}
 				itemObj.parent = parentKey;
 			} else {

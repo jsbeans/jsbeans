@@ -114,6 +114,7 @@
 				],
 				draggable: true,
 				callback: function(desc){
+					$this.caption.find('.name').text(desc.name);
                     this.publish('DataCube.CubeEditor.sliceNodeEdit', { cube: $this.slice.cube, query: desc.query, queryParams: desc.queryParams });
 					$this.slice.cube.server().updateSliceSettings($this.slice.getLocalId(), desc, function(res, fail){
 						// TODO: redraw query editor

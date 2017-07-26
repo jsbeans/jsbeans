@@ -145,6 +145,13 @@
 					$this.updateTabHeader();
 				}
 			});
+			
+			this.subscribe('DataCube.Model.Dashboard.filterChanged', function(sender){
+				if(sender != $this.getDashboard()){
+					return;
+				}
+				$this.getWidget().refresh();
+			});
 		},
 		
 		destroy: function(){
@@ -314,10 +321,13 @@
 		},
 		
 		applySettings: function(){
+			var title = this.settingsContainer.find('> .header > .caption > .title').jsb().getData().getValue();
 			this.values = this.settingsRenderer.getValues();
 			
 			// store data in wrapper
-			this.server().storeValues(this.values, function(){
+			this.server().storeValues(title, this.values, function(){
+				$this.name = title;
+				$this.updateTabHeader();
 				$this.updateWidgetSelectors();
 			});
 			
@@ -352,8 +362,9 @@
 			return true;
 		},
 		
-		storeValues: function(values){
+		storeValues: function(name, values){
 			this.values = values;
+			this.setName(name);
 			this.entry.store();
 			this.doSync();
 			return true;

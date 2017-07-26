@@ -128,6 +128,7 @@
     vertical-align: top;
     margin-left: 6px;
 	display: inline-block;
+	max-width: 100%;
 }
 
 .widgetSchemeRenderer[entry="item"].used > .value:first-child {
@@ -145,7 +146,15 @@
 }
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer {
-	margin: 1px 0;
+	margin: 2px 0;
+}
+
+.widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:nth-child(even) {
+	background-color: #F7F2EE;
+}
+
+.widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:nth-child(odd) {
+	background-color: #EFE9E0;
 }
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer > .btnDelete {
@@ -203,18 +212,21 @@
 	padding-left: 16px;
 }
 
-.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .colorEditor{
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor{
     display: inline-block;
 }
 
-.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .colorEditor > input[type="color"]{
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer{
+    height: 20px;
+    box-sizing: border-box;
     height: 18px;
     border: 1px solid rgba(2, 47, 78, 0.2);
     background-color: rgba(24, 108, 138, 0.2);
-    padding: 0 4px;
     border-radius: 6px;
 }
-
-.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .colorEditor > input[type="color"]:focus{
-    outline: none;
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer > .sp-preview{
+    height: 8px;
+}
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer > .sp-dd{
+    line-height: 4px;
 }

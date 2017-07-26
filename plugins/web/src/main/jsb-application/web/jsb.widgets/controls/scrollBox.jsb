@@ -2,6 +2,8 @@
 	$name:'JSB.Widgets.ScrollBox',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		ready: false,
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -13,6 +15,10 @@
 		
 		options: {
 			scrollbars: true
+		},
+		
+		isReady: function(){
+			return $this.ready;
 		},
 		
 		init: function(){
@@ -81,13 +87,14 @@
 			}
 			
 			JSB().deferUntil(function(){
-				self.installScroll();
+				$this.installScroll();
+				$this.setEasing('default');
+				$this.updateScrollbars();
+				$this.ready = true;
 			},function(){
-				return self.getElement().width() > 0;
+				return $this.getElement().width() > 0;
 			});
 
-			this.setEasing('default');
-			this.updateScrollbars();
 		},
 		
 		refresh: function(){
@@ -149,6 +156,10 @@
 			}
 		},
 		
+		getPane: function(){
+			return this.scrollPane;
+		},
+		
 		handleOnScroll: function(x, y){
 			var self = this;
 			self.updateVisibleArea();
@@ -170,7 +181,7 @@
 				this.scrollDelta = 0;
 				this.scrollPos = this.scroll.y;
 			}
-			this.scrollStartTime = new Date().getTime();
+			this.scrollStartTime = Date.now();
 			var prevDelta = this.scroll.y - this.scrollPos; 
 			self.scrollDelta += delta * this.multiplicator - prevDelta;
 			this.scrollPos = this.scroll.y;
@@ -191,7 +202,7 @@
 					self.isScrolling = true;
 					self.updateScrollInterval = setInterval(function(){
 						self.updateWheelScrollPosition();
-					},1);
+					}, 1);
 				}, function(){
 					return !self.isScrolling;
 				});
@@ -358,8 +369,8 @@
 		},
 		
 		updateWheelScrollPosition: function(){
-			var dur = 800;
-			var curTime = new Date().getTime() - this.scrollStartTime;
+			var dur = 1000;
+			var curTime = Date.now() - this.scrollStartTime;
 			if(curTime > dur){
 				this.stopScrollUpdate('wheel');
 				return;
@@ -374,15 +385,15 @@
 				return;
 			}
 
-			var curScrollHandleTime = new Date().getTime();
-			if(JSB().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 10){
+			var curScrollHandleTime = Date.now();
+			if(JSB().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 50){
 				this.handleOnScroll(curPos.x, newY);
 				this.lastScrollHandleTime = curScrollHandleTime;
 			}
 		},
 
 		updateScrollPosition: function(){
-			var dur = 800;
+			var dur = 1000;
 			var curTime = new Date().getTime() - this.scrollStartTime;
 			if(curTime > dur){
 				this.stopScrollUpdate('auto');
@@ -400,7 +411,7 @@
 			this.scroll.scrollTo(newX, newY);
 			
 			var curScrollHandleTime = new Date().getTime();
-			if(JSB().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 10){
+			if(JSB().isNull(this.lastScrollHandleTime) || curScrollHandleTime - this.lastScrollHandleTime > 50){
 				this.handleOnScroll(newX, newY);
 				this.lastScrollHandleTime = curScrollHandleTime;
 			}

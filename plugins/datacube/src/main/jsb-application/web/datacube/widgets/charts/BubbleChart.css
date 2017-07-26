@@ -1,8 +1,6 @@
 @CHARSET "UTF-8";
 
 .bubbleChart {
-	min-width: 300px;
-	min-height: 300px;
 }
 
 .bubbleChart .container {

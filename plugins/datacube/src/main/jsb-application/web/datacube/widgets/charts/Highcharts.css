@@ -1,8 +1,6 @@
 @CHARSET "UTF-8";
 
 .highchartsWidget {
-	min-width: 300px;
-	min-height: 300px;
 }
 
 .highchartsWidget .container {

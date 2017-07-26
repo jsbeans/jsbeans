@@ -7,6 +7,7 @@
 	           'JSB.Widgets.Button'],
 	
 	$client: {
+		source: null,
 		dataScheme: null,
 		ready: false,
 		
@@ -28,15 +29,30 @@
 					}
 				}
 			});
+
+			var refreshButton = new Button({
+				cssClass: 'roundButton btn10 btnRefresh',
+				tooltip: 'Обновить схему данных',
+				onClick: function(evt){
+					evt.stopPropagation();
+					$this.setSource($this.source);
+				}
+			});
 			
 			this.append(removeButton);
+			this.append(refreshButton);
 			
 			if(!this.options.scope){
+				this.addClass('refreshable');
 				this.attr('title', 'Перетащите сюда источник');
 				this.placeholderElt = this.$('<div class="placeholder">Перетащите сюда источник</div>');
 				this.append(this.placeholderElt);
 				this.bindingElt = this.$('<div class="binding"></div>');
 				this.append(this.bindingElt);
+				
+				this.refreshElt = this.$('<div class="refresh">Загрузка схемы данных<div class="icon"></div></div>');
+				this.append(this.refreshElt);
+
 				
 				this.setupDroppable();
 				if(this.options.value){
@@ -119,11 +135,12 @@
 			
 		},
 		
-		setDataScheme: function(ds, source){
+		setDataScheme: function(ds, source, callback){
 			$this.dataScheme = ds;
 			var ready = $this.ready;
 			
 			function setupSource(source){
+				$this.source = source;
 				$this.bindingElt.empty().append(RendererRepository.createRendererFor(source, {showCube: true}).getElement());
 				$this.addClass('filled');
 				
@@ -134,9 +151,16 @@
 			
 			if(source){
 				setupSource(source);
+				if(callback){
+					callback.call($this);
+				}
 			} else {
 				this.wrapper.server().getDataSchemeSource(ds, function(source){
 					setupSource(source);
+					if(callback){
+						callback.call($this);
+					}
+
 				});
 			}
 		},
@@ -153,12 +177,14 @@
 				}
 				
 			}
-			
+			$this.addClass('refreshing');
 			this.wrapper.server().combineDataScheme(source, function(dataScheme, fail){
 				if(fail){
-					
+					$this.removeClass('refreshing');
 				} else {
-					$this.setDataScheme(dataScheme, source);
+					$this.setDataScheme(dataScheme, source, function(){
+						$this.removeClass('refreshing');
+					});
 				}
 			});
 		},
