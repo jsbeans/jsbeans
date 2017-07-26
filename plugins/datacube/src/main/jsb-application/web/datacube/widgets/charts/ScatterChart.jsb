@@ -4,7 +4,7 @@
 	$expose: {
 		name: 'Разброс',
 		description: '',
-		category: 'Highcharts',
+		category: 'Диаграммы',
 		thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABACAIAAABjvUUjAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
 		bWFnZVJlYWR5ccllPAAAE/FJREFUeNrsWwl4U9W2PhmapumYzpQOFGgZZQZBKTJPXlAvPPXqu/re
 		U/GpgCjykCu8572gOIAiyvQqImW0jEKZKYUOtHRu0ilJ0ylp0jRzMw8n+66TU0LokJZSLuDH+r7k

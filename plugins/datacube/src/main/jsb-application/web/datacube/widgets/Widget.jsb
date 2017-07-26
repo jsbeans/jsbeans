@@ -7,6 +7,7 @@
 		wrapper: null,
 		context: null,
 		values: null,
+		sort: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -60,7 +61,6 @@
 						traverse(obj, null, function(item, val, stop){
 							if(item.type == 'widget'){
 								stop();
-								return;
 							}
 							if(item.key == key){
 								foundArr.push(item);
@@ -231,7 +231,8 @@
 						};
 					}
 					JSB.merge(item.fetchOpts, opts);
-					item.fetchOpts.filter = $this.getWrapper().getDashboard().constructFilter(item.binding.source);
+					item.fetchOpts.filter = $this.getWrapper().getOwner().getFilterSelector().constructFilter(item.binding.source);
+					item.fetchOpts.sort = $this.sort;
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(item.fetchOpts.reset){
 							item.cursor = 0;
@@ -445,8 +446,14 @@
 //			throw new Error('This method should be overriden');
 		},
 		
-		addFilter: function(filterDesc){
-			this.getWrapper().getDashboard().addFilter(filterDesc);
+		addFilter: function(){
+			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
+			return filterSelector.addFilter.apply(filterSelector, arguments);
+		},
+		
+		setSort: function(q){
+			this.sort = q;
+			this.refresh();
 		}
 	},
 	
@@ -474,6 +481,9 @@
 					var extQuery = {};
 					if(opts.filter){
 						extQuery.$filter = opts.filter;
+					}
+					if(opts.sort){
+						extQuery.$sort = [opts.sort];
 					}
 					this.iterators[sourceId] = source.executeQuery(extQuery);
 				} else {

@@ -4,7 +4,7 @@
 	$expose: {
 		name: 'Полярная диаграмма',
 		description: '',
-		category: 'Highcharts',
+		category: 'Диаграммы',
 		thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABACAYAAADs39J0AAAACXBIWXMAAAxNAAAMTQHSzq1OAAAK
 		T2lDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjanVNnVFPpFj333vRCS4iAlEtvUhUIIFJCi4AU
 		kSYqIQkQSoghodkVUcERRUUEG8igiAOOjoCMFVEsDIoK2AfkIaKOg6OIisr74Xuja9a89+bN/rXX

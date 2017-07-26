@@ -2,9 +2,9 @@
 	$name: 'JSB.DataCube.Foamtree',
     $parent: 'JSB.DataCube.Widgets.Widget',
     $expose: {
-        name: 'Морковка',
+        name: 'FoamTree',
         description: '',
-        category: 'Foamtree',
+        category: 'Кластеризация',
         thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABKCAYAAABNRPESAAAABGdBTUEAALGPC/xhBQAAAAlwSFlz
                                       AAAOwgAADsIBFShKgAAAWW5JREFUeF6N/edXVHm//wn3HzDP515zr1lr7ge/mTPnOuf01cFIzhkU
                                       RBAUBZEkSTBrm1Mb2rbN3W2b2pwTQUGy5JyhqKJyIGdQ8HV/dnn1OXPO/CaU67t2VVG1a+9PeIe9
