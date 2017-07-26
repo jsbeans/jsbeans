@@ -144,6 +144,7 @@ debugger;
 		},
 
 		prepareQuery: function(dcQuery, dataProvider) {
+		    dcQuery = JSB.merge(true, {}, dcQuery);
 		    // fill all cube fields (or linked with dataProvider) for default $select={}
 		    if (Object.keys(dcQuery.$select).length == 0) {
 		        if (dataProvider) {

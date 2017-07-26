@@ -62,7 +62,8 @@
         schemaCollections: {
             $$aggregateOperator: [
                 '$sum', '$count','$min', '$max', '$avg',
-                '$array', '$flatArray', '$gsum', '$gcount', '$gmin', '$gmax'
+                '$array', '$flatArray', '$gsum', '$gcount', '$gmin', '$gmax',
+                '$grmaxsum'
             ],
             $$functionOperators: [ '$toInt', '$toDouble', '$toBoolean', '$distinct' ],
             $$multiOperators: [ '$and', '$or' ],
@@ -116,6 +117,10 @@
             $gmax: {
                  type: 'object',
                  values: ['$field', '$$functionOperators' ]
+            },
+            $grmaxsum: {
+                type: 'object',
+                values: ['$field', '$$functionOperators' ]
             },
         },
 

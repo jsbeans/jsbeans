@@ -277,6 +277,25 @@
                     where: $this._subQueryTranslateWhere(dcQuery, exp.$gsum),
                     columns:[{ expression: functionExpression('SUM', translateExpression(null, exp.$gsum, true), null) }]
                 }
+                if (exp.$grmaxsum) return {
+                    type: 'select',  alias: key + 'Table2',
+                    columns: [{
+                        type: 'MAX',
+                        expression: '"' + key + '"',
+                        alias: key
+                    }],
+                    table: {
+                        type: 'select', alias: key + 'Table',
+                        table: $this._extractTable(dcQuery, exp.$grmaxsum),
+                        where: $this._subQueryTranslateWhere(dcQuery, exp.$grmaxsum),
+                        groupBy: $this._translateGroupBy(dcQuery),
+                        columns:[{
+                            expression: functionExpression('SUM', translateExpression(null, exp.$grmaxsum, true), null),
+                            alias: key
+                        }]
+                    }
+                }
+
 
                 if (exp.$toInt) return "CAST(( " + translateExpression(null, exp.$toInt, useDefaultTable) + " ) as int)"
                 if (exp.$toDouble) return "CAST(( " + translateExpression(null, exp.$toDouble, useDefaultTable) + " ) as double precision)"
