@@ -523,7 +523,7 @@
                 skipSmallGroups = this.getContext().find('skipSmallGroups').used(),
                 skipEmptyNamedGroups = this.getContext().find('skipEmptyNamedGroups').used();
 
-            context.fetch({readAll: true}, function(){
+            context.fetch({readAll: true, reset: true}, function(){
                 while(context.next()){
                     var el = data;
 
