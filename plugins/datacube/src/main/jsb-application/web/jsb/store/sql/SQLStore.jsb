@@ -222,6 +222,7 @@
                             .replace(new RegExp('\\( `','g'), "(\"\"\"")
                             .replace(new RegExp('` \\)','g'), "\"\"\")")
                             .replace(new RegExp('\\.`','g'), ".\"\"\"")
+                            .replace(new RegExp("(\\S)`\\s", "g"), "$1\"\"\" ")
                             .replace(new RegExp('`','g'), "\"\"");
 //                    Log.debug('Parametrized SQL Query: ' + parametrizedSQL);
                     var result = $this.asSQL().iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);
