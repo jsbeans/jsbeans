@@ -573,8 +573,7 @@
                             groups: data
                         },
                         onGroupClick: function (event) {
-                            debugger;
-                            var context = $this.getContext().find('source');
+                            var context = $this.getContext().find('source').binding();
                             if(!context.source) return;
 
                             $this.addFilter(context.source, 'and', { field: event.group.fieldName, value: event.group.label, op: 'equal' });
