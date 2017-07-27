@@ -133,48 +133,9 @@
                 }
             }
             return joins;
-
-//            var joins = [];
-//            var joinedProviders = this.providers.slice(0,1);
-//            for(var i=1; i < this.providers.length; i++) {
-//                var provider = this.providers[i];
-//                var join = {
-//                    type: 'left',
-//                    target: provider.getTableFullName(),
-//                    on: {}
-//                };
-//                for(var f in this.cube.fields){
-//                    var binding = this.cube.fields[f].binding;
-//                    var left = null, right = null, rightPosition = binding.length;
-//                    for(var b in binding) {
-//                        if (binding[b].provider == provider) {
-//                            right = binding[b];
-//                            rightPosition = b;
-//                        }
-//                    }
-//                    if (right) for(var b = 0; b < rightPosition; b++) {
-//                        left = binding[b];
-//                        join.on[this._quotedName(right.field)] =
-//                            '$' + left.provider.getTableFullName() + '.' + this._quotedName(left.field) + '$';
-//                        joinedProviders.push(right.provider);
-//                    }
-//                }
-//                if (Object.keys(join.on).length == 0) {
-//                    throw new Error('Join condition is not defined');
-//                }
-//                joins.push(join);
-//            }
-//            return joins;
         },
 
         _translateField: function(dcQuery, field, useDefaultTable) {
-//            // if alias return as is
-//            if (dcQuery.$select && dcQuery.$select[field]) {
-//                return this._quotedName(field);
-//            }
-//            if (!this.cube.fields[field]) {
-//                throw new Error('Cube has no field ' + field);
-//            }
             // if new alias return as is
             if (!this.cube.fields[field]) {
                 //return this._quotedName(field);
@@ -187,10 +148,24 @@
                     return useDefaultTable
                             ? this._quotedName(binding[b].field)
                             : binding[b].provider.getTableFullName() + '.' + this._quotedName(binding[b].field);
+//                            : this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field);
                 }
             }
             throw new Error('Cube has no lined DataProvider for field ' + field);
         },
+
+//        _translateTableName: function(tableName){
+//            var names = tableName.split(".");
+//            var name = '"';
+//            for(var i in names) {
+//                name += names[i];
+//                if (i > 0) {
+//                    name += '"."'
+//                }
+//            }
+//            name += '"';
+//            return name;
+//        },
 
         _quotedName: function(name) {
             return escape(name) == name ? name : '`' + name + '`';
@@ -421,7 +396,6 @@
         },
 
         _translateGroupBy: function(dcQuery) {
-//debugger;
             var groupBy = [];
             for(var i in dcQuery.$groupBy) {
                 groupBy.push(this._translateField(dcQuery, dcQuery.$groupBy[i]));
@@ -430,11 +404,14 @@
         },
 
         _translateSort: function(dcQuery) {
+//debugger;
             var sort = [];
             for(var i in dcQuery.$sort) {
                 var field = Object.keys(dcQuery.$sort[i])[0];
                 var key = dcQuery.$sort[i][field] < 0 ? 'DESC' : 'ASC';
-                sort.push('"' + this._translateField(dcQuery, field) + '" ' + key);
+                var tfield = this._translateField(dcQuery, field);
+                if (tfield == field) tfield = '"' + tfield + '"';
+                sort.push('' + tfield + ' ' + key);
             }
             return sort;
         },
