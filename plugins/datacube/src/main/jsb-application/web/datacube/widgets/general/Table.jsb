@@ -184,8 +184,21 @@
 						itemType: 'any'
 					},{
 						name: 'Виджет',
-						type: 'widget',
-						key: 'widget'
+						type: 'group',
+						key: 'widgetGroup',
+						items: [{
+							name: 'Виджет',
+							key: 'widget',
+							type: 'widget',
+						},{
+							type: 'item',
+							key: 'widgetSort',
+							name: 'Использовать поля для сортировки',
+							optional: true,
+							multiple: true,
+							binding: 'field',
+							editor: 'none'
+						}]
 					}]
 				},{
 					name: 'Выравнивание ячейки',
@@ -325,7 +338,8 @@
 	
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
-		           'JSB.Crypt.MD5'],
+		           'JSB.Crypt.MD5',
+		           'JSB.DataCube.Widgets.SortSelector'],
 		
 		ready: false,
 		headerDesc: [],
@@ -441,8 +455,13 @@
 			}
 			
 			var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
-			this.fetchRowsBatch(fetchSize, function(rows){
-				if(!rows || rows.length == 0){
+			this.fetchRowsBatch(fetchSize, function(rows, fail){
+				if(fail){
+					JSB.getLogger().error(fail);
+					$this.appendRowsReady = true;
+					return;
+				}
+				if(!rows){
 					$this.appendRowsReady = true;
 					return;
 				}
@@ -582,6 +601,25 @@
 				});
 				
 				rowsSelDataColData.order();
+
+				// destroy widgets
+				rowsSelData.exit()
+					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
+						.each(function(d){
+							var cell = d3.select(this).select('div.cell');
+							var cellEl = $this.$(cell.node());
+							
+							if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+								$this.widgetMap[d.rowKey][d.column].destroy();
+								delete $this.widgetMap[d.rowKey][d.column];
+								if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+									delete $this.widgetMap[d.rowKey];
+								}
+							}
+						});
+						
+				rowsSelData.exit()
+					.remove();
 				
 				rowsSelData
 					.enter()
@@ -620,24 +658,7 @@
 										});
 
 				
-				// destroy widgets
-				rowsSelData.exit()
-					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
-						.each(function(d){
-							var cell = d3.select(this).select('div.cell');
-							var cellEl = $this.$(cell.node());
-							
-							if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
-								$this.widgetMap[d.rowKey][d.column].destroy();
-								delete $this.widgetMap[d.rowKey][d.column];
-								if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
-									delete $this.widgetMap[d.rowKey];
-								}
-							}
-						});
-						
-				rowsSelData.exit()
-					.remove();
+				rowsSelData.order();
 				
 				$this.appendRowsReady = true;
 				JSB.defer(function(){
@@ -726,7 +747,7 @@
 						};
 						if(cols[i].colType == 'text'){
 							rDesc.value = cols[i].valueSelector.value();
-						} else if(cols[i].colType == 'widget'){
+						} else if(cols[i].colType == 'widgetGroup'){
 							var vals = JSB.clone($this.colDesc[i].widget.values.unwrap());
 							rDesc.value = vals;
 						}
@@ -744,12 +765,12 @@
 						return;
 					}
 				}
-				rowsContext.fetch({batchSize: batchSize - rows.length},function(data){
+				rowsContext.fetch({batchSize: batchSize - rows.length},function(data, fail){
 					if(data && data.length){
 						iterateRows();
 					} else {
 						$this.stopPreFetch = false;
-						callback.call($this, rows);
+						callback.call($this, rows, fail);
 					}
 				})
 			}
@@ -762,11 +783,7 @@
 			if(!binding.source){
 				return;
 			}
-			this.addFilter({
-				type: 'and',
-				source: binding.source,
-				filter: d.filter
-			});
+			this.addFilter(binding.source, 'and', d.filter);
 		},
 		
 		updateRows: function(){
@@ -787,7 +804,6 @@
 			});
 			colGroupData.order();
 			this.appendRowsReady = true;
-			
 			this.appendRows(true);
 		},
 		
@@ -825,7 +841,18 @@
 							.attr('style', function(d){ return d.hStyle.cssStyle})
 							.style('text-align', function(d){ return d.hStyle.alignHorz})
 							.style('vertical-align', function(d){ return d.hStyle.alignVert})
-							.text(function(d){ return d.title});
+							.each(function(d){
+								var elt = $this.$(this);
+								elt.append($this.$('<span class="text"></span>').text(d.title));
+								if(d.sortFields && d.sortFields.length > 0){
+									var sortSelector = new SortSelector(d.sortFields, {
+										onChange: function(q){
+											$this.updateOrder(this, q);
+										}
+									});
+									elt.append(sortSelector.getElement());
+								}
+							});
 					
 					colData.exit()
 						.remove();
@@ -837,6 +864,17 @@
 				this.removeClass('hasHeader');
 			}
 			$this.updateHeaderSize();
+		},
+		
+		updateOrder: function(sortSelector, sortQuery){
+			var sortSels = this.header.find('.sortSelector');
+			sortSels.each(function(){
+				var curSel = $this.$(this).jsb();
+				if(curSel != sortSelector){
+					curSel.clear();
+				}
+			});
+			this.setSort(sortQuery);
 		},
 		
 		refresh: function(){
@@ -944,20 +982,28 @@
 						alignVert: hAlignVert,
 						cssStyle: hCssStyle
 					},
-					widget: null
+					widget: null,
+					sortFields: null
 				};
 				
 				// check for widget
 				var viewSelector = gArr[i].find('view').value();
-				if(viewSelector.key() == 'widget'){
-					var wType = viewSelector.unwrap().widget.jsb;
-					var wName = viewSelector.unwrap().widget.name;
+				if(viewSelector.key() == 'widgetGroup'){
+					var widgetSelector = viewSelector.find('widget');
+					var wType = widgetSelector.unwrap().widget.jsb;
+					var wName = widgetSelector.unwrap().widget.name;
 					widgetTypes.push(wType);
 					desc.widget = {
 						jsb: wType,
 						name: wName,
-						values: viewSelector.value()
+						values: widgetSelector.value()
 					};
+					var sortSelector = viewSelector.find('widgetSort');
+					if(sortSelector.used()){
+						desc.sortFields = sortSelector.binding();
+					}
+				} else {
+					desc.sortFields = viewSelector.binding();
 				}
 				
 				this.colDesc.push(desc);

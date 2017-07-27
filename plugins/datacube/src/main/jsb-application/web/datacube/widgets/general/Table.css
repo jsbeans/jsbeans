@@ -33,6 +33,17 @@
     font-weight: normal;
 }
 
+.tableWidget > table.header > thead > tr > th.col > .text {
+	display: inline-block;
+    vertical-align: middle;
+}
+
+.tableWidget > table.header > thead > tr > th.col > .sortSelector {
+	display: inline-block;
+	vertical-align: middle;
+    float: right;
+}
+
 .tableWidget.hasBorder > table.header > thead > tr > th.col {
 	border-right: 1px solid #d2d2d2;
 }
@@ -40,6 +51,7 @@
 .tableWidget.hasBorder > table.header > thead > tr > th.col:last-child {
 	border-right: none;
 }
+
 
 
 .tableWidget > .pane {}
