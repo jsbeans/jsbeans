@@ -470,6 +470,7 @@
 
 				// prepare rows
 				var pRows = [];
+				var idxOffset = $this.rows.length;
 				for(var i = 0; i < rows.length; i++){
 					var rowDesc = rows[i];
 					var row = rowDesc.row;
@@ -480,6 +481,7 @@
 					if($this.rowKeyMap[key]){
 						continue;
 					}
+					rowDesc.position = idxOffset + pRows.length;
 					pRows.push(rowDesc);
 					$this.rowKeyMap[key] = rowDesc;
 					
@@ -512,6 +514,7 @@
 				rowsSelData.each(function(d){
 					d3.select(this)
 						.classed('rowFilter', d.filter && d.filter.length > 0)
+						.attr('pos', function(d){return d.position;})
 						.on('click',function(d){
 							if(!d.filter || d.filter.length == 0){
 								return;
@@ -519,52 +522,16 @@
 							$this.onRowClick(d);
 						});
 				});
+				rowsSelData.order();
+
 				
 				var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
 				
-				rowsSelDataColData.exit()
-					.each(function(d){
-						var cell = d3.select(this).select('div.cell');
-						var cellEl = $this.$(cell.node());
-						
-						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
-							$this.widgetMap[d.rowKey][d.column].destroy();
-							delete $this.widgetMap[d.rowKey][d.column];
-							if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
-								delete $this.widgetMap[d.rowKey];
-							}
-						}
-					})
-					.remove();
-					
-				rowsSelDataColData.enter()
-				.append('td')
-					.classed('col', true)
-					.attr('key', function(d){ return d.key;})
-					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
-					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
-						.append('div')
-							.classed('cell', true)
-							.attr('key', function(d){ return d.key;})
-							.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-							.each(function(d){
-								var cellEl = $this.$(this);
-								if($this.colDesc[d.colIdx].widget){
-									var widget = $this.widgetMap[d.rowKey][d.column];
-									cellEl.append(widget.getElement());
-									cellEl.attr('widget', widget.getId());
-								} else {
-									cellEl.attr('title', d.value);
-									cellEl.text(d.value);
-								}
-							});
-					
 				rowsSelDataColData
 					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
 					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
 					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert});
-				
+			
 				rowsSelDataColData.each(function(d){
 					var cell = d3.select(this).select('div.cell');
 					cell.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle});
@@ -604,6 +571,48 @@
 				});
 				
 				rowsSelDataColData.order();
+				
+				rowsSelDataColData.exit()
+					.each(function(d){
+						var cell = d3.select(this).select('div.cell');
+						var cellEl = $this.$(cell.node());
+						
+						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+							$this.widgetMap[d.rowKey][d.column].destroy();
+							delete $this.widgetMap[d.rowKey][d.column];
+							if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+								delete $this.widgetMap[d.rowKey];
+							}
+						}
+					})
+					.remove();
+					
+				rowsSelDataColData.enter()
+				.append('td')
+					.classed('col', true)
+					.attr('key', function(d){ return d.key;})
+					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
+					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
+						.append('div')
+							.classed('cell', true)
+							.attr('key', function(d){ return d.key;})
+							.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+							.each(function(d){
+								var cellEl = $this.$(this);
+								if($this.colDesc[d.colIdx].widget){
+									var widget = $this.widgetMap[d.rowKey][d.column];
+									cellEl.append(widget.getElement());
+									cellEl.attr('widget', widget.getId());
+								} else {
+									cellEl.attr('title', d.value);
+									cellEl.text(d.value);
+								}
+							});
+					
+				
+				
+				
 
 				// destroy widgets
 				rowsSelData.exit()
@@ -628,6 +637,7 @@
 					.enter()
 						.append('tr')
 							.classed('row', true)
+							.attr('pos', function(d){return d.position;})
 							.classed('rowFilter', function(d){return d.filter && d.filter.length > 0})
 							.on('click',function(d){
 								if(!d.filter || d.filter.length == 0){
@@ -660,8 +670,6 @@
 											}
 										});
 
-				
-				rowsSelData.order();
 				
 				console.log($this.rows);
 
