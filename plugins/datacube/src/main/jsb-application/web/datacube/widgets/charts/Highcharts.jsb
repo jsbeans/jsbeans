@@ -67,10 +67,7 @@
                             name: 'Цвет',
                             binding: 'field',
                             itemType: 'color',
-                            editor: 'JSB.Widgets.ColorEditor',
-                            options: {
-                                mode: 'hexagon'
-                            }
+                            editor: 'JSB.Widgets.ColorEditor'
                         }
                         ]
                     }
