@@ -245,6 +245,10 @@
                     return functionExpression('string_to_array', translateExpression(null, exp.$splitString.$field) + ", '" + exp.$splitString.$separator + "'", key);
                 }
 
+                if (exp.$substring) {
+                    return functionExpression('substring', translateExpression(null, exp.$substring.$field) + " for " + exp.$substring.$length + "", key);
+                }
+
                 // { type: 'function', function: 'min', expression: [1, "'foo'"] }
 
                 if (exp.$gmax) return {
@@ -384,10 +388,10 @@
                 if (exp.$and) return { $and: translateExpressions(exp.$and) };
 
                 if (exp.$eq) return { $equals: translateExpressions(exp.$eq) };
-                if (exp.$eq && exp.$eq == null) return { $null: true };
+                if (exp.$eq === null) return { $null: true };
 
                 if (exp.$ne) return { $ne: translateExpressions(exp.$ne) };
-                if (exp.$ne && exp.$ne == null) return { $notNull: true };
+                if (exp.$ne === null) return { $notNull: true };
 
                 if (exp.$gt) return { $gt: translateExpressions(exp.$gt) };
                 if (exp.$gte) return { $gte: translateExpressions(exp.$gte) };
