@@ -460,8 +460,6 @@
     },
 	$require: [],
 	$client: {
-	    isContainerReady: false,
-
         $constructor: function(opts){
             $base(opts);
             this.loadCss('foamtree.css');
@@ -469,9 +467,6 @@
 
             this.foamtreeContainer = this.$('<div class="foamtreeWidget" id="' + this.foamtreeId + '"></div>');
             this.append(this.foamtreeContainer);
-            this.foamtreeContainer.ready(function(){
-                $this.isContainerReady = true;
-            });
 
             JSB().loadScript(['datacube/widgets/foamtree/foamtree.js'],
                 function(){
@@ -502,10 +497,6 @@
             ]
         },
 
-        onGroupHover: function(evt){
-            // debugger;
-        },
-
         refresh: function(){
             if(this.getContext().find('source').bound()){
                 this.getElement().loader();
@@ -529,6 +520,7 @@
 
                     for(var i = 0; i < levels.length; i++){
                         var label = levels[i].get(0).value();
+                        var binding = levels[i].get(0).binding();
                         var weight = levels[i].get(1).value();
 
                         var e = el.find(function(element){
@@ -539,6 +531,7 @@
                         if(!e){
                             el.push({
                                 label: label,
+                                fieldName: binding[0],
                                 weight: parseInt(weight),
                                 groups: []
                             });
@@ -568,7 +561,7 @@
                     });
 
                 }, function(){
-                    return $this.isContainerReady && $this.isScriptLoaded && $this.getElement().is(':visible');
+                    return $this.foamtreeContainer.height() > 0 && $this.foamtreeContainer.width() > 0 && $this.isScriptLoaded && $this.getElement().is(':visible');
                 });
             } else {
                 JSB().deferUntil(function(){
@@ -579,9 +572,13 @@
                         dataObject: {
                             groups: data
                         },
-                        onGroupHover: function(evt){
-                            $this.onGroupHover(evt);
-                        },
+                        onGroupClick: function (event) {
+                            debugger;
+                            var context = $this.getContext().find('source');
+                            if(!context.source) return;
+
+                            $this.addFilter(context.source, 'and', { field: event.group.fieldName, value: event.group.label, op: 'equal' });
+                        }
                     });
                     $this.foamtreeContainer.resize(function(){
                         JSB().defer(function(){
@@ -589,7 +586,7 @@
                         }, 300, 'foamtree.resize.' + $this.getId())
                     });
                 }, function(){
-                    return $this.isContainerReady && $this.isScriptLoaded && $this.getElement().is(':visible');
+                    return $this.foamtreeContainer.height() > 0 && $this.foamtreeContainer.width() > 0 && $this.isScriptLoaded && $this.getElement().is(':visible');
                 });
             }
         },

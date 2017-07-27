@@ -94,7 +94,7 @@
         {
             type: 'group',
             name: 'Источник',
-            binding: 'array',
+            binding: 'record',
             key: 'source',
             items: [
             {
@@ -105,22 +105,60 @@
                 itemValue: '$field',
             },
             {
-                type: 'item',
+                type: 'group',
                 name: 'Разметка',
-                binding: 'field',
-                itemType: 'string',
-                itemValue: '$field',
+                key: 'annots',
+                binding: 'array',
+                items: [
+                {
+                    type: 'item',
+                    name: 'Id фрагмента',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
+                },
+                {
+                    type: 'item',
+                    name: 'Id документа',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
+                },
+                {
+                    type: 'item',
+                    name: 'Начальный индекс',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
+                },
+                {
+                    type: 'item',
+                    name: 'Конечный индекс',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
+                }
+                ]
             },
             {
-                name: 'CSS стиль',
+                name: 'CSS стиль текста',
                 type: 'item',
                 optional: true,
                 itemType: 'string',
-                itemValue: `/* Заполните объект CSS значениями */
-{
-    font-family: 'arial';
-}`,
-                key: 'css',
+                itemValue: `/* Заполните объект CSS значениями */,
+                key: 'cssText',
+                editor: 'JSB.Widgets.MultiEditor',
+                options: {
+                    valueType: 'org.jsbeans.types.Css'
+                }
+            },
+            {
+                name: 'CSS стиль выделений',
+                type: 'item',
+                optional: true,
+                itemType: 'string',
+                itemValue: `/* Заполните объект CSS значениями */,
+                key: 'cssMark',
                 editor: 'JSB.Widgets.MultiEditor',
                 options: {
                     valueType: 'org.jsbeans.types.Css'
@@ -159,8 +197,8 @@
             var sourceValue = this.getContext().find('source').value();
 
             this.text = sourceValue.get(0).value();
-            this.text = this.text.replace(/_x000D_/g , '');
-
+            this.text = this.text.replace(/_x000D_/g , ' ');
+debugger;
             var annot = sourceValue.get(1).value();
             if(!JSB().isArray(annot)) annot = [annot];
 
@@ -218,7 +256,7 @@
                 return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
             }
 
-            var cssSelector = this.getContext().find('css');
+            var cssSelector = this.getContext().find('cssText');
             if(cssSelector.used()){
                 this.getElement().attr("style", prepareCss(cssSelector.value()));
             }
@@ -259,13 +297,18 @@
 					this.append(pElt);
 				}
 			}
-
+			// markup click
+			/*
 			this.find('span.highlight').click(function(evt){
 				var hElt = self.$(evt.currentTarget);
 				var hid = hElt.attr('hid');
-				self.publish('activateHighlight', hid);
 				self.activateHighlight(hid);
 			});
+			*/
+            var cssSelector = this.getContext().find('cssMark');
+            if(cssSelector.used()){
+                this.find('span.highlight').attr("style", prepareCss(cssSelector.value()));
+            }
 		},
 
 		activateHighlight: function(hid){
