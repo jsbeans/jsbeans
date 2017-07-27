@@ -8,7 +8,7 @@
     cursor: pointer;
 }
 
-.colorEditor .colorPicker{
+.colorPicker{
     position: absolute;
     top: 22px;
     z-index: 1000;
@@ -16,4 +16,23 @@
     background-color: rgba(168, 230, 172, 0.6);
     padding: 0 4px;
     border-radius: 3px;
+}
+
+.colorPicker .colormap{
+    margin-left: 1px;
+    margin-bottom: -3px;
+}
+
+.colorEditor .currentColor{
+    width: 32px;
+    height: 10px;
+    margin: 4px;
+    border-radius: 3px;
+}
+
+.colorEditor .selectedhexagon{
+    position: relative;
+    width: 21px;
+    height: 21px;
+    background-image: url(/../jsb.widgets/images/img_selectedcolor.gif);
 }

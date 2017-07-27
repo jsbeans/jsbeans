@@ -84,7 +84,7 @@
 		           'JSB.DataCube.Dialogs.WidgetOptionsTool',
 		           'JSB.DataCube.Widgets.WidgetSchemeRenderer'],
 		
-		editor: null,
+		owner: null,
 		widget: null,
 		settingsVisible: false,
 		
@@ -146,12 +146,20 @@
 				}
 			});
 			
-			this.subscribe('DataCube.Model.Dashboard.filterChanged', function(sender){
-				if(sender != $this.getDashboard()){
+			this.subscribe('DataCube.Dashboard.filterChanged', function(sender){
+				if(sender != $this.getOwner().getFilterSelector()){
 					return;
 				}
 				$this.getWidget().refresh();
 			});
+		},
+		
+		setOwner: function(owner){
+			this.owner = owner;
+		},
+		
+		getOwner: function(){
+			return this.owner;
 		},
 		
 		destroy: function(){

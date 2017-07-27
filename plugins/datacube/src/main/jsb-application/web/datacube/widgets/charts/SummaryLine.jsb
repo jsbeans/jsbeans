@@ -4,7 +4,7 @@
 	$expose: {
 		name: 'SummaryLine',
 		description: '',
-		category: 'Highcharts',
+		category: 'Диаграммы',
 		thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJQAAABACAYAAAD8k17tAAAABGdBTUEAALGPC/xhBQAAAAlwSFlz
                                       AAAOwgAADsIBFShKgAAADfhJREFUeF7tXflz48h5nb/dVanyD045jqtcTiWOY2ftzdgTr7d2DmVm
                                       RxrdF0mdFO/7JsUDJEEQPPTyvSYhQRQFkhrOjiXhVT2R3a8bgBofvq+72QBeDIdXcOlyXpq9HnTD

@@ -159,6 +159,7 @@
             var sourceValue = this.getContext().find('source').value();
 
             this.text = sourceValue.get(0).value();
+            this.text = this.text.replace(/_x000D_/g , '');
 
             var annot = sourceValue.get(1).value();
             if(!JSB().isArray(annot)) annot = [annot];
@@ -174,14 +175,34 @@
                             id: h.id,
                             docId: h.document_id,
                             offset: h.start,
-                            length: h.end - h.start + 1
+                            length: h.end - h.start
                         });
                     }
 
                     this.highlights.sort(function(a, b){
                         return a.offset - b.offset;
                     });
-                } catch(ex){}
+
+                    this.highlights = this.highlights.reduce(function(newArr, el, i, array){
+                        if(i === 0){
+                            newArr.push(el);
+                            return newArr;
+                        }
+
+                        var prevEl = newArr[newArr.length - 1];
+                        var prevEnd = prevEl.offset + prevEl.length;
+
+                        if(prevEnd >= el.offset){
+                            prevEl.length += prevEnd - el.offset + el.length;
+                        }
+
+                        newArr.push(el);
+
+                        return newArr;
+                    }, []);
+                } catch(ex){
+                    console.log(ex);
+                }
             }
 
             this.redraw();
@@ -220,7 +241,7 @@
 				var toIdx = fromIdx + h.length;
 				// do replace
 				var prefix = html.substr(0, fromIdx);
-				var postfix = html.substr(toIdx, html.length - toIdx);
+				var postfix = html.substr(toIdx);
 				var highlightStr = html.substr(fromIdx, toIdx - fromIdx);
 				html = prefix + '<span class="highlight" hid="'+h.id+'">' + highlightStr + '</span>' + postfix;
 				var newSize = html.length;
@@ -233,13 +254,11 @@
 
 			for(var i = 0; i < pArr.length; i++){
 				var pTxt = pArr[i];
-				if(pTxt.trim().length === 0){
-				} else {
+				if(pTxt.trim().length !== 0){
 					var pElt = this.$('<p></p>').append(pTxt);
 					this.append(pElt);
 				}
 			}
-
 
 			this.find('span.highlight').click(function(evt){
 				var hElt = self.$(evt.currentTarget);

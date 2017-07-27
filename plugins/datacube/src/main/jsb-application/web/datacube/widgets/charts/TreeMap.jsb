@@ -4,7 +4,7 @@
 	$expose: {
 		name: 'Карта дерева',
 		description: '',
-		category: 'Highcharts',
+		category: 'Диаграммы',
 		thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABACAMAAADbASJGAAAACXBIWXMAAAsTAAALEwEAmpwYAAAK
 		T2lDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHjanVNnVFPpFj333vRCS4iAlEtvUhUIIFJCi4AU
 		kSYqIQkQSoghodkVUcERRUUEG8igiAOOjoCMFVEsDIoK2AfkIaKOg6OIisr74Xuja9a89+bN/rXX
@@ -208,7 +208,7 @@
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
-                source.fetch({readAll: true}, function(){
+                source.fetch({readAll: true, reset: true}, function(){
                     while(source.next()){
                         var el = data;
 

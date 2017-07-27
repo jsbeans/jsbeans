@@ -16,7 +16,6 @@
 .textWidget > p > span.highlight,
 .textWidget > span.highlight {
 	background: #decca5;
-	cursor: pointer;
 	padding: 0 1px;
     border-radius: 3px;
 

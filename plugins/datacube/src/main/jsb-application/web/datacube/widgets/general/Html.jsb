@@ -144,7 +144,8 @@
 			name: 'Использовать iframe',
 			type: 'item',
 			key: 'useIframe',
-			optional: 'checked'
+			optional: true,
+			editor: 'none'
 		}]
 	},
 	

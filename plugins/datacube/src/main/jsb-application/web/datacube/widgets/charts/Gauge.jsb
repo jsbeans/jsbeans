@@ -4,7 +4,7 @@
 	$expose: {
 		name: 'Измеритель',
 		description: '',
-		category: 'Highcharts',
+		category: 'Диаграммы',
 		thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABACAIAAABjvUUjAAAACXBIWXMAAAsTAAALEwEAmpwYAAAX
 		UGlDQ1BQaG90b3Nob3AgSUNDIHByb2ZpbGUAAHja1XlXUJRL1O3+vkmkIec45JwzSM45ZwWGnMOQ
 		QcAcCIKAZEFABQQE5RAEA6CCEUEFIwoiAoIKIkpQ5n/Qc86f7sOtui93PXStWr177b2rH7q6G4Bn
