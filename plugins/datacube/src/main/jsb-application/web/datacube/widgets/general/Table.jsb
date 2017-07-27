@@ -348,7 +348,8 @@
 		rowKeyMap: {},
 		rowFilterFields: [],
 		widgetMap: {},
-		appendRowsReady: false,
+		blockFetch: true,
+		rowAppending: false,
 		preFetching: false,
 		stopPreFetch: false,
 		scrollHeight: 0,
@@ -429,10 +430,10 @@
 		},
 		
 		appendRows: function(bUseExisting){
-			if(!$this.ready || !this.appendRowsReady || !$this.scroll.getElement().is(':visible')){
+			if(!$this.ready || this.rowAppending || $this.blockFetch || !$this.scroll.getElement().is(':visible')){
 				return;
 			}
-			this.appendRowsReady = false;
+			this.rowAppending = true;
 			var fetchSize = 10;
 			
 			if(bUseExisting){
@@ -445,11 +446,12 @@
 				// check scroll
 				var scrollPos = $this.scroll.getScrollPosition();
 				if(!scrollPos){
+					this.rowAppending = false;
 					return;
 				}
 				var scrollY = scrollPos.y;
 				if( $this.paneHeight - ($this.scrollHeight - scrollY) > 2 * $this.scrollHeight){
-					this.appendRowsReady = true;
+					this.rowAppending = false;
 					return;
 				}
 			}
@@ -458,11 +460,11 @@
 			this.fetchRowsBatch(fetchSize, function(rows, fail){
 				if(fail){
 					JSB.getLogger().error(fail);
-					$this.appendRowsReady = true;
+					$this.rowAppending = false;
 					return;
 				}
-				if(!rows){
-					$this.appendRowsReady = true;
+				if(!rows || $this.blockFetch){
+					$this.rowAppending = false;
 					return;
 				}
 
@@ -503,6 +505,7 @@
 				}
 				
 				$this.rows = $this.rows.concat(pRows);
+				
 				// accociate with DOM
 				var rowsSel = tbody.selectAll('tr.row');
 				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
@@ -660,7 +663,10 @@
 				
 				rowsSelData.order();
 				
-				$this.appendRowsReady = true;
+				console.log($this.rows);
+
+				
+				$this.rowAppending = false;
 				JSB.defer(function(){
 					$this.appendRows();	
 				}, 0);
@@ -787,7 +793,17 @@
 		},
 		
 		updateRows: function(){
+			this.blockFetch = true;
 			var rowsContext = this.getContext().find('rows');
+			if($this.preFetching || $this.rowAppending){
+				$this.stopPreFetch = true;
+				JSB.deferUntil(function(){
+					$this.updateRows();
+				}, function(){
+					return !$this.preFetching && !$this.rowAppending;
+				});
+				return;
+			}
 			rowsContext.reset();
 			
 			var colGroup = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('colgroup');
@@ -803,7 +819,7 @@
 				d3.select(this).style('width', function(d){ return '' + d.size + '%'});
 			});
 			colGroupData.order();
-			this.appendRowsReady = true;
+			this.blockFetch = false;
 			this.appendRows(true);
 		},
 		
