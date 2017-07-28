@@ -308,7 +308,7 @@
 
                     $this.container.highcharts({
                         chart: {
-                            zoomType: 'xy'
+                            zoomType: 'x'
                         },
 
                         title: {
