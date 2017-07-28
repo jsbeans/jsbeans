@@ -1,7 +1,7 @@
 ## Язык запросов к кубу
 
 Запрос состоит из двух объектов:
-* тело запроса - `$select | $filter | $groupBy | $sort`
+* тело запроса - `$select | $filter | $groupBy | $sort | $finalize`
 * значения параметров запроса - `{ name: value }`
 
 ```
@@ -36,26 +36,58 @@
 
 `$gcount: 1, $gcount, $gsum: 1, $gsum, $gmax, $gmin`
 
+### Функции группировки "над группой"
+
+Применяются в секции $select и формируют глобальное аггрегированное значение, полученное путем применения глобальной функции аггрегации над агреггированными значениями в группе.
+
+`$grmaxsum` - вычисляет максимальное значение суммы значений в группе
+
 ### Функции фильтрации
 
 Применяются в секции $filter для фильтрации выборки по значениям полей. 
 
-`$or, $and, $eq: null, $eq, $ne: null, $ne, $gt, $gte, $lt, $lte, $like, $ilike, $in, $nin`
+`$or, $and, {$eq: null}, $eq, {$ne: null}, $ne, $gt, $gte, $lt, $lte, $like, $ilike, $in, $nin`
 
 ```{
     $select: {...},
     $filter: {
         "Код отрасли": {$like: '${like}'},
         "Значение": {$ne: null}
+    }
+},
+{
+    like: "*"
+}
+```
+
+### Функции пост-обработки
+
+Применяются в секции $finalize.
+
+`{ $splitString: {$field: 'myField', $separator: ", "} }` - разбивает строку и превращает в массив строк
+`{ $substring: {$field:'myField', $length: 123}}`
+
+```
+{
+    $select: {...},
+    $filter: {
+        "Код отрасли": {$like: '${like}'},
+        "Значение": {$ne: null}
     },
-    {
-        like: "*"
+    $finalize: {
+        'myField': {
+            $splitString: {
+                $field: 'myField', 
+                $separator: ", "
+            }
+        }
     }
 }
 ```
 
 
 ### Синтаксис
+TODO: update
 ````
 query             := '{' select [filter] [groupBy] [sort] '}'
 
