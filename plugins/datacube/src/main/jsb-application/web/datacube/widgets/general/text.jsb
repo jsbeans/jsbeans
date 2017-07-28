@@ -105,6 +105,14 @@
                 itemValue: '$field',
             },
             {
+                type: 'item',
+                name: 'Разметка',
+                binding: 'field',
+                itemType: 'string',
+                itemValue: '$field',
+            },
+            /*
+            {
                 type: 'group',
                 name: 'Разметка',
                 key: 'annots',
@@ -140,12 +148,13 @@
                 }
                 ]
             },
+            */
             {
                 name: 'CSS стиль текста',
                 type: 'item',
                 optional: true,
                 itemType: 'string',
-                itemValue: `/* Заполните объект CSS значениями */,
+                itemValue: `/* Заполните объект CSS значениями */`,
                 key: 'cssText',
                 editor: 'JSB.Widgets.MultiEditor',
                 options: {
@@ -157,7 +166,7 @@
                 type: 'item',
                 optional: true,
                 itemType: 'string',
-                itemValue: `/* Заполните объект CSS значениями */,
+                itemValue: `/* Заполните объект CSS значениями */`,
                 key: 'cssMark',
                 editor: 'JSB.Widgets.MultiEditor',
                 options: {
@@ -198,7 +207,7 @@
 
             this.text = sourceValue.get(0).value();
             this.text = this.text.replace(/_x000D_/g , ' ');
-debugger;
+
             var annot = sourceValue.get(1).value();
             if(!JSB().isArray(annot)) annot = [annot];
 
@@ -245,23 +254,23 @@ debugger;
 
             this.redraw();
 
-            function prepareCss(cssText){
-                if(!cssText) return "";
-                if(cssText.indexOf('{') >= 0){
-                    var m = cssText.match(/\{([^\}]*)\}/i);
-                    if(m && m.length > 1){
-                        cssText = m[1];
-                    }
-                }
-                return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
-            }
-
             var cssSelector = this.getContext().find('cssText');
             if(cssSelector.used()){
-                this.getElement().attr("style", prepareCss(cssSelector.value()));
+                this.getElement().attr("style", this.prepareCss(cssSelector.value()));
             }
 
             $this.getElement().loader('hide');
+        },
+
+        prepareCss: function(cssText){
+            if(!cssText) return "";
+            if(cssText.indexOf('{') >= 0){
+                var m = cssText.match(/\{([^\}]*)\}/i);
+                if(m && m.length > 1){
+                    cssText = m[1];
+                }
+            }
+            return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
         },
 
 		redraw: function(){
@@ -307,7 +316,7 @@ debugger;
 			*/
             var cssSelector = this.getContext().find('cssMark');
             if(cssSelector.used()){
-                this.find('span.highlight').attr("style", prepareCss(cssSelector.value()));
+                this.find('span.highlight').attr("style", this.prepareCss(cssSelector.value()));
             }
 		},
 
