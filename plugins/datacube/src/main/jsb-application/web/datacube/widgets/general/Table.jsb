@@ -173,7 +173,7 @@
 					itemType: 'string',
 					itemValue: '$field'
 				},{
-					name: 'Отображение ячейки',
+					name: 'Способ отображения ячейки',
 					type: 'select',
 					key: 'view',
 					items:[{
@@ -183,7 +183,7 @@
 						binding: 'field',
 						itemType: 'any'
 					},{
-						name: 'Виджет',
+						name: 'Встроенный виджет',
 						type: 'group',
 						key: 'widgetGroup',
 						items: [{
@@ -391,15 +391,24 @@
 			});
 			
 			$this.header.resize(function(){
+				if(!$this.getElement().is(':visible')){
+					return;
+				}
 				$this.updateHeaderSize();
 			});
 
 			this.scroll.getElement().resize(function(){
+				if(!$this.getElement().is(':visible')){
+					return;
+				}
 				$this.scrollHeight = $this.scroll.getElement().height();
 				$this.appendRows();
 			});
 			
 			$this.scroll.getPane().resize(function(){
+				if(!$this.getElement().is(':visible')){
+					return;
+				}
 				$this.paneHeight = $this.scroll.getPane().height();
 				$this.header.width($this.scroll.getPane().width());
 			});
@@ -429,14 +438,14 @@
 			return names;
 		},
 		
-		appendRows: function(bUseExisting){
+		appendRows: function(bRefresh){
 			if(!$this.ready || this.rowAppending || $this.blockFetch || !$this.scroll.getElement().is(':visible')){
 				return;
 			}
 			this.rowAppending = true;
 			var fetchSize = 10;
 			
-			if(bUseExisting){
+			if(bRefresh){
 				if(this.rows.length > 0){
 					fetchSize = this.rows.length;
 				}
@@ -467,7 +476,7 @@
 					$this.rowAppending = false;
 					return;
 				}
-
+				
 				// prepare rows
 				var pRows = [];
 				var idxOffset = $this.rows.length;
@@ -504,6 +513,11 @@
 							$this.widgetMap[key][colName] = widget;
 						}
 					}
+				}
+				
+				if(pRows.length == 0 && !bRefresh){
+					$this.rowAppending = false;
+					return;
 				}
 				
 				$this.rows = $this.rows.concat(pRows);
@@ -670,14 +684,12 @@
 											}
 										});
 
-				
-				console.log($this.rows);
-
-				
 				$this.rowAppending = false;
-				JSB.defer(function(){
-					$this.appendRows();	
-				}, 0);
+				if(pRows.length > 0){
+					JSB.defer(function(){
+						$this.appendRows();	
+					}, 0);
+				}
 				
 			})
 		},

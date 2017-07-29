@@ -278,6 +278,10 @@
 			return splittersPos;
 		},
 		
+		getType: function(){
+			return this.options.type;
+		},
+		
 		showPane: function(paneIdx, bShow){
 			this.hidden[paneIdx] = !bShow;
 			

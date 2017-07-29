@@ -35,22 +35,24 @@
 		
 		addFilterItem: function(sourceId, type, fItem){
 			var itemId = MD5.md5('' + fItem.field) + '_' + MD5.md5('' + fItem.value);
-			if($this.filters[itemId]){
-				return false;
-			}
 			if(!$this.filterBySource[sourceId]){
 				$this.filterBySource[sourceId] = {};
 			}
 			if($this.filterBySource[sourceId][itemId]){
 				return false; 
 			}
-			$this.filters[itemId] = $this.filterBySource[sourceId][itemId] = {
+			$this.filterBySource[sourceId][itemId] = {
 				id: itemId,
 				type: type,
 				field: fItem.field,
 				value: fItem.value
 			}
-			$this.filterArr.push($this.filters[itemId]);
+			
+			if(!$this.filters[itemId]){
+				$this.filters[itemId] = $this.filterBySource[sourceId][itemId];
+				$this.filterArr.push($this.filters[itemId]);
+			}
+			
 			
 			return true;
 		},

@@ -188,6 +188,10 @@
             this.append(this.container);
 
             this.getElement().resize(function(){
+            	if(!$this.getElement().is(':visible')){
+            		return;
+            	}
+
                 if($this.highcharts){
                     $this.highcharts.setSize(self.getElement().width(), $this.getElement().height(), false);
                 }

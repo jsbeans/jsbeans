@@ -26,6 +26,9 @@
 			this.clientContainer = this.$('<div class="_jsb_clientContainer"></div>');
 			this.append(this.clientContainer);
 			
+			this.phContainer = this.$('<div class="_jsb_phContainer"></div>');
+			this.append(this.phContainer);
+			
 			// create placeholders
 			var phArr = ['center', 'left', 'top', 'right', 'bottom'];
 			
@@ -49,7 +52,7 @@
 							}
 							
 							if(dragAccept){
-								$this.addClass('dragging');
+								$this.enableDragging(true);
 							}
 							
 							return dragAccept;
@@ -67,7 +70,7 @@
 							$this.options.onDragDrop.call($this, d, callback);
 						},
 						onDragStop: function(){
-							$this.removeClass('dragging');
+							$this.enableDragging(false);
 						},
 						onDropWidget: function(widget){
 							var cont = widget.getContainer();
@@ -79,9 +82,78 @@
 						}
 					});
 					ph.addClass(phType);
-					$this.append(ph);
+					$this.phContainer.append(ph.getElement());
 					$this.placeholders[phType] = ph;
 				})(phType);
+			}
+		},
+		
+		enableDragging: function(bEnable){
+			if(bEnable){
+				if($this.hasClass('dragging')){
+					return;
+				}
+				$this.addClass('dragging');
+				// figure out deep
+				var curContainer = this;
+				var leftOffset = 0;
+				var rightOffset = 0;
+				var topOffset = 0;
+				var bottomOffset = 0;
+				var step = 11;
+				var bStopLeft = false;
+				var bStopRight = false;
+				var bStopTop = false;
+				var bStopBottom = false;
+				while(curContainer){
+					var pContainer = curContainer.parent;
+					if(!JSB.isInstanceOf(pContainer, 'JSB.Widgets.Dashboard.Container')){
+						break;
+					}
+					
+					if(pContainer.childContainers[0] == curContainer){
+						if(pContainer.splitBox.getType() == 'vertical'){
+							// left
+							bStopRight = true;
+						} else {
+							// top
+							bStopBottom = true;
+						}
+					} else {
+						if(pContainer.splitBox.getType() == 'vertical') {
+							// right
+							bStopLeft = true;
+						} else {
+							// bottom
+							bStopTop = true;
+						}
+					}
+					
+					if(!bStopLeft){
+						leftOffset += step;
+					}
+					if(!bStopRight){
+						rightOffset += step;
+					}
+					if(!bStopTop){
+						topOffset += step;
+					}
+					if(!bStopBottom){
+						bottomOffset += step;
+					}
+
+					curContainer = pContainer;
+				}
+				
+				$this.phContainer.css({
+					'margin-left': leftOffset,
+					'margin-right': rightOffset,
+					'margin-top': topOffset,
+					'margin-bottom': bottomOffset
+				});
+				
+			} else {
+				$this.removeClass('dragging');
 			}
 		},
 		

@@ -26,11 +26,11 @@
 }
 
 ._dwp_scrollBox.vertScrollVisible > ._dwp_scrollPane {
-	padding-right: 10px;
+	padding-right: 14px;
 }
 
 ._dwp_scrollBox.horzScrollVisible > ._dwp_scrollPane {
-	padding-bottom: 10px;
+	padding-bottom: 14px;
 }
 
 
@@ -46,33 +46,35 @@
 ._dwp_scrollBox > .iScrollVerticalScrollbar {
 	border-radius: 4px;
 	width: 8px !important;
-	background: -webkit-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
-	background: -moz-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
-	background: linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
-	background: -o-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
-	background: -ms-linear-gradient(left, #808080, #BDBDBD, #8D8D8D);
+	background: -webkit-linear-gradient(left, #808080, #9c9b9b, #8D8D8D);
+	background: -moz-linear-gradient(left, #808080, #9c9b9b, #8D8D8D);
+	background: linear-gradient(left, #808080, #9c9b9b, #8D8D8D);
+	background: -o-linear-gradient(left, #808080, #9c9b9b, #8D8D8D);
+	background: -ms-linear-gradient(left, #808080, #9c9b9b, #8D8D8D);
 	right: 0 !important;
 	display: none;
 }
 
 ._dwp_scrollBox.vertScrollVisible > .iScrollVerticalScrollbar {
 	display: block;
+	width: 12px !important;
 }
 
 ._dwp_scrollBox > .iScrollHorizontalScrollbar {
 	border-radius: 4px;
 	height: 8px !important;
-	background: -webkit-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
-	background: -moz-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
-	background: linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
-	background: -o-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
-	background: -ms-linear-gradient(top, #808080, #BDBDBD, #8D8D8D);
+	background: -webkit-linear-gradient(top, #808080, #9c9b9b, #8D8D8D);
+	background: -moz-linear-gradient(top, #808080, #9c9b9b, #8D8D8D);
+	background: linear-gradient(top, #808080, #9c9b9b, #8D8D8D);
+	background: -o-linear-gradient(top, #808080, #9c9b9b, #8D8D8D);
+	background: -ms-linear-gradient(top, #808080, #9c9b9b, #8D8D8D);
 	bottom: 0 !important;
 	display: none;
 }
 
 ._dwp_scrollBox.horzScrollVisible > .iScrollHorizontalScrollbar {
 	display: block;
+	height: 12px !important;
 }
 
 ._dwp_scrollBox > div > .iScrollIndicator {
@@ -82,7 +84,7 @@
 }
 
 ._dwp_scrollBox > .iScrollVerticalScrollbar > .iScrollIndicator {
-	width: 6px !important;
+	width: 10px !important;
 	background: -webkit-linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
 	background: -moz-linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
 	background: linear-gradient(left, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
@@ -92,7 +94,7 @@
 }
 
 ._dwp_scrollBox > .iScrollHorizontalScrollbar > .iScrollIndicator {
-	height: 6px !important;
+	height: 10px !important;
 	background: -webkit-linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
 	background: -moz-linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;
 	background: linear-gradient(top, #D3D3D3, #FFFFFF 40%, #D3D3D3) !important;

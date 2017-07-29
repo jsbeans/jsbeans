@@ -43,18 +43,25 @@
 				elt.append(this.scrollPane);
 			}
 			
-			this.multiplicator = 150;
+			this.multiplicator = 100;
 			if(navigator.platform.match(/Mac/)){
 				this.multiplicator = 1;
 			}
 			
 			this.getElement().resize(function(evt){
+				if(!$this.getElement().is(':visible')){
+					return;
+				}
 				self.refresh();
 				self.updateVisibleArea();
 				self.updateScrollbars();
 			});
 			
 			this.scrollPane.resize(function(evt){
+				if(!$this.scrollPane.is(':visible')){
+					return;
+				}
+
 				self.refresh();
 				self.updateVisibleArea();
 				if(!JSB().isNull(self.scroll)){
@@ -88,7 +95,7 @@
 			
 			JSB().deferUntil(function(){
 				$this.installScroll();
-				$this.setEasing('default');
+				$this.setEasing('easeOutExpo');
 				$this.updateScrollbars();
 				$this.ready = true;
 			},function(){
@@ -193,7 +200,16 @@
 				self.scrollDelta = this.getElement().height() - boundaryPenetrationAllowed - this.scrollPane.height() - this.scrollPos;
 			}
 			
-			if(self.updateScrollInterval == null ) {
+			if($this.updateScrollInterval == null && !$this.isScrolling) {
+				if(!self.scrollDelta){
+					return;
+				}
+				self.scroll._execEvent('scrollStart');
+				self.isScrolling = true;
+				self.updateScrollInterval = setInterval(function(){
+					self.updateWheelScrollPosition();
+				}, 1);
+/*
 				JSB().deferUntil(function(){
 					if(!self.scrollDelta){
 						return;
@@ -204,8 +220,9 @@
 						self.updateWheelScrollPosition();
 					}, 1);
 				}, function(){
-					return !self.isScrolling;
+					return $this.updateScrollInterval == null && !$this.isScrolling;
 				});
+*/				
 			}
 		},
 
@@ -369,7 +386,7 @@
 		},
 		
 		updateWheelScrollPosition: function(){
-			var dur = 1000;
+			var dur = 800;
 			var curTime = Date.now() - this.scrollStartTime;
 			if(curTime > dur){
 				this.stopScrollUpdate('wheel');

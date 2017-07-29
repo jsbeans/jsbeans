@@ -14,25 +14,35 @@
 	height: 100%;
 }
 
-._jsb_dashboardContainer > ._jsb_dashboardPlaceholder {
+._jsb_dashboardContainer > ._jsb_phContainer {
+	position: absolute;
+	box-sizing: border-box;
+	z-index: -1;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}
+
+._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder {
 	position: absolute;
 	display: none;
+}
+
+._jsb_dashboardContainer.dragging > ._jsb_phContainer {
+	padding: 11px;
 	z-index: 9999;
 }
 
-._jsb_dashboardContainer.dragging {
-	padding: 11px;
-}
-
-._jsb_dashboardContainer.dragging > ._jsb_dashboardPlaceholder {
+._jsb_dashboardContainer.dragging > ._jsb_phContainer > ._jsb_dashboardPlaceholder {
 	display: block;
 }
 
-._jsb_dashboardContainer.dragging > ._jsb_dashboardPlaceholder.center {
+._jsb_dashboardContainer.dragging > ._jsb_phContainer > ._jsb_dashboardPlaceholder.center {
 	display: none;
 }
 
-._jsb_dashboardContainer > ._jsb_dashboardPlaceholder.center {
+._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder.center {
 	left: 12px;
 	right: 12px;
 	top: 12px;
@@ -40,32 +50,32 @@
 	display: none;
 }
 
-._jsb_dashboardContainer.dragging[type="widget"] > ._jsb_dashboardPlaceholder.center {
+._jsb_dashboardContainer.dragging[type="widget"] > ._jsb_phContainer > ._jsb_dashboardPlaceholder.center {
 	display: block;
 }
 
-._jsb_dashboardContainer > ._jsb_dashboardPlaceholder.left {
+._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder.left {
 	left: 1px;
 	top: 10px;
 	bottom: 10px;
 	width: 10px;
 }
 
-._jsb_dashboardContainer > ._jsb_dashboardPlaceholder.top {
+._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder.top {
 	left: 10px;
 	top: 1px;
 	right: 10px;
 	height: 10px;
 }
 
-._jsb_dashboardContainer > ._jsb_dashboardPlaceholder.right {
+._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder.right {
 	right: 1px;
 	top: 10px;
 	bottom: 10px;
 	width: 10px;
 }
 
-._jsb_dashboardContainer > ._jsb_dashboardPlaceholder.bottom {
+._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder.bottom {
 	left: 10px;
 	bottom: 1px;
 	right: 10px;

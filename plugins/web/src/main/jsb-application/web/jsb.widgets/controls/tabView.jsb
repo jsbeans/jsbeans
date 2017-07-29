@@ -61,6 +61,9 @@
 			this.append(this.clientPane);
 			
 			this.tabPane.resize(function(){
+				if(!$this.tabPane.is(':visible')){
+					return;
+				}
 				self.updateSizes();
 			});
 		},

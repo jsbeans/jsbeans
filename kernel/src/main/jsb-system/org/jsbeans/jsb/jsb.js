@@ -2974,6 +2974,11 @@
 							__type: 'Float64Array',
 							__data: JSB().Base64.encode(res.buffer)
 						};
+					} else if(JSB().isDate(res)){
+						return {
+							__type: 'Date',
+							__data: res.getTime()
+						};
 					} else if(JSB().isBean(res)){
 						// encode jso object
 						if(isServer){
@@ -3091,6 +3096,10 @@
 				} else if(res.__type && res.__type == 'Float64Array'){
 					if(callback){
 						callback(new Float64Array(JSB().Base64.decode(res.__data)));
+					} 
+				} else if(res.__type && res.__type == 'Date'){
+					if(callback){
+						callback(new Date(res.__data));
 					} 
 				} else {
 					// parse json object

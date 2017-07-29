@@ -580,6 +580,9 @@
                         }
                     });
                     $this.foamtreeContainer.resize(function(){
+                    	if(!$this.foamtreeContainer.is(':visible')){
+        					return;
+        				}
                         JSB().defer(function(){
                             $this.foamtree.resize();
                         }, 300, 'foamtree.resize.' + $this.getId())

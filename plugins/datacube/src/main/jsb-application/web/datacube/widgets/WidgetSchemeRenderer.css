@@ -85,12 +85,16 @@
 
 .widgetSchemeRenderer.hasMultiple > .body > .items {
 	border-top: 1px solid #ded7cb;
-	cursor: url(/jsb.widgets/images/hand.gif), move;
+	cursor: move;
 	padding: 2px 20px 2px 6px;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:first-child {
-	border-top: none;
+	/*border-top: none;*/
+}
+
+.widgetSchemeRenderer.hasMultiple > .body > .items:last-child {
+	border-bottom: 1px solid #ded7cb;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(even) {
@@ -147,6 +151,11 @@
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer {
 	margin: 2px 0;
+	border-top: 1px solid #ded7cb;
+}
+
+.widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:last-child {
+	border-bottom: 1px solid #ded7cb;
 }
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:nth-child(even) {

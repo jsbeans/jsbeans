@@ -1,8 +1,6 @@
 @CHARSET "UTF-8";
 
 ._dwp_messageTool {
-	min-width: 400px;
-	max-width: 800px;
 	padding: 6px 10px;
 }
 
@@ -19,7 +17,8 @@
 	text-align: justify;
 	vertical-align: middle;
 	display: inline-block;
-	max-width: 300px;
+	min-width: 300px;
+	max-width: 600px;
 }
 
 ._dwp_messageTool ._dwp_messageTool_Buttons {

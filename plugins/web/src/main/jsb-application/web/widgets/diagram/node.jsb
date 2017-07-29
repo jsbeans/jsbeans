@@ -37,6 +37,9 @@
 			}
 			
 			this.getElement().resize(function(){
+				if(!$this.getElement().is(':visible')){
+					return;
+				}
 				self.updateLinks();
 				self.diagram.updateLayout(self);
 			});

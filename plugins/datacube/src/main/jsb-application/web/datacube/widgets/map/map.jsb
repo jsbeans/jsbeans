@@ -468,6 +468,10 @@
             }, 1000);
 
             this.mapContainer.resize(function(){
+            	if(!$this.mapContainer.is(':visible')){
+            		return;
+            	}
+
                 JSB().defer(function(){
                     var height = $this.mapContainer.height();
                     if($this.leafletAttrMap) $this.leafletAttrMap.invalidateSize();

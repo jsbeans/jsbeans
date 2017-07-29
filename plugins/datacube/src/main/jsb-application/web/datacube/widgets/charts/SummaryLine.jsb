@@ -89,6 +89,10 @@
 			this.hc = this.$('<div class="container"></div>');
 			this.getElement().append(this.hc);
 			this.getElement().resize(function(){
+            	if(!$this.getElement().is(':visible')){
+            		return;
+            	}
+
 				if(self.chart){
 					self.chart.setSize(self.getElement().width(), self.getElement().height(), false);
 				}

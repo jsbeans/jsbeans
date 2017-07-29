@@ -21,6 +21,10 @@
 				if(msg == 'JSB.Widgets.ItemList.insertItem'){
 					var wrapper = params.item.getElement().parent();
 					wrapper.resize(function(){
+						if(!wrapper.is(':visible')){
+							return;
+						}
+
 						self.update();
 					});
 				}
@@ -55,6 +59,9 @@
 				
 				var wrapper = params.item.getElement().parent();
 				wrapper.resize(function(){
+					if(!wrapper.is(':visible')){
+						return;
+					}
 					self.update();
 				});
 
@@ -87,6 +94,9 @@
 			};
 			
 			this.getContainer().resize(function(){
+				if(!$this.getContainer().is(':visible')){
+					return;
+				}
 				var nw = self.getContainer().width();
 				if(self.lastContainerSize.width != nw){
 					self.update();
@@ -214,6 +224,9 @@
 				top: -(h - h * size) / 2,
 			});
 			item.getElement().resize(function(){
+				if(!item.getElement().is(':visible')){
+					return;
+				}
 				var nw = item.getElement().outerWidth();
 				var nh = item.getElement().outerHeight();
 				item.getElement().parent().css({

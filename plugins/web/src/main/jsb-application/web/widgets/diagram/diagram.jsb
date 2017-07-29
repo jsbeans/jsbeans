@@ -212,6 +212,9 @@
 			this.setupEventHandlers();
 			
 			this.getElement().resize(function(){
+				if(!$this.getElement().is(':visible')){
+					return;
+				}
 				self.updateViewport();
 			});
 			

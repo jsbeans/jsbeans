@@ -6,7 +6,7 @@
 }
 
 ._jsb_diagram.panning {
-	cursor: url('/jsb.widgets/images/hand.gif'), move;
+	cursor: move;
 }
 
 ._jsb_diagram > ._jsb_diagramToolContainer {}

@@ -116,15 +116,16 @@
 				element: '<div class="icon"></div>',
 				click: function(){
 					var sel = $this.tree.getSelected();
-					if(!sel || sel.length == 0){
+					var selToDel = $this.combineSelectionForDelete(sel);
+					if(!selToDel || selToDel.length == 0){
 						return;
 					}
 					var targets = [];
 					var constraints = [];
-					if(!JSB().isArray(sel) || sel.length == 1){
-						var ss = sel;
+					if(!JSB().isArray(selToDel) || selToDel.length == 1){
+						var ss = selToDel;
 						if(JSB().isArray(ss)){
-							ss = sel[0];
+							ss = selToDel[0];
 						}
 						targets.push({
 							selector: ss.wrapper,
@@ -150,16 +151,32 @@
 							weight: 10.0
 						}];
 					}
+					var msgElt = $this.$('<div><div>Следующие элементы будут удалены безвозвратно:</div></div>');
+					var nodesToDelElt = $this.$('<div style="font-weight:bold; padding: 4px 0 0 10px;"></div>');
+					for(var i = 0; i < selToDel.length; i++){
+						var nodeElt = '';
+						var node = selToDel[i].obj;
+						if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
+							var entry = node.getEntry();
+							var renderer = RendererRepository.createRendererFor(entry, {editable:false});
+							nodeElt = renderer.getElement();
+						} else {
+							nodeElt = $this.$('<span></span>').text(selToDel[i].obj.getName());
+						}
+						nodesToDelElt.append($this.$('<div></div>').append(nodeElt));
+					}
+					msgElt.append(nodesToDelElt);
+					msgElt.append('<div>Продолжить удаление?</div>');
 					ToolManager.showMessage({
 						icon: 'removeDialogIcon',
-						text: 'Вы уверены что хотите удалить выбранные элементы?',
+						text: msgElt,
 						buttons: [{text: 'Удалить', value: true},
 						          {text: 'Нет', value: false}],
 						target: targets,
 						constraints: constraints,
 						callback: function(bDel){
 							if(bDel){
-								$this.removeItems(sel);
+								$this.removeItems(selToDel);
 							}
 						}
 					});
@@ -526,10 +543,35 @@
 				}
 			});
 		},
+		
+		combineSelectionForDelete: function(sel){
+			if(!sel){
+				return sel;
+			}
+			var newSel = [];
+			if(!JSB.isArray(sel)){
+				sel = [sel];
+			}
+			for(var i = 0; i < sel.length; i++){
+				var node = sel[i].obj;
+				if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
+					var entry = node.getEntry();
+					if(entry.getParent()){
+						continue;
+					}
+				}
+				newSel.push(sel[i]);
+			}
+			return newSel;
+		},
 
 		updateToolbar: function(){
 			var selection = this.tree.getSelected();
-			if(!selection || selection.length == 0){
+			
+			// calculate selection for delete
+			var selToDel = this.combineSelectionForDelete(selection);
+			
+			if(!selToDel || selToDel.length == 0){
 				// disable buttons
 				this.toolbar.enableItem('delete', false);
 			} else {
@@ -739,7 +781,7 @@
 				revert: false,
 				scroll: false,
 				zIndex: 100000,
-				distance: 10,
+				distance: 30,
 				appendTo: 'body'
 			});
 			
