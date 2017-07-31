@@ -497,7 +497,10 @@
             ]
         },
 
-        refresh: function(){
+        refresh: function(opts){
+        	if(opts && opts.initiator == this){
+        		return;
+        	}
             if(this.getContext().find('source').bound()){
                 this.getElement().loader();
 
