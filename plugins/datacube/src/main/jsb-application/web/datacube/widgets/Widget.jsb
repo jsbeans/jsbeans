@@ -446,9 +446,9 @@
 //			throw new Error('This method should be overriden');
 		},
 		
-		addFilter: function(srcId, type, items){
+		addFilter: function(srcId, type, items, removeFIds){
 			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
-			return filterSelector.addFilter(srcId, type, items, this);
+			return filterSelector.addFilter(srcId, type, items, this, removeFIds);
 		},
 		
 		removeFilter: function(fItemId){

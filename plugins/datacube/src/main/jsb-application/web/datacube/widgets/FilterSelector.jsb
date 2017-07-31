@@ -58,7 +58,6 @@
 				$this.filterArr.push($this.filters[itemId]);
 			}
 			
-			
 			return true;
 		},
 		
@@ -84,14 +83,23 @@
 		},
 		
 		removeFilter: function(fItemId, initiator){
-			$this.removeFilterItem(fItemId);
-			$this.redraw();
+            this.removeFilterItem(fItemId);
+
+			this.redraw();
 			JSB.defer(function(){
-				$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator, dashboard: $this.getOwner().getDashboard()});	
+				$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator, dashboard: $this.getOwner().getDashboard(), type: 'removeFilter', fItemIds: [fItemId] });
 			});
 		},
 		
-		addFilter: function(srcId, type, items, initiator){
+		addFilter: function(srcId, type, items, initiator, removeFIds){
+		    // remove old filters
+		    if(!JSB.isArray(removeFIds)){
+                removeFIds = [removeFIds];
+            }
+            for(var i = 0; i < removeFIds.length; i++)
+                this.removeFilterItem(removeFIds[i]);
+
+            // create new filters
 			var fItemIds = [];
 			if(!JSB.isArray(items)){
 				items = [items];
@@ -113,7 +121,7 @@
 				if(bNeedRefresh){
 					$this.redraw();
 					JSB.defer(function(){
-						$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator, dashboard: $this.getOwner().getDashboard()});	
+						$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator, dashboard: $this.getOwner().getDashboard(), type: 'addFilter', fItemIds: fItemIds});
 					});
 				}
 			});
@@ -175,7 +183,7 @@
 							fTag.remove();
 							$this.updateVisibility();
 							JSB.defer(function(){
-								$this.publish('DataCube.Dashboard.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard()});	
+								$this.publish('DataCube.Dashboard.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'removeFilter', fItemIds: [fId]});
 							});
 						}
 					});

@@ -10,7 +10,7 @@
 		$constructor: function(opts){
 			$base(opts);
 
-			this.loadCss('Handsontable.css');
+			this.loadCss('Handsontable.jsb.css');
 			this.addClass('tableControl');
 
             this.noData = this.$('<div class="noData hidden">Нет данных</div>');
