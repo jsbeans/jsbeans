@@ -138,6 +138,12 @@
         _translateField: function(dcQuery, field, useDefaultTable) {
             // if new alias return as is
             if (!this.cube.fields[field]) {
+                // is in provider
+                for(var i in this.providers){
+                    if(this.providers[i].extractFields()[field]) {
+                        return this._quotedName(field);
+                    }
+                }
                 //return this._quotedName(field);
                 return field;
             }
@@ -147,25 +153,25 @@
 //                    return this._quotedName(binding[b].field);
                     return useDefaultTable
                             ? this._quotedName(binding[b].field)
-                            : binding[b].provider.getTableFullName() + '.' + this._quotedName(binding[b].field);
-//                            : this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field);
+//                            : binding[b].provider.getTableFullName() + '.' + this._quotedName(binding[b].field);
+                            : this._translateTableName(binding[b].provider.getTableFullName()) + '."' + this._quotedName(binding[b].field) + '"';
                 }
             }
             throw new Error('Cube has no lined DataProvider for field ' + field);
         },
 
-//        _translateTableName: function(tableName){
-//            var names = tableName.split(".");
-//            var name = '"';
-//            for(var i in names) {
-//                name += names[i];
-//                if (i > 0) {
-//                    name += '"."'
-//                }
-//            }
-//            name += '"';
-//            return name;
-//        },
+        _translateTableName: function(tableName){
+            var names = tableName.split(".");
+            var name = '"';
+            for(var i in names) {
+                name += names[i];
+                if (i < names.length - 1) {
+                    name += '"."'
+                }
+            }
+            name += '"';
+            return name;
+        },
 
         _quotedName: function(name) {
             return escape(name) == name ? name : '`' + name + '`';
@@ -181,13 +187,34 @@
                 };
             }
 
+            function grMaxExpression(func, subExp, alias){
+                return {
+                    type: 'select',  alias: alias + 'Table2',
+                    columns: [{
+                        type: 'MAX',
+                        expression: '"' + alias + '"',
+                        alias: alias
+                    }],
+                    table: {
+                        type: 'select', alias: alias + 'Table',
+                        table: $this._extractTable(dcQuery, subExp),
+                        where: $this._subQueryTranslateWhere(dcQuery, subExp),
+                        groupBy: $this._translateGroupBy(dcQuery),
+                        columns:[{
+                            expression: functionExpression(func, translateExpression(null, subExp, true), null),
+                            alias: alias
+                        }]
+                    }
+                }
+            }
+
             function translateExpression(key, exp, useDefaultTable) {
                 if (JSB.isString(exp)) {
                     if (key) {
                         var provs = $this._extractUsedProviders(dcQuery, exp, false, true);
                         if (provs.length == 0) throw new Error('Unknown provider for ' + JSON.stringify(exp));
                         return {
-                            name: $this._translateField(dcQuery, exp),
+                            name: $this._translateField(dcQuery, exp, useDefaultTable),
                             table: !useDefaultTable && provs[0].getTableFullName(),
                             alias: key
                         };
@@ -256,24 +283,10 @@
                     where: $this._subQueryTranslateWhere(dcQuery, exp.$gsum),
                     columns:[{ expression: functionExpression('SUM', translateExpression(null, exp.$gsum, true), null) }]
                 }
-                if (exp.$grmaxsum) return {
-                    type: 'select',  alias: key + 'Table2',
-                    columns: [{
-                        type: 'MAX',
-                        expression: '"' + key + '"',
-                        alias: key
-                    }],
-                    table: {
-                        type: 'select', alias: key + 'Table',
-                        table: $this._extractTable(dcQuery, exp.$grmaxsum),
-                        where: $this._subQueryTranslateWhere(dcQuery, exp.$grmaxsum),
-                        groupBy: $this._translateGroupBy(dcQuery),
-                        columns:[{
-                            expression: functionExpression('SUM', translateExpression(null, exp.$grmaxsum, true), null),
-                            alias: key
-                        }]
-                    }
-                }
+                if (exp.$grmaxsum) return grMaxExpression('SUM', exp.$grmaxsum, key);
+                if (exp.$grmaxavg) return grMaxExpression('AVG', exp.$grmaxavg, key);
+                if (exp.$grmaxcount) return grMaxExpression('COUNT', exp.$grmaxcount, key);
+
 
 
                 if (exp.$toInt) return "CAST(( " + translateExpression(null, exp.$toInt, useDefaultTable) + " ) as int)"
