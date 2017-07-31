@@ -16,21 +16,7 @@
 			
 			this.loadCss('CubeEditor.css');
 			this.addClass('cubeEditor');
-/*			
-			// create toolbar
-			this.toolbar = new ToolBar();
-			this.append(this.toolbar);
 			
-			this.toolbar.addItem({
-				key: 'addSource',
-				tooltip: 'Добавить источник данных',
-				element: '<div class="icon"></div>',
-				click: function(){
-				}
-			});
-			
-			this.toolbar.addSeparator({key: 'createSeparator'});
-*/			
 			// create diagram
 			this.diagram = new Diagram({
 				minZoom: 0.25,
@@ -252,7 +238,7 @@
 						var bDesc = fDesc.binding[i];
 						var link = $this.diagram.createLink('bind');
 						link.setSource($this.cubeNode.leftFieldConnectors[fName]);
-						link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field])
+						link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field]);
 					}
 				}
 				

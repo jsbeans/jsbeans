@@ -150,14 +150,16 @@ debugger;
 		        if (dataProvider) {
 		            var fields = dataProvider.extractFields();
 		            for(var field in fields) if (fields.hasOwnProperty(field)){
-		                 dcQuery.$select[field] = field;
+		                var name = field.replace(new RegExp('"','g'),'');
+		                 dcQuery.$select[name] = field;
 		            }
 		        } else {
                     for (var f in this.cube.fields) if (this.cube.fields.hasOwnProperty(f)) {
                         var binding = this.cube.fields[f].binding;
                         for(var b in binding) {
                             if (!dataProvider || binding[b].provider == dataProvider) {
-                                dcQuery.$select[f] = f;
+                                var name = f.replace(new RegExp('"','g'),'');
+                                dcQuery.$select[name] = f;
                                 break;
                             }
                         }

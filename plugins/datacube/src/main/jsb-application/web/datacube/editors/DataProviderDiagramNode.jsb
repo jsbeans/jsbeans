@@ -8,6 +8,7 @@
 		provider: null,
 		editor: null,
 		fields: null,
+		binding: null,
 		rightFieldConnectors: {},
 		
 		options: {
@@ -48,7 +49,7 @@
 				tooltip: 'Обновить схему данных',
 				onClick: function(evt){
 					evt.stopPropagation();
-					debugger;
+					$this.refreshScheme();
 				}
 			}); 
 			this.caption.append(refreshButton.getElement());
@@ -133,7 +134,31 @@
 			});
 		},
 		
+		refreshScheme: function(){
+			$this.find('.body > .loading').removeClass('hidden');
+			$this.find('.body > .failed').addClass('hidden');
+			this.editor.cubeEntry.server().refreshDataProviderFields($this.provider.getId(), function(desc, fail){
+				$this.find('.body > .loading').addClass('hidden');
+				if(fail){
+					$this.find('.body > .failed').removeClass('hidden');
+					$this.find('.body > .failed > .text').text('Ошибка загрузки схемы');
+					$this.find('.body > .failed > .details').text(fail.message);
+				} else {
+					// update local fields
+					$this.fields = desc.fields;
+					$this.binding = desc.binding;
+					$this.refresh();
+				}
+			});
+		},
+		
 		refresh: function(){
+			if($this.rightFieldConnectors && Object.keys($this.rightFieldConnectors).length > 0){
+				for(var fName in $this.rightFieldConnectors){
+					var conn = $this.rightFieldConnectors[fName];
+					conn.destroy();
+				}
+			}
 			this.fieldList.empty();
 			var fieldNames = Object.keys(this.fields);
 			fieldNames.sort(function(a, b){
@@ -172,6 +197,15 @@
 						}
 					});
 					$this.rightFieldConnectors[field] = rightConnector;
+					
+					if($this.binding && $this.binding[field]){
+						for(var j = 0; j < $this.binding[field].length; j++){
+							var bDesc = $this.binding[field][j];
+							var link = $this.diagram.createLink('bind');
+							link.setSource($this.editor.cubeNode.leftFieldConnectors[bDesc.field]);
+							link.setTarget(rightConnector);
+						}
+					}
 					
 				})(f);
 			}

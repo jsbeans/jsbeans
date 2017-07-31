@@ -113,11 +113,14 @@
 					// construct slices
 					for(var i = 0; i < snapshot.slices.length; i++){
 						var sDesc = snapshot.slices[i];
-						this.slicePositions[sDesc.id] = sDesc.position;
 						var slice = this.workspace.entry(sDesc.id);
+						if(!JSB.isInstanceOf(slice, 'JSB.DataCube.Model.Slice')){
+							continue;
+						}
 						slice.setQuery(sDesc.query);
 						slice.setQueryParams(sDesc.queryParams);
 						this.slices[sDesc.id] = slice;
+						this.slicePositions[sDesc.id] = sDesc.position;
 					}
 					
 				}
@@ -297,6 +300,122 @@
 			return dpFields;
 		},
 		
+		prepareFieldName: function(name){
+			name = name.trim();
+			if(name.length == 0){
+				return name;
+			}
+			if(name[0] == '\"' || name[0] == '\''){
+				name = name.substr(1, name.length - 1);
+			}
+			if(name[name.length - 1] == '\"' || name[name.length - 1] == '\''){
+				name = name.substr(0, name.length - 1);
+			}
+
+			return name;
+		},
+		
+		
+		refreshDataProviderFields: function(pId){
+			var provider = this.getProviderById(pId);
+			var dpNewFields = provider.extractFields();
+			var dpFields = this.dataProviderFields[provider.getId()];
+			var bNeedStore = false;
+			if(dpFields && Object.keys(dpFields).length > 0){
+				 // perform update existed fields
+				for(var fName in dpNewFields){
+					var fType = dpNewFields[fName];
+					var pfName = this.prepareFieldName(fName);
+					if(dpFields[pfName]){
+						// rename data provider field
+						bNeedStore = true;
+						this.renameDataProviderField(provider, pfName, fName, fType);
+					}
+				}
+			}
+			this.dataProviderFields[provider.getId()] = dpNewFields;
+			if(this.removeUnexistedFields(provider)){
+				bNeedStore = true;
+			}
+			
+			var providerBindingMap = {};
+			for(var fName in this.fields){
+				var fDesc = this.fields[fName];
+				var bindingArr = fDesc.binding;
+				for(var i = 0; i < bindingArr.length; i++){
+					var bDesc = bindingArr[i];
+					if(bDesc.provider != provider){
+						continue;
+					}
+					if(!providerBindingMap[bDesc.field]){
+						providerBindingMap[bDesc.field] = [];
+					}
+					providerBindingMap[bDesc.field].push({
+						field: fName,
+						type: fDesc.type,
+						link: fDesc.link,
+						order: fDesc.order
+					});
+				}
+			}
+			
+			if(bNeedStore){
+				this.store();
+				this.doSync();
+			}
+			
+			return {fields: dpNewFields, binding: providerBindingMap};
+		},
+		
+		renameDataProviderField: function(provider, oldName, newName, type){
+			// iterate over all fields in cube
+			for(var fName in this.fields){
+				var fDesc = this.fields[fName];
+				var bindingArr = fDesc.binding;
+				for(var i = 0; i < bindingArr.length; i++){
+					var bDesc = bindingArr[i];
+					if(bDesc.provider != provider){
+						continue;
+					}
+					if(bDesc.field == oldName){
+						bDesc.field = newName;
+						bDesc.type = type;
+					}
+				}
+			}
+		},
+		
+		removeUnexistedFields: function(provider){
+			var bNeedStore = false;
+			var dpFields = this.dataProviderFields[provider.getId()];
+			var fieldsToRemove = [];
+			for(var fName in this.fields){
+				var fDesc = this.fields[fName];
+				var bindingArr = fDesc.binding;
+				for(var i = bindingArr.length - 1; i >= 0 ; i--){
+					var bDesc = bindingArr[i];
+					if(bDesc.provider != provider){
+						continue;
+					}
+					
+					if(!dpFields[bDesc.field]){
+						bindingArr.splice(i, 1);
+					}
+				}
+				if(bindingArr.length == 0){
+					fieldsToRemove.push(fName);
+					bNeedStore = true;
+				}
+			}
+			for(var i = 0; i < fieldsToRemove.length; i++){
+				if(this.fields[fieldsToRemove[i]]){
+					delete this.fields[fieldsToRemove[i]];
+				}
+			}
+			
+			return bNeedStore;
+		},
+		
 		updateDataProviderNodePosition: function(pId, pt){
 			var provider = this.getProviderById(pId);
 			this.dataProviderPositions[provider.getId()] = pt;
@@ -305,7 +424,7 @@
 		
 		addField: function(pId, pField, pType){
 			var provider = this.getProviderById(pId);
-			var nameCandidate = pField;
+			var nameCandidate = this.prepareFieldName(pField);
 			if(this.fields[nameCandidate]){
 				// lookup appropriate name
 				for(var cnt = 2; ; cnt++){

@@ -67,7 +67,7 @@
 			$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
 
 			// update entries
-			var existedTables = this.getChildren();
+			var existedTables = JSB.clone(this.getChildren());
 			for(var sName in schema){
 				var sDesc = schema[sName];
 				for(var tName in sDesc.tables){
@@ -75,6 +75,7 @@
 					var tId = this.getLocalId() + '|' + sName + '|' + tName;
 					if(existedTables[tId]){
 						// already exists
+						existedTables[tId].updateDescriptor(tDesc);
 						delete existedTables[tId];
 						continue;
 					}
