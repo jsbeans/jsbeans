@@ -151,7 +151,7 @@
 					return;
 				}
 				if(JSB.isInstanceOf(sender, 'JSB.DataCube.Widgets.FilterSelector')){
-					if(sender.getOwner().getDashboard() != opts.dashboard){
+					if(sender.getOwner().getDashboard() != $this.getOwner().getDashboard()){
 						return;
 					}
 				}
