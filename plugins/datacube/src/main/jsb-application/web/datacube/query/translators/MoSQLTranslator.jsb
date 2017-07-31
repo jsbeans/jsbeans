@@ -154,7 +154,7 @@
                     return useDefaultTable
                             ? this._quotedName(binding[b].field)
 //                            : binding[b].provider.getTableFullName() + '.' + this._quotedName(binding[b].field);
-                            : this._translateTableName(binding[b].provider.getTableFullName()) + '."' + this._quotedName(binding[b].field) + '"';
+                            : this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
                 }
             }
             throw new Error('Cube has no lined DataProvider for field ' + field);
@@ -174,7 +174,12 @@
         },
 
         _quotedName: function(name) {
-            return escape(name) == name ? name : '`' + name + '`';
+            if (name.indexOf('"') != -1) {
+                return '`' + name + '`';
+            } else {
+                return '"' + name + '"';
+            }
+            //return escape(name) == name ? name : '`' + name + '`';
         },
 
         _translateColumns: function(dcQuery) {
@@ -213,6 +218,7 @@
                     if (key) {
                         var provs = $this._extractUsedProviders(dcQuery, exp, false, true);
                         if (provs.length == 0) throw new Error('Unknown provider for ' + JSON.stringify(exp));
+
                         return {
                             name: $this._translateField(dcQuery, exp, useDefaultTable),
                             table: !useDefaultTable && provs[0].getTableFullName(),
@@ -296,7 +302,7 @@
 
                 throw new Error('Unsupported select expression');
             }
-//debugger;
+
             var select = dcQuery.$select;
             var columns = [];
             for (var p in select) if (select.hasOwnProperty(p)) {
@@ -484,7 +490,7 @@
                             }
                         }
                         // may be alias
-                        providers = providers.concat(
+                        if (!byValue) providers = providers.concat(
                                 this._extractUsedProviders(dcQuery, dcQuery.$select[exp], false, true));
                     } else {
                         providers = providers.concat(this._getCubeFieldProviders(exp));
