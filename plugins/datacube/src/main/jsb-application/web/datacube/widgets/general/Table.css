@@ -19,6 +19,7 @@
 .tableWidget > table.header > thead > tr {}
 
 .tableWidget > table.header > thead > tr > th.col {
+	position: relative;
 	background: -webkit-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
     background: -moz-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
     background: linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
@@ -33,15 +34,23 @@
     font-weight: normal;
 }
 
+.tableWidget > table.header > thead > tr > th.col.sortable {
+	padding-right: 20px;
+}
+
 .tableWidget > table.header > thead > tr > th.col > .text {
 	display: inline-block;
     vertical-align: middle;
+	min-height: 16px;
 }
 
 .tableWidget > table.header > thead > tr > th.col > .sortSelector {
 	display: inline-block;
 	vertical-align: middle;
-    float: right;
+    position: absolute;
+    top: 50%;
+    margin-top: -9px;
+    right: 2px;
 }
 
 .tableWidget.hasBorder > table.header > thead > tr > th.col {

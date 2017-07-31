@@ -79,6 +79,18 @@
 		
 		executeQuery: function(extQuery){
 			var params = {};
+			var filterOps = {
+				'$eq': true,
+				'$lt': true,
+				'$lte': true,
+				'$gt': true, 
+				'$gte': true,
+				'$ne': true,
+				'$like': true,
+				'$ilike': true,
+				'$in': true,
+				'$nin': true
+			};
 			var preparedQuery = JSB.clone(this.query);
             if(!preparedQuery || Object.keys(preparedQuery).length == 0){
             	preparedQuery = { $select: {}};
@@ -92,14 +104,14 @@
 	        		}
 	        		function prepareFilter(scope){
 	        			for(var f in scope){
-	        				if(f == '$eq'){
+	        				if(filterOps[f]){
 	        					var pName = getNextParam();
 	        					params[pName] = scope[f];
 	        					scope[f] = '${'+pName+'}';
 	        				} else if(f == '$and' || f == '$or'){
 	        					var arr = scope[f];
 	        					for(var i = 0; i < arr.length; i++){
-	        						prepareFilter(arr[i])
+	        						prepareFilter(arr[i]);
 	        					}
 	        				} else {
 	        					prepareFilter(scope[f]);

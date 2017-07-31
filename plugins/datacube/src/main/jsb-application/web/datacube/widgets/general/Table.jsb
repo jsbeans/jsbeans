@@ -809,7 +809,11 @@
 			if(!binding.source){
 				return;
 			}
-			this.addFilter(binding.source, 'and', d.filter);
+			var filters = JSB.clone(d.filter);
+			for(var i = 0; i < filters.length; i++){
+				filters[i].op = '$eq';
+			}
+			this.addFilter(binding.source, 'and', filters);
 		},
 		
 		updateRows: function(){
@@ -881,12 +885,15 @@
 								var elt = $this.$(this);
 								elt.append($this.$('<span class="text"></span>').text(d.title));
 								if(d.sortFields && d.sortFields.length > 0){
+									elt.addClass('sortable');
 									var sortSelector = new SortSelector(d.sortFields, {
 										onChange: function(q){
 											$this.updateOrder(this, q);
 										}
 									});
 									elt.append(sortSelector.getElement());
+								} else {
+									elt.removeClass('sortable');
 								}
 							});
 					
