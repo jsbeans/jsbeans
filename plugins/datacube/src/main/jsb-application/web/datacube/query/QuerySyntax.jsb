@@ -63,7 +63,7 @@
             $$aggregateOperator: [
                 '$sum', '$count','$min', '$max', '$avg',
                 '$array', '$flatArray', '$gsum', '$gcount', '$gmin', '$gmax',
-                '$grmaxsum'
+                '$grmaxsum', '$grmaxcount', '$grmaxavg'
             ],
             $$functionOperators: [ '$toInt', '$toDouble', '$toBoolean', '$distinct' ],
             $$multiOperators: [ '$and', '$or' ],
@@ -119,6 +119,14 @@
                  values: ['$field', '$$functionOperators' ]
             },
             $grmaxsum: {
+                type: 'object',
+                values: ['$field', '$$functionOperators' ]
+            },
+            $grmaxcount: {
+                type: 'object',
+                values: ['$field', '$$functionOperators' ]
+            },
+            $grmaxavg: {
                 type: 'object',
                 values: ['$field', '$$functionOperators' ]
             },
