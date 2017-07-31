@@ -146,11 +146,16 @@
 				}
 			});
 			
-			this.subscribe('DataCube.Dashboard.filterChanged', function(sender){
+			this.subscribe('DataCube.Dashboard.filterChanged', function(sender, msg, opts){
 				if(sender != $this.getOwner().getFilterSelector()){
 					return;
 				}
-				$this.getWidget().refresh();
+				if(JSB.isInstanceOf(sender, 'JSB.DataCube.Widgets.FilterSelector')){
+					if(sender.getOwner().getDashboard() != $this.getDashboard()){
+						return;
+					}
+				}
+				$this.getWidget().refresh(opts);
 			});
 		},
 		

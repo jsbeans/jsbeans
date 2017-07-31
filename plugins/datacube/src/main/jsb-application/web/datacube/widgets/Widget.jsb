@@ -442,13 +442,18 @@
 			return this.context;
 		},
 		
-		refresh: function(){
+		refresh: function(opts){
 //			throw new Error('This method should be overriden');
 		},
 		
-		addFilter: function(){
+		addFilter: function(srcId, type, items){
 			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
-			return filterSelector.addFilter.apply(filterSelector, arguments);
+			return filterSelector.addFilter(srcId, type, items, this);
+		},
+		
+		removeFilter: function(fItemId){
+			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
+			return filterSelector.removeFilter(fItemId, this);
 		},
 		
 		setSort: function(q){
