@@ -1,7 +1,7 @@
 {
 	$name: 'JSB.DataCube.DataProviderDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository'],
+	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository', 'JSB.Widgets.Button'],
 	
 	$client: {
 		ready: false,
@@ -41,6 +41,30 @@
 			this.caption = this.$('<div class="caption"></div>');
 			var renderer = RendererRepository.createRendererFor(this.provider.entry);
 			this.caption.append(renderer.getElement());
+			
+			// refresh btn
+			var refreshButton = new Button({
+				cssClass: 'roundButton btn10 btnRefresh',
+				tooltip: 'Обновить схему данных',
+				onClick: function(evt){
+					evt.stopPropagation();
+					debugger;
+				}
+			}); 
+			this.caption.append(refreshButton.getElement());
+			
+			var removeButton = new Button({
+				cssClass: 'roundButton btn10 btnDelete',
+				tooltip: 'Удалить',
+				enabled: false,
+				onClick: function(evt){
+					evt.stopPropagation();
+					debugger;
+				}
+			});
+			this.caption.append(removeButton.getElement());
+			
+			
 			this.body = this.$(`
 				<div class="body">
 					<div class="loading hidden">

@@ -33,8 +33,12 @@
 			this.redraw();
 		},
 		
+		constructFilterItemId: function(fItem){
+			return MD5.md5('' + fItem.field) + '_' + MD5.md5('' + fItem.value);
+		},
+		
 		addFilterItem: function(sourceId, type, fItem){
-			var itemId = MD5.md5('' + fItem.field) + '_' + MD5.md5('' + fItem.value);
+			var itemId = this.constructFilterItemId(fItem);
 			if(!$this.filterBySource[sourceId]){
 				$this.filterBySource[sourceId] = {};
 			}
@@ -79,9 +83,21 @@
 			}
 		},
 		
-		addFilter: function(srcId, type, items){
+		removeFilter: function(fItemId, initiator){
+			$this.removeFilterItem(fItemId);
+			$this.redraw();
+			JSB.defer(function(){
+				$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator});	
+			});
+		},
+		
+		addFilter: function(srcId, type, items, initiator){
+			var fItemIds = [];
 			if(!JSB.isArray(items)){
 				items = [items];
+			}
+			for(var i = 0; i < items.length; i++){
+				fItemIds.push(this.constructFilterItemId(items[i]));
 			}
 			// acquire cube slices by current source
 			this.getOwner().getDashboard().server().acquireAssiciatedSources(srcId, function(sourceArr){
@@ -97,10 +113,12 @@
 				if(bNeedRefresh){
 					$this.redraw();
 					JSB.defer(function(){
-						$this.publish('DataCube.Dashboard.filterChanged');	
+						$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator});	
 					});
 				}
-			})
+			});
+			
+			return fItemIds;
 		},
 		
 		constructFilter: function(sourceId){

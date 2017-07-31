@@ -23,7 +23,7 @@
 	background: -ms-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
 	
 	
-    padding: 2px 12px 2px 4px;
+    padding: 2px 46px 2px 4px;
 	cursor: move;
     border-bottom: 1px solid #988e5f;
     position: relative;
@@ -58,12 +58,26 @@
 */
 
 .dataProviderDiagramNode > .caption > .renderer {
-	padding-bottom: 1px;
+	padding-bottom: 2px;
 }
 
 .dataProviderDiagramNode > .caption > .renderer > .icon {}
 
 .dataProviderDiagramNode > .caption > .renderer > .title {}
+
+.dataProviderDiagramNode > .caption > .roundButton {
+	position: absolute;
+	top: 50%;
+	margin-top: -8px; 
+}
+
+.dataProviderDiagramNode > .caption > .roundButton.btnRefresh {
+	right: 26px;
+}
+
+.dataProviderDiagramNode > .caption > .roundButton.btnDelete {
+	right: 6px;
+}
 
 .dataProviderDiagramNode > .gripper {
 	position: absolute;
