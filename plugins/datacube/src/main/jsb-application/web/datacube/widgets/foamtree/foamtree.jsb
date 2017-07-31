@@ -585,7 +585,7 @@
                                 var context = $this.getContext().find('source').binding();
                                 if(!context.source) return;
 
-                                $this._currentFilter = $this.addFilter(context.source, 'and', { field: event.groups[0].fieldName, value: event.groups[0].label, op: 'equal' }, $this._currentFilter);
+                                $this._currentFilter = $this.addFilter(context.source, 'and', { field: event.groups[0].fieldName, value: event.groups[0].label, op: '$eq' }, $this._currentFilter);
                             } else {
                                 if($this._currentFilter){
                                     $this.removeFilter($this._currentFilter);
