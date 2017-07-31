@@ -150,6 +150,11 @@
 				if(sender != $this.getOwner().getFilterSelector()){
 					return;
 				}
+				if(JSB.isInstanceOf(sender, 'JSB.DataCube.Widgets.FilterSelector')){
+					if(sender.getOwner().getDashboard() != opts.dashboard){
+						return;
+					}
+				}
 				$this.getWidget().refresh(opts);
 			});
 		},

@@ -87,7 +87,7 @@
 			$this.removeFilterItem(fItemId);
 			$this.redraw();
 			JSB.defer(function(){
-				$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator});	
+				$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator, dashboard: $this.getOwner().getDashboard()});	
 			});
 		},
 		
@@ -113,7 +113,7 @@
 				if(bNeedRefresh){
 					$this.redraw();
 					JSB.defer(function(){
-						$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator});	
+						$this.publish('DataCube.Dashboard.filterChanged', {initiator: initiator, dashboard: $this.getOwner().getDashboard()});	
 					});
 				}
 			});
@@ -175,7 +175,7 @@
 							fTag.remove();
 							$this.updateVisibility();
 							JSB.defer(function(){
-								$this.publish('DataCube.Dashboard.filterChanged');	
+								$this.publish('DataCube.Dashboard.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard()});	
 							});
 						}
 					});
