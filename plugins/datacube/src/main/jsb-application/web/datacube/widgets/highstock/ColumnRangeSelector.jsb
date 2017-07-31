@@ -210,7 +210,25 @@
                     var data = [];
 
                     while(source.next()){
-                        var dateValue = new Date(source.value().get(0).value()).getTime();
+                        var val = source.value().get(0).value();
+
+                        switch($this._contentType || typeof val){
+                            case 'string':
+                                var dateValue = new Date(val).getTime();
+
+                                if(!$this._contentType) $this._contentType = typeof val;
+                                break;
+                            case 'object':
+                                if(JSB().isDate(val)){
+                                    var dateValue = new Date(val).getTime();
+
+                                    if(!$this._contentType) $this._contentType = 'date';
+                                    break;
+                                }
+                            default:
+                                // invalid type
+                                break;
+                        }
 
                         if(dateValue !== dateValue) continue;
 
@@ -257,7 +275,7 @@
 
                     if(tooltip){
                         var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
-                        tooltipXDateFormat = tooltipXDateFormat.length === 0 ? undefined : tooltipXDateFormat;
+                        tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
                     } else {
                         var tooltipXDateFormat;
                     }
@@ -307,7 +325,22 @@
                 if(!context.source) return;
 
                 var field = $this.getContext().find("source").value().get(0).binding();
-                $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: event.min, op: '$gte' }, { field: field, value: event.max, op: '$lte' }], $this._currentFilter);
+
+                switch($this._contentType){
+                    case 'string':
+                        var min = new Date(event.min*1000).toString(),
+                            max = new Date(event.max*1000).toString()
+                        break;
+                    case 'date':
+                        var min = new Date(event.min*1000),
+                            max = new Date(event.max*1000)
+                        break;
+                    default:
+                        // invalid type
+                        return;
+                }
+
+                $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: min, op: '$gte' }, { field: field, value: max, op: '$lte' }], $this._currentFilter);
             }, 500, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
         }
 	}
