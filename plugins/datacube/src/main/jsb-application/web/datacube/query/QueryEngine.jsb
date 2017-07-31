@@ -206,13 +206,13 @@ debugger;
                     }
                 }
 
-                // add filter fields to groupBy
-                for (var alias in dcQuery.$filter){
-                    var field = findField(dcQuery.$select[alias], false);
-                    if (field.field && groupFields.indexOf(field.field) == -1) {
-                        groupFields.push(field.field);
-                    }
-                }
+//                // add filter fields to groupBy
+//                for (var alias in dcQuery.$filter){
+//                    var field = findField(dcQuery.$select[alias], false);
+//                    if (field.field && groupFields.indexOf(field.field) == -1) {
+//                        groupFields.push(field.field);
+//                    }
+//                }
 
                 if (groupFields.length == 0 && unknownAggregate) {
                     throw new Error("Define $groupBy");
