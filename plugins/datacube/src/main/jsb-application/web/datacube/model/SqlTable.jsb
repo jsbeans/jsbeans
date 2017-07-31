@@ -21,6 +21,13 @@
 			} else {
 				this.descriptor = this.property('descriptor');
 			}
+		},
+		
+		updateDescriptor: function(desc){
+			this.descriptor = desc;
+			this.property('descriptor', this.descriptor);
+			this.title(this.descriptor.schema + '.' + this.descriptor.name);
+			this.doSync();
 		}
 		
 	}
