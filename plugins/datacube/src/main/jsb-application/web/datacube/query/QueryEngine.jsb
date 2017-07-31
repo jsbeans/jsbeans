@@ -196,15 +196,24 @@ debugger;
                 for (var alias in dcQuery.$select) {
                     var field = findField(dcQuery.$select[alias], false);
                     if (field.aggregated && field.field){
-                        if (aggregatedFields.indexOf() == -1)
+                        if (aggregatedFields.indexOf(field.field) == -1)
                             aggregatedFields.push(field.field);
                     } else if (field.field) {
-                        if (groupFields.indexOf() == -1)
+                        if (groupFields.indexOf(field.field) == -1)
                             groupFields.push(field.field);
                     } else {
                         unknownAggregate = true;
                     }
                 }
+
+//                // add filter fields to groupBy
+//                for (var alias in dcQuery.$filter){
+//                    var field = findField(dcQuery.$select[alias], false);
+//                    if (field.field && groupFields.indexOf(field.field) == -1) {
+//                        groupFields.push(field.field);
+//                    }
+//                }
+
                 if (groupFields.length == 0 && unknownAggregate) {
                     throw new Error("Define $groupBy");
                 }
@@ -322,11 +331,12 @@ debugger;
 		        next: function(){
 		            var next = it.next();
 		            if (next) {
-		                Log.debug(JSON.stringify(next));
+		                //Log.debug(JSON.stringify(next));
 		            }
 		            return next;
 		        },
 		        close: function(){
+		            Log.debug('Iterator closed');
 		            it.close();
 		        }
 		    };

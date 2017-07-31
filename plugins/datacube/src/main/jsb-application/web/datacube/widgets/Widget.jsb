@@ -231,7 +231,9 @@
 						};
 					}
 					JSB.merge(item.fetchOpts, opts);
-					item.fetchOpts.filter = $this.getWrapper().getOwner().getFilterSelector().constructFilter(item.binding.source);
+					if($this.getWrapper() && $this.getWrapper().getOwner()){
+						item.fetchOpts.filter = $this.getWrapper().getOwner().getFilterSelector().constructFilter(item.binding.source);
+					}
 					item.fetchOpts.sort = $this.sort;
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(item.fetchOpts.reset){
@@ -419,7 +421,15 @@
 		
 		setWrapper: function(w, values){
 			this.wrapper = w;
-			this.updateSelectors(values);
+			if(w.getOwner()){
+				this.updateSelectors(values);
+			} else {
+				JSB.deferUntil(function(){
+					$this.updateSelectors(values);
+				}, function(){
+					return $this.wrapper.getOwner();
+				});
+			}
 		},
 		
 		getWrapper: function(){

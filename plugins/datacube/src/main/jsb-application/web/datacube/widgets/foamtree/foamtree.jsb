@@ -497,7 +497,10 @@
             ]
         },
 
-        refresh: function(){
+        refresh: function(opts){
+        	if(opts && opts.initiator == this){
+        		return;
+        	}
             if(this.getContext().find('source').bound()){
                 this.getElement().loader();
 
@@ -585,7 +588,7 @@
                                 var context = $this.getContext().find('source').binding();
                                 if(!context.source) return;
 
-                                $this._currentFilter = $this.addFilter(context.source, 'and', { field: event.groups[0].fieldName, value: event.groups[0].label, op: 'equal' }, $this._currentFilter);
+                                $this._currentFilter = $this.addFilter(context.source, 'and', { field: event.groups[0].fieldName, value: event.groups[0].label, op: '$eq' }, $this._currentFilter);
                             } else {
                                 if($this._currentFilter){
                                     $this.removeFilter($this._currentFilter);

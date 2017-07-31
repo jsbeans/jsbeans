@@ -367,7 +367,7 @@
 			this.scroll = new ScrollBox({
 				onScroll: function(){
 					var scrollY = $this.scroll.getScrollPosition().y;
-					if( $this.paneHeight - ($this.scrollHeight - scrollY) > 2 * $this.scrollHeight){
+					if( $this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
 						return;
 					}
 					
@@ -459,7 +459,7 @@
 					return;
 				}
 				var scrollY = scrollPos.y;
-				if( $this.paneHeight - ($this.scrollHeight - scrollY) > 2 * $this.scrollHeight){
+				if( $this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
 					this.rowAppending = false;
 					return;
 				}
@@ -688,7 +688,7 @@
 				if(pRows.length > 0){
 					JSB.defer(function(){
 						$this.appendRows();	
-					}, 0);
+					},0);
 				}
 				
 			})
