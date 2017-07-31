@@ -65,7 +65,7 @@
 			var fields = {};
 			for(var colName in desc.columns){
 				var type = desc.columns[colName].datatypeName;
-				fields[this.prepareName(colName)] = type;
+				fields[colName] = type;
 			}
 			return fields;
 		}

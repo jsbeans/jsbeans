@@ -45,7 +45,8 @@
 				id: itemId,
 				type: type,
 				field: fItem.field,
-				value: fItem.value
+				value: fItem.value,
+				op: fItem.op
 			}
 			
 			if(!$this.filters[itemId]){
@@ -110,7 +111,9 @@
 			var filter = {};
 			for(var fItemId in filters){
 				var fItemDesc = filters[fItemId];
-				filter[fItemDesc.field] = {$eq: fItemDesc.value};
+				var fOp = {};
+				fOp[fItemDesc.op] = fItemDesc.value;
+				filter[fItemDesc.field] = fOp;
 			}
 			return filter;
 		},
