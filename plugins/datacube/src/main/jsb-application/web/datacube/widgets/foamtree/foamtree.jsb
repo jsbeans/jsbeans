@@ -526,10 +526,13 @@
                         var binding = levels[i].get(0).binding();
                         var weight = levels[i].get(1).value();
 
-                        var e = el.find(function(element){
-                            if(element.label == label) return true;
-                            return false;
-                        });
+                        var e = null;
+                        for(var j = 0; j < el.length; j++){
+                            if(el[j].label === label){
+                                e = el[j];
+                                break;
+                            }
+                        }
 
                         if(!e){
                             el.push({

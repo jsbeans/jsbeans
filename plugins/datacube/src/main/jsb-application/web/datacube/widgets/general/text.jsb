@@ -229,7 +229,7 @@
                     this.highlights.sort(function(a, b){
                         return a.offset - b.offset;
                     });
-
+                    /*
                     this.highlights = this.highlights.reduce(function(newArr, el, i, array){
                         if(i === 0){
                             newArr.push(el);
@@ -247,6 +247,23 @@
 
                         return newArr;
                     }, []);
+                    */
+
+                    var fObj = {};
+                    this.highlights = this.highlights.filter(function(el){
+                        for(var i = el.offset; i < el.offset + el.length; i++){
+                            if(fObj[i]){
+                                return false;
+                            }
+                        }
+
+                        for(var i = el.offset; i < el.offset + el.length; i++){
+                            fObj[i] = true;
+                        }
+
+                        return true;
+                    });
+
                 } catch(ex){
                     console.log(ex);
                 }

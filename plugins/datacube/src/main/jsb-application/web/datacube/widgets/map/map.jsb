@@ -497,10 +497,13 @@
                         var id = rows[0].get(0).value();
                         var w = rows[0].get(1).value();
 
-                        var e = data.find(function(element){
-                            if(element.id === id) return true;
-                            return false;
-                        });
+                        var e = null;
+                        for(var j = 0; j < data.length; j++){
+                            if(data[j].id === id){
+                                e = data[j];
+                                break;
+                            }
+                        }
 
                         if(!e){
                             data.push({

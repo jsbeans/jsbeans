@@ -171,7 +171,13 @@
 					var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
 					fTag.append($this.$('<div class="field"></div>').text(fDesc.field).attr('title', fDesc.field));
 					fTag.append('<div class="op">=</div>');
-					fTag.append($this.$('<div class="value"></div>').text('' + fDesc.value).attr('title', '' + fDesc.value));
+
+					if(JSB().isDate(fDesc.value)){
+					    var v = fDesc.value.toDateString();
+					} else {
+					    var v = fDesc.value;
+					}
+					fTag.append($this.$('<div class="value"></div>').text('' + v).attr('title', '' + v));
 					
 					var removeButton = new Button({
 						cssClass: 'roundButton btn10 btnDelete',

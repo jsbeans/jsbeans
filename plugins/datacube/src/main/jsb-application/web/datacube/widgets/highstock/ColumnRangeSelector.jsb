@@ -181,6 +181,9 @@
             this.append(this.container);
 
             this.getElement().resize(function(){
+                if(!$this.getElement().is(':visible')){
+                    return;
+                }
                 if($this.highcharts){
                     $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }
@@ -191,7 +194,19 @@
 
         refresh: function(opts){
             if(opts && this == opts.initiator) return;
-            if(opts && opts.type === 'removeFilter' && this._currentFilter.indexOf(opts.fItemIds[0]) >= 0) return;
+            if(opts && opts.type === 'removeFilter'){
+                var index = this._currentFilter.indexOf(opts.fItemIds[0]);
+                if(index === 0){
+                    this._isRemoveFilter = true;
+                    this.chart.xAxis[0].setExtremes($this._extremes[0]);
+                    return;
+                }
+                if(index === 1){
+                    this._isRemoveFilter = true;
+                    this.chart.xAxis[0].setExtremes(undefined, $this._extremes[1]);
+                    return;
+                }
+            }
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
@@ -207,35 +222,38 @@
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
+                    $this._originalData = {};
                     var data = [];
 
                     while(source.next()){
                         var val = source.value().get(0).value();
 
-                        switch($this._contentType || typeof val){
+                        switch(typeof val){
                             case 'string':
                                 var dateValue = new Date(val).getTime();
 
-                                if(!$this._contentType) $this._contentType = typeof val;
+                                if(dateValue !== dateValue) continue;
+
+                                $this._originalData[dateValue] = val;
                                 break;
                             case 'object':
                                 if(JSB().isDate(val)){
-                                    var dateValue = new Date(val).getTime();
-
-                                    if(!$this._contentType) $this._contentType = 'date';
+                                    var dateValue = val.getTime();
                                     break;
                                 }
                             default:
                                 // invalid type
-                                break;
+                                continue;
                         }
 
-                        if(dateValue !== dateValue) continue;
-
                         if(autoCount){
-                            var e = data.find(function(el){
-                                return el.x === dateValue;
-                            });
+                            var e = null;
+                            for(var j = 0; j < data.length; j++){
+                                if(data[j].x === dateValue){
+                                    e = data[j];
+                                    break;
+                                }
+                            }
 
                             if(e){
                                 e.y++;
@@ -280,19 +298,19 @@
                         var tooltipXDateFormat;
                     }
 
+                    $this._extremes = [data[0].x, data[data.length - 1].x];
+
                     $this.getElement().loader('hide');
 
                     // create the chart
-                    Highcharts.stockChart(this.containerId, {
+                    $this.chart = Highcharts.stockChart(this.containerId, {
                         chart: {
                             alignTicks: false
                         },
 
-                        rangeSelector: {
-                            selected: 1,
-                        },
-
                         xAxis: {
+                            min: data[0].x,
+                            max: data[data.length - 1].x,
                             events: {
                                 afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
                             }
@@ -320,28 +338,46 @@
         },
 
         _addIntervalFilter: function(event){
+            if(this._isRemoveFilter){
+                this._isRemoveFilter = false;
+                return;
+            }
+
             JSB().defer(function(){
                 var context = $this.getContext().find('source').binding();
                 if(!context.source) return;
 
                 var field = $this.getContext().find("source").value().get(0).binding();
 
-                switch($this._contentType){
-                    case 'string':
-                        var min = new Date(event.min*1000).toString(),
-                            max = new Date(event.max*1000).toString()
-                        break;
-                    case 'date':
-                        var min = new Date(event.min*1000),
-                            max = new Date(event.max*1000)
-                        break;
-                    default:
-                        // invalid type
-                        return;
+                if($this._originalData !== {}){
+                    var min = $this._originalData[event.min];
+                    if(!min) min = $this._originalData[$this._findNearest(Object.keys($this._originalData), event.min)];
+
+                    var max = $this._originalData[event.max];
+                    if(!max) max = $this._originalData[$this._findNearest(Object.keys($this._originalData), event.max)];
+                } else {
+                    var min = new Date(event.min),
+                        max = new Date(event.max)
                 }
 
                 $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: min, op: '$gte' }, { field: field, value: max, op: '$lte' }], $this._currentFilter);
             }, 500, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
+        },
+
+        _findNearest: function(a, x){
+            var first = 0,
+                last = a.length;
+
+            while(first < last){
+                var mid = ~~(first + (last - first) / 2);
+
+                if (x <= a[mid])
+                    last = mid;
+                else
+                    first = mid + 1;
+            }
+
+            return a[last];
         }
 	}
 }
