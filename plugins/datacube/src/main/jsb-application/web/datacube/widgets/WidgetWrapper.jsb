@@ -100,12 +100,14 @@
 						<div class="title" jsb="JSB.Widgets.PrimitiveEditor"></div>
 					</div>
 					<div class="buttons">
-						<div jsb="JSB.Widgets.Button" 
-							class="roundButton btnOk btn16" 
+						<div jsb="JSB.Widgets.Button"
+							class="btnOk"
+							caption="Сохранить"
 							onclick="{{=this.callbackAttr(function(evt){ $this.applySettings(evt); })}}" >
 						</div>
-						<div jsb="JSB.Widgets.Button" 
-							class="roundButton btnCancel btn16" 
+						<div jsb="JSB.Widgets.Button"
+						    class="btnCancel"
+						    caption="Отмена"
 							onclick="{{=this.callbackAttr(function(evt){ $this.closeSettings(); })}}" >
 						</div>
 					</div>

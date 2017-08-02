@@ -43,6 +43,8 @@
 				$this._oldScroll.x = scrollLeft;
 				$this._oldScroll.y = scrollTop;
 			});
+
+			// debugger;
 		},
 		
 		events:{
@@ -52,15 +54,36 @@
 			onMinY: null,
 			preLoad: null
 		},
-		
+
+		/**
+         * Очищает элемент.
+         */
 		clear: function(){
 			this.getElement().empty();
 		},
-		
+
+        /**
+         * Возвращает текущую позицию скроллбокса.
+         *
+         * @return {{number}, {number}} Объект {x, y}
+         */
 		getScrollPosition: function(){
 			return { x: this.getElement().scrollLeft, y: this.getElement().scrollTop };
 		},
-		
+
+		/**
+         * Устанавливает позицию скроллбокса.
+         *
+         * @param {number}, {number} Координаты по осям x и y
+         */
+		scrollTo: function(x, y){
+		    this.setScrollPosition(x, y);
+		},
+
+		scrollToElement: function(target, vAlign, hAlign){
+            // todo
+		},
+		/*
 		setScrollPosition: function(pos){
 			if(!pos){
 				throw new Error('Incorrect function parameters("setScrollPosition" need 1 parameter)');
@@ -73,5 +96,19 @@
 			if(pos.y)
 				this.getElement().setTop(pos.y);
 		}
+		*/
+
+		/**
+         * Устанавливает позицию скроллбокса.
+         *
+         * @param {number}, {number} Координаты по осям x и y
+         */
+        setScrollPosition: function(x, y){
+            if(x)
+                this.getElement().setLeft(x);
+
+            if(y)
+                this.getElement().setTop(y);
+        }
 	}
 }

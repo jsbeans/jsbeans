@@ -1,17 +1,20 @@
 @CHARSET "UTF-8";
 
 .dataBindingSelector {
-	display: inline-block;
-	border: 1px solid rgba(2, 47, 78, 0.2);
-    background-color: rgba(24, 108, 138, 0.2);
-    padding: 0 4px;
+    display: inline-block;
+    padding: 6px 5px 6px 5px;
+    height: 34px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    border: 1px solid rgba(2, 47, 78, 0.2);
     border-radius: 6px;
-    position: relative;
+    background-color: rgba(24, 108, 138, 0.2);
 }
 
 .dataBindingSelector > .btnDelete {
 	position: absolute;
-	right: 2px;
+	right: 7px;
 	top: 50%;
 	margin-top: -8px;
 	display: none;
@@ -19,19 +22,18 @@
 
 .dataBindingSelector > .btnRefresh {
 	position: absolute;
-	right: 22px;
+	right: 27px;
 	top: 50%;
 	margin-top: -8px;
 	display: none;
 }
 
-
 .dataBindingSelector.filled {
-	padding: 0 20px 0 4px;
+    padding: 6px 30px 6px 5px;
 }
 
 .dataBindingSelector.refreshable.filled {
-	padding: 0 40px 0 4px;
+	padding: 6px 45px 6px 5px;
 }
 
 .dataBindingSelector.filled > .btnDelete {

@@ -28,6 +28,10 @@
 	display: inline-block;
 	vertical-align: middle;
 	min-width: 100px;
+    color: #73879C;
+    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .widgetSchemeRenderer > .header > .btnCreate {
@@ -84,7 +88,7 @@
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items {
-	border-top: 1px solid #ded7cb;
+    border-top: 1px solid #d0d0d0;
 	cursor: move;
 	padding: 2px 20px 2px 6px;
 }
@@ -98,11 +102,11 @@
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(even) {
-	background-color: #F7F2EE;
+	background-color: #fff;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(odd) {
-	background-color: #EFE9E0;
+	background-color: #f9f9f9;
 }
 
 .widgetSchemeRenderer > .body > .items > .item {}
@@ -121,7 +125,8 @@
 .widgetSchemeRenderer[entry="item"] {}
 
 .widgetSchemeRenderer[entry="item"] > .header {
-	vertical-align: top;
+	vertical-align: middle;
+    line-height: 34px;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value {
@@ -188,7 +193,8 @@
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .separator {
-	vertical-align: top;
+    vertical-align: middle;
+    line-height: 34px;
 	display: inline-block;
     margin: 0 6px;
     color: #555;
@@ -199,9 +205,27 @@
 	display: none;
 }
 
-
 .widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .valueEditor {
-	max-width: 140px;
+
+}
+
+.widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .valueEditor > input {
+    display: block;
+    width: 100%;
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
 }
 
 /* select */
