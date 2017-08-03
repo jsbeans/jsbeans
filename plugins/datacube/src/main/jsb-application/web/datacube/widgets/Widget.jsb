@@ -438,7 +438,7 @@
 		
 		updateSelectors: function(values){
 			if(!values){
-				values = JSB.clone(this.wrapper.values);
+				values = JSB.clone(this.getWrapper().getValues());
 			}
 			this.values = values;
 			if(this.values instanceof this.Selector){

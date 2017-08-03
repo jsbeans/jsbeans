@@ -1,7 +1,7 @@
 {
 	$name: 'JSB.DataCube.Widgets.EmbeddedWidgetSelector',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.Widgets.ToolManager', 'JSB.DataCube.Renderers.WidgetRenderer', 'JSB.Widgets.Button'],
+	$require: ['JSB.Widgets.ToolManager', 'JSB.DataCube.Renderers.EmbededWidgetRenderer', 'JSB.Widgets.Button'],
 	
 	$client: {
 		
@@ -124,7 +124,7 @@
 			if(this.renderer){
 				this.renderer.destroy();
 			}
-			this.renderer = new WidgetRenderer($this.wDesc, {});
+			this.renderer = new EmbededWidgetRenderer($this.wDesc, {});
 			this.bindingElt.empty().append(this.renderer.getElement());
 			this.addClass('filled');
 			

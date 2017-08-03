@@ -45,7 +45,7 @@
 			return this.options[opt];
 		},
 		
-		hasOption: function(){
+		hasOption: function(opt){
 			return !JSB().isNull(this.options[opt]);
 		},
 

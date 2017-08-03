@@ -155,7 +155,7 @@
 					callback.call($this);
 				}
 			} else {
-				this.wrapper.server().getDataSchemeSource(ds, function(source){
+				this.wrapper.getWidgetEntry().server().getDataSchemeSource(ds, function(source){
 					setupSource(source);
 					if(callback){
 						callback.call($this);
@@ -178,7 +178,7 @@
 				
 			}
 			$this.addClass('refreshing');
-			this.wrapper.server().combineDataScheme(source, function(dataScheme, fail){
+			this.wrapper.getWidgetEntry().server().combineDataScheme(source, function(dataScheme, fail){
 				if(fail){
 					$this.removeClass('refreshing');
 				} else {

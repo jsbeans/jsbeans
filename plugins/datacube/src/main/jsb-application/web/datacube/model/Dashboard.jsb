@@ -16,7 +16,7 @@
 		wrappers: {},
 		
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.DataCube.Widgets.WidgetWrapper'],
+		           'JSB.DataCube.Model.Widget'],
 		
 		loaded: false,
 		
@@ -46,11 +46,11 @@
 		},
 		
 		createWidgetWrapper: function(wType, wName){
-			var wwId = 'wWrap_' + JSB.generateUid();
-			var wWrapper = new WidgetWrapper(wwId, this, wType, {});
-			wWrapper.setName(wName);
+			var wwId = JSB.generateUid();
+			var wWrapper = new Widget(wwId, this.workspace, this, wName, wType, {});
 			this.wrappers[wwId] = wWrapper;
 			this.widgetCount = Object.keys(this.wrappers).length;
+			this.addChildEntry(wWrapper);
 			this.store();
 			this.doSync();
 			return wWrapper;
@@ -62,6 +62,7 @@
 			}
 			delete this.wrappers[wwId];
 			this.widgetCount = Object.keys(this.wrappers).length;
+			this.removeChildEntry(wwId);
 			this.store();
 			this.doSync();
 			return true;
@@ -94,6 +95,7 @@
 		
 		load: function(){
 			if(!this.loaded){
+				var bNeedStore = false;
 				if(this.workspace.existsArtifact(this.getLocalId() + '.dashboard')){
 					// read layout
 					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.dashboard');
@@ -103,11 +105,19 @@
 					this.wrappers = {};
 					for(var wId in snapshot.wrappers){
 						var wDesc = snapshot.wrappers[wId];
-						var wWrapper = new WidgetWrapper(wId, this, wDesc.jsb, wDesc.values);
-						wWrapper.setName(wDesc.name);
+						var wWrapper = this.workspace.entry(wId);
+						if(!wWrapper){
+							bNeedStore = true;
+							wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values);
+							this.addChildEntry(wWrapper);
+						}
+						
 						this.wrappers[wId] = wWrapper;
 					}
 					this.widgetCount = Object.keys(this.wrappers).length;
+					if(bNeedStore){
+						this.workspace.store();
+					}
 				}
 				this.loaded = true;
 			}
