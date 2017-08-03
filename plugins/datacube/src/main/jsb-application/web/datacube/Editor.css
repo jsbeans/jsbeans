@@ -148,3 +148,8 @@
 .hidden{
     display: none !important;
 }
+
+/*hide highcharts logo*/
+.highcharts-container > svg > text {
+    display: none !important;
+}

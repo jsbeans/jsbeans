@@ -437,7 +437,47 @@
                     itemValue: ''
                 }
                 ]
-            },{
+            },
+            {
+                name: 'Алгоритм построения слоёв',
+                type: 'select',
+                key: 'layout',
+                items:[
+                {
+                    name: 'relaxed',
+                    type: 'item',
+                    editor: 'none'
+                },
+                {
+                    name: 'ordered',
+                    type: 'item',
+                    editor: 'none'
+                },
+                {
+                    name: 'squarified',
+                    type: 'item',
+                    editor: 'none'
+                }
+                ]
+            },
+            {
+                name: 'Алгоритм построения групп',
+                type: 'select',
+                key: 'stacking',
+                items:[
+                {
+                    name: 'hierarchical',
+                    type: 'item',
+                    editor: 'none'
+                },
+                {
+                    name: 'flattened',
+                    type: 'item',
+                    editor: 'none'
+                }
+                ]
+            },
+            {
                 type: 'item',
                 key: 'autoSize',
                 name: 'Автоматически считать размеры',
@@ -475,32 +515,9 @@
             );
         },
 
-        /*
-        * data structure
-        {
-            groups: {
-                { label: "Your", weight: 1.0 },
-                { label: "First", weight: 3.0 },
-                { label: "FoamTree", weight: 2.0 },
-                { label: "Visualization", weight: 4.0 }
-            }
-        }
-        */
-
-        // data example
-        _aggrs: {
-            groups: [
-                { label: "Добавьте", weight: 1.0 },
-                { label: "Свои", weight: 3.0 },
-                { label: "Данные", weight: 2.0 },
-                { label: "Маппированием", weight: 4.0 }
-            ]
-        },
-
         refresh: function(opts){
-        	if(opts && opts.initiator == this){
-        		return;
-        	}
+        	if(opts && opts.initiator == this) return;
+
             if(this.getContext().find('source').bound()){
                 this.getElement().loader();
 
@@ -561,6 +578,8 @@
                     $this.getElement().loader('hide');
 
                     $this.foamtree.set({
+                        layout: $this.getContext().find('layout').value().name(),
+                        stacking: $this.getContext().find('stacking').value().name(),
                         dataObject: {
                             groups: data
                         }
@@ -578,14 +597,8 @@
                         dataObject: {
                             groups: data
                         },
-                        /*
-                        onGroupClick: function (event) {
-                            var context = $this.getContext().find('source').binding();
-                            if(!context.source) return;
-
-                            $this.addFilter(context.source, 'and', { field: event.group.fieldName, value: event.group.label, op: 'equal' });
-                        },
-                        */
+                        layout: $this.getContext().find('layout').value().name(),
+                        stacking: $this.getContext().find('stacking').value().name(),
                         onGroupSelectionChanged: function(event){
                             if(event.groups.length){
                                 var context = $this.getContext().find('source').binding();

@@ -198,7 +198,9 @@
             this.isInit = true;
         },
 
-        refresh: function(){
+        refresh: function(opts){
+            if(opts && this == opts.initiator) return;
+
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
@@ -220,6 +222,11 @@
                                     y: y[j]
                                 });
                             }
+                        } else {
+                            data.push({
+                                name: name,
+                                y: y
+                            });
                         }
                     }
 
@@ -252,7 +259,13 @@
 
                         series: [{
                             data: data,
-                            colorByPoint: true
+                            colorByPoint: true,
+                            point: {
+                                events: {
+                                    select: function(evt) { $this._addPieFilter(evt.target.name);},
+                                    unselect: function() { $this.removeFilter($this._currentFilter); }
+                                }
+                            }
                         }]
                     });
 
@@ -265,6 +278,15 @@
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _addPieFilter: function(value){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) return;
+
+            var field = this.getContext().find('data').value().get(0).binding();
+
+            this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);
         }
 	}
 }

@@ -94,23 +94,26 @@
             name: 'Алгоритм построения',
             type: 'select',
             key: 'layoutAlgorithm',
-            editor: 'none',
             items:[
             {
                 name: 'sliceAndDice',
                 type: 'item',
+                editor: 'none'
             },
             {
                 name: 'squarified',
                 type: 'item',
+                editor: 'none'
             },
             {
                 name: 'stripes',
                 type: 'item',
+                editor: 'none'
             },
             {
                 name: 'strip',
                 type: 'item',
+                editor: 'none'
             }
             ]
         },
@@ -200,7 +203,9 @@
             this.isInit = true;
         },
 
-        refresh: function(){
+        refresh: function(opts){
+            if(opts && this == opts.initiator) return;
+
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
@@ -241,6 +246,7 @@
                             }
                         }
                     }
+
                     data = $this.procData(data, autoSize, skipSmallGroups, skipEmptyNamedGroups);
 
                     data = $this.convertToTreemapFormat(data);
@@ -252,24 +258,63 @@
                         subtitle: {
                             text: this.getContext().find('subtitle').value()
                         },
+                        plotOptions: {
+                            treemap: {
+                                allowPointSelect: true,
+                                point: {
+                                    events: {
+                                        select: function(evt) {
+                                            this.update({
+                                                borderColor: 'green',
+                                                borderWidth: 4
+                                            });
+
+                                            $this._addNewFilter(evt.target.level, evt.target.name);
+                                        },
+                                        unselect: function(evt) {
+                                            this.update({
+                                                borderColor: '#E0E0E0',
+                                                borderWidth: 1
+                                            });
+
+                                            if($this._currentFilter) $this.removeFilter($this._currentFilter);
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         series: [{
                             type: 'treemap',
                             layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),
                             allowDrillToNode: true,
                             animationLimit: 1000,
                             dataLabels: {
-                                enabled: false
+                                enabled: true
                             },
                             levelIsConstant: false,
-                            levels: [{
-                                level: 1,
-                                dataLabels: {
-                                    enabled: true
-                                },
-                                borderWidth: 3
-                            }],
                             data: data,
-                            turboThreshold: 0
+                            turboThreshold: 0,
+
+                            drillUpButton: {
+                                text: '<< return',
+                                position: {
+                                    align: 'right',
+                                    x: -10
+                                },
+                                theme: {
+                                    fill: 'white',
+                                    'stroke-width': 1,
+                                    stroke: 'silver',
+                                    r: 5,
+                                    states: {
+                                        hover: {
+                                            fill: '#bada55'
+                                        }
+                                    }
+                                }
+
+                            }
+
                         }]
                     });
 
@@ -280,6 +325,16 @@
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _addNewFilter: function(level, value){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) return;
+
+            var field = this.getContext().find("series").values()[level].get(0).binding();
+            if(!field[0]) return;
+
+            this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);
         },
 
         // utils
