@@ -28,7 +28,12 @@
 			
 			this.tabView = new TabView({
 				allowCloseTab: false,
-				allowNewTab: false
+				allowNewTab: false,
+				onSwitchTab: function(id){
+					if($this.views[id]){
+						$this.views[id].ctrl.setCurrentNode($this.currentNode, $this.currentWorkspace);
+					}
+				}
 			});
 			this.append(this.tabView);
 			
