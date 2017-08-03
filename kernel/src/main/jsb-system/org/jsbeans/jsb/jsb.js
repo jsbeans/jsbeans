@@ -1,4 +1,5 @@
-/*! jsBeans v2.6.4 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.6.5 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
 	function JSB(cfg){
@@ -4225,7 +4226,11 @@ JSB({
 		},
 
 		ajax: function(url, params, callback){
-			JSB().getProvider().ajax(JSB().getProvider().getServerBase() + url, params, callback);
+			var pUrl = url;
+			if(pUrl.indexOf(':') == -1){
+				pUrl = JSB().getProvider().getServerBase() + pUrl;
+			}
+			JSB().getProvider().ajax(pUrl, params, callback);
 		},
 
 		onBeforeSync: function(syncInfo){
@@ -5274,7 +5279,12 @@ JSB({
 		decodeObject: function(obj){
 			if( typeof(obj) === 'object' ){
 				for( var key in obj ) {
-					var newKey = decodeURIComponent(key);
+					var newKey = null;
+					try {
+						newKey = decodeURIComponent(key);
+					}catch(e){
+						newKey = key;
+					}
 					if(newKey != key){
 						obj[newKey] = obj[key];
 						delete obj[key];
@@ -5283,7 +5293,9 @@ JSB({
 					if(typeof(obj[key]) === 'object'){
 						this.decodeObject(obj[key]);
 					} else if(typeof(obj[key]) === 'string'){
-						obj[key] = decodeURIComponent(obj[key]);
+						try {
+							obj[key] = decodeURIComponent(obj[key]);
+						}catch(e){}
 					}
 				}
 			} else if(typeof(obj) === 'array') {
@@ -5291,7 +5303,9 @@ JSB({
 					if(typeof(obj[i]) === 'object'){
 						this.decodeObject(obj[i]);
 					} else if(typeof(obj[i]) === 'string'){
-						obj[i] = decodeURIComponent(obj[i]);
+						try {
+							obj[i] = decodeURIComponent(obj[i]);
+						}catch(e){}
 					}
 					
 				}
@@ -5875,3 +5889,4 @@ JSB({
 		
 	}
 });
+}

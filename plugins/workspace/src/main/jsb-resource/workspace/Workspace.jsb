@@ -156,9 +156,7 @@
 		},
 		
 		existsEntry: function(id){
-			var insId = this.entryInstanceId(id);
-			var entry = JSB().getInstance(insId);
-			return !!entry;
+			return !!this.entry(id);
 		},
 		
 		removeEntry: function(id){
@@ -189,7 +187,7 @@
                     	} else if(eType instanceof JSB){
                     		eType = eType.getClass();
                     	} else if(!eType) {
-                    		eType = Entry;
+                    		return null;
                     	}
                         entry = new eType(id, self);
                     }

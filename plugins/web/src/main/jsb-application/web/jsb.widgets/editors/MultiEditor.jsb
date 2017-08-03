@@ -27,9 +27,9 @@
 			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
 				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
 				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
-				this.data = new Value('', this.options.valueType);
+				this.data = new Value(this.options.value, this.options.valueType);
 			} else {
-				this.data = new Value({value:''}, this.options.valueType);
+				this.data = new Value({value:this.options.value || ''}, this.options.valueType);
 			}
 			
 			this.ready = false;
@@ -175,7 +175,10 @@
 		options: {
 			valueType: 'org.jsbeans.types.JavaScript',
 			showHints: true,
-			validation: true
+			validation: true,
+			value: null,
+			
+			onChange: null
 		},
 		
 		behavior: {
@@ -217,16 +220,21 @@
 
 			self.editor = window.CodeMirror(this.getElement().get(0), cmOpts);
 			
-			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
-				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
-				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
-				this.editor.getDoc().setValue(this.data.getValue());
-			} else {
-				this.editor.getDoc().setValue(this.data.getValue().value);
+			if(this.data.getValue()){
+				if(this.options.valueType == 'org.jsbeans.types.JsonObject'
+					|| this.options.valueType == 'org.jsbeans.types.JsonArray'
+					|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
+					this.editor.getDoc().setValue(this.data.getValue());
+				} else {
+					this.editor.getDoc().setValue(this.data.getValue().value);
+				}
 			}
 			self.editor.on('change', function(cm, evt2){
 				if(!JSB.isNull(self.options.onChange)){
-					self.options.onChange(self.editor.getDoc().getValue());
+					var val = self.editor.getDoc().getValue();
+					if($this.isValid()){
+						self.options.onChange.call($this, $this.getData().getValue());
+					}
 				}
 			});
 			
@@ -249,6 +257,33 @@
 				self.editor.refresh();
 			});
 			
+		},
+		
+		isValid: function(){
+			var val = $this.editor.getDoc().getValue();
+			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
+				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
+				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
+				try {
+					eval('(' + val + ')');
+					$this.setErrorMark(false);
+					return true;
+				}catch(e){
+					$this.setErrorMark(true);
+					return false;
+				}
+			} else {
+				$this.setErrorMark(false);
+				return true;
+			}
+		},
+		
+		setErrorMark: function(b){
+			if(b){
+				this.addClass('invalid');
+			} else {
+				this.removeClass('invalid');
+			}
 		},
 		
 		setData: function(data){
@@ -297,12 +332,15 @@
 		},
 		
 		getData: function(){
-			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
-				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
-				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
-				this.data.setValue(eval('(' + this.editor.getDoc().getValue() + ')'));
-			} else {
-				this.data.setValue({value: this.editor.getDoc().getValue()});
+			var val = this.editor.getDoc().getValue();
+			if(val){
+				if(this.options.valueType == 'org.jsbeans.types.JsonObject'
+					|| this.options.valueType == 'org.jsbeans.types.JsonArray'
+					|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
+					this.data.setValue(eval('(' + val + ')'));
+				} else {
+					this.data.setValue({value: val});
+				}
 			}
 			return this.data;
 		},

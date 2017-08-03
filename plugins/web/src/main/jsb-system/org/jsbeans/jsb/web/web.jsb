@@ -1,5 +1,5 @@
 {
-	$name:'Web',
+	$name: 'JSB.Web',
 	$singleton: true,
 	
 	$client: {

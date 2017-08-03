@@ -534,7 +534,7 @@
 					break;
 				}
 			}
-			var sId = this.getId() + '|slice_' + JSB.generateUid();
+			var sId = JSB.generateUid();
 			var slice = new Slice(sId, this.workspace, this, sName);
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
@@ -553,6 +553,10 @@
 		
 		getSlices: function(){
 			return this.slices;
+		},
+		
+		getFields: function(){
+			return this.fields;
 		},
 		
 		renameSlice: function(sId, newName){
@@ -588,5 +592,53 @@
 			this.store();
 		},
 
+		parametrizeQuery: function(query){
+			var newQuery = JSB.clone(query);
+			var params = {};
+			var filterOps = {
+				'$eq': true,
+				'$lt': true,
+				'$lte': true,
+				'$gt': true, 
+				'$gte': true,
+				'$ne': true,
+				'$like': true,
+				'$ilike': true,
+				'$in': true,
+				'$nin': true
+			};
+			
+			if(newQuery && Object.keys(newQuery).length > 0){
+	        	// translate $filter
+	        	if(newQuery.$filter){
+	        		var c = {i: 1};
+	        		function getNextParam(){
+	        			return '_cubeParam' + $this.getId() + '_' + (c.i++);
+	        		}
+	        		function prepareFilter(scope){
+	        			for(var f in scope){
+	        				if(filterOps[f]){
+	        					var pName = getNextParam();
+	        					params[pName] = scope[f];
+	        					scope[f] = '${'+pName+'}';
+	        				} else if(f == '$and' || f == '$or'){
+	        					var arr = scope[f];
+	        					for(var i = 0; i < arr.length; i++){
+	        						prepareFilter(arr[i]);
+	        					}
+	        				} else {
+	        					prepareFilter(scope[f]);
+	        				}
+	        			}
+	        		}
+	        		prepareFilter(newQuery.$filter);
+	        	}
+            }
+			
+			return {
+				query: newQuery,
+				params: params
+			}
+		}
 	}
 }
