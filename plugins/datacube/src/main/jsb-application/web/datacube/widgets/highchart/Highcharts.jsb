@@ -108,7 +108,7 @@
                 type: 'group',
                 name: 'Серии',
                 key: 'series',
-                multiple: 'auto',
+                multiple: 'true',
                 items: [
                 {
                     name: 'Имя поля',
@@ -255,7 +255,9 @@
             this.isInit = true;
 		},
 
-        refresh: function(){
+        refresh: function(opts){
+            if(opts && this == opts.initiator) return;
+
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
@@ -282,7 +284,13 @@
                                     },
                                     yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
                                     dashStyle: seriesContext[i].get(5).value().name(),
-                                    color: $this.isNull(seriesContext[i].get(6).value())
+                                    color: $this.isNull(seriesContext[i].get(6).value()),
+                                    point: {
+                                        events: {
+                                            select: function(evt) { $this._addNewFilter(evt.target.series.index, evt.target.category);},
+                                            unselect: function() { $this.removeFilter($this._currentFilter); }
+                                        }
+                                    }
                                 };
                             }
 
@@ -356,6 +364,19 @@
                             backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
                         },
 
+                        plotOptions: {
+                            series: {
+                                allowPointSelect: true,
+                                states: {
+                                    select: {
+                                        color: null,
+                                        borderWidth: 5,
+                                        borderColor: 'Blue'
+                                    }
+                                }
+                            }
+                        },
+
                         series: series
                     });
 
@@ -366,6 +387,16 @@
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _addNewFilter: function(index, value){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) return;
+
+            var field = this.getContext().find("xAxis").get(0).value().binding();
+            if(!field[0]) return;
+
+            this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);
         },
 
         // utils
