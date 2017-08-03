@@ -1,12 +1,15 @@
 {
-	$name: 'JSB.DataCube.SliceApiView',
+	$name: 'JSB.DataCube.CubeApiView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
 		$require: ['JSB.Widgets.SplitBox', 'JSB.Widgets.TabView', 'JsonView', 'JSB.Widgets.ScrollBox', 'JSB.Widgets.MultiEditor'],
 		ready: false,
 		ignoreHandlers: false,
+		isCube: false,
 		requestOpts: {
+			select: {},
+			groupBy: [],
 			filter: {},
 			sort: [{}],
 			skip: 0,
@@ -16,8 +19,8 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('SliceApiView.css');
-			this.addClass('sliceApiView');
+			this.loadCss('CubeApiView.css');
+			this.addClass('cubeApiView');
 			
 			var splitBox = new SplitBox({
 				type: 'vertical',
@@ -26,19 +29,43 @@
 			this.append(splitBox);
 			splitBox.addToPane(0, `#dot
 				<div class="leftScroll" jsb="JSB.Widgets.ScrollBox">
-					<div jsb="JSB.Widgets.GroupBox" caption="Идентификация среза" class="sliceSettings">
+					<div jsb="JSB.Widgets.GroupBox" caption="Идентификация куба" class="cubeSettings">
 						<div class="option workspaceId">
 							<div class="icon"></div>
 							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" readonly="true" title="Идентификатор рабочей области" placeholder="Идентификатор рабочей области"></div>
+						</div>
+						
+						<div class="option cubeId">
+							<div class="icon"></div>
+							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" readonly="true" title="Идентификатор куба" placeholder="Идентификатор куба"></div>
 						</div>
 						
 						<div class="option sliceId">
 							<div class="icon"></div>
 							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" readonly="true" title="Идентификатор среза" placeholder="Идентификатор среза"></div>
 						</div>
+
 					</div>
 					
 					<div jsb="JSB.Widgets.GroupBox" caption="Конструктор запроса" class="requestConstructor">
+					
+						<div class="option select" jsb="JSB.Widgets.CheckBox" label="$select" check="false">
+							<div jsb="JSB.Widgets.MultiEditor" 
+								class="editor selectEditor"
+								valuetype="org.jsbeans.types.JsonObject" 
+								showhints="false"
+								onchange="{{=$this.callbackAttr(function(val){ $this.requestOpts.select = val; $this.updateRequest()}) }}"></div>
+						</div>
+
+						<div class="option groupBy" jsb="JSB.Widgets.CheckBox" label="$groupBy" checked="false"
+							onchange="{{=$this.callbackAttr(function(checked){ $this.enableGroupBy(checked); })}}">
+							<div jsb="JSB.Widgets.MultiEditor" 
+								class="editor groupByEditor"
+								valuetype="org.jsbeans.types.JsonObject" 
+								showhints="false"
+								onchange="{{=$this.callbackAttr(function(val){ $this.requestOpts.groupBy = val; $this.updateRequest()}) }}"></div>
+						</div>
+
 						<div class="option filter" jsb="JSB.Widgets.CheckBox" label="$filter" checked="false"
 							onchange="{{=$this.callbackAttr(function(checked){ $this.enableFilter(checked); })}}">
 							<div jsb="JSB.Widgets.MultiEditor" 
@@ -111,6 +138,7 @@
 			
 			// add text view
 			this.textView = new MultiEditor({
+				readOnly: true,
 				valueType: 'org.jsbeans.types.JsonObject'
 			});
 			resultsTab.addTab('Текст', this.textView, {id:'text'});
@@ -124,7 +152,15 @@
 				return $this.isContentReady();
 			});
 		},
-		
+
+		enableGroupBy: function(bChecked){
+			if(bChecked){
+				var editor = this.find('.groupByEditor').jsb();
+				editor.setData(this.requestOpts.groupBy);
+			}
+			this.updateRequest();
+		},
+
 		enableFilter: function(bChecked){
 			if(bChecked){
 				var editor = this.find('.filterEditor').jsb();
@@ -145,9 +181,15 @@
 			// construct slice request
 			var entry = this.node.getEntry();
 			var wid = entry.workspace.getLocalId();
-			var sid = entry.getLocalId();
+			var eid = entry.getLocalId();
 			
 			var query = {};
+			if(this.isCube){
+				query.$select = this.requestOpts.select;
+				if(this.find('.option.groupBy').jsb().isChecked()){
+					query.$groupBy = this.requestOpts.groupBy;
+				}
+			}
 			if(this.find('.option.filter').jsb().isChecked()){
 				query.$filter = this.requestOpts.filter;
 			}
@@ -155,7 +197,7 @@
 				query.$sort = this.requestOpts.sort;
 			}
 			
-			var url = JSB.getProvider().getServerBase() + 'datacube/api/Slice.jsb?wid=' + wid + '&sid=' + sid + '&query=' + JSON.stringify(query);
+			var url = JSB.getProvider().getServerBase() + 'datacube/api/' + (this.isCube ? 'Cube.jsb':'Slice.jsb') + '?wid=' + wid + (this.isCube ? '&cid=':'&sid=') + eid + '&query=' + JSON.stringify(query);
 			
 			if(this.find('.option.skip').jsb().isChecked()){
 				url += '&skip=' + this.requestOpts.skip;
@@ -180,8 +222,18 @@
 		},
 		
 		fillSettings: function(){
+			var idGroup = this.find('.cubeSettings').jsb();
 			var entry = this.node.getEntry();
+			if(JSB.isInstanceOf(entry, 'JSB.DataCube.Model.Cube')){
+				this.isCube = true;
+				idGroup.setTitle('Идентификация куба');
+			} else {
+				this.isCube = false;
+				idGroup.setTitle('Идентификация среза');
+			}
 			this.requestOpts = {
+				select: {},
+				groupBy: [],
 				filter: {},
 				sort: [{}],
 				skip: 0,
@@ -189,13 +241,33 @@
 			};
 			$this.ignoreHandlers = true;
 			var wid = entry.workspace.getLocalId();
-			var sid = entry.getLocalId();
+			var eid = entry.getLocalId();
 			
 			// fill id
 			this.find('.workspaceId > .editor').jsb().setData(wid);
-			this.find('.sliceId > .editor').jsb().setData(sid);
+			if(this.isCube){
+				this.find('.sliceId').addClass('hidden');
+				this.find('.cubeId').removeClass('hidden');
+				this.find('.cubeId > .editor').jsb().setData(eid);
+			} else {
+				this.find('.sliceId').removeClass('hidden');
+				this.find('.cubeId').addClass('hidden');
+				this.find('.sliceId > .editor').jsb().setData(eid);
+			}
+			
+			
 			
 			// fill constructor
+			if(this.isCube){
+				this.find('.option.select').removeClass('hidden');
+				this.find('.selectEditor').jsb().setData(this.requestOpts.select);
+				
+				this.find('.option.groupBy').removeClass('hidden');
+				this.find('.option.groupBy').jsb().setChecked(false);
+			} else {
+				this.find('.option.select').addClass('hidden');
+				this.find('.option.groupBy').addClass('hidden');
+			}
 			this.find('.option.filter').jsb().setChecked(false);
 			this.find('.option.sort').jsb().setChecked(false);
 			
@@ -203,6 +275,9 @@
 			this.find('.option.skip').jsb().setChecked(true);
 			this.find('.limitEditor').jsb().setData(this.requestOpts.limit);
 			this.find('.skipEditor').jsb().setData(this.requestOpts.skip);
+			
+			this.jsonView.setData();
+			this.textView.setData();
 			
 			$this.ignoreHandlers = false;
 			this.updateRequest();
@@ -228,8 +303,8 @@
 		$bootstrap: function(){
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
-				priority: 1,
-				acceptNode: 'JSB.DataCube.SliceNode',
+				priority: 0,
+				acceptNode: ['JSB.DataCube.CubeNode', 'JSB.DataCube.SliceNode'],
 				caption: 'API'
 			});
 		},

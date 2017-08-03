@@ -60,7 +60,7 @@
 		},
 
         options: {
-            data: null,
+            data: undefined,
             collapsed: false
         },
 		
@@ -93,8 +93,10 @@
 		},
 		
 		renderElement: function(obj, elt, deep){
-			if(obj == null){
+			if(obj === null){
 				this.renderNull(elt, deep);
+			} else if(obj === undefined){
+				// do nothing
 			} else if( typeof(obj) == 'object' ){
 				if(Object.prototype.toString.call(obj) === "[object Array]") {
 					this.renderArray(obj, elt, deep);

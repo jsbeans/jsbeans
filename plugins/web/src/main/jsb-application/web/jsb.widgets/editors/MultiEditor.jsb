@@ -177,6 +177,7 @@
 			showHints: true,
 			validation: true,
 			value: null,
+			readOnly: false,
 			
 			onChange: null
 		},
