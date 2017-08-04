@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.Cube',
+	$name: 'DataCube.Model.Cube',
 	$parent: 'JSB.Workspace.Entry',
 	
 	sourceCount: 0,
@@ -20,12 +20,12 @@
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.DataCube.Providers.DataProviderRepository',
-		           'JSB.DataCube.Model.Slice',
-		           'JSB.DataCube.Query.QueryEngine'],
+		           'DataCube.Providers.DataProviderRepository',
+		           'DataCube.Model.Slice',
+		           'DataCube.Query.QueryEngine'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.CubeNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.CubeNode');
 		},
 		
 		loaded: false,
@@ -114,7 +114,7 @@
 					for(var i = 0; i < snapshot.slices.length; i++){
 						var sDesc = snapshot.slices[i];
 						var slice = this.workspace.entry(sDesc.id);
-						if(!JSB.isInstanceOf(slice, 'JSB.DataCube.Model.Slice')){
+						if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 							continue;
 						}
 						slice.setQuery(sDesc.query);
@@ -534,7 +534,7 @@
 					break;
 				}
 			}
-			var sId = this.getId() + '|slice_' + JSB.generateUid();
+			var sId = JSB.generateUid();
 			var slice = new Slice(sId, this.workspace, this, sName);
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
@@ -553,6 +553,10 @@
 		
 		getSlices: function(){
 			return this.slices;
+		},
+		
+		getFields: function(){
+			return this.fields;
 		},
 		
 		renameSlice: function(sId, newName){
@@ -588,5 +592,53 @@
 			this.store();
 		},
 
+		parametrizeQuery: function(query){
+			var newQuery = JSB.clone(query);
+			var params = {};
+			var filterOps = {
+				'$eq': true,
+				'$lt': true,
+				'$lte': true,
+				'$gt': true, 
+				'$gte': true,
+				'$ne': true,
+				'$like': true,
+				'$ilike': true,
+				'$in': true,
+				'$nin': true
+			};
+			
+			if(newQuery && Object.keys(newQuery).length > 0){
+	        	// translate $filter
+	        	if(newQuery.$filter){
+	        		var c = {i: 1};
+	        		function getNextParam(){
+	        			return '_cubeParam' + $this.getId() + '_' + (c.i++);
+	        		}
+	        		function prepareFilter(scope){
+	        			for(var f in scope){
+	        				if(filterOps[f]){
+	        					var pName = getNextParam();
+	        					params[pName] = scope[f];
+	        					scope[f] = '${'+pName+'}';
+	        				} else if(f == '$and' || f == '$or'){
+	        					var arr = scope[f];
+	        					for(var i = 0; i < arr.length; i++){
+	        						prepareFilter(arr[i]);
+	        					}
+	        				} else {
+	        					prepareFilter(scope[f]);
+	        				}
+	        			}
+	        		}
+	        		prepareFilter(newQuery.$filter);
+	        	}
+            }
+			
+			return {
+				query: newQuery,
+				params: params
+			}
+		}
 	}
 }

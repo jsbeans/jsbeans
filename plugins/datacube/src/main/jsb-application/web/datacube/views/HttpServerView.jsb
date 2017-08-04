@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.HttpServerView',
+	$name: 'DataCube.HttpServerView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -103,7 +103,7 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 1,
-				acceptNode: 'JSB.DataCube.HttpServerNode',
+				acceptNode: 'DataCube.HttpServerNode',
 				caption: 'Настройки'
 			});
 		},

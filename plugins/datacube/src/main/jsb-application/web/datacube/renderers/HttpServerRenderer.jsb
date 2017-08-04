@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Renderers.HttpServerRenderer',
+	$name: 'DataCube.Renderers.HttpServerRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
 		$constructor: function(entry, opts){
@@ -13,7 +13,7 @@
 	$server: {
 		$require: 'JSB.Widgets.RendererRepository',
 		$bootstrap: function(){
-			RendererRepository.registerRenderer(this, 'JSB.DataCube.Model.HttpServer');
+			RendererRepository.registerRenderer(this, 'DataCube.Model.HttpServer');
 		}
 	}
 }

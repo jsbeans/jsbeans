@@ -1,7 +1,7 @@
 {
-	$name: 'JSB.DataCube.Widgets.EmbeddedWidgetSelector',
+	$name: 'DataCube.Widgets.EmbeddedWidgetSelector',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.Widgets.ToolManager', 'JSB.DataCube.Renderers.WidgetRenderer', 'JSB.Widgets.Button'],
+	$require: ['JSB.Widgets.ToolManager', 'DataCube.Renderers.EmbededWidgetRenderer', 'JSB.Widgets.Button'],
 	
 	$client: {
 		
@@ -72,7 +72,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
+							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
 								$this.lastAccepted = true;
 								return true;
 							}
@@ -93,7 +93,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
+							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
 								$this.setDescriptor({name: obj.descriptor.name, jsb: obj.descriptor.jsb});
 								evt.stopPropagation();
 								return;
@@ -124,7 +124,7 @@
 			if(this.renderer){
 				this.renderer.destroy();
 			}
-			this.renderer = new WidgetRenderer($this.wDesc, {});
+			this.renderer = new EmbededWidgetRenderer($this.wDesc, {});
 			this.bindingElt.empty().append(this.renderer.getElement());
 			this.addClass('filled');
 			

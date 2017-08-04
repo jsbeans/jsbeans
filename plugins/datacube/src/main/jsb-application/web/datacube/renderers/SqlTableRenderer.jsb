@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Renderers.SqlTableRenderer',
+	$name: 'DataCube.Renderers.SqlTableRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$client: {
 		$constructor: function(entry, opts){
@@ -22,7 +22,7 @@
 	$server: {
 		$require: 'JSB.Widgets.RendererRepository',
 		$bootstrap: function(){
-			RendererRepository.registerRenderer(this, 'JSB.DataCube.Model.SqlTable');
+			RendererRepository.registerRenderer(this, 'DataCube.Model.SqlTable');
 		}
 	}
 }

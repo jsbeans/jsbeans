@@ -154,7 +154,7 @@
 
 		// createStatement, prepareStatement, query, execute, call
 
-		_getJDBCType: function (value, type) {
+        _getJDBCType: function (value, type) {
             var jdbcType = type || null;
             if (JSB.isString(jdbcType)) {
                 jdbcType = JDBCType.valueOf(jdbcType);
@@ -172,6 +172,8 @@
                     jdbcType = JDBCType.BOOLEAN;
                 } else if (JSB.isString(value)) {
                     jdbcType = JDBCType.NVARCHAR;
+                } else if (JSB.isDate(value)) {
+                    jdbcType = JDBCType.DATE;
                 } else {
                     jdbcType = JDBCType.NVARCHAR;
                 }

@@ -1,11 +1,11 @@
 {
-	$name: 'JSB.DataCube.Query.Translators.MoSQLTranslator',
-	$parent: 'JSB.DataCube.Query.Translators.Translator',
+	$name: 'DataCube.Query.Translators.MoSQLTranslator',
+	$parent: 'DataCube.Query.Translators.Translator',
 
 	$server: {
 		$require: [
-		    'JSB.DataCube.Query.Translators.TranslatorRegistry',
-		    'JSB.DataCube.Providers.SqlTableDataProvider'
+		    'DataCube.Query.Translators.TranslatorRegistry',
+		    'DataCube.Providers.SqlTableDataProvider'
         ],
 
 		$bootstrap: function(){
@@ -363,11 +363,8 @@
             }
             function translateExpression(exp) {
                 // is param
-                if (JSB.isString(exp)) {
-                    if (exp.match(/^\$/))
-                        return exp;
-                    else
-                        throw new Error("Filter condition value is not param");
+                if (JSB.isString(exp) && exp.match(/^\$/)) {
+                    return exp;
                 }
                 var key = Object.keys(exp)[0];
                 // is field

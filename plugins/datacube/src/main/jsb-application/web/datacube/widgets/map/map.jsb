@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.MapWidget',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.MapWidget',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Карта мира',
 		description: '',
@@ -172,7 +172,8 @@
 	},
 	$scheme: {
         type: 'group',
-        items: [{
+        items: [
+        {
             type: 'group',
             name: 'Источник',
             key: 'source',
@@ -191,14 +192,17 @@
                 binding: 'field',
                 itemType: 'number',
                 itemValue: ''
-            },
-            {
-                type: 'item',
-                key: 'autoSize',
-                name: 'Автоматически считать количество',
-                optional: true
-            }]
-        }]
+            }
+            ]
+        },
+        {
+            type: 'item',
+            key: 'autoSize',
+            name: 'Автоматически считать количество',
+            optional: true,
+            editor: 'none'
+        }
+        ]
 	},
 	$require: ['Tipsy'],
 	$client: {
@@ -480,6 +484,8 @@
         },
 
         refresh: function(){
+            if(opts && this == opts.initiator) return;
+
             var context = this.getContext().find('source');
             if(!context.bound()) return;
 
@@ -497,10 +503,13 @@
                         var id = rows[0].get(0).value();
                         var w = rows[0].get(1).value();
 
-                        var e = data.find(function(element){
-                            if(element.id === id) return true;
-                            return false;
-                        });
+                        var e = null;
+                        for(var j = 0; j < data.length; j++){
+                            if(data[j].id === id){
+                                e = data[j];
+                                break;
+                            }
+                        }
 
                         if(!e){
                             data.push({
@@ -531,7 +540,7 @@
                 if(!flag) $this.getElement().loader('hide');
             }, function(){
                 return $this.isInit && $this.getElement().is(':visible');
-            })
+            });
         },
 
         rebuildCategories: function(){
@@ -569,6 +578,7 @@
                 });
 
                 // highlight
+                /*
                 item.on("mouseenter", function(_cat){
                         if(this.tipsy) {
                             this.tipsy.show();
@@ -601,10 +611,11 @@
                         var opts = JSB().merge($this._defaults.path.base, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.base : null);
                         $this.fillStyle(item, opts);
                         $this.onCatLeave(_cat);
-                    })
+                    });
+                */
                 // cat click
-                    .on("click", function(_cat){
-                        $this.onCatClick(_cat);
+                item.on("click", function(_cat){
+                        $this.onCatClick(this, _cat);
                     });
             });
 
@@ -626,6 +637,7 @@
                 $this.fillStyle(item, opts);
 
                 // highlight
+                /*
                 item.on("mouseenter", function(){
                         var opts = JSB().merge($this._defaults.label.selected, typeof $this._aggrs[i].label !== 'undefined' ? $this._aggrs[i].label.selected : null);
                         $this.fillStyle(item, opts);
@@ -634,6 +646,7 @@
                         var opts = JSB().merge($this._defaults.label.base, typeof $this._aggrs[i].label !== 'undefined' ? $this._aggrs[i].label.base : null);
                         $this.fillStyle(item, opts);
                     });
+                */
             });
 
             // exit
@@ -641,6 +654,8 @@
         },
 
         fillStyle: function(item, opts){
+            if(!item || !opts) return;
+
             for(var j in opts.attrs){
                 item.attr(j, opts.attrs[j]);
             }
@@ -702,7 +717,25 @@
         },
 
         // callbacks
-        onCatClick: function(_cat){
+        onCatClick: function(item, _cat){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) return;
+
+            if(this._selectedCat === _cat){
+                // remove old filter
+                this._selectedCat = null;
+                this.removeFilter(this._currentFilter);
+
+                this.fillStyle(d3.select(item), $this._defaults.path.base);
+            } else {
+                // add new filter
+                this.fillStyle(d3.select(item), $this._defaults.path.selected);
+
+                var field = this.getContext().find('source').value().get(0).binding();
+
+                this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: _cat.id, op: '$eq' }], this._currentFilter);
+                this._selectedCat = _cat;
+            }
         },
         onCatEnter: function(_cat){
         },

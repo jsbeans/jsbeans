@@ -33,3 +33,11 @@
 .CodeMirror-hints, .CodeMirror-lint-tooltip {
 	z-index: 100000 !important;
 }
+
+.multiEditor.invalid .CodeMirror .CodeMirror-lines {
+	background: -webkit-linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
+    background: -moz-linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
+    background: linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
+    background: -o-linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
+    background: -ms-linear-gradient(top, #E4B0B0, #EECACA 30%, #FAE1E1 80%, #E9BDBD);
+}

@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.SqlSourceView',
+	$name: 'DataCube.SqlSourceView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -179,7 +179,7 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 1,
-				acceptNode: 'JSB.DataCube.SqlSourceNode',
+				acceptNode: 'DataCube.SqlSourceNode',
 				caption: 'Настройки'
 			});
 		},

@@ -1,7 +1,7 @@
 {
-	$name: 'JSB.DataCube.Widgets.DataBindingSelector',
+	$name: 'DataCube.Widgets.DataBindingSelector',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.DataCube.Providers.DataProviderRepository',
+	$require: ['DataCube.Providers.DataProviderRepository',
 	           'JSB.Widgets.RendererRepository',
 	           'JSB.Widgets.ToolManager',
 	           'JSB.Widgets.Button'],
@@ -93,7 +93,7 @@
 								continue;
 							}
 							var entry = obj.getEntry();
-							if(JSB.isInstanceOf(entry,'JSB.DataCube.Model.Slice')){
+							if(JSB.isInstanceOf(entry,'DataCube.Model.Slice')){
 								return true;
 							}
 							var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
@@ -155,7 +155,7 @@
 					callback.call($this);
 				}
 			} else {
-				this.wrapper.server().getDataSchemeSource(ds, function(source){
+				this.wrapper.getWidgetEntry().server().getDataSchemeSource(ds, function(source){
 					setupSource(source);
 					if(callback){
 						callback.call($this);
@@ -167,7 +167,7 @@
 		
 		setSource: function(entry){
 			var source = null;
-			if(JSB.isInstanceOf(entry,'JSB.DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(entry,'DataCube.Model.Slice')){
 				// add slice
 				source = entry;
 			} else {
@@ -178,7 +178,7 @@
 				
 			}
 			$this.addClass('refreshing');
-			this.wrapper.server().combineDataScheme(source, function(dataScheme, fail){
+			this.wrapper.getWidgetEntry().server().combineDataScheme(source, function(dataScheme, fail){
 				if(fail){
 					$this.removeClass('refreshing');
 				} else {

@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.Table',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Table',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Таблица',
 		description: '',
@@ -339,7 +339,7 @@
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
-		           'JSB.DataCube.Widgets.SortSelector'],
+		           'DataCube.Widgets.SortSelector'],
 		
 		ready: false,
 		headerDesc: [],
@@ -367,7 +367,7 @@
 			this.scroll = new ScrollBox({
 				onScroll: function(){
 					var scrollY = $this.scroll.getScrollPosition().y;
-					if( $this.paneHeight - ($this.scrollHeight - scrollY) > 2 * $this.scrollHeight){
+					if( $this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
 						return;
 					}
 					
@@ -459,7 +459,7 @@
 					return;
 				}
 				var scrollY = scrollPos.y;
-				if( $this.paneHeight - ($this.scrollHeight - scrollY) > 2 * $this.scrollHeight){
+				if( $this.paneHeight - ($this.scrollHeight - scrollY) > 0.3 * $this.scrollHeight){
 					this.rowAppending = false;
 					return;
 				}
@@ -688,7 +688,7 @@
 				if(pRows.length > 0){
 					JSB.defer(function(){
 						$this.appendRows();	
-					}, 0);
+					},0);
 				}
 				
 			})

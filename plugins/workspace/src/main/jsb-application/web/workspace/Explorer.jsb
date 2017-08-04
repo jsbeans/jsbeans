@@ -12,7 +12,7 @@
 	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.Button',
 	           'JQuery.UI.Effects',
-	           'Web'],
+	           'JSB.Web'],
 	
 	$sync: {
 		updateCheckInterval: 0
@@ -612,7 +612,7 @@
 			return path;
 		},
 
-		addTreeItem: function(itemDesc, parent, bReplace){
+		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
 			var key = JSB().generateUid();
 			var node = null;
 			
@@ -692,7 +692,7 @@
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
 					cssClass: itemDesc.type,
-					collapsed: itemDesc.type == 'entry'
+					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
 				}, parent);
 			} else {
 				curTreeNode = $this.tree.addNode({
@@ -702,7 +702,7 @@
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
 					cssClass: itemDesc.type,
-					collapsed: itemDesc.type == 'entry'
+					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
 				}, parent);
 			}
 			node.treeNode = curTreeNode;
@@ -893,7 +893,7 @@
 			this.tree.clear();
 			for(var id in this.wtree){
 				var desc = this.wtree[id];
-				this.addTreeItem(desc);
+				this.addTreeItem(desc, null, false, {collapsed:true});
 			}
 			
 			this.sort();

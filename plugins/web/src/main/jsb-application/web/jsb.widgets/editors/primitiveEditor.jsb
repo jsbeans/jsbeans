@@ -116,6 +116,9 @@
 			
 			this.editBoxElt.bind('input propertychange', function(evt) {
 				if(JSB().isNull(self.options.mode) || self.options.mode != 'inplace'){
+					if(self.options.ontypeValidation){
+						$this.isValid();
+					}
 					self.trackChanging(evt);
 				}
 			});
@@ -222,6 +225,7 @@
 			password: false,
 			autocomplete: null,
 			dblclick: true,
+			ontypeValidation: false,
 			
 			valueType: 'string',
 			

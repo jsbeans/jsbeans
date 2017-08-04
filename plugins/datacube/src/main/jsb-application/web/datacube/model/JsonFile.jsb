@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.JsonFile',
+	$name: 'DataCube.Model.JsonFile',
 	$parent: 'JSB.Workspace.FileEntry',
 	
 	records: null,
@@ -19,7 +19,7 @@
 				}
 				return false;
 			});
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.JsonFileNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.JsonFileNode');
 		},
 
 		$constructor: function(id, workspace, opts){

@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.CubeEditorView',
+	$name: 'DataCube.CubeEditorView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -30,10 +30,10 @@
 				},
 				widgets: {
 					cubeEditor: {
-						jsb: 'JSB.DataCube.CubeEditor',
+						jsb: 'DataCube.CubeEditor',
 					},
 					gridView: {
-						jsb: 'JSB.DataCube.GridView',
+						jsb: 'DataCube.GridView',
 						title: 'Таблица'
 					},
 				}
@@ -62,7 +62,7 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 1,
-				acceptNode: 'JSB.DataCube.CubeNode',
+				acceptNode: 'DataCube.CubeNode',
 				caption: 'Схема куба'
 			});
 		},

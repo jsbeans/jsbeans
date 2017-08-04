@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.HttpServer',
+	$name: 'DataCube.Model.HttpServer',
 	$parent: 'JSB.Workspace.Entry',
 	
 	$server: {
@@ -9,7 +9,7 @@
 		
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.HttpServerNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.HttpServerNode');
 		},
 
 		$constructor: function(id, workspace){

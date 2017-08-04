@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.ProgressBar',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.ProgressBar',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'ProgressBar',
 		description: '',

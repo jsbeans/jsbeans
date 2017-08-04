@@ -1,9 +1,9 @@
 {
-	$name: 'JSB.DataCube.DashboardEditorView',
+	$name: 'DataCube.DashboardEditorView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
-		$require: ['JSB.DataCube.DashboardEditor'],
+		$require: ['DataCube.DashboardEditor'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -28,7 +28,7 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 1,
-				acceptNode: 'JSB.DataCube.DashboardNode',
+				acceptNode: 'DataCube.DashboardNode',
 				caption: 'Редактирование'
 			});
 		},

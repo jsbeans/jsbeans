@@ -1,6 +1,6 @@
 {
 	$name: 'JSB.ClientBootstrap',
-	$require: ['Web'],
+	$require: ['JSB.Web'],
 	$http: true,
 	$singleton: true,
 	

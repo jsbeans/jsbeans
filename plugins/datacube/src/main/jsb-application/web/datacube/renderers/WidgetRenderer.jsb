@@ -1,26 +1,33 @@
 {
-	$name: 'JSB.DataCube.Renderers.WidgetRenderer',
-	$parent: 'JSB.Widgets.Renderer',
+	$name: 'DataCube.Renderers.WidgetRenderer',
+	$parent: 'JSB.Workspace.EntryRenderer',
+	$require: 'JSB.Widgets.RendererRepository',
 	$client: {
-		$constructor: function(wDesc, opts){
+		$constructor: function(entry, opts){
+			var self = this;
 			opts = opts || {};
-			$base(wDesc, opts);
+			opts.editable = false;
+			$base(entry, opts);
 			this.addClass('widgetRenderer');
 			this.loadCss('WidgetRenderer.css');
 			
-			this.icon = this.$('<img class="icon"></img>');
-			this.append(this.icon);
-			
-			this.title = this.$('<div class="title"></div>');
-			this.append(this.title);
+			if(opts.showDashboard){
+				this.server().getDashboard(entry, function(dashboardEntry){
+					$this.append('<div class="leftParen">(</div>');
+					$this.append(RendererRepository.createRendererFor(dashboardEntry).getElement());
+					$this.append('<div class="rightParen">)</div>');
+				});
+			}
+		}
+	},
 	
-			JSB.lookup(wDesc.jsb, function(wCls){
-				var expose = wCls.jsb.getDescriptor().$expose;
-				var icon = expose.icon || expose.thumb;
-				$this.icon.attr('src', icon);
-				$this.title.text(expose.name);
-			});
-			
+	$server: {
+		$bootstrap: function(){
+			RendererRepository.registerRenderer(this, 'DataCube.Model.Widget');
+		},
+		
+		getDashboard: function(entry){
+			return entry.workspace.entry(entry.parent);
 		}
 	}
 }

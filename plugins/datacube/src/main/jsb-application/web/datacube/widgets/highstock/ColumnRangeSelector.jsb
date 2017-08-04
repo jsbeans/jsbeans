@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.ColumnRangeSelector',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.ColumnRangeSelector',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Временной диапазон',
 		description: '',
@@ -64,65 +64,10 @@
                 itemValue: ''
             },
             {
-                type: 'group',
-                name: 'Группировка данных',
-                key: 'dataGrouping',
-                multiple: 'true',
-                optional: true,
-                items: [
-                {
-                    name: 'Единица измерения',
-                    type: 'select',
-                    items:[
-                    {
-                        name: 'millisecond',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'second',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'minute',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'hour',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'day',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'week',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'month',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'year',
-                        type: 'item',
-                        editor: 'none'
-                    }
-                    ]
-                },
-                {
-                    name: 'Группировка',
-                    type: 'item',
-                    itemType: 'string',
-                    itemValue: ''
-                }
-                ]
+                name: 'Интервал точек',
+                type: 'item',
+                itemType: 'number',
+                itemValue: ''
             }
             ]
         },
@@ -181,6 +126,9 @@
             this.append(this.container);
 
             this.getElement().resize(function(){
+                if(!$this.getElement().is(':visible')){
+                    return;
+                }
                 if($this.highcharts){
                     $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }
@@ -191,33 +139,69 @@
 
         refresh: function(opts){
             if(opts && this == opts.initiator) return;
-            if(opts && opts.type === 'removeFilter' && this._currentFilter.indexOf(opts.fItemIds[0]) >= 0) return;
+            if(opts && opts.type === 'removeFilter'){
+                var index = this._currentFilter.indexOf(opts.fItemIds[0]);
+                if(index === 0){
+                    this._isRemoveFilter = true;
+                    var ex = this.chart.xAxis[0].getExtremes();
+                    this.chart.xAxis[0].setExtremes($this._extremes[0], ex.max);
+                    return;
+                }
+                if(index === 1){
+                    this._isRemoveFilter = true;
+                    var ex = this.chart.xAxis[0].getExtremes();
+                    this.chart.xAxis[0].setExtremes(ex.min, $this._extremes[1]);
+                    return;
+                }
+            }
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
             var seriesContext = this.getContext().find('series').value(),
-                isdataGrouping = this.getContext().find('dataGrouping').used(),
+                // isdataGrouping = this.getContext().find('dataGrouping').used(),
                 autoCount = source.value().get(2).used(),
                 tooltip = this.getContext().find('tooltip').value();
-
+            /*
             if(isdataGrouping)
                 var dataGrouping = this.getContext().find('dataGrouping').values();
-
+            */
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
+                    $this._originalData = {};
                     var data = [];
 
                     while(source.next()){
-                        var dateValue = new Date(source.value().get(0).value()).getTime();
+                        var val = source.value().get(0).value();
 
-                        if(dateValue !== dateValue) continue;
+                        switch(typeof val){
+                            case 'string':
+                                var dateValue = new Date(val).getTime();
+
+                                if(dateValue !== dateValue) continue;
+
+                                $this._originalData[dateValue] = val;
+                                break;
+                            case 'object':
+                                if(JSB().isDate(val)){
+                                    var dateValue = val.getTime();
+                                    if(dateValue !== dateValue) continue;
+                                    break;
+                                }
+                            default:
+                                // invalid type
+                                continue;
+                        }
 
                         if(autoCount){
-                            var e = data.find(function(el){
-                                return el.x === dateValue;
-                            });
+                            var e = null;
+                            for(var j = 0; j < data.length; j++){
+                                if(data[j].x === dateValue){
+                                    e = data[j];
+                                    break;
+                                }
+                            }
 
                             if(e){
                                 e.y++;
@@ -231,50 +215,56 @@
                         }
                     }
 
+                    if(data.length === 0) return;
+
                     data.sort(function(a, b){
                         if(a.x < b.x) return -1;
                         if(a.x > b.x) return 1;
                         return 0;
                     });
 
+                    try{
                     var units = [];
+                    /*
                     if(isdataGrouping)
                         for(var i = 0; i < dataGrouping.length; i++){
                             units.push([
                                 dataGrouping[i].get(0).value(), dataGrouping[i].get(1).value()
                             ]);
                         }
-
+                    */
                     var series = {
                         type: 'column',
                         name: seriesContext.get(0).value(),
                         data: data,
                         turboThreshold: 0,
+                        pointInterval: seriesContext.get(1).value(),
                         dataGrouping: {
-                            units: units
+                            enabled: false,
+                            // units: units
                         }
                     };
 
-                    if(tooltip){
-                        var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
-                        tooltipXDateFormat = tooltipXDateFormat.length === 0 ? undefined : tooltipXDateFormat;
-                    } else {
-                        var tooltipXDateFormat;
+                    var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
+                    tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
+
+                    $this._extremes = [data[0].x, data[data.length - 1].x];
+                    } catch(e){
+                        console.log(e);
+                        return;
+                    } finally{
+                        $this.getElement().loader('hide');
                     }
 
-                    $this.getElement().loader('hide');
-
                     // create the chart
-                    Highcharts.stockChart(this.containerId, {
+                    $this.chart = Highcharts.stockChart(this.containerId, {
                         chart: {
                             alignTicks: false
                         },
 
-                        rangeSelector: {
-                            selected: 1,
-                        },
-
                         xAxis: {
+                            min: data[0].x,
+                            max: data[data.length - 1].x,
                             events: {
                                 afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
                             }
@@ -302,13 +292,65 @@
         },
 
         _addIntervalFilter: function(event){
+            if(this._isRemoveFilter){
+                this._isRemoveFilter = false;
+                return;
+            }
+
             JSB().defer(function(){
                 var context = $this.getContext().find('source').binding();
                 if(!context.source) return;
 
                 var field = $this.getContext().find("source").value().get(0).binding();
-                $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: event.min, op: '$gte' }, { field: field, value: event.max, op: '$lte' }], $this._currentFilter);
+
+                if(Object.keys($this._originalData).length > 0){
+                    if($this._extremes[0] !== event.min){
+                        var min = $this._originalData[event.min];
+                        if(!min) min = $this._originalData[$this._findNearest(Object.keys($this._originalData), event.min)];
+                    }
+
+                    if($this._extremes[1] !== event.max){
+                        var max = $this._originalData[event.max];
+                        if(!max) max = $this._originalData[$this._findNearest(Object.keys($this._originalData), event.max)];
+                    }
+                } else {
+                    if($this._extremes[0] !== event.min) var min = new Date(event.min);
+                    if($this._extremes[1] !== event.max) var max = new Date(event.max);
+                }
+
+                if(!min && max){
+                    $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: max, op: '$lte' }], $this._currentFilter);
+                    return;
+                }
+                if(!max && min){
+                    $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: min, op: '$gte' }], $this._currentFilter);
+                    return;
+                }
+                if(max && min){
+                    $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: min, op: '$gte' }, { field: field, value: max, op: '$lte' }], $this._currentFilter);
+                    return;
+                }
+                if(!min && !max){
+                    $this.removeFilter($this._currentFilter);
+                    $this._currentFilter = undefined;
+                }
             }, 500, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
+        },
+
+        _findNearest: function(a, x){
+            var first = 0,
+                last = a.length;
+
+            while(first < last){
+                var mid = ~~(first + (last - first) / 2);
+
+                if (x <= a[mid])
+                    last = mid;
+                else
+                    first = mid + 1;
+            }
+
+            return a[last];
         }
 	}
 }

@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Query.Translators.Translator',
+	$name: 'DataCube.Query.Translators.Translator',
 
 	$server: {
 		$require: [

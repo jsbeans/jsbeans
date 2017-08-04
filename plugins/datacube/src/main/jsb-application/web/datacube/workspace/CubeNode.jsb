@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.CubeNode',
+	$name: 'DataCube.CubeNode',
 	$parent: 'JSB.Workspace.EntryNode',
 	$client: {
 		$constructor: function(opts){

@@ -1,7 +1,7 @@
 {
 	$name:'JSB.HttpApi',
 	$server: {
-		$require: ['JSB.System.Kernel','JSB.System.Log', 'Web'],
+		$require: ['JSB.System.Kernel','JSB.System.Log', 'JSB.Web'],
 		$singleton: true,
 		httpMap: {},
 		

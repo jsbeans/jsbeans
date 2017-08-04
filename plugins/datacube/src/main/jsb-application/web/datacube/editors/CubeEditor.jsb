@@ -1,11 +1,11 @@
 {
-	$name: 'JSB.DataCube.CubeEditor',
+	$name: 'DataCube.CubeEditor',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
 		$require: ['JSB.Widgets.Diagram',
 		           'JSB.Widgets.ToolBar',
-		           'JSB.DataCube.Providers.DataProviderRepository'],
+		           'DataCube.Providers.DataProviderRepository'],
 		           
 		cubeEntry: null,
 		cubeNode: null,
@@ -27,7 +27,7 @@
 				},
 				nodes: {
 					dataProviderDiagramNode: {
-						jsb: 'JSB.DataCube.DataProviderDiagramNode',
+						jsb: 'DataCube.DataProviderDiagramNode',
 						layout: {
 							'default': {
 								auto: true,
@@ -37,7 +37,7 @@
 						}
 					},
 					cubeDiagramNode: {
-						jsb: 'JSB.DataCube.CubeDiagramNode',
+						jsb: 'DataCube.CubeDiagramNode',
 						layout: {
 							'default': {
 								auto: true,
@@ -47,7 +47,7 @@
 						}
 					},
 					sliceDiagramNode: {
-						jsb: 'JSB.DataCube.SliceDiagramNode',
+						jsb: 'DataCube.SliceDiagramNode',
 						layout: {
 							'default': {
 								auto: true,

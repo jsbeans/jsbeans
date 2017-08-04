@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Renderers.SliceRenderer',
+	$name: 'DataCube.Renderers.SliceRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$require: 'JSB.Widgets.RendererRepository',
 	$client: {
@@ -23,7 +23,7 @@
 	
 	$server: {
 		$bootstrap: function(){
-			RendererRepository.registerRenderer(this, 'JSB.DataCube.Model.Slice');
+			RendererRepository.registerRenderer(this, 'DataCube.Model.Slice');
 		},
 		
 		getCube: function(entry){

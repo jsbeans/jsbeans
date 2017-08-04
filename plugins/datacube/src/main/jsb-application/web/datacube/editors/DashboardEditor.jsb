@@ -1,15 +1,16 @@
 {
-	$name: 'JSB.DataCube.DashboardEditor',
+	$name: 'DataCube.DashboardEditor',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
 		$require: ['JSB.Widgets.ToolBar', 
 		           'JSB.Widgets.Dashboard.Dashboard',
-		           'JSB.DataCube.Widgets.FilterSelector',
-		           'JSB.DataCube.Widgets.WidgetWrapper'],
+		           'DataCube.Widgets.FilterSelector',
+		           'DataCube.Widgets.WidgetWrapper'],
 		
 		entry: null,
 		ignoreHandlers: false,
+		wrappers: {},
 		           
 		$constructor: function(opts){
 			$base(opts);
@@ -26,7 +27,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
+							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
 								return true;
 							}
 						}
@@ -38,9 +39,10 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
-								$this.entry.server().createWidgetWrapper(obj.descriptor.jsb, obj.descriptor.name, function(wWrapper){
-									wWrapper.setOwner($this);
+							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
+								$this.entry.server().createWidgetWrapper(obj.descriptor.jsb, obj.descriptor.name, function(widgetEntry){
+									var wWrapper = new WidgetWrapper(widgetEntry, $this);
+									$this.wrappers[wWrapper.getId()] = wWrapper;
 									if(callback){
 										callback.call($this, wWrapper);
 									}
@@ -72,12 +74,44 @@
 			this.entry = entry;
 			this.filterSelector.clear();
 			this.entry.server().load(function(dashboardDesc){
+				// remove old wrappers
+				for(var wId in $this.wrappers){
+					$this.wrappers[wId].destroy();
+				}
+				
+				// create wrappers
+				$this.wrappers = {};
+				var wWrappers = {};
 				for(var wId in dashboardDesc.wrappers){
-					dashboardDesc.wrappers[wId].setOwner($this);
+					var wWrapper = new WidgetWrapper(dashboardDesc.wrappers[wId], $this);
+					wWrappers[wId] = wWrapper;
+					$this.wrappers[wWrapper.getId()] = wWrapper;
+				}
+				
+				// translate layout ids
+				var layout = JSB.clone(dashboardDesc.layout);
+				if(layout){
+					function performLayout(lEntry){
+						if(lEntry.type == 'widget'){
+							var nWidgets = [];
+							for(var i = 0; i < lEntry.widgets.length; i++){
+								var wServerId = lEntry.widgets[i];
+								var wClientId = wWrappers[wServerId].getId();
+								nWidgets.push(wClientId);
+							}
+							lEntry.widgets = nWidgets;
+						} else if(lEntry.type == 'split'){
+							for(var i = 0; i < lEntry.containers.length; i++){
+								performLayout(lEntry.containers[i]);
+							}
+						} 
+					}
+					
+					performLayout(layout);
 				}
 				var desc = {
-					layout: dashboardDesc.layout,
-					widgets: dashboardDesc.wrappers
+					layout: layout,
+					widgets: $this.wrappers
 				};
 				$this.ignoreHandlers = true;
 				$this.dashboard.setLayout(desc);
@@ -86,7 +120,30 @@
 		},
 		
 		updateLayout: function(dlayout){
-			this.entry.server().updateLayout(dlayout ? dlayout.layout : null);
+			var layoutToStore = null;
+			if(dlayout){
+				layoutToStore = dlayout.layout;
+				if(layoutToStore){
+					function performLayout(lEntry){
+						if(lEntry.type == 'widget'){
+							var nWidgets = [];
+							for(var i = 0; i < lEntry.widgets.length; i++){
+								var wClientId = lEntry.widgets[i];
+								var wServerId = $this.wrappers[wClientId].getWidgetEntry().getLocalId();
+								nWidgets.push(wServerId);
+							}
+							lEntry.widgets = nWidgets;
+						} else if(lEntry.type == 'split'){
+							for(var i = 0; i < lEntry.containers.length; i++){
+								performLayout(lEntry.containers[i]);
+							}
+						} 
+					}
+					
+					performLayout(layoutToStore);
+				}
+			}
+			this.entry.server().updateLayout(layoutToStore);
 		},
 		
 		getFilterSelector: function(){

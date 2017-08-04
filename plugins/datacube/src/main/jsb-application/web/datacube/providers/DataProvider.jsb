@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Providers.DataProvider',
+	$name: 'DataCube.Providers.DataProvider',
 	$fixedId: true,
 	$sync: {
 		updateCheckInterval: 0
