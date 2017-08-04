@@ -1,1 +1,0 @@
-https://docs.handsontable.com/0.32.0/demo-custom-renderers.html

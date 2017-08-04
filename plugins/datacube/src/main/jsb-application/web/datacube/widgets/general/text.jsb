@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Widgets.Text',
 	$parent: 'DataCube.Widgets.Widget',
-	$require: [],
+	$require: ['JSB.Widgets.Button'],
 	$expose: {
     		name: 'Текст',
     		description: '',
@@ -149,6 +149,12 @@
                 ]
             },
             */
+            {
+                name: 'Скрывать абзацы без выделений',
+                type: 'item',
+                optional: true,
+                editor: 'none'
+            },
             {
                 name: 'CSS стиль текста',
                 type: 'item',
@@ -316,13 +322,45 @@
 
 			var pArr = html.split('\n');
 
-			for(var i = 0; i < pArr.length; i++){
-				var pTxt = pArr[i];
-				if(pTxt.trim().length !== 0){
-					var pElt = this.$('<p></p>').append(pTxt);
-					this.append(pElt);
-				}
+			if(this.getContext().find('source').value().get(2).used()){
+                var collStr = '';
+                for(var i = 0; i < pArr.length; i++){
+                    var pTxt = pArr[i];
+                    if(pTxt.trim().length !== 0){
+                        var pElt = '<p>' + pTxt + '</p>';
+
+                        if(pTxt.indexOf('<span class="highlight"') < 0){
+                            collStr += pElt;
+                        } else {
+                            if(collStr.length > 0){
+                                this.append(`#dot
+                                    <div class="collapseBlock">
+                                    <div jsb="JSB.Widgets.Button"
+                                         caption="* * *"
+                                         onclick="{{=this.callbackAttr(function(evt){ this.getElement().addClass('hidden'); })}}" >
+                                    </div>
+                                    <div class="pointCollapse">
+                                        {{=collStr}}
+                                    </div>
+                                    </div>
+                                `);
+                                collStr = '';
+                            }
+
+                            this.append(pElt);
+                        }
+                    }
+                }
+			} else {
+                for(var i = 0; i < pArr.length; i++){
+                    var pTxt = pArr[i];
+                    if(pTxt.trim().length !== 0){
+                        var pElt = this.$('<p></p>').append(pTxt);
+                        this.append(pElt);
+                    }
+                }
 			}
+
 			// markup click
 			/*
 			this.find('span.highlight').click(function(evt){
@@ -331,6 +369,7 @@
 				self.activateHighlight(hid);
 			});
 			*/
+
             var cssSelector = this.getContext().find('cssMark');
             if(cssSelector.used()){
                 this.find('span.highlight').attr("style", this.prepareCss(cssSelector.value()));
