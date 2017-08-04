@@ -1,7 +1,7 @@
 ## Язык запросов к кубу
 
 Запрос состоит из двух объектов:
-* тело запроса - `$select | $filter | $groupBy | $sort | $finalize`
+* тело запроса - `$select | $filter | $groupBy | $sort | $finalize | $distinct`
 * значения параметров запроса - `{ name: value }`
 
 ```
@@ -23,6 +23,8 @@
 Применяются в секции $select.
 
 `$toInt, $toDouble, $toString, $toBoolean, $distinct`
+
+`$trim` - удаление лишних пробелов в строках
 
 ### Функции группировки
 
@@ -49,7 +51,11 @@
 
 Применяются в секции $filter для фильтрации выборки по значениям полей. 
 
-`$or, $and, {$eq: null}, $eq, {$ne: null}, $ne, $gt, $gte, $lt, $lte, $like, $ilike, $in, $nin`
+`$or, $and, $not, {$eq: null}, $eq, {$ne: null}, $ne, $gt, $gte, $lt, $lte, $like, $ilike, $in, $nin`
+
+Задание имени поля в качестве значения условия - `{$field: 'field_name'}` 
+Также поддерживается задание строковой или числовой константы в качестве значения условия.
+
 
 ```{
     $select: {...},

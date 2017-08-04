@@ -18,7 +18,7 @@
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
 		    this.queryEngine = queryEngine;
 		    this.cube = queryEngine.cube;
-		    this.translator = TranslatorRegistry.newTranslator(providerOrProviders, this.cube);
+		    this.translator = TranslatorRegistry.newTranslator(providerOrProviders, this.cube || this.queryEngine);
 		},
 
 		matchDataProvider: function(dataProvider){
