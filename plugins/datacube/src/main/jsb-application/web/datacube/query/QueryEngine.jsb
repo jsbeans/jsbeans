@@ -169,6 +169,7 @@ debugger;
 
             // generate $groupBy if not defined
             if (!dcQuery.$groupBy) {
+                // TODO: support multi fields in select (n-operators)
                 var aggregateFunctions = QuerySyntax.schemaAggregateOperators;
                 function findField(exp, aggregated){
                     if (JSB.isString(exp)) {
@@ -183,6 +184,12 @@ debugger;
                             return findField(exp[op], true);
                         }
                         return findField(exp[op], aggregated);
+                    }
+                    if (JSB.isArray(exp)) {
+                        for (var i in exp) {
+                            var f = findField(exp[i], aggregated);
+                            if (f.field) return f;
+                        }
                     }
                     return {
                         field: null,

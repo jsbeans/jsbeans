@@ -45,6 +45,7 @@
 		    order = (order ? ' ORDER BY ' + order : ' ');
 
 		    var sql = 'SELECT ' + columns + ' FROM ' + from + where + group + order;
+		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
         },
 
@@ -85,14 +86,30 @@
                 return '(SELECT MAX(' + $this._quotedName(subAlias) + ') FROM ' + subQ + ')';
             }
 
+            function translateNOperator(args, op) {
+                var sql = '(';
+                for (var i in args) {
+                    if (i > 0) sql += ' ' + op + ' ';
+                    sql += $this._translateColumn(null, args[i], dcQuery);
+                }
+                sql += ')';
+                return sql;
+            }
+
             function translateSubQuery(subExp){
                 throw new 'Not implemented yet';
             }
 
             if (JSB.isString(exp)) {
-                // is dataprovider or cube field
-                return this._translateField(exp, dcQuery);
+                if (exp.match(/^\$\{.*\}/g)) {
+                    // is parameter value - as is
+                    return exp;
+                } else {
+                    // is dataprovider or cube field
+                    return this._translateField(exp, dcQuery);
+                }
             }
+
             if (exp == 1 || exp == -1) {
                 return exp;
             }
@@ -103,23 +120,30 @@
 
             var op = Object.keys(exp)[0];
 
-            // aggregate operators
+            // const or field
             switch(op) {
-                case '$distinct':
-                    return 'DISTINCT(' + this._translateColumn(null, exp[op], dcQuery) + ')';
-                case '$count':
-                    return 'COUNT(' + this._translateColumn(null, exp[op], dcQuery) + ')';
-                case '$sum':
-                    return 'SUM(' + this._translateColumn(null, exp[op], dcQuery) + ')';
-                case '$max':
-                    return 'MAX(' + this._translateColumn(null, exp[op], dcQuery) + ')';
-                case '$min':
-                    return 'MIN(' + this._translateColumn(null, exp[op], dcQuery) + ')';
-                case '$avg':
-                    return 'AVG(' + this._translateColumn(null, exp[op], dcQuery) + ')';
-                case '$array':
-                case '$flatArray':
-                    return 'ARRAY_AGG(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                case '$const':
+                    if (JSB.isString(exp[op])) {
+                        return "'" + exp[op] + "'"
+                    } else if (JSB.isNumber(exp[op])) {
+                        return '' + exp[op];
+                    }
+                case '$field':
+                    return this._translateField(exp[op], dcQuery);
+            }
+
+            // n-operators
+            switch(op) {
+                case '$add':
+                    return translateNOperator(exp[op], '+');
+                case '$sub':
+                    return translateNOperator(exp[op], '+');
+                case '$mod':
+                    return translateNOperator(exp[op], '%');
+                case '$multiply':
+                    return translateNOperator(exp[op], '*');
+                case '$divide':
+                    return translateNOperator(exp[op], '/');
             }
 
             // transform operators
@@ -139,6 +163,25 @@
                     return 'CAST((' + this._translateColumn(null, exp[op], dcQuery) + ' ) as boolean)';
                 case '$toString':
                     return 'CAST((' + this._translateColumn(null, exp[op], dcQuery) + ' ) as string)';
+            }
+
+            // aggregate operators
+            switch(op) {
+                case '$distinct':
+                    return 'DISTINCT(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                case '$count':
+                    return 'COUNT(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                case '$sum':
+                    return 'SUM(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                case '$max':
+                    return 'MAX(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                case '$min':
+                    return 'MIN(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                case '$avg':
+                    return 'AVG(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                case '$array':
+                case '$flatArray':
+                    return 'ARRAY_AGG(' + this._translateColumn(null, exp[op], dcQuery) + ')';
             }
 
             // global sub query operators
@@ -335,53 +378,31 @@
                         if (exp[op] === null)
                             return $this._translateField(field, dcQuery) + ' IS NULL ';
                         else
-                            return $this._translateField(field, dcQuery) + ' = ' + translateValue(exp[op]) + ' ';
+                            return $this._translateField(field, dcQuery) + ' = ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$ne':
                         if (exp[op] === null)
                             return $this._translateField(field, dcQuery) + ' IS NOT NULL ';
                         else
-                            return $this._translateField(field, dcQuery) + ' != ' + translateValue(exp[op]) + ' ';
+                            return $this._translateField(field, dcQuery) + ' != ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$gt':
-                        return $this._translateField(field, dcQuery) + ' > ' + translateValue(exp[op]) + ' ';
+                        return $this._translateField(field, dcQuery) + ' > ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$gte':
-                        return $this._translateField(field, dcQuery) + ' >= ' + translateValue(exp[op]) + ' ';
+                        return $this._translateField(field, dcQuery) + ' >= ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$lt':
-                        return $this._translateField(field, dcQuery) + ' < ' + translateValue(exp[op]) + ' ';
+                        return $this._translateField(field, dcQuery) + ' < ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$lte':
-                        return $this._translateField(field, dcQuery) + ' <= ' + translateValue(exp[op]) + ' ';
+                        return $this._translateField(field, dcQuery) + ' <= ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
 
                     case '$like':
-                        return $$this._translateField(field, dcQuery) + ' ~~ ' + translateValue(exp[op]) + ' ';
+                        return $$this._translateField(field, dcQuery) + ' ~~ ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$ilike':
-                        return $this._translateField(field, dcQuery) + ' ~~* ' + translateValue(exp[op]) + ' ';
+                        return $this._translateField(field, dcQuery) + ' ~~* ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$in':
-                        return $this._translateField(field, dcQuery) + ' IN ' + translateValue(exp[op]) + ' ';
+                        return $this._translateField(field, dcQuery) + ' IN ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                     case '$nin':
-                        return $this._translateField(field, dcQuery) + ' NOT IN ' + translateValue(exp[op]) + ' ';
+                        return $this._translateField(field, dcQuery) + ' NOT IN ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
                 }
                 throw new Error('Unsupported condition expression ' + op);
-            }
-
-            function translateValue(exp) {
-                if (JSB.isPlainObject(exp)) {
-                    if(exp.$field) {
-                        // or field compared with other field
-                        return $this._translateField(dcQuery, exp.$field);
-                    }
-                }
-                if (JSB.isString(exp) && exp.match(/^\$\{.*\}/g)) {
-                    // is parameter value - as is
-                    return exp;
-                }
-
-                // constants
-                if (JSB.isString(exp)) {
-                    return "'" + exp + "'"
-                } else if (JSB.isNumber(exp)) {
-                    return '' + exp;
-                }
-
-                throw new Error('Unsupported condition value type ' + exp);
             }
 
             return dcQuery.$filter ? translateMultiExpressions(dcQuery.$filter) : '';
