@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.GridView',
+	$name: 'DataCube.GridView',
 	$parent: 'JSB.Widgets.Widget',
 	$require: ['Handsontable'],
 	$client: {
@@ -132,15 +132,15 @@
 		},
 		
 		updateData: function(source){
-			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 			    this._updateData(source);
-			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Providers.DataProvider')){
+			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
 			    this._updateData({
 			        cube: source.cube,
 			        provider: source,
                     query: { $select: {}}
 			    });
-			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Cube')){
+			} else if(JSB.isInstanceOf(source, 'DataCube.Model.Cube')){
             	this._updateData({
             	cube: source,
             	query: { $select: {}}

@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.Slice',
+	$name: 'DataCube.Model.Slice',
 	$parent: 'JSB.Workspace.Entry',
 	
 	cube: null,
@@ -29,7 +29,7 @@
 		$require: ['JSB.Workspace.WorkspaceController'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.SliceNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SliceNode');
 		},
 		
 		$constructor: function(id, workspace, cube, name){

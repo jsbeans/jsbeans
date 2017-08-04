@@ -1,7 +1,7 @@
 {
-	$name: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Widget',
 	$parent: 'JSB.Widgets.Widget',
-	$require: 'JSB.DataCube.Widgets.WidgetExplorer',
+	$require: 'DataCube.Widgets.WidgetExplorer',
 	
 	$client: {
 		wrapper: null,
@@ -492,7 +492,7 @@
 			}
 			if(!this.iterators[sourceId]){
 				// figure out data provider
-				if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
+				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 					var extQuery = {};
 					if(opts.filter){
 						extQuery.$filter = opts.filter;

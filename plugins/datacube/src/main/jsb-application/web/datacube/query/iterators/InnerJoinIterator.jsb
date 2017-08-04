@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Query.Iterators.InnerJoinIterator',
-	$parent: 'JSB.DataCube.Query.Iterators.Iterator',
+	$name: 'DataCube.Query.Iterators.InnerJoinIterator',
+	$parent: 'DataCube.Query.Iterators.Iterator',
 
 	$server: {
 		$constructor: function(iterators, queryEngine){

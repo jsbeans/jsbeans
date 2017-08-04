@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.Dashboard',
+	$name: 'DataCube.Model.Dashboard',
 	$parent: 'JSB.Workspace.Entry',
 	
 	getWidgetCount: function(){
@@ -16,12 +16,12 @@
 		wrappers: {},
 		
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.DataCube.Model.Widget'],
+		           'DataCube.Model.Widget'],
 		
 		loaded: false,
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.DashboardNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.DashboardNode');
 		},
 
 		$constructor: function(id, workspace, opts){
@@ -131,7 +131,7 @@
 		acquireAssiciatedSources: function(sourceId){
 			var sourceArr = [];
 			var source = this.workspace.entry(sourceId);
-			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 				var cube = source.getCube();
 				var sliceMap = cube.getSlices();
 				for(var sId in sliceMap){

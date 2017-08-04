@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Renderers.WidgetRenderer',
+	$name: 'DataCube.Renderers.WidgetRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
 	$require: 'JSB.Widgets.RendererRepository',
 	$client: {
@@ -23,7 +23,7 @@
 	
 	$server: {
 		$bootstrap: function(){
-			RendererRepository.registerRenderer(this, 'JSB.DataCube.Model.Widget');
+			RendererRepository.registerRenderer(this, 'DataCube.Model.Widget');
 		},
 		
 		getDashboard: function(entry){

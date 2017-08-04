@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Api.Slice',
+	$name: 'DataCube.Api.Slice',
 	$parent: 'JSB.Widgets.Page',
 	$html: {
 		title: 'DataCube Slice API',
@@ -48,7 +48,7 @@
 			}
 			
 			var slice = w.entry(params.sid);
-			if(!slice || !JSB.isInstanceOf(slice, 'JSB.DataCube.Model.Slice')){
+			if(!slice || !JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 				throw new Error('Unable to find slice with id: ' + params.sid);
 			}
 			

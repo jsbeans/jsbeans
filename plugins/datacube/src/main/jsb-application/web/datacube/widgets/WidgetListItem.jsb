@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Widgets.WidgetListItem',
+	$name: 'DataCube.Widgets.WidgetListItem',
 	$parent: 'JSB.Widgets.ListItem',
 	
 	$client: {

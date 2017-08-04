@@ -1,12 +1,12 @@
 {
-	$name: 'JSB.DataCube.DashboardEditor',
+	$name: 'DataCube.DashboardEditor',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
 		$require: ['JSB.Widgets.ToolBar', 
 		           'JSB.Widgets.Dashboard.Dashboard',
-		           'JSB.DataCube.Widgets.FilterSelector',
-		           'JSB.DataCube.Widgets.WidgetWrapper'],
+		           'DataCube.Widgets.FilterSelector',
+		           'DataCube.Widgets.WidgetWrapper'],
 		
 		entry: null,
 		ignoreHandlers: false,
@@ -27,7 +27,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
+							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
 								return true;
 							}
 						}
@@ -39,7 +39,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
-							if(JSB.isInstanceOf(obj, 'JSB.DataCube.Widgets.WidgetListItem')){
+							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
 								$this.entry.server().createWidgetWrapper(obj.descriptor.jsb, obj.descriptor.name, function(widgetEntry){
 									var wWrapper = new WidgetWrapper(widgetEntry, $this);
 									$this.wrappers[wWrapper.getId()] = wWrapper;

@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.Highcharts',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Highcharts',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Гистограмма',
 		description: '',

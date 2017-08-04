@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.PieChart',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.PieChart',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Круговая диаграмма',
 		description: '',

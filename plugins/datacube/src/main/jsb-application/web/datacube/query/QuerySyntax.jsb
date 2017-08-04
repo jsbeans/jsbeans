@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Query.QuerySyntax',
+	$name: 'DataCube.Query.QuerySyntax',
 	$singleton: true,
 
 	$server: {

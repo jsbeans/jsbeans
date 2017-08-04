@@ -1,13 +1,13 @@
 {
-	$name: 'JSB.DataCube.Query.QueryEngine',
+	$name: 'DataCube.Query.QueryEngine',
 
 	$server: {
 		$require: [
-		    'JSB.DataCube.Query.Iterators.DataProviderIterator',
-		    'JSB.DataCube.Query.Iterators.InnerJoinIterator',
-		    'JSB.DataCube.Query.Iterators.FinalizeIterator',
-		    'JSB.DataCube.Providers.SqlTableDataProvider',
-		    'JSB.DataCube.Query.QuerySyntax'
+		    'DataCube.Query.Iterators.DataProviderIterator',
+		    'DataCube.Query.Iterators.InnerJoinIterator',
+		    'DataCube.Query.Iterators.FinalizeIterator',
+		    'DataCube.Providers.SqlTableDataProvider',
+		    'DataCube.Query.QuerySyntax'
         ],
 
 	    selftTest: function(cube){

@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Providers.InMemoryDataProvider',
-	$parent: 'JSB.DataCube.Providers.DataProvider',
+	$name: 'DataCube.Providers.InMemoryDataProvider',
+	$parent: 'DataCube.Providers.DataProvider',
 	
 	$server: {
 		fields: {},

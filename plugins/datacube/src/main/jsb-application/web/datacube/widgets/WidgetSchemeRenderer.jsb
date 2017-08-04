@@ -1,12 +1,12 @@
 {
-	$name: 'JSB.DataCube.Widgets.WidgetSchemeRenderer',
+	$name: 'DataCube.Widgets.WidgetSchemeRenderer',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.ComboBox',
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.ToolManager',
-	           'JSB.DataCube.Widgets.DataBindingSelector',
-	           'JSB.DataCube.Widgets.EmbeddedWidgetSelector'],
+	           'DataCube.Widgets.DataBindingSelector',
+	           'DataCube.Widgets.EmbeddedWidgetSelector'],
 	
 	$client: {
 		options: {

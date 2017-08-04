@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Widgets.SortSelector',
+	$name: 'DataCube.Widgets.SortSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: 'JSB.Widgets.ToolManager',
 	

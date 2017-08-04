@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Widgets.WidgetExplorer',
+	$name: 'DataCube.Widgets.WidgetExplorer',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
@@ -7,7 +7,7 @@
 		           'JSB.Widgets.GroupBox',
 		           'JSB.Widgets.ItemList',
 		           'JSB.Widgets.ItemList.BlockView',
-		           'JSB.DataCube.Widgets.WidgetListItem'],
+		           'DataCube.Widgets.WidgetListItem'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -68,7 +68,7 @@
 		$constructor: function(){
 			$base();
 			JSB.onLoad(function(){
-				if(this.isSubclassOf('JSB.DataCube.Widgets.Widget') && this.$name != 'JSB.DataCube.Widgets.Widget'){
+				if(this.isSubclassOf('DataCube.Widgets.Widget') && this.$name != 'DataCube.Widgets.Widget'){
 					$this.register(this);
 				}
 			});

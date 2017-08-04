@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.Table',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Table',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Таблица',
 		description: '',
@@ -339,7 +339,7 @@
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
-		           'JSB.DataCube.Widgets.SortSelector'],
+		           'DataCube.Widgets.SortSelector'],
 		
 		ready: false,
 		headerDesc: [],

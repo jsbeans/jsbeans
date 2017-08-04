@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.JsonFileNode',
+	$name: 'DataCube.JsonFileNode',
 	$parent: 'JSB.Workspace.FileNode',
 	$client: {
 		$constructor: function(opts){

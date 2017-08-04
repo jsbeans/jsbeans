@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.Widget',
+	$name: 'DataCube.Model.Widget',
 	$parent: 'JSB.Workspace.Entry',
 	
 	dashboard: null,
@@ -27,12 +27,12 @@
 	$client: {},
 	
 	$server: {
-		$require: ['JSB.DataCube.Providers.DataProviderRepository',
-		           'JSB.DataCube.Query.QueryEngine',
+		$require: ['DataCube.Providers.DataProviderRepository',
+		           'DataCube.Query.QueryEngine',
 		           'JSB.Workspace.WorkspaceController'],
 		
         $bootstrap: function(){
-        	WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.WidgetNode');
+        	WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.WidgetNode');
         },
 
 		$constructor: function(id, workspace, dashboard, name, wType, values){
@@ -90,7 +90,7 @@
 		
 		combineDataScheme: function(source){
 			var iterator = null;
-			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 				iterator = source.executeQuery();
 			} else {
 				// TODO

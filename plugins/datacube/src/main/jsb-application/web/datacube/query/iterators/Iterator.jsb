@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Query.Iterators.Iterator',
+	$name: 'DataCube.Query.Iterators.Iterator',
 
 	$server: {
 		$constructor: function(){

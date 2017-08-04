@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Dialogs.SliceOptionsTool',
+	$name: 'DataCube.Dialogs.SliceOptionsTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager', 
 	           'JSB.Widgets.PrimitiveEditor',

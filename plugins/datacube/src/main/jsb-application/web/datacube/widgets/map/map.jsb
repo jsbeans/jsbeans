@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.MapWidget',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.MapWidget',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Карта мира',
 		description: '',

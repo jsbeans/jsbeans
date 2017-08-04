@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Renderers.EmbededWidgetRenderer',
+	$name: 'DataCube.Renderers.EmbededWidgetRenderer',
 	$parent: 'JSB.Widgets.Renderer',
 	$client: {
 		$constructor: function(wDesc, opts){

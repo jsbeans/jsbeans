@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.TreeMap',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.TreeMap',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Карта дерева',
 		description: '',

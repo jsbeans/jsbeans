@@ -1,7 +1,7 @@
 {
-	$name: 'JSB.DataCube.Model.SqlSource',
+	$name: 'DataCube.Model.SqlSource',
 	$parent: 'JSB.Workspace.Entry',
-	$require: ['JSB.DataCube.Model.SqlTable'],
+	$require: ['DataCube.Model.SqlTable'],
 	
 	details: null,
 	
@@ -17,7 +17,7 @@
 		
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.SqlSourceNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SqlSourceNode');
 		},
 
 		$constructor: function(id, workspace){

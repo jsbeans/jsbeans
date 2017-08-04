@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.DashboardViewerView',
+	$name: 'DataCube.DashboardViewerView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -23,7 +23,7 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 0.5,
-				acceptNode: 'JSB.DataCube.DashboardNode',
+				acceptNode: 'DataCube.DashboardNode',
 				caption: 'Просмотр'
 			});
 		},
