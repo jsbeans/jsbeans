@@ -1,16 +1,16 @@
 {
-	$name: 'JSB.DataCube.Query.Translators.SQLTranslator',
-	$parent: 'JSB.DataCube.Query.Translators.Translator',
+	$name: 'DataCube.Query.Translators.SQLTranslator',
+	$parent: 'DataCube.Query.Translators.Translator',
 
 	$server: {
 		$require: [
-		    'JSB.DataCube.Query.QueryParser',
-		    'JSB.DataCube.Query.Translators.TranslatorRegistry',
-		    'JSB.DataCube.Providers.SqlTableDataProvider'
+		    'DataCube.Query.QueryParser',
+		    'DataCube.Query.Translators.TranslatorRegistry',
+		    'DataCube.Providers.SqlTableDataProvider'
         ],
 
 		$bootstrap: function(){
-			TranslatorRegistry.register(this, 'JSB.DataCube.Providers.SqlTableDataProvider');
+			TranslatorRegistry.register(this, 'DataCube.Providers.SqlTableDataProvider');
 		},
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){

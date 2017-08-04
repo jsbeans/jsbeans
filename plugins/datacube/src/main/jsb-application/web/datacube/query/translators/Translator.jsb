@@ -10,7 +10,7 @@
 		    if (!JSB.isBean(cubeOrQueryEngine)) {
 		        throw new Error('Cube or QueryEngine is not defined');
 		    }
-		    if (cubeOrQueryEngine.getJsb().$name == 'JSB.DataCube.Model.Cube') {
+		    if (cubeOrQueryEngine.getJsb().$name == 'DataCube.Model.Cube') {
                 this.cube = cubeOrQueryEngine;
                 this.queryEngine = cubeOrQueryEngine.queryEngine;
             } else {

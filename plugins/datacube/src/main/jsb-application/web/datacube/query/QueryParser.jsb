@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Query.QueryParser',
+	$name: 'DataCube.Query.QueryParser',
 
 	$server: {
 		$require: [],

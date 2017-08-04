@@ -9,7 +9,7 @@
         ],
 
 		$bootstrap: function(){
-//			TranslatorRegistry.register(this, 'JSB.DataCube.Providers.SqlTableDataProvider');
+//			TranslatorRegistry.register(this, 'DataCube.Providers.SqlTableDataProvider');
 		},
 
 		$constructor: function(providerOrProviders, cube){
