@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.ScatterChart',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.ScatterChart',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Разброс',
 		description: '',

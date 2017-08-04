@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.WelcomeView',
+	$name: 'DataCube.WelcomeView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {

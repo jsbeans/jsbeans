@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Api.Cube',
+	$name: 'DataCube.Api.Cube',
 	$parent: 'JSB.Widgets.Page',
 	$html: {
 		title: 'DataCube Cube API',
@@ -44,7 +44,7 @@
 			}
 			
 			var cube = w.entry(params.cid);
-			if(!cube || !JSB.isInstanceOf(cube, 'JSB.DataCube.Model.Cube')){
+			if(!cube || !JSB.isInstanceOf(cube, 'DataCube.Model.Cube')){
 				throw new Error('Unable to find cube with id: ' + params.cid);
 			}
 			cube.load();

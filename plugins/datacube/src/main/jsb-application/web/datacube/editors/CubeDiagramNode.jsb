@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.CubeDiagramNode',
+	$name: 'DataCube.CubeDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.ToolManager'],
 	

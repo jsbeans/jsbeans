@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Providers.DataProviderRepository',
+	$name: 'DataCube.Providers.DataProviderRepository',
 	$singleton: true,
 	
 	$sync: {

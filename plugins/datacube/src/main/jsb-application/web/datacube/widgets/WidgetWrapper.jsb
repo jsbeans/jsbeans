@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Widgets.WidgetWrapper',
+	$name: 'DataCube.Widgets.WidgetWrapper',
 	$parent: 'JSB.Widgets.Widget',
 
 	widgetEntry: null,
@@ -80,8 +80,8 @@
 		$require: ['JSB.Widgets.Button', 
 		           'JSB.Widgets.PrimitiveEditor',
 		           'JSB.Widgets.ToolManager',
-		           'JSB.DataCube.Dialogs.WidgetOptionsTool',
-		           'JSB.DataCube.Widgets.WidgetSchemeRenderer'],
+		           'DataCube.Dialogs.WidgetOptionsTool',
+		           'DataCube.Widgets.WidgetSchemeRenderer'],
 		
 		owner: null,
 		widget: null,
@@ -151,7 +151,7 @@
 				if(sender != $this.getOwner().getFilterSelector()){
 					return;
 				}
-				if(JSB.isInstanceOf(sender, 'JSB.DataCube.Widgets.FilterSelector')){
+				if(JSB.isInstanceOf(sender, 'DataCube.Widgets.FilterSelector')){
 					if(sender.getOwner().getDashboard() != $this.getDashboard()){
 						return;
 					}
@@ -187,7 +187,7 @@
 				curWidgetJsb = this.widget.getJsb();
 			}
 			while(curWidgetJsb){
-				if(!curWidgetJsb.isSubclassOf('JSB.DataCube.Widgets.Widget')){
+				if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
 					break;
 				}
 				var wScheme = curWidgetJsb.getDescriptor().$scheme;

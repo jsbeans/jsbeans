@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Providers.SqlTableDataProvider',
-	$parent: 'JSB.DataCube.Providers.DataProvider',
+	$name: 'DataCube.Providers.SqlTableDataProvider',
+	$parent: 'DataCube.Providers.DataProvider',
 	
 	$client: {
 		$constructor: function(){
@@ -11,13 +11,13 @@
 	
 	$server: {
 		$require: [
-		    'JSB.DataCube.Providers.DataProviderRepository',
+		    'DataCube.Providers.DataProviderRepository',
 		    'JSB.Store.Sql.JDBC'
         ],
 		
 		$bootstrap: function(){
 			DataProviderRepository.registerDataProvider(this, {
-				accepts: 'JSB.DataCube.Model.SqlTable'
+				accepts: 'DataCube.Model.SqlTable'
 			});
 
             // try load all installed (in classpath)

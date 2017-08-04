@@ -1,9 +1,9 @@
 {
-	$name: 'JSB.DataCube.SliceDiagramNode',
+	$name: 'DataCube.SliceDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JQuery.UI.Resizable', 
 	           'JSB.Widgets.ToolManager',
-	           'JSB.DataCube.Dialogs.SliceOptionsTool'],
+	           'DataCube.Dialogs.SliceOptionsTool'],
 	
 	$client: {
 		ready: false,

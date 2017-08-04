@@ -1,16 +1,16 @@
 {
-	$name: 'JSB.DataCube.Query.Iterators.DataProviderIterator',
-	$parent: 'JSB.DataCube.Query.Iterators.Iterator',
+	$name: 'DataCube.Query.Iterators.DataProviderIterator',
+	$parent: 'DataCube.Query.Iterators.Iterator',
 
 	$server: {
 		$require: [
-		    'JSB.DataCube.Query.Translators.TranslatorRegistry',
+		    'DataCube.Query.Translators.TranslatorRegistry',
 
-//		    'JSB.DataCube.Providers.SqlTableDataProvider',
-//		    'JSB.DataCube.Providers.InMemoryDataProvider',
+//		    'DataCube.Providers.SqlTableDataProvider',
+//		    'DataCube.Providers.InMemoryDataProvider',
 
-		    'JSB.DataCube.Query.Translators.MoSQLTranslator',
-		    'JSB.DataCube.Query.Translators.LockiTranslator',
+		    'DataCube.Query.Translators.MoSQLTranslator',
+		    'DataCube.Query.Translators.LockiTranslator',
         ],
 
 		$constructor: function(providerOrProviders, queryEngine){

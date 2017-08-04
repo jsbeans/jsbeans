@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.CubeApiView',
+	$name: 'DataCube.CubeApiView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -224,7 +224,7 @@
 		fillSettings: function(){
 			var idGroup = this.find('.cubeSettings').jsb();
 			var entry = this.node.getEntry();
-			if(JSB.isInstanceOf(entry, 'JSB.DataCube.Model.Cube')){
+			if(JSB.isInstanceOf(entry, 'DataCube.Model.Cube')){
 				this.isCube = true;
 				idGroup.setTitle('Идентификация куба');
 			} else {
@@ -304,7 +304,7 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 0,
-				acceptNode: ['JSB.DataCube.CubeNode', 'JSB.DataCube.SliceNode'],
+				acceptNode: ['DataCube.CubeNode', 'DataCube.SliceNode'],
 				caption: 'API'
 			});
 		},

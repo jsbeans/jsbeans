@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Widgets.FilterSelector',
+	$name: 'DataCube.Widgets.FilterSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Crypt.MD5', 'JSB.Widgets.Button'],
 	

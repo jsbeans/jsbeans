@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.Text',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Text',
+	$parent: 'DataCube.Widgets.Widget',
 	$require: [],
 	$expose: {
     		name: 'Текст',

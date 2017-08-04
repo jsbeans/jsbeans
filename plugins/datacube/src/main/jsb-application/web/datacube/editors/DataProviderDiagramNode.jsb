@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.DataProviderDiagramNode',
+	$name: 'DataCube.DataProviderDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository', 'JSB.Widgets.Button'],
 	

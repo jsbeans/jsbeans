@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.Html',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Html',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Html',
 		description: '',

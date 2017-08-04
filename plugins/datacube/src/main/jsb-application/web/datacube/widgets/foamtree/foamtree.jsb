@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Foamtree',
-    $parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Foamtree',
+    $parent: 'DataCube.Widgets.Widget',
     $expose: {
         name: 'FoamTree',
         description: '',

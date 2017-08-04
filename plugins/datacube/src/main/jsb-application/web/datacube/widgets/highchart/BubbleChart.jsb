@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.BubbleChart',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.BubbleChart',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Пузыри',
 		description: '',

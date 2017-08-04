@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.Cube',
+	$name: 'DataCube.Model.Cube',
 	$parent: 'JSB.Workspace.Entry',
 	
 	sourceCount: 0,
@@ -20,12 +20,12 @@
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.DataCube.Providers.DataProviderRepository',
-		           'JSB.DataCube.Model.Slice',
-		           'JSB.DataCube.Query.QueryEngine'],
+		           'DataCube.Providers.DataProviderRepository',
+		           'DataCube.Model.Slice',
+		           'DataCube.Query.QueryEngine'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.CubeNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.CubeNode');
 		},
 		
 		loaded: false,
@@ -114,7 +114,7 @@
 					for(var i = 0; i < snapshot.slices.length; i++){
 						var sDesc = snapshot.slices[i];
 						var slice = this.workspace.entry(sDesc.id);
-						if(!JSB.isInstanceOf(slice, 'JSB.DataCube.Model.Slice')){
+						if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 							continue;
 						}
 						slice.setQuery(sDesc.query);
