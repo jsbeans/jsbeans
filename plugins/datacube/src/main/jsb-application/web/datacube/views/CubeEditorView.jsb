@@ -52,8 +52,12 @@
 				return;
 			}
 			cubeEditor.setCurrentEntry(this.node.getEntry());
+
+			var gridView = this.find('div[key="gridView"] > ._dwp_widget').jsb();
+			if(gridView && gridView.table){
+			    gridView.table.clear();
+			}
 		}
-		
 	},
 	
 	$server: {
