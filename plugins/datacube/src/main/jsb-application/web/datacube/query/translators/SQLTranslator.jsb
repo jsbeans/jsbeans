@@ -140,9 +140,9 @@
                     return translateNOperator(exp[op], '+');
                 case '$mod':
                     return translateNOperator(exp[op], '%');
-                case '$multiply':
+                case '$mul':
                     return translateNOperator(exp[op], '*');
-                case '$divide':
+                case '$div':
                     return translateNOperator(exp[op], '/');
             }
 

@@ -28,7 +28,7 @@
 
 ### Функции N-арные операторы
 
-`$add, $sub, $mod, $divide, $multipy`
+`$add, $sub, $mod, $div, $multipy`
  
 В качестве значения принимают массив выражений, например - `{ $add: [ ... ] }`
 
@@ -43,8 +43,8 @@
     $select: {
         'constValue' : {$const: 123},
         'add': {$add:[{$const: 123}, 'my_field1']},
-        'mul': {$multiply:['my_field1', 'my_field2']},
-        'formula': {$divide: [{$multiply:['my_field1', 'my_field2']}, {$const:100}]}
+        'mul': {$mul:['my_field1', 'my_field2']},
+        'formula': {$div: [{$mul:['my_field1', 'my_field2']}, {$const:100}]}
     }
 }
  ```
