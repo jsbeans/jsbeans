@@ -138,6 +138,7 @@
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
 				$this.widget.setWrapper($this);
+				$this.widget.refresh();
 			});
 
 			this.subscribe('JSB.Widgets.WidgetContainer.widgetAttached', function(sender, msg, w){
@@ -179,6 +180,10 @@
 		
 		getWidget: function(){
 			return this.widget;
+		},
+		
+		constructFilter: function(srcId){
+			return this.getOwner().getFilterSelector().constructFilter(srcId);
 		},
 		
 		extractWidgetScheme: function(curWidgetJsb){

@@ -383,6 +383,37 @@
 					$this.ready = true;	
 				} else {
 					JSB.deferUntil(function(){
+						$this.header.resize(function(){
+							if(!$this.getElement().is(':visible')){
+								return;
+							}
+							$this.updateHeaderSize();
+						});
+
+						$this.scroll.getElement().resize(function(){
+							if(!$this.getElement().is(':visible')){
+								return;
+							}
+							$this.scrollHeight = $this.scroll.getElement().height();
+							$this.appendRows();
+						});
+						
+						$this.scroll.getPane().resize(function(){
+							if(!$this.getElement().is(':visible')){
+								return;
+							}
+							$this.paneHeight = $this.scroll.getPane().height();
+							$this.header.width($this.scroll.getPane().width());
+						});
+						
+						if(!$this.scrollHeight){
+							JSB.deferUntil(function(){
+								$this.scrollHeight = $this.scroll.getElement().height();
+							}, function(){
+								return $this.scroll.getElement().height() > 0;
+							});
+						}
+
 						$this.ready = true;
 					}, function(){
 						return $this.scroll.isReady();
@@ -390,36 +421,6 @@
 				}
 			});
 			
-			$this.header.resize(function(){
-				if(!$this.getElement().is(':visible')){
-					return;
-				}
-				$this.updateHeaderSize();
-			});
-
-			this.scroll.getElement().resize(function(){
-				if(!$this.getElement().is(':visible')){
-					return;
-				}
-				$this.scrollHeight = $this.scroll.getElement().height();
-				$this.appendRows();
-			});
-			
-			$this.scroll.getPane().resize(function(){
-				if(!$this.getElement().is(':visible')){
-					return;
-				}
-				$this.paneHeight = $this.scroll.getPane().height();
-				$this.header.width($this.scroll.getPane().width());
-			});
-			
-			if(!$this.scrollHeight){
-				JSB.deferUntil(function(){
-					$this.scrollHeight = $this.scroll.getElement().height();
-				}, function(){
-					return $this.scroll.getElement().height() > 0;
-				});
-			}
 		},
 		
 		updateHeaderSize: function(){
@@ -503,10 +504,12 @@
 						var colName = $this.colDesc[j].title;
 						if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
 							$this.widgetMap[key][colName].setWrapper($this.getWrapper(), row[j].value);
+							$this.widgetMap[key][colName].refresh();
 						} else {
 							var WidgetCls = $this.colDesc[j].widget.cls;
 							var widget = new WidgetCls();
 							widget.setWrapper($this.getWrapper(),  row[j].value);
+							widget.refresh();
 							if(!$this.widgetMap[key]){
 								$this.widgetMap[key] = {};
 							}

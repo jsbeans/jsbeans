@@ -197,7 +197,7 @@
 				query.$sort = this.requestOpts.sort;
 			}
 			
-			var url = JSB.getProvider().getServerBase() + 'datacube/api/' + (this.isCube ? 'Cube.jsb':'Slice.jsb') + '?wid=' + wid + (this.isCube ? '&cid=':'&sid=') + eid + '&query=' + JSON.stringify(query);
+			var url = JSB.getProvider().getServerBase() + 'datacube/api/' + (this.isCube ? 'Cube.jsb':'Slice.jsb') + '?wsid=' + wid + (this.isCube ? '&cid=':'&sid=') + eid + '&query=' + JSON.stringify(query);
 			
 			if(this.find('.option.skip').jsb().isChecked()){
 				url += '&skip=' + this.requestOpts.skip;

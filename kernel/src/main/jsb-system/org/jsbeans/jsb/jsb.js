@@ -2378,6 +2378,8 @@ if(!(function(){return this;}).call(null).JSB){
 */						
 						keepFinalize();
 					}
+					ccall();
+/*					
 					if(self.isSystem()){
 						ccall();
 					} else {
@@ -2385,6 +2387,7 @@ if(!(function(){return this;}).call(null).JSB){
 							ccall();
 						});
 					}
+*/					
 				} else {
 					keepFinalize();
 				}

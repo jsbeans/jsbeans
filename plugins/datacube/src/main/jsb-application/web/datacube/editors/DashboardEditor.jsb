@@ -92,15 +92,18 @@
 				var layout = JSB.clone(dashboardDesc.layout);
 				if(layout){
 					function performLayout(lEntry){
-						if(lEntry.type == 'widget'){
+						if(lEntry && lEntry.widgets){
 							var nWidgets = [];
 							for(var i = 0; i < lEntry.widgets.length; i++){
 								var wServerId = lEntry.widgets[i];
-								var wClientId = wWrappers[wServerId].getId();
-								nWidgets.push(wClientId);
+								if(wServerId && wWrappers[wServerId]){
+									var wClientId = wWrappers[wServerId].getId();
+									nWidgets.push(wClientId);
+								}
 							}
 							lEntry.widgets = nWidgets;
-						} else if(lEntry.type == 'split'){
+						} 
+						if(lEntry && lEntry.containers){
 							for(var i = 0; i < lEntry.containers.length; i++){
 								performLayout(lEntry.containers[i]);
 							}
@@ -125,15 +128,18 @@
 				layoutToStore = dlayout.layout;
 				if(layoutToStore){
 					function performLayout(lEntry){
-						if(lEntry.type == 'widget'){
+						if(lEntry && lEntry.widgets){
 							var nWidgets = [];
 							for(var i = 0; i < lEntry.widgets.length; i++){
 								var wClientId = lEntry.widgets[i];
-								var wServerId = $this.wrappers[wClientId].getWidgetEntry().getLocalId();
-								nWidgets.push(wServerId);
+								if(wClientId && $this.wrappers[wClientId]){
+									var wServerId = $this.wrappers[wClientId].getWidgetEntry().getLocalId();
+									nWidgets.push(wServerId);
+								}
 							}
 							lEntry.widgets = nWidgets;
-						} else if(lEntry.type == 'split'){
+						} 
+						if(lEntry && lEntry.containers){
 							for(var i = 0; i < lEntry.containers.length; i++){
 								performLayout(lEntry.containers[i]);
 							}

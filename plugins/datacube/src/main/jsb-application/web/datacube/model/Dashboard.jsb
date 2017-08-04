@@ -62,7 +62,8 @@
 			}
 			delete this.wrappers[wwId];
 			this.widgetCount = Object.keys(this.wrappers).length;
-			this.removeChildEntry(wwId);
+			var cEntry = this.removeChildEntry(wwId);
+			cEntry.remove();
 			this.store();
 			this.doSync();
 			return true;

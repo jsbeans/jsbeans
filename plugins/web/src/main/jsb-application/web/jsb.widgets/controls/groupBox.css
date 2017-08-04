@@ -70,7 +70,8 @@
 }
 
 ._dwp_groupBox ._dwp_groupBoxPane {
-	height: 100%;
+	height: calc(100% - 9px);
+	box-sizing: border-box;
 	margin-top: -9px;
 	position: relative;
 	padding: 8px 3px 3px 3px;

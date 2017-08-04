@@ -26,8 +26,8 @@
 				return $base(params);
 			}
 			
-			if(!params.wid){
-				throw new Error('Missing parameter: "wid" (workspace Id)');
+			if(!params.wsid){
+				throw new Error('Missing parameter: "wsid" (workspace Id)');
 			}
 
 			if(!params.sid){
@@ -42,9 +42,9 @@
 			if(!wm){
 				throw new Error('Internal error: missing WorkspaceManager for datacube');
 			}
-			var w = wm.workspace(params.wid);
+			var w = wm.workspace(params.wsid);
 			if(!w){
-				throw new Error('Unable to find workspace with id: ' + params.wid);
+				throw new Error('Unable to find workspace with id: ' + params.wsid);
 			}
 			
 			var slice = w.entry(params.sid);
