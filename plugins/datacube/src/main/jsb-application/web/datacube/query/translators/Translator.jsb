@@ -5,21 +5,197 @@
 		$require: [
         ],
 
-		$constructor: function(provider){
-		    $base();
-		    this.provider = provider;
-		},
-
-		translateQuery: function(dcQuery, params){
-		    throw new Error('Not implemented');
+		$constructor: function(providerOrProviders, cubeOrQueryEngine){
+		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
+		    if (!JSB.isBean(cubeOrQueryEngine)) {
+		        throw new Error('Cube or QueryEngine is not defined');
+		    }
+		    if (cubeOrQueryEngine.getJsb().$name == 'JSB.DataCube.Model.Cube') {
+                this.cube = cubeOrQueryEngine;
+                this.queryEngine = cubeOrQueryEngine.queryEngine;
+            } else {
+                this.queryEngine = cubeOrQueryEngine;
+            }
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
-		    throw new Error('Not implemented');
+		    if (this.iterator) {
+		        // close previous iterator
+		        this.iterator.close();
+		    }
+
+            // translate query
+            var subQuery = this.extractSelfSubQuery(dcQuery, params);
+		    var translatedQuery = this.translateQuery(dcQuery, params);
+
+		    // create iterator
+		    this.iterator = this.executeQuery(translatedQuery, params);
+
+		    return {
+		        next: function(){
+		            return $this.translateResult($this.iterator.next());
+		        },
+		        close:function(){
+		            $this.iterator.close();
+		        }
+		    };
 		},
 
+		extractSelfSubQuery: function(dcQuery, params){
+		
+            function isLinkedWithSelfProviders(exp, byKeyField, byValueField){
+                var provs = $this._extractUsedProviders(dcQuery, exp, byKeyField, byValueField, true);
+                if (provs.length > 1) {
+                    throw new Error('Expression links with some providers - ' + JSON.stringify(exp));
+                }
+                if (provs.length == 0) {
+                    // abstract aggregators (sum:1, count:1) - find groupBy provider
+                    if (dcQuery.$groupBy && dcQuery.$groupBy[0]) {
+                        var provider = $this._extractUsedProviders(dcQuery, dcQuery.$groupBy[0], byKeyField, byValueField, true)[0];
+                        if ($this.providers.indexOf(provider) != -1) {
+                            return true;
+                        }
+                    }
+                } else if($this.providers.indexOf(provs[0]) != -1) {
+                    // use only current provider fields
+                    return true;
+                }
+            }
+
+		    function filterSubQuery(exp, byKeyField, byValueField){
+		        var newExpr = {};
+                for (var alias in exp) if (exp.hasOwnProperty(alias)) {
+                    var used = isLinkedWithSelfProviders(exp[alias], byKeyField, byValueField);
+                    if (used) {
+                        newExpr[alias] = JSB.merge(true, {}, exp[alias]);
+                    }
+                }
+                return newExpr;
+		    }
+
+		    function filterFields(groupBy) {
+		        var newGroupBy = [];
+                for (var i in groupBy) {
+                    var used = isLinkedWithSelfProviders(groupBy[i], false, true);
+                    if (used) {
+                        newGroupBy.push(groupBy[i]);
+                    }
+                }
+                return newGroupBy;
+		    }
+
+		    function filterFields(sort, allowAlias) {
+		        var newSort = [];
+                for (var i in sort) {
+                    var used = isLinkedWithSelfProviders(sort[i], false, true);
+                    if (!used && dcQuery.$select[sort[i]]) {
+                        // alias
+                        if (!allowAlias) {
+                            throw new Error('GroupBy not support aliases');
+                        }
+                        used = isLinkedWithSelfProviders(dcQuery.$select[sort[i]], false, true);
+                    }
+                    if (used) {
+                        newSort.push(sort[i]);
+                    }
+                }
+                return newSort;
+		    }
+
+		    if (!this.cube) {
+		        // provider query
+		        return JSB.merge(true, {}, dcQuery, {$finalize: null});
+		    }
+
+            return {
+                $select: filterSubQuery(dcQuery.$select, false, true),
+                $filter: filterSubQuery(dcQuery.$filter, true, false),
+                $groupBy: filterFields(dcQuery.$groupBy),
+                $sort: filterFields(dcQuery.$sort, true),
+                $distinct: dcQuery.$distinct,
+                // skip $finalize
+            };
+        },
+
 		close: function() {
-		    throw new Error('Not implemented');
+		    this.iterator.close();
 		},
+
+		translateQuery: function(dcQuery, params){
+		    throw new 'Not implemented';
+		},
+
+		executeQuery: function(translatedQuery, params){
+            throw new 'Not implemented';
+        },
+
+		translateResult: function(result) {
+		    // implement
+		    return result;
+		},
+
+
+
+
+        _getCubeFieldProviders: function(field, onlySelf) {
+            if (!this.cube) {
+                throw new Error('Cube is not defined');
+            }
+            // return providers of cube field or current provider for join fields
+            var providers = [];
+            if (!this.cube.fields[field]) {
+                throw new Error('Cube has no field ' + field);
+            }
+            var binding = this.cube.fields[field].binding;
+            for (var b in binding) {
+                if (onlySelf && this.providers.indexOf(binding[b].provider) != -1) {
+                    return [binding[b].provider];
+                }
+                providers.push(binding[b].provider);
+            }
+            return providers;
+        },
+
+        _extractUsedProviders: function(dcQuery, exp, byKeyField, byValueField, onlySelf){
+            // input exp - expression with cube fields
+            // result - array with providers connected with current expression
+            var providers = [];
+            if (JSB.isPlainObject(exp)) {
+                for(var p in exp) if (exp.hasOwnProperty(p)) {
+                    if (!p.match(/^\$/) && byKeyField) {
+                        if (this.cube && !this.cube.fields[p]) {
+                            // may be alias or provider field
+                            providers = providers.concat(
+                                    this._extractUsedProviders(dcQuery, dcQuery.$select[p], false, true));
+                        } else {
+                            providers = providers.concat(this._getCubeFieldProviders(p, onlySelf));
+                        }
+                    } else {
+                        providers = providers.concat(this._extractUsedProviders(dcQuery, exp[p], byKeyField, byValueField));
+                    }
+                }
+            } else if (JSB.isArray(exp)) {
+                for(var i in exp) {
+                    providers = providers.concat(this._extractUsedProviders(dcQuery, exp[i], byKeyField, byValueField));
+                }
+            } else if (JSB.isString(exp)) {
+                if (!exp.match(/^\$/) && byValueField) {
+                    if (this.cube && !this.cube.fields[exp]) {
+                        // may be provider
+                        for(var pp in this.providers) {
+                            if (this.providers[pp].extractFields()[exp]) {
+                                return [this.providers[pp]];
+                            }
+                        }
+                        // may be alias
+                        if (!byValueField) providers = providers.concat(
+                                this._extractUsedProviders(dcQuery, dcQuery.$select[exp], false, true));
+                    } else {
+                        providers = providers.concat(this._getCubeFieldProviders(exp, onlySelf));
+                    }
+                }
+            }
+            return providers;
+        },
 	}
 }

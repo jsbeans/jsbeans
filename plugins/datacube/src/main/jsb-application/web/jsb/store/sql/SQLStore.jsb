@@ -168,6 +168,7 @@
                 iteratedParametrizedQuery2: function(sql, getValue, getType, rowExtractor, onClose) {
                     var conn = $this.getConnection();
                     try {
+                        sql = sql.replace(new RegExp('`','g'), "\"\"");
                         return JDBC.iteratedParametrizedQuery(conn.get(), sql, getValue, getType, rowExtractor, function onClose2() {
                             conn.close();
                             if (JSB.isFunction(onClose)) {
@@ -218,13 +219,6 @@
                         var idx = parseInt(param);
                         return mosql.values[idx - 1];
                     });
-
-                    parametrizedSQL = parametrizedSQL
-//                            .replace(new RegExp('\\( `','g'), "(\"\"\"")
-//                            .replace(new RegExp('` \\)','g'), "\"\"\")")
-//                            .replace(new RegExp('\\.`','g'), ".\"\"\"")
-//                            .replace(new RegExp("(\\S)`\\s", "g"), "$1\"\"\" ")
-                            .replace(new RegExp('`','g'), "\"\"");
 
 //                    Log.debug('Parametrized SQL Query: ' + parametrizedSQL);
                     var result = $this.asSQL().iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);

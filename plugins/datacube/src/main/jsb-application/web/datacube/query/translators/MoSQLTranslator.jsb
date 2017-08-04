@@ -9,12 +9,12 @@
         ],
 
 		$bootstrap: function(){
-			TranslatorRegistry.register(this, 'JSB.DataCube.Providers.SqlTableDataProvider');
+//			TranslatorRegistry.register(this, 'JSB.DataCube.Providers.SqlTableDataProvider');
 		},
 
 		$constructor: function(providerOrProviders, cube){
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
-		    $base(this.providers[0]);
+		    $base(this.providers);
 		    this.cube = cube;
 		    this.queryEngine = cube.queryEngine;
 		},
@@ -28,7 +28,7 @@
 		    // translate query and create iterator
 		    var mosqlQuery = this.translateQuery(dcQuery, params);
 		    Log.debug('MoSQL query: ' + JSON.stringify(mosqlQuery,0,2));
-		    var store = this.provider.getStore();
+		    var store = this.providers[0].getStore();
 		    this.iterator = store.asMoSQL().iteratedParametrizedQuery2(
 		        mosqlQuery,
 		        function getValue(param) {
@@ -63,7 +63,7 @@
 		translateQuery: function(dcQuery, params) {
             var query = {
                 type: 'select',
-                table: this.provider.getTableFullName()
+                table: this.providers[0].getTableFullName()
             };
             if (this.providers.length > 1) {
                 query.joins = this.translateJoins(dcQuery, params);
@@ -87,8 +87,6 @@
         },
 
         translateJoins: function(dcQuery, params){
-            var joinedProviders = this.providers.slice(0,1);
-
             function translateJoin(leftProvider, joinedProviders){
                 var joins = [];
                 for(var p in $this.providers) if ($this.providers[p] != leftProvider) {
@@ -365,8 +363,11 @@
             }
             function translateExpression(exp) {
                 // is param
-                if (JSB.isString(exp) && exp.match(/^\$/)) {
-                    return exp;
+                if (JSB.isString(exp)) {
+                    if (exp.match(/^\$/))
+                        return exp;
+                    else
+                        throw new Error("Filter condition value is not param");
                 }
                 var key = Object.keys(exp)[0];
                 // is field

@@ -13,7 +13,7 @@
                 root: true,
                 type: 'object',
                 multiValues: true,
-                values: [ '$filter', '$select', '$sort', '$finalize'],
+                values: [ '$filter', '$select', '$sort', '$finalize', '$distinct'],
             },
         },
 
