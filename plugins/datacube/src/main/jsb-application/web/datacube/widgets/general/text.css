@@ -5,7 +5,8 @@
 	text-align: left;
 }
 
-.textWidget > p {
+.textWidget > p,
+.textWidget .collapseBlock .pointCollapse > p{
 	margin: 6px 0;
 }
 
@@ -30,4 +31,44 @@
 .textWidget > p > span.highlight.active,
 .textWidget > span.highlight.active {
 	background: #d4a540;
+}
+
+.textWidget .collapseBlock {
+    min-height: 24px;
+    overflow: hidden;
+}
+
+.textWidget .collapseBlock ._dwp_button{
+    height: 24px;
+    display: block;
+    margin: 0 auto;
+    width: 65px;
+    border: none;
+    background: transparent;
+    color: #893400;
+    font-size: 18px;
+}
+
+.textWidget .collapseBlock div.pointCollapse{
+    overflow: hidden;
+}
+
+.textWidget .collapseBlock ._dwp_button + div.pointCollapse{
+    max-height: 0px;
+
+    -moz-transition: 1s;
+    -ms-transition: 1s;
+    -o-transition: 1s;
+    -webkit-transition: 1s;
+    transition: 1s;
+}
+
+.textWidget .collapseBlock ._dwp_button.hidden + div.pointCollapse{
+    max-height: 2000px;
+
+    -moz-transition: 1s;
+    -ms-transition: 1s;
+    -o-transition: 1s;
+    -webkit-transition: 1s;
+    transition: 1s;
 }
