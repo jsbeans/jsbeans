@@ -72,3 +72,7 @@
     -webkit-transition: 1s;
     transition: 1s;
 }
+
+.hidden{
+    display: none !important;
+}

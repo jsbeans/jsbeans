@@ -150,7 +150,6 @@
             name: 'Заголовок',
             type: 'item',
             key: 'title',
-            binding: 'field',
             itemType: 'string',
             itemValue: ''
         },
@@ -164,7 +163,7 @@
                 type: 'group',
                 name: 'Серии',
                 key: 'series',
-                multiple: 'auto',
+                multiple: 'true',
                 items: [
                 {
                     name: 'Имя поля',
@@ -194,14 +193,17 @@
                             {
                                 name: 'between',
                                 type: 'item',
+                                editor: 'none'
                             },
                             {
                                 name: 'null',
                                 type: 'item',
+                                editor: 'none'
                             },
                             {
                                 name: 'on',
                                 type: 'item',
+                                editor: 'none'
                             }
                             ]
                         }]
@@ -221,12 +223,14 @@
         }]
     },
 	$client: {
+	    $require: ['JQuery.UI'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('polarChart');
 			this.loadCss('PolarChart.css');
-			JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+			//JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+			JSB().loadScript('tpl/highstock/highstock.js', function(){
 				JSB().loadScript('tpl/highcharts/js/highcharts-more.js', function(){
 					self.init();	
 				});
@@ -289,6 +293,8 @@
                         }
                     }
 
+                    $this.getElement().loader('hide');
+
                     $this.container.highcharts({
                         chart: {
                             polar: true
@@ -334,8 +340,6 @@
 
                     $this.chart =  $this.container.highcharts();
                 });
-
-                $this.getElement().loader('hide');
 		    }, function(){
 		        return $this.isInit;
 		    });
