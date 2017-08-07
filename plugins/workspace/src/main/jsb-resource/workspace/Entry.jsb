@@ -120,6 +120,7 @@
 			var cEntry = this.workspace.entry(eid);
 			cEntry.parent = null;
 			cEntry.property('parent', cEntry.parent);
+			return cEntry;
 		},
 		
 		addChildEntry: function(entry){

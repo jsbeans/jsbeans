@@ -498,7 +498,7 @@
             }]
         }]
     },
-	$require: [],
+	$require: ['JQuery.UI'],
 	$client: {
         $constructor: function(opts){
             $base(opts);

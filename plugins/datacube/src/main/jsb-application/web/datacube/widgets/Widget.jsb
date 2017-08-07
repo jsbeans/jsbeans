@@ -1,7 +1,6 @@
 {
 	$name: 'DataCube.Widgets.Widget',
 	$parent: 'JSB.Widgets.Widget',
-	$require: 'DataCube.Widgets.WidgetExplorer',
 	
 	$client: {
 		wrapper: null,
@@ -231,8 +230,8 @@
 						};
 					}
 					JSB.merge(item.fetchOpts, opts);
-					if($this.getWrapper() && $this.getWrapper().getOwner()){
-						item.fetchOpts.filter = $this.getWrapper().getOwner().getFilterSelector().constructFilter(item.binding.source);
+					if($this.getWrapper()){
+						item.fetchOpts.filter = $this.getWrapper().constructFilter(item.binding.source);
 					}
 					item.fetchOpts.sort = $this.sort;
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
@@ -421,7 +420,8 @@
 		
 		setWrapper: function(w, values){
 			this.wrapper = w;
-			if(w.getOwner()){
+			this.updateSelectors(values);
+/*			if(w.getOwner()){
 				this.updateSelectors(values);
 			} else {
 				JSB.deferUntil(function(){
@@ -430,6 +430,7 @@
 					return $this.wrapper.getOwner();
 				});
 			}
+*/			
 		},
 		
 		getWrapper: function(){
@@ -445,7 +446,6 @@
 				this.values = this.values.unwrap();
 			}
 			this.context = new this.Selector(this.values);
-			this.refresh();
 		},
 		
 		getContext: function(){
@@ -473,6 +473,8 @@
 	},
 	
 	$server: {
+		$require: 'DataCube.Widgets.WidgetExplorer',
+
 		iterators: {},
 		
 		destroy: function(){

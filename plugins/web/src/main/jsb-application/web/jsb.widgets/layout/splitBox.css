@@ -8,6 +8,7 @@
 
 ._dwp_splitbox ._dwp_splitPane {
 	position: absolute;
+	box-sizing: border-box;
 	overflow: hidden;
 }
 

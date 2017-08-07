@@ -18,6 +18,8 @@
 		})
 	},
 	$client: {
+		ready: false,
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -29,7 +31,7 @@
 				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
 				this.data = new Value(this.options.value, this.options.valueType);
 			} else {
-				this.data = new Value({value:this.options.value || ''}, this.options.valueType);
+				this.data = new Value(this.options.value || '', this.options.valueType);
 			}
 			
 			this.ready = false;
@@ -149,6 +151,7 @@
 					JSB.loadScript([
 					                  'tpl/codemirror/mode/htmlmixed/htmlmixed.js',
 					                  'tpl/codemirror/mode/xml/xml.js',
+					                  'tpl/codemirror/mode/javascript/javascript.js',
 					                  'tpl/codemirror/mode/css/css.js',
 					                  'tpl/codemirror/addon/hint/show-hint.js',
 					                  'tpl/codemirror/addon/hint/html-hint.js',
@@ -227,7 +230,7 @@
 					|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
 					this.editor.getDoc().setValue(this.data.getValue());
 				} else {
-					this.editor.getDoc().setValue(this.data.getValue().value);
+					this.editor.getDoc().setValue(this.data.getValue());
 				}
 			}
 			self.editor.on('change', function(cm, evt2){
@@ -258,6 +261,11 @@
 				self.editor.refresh();
 			});
 			
+			this.ready = true;
+		},
+		
+		isReady: function(){
+			return this.ready;
 		},
 		
 		isValid: function(){
@@ -300,12 +308,12 @@
 					}
 
 				} else {
-					this.data = new Value({value:''}, this.options.valueType);
+					this.data = new Value('', this.options.valueType);
 					if(!JSB.isNull(data)){
 						if(!JSB.isNull(data.value)){
-							this.data.setValue(data);
+							this.data.setValue(data.value);
 						} else {
-							this.data.setValue({value: data});
+							this.data.setValue(data);
 						}
 					}
 				}
@@ -325,9 +333,9 @@
 					
 				} else {
 					if(JSB.isNull(this.data.getValue())){
-						this.data.setValue({value: ''});
+						this.data.setValue('');
 					}
-					this.editor.getDoc().setValue(this.data.getValue().value);
+					this.editor.getDoc().setValue(this.data.getValue());
 				}
 			}
 		},
@@ -340,7 +348,7 @@
 					|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
 					this.data.setValue(eval('(' + val + ')'));
 				} else {
-					this.data.setValue({value: val});
+					this.data.setValue(val);
 				}
 			}
 			return this.data;

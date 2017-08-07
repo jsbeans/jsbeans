@@ -8,6 +8,7 @@
 			
 			(function(jQuery){
 				`#include 'jquery-ui.min.js'`;
+				`#include 'jquery.ui.loader.js'`;
 			}).call(null, JSB().$);
 			
 		}
