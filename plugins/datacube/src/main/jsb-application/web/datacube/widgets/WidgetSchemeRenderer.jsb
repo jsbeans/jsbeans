@@ -25,6 +25,7 @@
 			this.supply = opts.supply;
 			this.addClass('widgetSchemeRenderer');
 			this.loadCss('WidgetSchemeRenderer.css');
+			JSB().loadCss('tpl/font-awesome/css/font-awesome.min.css');
 			if(this.scheme.name){
 				this.values.name = this.scheme.name;
 			}
@@ -147,6 +148,7 @@
 					header.removeClass('hidden');
 
 				}
+
 				if(this.scheme.multiple){
 					this.addClass('hasMultiple');
 					// create append button
@@ -162,6 +164,16 @@
 					header.append(btnAdd.getElement());
 					header.removeClass('hidden');
 
+				}
+
+				if(this.scheme.description){
+				    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
+				    header.append(description);
+
+				    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
+				    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
+				                          function() { description.addClass( "hidden" ); });
+                    header.append(descriptionIcon);
 				}
 			}
 			
@@ -359,7 +371,16 @@
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
 					this.values.used = true;
 				}
-				
+
+				if(this.scheme.description){
+                    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
+                    header.append(description);
+
+                    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
+                    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
+                                          function() { description.addClass( "hidden" ); });
+                    header.append(descriptionIcon);
+                }
 			} else {
 				this.values.used = true;
 				header = this.options.outletHeader;
@@ -628,6 +649,16 @@
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
 					this.values.used = true;
 				}
+
+				if(this.scheme.description){
+                    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
+                    header.append(description);
+
+                    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
+                    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
+                                          function() { description.addClass( "hidden" ); });
+                    header.append(descriptionIcon);
+                }
 			} else {
 				header = this.options.outletHeader;
 				this.values.used = true;
@@ -746,6 +777,16 @@
 				});
 				header.append(this.widgetSelector.getElement());
 				header.removeClass('hidden');
+
+				if(this.scheme.description){
+                    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
+                    header.append(description);
+
+                    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
+                    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
+                                          function() { description.addClass( "hidden" ); });
+                    header.append(descriptionIcon);
+                }
 			}
 			
 			var bodyElt = this.$('<div class="body"></div>');
