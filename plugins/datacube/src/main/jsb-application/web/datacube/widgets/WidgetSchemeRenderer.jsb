@@ -145,8 +145,8 @@
 					});
 					header.append(this.bindingSelector.getElement());
 					header.removeClass('hidden');
-
 				}
+				
 				if(this.scheme.multiple){
 					this.addClass('hasMultiple');
 					// create append button
@@ -321,7 +321,15 @@
 			} else if($this.bindingSelector && $this.bindingSelector.isFilled()){
 				fillGroup($this.bindingSelector.getDataScheme());
 			} else if($this.binding){
-				fillGroup($this.binding);
+				if($this.scheme.binding == 'array' || $this.scheme.binding == 'record'){
+					var chBinding = JSB.clone($this.binding);
+					if(chBinding.source){
+						chBinding.propagated = true;
+					}
+					fillGroup(chBinding);
+				} else {
+					fillGroup($this.binding);
+				}
 			}
 		},
 		

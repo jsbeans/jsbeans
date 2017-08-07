@@ -111,6 +111,7 @@
 
 .dataBindingSelector.filled > .binding {
 	display: block;
+	white-space: nowrap;
 }
 
 .dataBindingSelector > .binding > .renderer {
@@ -127,12 +128,14 @@
 	padding-left: 20px;
 	display: inline-block;
 	vertical-align: middle;
+	max-width: 150px;
 }
 
 .dataBindingSelector > .binding > .renderer > .leftParen,
 .dataBindingSelector > .binding > .renderer > .rightParen,
 .dataBindingSelector > .binding > .renderer > .cubeRenderer {
 	vertical-align: middle;
+	max-width: 150px;
 }
 
 .dataBindingSelector > .binding > .renderer > .leftParen {

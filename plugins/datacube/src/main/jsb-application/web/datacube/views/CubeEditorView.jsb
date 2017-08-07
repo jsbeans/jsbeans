@@ -19,7 +19,7 @@
 						panes: [{
 							key: 'topPane',
 							size: 0.6,
-							minSize: '50%',
+							minSize: '100px',
 							widgets: 'cubeEditor'
 						},{
 							minSize: '100px',

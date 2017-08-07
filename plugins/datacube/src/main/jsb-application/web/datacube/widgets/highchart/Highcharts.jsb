@@ -271,7 +271,6 @@
                     var series = [];
                     var yAxis = [];
                     var xAxis = [];
-
                     while(source.next()){
                         for(var i = 0; i < seriesContext.length; i++){
                             if(!series[i]){
@@ -301,7 +300,6 @@
                                 series[i].data.push(a);
                             }
                         }
-
                         for(var i = 0; i < xAxisContext.length; i++){
                             var a = xAxisContext[i].get(0).value();
                             if(JSB().isArray(a)){

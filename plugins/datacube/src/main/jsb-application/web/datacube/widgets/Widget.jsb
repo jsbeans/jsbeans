@@ -210,7 +210,7 @@
 						return false;
 					}
 					
-					if(!item.binding.source){
+					if(!item.binding.source || item.binding.propagated){
 						if(item.data){
 							if(opts.reset){
 								item.cursor = 0;
@@ -261,17 +261,25 @@
 						return false;
 					}
 					var item = this.selector[0];
-					if(!item.data || !JSB.isArray(item.data)){
-						return false;
-					}
 					if(!JSB.isDefined(item.cursor)){
 						item.cursor = 0;
 					}
-					if(item.cursor >= item.data.length){
+					if(!item.data || (item.cursor > 0 && !JSB.isArray(item.data))){
 						return false;
 					}
 					
-					var dataEl = item.data[item.cursor++];
+					var dataEl = null;
+					
+					if(JSB.isArray(item.data)){
+						if(item.cursor >= item.data.length){
+							return false;
+						}
+						
+						dataEl = item.data[item.cursor++];
+					} else {
+						dataEl = item.data;
+						item.cursor++;
+					}
 					
 					// fills descendant with values
 					traverse(item, dataEl, function(curItem, val, stop){

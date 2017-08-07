@@ -13,7 +13,7 @@
 			this.loadCss('Handsontable.jsb.css');
 			this.addClass('tableControl');
 
-            this.noData = this.$('<div class="noData hidden">Нет данных</div>');
+            this.noData = this.$('<div class="noData hidden"></div>').text((opts && opts.noDataMessage)||'Нет данных');
             this.append(this.noData);
 
 			this.table = this.$('<div></div>');

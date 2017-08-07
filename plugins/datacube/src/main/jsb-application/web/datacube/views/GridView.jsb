@@ -14,6 +14,7 @@
 			this.loadCss('GridView.css');
 
             this.table = new Handsontable({
+            	noDataMessage: 'Выберите объект на диаграмме',
                 table: {
                     rowHeaders: false,
                     readOnly: false,
@@ -234,10 +235,9 @@
                     }
 
                     this.counter++;
-                    res.push(prepareElement(el));
-                    // res.push(el);
+                    //res.push(prepareElement(el));
+                    res.push(el);
                 }
-
                 return {
                     result: res,
                     allLoaded: allLoaded,

@@ -86,8 +86,9 @@
 		owner: null,
 		widget: null,
 		settingsVisible: false,
+		attached: false,
 		
-		$constructor: function(widgetEntry, owner){
+		$constructor: function(widgetEntry, owner, opts){
 			$base();
 			this.widgetEntry = widgetEntry;
 			this.owner = owner;
@@ -145,6 +146,7 @@
 				if(w == $this){
 					// update header
 					$this.updateTabHeader();
+					$this.attached = true;
 				}
 			});
 			
@@ -159,6 +161,20 @@
 				}
 				$this.getWidget().refresh(opts);
 			});
+			
+			if(opts && opts.showSettings){
+				var dashboardContainer = $this.getElement().closest("._jsb_dashboardContainer").jsb();
+				if(!$this.attached || !dashboardContainer || !$this.isContentReady()){
+					JSB.deferUntil(function(){
+						$this.showSettings();
+					}, function(){
+						return $this.attached && $this.getElement().closest("._jsb_dashboardContainer").jsb() && $this.isContentReady();
+					});
+				} else {
+					$this.showSettings();
+				}
+			}
+
 		},
 		
 		
@@ -301,9 +317,7 @@
 			editor.setData(this.getName());
 		},
 		
-		showSettings: function(evt){
-			var elt = this.$(evt.currentTarget);
-			
+		showSettings: function(){
 			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
 			dashboardContainer.placeholders['center'].enable(false);
 			
@@ -359,6 +373,7 @@
 		
 		updateWidgetSelectors: function(){
 			this.getWidget().updateSelectors();
+			this.getWidget().refresh();
 		}
 	}
 	

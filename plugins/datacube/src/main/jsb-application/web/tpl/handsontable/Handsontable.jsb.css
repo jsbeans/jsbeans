@@ -2,8 +2,12 @@
     height: 100%;
     width: 100%;
 }
+
 .tableControl .noData{
     text-align: center;
     font-size: 2em;
     color: darkgrey;
+	top: 50%;
+    position: relative;
+    margin-top: -15px;
 }
