@@ -59,6 +59,11 @@
             });
 		},
 
+		clear: function(){
+		    this.error.addClass('hidden');
+            this.table.clear();
+		},
+
 		// get column number; return header cell content
 		createHeader: function(i, header){
 		    if(!header) return i + 1;

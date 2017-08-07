@@ -85,6 +85,7 @@
         ]
     },
 	$client: {
+	    $require: ['JQuery.UI'],
 		$constructor: function(opts){
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');

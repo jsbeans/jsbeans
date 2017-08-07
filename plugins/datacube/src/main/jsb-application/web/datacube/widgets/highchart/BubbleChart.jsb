@@ -169,12 +169,14 @@
         }]
     },
 	$client: {
+	    $require: ['JQuery.UI'],
         $constructor: function(opts){
             var self = this;
             $base(opts);
             this.getElement().addClass('pieChart');
             this.loadCss('PieChart.css');
-            JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+            //JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+            JSB().loadScript('tpl/highstock/highstock.js', function(){
                 JSB().loadScript('tpl/highcharts/js/highcharts-more.js', function(){
                     self.init();
                 });

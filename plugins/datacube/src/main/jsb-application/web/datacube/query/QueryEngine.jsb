@@ -137,7 +137,7 @@ debugger;
 		query: function(dcQuery, params, dataProvider){
 			this.cube.load();
 		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
-//debugger;
+
 		    Log.debug('QueryEngine.query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
 		    var it = this.produceIterator(dcQuery, params||{}, dataProvider);
 		    return it;
