@@ -1629,6 +1629,7 @@ if(!(function(){return this;}).call(null).JSB){
 							(this.isPlainObject(copy, true) || (copyIsArray = this.isArray(copy))) && 
 							!this.isJavaObject(copy) && 
 							!(copy instanceof JSB) &&
+							!this.isDate(copy) &&
 							!this.isInstanceOf(copy, 'JSB.Object') &&
 							(!JSB().isClient() || (!(copy instanceof HTMLElement))&&(!(copy == document)))) {
 							if (copyIsArray) {

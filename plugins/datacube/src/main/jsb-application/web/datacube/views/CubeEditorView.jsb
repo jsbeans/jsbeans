@@ -19,7 +19,7 @@
 						panes: [{
 							key: 'topPane',
 							size: 0.6,
-							minSize: '50%',
+							minSize: '100px',
 							widgets: 'cubeEditor'
 						},{
 							minSize: '100px',
@@ -55,7 +55,7 @@
 
 			var gridView = this.find('div[key="gridView"] > ._dwp_widget').jsb();
 			if(gridView && gridView.table){
-			    gridView.table.clear();
+			    gridView.clear();
 			}
 		}
 	},

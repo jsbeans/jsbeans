@@ -75,6 +75,7 @@
             type: 'group',
             name: 'Всплывающая подсказка',
             key: 'tooltip',
+            description: 'Тултип, всплывающий при наведении на значение',
             items: [
                 {
                     name: 'Формат даты',
@@ -85,6 +86,7 @@
         ]
     },
 	$client: {
+	    $require: ['JQuery.UI'],
 		$constructor: function(opts){
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');

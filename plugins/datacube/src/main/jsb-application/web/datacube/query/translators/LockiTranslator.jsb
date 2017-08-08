@@ -14,14 +14,14 @@
 		},
 
 		$constructor: function(provider, cube){
-		    $base(provider);
+		    $base(provider, cube);
 		    this.cube = cube;
 		    this.queryEngine = cube.queryEngine;
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
 		    // TODO: translate query to loki
-            var result = this.provider.find();
+            var result = this.providers[0].find();
             var i = 0;
 		    return {
 		        next: function(){
@@ -38,6 +38,5 @@
 
 		close: function() {
 		},
-
 	}
 }

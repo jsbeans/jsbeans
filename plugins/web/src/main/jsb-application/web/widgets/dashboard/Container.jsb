@@ -347,8 +347,8 @@
 				var c1 = new $class(this.options, this, this.dashboard);
 				var c2 = new $class(this.options, this, this.dashboard);
 				
-				splitBox.addToPane(0, c1);
-				splitBox.addToPane(1, c2);
+				var pane1 = splitBox.addToPane(0, c1);
+				var pane2 = splitBox.addToPane(1, c2);
 				
 				if(side == 'right' || side == 'bottom'){
 					c1.setContainer(this);

@@ -14,6 +14,7 @@
 			this.loadCss('GridView.css');
 
             this.table = new Handsontable({
+            	noDataMessage: 'Выберите объект на диаграмме',
                 table: {
                     rowHeaders: false,
                     readOnly: false,
@@ -57,6 +58,11 @@
                     $this._updateData(slice);
                 }, 300, 'sliceNodeEdit' + $this.getId());
             });
+		},
+
+		clear: function(){
+		    this.error.addClass('hidden');
+            this.table.clear();
 		},
 
 		// get column number; return header cell content
@@ -234,10 +240,9 @@
                     }
 
                     this.counter++;
-                    res.push(prepareElement(el));
-                    // res.push(el);
+                    //res.push(prepareElement(el));
+                    res.push(el);
                 }
-
                 return {
                     result: res,
                     allLoaded: allLoaded,

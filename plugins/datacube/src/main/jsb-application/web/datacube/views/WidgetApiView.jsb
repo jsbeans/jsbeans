@@ -81,11 +81,6 @@
 			
 			hSplitBox.showPane(0, false);	// hide CSS pane
 */			
-			JSB.deferUntil(function(){
-				$this.ready = true;
-			}, function(){
-				return $this.isContentReady();
-			});
 			
 			this.find('.widgetSettings').resize(function(){
 				var h = $this.find('.widgetSettings').outerHeight() + 10;
@@ -187,6 +182,7 @@
 				widget.setSort({"cubeFieldName": -1});
 				*/
 				
+				
 				/* Управление фильтрами */
 				
 				/*
@@ -236,13 +232,14 @@
 		refresh: function(){
 			if(!this.ready){
 				JSB.deferUntil(function(){
+					$this.ready = true;
 					$this.refresh();
 				}, function(){
-					return $this.ready;
+					return $this.isContentReady();
 				});
 				return;
 			}
-			
+
 			$this.fillSettings();
 		}
 		

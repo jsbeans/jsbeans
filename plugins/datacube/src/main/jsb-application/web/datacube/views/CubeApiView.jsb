@@ -145,12 +145,6 @@
 			resultsTab.switchTab(jsonTab);
 			
 			splitBox.addToPane(1, resultsTab);
-			
-			JSB.deferUntil(function(){
-				$this.ready = true;
-			}, function(){
-				return $this.isContentReady();
-			});
 		},
 
 		enableGroupBy: function(bChecked){
@@ -286,9 +280,10 @@
 		refresh: function(){
 			if(!this.ready){
 				JSB.deferUntil(function(){
+					$this.ready = true;
 					$this.refresh();
 				}, function(){
-					return $this.ready;
+					return $this.isContentReady();
 				});
 				return;
 			}

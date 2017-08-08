@@ -98,14 +98,171 @@
 		PLvRXgwBSg2jsFgsPz+/bt30vTI3mUywM0iUHxQURJ46dymsJ9RNpPxEBD2nfwowALDTYSm2KjL/
 		AAAAAElFTkSuQmCC`
 	},
-	
+	$scheme: {
+        type: 'group',
+        items: [
+        {
+            name: 'Заголовок',
+            type: 'item',
+            key: 'title',
+            itemType: 'string',
+            itemValue: ''
+        },
+        {
+            name: 'Подзаголовок',
+            type: 'item',
+            key: 'subtitle',
+            itemType: 'string',
+            itemValue: ''
+        },
+        {
+            type: 'item',
+            name: 'Включить легенду',
+            key: 'enableLegend',
+            optional: true,
+            editor: 'none',
+        },
+        {
+            type: 'group',
+            name: 'Ось Х',
+            key: 'xAxis',
+            optional: true,
+            editor: 'none',
+            items: [
+            {
+                name: 'Заголовок',
+                type: 'item',
+                itemType: 'string',
+            },
+            {
+                name: 'Формат значений',
+                type: 'item',
+                itemType: 'string',
+            }
+            ]
+        },
+        {
+            type: 'group',
+            name: 'Ось Y',
+            key: 'yAxis',
+            optional: true,
+            editor: 'none',
+            items: [
+            {
+                name: 'Заголовок',
+                type: 'item',
+                itemType: 'string',
+            },
+            {
+                name: 'Формат значений',
+                type: 'item',
+                itemType: 'string',
+            }
+            ]
+        },
+        {
+            type: 'group',
+            name: 'plotOptions',
+            key: 'plotOptions',
+            optional: true,
+            editor: 'none',
+            items: [
+            {
+                type: 'group',
+                name: 'scatter',
+                items: [
+                {
+                    type: 'group',
+                    name: 'tooltip',
+                    items: [
+                    {
+                        name: 'headerFormat',
+                        type: 'item',
+                        itemType: 'string',
+                        itemValue: ''
+                    },
+                    {
+                        name: 'pointFormat',
+                        type: 'item',
+                        itemType: 'string',
+                        itemValue: ''
+                    }
+                    ]
+                }
+                ]
+            }
+            ]
+        },
+        {
+            type: 'group',
+            name: 'Серии',
+            binding: 'array',
+            key: 'source',
+            multiple: 'true',
+            items: [
+            {
+                name: 'Данные',
+                type: 'group',
+                key: 'data',
+                multiple: 'true',
+                items: [
+                {
+                    type: 'select',
+                    name: 'Имя поля',
+                    itemType: 'string',
+                    items: [
+                        {
+                            type: 'item',
+                            name: 'x',
+                            editor: 'none'
+                        },
+                        {
+                            type: 'item',
+                            name: 'y',
+                            editor: 'none'
+                        },
+                        {
+                            type: 'item',
+                            name: 'другое',
+                            itemType: 'string',
+                            itemValue: ''
+                        }
+                    ]
+                },
+                {
+                    type: 'item',
+                    name: 'Поле',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
+                }
+                ]
+            },
+            {
+                type: 'item',
+                name: 'Имя серии',
+                itemType: 'string',
+                itemValue: ''
+            },
+            {
+                type: 'item',
+                name: 'Цвет серии',
+                itemType: 'color',
+                editor: 'JSB.Widgets.ColorEditor',
+                options: {
+                    mode: 'hexagon'
+                }
+            }
+            ]
+        }]
+    },
 	$client: {
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('scatterChart');
 			this.loadCss('ScatterChart.css');
-			JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+			JSB().loadScript('tpl/highstock/highstock.js', function(){
 				self.init();
 			});
 		},
@@ -131,7 +288,29 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
-            var dataValue = this.getContext().find('data').value();
+            var dataValue = [],
+                seriesParams = [];
+            var dataValues = source.values();
+            for(var i = 0; i < dataValues.length; i++){
+                var val = [],
+                    a = dataValues[i].values();
+
+                for(var j = 0; j < a.length; j++){
+                    var curr = a[j].value();
+                    var n = curr.get(0);
+                    val.push({
+                        name: n.value() === null ? n.name() : n.value(),
+                        value: a[j].get(1)
+                    });
+                }
+
+                seriesParams.push({
+                    name: dataValues[i].get(1).value(),
+                    color: dataValues[i].get(2).value()
+                });
+
+                dataValue.push(val);
+            }
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
@@ -139,54 +318,98 @@
                     var data = [];
 
                     while(source.next()){
-                        var name = dataValue.get(0).value();
-                        var y = dataValue.get(1).value();
+                        for(var i = 0; i < dataValue.length; i++){
+                            if(!data[i]) data[i] = [];
 
-                        if(JSB().isArray(name)){
-                            for(var j = 0; j < name.length; j++){
-                                data.push({
-                                    name: name[j],
-                                    y: y[j]
-                                });
-                            }
+                            data[i].push(dataValue[i].reduce(function(newObj, el){
+                                newObj[el.name] = el.value.value()
+                                return newObj;
+                            }, {}));
                         }
                     }
 
-                    $this.container.highcharts({
-                        chart: {
-                            plotBackgroundColor: null,
-                            plotBorderWidth: null,
-                            plotShadow: false,
-                            type: 'pie'
-                        },
+                    try{
+                        var chart = {
+                            chart: {
+                                type: 'scatter',
+                                zoomType: 'xy'
+                            },
+                            title: {
+                                text: this.getContext().find('title').value()
+                            },
 
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
+                            subtitle: {
+                                text: this.getContext().find('subtitle').value()
+                            },
 
-                        plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                dataLabels: {
-                                    enabled: false
+                            legend: {
+                                enabled: this.getContext().find('enableLegend').used()
+                            },
+
+                            series: []
+                        };
+
+                        for(var i = 0; i < data.length; i++){
+                            chart.series.push({
+                                data: data[i],
+                                name: seriesParams[i].name,
+                                color: seriesParams[i].color
+                            });
+                        }
+
+                        // xAxis
+                        var x = this.getContext().find('xAxis');
+                        if(x.used()){
+                            x = x.value();
+
+                            chart.xAxis = {
+                                title: {
+                                  text: x.get(0).value()
                                 },
-                                showInLegend: true
+                                labels: {
+                                  format: x.get(1).value()
+                                }
                             }
-                        },
+                        }
 
-                        tooltip: {
-                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-                        },
+                        // yAxis
+                        var x = this.getContext().find('yAxis');
+                        if(x.used()){
+                            x = x.value();
 
-                        series: [{
-                            data: data,
-                            colorByPoint: true
-                        }]
-                    });
+                            chart.yAxis = {
+                                title: {
+                                  text: x.get(0).value()
+                                },
+                                labels: {
+                                  format: x.get(1).value()
+                                }
+                            }
+                        }
 
-                    $this.getElement().loader('hide');
+                        // plotOptions
+                        var x = this.getContext().find('plotOptions');
+                        if(x.used()){
+                            x = x.value();
+                            var dataLabels = x.get(0).value().get(0).value();
 
+                            chart.plotOptions = {
+                                scatter: {
+                                    tooltip: {
+                                        headerFormat: dataLabels.get(0).value(),
+                                        pointFormat: dataLabels.get(1).value()
+                                    }
+                                }
+                            };
+                        }
+                    } catch(ex){
+                        console.log(ex);
+                        return;
+                    } finally{
+                        $this.getElement().loader('hide');
+                    }
+
+                    $this.container.highcharts(chart);
                     $this.chart =  $this.container.highcharts();
                 });
 
@@ -194,6 +417,17 @@
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        // events
+        _addNewFilter: function(){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) return;
+            /*
+            var field = this.getContext().find('data').value().get(0).binding();
+
+            this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);
+            */
         }
 	}
 }

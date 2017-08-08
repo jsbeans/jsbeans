@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.DashboardViewerView',
+	$name: 'DataCube.DashboardPublicationView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -7,8 +7,8 @@
 		$constructor: function(opts){
 			$base(opts);
 			
-			this.loadCss('DashboardViewerView.css');
-			this.addClass('dashboardViewerView');
+			this.loadCss('DashboardPublicationView.css');
+			this.addClass('dashboardPublicationView');
 			
 		},
 		
@@ -22,9 +22,9 @@
 		$bootstrap: function(){
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
-				priority: 0.5,
+				priority: 0.3,
 				acceptNode: 'DataCube.DashboardNode',
-				caption: 'Просмотр'
+				caption: 'Публикация'
 			});
 		},
 	}

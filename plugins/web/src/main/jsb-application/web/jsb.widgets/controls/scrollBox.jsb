@@ -93,14 +93,14 @@
 				});
 			}
 			
-			JSB().deferUntil(function(){
+//			JSB().deferUntil(function(){
 				$this.installScroll();
 				$this.setEasing('easeOutExpo');
 				$this.updateScrollbars();
 				$this.ready = true;
-			},function(){
-				return $this.getElement().width() > 0;
-			});
+//			},function(){
+//				return $this.getElement().width() > 0;
+//			});
 
 		},
 		

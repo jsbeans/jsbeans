@@ -229,12 +229,14 @@
         }]
     },
 	$client: {
+	    $require: ['JQuery.UI'],
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('Highcharts.css');
-			JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+			//JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+			JSB().loadScript('tpl/highstock/highstock.js', function(){
 				self.init();
 			});
 		},
@@ -271,7 +273,6 @@
                     var series = [];
                     var yAxis = [];
                     var xAxis = [];
-
                     while(source.next()){
                         for(var i = 0; i < seriesContext.length; i++){
                             if(!series[i]){
@@ -301,7 +302,6 @@
                                 series[i].data.push(a);
                             }
                         }
-
                         for(var i = 0; i < xAxisContext.length; i++){
                             var a = xAxisContext[i].get(0).value();
                             if(JSB().isArray(a)){

@@ -151,10 +151,32 @@
                 multiple: 'true',
                 items: [
                 {
-                    type: 'item',
+                    type: 'select',
                     name: 'Имя поля',
                     itemType: 'string',
-                    itemValue: '',
+                    items: [
+                        {
+                            type: 'item',
+                            name: 'x',
+                            editor: 'none'
+                        },
+                        {
+                            type: 'item',
+                            name: 'y',
+                            editor: 'none'
+                        },
+                        {
+                            type: 'item',
+                            name: 'z',
+                            editor: 'none'
+                        },
+                        {
+                            type: 'item',
+                            name: 'другое',
+                            itemType: 'string',
+                            itemValue: ''
+                        }
+                    ]
                 },
                 {
                     type: 'item',
@@ -169,13 +191,14 @@
         }]
     },
 	$client: {
+	    $require: ['JQuery.UI'],
         $constructor: function(opts){
             var self = this;
             $base(opts);
             this.getElement().addClass('pieChart');
             this.loadCss('PieChart.css');
-            JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
-                JSB().loadScript('tpl/highcharts/js/highcharts-more.js', function(){
+            JSB().loadScript('tpl/highstock/highstock.js', function(){
+                JSB().loadScript('tpl/highstock/highcharts-more.js', function(){
                     self.init();
                 });
             });
@@ -207,8 +230,9 @@
             var dataValue = [];
             var dataVal = source.value().get(0).values();
             for(var i = 0; i < dataVal.length; i++){
+                var n = dataVal[i].get(0).value().get(0);
                 dataValue.push({
-                   name: dataVal[i].get(0).value(),
+                   name: n.value() === null ? n.name() : n.value(),
                    value: dataVal[i].get(1)
                 });
             }
@@ -248,8 +272,8 @@
                                 data: data,
                                 point: {
                                     events: {
-                                        select: function(evt) { debugger; $this._addNewFilter(evt.target.name);},
-                                        unselect: function() { $this.removeFilter($this._currentFilter); }
+                                        //select: function(evt) { debugger; $this._addNewFilter(evt.target.name);},
+                                        //unselect: function() { $this.removeFilter($this._currentFilter); }
                                     }
                                 }
                             }]
@@ -309,7 +333,7 @@
                                 series: {
                                     dataLabels: {
                                         enabled: dataLabels.get(0).used(),
-                                        format: dataLabels.get(0).value()
+                                        format: dataLabels.get(1).value()
                                     }
                                 }
                             };

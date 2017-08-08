@@ -179,8 +179,9 @@
 			$base(opts);
 			this.getElement().addClass('treeMap');
 			this.loadCss('TreeMap.css');
-			JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
-				JSB().loadScript('tpl/highcharts/js/modules/treemap.js', function(){
+			//JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
+			JSB().loadScript(['tpl/highstock/adapters/standalone-framework.js', 'tpl/highstock/highstock.js'], function(){
+				JSB().loadScript('tpl/highstock/modules/treemap.js', function(){
 					self.init();	
 				});
 			});
@@ -251,6 +252,8 @@
 
                     data = $this.convertToTreemapFormat(data);
 
+                    $this.getElement().loader('hide');
+
                     $this.container.highcharts({
                         title: {
                             text: this.getContext().find('title').value()
@@ -295,6 +298,7 @@
                             data: data,
                             turboThreshold: 0,
 
+                            /*
                             drillUpButton: {
                                 text: '<< return',
                                 position: {
@@ -312,15 +316,12 @@
                                         }
                                     }
                                 }
-
                             }
-
+                            */
                         }]
                     });
 
                     $this.chart =  $this.container.highcharts();
-
-                    $this.getElement().loader('hide');
                 });
             }, function(){
                 return $this.isInit;
@@ -328,6 +329,8 @@
         },
 
         _addNewFilter: function(level, value){
+            if(!level || !value) return;
+
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
