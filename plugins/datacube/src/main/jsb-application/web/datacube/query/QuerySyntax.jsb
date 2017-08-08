@@ -6,6 +6,37 @@
 		$require: [],
 
 		$constructor: function(){
+//		    EObj({
+//		        id: '$query',
+//		        type: 'object',
+//		        keys: ['$filter', '$select', '$sort', '$finalize', '$distinct'],
+//		        multi: M.Any
+//		    });
+//
+//		    EMObj({
+//		        id: '$select',
+//		        type: 'object',
+//		        keys: ['$$name'],
+//		        multi: M.Any,
+//		        value: '$$defineField'
+//		    });
+//
+//		    ENamedObj({
+//		        id: '$$defineField',
+//		        type: 'object',
+//
+//		        '$$expression',
+//		        M.Single
+//		    });
+//
+//		    EObj('$$expression', [
+//                '$sum', '$count','$min', '$max', '$avg',
+//                '$array', '$flatArray', '$gsum', '$gcount', '$gmin', '$gmax',
+//                '$grmaxsum', '$grmaxcount', '$grmaxavg',
+//                '$toInt', '$toDouble', '$toBoolean', '$distinct',
+//                '$add', '$sub', '$mul', '$div', '$mod',
+//                '$const', '$field', '$$name', '$$param'], M.Single);
+//            EFuncAgg('$sum', );
 		},
 
         schemaRoot:{

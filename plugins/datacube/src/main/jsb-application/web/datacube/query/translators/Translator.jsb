@@ -157,6 +157,17 @@
         },
 
         _extractUsedProviders: function(dcQuery, exp, byKeyField, byValueField, onlySelf){
+             function putValues(array, values){
+                for (var i in values) {
+                    var exists = false;
+                    for (var j in array) {
+                        if (array[j] == values[i]) {
+                            exists = true;
+                        }
+                    }
+                    if (!exists) array.push(values[i]);
+                }
+             }
             // input exp - expression with cube fields
             // result - array with providers connected with current expression
             var providers = [];
@@ -165,18 +176,20 @@
                     if (!p.match(/^\$/) && byKeyField) {
                         if (this.cube && !this.cube.fields[p]) {
                             // may be alias or provider field
-                            providers = providers.concat(
-                                    this._extractUsedProviders(dcQuery, dcQuery.$select[p], false, true));
+                            putValues(providers,
+                                this._extractUsedProviders(dcQuery, dcQuery.$select[p], false, true));
                         } else {
                             providers = providers.concat(this._getCubeFieldProviders(p, onlySelf));
                         }
                     } else {
-                        providers = providers.concat(this._extractUsedProviders(dcQuery, exp[p], byKeyField, byValueField));
+                        putValues(providers,
+                            this._extractUsedProviders(dcQuery, exp[p], byKeyField, byValueField));
                     }
                 }
             } else if (JSB.isArray(exp)) {
                 for(var i in exp) {
-                    providers = providers.concat(this._extractUsedProviders(dcQuery, exp[i], byKeyField, byValueField));
+                    putValues(providers,
+                        this._extractUsedProviders(dcQuery, exp[i], byKeyField, byValueField));
                 }
             } else if (JSB.isString(exp)) {
                 if (!exp.match(/^\$/) && byValueField) {
@@ -188,10 +201,11 @@
                             }
                         }
                         // may be alias
-                        if (!byValueField) providers = providers.concat(
+                        if (!byValueField) providers = putValues(providers,
                                 this._extractUsedProviders(dcQuery, dcQuery.$select[exp], false, true));
                     } else {
-                        providers = providers.concat(this._getCubeFieldProviders(exp, onlySelf));
+                        putValues(providers,
+                            this._getCubeFieldProviders(exp, onlySelf));
                     }
                 }
             }

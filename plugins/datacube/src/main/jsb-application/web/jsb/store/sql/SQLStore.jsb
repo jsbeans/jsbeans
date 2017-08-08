@@ -25,12 +25,6 @@
                     }
 			    }, config));
 			// init MongoSQL global var
-
-			var console = {
-			    log: function(){ Log.debug.apply(Log, arguments); },
-			    error: function(){ Log.debug.apply(Log, arguments); }
-			};
-			`#include 'thirdparty/mongo-sql-bundle.js'`;
 		},
 
         getConnection: function(checkConnection) {
@@ -180,50 +174,6 @@
                         throw e;
                     }
                 }
-            };
-		},
-
-		asMoSQL: function() {
-            return {
-                iteratedQuery: function(query, rowExtractor, onClose) {
-                    var query = JSB.merge({
-                        type: 'select',
-                    }, query, {});
-                    var mosql = MongoSQL.sql(query);
-
-                    var result = $this.asSQL().iteratedQuery(mosql.query, mosql.values, rowExtractor, onClose);
-                    return result;
-                },
-                iteratedParametrizedQuery: function(query, parameters, rowExtractor) {
-                    var query = JSB.merge({
-                        type: 'select',
-                    }, query, {});
-
-                    var mosql = MongoSQL.sql(query);
-                    var parametrizedSQL = mosql.query.replace(/\$(\d?)/g, function(str, param){
-                        var idx = parseInt(param);
-                        return mosql.values[idx - 1];
-                    });
-
-                    var result = $this.asSQL().iteratedParametrizedQuery(parametrizedSQL, parameters, rowExtractor, onClose);
-                    return result;
-                },
-                iteratedParametrizedQuery2: function(query, getValue, getType, rowExtractor, onClose) {
-                    var query = JSB.merge({
-                        type: 'select',
-                    }, query, {});
-
-                    var mosql = MongoSQL.sql(query);
-                    var parametrizedSQL = mosql.query;
-                    parametrizedSQL = parametrizedSQL.replace(/\$(\d?)/g, function(str, param){
-                        var idx = parseInt(param);
-                        return mosql.values[idx - 1];
-                    });
-
-//                    Log.debug('Parametrized SQL Query: ' + parametrizedSQL);
-                    var result = $this.asSQL().iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);
-                    return result;
-                },
             };
 		},
 

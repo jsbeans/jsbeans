@@ -9,7 +9,7 @@
 //		    'DataCube.Providers.SqlTableDataProvider',
 //		    'DataCube.Providers.InMemoryDataProvider',
 
-		    'DataCube.Query.Translators.MoSQLTranslator',
+		    'DataCube.Query.Translators.SQLTranslator',
 		    'DataCube.Query.Translators.LockiTranslator',
         ],
 

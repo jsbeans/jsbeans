@@ -17,6 +17,162 @@
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		},
 
+		examples: {
+		    subQuery0: {
+                "$select": {
+                    "Автор работы": "Автор работы",
+                    "Год": {$dateYear: "Дата документа"},
+                    "Значение" : {$sum: "precision"}
+                },
+                groupBy: ["Автор работы", "Год"]
+            },
+		    subQuery1: {
+                "$select": {
+                     "Автор работы": "Автор работы",
+                     "Год": {$dateYear: "Дата документа"},
+                     counts: {
+                         $select: {
+                             "Уникальных документов автора": {$count: {$distinct: "id"}},
+                             "Всего документов автора": {$count: 1}
+                         }
+                     },
+                     "Сумма за текущий год": {
+                         $select: {
+                             "precision": {$sum: "precision"},
+                             "Год для аггрегации": {$dateYear: "Дата документа"},
+                         },
+                         $filter: {
+                             "Автор работы": {$eq: "Автор работы"},
+                             "Год для аггрегации": {$eq: "Год"},
+                         }
+                     },
+                     "Сумма за прошлый год": {
+                         $select: {
+                             "precision": {$sum: "precision"},
+                             "Год для аггрегации": {$dateYear: "Дата документа"},
+                         },
+                         $filter: {
+                             "Автор работы": {$eq: "Автор работы"},
+                             "Год для аггрегации": {$eq: {$sub: ["Год", {$const:1}]}},
+                         }
+                     },
+                     "Прирост": {$sub: [{
+                             $select: {
+                                 "precision": {$sum: "precision"},
+                                 "Год для аггрегации": {$dateYear: "Дата документа"},
+                             },
+                             $filter: {
+                                 "Автор работы": {$eq: "Автор работы"},
+                                 "Год для аггрегации": {$eq: "Год"},
+                             }
+                         }, {
+                             $select: {
+                                 "precision": {$sum: "precision"},
+                                 "Год для аггрегации": {$dateYear: "Дата документа"},
+                             },
+                             $filter: {
+                                 "Автор работы": {$eq: "Автор работы"},
+                                 "Год для аггрегации": {$eq: {$sub: ["Год", {$const:1}]}},
+                             }
+                         }]}
+                },
+                $sort: [{"Автор работы":-1}, {"Год": -1}]
+            },
+		    subQuery2: {
+                "$select": {
+                    "Автор работы": "Автор работы",
+                    "Прирост в 2016": {
+                        "$sub": [
+                            {
+                                "$filter": {
+                                    "Автор работы": {
+                                        "$eq": "Автор работы"
+                                    },
+                                    "Год": {
+                                        "$eq": {
+                                            "$const": "2016"
+                                        }
+                                    }
+                                },
+                                "$select": {
+                                    "precision": {
+                                        "$sum": "precision"
+                                    },
+                                    "Год": {
+                                        "$dateYear": "Дата документа"
+                                    }
+                                }
+                            },
+                            {
+                                "$filter": {
+                                    "Автор работы": {
+                                        "$eq": "Автор работы"
+                                    },
+                                    "Год": {
+                                        "$eq": {
+                                            "$const": "2015"
+                                        }
+                                    }
+                                },
+                                "$select": {
+                                    "precision": {
+                                        "$sum": "precision"
+                                    },
+                                    "Год": {
+                                        "$dateYear": "Дата документа"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "Прирост в 2017": {
+                        "$sub": [
+                            {
+                                "$filter": {
+                                    "Автор работы": {
+                                        "$eq": "Автор работы"
+                                    },
+                                    "Год": {
+                                        "$eq": {
+                                            "$const": "2017"
+                                        }
+                                    }
+                                },
+                                "$select": {
+                                    "precision": {
+                                        "$sum": "precision"
+                                    },
+                                    "Год": {
+                                        "$dateYear": "Дата документа"
+                                    }
+                                }
+                            },
+                            {
+                                "$filter": {
+                                    "Автор работы": {
+                                        "$eq": "Автор работы"
+                                    },
+                                    "Год": {
+                                        "$eq": {
+                                            "$const": "2016"
+                                        }
+                                    }
+                                },
+                                "$select": {
+                                    "precision": {
+                                        "$sum": "precision"
+                                    },
+                                    "Год": {
+                                        "$dateYear": "Дата документа"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+
 		executeQuery: function(translatedQuery, params){
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asSQL().iteratedParametrizedQuery2(
@@ -35,35 +191,54 @@
         },
 
 		translateQuery: function(dcQuery, params) {
-		    var columns = this._translateColumns(dcQuery);
-		    var from  =  this._translateFrom(dcQuery);
-		    var where =  this._translateWhere(dcQuery);
-		    var group =  this._translateGroup(dcQuery);
-		    var order =  this._translateOrder(dcQuery);
-		    where = (where ? ' WHERE ' + where : ' ');
-		    group = (group ? ' GROUP BY ' + group : ' ');
-		    order = (order ? ' ORDER BY ' + order : ' ');
+		    var sql = this.translateQueryExpression(dcQuery);
 
-		    var sql = 'SELECT ' + columns + ' FROM ' + from + where + group + order;
 		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
         },
 
-        _translateColumns: function(dcQuery){
+		translateQueryExpression: function(dcQuery) {
+		    var sql = '';
+		    if (dcQuery.$sql) {
+		        sql += dcQuery.$sql;
+		    } else {
+                var columns = this._translateExpressions(dcQuery);
+                var from  =  this._translateFrom(dcQuery);
+                var where =  this._translateWhere(dcQuery);
+                var group =  this._translateGroup(dcQuery);
+                var order =  this._translateOrder(dcQuery);
+                from  = dcQuery.$context ? from + ' ' + this._quotedName(dcQuery.$context, true) : from;
+                where = where ? ' WHERE ' + where : ' ';
+                group = group ? ' GROUP BY ' + group : ' ';
+                order = order ? ' ORDER BY ' + order : ' ';
+
+                sql += 'SELECT ' + columns + ' FROM ' + from + where + group + order;
+            }
+
+		    if (dcQuery.$postFilter) {
+		        sql = 'SELECT * FROM (' + sql + ') "result" WHERE ' + this._translateWhere(dcQuery, dcQuery.$postFilter, "result");
+		    }
+
+		    Log.debug('Translated SQL Query: \n' + sql);
+            return sql;
+        },
+
+        _translateExpressions: function(dcQuery){
             var sqlColumns = '';
             var select = dcQuery.$select;
             var i = 0;
             for (var alias in select) if (select.hasOwnProperty(alias)) {
                 if (i++ > 0) sqlColumns += ', '
-                sqlColumns += this._translateColumn(alias, select[alias], dcQuery) + ' AS ' + this._quotedName(alias);
+                sqlColumns += this._translateExpression(alias, select[alias], dcQuery) + ' AS ' + this._quotedName(alias, true);
             }
             return sqlColumns;
         },
 
-        _translateColumn: function(alias, exp, dcQuery) {
+        _translateExpression: function(alias, exp, dcQuery) {
             function translateGlobalAggregate(subExp, func){
-                var column = $this._translateColumn(null, subExp, dcQuery);
-                var as     = (alias ? ' AS "' + alias +'"' : '');
+                var column = $this._translateExpression(null, subExp, dcQuery);
+		        var subAlias = JSB.generateUid();
+                var as     = ' AS ' + $this._quotedName(subAlias, true) + '';
                 var from   = $this._translateFrom(dcQuery);
                 var where  = $this._translateWhere(dcQuery);
                 where = where ? ' WHERE ' + where : '';
@@ -75,29 +250,29 @@
                 var from  =  $this._translateFrom(dcQuery);
                 var where =  $this._translateWhere(dcQuery);
 		        var group =  $this._translateGroup(dcQuery);
-		        var column = $this._translateColumn(null, subExp, dcQuery);
+		        var column = $this._translateExpression(null, subExp, dcQuery);
 		        var subAlias = JSB.generateUid();
 		        var subTableAlias = 'sub_table_' + JSB.generateUid();
                 var as     = ' AS ' + $this._quotedName(subAlias, true) +'';
                 where = (where ? ' WHERE ' + where : ' ');
                 group = (group ? ' GROUP BY ' + group : '');
 
-                var subQ = '(SELECT ' + func + '(' + column + ')' + as + ' FROM ' + from + where + group + ') ' + $this._quotedName(subTableAlias);
-                return '(SELECT MAX(' + $this._quotedName(subAlias) + ') FROM ' + subQ + ')';
+                var subQ = '(SELECT ' + func + '(' + column + ')' + as + ' FROM ' + from + where + group + ') ' + $this._quotedName(subTableAlias, true);
+                return '(SELECT MAX(' + $this._quotedName(subAlias, true) + ') FROM ' + subQ + ')';
             }
 
             function translateNOperator(args, op) {
                 var sql = '(';
                 for (var i in args) {
                     if (i > 0) sql += ' ' + op + ' ';
-                    sql += $this._translateColumn(null, args[i], dcQuery);
+                    sql += $this._translateExpression(null, args[i], dcQuery);
                 }
                 sql += ')';
                 return sql;
             }
 
-            function translateSubQuery(subExp){
-                throw new 'Not implemented yet';
+            function translateSubQuery(subQuery){
+                return $this.translateQueryExpression(subQuery);
             }
 
             if (JSB.isString(exp)) {
@@ -118,8 +293,15 @@
                 throw new Error('Expected object expression not ' + exp);
             }
 
-            var op = Object.keys(exp)[0];
 
+
+            if (exp.$select) {
+                // sub query expression
+                return '(' + translateSubQuery(exp) + ')';
+            }
+
+
+            var op = Object.keys(exp)[0];
             // const or field
             switch(op) {
                 case '$const':
@@ -129,7 +311,9 @@
                         return '' + exp[op];
                     }
                 case '$field':
-                    return this._translateField(exp[op], dcQuery);
+                case '$context':
+                    if (!exp.$field) throw new Error('Field $field is not defined with $context=' + exp.$context);
+                    return this._translateField(exp.$field, dcQuery, exp.$context);
             }
 
             // n-operators
@@ -137,7 +321,7 @@
                 case '$add':
                     return translateNOperator(exp[op], '+');
                 case '$sub':
-                    return translateNOperator(exp[op], '+');
+                    return translateNOperator(exp[op], '-');
                 case '$mod':
                     return translateNOperator(exp[op], '%');
                 case '$mul':
@@ -149,39 +333,46 @@
             // transform operators
             switch(op) {
                 case '$splitString':
-                    return 'string_to_array(' + this._translateColumn(null, exp[op].$field, dcQuery) + ", '" + exp[op].$separator + "'" + ')';
+                    return 'string_to_array(' + this._translateExpression(null, exp[op].$field, dcQuery) + ", '" + exp[op].$separator + "'" + ')';
                 case '$substring':
-                    return 'substring(' + this._translateColumn(null, exp[op].$field, dcQuery) + " for " + exp[op].$length + ')';
+                    return 'substring(' + this._translateExpression(null, exp[op].$field, dcQuery) + " for " + exp[op].$length + ')';
                 case '$trim':
-                    return 'TRIM(both from ' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'TRIM(both from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
 
                 case '$toInt':
-                    return 'CAST((' + this._translateColumn(null, exp[op], dcQuery) + ' ) as int)';
+                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as int)';
                 case '$toDouble':
-                    return 'CAST((' + this._translateColumn(null, exp[op], dcQuery) + ' ) as double precision)';
+                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as double precision)';
                 case '$toBoolean':
-                    return 'CAST((' + this._translateColumn(null, exp[op], dcQuery) + ' ) as boolean)';
+                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as boolean)';
                 case '$toString':
-                    return 'CAST((' + this._translateColumn(null, exp[op], dcQuery) + ' ) as string)';
+                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as string)';
+                case '$toDate':
+                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as date)';
+
+                case '$dateYear':
+                    return 'extract(isoyear from timestamp ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                case '$dateMonth':
+                    return 'extract(month from timestamp ' + this._translateExpression(null, exp[op], dcQuery) + ')';
             }
 
             // aggregate operators
             switch(op) {
                 case '$distinct':
-                    return 'DISTINCT(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'DISTINCT(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$count':
-                    return 'COUNT(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'COUNT(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$sum':
-                    return 'SUM(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'SUM(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$max':
-                    return 'MAX(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'MAX(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$min':
-                    return 'MIN(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'MIN(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$avg':
-                    return 'AVG(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'AVG(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$array':
                 case '$flatArray':
-                    return 'ARRAY_AGG(' + this._translateColumn(null, exp[op], dcQuery) + ')';
+                    return 'ARRAY_AGG(' + this._translateExpression(null, exp[op], dcQuery) + ')';
             }
 
             // global sub query operators
@@ -201,23 +392,26 @@
                     return '(' + translateMaxGroupAggregate(exp[op], 'AVG') + ')';
                 case '$grmaxcount':
                     return '(' + translateMaxGroupAggregate(exp[op], 'COUNT') + ')';
-
-                case '$subquery':
-                    return '(' + translateSubQuery(exp[op], 'COUNT') + ')';
             }
 
             throw new Error('Unsupported select expression ' + op);
         },
 
-        _translateField: function(field, dcQuery, onlyColumnName) {
+        _translateField: function(field, dcQuery, tableAlias, asAlias) {
+            if (asAlias) {
+                return tableAlias
+                        ? this._quotedName(tableAlias, true) + '.' + this._quotedName(field, true)
+                        : this._quotedName(field, true);
+            }
+            var tableAlias = tableAlias || dcQuery.$context;
             if (this.cube) {
                 if (this.cube.fields[field]) {
                     // is in Cube print full name
                     var binding = this.cube.fields[field].binding;
                     for(var b in binding) {
                         if (this.providers.indexOf(binding[b].provider) != -1) {
-                            return onlyColumnName
-                                    ? this._quotedName(binding[b].field)
+                            return tableAlias
+                                    ? this._quotedName(tableAlias, true) + '.' + this._quotedName(binding[b].field)
                                     : this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
                                 }
                     }
@@ -226,15 +420,18 @@
             // is in DataProvider print full name
             for(var i in this.providers){
                 if(this.providers[i].extractFields()[field]) {
-                    if (onlyColumnName) {
-                        return this._quotedName(field);
+                    if (tableAlias) {
+                        return this._quotedName(tableAlias, true) + '.' + this._quotedName(field);
                     } else {
                         return this._translateTableName(this.providers[i].getTableFullName()) + '.' + this._quotedName(field);
                     }
                 }
             }
-            // or alias - as is
-            if (dcQuery.$select[field]) {
+
+            // or table alias or main alias
+            if (tableAlias) {
+                return this._quotedName(tableAlias, true) + '.' + this._quotedName(field);
+            } else if (dcQuery.$select[field]) {
                 return this._quotedName(field);
             }
 
@@ -293,6 +490,12 @@
                 return sqlJoins;
             }
 
+            if (dcQuery.$from) {
+                if (!dcQuery.$from.$context) throw new Error('Field $context is not defined in sub query $from');
+                return '(' + this.translateQueryExpression(dcQuery.$from) +
+                            ') ';// + this._quotedName(dcQuery.$from.$context, true);
+            }
+
             var sqlFrom = this._translateTableName(this.providers[0].getTableFullName());
             if (this.providers.length > 1) {
                 if (!this.cube) {
@@ -315,7 +518,7 @@
             return sqlFrom;
         },
 
-        _translateWhere: function(dcQuery) {
+        _translateWhere: function(dcQuery, filterExp, forceTableAlias) {
 
             function translateOpExpressions(exps, op) {
                 if (!JSB.isArray(exps)) {
@@ -358,13 +561,13 @@
                                 throw new Error('Unsupported operator ' + op);
                         }
                     } else {
-                        sql += translateExpression(field, exps[field]);
+                        sql += translateCondition(field, exps[field]);
                     }
                 }
                 return sql;
             }
 
-            function translateExpression(field, exp) {
+            function translateCondition(field, exp) {
                 if (!JSB.isPlainObject(exp)) {
                     throw new Error('Unsupported expression type ' + exp);
                 }
@@ -376,36 +579,37 @@
                 switch(op){
                     case '$eq':
                         if (exp[op] === null)
-                            return $this._translateField(field, dcQuery) + ' IS NULL ';
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NULL ';
                         else
-                            return $this._translateField(field, dcQuery) + ' = ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' = ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$ne':
                         if (exp[op] === null)
-                            return $this._translateField(field, dcQuery) + ' IS NOT NULL ';
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NOT NULL ';
                         else
-                            return $this._translateField(field, dcQuery) + ' != ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' != ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$gt':
-                        return $this._translateField(field, dcQuery) + ' > ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' > ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$gte':
-                        return $this._translateField(field, dcQuery) + ' >= ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' >= ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$lt':
-                        return $this._translateField(field, dcQuery) + ' < ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' < ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$lte':
-                        return $this._translateField(field, dcQuery) + ' <= ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' <= ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
 
                     case '$like':
-                        return $$this._translateField(field, dcQuery) + ' ~~ ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $$this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~ ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$ilike':
-                        return $this._translateField(field, dcQuery) + ' ~~* ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~* ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$in':
-                        return $this._translateField(field, dcQuery) + ' IN ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IN ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                     case '$nin':
-                        return $this._translateField(field, dcQuery) + ' NOT IN ' + $this._translateColumn(null, exp[op], dcQuery) + ' ';
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' NOT IN ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
                 }
                 throw new Error('Unsupported condition expression ' + op);
             }
 
-            return dcQuery.$filter ? translateMultiExpressions(dcQuery.$filter) : '';
+            var filterExp = filterExp || dcQuery.$filter;
+            return filterExp ? translateMultiExpressions(filterExp) : '';
         },
 
         _translateGroup: function(dcQuery) {
