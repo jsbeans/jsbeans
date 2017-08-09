@@ -39,6 +39,8 @@
 //            EFuncAgg('$sum', );
 		},
 
+		macros: {},
+
         schemaRoot:{
             $query: {
                 root: true,
@@ -304,6 +306,59 @@
                 this.schemaMultiOperators, this.schemaConditionOperators,
                 this.schemaLeafs
             );
+        },
+
+        registerMacros: function(name, structure, objectGenerator) {
+            this.macros[name] = {
+                name: name,
+                structure: structure,
+                objectGenerator: objectGenerator
+            };
+        },
+
+        unwrapMacros: function(dcQuery) {
+            function validateMacro(exp, macro){
+                var structure = macro.structure;
+                for (var f in structure) if(structure.hasOwnProperty(f)) {
+                    if (typeof exp[f] === 'undefined') {
+                        throw new Error('Field ' + f + ' is not defined in ' + macro.name);
+                    }
+                    if (typeof exp[f] !== typeof structure[f]) {
+                        throw new Error('Field ' + f + ' must has type ' + structure[f]);
+                    }
+                }
+            }
+
+            function unwrapExpression(exp, setFunc) {
+                if (JSB.isPlainObject(exp)) {
+                    var key = Object.keys(exp)[0];
+                    for (var name in $this.macros) {
+                        if (name == key) {
+                            validateMacro(exp[key], $this.macros[name].structure);
+                            //dcQuery.$select[alias] = $this.macros[name].objectGenerator.call(null, exp[key], dcQuery);
+                            setFunc($this.macros[name].objectGenerator.call(null, exp[key], dcQuery));
+                            return;
+                        }
+                    }
+                    for (var f in exp) if(exp.hasOwnProperty(f)) {
+                        unwrapExpression(exp[f], function(newExp){
+                           exp[f] = newExp;
+                       });
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for (var i in exp) {
+                        unwrapExpression(exp[i], function(newExp){
+                            exp[i] = newExp;
+                        });
+                    }
+                }
+            }
+
+            for (var alias in dcQuery.$select) if(dcQuery.$select.hasOwnProperty(alias)) {
+                unwrapExpression(dcQuery.$select[alias], function(newExp){
+                    dcQuery.$select[alias] = newExp;
+                });
+            }
         }
 	}
 }
