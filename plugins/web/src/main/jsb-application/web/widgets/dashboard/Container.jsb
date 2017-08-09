@@ -314,7 +314,6 @@
 				this.clientContainer.append(this.widgetContainer.getElement());
 				this.type = 'widget';
 				this.childContainers = [];
-				this.getElement().attr('type', this.type);
 			} else {
 				container.splitBox.getElement().detach();
 				this.splitBox = container.splitBox;
@@ -325,12 +324,16 @@
 				container.childContainers = [];
 				this.childContainers[0].parent = this;
 				this.childContainers[1].parent = this;
-				this.getElement().attr('type', this.type);
 			}
+			this.getElement().attr('type', this.type);
 		},
 		
 		dockWidget: function(widget, side){
 			if(side == 'center'){
+				if(this.type != 'widget'){
+					JSB.getLogger().error('Failed to dock widget into center of split');
+					return;
+				}
 				this.addWidget(widget);
 			} else {
 				var splitType = (side == 'left' || side == 'right') ? 'vertical' : 'horizontal';
@@ -390,6 +393,7 @@
 		
 		setLayout: function(layout){
 			if(layout.type == 'widget'){
+				this.type = 'widget';
 				for(var i = 0; i < layout.widgets.length; i++){
 					var wId = layout.widgets[i];
 					var w = this.dashboard.widgets[wId];
@@ -401,6 +405,7 @@
 					this.undockWidget();
 				}
 			} else {
+				this.type = 'split';
 				this.splitBox = new SplitBox({
 					type: layout.splitType,
 					position: layout.splitPosition,
@@ -422,6 +427,7 @@
 				c1.setLayout(layout.containers[0]);
 				c2.setLayout(layout.containers[1]);
 			}
+			this.getElement().attr('type', this.type);
 		}
 	}
 }
