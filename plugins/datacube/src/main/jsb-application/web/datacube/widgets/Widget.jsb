@@ -527,7 +527,10 @@
 				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 					var extQuery = {};
 					if(opts.filter){
-						extQuery.$postFilter = opts.filter;
+						extQuery.$filter = opts.filter;
+					}
+					if(opts.postFilter){
+						extQuery.$postFilter = opts.postFilter;
 					}
 					if(opts.sort){
 						extQuery.$sort = [opts.sort];
