@@ -204,6 +204,14 @@
             });
         },
 
+        options: {
+            onClick: null,
+            onSelect: null,
+            onUnselect: null,
+            onMouseOver: null,
+            onMouseOut: null
+        },
+
         init: function(){
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);
@@ -268,14 +276,60 @@
                                 enabled: this.getContext().find('enableLegend').used()
                             },
 
-                            series: [{
-                                data: data,
-                                point: {
-                                    events: {
-                                        //select: function(evt) { debugger; $this._addNewFilter(evt.target.name);},
-                                        //unselect: function() { $this.removeFilter($this._currentFilter); }
+                            plotOptions: {
+                                bubble: {
+                                    allowPointSelect: true,
+                                    point: {
+                                        events: {
+                                            click: function(evt) {
+                                                if(JSB().isFunction($this.options.onClick)){
+                                                    $this.options.onClick.call(this, evt);
+                                                }
+                                            },
+                                            select: function(evt) {
+                                                var flag = false;
+
+                                                if(JSB().isFunction($this.options.onSelect)){
+                                                    flag = $this.options.onSelect.call(this, evt);
+                                                }
+                                                /*
+                                                if(!flag){
+                                                    debugger;
+                                                    // $this._addNewFilter(evt.target.name);
+                                                }
+                                                */
+                                            },
+                                            unselect: function(evt) {
+                                                var flag = false;
+
+                                                if(JSB().isFunction($this.options.onUnselect)){
+                                                    flag = $this.options.onUnselect.call(this, evt);
+                                                }
+                                                /*
+                                                if(!flag && $this._currentFilter && !$this._notNeedUnselect){
+                                                    $this._notNeedUnselect = false;
+                                                    $this.removeFilter($this._currentFilter);
+                                                    $this.refreshAll();
+                                                }
+                                                */
+                                            },
+                                            mouseOut: function(evt) {
+                                                if(JSB().isFunction($this.options.mouseOut)){
+                                                    $this.options.mouseOut.call(this, evt);
+                                                }
+                                            },
+                                            mouseOver: function(evt) {
+                                                if(JSB().isFunction($this.options.mouseOver)){
+                                                    $this.options.mouseOver.call(this, evt);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
+                            },
+
+                            series: [{
+                                data: data
                             }]
                         };
 
@@ -329,13 +383,11 @@
                             x = x.value();
                             var dataLabels = x.get(0).value().get(0).value();
 
-                            chart.plotOptions = {
-                                series: {
+                            chart.plotOptions.series = {
                                     dataLabels: {
                                         enabled: dataLabels.get(0).used(),
                                         format: dataLabels.get(1).value()
                                     }
-                                }
                             };
                         }
                     } catch(ex){
@@ -359,11 +411,8 @@
         _addNewFilter: function(){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
-            /*
-            var field = this.getContext().find('data').value().get(0).binding();
 
-            this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);
-            */
+
         }
 	}
 }
