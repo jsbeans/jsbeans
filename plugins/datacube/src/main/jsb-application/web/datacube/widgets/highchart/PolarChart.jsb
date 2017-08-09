@@ -229,9 +229,8 @@
 			$base(opts);
 			this.getElement().addClass('polarChart');
 			this.loadCss('PolarChart.css');
-			//JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
 			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				JSB().loadScript('tpl/highcharts/js/highcharts-more.js', function(){
+				JSB().loadScript('tpl/highstock/highcharts-more.js', function(){
 					self.init();	
 				});
 			});

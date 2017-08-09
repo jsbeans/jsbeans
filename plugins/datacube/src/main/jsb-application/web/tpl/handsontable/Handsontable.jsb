@@ -267,6 +267,11 @@
                         continue;
                     }
 
+                    if(JSB.isDate(data[i][j])){
+                        data[i][j] = data[i][j].toString();
+                        continue;
+                    }
+
                     // object or array
                     if(JSB.isObject(data[i][j]) || JSB.isArray(data[i][j])){
                         data[i][j] = null;

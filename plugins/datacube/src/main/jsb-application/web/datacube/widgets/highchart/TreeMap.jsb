@@ -179,7 +179,6 @@
 			$base(opts);
 			this.getElement().addClass('treeMap');
 			this.loadCss('TreeMap.css');
-			//JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
 			JSB().loadScript(['tpl/highstock/adapters/standalone-framework.js', 'tpl/highstock/highstock.js'], function(){
 				JSB().loadScript('tpl/highstock/modules/treemap.js', function(){
 					self.init();	
@@ -266,13 +265,16 @@
                                 allowPointSelect: true,
                                 point: {
                                     events: {
+                                    /*
                                         select: function(evt) {
                                             this.update({
                                                 borderColor: 'green',
                                                 borderWidth: 4
                                             });
 
-                                            $this._addNewFilter(evt.target.level, evt.target.name);
+                                            debugger;
+
+                                            $this._addNewFilter(evt.target.series.index, evt.target.name);
                                         },
                                         unselect: function(evt) {
                                             this.update({
@@ -280,8 +282,13 @@
                                                 borderWidth: 1
                                             });
 
-                                            if($this._currentFilter) {$this.removeFilter($this._currentFilter); $this.refreshAll(); };
+                                            if(!$this._notNeedUnselect){
+                                                $this._notNeedUnselect = false;
+                                                $this.removeFilter($this._currentFilter);
+                                                $this.refreshAll();
+                                            }
                                         }
+                                    */
                                     }
                                 }
                             }
@@ -296,28 +303,7 @@
                             },
                             levelIsConstant: false,
                             data: data,
-                            turboThreshold: 0,
-
-                            /*
-                            drillUpButton: {
-                                text: '<< return',
-                                position: {
-                                    align: 'right',
-                                    x: -10
-                                },
-                                theme: {
-                                    fill: 'white',
-                                    'stroke-width': 1,
-                                    stroke: 'silver',
-                                    r: 5,
-                                    states: {
-                                        hover: {
-                                            fill: '#bada55'
-                                        }
-                                    }
-                                }
-                            }
-                            */
+                            turboThreshold: 0
                         }]
                     });
 
@@ -346,8 +332,11 @@
             };
             if(!this.hasFilter(fDesc)){
             	if(this._currentFilter){
-            		this.removeFilter(this._currentFilter);
-            	}
+                    this.removeFilter(this._currentFilter);
+                    this._currentFilter = null;
+                    this._notNeedUnselect = true;
+                }
+
             	this._currentFilter = this.addFilter(fDesc);
             	this.refreshAll();
             }

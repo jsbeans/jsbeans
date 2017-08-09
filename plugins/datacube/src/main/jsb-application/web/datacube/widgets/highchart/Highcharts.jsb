@@ -289,7 +289,13 @@
                                     point: {
                                         events: {
                                             select: function(evt) { $this._addNewFilter(evt.target.series.index, evt.target.category);},
-                                            unselect: function() { $this.removeFilter($this._currentFilter); $this.refreshAll();}
+                                            unselect: function() {
+                                                if(!$this._notNeedUnselect){
+                                                    $this._notNeedUnselect = false;
+                                                    $this.removeFilter($this._currentFilter);
+                                                    $this.refreshAll();
+                                                }
+                                            }
                                         }
                                     }
                                 };
@@ -404,8 +410,10 @@
             };
             if(!this.hasFilter(fDesc)){
             	if(this._currentFilter){
-            		this.removeFilter(this._currentFilter);
-            	}
+                    this.removeFilter(this._currentFilter);
+                    this._currentFilter = null;
+                    this._notNeedUnselect = true;
+                }
             	this._currentFilter = this.addFilter(fDesc);
             	this.refreshAll();
             }
