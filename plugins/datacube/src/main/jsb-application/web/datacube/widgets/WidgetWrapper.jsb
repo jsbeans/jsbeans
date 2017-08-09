@@ -150,14 +150,12 @@
 				}
 			});
 			
-			this.subscribe('DataCube.Dashboard.filterChanged', function(sender, msg, opts){
-				if(sender != $this.getOwner().getFilterSelector()){
+			this.subscribe('DataCube.filterChanged', function(sender, msg, opts){
+				if(JSB.isInstanceOf(sender, 'DataCube.Widgets.FilterManager')){
 					return;
 				}
-				if(JSB.isInstanceOf(sender, 'DataCube.Widgets.FilterSelector')){
-					if(sender.getOwner().getDashboard() != $this.getDashboard()){
-						return;
-					}
+				if(!opts || opts.dashboard != $this.getDashboard()){
+					return;
 				}
 				$this.getWidget().refresh(opts);
 			});
@@ -199,7 +197,23 @@
 		},
 		
 		constructFilter: function(srcId){
-			return this.getOwner().getFilterSelector().constructFilter(srcId);
+			return this.getOwner().getFilterManager().constructFilter(srcId);
+		},
+		
+		hasFilter: function(fDesc){
+			return this.getOwner().getFilterManager().hasFilter(fDesc);
+		},
+		
+		addFilter: function(fDesc, sourceIds, widget){
+			return this.getOwner().getFilterManager().addFilter(fDesc, sourceIds, widget);
+		},
+		
+		removeFilter: function(fItemId, widget){
+			return this.getOwner().getFilterManager().removeFilter(fItemId, widget);
+		},
+		
+		clearFilters: function(widget){
+			this.getOwner().getFilterManager().clearFilters(widget);
 		},
 		
 		extractWidgetScheme: function(curWidgetJsb){
@@ -362,19 +376,16 @@
 			this.values = this.settingsRenderer.getValues();
 			
 			// store data in wrapper
-			this.getWidgetEntry().server().storeValues(title, this.values, function(){
+			this.getWidgetEntry().server().storeValues(title, this.values, function(sourceMap){
 				$this.name = title;
 				$this.updateTabHeader();
-				$this.updateWidgetSelectors();
+				$this.getWidget().updateValues(JSB.clone($this.values), sourceMap);
+				$this.getWidget().refresh();
 			});
 			
 			this.closeSettings();
-		},
-		
-		updateWidgetSelectors: function(){
-			this.getWidget().updateSelectors();
-			this.getWidget().refresh();
 		}
+		
 	}
 	
 }

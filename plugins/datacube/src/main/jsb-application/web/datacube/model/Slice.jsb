@@ -84,8 +84,10 @@
             	preparedQuery = { $select: {}};
             }
             if(extQuery && Object.keys(extQuery).length > 0){
+            	
             	var qDesc = this.cube.parametrizeQuery(extQuery);
             	params = qDesc.params;
+            	
 	           	JSB.merge(preparedQuery, qDesc.query);
             }
 

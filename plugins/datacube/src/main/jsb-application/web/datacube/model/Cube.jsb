@@ -610,7 +610,7 @@
 			
 			if(newQuery && Object.keys(newQuery).length > 0){
 	        	// translate $filter
-	        	if(newQuery.$filter){
+	        	if(newQuery.$filter || newQuery.$postFilter){
 	        		var c = {i: 1};
 	        		function getNextParam(){
 	        			return '_cubeParam' + $this.getId() + '_' + (c.i++);
@@ -631,7 +631,12 @@
 	        				}
 	        			}
 	        		}
-	        		prepareFilter(newQuery.$filter);
+	        		if(newQuery.$filter){
+	        			prepareFilter(newQuery.$filter);
+	        		}
+	        		if(newQuery.$postFilter){
+	        			prepareFilter(newQuery.$postFilter);
+	        		}
 	        	}
             }
 			

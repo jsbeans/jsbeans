@@ -6,6 +6,7 @@
 	name: null,
 	wType: null,
 	values: null,
+	sourceMap: null,
 	
 	getName: function(){
 		return this.name;
@@ -21,6 +22,10 @@
 	
 	getValues: function(){
 		return this.values;
+	},
+	
+	getSourceMap: function(){
+		return this.sourceMap;
 	},
 
 	
@@ -45,7 +50,9 @@
 				this.wType = wType;
 				this.property('wType', wType);
 				this.values = values;
+				this.sourceMap = this.generateInteroperationMap(values);
 				this.property('values', values);
+				this.property('sourceMap', this.sourceMap);
 			} else {
 				if(this.property('dashboard')){
 					this.dashboard = this.workspace.entry(this.property('dashboard'));
@@ -56,6 +63,11 @@
 				}
 				if(this.property('values')){
 					this.values = this.property('values');
+				}
+				if(this.property('sourceMap')){
+					this.sourceMap = this.property('sourceMap');
+				} else {
+					this.sourceMap = this.generateInteroperationMap(this.values);
 				}
 			}
 		},
@@ -74,11 +86,13 @@
 		
 		storeValues: function(name, values){
 			this.values = values;
+			this.sourceMap = this.generateInteroperationMap(values);
 			this.property('values', values);
+			this.property('sourceMap', this.sourceMap);
 			this.setName(name);
 			this.getDashboard().store();
 			this.doSync();
-			return true;
+			return this.sourceMap;
 		},
 		
 		getDataSchemeSource: function(ds){
@@ -86,6 +100,62 @@
 				throw new Error('Invalid datascheme passed');
 			}
 			return this.workspace.entry(ds.source);
+		},
+		
+		generateInteroperationMap: function(values){
+			var sourceMap = {};
+			
+			function traverseValues(src, callback){
+				if(!src || !src.used){
+					return;
+				}
+				var sCont = {bStop : false};
+				callback.call($this, src, function(){
+					sCont.bStop = true;
+				});
+				
+				if(sCont.bStop){
+					return;
+				}
+				if(src.type == 'group'){
+					for(var i = 0; i < src.groups.length; i++){
+						var gDesc = src.groups[i];
+						for(var j = 0; j < gDesc.items.length; j++){
+							traverseValues(gDesc.items[j], callback);
+						}
+					}
+				} else if(src.type == 'select'){
+					var iDesc = src.items[src.chosenIdx];
+					traverseValues(iDesc, callback);
+				} else if(src.type == 'widget'){
+					var wDesc = src.values;
+					traverseValues(wDesc, callback);
+				}
+			}
+			
+			traverseValues(values, function(entry, stop){
+				if(entry.type == 'widget'){
+					stop();
+					return;
+				}
+				if(entry.binding && entry.binding.source){
+					var source = $this.workspace.entry(entry.binding.source);
+					sourceMap[entry.binding.source] = []
+					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+						var cube = source.getCube();
+						cube.load();
+						var sliceMap = cube.getSlices();
+						for(var sId in sliceMap){
+							sourceMap[entry.binding.source].push(sId);
+						}
+					} else {
+						sourceMap[entry.binding.source].push(entry.binding.source);
+					}
+					
+				}
+			});
+			
+			return sourceMap;
 		},
 		
 		combineDataScheme: function(source){

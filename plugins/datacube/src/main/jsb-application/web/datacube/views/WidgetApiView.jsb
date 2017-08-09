@@ -150,7 +150,6 @@
 		<script type="text/javascript">
 		
 			/* Программное встраивание виджета */
-		
 			/*
 			JSB.create('DataCube.Api.Widget', {
 				wsid: "{{=wid}}", 
@@ -164,29 +163,41 @@
 
 		
 			/* Доступ к экземпляру виджета */
-		
 			JSB.getInstance('DataCube.Api.WidgetController')
 			.lookupWidget('{{=eid}}', function(widget){
-				console.log(widget);
-				
-				/* Программный запуск отрисовки/обновления виджета */
-				
 				/*
+				// Программный запуск отрисовки/обновления виджета
 				widget.refresh();
 				*/
-				
-				
-				/* Установка сортировки */
-				
-				/* 
-				widget.setSort({"cubeFieldName": -1});
+
+				/*
+				// Установка сортировки
+				widget.setSort({"count": -1});
 				*/
 				
-				
 				/* Управление фильтрами */
-				
 				/*
-				TODO: complete this manual
+				// Добавление фильтра
+				var filterDesc = {
+					type: '$and',	// логический оператор фильтра
+					op: '$lte',		// оператор сравнения поля среза
+					field: 'count',	// название поля среза
+					value: 1		// значение
+				};
+				
+				var myFilterId = widget.addFilter(filterDesc);
+				
+				// обновление всех виджетов на странице с учетом фильтров
+				widget.refreshAll();	
+				
+				// Удаление фильтра
+				widget.removeFilter(myFilterId);
+				
+				// Проверка на наличие установленного фильтра
+				widget.hasFilter(filterDesc);
+				
+				// Удаление всех фильтров
+				widget.clearFilters();
 				*/
 			});
 		

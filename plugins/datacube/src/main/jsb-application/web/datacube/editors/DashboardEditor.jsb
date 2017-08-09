@@ -6,6 +6,7 @@
 		$require: ['JSB.Widgets.ToolBar', 
 		           'JSB.Widgets.Dashboard.Dashboard',
 		           'DataCube.Widgets.FilterSelector',
+		           'DataCube.Widgets.FilterManager',
 		           'DataCube.Widgets.WidgetWrapper'],
 		
 		entry: null,
@@ -18,8 +19,11 @@
 			this.loadCss('DashboardEditor.css');
 			this.addClass('dashboardEditor');
 			
-			this.filterSelector = new FilterSelector(this);
+			this.filterManager = new FilterManager(this);
+			
+			this.filterSelector = new FilterSelector(this, this.filterManager);
 			this.append(this.filterSelector);
+			
 			
 			this.dashboard = new Dashboard({
 				emptyText: 'Перетащите сюда виджет',
@@ -74,7 +78,7 @@
 				return;
 			}
 			this.entry = entry;
-			this.filterSelector.clear();
+			this.filterManager.clear();
 			this.entry.server().load(function(dashboardDesc){
 				// remove old wrappers
 				for(var wId in $this.wrappers){
@@ -156,6 +160,10 @@
 		
 		getFilterSelector: function(){
 			return this.filterSelector;
+		},
+		
+		getFilterManager: function(){
+			return this.filterManager;
 		},
 		
 		getDashboard: function(){

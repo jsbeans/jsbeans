@@ -724,7 +724,9 @@
             if(this._selectedCat === _cat){
                 // remove old filter
                 this._selectedCat = null;
-                this.removeFilter(this._currentFilter);
+                if(this._currentFilter){
+                	this.removeFilter(this._currentFilter);
+                }
 
                 this.fillStyle(d3.select(item), $this._defaults.path.base);
             } else {
@@ -733,7 +735,20 @@
 
                 var field = this.getContext().find('source').value().get(0).binding();
 
-                this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: _cat.id, op: '$eq' }], this._currentFilter);
+                var fDesc = {
+                	sourceId: context.source,
+                	type: '$and',
+                	op: '$eq',
+                	field: field,
+                	value: _cat.id
+                };
+                if(!this.hasFilter(fDesc)){
+                	if(this._currentFilter){
+                		this.removeFilter(this._currentFilter);
+                	}
+                	this._currentFilter = this.addFilter(fDesc);
+                	this.refreshAll();
+                }
                 this._selectedCat = _cat;
             }
         },
