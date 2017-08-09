@@ -148,7 +148,6 @@
 		<!-- Управление виджетом -->
 		
 		<script type="text/javascript">
-		
 			/* Программное встраивание виджета */
 			/*
 			JSB.create('DataCube.Api.Widget', {
@@ -200,12 +199,9 @@
 				widget.clearFilters();
 				*/
 			});
-		
-		
 		</script>
 		
 	</body>
-	
 </html>`;
 
 			this.find('.htmlView div[jsb="JSB.Widgets.MultiEditor"]').jsb().setData(html);

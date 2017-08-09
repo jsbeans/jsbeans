@@ -309,6 +309,7 @@
 											var container = $this.getContainer();
 											if(container){
 												var dashboardContainer = container.getElement().closest('._jsb_dashboardContainer').jsb();
+												dashboardContainer.placeholders['center'].enable(true);
 												dashboardContainer.removeWidget($this);
 												if($this.getOwner().wrappers[$this.getId()]){
 													delete $this.getOwner().wrappers[$this.getId()];
