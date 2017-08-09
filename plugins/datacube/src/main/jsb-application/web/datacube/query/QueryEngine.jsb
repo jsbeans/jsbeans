@@ -137,14 +137,19 @@ debugger;
 		query: function(dcQuery, params, dataProvider){
 			this.cube.load();
 		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
+		    Log.debug('QueryEngine.preparedQuery: \n' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
 
-		    Log.debug('QueryEngine.query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
 		    var it = this.produceIterator(dcQuery, params||{}, dataProvider);
 		    return it;
 		},
 
 		prepareQuery: function(dcQuery, dataProvider) {
+		    // clone query
 		    dcQuery = JSB.merge(true, {}, dcQuery);
+
+		    // unwrap macros to complex expressions
+		    QuerySyntax.unwrapMacros(dcQuery);
+
 		    // fill all cube fields (or linked with dataProvider) for default $select={}
 		    if (Object.keys(dcQuery.$select).length == 0) {
 		        if (dataProvider) {
