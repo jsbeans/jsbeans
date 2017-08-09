@@ -87,6 +87,10 @@
     },
 	$client: {
 	    $require: ['JQuery.UI'],
+	    _minFilter: null,
+	    _maxFilter: null,
+	   
+	    
 		$constructor: function(opts){
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
@@ -142,19 +146,18 @@
         refresh: function(opts){
             if(opts && this == opts.initiator) return;
             if(opts && opts.type === 'removeFilter'){
-                var index = this._currentFilter.indexOf(opts.fItemIds[0]);
-                if(index === 0){
+            	if(this._maxFilter == opts.fItemIds[0]){
                     this._isRemoveFilter = true;
                     var ex = this.chart.xAxis[0].getExtremes();
                     this.chart.xAxis[0].setExtremes($this._extremes[0], ex.max);
                     return;
-                }
-                if(index === 1){
-                    this._isRemoveFilter = true;
+            	}
+            	if(this._minFilter == opts.fItemIds[0]){
+            		this._isRemoveFilter = true;
                     var ex = this.chart.xAxis[0].getExtremes();
                     this.chart.xAxis[0].setExtremes(ex.min, $this._extremes[1]);
                     return;
-                }
+            	}
             }
 
             var source = this.getContext().find('source');
@@ -320,21 +323,55 @@
                     if($this._extremes[1] !== event.max) var max = new Date(event.max);
                 }
 
-                if(!min && max){
-                    $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: max, op: '$lte' }], $this._currentFilter);
-                    return;
+                var bNeedRefresh = false;
+                if(max){
+                	var fDesc = {
+                		sourceId: context.source,
+                		type: '$and',
+                		op: '$lte',
+                		field: field,
+                		value: max
+                	};
+                	if(!$this.hasFilter(fDesc)){
+                		if($this._maxFilter){
+                			$this.removeFilter($this._maxFilter);
+                		}
+                		$this._maxFilter = $this.addFilter(fDesc);
+                		bNeedRefresh = true;
+                	}
                 }
-                if(!max && min){
-                    $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: min, op: '$gte' }], $this._currentFilter);
-                    return;
+                if(min){
+                	var fDesc = {
+                		sourceId: context.source,
+                		type: '$and',
+                		op: '$gte',
+                		field: field,
+                		value: min
+                	};
+                	if(!$this.hasFilter(fDesc)){
+                		if($this._minFilter){
+                			$this.removeFilter($this._minFilter);
+                		}
+                		$this._minFilter = $this.addFilter(fDesc);
+                		bNeedRefresh = true;
+                	}
                 }
-                if(max && min){
-                    $this._currentFilter = $this.addFilter(context.source, 'and', [{ field: field, value: min, op: '$gte' }, { field: field, value: max, op: '$lte' }], $this._currentFilter);
-                    return;
-                }
+                
                 if(!min && !max){
-                    $this.removeFilter($this._currentFilter);
-                    $this._currentFilter = undefined;
+                	if($this._maxFilter){
+	                    $this.removeFilter($this._maxFilter);
+	                    $this._maxFilter = undefined;
+	                    bNeedRefresh = true;
+                	}
+                	if($this._minFilter){
+	                    $this.removeFilter($this._minFilter);
+	                    $this._minFilter = undefined;
+	                    bNeedRefresh = true;
+                	}
+                }
+                
+                if(bNeedRefresh){
+                	$this.refreshAll();
                 }
             }, 500, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
         },

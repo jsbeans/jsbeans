@@ -4,6 +4,7 @@
 	$singleton: true,
 	
 	$client: {
+		filterManager: null,
 		widgets: {},
 		wrappers: {},
 		
@@ -12,6 +13,9 @@
 		
 		$constructor: function(){
 			$base();
+			JSB.lookup('DataCube.Widgets.FilterManager', function(FilterManager){
+				$this.filterManager = new FilterManager($this);
+			});
 			this.subscribe('DataCube.Api.Widget.widgetCreated', function(wrapper, msg, params){
 				var wid = params.wid;
 				$this.widgets[wid] = wrapper.getWidget();
@@ -54,6 +58,10 @@
 			}
 			this.wrapperCallbacks[wid].push(callback);
 			
+		},
+		
+		getFilterManager: function(){
+			return $this.filterManager;
 		}
 	},
 	
@@ -85,6 +93,8 @@
 			code += '(' + setupServerPath.toString() + ')();';
 			
 			// insert dom controller
+			code += Web.getJsbCode('JSB.Crypt.MD5') + ';';
+			code += Web.getJsbCode('DataCube.Widgets.FilterManager') + ';';
 			code += Web.getJsbCode('DataCube.Api.WidgetController') + ';';
 			code += Web.getJsbCode('JQuery') + ';';
 			code += Web.getJsbCode('JSB.Widgets.DomController') + ';';

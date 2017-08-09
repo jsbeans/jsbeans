@@ -494,22 +494,21 @@
 					// proceed widgets
 					for(var j = 0; j < $this.colDesc.length; j++){
 						row[j].rowKey = key;
-						if(!$this.colDesc[j].widget){
-							continue;
-						}
-						var colName = $this.colDesc[j].title;
-						if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
-							$this.widgetMap[key][colName].setWrapper($this.getWrapper(), row[j].value);
-							$this.widgetMap[key][colName].refresh();
-						} else {
-							var WidgetCls = $this.colDesc[j].widget.cls;
-							var widget = new WidgetCls();
-							widget.setWrapper($this.getWrapper(),  row[j].value);
-							widget.refresh();
-							if(!$this.widgetMap[key]){
-								$this.widgetMap[key] = {};
+						if($this.colDesc[j].widget){
+							var colName = $this.colDesc[j].title;
+							if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
+								$this.widgetMap[key][colName].setWrapper($this.getWrapper(), row[j].value);
+								$this.widgetMap[key][colName].refresh();
+							} else {
+								var WidgetCls = $this.colDesc[j].widget.cls;
+								var widget = new WidgetCls();
+								widget.setWrapper($this.getWrapper(),  row[j].value);
+								widget.refresh();
+								if(!$this.widgetMap[key]){
+									$this.widgetMap[key] = {};
+								}
+								$this.widgetMap[key][colName] = widget;
 							}
-							$this.widgetMap[key][colName] = widget;
 						}
 					}
 				}
@@ -816,11 +815,23 @@
 			if(!binding.source){
 				return;
 			}
-			var filters = JSB.clone(d.filter);
-			for(var i = 0; i < filters.length; i++){
-				filters[i].op = '$eq';
+			var bNeedRefresh = false;
+			for(var i = 0; i < d.filter.length; i++){
+				var fDesc = {
+					sourceId: binding.source,
+					type: '$and',
+					op: '$eq',
+					field: d.filter[i].field,
+					value: d.filter[i].value
+				};
+				if(!this.hasFilter(fDesc)){
+					this.addFilter(fDesc);
+					bNeedRefresh = true;
+				}
 			}
-			this.addFilter(binding.source, 'and', filters);
+			if(bNeedRefresh){
+				this.refreshAll();
+			}
 		},
 		
 		updateRows: function(){

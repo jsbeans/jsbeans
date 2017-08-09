@@ -63,7 +63,7 @@
             		$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Обновление схемы ' + pp + '%', success: true}, {session: true});
             		lastPP = pp;
             	}
-			});
+			}, this.settings.filter);
 			$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
 
 			// update entries
@@ -86,7 +86,10 @@
 			
 			// remove unexisted
 			for(var tId in existedTables){
-				this.removeChildEntry(tId);
+				var cEntry = this.removeChildEntry(tId);
+				if(cEntry){
+					cEntry.remove();
+				}
 			}
 			
 			// construct details

@@ -265,7 +265,7 @@
                             point: {
                                 events: {
                                     select: function(evt) { $this._addPieFilter(evt.target.name);},
-                                    unselect: function() { $this.removeFilter($this._currentFilter); }
+                                    unselect: function() { $this.removeFilter($this._currentFilter); $this.refreshAll();}
                                 }
                             }
                         }]
@@ -287,8 +287,20 @@
             if(!context.source) return;
 
             var field = this.getContext().find('data').value().get(0).binding();
-
-            this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);
+            var fDesc = {
+            	sourceId: context.source,
+            	type: '$and',
+            	op: '$eq',
+            	field: field,
+            	value: value
+            };
+            if(!this.hasFilter(fDesc)){
+            	if(this._currentFilter){
+            		this.removeFilter(this._currentFilter);
+            	}
+            	this._currentFilter = this.addFilter(fDesc);
+            	this.refreshAll();
+            }
         }
 	}
 }

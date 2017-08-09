@@ -70,10 +70,11 @@
 							$this.options.onDragStop.call($this);
 						}
 					}
-
+	
 				});
+
 			}, function(){
-				return $this.getElement().width() > 0 && $this.getElement().height() > 0;
+				return $this.getElement().width() > 0 && $this.getElement().height(); 
 			});
 			
 			

@@ -63,7 +63,9 @@
 			delete this.wrappers[wwId];
 			this.widgetCount = Object.keys(this.wrappers).length;
 			var cEntry = this.removeChildEntry(wwId);
-			cEntry.remove();
+			if(cEntry){
+				cEntry.remove();
+			}
 			this.store();
 			this.doSync();
 			return true;
@@ -72,24 +74,25 @@
 		store: function(){
 			var mtxName = 'store_' + this.getId();
 			JSB.getLocker().lock(mtxName);
-			
-			var desc = {
-				layout: this.layout,
-				wrappers: {}
-			}
-			for(var wId in this.wrappers){
-				var wWrapper = this.wrappers[wId];
-				desc.wrappers[wId] = {
-					jsb: wWrapper.getWidgetType(),
-					name: wWrapper.getName(),
-					values: wWrapper.getValues()
+			try {
+				var desc = {
+					layout: this.layout,
+					wrappers: {}
 				}
+				for(var wId in this.wrappers){
+					var wWrapper = this.wrappers[wId];
+					desc.wrappers[wId] = {
+						jsb: wWrapper.getWidgetType(),
+						name: wWrapper.getName(),
+						values: wWrapper.getValues()
+					}
+				}
+				this.widgetCount = Object.keys(this.wrappers).length;
+				this.property('widgets', this.widgetCount);
+				this.workspace.writeArtifactAsJson(this.getLocalId() + '.dashboard', desc);
+			} finally {
+				JSB.getLocker().unlock(mtxName);	
 			}
-			this.widgetCount = Object.keys(this.wrappers).length;
-			this.property('widgets', this.widgetCount);
-			this.workspace.writeArtifactAsJson(this.getLocalId() + '.dashboard', desc);
-			
-			JSB.getLocker().unlock(mtxName);
 			this.workspace.store();
 
 		},
@@ -98,26 +101,68 @@
 			if(!this.loaded){
 				var bNeedStore = false;
 				if(this.workspace.existsArtifact(this.getLocalId() + '.dashboard')){
-					// read layout
-					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.dashboard');
-					this.layout = snapshot.layout;
-					
-					// read wrappers
-					this.wrappers = {};
-					for(var wId in snapshot.wrappers){
-						var wDesc = snapshot.wrappers[wId];
-						var wWrapper = this.workspace.entry(wId);
-						if(!wWrapper){
-							bNeedStore = true;
-							wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values);
-							this.addChildEntry(wWrapper);
+					var mtxName = 'load_' + this.getId();
+					JSB.getLocker().lock(mtxName);
+					try {
+						// read layout
+						var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.dashboard');
+						this.layout = snapshot.layout;
+
+						// read wrappers
+						this.wrappers = this.getChildren();
+						
+						for(var wId in snapshot.wrappers){
+							var wDesc = snapshot.wrappers[wId];
+							
+							if(!this.wrappers[wId]){
+								var wWrapper = this.workspace.entry(wId);
+								if(!wWrapper){
+									bNeedStore = true;
+									wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values);
+									this.addChildEntry(wWrapper);
+								}
+								
+								this.wrappers[wId] = wWrapper;
+							}
 						}
 						
-						this.wrappers[wId] = wWrapper;
+						// remove unused wrappers
+						var unusedWrappers = JSB.clone(this.wrappers);
+						function performLayoutEntry(lEntry){
+							if(lEntry && lEntry.widgets){
+								for(var i = 0; i < lEntry.widgets.length; i++){
+									var wServerId = lEntry.widgets[i];
+									if(unusedWrappers[wServerId]){
+										delete unusedWrappers[wServerId];
+									}
+								}
+							} 
+							if(lEntry && lEntry.containers){
+								for(var i = 0; i < lEntry.containers.length; i++){
+									performLayoutEntry(lEntry.containers[i]);
+								}
+							} 
+						}
+						
+						performLayoutEntry(this.layout);
+						
+						for(var wId in unusedWrappers){
+							bNeedStore = true;
+							var cEntry = this.removeChildEntry(wId);
+							if(cEntry){
+								cEntry.remove();
+							}
+							delete this.wrappers[wId];
+						}
+						
+					} finally {
+						JSB.getLocker().unlock(mtxName);	
 					}
+					
 					this.widgetCount = Object.keys(this.wrappers).length;
 					if(bNeedStore){
-						this.workspace.store();
+						this.store();
+						this.doSync();
 					}
 				}
 				this.loaded = true;
@@ -134,6 +179,7 @@
 			var source = this.workspace.entry(sourceId);
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 				var cube = source.getCube();
+				cube.load();
 				var sliceMap = cube.getSlices();
 				for(var sId in sliceMap){
 					sourceArr.push(sId);

@@ -7,6 +7,7 @@
 		context: null,
 		values: null,
 		sort: null,
+		sourceMap: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -426,26 +427,16 @@
 			};
 		},
 		
-		setWrapper: function(w, values){
+		setWrapper: function(w, values, sourceMap){
 			this.wrapper = w;
-			this.updateSelectors(values);
-/*			if(w.getOwner()){
-				this.updateSelectors(values);
-			} else {
-				JSB.deferUntil(function(){
-					$this.updateSelectors(values);
-				}, function(){
-					return $this.wrapper.getOwner();
-				});
-			}
-*/			
+			this.updateValues(values, sourceMap);
 		},
 		
 		getWrapper: function(){
 			return this.wrapper;
 		},
 		
-		updateSelectors: function(values){
+		updateValues: function(values, sourceMap){
 			if(!values){
 				values = JSB.clone(this.getWrapper().getValues());
 			}
@@ -454,6 +445,11 @@
 				this.values = this.values.unwrap();
 			}
 			this.context = new this.Selector(this.values);
+			if(sourceMap){
+				this.sourceMap = sourceMap;
+			} else {
+				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
+			}
 		},
 		
 		getContext: function(){
@@ -464,14 +460,40 @@
 //			throw new Error('This method should be overriden');
 		},
 		
-		addFilter: function(srcId, type, items, removeFIds){
-			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
-			return filterSelector.addFilter(srcId, type, items, this, removeFIds);
+		refreshAll: function(opts){
+			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
+		},
+		
+		getSourceIds: function(){
+			return Object.keys(this.sourceMap);
+		},
+		
+		clearFilters: function(){
+			this.getWrapper().clearFilters(this);
+		},
+		
+		hasFilter: function(fDesc){
+			return this.getWrapper().hasFilter(fDesc);
+		},
+		
+		addFilter: function(fDesc){
+			if(!fDesc.sourceId){
+				var sourceArr = this.getSourceIds();
+				if(sourceArr && sourceArr.length > 0){
+					fDesc.sourceId = sourceArr[0];
+				}
+			}
+			if(fDesc.sourceId){
+				if(!this.sourceMap[fDesc.sourceId]){
+					throw new Error('Invalid sourceId');
+				}
+				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
+			}
+			throw new Error('Missing sourceId');
 		},
 		
 		removeFilter: function(fItemId){
-			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
-			return filterSelector.removeFilter(fItemId, this);
+			return this.getWrapper().removeFilter(fItemId, this);
 		},
 		
 		setSort: function(q){
@@ -506,6 +528,9 @@
 					var extQuery = {};
 					if(opts.filter){
 						extQuery.$filter = opts.filter;
+					}
+					if(opts.postFilter){
+						extQuery.$postFilter = opts.postFilter;
 					}
 					if(opts.sort){
 						extQuery.$sort = [opts.sort];

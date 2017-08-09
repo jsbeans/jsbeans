@@ -289,7 +289,7 @@
                                     point: {
                                         events: {
                                             select: function(evt) { $this._addNewFilter(evt.target.series.index, evt.target.category);},
-                                            unselect: function() { $this.removeFilter($this._currentFilter); }
+                                            unselect: function() { $this.removeFilter($this._currentFilter); $this.refreshAll();}
                                         }
                                     }
                                 };
@@ -395,8 +395,20 @@
 
             var field = this.getContext().find("xAxis").get(0).value().binding();
             if(!field[0]) return;
-
-            this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);
+            var fDesc = {
+            	sourceId: context.source,
+            	type: '$and',
+            	op: '$eq',
+            	field: field,
+            	value: value
+            };
+            if(!this.hasFilter(fDesc)){
+            	if(this._currentFilter){
+            		this.removeFilter(this._currentFilter);
+            	}
+            	this._currentFilter = this.addFilter(fDesc);
+            	this.refreshAll();
+            }
         },
 
         // utils

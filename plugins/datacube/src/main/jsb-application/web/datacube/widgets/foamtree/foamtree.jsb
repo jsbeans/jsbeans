@@ -603,8 +603,20 @@
                             if(event.groups.length){
                                 var context = $this.getContext().find('source').binding();
                                 if(!context.source) return;
-
-                                $this._currentFilter = $this.addFilter(context.source, 'and', { field: event.groups[0].fieldName, value: event.groups[0].label, op: '$eq' }, $this._currentFilter);
+                                var fDesc = {
+                                	sourceId: context.source,
+                                	type: '$and',
+                                	op: '$eq',
+                                	field: event.groups[0].fieldName,
+                                	value: event.groups[0].label
+                                };
+                                if(!$this.hasFilter(fDesc)){
+                                	if($this._currentFilter){
+                                    	$this.removeFilter($this._currentFilter);
+                                    }
+                                	$this._currentFilter = $this.addFilter(fDesc);
+                                	$this.refreshAll();
+                                }
                             } else {
                                 if($this._currentFilter){
                                     $this.removeFilter($this._currentFilter);

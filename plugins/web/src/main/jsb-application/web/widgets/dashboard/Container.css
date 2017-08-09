@@ -34,7 +34,7 @@
 
 ._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder {
 	position: absolute;
-	display: none;
+	visibility: hidden;
 }
 
 ._jsb_dashboardContainer.dragging > ._jsb_phContainer {
@@ -43,11 +43,11 @@
 }
 
 ._jsb_dashboardContainer.dragging > ._jsb_phContainer > ._jsb_dashboardPlaceholder {
-	display: block;
+	visibility: visible;
 }
 
 ._jsb_dashboardContainer.dragging > ._jsb_phContainer > ._jsb_dashboardPlaceholder.center {
-	display: none;
+	visibility: hidden;
 }
 
 ._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder.center {
@@ -55,11 +55,11 @@
 	right: 12px;
 	top: 12px;
 	bottom: 12px;
-	display: none;
+	visibility: hidden;
 }
 
 ._jsb_dashboardContainer.dragging[type="widget"] > ._jsb_phContainer > ._jsb_dashboardPlaceholder.center {
-	display: block;
+	visibility: visible;
 }
 
 ._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder.left {
