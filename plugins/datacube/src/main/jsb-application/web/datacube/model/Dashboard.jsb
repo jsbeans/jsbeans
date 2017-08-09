@@ -40,6 +40,7 @@
 		
 		updateLayout: function(layout){
 			this.layout = layout;
+			JSB.getLogger().info('layout: ' + JSON.stringify(layout, null, 4));
 			
 			this.store();
 			this.doSync();

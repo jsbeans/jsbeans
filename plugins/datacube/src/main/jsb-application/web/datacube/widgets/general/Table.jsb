@@ -693,6 +693,9 @@
 					JSB.deferUntil(function(){
 						$this.appendRows();	
 					}, function(){
+						if(!$this.getElement().is(':visible')){
+							return true;
+						}
 						return lastRowElt.width() > 0 && lastRowElt.height() > 0;
 					});
 				}
