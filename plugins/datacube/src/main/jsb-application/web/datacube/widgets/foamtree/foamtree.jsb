@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Foamtree',
+	$name: 'DataCube.Widgets.Foamtree',
     $parent: 'DataCube.Widgets.Widget',
     $expose: {
         name: 'FoamTree',
