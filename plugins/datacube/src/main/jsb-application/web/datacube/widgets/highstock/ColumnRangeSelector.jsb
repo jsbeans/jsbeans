@@ -86,7 +86,7 @@
         ]
     },
 	$client: {
-	    $require: ['JQuery.UI'],
+		$require: ['JQuery.UI.Loader'],
 	    _minFilter: null,
 	    _maxFilter: null,
 	   

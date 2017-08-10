@@ -4,7 +4,8 @@
 	$require: {
 		UiEffects: 'JQuery.UI.Effects',
 		FloatingContainer: 'JSB.Widgets.FloatingContainer',
-		UiInteractions: 'JQuery.UI.Interactions'
+		UiInteractions: 'JQuery.UI.Interactions',
+		Loader: 'JQuery.UI.Loader'
 		
 	},
 	$client: {

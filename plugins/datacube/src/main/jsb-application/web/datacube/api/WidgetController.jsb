@@ -100,7 +100,7 @@
 			code += Web.getJsbCode('JSB.Widgets.DomController') + ';';
 			
 			// pack required beans
-			code += Web.getJsbCode('JQuery.UI') + ';';
+//			code += Web.getJsbCode('JQuery.UI') + ';';
 			
 			code += Web.getJsbCode('JSB.Widgets.Control') + ';';
 			code += Web.getJsbCode('JSB.Widgets.TabView') + ';';

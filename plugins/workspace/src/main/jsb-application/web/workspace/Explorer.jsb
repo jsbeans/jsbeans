@@ -12,6 +12,7 @@
 	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.Button',
 	           'JQuery.UI.Effects',
+	           'JQuery.UI.Loader',
 	           'JSB.Web'],
 	
 	$sync: {

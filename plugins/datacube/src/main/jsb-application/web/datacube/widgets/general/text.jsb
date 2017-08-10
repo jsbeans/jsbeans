@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Widgets.Text',
 	$parent: 'DataCube.Widgets.Widget',
-	$require: ['JSB.Widgets.Button'],
+	$require: ['JSB.Widgets.Button', 'JQuery.UI.Loader'],
 	$expose: {
     		name: 'Текст',
     		description: '',

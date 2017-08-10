@@ -1,11 +1,13 @@
 {
 	$name: 'DataCube.Editor',
 	$parent: 'JSB.Widgets.Page',
-	$require: {
-		SplitLayoutManager: 'JSB.Widgets.SplitLayoutManager',
-		ToolBar: 'JSB.Widgets.ToolBar',
-		ToolManager: 'JSB.Widgets.ToolManager',
-	},
+	$require: [
+	    'JQuery.UI',
+	    'JQuery.UI.Loader',
+		'JSB.Widgets.SplitLayoutManager',
+		'JSB.Widgets.ToolBar',
+		'JSB.Widgets.ToolManager',
+	],
 	
 	$html: {
 		title: 'DataCube',

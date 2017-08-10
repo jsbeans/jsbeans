@@ -1,6 +1,6 @@
 {
 	$name:'JQuery.UI.Resizable',
-	$require: ['JQuery'],
+	$require: ['JQuery.UI'],
 	$client:{
 		$singleton: true,
 		$bootstrap: function(){

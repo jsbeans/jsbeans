@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.GridView',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['Handsontable'],
+	$require: ['Handsontable', 'JQuery.UI.Loader'],
 	$client: {
 	    allLoaded: false,
 	    curLoadId: null,
