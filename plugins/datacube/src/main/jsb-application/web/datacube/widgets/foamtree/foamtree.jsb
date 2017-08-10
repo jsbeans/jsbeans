@@ -498,7 +498,7 @@
             }]
         }]
     },
-	$require: ['JQuery.UI'],
+	$require: ['JQuery.UI.Loader'],
 	$client: {
         $constructor: function(opts){
             $base(opts);

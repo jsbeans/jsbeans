@@ -36,7 +36,6 @@
 						$this.getElement().removeClass('acceptDraggable');
 					}
 				}
-				
 				$this.getElement().droppable({
 					accept: function(d){
 						$this.lastAccepted = false;

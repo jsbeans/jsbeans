@@ -1,6 +1,6 @@
 {
 	$name:'JQuery.UI.Interactions',
-	$require: ['JQuery', 'JQuery.UI.Core'],
+	$require: ['JQuery.UI.Core'],
 	$client:{
 		$singleton: true,
 		$bootstrap: function(){

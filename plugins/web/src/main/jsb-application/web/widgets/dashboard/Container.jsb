@@ -330,7 +330,7 @@
 		
 		dockWidget: function(widget, side){
 			if(side == 'center'){
-				if(this.type != 'widget'){
+				if(this.type == 'split'){
 					JSB.getLogger().error('Failed to dock widget into center of split');
 					return;
 				}

@@ -204,8 +204,9 @@
         }
         ]
 	},
-	$require: ['Tipsy'],
 	$client: {
+		$require: ['Tipsy', 'JQuery.UI.Loader'],
+
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('mapWidget');
