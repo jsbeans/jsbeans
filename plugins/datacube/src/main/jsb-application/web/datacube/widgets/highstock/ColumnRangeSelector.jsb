@@ -143,7 +143,7 @@
                     $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }
             });
-
+            
             this.isInit = true;
 		},
 
