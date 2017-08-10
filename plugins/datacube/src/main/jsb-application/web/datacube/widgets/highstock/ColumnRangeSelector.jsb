@@ -35,20 +35,23 @@
                 type: 'item',
                 binding: 'field',
                 itemType: 'string',
-                itemValue: '$field'
+                itemValue: '$field',
+                description: 'Массив дат в формате Date или String'
             },
             {
                 name: 'Количество',
                 type: 'item',
                 binding: 'field',
                 itemType: 'string',
-                itemValue: '$field'
+                itemValue: '$field',
+                description: 'Количество значений для каждой даты'
             },
             {
                 type: 'item',
                 name: 'Автоподсчёт',
                 optional: true,
-                editor: 'none'
+                editor: 'none',
+                description: 'Автоматический подсчёт количества значений для каждой даты (считается количество одинаковых дат)'
             }
             ]
         },
@@ -58,10 +61,11 @@
             key: 'series',
             items: [
             {
-                name: 'Имя поля',
+                name: 'Имя серии',
                 type: 'item',
                 itemType: 'string',
-                itemValue: ''
+                itemValue: '',
+                description: 'Имя серии. Выводится во всплывающей подсказке'
             },
             {
                 name: 'Интервал точек',
@@ -75,11 +79,12 @@
             type: 'group',
             name: 'Всплывающая подсказка',
             key: 'tooltip',
-            // description: 'Тултип, всплывающий при наведении на значение',
+            description: 'Тултип, всплывающий при наведении на значение',
             items: [
                 {
                     name: 'Формат даты',
                     type: 'item',
+                    description: 'Формат даты во всплывающей подсказке'
                 }
             ]
         }
@@ -89,13 +94,12 @@
 	    $require: ['JQuery.UI'],
 	    _minFilter: null,
 	    _maxFilter: null,
-	   
 	    
 		$constructor: function(opts){
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
-			// this.loadCss('Highcharts.css');
-			JSB().loadScript(['tpl/highstock/highstock.js'], function(){
+			JSB().loadCss('tpl/highstock/css/highcharts.css');
+			JSB().loadScript('tpl/highstock/highstock.js', function(){
 			    Highcharts.setOptions({
 			        lang: {
                         contextButtonTitle: "Меню виджета",
@@ -122,11 +126,11 @@
                     }
 			    });
 
-				$this._init();
+				$this.init();
 			});
 		},
 
-		_init: function(){
+		init: function(){
 		    this.containerId = JSB().generateUid();
             this.container = this.$('<div class="container" id="' + this.containerId + '"></div>');
             this.append(this.container);
@@ -135,8 +139,8 @@
                 if(!$this.getElement().is(':visible')){
                     return;
                 }
-                if($this.highcharts){
-                    $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
+                if($this.chart){
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }
             });
 
@@ -164,13 +168,11 @@
             if(!source.bound()) return;
 
             var seriesContext = this.getContext().find('series').value(),
-                // isdataGrouping = this.getContext().find('dataGrouping').used(),
                 autoCount = source.value().get(2).used(),
-                tooltip = this.getContext().find('tooltip').value();
-            /*
-            if(isdataGrouping)
-                var dataGrouping = this.getContext().find('dataGrouping').values();
-            */
+                tooltip = this.getContext().find('tooltip').value(),
+                value = source.value().get(0),
+                count = source.value().get(1);
+
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
@@ -178,7 +180,7 @@
                     var data = [];
 
                     while(source.next()){
-                        var val = source.value().get(0).value();
+                        var val = value.value();
 
                         switch(typeof val){
                             case 'string':
@@ -214,13 +216,9 @@
                                 data.push({ x: dateValue, y: 1 });
                             }
                         } else {
-                            var countValue = source.value().get(1).value();
-
-                            data.push({ x: dateValue, y: countValue });
+                            data.push({ x: dateValue, y: count.value() });
                         }
                     }
-
-                    if(data.length === 0) return;
 
                     data.sort(function(a, b){
                         if(a.x < b.x) return -1;
@@ -229,68 +227,55 @@
                     });
 
                     try{
-                    var units = [];
-                    /*
-                    if(isdataGrouping)
-                        for(var i = 0; i < dataGrouping.length; i++){
-                            units.push([
-                                dataGrouping[i].get(0).value(), dataGrouping[i].get(1).value()
-                            ]);
-                        }
-                    */
-                    var series = {
-                        type: 'column',
-                        name: seriesContext.get(0).value(),
-                        data: data,
-                        turboThreshold: 0,
-                        pointInterval: seriesContext.get(1).value(),
-                        dataGrouping: {
-                            enabled: false,
-                            // units: units
-                        }
-                    };
+                        var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
+                        tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
 
-                    var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
-                    tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
+                        var chart = {
+                            xAxis: {
+                                // min: data[0].x,
+                                // max: data[data.length - 1].x,
+                                events: {
+                                    // afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
+                                }
+                            },
 
-                    $this._extremes = [data[0].x, data[data.length - 1].x];
+                            title: {
+                                text: this.getContext().find('title').value()
+                            },
+
+                            subtitle: {
+                                text: this.getContext().find('subtitle').value()
+                            },
+
+                            tooltip: {
+                                xDateFormat: tooltipXDateFormat
+                            }
+                        };
+
+                        chart.series = {
+                            type: 'column',
+                            name: seriesContext.get(0).value(),
+                            data: data,
+                            turboThreshold: 0,
+                            /*
+                            pointInterval: seriesContext.get(1).value(),
+                            dataGrouping: {
+                                enabled: false,
+                            }
+                            */
+                        };
+
+                        $this._extremes = [data[0].x, data[data.length - 1].x];
                     } catch(e){
                         console.log(e);
                         return;
                     } finally{
                         $this.getElement().loader('hide');
                     }
-
+// debugger;
                     // create the chart
-                    $this.chart = Highcharts.stockChart(this.containerId, {
-                        chart: {
-                            alignTicks: false
-                        },
-
-                        xAxis: {
-                            min: data[0].x,
-                            max: data[data.length - 1].x,
-                            events: {
-                                afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
-                            }
-                        },
-
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-
-                        subtitle: {
-                            text: this.getContext().find('subtitle').value()
-                        },
-
-                        tooltip: {
-                            xDateFormat: tooltipXDateFormat
-                        },
-
-                        series: [series]
-                    });
+                    $this.chart = Highcharts.stockChart($this.containerId, chart);
                 });
-
             }, function(){
                 return $this.isInit;
             });

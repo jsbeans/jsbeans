@@ -235,7 +235,6 @@
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('Highcharts.css');
-			//JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
 			JSB().loadScript('tpl/highstock/highstock.js', function(){
 				self.init();
 			});
