@@ -17,78 +17,6 @@
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		},
 
-//		examples: {
-//		    growTempByYearsFunc: function() {
-////		        $growTempByYears: {
-////		            $year: {$toInt: "Год"},
-////		            $field: "Чистая прибыль(убыток)за отчетный период"
-////		        }
-//		    },
-//		    growTempByYears: {
-//		        $context: "main",
-//		        $groupBy: [ "Наименование предприятия", "Год"],
-//		        $select: {
-//                    "Наименование предприятия":"Наименование предприятия",
-//                    "Год":"Год",
-//                    "Темп роста" : {
-//                        $div: [
-//                            {
-//                                $context: "pastYear",
-//                                $groupBy: [ "Наименование предприятия", "Год"],
-//                                $select: {
-//                                    "Прибыль за прошлый год": {$sum: "Чистая прибыль(убыток)за отчетный период"}
-//                                },
-//                                $filter: {
-//                                    "Год": {$eq: {$sub:[
-//                                        {$toInt: {$field: "Год", $context: "main"}},
-//                                        {$const:1}
-//                                    ]}},
-//                                    "Наименование предприятия": {$eq:
-//                                        {$field: "Наименование предприятия", $context: "main"}
-//                                    }
-//                                }
-//                            },
-//                            {$sum: "Чистая прибыль(убыток)за отчетный период"}
-//                        ]
-//                    }
-//		        },
-//		    },
-//		    increaseTempByYears: {
-//		        $context: "main",
-//		        $groupBy: [ "Наименование предприятия", "Год"],
-//		        $select: {
-//                    "Наименование предприятия":"Наименование предприятия",
-//                    "Год":"Год",
-//                    "Темп роста" : {
-//                        $div: [
-//                            {$sub:[
-//                                {$sum: "Чистая прибыль(убыток)за отчетный период"},
-//                                {
-//                                    $context: "pastYear",
-//                                    $groupBy: [ "Наименование предприятия", "Год"],
-//                                    $select: {
-//                                        "Прибыль за прошлый год": {$sum: "Чистая прибыль(убыток)за отчетный период"}
-//                                    },
-//                                    $filter: {
-//                                        "Год": {$eq: {$toString: {
-//                                            $sub:[
-//                                                {$toInt: {$field: "Год", $context: "main"}},
-//                                                {$const:1}
-//                                            ]}
-//                                         }},
-//                                        "Наименование предприятия": {$eq:
-//                                            {$field: "Наименование предприятия", $context: "main"}
-//                                        }
-//                                    }
-//                                }
-//                            ]},
-//                            {$sum: "Чистая прибыль(убыток)за отчетный период"}
-//                        ]
-//                    }
-//		        },
-//		    }
-//        },
-
 		executeQuery: function(translatedQuery, params){
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asSQL().iteratedParametrizedQuery2(
@@ -116,7 +44,7 @@
 		translateQueryExpression: function(dcQuery) {
 		    var sql = '';
 		    if (dcQuery.$sql) {
-		        sql += dcQuery.$sql;
+		        sql += this._prepareEmbeddedSQL(dcQuery.$sql, dcQuery);
 		    } else {
                 var columns = this._translateExpressions(dcQuery);
                 var from  =  this._translateFrom(dcQuery);
@@ -136,6 +64,26 @@
 		    }
 
 		    Log.debug('Translated SQL Query: \n' + sql);
+            return sql;
+        },
+
+        _prepareEmbeddedSQL: function(sql, dcQuery){
+            if (this.cube) {
+                for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
+                    // is in Cube print full name
+                    var binding = this.cube.fields[field].binding;
+                    for(var b in binding) {
+                        if (this.providers.indexOf(binding[b].provider) != -1) {
+                            var name = this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
+                            sql = sql.replace('$cube.' + this._quotedName(field), name);
+                        }
+                    }
+                }
+            }
+            var fail = sql.match(/\$cube\.\".*\"/i);
+            if (fail) {
+                throw new Error("Unknown cube field " + fail[0]);
+            }
             return sql;
         },
 
@@ -216,6 +164,10 @@
                 return '(' + translateSubQuery(exp) + ')';
             }
 
+		    if (exp.$sql) {
+		        return '(' + this._prepareEmbeddedSQL(exp.$sql, dcQuery) + ')';
+		    }
+
 
             var op = Object.keys(exp)[0];
             // const or field
@@ -267,9 +219,14 @@
                     return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as date)';
 
                 case '$dateYear':
-                    return 'extract(isoyear from timestamp ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'extract(isoyear from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$dateMonth':
-                    return 'extract(month from timestamp ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'extract(month from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                case '$dateTotalSeconds':
+                    return 'extract(epoch from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+
+                case '$dateIntervalOrder':
+                    return 'CAST(extract(epoch from ' + this._translateExpression(null, exp.$dateIntervalOrder.$field, dcQuery) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
             }
 
             // aggregate operators
@@ -460,7 +417,7 @@
                 var sql = '';
                 var cnt = 0;
                 for (var field in exps) if (exps.hasOwnProperty(field)) {
-                    if (cnt > 0) sql += ' AND ';
+                    if (cnt++ > 0) sql += ' AND ';
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
@@ -537,7 +494,8 @@
             var sql = '';
             for (var i in group) {
                 if (i > 0) sql += ', ';
-                sql += $this._translateField(group[i], dcQuery);
+                //sql += $this._translateField(group[i], dcQuery);
+                sql += $this._translateExpression(null, group[i], dcQuery);
             }
             return sql;
         },
