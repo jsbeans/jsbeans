@@ -28,7 +28,11 @@
 
 `$toInt, $toDouble, $toString, $toBoolean, $toDate, $distinct`
 
-`$dateYear, $dateMonth`
+`$dateYear, $dateMonth` - извчение года и месяца из даты
+
+`$dateTotalSeconds` - извлечение секунд из даты начиная с 1970-01-01
+
+`$dateIntervalOrder: {$field: "field", $seconds: 31536000}` - разбиение даты на интервалы и приведение к порядковому номеру интервала, используется для группировки по интервалам дат
 
 `$trim` - удаление лишних пробелов в строках
 
