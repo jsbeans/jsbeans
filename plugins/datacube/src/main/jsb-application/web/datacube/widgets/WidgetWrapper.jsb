@@ -196,8 +196,8 @@
 			return this.widget;
 		},
 		
-		constructFilter: function(srcId){
-			return this.getOwner().getFilterManager().constructFilter(srcId);
+		constructFilter: function(src){
+			return this.getOwner().getFilterManager().constructFilter(src);
 		},
 		
 		hasFilter: function(fDesc){
@@ -377,10 +377,10 @@
 			this.values = this.settingsRenderer.getValues();
 			
 			// store data in wrapper
-			this.getWidgetEntry().server().storeValues(title, this.values, function(sourceMap){
+			this.getWidgetEntry().server().storeValues(title, this.values, function(sourceDesc){
 				$this.name = title;
 				$this.updateTabHeader();
-				$this.getWidget().updateValues(JSB.clone($this.values), sourceMap);
+				$this.getWidget().updateValues(JSB.clone($this.values), sourceDesc);
 				$this.getWidget().refresh();
 			});
 			

@@ -8,6 +8,7 @@
 		values: null,
 		sort: null,
 		sourceMap: null,
+		sources: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -232,7 +233,11 @@
 					}
 					JSB.merge(item.fetchOpts, opts);
 					if($this.getWrapper()){
-						item.fetchOpts.filter = $this.getWrapper().constructFilter(item.binding.source);
+						var filterDesc = $this.getWrapper().constructFilter($this.sources[item.binding.source]);
+						if(filterDesc){
+							item.fetchOpts.filter = filterDesc.filter;
+							item.fetchOpts.postFilter = filterDesc.postFilter;
+						}
 					}
 					item.fetchOpts.sort = $this.sort;
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
@@ -427,16 +432,16 @@
 			};
 		},
 		
-		setWrapper: function(w, values, sourceMap){
+		setWrapper: function(w, values, sourceDesc){
 			this.wrapper = w;
-			this.updateValues(values, sourceMap);
+			this.updateValues(values, sourceDesc);
 		},
 		
 		getWrapper: function(){
 			return this.wrapper;
 		},
 		
-		updateValues: function(values, sourceMap){
+		updateValues: function(values, sourceDesc){
 			if(!values){
 				values = JSB.clone(this.getWrapper().getValues());
 			}
@@ -445,10 +450,12 @@
 				this.values = this.values.unwrap();
 			}
 			this.context = new this.Selector(this.values);
-			if(sourceMap){
-				this.sourceMap = sourceMap;
+			if(sourceDesc){
+				this.sourceMap = sourceDesc.sourceMap;
+				this.sources = sourceDesc.sources;
 			} else {
 				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
+				this.sources = this.getWrapper().getWidgetEntry().getSources();
 			}
 		},
 		
@@ -484,9 +491,10 @@
 				}
 			}
 			if(fDesc.sourceId){
-				if(!this.sourceMap[fDesc.sourceId]){
+				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
 					throw new Error('Invalid sourceId');
 				}
+				fDesc.source = this.sources[fDesc.sourceId];
 				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
 			}
 			throw new Error('Missing sourceId');

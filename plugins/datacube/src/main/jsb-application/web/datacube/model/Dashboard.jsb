@@ -174,22 +174,29 @@
 				wrappers: this.wrappers
 			}
 		},
-		
-		acquireAssiciatedSources: function(sourceId){
-			var sourceArr = [];
-			var source = this.workspace.entry(sourceId);
-			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-				var cube = source.getCube();
-				cube.load();
-				var sliceMap = cube.getSlices();
-				for(var sId in sliceMap){
-					sourceArr.push(sId);
+	
+		getSources: function(){
+			var sources = {};
+			this.load();
+			
+			for(var wId in this.wrappers){
+				var wWrapper = this.wrappers[wId];
+				var srcMap = wWrapper.getSourceMap();
+				for(var srcId in srcMap){
+					if(!sources[srcId]){
+						sources[srcId] = this.workspace.entry(srcId);
+					}
+					var srcArr = srcMap[srcId];
+					for(var i = 0; i < srcArr.length; i++){
+						var srcArrId = srcArr[i];
+						if(!sources[srcArrId]){
+							sources[srcArrId] = this.workspace.entry(srcArrId);
+						}
+					}
 				}
-			} else {
-				sourceArr.push(sourceId);
 			}
 			
-			return sourceArr;
+			return sources;
 		}
 	}
 }

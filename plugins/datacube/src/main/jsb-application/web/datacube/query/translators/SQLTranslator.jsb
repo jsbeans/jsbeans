@@ -401,7 +401,7 @@
                 var sql = '(';
                 var cnt = 0;
                 for (var i in exps) {
-                    if (cnt > 0) sql += ' ' + op + ' ';
+                    if (cnt++ > 0) sql += ' ' + op + ' ';
                     sql += translateMultiExpressions(exps[i]);
                 }
                 sql += ')';

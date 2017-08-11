@@ -209,8 +209,6 @@
 		},
 
         refresh: function(opts){
-            debugger;
-
             if(opts && this == opts.initiator) return;
             if(opts && opts.type === 'removeFilter'){
             	if(this._maxFilter == opts.fItemIds[0]){
