@@ -48,6 +48,7 @@
     color: blue;
     font-size: 14px;
     margin-left: 5px;
+    cursor: help;
 }
 
 .widgetSchemeRenderer > .header > .btnCreate {

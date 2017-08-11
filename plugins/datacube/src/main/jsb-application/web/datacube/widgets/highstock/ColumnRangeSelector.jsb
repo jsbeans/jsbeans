@@ -66,12 +66,6 @@
                 itemType: 'string',
                 itemValue: '',
                 description: 'Имя серии. Выводится во всплывающей подсказке'
-            },
-            {
-                name: 'Интервал точек',
-                type: 'item',
-                itemType: 'number',
-                itemValue: ''
             }
             ]
         },
@@ -84,7 +78,7 @@
                 {
                     name: 'Формат даты',
                     type: 'item',
-                    description: 'Формат даты во всплывающей подсказке'
+                    description: 'Формат даты во всплывающей подсказке (%d - день, %m - месяц, %y - год)'
                 }
             ]
         },
@@ -93,6 +87,7 @@
             name: 'Группировка данных',
             key: 'dataGrouping',
             multiple: 'true',
+            optional: true,
             items: [
                 {
                     name: 'Единица измерения',
@@ -102,42 +97,50 @@
                     {
                         name: 'Миллисекунда',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'millisecond'
                     },
                     {
                         name: 'Секунда',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'second'
                     },
                     {
                         name: 'Минута',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'minute'
                     },
                     {
                         name: 'Час',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'hour'
                     },
                     {
                         name: 'День',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'day'
                     },
                     {
                         name: 'Неделя',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'week'
                     },
                     {
                         name: 'Месяц',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'month'
                     },
                     {
                         name: 'Год',
                         type: 'item',
-                        editor: 'none'
+                        editor: 'none',
+                        itemValue: 'year'
                     }
                     ]
                 },
@@ -145,7 +148,8 @@
                     name: 'Группировка',
                     type: 'item',
                     itemType: 'string',
-                    itemValue: ''
+                    itemValue: '',
+                    description: 'Массив допустимых группировок, через запятую (1, 2, 4)'
                 }
             ]
         }
@@ -209,20 +213,18 @@
 		},
 
         refresh: function(opts){
-            debugger;
-
             if(opts && this == opts.initiator) return;
             if(opts && opts.type === 'removeFilter'){
             	if(this._maxFilter == opts.fItemIds[0]){
                     this._isRemoveFilter = true;
                     var ex = this.chart.xAxis[0].getExtremes();
-                    this.chart.xAxis[0].setExtremes($this._extremes[0], ex.max);
+                    this.chart.xAxis[0].setExtremes(ex.min, $this._extremes[1]);
                     return;
             	}
             	if(this._minFilter == opts.fItemIds[0]){
             		this._isRemoveFilter = true;
                     var ex = this.chart.xAxis[0].getExtremes();
-                    this.chart.xAxis[0].setExtremes(ex.min, $this._extremes[1]);
+                    this.chart.xAxis[0].setExtremes($this._extremes[0], ex.max);
                     return;
             	}
             }
@@ -236,15 +238,15 @@
                 tooltip = this.getContext().find('tooltip').value(),
                 value = source.value().get(0),
                 count = source.value().get(1);
-/*
+
             if(dataGrouping.used()){
                 var units = [];
-                debugger;
-                for(var i = 0; i < dataGrouping.values().length; i++){
-
+                var values = dataGrouping.values();
+                for(var i = 0; i < values.length; i++){
+                    units.push([values[i].get(0).value().get(0).value(), [values[i].get(1).value()]]);
                 }
             }
-*/
+
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
@@ -332,9 +334,9 @@
                             name: seriesContext.get(0).value(),
                             data: data,
                             turboThreshold: 0,
-                            pointInterval: seriesContext.get(1).value(),
                             dataGrouping: {
-                                enabled: false,
+                                enabled: units !== undefined ? true : false,
+                                units: units
                             }
                         }];
 
