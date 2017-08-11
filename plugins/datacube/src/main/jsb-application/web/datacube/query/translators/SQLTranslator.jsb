@@ -495,7 +495,7 @@
             for (var i in group) {
                 if (i > 0) sql += ', ';
                 //sql += $this._translateField(group[i], dcQuery);
-                sql += $this._translateExpression(group[i], dcQuery);
+                sql += $this._translateExpression(null, group[i], dcQuery);
             }
             return sql;
         },
