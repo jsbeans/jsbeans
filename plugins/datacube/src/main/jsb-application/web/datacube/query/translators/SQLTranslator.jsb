@@ -68,6 +68,22 @@
         },
 
         _prepareEmbeddedSQL: function(sql, dcQuery){
+            if (this.cube) {
+                for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
+                    // is in Cube print full name
+                    var binding = this.cube.fields[field].binding;
+                    for(var b in binding) {
+                        if (this.providers.indexOf(binding[b].provider) != -1) {
+                            var name = this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
+                            sql = sql.replace('$cube.' + this._quotedName(field), name);
+                        }
+                    }
+                }
+            }
+            var fail = sql.match(/\$cube\.\".*\"/i);
+            if (fail) {
+                throw new Error("Unknown cube field " + fail[0]);
+            }
             return sql;
         },
 
