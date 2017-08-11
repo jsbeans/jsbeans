@@ -62,7 +62,34 @@
 					var fDesc = filters[fId];
 					var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
 					fTag.append($this.$('<div class="field"></div>').text(fDesc.field).attr('title', fDesc.field));
-					fTag.append('<div class="op">=</div>');
+					var opSign = ':';
+					switch(fDesc.op){
+					case '$eq':
+						opSign = '=';
+						break;
+					case '$lt':
+						opSign = '<';
+						break;
+					case '$lte':
+						opSign = '&le;';
+						break;
+					case '$gt':
+						opSign = '>';
+						break;
+					case '$gte':
+						opSign = '&ge;';
+						break;
+					case '$ne':
+						opSign = '&ne;';
+						break;
+					case '$like':
+					case '$ilike':
+						opSign = '&asymp;';
+						break;
+					default:
+						opSign = ':';
+					}
+					fTag.append('<div class="op">'+opSign+'</div>');
 
 					if(JSB().isDate(fDesc.value)){
 					    var v = fDesc.value.toDateString();

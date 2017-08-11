@@ -613,7 +613,7 @@
 	        	if(newQuery.$filter || newQuery.$postFilter){
 	        		var c = {i: 1};
 	        		function getNextParam(){
-	        			return '_cubeParam' + $this.getId() + '_' + (c.i++);
+	        			return 'p' + (c.i++);
 	        		}
 	        		function prepareFilter(scope){
 	        			for(var f in scope){

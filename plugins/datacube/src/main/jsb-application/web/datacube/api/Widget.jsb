@@ -77,8 +77,8 @@
 			return $this.widget;
 		},
 		
-		constructFilter: function(srcId){
-			return WidgetController.getFilterManager().constructFilter(srcId);
+		constructFilter: function(src){
+			return WidgetController.getFilterManager().constructFilter(src);
 		},
 		
 		clearFilters: function(widget){
