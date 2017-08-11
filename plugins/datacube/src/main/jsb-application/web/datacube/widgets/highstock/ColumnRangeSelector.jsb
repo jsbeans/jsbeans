@@ -87,6 +87,67 @@
                     description: 'Формат даты во всплывающей подсказке'
                 }
             ]
+        },
+        {
+            type: 'group',
+            name: 'Группировка данных',
+            key: 'dataGrouping',
+            multiple: 'true',
+            items: [
+                {
+                    name: 'Единица измерения',
+                    type: 'select',
+                    description: 'Группируемая диница измерения',
+                    items: [
+                    {
+                        name: 'Миллисекунда',
+                        type: 'item',
+                        editor: 'none'
+                    },
+                    {
+                        name: 'Секунда',
+                        type: 'item',
+                        editor: 'none'
+                    },
+                    {
+                        name: 'Минута',
+                        type: 'item',
+                        editor: 'none'
+                    },
+                    {
+                        name: 'Час',
+                        type: 'item',
+                        editor: 'none'
+                    },
+                    {
+                        name: 'День',
+                        type: 'item',
+                        editor: 'none'
+                    },
+                    {
+                        name: 'Неделя',
+                        type: 'item',
+                        editor: 'none'
+                    },
+                    {
+                        name: 'Месяц',
+                        type: 'item',
+                        editor: 'none'
+                    },
+                    {
+                        name: 'Год',
+                        type: 'item',
+                        editor: 'none'
+                    }
+                    ]
+                },
+                {
+                    name: 'Группировка',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: ''
+                }
+            ]
         }
         ]
     },
@@ -99,7 +160,7 @@
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			JSB().loadCss('tpl/highstock/css/highcharts.css');
-			JSB().loadScript('tpl/highstock/highstock.js', function(){
+			JSB().loadScript(['tpl/highstock/highstock.src.js', 'tpl/highstock/adapters/standalone-framework.js'], function(){
 			    Highcharts.setOptions({
 			        lang: {
                         contextButtonTitle: "Меню виджета",
@@ -143,11 +204,13 @@
                     $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }
             });
-            
+
             this.isInit = true;
 		},
 
         refresh: function(opts){
+            debugger;
+
             if(opts && this == opts.initiator) return;
             if(opts && opts.type === 'removeFilter'){
             	if(this._maxFilter == opts.fItemIds[0]){
@@ -169,10 +232,19 @@
 
             var seriesContext = this.getContext().find('series').value(),
                 autoCount = source.value().get(2).used(),
+                dataGrouping = this.getContext().find('dataGrouping'),
                 tooltip = this.getContext().find('tooltip').value(),
                 value = source.value().get(0),
                 count = source.value().get(1);
+/*
+            if(dataGrouping.used()){
+                var units = [];
+                debugger;
+                for(var i = 0; i < dataGrouping.values().length; i++){
 
+                }
+            }
+*/
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
@@ -231,11 +303,14 @@
                         tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
 
                         var chart = {
+                            chart: {
+                                renderTo: $this.containerId
+                            },
                             xAxis: {
-                                // min: data[0].x,
-                                // max: data[data.length - 1].x,
+                                min: data[0].x,
+                                max: data[data.length - 1].x,
                                 events: {
-                                    // afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
+                                    afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
                                 }
                             },
 
@@ -252,18 +327,16 @@
                             }
                         };
 
-                        chart.series = {
+                        chart.series = [{
                             type: 'column',
                             name: seriesContext.get(0).value(),
                             data: data,
                             turboThreshold: 0,
-                            /*
                             pointInterval: seriesContext.get(1).value(),
                             dataGrouping: {
                                 enabled: false,
                             }
-                            */
-                        };
+                        }];
 
                         $this._extremes = [data[0].x, data[data.length - 1].x];
                     } catch(e){
@@ -272,9 +345,10 @@
                     } finally{
                         $this.getElement().loader('hide');
                     }
-// debugger;
+
                     // create the chart
-                    $this.chart = Highcharts.stockChart($this.containerId, chart);
+                    $this.chart = new Highcharts.stockChart(chart);
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 });
             }, function(){
                 return $this.isInit;
