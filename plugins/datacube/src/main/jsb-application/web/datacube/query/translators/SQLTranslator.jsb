@@ -226,7 +226,7 @@
                     return 'extract(epoch from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
 
                 case '$dateIntervalOrder':
-                    return 'CAST(extract(epoch from ' + this._translateExpression(null, exp.$dateIntervalOrder.$field, dcQuery) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
+                    return 'CAST((extract(epoch from ' + this._translateExpression(null, exp.$dateIntervalOrder.$field, dcQuery) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
             }
 
             // aggregate operators

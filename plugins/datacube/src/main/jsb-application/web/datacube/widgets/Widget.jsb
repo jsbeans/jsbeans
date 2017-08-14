@@ -231,6 +231,7 @@
 							reset: true
 						};
 					}
+
 					JSB.merge(item.fetchOpts, opts);
 					if($this.getWrapper()){
 						var filterDesc = $this.getWrapper().constructFilter($this.sources[item.binding.source]);
@@ -240,6 +241,7 @@
 						}
 					}
 					item.fetchOpts.sort = $this.sort;
+
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(item.fetchOpts.reset){
 							item.cursor = 0;
@@ -543,6 +545,12 @@
 					if(opts.sort){
 						extQuery.$sort = [opts.sort];
 					}
+					if(opts.select){
+                        extQuery.$select = opts.select;
+                    }
+                    if(opts.groupBy){
+                        extQuery.$groupBy = opts.groupBy;
+                    }
 					this.iterators[sourceId] = source.executeQuery(extQuery);
 				} else {
 					// TODO
