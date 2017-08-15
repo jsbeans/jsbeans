@@ -237,7 +237,7 @@ public class JsHub extends Service {
     
     private void clearScope(String scopePath){
     	// clear beans
-    	String script = "var sessionScope = JSB().getSessionInstancesScope(); var beanIdsArr = Object.keys(sessionScope); for(var bidx = 0; bidx < beanIdsArr.length; bidx++){ var bInst = sessionScope[beanIdsArr[bidx]]; if(bInst && bInst.destroy){ bInst.destroy(); } }";
+    	String script = "var sessionScope = JSB().getSessionInstancesScope(); var beanIdsArr = Object.keys(sessionScope); for(var bidx = 0; bidx < beanIdsArr.length; bidx++){ var bInst = sessionScope[beanIdsArr[bidx]]; if(bInst && bInst.destroy){ try{ bInst.destroy();} catch(e){ JSB.getLogger().error(e);} } }";
     	try {
 	    	Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(scopePath);
 	    	Context cx = contextFactory.enterContext();

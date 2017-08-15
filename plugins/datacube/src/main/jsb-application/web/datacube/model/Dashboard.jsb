@@ -7,6 +7,7 @@
 	},
 	
 	widgetCount: 0,
+	lastUpdated: null,
 	
 	$client: {
 	},
@@ -28,6 +29,9 @@
 			$base(id, workspace);
 			if(this.property('widgets')){
 				this.widgetCount = this.property('widgets');
+			}
+			if(this.property('lastUpdated')){
+				this.lastUpdated = this.property('lastUpdated');
 			}
 		},
 		
@@ -89,7 +93,9 @@
 					}
 				}
 				this.widgetCount = Object.keys(this.wrappers).length;
+				this.lastUpdated = Date.now();
 				this.property('widgets', this.widgetCount);
+				this.property('lastUpdated', this.lastUpdated);
 				this.workspace.writeArtifactAsJson(this.getLocalId() + '.dashboard', desc);
 			} finally {
 				JSB.getLocker().unlock(mtxName);	

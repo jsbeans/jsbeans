@@ -220,10 +220,11 @@
                 if(!$this.getElement().is(':visible')){
                     return;
                 }
-
-                if($this.highcharts){
-                    $this.highcharts.setSize(self.getElement().width(), $this.getElement().height(), false);
-                }
+                JSB.defer(function(){
+                    if($this.highcharts){
+                        $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
+                    }
+                }, 300, 'bcResize' + $this.getId());
             });
 
             this.isInit = true;

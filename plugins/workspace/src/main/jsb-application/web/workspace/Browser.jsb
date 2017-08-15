@@ -70,7 +70,9 @@
 			if(!this.views[id]){
 				this.views[id] = this.tabView.addTab(title, view, {id: id});
 				this.views[id].tab.resize(function(){
-					$this.updateNavigator();
+					JSB.defer(function(){
+						$this.updateNavigator();	
+					}, 100, 'addView_' + $this.getId());
 				});
 			}
 			
