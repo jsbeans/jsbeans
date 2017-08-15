@@ -239,13 +239,8 @@
         refresh: function(opts){
             if(opts && this == opts.initiator) {
                 return;
+            }
 
-                if(this.getContext().find('fixedColumns').used()){
-
-                } else {
-                    return;
-                }
-            };
             if(opts && opts.type === 'removeFilter'){
             	if(this._maxFilter == opts.fItemIds[0]){
                     this._isRemoveFilter = true;
@@ -328,7 +323,7 @@
                             });
                         }
 
-                        var navigatorChartOptions: {
+                        var navigatorChartOptions = {
                             adaptToUpdatedData: false,
                             series: {
                                 data: data
@@ -464,7 +459,50 @@
                 var context = $this.getContext().find('source').binding();
                 if(!context.source) return;
 
-                var field = $this.getContext().find("source").value().get(0).binding();
+                var value = $this.getContext().find('source').value().get(0);
+
+                var fixedColumns = this.getContext().find('fixedColumns');
+                if(fixedColumns.used()){
+                    var columnCount = fixedColumns.value().get(2).value();
+                    var colWidth = (event.max - event.min) / 1000 / columnCount;
+
+                    var fixedColumnsSelect = {
+                        dateIntervalOrder: {
+                            $dateIntervalOrder: {
+                                $field: value.binding()[0],
+                                $seconds: colWidth
+                            }
+                        },
+                        dateCount: {
+                            $count: 1
+                        }
+                    };
+                    var fixedColumnsGroupBy = [
+                        {
+                            $dateIntervalOrder: {
+                                $field: value.binding()[0],
+                                $seconds: colWidth
+                            }
+                        }
+                    ];
+
+                    $this.chart.showLoading('Загрузка...');
+                    $this.getContext().find('source').fetch({readAll: true, reset: true, select: fixedColumnsSelect, groupBy: fixedColumnsGroupBy}, function(queryResult){
+                        var data = [];
+
+                        for(var i = 0; i < queryResult.length; i++){
+                            data.push({
+                                x: queryResult[i].dateIntervalOrder * colWidth * 1000,
+                                y: queryResult[i].dateCount
+                            });
+                        }
+
+                        $this.chart.series[0].setData(data);
+                        $this.chart.hideLoading();
+                    });
+                }
+
+                var field = value.binding();
 
                 if(Object.keys($this._originalData).length > 0){
                     if($this._extremes[0] !== event.min){
