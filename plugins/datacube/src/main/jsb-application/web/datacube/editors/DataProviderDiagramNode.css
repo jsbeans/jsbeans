@@ -39,31 +39,34 @@
 	background: -ms-linear-gradient(top, #adc8e2 0%, #86b1d4 60%, #4489d0 100%);
 }
 
-/*
-.dataProviderDiagramNode > .caption > .icon {
-	position: absolute;
-	width: 20px;
-	height: 20px;
-	left: 4px;
-	top: 50%;
-	margin-top: -10px;
-}
-
-.dataProviderDiagramNode > .caption > .name {
-	padding-left: 24px;
-    height: 20px;
-    box-sizing: border-box;
-    padding-top: 2px;
-}
-*/
-
 .dataProviderDiagramNode > .caption > .renderer {
-	padding-bottom: 2px;
+	white-space: nowrap;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	overflow: hidden;
+    display: block;
 }
 
 .dataProviderDiagramNode > .caption > .renderer > .icon {}
 
 .dataProviderDiagramNode > .caption > .renderer > .title {}
+
+.dataProviderDiagramNode > .caption > .renderer > .leftParen,
+.dataProviderDiagramNode > .caption > .renderer > .rightParen,
+.dataProviderDiagramNode > .caption > .renderer > .renderer {
+	font-size: 11px;
+	color: #555;
+}
+
+.dataProviderDiagramNode > .caption > .renderer > .renderer > .icon {
+	width: 14px;
+    height: 14px;
+    margin-top: -7px;
+}
+
+.dataProviderDiagramNode > .caption > .renderer > .renderer > .title {
+	padding-left: 20px;
+}
 
 .dataProviderDiagramNode > .caption > .roundButton {
 	position: absolute;

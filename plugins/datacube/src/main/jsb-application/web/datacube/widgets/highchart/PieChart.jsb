@@ -200,9 +200,12 @@
             		return;
             	}
 
-                if($this.highcharts){
-                    $this.highcharts.setSize(self.getElement().width(), $this.getElement().height(), false);
-                }
+                JSB.defer(function(){
+                    if($this.highcharts){
+                        $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
+                    }
+                }, 300, 'hcResize' + $this.getId());
+
             });
 
             this.isInit = true;

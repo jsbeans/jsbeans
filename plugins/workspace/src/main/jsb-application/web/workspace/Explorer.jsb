@@ -207,9 +207,11 @@
 			this.installUploadContainer(null);
 
 			$this.toolbar.getElement().resize(function(){
-				$this.tree.getElement().css({
-					top: $this.toolbar.getElement().outerHeight()
-				});
+				JSB.defer(function(){
+					$this.tree.getElement().css({
+						top: $this.toolbar.getElement().outerHeight()
+					});
+				}, 100, 'explorerToolbarResize' + $this.getId());
 			});
 
 			if(this.options.wmKey){

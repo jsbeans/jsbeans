@@ -228,9 +228,11 @@
                 if(!$this.getElement().is(':visible')){
                     return;
                 }
-                if($this.chart){
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
-                }
+                JSB.defer(function(){
+                	if($this.chart){
+                        $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
+                    }
+                }, 300, 'hcResize' + $this.getId());
             });
 
             this.isInit = true;

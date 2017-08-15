@@ -40,7 +40,7 @@
 			this.attr('provider', this.provider.getJsb().$name);
 			
 			this.caption = this.$('<div class="caption"></div>');
-			var renderer = RendererRepository.createRendererFor(this.provider.entry);
+			var renderer = RendererRepository.createRendererFor(this.provider.entry, {showSource: true});
 			this.caption.append(renderer.getElement());
 			
 			// refresh btn

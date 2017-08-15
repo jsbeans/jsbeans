@@ -238,6 +238,9 @@
 						if(filterDesc){
 							item.fetchOpts.filter = filterDesc.filter;
 							item.fetchOpts.postFilter = filterDesc.postFilter;
+						} else {
+							item.fetchOpts.filter = null;
+							item.fetchOpts.postFilter = null;
 						}
 					}
 					item.fetchOpts.sort = $this.sort;
@@ -518,11 +521,17 @@
 		iterators: {},
 		
 		destroy: function(){
-			for(var it in this.iterators){
-				this.iterators[it].close();
+			if(!this.isDestroyed()){
+				for(var it in this.iterators){
+					try {
+						this.iterators[it].close();
+					}catch(e){
+						JSB.getLogger().error(e);
+					}
+				}
+				this.iterators = {};
+				$base();
 			}
-			this.iterators = {};
-			$base();
 		},
 		
 		fetch: function(sourceId, dashboard, opts){
