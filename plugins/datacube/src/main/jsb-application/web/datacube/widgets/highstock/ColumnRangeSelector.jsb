@@ -189,7 +189,7 @@
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			JSB().loadCss('tpl/highstock/css/highcharts.css');
-			JSB().loadScript(['tpl/highstock/highstock.js', 'tpl/highstock/adapters/standalone-framework.js'], function(){
+			JSB().loadScript(['tpl/highstock/highstock.js'], function(){ // 'tpl/highstock/adapters/standalone-framework.js'
 			    Highcharts.setOptions({
 			        lang: {
                         contextButtonTitle: "Меню виджета",
@@ -315,6 +315,11 @@
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true, select: fixedColumnsSelect, groupBy: fixedColumnsGroupBy}, function(queryResult){
                     if(fixedColumns.used()){
+                        if(!queryResult){
+                            if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
+                            return;
+                        }
+
                         var data = [];
 
                         for(var i = 0; i < queryResult.length; i++){
@@ -324,7 +329,7 @@
                             });
                         }
 
-                        var navigatorChartOptions = {
+                        var navigator = {
                             adaptToUpdatedData: false,
                             series: {
                                 data: data
@@ -430,8 +435,8 @@
                             }
                         }];
 
-                        if(navigatorChartOptions){
-                            chart.navigator = navigatorChartOptions;
+                        if(navigator){
+                            chart.navigator = navigator;
                         }
 
                         if(scrollbar){
@@ -443,7 +448,7 @@
                         }
                     } catch(e){
                         console.log(e);
-                        if($this.chart) $this.chart.destroy();
+                        if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
                         return;
                     } finally{
                         $this.getElement().loader('hide');
@@ -602,6 +607,11 @@
 
             $this.chart.showLoading('Загрузка...');
             $this.getContext().find('source').fetch({readAll: true, reset: true, select: fixedColumnsSelect, groupBy: fixedColumnsGroupBy}, function(queryResult){
+                if(!queryResult){
+                    $this.chart.hideLoading();
+                    return;
+                }
+
                 var data = [];
 
                 for(var i = 0; i < queryResult.length; i++){
