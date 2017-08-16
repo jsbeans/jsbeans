@@ -175,6 +175,82 @@
                 itemType: 'string'
             }
             ]
+        },
+        {
+            type: 'group',
+            name: 'Ось Х',
+            key: 'xAxis',
+            optional: true,
+            items: [
+            {
+                type: 'group',
+                name: 'Формат дат',
+                multiple: 'true',
+                items: [
+                {
+                    name: 'Единица измерения',
+                    type: 'select',
+                    items: [
+                    {
+                        name: 'Миллисекунда',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'millisecond'
+                    },
+                    {
+                        name: 'Секунда',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'second'
+                    },
+                    {
+                        name: 'Минута',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'minute'
+                    },
+                    {
+                        name: 'Час',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'hour'
+                    },
+                    {
+                        name: 'День',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'day'
+                    },
+                    {
+                        name: 'Неделя',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'week'
+                    },
+                    {
+                        name: 'Месяц',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'month'
+                    },
+                    {
+                        name: 'Год',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'year'
+                    }
+                    ]
+                },
+                {
+                    name: 'Формат',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: '',
+                    description: 'Формат даты'
+                }
+                ]
+            }
+            ]
         }
         ]
     },
@@ -399,11 +475,22 @@
                         var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
                         tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
 
+                        var xAxis = this.getContext().find('xAxis');
+                        if(xAxis.used()){
+                            var gr = xAxis.values(),
+                                dateTimeLabelFormats = {};
+
+                            for(var i = 0; i < gr.length; i++){
+                                dateTimeLabelFormats[gr[i].value().get(0).value().get(0).value()] = gr[i].value().get(1).value();
+                            }
+                        }
+
                         var chart = {
                             chart: {
                                 renderTo: $this.containerId
                             },
                             xAxis: {
+                                type: 'datetime',
                                 min: data[0].x,
                                 max: data[data.length - 1].x,
                                 events: {
@@ -445,6 +532,10 @@
 
                         if(rangeSelector){
                             chart.rangeSelector = rangeSelector;
+                        }
+
+                        if(dateTimeLabelFormats){
+                            chart.xAxis.dateTimeLabelFormats = dateTimeLabelFormats;
                         }
                     } catch(e){
                         console.log(e);

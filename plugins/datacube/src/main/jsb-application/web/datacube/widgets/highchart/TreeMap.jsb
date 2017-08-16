@@ -264,12 +264,12 @@
                         subtitle: {
                             text: this.getContext().find('subtitle').value()
                         },
+                        /*
                         plotOptions: {
                             treemap: {
                                 allowPointSelect: true,
                                 point: {
                                     events: {
-                                    /*
                                         select: function(evt) {
                                             this.update({
                                                 borderColor: 'green',
@@ -278,25 +278,24 @@
 
                                             debugger;
 
-                                            $this._addNewFilter(evt.target.series.index, evt.target.name);
+                                            // $this._addNewFilter(evt.target.series.index, evt.target.name);
                                         },
                                         unselect: function(evt) {
                                             this.update({
                                                 borderColor: '#E0E0E0',
                                                 borderWidth: 1
                                             });
-
                                             if(!$this._notNeedUnselect){
                                                 $this._notNeedUnselect = false;
                                                 $this.removeFilter($this._currentFilter);
                                                 $this.refreshAll();
                                             }
                                         }
-                                    */
                                     }
                                 }
                             }
                         },
+                        */
                         series: [{
                             type: 'treemap',
                             layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),
