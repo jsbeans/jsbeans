@@ -216,6 +216,8 @@
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
+            
+			$base();
 
             var dataValue = this.getContext().find('data').value();
 

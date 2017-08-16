@@ -1205,6 +1205,9 @@
 			}
 			
 			for (var entry, it = w.entries(); entry = it.next();) {
+				if(entry.getName() == 'Визуализация 5'){
+					debugger;
+				}
 				if(entry.getParent()){
 					continue;
 				}

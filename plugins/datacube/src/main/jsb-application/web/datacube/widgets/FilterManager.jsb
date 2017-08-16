@@ -138,9 +138,20 @@
 			return fId;
 		},
 		
-		constructFilter: function(source){
+		localizeFilter: function(source){
 			var sourceId = source.getLocalId();
 			var filters = this.filterBySource[sourceId];
+			if(!filters || Object.keys(filters).length == 0){
+				return null;
+			}
+			return filters;
+		},
+		
+		constructFilterBySource: function(source){
+			return this.constructFilterByLocal(this.localizeFilter(source));
+		},
+		
+		constructFilterByLocal: function(filters){
 			if(!filters || Object.keys(filters).length == 0){
 				return null;
 			}

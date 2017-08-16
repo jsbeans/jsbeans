@@ -272,6 +272,8 @@
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
+            
+			$base();
 
             var seriesContext = this.getContext().find('series').values();
             var yAxisContext = this.getContext().find('yAxis').values();

@@ -120,7 +120,7 @@
 		        var i = 0;
 		        return {
 		            next: function() {
-		                while(i < localIds.length && !self.body.entries[localIds[i]]) {
+		                while(i < localIds.length && (!self.body.entries[localIds[i]] || Object.keys(self.body.entries[localIds[i]]).length == 0)) {
 		                    i++;
 		                }
 

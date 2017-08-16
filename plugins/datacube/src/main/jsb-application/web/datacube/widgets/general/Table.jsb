@@ -954,6 +954,9 @@
 			if(!this.getContext().find('columns').used()){
 				return;
 			}
+			
+			$base();
+
 			// update col sizes
 			var colSizes = [];
 			var fixedSize = 0;

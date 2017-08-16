@@ -9,6 +9,7 @@
 		sort: null,
 		sourceMap: null,
 		sources: null,
+		sourceFilterMap: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -191,6 +192,35 @@
 					}
 				},
 				
+				getFilters: function(){
+					if(this.selector.length == 0){
+						return null;
+					}
+					
+					var item = this.selector[0];
+					if(!item.binding || !item.binding.source){
+						return null;
+					}
+					if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
+						return $this.sourceFilterMap[item.binding.source];
+					}
+				},
+				
+				setFilters: function(filters){
+					if(this.selector.length == 0){
+						throw new Error('Wrong selector');
+					}
+					
+					var item = this.selector[0];
+					if(!item.binding || !item.binding.source){
+						throw new Error('Missing source binding in selector');
+					}
+					if(!$this.sourceFilterMap){
+						$this.sourceFilterMap = {};
+					}
+					$this.sourceFilterMap[item.binding.source] = filters;
+				},
+				
 				fetch: function(opts, callback){
 					if(arguments.length == 1 && JSB.isFunction(opts)){
 						callback = opts;
@@ -234,7 +264,12 @@
 
 					JSB.merge(item.fetchOpts, opts);
 					if($this.getWrapper()){
-						var filterDesc = $this.getWrapper().constructFilter($this.sources[item.binding.source]);
+						var filterDesc = null;
+						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
+							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source]);
+						} else {
+							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
+						}
 						if(filterDesc){
 							item.fetchOpts.filter = filterDesc.filter;
 							item.fetchOpts.postFilter = filterDesc.postFilter;
@@ -468,8 +503,10 @@
 			return this.context;
 		},
 		
+		
 		refresh: function(opts){
-//			throw new Error('This method should be overriden');
+			// localize filters
+			this.localizeFilters();
 		},
 		
 		refreshAll: function(opts){
@@ -479,6 +516,19 @@
 		getSourceIds: function(){
 			return Object.keys(this.sourceMap);
 		},
+		
+		localizeFilters: function(){
+			this.sourceFilterMap = {};
+			for(var srcId in this.sources){
+				var src = this.sources[srcId];
+				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
+			}
+		},
+		
+		getLocalFilters: function(){
+			return this.sourceFilterMap;
+		},
+
 		
 		clearFilters: function(){
 			this.getWrapper().clearFilters(this);
