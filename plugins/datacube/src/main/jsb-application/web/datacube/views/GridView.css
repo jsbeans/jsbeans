@@ -36,6 +36,13 @@
 .gridView td > *{
     max-width: initial;
 }
+
+.gridView th > .relative > .colHeader > div {
+	padding-right: 20px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .gridView .handsontable .htDimmed{
     word-wrap: break-word;
 }
@@ -46,13 +53,12 @@
     width: 20px;
     height: 20px;
     background-size: 100%;
-    /*
-    position: absolute;
-    right: 5px;
-    top: 2px;
-    */
-    float: right;
     padding: 0;
+    
+	position: absolute;
+    right: 0;
+    top: 50%;
+    margin-top: -10px;
 
     cursor: pointer;
     border: 1px solid rgba(0,0,0,0);
