@@ -239,6 +239,8 @@
 				return;
 			}
 			
+			$base();
+			
 			// construct series descriptors
 			function prepareCss(cssText){
 				if(cssText.indexOf('{') >= 0){

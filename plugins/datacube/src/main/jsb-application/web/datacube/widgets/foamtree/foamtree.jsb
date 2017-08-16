@@ -516,6 +516,7 @@
         },
 
         refresh: function(opts){
+        	$base(opts);
         	if(opts && opts.initiator == this) return;
 
             if(this.getContext().find('source').bound()){

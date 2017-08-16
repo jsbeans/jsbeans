@@ -490,6 +490,8 @@
             var context = this.getContext().find('source');
             if(!context.bound()) return;
 
+			$base();
+
             this.getElement().loader();
             JSB().deferUntil(function(){
                 var rows = $this.getContext().find('source').values();

@@ -196,10 +196,18 @@
 			return this.widget;
 		},
 		
-		constructFilter: function(src){
-			return this.getOwner().getFilterManager().constructFilter(src);
+		localizeFilter: function(src){
+			return this.getOwner().getFilterManager().localizeFilter(src);
 		},
 		
+		constructFilterBySource: function(src){
+			return this.getOwner().getFilterManager().constructFilterBySource(src);
+		},
+
+		constructFilterByLocal: function(filters){
+			return this.getOwner().getFilterManager().constructFilterByLocal(filters);
+		},
+
 		hasFilter: function(fDesc){
 			return this.getOwner().getFilterManager().hasFilter(fDesc);
 		},

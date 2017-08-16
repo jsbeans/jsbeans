@@ -319,6 +319,8 @@
             if(opts && this == opts.initiator) {
                 return;
             }
+            
+			$base();
 
             if(opts && opts.type === 'removeFilter'){
             	if(this._maxFilter == opts.fItemIds[0]){

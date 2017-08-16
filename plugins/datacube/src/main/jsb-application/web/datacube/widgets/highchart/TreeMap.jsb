@@ -213,6 +213,8 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
+			$base();
+
             var data = [],
                 series = this.getContext().find('series').values(),
                 autoSize = this.getContext().find('autoSize').used(),

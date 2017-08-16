@@ -235,6 +235,8 @@
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
+            
+			$base();
 
             var dataValue = [];
             var dataVal = source.value().get(0).values();

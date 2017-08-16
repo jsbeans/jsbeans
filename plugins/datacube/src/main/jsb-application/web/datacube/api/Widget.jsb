@@ -77,10 +77,18 @@
 			return $this.widget;
 		},
 		
-		constructFilter: function(src){
-			return WidgetController.getFilterManager().constructFilter(src);
+		localizeFilter: function(src){
+			return WidgetController.getFilterManager().localizeFilter(src);
 		},
 		
+		constructFilterBySource: function(source){
+			return WidgetController.getFilterManager().constructFilterBySource(source);
+		},
+
+		constructFilterByLocal: function(filters){
+			return WidgetController.getFilterManager().constructFilterByLocal(filters);
+		},
+
 		clearFilters: function(widget){
 			WidgetController.getFilterManager().clearFilters(widget);
 		},
