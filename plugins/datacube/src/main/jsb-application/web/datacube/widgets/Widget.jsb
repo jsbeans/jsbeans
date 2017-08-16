@@ -202,7 +202,7 @@
 						return null;
 					}
 					if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
-						return $this.sourceFilterMap[item.binding.source];
+						return JSB().clone($this.sourceFilterMap[item.binding.source]);
 					}
 				},
 				
