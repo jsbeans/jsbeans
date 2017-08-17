@@ -23,7 +23,7 @@
 	background: -ms-linear-gradient(top, #c1efcc 0%, #a4d8aa 100%);
 	
 	
-    padding: 2px 12px 2px 4px;
+    padding: 2px 46px 2px 4px;
 	cursor: move;
     border-bottom: 1px solid #4b794e;
     position: relative;
@@ -31,10 +31,18 @@
 
 .sliceDiagramNode > .caption > .btnEdit {
 	position: absolute;
+	right: 26px;
+	top: 50%;
+	margin-top: -8px;
+}
+
+.sliceDiagramNode > .caption > .btnDelete {
+	position: absolute;
 	right: 6px;
 	top: 50%;
 	margin-top: -8px;
 }
+
 
 .sliceDiagramNode.selected > .caption,
 .sliceDiagramNode.highlighted > .caption {

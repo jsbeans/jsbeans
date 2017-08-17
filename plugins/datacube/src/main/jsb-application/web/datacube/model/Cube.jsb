@@ -544,6 +544,19 @@
 			return slice;
 		},
 		
+		removeSlice: function(sId){
+			var slice = this.slices[sId];
+			if(!slice){
+				return;
+			}
+			delete this.slices[sId];
+			this.removeChildEntry(sId);
+			slice.remove();
+			this.sliceCount = Object.keys(this.slices).length;
+			this.store();
+			this.doSync();
+		},
+		
 		getSliceById: function(sId){
 			if(!this.slices[sId]){
 				throw new Error('Unable to find slice with id: ' + sId);
