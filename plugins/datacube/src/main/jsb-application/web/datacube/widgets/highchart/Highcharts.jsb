@@ -222,11 +222,24 @@
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
+                },
+                {
+                    name: 'Стек',
+                    type: 'item',
+                    itemType: 'string'
                 }
                 ]
+            },
+            {
+                name: 'Стек',
+                key: 'isStacking',
+                type: 'item',
+                optional: true,
+                editor: 'none'
             }
             ]
-        }]
+        }
+        ]
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
@@ -285,151 +298,167 @@
                     var series = [];
                     var yAxis = [];
                     var xAxis = [];
-                    while(source.next()){
-                        for(var i = 0; i < seriesContext.length; i++){
-                            if(!series[i]){
-                                series[i] = {
-                                    name: seriesContext[i].get(0).value(),
-                                    data: [],
-                                    type: seriesContext[i].get(2).value().name(),
-                                    tooltip: {
-                                        valueSuffix: seriesContext[i].get(3).value().get(0).value()
-                                    },
-                                    yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-                                    dashStyle: seriesContext[i].get(5).value().name(),
-                                    color: $this.isNull(seriesContext[i].get(6).value()),
-                                    point: {
-                                        events: {
-                                            click: function(evt) {
-                                                if(JSB().isFunction($this.options.onClick)){
-                                                    $this.options.onClick.call(this, evt);
-                                                }
-                                            },
-                                            select: function(evt) {
-                                                var flag = false;
 
-                                                if(JSB().isFunction($this.options.onSelect)){
-                                                    flag = $this.options.onSelect.call(this, evt);
-                                                }
+                    try{
+                        while(source.next()){
+                            for(var i = 0; i < seriesContext.length; i++){
+                                if(!series[i]){
+                                    series[i] = {
+                                        name: seriesContext[i].get(0).value(),
+                                        data: [],
+                                        type: seriesContext[i].get(2).value().name(),
+                                        tooltip: {
+                                            valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                                        },
+                                        yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
+                                        dashStyle: seriesContext[i].get(5).value().name(),
+                                        color: $this.isNull(seriesContext[i].get(6).value()),
+                                        point: {
+                                            events: {
+                                                click: function(evt) {
+                                                    if(JSB().isFunction($this.options.onClick)){
+                                                        $this.options.onClick.call(this, evt);
+                                                    }
+                                                },
+                                                select: function(evt) {
+                                                    var flag = false;
 
-                                                if(!flag){
-                                                    $this._addNewFilter(evt.target.series.index, evt.target.category);
-                                                }
-                                            },
-                                            unselect: function(evt) {
-                                                var flag = false;
+                                                    if(JSB().isFunction($this.options.onSelect)){
+                                                        flag = $this.options.onSelect.call(this, evt);
+                                                    }
 
-                                                if(JSB().isFunction($this.options.onUnselect)){
-                                                    flag = $this.options.onUnselect.call(this, evt);
-                                                }
+                                                    if(!flag){
+                                                        $this._addNewFilter(evt.target.series.index, evt.target.category);
+                                                    }
+                                                },
+                                                unselect: function(evt) {
+                                                    var flag = false;
 
-                                                if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                                    $this._notNeedUnselect = false;
-                                                    $this.removeFilter($this._currentFilter);
-                                                    $this.refreshAll();
-                                                }
-                                            },
-                                            mouseOut: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOut)){
-                                                    $this.options.mouseOut.call(this, evt);
-                                                }
-                                            },
-                                            mouseOver: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOver)){
-                                                    $this.options.mouseOver.call(this, evt);
+                                                    if(JSB().isFunction($this.options.onUnselect)){
+                                                        flag = $this.options.onUnselect.call(this, evt);
+                                                    }
+
+                                                    if(!flag && $this._currentFilter && !$this._notNeedUnselect){
+                                                        $this._notNeedUnselect = false;
+                                                        $this.removeFilter($this._currentFilter);
+                                                        $this.refreshAll();
+                                                    }
+                                                },
+                                                mouseOut: function(evt) {
+                                                    if(JSB().isFunction($this.options.mouseOut)){
+                                                        $this.options.mouseOut.call(this, evt);
+                                                    }
+                                                },
+                                                mouseOver: function(evt) {
+                                                    if(JSB().isFunction($this.options.mouseOver)){
+                                                        $this.options.mouseOver.call(this, evt);
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
-                                };
-                            }
+                                        },
+                                        stack: seriesContext[i].get(7).value()
+                                    };
+                                }
 
-                            var a = seriesContext[i].get(1).value();
-                            if(JSB().isArray(a)){
-                                series[i].data = a;
-                            } else {
-                                series[i].data.push(a);
-                            }
-                        }
-                        for(var i = 0; i < xAxisContext.length; i++){
-                            var a = xAxisContext[i].get(0).value();
-                            if(JSB().isArray(a)){
-                                xAxis = a;
-                            } else {
-                                xAxis.push(a);
-                            }
-                        }
-
-                        for(var i = 0; i < yAxisContext.length; i++){
-                            yAxis[i] = {
-                                title: {
-                                    text: yAxisContext[i].get(0).value().get(0).value(),
-                                    style: {
-                                        color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
-                                    }
-                                },
-                                labels: {
-                                    format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
-                                    style: {
-                                        color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
-                                    }
-                                },
-                                opposite: yAxisContext[i].get(2).used()
-                            };
-                        }
-                    }
-
-                    $this.container.highcharts({
-                        chart: {
-                            zoomType: 'x'
-                        },
-
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-
-                        subtitle: {
-                            text: this.getContext().find('subtitle').value()
-                        },
-
-                        xAxis: [{
-                            categories: xAxis,
-                            crosshair: true
-                        }],
-
-                        yAxis: yAxis,
-
-                        tooltip: {
-                            shared: true
-                        },
-
-                        legend: {
-                            layout: 'vertical',
-                            align: 'left',
-                            x: 80,
-                            verticalAlign: 'top',
-                            y: 55,
-                            floating: true,
-                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-                        },
-
-                        plotOptions: {
-                            series: {
-                                allowPointSelect: true,
-                                states: {
-                                    select: {
-                                        color: null,
-                                        borderWidth: 5,
-                                        borderColor: 'Blue'
-                                    }
+                                var a = seriesContext[i].get(1).value();
+                                if(JSB().isArray(a)){
+                                    series[i].data = a;
+                                } else {
+                                    series[i].data.push(a);
                                 }
                             }
-                        },
+                            for(var i = 0; i < xAxisContext.length; i++){
+                                var a = xAxisContext[i].get(0).value();
+                                if(JSB().isArray(a)){
+                                    xAxis = a;
+                                } else {
+                                    xAxis.push(a);
+                                }
+                            }
 
-                        series: series
-                    });
+                            for(var i = 0; i < yAxisContext.length; i++){
+                                yAxis[i] = {
+                                    title: {
+                                        text: yAxisContext[i].get(0).value().get(0).value(),
+                                        style: {
+                                            color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
+                                        }
+                                    },
+                                    labels: {
+                                        format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
+                                        style: {
+                                            color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
+                                        }
+                                    },
+                                    opposite: yAxisContext[i].get(2).used()
+                                };
+                            }
+                        }
 
-                    $this.getElement().loader('hide');
+                        var chart = {
+                            chart: {
+                                zoomType: 'x'
+                            },
+
+                            title: {
+                                text: this.getContext().find('title').value()
+                            },
+
+                            subtitle: {
+                                text: this.getContext().find('subtitle').value()
+                            },
+
+                            xAxis: [{
+                                categories: xAxis,
+                                crosshair: true
+                            }],
+
+                            yAxis: yAxis,
+
+                            tooltip: {
+                                shared: true
+                            },
+
+                            legend: {
+                                layout: 'vertical',
+                                align: 'left',
+                                x: 80,
+                                verticalAlign: 'top',
+                                y: 55,
+                                floating: true,
+                                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                            },
+
+                            plotOptions: {
+                                series: {
+                                    allowPointSelect: true,
+                                    states: {
+                                        select: {
+                                            color: null,
+                                            borderWidth: 5,
+                                            borderColor: 'Blue'
+                                        }
+                                    }
+                                }
+                            },
+
+                            series: series
+                        };
+
+                        if($this.getContext().find('isStacking').used()){
+                            chart.plotOptions.column = {
+                                stacking: 'normal'
+                            }
+                        }
+                    } catch(e){
+                        console.log(e);
+                        return;
+                    } finally {
+                        $this.getElement().loader('hide');
+                    }
+
+                    $this.container.highcharts(chart);
+
                     $this.chart =  $this.container.highcharts();
                 });
 
