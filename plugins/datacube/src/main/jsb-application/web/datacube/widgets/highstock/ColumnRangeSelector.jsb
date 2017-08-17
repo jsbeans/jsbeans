@@ -333,35 +333,10 @@
             var fixedColumns = this.getContext().find('fixedColumns');
 // filters section
             var globalFilters = source.getFilters(),
-                binding = source.value().get(0).binding()[0];
-                
-            if(this._currentFilters.minId && (!globalFilters || !globalFilters[this._currentFilters.minId])){
-                this._filterChanged = true;
-
-                this._currentFilters.min = null;
-                this._currentFilters.minId = null;
-
-                this.chart.xAxis[0].setExtremes($this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
-
-                if(fixedColumns.used()){
-                    this._loadFixedColumnData($this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
-                }
-                return;
-            }
-
-            if(this._currentFilters.maxId && (!globalFilters || !globalFilters[this._currentFilters.maxId])){
-                this._filterChanged = true;
-
-                this._currentFilters.max = null;
-                this._currentFilters.maxId = null;
-
-                this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._widgetExtremes.max);
-
-                if(fixedColumns.used()){
-                    this._loadFixedColumnData($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._widgetExtremes.max);
-                }
-                return;
-            }
+                binding = source.value().get(0).binding()[0],
+                hasMin = false,
+                hasMax = false,
+                isReturn = false;
 
             if(globalFilters){
                 var _bNeedExtremesUpdate = false;
@@ -375,37 +350,75 @@
 
                             break;
                         case '$gte':    // min filter
-                            if(this._currentFilters.min && this._currentFilters.min != cur.value){
-                                this._currentFilters.min = cur.value;
+                            if(this._currentFilters.min && this._currentFilters.min <= cur.value || !this._currentFilters.min){
+                                this._currentFilters.min = cur.value.getTime();
                                 this._currentFilters.minId = cur.id;
                                 _bNeedExtremesUpdate = true;
                             }
+                            hasMin = true;
                             break;
                         case '$lte':    // max filter
-                            if(this._currentFilters.max && this._currentFilters.max != cur.value){
-                                this._currentFilters.max = cur.value;
+                            if(this._currentFilters.max && this._currentFilters.max >= cur.value || !this._currentFilters.max){
+                                this._currentFilters.max = cur.value.getTime();
                                 this._currentFilters.maxId = cur.id;
                                 _bNeedExtremesUpdate = true;
                             }
+                            hasMax = true;
                             break;
                         }
                         delete globalFilters[i];
                     }
                 }
 
-                if(MD5.md5(globalFilters) === this._currentFilters.curFilterHash){ // update data not require
+                if(Object.keys(globalFilters).length === 0) globalFilters = null;
+
+                if(globalFilters && MD5.md5(globalFilters) === this._currentFilters.curFilterHash || !globalFilters && !this._currentFilters.curFilterHash){ // update data not require
                     if(_bNeedExtremesUpdate){
                         this._filterChanged = true;
 
-                        $this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
+                        var min = this._currentFilters.min ? this._currentFilters.min : this._widgetExtremes.min,
+                            max = this._currentFilters.max ? this._currentFilters.max : this._widgetExtremes.max;
+
+                        $this.chart.xAxis[0].setExtremes(min, max);
 
                         if(fixedColumns.used()){
-                            this._loadFixedColumnData($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
+                            this._loadFixedColumnData(min, max);
                         }
                     }
-                    return;
+                    isReturn = true;
+                } else {
+                    this._currentFilters.curFilterHash = globalFilters ? MD5.md5(globalFilters) : undefined;
                 }
             }
+
+            if(!hasMin && this._currentFilters.minId){
+                this._filterChanged = true;
+
+                this._currentFilters.min = null;
+                this._currentFilters.minId = null;
+
+                this.chart.xAxis[0].setExtremes($this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
+
+                if(fixedColumns.used()){
+                    this._loadFixedColumnData($this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
+                }
+                isReturn = true;
+            }
+
+            if(!hasMax && this._currentFilters.maxId){
+                this._filterChanged = true;
+
+                this._currentFilters.max = null;
+                this._currentFilters.maxId = null;
+
+                this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._widgetExtremes.max);
+
+                if(fixedColumns.used()){
+                    this._loadFixedColumnData($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._widgetExtremes.max);
+                }
+                isReturn = true;
+            }
+            if(isReturn) return;
 // end filters section
             var seriesContext = this.getContext().find('series').value(),
                 autoCount = source.value().get(2).used(),
@@ -694,7 +707,7 @@
                         $this._loadFixedColumnData(event.min, event.max);
                     }
                 }
-            }, 500, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
+            }, 700, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
         },
 
         _loadFixedColumnData: function(min, max){

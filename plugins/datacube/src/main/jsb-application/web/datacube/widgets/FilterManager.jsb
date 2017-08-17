@@ -35,6 +35,7 @@
 			if($this.filterBySource[sourceId][itemId]){
 				return false; 
 			}
+
 			$this.filterBySource[sourceId][itemId] = {
 				id: itemId,
 				type: fDesc.type,
@@ -51,7 +52,7 @@
 			return true;
 		},
 		
-		removeFilter: function(itemId){
+		removeFilter: function(itemId, isNoPublish){
 			var pfCount = Object.keys($this.filters).length;
 			// remove from sources
 			for(var srcId in $this.filterBySource){
@@ -72,7 +73,7 @@
 				}
 			}
 			
-			if(Object.keys($this.filters) != pfCount){
+			if(Object.keys($this.filters) != pfCount && !isNoPublish){
 				this.publish('DataCube.filterChanged');
 			}
 		},
@@ -123,12 +124,61 @@
             // create new filters
 			this.translateFilter(fDesc);
 			var fId = this.constructFilterId(fDesc);
-			
+
+			// check filter conflicts
+            var f;
+            for(var i = 0; i < $this.filterArr.length; i++){
+                if($this.filterArr[i].field === fDesc.field && $this.filterArr[i].op === fDesc.op)
+                    f = $this.filterArr[i];
+            }
+            if(f){
+                switch(f.op){
+                    case "$gt":
+                    case "$gte":   // >=
+                        if(f.type === "$and" && fDesc.type === "$and"){
+                            if(f.value >= fDesc.value){
+                                return f.id;
+                            } else {
+                                this.removeFilter(f.id, true);
+                            }
+                        }
+                        if(f.type === "$or" && fDesc.type === "$or"){
+                            if(f.value >= fDesc.value){
+                                this.removeFilter(f.id, true);
+                            } else {
+                                return f.id;
+                            }
+                        }
+                        break;
+                    case "$lt":
+                    case "$lt":
+                    case "$lte":    // <=
+                        if(f.type === "$and" && fDesc.type === "$and"){
+                            if(f.value >= fDesc.value){
+                                this.removeFilter(f.id, true);
+                            } else {
+                                return f.id;
+                            }
+                        }
+                        if(f.type === "$or" && fDesc.type === "$or"){
+                            if(f.value >= fDesc.value){
+                                return f.id;
+                            } else {
+                                this.removeFilter(f.id, true);
+                            }
+                        }
+                        break;
+                    case "$eq":
+                        if(f.type === "$and" && fDesc.type === "$and"){
+                            this.removeFilter(f.id, true);
+                        }
+                        break;
+                }
+            }
 			
 			var bNeedRefresh = false;
 			for(var i = 0; i < sourceArr.length; i++){
-				var sourceId = sourceArr[i];
-				if($this.addFilterItem(sourceId, fDesc)){
+				if($this.addFilterItem(sourceArr[i], fDesc)){
 					bNeedRefresh = true;
 				}
 			}
