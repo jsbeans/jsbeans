@@ -46,6 +46,8 @@
 					
 					<div jsb="JSB.Widgets.Button" class="roundButton btnEdit btn10" tooltip="Редактировать срез"
 						onclick="{{=$this.callbackAttr(function(evt){ $this.showSettings(evt); evt.stopPropagation(); })}}"></div>
+					<div jsb="JSB.Widgets.Button" class="roundButton btnDelete btn10" tooltip="Удалить срез"
+						onclick="{{=$this.callbackAttr(function(evt){ $this.removeSlice(evt); evt.stopPropagation(); })}}"></div>
 				</div>
 			`);
 			this.body = this.$(`
@@ -83,6 +85,31 @@
 					return;
 				}
 				$this.caption.find('.name').text(desc.name);
+			});
+		},
+		
+		removeSlice: function(evt){
+			var elt = $this.$(evt.currentTarget);
+			ToolManager.showMessage({
+				icon: 'removeDialogIcon',
+				text: 'Вы уверены что хотите удалить срез "'+$this.slice.getName()+'" ?',
+				buttons: [{text: 'Удалить', value: true},
+				          {text: 'Нет', value: false}],
+				target: {
+					selector: elt
+				},
+				constraints: [{
+					weight: 10.0,
+					selector: elt
+				},{
+					selector: $this.getElement(),
+					weight: 10.0
+				}],
+				callback: function(bDel){
+					if(bDel){
+						$this.editor.removeSlice($this.slice, $this);
+					}
+				}
 			});
 		},
 		
