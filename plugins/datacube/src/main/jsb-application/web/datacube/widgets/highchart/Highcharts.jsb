@@ -136,6 +136,11 @@
                         name: 'spline',
                         type: 'item',
                         editor: 'none'
+                    },
+                    {
+                        name: 'area',
+                        type: 'item',
+                        editor: 'none'
                     }
                     ]
                 },
@@ -226,7 +231,8 @@
                 {
                     name: 'Стек',
                     type: 'item',
-                    itemType: 'string'
+                    itemType: 'string',
+                    description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
                 }
                 ]
             },
