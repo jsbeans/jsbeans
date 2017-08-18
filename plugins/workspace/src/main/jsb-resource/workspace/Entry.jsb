@@ -24,6 +24,10 @@
 		return this.parent;
 	},
 	
+	getWorkspace: function(){
+		return this.workspace;
+	},
+	
 	$client: {
 		onAfterSync: function(){
 			$this.publish('Workspace.Entry.updated');

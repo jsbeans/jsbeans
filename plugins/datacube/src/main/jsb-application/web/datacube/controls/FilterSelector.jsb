@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.FilterSelector',
+	$name: 'DataCube.Controls.FilterSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.Button'],
 	

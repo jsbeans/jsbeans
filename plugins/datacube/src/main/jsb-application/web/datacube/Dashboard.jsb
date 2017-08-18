@@ -9,7 +9,7 @@
 	
 	$client: {
 		$require: ['JSB.Widgets.Dashboard.Dashboard',
-		           'DataCube.Widgets.FilterSelector',
+		           'DataCube.Controls.FilterSelector',
 		           'DataCube.Widgets.FilterManager',
 		           'DataCube.Widgets.WidgetWrapper'],
 		           

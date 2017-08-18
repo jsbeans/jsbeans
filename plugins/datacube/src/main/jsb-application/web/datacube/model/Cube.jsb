@@ -22,7 +22,8 @@
 		$require: ['JSB.Workspace.WorkspaceController',
 		           'DataCube.Providers.DataProviderRepository',
 		           'DataCube.Model.Slice',
-		           'DataCube.Query.QueryEngine'],
+		           'DataCube.Query.QueryEngine',
+		           'DataCube.MaterializationEngine'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.CubeNode');
@@ -37,6 +38,8 @@
 		fields: {},
 		slices: {},
 		slicePositions: {},
+		materialization: {},
+		materializing: false,
 		nodePosition: null,
 
 		$constructor: function(id, workspace, opts){
@@ -570,6 +573,57 @@
 		
 		getFields: function(){
 			return this.fields;
+		},
+		
+		getMaterializationInfo: function(){
+			return {
+				materialization: this.materialization,
+				materializing: this.materializing
+			};
+		},
+		
+		startMaterialization: function(database){
+			this.materializing = true;
+			this.materializer = MaterializationEngine.createMaterializerForSource(database);
+			
+			// run materialization on deferred manner
+			JSB.defer(function(){
+				function checkStop(){
+					if($this.stopMaterializing){
+						$this.materializing = false;
+						$this.stopMaterializing = false;
+						$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+						return true;
+					}
+					return false;
+				}
+				
+				$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
+				Kernel.sleep(1000);
+				
+				for(var i = 0; i < 100; i++){
+					if(checkStop()){return;}
+					$this.publish('DataCube.Model.Cube.status', {status: 'Сохранение записей: ' + i, success: true}, {session: true});
+					Kernel.sleep(100);
+				}
+				
+				if(checkStop()){return;}
+				$this.publish('DataCube.Model.Cube.status', {status: 'Формирование индексов', success: true}, {session: true});
+				Kernel.sleep(2000);
+				
+				if(checkStop()){return;}
+				$this.publish('DataCube.Model.Cube.status', {status: 'Завершение материализации', success: true}, {session: true});
+				Kernel.sleep(1000);
+				
+				$this.materializing = false;
+				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+				
+			});
+			
+		},
+		
+		stopMaterialization: function(){
+			$this.stopMaterializing = true;
 		},
 		
 		renameSlice: function(sId, newName){

@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Model.SqlSource',
-	$parent: 'JSB.Workspace.Entry',
+	$parent: 'DataCube.Model.DatabaseSource',
 	$require: ['DataCube.Model.SqlTable'],
 	
 	details: null,
