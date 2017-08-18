@@ -556,7 +556,8 @@
 		},
 		
 		removeFilter: function(fItemId){
-			return this.getWrapper().removeFilter(fItemId, this);
+			// return this.getWrapper().removeFilter(fItemId, this);
+			return this.getWrapper().removeFilter(fItemId);
 		},
 		
 		setSort: function(q){

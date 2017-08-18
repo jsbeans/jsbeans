@@ -172,6 +172,12 @@
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
+
+	    _series: {},
+	    _curFilters: {},
+	    _removedFiltersCnt: 0,
+	    _curFilterHash: null,
+
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -219,6 +225,55 @@
             
 			$base();
 
+// filters section
+            var globalFilters = source.getFilters();
+
+            if(globalFilters){
+                var binding = source.value().get(1).value().get(0).binding()[0],
+                    newFilters = {};
+
+                for(var i in globalFilters){
+                    var cur = globalFilters[i];
+
+                    if(cur.field === binding && cur.op === '$eq'){
+                        if(!this._curFilters[cur.value]){
+                            this._curFilters[cur.value] = cur.id;
+                            this.chart.series[0].data[this._series[cur.value]].select(true, true);
+                        }
+
+                        newFilters[cur.value] = true;
+
+                        delete globalFilters[i];
+                    }
+                }
+
+                for(var i in this._curFilters){
+                    if(!newFilters[i]){
+                        this._removedFiltersCnt++;
+                        this.chart.series[0].data[this._series[i]].select(false, true);
+                        delete this._curFilters[i];
+                    }
+                }
+
+                if(Object.keys(globalFilters).length === 0) globalFilters = null;
+
+                if(globalFilters && MD5.md5(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = globalFilters ? MD5.md5(globalFilters) : undefined;
+                }
+            } else {
+                if(Object.keys(this._curFilters).length > 0){
+                    this._removedFiltersCnt = Object.keys(this._curFilters).length;
+                    for(var i in this._curFilters){
+                        this.chart.series[0].data[this._series[i]].select(false, true);
+                    }
+                    this._curFilters = {};
+                    this._curFilterHash = null;
+                    return;
+                }
+            }
+// end filters section
             var dataValue = this.getContext().find('data').value();
 
             $this.getElement().loader();
@@ -244,6 +299,11 @@
                             });
                         }
                     }
+
+                    $this._series = data.reduce(function(arr, el, i){
+                        arr[el.name] = i;
+                        return arr;
+                    }, {});
 
                     $this.container.highcharts({
                         chart: {
@@ -278,6 +338,8 @@
                             point: {
                                 events: {
                                     click: function(evt) {
+                                        $this._clickEvt = evt;
+
                                         if(JSB().isFunction($this.options.onClick)){
                                             $this.options.onClick.call(this, evt);
                                         }
@@ -289,21 +351,35 @@
                                             flag = $this.options.onSelect.call(this, evt);
                                         }
 
-                                        if(!flag){
-                                            $this._addPieFilter(evt.target.name);
+                                        if(!flag && $this._clickEvt){
+                                            $this._addPieFilter(evt);
+                                            $this._clickEvt = null;
                                         }
                                     },
                                     unselect: function(evt) {
+                                        $this._clickEvt = null;
                                         var flag = false;
 
                                         if(JSB().isFunction($this.options.onUnselect)){
                                             flag = $this.options.onUnselect.call(this, evt);
                                         }
 
-                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                            $this._notNeedUnselect = false;
-                                            $this.removeFilter($this._currentFilter);
-                                            $this.refreshAll();
+                                        if(!flag && $this._removedFiltersCnt === 0){
+                                            if(Object.keys($this._curFilters).length > 0){
+                                                if(evt.accumulate){
+                                                    $this.removeFilter($this._curFilters[evt.target.name]);
+                                                    delete $this._curFilters[evt.target.name];
+                                                    $this.refreshAll();
+                                                } else {
+                                                    for(var i in $this._curFilters){
+                                                        $this.removeFilter($this._curFilters[i]);
+                                                    }
+                                                    $this._curFilters = {};
+                                                    $this.refreshAll();
+                                                }
+                                            }
+                                        } else {
+                                            $this._removedFiltersCnt--;
                                         }
                                     },
                                     mouseOut: function(evt) {
@@ -332,28 +408,31 @@
             });
         },
 
-        _addPieFilter: function(value){
+        _addPieFilter: function(evt){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
             var field = this.getContext().find('data').value().get(0).binding();
             var fDesc = {
             	sourceId: context.source,
-            	type: '$and',
+            	type: '$or',
             	op: '$eq',
             	field: field,
-            	value: value
+            	value: evt.target.name
             };
 
-            if(!this.hasFilter(fDesc)){
-            	if(this._currentFilter){
-            		this.removeFilter(this._currentFilter);
-            		this._currentFilter = null;
-            		this._notNeedUnselect = true;
-            	}
-            	this._currentFilter = this.addFilter(fDesc);
-            	this.refreshAll();
+            if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
+                this._removedFiltersCnt = Object.keys(this._curFilters).length;
+
+                for(var i in this._curFilters){
+                    this.removeFilter(this._curFilters[i]);
+                }
+
+                this._curFilters = {};
             }
+
+            this._curFilters[evt.target.name] = this.addFilter(fDesc);
+            this.refreshAll();
         }
 	}
 }
