@@ -401,8 +401,6 @@
 
                     $this.chart =  $this.container.highcharts();
                 });
-
-
             }, function(){
                 return $this.isInit;
             });

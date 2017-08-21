@@ -60,7 +60,20 @@
 			for(var i = 0; i < filterArr.length; i++){
 				(function(fId){
 					var fDesc = filters[fId];
+
 					var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
+
+					var type = '';
+					switch(fDesc.type){
+					    case '$and':
+                            type = 'И';
+					        break;
+                        case '$or':
+                            type = 'ИЛИ';
+                            break;
+					}
+                    fTag.append($this.$('<div class="type"></div>').text(type));
+
 					fTag.append($this.$('<div class="field"></div>').text(fDesc.field).attr('title', fDesc.field));
 					var opSign = ':';
 					switch(fDesc.op){
@@ -111,7 +124,6 @@
 							JSB.defer(function(){
 								$this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'removeFilter', fItemIds: [fId]});
 							});
-							
 						}
 					});
 					fTag.append(removeButton.getElement());
