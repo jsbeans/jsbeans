@@ -5,8 +5,8 @@
 	           'JSB.Widgets.ComboBox',
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.ToolManager',
-	           'DataCube.Widgets.DataBindingSelector',
-	           'DataCube.Widgets.EmbeddedWidgetSelector'],
+	           'DataCube.Controls.DataBindingSelector',
+	           'DataCube.Controls.EmbeddedWidgetSelector'],
 	
 	$client: {
 		options: {

@@ -21,5 +21,9 @@
 		asMongo: function() {
             throw new Error('MongoDB query not supported for store ' + this.config.name);
 		},
+		
+		getType: function(){
+			return this.config.type;
+		}
     }
 })

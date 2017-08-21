@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Model.SqlSource',
-	$parent: 'JSB.Workspace.Entry',
+	$parent: 'DataCube.Model.DatabaseSource',
 	$require: ['DataCube.Model.SqlTable'],
 	
 	details: null,
@@ -73,6 +73,7 @@
 				for(var tName in sDesc.tables){
 					var tDesc = sDesc.tables[tName];
 					var tId = this.getLocalId() + '|' + sName + '|' + tName;
+					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
 					if(existedTables[tId]){
 						// already exists
 						existedTables[tId].updateDescriptor(tDesc);

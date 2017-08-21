@@ -7,6 +7,10 @@
 			$base(opts);
 			this.addClass('renderer');
 			this.loadCss('Renderer.css');
+		},
+		
+		getObject: function(){
+			return this.object;
 		}
 	}
 }

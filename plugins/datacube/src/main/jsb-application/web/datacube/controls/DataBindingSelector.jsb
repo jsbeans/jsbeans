@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.DataBindingSelector',
+	$name: 'DataCube.Controls.DataBindingSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['DataCube.Providers.DataProviderRepository',
 	           'JSB.Widgets.RendererRepository',

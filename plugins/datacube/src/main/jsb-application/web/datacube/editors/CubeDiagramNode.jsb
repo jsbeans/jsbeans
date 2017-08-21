@@ -1,7 +1,9 @@
 {
 	$name: 'DataCube.CubeDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.ToolManager'],
+	$require: ['JQuery.UI.Resizable', 
+	           'JSB.Widgets.ToolManager', 
+	           'DataCube.Dialogs.CubeMaterializationTool'],
 	
 	$client: {
 		ready: false,
@@ -50,7 +52,13 @@
 			this.body = this.$(`
 				<div class="body"></div>
 			`);
-			this.status = this.$('<div class="status"></div>');
+			this.status = this.$(`
+				<div class="status">
+					<div class="message"></div>
+					<div class="indicators">
+						<div class="indicator materialization" title="Настройки материализации куба"></div>
+					</div>
+				</div>`);
 			this.append(this.caption);
 			this.append(this.body);
 			this.append(this.status);
@@ -87,6 +95,41 @@
 					return;
 				}
 				$this.caption.find('.name').text(desc.name);
+			});
+			
+			this.subscribe('DataCube.Model.Cube.status', {session: true}, function(sender, msg, params){
+				if(sender != $this.entry){
+					return;
+				}
+				var msgElt = $this.status.find('.message');
+				msgElt.empty();
+				if(params.status){
+					msgElt.append(params.status);
+				}
+				$this.updateIndicators();
+			});
+			
+			// indicators
+			this.status.find('.indicator.materialization').click(function(evt){
+				$this.showMaterializationDialog(evt);
+			});
+			
+			this.updateIndicators();
+		},
+		
+		updateIndicators: function(){
+			this.entry.server().getMaterializationInfo(function(mInfo){
+				var matElt = $this.status.find('.indicators > .indicator.materialization');
+				if(mInfo && mInfo.materializing){
+					matElt.addClass('materializing');
+					matElt.removeClass('materialized');
+				} else if(mInfo && Object.keys(mInfo.materialization).length > 0){
+					matElt.addClass('materialized');
+					matElt.removeClass('materializing');
+				} else {
+					matElt.removeClass('materializing');
+					matElt.removeClass('materialized');
+				}
 			});
 		},
 		
@@ -367,6 +410,31 @@
 			} else {
 				elt.removeClass('highlighted');
 			}
+		},
+		
+		showMaterializationDialog: function(evt){
+			var elt = this.$(evt.currentTarget);
+			ToolManager.activate({
+				id: 'cubeMaterializationTool',
+				cmd: 'show',
+				data: {
+					cube: $this.entry,
+				},
+				scope: $this.$('.cubeEditorView'),
+				target: {
+					selector: elt,
+				},
+				constraints: [{
+					selector: elt,
+					weight: 10.0
+				},{
+					selector: $this.getElement(),
+					weight: 10.0
+				}],
+				draggable: true,
+				callback: function(desc){
+				}
+			});
 		}
 	}
 }

@@ -339,7 +339,7 @@
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
-		           'DataCube.Widgets.SortSelector'],
+		           'DataCube.Controls.SortSelector'],
 		
 		ready: false,
 		headerDesc: [],
