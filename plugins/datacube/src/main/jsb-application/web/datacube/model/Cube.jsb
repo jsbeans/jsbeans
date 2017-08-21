@@ -74,11 +74,13 @@
 					// construct data providers
 					for(var i = 0; i < snapshot.providers.length; i++){
 						var pDesc = snapshot.providers[i];
+						var pEntry = null;
 						if(!this.workspace.existsEntry(pDesc.entry)){
 							JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
 							continue;
+						} else {
+							pEntry = this.workspace.entry(pDesc.entry);
 						}
-						var pEntry = this.workspace.entry(pDesc.entry);
 						var pJsb = JSB.get(pDesc.jsb);
 						if(!pJsb){
 							JSB.getLogger().error('Unable to construct data provider "'+pDesc.jsb+'" due to missing its bean');
