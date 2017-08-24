@@ -1,0 +1,34 @@
+.graphNode {
+    border: 2px solid saddlebrown;
+    border-radius: 5px;
+    padding: 5px;
+    box-sizing: border-box;
+    background: antiquewhite;
+    color: firebrick;
+    font-size: 1.1em;
+}
+
+.graphNode .connector {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    /*
+    width: 5px;
+    height: 5px;
+    border: 1px solid blue;
+    border-radius: 5px;
+    background: aquamarine;
+    */
+}
+
+.graphNode .caption{
+    text-align: center;
+}
+
+.graphNode .simpleMode {
+
+}
+
+.graphNode .widgetMode {
+
+}
