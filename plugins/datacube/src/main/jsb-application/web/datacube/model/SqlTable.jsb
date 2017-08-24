@@ -28,6 +28,10 @@
 			this.property('descriptor', this.descriptor);
 			this.title(this.descriptor.schema + '.' + this.descriptor.name);
 			this.doSync();
+		},
+		
+		getDescriptor: function(){
+			return this.descriptor;
 		}
 		
 	}

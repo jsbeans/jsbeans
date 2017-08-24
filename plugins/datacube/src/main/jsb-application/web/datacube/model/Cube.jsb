@@ -244,7 +244,7 @@
 				throw new Error('Unable to find provider bean: ' + providerDesc.pType);
 			}
 			var ProviderCls = providerJsb.getClass();
-			var pId = this.getId() + '|dp_' + JSB.generateUid();
+			var pId = this.getLocalId() + '|dp_' + JSB.generateUid();
 			var provider = new ProviderCls(pId, providerEntry, this, providerDesc.opts);
 			this.dataProviders[pId] = provider;
 			this.dataProviderEntries[pId] = providerEntry;
@@ -608,6 +608,7 @@
 				
 				JSB.getLocker().lock('materialization_' + $this.getId());
 				
+				
 				try {
 					$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
 					var suggestedName = 'cube_' + $this.getLocalId();
@@ -631,6 +632,8 @@
 */					
 					// transmit data
 					var iterator = $this.queryEngine.query({$select: {}}, {});
+					var batch = [];
+					var lastStatusTimestamp = 0;
 					for(var i = 0; ; i++){
 						var el = null;
 						try {
@@ -656,18 +659,82 @@
 						for(var j = 0; j < fieldsToRemove.length; j++){
 							delete el[fieldsToRemove[j]];
 						}
-						$this.materializer.insert(materializationDesc.table, el);
+						batch.push(el);
 						
-						if(i % 1000 == 0){
-							if(checkStop()){return;}
-							$this.publish('DataCube.Model.Cube.status', {status: 'Сохранено записей: ' + i, success: true}, {session: true});
-						}
+						if(batch.length >= 100){
+							$this.materializer.insert(materializationDesc.table, batch);
+							batch = [];
+							
+							var curTimestamp = Date.now();
+							if(curTimestamp - lastStatusTimestamp > 3000){
+								lastStatusTimestamp = curTimestamp;
+								if(checkStop()){return;}
+								$this.publish('DataCube.Model.Cube.status', {status: 'Сохранено записей: ' + (i + 1), success: true}, {session: true});
+							}
 
+						}
+					}
+					
+					if(batch.length > 0){
+						$this.materializer.insert(materializationDesc.table, batch);
 					}
 					
 					if(checkStop()){return;}
+					// prepare materialization object
+					$this.publish('DataCube.Model.Cube.status', {status: 'Обновление схемы базы материализации', success: true}, {session: true});
+					database.extractScheme();
+					var chEntries = database.getChildren();
+					var source = null;
+					for(var chId in chEntries){
+						var tableSource = chEntries[chId];
+						var tDesc = tableSource.getDescriptor();
+						if(tDesc.name == materializationDesc.table){
+							source = tableSource;
+							break;
+						}
+					}
+					
+					if(!source){
+						throw new Error('Internal error: unable to find materialization table');
+					}
 					$this.publish('DataCube.Model.Cube.status', {status: 'Завершение материализации', success: true}, {session: true});
-					Kernel.sleep(1000);
+					var providerDesc = DataProviderRepository.queryDataProviderInfo(source);
+					var providerJsb = JSB.get(providerDesc.pType);
+					if(!providerJsb){
+						throw new Error('Unable to find provider bean: ' + providerDesc.pType);
+					}
+					var ProviderCls = providerJsb.getClass();
+					var pId = $this.getLocalId() + '|dp_' + JSB.generateUid();
+					materializationDesc.dataProvider = new ProviderCls(pId, source, $this, providerDesc.opts);
+					materializationDesc.dataProviderEntry = source;
+					materializationDesc.fields = {};
+					var providerFields = materializationDesc.dataProvider.extractFields();
+					for(var fName in $this.fields){
+						var fDesc = materializationDesc.fields[fName] = {
+							field: fName,
+							type: $this.fields[fName].type,
+							binding: []
+						};
+						if(providerFields[fName]){
+							fDesc.binding = [{
+								provider: materializationDesc.dataProvider,
+								field: fName,
+								type: providerFields[fName]
+							}];
+							continue;
+						} else {
+							JSB.getLogger().warn('Internal error: unable to find field: ' + fName + ' in materialized table');
+							fDesc.binding = [{
+								provider: materializationDesc.dataProvider,
+								field: fName,
+								type: fDesc.type
+							}];
+						}
+					}
+					materializationDesc.lastUpdate = Date.now();
+					var oldMaterialization = $this.materialization;
+					$this.materialization = materializationDesc;
+					$this.removeMaterialization(oldMaterialization);
 					
 					$this.materializing = false;
 					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
@@ -681,6 +748,10 @@
 					JSB.getLocker().unlock('materialization_' + $this.getId());
 				}
 				
+				$this.store();
+				$this.doSync();
+				
+				// TODO: remove old materialization
 				
 			});
 			
@@ -688,6 +759,31 @@
 		
 		stopMaterialization: function(){
 			$this.stopMaterializing = true;
+		},
+		
+		removeMaterialization: function(materialization){
+			var bLocked = false;
+			
+			if(!materialization){
+				JSB.getLocker().lock('materialization_' + $this.getId());
+				bLocked = true;
+				materialization = $this.materialization;
+				$this.materialization = {};
+			}
+			
+			if(materialization){
+				if(materialization.dataProvider){
+					materialization.dataProvider.destroy();
+				}
+				
+				// TODO: remove old table
+			}
+			
+			if(bLocked){
+				JSB.getLocker().unlock('materialization_' + $this.getId());	
+				$this.store();
+				$this.doSync();
+			}
 		},
 		
 		renameSlice: function(sId, newName){
