@@ -6,4 +6,87 @@
  * Dual licensed under the MIT and GPL licenses.
  * http://benalman.com/about/license/
  */
-(function($,h,c){var a=$([]),e=$.resize=$.extend($.resize,{}),i,k="setTimeout",j="resize",d=j+"-special-event",b="delay",f="throttleWindow";e[b]=250;e[f]=true;$.event.special[j]={setup:function(){if(!e[f]&&this[k]){return false}var l=$(this);a=a.add(l);$.data(this,d,{w:l.width(),h:l.height()});if(a.length===1){g()}},teardown:function(){if(!e[f]&&this[k]){return false}var l=$(this);a=a.not(l);l.removeData(d);if(!a.length){clearTimeout(i)}},add:function(l){if(!e[f]&&this[k]){return false}var n;function m(s,o,p){var q=$(this),r=$.data(this,d);r.w=o!==c?o:q.width();r.h=p!==c?p:q.height();n.apply(this,arguments)}if($.isFunction(l)){n=l;return m}else{n=l.handler;l.handler=m}}};function g(){i=h[k](function(){a.each(function(){var n=$(this),m=n.width(),l=n.height(),o=$.data(this,d);if(m!==o.w||l!==o.h){n.trigger(j,[o.w=m,o.h=l])}});g()},e[b])}})(jQuery,this);
+(function($,h,c){
+	var elemets = $([]), filtered = null; 
+	var e = $.resize = $.extend($.resize,{});
+	var timeoutHandle;
+	var d = "resize-special-event";
+	e.delay = 50;
+	e.minDelay = 10;
+	e.maxDelay = 800;
+	e.throttleWindow = true;
+	$.event.special.resize={
+		setup:function(){
+			if(!e.throttleWindow && this.setTimeout){
+				return false
+			}
+			var elt = $(this);
+			elemets = elemets.add(elt);
+			filtered = elemets.filter(':visible');
+			$.data(this, d, {w:elt.width(),h:elt.height()});
+			if(elemets.length === 1){
+				checkResize();
+			}
+		},
+		
+		teardown:function(){
+			if(!e.throttleWindow && this.setTimeout){return false}
+			var elt = $(this);
+			elemets = elemets.not(elt);
+			elt.removeData(d);
+			if(!elemets.length){
+				clearTimeout(timeoutHandle);
+			}
+		},
+		
+		add:function(l){
+			if(!e.throttleWindow && this.setTimeout){return false}
+			var n;
+			function m(s,o,p){
+				var q=$(this),r=$.data(this,d);
+				r.w=o!==c?o:q.width();
+				r.h=p!==c?p:q.height();
+				n.apply(this,arguments);
+			}
+			if($.isFunction(l)){
+				n=l;
+				return m;
+			} else {
+				n=l.handler;
+				l.handler=m;
+			}
+		}
+	};
+	
+	function checkResize(){
+		timeoutHandle = setTimeout(function(){
+			var visCount = 0;
+			var trigCount = 0;
+			if(!filtered){
+				filtered = elemets.filter(':visible');
+			}
+			filtered.each(function(){
+				var elt = $(this);
+				visCount++;
+				var m = elt.width(),l = elt.height(), o = $.data(this,d);
+				if(m!==o.w||l!==o.h){
+					trigCount++;
+					elt.trigger('resize',[o.w=m,o.h=l]);
+				}
+			});
+			if(trigCount){
+				e.delay *= 0.25;
+				if(e.delay < e.minDelay){
+					e.delay = e.minDelay;
+				}
+			} else {
+				e.delay *= 2;
+				filtered = elemets.filter(':visible');
+				if(e.delay > e.maxDelay){
+					e.delay = e.maxDelay;
+				}
+			}
+			checkResize();
+		},e.delay);
+	}
+})(jQuery,this);

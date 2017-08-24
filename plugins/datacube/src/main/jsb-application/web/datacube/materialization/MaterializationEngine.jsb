@@ -28,7 +28,7 @@
 			JSB.getLocker().unlock('registerMaterializer');
 		},
 		
-		createMaterializerForSource: function(source){
+		createMaterializer: function(source){
 			var MaterializerCls = this.materializers[source.getJsb().$name];
 			return new MaterializerCls(this, source);
 		}

@@ -70,6 +70,38 @@
                 }
             }
 		},
+		
+		executeUpdate: function(connection, sql, values, types){
+			Log.debug('Native SQL query: ' + sql);
+			
+			var values = values || null;
+		    var types = types || [];
+			if(JSB.isArray(values)){
+				var st = connection.prepareStatement(sql);
+				try {
+					for (var i = 0; i < values.length; i++) {
+			            var value = values[i];
+			            var type = types.length > i && types[i] || null;
+			            var type = this._getJDBCType(value, type);
+	                    this._setStatementArgument(st, i + 1, value, type);
+			        }
+					return st.executeUpdate();
+				} finally {
+					if (!st.isClosed()) {
+	                    st.close();
+	                }
+				}
+			} else {
+				var st = connection.createStatement();
+				try {
+					return st.executeUpdate(sql);
+				} finally {
+					if (!st.isClosed()) {
+	                    st.close();
+	                }
+				}
+			}
+		},
 
 		iteratedParametrizedQuery: function(connection, parametrizedSQL, getValue, getType, rowExtractor, onClose) {
 		    var getType = getType || function(){

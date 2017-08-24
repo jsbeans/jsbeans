@@ -23,7 +23,8 @@
 		           'DataCube.Providers.DataProviderRepository',
 		           'DataCube.Model.Slice',
 		           'DataCube.Query.QueryEngine',
-		           'DataCube.MaterializationEngine'],
+		           'DataCube.MaterializationEngine',
+		           'JSB.Crypt.MD5'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.CubeNode');
@@ -74,11 +75,13 @@
 					// construct data providers
 					for(var i = 0; i < snapshot.providers.length; i++){
 						var pDesc = snapshot.providers[i];
+						var pEntry = null;
 						if(!this.workspace.existsEntry(pDesc.entry)){
 							JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
 							continue;
+						} else {
+							pEntry = this.workspace.entry(pDesc.entry);
 						}
-						var pEntry = this.workspace.entry(pDesc.entry);
 						var pJsb = JSB.get(pDesc.jsb);
 						if(!pJsb){
 							JSB.getLogger().error('Unable to construct data provider "'+pDesc.jsb+'" due to missing its bean');
@@ -584,7 +587,7 @@
 		
 		startMaterialization: function(database){
 			this.materializing = true;
-			this.materializer = MaterializationEngine.createMaterializerForSource(database);
+			this.materializer = MaterializationEngine.createMaterializer(database);
 			
 			// run materialization on deferred manner
 			JSB.defer(function(){
@@ -598,25 +601,86 @@
 					return false;
 				}
 				
-				$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
-				Kernel.sleep(1000);
+				var materializationDesc = {
+					table: null,
+					indexes: {}
+				};
 				
-				for(var i = 0; i < 100; i++){
+				JSB.getLocker().lock('materialization_' + $this.getId());
+				
+				try {
+					$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
+					var suggestedName = 'cube_' + $this.getLocalId();
+					var fields = {};
+					for(var fName in $this.fields){
+						fields[$this.fields[fName].field] = $this.fields[fName].type;
+					}
+					
+					
+					// create table
+					materializationDesc.table = $this.materializer.createTable(suggestedName, fields);
+/*					
+					// create default indexes
+					for(var fName in fields){
+						var indexDesc = {};
+						indexDesc[fName] = 1;
+						var idxName = 'idx_' + MD5.md5(fName);
+						$this.materializer.createIndex(materializationDesc.table, idxName, indexDesc);
+						materializationDesc.indexes[idxName] = true;
+					}
+*/					
+					// transmit data
+					var iterator = $this.queryEngine.query({$select: {}}, {});
+					for(var i = 0; ; i++){
+						var el = null;
+						try {
+							el = iterator.next();
+						}catch(e){
+							el = null;
+						}
+						if(!el){
+							break;
+						}
+						
+						if(!JSB.isObject(el)){
+							continue;
+						}
+						
+						// remove non cube field
+						var fieldsToRemove = [];
+						for(var f in el){
+							if(!fields[f]){
+								fieldsToRemove.push(f);
+							}
+						}
+						for(var j = 0; j < fieldsToRemove.length; j++){
+							delete el[fieldsToRemove[j]];
+						}
+						$this.materializer.insert(materializationDesc.table, el);
+						
+						if(i % 1000 == 0){
+							if(checkStop()){return;}
+							$this.publish('DataCube.Model.Cube.status', {status: 'Сохранено записей: ' + i, success: true}, {session: true});
+						}
+
+					}
+					
 					if(checkStop()){return;}
-					$this.publish('DataCube.Model.Cube.status', {status: 'Сохранение записей: ' + i, success: true}, {session: true});
-					Kernel.sleep(100);
+					$this.publish('DataCube.Model.Cube.status', {status: 'Завершение материализации', success: true}, {session: true});
+					Kernel.sleep(1000);
+					
+					$this.materializing = false;
+					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+					
+				} catch(e){
+					
+					throw e;
+				} finally {
+					$this.materializer.destroy();
+					$this.materializer = null;
+					JSB.getLocker().unlock('materialization_' + $this.getId());
 				}
 				
-				if(checkStop()){return;}
-				$this.publish('DataCube.Model.Cube.status', {status: 'Формирование индексов', success: true}, {session: true});
-				Kernel.sleep(2000);
-				
-				if(checkStop()){return;}
-				$this.publish('DataCube.Model.Cube.status', {status: 'Завершение материализации', success: true}, {session: true});
-				Kernel.sleep(1000);
-				
-				$this.materializing = false;
-				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
 				
 			});
 			
