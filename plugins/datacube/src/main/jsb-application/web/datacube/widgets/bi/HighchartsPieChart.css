@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+
+.pieChart {
+}
+
+.pieChart .container {
+	width: 100%;
+	height: 100%;
+}
