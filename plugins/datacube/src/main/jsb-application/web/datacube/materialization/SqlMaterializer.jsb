@@ -115,30 +115,41 @@
 			}
 		},
 		
-		insert: function(tName, obj){
+		insert: function(tName, objArr){
 			var store = this.source.getStore();
 			var connection = store.getConnection(true).get();
+			if(!JSB.isArray(objArr)){
+				objArr = [objArr];
+			}
 			try {
-				var fNameArr = Object.keys(obj);
-				var sql = 'insert into ' + tName + '(';
-				for(var i = 0; i < fNameArr.length; i++){
-					sql += '"' + fNameArr[i] + '"';
-					if(i < fNameArr.length - 1){
-						sql += ', ';
+				var batch = [];
+				for(var b = 0; b < objArr.length; b++){
+					var obj = objArr[b];
+					var fNameArr = Object.keys(obj);
+					var sql = 'insert into ' + tName + '(';
+					for(var i = 0; i < fNameArr.length; i++){
+						sql += '"' + fNameArr[i] + '"';
+						if(i < fNameArr.length - 1){
+							sql += ', ';
+						}
 					}
-				}
-				sql += ') values(';
-				var values = [];
-				for(var i = 0; i < fNameArr.length; i++){
-					var fVal = obj[fNameArr[i]];
-					values.push(fVal);
-					sql += '?'
-					if(i < fNameArr.length - 1){
-						sql += ', ';
+					sql += ') values(';
+					var values = [];
+					for(var i = 0; i < fNameArr.length; i++){
+						var fVal = obj[fNameArr[i]];
+						values.push(fVal);
+						sql += '?'
+						if(i < fNameArr.length - 1){
+							sql += ', ';
+						}
 					}
+					sql += ')';
+					batch.push({
+						sql: sql,
+						values: values
+					});
 				}
-				sql += ')';
-				JDBC.executeUpdate(connection, sql, values);
+				JDBC.executeUpdate(connection, batch);
 			} finally {
 				connection.close();
 			}
