@@ -961,6 +961,13 @@
 				}
 				lm.execute(manNodeMap[lman]);
 			}
+		},
+
+		getFieldSize: function(){
+		    return {
+		        x: this.grid.width(),
+		        y: this.grid.height()
+		    };
 		}
 	},
 	
