@@ -77,7 +77,8 @@
                key: 'linkList',
                binding: 'field',
                itemType: 'string',
-               itemValue: '$field'
+               itemValue: '$field',
+               description: 'Массив объектов формата { source: "source_node_id", target: "target_node_id" }'
             },
             {
                 type: 'group',
@@ -91,7 +92,8 @@
                    key: 'nodeList',
                    binding: 'field',
                    itemType: 'string',
-                   itemValue: '$field'
+                   itemValue: '$field',
+                   description: 'Массив уникальных идентефикаторов вершин'
                 },
                 {
                    name: 'Способ отображения ячейки',
@@ -125,22 +127,24 @@
                    }
                    ]
                 },
-                /*
                 {
                     type: 'item',
                     name: 'Высота ячейки',
                     key: 'itemHeight',
                     binding: 'field',
-                    itemType: 'string'
+                    itemType: 'string',
+                    itemValue: '50',
+                    description: 'Высота объекта вершины'
                 },
                 {
                     type: 'item',
                     name: 'Ширина ячейки',
                     key: 'itemWidth',
                     binding: 'field',
-                    itemType: 'string'
+                    itemType: 'string',
+                    itemValue: '50',
+                    description: 'Ширина объекта вершины'
                 }
-                */
                 ]
             }
             ]
@@ -318,66 +322,54 @@
 
         createGraph: function(nodes, links){
             try{
-                /*
+                $this.diagram.clear();
+
                 var itemWidth = this.getContext().find('itemWidth').value(),
                     itemHeight = this.getContext().find('itemHeight').value();
-*/
-                    var simulation = d3.forceSimulation()
-                                       .force("link", d3.forceLink().id(function(d) { return d.id; }));
 
-                    simulation.nodes(nodes)
-                              .on("tick", ticked);
-
-                    simulation.force("link").links(links);
-
-                function ticked(arg) {
-                    $this.diagram.clear();
-
-                    nodes.forEach(function(d){
-                        var node = $this.diagram.createNode('graphNode', {entry: d.entry});
-                        node.setPosition(d.x, d.y)
-                        $this._nodeList[d.id] = node;
-                    });
-
-                    links.forEach(function(d){
-                        var link = $this.diagram.createLink('bind');
-                        link.setSource($this._nodeList[d.source.id].connector);
-                        link.setTarget($this._nodeList[d.target.id].connector);
-                    });
-
-                    simulation.force("collide", d3.forceCollide().radius(function(d) {
-                        /*
-                        if(itemWidth && itemHeight){
-                            var r = Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2));
-                        } else {
-                            var r = Math.sqrt(Math.pow($this._nodeList[d.id].getElement().width(), 2) + Math.pow($this._nodeList[d.id].getElement().height(), 2));
-                        }
-                        */
-                        var r = Math.sqrt(Math.pow($this._nodeList[d.id].getElement().width(), 2) + Math.pow($this._nodeList[d.id].getElement().height(), 2));
+                var simulation = d3.forceSimulation()
+                    .force("link", d3.forceLink().id(function(d) { return d.id }))
+                    .force("collide",d3.forceCollide( function(d){
+                        var r = Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2));
                         return r;
-                    })
-                    .iterations(1));
+                    }).iterations(1))
+                    .force("charge", d3.forceManyBody())
+                    .force("y", d3.forceY(0))
+                    .force("x", d3.forceX(0));
 
-                    JSB().defer(function(){
-                        $this.getElement().loader('hide');
-                    }, 300, 'simulations_defer_' + $this.getId());
-    /*
-                    JSB().defer(function(){
-                        simulation.force("collide", d3.forceCollide().radius(function(d) {
-                            var r = Math.sqrt(Math.pow($this._nodeList[d.id].getElement().width(), 2) + Math.pow($this._nodeList[d.id].getElement().height(), 2));
-                            return r;
-                            })
-                            .iterations(1));
-                    }, 100, 'simulations_defer_' + $this.getId());
-    */
+                nodes.forEach(function(d){
+                    var node = $this.diagram.createNode('graphNode', {entry: d.entry});
+                    if(itemWidth && itemHeight){
+                        node.getElement().width(itemWidth);
+                        node.getElement().height(itemHeight);
+                    }
+                    $this._nodeList[d.id] = node;
+                });
+
+                links.forEach(function(d){
+                    var link = $this.diagram.createLink('bind');
+                    link.setSource($this._nodeList[d.source].connector);
+                    link.setTarget($this._nodeList[d.target].connector);
+                });
+
+                function ticked() {
+                    nodes.forEach(function(el){
+                        $this._nodeList[el.id].setPosition(el.x, el.y);
+                    });
                 }
+
+                simulation.nodes(nodes)
+                          .on("tick", ticked)
+                          .on("end", function(){
+                            $this.getElement().loader('hide');
+                          });
+
+                simulation.force("link")
+                          .links(links);
             } catch(ex){
                 console.log(ex);
                 simulation.stop();
-            } finally {
-                JSB().defer(function(){
-                    $this.getElement().loader('hide');
-                }, 300, 'simulations_defer_' + $this.getId());
+                $this.getElement().loader('hide');
             }
         }
     }
