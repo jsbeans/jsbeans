@@ -330,10 +330,10 @@
 
                 if(Object.keys(globalFilters).length === 0) globalFilters = null;
 
-                if(globalFilters && MD5.md5(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
+                if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
                     return;
                 } else {
-                    this._curFilterHash = globalFilters ? MD5.md5(globalFilters) : undefined;
+                    this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
