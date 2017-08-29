@@ -166,6 +166,10 @@
 			this.publish('_jsb_diagramConnectorInstalled');
 		},
 		
+		getOrigin: function(){
+			return this.options.origin;
+		},
+		
 		getPoint: function(){
 			if(!this.installed){
 				return null;

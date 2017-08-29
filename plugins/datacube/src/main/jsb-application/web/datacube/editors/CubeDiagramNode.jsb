@@ -291,12 +291,62 @@
 						var rDesc = this.getRemote(link);
 						var provider = rDesc.node.provider;
 						var field = rDesc.connector.options.field;
-						$this.entry.server().addField(provider.getId(), field, rDesc.node.fields[field], function(desc){
-							$this.addField(desc.field, desc.type);
-							$this.editor.ignoreHandlers = true;
-							link.setSource($this.leftFieldConnectors[desc.field]);
-							$this.editor.ignoreHandlers = false;
+						
+						function addField(){
+							$this.entry.server().addField(provider.getId(), field, rDesc.node.fields[field], function(desc){
+								$this.addField(desc.field, desc.type);
+								$this.editor.ignoreHandlers = true;
+								link.setSource($this.leftFieldConnectors[desc.field]);
+								$this.editor.ignoreHandlers = false;
+							});
+						}
+
+						$this.entry.server().getMaterializationInfo(function(matDesc){
+							if(matDesc.materializing){
+								var elt = welcomeConnector.getOrigin();
+								ToolManager.showMessage({
+									icon: 'infoDialogIcon',
+									text: 'Добавление поля в куб в момент материализации невозможно',
+									buttons: [{text: 'Закрыть', value: true}],
+									target: {
+										selector: elt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: elt
+									}],
+									callback: function(){
+										link.destroy();
+									}
+								});
+							} else if(matDesc.materialization && Object.keys(matDesc.materialization).length > 0){
+								// show ask dialog
+								var elt = welcomeConnector.getOrigin();
+								ToolManager.showMessage({
+									icon: 'warningDialogIcon',
+									text: 'Добавление поля в куб приведет к удалению существующей материализации',
+									buttons: [{text: 'Продолжить', value: true},
+									          {text: 'Отмена', value: false}],
+									target: {
+										selector: elt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: elt
+									}],
+									callback: function(b){
+										if(b){
+											addField();
+										} else {
+											link.destroy();
+										}
+									}
+								});
+							} else {
+								addField();
+							}
 						});
+						
 					}
 				});
 			}
@@ -353,14 +403,58 @@
 				}],
 				callback: function(bDel){
 					if(bDel){
-						$this.entry.server().removeField(field, function(res, fail){
-							if(res){
-								delete $this.fields[field];
-								$this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
-								$this.leftFieldConnectors[field].destroy();
-								delete $this.leftFieldConnectors[field];
-								$this.rightFieldConnectors[field].destroy();
-								delete $this.rightFieldConnectors[field];
+						function removeField(){
+							$this.entry.server().removeField(field, function(res, fail){
+								if(res){
+									delete $this.fields[field];
+									$this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
+									$this.leftFieldConnectors[field].destroy();
+									delete $this.leftFieldConnectors[field];
+									$this.rightFieldConnectors[field].destroy();
+									delete $this.rightFieldConnectors[field];
+								}
+							});
+						}
+						
+						$this.entry.server().getMaterializationInfo(function(matDesc){
+							if(matDesc.materializing){
+								ToolManager.showMessage({
+									icon: 'infoDialogIcon',
+									text: 'Удаление поля из куба в момент материализации невозможно',
+									buttons: [{text: 'Закрыть', value: true}],
+									target: {
+										selector: fElt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: fElt
+									}],
+									callback: function(){
+										
+									}
+								});
+							} else if(matDesc.materialization && Object.keys(matDesc.materialization).length > 0){
+								// show ask dialog
+								ToolManager.showMessage({
+									icon: 'warningDialogIcon',
+									text: 'Удаление поля из куба приведет к удалению существующей материализации',
+									buttons: [{text: 'Продолжить', value: true},
+									          {text: 'Отмена', value: false}],
+									target: {
+										selector: fElt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: fElt
+									}],
+									callback: function(b){
+										if(b){
+											removeField();
+										} 
+									}
+								});
+							} else {
+								removeField();
 							}
 						});
 					}
