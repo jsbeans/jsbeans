@@ -1,11 +1,11 @@
 {
-	$name: 'DataCube.Widgets.HighchartsBasicArea',
+	$name: 'DataCube.Widgets.HighchartsWaterfall',
 	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
-		name: 'Линейный с заливкой',
+		name: 'Водопад',
 		description: '',
 		category: 'BI',
-		thumb: 'data:image/png;base64,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'
+		thumb: 'data:image/png;base64,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'
 	},
     $scheme: {
         type: 'group',
@@ -70,7 +70,6 @@
                 type: 'group',
                 name: 'Ось Y',
                 key: 'yAxis',
-                multiple: 'true',
                 items: [
                 {
                     type: 'group',
@@ -131,7 +130,6 @@
                 type: 'group',
                 name: 'Серии',
                 key: 'series',
-                multiple: 'true',
                 items: [
                 {
                     name: 'Имя поля',
@@ -147,31 +145,25 @@
                     itemValue: '$field'
                 },
                 {
+                    name: 'isIntermediateSum',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
+                },
+                {
+                    name: 'isSum',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
+                },
+                {
                     name: 'Тип отображения',
                     type: 'select',
                     items:[
                     {
-                        name: 'area',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'areaspline',
-                        type: 'item',
-                        editor: 'none'
-                    },      
-                    {
-                        name: 'column',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'line',
-                        type: 'item',
-                        editor: 'none'
-                    },
-                    {
-                        name: 'spline',
+                        name: 'waterfall',
                         type: 'item',
                         editor: 'none'
                     }
@@ -255,47 +247,33 @@
                     ]
                 },
                 {
-                    name: 'Цвет',
+                    name: 'Цвет (color)',
                     type: 'item',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
                 },
                 {
-                    type: 'group',
-                    name: 'Маркер',
-	                items: [
-	                {
-	                    name: 'The fill color of the point marker',
-	                    type: 'item',
-                        itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor'
-	                },
-	                {
-	                    name: 'The color of the point marker\'s outline',
-	                    type: 'item',
-                        itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor',
-	                    itemValue: '#ffffff'
-	                },
-	                {
-	                    name: 'The width of the point marker\'s outline',
-	                    type: 'item',
-	                    itemType: 'string',
-	                    itemValue: '0'
-	                },
-	                {
-	                    name: 'The radius of the point marker',
-	                    type: 'item',
-	                    itemType: 'string',
-	                    itemValue: '4'
-	                },
-	                {
-	                    name: 'A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".',
-	                    type: 'item',
-	                    itemType: 'string'
-	                }]
-                }
+                    name: 'Цвет (upColor)',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'color',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
+                {
+                    name: 'Цвет (isIntermediateSum)',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'color',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
+                {
+                    name: 'Цвет (isSum)',
+                    type: 'item',
+                    binding: 'field',
+                    itemType: 'color',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
                 ]
             }
             ]
@@ -337,7 +315,7 @@
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('HighchartsBasicArea.css');
-			JSB().loadScript('tpl/highstock/highstock.js', function(){
+			JSB().loadScript('tpl/highstock/highcharts-more.js', function(){
 				self.init();
 			});
 		},
@@ -391,25 +369,14 @@
                                 series[i] = {
                                     name: seriesContext[i].get(0).value(),
                                     data: [],
-                                    type: seriesContext[i].get(2).value().name(),
+                                    //type: seriesContext[i].get(4).value().name(),
                                     tooltip: {
-                                        valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                                        valueSuffix: seriesContext[i].get(5).value().get(0).value()
                                     },
-                                    yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-                                    dashStyle: seriesContext[i].get(5).value().name(),
-                                    color: $this.isNull(seriesContext[i].get(6).value()),
-                                    marker: {
-					                    // The fill color of the point marker
-					                    fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
-					                    // The color of the point marker's outline
-					                    lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
-					                    // The width of the point marker's outline
-					                    lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
-					                    // The radius of the point marker
-					                    radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
-					                    // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
-					                    symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
-                                    },
+                                    yAxis: $this.isNull(seriesContext[i].get(6).value(), true),
+                                    dashStyle: seriesContext[i].get(7).value().name(),
+                                    color: $this.isNull(seriesContext[i].get(8).value()),
+                                    upColor: $this.isNull(seriesContext[i].get(9).value()),
                                     point: {
                                         events: {
                                             click: function(evt) {
@@ -457,10 +424,33 @@
                             }
 
                             var a = seriesContext[i].get(1).value();
+                            var isIntermediateSum = seriesContext[i].get(2).value() !== 0;
+                            var isSum = seriesContext[i].get(3).value() !== 0;
+                            var isIntermediateSumColor = $this.isNull(seriesContext[i].get(10).value());
+                            var isSumColor = $this.isNull(seriesContext[i].get(11).value());
+                            
+                            
+                            
                             if(JSB().isArray(a)){
                                 series[i].data = a;
                             } else {
-                                series[i].data.push(a);
+                            	if( isIntermediateSum ) { 
+	                                series[i].data.push({
+	                                	//y: a, 
+	                                	isIntermediateSum: true,
+	                                	color: isIntermediateSumColor
+	                                });
+	                            } else if( isSum ) {
+	                                series[i].data.push({
+	                                	//y: a, 
+	                                	isSum: true,
+	                                	color: isSumColor
+	                                });
+	                            } else {
+	                                series[i].data.push({
+	                                	y: a
+	                                });
+	                            }
                             }
                         }
                         for(var i = 0; i < xAxisContext.length; i++){
@@ -506,6 +496,7 @@
                     
                         chart: {
                             //zoomType: 'x'
+                            type: 'waterfall'
                         },
 
                         title: {
@@ -535,14 +526,7 @@
                         },
 
                         legend: {
-                            layout: 'horizontal',
-                            floating: false,
-                            align: 'center',
-                            verticalAlign: 'bottom',
-                            x: 0,
-                            y: 0,
-                            itemDistance: 30,
-                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                        	enabled: false
                         },
 
                         plotOptions: {
