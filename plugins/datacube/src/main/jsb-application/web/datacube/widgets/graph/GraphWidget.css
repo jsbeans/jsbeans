@@ -1,0 +1,7 @@
+.graphWidget {}
+
+.graphWidget ._jsb_diagram > ._jsb_diagramCanvas > svg > g.link > path{
+    stroke: #0559ef;
+    stroke-width: 2px;
+    stroke-opacity: 0.6;
+}

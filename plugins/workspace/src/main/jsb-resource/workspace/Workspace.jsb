@@ -117,10 +117,12 @@
 
 		    return this._locked('body', function(){
 		        var localIds = Object.keys(self.body.entries);
+		        //JSB.getLogger().info('count: ' + localIds.length + '; entries: ' + JSON.stringify(localIds));
 		        var i = 0;
 		        return {
 		            next: function() {
-		                while(i < localIds.length && !self.body.entries[localIds[i]]) {
+		            	//JSB.getLogger().info('pos: ' + i + '; entry: ' + localIds[i]);
+		                while(i < localIds.length && (!localIds[i] || !self.body.entries[localIds[i]] || Object.keys(self.body.entries[localIds[i]]).length == 0 || !self.body.entries[localIds[i]].eType)) {
 		                    i++;
 		                }
 

@@ -8,6 +8,10 @@
 		values: null,
 		sort: null,
 		sourceMap: null,
+		sources: null,
+		sourceFilterMap: null,
+
+		$require: ['JSB.Crypt.MD5'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -190,6 +194,35 @@
 					}
 				},
 				
+				getFilters: function(){
+					if(this.selector.length == 0){
+						return null;
+					}
+					
+					var item = this.selector[0];
+					if(!item.binding || !item.binding.source){
+						return null;
+					}
+					if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
+						return JSB().clone($this.sourceFilterMap[item.binding.source]);
+					}
+				},
+				
+				setFilters: function(filters){
+					if(this.selector.length == 0){
+						throw new Error('Wrong selector');
+					}
+					
+					var item = this.selector[0];
+					if(!item.binding || !item.binding.source){
+						throw new Error('Missing source binding in selector');
+					}
+					if(!$this.sourceFilterMap){
+						$this.sourceFilterMap = {};
+					}
+					$this.sourceFilterMap[item.binding.source] = filters;
+				},
+				
 				fetch: function(opts, callback){
 					if(arguments.length == 1 && JSB.isFunction(opts)){
 						callback = opts;
@@ -230,11 +263,25 @@
 							reset: true
 						};
 					}
+
 					JSB.merge(item.fetchOpts, opts);
 					if($this.getWrapper()){
-						item.fetchOpts.filter = $this.getWrapper().constructFilter(item.binding.source);
+						var filterDesc = null;
+						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
+							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source]);
+						} else {
+							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
+						}
+						if(filterDesc){
+							item.fetchOpts.filter = filterDesc.filter;
+							item.fetchOpts.postFilter = filterDesc.postFilter;
+						} else {
+							item.fetchOpts.filter = null;
+							item.fetchOpts.postFilter = null;
+						}
 					}
 					item.fetchOpts.sort = $this.sort;
+
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(item.fetchOpts.reset){
 							item.cursor = 0;
@@ -427,16 +474,16 @@
 			};
 		},
 		
-		setWrapper: function(w, values, sourceMap){
+		setWrapper: function(w, values, sourceDesc){
 			this.wrapper = w;
-			this.updateValues(values, sourceMap);
+			this.updateValues(values, sourceDesc);
 		},
 		
 		getWrapper: function(){
 			return this.wrapper;
 		},
 		
-		updateValues: function(values, sourceMap){
+		updateValues: function(values, sourceDesc){
 			if(!values){
 				values = JSB.clone(this.getWrapper().getValues());
 			}
@@ -445,10 +492,12 @@
 				this.values = this.values.unwrap();
 			}
 			this.context = new this.Selector(this.values);
-			if(sourceMap){
-				this.sourceMap = sourceMap;
+			if(sourceDesc){
+				this.sourceMap = sourceDesc.sourceMap;
+				this.sources = sourceDesc.sources;
 			} else {
 				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
+				this.sources = this.getWrapper().getWidgetEntry().getSources();
 			}
 		},
 		
@@ -456,8 +505,10 @@
 			return this.context;
 		},
 		
+		
 		refresh: function(opts){
-//			throw new Error('This method should be overriden');
+			// localize filters
+			this.localizeFilters();
 		},
 		
 		refreshAll: function(opts){
@@ -467,6 +518,19 @@
 		getSourceIds: function(){
 			return Object.keys(this.sourceMap);
 		},
+		
+		localizeFilters: function(){
+			this.sourceFilterMap = {};
+			for(var srcId in this.sources){
+				var src = this.sources[srcId];
+				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
+			}
+		},
+		
+		getLocalFilters: function(){
+			return this.sourceFilterMap;
+		},
+
 		
 		clearFilters: function(){
 			this.getWrapper().clearFilters(this);
@@ -484,21 +548,32 @@
 				}
 			}
 			if(fDesc.sourceId){
-				if(!this.sourceMap[fDesc.sourceId]){
+				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
 					throw new Error('Invalid sourceId');
 				}
+				fDesc.source = this.sources[fDesc.sourceId];
 				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
 			}
 			throw new Error('Missing sourceId');
 		},
 		
 		removeFilter: function(fItemId){
-			return this.getWrapper().removeFilter(fItemId, this);
+			// return this.getWrapper().removeFilter(fItemId, this);
+			return this.getWrapper().removeFilter(fItemId);
 		},
 		
 		setSort: function(q){
 			this.sort = q;
 			this.refresh();
+		},
+
+		createFilterHash: function(filter){
+            var str = '';
+		    for(var i in filter){
+		        str += '' + i;
+		    }
+
+		    return MD5.md5(str);
 		}
 	},
 	
@@ -508,11 +583,17 @@
 		iterators: {},
 		
 		destroy: function(){
-			for(var it in this.iterators){
-				this.iterators[it].close();
+			if(!this.isDestroyed()){
+				for(var it in this.iterators){
+					try {
+						this.iterators[it].close();
+					}catch(e){
+						JSB.getLogger().error(e);
+					}
+				}
+				this.iterators = {};
+				$base();
 			}
-			this.iterators = {};
-			$base();
 		},
 		
 		fetch: function(sourceId, dashboard, opts){
@@ -535,6 +616,12 @@
 					if(opts.sort){
 						extQuery.$sort = [opts.sort];
 					}
+					if(opts.select){
+                        extQuery.$select = opts.select;
+                    }
+                    if(opts.groupBy){
+                        extQuery.$groupBy = opts.groupBy;
+                    }
 					this.iterators[sourceId] = source.executeQuery(extQuery);
 				} else {
 					// TODO

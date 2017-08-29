@@ -69,9 +69,10 @@
 
         _prepareEmbeddedSQL: function(sql, dcQuery){
             if (this.cube) {
-                for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
+            	var managedFields = this.cube.getManagedFields();
+                for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
                     // is in Cube print full name
-                    var binding = this.cube.fields[field].binding;
+                    var binding = managedFields[field].binding;
                     for(var b in binding) {
                         if (this.providers.indexOf(binding[b].provider) != -1) {
                             var name = this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
@@ -268,7 +269,7 @@
                     return 'extract(epoch from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
 
                 case '$dateIntervalOrder':
-                    return 'CAST(extract(epoch from ' + this._translateExpression(null, exp.$dateIntervalOrder.$field, dcQuery) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
+                    return 'CAST((extract(epoch from ' + this._translateExpression(null, exp.$dateIntervalOrder.$field, dcQuery) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
             }
 
             // aggregate operators
@@ -320,9 +321,10 @@
             }
             var tableAlias = tableAlias || dcQuery.$context;
             if (this.cube) {
-                if (this.cube.fields[field]) {
+            	var managedFields = this.cube.getManagedFields();
+                if (managedFields[field]) {
                     // is in Cube print full name
-                    var binding = this.cube.fields[field].binding;
+                    var binding = managedFields[field].binding;
                     for(var b in binding) {
                         if (this.providers.indexOf(binding[b].provider) != -1) {
                             return tableAlias
@@ -380,12 +382,13 @@
         _translateFrom: function(dcQuery) {
             function translateJoinWith(leftProvider, joinedProviders){
                 var sqlJoins = '';
+                var managedFields = $this.cube.getManagedFields();
                 for(var p in $this.providers) if ($this.providers[p] != leftProvider) {
                     var rightProvider = $this.providers[p];
 
                     var on = '';
-                    for(var f in $this.cube.fields){
-                        var binding = $this.cube.fields[f].binding;
+                    for(var f in managedFields){
+                        var binding = managedFields[f].binding;
                         var leftPosition = binding.length;
                         for(var b = 0; b < binding.length; b++) {
                             if (binding[b].provider == leftProvider) {

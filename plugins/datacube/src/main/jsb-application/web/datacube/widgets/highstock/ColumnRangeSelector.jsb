@@ -66,12 +66,6 @@
                 itemType: 'string',
                 itemValue: '',
                 description: 'Имя серии. Выводится во всплывающей подсказке'
-            },
-            {
-                name: 'Интервал точек',
-                type: 'item',
-                itemType: 'number',
-                itemValue: ''
             }
             ]
         },
@@ -84,22 +78,199 @@
                 {
                     name: 'Формат даты',
                     type: 'item',
-                    description: 'Формат даты во всплывающей подсказке'
+                    description: 'Формат даты во всплывающей подсказке (%d - день, %m - месяц, %y - год)'
                 }
+            ]
+        },
+        {
+            type: 'group',
+            name: 'Группировка данных',
+            key: 'dataGrouping',
+            multiple: 'true',
+            optional: true,
+            items: [
+                {
+                    name: 'Единица измерения',
+                    type: 'select',
+                    description: 'Группируемая диница измерения',
+                    items: [
+                    {
+                        name: 'Миллисекунда',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'millisecond'
+                    },
+                    {
+                        name: 'Секунда',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'second'
+                    },
+                    {
+                        name: 'Минута',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'minute'
+                    },
+                    {
+                        name: 'Час',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'hour'
+                    },
+                    {
+                        name: 'День',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'day'
+                    },
+                    {
+                        name: 'Неделя',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'week'
+                    },
+                    {
+                        name: 'Месяц',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'month'
+                    },
+                    {
+                        name: 'Год',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'year'
+                    }
+                    ]
+                },
+                {
+                    name: 'Группировка',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: '',
+                    description: 'Массив допустимых группировок, через запятую (1, 2, 4)'
+                }
+            ]
+        },
+        {
+            type: 'group',
+            name: 'Фиксированное количество столбцов',
+            key: 'fixedColumns',
+            optional: true,
+            items: [
+            {
+                name: 'Начальная дата',
+                type: 'item',
+                itemType: 'string'
+            },
+            {
+                name: 'Конечная дата',
+                type: 'item',
+                itemType: 'string'
+            },
+            {
+                name: 'Число столбцов',
+                type: 'item',
+                itemType: 'string'
+            }
+            ]
+        },
+        {
+            type: 'group',
+            name: 'Ось Х',
+            key: 'xAxis',
+            optional: true,
+            items: [
+            {
+                type: 'group',
+                name: 'Формат дат',
+                multiple: 'true',
+                items: [
+                {
+                    name: 'Единица измерения',
+                    type: 'select',
+                    items: [
+                    {
+                        name: 'Миллисекунда',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'millisecond'
+                    },
+                    {
+                        name: 'Секунда',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'second'
+                    },
+                    {
+                        name: 'Минута',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'minute'
+                    },
+                    {
+                        name: 'Час',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'hour'
+                    },
+                    {
+                        name: 'День',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'day'
+                    },
+                    {
+                        name: 'Неделя',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'week'
+                    },
+                    {
+                        name: 'Месяц',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'month'
+                    },
+                    {
+                        name: 'Год',
+                        type: 'item',
+                        editor: 'none',
+                        itemValue: 'year'
+                    }
+                    ]
+                },
+                {
+                    name: 'Формат',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: '',
+                    description: 'Формат даты'
+                }
+                ]
+            }
             ]
         }
         ]
     },
 	$client: {
 		$require: ['JQuery.UI.Loader'],
-	    _minFilter: null,
-	    _maxFilter: null,
+		_currentFilters: {
+		    min: null,
+		    minId: null,
+		    max: null,
+		    maxId: null,
+		    curFilterHash: null
+		},
+		_filterChanged: false,
+		_widgetExtremes: {},
 	    
 		$constructor: function(opts){
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			JSB().loadCss('tpl/highstock/css/highcharts.css');
-			JSB().loadScript('tpl/highstock/highstock.js', function(){
+			JSB().loadScript(['tpl/highstock/highstock.js'], function(){ // 'tpl/highstock/adapters/standalone-framework.js'
 			    Highcharts.setOptions({
 			        lang: {
                         contextButtonTitle: "Меню виджета",
@@ -139,103 +310,260 @@
                 if(!$this.getElement().is(':visible')){
                     return;
                 }
-                if($this.chart){
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
-                }
+                JSB.defer(function(){
+                	if($this.chart){
+                        $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
+                    }
+                }, 300, 'hcResize' + $this.getId());
             });
-            
+
             this.isInit = true;
 		},
 
         refresh: function(opts){
-            if(opts && this == opts.initiator) return;
-            if(opts && opts.type === 'removeFilter'){
-            	if(this._maxFilter == opts.fItemIds[0]){
-                    this._isRemoveFilter = true;
-                    var ex = this.chart.xAxis[0].getExtremes();
-                    this.chart.xAxis[0].setExtremes($this._extremes[0], ex.max);
-                    return;
-            	}
-            	if(this._minFilter == opts.fItemIds[0]){
-            		this._isRemoveFilter = true;
-                    var ex = this.chart.xAxis[0].getExtremes();
-                    this.chart.xAxis[0].setExtremes(ex.min, $this._extremes[1]);
-                    return;
-            	}
+            if(opts && this == opts.initiator) {
+                return;
             }
+            
+			$base();
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
+            var fixedColumns = this.getContext().find('fixedColumns');
+// filters section
+            var globalFilters = source.getFilters(),
+                binding = source.value().get(0).binding()[0],
+                hasMin = false,
+                hasMax = false,
+                isReturn = false;
+
+            if(globalFilters){
+                var _bNeedExtremesUpdate = false;
+
+                for(var i in globalFilters){
+                    var cur = globalFilters[i];
+
+                    if(cur.field === binding){
+                        switch(cur.op){
+                        case '$eq':     // equal
+
+                            break;
+                        case '$gte':    // min filter
+                            if(this._currentFilters.min && this._currentFilters.min <= cur.value || !this._currentFilters.min){
+                                this._currentFilters.min = cur.value.getTime();
+                                this._currentFilters.minId = cur.id;
+                                _bNeedExtremesUpdate = true;
+                            }
+                            hasMin = true;
+                            break;
+                        case '$lte':    // max filter
+                            if(this._currentFilters.max && this._currentFilters.max >= cur.value || !this._currentFilters.max){
+                                this._currentFilters.max = cur.value.getTime();
+                                this._currentFilters.maxId = cur.id;
+                                _bNeedExtremesUpdate = true;
+                            }
+                            hasMax = true;
+                            break;
+                        }
+                        delete globalFilters[i];
+                    }
+                }
+
+                if(Object.keys(globalFilters).length === 0) globalFilters = null;
+
+                if(globalFilters && this.createFilterHash(globalFilters) === this._currentFilters.curFilterHash || !globalFilters && !this._currentFilters.curFilterHash){ // update data not require
+                    if(_bNeedExtremesUpdate){
+                        this._filterChanged = true;
+
+                        var min = this._currentFilters.min ? this._currentFilters.min : this._widgetExtremes.min,
+                            max = this._currentFilters.max ? this._currentFilters.max : this._widgetExtremes.max;
+
+                        $this.chart.xAxis[0].setExtremes(min, max);
+
+                        if(fixedColumns.used()){
+                            this._loadFixedColumnData(min, max);
+                        }
+                    }
+                    isReturn = true;
+                } else {
+                    this._currentFilters.curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+                }
+            }
+
+            if(!hasMin && this._currentFilters.minId){
+                this._filterChanged = true;
+
+                this._currentFilters.min = null;
+                this._currentFilters.minId = null;
+
+                this.chart.xAxis[0].setExtremes($this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
+
+                if(fixedColumns.used()){
+                    this._loadFixedColumnData($this._widgetExtremes.min, $this._currentFilters.max ? $this._currentFilters.max : $this._widgetExtremes.max);
+                }
+                isReturn = true;
+            }
+
+            if(!hasMax && this._currentFilters.maxId){
+                this._filterChanged = true;
+
+                this._currentFilters.max = null;
+                this._currentFilters.maxId = null;
+
+                this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._widgetExtremes.max);
+
+                if(fixedColumns.used()){
+                    this._loadFixedColumnData($this._currentFilters.min ? $this._currentFilters.min : $this._widgetExtremes.min, $this._widgetExtremes.max);
+                }
+                isReturn = true;
+            }
+            if(isReturn) return;
+// end filters section
             var seriesContext = this.getContext().find('series').value(),
                 autoCount = source.value().get(2).used(),
                 tooltip = this.getContext().find('tooltip').value(),
                 value = source.value().get(0),
                 count = source.value().get(1);
 
-            $this.getElement().loader();
-            JSB().deferUntil(function(){
-                source.fetch({readAll: true, reset: true}, function(){
-                    $this._originalData = {};
-                    var data = [];
+            if(fixedColumns.used()){
+                var minFix = fixedColumns.value().get(0).value(),
+                    maxFix = fixedColumns.value().get(1).value(),
+                    columnCount = fixedColumns.value().get(2).value();
 
-                    while(source.next()){
-                        var val = value.value();
+                var colWidth = (new Date(maxFix).getTime() - new Date(minFix).getTime()) / 1000 / columnCount;
 
-                        switch(typeof val){
-                            case 'string':
-                                var dateValue = new Date(val).getTime();
-
-                                if(dateValue !== dateValue) continue;
-
-                                $this._originalData[dateValue] = val;
-                                break;
-                            case 'object':
-                                if(JSB().isDate(val)){
-                                    var dateValue = val.getTime();
-                                    if(dateValue !== dateValue) continue;
-                                    break;
-                                }
-                            default:
-                                // invalid type
-                                continue;
+                var fixedColumnsSelect = {
+                    dateIntervalOrder: {
+                        $dateIntervalOrder: {
+                            $field: value.binding()[0],
+                            $seconds: colWidth
                         }
-
-                        if(autoCount){
-                            var e = null;
-                            for(var j = 0; j < data.length; j++){
-                                if(data[j].x === dateValue){
-                                    e = data[j];
-                                    break;
-                                }
-                            }
-
-                            if(e){
-                                e.y++;
-                            } else {
-                                data.push({ x: dateValue, y: 1 });
-                            }
-                        } else {
-                            data.push({ x: dateValue, y: count.value() });
+                    },
+                    dateCount: {
+                        $count: 1
+                    }
+                };
+                var fixedColumnsGroupBy = [
+                    {
+                        $dateIntervalOrder: {
+                            $field: value.binding()[0],
+                            $seconds: colWidth
                         }
                     }
+                ];
+            } else {
+                var fixedColumnsSelect = undefined,
+                    fixedColumnsGroupBy = undefined;
+            }
 
-                    data.sort(function(a, b){
-                        if(a.x < b.x) return -1;
-                        if(a.x > b.x) return 1;
-                        return 0;
-                    });
-
+            $this.getElement().loader();
+            JSB().deferUntil(function(){
+                source.fetch({readAll: true, reset: true, select: fixedColumnsSelect, groupBy: fixedColumnsGroupBy}, function(queryResult){
                     try{
+                        if(fixedColumns.used()){
+                            if(!queryResult){
+                                if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
+                                return;
+                            }
+
+                            var data = [];
+
+                            for(var i = 0; i < queryResult.length; i++){
+                                data.push({
+                                    x: queryResult[i].dateIntervalOrder * colWidth * 1000,
+                                    y: queryResult[i].dateCount
+                                });
+                            }
+
+                            var navigator = {
+                                adaptToUpdatedData: false,
+                                series: {
+                                    data: data
+                                }
+                            }
+
+                            var scrollbar = {
+                                liveRedraw: false
+                            }
+
+                            var rangeSelector = {
+                                enabled: false
+                            }
+                        } else {
+                            var data = [];
+
+                            while(source.next()){
+                                var val = value.value();
+
+                                if(!JSB().isDate(val)) return;
+
+                                var dateValue = val.getTime();
+
+                                if(autoCount){
+                                    var e = null;
+                                    for(var j = 0; j < data.length; j++){
+                                        if(data[j].x === dateValue){
+                                            e = data[j];
+                                            break;
+                                        }
+                                    }
+
+                                    if(e){
+                                        e.y++;
+                                    } else {
+                                        data.push({ x: dateValue, y: 1 });
+                                    }
+                                } else {
+                                    data.push({ x: dateValue, y: count.value() });
+                                }
+                            }
+                        }
+
+                        if(data.length === 0){
+                            console.log('Временной диапазон: нет данных или неверный формат (поддерживается только объект Date)');
+                            if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
+                            return;
+                        }
+
+                        data.sort(function(a, b){
+                            if(a.x < b.x) return -1;
+                            if(a.x > b.x) return 1;
+                            return 0;
+                        });
+
                         var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
                         tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
 
+                        var dataGrouping = this.getContext().find('dataGrouping');
+                        if(dataGrouping.used()){
+                            var units = [];
+                            var values = dataGrouping.values();
+                            for(var i = 0; i < values.length; i++){
+                                units.push([values[i].get(0).value().get(0).value(), [values[i].get(1).value()]]);
+                            }
+                        }
+
+                        var xAxis = this.getContext().find('xAxis');
+                        if(xAxis.used()){
+                            var gr = xAxis.values(),
+                                dateTimeLabelFormats = {};
+
+                            for(var i = 0; i < gr.length; i++){
+                                dateTimeLabelFormats[gr[i].value().get(0).value().get(0).value()] = gr[i].value().get(1).value();
+                            }
+                        }
+
                         var chart = {
+                            chart: {
+                                renderTo: $this.containerId
+                            },
                             xAxis: {
-                                // min: data[0].x,
-                                // max: data[data.length - 1].x,
+                                type: 'datetime',
+                                min: data[0].x,
+                                max: data[data.length - 1].x,
                                 events: {
-                                    // afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
+                                    afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
                                 }
                             },
 
@@ -252,29 +580,54 @@
                             }
                         };
 
-                        chart.series = {
+                        chart.series = [{
                             type: 'column',
                             name: seriesContext.get(0).value(),
                             data: data,
                             turboThreshold: 0,
-                            /*
-                            pointInterval: seriesContext.get(1).value(),
                             dataGrouping: {
-                                enabled: false,
+                                enabled: units !== undefined ? true : false,
+                                units: units
                             }
-                            */
-                        };
+                        }];
 
-                        $this._extremes = [data[0].x, data[data.length - 1].x];
+                        if(navigator){
+                            chart.navigator = navigator;
+                        }
+
+                        if(scrollbar){
+                            chart.scrollbar = scrollbar;
+                        }
+
+                        if(rangeSelector){
+                            chart.rangeSelector = rangeSelector;
+                        }
+
+                        if(dateTimeLabelFormats){
+                            chart.xAxis.dateTimeLabelFormats = dateTimeLabelFormats;
+                        }
                     } catch(e){
                         console.log(e);
+                        if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
                         return;
                     } finally{
                         $this.getElement().loader('hide');
                     }
-// debugger;
+
                     // create the chart
-                    $this.chart = Highcharts.stockChart($this.containerId, chart);
+                    $this.chart = new Highcharts.stockChart(chart);
+
+                    var ex = $this.chart.navigator.xAxis.getExtremes();
+                    $this._widgetExtremes = {
+                        min: ex.min,
+                        max: ex.max
+                    };
+
+                    if(_bNeedExtremesUpdate){
+                        $this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : ex.dataMin, $this._currentFilters.max ? $this._currentFilters.max : ex.dataMax);
+                    }
+
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 });
             }, function(){
                 return $this.isInit;
@@ -282,99 +635,131 @@
         },
 
         _addIntervalFilter: function(event){
-            if(this._isRemoveFilter){
-                this._isRemoveFilter = false;
+            if(this._filterChanged){
+                this._filterChanged = false;
                 return;
             }
 
             JSB().defer(function(){
+                if(event.min === $this._widgetExtremes.min && !$this._currentFilters.min && event.max === $this._widgetExtremes.max && !$this._currentFilters.max) return;
+
                 var context = $this.getContext().find('source').binding();
                 if(!context.source) return;
 
-                var field = $this.getContext().find("source").value().get(0).binding();
+                var field = $this.getContext().find('source').value().get(0).binding(),
+                    bNeedRefresh = false;
 
-                if(Object.keys($this._originalData).length > 0){
-                    if($this._extremes[0] !== event.min){
-                        var min = $this._originalData[event.min];
-                        if(!min) min = $this._originalData[$this._findNearest(Object.keys($this._originalData), event.min)];
+                // min filter
+                if($this._currentFilters.min && $this._currentFilters.min !== event.min || !$this._currentFilters.min && event.min !== $this._widgetExtremes.min){  // change filter
+                    if($this._currentFilters.min){
+                        $this.removeFilter($this._currentFilters.minId);
                     }
 
-                    if($this._extremes[1] !== event.max){
-                        var max = $this._originalData[event.max];
-                        if(!max) max = $this._originalData[$this._findNearest(Object.keys($this._originalData), event.max)];
-                    }
-                } else {
-                    if($this._extremes[0] !== event.min) var min = new Date(event.min);
-                    if($this._extremes[1] !== event.max) var max = new Date(event.max);
+                    var fDesc = {
+                        sourceId: context.source,
+                        type: '$and',
+                        op: '$gte',
+                        field: field,
+                        value: new Date(event.min)
+                    };
+                    $this._currentFilters.min = event.min;
+                    $this._currentFilters.minId = $this.addFilter(fDesc);
+
+                    bNeedRefresh = true;
+                }
+                if($this._currentFilters.min && event.min === event.dataMin){   // remove filter
+                    $this.removeFilter($this._currentFilters.minId);
+                    $this._currentFilters.min = null;
+                    $this._currentFilters.minId = null;
+                    bNeedRefresh = true;
                 }
 
-                var bNeedRefresh = false;
-                if(max){
-                	var fDesc = {
-                		sourceId: context.source,
-                		type: '$and',
-                		op: '$lte',
-                		field: field,
-                		value: max
-                	};
-                	if(!$this.hasFilter(fDesc)){
-                		if($this._maxFilter){
-                			$this.removeFilter($this._maxFilter);
-                		}
-                		$this._maxFilter = $this.addFilter(fDesc);
-                		bNeedRefresh = true;
-                	}
+                // max filter
+                if($this._currentFilters.max && $this._currentFilters.max !== event.max || !$this._currentFilters.max && event.max !== $this._widgetExtremes.max){  // change filter
+                    if($this._currentFilters.max){
+                        $this.removeFilter($this._currentFilters.maxId);
+                    }
+
+                    var fDesc = {
+                        sourceId: context.source,
+                        type: '$and',
+                        op: '$lte',
+                        field: field,
+                        value: new Date(event.max)
+                    };
+                    $this._currentFilters.max = event.max;
+                    $this._currentFilters.maxId = $this.addFilter(fDesc);
+
+                    bNeedRefresh = true;
                 }
-                if(min){
-                	var fDesc = {
-                		sourceId: context.source,
-                		type: '$and',
-                		op: '$gte',
-                		field: field,
-                		value: min
-                	};
-                	if(!$this.hasFilter(fDesc)){
-                		if($this._minFilter){
-                			$this.removeFilter($this._minFilter);
-                		}
-                		$this._minFilter = $this.addFilter(fDesc);
-                		bNeedRefresh = true;
-                	}
+                if($this._currentFilters.max && event.max === event.dataMax){   // remove filter
+                    $this.removeFilter($this._currentFilters.maxId);
+                    $this._currentFilters.max = null;
+                    $this._currentFilters.maxId = null;
+                    bNeedRefresh = true;
                 }
-                
-                if(!min && !max){
-                	if($this._maxFilter){
-	                    $this.removeFilter($this._maxFilter);
-	                    $this._maxFilter = undefined;
-	                    bNeedRefresh = true;
-                	}
-                	if($this._minFilter){
-	                    $this.removeFilter($this._minFilter);
-	                    $this._minFilter = undefined;
-	                    bNeedRefresh = true;
-                	}
-                }
-                
+
                 if(bNeedRefresh){
-                	$this.refreshAll();
+                    $this.refreshAll();
+
+                    var fixedColumns = $this.getContext().find('fixedColumns');
+                    if(fixedColumns.used()){
+                        $this._loadFixedColumnData(event.min, event.max);
+                    }
                 }
-            }, 500, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
+            }, 700, 'ColumnRangeSelector.xAxisFilterUpdate_' + this.containerId);
         },
 
-        _findNearest: function(a, x){
-            var first = 0,
-                last = a.length;
+        _loadFixedColumnData: function(min, max){
+            var columnCount = this.getContext().find('fixedColumns').value().get(2).value(),
+                field = this.getContext().find('source').value().get(0).binding()[0];
+            var colWidth = Math.floor((max - min) / 1000 / columnCount);
 
-            while(first < last){
-                var mid = ~~(first + (last - first) / 2);
+            var fixedColumnsSelect = {
+                dateIntervalOrder: {
+                    $dateIntervalOrder: {
+                        $field: field,
+                        $seconds: colWidth
+                    }
+                },
+                dateCount: {
+                    $count: 1
+                }
+            };
+            var fixedColumnsGroupBy = [
+                {
+                    $dateIntervalOrder: {
+                        $field: field,
+                        $seconds: colWidth
+                    }
+                }
+            ];
 
-                if (x <= a[mid])
-                    last = mid;
-                else
-                    first = mid + 1;
-            }
+            $this.chart.showLoading('Загрузка...');
+            $this.getContext().find('source').fetch({readAll: true, reset: true, select: fixedColumnsSelect, groupBy: fixedColumnsGroupBy}, function(queryResult){
+                if(!queryResult){
+                    $this.chart.hideLoading();
+                    return;
+                }
 
-            return a[last];
+                var data = [];
+
+                for(var i = 0; i < queryResult.length; i++){
+                    data.push({
+                        x: queryResult[i].dateIntervalOrder * colWidth * 1000,
+                        y: queryResult[i].dateCount
+                    });
+                }
+
+                data.sort(function(a, b){
+                    if(a.x < b.x) return -1;
+                    if(a.x > b.x) return 1;
+                    return 0;
+                });
+
+                $this.chart.series[0].setData(data);
+                $this.chart.hideLoading();
+            });
         }
 	}
 }

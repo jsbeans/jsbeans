@@ -5,8 +5,8 @@
 	           'JSB.Widgets.ComboBox',
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.ToolManager',
-	           'DataCube.Widgets.DataBindingSelector',
-	           'DataCube.Widgets.EmbeddedWidgetSelector'],
+	           'DataCube.Controls.DataBindingSelector',
+	           'DataCube.Controls.EmbeddedWidgetSelector'],
 	
 	$client: {
 		options: {
@@ -104,12 +104,13 @@
 				if(this.scheme.optional){
 					// show checkbox caption
 					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateGroupUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
-					JSB.deferUntil(function(){
-						header.find('> div.caption').jsb().setChecked(true);	
-						}, function(){
-						return header.find('> div.caption').jsb();
-					});
-
+					if(!JSB.isDefined(this.values.used) && this.scheme.optional == 'checked'){
+                        JSB.deferUntil(function(){
+                            header.find('> div.caption').jsb().setChecked(true);
+                            }, function(){
+                            return header.find('> div.caption').jsb();
+                        });
+                    }
 				} else {
 					// show simple caption
 					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
@@ -129,18 +130,22 @@
 						value: $this.values.binding,
 						wrapper: this.wrapper,
 						onChange: function(){
-							var binding = this.getDataScheme();
+						    var binding = this.getDataScheme();
+
+						    clearBinding($this.values);
+
 							if(!binding){
 								$this.values.binding = null;
 								$this.update();
 								return;
 							}
+
 							if(binding.source){
 								$this.values.binding = binding;
 							} else {
 								$this.values.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
 							}
-							 
+
 							fillGroup(binding);
 						}
 					});
@@ -217,7 +222,6 @@
 					$this.values.groups.splice(i, 0, gg);
 				}
 			}
-
 			
 			function fillGroupItems(groupIdx, binding, supply){
 				var ul = $this.$('<div class="items"></div>');
@@ -231,6 +235,15 @@
 				var groupValues = $this.values.groups[groupIdx];
 				
 				if($this.scheme.multiple){
+                    var handle = $this.$(`#dot
+                        <div class="sortableHandle">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    `);
+                    ul.append(handle);
+
 					var removeButton = new Button({
 						cssClass: 'roundButton btn10 btnDelete',
 						tooltip: 'Удалить запись',
@@ -278,11 +291,31 @@
 					}
 					addItem(item, groupValues.items[i]);
 				}
+			}
 
+			function clearBinding(values){
+			    if(values && values.groups && values.groups.length > 0){
+                    for(var i = 0; i < values.groups.length; i++){
+                        clearBinding(values.groups[i]);
+                    }
+                } else {
+                    if(values && values.items && values.items.length > 0){
+                        for(var i = 0; i < values.items.length; i++){
+                            clearBinding(values.items[i]);
+                        }
+                    } else {
+                        if(values && values.values && values.values.length > 0){
+                            for(var i = 0; i < values.values.length; i++){
+                                values.values[i].binding = null;
+                            }
+                        }
+                    }
+                }
 			}
 			
 			function fillGroup(childBinding){
 				$this.bodyElt.empty();
+
 				if(!$this.values.binding && $this.scheme.binding){
 					if(!childBinding || childBinding.source){
 						$this.values.binding = childBinding;
@@ -321,6 +354,7 @@
 			this.append(this.bodyElt);
 			if(this.scheme.multiple){
 				this.bodyElt.sortable({
+				    handle: '.sortableHandle',
 					update: function(evt, ui){
 						reorderValues();
 					}
@@ -470,6 +504,7 @@
 						
 						onChange: function(){
 							var binding = this.getDataScheme();
+
 							if(!binding){
 								valueDesc.binding = null;
 								valContainer.removeClass('isBound');

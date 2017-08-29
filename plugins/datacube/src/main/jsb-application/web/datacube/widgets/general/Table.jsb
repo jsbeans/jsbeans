@@ -151,7 +151,7 @@
 			editor: 'none'
 		},{
 			type: 'group',
-			name: 'Строки',
+			name: 'Источник',
 			binding: 'array',
 			key: 'rows',
 			items: [{
@@ -339,7 +339,7 @@
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
-		           'DataCube.Widgets.SortSelector'],
+		           'DataCube.Controls.SortSelector'],
 		
 		ready: false,
 		headerDesc: [],
@@ -954,6 +954,9 @@
 			if(!this.getContext().find('columns').used()){
 				return;
 			}
+			
+			$base();
+
 			// update col sizes
 			var colSizes = [];
 			var fixedSize = 0;

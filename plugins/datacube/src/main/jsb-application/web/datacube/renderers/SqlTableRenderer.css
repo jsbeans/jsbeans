@@ -1,6 +1,7 @@
 @CHARSET "UTF-8";
 
 .sqlTableRenderer {
+	position: relative;
 }
 
 .sqlTableRenderer > .icon {
@@ -16,5 +17,24 @@
 }
 
 .sqlTableRenderer > .title {
+	display: block;
 	padding-left: 26px;
+}
+
+.sqlTableRenderer.showSource > .title {
+	display: inline-block;
+	vertical-align: middle;
+	max-width: 60%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+
+.sqlTableRenderer.showSource > .leftParen,
+.sqlTableRenderer.showSource > .rightParen,
+.sqlTableRenderer.showSource > .sqlSourceRenderer {
+	display: inline-block;
+	vertical-align: middle;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }

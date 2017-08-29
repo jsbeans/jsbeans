@@ -200,7 +200,7 @@
             try{
                 if(this.it) this.it.close();
 
-                this.it = obj.cube.queryEngine.query(obj.query, obj.queryParams, obj.provider);
+                this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider);
                 this.counter = 0;
 
                 return this.loadMore(obj.id);

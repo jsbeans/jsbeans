@@ -43,7 +43,7 @@
                 $this.table.resize(function(){
                     JSB().defer(function(){
                         $this.handsontable.render();
-                    }, 300, 'handsontable.resize')
+                    }, 300, 'handsontable.resize' + $this.getId())
                 });
 
                 $this.options.isInit = true;

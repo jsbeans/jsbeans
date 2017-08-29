@@ -207,9 +207,11 @@
 			this.installUploadContainer(null);
 
 			$this.toolbar.getElement().resize(function(){
-				$this.tree.getElement().css({
-					top: $this.toolbar.getElement().outerHeight()
-				});
+				JSB.defer(function(){
+					$this.tree.getElement().css({
+						top: $this.toolbar.getElement().outerHeight()
+					});
+				}, 100, 'explorerToolbarResize' + $this.getId());
 			});
 
 			if(this.options.wmKey){
@@ -455,7 +457,7 @@
 								continue;
 							}
 							if(JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
-								if(obj.getEntry().getParent()){
+								if(obj.getEntry().getParentId()){
 									continue;	// node has a fixed parent - skipping
 								}
 							}
@@ -557,7 +559,7 @@
 				var node = sel[i].obj;
 				if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					var entry = node.getEntry();
-					if(entry.getParent()){
+					if(entry.getParentId()){
 						continue;
 					}
 				}

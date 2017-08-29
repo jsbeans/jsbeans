@@ -34,7 +34,7 @@
 
 ._jsb_dashboardContainer > ._jsb_phContainer > ._jsb_dashboardPlaceholder {
 	position: absolute;
-	/*display: none;*/
+	display: none;
 }
 
 ._jsb_dashboardContainer.dragging > ._jsb_phContainer {
@@ -43,7 +43,7 @@
 }
 
 ._jsb_dashboardContainer.dragging > ._jsb_phContainer > ._jsb_dashboardPlaceholder {
-	/*display: block;*/
+	display: block;
 }
 
 ._jsb_dashboardContainer.dragging > ._jsb_phContainer > ._jsb_dashboardPlaceholder.center {

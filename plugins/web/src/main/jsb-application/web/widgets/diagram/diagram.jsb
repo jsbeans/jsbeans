@@ -39,7 +39,8 @@
 			cellSize: 10,
 			autoLayout: true,
 			highlightSelecting: false,	// highlight elements while selecting
-			
+			background: null,
+
 			links: {
 				'_jsb_diagramUserWiringLink': {
 					
@@ -105,6 +106,11 @@
 			elt.prepend(self.toolContainer);
 
 			self.grid = self.$('<div class="_jsb_diagramGrid"></div>');
+			if(this.options.background){
+			    self.grid.css({
+			        'background': this.options.background
+			    });
+			}
 			self.grid.css({
 				'position': 'absolute'
 			});
@@ -961,6 +967,13 @@
 				}
 				lm.execute(manNodeMap[lman]);
 			}
+		},
+
+		getFieldSize: function(){
+		    return {
+		        x: this.grid.width(),
+		        y: this.grid.height()
+		    };
 		}
 	},
 	

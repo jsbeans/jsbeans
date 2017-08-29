@@ -70,6 +70,84 @@
                 }
             }
 		},
+		
+		executeUpdate: function(connection, sql, values, types){
+			if(JSB.isArray(sql)){
+				// batch processing
+				var batch = sql;
+				var lastSql = null;
+				var curStatement = null;
+				connection.setAutoCommit(false);
+				try {
+					for(var b = 0; b < batch.length; b++){
+						var bDesc = batch[b];
+						var sql = bDesc.sql;
+						var values = bDesc.values || null;
+					    var types = bDesc.types || [];
+					    if(sql !== lastSql){
+					    	// commit previous statement
+					    	if(curStatement){
+								curStatement.executeBatch();
+								if(!curStatement.isClosed()) {
+									curStatement.close();
+				                }
+							}
+					    	// create new statement
+					    	lastSql = sql;
+					    	curStatement = connection.prepareStatement(sql);
+					    }
+				    	for (var i = 0; i < values.length; i++) {
+				            var value = values[i];
+				            var type = types.length > i && types[i] || null;
+				            var type = this._getJDBCType(value, type);
+		                    this._setStatementArgument(curStatement, i + 1, value, type);
+				        }
+				    	curStatement.addBatch();
+					}
+					if(curStatement){
+						curStatement.executeBatch();
+						if(!curStatement.isClosed()) {
+							curStatement.close();
+		                }
+						curStatement = null;
+					}
+					connection.commit();
+				} finally {
+					if(curStatement && !curStatement.isClosed()){
+						curStatement.close();
+					}
+				}
+			} else {
+				var values = values || null;
+			    var types = types || [];
+			    connection.setAutoCommit(true);
+				if(JSB.isArray(values)){
+					var st = connection.prepareStatement(sql);
+					try {
+						for (var i = 0; i < values.length; i++) {
+				            var value = values[i];
+				            var type = types.length > i && types[i] || null;
+				            var type = this._getJDBCType(value, type);
+		                    this._setStatementArgument(st, i + 1, value, type);
+				        }
+						return st.executeUpdate();
+					} finally {
+						if (!st.isClosed()) {
+		                    st.close();
+		                }
+					}
+				} else {
+					var st = connection.createStatement();
+					try {
+						return st.executeUpdate(sql);
+					} finally {
+						if (!st.isClosed()) {
+		                    st.close();
+		                }
+					}
+				}
+			}
+		},
 
 		iteratedParametrizedQuery: function(connection, parametrizedSQL, getValue, getType, rowExtractor, onClose) {
 		    var getType = getType || function(){

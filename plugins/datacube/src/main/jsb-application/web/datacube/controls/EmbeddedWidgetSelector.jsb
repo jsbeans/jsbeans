@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.EmbeddedWidgetSelector',
+	$name: 'DataCube.Controls.EmbeddedWidgetSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.ToolManager', 'DataCube.Renderers.EmbededWidgetRenderer', 'JSB.Widgets.Button'],
 	

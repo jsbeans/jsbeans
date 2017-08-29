@@ -278,6 +278,12 @@
 				var cubeRect = $this.cubeNode.getRect();
 				sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
 			});
+		},
+		
+		removeSlice: function(slice, sliceNode){
+			this.cubeEntry.server().removeSlice(slice.getLocalId(), function(){
+				sliceNode.destroy();
+			});
 		}
 	}
 }

@@ -197,9 +197,11 @@
             		return;
             	}
 
-                if($this.highcharts){
-                    $this.highcharts.setSize(self.getElement().width(), $this.getElement().height(), false);
-                }
+            	JSB.defer(function(){
+                    if($this.highcharts){
+                        $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
+                    }
+                }, 300, 'hcResize' + $this.getId());
             });
 
             this.isInit = true;
@@ -210,6 +212,8 @@
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
+
+			$base();
 
             var data = [],
                 series = this.getContext().find('series').values(),
@@ -262,12 +266,12 @@
                         subtitle: {
                             text: this.getContext().find('subtitle').value()
                         },
+                        /*
                         plotOptions: {
                             treemap: {
                                 allowPointSelect: true,
                                 point: {
                                     events: {
-                                    /*
                                         select: function(evt) {
                                             this.update({
                                                 borderColor: 'green',
@@ -276,25 +280,24 @@
 
                                             debugger;
 
-                                            $this._addNewFilter(evt.target.series.index, evt.target.name);
+                                            // $this._addNewFilter(evt.target.series.index, evt.target.name);
                                         },
                                         unselect: function(evt) {
                                             this.update({
                                                 borderColor: '#E0E0E0',
                                                 borderWidth: 1
                                             });
-
                                             if(!$this._notNeedUnselect){
                                                 $this._notNeedUnselect = false;
                                                 $this.removeFilter($this._currentFilter);
                                                 $this.refreshAll();
                                             }
                                         }
-                                    */
                                     }
                                 }
                             }
                         },
+                        */
                         series: [{
                             type: 'treemap',
                             layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),

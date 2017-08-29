@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.FilterSelector',
+	$name: 'DataCube.Controls.FilterSelector',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.Button'],
 	
@@ -60,9 +60,49 @@
 			for(var i = 0; i < filterArr.length; i++){
 				(function(fId){
 					var fDesc = filters[fId];
+
 					var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
+
+					var type = '';
+					switch(fDesc.type){
+					    case '$and':
+                            type = 'И';
+					        break;
+                        case '$or':
+                            type = 'ИЛИ';
+                            break;
+					}
+                    fTag.append($this.$('<div class="type"></div>').text(type));
+
 					fTag.append($this.$('<div class="field"></div>').text(fDesc.field).attr('title', fDesc.field));
-					fTag.append('<div class="op">=</div>');
+					var opSign = ':';
+					switch(fDesc.op){
+					case '$eq':
+						opSign = '=';
+						break;
+					case '$lt':
+						opSign = '<';
+						break;
+					case '$lte':
+						opSign = '&le;';
+						break;
+					case '$gt':
+						opSign = '>';
+						break;
+					case '$gte':
+						opSign = '&ge;';
+						break;
+					case '$ne':
+						opSign = '&ne;';
+						break;
+					case '$like':
+					case '$ilike':
+						opSign = '&asymp;';
+						break;
+					default:
+						opSign = ':';
+					}
+					fTag.append('<div class="op">'+opSign+'</div>');
 
 					if(JSB().isDate(fDesc.value)){
 					    var v = fDesc.value.toDateString();
@@ -84,7 +124,6 @@
 							JSB.defer(function(){
 								$this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'removeFilter', fItemIds: [fId]});
 							});
-							
 						}
 					});
 					fTag.append(removeButton.getElement());

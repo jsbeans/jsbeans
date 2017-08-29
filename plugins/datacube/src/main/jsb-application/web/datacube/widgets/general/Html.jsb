@@ -295,6 +295,7 @@
 		},
 		
 		refresh: function(){
+			$base();
 			var recordContext = this.getContext().find('record');
 			if(recordContext.data()){
 				$this.draw();

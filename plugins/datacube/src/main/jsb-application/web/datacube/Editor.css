@@ -150,6 +150,6 @@
 }
 
 /*hide highcharts logo*/
-.highcharts-container > svg > text {
+.highcharts-container > svg > text.highcharts-credits {
     display: none !important;
 }

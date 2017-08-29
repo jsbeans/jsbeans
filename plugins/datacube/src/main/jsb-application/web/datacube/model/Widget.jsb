@@ -7,6 +7,7 @@
 	wType: null,
 	values: null,
 	sourceMap: null,
+	sources: {},
 	
 	getName: function(){
 		return this.name;
@@ -26,6 +27,10 @@
 	
 	getSourceMap: function(){
 		return this.sourceMap;
+	},
+	
+	getSources: function(){
+		return this.sources;
 	},
 
 	
@@ -53,6 +58,9 @@
 				this.sourceMap = this.generateInteroperationMap(values);
 				this.property('values', values);
 				this.property('sourceMap', this.sourceMap);
+				for(var sId in this.sourceMap){
+					this.sources[sId] = this.workspace.entry(sId);
+				}
 			} else {
 				if(this.property('dashboard')){
 					this.dashboard = this.workspace.entry(this.property('dashboard'));
@@ -68,6 +76,9 @@
 					this.sourceMap = this.property('sourceMap');
 				} else {
 					this.sourceMap = this.generateInteroperationMap(this.values);
+				}
+				for(var sId in this.sourceMap){
+					this.sources[sId] = this.workspace.entry(sId);
 				}
 			}
 		},
@@ -87,12 +98,16 @@
 		storeValues: function(name, values){
 			this.values = values;
 			this.sourceMap = this.generateInteroperationMap(values);
+			this.sources = {};
+			for(var sId in this.sourceMap){
+				this.sources[sId] = this.workspace.entry(sId);
+			}
 			this.property('values', values);
 			this.property('sourceMap', this.sourceMap);
 			this.setName(name);
 			this.getDashboard().store();
 			this.doSync();
-			return this.sourceMap;
+			return {sources: this.sources, sourceMap: this.sourceMap};
 		},
 		
 		getDataSchemeSource: function(ds){
