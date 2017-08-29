@@ -20,7 +20,7 @@
 		return this.name;
 	},
 	
-	getParent: function(){
+	getParentId: function(){
 		return this.parent;
 	},
 	
@@ -154,7 +154,10 @@
 		},
 		
 		getParent: function(){
-			return this.parent;
+			if(this.parent){
+				return this.workspace.entry(this.parent);
+			}
+			return null;
 		},
 
 		_locked: function(id, func) {

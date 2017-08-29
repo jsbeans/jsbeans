@@ -10,7 +10,6 @@
 	var elemets = $([]), filtered = null; 
 	var e = $.resize = $.extend($.resize,{});
 	var timeoutHandle;
-	var d = "resize-special-event";
 	e.delay = 50;
 	e.minDelay = 10;
 	e.maxDelay = 800;
@@ -22,8 +21,8 @@
 			}
 			var elt = $(this);
 			elemets = elemets.add(elt);
+			$.data(this, "resize-special-event", {w:elt.width(),h:elt.height()});
 			filtered = elemets.filter(':visible');
-			$.data(this, d, {w:elt.width(),h:elt.height()});
 			if(elemets.length === 1){
 				checkResize();
 			}
@@ -33,7 +32,7 @@
 			if(!e.throttleWindow && this.setTimeout){return false}
 			var elt = $(this);
 			elemets = elemets.not(elt);
-			elt.removeData(d);
+			elt.removeData("resize-special-event");
 			if(!elemets.length){
 				clearTimeout(timeoutHandle);
 			}
@@ -43,7 +42,7 @@
 			if(!e.throttleWindow && this.setTimeout){return false}
 			var n;
 			function m(s,o,p){
-				var q=$(this),r=$.data(this,d);
+				var q=$(this),r=$.data(this,"resize-special-event");
 				r.w=o!==c?o:q.width();
 				r.h=p!==c?p:q.height();
 				n.apply(this,arguments);
@@ -68,7 +67,11 @@
 			filtered.each(function(){
 				var elt = $(this);
 				visCount++;
-				var m = elt.width(),l = elt.height(), o = $.data(this,d);
+				var m = elt.width(),l = elt.height(), o = $.data(this,"resize-special-event");
+				if(!o){
+					o = {w:0,h:0};
+					$.data(this, "resize-special-event", o);
+				}
 				if(m!==o.w||l!==o.h){
 					trigCount++;
 					elt.trigger('resize',[o.w=m,o.h=l]);

@@ -7,14 +7,9 @@
 		           'JSB.Store.StoreManager', 
 		           'DataCube.MaterializationEngine',
 		           'JSB.Store.Sql.JDBC',
-		           'java:java.sql.JDBCType'],
+		           'java:java.sql.JDBCType',
+		           'JSB.Text.Translit'],
 		           
-		typeTranslationMap: {
-			'int': 'INTEGER',
-			'integer': 'INTEGER',
-			'string': ''
-		},
-		
 		$bootstrap: function(){
 			MaterializationEngine.registerMaterializer('DataCube.Model.SqlSource', this);
 		},
@@ -88,6 +83,42 @@
 			}
 			
 			return suggestedName;
+		},
+		
+		removeTable: function(tName){
+			if(!tName){
+				return;
+			}
+			var store = this.source.getStore();
+			var connection = store.getConnection(true).get();
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, tName, null);
+				if(!rs.next()){
+					return;
+				}
+				JDBC.executeUpdate(connection, 'drop table ' + tName);
+			} finally {
+				connection.close();
+			}
+		},
+		
+		renameTable: function(oldName, newName){
+			if(!oldName || !newName){
+				return;
+			}
+			var store = this.source.getStore();
+			var connection = store.getConnection(true).get();
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, oldName, null);
+				if(!rs.next()){
+					return;
+				}
+				JDBC.executeUpdate(connection, 'alter table ' + oldName + ' rename to ' + newName);
+			} finally {
+				connection.close();
+			}
 		},
 		
 		createIndex: function(tName, idxName, idxFields){

@@ -113,7 +113,7 @@
 			// read
 			var qDesc = cube.parametrizeQuery(params.query);
 			
-			var it = cube.queryEngine.query(qDesc.query, qDesc.params);
+			var it = cube.executeQuery(qDesc.query, qDesc.params);
 			if(!it){
 				throw new Error('Failed to execute query: ' + JSON.stringify(query));
 			}

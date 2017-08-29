@@ -143,10 +143,11 @@
             }
             // return providers of cube field or current provider for join fields
             var providers = [];
-            if (!this.cube.fields[field]) {
+            var managedFields = this.cube.getManagedFields();
+            if (!managedFields[field]) {
                 throw new Error('Cube has no field ' + field);
             }
-            var binding = this.cube.fields[field].binding;
+            var binding = managedFields[field].binding;
             for (var b in binding) {
                 if (onlySelf && this.providers.indexOf(binding[b].provider) != -1) {
                     return [binding[b].provider];
@@ -171,10 +172,11 @@
             // input exp - expression with cube fields
             // result - array with providers connected with current expression
             var providers = [];
+            var managedFields = this.cube.getManagedFields();
             if (JSB.isPlainObject(exp)) {
                 for(var p in exp) if (exp.hasOwnProperty(p)) {
                     if (!p.match(/^\$/) && byKeyField) {
-                        if (this.cube && !this.cube.fields[p]) {
+                        if (this.cube && !managedFields[p]) {
                             // may be alias or provider field
                             putValues(providers,
                                 this._extractUsedProviders(dcQuery, dcQuery.$select[p], false, true));
@@ -193,7 +195,7 @@
                 }
             } else if (JSB.isString(exp)) {
                 if (!exp.match(/^\$/) && byValueField) {
-                    if (this.cube && !this.cube.fields[exp]) {
+                    if (this.cube && !managedFields[exp]) {
                         // may be provider
                         for(var pp in this.providers) {
                             if (this.providers[pp].extractFields()[exp]) {

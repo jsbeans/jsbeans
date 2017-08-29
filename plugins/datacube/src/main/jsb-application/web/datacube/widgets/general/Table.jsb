@@ -493,7 +493,6 @@
 					
 					// proceed widgets
 					for(var j = 0; j < $this.colDesc.length; j++){
-					    debugger;
 						row[j].rowKey = key;
 						if($this.colDesc[j].widget){
 							var colName = $this.colDesc[j].title;

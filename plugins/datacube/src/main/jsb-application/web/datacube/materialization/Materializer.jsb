@@ -11,6 +11,8 @@
 		},
 		
 		createTable: function(tName, fields){},
+		removeTable: function(tName){},
+		renameTable: function(oldName, newName){},
 		
 		createIndex: function(tName, idxName, idxFields){},
 		
