@@ -75,7 +75,9 @@
                     for(var b in binding) {
                         if (this.providers.indexOf(binding[b].provider) != -1) {
                             var name = this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
-                            sql = sql.replace('$cube.' + this._quotedName(field), name);
+                            while(sql.indexOf('$cube.' + this._quotedName(field)) > 0) {
+                                sql = sql.replace('$cube.' + this._quotedName(field), name);
+                            }
                         }
                     }
                 }
@@ -135,7 +137,25 @@
                 return sql;
             }
 
-            function translateSubQuery(subQuery){
+            function translateDivzOperator(args) {
+                if (args.length != 2) throw new Error('Operator $divz must have two arguments');
+
+                var sql = '(case when ';
+                sql += $this._translateExpression(null, args[1], dcQuery);
+                sql += ' = 0 then 0 else ';
+                sql += $this._translateExpression(null, args[0], dcQuery) + '/' + $this._translateExpression(null, args[1], dcQuery);
+                sql += ' end)';
+                return sql;
+            }
+
+
+            function translateSubQuery(subQuery, parentFilters){
+                subQuery = JSB.merge(true, {}, subQuery);
+                if (parentFilters.$filter) {
+                    subQuery.$filter = subQuery.$filter || {};
+                    subQuery.$filter.$and = subQuery.$filter.$and || [];
+                    subQuery.$filter.$and.push(parentFilters.$filter)
+                }
                 return $this.translateQueryExpression(subQuery);
             }
 
@@ -153,6 +173,17 @@
                 return exp;
             }
 
+            if (JSB.isArray(exp)) {
+                var sql = '';
+                for (var i in exp) {
+                    if (i > 0) sql += ', ';
+                    sql += $this._translateExpression(null, exp[i], dcQuery);
+                }
+                sql += '';
+                return sql;
+
+            }
+
             if (!JSB.isPlainObject(exp)) {
                 throw new Error('Expected object expression not ' + exp);
             }
@@ -161,7 +192,10 @@
 
             if (exp.$select) {
                 // sub query expression
-                return '(' + translateSubQuery(exp) + ')';
+                return '(' + translateSubQuery(exp, {
+                    $filter: dcQuery.$filter,
+                    $postFilter: dcQuery.$postFilter
+                }) + ')';
             }
 
 		    if (exp.$sql) {
@@ -196,10 +230,18 @@
                     return translateNOperator(exp[op], '*');
                 case '$div':
                     return translateNOperator(exp[op], '/');
+                case '$divz':
+                    return translateDivzOperator(exp[op]);
+
             }
 
             // transform operators
             switch(op) {
+                case '$greatest':
+                    return 'GREATEST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                case '$least':
+                    return 'LEAST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+
                 case '$splitString':
                     return 'string_to_array(' + this._translateExpression(null, exp[op].$field, dcQuery) + ", '" + exp[op].$separator + "'" + ')';
                 case '$substring':
@@ -312,16 +354,20 @@
         },
 
         _translateTableName: function(tableName){
-            var names = tableName.split(".");
-            var name = '"';
-            for(var i in names) {
-                name += names[i];
-                if (i < names.length - 1) {
-                    name += '"."'
+            if (tableName.startsWith('"') && tableName.endsWith('"')) {
+                return tableName;
+            } else {
+                var names = tableName.split(".");
+                var name = '"';
+                for(var i in names) {
+                    name += names[i];
+                    if (i < names.length - 1) {
+                        name += '"."'
+                    }
                 }
+                name += '"';
+                return name;
             }
-            name += '"';
-            return name;
         },
 
         _quotedName: function(name, isAlias) {
@@ -401,7 +447,7 @@
                 var sql = '(';
                 var cnt = 0;
                 for (var i in exps) {
-                    if (cnt > 0) sql += ' ' + op + ' ';
+                    if (cnt++ > 0) sql += ' ' + op + ' ';
                     sql += translateMultiExpressions(exps[i]);
                 }
                 sql += ')';
