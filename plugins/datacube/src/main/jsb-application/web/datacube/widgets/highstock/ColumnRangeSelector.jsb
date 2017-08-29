@@ -255,7 +255,7 @@
         ]
     },
 	$client: {
-		$require: ['JQuery.UI.Loader', 'JSB.Crypt.MD5'],
+		$require: ['JQuery.UI.Loader'],
 		_currentFilters: {
 		    min: null,
 		    minId: null,
@@ -372,7 +372,7 @@
 
                 if(Object.keys(globalFilters).length === 0) globalFilters = null;
 
-                if(globalFilters && MD5.md5(globalFilters) === this._currentFilters.curFilterHash || !globalFilters && !this._currentFilters.curFilterHash){ // update data not require
+                if(globalFilters && this.createFilterHash(globalFilters) === this._currentFilters.curFilterHash || !globalFilters && !this._currentFilters.curFilterHash){ // update data not require
                     if(_bNeedExtremesUpdate){
                         this._filterChanged = true;
 
@@ -387,7 +387,7 @@
                     }
                     isReturn = true;
                 } else {
-                    this._currentFilters.curFilterHash = globalFilters ? MD5.md5(globalFilters) : undefined;
+                    this._currentFilters.curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
                 }
             }
 

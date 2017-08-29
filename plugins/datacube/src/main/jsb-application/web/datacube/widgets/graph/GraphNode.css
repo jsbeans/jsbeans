@@ -12,13 +12,6 @@
     position: absolute;
     left: 50%;
     top: 50%;
-    /*
-    width: 5px;
-    height: 5px;
-    border: 1px solid blue;
-    border-radius: 5px;
-    background: aquamarine;
-    */
 }
 
 .graphNode .caption{
