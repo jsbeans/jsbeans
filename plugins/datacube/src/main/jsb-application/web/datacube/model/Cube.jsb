@@ -123,10 +123,11 @@
 								table: snapshot.materialization.table,
 								lastUpdate: snapshot.materialization.lastUpdate,
 								dataProviderEntry: this.workspace.entry(snapshot.materialization.provider.entry),
-								fields: {}
+								fields: {},
+								indexes: snapshot.materialization.indexes || {}
 							};
 							if(!materialization.dataProviderEntry){
-								throw new Error('Missing materialized source');
+								throw new Error('Missing materialized source for cube: ' + $this.getName());
 							}
 							var pJsb = JSB.get(snapshot.materialization.provider.jsb);
 							if(!pJsb){
@@ -256,7 +257,8 @@
 						jsb: this.materialization.dataProvider.getJsb().$name,
 						entry: this.materialization.dataProviderEntry.getLocalId()
 					},
-					fields: []
+					fields: [],
+					indexes: this.materialization.indexes || {}
 				};
 				for(var fName in this.materialization.fields){
 					var fDesc = {
@@ -526,6 +528,7 @@
 				type: pType
 			});
 			this.fieldCount = Object.keys(this.fields).length;
+			this.removeMaterialization();
 			this.store();
 			this.doSync();
 			return this.fields[nameCandidate];
@@ -571,9 +574,19 @@
 			if(this.fields[n]){
 				return false;
 			}
+			
+			// update fields
 			this.fields[n] = this.fields[oldName];
 			delete this.fields[oldName];
 			this.fields[n].field = n;
+			
+			// update materialization
+			if(this.materialization && this.materialization.fields && this.materialization.fields[oldName]){
+				this.materialization.fields[n] = this.materialization.fields[oldName];
+				delete this.materialization.fields[oldName];
+				this.materialization.fields[n].field = n;
+			}
+			
 			this.store();
 			this.doSync();
 			return this.fields[n];
@@ -594,6 +607,10 @@
 			}
 			
 			this.fieldCount = Object.keys(this.fields).length;
+			
+			// remove materialization
+			this.removeMaterialization();
+			
 			this.store();
 			this.doSync();
 			return true;
@@ -657,6 +674,14 @@
 			return this.getFields();
 		},
 		
+		isMaterializing: function(){
+			return this.materializing;
+		},
+		
+		isMaterialized: function(){
+			return (this.materialization && Object.keys(this.materialization).length > 0 ? true: false);
+		},
+		
 		getMaterializationInfo: function(){
 			return {
 				materialization: this.materialization,
@@ -715,17 +740,9 @@
 					
 					
 					// create table
-					materializationDesc.table = $this.materializer.createTable(suggestedName, fields);
-/*					
-					// create default indexes
-					for(var fName in fields){
-						var indexDesc = {};
-						indexDesc[fName] = 1;
-						var idxName = 'idx_' + MD5.md5(fName);
-						$this.materializer.createIndex(materializationDesc.table, idxName, indexDesc);
-						materializationDesc.indexes[idxName] = true;
-					}
-*/					
+					var tableDesc = $this.materializer.createTable(suggestedName, fields);
+					materializationDesc.table = tableDesc.table;
+					
 					// transmit data
 					var iterator = $this.queryEngine.query({$select: {}}, {});
 					var batch = [];
@@ -744,18 +761,17 @@
 						if(!JSB.isObject(el)){
 							continue;
 						}
-						
-						// remove non cube field
-						var fieldsToRemove = [];
+
+						// translate data into new fields
+						var nEl = {};
 						for(var f in el){
 							if(!fields[f]){
-								fieldsToRemove.push(f);
+								continue;
 							}
+							nEl[tableDesc.fieldMap[f]] = el[f];
 						}
-						for(var j = 0; j < fieldsToRemove.length; j++){
-							delete el[fieldsToRemove[j]];
-						}
-						batch.push(el);
+						
+						batch.push(nEl);
 						
 						if(batch.length >= 100){
 							$this.materializer.insert(materializationDesc.table, batch);
@@ -825,33 +841,19 @@
 							type: $this.fields[fName].type,
 							binding: []
 						};
-						if(providerFields[fName]){
+						var pName = tableDesc.fieldMap[fName];
+						if(providerFields[pName]){
 							fDesc.binding = [{
 								provider: materializationDesc.dataProvider,
-								field: fName,
-								type: providerFields[fName]
+								field: pName,
+								type: providerFields[pName]
 							}];
 							continue;
 						} else {
-							var providerFieldName = null;
-							for(var pName in providerFields){
-								if(fName.indexOf(pName) == 0){
-									providerFieldName = pName;
-									break;
-								}
-							}
-							if(!providerFieldName){
-								throw new Error('Internal error: failed to find field: "' + fName + '" in materialized table');
-							}
-							
-							fDesc.binding = [{
-								provider: materializationDesc.dataProvider,
-								field: providerFieldName,
-								type: providerFields[providerFieldName]
-							}];
-							JSB.getLogger().warn('Materialized field "' + fName + '" has been truncated to "' + providerFieldName + '"');
+							throw new Error('Internal error: failed to find field: "' + fName + '" in materialized table');
 						}
 					}
+					$this.updateIndexes(materializationDesc);
 					materializationDesc.lastUpdate = Date.now();
 					var oldMaterialization = $this.materialization;
 					$this.materialization = materializationDesc;
@@ -917,6 +919,183 @@
 				JSB.getLocker().unlock('materialization_' + $this.getId());	
 				$this.store();
 				$this.doSync();
+			}
+		},
+		
+		updateIndexes: function(materialization){
+			var bLocked = false;
+			var bCreatedMaterializer = false;
+			var bChanged = false;
+			
+			if(!materialization){
+				JSB.getLocker().lock('materialization_' + $this.getId());
+				bLocked = true;
+				materialization = this.materialization;
+				$this.materializing = true;
+			}
+			
+			var matFields = materialization.fields;
+
+			function extractIndexesForSlice(slice){
+				var q = slice.getQuery();
+				
+				function parseObject(obj){
+					var indexMap = {};
+					if(!JSB.isObject(obj)){
+						return null;
+					}
+					
+					for(var fObj in obj){
+						if(fObj == '$groupBy'){
+							// parse groupBy
+							var groupByObj = obj[fObj];
+							if(!JSB.isArray(groupByObj)){
+								groupByObj = [groupByObj];
+							}
+							var fStr = '';
+							var indexDesc = {};
+							for(var i = 0; i < groupByObj.length; i++){
+								var f = groupByObj[i];
+								if(!matFields[f]){
+									continue;
+								}
+								if(fStr.length > 0){
+									fStr += '|';
+								}
+								fStr += f;
+								indexDesc[f] = true;
+							}
+							var idxName = 'idx_' + MD5.md5(fStr);
+							indexMap[idxName] = indexDesc;
+						} else if(fObj == '$filter') {
+							// parse filter
+							if(!JSB.isObject(obj[fObj])){
+								continue;
+							}
+							var fStr = '';
+							var indexDesc = {};
+							for(var f in obj[fObj]){
+								if(!matFields[f]){
+									continue;
+								}
+								if(fStr.length > 0){
+									fStr += '|';
+								}
+								fStr += f;
+								indexDesc[f] = true;
+							}
+							var idxName = 'idx_' + MD5.md5(fStr);
+							indexMap[idxName] = indexDesc;
+						} else if(JSB.isObject(obj[fObj]) && Object.keys(obj[fObj]).length > 0){
+							var sMap = parseObject(obj[fObj]);
+							if(sMap && Object.keys(sMap).length > 0){
+								JSB.merge(indexMap, sMap);
+							}
+						} else if(JSB.isArray(obj[fObj])){
+							for(var i = 0; i < obj[fObj].length; i++){
+								var sMap = parseObject(obj[fObj][i]);
+								if(sMap && Object.keys(sMap).length > 0){
+									JSB.merge(indexMap, sMap);
+								}
+							}
+						}
+					}
+
+					return indexMap;
+				}
+				
+				return parseObject(q);
+			}
+			
+			try {
+				var materializer = this.materializer;
+				if(!materializer){
+					var database = materialization.dataProviderEntry.getParent();
+					materializer = MaterializationEngine.createMaterializer(database);
+					bCreatedMaterializer = true;
+				}
+
+				$this.publish('DataCube.Model.Cube.status', {status: 'Обновление индексов материализации', success: true}, {session: true});
+				// iterate over slices
+				var cubeIdxMap = {};
+				for(var sId in this.slices){
+					var slice = this.slices[sId];
+					var indexes = extractIndexesForSlice(slice);
+					if(indexes && Object.keys(indexes).length > 0){
+						JSB.merge(cubeIdxMap, indexes);
+					}
+				}
+				// adding new indexes
+				var indexCount = Object.keys(cubeIdxMap).length;
+				var curIndexPos = 0;
+				var lastPcnt = -1;
+				for(var idxName in cubeIdxMap){
+					if(materialization.indexes && materialization.indexes[idxName]){
+						continue;
+					}
+					// translate index fields
+					var idxDesc = {};
+					for(var fName in cubeIdxMap[idxName]){
+						if(materialization.fields[fName] && materialization.fields[fName].binding && materialization.fields[fName].binding.length > 0){
+							var pField = materialization.fields[fName].binding[0].field;
+							idxDesc[pField] = cubeIdxMap[idxName][fName];
+						}
+					}
+					
+					if(Object.keys(idxDesc).length > 0){
+						try {
+							materializer.createIndex(materialization.table, idxName, idxDesc);
+							if(!materialization.indexes){
+								materialization.indexes = {};
+							}
+							materialization.indexes[idxName] = cubeIdxMap[idxName];
+							bChanged = true;
+						} catch(e){
+							JSB.getLogger().warn('Failed to create index ' + idxName + ' for ' + JSON.stringify(idxDesc));
+						}
+					}
+					curIndexPos++;
+					var pcnt = Math.floor(curIndexPos * 100 / indexCount);
+					if(lastPcnt != pcnt){
+						$this.publish('DataCube.Model.Cube.status', {status: 'Создание новых индексов: ' + pcnt + '%', success: true}, {session: true});
+						lastPcnt = pcnt;
+					}
+					
+				}
+				
+				// remove missing indexes
+				$this.publish('DataCube.Model.Cube.status', {status: 'Удаление старых индексов', success: true}, {session: true});
+				var idxToRemove = [];
+				if(materialization.indexes){
+					for(var idxName in materialization.indexes){
+						if(!cubeIdxMap[idxName]){
+							idxToRemove.push(idxName);
+						}
+					}
+				}
+				for(var i = 0; i < idxToRemove.length; i++){
+					var idxName = idxToRemove[i];
+					try {
+						materializer.removeIndex(materialization.table, idxName);
+						delete materialization.indexes[idxName];
+						bChanged = true;
+					}catch(e){
+						JSB.getLogger().warn('Failed to remove index ' + idxName + ' with ' + JSON.stringify(materialization.indexes[idxName]));
+					}
+				}
+			} finally {
+				if(bCreatedMaterializer){
+					materializer.destroy();
+				}
+				if(bLocked){
+					$this.materializing = false;
+					JSB.getLocker().unlock('materialization_' + $this.getId());
+					if(bChanged){
+						$this.store();
+						$this.doSync();
+					}
+					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+				}
 			}
 		},
 		

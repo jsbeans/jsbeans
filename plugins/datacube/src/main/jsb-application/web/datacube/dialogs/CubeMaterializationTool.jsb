@@ -190,7 +190,12 @@
 			});
 		},
 		
-		updateIndexes: function(){},
+		updateIndexes: function(){
+			var cube = this.data.data.cube;
+			cube.server().updateIndexes(function(){
+				$this.updatePanes();
+			});
+		},
 		
 		removeMaterialization: function(evt){
 			var cube = this.data.data.cube;

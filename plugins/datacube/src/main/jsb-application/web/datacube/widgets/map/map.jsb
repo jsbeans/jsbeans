@@ -484,7 +484,7 @@
             })
         },
 
-        refresh: function(){
+        refresh: function(opts){
             if(opts && this == opts.initiator) return;
 
             var context = this.getContext().find('source');
@@ -498,7 +498,7 @@
 
                 var autoSize = $this.getContext().find('autoSize').used();
 
-                var flag = context.fetch({readAll: true}, function(){
+                var flag = context.fetch({readAll: true, reset: true}, function(){
                     $this.getElement().loader('hide');
                     var data = [];
 

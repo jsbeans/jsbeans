@@ -15,6 +15,7 @@
 		renameTable: function(oldName, newName){},
 		
 		createIndex: function(tName, idxName, idxFields){},
+		removeIndex: function(tName, idxName){},
 		
 		insert: function(tName, obj){}
 	}

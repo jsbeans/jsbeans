@@ -43,8 +43,36 @@
 		},
 		
 		updateLayout: function(layout){
+			// check layout to be stored
+			function checkLayoutFailed(lEntry){
+				if(lEntry && lEntry.widgets){
+					for(var i = 0; i < lEntry.widgets.length; i++){
+						var wServerId = lEntry.widgets[i];
+						if(!$this.wrappers[wServerId]){
+							return wServerId;
+						}
+					}
+				} 
+				if(lEntry && lEntry.containers){
+					for(var i = 0; i < lEntry.containers.length; i++){
+						var failId = checkLayoutFailed(lEntry.containers[i]);
+						if(failId){
+							return failId;
+						}
+					}
+				}
+				
+				return false;
+			}
+			
+			var failId = checkLayoutFailed(layout);
+			if(failId){
+				JSB.getLogger().warn('Wrong layout: Unable to find widget entry for: ' + failId);
+				return;
+			}
+			
 			this.layout = layout;
-			JSB.getLogger().info('layout: ' + JSON.stringify(layout, null, 4));
+			JSB.getLogger().info('Layout saved: ' + JSON.stringify(layout, null, 4));
 			
 			this.store();
 			this.doSync();
@@ -66,6 +94,7 @@
 				throw new Error('Failed to find widget wrapper with id: ' + wwId);
 			}
 			delete this.wrappers[wwId];
+			this.fixupLayout();
 			this.widgetCount = Object.keys(this.wrappers).length;
 			var cEntry = this.removeChildEntry(wwId);
 			if(cEntry){
@@ -75,6 +104,8 @@
 			this.doSync();
 			return true;
 		},
+		
+		fixupLayout: function(){},
 		
 		store: function(){
 			var mtxName = 'store_' + this.getId();

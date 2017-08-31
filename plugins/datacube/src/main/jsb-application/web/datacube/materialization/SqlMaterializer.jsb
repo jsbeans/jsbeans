@@ -49,6 +49,8 @@
 		},
 		
 		createTable: function(cName, fields){
+			var sqlFields = {};
+			var fieldMap = {};
 			var store = this.source.getStore();
 			var connection = store.getConnection(true).get();
 			var suggestedName = cName;
@@ -65,24 +67,32 @@
 				}
 				
 				// create table with suggestedName
-				var sql = 'create table '+suggestedName+' (';
+				var sql = 'create table '+suggestedName+' ()';
+				JDBC.executeUpdate(connection, sql);
 				
 				var fNameArr = Object.keys(fields);
 				for(var i = 0; i < fNameArr.length; i++){
-					sql += '"' + fNameArr[i] + '" ' + this.translateType(fields[fNameArr[i]]);
-					if(i < fNameArr.length - 1){
-						sql += ', ';
+					sql = 'alter table ' + suggestedName + ' add column "' + fNameArr[i] + '" ' + this.translateType(fields[fNameArr[i]]);
+					JDBC.executeUpdate(connection, sql);
+					
+					// extract current field
+					var columns = databaseMetaData.getColumns(null, null, suggestedName, null);
+					while(columns.next()) {
+						var columnName = ''+columns.getString("COLUMN_NAME");
+						if(sqlFields[columnName]){
+							continue;
+						}
+						sqlFields[columnName] = true;
+						fieldMap[fNameArr[i]] = columnName;
+						break;
 					}
 				}
-				sql += ')';
-				
-				JDBC.executeUpdate(connection, sql);
 				
 			} finally {
 				connection.close();
 			}
 			
-			return suggestedName;
+			return {table: suggestedName, fieldMap: fieldMap};
 		},
 		
 		removeTable: function(tName){
@@ -128,7 +138,7 @@
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
 				if(rs.next()){
-					JDBC.executeUpdate(connection, 'drop index ' + tName + '.' + idxName);
+					JDBC.executeUpdate(connection, 'drop index ' + idxName);
 				}
 				
 				var sql = 'create index ' + idxName + ' on ' + tName + '(';
@@ -144,6 +154,20 @@
 			} finally {
 				connection.close();
 			}
+		},
+		
+		removeIndex: function(tName, idxName){
+			var store = this.source.getStore();
+			var connection = store.getConnection(true).get();
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, idxName, null);
+				if(rs.next()){
+					JDBC.executeUpdate(connection, 'drop index ' + idxName);
+				}
+			} finally {
+				connection.close();
+			}		
 		},
 		
 		insert: function(tName, objArr){
