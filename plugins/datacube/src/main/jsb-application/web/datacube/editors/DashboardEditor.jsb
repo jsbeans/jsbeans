@@ -105,6 +105,8 @@
 								if(wServerId && wWrappers[wServerId]){
 									var wClientId = wWrappers[wServerId].getId();
 									nWidgets.push(wClientId);
+								} else {
+									debugger;
 								}
 							}
 							lEntry.widgets = nWidgets;
