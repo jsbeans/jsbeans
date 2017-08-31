@@ -289,6 +289,8 @@
                 case '$array':
                 case '$flatArray':
                     return 'ARRAY_AGG(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                case '$expandArray':
+                    return 'UNNEST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
             }
 
             // global sub query operators
@@ -476,8 +478,8 @@
                             case '$and':
                                 sql += '(' + translateOpExpressions(exps[op], 'AND') + ')';
                                 break;
-                            case '$not':
-                                sql += ' NOT (' +translateExpressions(exps[op]) + ')';
+//                            case '$not':
+//                                sql += ' NOT (' +translateExpressions(exps[op]) + ')';
                                 break;
                             default:
                                 throw new Error('Unsupported operator ' + op);
