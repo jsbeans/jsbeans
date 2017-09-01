@@ -23,9 +23,18 @@
 	position: absolute;
     top: 16px;
     left: 0;
-	padding-left: 32px;
+    padding-left: 32px;
     font-size: 10px;
     color: #555;
+    padding-right: 44px;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.workspaceExplorerNode.cubeNode > .status.error {
+	color: #b14201;
 }
 
 .workspaceExplorerNode.cubeNode > .status > .item {

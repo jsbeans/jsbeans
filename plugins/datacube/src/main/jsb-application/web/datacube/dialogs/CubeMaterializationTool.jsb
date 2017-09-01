@@ -36,14 +36,14 @@
 
 				<div class="group materialized">
 					<div class="status">Материализация выполнена <span class="date"></span></div>
+					<div class="message"></div>
 				</div>
 				
 				<div class="group unmaterialized">
 					<div class="status">Выберите базу для сохранения</div>
 					<div jsb="DataCube.Controls.DatabaseSelector"
 						onchange="{{=this.callbackAttr(function(){ $this.updatePanes(); })}}"></div>
-					<p class="warning"><strong>Внимание!</strong> Процедура материализации может занять длительное время</p>
-
+					<div class="message"></div>
 				</div>
 				
 				<div class="group materializing">
@@ -63,6 +63,7 @@
 						jsb="JSB.Widgets.Button" 
 						class="roundButton btnRefresh btn16" 
 						caption="Обновить материализацию"
+						enabled="false"
 						onclick="{{=this.callbackAttr(function(evt){ $this.updateMaterialization(); })}}" >
 					</div>
 
@@ -102,7 +103,7 @@
 				if(sender != cube){
 					return;
 				}
-				$this.updatePanes(params.status);
+				$this.updatePanes(params.status, params.success != true);
 			});
 		},
 		
@@ -115,7 +116,7 @@
 			});
 		},
 		
-		updatePanes: function(msg){
+		updatePanes: function(msg, bFail){
 			var cube = this.data.data.cube;
 			cube.server().getMaterializationInfo(function(mInfo){
 				if(mInfo && Object.keys(mInfo.materialization).length > 0){
@@ -147,6 +148,7 @@
 				if(mInfo && mInfo.materializing){
 					$this.find('.materializing').removeClass('hidden');
 					$this.find('.unmaterialized').addClass('hidden');
+					$this.find('.materialized').addClass('hidden');
 					
 					$this.find('.btnStart').addClass('hidden');
 					$this.find('.btnRefresh').addClass('hidden');
@@ -155,14 +157,24 @@
 					
 					$this.find('.btnStop').removeClass('hidden');
 					
-					if(msg){
-						$this.find('.materializing > .message').text(msg);
-					}
 				} else {
 					$this.find('.materializing').addClass('hidden');
 					
 					$this.find('.btnStop').addClass('hidden');
 				}
+				
+				var msgElt = $this.find('.group > .message');
+				if(msg){
+					msgElt.text(msg);
+					if(bFail){
+						msgElt.addClass('error');
+					} else {
+						msgElt.removeClass('error');
+					}
+				} else {
+					msgElt.empty();
+				}
+
 
 			});
 			

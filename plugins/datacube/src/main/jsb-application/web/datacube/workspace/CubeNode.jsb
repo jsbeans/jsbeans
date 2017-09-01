@@ -21,17 +21,23 @@
 				if(sender != $this.getEntry()){
 					return;
 				}
-				$this.update(params.status);
+				$this.update(params.status, params.success !== true);
 			});
 			
 			this.update();
 		},
 		
-		update: function(status){
+		update: function(status, bFail){
 			var statusElt = this.find('.status');
 			statusElt.empty();
+			if(bFail){
+				statusElt.addClass('error');
+			} else {
+				statusElt.removeClass('error');
+			}
 			if(status){
 				statusElt.append(status);
+				statusElt.attr('title', status);
 			} else {
 				statusElt.append(`#dot
 					<div class="item sources">Источников: <span class="count">{{=$this.getEntry().getSourceCount()}}</span>; </div>

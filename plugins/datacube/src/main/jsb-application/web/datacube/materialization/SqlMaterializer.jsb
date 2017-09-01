@@ -8,6 +8,7 @@
 		           'DataCube.MaterializationEngine',
 		           'JSB.Store.Sql.JDBC',
 		           'java:java.sql.JDBCType',
+		           'java:java.sql.Types',
 		           'JSB.Text.Translit'],
 		           
 		$bootstrap: function(){
@@ -18,28 +19,82 @@
 			$base(engine, source);
 		},
 		
-		translateType: function(jsonType){
-			var sqlType = jsonType;
-			switch(jsonType){
+		translateType: function(jsonType, typeMap){
+			var sqlType = jsonType.toLowerCase();
+			switch(sqlType){
 			case 'int':
 			case 'integer':
-				sqlType = JDBCType.INTEGER.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.INTEGER, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DECIMAL, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.BIGINT, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.BIGINT, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.REAL, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.FLOAT, typeMap);
+				}
 				break;
 			case 'boolean':
-				sqlType = JDBCType.BOOLEAN.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.BOOLEAN, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.BIT, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.INTEGER, typeMap);
+				}
 				break;
+			case 'nvarchar':
+			case 'varchar':
 			case 'string':
-				sqlType = JDBCType.VARCHAR.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.VARCHAR, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.NVARCHAR, typeMap);
+				}
 				break;
 			case 'float':
+				sqlType = JDBC.getVendorTypeForSqlType(Types.FLOAT, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.REAL, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
+				}
+
+				break;
 			case 'double':
-				sqlType = JDBCType.DOUBLE.getName();
+			case 'number':
+				sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
+				}
 				break;
 			case 'date':
 			case 'time':
 			case 'datetime':
 			case 'timestamp':
-				sqlType = JDBCType.TIMESTAMP.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.TIMESTAMP, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DATE, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.TIME, typeMap);
+				}
 				break;
 			case 'array':
 				sqlType = JDBCType.ARRAY.getName();
@@ -53,6 +108,7 @@
 			var fieldMap = {};
 			var store = this.source.getStore();
 			var connection = store.getConnection(true).get();
+			var typeMap = JDBC.getSupportedTypeMap(connection);
 			var suggestedName = cName;
 			try {
 				var databaseMetaData = connection.getMetaData();
@@ -72,7 +128,7 @@
 				
 				var fNameArr = Object.keys(fields);
 				for(var i = 0; i < fNameArr.length; i++){
-					sql = 'alter table ' + suggestedName + ' add column "' + fNameArr[i] + '" ' + this.translateType(fields[fNameArr[i]]);
+					sql = 'alter table ' + suggestedName + ' add column "c' + i + '_' + fNameArr[i] + '" ' + this.translateType(fields[fNameArr[i]], typeMap);
 					JDBC.executeUpdate(connection, sql);
 					
 					// extract current field
@@ -88,6 +144,12 @@
 					}
 				}
 				
+			} catch(e){
+				try {
+					JDBC.executeUpdate(connection, 'drop table ' + suggestedName);
+				} catch(ex) {
+				}
+				throw e;
 			} finally {
 				connection.close();
 			}
@@ -182,21 +244,31 @@
 					var obj = objArr[b];
 					var fNameArr = Object.keys(obj);
 					var sql = 'insert into ' + tName + '(';
+					var bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
-						sql += '"' + fNameArr[i] + '"';
-						if(i < fNameArr.length - 1){
+						if(JSB.isNull(obj[fNameArr[i]])){
+							continue;
+						}
+						if(!bFirst){
 							sql += ', ';
 						}
+						sql += '"' + fNameArr[i] + '"';
+						bFirst = false;
 					}
 					sql += ') values(';
 					var values = [];
+					bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
 						var fVal = obj[fNameArr[i]];
-						values.push(fVal);
-						sql += '?'
-						if(i < fNameArr.length - 1){
+						if(JSB.isNull(fVal)){
+							continue;
+						}
+						if(!bFirst){
 							sql += ', ';
 						}
+						sql += '?'
+						values.push(fVal);
+						bFirst = false;
 					}
 					sql += ')';
 					batch.push({

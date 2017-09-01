@@ -861,12 +861,17 @@
 					if(oldMaterialization && oldMaterialization.dataProvider){
 						oldMaterialization.dataProvider.destroy();
 					}
-					
 					$this.materializing = false;
 					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
 					
 				} catch(e){
-					
+					if(materializationDesc.table){
+						try {
+							$this.materializer.removeTable(materializationDesc.table);	
+						}catch(e){}
+					}
+					$this.materializing = false;
+					$this.publish('DataCube.Model.Cube.status', {status: e.message, success: false}, {session: true});
 					throw e;
 				} finally {
 					$this.materializer.destroy();
