@@ -14,11 +14,11 @@
                 <div class="connector bottom"></div>
             `);
 
-			if(this.entry.widget){
+			if(this.entry.cls){
 			    this.addClass('widgetMode');
-			    this.widget = new this.entry.widget.wClass();
+			    this.widget = new this.entry.cls();
 			    this.append(this.widget.getElement());
-			    this.widget.setWrapper(this.entry.widget.wrapper,  JSB().clone(this.entry.widget.value.unwrap()));
+			    this.widget.setWrapper(this.entry.wrapper,  JSB().clone(this.entry.value.unwrap()));
 			    this.widget.refresh();
 			} else if(this.entry.header){
 			    this.addClass('simpleMode');

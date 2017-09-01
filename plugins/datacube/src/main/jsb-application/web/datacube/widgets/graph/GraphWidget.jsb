@@ -72,28 +72,42 @@
             binding: 'array',
             items: [
             {
-               name: 'Список связей',
-               type: 'item',
-               key: 'linkList',
-               binding: 'field',
-               itemType: 'string',
-               itemValue: '$field',
-               description: 'Массив объектов формата { source: "source_node_id", target: "target_node_id" }'
-            },
-            {
                 type: 'group',
                 name: 'Группы',
                 key: 'graphGroups',
                 multiple: true,
                 items: [
                 {
-                   name: 'Список вершин',
+                   name: 'Начальный элемент',
                    type: 'item',
-                   key: 'nodeList',
+                   key: 'sourceElement',
                    binding: 'field',
                    itemType: 'string',
                    itemValue: '$field',
-                   description: 'Массив уникальных идентефикаторов вершин'
+                },
+                {
+                   name: 'Конечный элемент',
+                   type: 'item',
+                   key: 'targetElement',
+                   binding: 'field',
+                   itemType: 'string',
+                   itemValue: '$field',
+                }
+                ]
+            },
+            {
+                name: 'Способы отображения',
+                type: 'group',
+                key: 'viewTypes',
+                multiple: 'true',
+                items:[
+                {
+                    name: 'Элемент',
+                    type: 'item',
+                    key: 'element',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
                 },
                 {
                    name: 'Способ отображения ячейки',
@@ -126,26 +140,35 @@
                        ]
                    }
                    ]
-                },
-                {
-                    type: 'item',
-                    name: 'Высота ячейки',
-                    key: 'itemHeight',
-                    binding: 'field',
-                    itemType: 'string',
-                    itemValue: '50',
-                    description: 'Высота объекта вершины'
-                },
-                {
-                    type: 'item',
-                    name: 'Ширина ячейки',
-                    key: 'itemWidth',
-                    binding: 'field',
-                    itemType: 'string',
-                    itemValue: '50',
-                    description: 'Ширина объекта вершины'
                 }
                 ]
+            },
+            {
+                type: 'item',
+                name: 'Максимальное число вершин',
+                key: 'maxNodes',
+                binding: 'field',
+                itemType: 'string',
+                itemValue: '100',
+                description: 'Максимальное отображаемое число вершин'
+            },
+            {
+                type: 'item',
+                name: 'Высота ячейки',
+                key: 'itemHeight',
+                binding: 'field',
+                itemType: 'string',
+                itemValue: '50',
+                description: 'Высота объекта вершины'
+            },
+            {
+                type: 'item',
+                name: 'Ширина ячейки',
+                key: 'itemWidth',
+                binding: 'field',
+                itemType: 'string',
+                itemValue: '50',
+                description: 'Ширина объекта вершины'
             }
             ]
         }
@@ -216,24 +239,40 @@
 
             this.getElement().loader();
 
-            var graphGroups = this.getContext().find('graphGroups').values(),
-                viewList = [];
-            for(var i = 0; i < graphGroups.length; i++){
-                var viewSelector = graphGroups[i].find('view').value();
+            var viewTypes = this.getContext().find('viewTypes').values(),
+                viewSelector = this.getContext().find('view').value(),
+                viewList = [],
+                bindingMap = {};
+
+            for(var i = 0; i < viewTypes.length; i++){
+                var viewSelector = viewTypes[i].find('view').value(),
+                    binding = viewTypes[i].find('element').binding();
+
+                    if(bindingMap[binding]) continue;
 
                 if(viewSelector.key() === 'widgetGroup'){
-                    var widgetSelector = viewSelector.find('widget');
+                    var jsb = viewSelector.find('widget').unwrap().widget.jsb;
 
                     viewList.push({
-                        jsb: widgetSelector.unwrap().widget.jsb,
+                        binding: binding,
+                        jsb: jsb,
                         wrapper: this.getWrapper(),
+                        value: viewSelector.value()
                     });
                 } else {
                     viewList.push({
-                        header: 'header'
+                        binding: binding,
+                        header: viewSelector.value()
                     });
                 }
+
+                bindingMap[binding] = true;
             }
+
+            var viewListObject = viewList.reduce(function(obj, el){
+                obj[el.binding] = el;
+                return obj;
+            }, {});
 
             JSB.chain(viewList, function(d, c){
                 if(!d.jsb){
@@ -242,70 +281,214 @@
                     JSB.lookup(d.jsb, function(cls){
                         d.cls = cls;
                         c();
-                    })
+                    });
                 }
             }, function(){
-                $this.fetch(viewList);
+                $this.fetch(viewListObject);
             });
         },
 
         fetch: function(viewList){
+            this.diagram.clear();
+
             var source = this.getContext().find('source'),
                 graphGroups = this.getContext().find('graphGroups').values(),
-                nodeList = this.getContext().find('nodeList'),
-                linkList = this.getContext().find('linkList');
+                maxNodes = this.getContext().find('maxNodes').value(),
+                itemWidth = this.getContext().find('itemWidth').value(),
+                itemHeight = this.getContext().find('itemHeight').value(),
+                count = 0,
+                links = [],
+                nodesMap = {};
 
-            source.fetch({readAll: true, reset: true}, function(){
-                var links = [],
-                    nodes = [];
+            function innerFetch(reset){
+                source.fetch({batchSize: 10, reset: reset}, function(){
+                    while(source.next() && count <= maxNodes){
+                        for(var i = 0; i < graphGroups.length; i++){
+                            var entry,
+                                binding = graphGroups[i].find('element').binding(),
+                                sourceElement = graphGroups[i].find('sourceElement'),
+                                targetElement = graphGroups[i].find('targetElement'),
+                                se = sourceElement.value(),
+                                te = targetElement.value();
 
-                while(source.next()){
-                    for(var i = 0; i < graphGroups.length; i++){
-                        var entry,
-                            viewSelector = graphGroups[i].find('view').value();
+                            if(!nodesMap[se]){
+                                var seEntry = JSB().clone(viewList[sourceElement.binding()]);
 
-                        if(viewList[i].header){
-                            entry = {
-                                header: viewSelector.value().value()
+                                if(seEntry){
+                                    if(seEntry.value){
+                                        seEntry.value = seEntry.value.value();
+                                    }
+                                    if(seEntry.header){
+                                        seEntry.header = seEntry.header.value();
+                                    }
+                                } else {
+                                    seEntry.header = se;
+                                }
+
+                                nodesMap[se] = seEntry;
+
+                                var node = $this.diagram.createNode('graphNode', {entry: seEntry});
+                                if(itemWidth && itemHeight){
+                                    node.getElement().width(itemWidth);
+                                    node.getElement().height(itemHeight);
+                                }
+                                $this._nodeList[se] = node;
                             }
-                        } else {
-                            entry = {
-                                widget: {
-                                    wClass: viewList[i].cls,
-                                    wrapper: viewList[i].wrapper,
-                                    value: viewSelector.value().value()
+
+                            if(!nodesMap[te]){
+                                var teEntry = JSB().clone(viewList[targetElement.binding()]);
+
+                                if(teEntry){
+                                    if(teEntry.value){
+                                        teEntry.value = teEntry.value.value();
+                                    }
+                                    if(teEntry.header){
+                                        teEntry.header = teEntry.header.value();
+                                    }
+                                } else {
+                                    teEntry.header = te;
+                                }
+
+                                nodesMap[te] = teEntry;
+
+                                var node = $this.diagram.createNode('graphNode', {entry: teEntry});
+                                if(itemWidth && itemHeight){
+                                    node.getElement().width(itemWidth);
+                                    node.getElement().height(itemHeight);
+                                }
+                                $this._nodeList[te] = node;
+                            }
+
+                            var flag = true,
+                                curLink = {
+                                    source: se,
+                                    target: te
+                                };
+                            for(var j = 0; j < links.length; j++){
+                                if(links[j].source === curLink.source && links[j].target === curLink.target || links[j].target === curLink.source && links[j].source === curLink.target){
+                                    flag = false;
+                                    break;
                                 }
                             }
+                            if(flag){
+                                links.push(curLink);
+                            }
                         }
 
-                        var nl = nodeList.value();
-                        if(JSB().isArray(nl)){
-                            nodes = nl.reduce(function(arr, el){
-                                arr.push({
-                                    id: el,
-                                    entry: entry
-                                });
-                                return arr;
-                            }, []);
-                        } else {
+                        count = Object.keys(nodesMap).length;
+                    }
+
+                    if(count >= maxNodes){
+                        var nodes = [];
+                        for(var i in nodesMap){
                             nodes.push({
-                                id: nodeList.value(),
-                                entry: entry
+                                id: i,
+                                entry: nodesMap[i]
                             });
                         }
-                    }
 
-                    var flag = true,
-                        curLink = linkList.value();
-                    for(var i = 0; i < links.length; i++){
-                        if(links[i].source === curLink.source && links[i].target === curLink.target || links[i].target === curLink.source && links[i].source === curLink.target){
-                            flag = false;
-                            break;
+                        if($this._isInit){
+                            $this.createGraph(nodes, links);
+                        } else {
+                            JSB().deferUntil(function(){
+                                $this.createGraph(nodes, links);
+                            }, function(){
+                                return $this._isInit;
+                            })
+                        }
+                    } else {
+                        innerFetch(false);
+                    }
+                });
+            }
+
+            innerFetch(true);
+
+            /*
+            source.fetch({readAll: true, reset: true}, function(){
+                while(source.next() && count <= maxNodes){
+                    for(var i = 0; i < graphGroups.length; i++){
+                        var entry,
+                            binding = graphGroups[i].find('element').binding(),
+                            sourceElement = graphGroups[i].find('sourceElement'),
+                            targetElement = graphGroups[i].find('targetElement'),
+                            se = sourceElement.value(),
+                            te = targetElement.value();
+
+                        if(!nodesMap[se]){
+                            var seEntry = JSB().clone(viewList[sourceElement.binding()]);
+
+                            if(seEntry){
+                                if(seEntry.value){
+                                    seEntry.value = seEntry.value.value();
+                                }
+                                if(seEntry.header){
+                                    seEntry.header = seEntry.header.value();
+                                }
+                            } else {
+                                seEntry.header = se;
+                            }
+
+                            nodesMap[se] = seEntry;
+
+                            var node = $this.diagram.createNode('graphNode', {entry: seEntry});
+                            if(itemWidth && itemHeight){
+                                node.getElement().width(itemWidth);
+                                node.getElement().height(itemHeight);
+                            }
+                            $this._nodeList[se] = node;
+                        }
+
+                        if(!nodesMap[te]){
+                            var teEntry = JSB().clone(viewList[targetElement.binding()]);
+
+                            if(teEntry){
+                                if(teEntry.value){
+                                    teEntry.value = teEntry.value.value();
+                                }
+                                if(teEntry.header){
+                                    teEntry.header = teEntry.header.value();
+                                }
+                            } else {
+                                teEntry.header = te;
+                            }
+
+                            nodesMap[te] = teEntry;
+
+                            var node = $this.diagram.createNode('graphNode', {entry: teEntry});
+                            if(itemWidth && itemHeight){
+                                node.getElement().width(itemWidth);
+                                node.getElement().height(itemHeight);
+                            }
+                            $this._nodeList[te] = node;
+                        }
+
+                        var flag = true,
+                            curLink = {
+                                source: se,
+                                target: te
+                            };
+                        for(var j = 0; j < links.length; j++){
+                            if(links[j].source === curLink.source && links[j].target === curLink.target || links[j].target === curLink.source && links[j].source === curLink.target){
+                                flag = false;
+                                break;
+                            }
+                        }
+                        if(flag){
+                            links.push(curLink);
                         }
                     }
-                    if(flag){
-                        links.push(curLink);
-                    }
+
+                    count = Object.keys(nodesMap).length;
+                }
+
+                // nodeMap to node
+                var nodes = [];
+                for(var i in nodesMap){
+                    nodes.push({
+                        id: i,
+                        entry: nodesMap[i]
+                    });
                 }
 
                 if($this._isInit){
@@ -318,33 +501,29 @@
                     })
                 }
             });
+            */
         },
 
         createGraph: function(nodes, links){
             try{
-                $this.diagram.clear();
-
                 var itemWidth = this.getContext().find('itemWidth').value(),
                     itemHeight = this.getContext().find('itemHeight').value();
 
                 var simulation = d3.forceSimulation()
+                    .alphaMin(0.1)
                     .force("link", d3.forceLink().id(function(d) { return d.id }))
                     .force("collide",d3.forceCollide( function(d){
-                        var r = Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2));
+                        if(!itemWidth){
+                            itemWidth = $this._nodeList[d.id].getElement().width();
+                        }
+                        if(!itemHeight){
+                            itemHeight = $this._nodeList[d.id].getElement().height();
+                        }
+
+                        var r = (Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2))) / 3;
                         return r;
                     }).iterations(1))
-                    .force("charge", d3.forceManyBody())
-                    .force("y", d3.forceY(0))
-                    .force("x", d3.forceX(0));
-
-                nodes.forEach(function(d){
-                    var node = $this.diagram.createNode('graphNode', {entry: d.entry});
-                    if(itemWidth && itemHeight){
-                        node.getElement().width(itemWidth);
-                        node.getElement().height(itemHeight);
-                    }
-                    $this._nodeList[d.id] = node;
-                });
+                    .force("charge", d3.forceManyBody());
 
                 links.forEach(function(d){
                     var link = $this.diagram.createLink('bind');
@@ -352,15 +531,19 @@
                     link.setTarget($this._nodeList[d.target].connector);
                 });
 
-                function ticked() {
-                    nodes.forEach(function(el){
-                        $this._nodeList[el.id].setPosition(el.x, el.y);
-                    });
-                }
+                // var tickCount = 0;
 
                 simulation.nodes(nodes)
-                          .on("tick", ticked)
+                          /*
+                          .on("tick", function(){
+                            console.log('tick_' + tickCount + ' ' + new Date().toString());
+                            tickCount++;
+                          })
+                          */
                           .on("end", function(){
+                            nodes.forEach(function(el){
+                                $this._nodeList[el.id].setPosition(el.x, el.y);
+                            });
                             $this.getElement().loader('hide');
                           });
 
