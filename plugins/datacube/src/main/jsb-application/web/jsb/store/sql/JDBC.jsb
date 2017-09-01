@@ -37,6 +37,7 @@
                 for(var i = 1; i < count + 1; i++) {
                     var name = rs.getMetaData().getColumnLabel(i) || rs.getMetaData().getColumnName(i);
                     json[''+name] = this._getColumnValue(rs, i);
+                    
                 }
 		        return json;
 		    }
@@ -231,6 +232,31 @@
 		},
 
 		// createStatement, prepareStatement, query, execute, call
+		
+		getSupportedTypeMap: function(connection){
+			var databaseMetaData = connection.getMetaData();
+			var rs = databaseMetaData.getTypeInfo();
+			var typeMap = {};
+			while(rs.next()){
+				var typeName = '' + rs.getString('TYPE_NAME');
+				var typeIdx = 0 + rs.getInt('DATA_TYPE');
+				var precision = 0 + rs.getInt('PRECISION');
+				typeMap['' + typeIdx] = {
+					name: typeName,
+					sqlType: typeIdx,
+					precision: precision
+				};
+			}
+			
+			return typeMap;
+		},
+		
+		getVendorTypeForSqlType: function(sqlType, typeMap){
+			if(typeMap['' + sqlType]){
+				return typeMap['' + sqlType].name;
+			}
+			return null;
+		},
 
         _getJDBCType: function (value, type) {
             var jdbcType = type || null;
@@ -308,6 +334,10 @@
         },
 
         _getColumnValue: function(resultSet, i){
+        	var valObj = resultSet.getObject(i);
+        	if(valObj == null){
+        		return null;
+        	}
             var type = 0+resultSet.getMetaData().getColumnType(i);
             switch (type) {
                 case 0+Types.BIT:

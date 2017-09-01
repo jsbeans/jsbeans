@@ -137,8 +137,10 @@
 			});
 
             this.$(window).resize(function(){
-                if($this.params)
-                    $this.updatePosition();
+                if($this.params && $this.isVisible()){
+                	$this.updatePosition();
+                }
+                    
             });
 /*
             if(this.options.draggable){

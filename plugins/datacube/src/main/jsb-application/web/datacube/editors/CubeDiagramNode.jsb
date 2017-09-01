@@ -105,6 +105,12 @@
 				msgElt.empty();
 				if(params.status){
 					msgElt.append(params.status);
+					msgElt.attr('title', params.status);
+				}
+				if(params.success){
+					msgElt.removeClass('error');
+				} else {
+					msgElt.addClass('error');
 				}
 				$this.updateIndicators();
 			});
