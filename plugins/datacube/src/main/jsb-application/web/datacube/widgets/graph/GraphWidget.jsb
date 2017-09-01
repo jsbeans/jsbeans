@@ -73,7 +73,7 @@
             items: [
             {
                 type: 'group',
-                name: 'Группы',
+                name: 'Связи',
                 key: 'graphGroups',
                 multiple: true,
                 items: [
@@ -106,6 +106,7 @@
                     type: 'item',
                     key: 'element',
                     binding: 'field',
+                    multiple: 'true',
                     itemType: 'string',
                     itemValue: '$field',
                 },
@@ -140,6 +141,22 @@
                        ]
                    }
                    ]
+                },
+                {
+                    name: 'Имя',
+                    type: 'item',
+                    key: 'name',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
+                },
+                {
+                    name: 'Всплывающая подпись',
+                    type: 'item',
+                    key: 'caption',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field'
                 }
                 ]
             },
@@ -175,9 +192,10 @@
         ]
     },
 	$client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Widgets.Diagram'],
+        $require: ['JQuery.UI.Loader', 'JSB.Widgets.Diagram', 'JSB.Widgets.CheckBox'],
 
         _nodeList: {},
+        _namesList: {},
 
         $constructor: function(opts){
             $base(opts);
@@ -191,6 +209,7 @@
             this.diagram = new Diagram({
                 minZoom: 0.25,
                 highlightSelecting: false,
+                autoLayout: false,
                 nodes: {
                     graphNode: {
                         jsb: 'DataCube.GraphWidget.GraphNode',
@@ -246,9 +265,14 @@
 
             for(var i = 0; i < viewTypes.length; i++){
                 var viewSelector = viewTypes[i].find('view').value(),
-                    binding = viewTypes[i].find('element').binding();
+                    binding = viewTypes[i].find('element').binding(),
+                    caption = viewTypes[i].find('caption'),
+                    name = viewTypes[i].find('name').value();
 
                     if(bindingMap[binding]) continue;
+
+                if(!name) name = binding[0];
+                var nClass = 'nodeType_' + JSB().generateUid();
 
                 if(viewSelector.key() === 'widgetGroup'){
                     var jsb = viewSelector.find('widget').unwrap().widget.jsb;
@@ -257,17 +281,27 @@
                         binding: binding,
                         jsb: jsb,
                         wrapper: this.getWrapper(),
-                        value: viewSelector.value()
+                        value: viewSelector.value(),
+                        caption: caption,
+                        nClass: nClass
                     });
+
+                    this._namesList[name] = { binding: binding, type: 'widget', nClass: nClass };
                 } else {
                     viewList.push({
                         binding: binding,
-                        header: viewSelector.value()
+                        header: viewSelector.value(),
+                        caption: caption,
+                        nClass: nClass
                     });
+
+                    this._namesList[name] = { binding: binding, type: 'simpleGraph', nClass: nClass };
                 }
 
                 bindingMap[binding] = true;
             }
+
+            this.createLegend();
 
             var viewListObject = viewList.reduce(function(obj, el){
                 obj[el.binding] = el;
@@ -302,7 +336,10 @@
 
             function innerFetch(reset){
                 source.fetch({batchSize: 10, reset: reset}, function(){
+                    var whileCnt = 0;
                     while(source.next() && count <= maxNodes){
+                        whileCnt++;
+
                         for(var i = 0; i < graphGroups.length; i++){
                             var entry,
                                 binding = graphGroups[i].find('element').binding(),
@@ -320,6 +357,9 @@
                                     }
                                     if(seEntry.header){
                                         seEntry.header = seEntry.header.value();
+                                    }
+                                    if(seEntry.caption){
+                                        seEntry.caption = seEntry.caption.value();
                                     }
                                 } else {
                                     seEntry.header = se;
@@ -344,6 +384,9 @@
                                     }
                                     if(teEntry.header){
                                         teEntry.header = teEntry.header.value();
+                                    }
+                                    if(teEntry.caption){
+                                        teEntry.caption = teEntry.caption.value();
                                     }
                                 } else {
                                     teEntry.header = te;
@@ -378,7 +421,7 @@
                         count = Object.keys(nodesMap).length;
                     }
 
-                    if(count >= maxNodes){
+                    if(count >= maxNodes || whileCnt !== 10){
                         var nodes = [];
                         for(var i in nodesMap){
                             nodes.push({
@@ -531,15 +574,7 @@
                     link.setTarget($this._nodeList[d.target].connector);
                 });
 
-                // var tickCount = 0;
-
                 simulation.nodes(nodes)
-                          /*
-                          .on("tick", function(){
-                            console.log('tick_' + tickCount + ' ' + new Date().toString());
-                            tickCount++;
-                          })
-                          */
                           .on("end", function(){
                             nodes.forEach(function(el){
                                 $this._nodeList[el.id].setPosition(el.x, el.y);
@@ -553,6 +588,55 @@
                 console.log(ex);
                 simulation.stop();
                 $this.getElement().loader('hide');
+            }
+        },
+
+        createLegend: function(){
+            this.legendDiv = this.$('<div class="graphLegend hidden"></div>');
+            this.append(this.legendDiv);
+
+            this.legendBtn = this.$('<div class="graphLegendBtn">Легенда &#9660;</div>');
+            this.legendBtn.click(function(){
+                $this.legendDiv.toggleClass('hidden');
+                if($this.legendDiv.hasClass('hidden')){
+                    this.innerHTML = 'Легенда &#9660;';
+                } else {
+                    this.innerHTML = 'Легенда &#9650;';
+                }
+            });
+            this.append(this.legendBtn);
+
+            for(var i in this._namesList){
+                var checkBox = new CheckBox({
+                    class: "graphLegendCheckBox",
+                    label: i,
+                    checked: true,
+                    onChange: function(b){
+                        var elems = $this.find('.' + $this._namesList[this.options.label].nClass);
+                        if(b){
+                            elems.removeClass('hidden');
+                        } else {
+                            elems.addClass('hidden');
+                        }
+
+                        $this.updateLinks();
+                    }
+                });
+                this.legendDiv.append(checkBox.getElement());
+            }
+        },
+
+        updateLinks: function(){
+            var links = this.diagram.getLinks();
+
+            for(var i in links){
+                if(links[i].source.node.getElement().hasClass('hidden') || links[i].target.node.getElement().hasClass('hidden')){
+                    links[i].group.classed('hidden', true);
+                }
+
+                if(!links[i].source.node.getElement().hasClass('hidden') && !links[i].target.node.getElement().hasClass('hidden')){
+                    links[i].group.classed('hidden', false);
+                }
             }
         }
     }

@@ -10,9 +10,12 @@
 			this.entry = opts.entry;
 
 			this.append(`#dot
-                <div class="connector top"></div>
-                <div class="connector bottom"></div>
+                <div class="connector"></div>
             `);
+
+            if(this.entry.nClass){
+                this.addClass(this.entry.nClass);
+            }
 
 			if(this.entry.cls){
 			    this.addClass('widgetMode');
@@ -26,6 +29,18 @@
                     <div class="caption">{{=this.entry.header}}</div>
                 `);
                 this.append(this.header);
+			}
+
+			if(this.entry.caption){
+                var caption = this.$('<div class="graphNodePopup hidden">' + this.entry.caption + '</div>');
+                this.append(caption);
+
+                this.getElement().hover(function() { caption.removeClass( "hidden" ); },
+                                        function() { caption.addClass( "hidden" ); });
+
+                this.getElement().mousemove(function(evt){
+                    caption.offset({top: evt.pageY + 10, left: evt.pageX + 10 });
+                });
 			}
 
 			this._createConnectors();

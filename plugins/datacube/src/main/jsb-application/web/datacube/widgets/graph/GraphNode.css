@@ -8,7 +8,7 @@
     */
     box-sizing: border-box;
     padding: 5px;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .graphNode .connector {
@@ -27,4 +27,15 @@
 
 .graphNode .widgetMode {
 
+}
+
+.graphNode .graphNodePopup{
+    position: absolute;
+    border: 1px solid grey;
+    border-radius: 5px;
+    background: white;
+    padding: 3px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    z-index: 1000;
 }
