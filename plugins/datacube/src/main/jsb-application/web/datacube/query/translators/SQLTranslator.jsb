@@ -143,7 +143,7 @@
 
                 var sql = '(case when ';
                 sql += $this._translateExpression(null, args[1], dcQuery);
-                sql += ' = 0 then 0 else ';
+                sql += " = 0 then NULL else ";
                 sql += $this._translateExpression(null, args[0], dcQuery) + '/' + $this._translateExpression(null, args[1], dcQuery);
                 sql += ' end)';
                 return sql;
