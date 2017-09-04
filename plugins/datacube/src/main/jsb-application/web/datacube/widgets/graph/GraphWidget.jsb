@@ -73,7 +73,7 @@
             items: [
             {
                 type: 'group',
-                name: 'Группы',
+                name: 'Связи',
                 key: 'graphGroups',
                 multiple: true,
                 items: [
@@ -92,6 +92,14 @@
                    binding: 'field',
                    itemType: 'string',
                    itemValue: '$field',
+                },
+                {
+                    name: 'CSS стиль связи',
+                    type: 'item',
+                    key: 'linkCss',
+                    itemType: 'string',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    description: 'JSON-объект с описанием css-свойств связей'
                 }
                 ]
             },
@@ -106,8 +114,9 @@
                     type: 'item',
                     key: 'element',
                     binding: 'field',
+                    multiple: 'true',
                     itemType: 'string',
-                    itemValue: '$field',
+                    itemValue: '$field'
                 },
                 {
                    name: 'Способ отображения ячейки',
@@ -124,7 +133,8 @@
                            name: 'Заголовки',
                            key: 'header',
                            binding: 'field',
-                           itemType: 'string'
+                           itemType: 'string',
+                           description: 'Заголовок внутри вершины'
                        }
                        ]
                    },
@@ -140,6 +150,32 @@
                        ]
                    }
                    ]
+                },
+                {
+                    name: 'Имя',
+                    type: 'item',
+                    key: 'name',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
+                    description: 'Имя вершин, отображаемое в легенде'
+                },
+                {
+                    name: 'Всплывающая подпись',
+                    type: 'item',
+                    key: 'caption',
+                    binding: 'field',
+                    itemType: 'string',
+                    itemValue: '$field',
+                    description: 'Надпись, отображаемая при наведении на вершину'
+                },
+                {
+                    name: 'CSS стиль элемента',
+                    type: 'item',
+                    key: 'nodeCss',
+                    itemType: 'string',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    description: 'JSON-объект с описанием css-свойств вершин'
                 }
                 ]
             },
@@ -169,15 +205,25 @@
                 itemType: 'string',
                 itemValue: '50',
                 description: 'Ширина объекта вершины'
+            },
+            {
+                type: 'item',
+                name: 'Радиус ячейки',
+                key: 'itemRadius',
+                binding: 'field',
+                itemType: 'string',
+                itemValue: '',
+                description: 'Радиус относительно центра вершины, в котором не будет других вершин'
             }
             ]
         }
         ]
     },
 	$client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Widgets.Diagram'],
+        $require: ['JQuery.UI.Loader', 'JSB.Widgets.Diagram', 'JSB.Widgets.CheckBox'],
 
         _nodeList: {},
+        _namesList: {},
 
         $constructor: function(opts){
             $base(opts);
@@ -191,6 +237,8 @@
             this.diagram = new Diagram({
                 minZoom: 0.25,
                 highlightSelecting: false,
+                autoLayout: false,
+                background: 'none',
                 nodes: {
                     graphNode: {
                         jsb: 'DataCube.GraphWidget.GraphNode',
@@ -246,9 +294,21 @@
 
             for(var i = 0; i < viewTypes.length; i++){
                 var viewSelector = viewTypes[i].find('view').value(),
-                    binding = viewTypes[i].find('element').binding();
+                    binding = viewTypes[i].find('element').binding(),
+                    caption = viewTypes[i].find('caption'),
+                    name = viewTypes[i].find('name').value();
 
-                    if(bindingMap[binding]) continue;
+                try{
+                    var nodeCss = JSON.parse(viewTypes[i].find('nodeCss').value());
+                } catch(ex){
+                    console.log(ex);
+                    var nodeCss = undefined;
+                }
+
+                if(bindingMap[binding]) continue;
+
+                if(!name) name = binding[0];
+                var nClass = 'nodeType_' + JSB().generateUid();
 
                 if(viewSelector.key() === 'widgetGroup'){
                     var jsb = viewSelector.find('widget').unwrap().widget.jsb;
@@ -257,16 +317,39 @@
                         binding: binding,
                         jsb: jsb,
                         wrapper: this.getWrapper(),
-                        value: viewSelector.value()
+                        value: viewSelector.value(),
+                        caption: caption,
+                        nClass: nClass,
+                        nodeCss: nodeCss
                     });
+
+                    this._namesList[name] = { binding: binding, type: 'widget', nClass: nClass };
                 } else {
                     viewList.push({
                         binding: binding,
-                        header: viewSelector.value()
+                        header: viewSelector.value(),
+                        caption: caption,
+                        nClass: nClass,
+                        nodeCss: nodeCss
                     });
+
+                    this._namesList[name] = { binding: binding, type: 'simpleGraph', nClass: nClass };
                 }
 
                 bindingMap[binding] = true;
+            }
+
+            this.createLegend();
+
+            var graphGroups = this.getContext().find('graphGroups').values(),
+                linksList = [];
+            for(var i = 0; i < graphGroups.length; i++){
+                try{
+                    linksList.push(JSON.parse(graphGroups[i].find('linkCss').value()));
+                } catch(ex){
+                    console.log(ex);
+                    linksList.push({});
+                }
             }
 
             var viewListObject = viewList.reduce(function(obj, el){
@@ -284,12 +367,13 @@
                     });
                 }
             }, function(){
-                $this.fetch(viewListObject);
+                $this.fetch(viewListObject, linksList);
             });
         },
 
-        fetch: function(viewList){
+        fetch: function(viewList, linksList){
             this.diagram.clear();
+            this.diagram.setPan({x: 0, y: 0});
 
             var source = this.getContext().find('source'),
                 graphGroups = this.getContext().find('graphGroups').values(),
@@ -302,7 +386,10 @@
 
             function innerFetch(reset){
                 source.fetch({batchSize: 10, reset: reset}, function(){
+                    var whileCnt = 0;
                     while(source.next() && count <= maxNodes){
+                        whileCnt++;
+
                         for(var i = 0; i < graphGroups.length; i++){
                             var entry,
                                 binding = graphGroups[i].find('element').binding(),
@@ -320,6 +407,9 @@
                                     }
                                     if(seEntry.header){
                                         seEntry.header = seEntry.header.value();
+                                    }
+                                    if(seEntry.caption){
+                                        seEntry.caption = seEntry.caption.value();
                                     }
                                 } else {
                                     seEntry.header = se;
@@ -345,6 +435,9 @@
                                     if(teEntry.header){
                                         teEntry.header = teEntry.header.value();
                                     }
+                                    if(teEntry.caption){
+                                        teEntry.caption = teEntry.caption.value();
+                                    }
                                 } else {
                                     teEntry.header = te;
                                 }
@@ -362,7 +455,8 @@
                             var flag = true,
                                 curLink = {
                                     source: se,
-                                    target: te
+                                    target: te,
+                                    css: linksList[i]
                                 };
                             for(var j = 0; j < links.length; j++){
                                 if(links[j].source === curLink.source && links[j].target === curLink.target || links[j].target === curLink.source && links[j].source === curLink.target){
@@ -378,7 +472,7 @@
                         count = Object.keys(nodesMap).length;
                     }
 
-                    if(count >= maxNodes){
+                    if(count >= maxNodes || whileCnt !== 10){
                         var nodes = [];
                         for(var i in nodesMap){
                             nodes.push({
@@ -507,21 +601,24 @@
         createGraph: function(nodes, links){
             try{
                 var itemWidth = this.getContext().find('itemWidth').value(),
-                    itemHeight = this.getContext().find('itemHeight').value();
+                    itemHeight = this.getContext().find('itemHeight').value(),
+                    itemRadius = this.getContext().find('itemRadius').value();
 
                 var simulation = d3.forceSimulation()
                     .alphaMin(0.1)
                     .force("link", d3.forceLink().id(function(d) { return d.id }))
                     .force("collide",d3.forceCollide( function(d){
+                        if(itemRadius){
+                            return itemRadius;
+                        }
+
                         if(!itemWidth){
                             itemWidth = $this._nodeList[d.id].getElement().width();
                         }
                         if(!itemHeight){
                             itemHeight = $this._nodeList[d.id].getElement().height();
                         }
-
-                        var r = (Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2))) / 3;
-                        return r;
+                        return (Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2))) / 2;
                     }).iterations(1))
                     .force("charge", d3.forceManyBody());
 
@@ -529,23 +626,31 @@
                     var link = $this.diagram.createLink('bind');
                     link.setSource($this._nodeList[d.source].connector);
                     link.setTarget($this._nodeList[d.target].connector);
+
+                    for(var i in d.css){
+                        link.path.style(i, d.css[i]);
+                    }
                 });
 
-                // var tickCount = 0;
+                function ticked(){
+                    nodes.forEach(function(el){
+                        $this._nodeList[el.id].setPosition(el.x, el.y);
+                    });
+                }
+
+                $this.getElement().loader('hide');
 
                 simulation.nodes(nodes)
+                          .on("tick", ticked);
                           /*
-                          .on("tick", function(){
-                            console.log('tick_' + tickCount + ' ' + new Date().toString());
-                            tickCount++;
-                          })
-                          */
                           .on("end", function(){
                             nodes.forEach(function(el){
                                 $this._nodeList[el.id].setPosition(el.x, el.y);
                             });
+
                             $this.getElement().loader('hide');
                           });
+                          */
 
                 simulation.force("link")
                           .links(links);
@@ -553,6 +658,55 @@
                 console.log(ex);
                 simulation.stop();
                 $this.getElement().loader('hide');
+            }
+        },
+
+        createLegend: function(){
+            this.legendDiv = this.$('<div class="graphLegend hidden"></div>');
+            this.append(this.legendDiv);
+
+            this.legendBtn = this.$('<div class="graphLegendBtn">Легенда &#9660;</div>');
+            this.legendBtn.click(function(){
+                $this.legendDiv.toggleClass('hidden');
+                if($this.legendDiv.hasClass('hidden')){
+                    this.innerHTML = 'Легенда &#9660;';
+                } else {
+                    this.innerHTML = 'Легенда &#9650;';
+                }
+            });
+            this.append(this.legendBtn);
+
+            for(var i in this._namesList){
+                var checkBox = new CheckBox({
+                    class: "graphLegendCheckBox",
+                    label: i,
+                    checked: true,
+                    onChange: function(b){
+                        var elems = $this.find('.' + $this._namesList[this.options.label].nClass);
+                        if(b){
+                            elems.removeClass('hidden');
+                        } else {
+                            elems.addClass('hidden');
+                        }
+
+                        $this.updateLinks();
+                    }
+                });
+                this.legendDiv.append(checkBox.getElement());
+            }
+        },
+
+        updateLinks: function(){
+            var links = this.diagram.getLinks();
+
+            for(var i in links){
+                if(links[i].source.node.getElement().hasClass('hidden') || links[i].target.node.getElement().hasClass('hidden')){
+                    links[i].group.classed('hidden', true);
+                }
+
+                if(!links[i].source.node.getElement().hasClass('hidden') && !links[i].target.node.getElement().hasClass('hidden')){
+                    links[i].group.classed('hidden', false);
+                }
             }
         }
     }

@@ -21,7 +21,7 @@
 		
 		refresh: function(){
 			$this.scheme = QuerySyntax.getSchema()[$this.schemeEntry];
-			debugger;
+//			debugger;
 		}
 	},
 	

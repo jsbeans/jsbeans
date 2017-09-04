@@ -5,8 +5,6 @@
 	$require: [],
 
 	$constructor: function(){
-		$base();
-		
         function installSuper(obj, _super) {
             if (!Object.setPrototypeOf) {
                 obj.__proto__ = _super;
@@ -102,6 +100,7 @@
 
 	    new this.ComplexObject({
 	        name: '$query',
+	        desc: 'Query expression',
 	        values: {
 	            '$filter': '$filter',
 	            '$groupBy': '$groupBy',
@@ -116,6 +115,7 @@
 
 	    new this.ComplexObject({
 	        name: '$select',
+	        desc: 'Select output fields definition',
 	        customKey: '#outputFieldName',
 	        values: {
 	            '#outputFieldName': '$valueDefinition'
@@ -138,7 +138,7 @@
                 '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
                 '$distinct',
                 '$sum', '$count','$min', '$max', '$avg',
-                '$array', '$flatArray',
+                '$array', '$flatArray', '$expandArray',
                 '$gsum', '$gcount', '$gmin', '$gmax',
                 '$grmaxsum', '$grmaxcount', '$grmaxavg'
             ]
@@ -152,36 +152,42 @@
 
 	    new this.EArray({
 	        name: '$add',
+	        desc: 'Addition of values (+)',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$sub',
+	        desc: 'Subtraction of values (-)',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$mul',
+	        desc: 'Multiplication of values (*)',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$div',
+	        desc: 'Division of values (/)',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$divz',
+	        desc: 'Division of values with support zero in the denominator (/)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$mod',
+	        desc: 'Division by module of values (%)',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
@@ -189,12 +195,14 @@
 
 	    new this.EArray({
 	        name: '$greatest',
+	        desc: 'Select greatest value from several',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$least',
+	        desc: 'Select least value from several',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
@@ -202,6 +210,7 @@
 
 	    new this.ComplexObject({
 	        name: '$splitString',
+	        desc: 'Split string to array',
 	        values: {
 	            '$field': '$valueDefinition',
 	            '$separator': '$constString'
@@ -209,6 +218,7 @@
 	    });
 	    new this.ComplexObject({
             name: '$substring',
+	        desc: 'Extract substring',
             values: {
                 '$field': '$valueDefinition',
                 '$length': '$constInt'
@@ -217,117 +227,141 @@
 
 	    new this.SingleObject({
 	        name: '$toInt',
+	        desc: 'Cast to int',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$toDouble',
+	        desc: 'Cast to double',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$toBoolean',
+	        desc: 'Cast to boolean',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$toDate',
+	        desc: 'Cast to date',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$dateYear',
+	        desc: 'Extract year from date/timestamp',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$dateMonth',
+	        desc: 'Extract month from date/timestamp',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$dateTotalSeconds',
+	        desc: 'Extract total seconds (since 1970-01-01) from date/timestamp',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$dateIntervalOrder',
-	        values: ['$expression', '$query', '$field', '$const', '$param'],
-	    });
-	    new this.SingleObject({
-	        name: '$dateYear',
+	        desc: 'Split date/timestamp to intervals and return order number',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$distinct',
+	        desc: 'Eliminate duplicate values',
 	        values: ['$expression', '$field'],
 	    });
 	    new this.SingleObject({
 	        name: '$sum',
+	        desc: 'Aggregate sum of valued',
 	        aggregate: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param', 1],
 	    });
 	    new this.SingleObject({
 	        name: '$count',
+	        desc: 'Aggregate count of values',
 	        aggregate: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param', 1],
 	    });
 	    new this.SingleObject({
 	        name: '$min',
+	        desc: 'Aggregate and get min value',
 	        aggregate: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$max',
+	        desc: 'Aggregate and get max value',
 	        aggregate: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$avg',
+	        desc: 'Aggregate and get avg value',
 	        aggregate: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$array',
+	        desc: 'Aggregate values to array',
 	        aggregate: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$flatArray',
+	        desc: 'Aggregate values and arrays to flat array',
 	        aggregate: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
+	        name: '$expandArray',
+	        desc: 'Expand array values as rows',
+	        values: ['$expression', '$query', '$field', '$const', '$param'],
+	    });
+	    new this.SingleObject({
 	        name: '$gsum',
+	        desc: 'Global aggregate sum of values',
 	        aggregate: true,
 	        global: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param', 1],
 	    });
 	    new this.SingleObject({
 	        name: '$gcount',
+	        desc: 'Global aggregate count of values',
 	        aggregate: true,
 	        global: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param', 1],
 	    });
 	    new this.SingleObject({
 	        name: '$gmin',
+	        desc: 'Global aggregate and get min value',
 	        aggregate: true,
 	        global: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$gmax',
+	        desc: 'Global aggregate and get max value',
 	        aggregate: true,
 	        global: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$grmaxsum',
+	        desc: 'Aggregate sum of values in groups and get max aggregated value',
 	        aggregate: true,
 	        global: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param', 1],
 	    });
 	    new this.SingleObject({
 	        name: '$grmaxcount',
+	        desc: 'Aggregate count of values in groups and get max aggregated value',
 	        aggregate: true,
 	        global: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param', 1],
 	    });
 	    new this.SingleObject({
 	        name: '$grmaxavg',
+	        desc: 'Aggregate avg of values in groups and get max aggregated value',
 	        aggregate: true,
 	        global: true,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
@@ -336,6 +370,7 @@
 
 	    new this.EArray({
 	        name: '$groupBy',
+	        desc: 'Group by values definition',
 	        minOperands: 1,
 	        maxOperands: -1,
 	        values: ['$expression', '$field'],
@@ -343,6 +378,7 @@
 
 	    new this.ComplexObject({
 	        name: '$filter',
+	        desc: 'Filter input data conditions definition',
 	        customKey: '#fieldName',
 	        values: {
 	            '#fieldName': '$valueCondition',
@@ -366,6 +402,7 @@
 
 	    new this.ComplexObject({
 	        name: '$postFilter',
+	        desc: 'Filter output data conditions definition',
 	        customKey: '#outputFieldName',
 	        values: {
 	            '#outputFieldName': '$valueCondition',
@@ -396,53 +433,65 @@
 
 	    new this.SingleObject({
 	        name: '$eq',
+	        desc: 'Equals condition (=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$ne',
+	        desc: 'Not qquals condition (!=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$gt',
+	        desc: 'Greater then condition (>)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$gte',
+	        desc: 'Greater then or equals condition (>=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$lt',
+	        desc: 'Less then condition (<)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$lte',
+	        desc: 'Less then or equals condition (<=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$like',
+	        desc: 'Match strings by patterns (LIKE)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$ilike',
+	        desc: 'Match strings by patterns ignore case (ILIKE)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$in',
+	        desc: 'Match if value in array',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$nin',
+	        desc: 'Match if value not in array',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 
 	    // expressionCondition
 	    new this.EArray({
 	        name: '$eqExpr',
+	        desc: 'Equals condition on two expressions (=)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
+	        desc: 'Not equals condition on two expressions (!=)',
 	        name: '$neExpr',
 	        minOperands: 2,
 	        maxOperands: 2,
@@ -450,59 +499,69 @@
 	    });
 	    new this.EArray({
 	        name: '$gtExpr',
+	        desc: 'Greater then condition on two expressions (>)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$gteExpr',
+	        desc: 'Greater then or equals condition on two expressions (>=)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$ltExpr',
+	        desc: 'Less then condition on two expressions (<)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$lteExpr',
+	        desc: 'Less then or equals condition on two expressions (<=)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$likeExpr',
+	        desc: 'Match strings by patterns on two expressions (LIKE)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$ilikeExpr',
+	        desc: 'Match strings by patterns ignore case on two expressions (ILIKE)',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$inExpr',
+	        desc: 'Match if value in array on two expressions',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.EArray({
 	        name: '$ninExpr',
+	        desc: 'Match if value not in array on two expressions',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$not',
+	        desc: 'Inverse condition (NOT)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 
 	    new this.EArray({
 	        name: '$sort',
+	        desc: 'Sort by definition',
 	        minOperands: 1,
 	        maxOperands: -1,
 	        values: ['$sortDefinition'],
@@ -534,6 +593,7 @@
 
 	    new this.EConstBoolean({
 	        name: '$distinctAll',
+	        desc: 'Eliminate duplicate rows',
 	        value: true,
 	    });
 
@@ -544,6 +604,7 @@
 	    });
 	    new this.SingleObject({
 	        name: '$fieldExpr',
+	        desc: 'Field namr',
 	        values: {
 	            '$field': '$fieldName',
 	            '$context': '$contextName'
@@ -553,6 +614,7 @@
 
 	    new this.SingleObject({
 	        name: '$const',
+	        desc: 'Constant value',
 	        values: {
 	            '$const': '$constValue'
 	        }
@@ -583,11 +645,10 @@
 	        name: '$param'
 	    });
 
-/*
+
         JSB.getLogger().debug('****************** SCHEME BEGIN ******************');
         JSB.getLogger().debug(JSON.stringify($this.schemeExpressions, 0, 4));
         JSB.getLogger().debug('****************** SCHEME END ******************');
-*/        
 	},
 
 	macros: {},

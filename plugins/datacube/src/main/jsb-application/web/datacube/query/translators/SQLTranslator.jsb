@@ -101,7 +101,7 @@
             return sqlColumns;
         },
 
-        _translateExpression: function(alias, exp, dcQuery) {
+        _translateExpression: function(alias, exp, dcQuery, forceTableAlias) {
             function translateGlobalAggregate(subExp, func){
                 var column = $this._translateExpression(null, subExp, dcQuery);
 		        var subAlias = JSB.generateUid();
@@ -166,7 +166,7 @@
                     return exp;
                 } else {
                     // is dataprovider or cube field
-                    return this._translateField(exp, dcQuery);
+                    return this._translateField(exp, dcQuery, forceTableAlias, !!forceTableAlias);
                 }
             }
 
@@ -178,7 +178,7 @@
                 var sql = '';
                 for (var i in exp) {
                     if (i > 0) sql += ', ';
-                    sql += $this._translateExpression(null, exp[i], dcQuery);
+                    sql += $this._translateExpression(null, exp[i], dcQuery, forceTableAlias);
                 }
                 sql += '';
                 return sql;
@@ -216,7 +216,7 @@
                 case '$field':
                 case '$context':
                     if (!exp.$field) throw new Error('Field $field is not defined with $context=' + exp.$context);
-                    return this._translateField(exp.$field, dcQuery, exp.$context);
+                    return this._translateField(exp.$field, dcQuery, exp.$context, forceTableAlias, !!forceTableAlias);
             }
 
             // n-operators
@@ -257,7 +257,7 @@
                 case '$toBoolean':
                     return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as boolean)';
                 case '$toString':
-                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as string)';
+                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as varchar)';
                 case '$toDate':
                     return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as date)';
 
@@ -459,6 +459,96 @@
                 return sql;
             }
 
+            function translateBinCondition(op, operands) {
+                if (!JSB.isArray(operands)) {
+                    throw new Error('Operands for ' + op + ' must be array not ' + typeof operands);
+                }
+                if (op != '$not' && operands.length != 2) {
+                    throw new Error('Operator ' + op + ' support only 2 operands');
+                }
+                if (op == '$not' && operands.length != 1) {
+                    throw new Error('Operator ' + op + ' support only 1 operands');
+                }
+                if (operands[0] == null) {
+                    throw new Error('First operand cannot be null');
+                }
+
+                switch(op){
+                    case '$not':
+                            return 'NOT ' + $this.translateMultiExpressions(operands[0]) + ' ';
+                    case '$eq':
+                        if (operands[1] === null)
+                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IS NULL ';
+                        else
+                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' = ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$ne':
+                        if (operands[1] === null)
+                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IS NOT NULL ';
+                        else
+                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' != ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$gt':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' > ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$gte':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' >= ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$lt':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' < ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$lte':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' <= ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+
+                    case '$like':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' ~~ ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$ilike':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' ~~* ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$in':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IN ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                    case '$nin':
+                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' NOT IN ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                }
+                throw new Error('Unsupported binary condition expression ' + op);
+
+            }
+
+            function translateCondition(field, exp) {
+                if (!JSB.isPlainObject(exp)) {
+                    throw new Error('Expression type must be object not ' + typeof exp);
+                }
+                if (Object.keys(exp).length != 1) {
+                    throw new Error('Unexpected expressions count on field ' + field);
+                }
+
+                var op = Object.keys(exp)[0];
+                switch(op){
+                    case '$eq':
+                        if (exp[op] === null)
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NULL ';
+                        else
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' = ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$ne':
+                        if (exp[op] === null)
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NOT NULL ';
+                        else
+                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' != ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$gt':
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' > ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$gte':
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' >= ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$lt':
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' < ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$lte':
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' <= ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+
+                    case '$like':
+                        return $$this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~ ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$ilike':
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~* ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$in':
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IN ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                    case '$nin':
+                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' NOT IN ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
+                }
+                throw new Error('Unsupported condition expression ' + op);
+            }
+
             function translateMultiExpressions(exps) {
                 if (!JSB.isPlainObject(exps)) {
                     throw new Error('Unsupported expression type ' + exps);
@@ -478,11 +568,9 @@
                             case '$and':
                                 sql += '(' + translateOpExpressions(exps[op], 'AND') + ')';
                                 break;
-//                            case '$not':
-//                                sql += ' NOT (' +translateExpressions(exps[op]) + ')';
-                                break;
                             default:
-                                throw new Error('Unsupported operator ' + op);
+                                // $op: [left, right] expression
+                                sql += translateBinCondition(op, exps[op]);
                         }
                     } else {
                         sql += translateCondition(field, exps[field]);
@@ -490,48 +578,6 @@
                 }
                 return sql;
             }
-
-            function translateCondition(field, exp) {
-                if (!JSB.isPlainObject(exp)) {
-                    throw new Error('Unsupported expression type ' + exp);
-                }
-                if (Object.keys(exp).length != 1) {
-                    throw new Error('Unexpected expressions count on field' + field);
-                }
-
-                var op = Object.keys(exp)[0];
-                switch(op){
-                    case '$eq':
-                        if (exp[op] === null)
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NULL ';
-                        else
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' = ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$ne':
-                        if (exp[op] === null)
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NOT NULL ';
-                        else
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' != ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$gt':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' > ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$gte':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' >= ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$lt':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' < ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$lte':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' <= ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-
-                    case '$like':
-                        return $$this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~ ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$ilike':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~* ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$in':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IN ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                    case '$nin':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' NOT IN ' + $this._translateExpression(null, exp[op], dcQuery) + ' ';
-                }
-                throw new Error('Unsupported condition expression ' + op);
-            }
-
             var filterExp = filterExp || dcQuery.$filter;
             return filterExp ? translateMultiExpressions(filterExp) : '';
         },
