@@ -67,7 +67,7 @@
 				wmKey: 'datacube',
 				priority: 1,
 				acceptNode: 'DataCube.CubeNode',
-				caption: 'Схема куба'
+				caption: 'Схема'
 			});
 		},
 	}

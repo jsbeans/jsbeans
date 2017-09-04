@@ -251,7 +251,11 @@ debugger;
 		                }
 		                collect(q[f]);
 		            }
-		        }
+		        } else if (JSB.isArray(q)) {
+                    for (var i in q) {
+                        collect(q[i]);
+                    }
+                }
 		    }
             collect(dcQuery.$select);
             return {
@@ -303,7 +307,7 @@ debugger;
                 for (var i = 0; i < dataProviders.length; i++) {
                     var provider = dataProviders[i];
                     if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, providerIterators.length == 0)) {
-                        if (i > 0) {
+                        if (providerIterators.length > 0) {
                             var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
                             if (provider instanceof SqlTableDataProvider
                                 && prev.getJsb().$name == provider.getJsb().$name
