@@ -17,6 +17,10 @@
                 this.addClass(this.entry.nClass);
             }
 
+            if(this.entry.nodeCss){
+                this.getElement().css(this.entry.nodeCss);
+            }
+
 			if(this.entry.cls){
 			    this.addClass('widgetMode');
 			    this.widget = new this.entry.cls();
