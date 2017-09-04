@@ -91,8 +91,7 @@
 	           	JSB.merge(preparedQuery, qDesc.query);
             }
 
-            this.cube.load();
-            return this.cube.queryEngine.query(preparedQuery, params);
+            return this.cube.executeQuery(preparedQuery, params);
 		}
 		
 	}

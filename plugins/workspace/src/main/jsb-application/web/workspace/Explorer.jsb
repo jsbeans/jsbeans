@@ -457,7 +457,7 @@
 								continue;
 							}
 							if(JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
-								if(obj.getEntry().getParent()){
+								if(obj.getEntry().getParentId()){
 									continue;	// node has a fixed parent - skipping
 								}
 							}
@@ -559,7 +559,7 @@
 				var node = sel[i].obj;
 				if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					var entry = node.getEntry();
-					if(entry.getParent()){
+					if(entry.getParentId()){
 						continue;
 					}
 				}

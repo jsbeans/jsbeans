@@ -114,6 +114,10 @@
 	white-space: nowrap;
 }
 
+.cubeDiagramNode > .status > .message.error {
+	color: #b14201;
+}
+
 .cubeDiagramNode > .status > .indicators {
 	position: absolute;
 	top: 50%;

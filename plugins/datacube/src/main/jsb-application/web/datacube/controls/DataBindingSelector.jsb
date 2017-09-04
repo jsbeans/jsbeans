@@ -252,6 +252,5 @@
 		getDataScheme: function(){
 			return this.dataScheme;
 		}
-		
 	}
 }

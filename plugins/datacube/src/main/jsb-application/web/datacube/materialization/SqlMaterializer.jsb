@@ -7,14 +7,10 @@
 		           'JSB.Store.StoreManager', 
 		           'DataCube.MaterializationEngine',
 		           'JSB.Store.Sql.JDBC',
-		           'java:java.sql.JDBCType'],
+		           'java:java.sql.JDBCType',
+		           'java:java.sql.Types',
+		           'JSB.Text.Translit'],
 		           
-		typeTranslationMap: {
-			'int': 'INTEGER',
-			'integer': 'INTEGER',
-			'string': ''
-		},
-		
 		$bootstrap: function(){
 			MaterializationEngine.registerMaterializer('DataCube.Model.SqlSource', this);
 		},
@@ -23,28 +19,82 @@
 			$base(engine, source);
 		},
 		
-		translateType: function(jsonType){
-			var sqlType = jsonType;
-			switch(jsonType){
+		translateType: function(jsonType, typeMap){
+			var sqlType = jsonType.toLowerCase();
+			switch(sqlType){
 			case 'int':
 			case 'integer':
-				sqlType = JDBCType.INTEGER.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.INTEGER, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DECIMAL, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.BIGINT, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.BIGINT, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.REAL, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.FLOAT, typeMap);
+				}
 				break;
 			case 'boolean':
-				sqlType = JDBCType.BOOLEAN.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.BOOLEAN, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.BIT, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.INTEGER, typeMap);
+				}
 				break;
+			case 'nvarchar':
+			case 'varchar':
 			case 'string':
-				sqlType = JDBCType.VARCHAR.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.VARCHAR, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.NVARCHAR, typeMap);
+				}
 				break;
 			case 'float':
+				sqlType = JDBC.getVendorTypeForSqlType(Types.FLOAT, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.REAL, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
+				}
+
+				break;
 			case 'double':
-				sqlType = JDBCType.DOUBLE.getName();
+			case 'number':
+				sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
+				}
 				break;
 			case 'date':
 			case 'time':
 			case 'datetime':
 			case 'timestamp':
-				sqlType = JDBCType.TIMESTAMP.getName();
+				sqlType = JDBC.getVendorTypeForSqlType(Types.TIMESTAMP, typeMap);
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.DATE, typeMap);
+				}
+				if(!sqlType){
+					sqlType = JDBC.getVendorTypeForSqlType(Types.TIME, typeMap);
+				}
 				break;
 			case 'array':
 				sqlType = JDBCType.ARRAY.getName();
@@ -54,8 +104,11 @@
 		},
 		
 		createTable: function(cName, fields){
+			var sqlFields = {};
+			var fieldMap = {};
 			var store = this.source.getStore();
 			var connection = store.getConnection(true).get();
+			var typeMap = JDBC.getSupportedTypeMap(connection);
 			var suggestedName = cName;
 			try {
 				var databaseMetaData = connection.getMetaData();
@@ -70,24 +123,74 @@
 				}
 				
 				// create table with suggestedName
-				var sql = 'create table '+suggestedName+' (';
+				var sql = 'create table '+suggestedName+' ()';
+				JDBC.executeUpdate(connection, sql);
 				
 				var fNameArr = Object.keys(fields);
 				for(var i = 0; i < fNameArr.length; i++){
-					sql += '"' + fNameArr[i] + '" ' + this.translateType(fields[fNameArr[i]]);
-					if(i < fNameArr.length - 1){
-						sql += ', ';
+					sql = 'alter table ' + suggestedName + ' add column "c' + i + '_' + fNameArr[i] + '" ' + this.translateType(fields[fNameArr[i]], typeMap);
+					JDBC.executeUpdate(connection, sql);
+					
+					// extract current field
+					var columns = databaseMetaData.getColumns(null, null, suggestedName, null);
+					while(columns.next()) {
+						var columnName = ''+columns.getString("COLUMN_NAME");
+						if(sqlFields[columnName]){
+							continue;
+						}
+						sqlFields[columnName] = true;
+						fieldMap[fNameArr[i]] = columnName;
+						break;
 					}
 				}
-				sql += ')';
 				
-				JDBC.executeUpdate(connection, sql);
-				
+			} catch(e){
+				try {
+					JDBC.executeUpdate(connection, 'drop table ' + suggestedName);
+				} catch(ex) {
+				}
+				throw e;
 			} finally {
 				connection.close();
 			}
 			
-			return suggestedName;
+			return {table: suggestedName, fieldMap: fieldMap};
+		},
+		
+		removeTable: function(tName){
+			if(!tName){
+				return;
+			}
+			var store = this.source.getStore();
+			var connection = store.getConnection(true).get();
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, tName, null);
+				if(!rs.next()){
+					return;
+				}
+				JDBC.executeUpdate(connection, 'drop table ' + tName);
+			} finally {
+				connection.close();
+			}
+		},
+		
+		renameTable: function(oldName, newName){
+			if(!oldName || !newName){
+				return;
+			}
+			var store = this.source.getStore();
+			var connection = store.getConnection(true).get();
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, oldName, null);
+				if(!rs.next()){
+					return;
+				}
+				JDBC.executeUpdate(connection, 'alter table ' + oldName + ' rename to ' + newName);
+			} finally {
+				connection.close();
+			}
 		},
 		
 		createIndex: function(tName, idxName, idxFields){
@@ -97,7 +200,7 @@
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
 				if(rs.next()){
-					JDBC.executeUpdate(connection, 'drop index ' + tName + '.' + idxName);
+					JDBC.executeUpdate(connection, 'drop index ' + idxName);
 				}
 				
 				var sql = 'create index ' + idxName + ' on ' + tName + '(';
@@ -115,6 +218,20 @@
 			}
 		},
 		
+		removeIndex: function(tName, idxName){
+			var store = this.source.getStore();
+			var connection = store.getConnection(true).get();
+			try {
+				var databaseMetaData = connection.getMetaData();
+				var rs = databaseMetaData.getTables(null, null, idxName, null);
+				if(rs.next()){
+					JDBC.executeUpdate(connection, 'drop index ' + idxName);
+				}
+			} finally {
+				connection.close();
+			}		
+		},
+		
 		insert: function(tName, objArr){
 			var store = this.source.getStore();
 			var connection = store.getConnection(true).get();
@@ -127,21 +244,31 @@
 					var obj = objArr[b];
 					var fNameArr = Object.keys(obj);
 					var sql = 'insert into ' + tName + '(';
+					var bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
-						sql += '"' + fNameArr[i] + '"';
-						if(i < fNameArr.length - 1){
+						if(JSB.isNull(obj[fNameArr[i]])){
+							continue;
+						}
+						if(!bFirst){
 							sql += ', ';
 						}
+						sql += '"' + fNameArr[i] + '"';
+						bFirst = false;
 					}
 					sql += ') values(';
 					var values = [];
+					bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
 						var fVal = obj[fNameArr[i]];
-						values.push(fVal);
-						sql += '?'
-						if(i < fNameArr.length - 1){
+						if(JSB.isNull(fVal)){
+							continue;
+						}
+						if(!bFirst){
 							sql += ', ';
 						}
+						sql += '?'
+						values.push(fVal);
+						bFirst = false;
 					}
 					sql += ')';
 					batch.push({

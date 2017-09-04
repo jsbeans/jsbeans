@@ -35,8 +35,8 @@
 
 		getTableFullName:function(){
 		    return this.getTableDescriptor().schema
-		            ? this.getTableDescriptor().schema + '.' + this.getTableDescriptor().name
-		            : this.getTableDescriptor().name;
+		            ? '"' + this.getTableDescriptor().schema + '"."' + this.getTableDescriptor().name + '"'
+		            : '"' + this.getTableDescriptor().name + '"';
         },
 
 

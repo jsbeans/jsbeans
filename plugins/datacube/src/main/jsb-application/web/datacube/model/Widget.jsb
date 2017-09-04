@@ -62,6 +62,7 @@
 					this.sources[sId] = this.workspace.entry(sId);
 				}
 			} else {
+				var bNeedSave = false;
 				if(this.property('dashboard')){
 					this.dashboard = this.workspace.entry(this.property('dashboard'));
 				}
@@ -76,9 +77,15 @@
 					this.sourceMap = this.property('sourceMap');
 				} else {
 					this.sourceMap = this.generateInteroperationMap(this.values);
+					this.property('sourceMap', this.sourceMap);
+					bNeedSave = true;
 				}
 				for(var sId in this.sourceMap){
 					this.sources[sId] = this.workspace.entry(sId);
+				}
+				
+				if(bNeedSave){
+					this.workspace.store();
 				}
 			}
 		},

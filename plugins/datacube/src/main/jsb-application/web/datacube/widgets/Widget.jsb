@@ -10,6 +10,8 @@
 		sourceMap: null,
 		sources: null,
 		sourceFilterMap: null,
+
+		$require: ['JSB.Crypt.MD5'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -563,6 +565,15 @@
 		setSort: function(q){
 			this.sort = q;
 			this.refresh();
+		},
+
+		createFilterHash: function(filter){
+            var str = '';
+		    for(var i in filter){
+		        str += '' + i;
+		    }
+
+		    return MD5.md5(str);
 		}
 	},
 	

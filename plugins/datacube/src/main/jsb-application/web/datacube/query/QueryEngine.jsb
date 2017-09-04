@@ -138,7 +138,6 @@ debugger;
 			this.cube.load();
 		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
 		    Log.debug('QueryEngine.preparedQuery: \n' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
-
 		    var it = this.produceIterator(dcQuery, params||{}, dataProvider);
 		    return it;
 		},
@@ -159,8 +158,9 @@ debugger;
 		                 dcQuery.$select[name] = field;
 		            }
 		        } else {
-                    for (var f in this.cube.fields) if (this.cube.fields.hasOwnProperty(f)) {
-                        var binding = this.cube.fields[f].binding;
+		        	var managedFields = this.cube.getManagedFields();
+                    for (var f in managedFields) if (managedFields.hasOwnProperty(f)) {
+                        var binding = managedFields[f].binding;
                         for(var b in binding) {
                             if (!dataProvider || binding[b].provider == dataProvider) {
                                 var name = f.replace(new RegExp('"','g'),'');
@@ -251,7 +251,11 @@ debugger;
 		                }
 		                collect(q[f]);
 		            }
-		        }
+		        } else if (JSB.isArray(q)) {
+                    for (var i in q) {
+                        collect(q[i]);
+                    }
+                }
 		    }
             collect(dcQuery.$select);
             return {
@@ -265,9 +269,9 @@ debugger;
 		    var joinCount = 0;
 		    for (var i in cubeFields) {
 		        var field = cubeFields[i];
-
-		        if (this.cube.fields[field]) {
-		            var binding = this.cube.fields[field].binding;
+		        var managedFields = this.cube.getManagedFields();
+		        if(managedFields[field]) {
+		            var binding = managedFields[field].binding;
 
 		            // iterate binding providers
 		            for(var b in binding) {
@@ -303,7 +307,7 @@ debugger;
                 for (var i = 0; i < dataProviders.length; i++) {
                     var provider = dataProviders[i];
                     if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, providerIterators.length == 0)) {
-                        if (i > 0) {
+                        if (providerIterators.length > 0) {
                             var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
                             if (provider instanceof SqlTableDataProvider
                                 && prev.getJsb().$name == provider.getJsb().$name
