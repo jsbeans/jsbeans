@@ -92,6 +92,14 @@
                    binding: 'field',
                    itemType: 'string',
                    itemValue: '$field',
+                },
+                {
+                    name: 'CSS стиль связи',
+                    type: 'item',
+                    key: 'linkCss',
+                    itemType: 'string',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    description: 'JSON-объект с описанием css-свойств связей'
                 }
                 ]
             },
@@ -108,7 +116,7 @@
                     binding: 'field',
                     multiple: 'true',
                     itemType: 'string',
-                    itemValue: '$field',
+                    itemValue: '$field'
                 },
                 {
                    name: 'Способ отображения ячейки',
@@ -125,7 +133,8 @@
                            name: 'Заголовки',
                            key: 'header',
                            binding: 'field',
-                           itemType: 'string'
+                           itemType: 'string',
+                           description: 'Заголовок внутри вершины'
                        }
                        ]
                    },
@@ -148,7 +157,8 @@
                     key: 'name',
                     binding: 'field',
                     itemType: 'string',
-                    itemValue: '$field'
+                    itemValue: '$field',
+                    description: 'Имя вершин, отображаемое в легенде'
                 },
                 {
                     name: 'Всплывающая подпись',
@@ -156,7 +166,16 @@
                     key: 'caption',
                     binding: 'field',
                     itemType: 'string',
-                    itemValue: '$field'
+                    itemValue: '$field',
+                    description: 'Надпись, отображаемая при наведении на вершину'
+                },
+                {
+                    name: 'CSS стиль элемента',
+                    type: 'item',
+                    key: 'nodeCss',
+                    itemType: 'string',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    description: 'JSON-объект с описанием css-свойств вершин'
                 }
                 ]
             },
@@ -186,6 +205,15 @@
                 itemType: 'string',
                 itemValue: '50',
                 description: 'Ширина объекта вершины'
+            },
+            {
+                type: 'item',
+                name: 'Радиус ячейки',
+                key: 'itemRadius',
+                binding: 'field',
+                itemType: 'string',
+                itemValue: '',
+                description: 'Радиус относительно центра вершины, в котором не будет других вершин'
             }
             ]
         }
@@ -210,6 +238,7 @@
                 minZoom: 0.25,
                 highlightSelecting: false,
                 autoLayout: false,
+                background: 'none',
                 nodes: {
                     graphNode: {
                         jsb: 'DataCube.GraphWidget.GraphNode',
@@ -269,7 +298,14 @@
                     caption = viewTypes[i].find('caption'),
                     name = viewTypes[i].find('name').value();
 
-                    if(bindingMap[binding]) continue;
+                try{
+                    var nodeCss = JSON.parse(viewTypes[i].find('nodeCss').value());
+                } catch(ex){
+                    console.log(ex);
+                    var nodeCss = undefined;
+                }
+
+                if(bindingMap[binding]) continue;
 
                 if(!name) name = binding[0];
                 var nClass = 'nodeType_' + JSB().generateUid();
@@ -283,7 +319,8 @@
                         wrapper: this.getWrapper(),
                         value: viewSelector.value(),
                         caption: caption,
-                        nClass: nClass
+                        nClass: nClass,
+                        nodeCss: nodeCss
                     });
 
                     this._namesList[name] = { binding: binding, type: 'widget', nClass: nClass };
@@ -292,7 +329,8 @@
                         binding: binding,
                         header: viewSelector.value(),
                         caption: caption,
-                        nClass: nClass
+                        nClass: nClass,
+                        nodeCss: nodeCss
                     });
 
                     this._namesList[name] = { binding: binding, type: 'simpleGraph', nClass: nClass };
@@ -302,6 +340,17 @@
             }
 
             this.createLegend();
+
+            var graphGroups = this.getContext().find('graphGroups').values(),
+                linksList = [];
+            for(var i = 0; i < graphGroups.length; i++){
+                try{
+                    linksList.push(JSON.parse(graphGroups[i].find('linkCss').value()));
+                } catch(ex){
+                    console.log(ex);
+                    linksList.push({});
+                }
+            }
 
             var viewListObject = viewList.reduce(function(obj, el){
                 obj[el.binding] = el;
@@ -318,12 +367,13 @@
                     });
                 }
             }, function(){
-                $this.fetch(viewListObject);
+                $this.fetch(viewListObject, linksList);
             });
         },
 
-        fetch: function(viewList){
+        fetch: function(viewList, linksList){
             this.diagram.clear();
+            this.diagram.setPan({x: 0, y: 0});
 
             var source = this.getContext().find('source'),
                 graphGroups = this.getContext().find('graphGroups').values(),
@@ -405,7 +455,8 @@
                             var flag = true,
                                 curLink = {
                                     source: se,
-                                    target: te
+                                    target: te,
+                                    css: linksList[i]
                                 };
                             for(var j = 0; j < links.length; j++){
                                 if(links[j].source === curLink.source && links[j].target === curLink.target || links[j].target === curLink.source && links[j].source === curLink.target){
@@ -550,21 +601,24 @@
         createGraph: function(nodes, links){
             try{
                 var itemWidth = this.getContext().find('itemWidth').value(),
-                    itemHeight = this.getContext().find('itemHeight').value();
+                    itemHeight = this.getContext().find('itemHeight').value(),
+                    itemRadius = this.getContext().find('itemRadius').value();
 
                 var simulation = d3.forceSimulation()
                     .alphaMin(0.1)
                     .force("link", d3.forceLink().id(function(d) { return d.id }))
                     .force("collide",d3.forceCollide( function(d){
+                        if(itemRadius){
+                            return itemRadius;
+                        }
+
                         if(!itemWidth){
                             itemWidth = $this._nodeList[d.id].getElement().width();
                         }
                         if(!itemHeight){
                             itemHeight = $this._nodeList[d.id].getElement().height();
                         }
-
-                        var r = (Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2))) / 3;
-                        return r;
+                        return (Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2))) / 2;
                     }).iterations(1))
                     .force("charge", d3.forceManyBody());
 
@@ -572,15 +626,31 @@
                     var link = $this.diagram.createLink('bind');
                     link.setSource($this._nodeList[d.source].connector);
                     link.setTarget($this._nodeList[d.target].connector);
+
+                    for(var i in d.css){
+                        link.path.style(i, d.css[i]);
+                    }
                 });
 
+                function ticked(){
+                    nodes.forEach(function(el){
+                        $this._nodeList[el.id].setPosition(el.x, el.y);
+                    });
+                }
+
+                $this.getElement().loader('hide');
+
                 simulation.nodes(nodes)
+                          .on("tick", ticked);
+                          /*
                           .on("end", function(){
                             nodes.forEach(function(el){
                                 $this._nodeList[el.id].setPosition(el.x, el.y);
                             });
+
                             $this.getElement().loader('hide');
                           });
+                          */
 
                 simulation.force("link")
                           .links(links);
