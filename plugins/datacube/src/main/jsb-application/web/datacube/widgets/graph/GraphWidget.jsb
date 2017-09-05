@@ -399,7 +399,7 @@
                                 se = sourceElement.value(),
                                 te = targetElement.value();
 
-                            if(!nodesMap[se] && !$this._nodeList[se]){
+                            if(!nodesMap[se]){
                                 var seEntry = JSB().clone(viewList[sourceElement.binding()]);
 
                                 if(seEntry){
@@ -418,15 +418,16 @@
 
                                 nodesMap[se] = seEntry;
 
-                                var node = $this.diagram.createNode('graphNode', {entry: seEntry});
-                                if(itemWidth && itemHeight){
-                                    node.getElement().width(itemWidth);
-                                    node.getElement().height(itemHeight);
+                                if($this._nodeList[se]){
+                                    $this._nodeList[se].updateEntry(seEntry);
+                                } else {
+                                    var node = $this.diagram.createNode('graphNode', {entry: seEntry});
+                                    if(itemWidth && itemHeight){
+                                        node.getElement().width(itemWidth);
+                                        node.getElement().height(itemHeight);
+                                    }
+                                    $this._nodeList[se] = node;
                                 }
-                                $this._nodeList[se] = node;
-                            }
-                            if(!nodesMap[se] && $this._nodeList[se]){
-                                nodesMap[se] = true;
                             }
 
                             if(!nodesMap[te] && !$this._nodeList[te]){
@@ -448,15 +449,16 @@
 
                                 nodesMap[te] = teEntry;
 
-                                var node = $this.diagram.createNode('graphNode', {entry: teEntry});
-                                if(itemWidth && itemHeight){
-                                    node.getElement().width(itemWidth);
-                                    node.getElement().height(itemHeight);
+                                if($this._nodeList[te]){
+                                    $this._nodeList[te].updateEntry(teEntry);
+                                } else {
+                                    var node = $this.diagram.createNode('graphNode', {entry: teEntry});
+                                    if(itemWidth && itemHeight){
+                                        node.getElement().width(itemWidth);
+                                        node.getElement().height(itemHeight);
+                                    }
+                                    $this._nodeList[te] = node;
                                 }
-                                $this._nodeList[te] = node;
-                            }
-                            if(!nodesMap[te] && $this._nodeList[te]){
-                                nodesMap[te] = true;
                             }
 
                             var flag = true,
