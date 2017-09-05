@@ -347,7 +347,7 @@
         ]
     },
 	$client: {
-	    $require: ['JQuery.UI.Loader'],
+	    $require: ['JQuery.UI.Loader', 'JSB.Crypt.MD5'],
 	    
         _curFilters: {},
         _deselectCategoriesCount: 0,
