@@ -840,6 +840,20 @@
 			return this.highlighted;
 		},
 		
+		select: function(node, bSelect){
+			if(!JSB.isDefined(bSelect)){
+				bSelect = true;
+			}
+			if(JSB.isInstanceOf(node, 'JSB.Widgets.Diagram.Node') || JSB.isInstanceOf(node, 'JSB.Widgets.Diagram.Link')){
+				node.select(bSelect);
+			} else if(JSB.isObject(node)){
+				for(var objId in node){
+					var obj = node[objId];
+					obj.select(bSelect);
+				}
+			}
+		},
+		
 		getNodesUnderCursor: function(pt){
 			var selMap = {};
 			var sheetRc = this.sheet.get(0).getBoundingClientRect();

@@ -4,7 +4,12 @@
 	
 	$client: {
 		$constructor: function(opts){
-			$base(JSB.merge({}, opts, {schemeEntry: '$query'}));
+			$base(JSB.merge({}, opts, {
+				schemeEntry: '$query',
+				elements: {
+					
+				}
+			}));
 		}
 	},
 	

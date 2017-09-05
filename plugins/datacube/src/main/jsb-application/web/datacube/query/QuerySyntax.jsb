@@ -23,6 +23,7 @@
         /** Abstract expression value
         */
         this.Expression = function Expression(desc) {
+       		desc.expressionType = desc.expressionType || 'Expression';
             JSB.merge(true, this, desc);
             if (!this.name) throw new Error('Undefined expression name');
             if (!this.type) throw new Error(this.name + ': ' + 'Undefined expression type for');
@@ -34,14 +35,16 @@
         */
         this.Group = function Group(desc) {
             desc.type = 'group';
+            desc.expressionType = desc.expressionType || 'Group';
             if (!desc.values) throw new Error(desc.name + ': ' + 'Undefined expressions of group');
             var _super = installSuper(this, new $this.EObject(desc));
         };
 
         /** String expression value
         */
-        this.EString = function EString(desc) {EString
+        this.EString = function EString(desc) {
             desc.type = 'string';
+            desc.expressionType = desc.expressionType || 'EString';
             var _super = installSuper(this, new $this.Expression(desc));
         };
 
@@ -49,23 +52,28 @@
         */
         this.EArray = function EArray(desc) {
             desc.type = 'array';
+            desc.expressionType = desc.expressionType || 'EArray';
             if (!desc.values || Object.keys(desc.values).length < 1) throw new Error(desc.name + ': ' + 'Undefined values ');
             var _super = installSuper(this, new $this.Expression(desc));
         };
 
         this.EConst = function EConst(desc) {
+        	desc.expressionType = desc.expressionType || 'EConst';
             var _super = installSuper(this, new $this.Expression(desc));
         };
         this.EConstNumber = function EConstNumber(desc) {
             desc.type = 'number';
+            desc.expressionType = desc.expressionType || 'EConstNumber';
             var _super = installSuper(this, new $this.EConst(desc));
         };
         this.EConstBoolean = function EConstBoolean(desc) {
             desc.type = 'boolean';
+            desc.expressionType = desc.expressionType || 'EConstBoolean';
             var _super = installSuper(this, new $this.EConst(desc));
         };
         this.EConstString = function EConstString(desc) {
             desc.type = 'string';
+            desc.expressionType = desc.expressionType || 'EConstString';
             var _super = installSuper(this, new $this.EConst(desc));
         };
 
@@ -73,6 +81,7 @@
         */
         this.EObject = function EObject(desc) {
             desc.type = 'object';
+            desc.expressionType = desc.expressionType || 'EObject';
             var _super = installSuper(this, new $this.Expression(desc));
         };
 
@@ -80,6 +89,7 @@
         */
         this.SingleObject = function SingleObject(desc) {
             if (!desc.values) throw new Error(desc.name + ': ' + 'Undefined object expression values ');
+            desc.expressionType = desc.expressionType || 'SingleObject';
             var _super = installSuper(this, new $this.EObject(desc));
         };
 
@@ -94,6 +104,7 @@
                 }
             }
             if (!desc.values) throw new Error(desc.name + ': ' + 'Undefined object expression values');
+            desc.expressionType = desc.expressionType || 'ComplexObject';
             var _super = installSuper(this, new $this.EObject(desc));
         };
 
