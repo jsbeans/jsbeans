@@ -372,7 +372,8 @@
         },
 
         fetch: function(viewList, linksList){
-            this.diagram.clear();
+            // this.diagram.clear();
+            if(this.simulation) this.simulation.stop();
             this.diagram.setPan({x: 0, y: 0});
 
             var source = this.getContext().find('source'),
@@ -398,7 +399,7 @@
                                 se = sourceElement.value(),
                                 te = targetElement.value();
 
-                            if(!nodesMap[se]){
+                            if(!nodesMap[se] && !$this._nodeList[se]){
                                 var seEntry = JSB().clone(viewList[sourceElement.binding()]);
 
                                 if(seEntry){
@@ -424,8 +425,11 @@
                                 }
                                 $this._nodeList[se] = node;
                             }
+                            if(!nodesMap[se] && $this._nodeList[se]){
+                                nodesMap[se] = true;
+                            }
 
-                            if(!nodesMap[te]){
+                            if(!nodesMap[te] && !$this._nodeList[te]){
                                 var teEntry = JSB().clone(viewList[targetElement.binding()]);
 
                                 if(teEntry){
@@ -450,6 +454,9 @@
                                     node.getElement().height(itemHeight);
                                 }
                                 $this._nodeList[te] = node;
+                            }
+                            if(!nodesMap[te] && $this._nodeList[te]){
+                                nodesMap[te] = true;
                             }
 
                             var flag = true,
@@ -482,9 +489,11 @@
                         }
 
                         if($this._isInit){
+                            $this.removeOldNodes(nodesMap);
                             $this.createGraph(nodes, links);
                         } else {
                             JSB().deferUntil(function(){
+                                $this.removeOldNodes(nodesMap);
                                 $this.createGraph(nodes, links);
                             }, function(){
                                 return $this._isInit;
@@ -604,7 +613,7 @@
                     itemHeight = this.getContext().find('itemHeight').value(),
                     itemRadius = this.getContext().find('itemRadius').value();
 
-                var simulation = d3.forceSimulation()
+                this.simulation = d3.forceSimulation()
                     .alphaMin(0.1)
                     .force("link", d3.forceLink().id(function(d) { return d.id }))
                     .force("collide",d3.forceCollide( function(d){
@@ -640,7 +649,7 @@
 
                 $this.getElement().loader('hide');
 
-                simulation.nodes(nodes)
+                this.simulation.nodes(nodes)
                           .on("tick", ticked);
                           /*
                           .on("end", function(){
@@ -652,11 +661,11 @@
                           });
                           */
 
-                simulation.force("link")
+                this.simulation.force("link")
                           .links(links);
             } catch(ex){
                 console.log(ex);
-                simulation.stop();
+                this.simulation.stop();
                 $this.getElement().loader('hide');
             }
         },
@@ -706,6 +715,15 @@
 
                 if(!links[i].source.node.getElement().hasClass('hidden') && !links[i].target.node.getElement().hasClass('hidden')){
                     links[i].group.classed('hidden', false);
+                }
+            }
+        },
+
+        removeOldNodes: function(newNodeList){
+            for(var i in this._nodeList){
+                if(!newNodeList[i]){
+                    this.diagram.removeNode(this._nodeList[i]);
+                    delete this._nodeList[i];
                 }
             }
         }

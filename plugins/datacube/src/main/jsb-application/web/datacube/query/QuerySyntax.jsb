@@ -113,6 +113,7 @@
 	        name: '$query',
 	        desc: 'Query expression',
 	        values: {
+	            '$context': '$contextName',
 	            '$filter': '$filter',
 	            '$groupBy': '$groupBy',
 	            '$select': '$select',
