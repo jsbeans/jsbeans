@@ -3,7 +3,8 @@
 	$parent: 'JSB.Widgets.Control',
 	$require: {
 		Button: 'JSB.Widgets.Button',
-		TextEditor: 'JSB.Widgets.PrimitiveEditor'
+		TextEditor: 'JSB.Widgets.PrimitiveEditor',
+		'MD5': 'JSB.Crypt.MD5'
 	},
 	$client: {
 		$constructor: function(opts){
@@ -106,7 +107,7 @@
 			// proceed hash authentication
 			this.lastUser = this.loginElt.getData().getValue().trim();
 			this.lastPass = this.passElt.getData().getValue().trim();
-			var hash = JSB().MD5.md5(this.lastUser + '@' + this.lastPass);
+			var hash = MD5.md5(this.lastUser + '@' + this.lastPass);
 			
 			JSB().getProvider().ajax(serverBase + 'login', {
 				mode: 'json',

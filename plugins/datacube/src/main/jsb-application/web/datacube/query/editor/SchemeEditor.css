@@ -1,0 +1,23 @@
+@CHARSET "UTF-8";
+
+.schemeEditor {
+	display: inline-block;
+}
+
+.schemeEditor > .container {
+	display: block;
+}
+
+.schemeEditor > .roundButton {}
+
+
+
+.schemeEditor[etype = "ComplexObject"] {}
+
+.schemeEditor[etype = "SimpleObject"] {}
+
+
+
+.schemeEditor[etype = "SimpleObject"] > .roundButton {
+	display: none;
+}

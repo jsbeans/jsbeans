@@ -10,6 +10,8 @@
 		renew:true
 	},
 	$client: {
+		$require: 'JSB.Crypt.MD5',
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -82,7 +84,7 @@
 			var self = this;
 			function passhash(p) {
 				if (p && p.length > 0)
-					return JSB().MD5.md5(self.attrs.login + '@' + p);
+					return MD5.md5(self.attrs.login + '@' + p);
 				return null;
 			}
 			var name = this.find('.name>div').jsb().getData().getValue();

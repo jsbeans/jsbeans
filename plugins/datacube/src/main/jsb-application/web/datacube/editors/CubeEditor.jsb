@@ -277,6 +277,10 @@
 				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this});
 				var cubeRect = $this.cubeNode.getRect();
 				sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
+				
+				$this.diagram.select($this.diagram.getNodes(), false);
+				$this.diagram.select($this.diagram.getLinks(), false);
+				sNode.select(true);
 			});
 		},
 		
