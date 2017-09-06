@@ -104,6 +104,7 @@
                         type: 'item',
                         name: 'Формат',
                         itemType: 'string',
+						description: 'Например, {value:.2f}'
                     },
                     {
                         type: 'group',
@@ -185,6 +186,12 @@
                         type: 'item',
                         name: 'Суффикс значения',
                         itemType: 'string'
+                    },
+                    {
+                        type: 'item',
+                        name: 'Формат',
+                        itemType: 'string',
+						description: 'The HTML of the point\'s line in the tooltip. Variables are enclosed by curly brackets. Available variables are point.x, point.y, series.name and series.color and other properties on the same form. Defaults to <code>&lt;span style="color:{point.color}"&gt;\u25CF&lt;/span&gt; {series.name}: &lt;b&gt;{point.y}&lt;/b&gt;&lt;br/&gt;</code>.'
                     }
                     ]
                 },
@@ -373,19 +380,17 @@
         },
 
 		init: function(){
+			
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);
 
             this.getElement().resize(function(){
-            	if(!$this.getElement().is(':visible')){
+            	if(!$this.getElement().is(':visible') || !$this.chart){
             		return;
             	}
                 JSB.defer(function(){
-                    if($this.highcharts){
-                        $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
-                    }
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }, 300, 'hcResize' + $this.getId());
-
             });
 
             this.isInit = true;
@@ -430,11 +435,11 @@
 
                 if(Object.keys(globalFilters).length === 0) globalFilters = null;
 
-                if(globalFilters && MD5.md5(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
+                if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
                     return;
                 } else {
-                    this._curFilterHash = globalFilters ? MD5.md5(globalFilters) : undefined;
-                }
+                    this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+                }                
             } else {
                 if(Object.keys(this._curFilters).length > 0){
                     for(var i in this._curFilters){
@@ -467,7 +472,7 @@
 	                                    data: [],
 	                                    type: seriesContext[i].get(2).value().name(),
 	                                    tooltip: {
-	                                        valueSuffix: seriesContext[i].get(3).value().get(0).value()
+	                                        valueSuffix: seriesContext[i].get(3).value().get(0).value(),
 	                                    },
 	                                    yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
 	                                    dashStyle: seriesContext[i].get(5).value().name(),
@@ -549,6 +554,23 @@
 	                                    }
 	                                    //,stack: seriesContext[i].get(8).value()
 	                                };
+									
+									/**
+									**/
+									var tooltipPointFormat = $this.safeGetValue(seriesContext[i], [3,1]), 
+									tooltipPointFormat2 = $this.safeGetValue(seriesContext[i], [4,17]);
+									
+									console.log(tooltipPointFormat);
+									console.log(tooltipPointFormat2);
+									
+									if( tooltipPointFormat ) {
+										console.log(tooltipPointFormat);
+										console.log(tooltipPointFormat2);
+										
+										series[i].tooltip.pointFormat = tooltipPointFormat;
+									}
+									/**
+									**/
 	                            }
 	
 	                            var a = seriesContext[i].get(1).value();
@@ -596,6 +618,10 @@
 	                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
 	                    
 	                    var chartOptions = {
+	                    
+	                    	HighchartsBasicArea: {
+	                    		version: 'v-2017-09-05-01'
+	                    	},
 	
 							colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                       
 	                    
@@ -675,7 +701,7 @@
 	                    $this.chart =  $this.container.highcharts();
 	                    
                     } catch(e) {
-                    	console.log("Exception", e);
+                    	console.log("Exception", [$this.wrapper.widgetEntry.wType, e]);
                     } finally {
                         $this.getElement().loader('hide');
                     }
@@ -722,6 +748,20 @@
             if(b) return a === null ? undefined : parseInt(a);
             return a === null ? undefined : a;
         },
+		
+		safeGetValue: function(context, args) {
+			console.log(arguments);
+			if( context !== null && typeof context === 'object') {
+				if( args !== null && (!!args && args.constructor === Array) && args.length) {
+					if(context.get(args[0]) !== null) {
+						var value = context.get(args[0]).value();
+						return (((args.length === 1) || (value === null)) ? value : this.safeGetValue(value, args.slice(1)));
+					}
+				}
+			}
+			
+			return;
+		},
 
         _selectAllCategory: function(cat){
             var series = this.chart.series;
