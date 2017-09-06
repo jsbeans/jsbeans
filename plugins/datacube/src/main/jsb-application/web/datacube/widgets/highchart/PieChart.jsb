@@ -150,6 +150,7 @@
                 name: 'Данные',
                 type: 'group',
                 key: 'data',
+                multiple: 'true',
                 items: [
                 {
                     type: 'item',
@@ -168,7 +169,46 @@
                 ]
             }
             ]
-        }]
+        },
+        {
+            type: 'group',
+            name: 'Подпись',
+            key: 'dataLabels',
+            items: [
+            {
+                name: 'Включить подпись',
+                type: 'item',
+                key: 'enabled',
+                optional: true,
+                editor: 'none'
+            },
+            {
+                name: 'Формат подписи',
+                type: 'item',
+                key: 'format',
+                itemType: 'string',
+                itemValue: '{y}',
+                description: 'В качестве переменных в строке можно использовать имя {point.name} и значение {y}'
+            },
+            {
+                name: 'Расстояние от окружности',
+                type: 'item',
+                key: 'distance',
+                itemType: 'string',
+                itemValue: '30',
+                description: 'Положительное значение указывает расстояние снаружи окружности, отрицательное - внутри'
+            }
+            ]
+        },
+        {
+            name: 'Диаметр внутреннего круга',
+            type: 'item',
+            key: 'innerSize',
+            itemType: 'string',
+            itemValue: '0',
+            description: 'Диаметр внутреннего круга. По умолчанию 0. Диаметр больше 0 делает диаграмму вида бублика. Указывается числовое или процентное значение'
+        }
+        ]
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
@@ -183,7 +223,6 @@
 			$base(opts);
 			this.getElement().addClass('pieChart');
 			this.loadCss('PieChart.css');
-			//JSB().loadScript('tpl/highcharts/js/highcharts.js', function(){
 			JSB().loadScript('tpl/highstock/highstock.js', function(){
 				self.init();
 			});
@@ -209,7 +248,6 @@
                 JSB.defer(function(){
                     $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }, 300, 'hcResize' + $this.getId());
-
             });
 
             this.isInit = true;
@@ -272,7 +310,14 @@
                 }
             }
 // end filters section
-            var dataValue = this.getContext().find('data').value();
+            var dataValues = this.getContext().find('data').values(),
+                dataSource = [];
+            for(var i = 0; i < dataValues.length; i++){
+                dataSource.push({
+                    name: dataValues[i].get(0),
+                    y: dataValues[i].get(1)
+                });
+            }
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
@@ -280,21 +325,22 @@
                     var data = [];
 
                     while(source.next()){
-                        var name = dataValue.get(0).value();
-                        var y = dataValue.get(1).value();
-
-                        if(JSB().isArray(name)){
-                            for(var j = 0; j < name.length; j++){
-                                data.push({
-                                    name: name[j],
-                                    y: y[j]
-                                });
+                        for(var i = 0; i < dataSource.length; i++){
+                            var d = {
+                                name: dataSource[i].name.value(),
+                                y: dataSource[i].y.value()
                             }
-                        } else {
-                            data.push({
-                                name: name,
-                                y: y
-                            });
+
+                            if(JSB().isArray(d.name)){
+                                for(var j = 0; j < d.name.length; j++){
+                                    data.push({
+                                        name: d.name[j],
+                                        y: d.y[j]
+                                    });
+                                }
+                            } else {
+                                data.push(d);
+                            }
                         }
                     }
 
@@ -303,7 +349,7 @@
                         return arr;
                     }, {});
 
-                    $this.container.highcharts({
+                    var chartOptions = {
                         chart: {
                             plotBackgroundColor: null,
                             plotBorderWidth: null,
@@ -320,19 +366,22 @@
                                 allowPointSelect: true,
                                 cursor: 'pointer',
                                 dataLabels: {
-                                    enabled: false
+                                    enabled: this.getContext().find('dataLabels').find('enabled').used(),
+                                    format: this.getContext().find('dataLabels').find('format').value(),
+                                    distance: Number(this.getContext().find('dataLabels').find('distance').value())
                                 },
                                 showInLegend: true
                             }
                         },
 
                         tooltip: {
-                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                            pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
                         },
 
                         series: [{
                             data: data,
                             colorByPoint: true,
+                            innerSize: this.getContext().find('innerSize').value(),
                             point: {
                                 events: {
                                     click: function(evt) {
@@ -393,7 +442,25 @@
                                 }
                             }
                         }]
-                    });
+                    };
+
+                    // todo: distance after resize
+                    /*
+                    var dataLabelsDistance = this.getContext().find('dataLabels').find('distance').value();
+                    if(dataLabelsDistance.indexOf('%') > -1){
+                        dataLabelsDistance = Number(dataLabelsDistance.slice(0, dataLabelsDistance.indexOf('%')));
+
+                        var w = $this.getElement().width(),
+                            h = $this.getElement().height();
+
+                        dataLabelsDistance = w <= h ? dataLabelsDistance * w / 100 : dataLabelsDistance * h / 100;
+                    } else {
+                        dataLabelsDistance = Number(dataLabelsDistance);
+                    }
+                    chartOptions.plotOptions.pie.dataLabels.distance = dataLabelsDistance;
+                    */
+
+                    $this.container.highcharts(chartOptions);
 
                     $this.getElement().loader('hide');
 
