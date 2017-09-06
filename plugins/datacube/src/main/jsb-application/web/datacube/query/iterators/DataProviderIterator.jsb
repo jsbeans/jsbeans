@@ -37,6 +37,8 @@
 
 		close: function() {
 		    this.iterator.close();
+		    this.translator.close();
+		    this.destroy();
 		},
 
 		next: function(){

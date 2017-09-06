@@ -5,9 +5,10 @@
 		$require: [
 		],
 
-		$constructor: function(config){
+		$constructor: function(config, storeManager){
 			$base();
 			this.config = config;
+			this.storeManager = storeManager;
 		},
 
 		getName: function(){
@@ -24,6 +25,11 @@
 		
 		getType: function(){
 			return this.config.type;
-		}
+		},
+
+		close: function() {
+		    storeManager._removeStore(this);
+		    this.destroy();
+		},
     }
 })

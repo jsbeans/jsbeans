@@ -33,6 +33,7 @@
 
 		close: function() {
 		    this.iterator.close();
+		    this.destroy();
 		},
 
 		_finalizeObject: function(json, finalize) {

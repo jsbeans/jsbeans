@@ -54,8 +54,6 @@
 			if(this.property('slices')){
 				this.sliceCount = this.property('slices');
 			}
-
-            this.queryEngine = new QueryEngine(this);
 		},
 		
 		destroy: function(){
@@ -67,6 +65,8 @@
 		
 		load: function(bRespond){
 			if(!this.loaded){
+			    this.queryEngine = new QueryEngine(this);
+
 				if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
 					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.cube');
 					

@@ -37,6 +37,7 @@
 		},
 
 		close: function() {
-		},
+		    this.destroy();
+		}
 	}
 }
