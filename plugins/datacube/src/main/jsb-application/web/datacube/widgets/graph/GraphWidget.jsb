@@ -207,13 +207,110 @@
                 description: 'Ширина объекта вершины'
             },
             {
-                type: 'item',
-                name: 'Радиус ячейки',
-                key: 'itemRadius',
-                binding: 'field',
-                itemType: 'string',
-                itemValue: '',
-                description: 'Радиус относительно центра вершины, в котором не будет других вершин'
+                type: 'group',
+                name: 'Дополнительные настройки алгоритма расположения',
+                items: [
+                {
+                    type: 'group',
+                    name: 'Симуляция',
+                    key: 'simulation',
+                    items: [
+                        {
+                            type: 'item',
+                            name: 'alpha',
+                            key: 'alpha',
+                            itemType: 'number',
+                            itemValue: '1',
+                        },
+                        {
+                            type: 'item',
+                            name: 'alphaMin',
+                            key: 'alphaMin',
+                            itemType: 'number',
+                            itemValue: '0.001',
+                        },
+                        {
+                            type: 'item',
+                            name: 'alphaDecay',
+                            key: 'alphaDecay',
+                            itemType: 'number',
+                            itemValue: '0.0228',
+                        },
+                        {
+                            type: 'item',
+                            name: 'alphaTarget',
+                            key: 'alphaTarget',
+                            itemType: 'number',
+                            itemValue: '0',
+                        },
+                        {
+                            type: 'item',
+                            name: 'velocityDecay',
+                            key: 'velocityDecay',
+                            itemType: 'number',
+                            itemValue: '0.4',
+                        }
+                    ]
+                },
+                {
+                    type: 'group',
+                    name: 'Коллизия',
+                    key: 'collide',
+                    items: [
+                        {
+                            type: 'item',
+                            name: 'radius',
+                            key: 'radius',
+                            itemType: 'number',
+                            itemValue: '1',
+                        },
+                        {
+                            type: 'item',
+                            name: 'strength',
+                            key: 'strength',
+                            itemType: 'number',
+                            itemValue: '0.7',
+                        },
+                        {
+                            type: 'item',
+                            name: 'iterations',
+                            key: 'iterations',
+                            itemType: 'number',
+                            itemValue: '1',
+                        }
+                    ]
+                },
+                {
+                    type: 'group',
+                    name: 'Связи',
+                    key: 'link',
+                    items: [
+                        {
+                            type: 'item',
+                            name: 'distance',
+                            key: 'distance',
+                            itemType: 'number',
+                            itemValue: '30',
+                        },
+                        /*
+                        {
+                            type: 'item',
+                            name: 'strength',
+                            key: 'strength',
+                            itemType: 'number',
+                            itemValue: '',
+                        },
+                        */
+                        {
+                            type: 'item',
+                            name: 'iterations',
+                            key: 'iterations',
+                            itemType: 'number',
+                            itemValue: '1',
+                        }
+                    ]
+                }
+                ]
             }
             ]
         }
@@ -430,7 +527,7 @@
                                 }
                             }
 
-                            if(!nodesMap[te] && !$this._nodeList[te]){
+                            if(!nodesMap[te]){
                                 var teEntry = JSB().clone(viewList[targetElement.binding()]);
 
                                 if(teEntry){
@@ -613,14 +710,45 @@
             try{
                 var itemWidth = this.getContext().find('itemWidth').value(),
                     itemHeight = this.getContext().find('itemHeight').value(),
-                    itemRadius = this.getContext().find('itemRadius').value();
+                    // simulation settings
+                    simulationOpts = {
+                        id: 'simulation',
+                        alpha: this.getContext().find('simulation').find('alpha').value(),
+                        alphaMin: this.getContext().find('simulation').find('alphaMin').value(),
+                        alphaDecay: this.getContext().find('simulation').find('alphaDecay').value(),
+                        alphaTarget: this.getContext().find('simulation').find('alphaTarget').value(),
+                        velocityDecay: this.getContext().find('simulation').find('velocityDecay').value()
+                    },
+                    // collide settings
+                    collideOpts = {
+                        id: 'collide',
+                        radius: this.getContext().find('collide').find('radius').value(),
+                        strength: this.getContext().find('collide').find('strength').value(),
+                        iterations: this.getContext().find('collide').find('iterations').value()
+                    },
+                    linkOpts = {
+                        distance: this.getContext().find('link').find('radius').value(),
+                        // strength: this.getContext().find('link').find('strength').value(),
+                        iterations: this.getContext().find('link').find('iterations').value()
+                    };
+
+                simulationOpts = this.prepareOpts(simulationOpts);
+                collideOpts = this.prepareOpts(collideOpts);
+                linkOpts = this.prepareOpts(linkOpts);
 
                 this.simulation = d3.forceSimulation()
-                    .alphaMin(0.1)
-                    .force("link", d3.forceLink().id(function(d) { return d.id }))
-                    .force("collide",d3.forceCollide( function(d){
-                        if(itemRadius){
-                            return itemRadius;
+                    .alpha(simulationOpts.alpha)
+                    .alphaMin(simulationOpts.alphaMin)
+                    .alphaDecay(simulationOpts.alphaDecay)
+                    .alphaTarget(simulationOpts.alphaTarget)
+                    .velocityDecay(simulationOpts.velocityDecay)
+                    .force("link", d3.forceLink().id(function(d) { return d.id })
+                        .distance(linkOpts.distance)
+                        // .strength(linkOpts.strength)
+                        .iterations(linkOpts.iterations))
+                    .force("collide", d3.forceCollide( function(d){
+                        if(collideOpts.radius){
+                            return collideOpts.radius;
                         }
 
                         if(!itemWidth){
@@ -630,7 +758,10 @@
                             itemHeight = $this._nodeList[d.id].getElement().height();
                         }
                         return (Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2))) / 2;
-                    }).iterations(1))
+                    })
+                        .radius(collideOpts.radius)
+                        .strength(collideOpts.strength)
+                        .iterations(collideOpts.iterations))
                     .force("charge", d3.forceManyBody());
 
                 links.forEach(function(d){
@@ -653,21 +784,12 @@
 
                 this.simulation.nodes(nodes)
                           .on("tick", ticked);
-                          /*
-                          .on("end", function(){
-                            nodes.forEach(function(el){
-                                $this._nodeList[el.id].setPosition(el.x, el.y);
-                            });
-
-                            $this.getElement().loader('hide');
-                          });
-                          */
 
                 this.simulation.force("link")
                           .links(links);
             } catch(ex){
                 console.log(ex);
-                this.simulation.stop();
+                if(this.simulation) this.simulation.stop();
                 $this.getElement().loader('hide');
             }
         },
@@ -728,6 +850,57 @@
                     delete this._nodeList[i];
                 }
             }
+        },
+
+        prepareOpts: function(item){
+            var defSimulation = {
+                alpha: 1,
+                alphaMin: 0.001,
+                alphaDecay: 1 - Math.pow(0.001, 1 / 300),
+                alphaTarget: 0,
+                velocityDecay: 0.4
+            },
+                defCollide = {
+                radius: 1,
+                strength: 0.7,
+                iterations: 1
+            },
+                defLink = {
+                distance: 30,
+                iterations: 1
+            };
+
+            switch(item.id){
+                case 'simulation':
+                    for(var i in item){
+                        if(!item[i] || item[i].length === 0){
+                            item[i] = defSimulation[i];
+                        } else {
+                            item[i] = Number(item[i]);
+                        }
+                    }
+                    break;
+                case 'collide':
+                    for(var i in item){
+                        if(!item[i] || item[i].length === 0){
+                            item[i] = defCollide[i];
+                        } else {
+                            item[i] = Number(item[i]);
+                        }
+                    }
+                    break;
+                case 'link':
+                    for(var i in item){
+                        if(!item[i] || item[i].length === 0){
+                            item[i] = defLink[i];
+                        } else {
+                            item[i] = Number(item[i]);
+                        }
+                    }
+                    break;
+            }
+
+            return item;
         }
     }
 }
