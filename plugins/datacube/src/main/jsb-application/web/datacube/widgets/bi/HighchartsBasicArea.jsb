@@ -557,16 +557,8 @@
 									
 									/**
 									**/
-									var tooltipPointFormat = $this.safeGetValue(seriesContext[i], [3,1]), 
-									tooltipPointFormat2 = $this.safeGetValue(seriesContext[i], [4,17]);
-									
-									console.log(tooltipPointFormat);
-									console.log(tooltipPointFormat2);
-									
+									var tooltipPointFormat = $this.safeGetValue(seriesContext[i], [3,1]);
 									if( tooltipPointFormat ) {
-										console.log(tooltipPointFormat);
-										console.log(tooltipPointFormat2);
-										
 										series[i].tooltip.pointFormat = tooltipPointFormat;
 									}
 									/**
@@ -750,7 +742,6 @@
         },
 		
 		safeGetValue: function(context, args) {
-			console.log(arguments);
 			if( context !== null && typeof context === 'object') {
 				if( args !== null && (!!args && args.constructor === Array) && args.length) {
 					if(context.get(args[0]) !== null) {
