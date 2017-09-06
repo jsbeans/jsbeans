@@ -616,15 +616,13 @@
             this.append(this.container);
 
             this.getElement().resize(function(){
-            	if(!$this.getElement().is(':visible')){
-            		return;
-            	}
-                JSB.defer(function(){
-                    if($this.highcharts){
-                        $this.highcharts.setSize($this.getElement().width(), $this.getElement().height(), false);
-                    }
-                }, 300, 'hcResize' + $this.getId());
+            	if(!$this.getElement().is(':visible') || !$this.chart){
+                    return;
+                }
 
+                JSB.defer(function(){
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
+                }, 300, 'hcResize' + $this.getId());
             });
 
             this.isInit = true;
