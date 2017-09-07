@@ -28,7 +28,7 @@
 		},
 
 		close: function() {
-		    storeManager._removeStore(this);
+			this.storeManager._removeStore(this);
 		    this.destroy();
 		},
     }
