@@ -69,7 +69,7 @@
 		},
 
 		_removeStore: function(store){
-            delete $this._stores[config.config.name];
+            delete $this._stores[store.config.name];
 		},
 
 		_compareConfigs: function(inputConfig, storeConfig){
