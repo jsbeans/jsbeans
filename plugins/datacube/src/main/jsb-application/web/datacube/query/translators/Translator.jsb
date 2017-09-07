@@ -213,5 +213,9 @@
             }
             return providers;
         },
+
+		close: function() {
+		    throw new Error('Not implemented');
+		}
 	}
 }

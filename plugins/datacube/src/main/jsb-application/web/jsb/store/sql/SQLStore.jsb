@@ -10,7 +10,7 @@
 
 		connections: {},
 
-		$constructor: function(config){
+		$constructor: function(config, storeManager){
 			$base(JSB.merge({
 //                    type: JSB.Store.Sql.SQLStore,
 //                    url: '',
@@ -23,7 +23,7 @@
 //                        paramName: java.sql.Types.VALUE,
 //                        'name': 'STRING',
                     }
-			    }, config));
+			    }, config), storeManager);
 			// init MongoSQL global var
 		},
 
@@ -177,7 +177,7 @@
             };
 		},
 
-		destroy: function(){
+		close: function() {
             JSB.locked($this, 'connection', function() {
                 for (var id in this.connections) if ($this.connections.hasOwnProperty(id)) {
                     var conn = this.connections[conn.id];
@@ -190,6 +190,7 @@
                     }
                 }
             });
+
 		    $base();
 		},
 

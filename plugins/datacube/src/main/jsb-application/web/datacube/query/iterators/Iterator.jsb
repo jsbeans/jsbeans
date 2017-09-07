@@ -17,15 +17,6 @@
 
 		close: function() {
 		    throw new Error('Not implemented');
-		},
-
-		destroy: function(){
-		    try {
-		        this.close();
-		    } catch (e) {
-		        Log.error('Close Iterator failed', e);
-		    }
-		    $base();
 		}
 	}
 }

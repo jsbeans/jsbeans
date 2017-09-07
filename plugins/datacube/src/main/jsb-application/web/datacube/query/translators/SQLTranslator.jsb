@@ -613,5 +613,9 @@
             }
             return sql;
         },
+
+		close: function() {
+		    this.destroy();
+		}
 	}
 }

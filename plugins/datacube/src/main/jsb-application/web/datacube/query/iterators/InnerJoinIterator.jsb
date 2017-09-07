@@ -137,6 +137,7 @@
                     Log.error('Close Iterator failed', e);
                 }
 		    }
+		    this.destroy();
 		},
 
 		getLeftConditionFieldValues: function(i) {
