@@ -500,6 +500,7 @@
 				this.editor.publish('DataCube.CubeEditor.cubeNodeSelected', this.entry);
 			} else {
 				this.removeClass('selected');
+				this.editor.publish('DataCube.CubeEditor.cubeNodeDeselected', this.entry);
 			}
 		},
 		

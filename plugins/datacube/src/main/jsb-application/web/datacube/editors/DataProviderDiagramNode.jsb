@@ -244,6 +244,7 @@
 				this.editor.publish('DataCube.CubeEditor.providerNodeSelected', this.provider);
 			} else {
 				this.removeClass('selected');
+				this.editor.publish('DataCube.CubeEditor.providerNodeDeselected', this.provider);
 			}
 		},
 		

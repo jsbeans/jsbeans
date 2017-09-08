@@ -120,7 +120,8 @@
 				scope: params.scope,
 				target: params.target,
 				constraints: params.constraints,
-				callback: params.callback
+				callback: params.callback,
+				toolOpts: params.toolOpts
 			});
 
 		},

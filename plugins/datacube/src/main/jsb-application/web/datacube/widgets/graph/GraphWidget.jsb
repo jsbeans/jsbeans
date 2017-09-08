@@ -336,6 +336,9 @@
                 highlightSelecting: false,
                 autoLayout: false,
                 background: 'none',
+                onInit: function(){
+                    $this._diagramInit = true;
+                },
                 nodes: {
                     graphNode: {
                         jsb: 'DataCube.GraphWidget.GraphNode',
@@ -464,12 +467,15 @@
                     });
                 }
             }, function(){
-                $this.fetch(viewListObject, linksList);
+                JSB().deferUntil(function(){
+                    $this.fetch(viewListObject, linksList);
+                }, function(){
+                    return $this._isInit && $this._diagramInit;
+                });
             });
         },
 
         fetch: function(viewList, linksList){
-            // this.diagram.clear();
             if(this.simulation) this.simulation.stop();
             this.diagram.setPan({x: 0, y: 0});
 
