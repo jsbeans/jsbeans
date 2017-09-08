@@ -309,8 +309,8 @@ if(!(function(){return this;}).call(null).JSB){
 				return '';
 			}
 			if(this.$_path.length > 0 
-					&& this.$_path[this.$_path.length] != '\\' 
-					&& this.$_path[this.$_path.length] != '/' ){
+					&& this.$_path[this.$_path.length - 1] != '\\'
+					&& this.$_path[this.$_path.length - 1] != '/' ){
 				return this.$_path + '/';
 			}
 			return this.$_path;
@@ -2540,7 +2540,17 @@ if(!(function(){return this;}).call(null).JSB){
 				var _s = document.createElement("script");
 			    _s.type = "text/javascript";
 			    if(url.indexOf('http') == -1){
-			    	_s.src = self.getProvider().getServerBase() + url;	 
+			        var serverBase = self.getProvider().getServerBase();
+                    if(serverBase
+                        && serverBase.length > 0
+                        && (serverBase[serverBase.length - 1] == '/' || serverBase[serverBase.length - 1] == '\\')
+                        && url
+                        && url.length > 0
+                        && (url[0] == '/' || url[0] == '\\')){
+
+                        url = url.substr(1);
+                    }
+			    	_s.src = serverBase + url;
 			    } else {
 			    	_s.src = url;
 			    }
@@ -2615,7 +2625,17 @@ if(!(function(){return this;}).call(null).JSB){
 			var _l = document.createElement("link");
 			_l.rel = "stylesheet";
 		    if(url.indexOf('http') == -1){
-		    	_l.href = this.getProvider().getServerBase() + url;	 
+		        var serverBase = this.getProvider().getServerBase();
+		        if(serverBase
+		            && serverBase.length > 0
+		            && (serverBase[serverBase.length - 1] == '/' || serverBase[serverBase.length - 1] == '\\')
+		            && url
+		            && url.length > 0
+		            && (url[0] == '/' || url[0] == '\\')){
+
+                    url = url.substr(1);
+                }
+		    	_l.href = serverBase + url;
 		    } else {
 		    	_l.href = url;
 		    }
