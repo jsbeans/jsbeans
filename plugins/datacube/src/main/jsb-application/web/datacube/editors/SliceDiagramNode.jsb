@@ -169,6 +169,7 @@
 				this.editor.publish('DataCube.CubeEditor.sliceNodeSelected', this.slice);
 			} else {
 				this.removeClass('selected');
+				this.editor.publish('DataCube.CubeEditor.sliceNodeDeselected', this.slice);
 			}
 		},
 		

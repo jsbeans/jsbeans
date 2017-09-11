@@ -34,7 +34,7 @@
             this.errorText = this.$('<span class="errorText"></span>');
             this.error.append(this.errorText);
             this.append(this.error);
-            
+            // selected
             this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, slice){
             	JSB.defer(function(){
             		$this.updateData(slice);
@@ -58,11 +58,34 @@
                     $this._updateData(slice);
                 }, 300, 'sliceNodeEdit' + $this.getId());
             });
+
+            // deselected
+            this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(editor, msg, slice){
+                JSB.defer(function(){
+                    $this.clear();
+                }, 300, 'sliceNodeDeselected' + $this.getId());
+            });
+
+            this.subscribe('DataCube.CubeEditor.cubeNodeDeselected', function(editor, msg, slice){
+                JSB.defer(function(){
+                    $this.clear();
+                }, 300, 'cubeNodeDeselected' + $this.getId());
+            });
+
+            this.subscribe('DataCube.CubeEditor.providerNodeDeselected', function(editor, msg, slice){
+                JSB.defer(function(){
+                    $this.clear();
+                }, 300, 'providerNodeDeselected' + $this.getId());
+            });
 		},
 
 		clear: function(){
 		    this.error.addClass('hidden');
             this.table.clear();
+            this.curData = null;
+            this.curLoadId = null;
+            this.params = {};
+            this.allLoaded = false;
 		},
 
 		// get column number; return header cell content
@@ -157,6 +180,8 @@
 		},
 
 		_updateData: function(source){
+		    if(this.curData === source) return;
+
             this.error.addClass('hidden');
 
             if(!source.query) return;

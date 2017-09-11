@@ -685,7 +685,13 @@
 						$this.addTreeItem(chDesc, parentKey);
 					}
 				})
-				
+			}
+			function onNodeCollapse(treeNode){
+			    var selected = $this.tree.getSelected();
+
+			    if(selected && $this.tree.isChild(treeNode.key, selected.key, true)){
+			        $this.tree.selectItem(null, null);
+			    }
 			}
 			if(bReplace){
 				curTreeNode = $this.tree.replaceNode({
@@ -694,6 +700,7 @@
 					dynamicChildren: itemDesc.hasEntryChildren,
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
+					onCollapse: onNodeCollapse,
 					cssClass: itemDesc.type,
 					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
 				}, parent);
@@ -704,6 +711,7 @@
 					dynamicChildren: itemDesc.hasEntryChildren,
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
+					onCollapse: onNodeCollapse,
 					cssClass: itemDesc.type,
 					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
 				}, parent);

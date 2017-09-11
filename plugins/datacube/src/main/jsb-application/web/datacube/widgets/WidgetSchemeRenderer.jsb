@@ -171,13 +171,7 @@
 				}
 
 				if(this.scheme.description){
-				    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
-				    header.append(description);
-
-				    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
-				    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
-				                          function() { description.addClass( "hidden" ); });
-                    header.append(descriptionIcon);
+				    this.constructSchemeDescription(header, this.scheme.description);
 				}
 			}
 			
@@ -414,13 +408,7 @@
 				}
 
 				if(this.scheme.description){
-                    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
-                    header.append(description);
-
-                    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
-                    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
-                                          function() { description.addClass( "hidden" ); });
-                    header.append(descriptionIcon);
+				    this.constructSchemeDescription(header, this.scheme.description);
                 }
 			} else {
 				this.values.used = true;
@@ -693,13 +681,7 @@
 				}
 
 				if(this.scheme.description){
-                    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
-                    header.append(description);
-
-                    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
-                    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
-                                          function() { description.addClass( "hidden" ); });
-                    header.append(descriptionIcon);
+                    this.constructSchemeDescription(header, this.scheme.description);
                 }
 			} else {
 				header = this.options.outletHeader;
@@ -821,13 +803,7 @@
 				header.removeClass('hidden');
 
 				if(this.scheme.description){
-                    var description = this.$('<div class="sheme-description hidden">' + this.scheme.description + '</div>');
-                    header.append(description);
-
-                    var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
-                    descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
-                                          function() { description.addClass( "hidden" ); });
-                    header.append(descriptionIcon);
+				    this.constructSchemeDescription(header, this.scheme.description);
                 }
 			}
 			
@@ -836,6 +812,60 @@
 			if($this.values.widget){
 				fillWidgetPane();
 			}
+		},
+
+		constructSchemeDescription: function(header, schemeDescription){
+            var description = this.$('<div class="scheme-description hidden">' + schemeDescription + '</div>');
+            header.append(description);
+
+            var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
+
+            descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
+                                  function() { description.addClass( "hidden" ); });
+
+            descriptionIcon.mousemove(function(evt){
+                                if(description.hasClass('show')) return;
+
+                                var descWidth = description.outerWidth(),
+                                    descHeight = description.outerHeight(),
+                                    bodyWidth = $this.$(window).width(),
+                                    bodyHeight = $this.$(window).height(),
+                                    top = evt.pageY,
+                                    left = evt.pageX;
+
+                                if(top + descHeight + 20 > bodyHeight){
+                                    top = bodyHeight - descHeight - 20;
+                                }
+
+                                if(left + descWidth + 20 > bodyWidth){
+                                    left = bodyWidth - descWidth - 20;
+                                }
+
+                                description.offset({top: top + 15, left: left + 15 });
+                           });
+
+            descriptionIcon.click(function(evt){
+                               description.toggleClass('show');
+
+                               var descWidth = description.outerWidth(),
+                                   descHeight = description.outerHeight(),
+                                   bodyWidth = $this.$(window).width(),
+                                   bodyHeight = $this.$(window).height(),
+                                   top = evt.pageY,
+                                   left = evt.pageX;
+
+                               if(top + descHeight + 20 > bodyHeight){
+                                   top = bodyHeight - descHeight - 20;
+                               }
+
+                               if(left + descWidth + 20 > bodyWidth){
+                                   left = bodyWidth - descWidth - 20;
+                               }
+
+                               description.offset({top: top + 15, left: left + 15 });
+                           });
+
+            header.append(descriptionIcon);
 		}
 	}
 }

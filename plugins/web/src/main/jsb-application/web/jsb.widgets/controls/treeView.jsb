@@ -289,6 +289,27 @@
 			
 			return keyArr;
 		},
+
+		isChild: function(parentKey, childKey, bRecursively){
+		    if(bRecursively){
+		        function find(parentKey, childKey){
+		            var keyArr = $this.getChildNodes(parentKey);
+		            if(keyArr.indexOf(childKey) > -1){
+		                return true;
+		            } else {
+		                for(var i = 0; i < keyArr.length; i++){
+		                    if(find(keyArr[i], childKey)){
+		                        return true;
+		                    }
+		                }
+		            }
+		        }
+
+		        return find(parentKey, childKey);
+		    } else {
+		        return this.getChildNodes(parentKey).indexOf(childKey) > -1;
+		    }
+		},
 		
 		addNode: function(item, parentKey){
 			var itemObj = this.resolveItem(item);

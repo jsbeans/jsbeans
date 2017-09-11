@@ -18,7 +18,7 @@
 //                        user: '',
 //                        password: '',
 //                    },
-                    maxConnections: 5,
+                    maxConnections: 500,
                     argumentTypes: {
 //                        paramName: java.sql.Types.VALUE,
 //                        'name': 'STRING',

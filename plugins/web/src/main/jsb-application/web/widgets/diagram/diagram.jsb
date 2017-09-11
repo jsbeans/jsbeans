@@ -291,11 +291,7 @@
 				mouseout: function(evt){
 					self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 				},
-				
-				click: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
-				},
-				
+
 				mousedown: function(evt){
 					self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 				},
