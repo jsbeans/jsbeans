@@ -409,7 +409,8 @@
 	            '$ilike': '$ilikeExpr',
 	            '$in': '$inExpr',
 	            '$nin': '$ninExpr',
-	        }
+	        },
+	        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$in', '$nin']
 	    });
 
 	    new this.ComplexObject({
@@ -600,7 +601,27 @@
 
 	    new this.Group({
 	        name: '$finalize',
+	        desc: 'Finalize transformation',
 	        values: ['$finalizeFunction', '$finalizeObject'] // TODO
+	    });
+	    new this.ComplexObject({
+	        name: '$finalizeObject',
+	        values: {
+	            '$replace': '$finalizeReplace'
+//	            '$group': '$finalizeGroup'
+	        },
+	    });
+	    new this.ComplexObject({
+            name: '$finalizeReplace',
+	        desc: 'Replace values map (key - string "value" or regexp "/R/i")',
+	        customKey: '#value',
+	        values: {
+	            '#value': '$replaceWithValue'
+	        },
+        });
+	    new this.Group({
+	        name: '$replaceWithValue',
+	        values: ['$constString', '$constNumber', '$constBoolean'],
 	    });
 
 	    new this.EConstBoolean({
