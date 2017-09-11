@@ -235,6 +235,9 @@ debugger;
                     dcQuery.$groupBy = groupFields;
                 }
             }
+
+            this._topGeneralFields(dcQuery);
+
             return dcQuery;
 		},
 
@@ -357,5 +360,63 @@ debugger;
 		        }
 		    };
 		},
+
+		_topGeneralFields: function(dcQuery){
+		    function copyWithTopField(fieldName, obj) {
+		        var res = {};
+		        res[fieldName] = obj[fieldName];
+		        for (var f in obj) if (obj.hasOwnProperty(f) && f != fieldName) {
+		            res[f] = obj[f];
+		        }
+		        return res;
+		    }
+
+		    function isFieldLinkedWith(field, exp) {
+                if (JSB.isPlainObject(exp)) {
+                    if (exp['$field']
+                            && exp['$context'] == dcQuery.$context
+                            && exp['$field'] == field) {
+                        return true;
+                    } else {
+                        for(var p in exp) if (exp.hasOwnProperty(p)) {
+                            if (isFieldLinkedWith(field, exp[p])) {
+                                return true;
+                            }
+                        }
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for(var i in exp) {
+                        if (isFieldLinkedWith(field, exp[i])) {
+                            return true;
+                        }
+                    }
+                } else if (JSB.isString(exp) && exp == field) {
+                    // not true - defined without context (see top where isPlainObject)
+                    return false;
+                }
+                return false;
+		    }
+
+            var select = dcQuery.$select;
+		    var topFields = {};
+		    for (var field in select) if (select.hasOwnProperty(field)) {
+
+                var list = false;
+                for (var nextField in select) {
+                    if (nextField == field) {
+                        list = true;
+                    } else if (list && select.hasOwnProperty(nextField)) {
+                        if (isFieldLinkedWith(field, select[nextField])) {
+                            topFields[field] = Object.keys(topFields).length;
+                        }
+                    }
+                }
+		    }
+
+            for (var field in topFields) if (topFields.hasOwnProperty(field)) {
+		        select = copyWithTopField(field, select);
+		    }
+		    dcQuery.$select = select;
+		}
 	}
 }
