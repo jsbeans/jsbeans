@@ -421,9 +421,11 @@
 		
 		updateHeaderSize: function(){
 			if($this.header.is(':visible')){
-				$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
+				$this.scroll.getPane().css('padding-top', $this.header.height());
+//				$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
 			} else {
-				$this.scroll.getElement().css('height', '100%');
+				$this.scroll.getPane().css('padding-top', 0);
+//				$this.scroll.getElement().css('height', '100%');
 			}
 		},
 		

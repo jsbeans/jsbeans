@@ -122,7 +122,7 @@
 	            '$sort': '$sort',
 	            '$finalize': '$finalize'
             },
-	        optional: ['$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize'],
+	        optional: ['$context', '$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize'],
 	    });
 
 	    new this.ComplexObject({

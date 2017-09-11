@@ -2,22 +2,109 @@
 
 .schemeEditor {
 	display: inline-block;
+	vertical-align: top;
+	position: relative;
 }
+
+/* btnCreate */
+.schemeEditor > .roundButton {}
+
+.schemeEditor > .roundButton {
+	display: none;
+}
+
+.schemeEditor[etype = "ComplexObject"] > .btnCreate,
+.schemeEditor[etype = "EArray"] > .btnCreate {
+	display: inline-block;
+}
+
 
 .schemeEditor > .container {
 	display: block;
+	position: relative;
 }
 
-.schemeEditor > .roundButton {}
+.schemeEditor > .container > .entry {}
 
+
+/* literal values */
+
+.schemeEditor[etype = "EConstBoolean"] {}
+
+.schemeEditor[etype = "EConstString"] {}
+
+.schemeEditor[etype = "EConstNumber"] {}
+
+.schemeEditor[etype = "EConstNumber"],
+.schemeEditor[etype = "EConstString"] {
+	padding-right: 20px;
+	height: 20px;
+}
+
+.schemeEditor[etype = "EConstNumber"] > .container,
+.schemeEditor[etype = "EConstString"] > .container {}
+
+.schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor,
+.schemeEditor[etype = "EConstString"] > .container > ._dwp_editor {
+	display: block;
+}
+
+.schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor.editing,
+.schemeEditor[etype = "EConstString"] > .container > ._dwp_editor.editing,
+.schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor.editing > input,
+.schemeEditor[etype = "EConstString"] > .container > ._dwp_editor.editing > input {
+	min-width: 150px;
+	min-height: 20px;
+}
+
+.schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor > ._dwp_plain,
+.schemeEditor[etype = "EConstString"] > .container > ._dwp_editor > ._dwp_plain {
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+.schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor > input,
+.schemeEditor[etype = "EConstString"] > .container > ._dwp_editor > input {
+	padding: 0 2px;
+}
+
+
+
+.schemeEditor[etype = "EConstNumber"] > .btnEdit,
+.schemeEditor[etype = "EConstString"] > .btnEdit {
+	position: absolute;
+	display: inline-block;
+	right: 2px;
+	top: 50%;
+	margin-top: -8px;
+}
+
+/* complex object */
+
+.schemeEditor[etype = "ComplexObject"] > .container > .entry {
+	
+}
+
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .key {
+	display: inline-block;
+	vertical-align: top;
+	padding: 2px 0;
+}
+
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .key:after {
+	content: ":";
+	margin: 0 2px;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value {
+	display: inline-block;
+	vertical-align: top;
+}
 
 
 .schemeEditor[etype = "ComplexObject"] {}
 
 .schemeEditor[etype = "SimpleObject"] {}
 
-
-
-.schemeEditor[etype = "SimpleObject"] > .roundButton {
-	display: none;
-}
