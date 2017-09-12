@@ -18,13 +18,53 @@
 	display: inline-block;
 }
 
+.schemeEditor[sname = "$sortDefinition"] > .btnCreate {
+	display: none;
+}
+
 
 .schemeEditor > .container {
 	display: block;
 	position: relative;
 }
 
-.schemeEditor > .container > .entry {}
+.schemeEditor > .container > .entry {
+	
+}
+
+.schemeEditor > .container > .entry > .key {
+	display: inline-block;
+	vertical-align: top;
+	padding: 2px 0;
+}
+
+.schemeEditor > .container > .entry > .key:after {
+	content: ":";
+	margin: 0 2px;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.schemeEditor > .container > .entry > .value {
+	display: inline-block;
+	vertical-align: top;
+}
+
+
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value {
+	display: block;
+	margin-left: 30px;
+}
+
+
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[sname="$field"],
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype="EConstString"],
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype="EConstNumber"],
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype="EConstBoolean"],
+.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype="SingleObject"] {
+	display: inline-block;
+	margin-left: 0;
+} 
 
 
 /* literal values */
@@ -81,30 +121,9 @@
 
 /* complex object */
 
-.schemeEditor[etype = "ComplexObject"] > .container > .entry {
-	
-}
-
-.schemeEditor[etype = "ComplexObject"] > .container > .entry > .key {
-	display: inline-block;
-	vertical-align: top;
-	padding: 2px 0;
-}
-
-.schemeEditor[etype = "ComplexObject"] > .container > .entry > .key:after {
-	content: ":";
-	margin: 0 2px;
-	display: inline-block;
-	vertical-align: top;
-}
-
-.schemeEditor[etype = "ComplexObject"] > .container > .entry > .value {
-	display: inline-block;
-	vertical-align: top;
-}
 
 
 .schemeEditor[etype = "ComplexObject"] {}
 
-.schemeEditor[etype = "SimpleObject"] {}
+.schemeEditor[etype = "SingleObject"] {}
 

@@ -39,6 +39,7 @@
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .renderer {
 	padding-bottom: 2px;
+	max-width: 300px;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .icon,
