@@ -29,6 +29,7 @@
 			vSplitBox.addToPane(0, scrollBox);
 			
 			this.queryEditor = new QueryEditor();
+			this.queryEditor.addClass('queryEditor');
 			scrollBox.append(this.queryEditor);
 
 			

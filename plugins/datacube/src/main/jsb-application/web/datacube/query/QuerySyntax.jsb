@@ -124,7 +124,7 @@
 	            '$finalize': '$finalize',
 	            '$sql': '$sqlQuery'
             },
-	        optional: ['$context', '$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize', '$sql']
+	        optional: ['$context', '$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize', '$sql','$limit']
 	    });
 
 	    new this.ComplexObject({

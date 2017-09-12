@@ -29,13 +29,24 @@
 }
 
 .schemeEditor > .container > .entry {
-	
+	position: relative;
 }
 
 .schemeEditor > .container > .entry > .key {
 	display: inline-block;
 	vertical-align: top;
 	padding: 2px 0;
+	max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schemeEditor > .container > .entry > .key.keyword {
+	color: #7b4500;
+	font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
 }
 
 .schemeEditor > .container > .entry > .key:after {
@@ -50,6 +61,7 @@
 	vertical-align: top;
 }
 
+/* ComplexObject */
 
 .schemeEditor[etype = "ComplexObject"] > .container > .entry > .value {
 	display: block;
@@ -67,6 +79,55 @@
 } 
 
 
+/* EArray */
+
+.schemeEditor[etype = "EArray"] > .container > .entry {
+	padding-left: 16px;
+	background-color: rgba(202, 186, 167, 0.3);
+	min-height: 20px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+	margin: 1px 0;
+}
+
+.schemeEditor[etype = "EArray"] > .container > .entry > .handle {
+	position: absolute;
+	width: 10px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	
+	border-right: 1px solid rgba(195, 168, 140, 0.5);
+    background: rgba(202, 186, 167, 0.5);
+    cursor: move;
+}
+
+.schemeEditor[etype = "EArray"] > .container > .entry > .handle > div {
+	position: absolute;
+    left: 2px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border: 1px solid rgba(162, 128, 100, 0.5);
+    border-radius: 4px;
+    background: rgba(195, 174, 162, 0.5);
+    vertical-align: middle;
+    margin-top: -3px;
+}
+
+.schemeEditor[etype = "EArray"] > .container > .entry > .handle > div:first-child {
+	top: calc(50% - 7px);
+}
+
+.schemeEditor[etype = "EArray"] > .container > .entry > .handle > div:last-child {
+	top: calc(50% + 7px);
+}
+
+.schemeEditor[etype = "EArray"] > .container > .entry > .value {
+	padding-top: 2px;
+    padding-bottom: 2px;
+}
+
 /* literal values */
 
 .schemeEditor[etype = "EConstBoolean"] {}
@@ -78,7 +139,8 @@
 .schemeEditor[etype = "EConstNumber"],
 .schemeEditor[etype = "EConstString"] {
 	padding-right: 20px;
-	height: 20px;
+	max-width: 250px;
+    white-space: nowrap;
 }
 
 .schemeEditor[etype = "EConstNumber"] > .container,
@@ -119,11 +181,13 @@
 	margin-top: -8px;
 }
 
-/* complex object */
+/* special heuristics*/
+/* query */
+.schemeEditor[sname = "$query"] {
+	background-color: rgba(202, 186, 167, 0.3);
+    border-radius: 6px;
+    padding: 2px 4px;
+}
 
 
-
-.schemeEditor[etype = "ComplexObject"] {}
-
-.schemeEditor[etype = "SingleObject"] {}
 

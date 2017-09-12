@@ -83,10 +83,13 @@
 					
 					var valSchemes = $this.value ? $this.resolve($this.scheme, $this.value) : {};
 					
-					function drawEntry(valName, valScheme){
+					function drawEntry(valName, valScheme, opts){
 						// draw value entry
 						var entryElt = $this.$('<div class="entry"></div>');
-						var keyElt = $this.$('<div class="key"></div>').text(valName);
+						var keyElt = $this.$('<div class="key"></div>').text(valName).attr('title', valName);
+						if(opts && opts.keyword){
+							keyElt.addClass('keyword');
+						}
 						entryElt.append(keyElt);
 						$this.container.append(entryElt);
 						
@@ -115,7 +118,7 @@
 					// draw values
 					if(JSB.isArray($this.scheme.values)){
 						// draw simple object
-						drawEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme);
+						drawEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme, {keyword: true});
 					} else {
 						// construct optional map
 						var optionalMap = {};
@@ -140,7 +143,7 @@
 									if(!valSchemes.obj[vName]){
 										debugger;
 									}
-									drawEntry(vName, valSchemes.obj[vName].scheme);
+									drawEntry(vName, valSchemes.obj[vName].scheme, {keyword: true});
 								}
 							}
 						}
@@ -156,7 +159,14 @@
 						for(var i = 0; i < $this.value.length; i++){
 							var curVal = $this.value[i];
 							var valScheme = valSchemes.obj[i].scheme;
-							var entryElt = $this.$('<div class="entry"></div>');
+							var entryElt = $this.$(`
+								<div class="entry">
+									<div class="handle">
+										<div></div>
+										<div></div>
+										<div></div>
+									</div>
+								</div>`);
 							$this.container.append(entryElt);
 							
 							var valueEditor = new $class(JSB.merge({}, $this.options, {

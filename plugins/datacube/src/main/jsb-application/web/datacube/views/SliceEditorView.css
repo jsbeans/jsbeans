@@ -7,10 +7,16 @@
 	background-size: 100%;
 }
 
-.queryEditorView {
+.sliceEditorView {
 	background: -webkit-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
 	background: -moz-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
     background: linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
     background: -o-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
     background: -ms-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+}
+
+.sliceEditorView .schemeEditor.queryEditor[sname = "$query"] {
+	background: transparent;
+    border-radius: 0;
+    display: block;
 }
