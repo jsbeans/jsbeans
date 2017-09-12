@@ -47,10 +47,11 @@
 		        sql += this._prepareEmbeddedSQL(dcQuery.$sql, dcQuery);
 		    } else {
                 var columns = this._translateExpressions(dcQuery);
-                var from  =  this._translateFrom(dcQuery);
-                var where =  this._translateWhere(dcQuery);
-                var group =  this._translateGroup(dcQuery);
-                var order =  this._translateOrder(dcQuery);
+                var from  = this._translateFrom(dcQuery);
+                var where = this._translateWhere(dcQuery);
+                var group = this._translateGroup(dcQuery);
+                var order = this._translateOrder(dcQuery);
+                var limit = dcQuery.$limit
                 from  = dcQuery.$context ? from + ' ' + this._quotedName(dcQuery.$context, true) : from;
                 where = where ? ' WHERE ' + where : ' ';
                 group = group ? ' GROUP BY ' + group : ' ';
@@ -160,6 +161,17 @@
                 return $this.translateQueryExpression(subQuery);
             }
 
+            function translateCaseExpression($where, $then, $else){
+                var sql = 'case when ';
+                sql += $this._translateWhere(dcQuery, $where, forceTableAlias);
+                sql += " then ";
+                sql += $this._translateExpression(null, $then, dcQuery);
+                sql += " else ";
+                sql += $this._translateExpression(null, $else, dcQuery);
+                sql += ' end';
+                return sql;
+            }
+
             if (JSB.isString(exp)) {
                 if (exp.match(/^\$\{.*\}/g)) {
                     // is parameter value - as is
@@ -238,6 +250,9 @@
 
             // transform operators
             switch(op) {
+                case '$case':
+                    return '(' + translateCaseExpression(exp[op].$where, exp[op].$then, exp[op].$else) + ')';
+
                 case '$greatest':
                     return 'GREATEST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$least':

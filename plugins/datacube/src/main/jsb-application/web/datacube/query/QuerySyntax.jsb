@@ -123,7 +123,7 @@
 	            '$finalize': '$finalize',
 	            '$sql', '$sqlQuery'
             },
-	        optional: ['$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize', '$sql'],
+	        optional: ['$context', '$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize', '$sql']
 	    });
 
 	    new this.ComplexObject({
@@ -153,8 +153,7 @@
                 '$sum', '$count','$min', '$max', '$avg',
                 '$array', '$flatArray', '$expandArray',
                 '$gsum', '$gcount', '$gmin', '$gmax',
-                '$grmaxsum', '$grmaxcount', '$grmaxavg',
-                '$sqlQuery'
+                '$grmaxsum', '$grmaxcount', '$grmaxavg'
             ]
 	    });
 
@@ -412,7 +411,7 @@
 	            '$in': '$inExpr',
 	            '$nin': '$ninExpr',
 	        },
-	        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$in', '$nin']
+	        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
 	    });
 
 	    new this.ComplexObject({
@@ -604,14 +603,14 @@
 	    new this.Group({
 	        name: '$finalize',
 	        desc: 'Finalize transformation',
-	        values: ['$finalizeFunction', '$finalizeFields'] // TODO
+	        values: ['$finalizeFunction', '$finalizeFields']
 	    });
 	    new this.ComplexObject({
             name: '$finalizeFields',
-	        customKey: '#field,
-	        values: {
-	            '#field': '$finalizeExpression'
-	        },
+            customKey: '#field',
+			values: {
+			    '#field': '$finalizeExpression'
+			}
         });
 	    new this.ComplexObject({
 	        name: '$finalizeExpression',
@@ -665,10 +664,6 @@
 	        name: '$constValue',
 	        values: ['$constNumber', '$contBoolean', '$constString'],
 	    });
-
-	    new this.EConstString({
-            name: '$sqlQuery'
-        });
 
 	    new this.EConstString({
 	        name: '$fieldName'
