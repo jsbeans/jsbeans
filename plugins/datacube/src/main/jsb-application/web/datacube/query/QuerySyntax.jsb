@@ -120,6 +120,7 @@
 	            '$distinct': '$distinctAll',
 	            '$postFilter': '$postFilter',
 	            '$sort': '$sort',
+	            '$limit': '$limit',
 	            '$finalize': '$finalize',
 	            '$sql': '$sqlQuery'
             },
@@ -153,7 +154,8 @@
                 '$sum', '$count','$min', '$max', '$avg',
                 '$array', '$flatArray', '$expandArray',
                 '$gsum', '$gcount', '$gmin', '$gmax',
-                '$grmaxsum', '$grmaxcount', '$grmaxavg'
+                '$grmaxsum', '$grmaxcount', '$grmaxavg',
+                '$case'
             ]
 	    });
 
@@ -237,6 +239,16 @@
                 '$length': '$constInt'
             }
         });
+	    new this.ComplexObject({
+            name: '$if',
+	        desc: 'If then else',
+            values: {
+                '$cond': '$filter',
+                '$then': '$valueDefinition',
+                '$else': '$valueDefinition'
+            }
+        });
+
 
 	    new this.SingleObject({
 	        name: '$toInt',
@@ -580,11 +592,22 @@
 	        maxOperands: -1,
 	        values: ['$sortDefinition'],
 	    });
-	    new this.ComplexObject({
+	    new this.Group({
 	        name: '$sortDefinition',
+	        values: ['$sortFiled', '$sortExpression']
+	    });
+	    new this.ComplexObject({
+	        name: '$sortFiled',
 	        customKey: '#anyFieldName',
 	        values: {
 	            '#anyFieldName': '$sortType'
+	        },
+	    });
+	    new this.ComplexObject({
+	        name: '$sortExpression',
+	        values: {
+	            '$expr': '$valueDefinition',
+	            '$type': '$sortType',
 	        },
 	    });
 	    new this.Group({
@@ -598,6 +621,10 @@
 	    new this.EConstNumber({
 	        name: '$sortTypeDesc',
 	        value: -1,
+	    });
+
+	    new this.EConstNumber({
+	        name: '$limit',
 	    });
 
 	    new this.Group({

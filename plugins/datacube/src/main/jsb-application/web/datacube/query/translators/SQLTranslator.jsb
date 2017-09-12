@@ -51,13 +51,13 @@
                 var where = this._translateWhere(dcQuery);
                 var group = this._translateGroup(dcQuery);
                 var order = this._translateOrder(dcQuery);
-//                var limit = dcQuery.$limit
+                var limit = dcQuery.$limit ? ' LIMIT ' + dcQuery.$limit: '';
                 from  = dcQuery.$context ? from + ' ' + this._quotedName(dcQuery.$context, true) : from;
                 where = where ? ' WHERE ' + where : ' ';
                 group = group ? ' GROUP BY ' + group : ' ';
                 order = order ? ' ORDER BY ' + order : ' ';
 
-                sql += 'SELECT ' + columns + ' FROM ' + from + where + group + order;
+                sql += 'SELECT ' + columns + ' FROM ' + from + where + group + order + limit;
             }
 
 		    if (dcQuery.$postFilter) {
@@ -161,9 +161,9 @@
                 return $this.translateQueryExpression(subQuery);
             }
 
-            function translateCaseExpression($where, $then, $else){
+            function translateCaseExpression($cond, $then, $else){
                 var sql = 'case when ';
-                sql += $this._translateWhere(dcQuery, $where, forceTableAlias);
+                sql += $this._translateWhere(dcQuery, $cond, forceTableAlias);
                 sql += " then ";
                 sql += $this._translateExpression(null, $then, dcQuery);
                 sql += " else ";
@@ -250,8 +250,8 @@
 
             // transform operators
             switch(op) {
-                case '$case':
-                    return '(' + translateCaseExpression(exp[op].$where, exp[op].$then, exp[op].$else) + ')';
+                case '$if':
+                    return '(' + translateCaseExpression(exp[op].$cond, exp[op].$then, exp[op].$else) + ')';
 
                 case '$greatest':
                     return 'GREATEST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
@@ -622,9 +622,14 @@
             for (var i in sort) {
                 if (i > 0) sql += ', ';
                 var val = sort[i];
-                var field = Object.keys(val)[0];
-                var key = val[field] < 0 ? ' DESC' : ' ASC';
-                sql += $this._translateField(field, dcQuery) + key;
+                if (val.$expr && val.$type) {
+                var key = val.$type < 0 ? ' DESC' : ' ASC';
+                    sql += $this._translateExpression(null, val.$expr, dcQuery) + key;
+                } else {
+                    var field = Object.keys(val)[0];
+                    var key = val[field] < 0 ? ' DESC' : ' ASC';
+                    sql += $this._translateField(field, dcQuery) + key;
+                }
             }
             return sql;
         },

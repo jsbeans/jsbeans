@@ -73,16 +73,16 @@
                 return newExpr;
 		    }
 
-		    function filterFields(groupBy) {
-		        var newGroupBy = [];
-                for (var i in groupBy) {
-                    var used = isLinkedWithSelfProviders(groupBy[i], false, true);
-                    if (used) {
-                        newGroupBy.push(groupBy[i]);
-                    }
-                }
-                return newGroupBy;
-		    }
+//		    function filterFields(groupBy) {
+//		        var newGroupBy = [];
+//                for (var i in groupBy) {
+//                    var used = isLinkedWithSelfProviders(groupBy[i], false, true);
+//                    if (used) {
+//                        newGroupBy.push(groupBy[i]);
+//                    }
+//                }
+//                return newGroupBy;
+//		    }
 
 		    function filterFields(sort, allowAlias) {
 		        var newSort = [];
@@ -110,7 +110,7 @@
             return {
                 $select: filterSubQuery(dcQuery.$select, false, true),
                 $filter: filterSubQuery(dcQuery.$filter, true, false),
-                $groupBy: filterFields(dcQuery.$groupBy),
+                $groupBy: filterFields(dcQuery.$groupBy, true),
                 $sort: filterFields(dcQuery.$sort, true),
                 $distinct: dcQuery.$distinct,
                 // skip $finalize
