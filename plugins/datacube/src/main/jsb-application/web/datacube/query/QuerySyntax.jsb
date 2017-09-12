@@ -120,9 +120,10 @@
 	            '$distinct': '$distinctAll',
 	            '$postFilter': '$postFilter',
 	            '$sort': '$sort',
-	            '$finalize': '$finalize'
+	            '$finalize': '$finalize',
+	            '$sql', '$sqlQuery'
             },
-	        optional: ['$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize'],
+	        optional: ['$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize', '$sql'],
 	    });
 
 	    new this.ComplexObject({
@@ -152,7 +153,8 @@
                 '$sum', '$count','$min', '$max', '$avg',
                 '$array', '$flatArray', '$expandArray',
                 '$gsum', '$gcount', '$gmin', '$gmax',
-                '$grmaxsum', '$grmaxcount', '$grmaxavg'
+                '$grmaxsum', '$grmaxcount', '$grmaxavg',
+                '$sqlQuery'
             ]
 	    });
 
@@ -602,10 +604,17 @@
 	    new this.Group({
 	        name: '$finalize',
 	        desc: 'Finalize transformation',
-	        values: ['$finalizeFunction', '$finalizeObject'] // TODO
+	        values: ['$finalizeFunction', '$finalizeFields'] // TODO
 	    });
 	    new this.ComplexObject({
-	        name: '$finalizeObject',
+            name: '$finalizeFields',
+	        customKey: '#field,
+	        values: {
+	            '#field': '$finalizeExpression'
+	        },
+        });
+	    new this.ComplexObject({
+	        name: '$finalizeExpression',
 	        values: {
 	            '$replace': '$finalizeReplace'
 //	            '$group': '$finalizeGroup'
@@ -656,6 +665,10 @@
 	        name: '$constValue',
 	        values: ['$constNumber', '$contBoolean', '$constString'],
 	    });
+
+	    new this.EConstString({
+            name: '$sqlQuery'
+        });
 
 	    new this.EConstString({
 	        name: '$fieldName'
