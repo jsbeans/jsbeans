@@ -51,7 +51,7 @@
                 var where = this._translateWhere(dcQuery);
                 var group = this._translateGroup(dcQuery);
                 var order = this._translateOrder(dcQuery);
-                var limit = dcQuery.$limit
+//                var limit = dcQuery.$limit
                 from  = dcQuery.$context ? from + ' ' + this._quotedName(dcQuery.$context, true) : from;
                 where = where ? ' WHERE ' + where : ' ';
                 group = group ? ' GROUP BY ' + group : ' ';
