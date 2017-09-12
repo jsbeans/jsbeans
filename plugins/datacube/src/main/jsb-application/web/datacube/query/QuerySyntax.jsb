@@ -165,44 +165,68 @@
 	        values: []
 	    });
 
-	    new this.EArray({
+	    new this.SingleObject({
 	        name: '$add',
 	        desc: 'Addition of values (+)',
+	        values: ['$addValues'],
+	    });
+	    new this.EArray({
+	        name: '$addValues',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
-	    new this.EArray({
+	    new this.SingleObject({
 	        name: '$sub',
 	        desc: 'Subtraction of values (-)',
+	        values: ['$subValues'],
+	    });
+	    new this.EArray({
+	        name: '$subValues',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
-	    new this.EArray({
+	    new this.SingleObject({
 	        name: '$mul',
 	        desc: 'Multiplication of values (*)',
+	        values: ['$mulValues'],
+	    });
+	    new this.EArray({
+	        name: '$mulValues',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
-	    new this.EArray({
+	    new this.SingleObject({
 	        name: '$div',
 	        desc: 'Division of values (/)',
+	        values: ['$divValues'],
+	    });
+	    new this.EArray({
+	        name: '$divValues',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
-	    new this.EArray({
+	    new this.SingleObject({
 	        name: '$divz',
 	        desc: 'Division of values with support zero in the denominator (/)',
+	        values: ['$divzValues'],
+	    });
+	    new this.EArray({
+	        name: '$divzValues',
 	        minOperands: 2,
 	        maxOperands: 2,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
-	    new this.EArray({
+	    new this.SingleObject({
 	        name: '$mod',
 	        desc: 'Division by module of values (%)',
+	        values: ['$modValues'],
+	    });
+	    new this.EArray({
+	        name: '$modValues',
 	        minOperands: 2,
 	        maxOperands: -1,
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
