@@ -10,125 +10,6 @@
 		    'DataCube.Query.QuerySyntax'
         ],
 
-	    selftTest: function(cube){
-	        [
-	            // select all fields
-                this.query(
-                    { $select: {} }
-                ),
-                // select id field
-                this.query({
-                    $select: {
-                        Subject: 'Cубъект',
-                        "Тип ПКЗ": "Тип ПКЗ"
-
-                    },
-                    $filter: {
-                        $and: [
-                            { Cубъект: {$eq: '${subj1}'} },
-                            { Cубъект: {$eq: '${subj2}'} },
-                        ]
-                    }
-                }, {
-                    subj1: 'Открытое акционерное общество "Монолит"',
-                    subj2: 'Федеральное казенное предприятие "Авангард"'
-                }),
-                this.query({
-                    $select: {
-                        Subject: 'Cубъект',
-                        Values: { $array: {$toInt: {$toDouble: 'Значение'}}},
-                        minValue: { $min: {$toDouble: 'Значение'} },
-                        maxValue: { $max: {$toDouble: 'Значение'}},
-                    },
-                    $filter: {
-                        $and: [
-                            { Cубъект: {$eq: '${subj1}'} },
-                            { Cубъект: {$eq: '${subj2}'} },
-                        ]
-                    },
-                    $groupBy: ['Cубъект'],
-                    $sort: [{'maxValue': -1}] // -1 = DESC, 1 = ASC
-                }, {
-                    subj1: 'Открытое акционерное общество "Монолит"',
-                    subj2: 'Федеральное казенное предприятие "Авангард"'
-                }),
-                this.query({
-                    "$groupBy": [
-                        "Код отрасли"
-                    ],
-                    "$select": {
-                        "gcountAll": {
-                            "$gcount": 1
-                        },
-                        "count": {
-                            "$count": "Код отрасли"
-                        },
-                        "gmax": {
-                            "$gmax": {
-                                "$toInt": "Код отрасли"
-                            }
-                        },
-                        "gcountOtr": {
-                            "$gcount": {
-                                "$distinct": "Код отрасли"
-                            }
-                        }
-                    }
-                }),
-//                //
-//                this.query({
-//                    // produce values with new names from fields or aggregate functions
-//                    // <field_value> : <cube_field_or_function>
-//                    $select: {
-//                        type: 'user_type',
-//                        usersCount: { $sum: 1 },
-//                        totalLogins: { $sum: 'user_logins' },
-//                        avgLogins: { $avg: 'user_logins' },
-//                        maxLogins: { $max: 'user_logins' },
-//                        minLogins: { $min: 'user_logins' },
-//                        mainRoles: { $array: 'mainRole' },
-//                        roles: { $flatArray: 'roles' }
-//
-//                    },
-//                    // filter rows by new or cube fields
-//                    // note: aggregated fields not supported yet
-//                    $filter: {
-//                        user_enabled: { $eq : '${param1}' },
-//                        $or: [
-//                            { user_enabled: { $eq : '${param1}' } },
-//                            { mainRole: { $ne : null } } // not null
-//                        ]
-//                    },
-//
-//                    // note: distinct not supported
-//                    // $distinct: true,
-//
-//                    $groupBy: ['user_type'],
-//
-//                    // sorting by new or old fields
-//                    $sort: ['usersCount', 'totalLogins'],
-//
-//                    // postprocessing with function
-//                    $finalize: function(value) {
-//                        if (value.minLogins > 0) {
-//                            value.newFiled = 'created value';
-//                            return value;
-//                        }
-//                        // without return: filter value
-//                    }
-//                }, {
-//                    param1: true
-//                })
-            ].forEach(function(it){
-debugger;
-                for (var val = it.next(), i=0; !JSB.isNull(val) && i < 5; val = it.next(), i++) {
-                    Log.debug(JSON.stringify(val,0,2));
-                }
-                it.close();
-            });
-
-	    },
-
 		$constructor: function(cube){
 		    this.cube = cube;
 		    this.paramTypes = {};
@@ -184,11 +65,18 @@ debugger;
                         };
                     }
                     if (JSB.isPlainObject(exp)) {
-                        var op = Object.keys(exp)[0];
-                        if (aggregateFunctions[op]) {
-                            return findField(exp[op], true);
+                        if (Object.keys(exp).length == 1) {
+                            var op = Object.keys(exp)[0];
+                            if (aggregateFunctions[op]) {
+                                return findField(exp[op], true);
+                            } else {
+                                return findField(exp[op], aggregated);
+                            }
+                        } else {
+                            if (exp.$field && (!exp.$context || exp.$context == dcQuery.$context)) {
+                                return findField(exp.$field, aggregated);
+                            }
                         }
-                        return findField(exp[op], aggregated);
                     }
                     if (JSB.isArray(exp)) {
                         for (var i in exp) {

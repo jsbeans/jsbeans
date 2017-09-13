@@ -175,7 +175,7 @@
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
 
-            Log.debug('Native SQL query: ' + sql);
+            Log.debug('Native SQL query: \n' + sql);
             Log.debug('Native SQL parameters: ' + JSON.stringify(values) + ', ' + JSON.stringify(types));
 
 		    var rs;
