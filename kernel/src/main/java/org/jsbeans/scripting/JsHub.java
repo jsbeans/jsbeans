@@ -66,7 +66,6 @@ public class JsHub extends Service {
     
 //	private static Global jsGlobal = new Global();
     private final Map<String, Cancellable> timeoutMap = new ConcurrentHashMap<String, Cancellable>();
-//    private final Map<String, MessageDispatcher> dispatcherMap = new HashMap<>();
     private final Map<String, Map<String, Object>> execMapScript = new ConcurrentHashMap<String, Map<String, Object>>();
     private Main debugger;
     private ContextFactory contextFactory;
@@ -209,23 +208,9 @@ public class JsHub extends Service {
         }
         getSender().tell(msg.createResponse(retLst), getSelf());
     }
-/*
-    private MessageDispatcher getDispatcher() {
-        return this.getDispatcher("kernel.jshub.dispatcher");
-    }
-*/
+    
     private MessageDispatcher getDispatcher(String dName) {
         return Core.getActorSystem().dispatchers().lookup(dName);
-/*
-		if(dispatcherMap.containsKey(dName)){
-			return dispatcherMap.get(dName);
-		}
-
-		MessageDispatcher disp = Core.getActorSystem().dispatchers().lookup(dName);
-		dispatcherMap.put(dName, disp);
-
-		return disp; */
-
     }
 
     private void handleRemoveScope(RemoveScopeMessage msg) {

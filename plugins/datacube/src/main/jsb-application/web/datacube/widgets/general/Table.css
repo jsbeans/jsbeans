@@ -37,6 +37,7 @@
     color: #6b6b6b;
     text-shadow: 1px 1px #fbfbfb;
     font-weight: normal;
+	display: table-cell;
 }
 
 .tableWidget > table.header > thead > tr > th.col.sortable {
@@ -79,12 +80,14 @@
     max-width: none;
     max-height: none;
     width: 100%;
+	display: table;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody {}
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row {
 	position: relative;
+	display: table-row;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter {}
@@ -109,6 +112,7 @@
 	padding: 0 !important;
 	margin: 0 !important;
 	background: #fff;
+	display: table-cell;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col > div.cell {
