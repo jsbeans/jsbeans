@@ -36,56 +36,42 @@
             this.append(this.error);
             // selected
             this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, slice){
-            	JSB.defer(function(){
-            		$this.updateData(slice);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(slice);
             });
 
             this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, cube){
-            	JSB.defer(function(){
-            		$this.updateData(cube);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(cube);
             });
 
             this.subscribe('DataCube.CubeEditor.providerNodeSelected', function(editor, msg, provider){
-            	JSB.defer(function(){
-            		$this.updateData(provider);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(provider);
             });
 
             this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this._updateData(slice);
-                }, 300, 'sliceNodeEdit' + $this.getId());
+                $this._updateData(slice);
             });
 
             // deselected
             this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this.clear();
-                }, 300, 'sliceNodeDeselected' + $this.getId());
+                $this.clear();
             });
 
             this.subscribe('DataCube.CubeEditor.cubeNodeDeselected', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this.clear();
-                }, 300, 'cubeNodeDeselected' + $this.getId());
+                $this.clear();
             });
 
             this.subscribe('DataCube.CubeEditor.providerNodeDeselected', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this.clear();
-                }, 300, 'providerNodeDeselected' + $this.getId());
+                $this.clear();
             });
 		},
 
 		clear: function(){
 		    this.error.addClass('hidden');
             this.table.clear();
-            this.curData = null;
-            this.curLoadId = null;
-            this.params = {};
-            this.allLoaded = false;
+            // this.curData = null;
+            // this.curLoadId = null;
+            // this.params = {};
+            // this.allLoaded = false;
 		},
 
 		// get column number; return header cell content

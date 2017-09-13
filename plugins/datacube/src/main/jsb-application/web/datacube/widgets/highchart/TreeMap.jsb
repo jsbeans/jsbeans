@@ -296,6 +296,11 @@
                             }
                         },
                         */
+
+						credits: {
+        					enabled: false
+    					},
+
                         series: [{
                             type: 'treemap',
                             layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),

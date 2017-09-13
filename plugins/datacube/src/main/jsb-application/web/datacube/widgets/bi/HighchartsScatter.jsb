@@ -325,6 +325,8 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
+            $base();
+
             var dataValue = [],
                 seriesParams = [];
             var dataValues = source.values();
