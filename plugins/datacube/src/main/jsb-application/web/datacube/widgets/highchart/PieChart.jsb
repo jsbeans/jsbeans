@@ -315,7 +315,9 @@
             for(var i = 0; i < dataValues.length; i++){
                 dataSource.push({
                     name: dataValues[i].get(0),
-                    y: dataValues[i].get(1)
+                    bName: dataValues[i].get(0).binding()[0],
+                    y: dataValues[i].get(1),
+                    bY: dataValues[i].get(1).binding()[0]
                 });
             }
 
@@ -328,14 +330,18 @@
                         for(var i = 0; i < dataSource.length; i++){
                             var d = {
                                 name: dataSource[i].name.value(),
-                                y: dataSource[i].y.value()
+                                y: dataSource[i].y.value(),
+                                sortField: dataSource[i].bName ? dataSource[i].bName : dataSource[i].bY ? dataSource[i].bY : null,
+                                sortValue: dataSource[i].bName ?  dataSource[i].name.value() : dataSource[i].bY ? dataSource[i].y.value() : null
                             }
 
                             if(JSB().isArray(d.name)){
                                 for(var j = 0; j < d.name.length; j++){
                                     data.push({
                                         name: d.name[j],
-                                        y: d.y[j]
+                                        y: d.y[j],
+                                        sortField: d.bName ? d.bName : d.bY ? d.bY : null,
+                                        sortValue: d.bName ? d.name[j] : d.bY ? d.y[j] : null,
                                     });
                                 }
                             } else {
@@ -378,6 +384,10 @@
                             pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
                         },
 
+                        credits: {
+                            enabled: false
+                        },
+
                         series: [{
                             data: data,
                             colorByPoint: true,
@@ -414,8 +424,8 @@
                                         if(!flag && $this._removedFiltersCnt === 0){
                                             if(Object.keys($this._curFilters).length > 0){
                                                 if(evt.accumulate){
-                                                    $this.removeFilter($this._curFilters[evt.target.name]);
-                                                    delete $this._curFilters[evt.target.name];
+                                                    $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
+                                                    delete $this._curFilters[evt.target.options.sortValue];
                                                     $this.refreshAll();
                                                 } else {
                                                     for(var i in $this._curFilters){
@@ -475,13 +485,12 @@
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find('data').value().get(0).binding();
             var fDesc = {
             	sourceId: context.source,
             	type: '$or',
             	op: '$eq',
-            	field: field,
-            	value: evt.target.name
+            	field: evt.target.options.sortField,
+            	value: evt.target.options.sortValue
             };
 
             if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
@@ -494,7 +503,7 @@
                 this._curFilters = {};
             }
 
-            this._curFilters[evt.target.name] = this.addFilter(fDesc);
+            this._curFilters[evt.target.options.sortValue] = this.addFilter(fDesc);
             this.refreshAll();
         }
 	}

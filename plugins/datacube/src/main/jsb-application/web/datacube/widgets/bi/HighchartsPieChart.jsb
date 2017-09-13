@@ -239,6 +239,12 @@
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
+
+        _series: {},
+        _curFilters: {},
+        _removedFiltersCnt: 0,
+        _curFilterHash: null,
+
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -281,149 +287,223 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
+            $base();
+
+// filters section
+            var globalFilters = source.getFilters();
+
+            if(globalFilters){
+                var binding = source.value().get(1).value().get(0).binding()[0],
+                    newFilters = {};
+
+                for(var i in globalFilters){
+                    var cur = globalFilters[i];
+
+                    if(cur.field === binding && cur.op === '$eq'){
+                        if(!this._curFilters[cur.value]){
+                            this._curFilters[cur.value] = cur.id;
+                            this.chart.series[0].data[this._series[cur.value]].select(true, true);
+                        }
+
+                        newFilters[cur.value] = true;
+
+                        delete globalFilters[i];
+                    }
+                }
+
+                for(var i in this._curFilters){
+                    if(!newFilters[i]){
+                        this._removedFiltersCnt++;
+                        this.chart.series[0].data[this._series[i]].select(false, true);
+                        delete this._curFilters[i];
+                    }
+                }
+
+                if(Object.keys(globalFilters).length === 0) globalFilters = null;
+
+                if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+                }
+            } else {
+                if(Object.keys(this._curFilters).length > 0){
+                    this._removedFiltersCnt = Object.keys(this._curFilters).length;
+                    for(var i in this._curFilters){
+                        this.chart.series[0].data[this._series[i]].select(false, true);
+                    }
+                    this._curFilters = {};
+                    this._curFilterHash = null;
+                    return;
+                }
+            }
+// end filters section
+
             var dataValues = this.getContext().find('data').values(),
                 dataSource = [];
             for(var i = 0; i < dataValues.length; i++){
                 dataSource.push({
                     name: dataValues[i].get(0),
-                    y: dataValues[i].get(1)
+                    bName: dataValues[i].get(0).binding()[0],
+                    y: dataValues[i].get(1),
+                    bY: dataValues[i].get(1).binding()[0]
                 });
             }
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    var data = [];
+                    try {
+                        var data = [];
 
-                    while(source.next()){
-                        for(var i = 0; i < dataSource.length; i++){
-                            var d = {
-                                name: dataSource[i].name.value(),
-                                y: dataSource[i].y.value()
-                            }
-
-                            if(JSB().isArray(d.name)){
-                                for(var j = 0; j < d.name.length; j++){
-                                    data.push({
-                                        name: d.name[j],
-                                        y: d.y[j]
-                                    });
+                        while(source.next()){
+                            for(var i = 0; i < dataSource.length; i++){
+                                var d = {
+                                    name: dataSource[i].name.value(),
+                                    y: dataSource[i].y.value(),
+                                    sortField: dataSource[i].bName ? dataSource[i].bName : dataSource[i].bY ? dataSource[i].bY : null,
+                                    sortValue: dataSource[i].bName ?  dataSource[i].name.value() : dataSource[i].bY ? dataSource[i].y.value() : null
                                 }
-                            } else {
-                                data.push(d);
+
+                                if(JSB().isArray(d.name)){
+                                    for(var j = 0; j < d.name.length; j++){
+                                        data.push({
+                                            name: d.name[j],
+                                            y: d.y[j],
+                                            sortField: d.bName ? d.bName : d.bY ? d.bY : null,
+                                            sortValue: d.bName ? d.name[j] : d.bY ? d.y[j] : null,
+                                        });
+                                    }
+                                } else {
+                                    data.push(d);
+                                }
                             }
                         }
-                    }
-                    
-                    var colors = [
-						['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-						['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-						['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-						['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-						['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
-                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-                    
-					var chartOptions = {
-                    	
-                    	colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
-                    
-                        chart: {
-                            plotBackgroundColor: null,
-                            plotBorderWidth: null,
-                            plotShadow: false,
-                            type: 'pie'
-                        },
 
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
+                        var colors = [
+                            ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                            ['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
+                            ['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
+                            ['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
+                            ['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
+                        ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
 
-                        plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                dataLabels: {
-                                    enabled: this.getContext().find('dataLabels').find('enabled').used(),
-                                    format: this.getContext().find('dataLabels').find('format').value(),
-                                    distance: Number(this.getContext().find('dataLabels').find('distance').value())
-                                },
-                                showInLegend: true
-                            }
-                        },
-                        
-                        legend: {
-                        	rtl: true,
-                            layout: 'vertical',
-                            floating: false,
-                            align: 'left',
-                            verticalAlign: 'middle',
-                            x: 0,
-                            y: 0,
-  							itemMarginTop: 15,
-            				itemMarginBottom: 15,
-                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-                        },
-                        
+                        var chartOptions = {
 
-                        tooltip: {
-                            pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
-                        },
+                            colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
 
-						credits: {
-        					enabled: false
-    					},                        
+                            chart: {
+                                plotBackgroundColor: null,
+                                plotBorderWidth: null,
+                                plotShadow: false,
+                                type: 'pie'
+                            },
 
-                        series: [{
-                            data: data,
-                            colorByPoint: true,
-                            innerSize: this.getContext().find('innerSize').value(),
-                            point: {
-                                events: {
-                                    click: function(evt) {
-                                        if(JSB().isFunction($this.options.onClick)){
-                                            $this.options.onClick.call(this, evt);
-                                        }
+                            title: {
+                                text: this.getContext().find('title').value()
+                            },
+
+                            plotOptions: {
+                                pie: {
+                                    allowPointSelect: true,
+                                    cursor: 'pointer',
+                                    dataLabels: {
+                                        enabled: this.getContext().find('dataLabels').find('enabled').used(),
+                                        format: this.getContext().find('dataLabels').find('format').value(),
+                                        distance: Number(this.getContext().find('dataLabels').find('distance').value())
                                     },
-                                    select: function(evt) {
-                                        var flag = false;
+                                    showInLegend: true
+                                }
+                            },
 
-                                        if(JSB().isFunction($this.options.onSelect)){
-                                            flag = $this.options.onSelect.call(this, evt);
-                                        }
+                            legend: {
+                                rtl: true,
+                                layout: 'vertical',
+                                floating: false,
+                                align: 'left',
+                                verticalAlign: 'middle',
+                                x: 0,
+                                y: 0,
+                                itemMarginTop: 15,
+                                itemMarginBottom: 15,
+                                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                            },
 
-                                        if(!flag){
-                                            $this._addPieFilter(evt.target.name);
-                                        }
-                                    },
-                                    unselect: function(evt) {
-                                        var flag = false;
 
-                                        if(JSB().isFunction($this.options.onUnselect)){
-                                            flag = $this.options.onUnselect.call(this, evt);
-                                        }
+                            tooltip: {
+                                pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
+                            },
 
-                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                            $this._notNeedUnselect = false;
-                                            $this.removeFilter($this._currentFilter);
-                                            $this.refreshAll();
-                                        }
-                                    },
-                                    mouseOut: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOut)){
-                                            $this.options.mouseOut.call(this, evt);
-                                        }
-                                    },
-                                    mouseOver: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOver)){
-                                            $this.options.mouseOver.call(this, evt);
+                            credits: {
+                                enabled: false
+                            },
+
+                            series: [{
+                                data: data,
+                                colorByPoint: true,
+                                innerSize: this.getContext().find('innerSize').value(),
+                                point: {
+                                    events: {
+                                        click: function(evt) {
+                                            $this._clickEvt = evt;
+
+                                            if(JSB().isFunction($this.options.onClick)){
+                                                $this.options.onClick.call(this, evt);
+                                            }
+                                        },
+                                        select: function(evt) {
+                                            var flag = false;
+
+                                            if(JSB().isFunction($this.options.onSelect)){
+                                                flag = $this.options.onSelect.call(this, evt);
+                                            }
+
+                                            if(!flag && $this._clickEvt){
+                                                $this._addPieFilter(evt);
+                                                $this._clickEvt = null;
+                                            }
+                                        },
+                                        unselect: function(evt) {
+                                            $this._clickEvt = null;
+                                            var flag = false;
+
+                                            if(JSB().isFunction($this.options.onUnselect)){
+                                                flag = $this.options.onUnselect.call(this, evt);
+                                            }
+
+                                            if(!flag && $this._removedFiltersCnt === 0){
+                                                if(Object.keys($this._curFilters).length > 0){
+                                                    if(evt.accumulate){
+                                                        $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
+                                                        delete $this._curFilters[evt.target.options.sortValue];
+                                                        $this.refreshAll();
+                                                    } else {
+                                                        for(var i in $this._curFilters){
+                                                            $this.removeFilter($this._curFilters[i]);
+                                                        }
+                                                        $this._curFilters = {};
+                                                        $this.refreshAll();
+                                                    }
+                                                }
+                                            } else {
+                                                $this._removedFiltersCnt--;
+                                            }
+                                        },
+                                        mouseOut: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOut)){
+                                                $this.options.mouseOut.call(this, evt);
+                                            }
+                                        },
+                                        mouseOver: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOver)){
+                                                $this.options.mouseOver.call(this, evt);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        }]
-                    };
-                    
-                    try {
+                            }]
+                        };
+
                     	$this.container.highcharts(chartOptions);
                     } catch(e) {
                     	console.log("Exception", e);
@@ -442,28 +522,30 @@
             });
         },
 
-        _addPieFilter: function(value){
+        _addPieFilter: function(evt){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find('data').value().get(0).binding();
             var fDesc = {
             	sourceId: context.source,
-            	type: '$and',
+            	type: '$or',
             	op: '$eq',
-            	field: field,
-            	value: value
+            	field: evt.target.options.sortField,
+            	value: evt.target.options.sortValue
             };
 
-            if(!this.hasFilter(fDesc)){
-            	if(this._currentFilter){
-            		this.removeFilter(this._currentFilter);
-            		this._currentFilter = null;
-            		this._notNeedUnselect = true;
-            	}
-            	this._currentFilter = this.addFilter(fDesc);
-            	this.refreshAll();
+            if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
+                this._removedFiltersCnt = Object.keys(this._curFilters).length;
+
+                for(var i in this._curFilters){
+                    this.removeFilter(this._curFilters[i]);
+                }
+
+                this._curFilters = {};
             }
+
+            this._curFilters[evt.target.options.sortValue] = this.addFilter(fDesc);
+            this.refreshAll();
         }
 	}
 }

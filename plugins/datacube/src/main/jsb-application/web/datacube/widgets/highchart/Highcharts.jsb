@@ -519,6 +519,10 @@
                                 }
                             },
 
+                            credits: {
+                                enabled: false
+                            },
+
                             series: series
                         };
 

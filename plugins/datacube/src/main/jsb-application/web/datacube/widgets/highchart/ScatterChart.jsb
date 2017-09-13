@@ -358,6 +358,10 @@
                                 enabled: this.getContext().find('enableLegend').used()
                             },
 
+                            credits: {
+                                enabled: false
+                            },
+
                             series: []
                         };
 

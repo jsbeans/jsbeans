@@ -329,6 +329,10 @@
                                 }
                             },
 
+                            credits: {
+                                enabled: false
+                            },
+
                             series: [{
                                 data: data
                             }]
