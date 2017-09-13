@@ -116,6 +116,7 @@ public class JsbServlet extends HttpServlet {
             cmd = "get";
         }
         AsyncContext ac = req.startAsync(req, resp);
+        ac.setTimeout(0);	// disable async timeout - use future timeout
         Principal p = null;
         try {
             p = req.getUserPrincipal();
@@ -147,6 +148,7 @@ public class JsbServlet extends HttpServlet {
             // respond error (404)
             ((HttpServletResponse) ac.getResponse()).sendError(404);
         }
+        
         ac.complete();
     }
 
