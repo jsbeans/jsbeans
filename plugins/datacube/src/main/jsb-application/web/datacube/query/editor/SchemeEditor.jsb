@@ -1,22 +1,34 @@
 {
 	$name: 'DataCube.Query.SchemeEditor',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['DataCube.Query.QuerySyntax', 'JSB.Widgets.Button', 'JSB.Widgets.PrimitiveEditor'],
+	$require: ['DataCube.Query.QuerySyntax', 
+	           'JSB.Widgets.Button', 
+	           'JSB.Widgets.PrimitiveEditor', 
+	           'DataCube.Query.SchemeMenuTool',
+	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
+		selected: false,
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('SchemeEditor.css')
 			this.addClass('schemeEditor');
 			
+			$this.acceptedSchemes = opts.acceptedSchemes;
 			$this.schemeName = opts.schemeName;
 			$this.scope = opts.scope;
 			$this.scopeName = opts.scopeName;
 			$this.value = opts.value;
 			
+			$this.substrate = $this.$(`
+				<div class="substrate"></div>
+			`);
+			$this.append($this.substrate);
+			
 			$this.container = $this.$('<div class="container"></div>');
 			$this.append($this.container);
-			
+/*			
 			$this.btnAdd = new Button({
 				cssClass: 'roundButton btn10 btnCreate',
 				tooltip: 'Добавить поле',
@@ -41,9 +53,77 @@
 				}
 			});
 			$this.append($this.btnEdit);
-
+*/
 			if($this.value){
 				$this.refresh();
+			}
+			
+			$this.getElement().on({
+				mouseover: function(evt){
+					evt.stopPropagation();
+					JSB.cancelDefer('DataCube.Query.SchemeEditor.out');
+					JSB.defer(function(){
+						$this.select(true);
+					}, 300, 'DataCube.Query.SchemeEditor.over');
+				},
+				mouseout: function(evt){
+					evt.stopPropagation();
+					JSB.defer(function(){
+						$this.select(false);
+					}, 300, 'DataCube.Query.SchemeEditor.out');
+
+				}
+			});
+			
+			$this.subscribe('DataCube.Query.SchemeEditor.selected', function(sender, msg, bSelect){
+				if(sender == $this){
+					return;
+				} else {
+					if(bSelect){
+						// remove current selection
+						$this.select(false);
+					}
+				}
+			});
+		},
+		
+		select: function(bSelect){
+			if($this.selected === bSelect){
+				return;
+			}
+			
+			$this.publish('DataCube.Query.SchemeEditor.selected', bSelect);
+			$this.selected = bSelect;
+			$this.classed('hover', bSelect);
+			
+			// show popup menu
+			if(bSelect){
+				console.log('activate');
+				$this.menuTool = ToolManager.activate({
+					id: 'schemeMenuTool',
+					cmd: 'show',
+					data: {
+						editor: $this,
+					},
+					scope: null,
+					target: {
+						selector: $this.getElement(),
+						dock: 'top',
+						offsetVert: -1
+					},
+					constraints: [{
+						selector: $this.getElement(),
+						weight: 10.0
+					}],
+					callback: function(desc){
+					}
+				});
+			} else {
+				if($this.menuTool){
+					console.log('deactivate');
+					$this.menuTool.close();
+					$this.menuTool = null;
+				}
 			}
 		},
 		
@@ -86,13 +166,21 @@
 					function drawEntry(valName, valScheme, opts){
 						// draw value entry
 						var entryElt = $this.$('<div class="entry"></div>');
+						$this.container.append(entryElt);
+						
+						// add key
 						var keyElt = $this.$('<div class="key"></div>').text(valName).attr('title', valName);
 						if(opts && opts.keyword){
 							keyElt.addClass('keyword');
 						}
 						entryElt.append(keyElt);
-						$this.container.append(entryElt);
 						
+						// add separator
+						var sepElt = $this.$('<div class="separator"><div class="icon"></div></div>');
+						sepElt.addClass('selectable');
+						entryElt.append(sepElt);
+						
+						// add value
 						if(!JSB.isDefined($this.value[valName])){
 							// create scope entry
 							var entryScheme = QuerySyntax.getSchema()[valScheme];
@@ -106,6 +194,7 @@
 						}
 						
 						var valueEditor = new $class(JSB.merge({}, $this.options, {
+							acceptedSchemes: opts.acceptedSchemes,
 							schemeName: valScheme,
 							scopeName: valName,
 							scope: $this.value,
@@ -118,7 +207,8 @@
 					// draw values
 					if(JSB.isArray($this.scheme.values)){
 						// draw simple object
-						drawEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme, {keyword: true});
+						var acceptedSchemes = $this.combineAccepted($this.scheme.name);
+						drawEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme, {keyword: true, acceptedSchemes: acceptedSchemes});
 					} else {
 						// construct optional map
 						var optionalMap = {};
@@ -130,20 +220,21 @@
 
 						// draw complex object
 						for(var vName in $this.scheme.values){
+							var acceptedSchemes = $this.combineAccepted($this.scheme.values[vName]);
 							if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
 								for(var fName in $this.value){
 									// skip non-customs 
 									if($this.scheme.values[fName]){
 										continue;
 									}
-									drawEntry(fName, valSchemes.obj[fName].scheme);
+									drawEntry(fName, valSchemes.obj[fName].scheme, {acceptedSchemes: acceptedSchemes});
 								}
 							} else {
 								if(JSB.isDefined($this.value[vName]) || !optionalMap[vName]){
 									if(!valSchemes.obj[vName]){
 										debugger;
 									}
-									drawEntry(vName, valSchemes.obj[vName].scheme, {keyword: true});
+									drawEntry(vName, valSchemes.obj[vName].scheme, {keyword: true, acceptedSchemes: acceptedSchemes});
 								}
 							}
 						}
@@ -154,8 +245,8 @@
 					}
 					
 					if($this.value){
+						var acceptedSchemes = $this.combineAccepted($this.scheme.name);
 						var valSchemes = $this.resolve($this.scheme, $this.value);
-						
 						for(var i = 0; i < $this.value.length; i++){
 							var curVal = $this.value[i];
 							var valScheme = valSchemes.obj[i].scheme;
@@ -170,6 +261,7 @@
 							$this.container.append(entryElt);
 							
 							var valueEditor = new $class(JSB.merge({}, $this.options, {
+								acceptedSchemes: acceptedSchemes,
 								schemeName: valScheme,
 								scopeName: i,
 								scope: $this.value,
@@ -231,6 +323,8 @@
 			}
 			
 		},
+		
+		combineAccepted: function(schemeName){},
 		
 		resolve: function(schemeName, value){
 			var scheme = schemeName;

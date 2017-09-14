@@ -20,6 +20,17 @@
 	width: auto !important;
 	height: auto !important; 
 	overflow: visible;
+	opacity: 0;
+	visibility: hidden;
+	
+	transition: opacity 100ms, visibility 100ms;
+}
+
+._dwp_toolWrapper.visible {
+	visibility: visible;
+	opacity: 1;
+	
+	transition: opacity 200ms, visibility 200ms;
 }
 
 ._dwp_toolWrapper._dwp_modal {

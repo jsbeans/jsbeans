@@ -694,7 +694,8 @@
 	        name: '$field',
 	        values: ['$fieldExpr', '$fieldName'],
 	    });
-	    new this.SingleObject({
+	    
+	    new this.ComplexObject({
 	        name: '$fieldExpr',
 	        desc: 'Field namr',
 	        values: {
@@ -707,10 +708,9 @@
 	    new this.SingleObject({
 	        name: '$const',
 	        desc: 'Constant value',
-	        values: {
-	            '$const': '$constValue'
-	        }
+	        values: ['$constValue']
 	    });
+	    
 	    new this.Group({
 	        name: '$constValue',
 	        values: ['$constNumber', '$contBoolean', '$constString'],
