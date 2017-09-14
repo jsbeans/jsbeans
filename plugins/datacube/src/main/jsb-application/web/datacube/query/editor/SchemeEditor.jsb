@@ -21,9 +21,7 @@
 			$this.scopeName = opts.scopeName;
 			$this.value = opts.value;
 			
-			$this.substrate = $this.$(`
-				<div class="substrate"></div>
-			`);
+			$this.substrate = $this.$('<div class="substrate"></div>');
 			$this.append($this.substrate);
 			
 			$this.container = $this.$('<div class="container"></div>');
@@ -58,22 +56,7 @@
 				$this.refresh();
 			}
 			
-			$this.getElement().on({
-				mouseover: function(evt){
-					evt.stopPropagation();
-					JSB.cancelDefer('DataCube.Query.SchemeEditor.out');
-					JSB.defer(function(){
-						$this.select(true);
-					}, 300, 'DataCube.Query.SchemeEditor.over');
-				},
-				mouseout: function(evt){
-					evt.stopPropagation();
-					JSB.defer(function(){
-						$this.select(false);
-					}, 300, 'DataCube.Query.SchemeEditor.out');
-
-				}
-			});
+			$this.installMouseHandlers($this.getElement());
 			
 			$this.subscribe('DataCube.Query.SchemeEditor.selected', function(sender, msg, bSelect){
 				if(sender == $this){
@@ -81,13 +64,33 @@
 				} else {
 					if(bSelect){
 						// remove current selection
-						$this.select(false);
+						$this.select($this.getElement(), false);
 					}
 				}
 			});
 		},
 		
-		select: function(bSelect){
+		installMouseHandlers: function(elt){
+			elt.on({
+				mouseover: function(evt){
+					evt.stopPropagation();
+					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + $this.getId());
+					JSB.defer(function(){
+						$this.select(elt, true);
+					}, 300, 'DataCube.Query.SchemeEditor.over:' + $this.getId());
+				},
+				mouseout: function(evt){
+					evt.stopPropagation();
+					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + $this.getId());
+					JSB.defer(function(){
+						$this.select(elt, false);
+					}, 300, 'DataCube.Query.SchemeEditor.out:' + $this.getId());
+
+				}
+			});
+		},
+		
+		select: function(elt, bSelect){
 			if($this.selected === bSelect){
 				return;
 			}
@@ -98,7 +101,6 @@
 			
 			// show popup menu
 			if(bSelect){
-				console.log('activate');
 				$this.menuTool = ToolManager.activate({
 					id: 'schemeMenuTool',
 					cmd: 'show',
@@ -120,7 +122,6 @@
 				});
 			} else {
 				if($this.menuTool){
-					console.log('deactivate');
 					$this.menuTool.close();
 					$this.menuTool = null;
 				}
@@ -167,6 +168,11 @@
 						// draw value entry
 						var entryElt = $this.$('<div class="entry"></div>');
 						$this.container.append(entryElt);
+						
+						// add entry substrate
+						var entrySubstrate = $this.$('<div class="substrate"></div>');
+						entryElt.append(entrySubstrate);
+
 						
 						// add key
 						var keyElt = $this.$('<div class="key"></div>').text(valName).attr('title', valName);
@@ -252,6 +258,7 @@
 							var valScheme = valSchemes.obj[i].scheme;
 							var entryElt = $this.$(`
 								<div class="entry">
+									<div class="substrate"></div>
 									<div class="handle">
 										<div></div>
 										<div></div>
