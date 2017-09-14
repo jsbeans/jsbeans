@@ -335,6 +335,11 @@
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
+
+        _curFilters: {},
+        _deselectCategoriesCount: 0,
+        _curFilterHash: null,
+
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -376,6 +381,56 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
+            $base();
+
+// filters section
+            var globalFilters = source.getFilters();
+
+            if(globalFilters){
+                var binding = this.getContext().find("xAxis").get(0).value().binding()[0],
+                    newFilters = {};
+
+                for(var i in globalFilters){
+                    var cur = globalFilters[i];
+
+                    if(cur.field === binding && cur.op === '$eq'){
+                        if(!this._curFilters[cur.value]){
+                            this._curFilters[cur.value] = cur.id;
+                            this._selectAllCategory(cur.value);
+                        }
+
+                        newFilters[cur.value] = true;
+
+                        delete globalFilters[i];
+                    }
+                }
+
+                for(var i in this._curFilters){
+                    if(!newFilters[i]){
+                        this._deselectAllCategory(i);
+                        delete this._curFilters[i];
+                    }
+                }
+
+                if(Object.keys(globalFilters).length === 0) globalFilters = null;
+
+                if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+                }
+            } else {
+                if(Object.keys(this._curFilters).length > 0){
+                    for(var i in this._curFilters){
+                        this._deselectAllCategory(i);
+                    }
+                    this._curFilters = {};
+                    this._curFilterHash = null;
+                    return;
+                }
+            }
+// end filters section
+
             var seriesContext = this.getContext().find('series').values();
             var yAxisContext = this.getContext().find('yAxis').values();
             var xAxisContext = this.getContext().find('xAxis').values();
@@ -414,6 +469,8 @@
                                     point: {
                                         events: {
                                             click: function(evt) {
+                                                $this._clickEvt = evt;
+
                                                 if(JSB().isFunction($this.options.onClick)){
                                                     $this.options.onClick.call(this, evt);
                                                 }
@@ -425,8 +482,10 @@
                                                     flag = $this.options.onSelect.call(this, evt);
                                                 }
 
-                                                if(!flag){
-                                                    $this._addNewFilter(evt.target.series.index, evt.target.category);
+                                                if(!flag && $this._clickEvt){
+                                                    evt.preventDefault();
+                                                    $this._clickEvt = null;
+                                                    $this._addNewFilter(evt);
                                                 }
                                             },
                                             unselect: function(evt) {
@@ -436,10 +495,26 @@
                                                     flag = $this.options.onUnselect.call(this, evt);
                                                 }
 
-                                                if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                                    $this._notNeedUnselect = false;
-                                                    $this.removeFilter($this._currentFilter);
-                                                    $this.refreshAll();
+                                                if(!flag && $this._deselectCategoriesCount === 0){
+                                                    if(Object.keys($this._curFilters).length > 0){
+                                                        evt.preventDefault();
+
+                                                        if(evt.accumulate){
+                                                            $this.removeFilter($this._curFilters[evt.target.category]);
+                                                            $this._deselectAllCategory(evt.target.category);
+                                                            delete $this._curFilters[evt.target.category];
+                                                            $this.refreshAll();
+                                                        } else {
+                                                            for(var i in $this._curFilters){
+                                                                $this.removeFilter($this._curFilters[i]);
+                                                                $this._deselectAllCategory(i);
+                                                            }
+                                                            $this._curFilters = {};
+                                                            $this.refreshAll();
+                                                        }
+                                                    }
+                                                } else {
+                                                    $this._deselectCategoriesCount--;
                                                 }
                                             },
                                             mouseOut: function(evt) {
@@ -589,27 +664,34 @@
             });
         },
 
-        _addNewFilter: function(index, value){
+        _addNewFilter: function(evt){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find("xAxis").get(0).value().binding();
+            var field = this.getContext().find("xAxis").get(0).value().binding()[0];
             if(!field[0]) return;
+
             var fDesc = {
-            	sourceId: context.source,
-            	type: '$and',
-            	op: '$eq',
-            	field: field,
-            	value: value
+                sourceId: context.source,
+                type: '$or',
+                op: '$eq',
+                field: field,
+                value: evt.target.category
             };
-            if(!this.hasFilter(fDesc)){
-            	if(this._currentFilter){
-                    this.removeFilter(this._currentFilter);
-                    this._currentFilter = null;
-                    this._notNeedUnselect = true;
+
+            if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
+                for(var i in this._curFilters){
+                    this._deselectAllCategory(i);
+                    this.removeFilter(this._curFilters[i]);
                 }
-            	this._currentFilter = this.addFilter(fDesc);
-            	this.refreshAll();
+
+                this._curFilters = {};
+            }
+
+            if(!this.hasFilter(fDesc)){
+                this._selectAllCategory(evt.target.category);
+                this._curFilters[evt.target.category] = this.addFilter(fDesc);
+                this.refreshAll();
             }
         },
 
@@ -617,6 +699,33 @@
         isNull: function(a, b){
             if(b) return a === null ? undefined : parseInt(a);
             return a === null ? undefined : a;
+        },
+
+        _selectAllCategory: function(cat){
+            var series = this.chart.series;
+
+            for(var i = 0; i < series.length; i++){
+                for(var j = 0; j < series[i].points.length; j++){
+                    if(series[i].points[j].category === cat && !series[i].points[j].selected){
+                        series[i].points[j].select(true, true);
+                        break;
+                    }
+                }
+            }
+        },
+
+        _deselectAllCategory: function(cat){
+            var series = this.chart.series;
+
+            for(var i = 0; i < series.length; i++){
+                for(var j = 0; j < series[i].points.length; j++){
+                    if(series[i].points[j].category === cat && series[i].points[j].selected){
+                        this._deselectCategoriesCount++;
+                        series[i].points[j].select(false, true);
+                        break;
+                    }
+                }
+            }
         }
 	}
 }

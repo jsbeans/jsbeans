@@ -37,7 +37,7 @@
 		translateQuery: function(dcQuery, params) {
 		    var sql = this.translateQueryExpression(dcQuery);
 
-		    Log.debug('Translated SQL Query: \n' + sql);
+//		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
         },
 
@@ -64,7 +64,7 @@
 		        sql = 'SELECT * FROM (' + sql + ') "result" WHERE ' + this._translateWhere(dcQuery, dcQuery.$postFilter, "result");
 		    }
 
-		    Log.debug('Translated SQL Query: \n' + sql);
+//		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
         },
 
@@ -430,7 +430,8 @@
             }
 
             if (dcQuery.$from) {
-                if (!dcQuery.$from.$context) throw new Error('Field $context is not defined in sub query $from');
+                //if (!dcQuery.$from.$context) throw new Error('Field $context is not defined in sub query $from');
+                if (!dcQuery.$context) throw new Error('Field $context is not defined query with $from');
                 return '(' + this.translateQueryExpression(dcQuery.$from) +
                             ') ';// + this._quotedName(dcQuery.$from.$context, true);
             }

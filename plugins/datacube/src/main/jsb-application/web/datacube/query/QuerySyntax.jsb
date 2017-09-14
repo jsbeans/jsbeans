@@ -117,6 +117,7 @@
 	            '$filter': '$filter',
 	            '$groupBy': '$groupBy',
 	            '$select': '$select',
+	            '$from':'$from',
 	            '$distinct': '$distinctAll',
 	            '$postFilter': '$postFilter',
 	            '$sort': '$sort',
@@ -124,7 +125,7 @@
 	            '$finalize': '$finalize',
 	            '$sql': '$sqlQuery'
             },
-	        optional: ['$context', '$filter', '$groupBy', '$distinct', '$postFilter', '$sort', '$finalize', '$sql','$limit']
+	        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$sort', '$finalize', '$sql','$limit']
 	    });
 
 	    new this.ComplexObject({
@@ -134,6 +135,11 @@
 	        values: {
 	            '#outputFieldName': '$valueDefinition'
 	        },
+	    });
+
+	    new this.Group({
+	    	name: '$from',
+	        values: ['$query'],
 	    });
 
 	    new this.Group({
