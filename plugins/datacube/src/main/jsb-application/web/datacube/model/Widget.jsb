@@ -123,6 +123,10 @@
 			}
 			return this.workspace.entry(ds.source);
 		},
+
+		generateSchemeMap: function(values){
+		    // todo * scheme refactoring
+		},
 		
 		generateInteroperationMap: function(values){
 			var sourceMap = {};
