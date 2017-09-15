@@ -54,13 +54,19 @@
 			$this.getElement().on({
 				mousemove: function(){
 					var editor = $this.data.data.editor;
-					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + editor.getId());
-					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + editor.getId());
+					var entryKey = $this.data.data.entryKey;
+					var entryType = $this.data.data.entryType;
+					var entryId = editor.getId() + '_' + entryType + '_' + entryKey;
+					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
+					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
 				},
 				mouseover: function(){
 					var editor = $this.data.data.editor;
-					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + editor.getId());
-					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + editor.getId());
+					var entryKey = $this.data.data.entryKey;
+					var entryType = $this.data.data.entryType;
+					var entryId = editor.getId() + '_' + entryType + '_' + entryKey;
+					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
+					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
 				}
 			});
 		},

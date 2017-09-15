@@ -503,13 +503,15 @@
 								$this.widgetMap[key][colName].refresh();
 							} else {
 								var WidgetCls = $this.colDesc[j].widget.cls;
-								var widget = new WidgetCls();
-								widget.setWrapper($this.getWrapper(),  row[j].value);
-								widget.refresh();
-								if(!$this.widgetMap[key]){
-									$this.widgetMap[key] = {};
+								if(WidgetCls){
+									var widget = new WidgetCls();
+									widget.setWrapper($this.getWrapper(),  row[j].value);
+									widget.refresh();
+									if(!$this.widgetMap[key]){
+										$this.widgetMap[key] = {};
+									}
+									$this.widgetMap[key][colName] = widget;
 								}
-								$this.widgetMap[key][colName] = widget;
 							}
 						}
 					}
