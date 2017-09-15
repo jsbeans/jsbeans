@@ -426,12 +426,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'fieldName',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
                 },{
                     name: 'Вес',
                     type: 'item',
+                    key: 'fieldWeight',
                     binding: 'field',
                     itemType: 'number',
                     itemValue: ''
@@ -446,16 +448,19 @@
                 {
                     name: 'relaxed',
                     type: 'item',
+                    key: 'relaxed',
                     editor: 'none'
                 },
                 {
                     name: 'ordered',
                     type: 'item',
+                    key: 'ordered',
                     editor: 'none'
                 },
                 {
                     name: 'squarified',
                     type: 'item',
+                    key: 'squarified',
                     editor: 'none'
                 }
                 ]
@@ -468,11 +473,13 @@
                 {
                     name: 'hierarchical',
                     type: 'item',
+                    key: 'hierarchical',
                     editor: 'none'
                 },
                 {
                     name: 'flattened',
                     type: 'item',
+                    key: 'flattened',
                     editor: 'none'
                 }
                 ]

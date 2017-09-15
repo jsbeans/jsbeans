@@ -100,6 +100,7 @@
             {
                 type: 'item',
                 name: 'Текст',
+                key: 'text',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field',
@@ -107,6 +108,7 @@
             {
                 type: 'item',
                 name: 'Разметка',
+                key: 'annotations',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field',
@@ -152,6 +154,7 @@
             {
                 name: 'Скрывать абзацы без выделений',
                 type: 'item',
+                key: 'hideWithoutAnnotations',
                 optional: true,
                 editor: 'none'
             },

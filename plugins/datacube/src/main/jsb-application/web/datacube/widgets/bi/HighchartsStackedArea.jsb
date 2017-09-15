@@ -38,25 +38,30 @@
                 {
                     name: 'Категории',
                     type: 'item',
+                    key: 'category',
                     binding: 'field',
                     itemType: 'any',
                 },
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -75,19 +80,23 @@
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -99,19 +108,23 @@
                 {
                     type: 'group',
                     name: 'Значения',
+                    key: 'labels',
                     items: [
                     {
                         type: 'item',
                         name: 'Формат',
+                        key: 'format',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -123,6 +136,7 @@
                 {
                     type: 'item',
                     name: 'Справа',
+                    key: 'opposite',
                     optional: true
                 }
                 ]
@@ -136,12 +150,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'seriesName',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'seriesData',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -149,15 +165,18 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'type',
                     items:[
                     {
                         name: 'area',
                         type: 'item',
+                        key: 'area',
                         editor: 'none'
                     },
                     {
                         name: 'areaspline',
                         type: 'item',
+                        key: 'areaspline',
                         editor: 'none'
                     }
                     ]
@@ -165,10 +184,12 @@
                 {
                     type: 'group',
                     name: 'Tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         type: 'item',
                         name: 'Суффикс значения',
+                        key: 'valueSuffix',
                         itemType: 'string'
                     }
                     ]
@@ -176,65 +197,78 @@
                 {
                     name: 'Индекс yAxis',
                     type: 'item',
+                    key: 'yAxisIndex',
                     itemType: 'string'
                 },
                 {
                     name: 'Тип линии',
                     type: 'select',
+                    key: 'dashStyle',
                     items:[
                     {
                         name: 'Solid',
                         type: 'item',
+                        key: 'Solid',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDash',
                         type: 'item',
+                        key: 'ShortDash',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDot',
                         type: 'item',
+                        key: 'ShortDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDot',
                         type: 'item',
+                        key: 'ShortDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDotDot',
                         type: 'item',
+                        key: 'ShortDashDotDot',
                         editor: 'none'
                     },
                     {
                         name: 'Dot',
                         type: 'item',
+                        key: 'Dot',
                         editor: 'none'
                     },
                     {
                         name: 'Dash',
                         type: 'item',
+                        key: 'Dash',
                         editor: 'none'
                     },
                     {
                         name: 'LongDash',
                         type: 'item',
+                        key: 'LongDash',
                         editor: 'none'
                     },
                     {
                         name: 'DashDot',
                         type: 'item',
+                        key: 'DashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDot',
                         type: 'item',
+                        key: 'LongDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDotDot',
                         type: 'item',
+                        key: 'LongDashDotDot',
                         editor: 'none'
                     }
                     ]
@@ -242,6 +276,7 @@
                 {
                     name: 'Цвет',
                     type: 'item',
+                    key: 'color',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -249,16 +284,19 @@
                 {
                     type: 'group',
                     name: 'Маркер',
+                    key: 'marker',
 	                items: [
 	                {
 	                    name: 'The fill color of the point marker',
 	                    type: 'item',
+	                    key: 'pointColor',
                         itemType: 'color',
                         editor: 'JSB.Widgets.ColorEditor'
 	                },
 	                {
 	                    name: 'The color of the point marker\'s outline',
 	                    type: 'item',
+	                    key: 'outlineColor',
                         itemType: 'color',
                         editor: 'JSB.Widgets.ColorEditor',
 	                    itemValue: '#ffffff'
@@ -266,18 +304,21 @@
 	                {
 	                    name: 'The width of the point marker\'s outline',
 	                    type: 'item',
+	                    key: 'pointWidth',
 	                    itemType: 'string',
 	                    itemValue: '0'
 	                },
 	                {
 	                    name: 'The radius of the point marker',
 	                    type: 'item',
+	                    key: 'pointRadius',
 	                    itemType: 'string',
 	                    itemValue: '4'
 	                },
 	                {
 	                    name: 'A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".',
 	                    type: 'item',
+	                    key: 'markerSymbol',
 	                    itemType: 'string'
 	                }]
                 }
@@ -293,21 +334,25 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]
@@ -320,17 +365,17 @@
             {
                 name: 'normal',
                 type: 'item',
+                key: 'normal',
                 editor: 'none'
             },
             {
                 name: 'percent',
                 type: 'item',
+                key: 'percent',
                 editor: 'none'
             }
             ]
-        }        
-                
-        
+        }
         ]
     },
 	$client: {

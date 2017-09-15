@@ -98,21 +98,25 @@
             {
                 name: 'sliceAndDice',
                 type: 'item',
+                key: 'sliceAndDice',
                 editor: 'none'
             },
             {
                 name: 'squarified',
                 type: 'item',
+                key: 'squarified',
                 editor: 'none'
             },
             {
                 name: 'stripes',
                 type: 'item',
+                key: 'stripes',
                 editor: 'none'
             },
             {
                 name: 'strip',
                 type: 'item',
+                key: 'strip',
                 editor: 'none'
             }
             ]
@@ -120,6 +124,7 @@
         {
             type: 'item',
             name: 'Альтернативное направление',
+            key: 'opposite',
             optional: true
         },
         {
@@ -158,12 +163,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'fieldName',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
                 },{
                     name: 'Вес',
                     type: 'item',
+                    key: 'fieldWeight',
                     binding: 'field',
                     itemType: 'number',
                     itemValue: ''

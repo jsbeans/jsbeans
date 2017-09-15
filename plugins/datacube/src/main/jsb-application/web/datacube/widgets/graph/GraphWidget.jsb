@@ -209,6 +209,7 @@
             {
                 type: 'group',
                 name: 'Дополнительные настройки алгоритма расположения',
+                key: 'advancedSettings',
                 items: [
                 {
                     type: 'group',

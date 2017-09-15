@@ -203,6 +203,7 @@
 				},{
 					name: 'Выравнивание ячейки',
 					type: 'group',
+					key: 'cellAlign',
 					items:[{
 						name: 'По горизонтали',
 						type: 'select',
@@ -210,16 +211,19 @@
 						items: [{
 							type: 'item',
 							name: 'По левому краю',
+							key: 'left',
 							itemValue: 'left',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'center',
 							itemValue: 'center',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
+							key: 'right',
 							itemValue: 'right',
 							editor: 'none'
 						}]
@@ -230,16 +234,19 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
+							key: 'top',
 							itemValue: 'top',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'middle',
 							itemValue: 'middle',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
+							key: 'bottom',
 							itemValue: 'bottom',
 							editor: 'none'
 						}]
@@ -262,6 +269,7 @@
 				},{
 					name: 'Выравнивание заголовка',
 					type: 'group',
+					key: 'headerAlign',
 					items:[{
 						name: 'По горизонтали',
 						type: 'select',
@@ -269,16 +277,19 @@
 						items: [{
 							type: 'item',
 							name: 'По левому краю',
+							key: 'left',
 							itemValue: 'left',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'center',
 							itemValue: 'center',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
+							key: 'right',
 							itemValue: 'right',
 							editor: 'none'
 						}]
@@ -289,16 +300,19 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
+							key: 'top',
 							itemValue: 'top',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'middle',
 							itemValue: 'middle',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
+							key: 'bottom',
 							itemValue: 'bottom',
 							editor: 'none'
 						}]

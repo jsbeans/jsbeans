@@ -132,11 +132,13 @@
             {
                 name: 'Заголовок',
                 type: 'item',
+                key: 'title',
                 itemType: 'string',
             },
             {
                 name: 'Формат значений',
                 type: 'item',
+                key: 'format',
                 itemType: 'string',
             }
             ]
@@ -151,11 +153,13 @@
             {
                 name: 'Заголовок',
                 type: 'item',
+                key: 'title',
                 itemType: 'string',
             },
             {
                 name: 'Формат значений',
                 type: 'item',
+                key: 'format',
                 itemType: 'string',
             }
             ]
@@ -170,20 +174,24 @@
             {
                 type: 'group',
                 name: 'scatter',
+                key: 'scatter',
                 items: [
                 {
                     type: 'group',
                     name: 'tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         name: 'headerFormat',
                         type: 'item',
+                        key: 'headerFormat',
                         itemType: 'string',
                         itemValue: ''
                     },
                     {
                         name: 'pointFormat',
                         type: 'item',
+                        key: 'pointFormat',
                         itemType: 'string',
                         itemValue: ''
                     }
@@ -209,21 +217,25 @@
                 {
                     type: 'select',
                     name: 'Имя поля',
+                    key: 'fieldName',
                     itemType: 'string',
                     items: [
                         {
                             type: 'item',
                             name: 'x',
+                            key: 'x',
                             editor: 'none'
                         },
                         {
                             type: 'item',
                             name: 'y',
+                            key: 'y',
                             editor: 'none'
                         },
                         {
                             type: 'item',
                             name: 'другое',
+                            key: 'other',
                             itemType: 'string',
                             itemValue: ''
                         }
@@ -232,6 +244,7 @@
                 {
                     type: 'item',
                     name: 'Поле',
+                    key: 'field',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -241,12 +254,14 @@
             {
                 type: 'item',
                 name: 'Имя серии',
+                key: 'seriesName',
                 itemType: 'string',
                 itemValue: ''
             },
             {
                 type: 'item',
                 name: 'Цвет серии',
+                key: 'seriesColor',
                 itemType: 'color',
                 editor: 'JSB.Widgets.ColorEditor',
                 options: {
@@ -263,21 +278,25 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]

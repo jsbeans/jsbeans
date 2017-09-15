@@ -182,6 +182,7 @@
             {
                 name: 'Имя поля',
                 type: 'item',
+                key: 'fieldName',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field'
@@ -189,6 +190,7 @@
             {
                 name: 'Количество',
                 type: 'item',
+                key: 'fieldSize',
                 binding: 'field',
                 itemType: 'number',
                 itemValue: ''

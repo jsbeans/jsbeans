@@ -143,6 +143,7 @@
             {
                 name: 'Имя',
                 type: 'item',
+                key: 'name',
                 itemType: 'string',
                 itemValue: ''
             },
@@ -155,6 +156,7 @@
                 {
                     type: 'item',
                     name: 'Имена частей',
+                    key: 'partName',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -162,6 +164,7 @@
                 {
                     type: 'item',
                     name: 'Размеры частей',
+                    key: 'partSize',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -178,21 +181,25 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]
