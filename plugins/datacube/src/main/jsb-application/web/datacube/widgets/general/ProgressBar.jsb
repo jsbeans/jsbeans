@@ -108,16 +108,19 @@
 					items:[{
 						name: 'Линейный',
 						type: 'item',
+						key: 'Line',
 						itemValue: 'Line',
 						editor: 'none'
 					},{
 						name: 'Круговой',
 						type: 'item',
+						key: 'Circle',
 						itemValue: 'Circle',
 						editor: 'none'
 					},{
 						name: 'Дуговой',
 						type: 'item',
+						key: 'SemiCircle',
 						itemValue: 'SemiCircle',
 						editor: 'none'
 					}]

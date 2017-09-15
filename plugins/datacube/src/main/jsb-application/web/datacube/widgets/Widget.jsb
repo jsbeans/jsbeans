@@ -283,6 +283,9 @@
 					item.fetchOpts.sort = $this.sort;
 
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+						if(fail && fail.message == 'Fetch broke'){
+							return;
+						}
 						if(item.fetchOpts.reset){
 							item.cursor = 0;
 							if(item.data){
@@ -581,6 +584,7 @@
 		$require: 'DataCube.Widgets.WidgetExplorer',
 
 		iterators: {},
+		needBreak: false,
 		
 		destroy: function(){
 			if(!this.isDestroyed()){
@@ -599,47 +603,59 @@
 		fetch: function(sourceId, dashboard, opts){
 			var batchSize = opts.batchSize || 50;
 			var source = dashboard.workspace.entry(sourceId);
-			if(opts.reset && this.iterators[sourceId]){
-				this.iterators[sourceId].close();
-				delete this.iterators[sourceId];
-			}
-			if(!this.iterators[sourceId]){
-				// figure out data provider
-				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-					var extQuery = {};
-					if(opts.filter){
-						extQuery.$filter = opts.filter;
-					}
-					if(opts.postFilter){
-						extQuery.$postFilter = opts.postFilter;
-					}
-					if(opts.sort){
-						extQuery.$sort = [opts.sort];
-					}
-					if(opts.select){
-                        extQuery.$select = opts.select;
-                    }
-                    if(opts.groupBy){
-                        extQuery.$groupBy = opts.groupBy;
-                    }
-					this.iterators[sourceId] = source.executeQuery(extQuery);
-				} else {
-					// TODO
-				}
-			}
-			
 			var data = [];
-			for(var i = 0; i < batchSize || opts.readAll; i++){
-				var el = null;
-				try {
-					el = this.iterators[sourceId].next();
-				}catch(e){
-					el = null;
+			if(opts.reset){
+				this.needBreak = true;
+			}
+			JSB.getLocker().lock('fetch_' + $this.getId());
+			this.needBreak = false;
+			try {
+				if(opts.reset && this.iterators[sourceId]){
+					this.iterators[sourceId].close();
+					delete this.iterators[sourceId];
 				}
-				if(!el){
-					break;
+				if(!this.iterators[sourceId]){
+					// figure out data provider
+					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+						var extQuery = {};
+						if(opts.filter){
+							extQuery.$filter = opts.filter;
+						}
+						if(opts.postFilter){
+							extQuery.$postFilter = opts.postFilter;
+						}
+						if(opts.sort){
+							extQuery.$sort = [opts.sort];
+						}
+						if(opts.select){
+	                        extQuery.$select = opts.select;
+	                    }
+	                    if(opts.groupBy){
+	                        extQuery.$groupBy = opts.groupBy;
+	                    }
+						this.iterators[sourceId] = source.executeQuery(extQuery);
+					} else {
+						// TODO
+					}
 				}
-				data.push(el);
+			
+				for(var i = 0; i < batchSize || opts.readAll; i++){
+					if(this.needBreak){
+						throw new Error('Fetch broke');
+					}
+					var el = null;
+					try {
+						el = this.iterators[sourceId].next();
+					}catch(e){
+						el = null;
+					}
+					if(!el){
+						break;
+					}
+					data.push(el);
+				}
+			} finally {
+				JSB.getLocker().unlock('fetch_' + $this.getId());
 			}
 			
 			return data;

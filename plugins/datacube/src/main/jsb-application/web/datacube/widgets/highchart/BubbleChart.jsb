@@ -40,11 +40,13 @@
             items: [
             {
                 name: 'Заголовок',
+                key: 'header',
                 type: 'item',
                 itemType: 'string',
             },
             {
                 name: 'Формат значений',
+                key: 'valuesFormat',
                 type: 'item',
                 itemType: 'string',
             }
@@ -60,10 +62,12 @@
             {
                 name: 'Заголовок',
                 type: 'item',
-                itemType: 'string',
+                key: 'header',
+                itemType: 'string'
             },
             {
                 name: 'Формат значений',
+                key: 'valueFormat',
                 type: 'item',
                 itemType: 'string',
             }
@@ -79,26 +83,31 @@
             {
                 name: 'Использовать HTML',
                 type: 'item',
+                key: 'useHtml',
                 optional: true,
                 editor: 'none'
             },
             {
                 name: 'HeaderFormat',
+                key: 'headerFormat',
                 type: 'item',
                 itemType: 'string',
             },
             {
                 name: 'PointFormat',
+                key: 'pointFormat',
                 type: 'item',
                 itemType: 'string',
             },
             {
                 name: 'FooterFormat',
+                key: 'footerFormat',
                 type: 'item',
                 itemType: 'string',
             },
             {
                 name: 'FollowPointer',
+                key: 'followPointer',
                 type: 'item',
                 optional: true,
                 editor: 'none'
@@ -115,24 +124,21 @@
             {
                 type: 'group',
                 name: 'series',
+                key: 'series',
                 items: [
                 {
-                    type: 'group',
-                    name: 'series',
-                    items: [
-                    {
-                        name: 'enable',
-                        type: 'item',
-                        optional: true,
-                        editor: 'none'
-                    },
-                    {
-                        name: 'format',
-                        type: 'item',
-                        itemType: 'string',
-                        itemValue: ''
-                    }
-                    ]
+                    name: 'enable',
+                    type: 'item',
+                    key: 'enable',
+                    optional: true,
+                    editor: 'none'
+                },
+                {
+                    name: 'format',
+                    key: 'format',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: ''
                 }
                 ]
             }
@@ -153,26 +159,31 @@
                 {
                     type: 'select',
                     name: 'Имя поля',
+                    key: 'fieldName',
                     itemType: 'string',
                     items: [
                         {
                             type: 'item',
                             name: 'x',
+                            key: 'x',
                             editor: 'none'
                         },
                         {
                             type: 'item',
                             name: 'y',
+                            key: 'y',
                             editor: 'none'
                         },
                         {
                             type: 'item',
                             name: 'z',
+                            key: 'z',
                             editor: 'none'
                         },
                         {
                             type: 'item',
                             name: 'другое',
+                            key: 'other',
                             itemType: 'string',
                             itemValue: ''
                         }
@@ -181,6 +192,7 @@
                 {
                     type: 'item',
                     name: 'Поле',
+                    key: 'field',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -385,13 +397,12 @@
                         // plotOptions
                         var x = this.getContext().find('plotOptions');
                         if(x.used()){
-                            x = x.value();
-                            var dataLabels = x.get(0).value().get(0).value();
+                            x = x.find('series').value();
 
                             chart.plotOptions.series = {
                                     dataLabels: {
-                                        enabled: dataLabels.get(0).used(),
-                                        format: dataLabels.get(1).value()
+                                        enabled: x.get(0).used(),
+                                        format: x.get(1).value()
                                     }
                             };
                         }

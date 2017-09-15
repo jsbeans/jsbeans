@@ -38,25 +38,30 @@
                 {
                     name: 'Категории',
                     type: 'item',
+                    key: 'category',
                     binding: 'field',
                     itemType: 'any',
                 },
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -75,19 +80,23 @@
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -99,19 +108,23 @@
                 {
                     type: 'group',
                     name: 'Значения',
+                    key: 'labels',
                     items: [
                     {
                         type: 'item',
                         name: 'Формат',
+                        key: 'format',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -123,6 +136,7 @@
                 {
                     type: 'item',
                     name: 'Справа',
+                    key: 'opposite',
                     optional: true
                 }
                 ]
@@ -136,12 +150,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'seriesName',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'seriesData',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -149,10 +165,12 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'type',
                     items:[
                     {
                         name: 'column',
                         type: 'item',
+                        key: 'column',
                         editor: 'none'
                     }
                     ]
@@ -160,10 +178,12 @@
                 {
                     type: 'group',
                     name: 'Tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         type: 'item',
                         name: 'Суффикс значения',
+                        key: 'valueSuffix',
                         itemType: 'string'
                     }
                     ]
@@ -171,6 +191,7 @@
                 {
                     name: 'Индекс yAxis',
                     type: 'item',
+                    key: 'yAxisIndex',
                     itemType: 'string'
                 },
                 /*
@@ -239,6 +260,7 @@
                 {
                     name: 'Цвет',
                     type: 'item',
+                    key: 'color',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -246,6 +268,7 @@
                 {
                     name: 'Стек',
                     type: 'item',
+                    key: 'stack',
                     itemType: 'string',
                     description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
                 }                
@@ -297,21 +320,25 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]
@@ -324,11 +351,13 @@
             {
                 name: 'normal',
                 type: 'item',
+                key: 'normal',
                 editor: 'none'
             },
             {
                 name: 'percent',
                 type: 'item',
+                key: 'percent',
                 editor: 'none'
             }
             ]
@@ -356,18 +385,21 @@
 				// 0	enabled: false
 				type: 'item',
 				name: 'Включено',
+				key: 'enabled',
 				optional: true
 			},
 			{
 				// 1	align: undefined
                 type: 'item',
 				name: 'align',
+				key: 'align',
                 itemType: 'string'
 			},
 			{
 				// 2	format: "{total}"
                 type: 'item',
 				name: 'format',
+				key: 'format',
                 itemType: 'string',
                 itemValue: '{total}'
 			},
@@ -375,6 +407,7 @@
 				// 3	rotation: 0
                 type: 'item',
 				name: 'rotation',
+				key: 'rotation',
                 itemType: 'number',
                 itemValue: '0'
 			},
@@ -382,36 +415,42 @@
 				// 4	textAlign: undefined
                 type: 'item',
 				name: 'textAlign',
+				key: 'textAlign',
                 itemType: 'string'
 			},
 			{
 				// 5	useHTML: false
 				type: 'item',
 				name: 'useHTML',
+				key: 'useHTML',
 				optional: true
 			},
 			{
 				// 6	verticalAlign: undefined	
                 type: 'item',
 				name: 'verticalAlign',
+				key: 'verticalAlign',
                 itemType: 'string'
 			},
 			{
 				// 7	x: undefined	
                 type: 'item',
 				name: 'x',
+				key: 'x',
                 itemType: 'number'
 			},
 			{
 				// 8	y: undefined	
                 type: 'item',
 				name: 'y',
+				key: 'y',
                 itemType: 'number'
 			},
 			{
 				//	9	color**: undefined
 				type: 'item',
 				name: 'color',
+				key: 'color',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			}			
@@ -451,12 +490,14 @@
 				// 0	enabled: false
 				type: 'item',
 				name: 'Включено',
+				key: 'enabled',
 				optional: true
 			},
 			{
 				// 1	align: "center"
                 type: 'item',
 				name: 'align',
+				key: 'align',
                 itemType: 'string',
 				itemValue: "center"
 			},
@@ -464,12 +505,14 @@
 				// 2	allowOverlap: false
 				type: 'item',
 				name: 'allowOverlap',
+				key: 'allowOverlap',
 				optional: true
 			},
 			{
 				//	3	backgroundColor: undefined
 				type: 'item',
 				name: 'backgroundColor',
+				key: 'backgroundColor',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			},
@@ -477,6 +520,7 @@
 				//	4	borderColor: undefined
 				type: 'item',
 				name: 'borderColor',
+				key: 'borderColor',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			},
@@ -484,6 +528,7 @@
 				//	5	borderRadius: 0
 				type: 'item',
 				name: 'borderRadius',
+				key: 'borderRadius',
                 itemType: 'number',
 				itemValue: '0'
 			},
@@ -491,6 +536,7 @@
 				//	6	borderWidth: 0
 				type: 'item',
 				name: 'borderWidth',
+				key: 'borderWidth',
                 itemType: 'number',
 				itemValue: '0'
 			},
@@ -498,6 +544,7 @@
 				//	7	color: undefined
 				type: 'item',
 				name: 'color',
+				key: 'color',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			},
@@ -505,12 +552,14 @@
 				// 8	crop: true
 				type: 'item',
 				name: 'crop',
+				key: 'crop',
 				optional: true
 			},
 			{
 				// 9	format: "{y}"
                 type: 'item',
 				name: 'format',
+				key: 'format',
                 itemType: 'string',
                 itemValue: '{y}'
 			},
@@ -518,12 +567,14 @@
 				// 10	inside: undefined
                 type: 'item',
 				name: 'inside',
+				key: 'inside',
                 itemType: 'string'
 			},
 			{
 				//	11	overflow: "justify"
 				type: 'item',
 				name: 'overflow',
+				key: 'overflow',
                 itemType: 'string',
 				itemValue: 'justify'
 			},
@@ -531,6 +582,7 @@
 				//	12	padding: 5
 				type: 'item',
 				name: 'padding',
+				key: 'padding',
                 itemType: 'number',
 				itemValue: '5'
 			},
@@ -538,6 +590,7 @@
 				// 13	rotation: 0
                 type: 'item',
 				name: 'rotation',
+				key: 'rotation',
                 itemType: 'number',
                 itemValue: '0'
 			},
@@ -545,12 +598,14 @@
 				// 14	shadow: false
 				type: 'item',
 				name: 'shadow',
+				key: 'shadow',
 				optional: true
 			},
 			{
 				// 15	shape: "square"
                 type: 'item',
 				name: 'shape',
+				key: 'shape',
                 itemType: 'string',
                 itemValue: 'square'
 			},
@@ -558,18 +613,21 @@
 				// 16	useHTML: false
 				type: 'item',
 				name: 'useHTML',
+				key: 'useHTML',
 				optional: true
 			},
 			{
 				// 17	verticalAlign: undefined	
                 type: 'item',
 				name: 'verticalAlign',
+				key: 'verticalAlign',
                 itemType: 'string'
 			},
 			{
 				// 18	x: 0	
                 type: 'item',
 				name: 'x',
+				key: 'x',
                 itemType: 'number',
 				itemValue: '0'
 			},
@@ -577,6 +635,7 @@
 				// 19	y: -6	
                 type: 'item',
 				name: 'y',
+				key: 'y',
                 itemType: 'number',
 				itemValue: '-6'
 			},
@@ -584,6 +643,7 @@
 				// 20	zIndex: 6
                 type: 'item',
 				name: 'zIndex',
+				key: 'zIndex',
                 itemType: 'number',
 				itemValue: '6'
 			}

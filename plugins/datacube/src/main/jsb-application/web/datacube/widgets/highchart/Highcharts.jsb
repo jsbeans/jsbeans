@@ -38,6 +38,7 @@
                 {
                     name: 'Катагории',
                     type: 'item',
+                    key: 'category',
                     binding: 'field',
                     itemType: 'any',
                 }
@@ -51,20 +52,24 @@
                 items: [
                 {
                     type: 'group',
+                    key: 'title',
                     name: 'Заголовок',
                     items: [
                     {
                         type: 'item',
+                        key: 'text',
                         name: 'Текст',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
+                        key: 'style',
                         name: 'Стиль',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -76,19 +81,23 @@
                 {
                     type: 'group',
                     name: 'Значения',
+                    key: 'labels',
                     items: [
                     {
                         type: 'item',
                         name: 'Формат',
+                        key: 'format',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -100,6 +109,7 @@
                 {
                     type: 'item',
                     name: 'Справа',
+                    key: 'opposite',
                     optional: true
                 }
                 ]
@@ -113,12 +123,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'fieldName',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'data',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -126,20 +138,24 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'type',
                     items:[
                     {
                         name: 'column',
                         type: 'item',
+                        key: 'column',
                         editor: 'none'
                     },
                     {
                         name: 'spline',
                         type: 'item',
+                        key: 'spline',
                         editor: 'none'
                     },
                     {
                         name: 'area',
                         type: 'item',
+                        key: 'area',
                         editor: 'none'
                     }
                     ]
@@ -147,10 +163,12 @@
                 {
                     type: 'group',
                     name: 'Tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         type: 'item',
                         name: 'Суффикс значения',
+                        key: 'valueSuffix',
                         itemType: 'string',
                     }
                     ]
@@ -158,65 +176,78 @@
                 {
                     name: 'yAxis',
                     type: 'item',
+                    key: 'yAxis',
                     itemType: 'string',
                 },
                 {
                     name: 'Тип линии',
                     type: 'select',
+                    key: 'dashStyle',
                     items:[
                     {
                         name: 'Solid',
                         type: 'item',
+                        key: 'solid',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDash',
                         type: 'item',
+                        key: 'shortDash',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDot',
                         type: 'item',
+                        key: 'shortDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDot',
                         type: 'item',
+                        key: 'shortDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDotDot',
                         type: 'item',
+                        key: 'shortDashDotDot',
                         editor: 'none'
                     },
                     {
                         name: 'Dot',
                         type: 'item',
+                        key: 'dot',
                         editor: 'none'
                     },
                     {
                         name: 'Dash',
                         type: 'item',
+                        key: 'dash',
                         editor: 'none'
                     },
                     {
                         name: 'LongDash',
                         type: 'item',
+                        key: 'longDash',
                         editor: 'none'
                     },
                     {
                         name: 'DashDot',
                         type: 'item',
+                        key: 'dashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDot',
                         type: 'item',
+                        key: 'longDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDotDot',
                         type: 'item',
+                        key: 'longDashDotDot',
                         editor: 'none'
                     }
                     ]
@@ -224,6 +255,7 @@
                 {
                     name: 'Цвет',
                     type: 'item',
+                    key: 'color',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -231,6 +263,7 @@
                 {
                     name: 'Стек',
                     type: 'item',
+                    key: 'stack',
                     itemType: 'string',
                     description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
                 }

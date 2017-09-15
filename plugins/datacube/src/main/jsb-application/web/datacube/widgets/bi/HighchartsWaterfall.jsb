@@ -38,25 +38,30 @@
                 {
                     name: 'Категории',
                     type: 'item',
+                    key: 'category',
                     binding: 'field',
                     itemType: 'any',
                 },
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -74,19 +79,23 @@
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -98,19 +107,23 @@
                 {
                     type: 'group',
                     name: 'Значения',
+                    key: 'labels',
                     items: [
                     {
                         type: 'item',
                         name: 'Формат',
+                        key: 'format',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -122,6 +135,7 @@
                 {
                     type: 'item',
                     name: 'Справа',
+                    key: 'opposite',
                     optional: true
                 }
                 ]
@@ -134,12 +148,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'seriesName',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'seriesData',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -147,6 +163,7 @@
                 {
                     name: 'isIntermediateSum',
                     type: 'item',
+                    key: 'isIntermediateSum',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -154,6 +171,7 @@
                 {
                     name: 'isSum',
                     type: 'item',
+                    key: 'isSum',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -161,10 +179,12 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'type',
                     items:[
                     {
                         name: 'waterfall',
                         type: 'item',
+                        key: 'waterfall',
                         editor: 'none'
                     }
                     ]
@@ -172,10 +192,12 @@
                 {
                     type: 'group',
                     name: 'Tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         type: 'item',
                         name: 'Суффикс значения',
+                        key: 'valueSuffix',
                         itemType: 'string'
                     }
                     ]
@@ -183,65 +205,78 @@
                 {
                     name: 'Индекс yAxis',
                     type: 'item',
+                    key: 'yAxisIndex',
                     itemType: 'string'
                 },
                 {
                     name: 'Тип линии',
                     type: 'select',
+                    key: 'dashStyle',
                     items:[
                     {
                         name: 'Solid',
                         type: 'item',
+                        key: 'Solid',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDash',
                         type: 'item',
+                        key: 'ShortDash',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDot',
                         type: 'item',
+                        key: 'ShortDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDot',
                         type: 'item',
+                        key: 'ShortDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDotDot',
                         type: 'item',
+                        key: 'ShortDashDotDot',
                         editor: 'none'
                     },
                     {
                         name: 'Dot',
                         type: 'item',
+                        key: 'Dot',
                         editor: 'none'
                     },
                     {
                         name: 'Dash',
                         type: 'item',
+                        key: 'Dash',
                         editor: 'none'
                     },
                     {
                         name: 'LongDash',
                         type: 'item',
+                        key: 'LongDash',
                         editor: 'none'
                     },
                     {
                         name: 'DashDot',
                         type: 'item',
+                        key: 'DashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDot',
                         type: 'item',
+                        key: 'LongDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDotDot',
                         type: 'item',
+                        key: 'LongDashDotDot',
                         editor: 'none'
                     }
                     ]
@@ -249,6 +284,7 @@
                 {
                     name: 'Цвет (color)',
                     type: 'item',
+                    key: 'color',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -256,6 +292,7 @@
                 {
                     name: 'Цвет (upColor)',
                     type: 'item',
+                    key: 'upColor',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -263,6 +300,7 @@
                 {
                     name: 'Цвет (isIntermediateSum)',
                     type: 'item',
+                    key: 'isIntermediateSumColor',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -270,6 +308,7 @@
                 {
                     name: 'Цвет (isSum)',
                     type: 'item',
+                    key: 'isSumColor',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -286,21 +325,25 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]

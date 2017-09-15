@@ -209,6 +209,7 @@
             {
                 type: 'group',
                 name: 'Дополнительные настройки алгоритма расположения',
+                key: 'advancedSettings',
                 items: [
                 {
                     type: 'group',
@@ -321,6 +322,7 @@
 
         _nodeList: {},
         _namesList: {},
+        _isRefreshing: false,
 
         $constructor: function(opts){
             $base(opts);
@@ -385,6 +387,21 @@
 
             $base();
 
+            if(this._isRefreshing){
+                JSB().deferUntil(function(){
+                    if($this.simulation) $this.simulation.stop();
+
+                    $this.innerRefresh();
+                }, function(){
+                    return !$this._isRefreshing;
+                }, 100, 'graphWidget_' + this.getId());
+            } else {
+                this._isRefreshing = true;
+                this.innerRefresh();
+            }
+        },
+
+        innerRefresh: function(){
             this.getElement().loader();
 
             var viewTypes = this.getContext().find('viewTypes').values(),
@@ -713,6 +730,8 @@
         },
 
         createGraph: function(nodes, links){
+            this._isRefreshing = false;
+
             try{
                 var itemWidth = this.getContext().find('itemWidth').value(),
                     itemHeight = this.getContext().find('itemHeight').value(),
@@ -781,9 +800,14 @@
                 });
 
                 function ticked(){
-                    nodes.forEach(function(el){
-                        $this._nodeList[el.id].setPosition(el.x, el.y);
-                    });
+                    try{
+                        nodes.forEach(function(el){
+                            $this._nodeList[el.id].setPosition(el.x, el.y);
+                        });
+                    } catch(ex){
+                        console.log(ex);
+                        if($this.simulation) $this.simulation.stop();
+                    }
                 }
 
                 $this.getElement().loader('hide');
@@ -795,7 +819,7 @@
                           .links(links);
             } catch(ex){
                 console.log(ex);
-                if(this.simulation) this.simulation.stop();
+                if($this.simulation) $this.simulation.stop();
                 $this.getElement().loader('hide');
             }
         },

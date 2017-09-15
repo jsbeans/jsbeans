@@ -168,12 +168,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'fieldName',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'data',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -181,10 +183,12 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'style',
                     items:[
                     {
                         name: 'column',
                         type: 'group',
+                        key: 'column',
                         items: [{
                             name: 'Положение точек',
                             key: 'pointPlacement',
@@ -193,16 +197,19 @@
                             {
                                 name: 'between',
                                 type: 'item',
+                                key: 'between',
                                 editor: 'none'
                             },
                             {
                                 name: 'null',
                                 type: 'item',
+                                key: 'null',
                                 editor: 'none'
                             },
                             {
                                 name: 'on',
                                 type: 'item',
+                                key: 'on',
                                 editor: 'none'
                             }
                             ]
@@ -211,10 +218,12 @@
                     {
                         name: 'line',
                         type: 'item',
+                        key: 'line',
                     },
                     {
                         name: 'area',
                         type: 'item',
+                        key: 'area',
                     }
                     ]
                 }

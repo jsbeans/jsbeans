@@ -114,11 +114,13 @@
 				items: [{
 					type: 'item',
 					name: 'Ключ',
+					key: 'key',
 					itemType: 'string',
 					itemValue: '$field'
 				}, {
 					type: 'item',
 					name: 'Значение',
+					key: 'value',
 					binding: 'field',
 					itemType: 'any'
 				}]
