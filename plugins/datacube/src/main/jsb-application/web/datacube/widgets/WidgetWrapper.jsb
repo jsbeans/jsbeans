@@ -239,7 +239,43 @@
 				}
 				curWidgetJsb = curWidgetJsb.getParent();
 			}
+
+			if(!this.checkSchemeKeys(scheme)){
+			    throw 'Ошибка! Не у всех элементов схемы присутствуют ключи!';
+			}
+
 			return scheme;
+		},
+
+		checkSchemeKeys: function(scheme){
+		    var root = true;
+
+            function checkKeys(scheme){
+                switch(scheme.type){
+                    case 'group':
+                        if(!scheme.key){
+                            if(!root){
+                                return false;
+                            } else {
+                                root = false;
+                            }
+                        }
+
+                        for(var i = 0; i < scheme.items.length; i++){
+                            if(!checkKeys(scheme.items[i])) return false;
+                        }
+                        break;
+                    case 'item':
+                    case 'select':
+                    case 'widget':
+                        if(!scheme.key) return false;
+                        break;
+                }
+
+                return true;
+            }
+
+            return checkKeys(scheme);
 		},
 		
 		updateTabHeader: function(){

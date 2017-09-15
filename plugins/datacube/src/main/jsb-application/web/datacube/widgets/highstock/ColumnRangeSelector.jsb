@@ -33,6 +33,7 @@
             {
                 name: 'Дата',
                 type: 'item',
+                key: 'date',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field',
@@ -41,6 +42,7 @@
             {
                 name: 'Количество',
                 type: 'item',
+                key: 'count',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field',
@@ -49,6 +51,7 @@
             {
                 type: 'item',
                 name: 'Автоподсчёт',
+                key: 'autoCount',
                 optional: true,
                 editor: 'none',
                 description: 'Автоматический подсчёт количества значений для каждой даты (считается количество одинаковых дат)'
@@ -63,6 +66,7 @@
             {
                 name: 'Имя серии',
                 type: 'item',
+                key: 'seriesName',
                 itemType: 'string',
                 itemValue: '',
                 description: 'Имя серии. Выводится во всплывающей подсказке'
@@ -78,6 +82,7 @@
                 {
                     name: 'Формат даты',
                     type: 'item',
+                    key: 'dateFormat',
                     description: 'Формат даты во всплывающей подсказке (%d - день, %m - месяц, %y - год)'
                 }
             ]
@@ -92,53 +97,62 @@
                 {
                     name: 'Единица измерения',
                     type: 'select',
+                    key: 'timeUnit',
                     description: 'Группируемая диница измерения',
                     items: [
                     {
                         name: 'Миллисекунда',
                         type: 'item',
+                        key: 'millisecond',
                         editor: 'none',
                         itemValue: 'millisecond'
                     },
                     {
                         name: 'Секунда',
                         type: 'item',
+                        key: 'second',
                         editor: 'none',
                         itemValue: 'second'
                     },
                     {
                         name: 'Минута',
                         type: 'item',
+                        key: 'minute',
                         editor: 'none',
                         itemValue: 'minute'
                     },
                     {
                         name: 'Час',
                         type: 'item',
+                        key: 'hour',
                         editor: 'none',
                         itemValue: 'hour'
                     },
                     {
                         name: 'День',
                         type: 'item',
+                        key: 'day',
                         editor: 'none',
                         itemValue: 'day'
                     },
                     {
                         name: 'Неделя',
                         type: 'item',
+                        key: 'week',
                         editor: 'none',
                         itemValue: 'week'
                     },
                     {
                         name: 'Месяц',
                         type: 'item',
+                        key: 'month',
                         editor: 'none',
                         itemValue: 'month'
                     },
                     {
                         name: 'Год',
                         type: 'item',
+                        key: 'year',
                         editor: 'none',
                         itemValue: 'year'
                     }
@@ -147,6 +161,7 @@
                 {
                     name: 'Группировка',
                     type: 'item',
+                    key: 'grouping',
                     itemType: 'string',
                     itemValue: '',
                     description: 'Массив допустимых группировок, через запятую (1, 2, 4)'
@@ -162,16 +177,19 @@
             {
                 name: 'Начальная дата',
                 type: 'item',
+                key: 'startDate',
                 itemType: 'string'
             },
             {
                 name: 'Конечная дата',
                 type: 'item',
+                key: 'endDate',
                 itemType: 'string'
             },
             {
                 name: 'Число столбцов',
                 type: 'item',
+                key: 'columnCount',
                 itemType: 'string'
             }
             ]
@@ -185,57 +203,67 @@
             {
                 type: 'group',
                 name: 'Формат дат',
+                key: 'dateFormat',
                 multiple: 'true',
                 items: [
                 {
                     name: 'Единица измерения',
                     type: 'select',
+                    key: 'timeUnit',
                     items: [
                     {
                         name: 'Миллисекунда',
                         type: 'item',
+                        key: 'millisecond',
                         editor: 'none',
                         itemValue: 'millisecond'
                     },
                     {
                         name: 'Секунда',
                         type: 'item',
+                        key: 'second',
                         editor: 'none',
                         itemValue: 'second'
                     },
                     {
                         name: 'Минута',
                         type: 'item',
+                        key: 'minute',
                         editor: 'none',
                         itemValue: 'minute'
                     },
                     {
                         name: 'Час',
                         type: 'item',
+                        key: 'hour',
                         editor: 'none',
                         itemValue: 'hour'
                     },
                     {
                         name: 'День',
                         type: 'item',
+                        key: 'day',
                         editor: 'none',
                         itemValue: 'day'
                     },
                     {
                         name: 'Неделя',
                         type: 'item',
+                        key: 'week',
                         editor: 'none',
                         itemValue: 'week'
                     },
                     {
                         name: 'Месяц',
                         type: 'item',
+                        key: 'month',
                         editor: 'none',
                         itemValue: 'month'
                     },
                     {
                         name: 'Год',
                         type: 'item',
+                        key: 'year',
                         editor: 'none',
                         itemValue: 'year'
                     }
@@ -244,6 +272,7 @@
                 {
                     name: 'Формат',
                     type: 'item',
+                    key: 'format',
                     itemType: 'string',
                     itemValue: '',
                     description: 'Формат даты'

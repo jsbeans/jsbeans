@@ -38,25 +38,30 @@
                 {
                     name: 'Категории',
                     type: 'item',
+                    key: 'categories',
                     binding: 'field',
                     itemType: 'any',
                 },
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -75,19 +80,23 @@
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -99,19 +108,23 @@
                 {
                     type: 'group',
                     name: 'Значения',
+                    key: 'labels',
                     items: [
                     {
                         type: 'item',
                         name: 'Формат',
+                        key: 'format',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -123,6 +136,7 @@
                 {
                     type: 'item',
                     name: 'Справа',
+                    key: 'opposite',
                     optional: true
                 }
                 ]
@@ -136,12 +150,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'name',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'data',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -149,10 +165,12 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'type',
                     items:[
                     {
                         name: 'bar',
                         type: 'item',
+                        key: 'bar',
                         editor: 'none'
                     }
                     ]
@@ -160,10 +178,12 @@
                 {
                     type: 'group',
                     name: 'Tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         type: 'item',
                         name: 'Суффикс значения',
+                        key: 'valueSuffix',
                         itemType: 'string'
                     }
                     ]
@@ -171,6 +191,7 @@
                 {
                     name: 'Индекс yAxis',
                     type: 'item',
+                    key: 'yAxisIndex',
                     itemType: 'string'
                 },
                 /*
@@ -239,6 +260,7 @@
                 {
                     name: 'Цвет',
                     type: 'item',
+                    key: 'color',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -291,27 +313,29 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]
         }
-                
-        
         ]
     },
 	$client: {
