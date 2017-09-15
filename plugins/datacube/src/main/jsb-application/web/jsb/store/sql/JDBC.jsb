@@ -213,12 +213,14 @@
 //                      return columns;
 //                })(),
                 next: function(){
-                    var hasNext = rs.next();
-                    var value = hasNext ? rowExtractor.call($this, rs): null;
-                    if (JSB.isNull(value)) {
-                        this.close();
+                    if (!st.isClosed()) {
+                        var hasNext = rs.next();
+                        var value = hasNext ? rowExtractor.call($this, rs): null;
+                        if (JSB.isNull(value)) {
+                            this.close();
+                        }
+                        return value;
                     }
-                    return value;
                 },
                 close: function(){
                     if (!st.isClosed()) {

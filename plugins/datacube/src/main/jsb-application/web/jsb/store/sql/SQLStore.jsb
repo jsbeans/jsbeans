@@ -91,15 +91,18 @@
                 JSB.cancelDefer(conn.deferredCloseKey);
                 delete conn.deferredCloseKey;
             }
+            var closed = false;
             return {
                 get: function(){
+                    if (closed) throw new Error('Connection closed');
                     return conn.jdbcConnection;
                 },
                 close: function(){
+                    closed = true;
                     conn.deferredCloseKey = JSB.generateUid();
                     JSB.defer(function() {
                         closeConnection(conn);
-                    }, $this.closeUselessConnectionTimeoutSec||60, conn.deferredCloseKey);
+                    }, ($this.closeUselessConnectionTimeoutSec||60)*1000, conn.deferredCloseKey);
                     conn.available = true;
                 },
             };
@@ -178,8 +181,12 @@
 		},
 
 		close: function() {
+		debugger;
+		    // close all JDBC connections and clear pull
             JSB.locked($this, 'connection', function() {
-                for (var id in this.connections) if ($this.connections.hasOwnProperty(id)) {
+                var ids = Object.keys(this.connections);
+                for (var i in ids) {
+                    var id = ids[i];
                     var conn = this.connections[conn.id];
                     if (conn.jdbcConnection) {
                         if (conn.deferredCloseKey) {
@@ -188,6 +195,7 @@
                         cn.jdbcConnection.close();
                         cn.jdbcConnection = null;
                     }
+                    delete this.connections[conn.id];
                 }
             });
 
