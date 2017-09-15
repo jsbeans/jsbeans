@@ -283,6 +283,9 @@
 					item.fetchOpts.sort = $this.sort;
 
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+						if(fail && fail.message == 'Fetch broke'){
+							return;
+						}
 						if(item.fetchOpts.reset){
 							item.cursor = 0;
 							if(item.data){
@@ -581,6 +584,7 @@
 		$require: 'DataCube.Widgets.WidgetExplorer',
 
 		iterators: {},
+		needBreak: false,
 		
 		destroy: function(){
 			if(!this.isDestroyed()){
@@ -600,8 +604,11 @@
 			var batchSize = opts.batchSize || 50;
 			var source = dashboard.workspace.entry(sourceId);
 			var data = [];
-			
-			JSB.getLocker().lock('fetch_' + $this.getId()); 
+			if(opts.reset){
+				this.needBreak = true;
+			}
+			JSB.getLocker().lock('fetch_' + $this.getId());
+			this.needBreak = false;
 			try {
 				if(opts.reset && this.iterators[sourceId]){
 					this.iterators[sourceId].close();
@@ -633,6 +640,9 @@
 				}
 			
 				for(var i = 0; i < batchSize || opts.readAll; i++){
+					if(this.needBreak){
+						throw new Error('Fetch broke');
+					}
 					var el = null;
 					try {
 						el = this.iterators[sourceId].next();
