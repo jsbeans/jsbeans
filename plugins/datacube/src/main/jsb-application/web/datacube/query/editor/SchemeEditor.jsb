@@ -21,16 +21,17 @@
 			
 			$this.container = $this.$('<div class="container"></div>');
 			$this.append($this.container);
-/*			
+			
 			$this.btnAdd = new Button({
 				cssClass: 'roundButton btn10 btnCreate',
 				tooltip: 'Добавить поле',
-				onClick: function(){
+				onClick: function(evt){
+					evt.stopPropagation();
 					debugger;
 				}
 			});
 			$this.append($this.btnAdd);
-
+/*
 			$this.btnEdit = new Button({
 				cssClass: 'roundButton btn10 btnEdit',
 				tooltip: 'Редактировать',
@@ -57,15 +58,17 @@
 				}
 				
 				// deselect entry hovers
-				var entryHovers = $this.find('> .container > .entry');
-				entryHovers.each(function(){
+				var entries = $this.find('> .container > .entry');
+				entries.each(function(){
 					var entryElt = $this.$(this);
 					var key = entryElt.attr('key');
-					if(entryElt.is('.hover')){
+					
+					var keyHovers = entryElt.filter('.hover');
+					keyHovers.each(function(){
 						if(sender != $this || key != hoverDesc.entryKey || hoverDesc.entryType != 'entry'){
 							$this.selectHover('entry', key, false);
 						}
-					}
+					});
 					
 					var valueHovers = entryElt.find('> .value.hover');
 					valueHovers.each(function(){
@@ -79,7 +82,7 @@
 			});
 		},
 		
-		installHoverHandlers: function(entryType, entryKey){
+		installHoverHandlers: function(entryType, entryKey, handle, opts){
 			if(!entryType || !JSB.isDefined(entryKey)){
 				throw new Error('Missing entryType or entryKey');
 			}
@@ -91,7 +94,13 @@
 				elt = $this.find('> .container > .entry[key="'+entryKey+'"] > .value');
 			}
 			
-			elt.on({
+			elt.addClass('selectable');
+			
+			if(!handle){
+				handle = elt;
+			}
+			
+			handle.on({
 				mouseover: function(evt){
 					evt.stopPropagation();
 					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
@@ -106,8 +115,19 @@
 						$this.selectHover(entryType, entryKey, false);
 					}, 300, 'DataCube.Query.SchemeEditor.out:' + entryId);
 
+				},
+				click: function(evt){
+					evt.stopPropagation();
+					$this.showHoverMenu(entryType, entryKey, opts);
 				}
 			});
+		},
+		
+		showHoverMenu: function(entryType, entryKey, opts){
+			if(entryType == 'entry'){
+				return;
+			}
+			debugger;
 		},
 		
 		selectHover: function(entryType, entryKey, bSelect){
@@ -207,9 +227,6 @@
 						entryElt.attr('key', valName);
 						$this.container.append(entryElt);
 						
-						// inject entry substrate
-						entryElt.append('<div class="substrate"></div>');
-						$this.installHoverHandlers('entry', valName);
 						
 						// add key
 						var keyElt = $this.$('<div class="key"></div>').text(valName).attr('title', valName);
@@ -217,6 +234,13 @@
 							keyElt.addClass('keyword');
 						}
 						entryElt.append(keyElt);
+						
+						// inject entry substrate if it's not a SingleObject
+						if($this.scheme.expressionType != 'SingleObject'){
+							entryElt.append('<div class="substrate"></div>');
+							$this.installHoverHandlers('entry', valName, keyElt);
+						}
+
 						
 						// add separator
 						var sepElt = $this.$('<div class="separator"><div class="icon"></div></div>');
@@ -248,7 +272,18 @@
 						
 						// inject value substrate
 						valueEditor.append('<div class="substrate"></div>');
-						$this.installHoverHandlers('value', valName);
+						
+						// if value is a ComplexObject - inject handle
+						var valScheme = QuerySyntax.getSchema()[valScheme];
+						if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
+							var handle = $this.$('<div class="handle"></div>');
+							valueEditor.append(handle);
+							valueEditor.addClass('hasHandle');
+							$this.installHoverHandlers('value', valName, handle, opts);
+						} else {
+							$this.installHoverHandlers('value', valName, null, opts);
+						}
+
 						
 					}
 					
@@ -256,7 +291,7 @@
 					if(JSB.isArray($this.scheme.values)){
 						// draw simple object
 						var acceptedSchemes = $this.combineAcceptedSchemes();
-						drawEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme, {keyword: true, acceptedSchemes: acceptedSchemes[$this.scheme.name]});
+						drawEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme, {keyword: true, acceptedSchemes: acceptedSchemes});
 					} else {
 						// construct optional map
 						var optionalMap = {};
@@ -270,6 +305,7 @@
 /*						if($this.scheme.customKey){
 							debugger;
 						}*/
+						
 						var acceptedSchemes = $this.combineAcceptedSchemes();
 						for(var vName in $this.scheme.values){
 							if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
@@ -285,7 +321,7 @@
 									if(!valSchemes.obj[vName]){
 										debugger;
 									}
-									drawEntry(vName, valSchemes.obj[vName].scheme, {keyword: true, acceptedSchemes: acceptedSchemes});
+									drawEntry(vName, valSchemes.obj[vName].scheme, {keyword: true, acceptedSchemes: acceptedSchemes[vName]});
 								}
 							}
 						}
@@ -301,20 +337,17 @@
 						for(var i = 0; i < $this.value.length; i++){
 							var curVal = $this.value[i];
 							var valScheme = valSchemes.obj[i].scheme;
-							var entryElt = $this.$(`
-								<div class="entry">
-									<div class="handle">
-										<div></div>
-										<div></div>
-										<div></div>
-									</div>
-								</div>`);
+							var entryElt = $this.$('<div class="entry"></div>');
 							entryElt.attr('key', i);
 							$this.container.append(entryElt);
 							
+							var keyElt = $this.$('<div class="handle key"><div class="icon"></div></div>');
+							
+							entryElt.append(keyElt);
+							
 							// inject entry substrate
 							entryElt.append('<div class="substrate"></div>');
-							$this.installHoverHandlers('entry', i);
+							$this.installHoverHandlers('entry', i, keyElt);
 							
 							var valueEditor = new $class(JSB.merge({}, $this.options, {
 								acceptedSchemes: acceptedSchemes,
@@ -328,7 +361,7 @@
 							
 							// inject value substrate
 							valueEditor.append('<div class="substrate"></div>');
-							$this.installHoverHandlers('value', i);
+							$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
 						}
 					}
 				} else if($this.scheme.expressionType == 'Group'){

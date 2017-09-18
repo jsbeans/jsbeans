@@ -63,6 +63,7 @@
 }
 
 .schemeEditor > .container > .entry > .key {
+	position: relative;
 	display: inline-block;
 	vertical-align: top;
 	padding: 2px 0;
@@ -126,17 +127,52 @@
 	vertical-align: top;
 }
 
-/* SingleObject */
-.schemeEditor[etype = "SingleObject"] {
+
+.schemeEditor > .container > .entry > .key.selectable,
+.schemeEditor > .container > .entry > .value.selectable {
+/*	
 	background-color: rgba(175, 152, 125, 0.15);
     border-radius: 6px;
     padding: 0 4px;
+	margin: 2px;
+*/	
+}
+
+
+/*.schemeEditor > .container > .entry.hasHandle,*/
+.schemeEditor > .container > .entry > .value.hasHandle {
+    padding: 0 4px;
+	padding-left: 20px !important;
+	display: table;
+	background-color: rgba(175, 152, 125, 0.15);
+    border-radius: 6px;
+}
+
+.schemeEditor > .container > .entry.hasHandle > .handle,
+.schemeEditor > .container > .entry > .value.hasHandle > .handle {
+	position: absolute;
+	width: 16px;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	
+	border-right: 1px solid rgba(195, 168, 140, 0.5);
+    background: rgba(202, 186, 167, 0.5);
+}
+
+/* SingleObject */
+.schemeEditor[etype = "SingleObject"] {
+/*	
+	background-color: rgba(175, 152, 125, 0.15);
+    border-radius: 6px;
+    padding: 0 4px;
+*/    
 }
 
 
 .schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype = "SingleObject"] {
-    display: table;
-	margin-left: 30px;
+/*    display: table;
+	margin-left: 30px; */
 }
 
 
@@ -144,14 +180,19 @@
 /* ComplexObject */
 
 .schemeEditor[etype = "ComplexObject"] {
+/*	
 	background-color: rgba(175, 152, 125, 0.15);
     border-radius: 6px;
     padding: 2px 4px;
+*/    
 }
 
 .schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype = "ComplexObject"] {
     display: table;
-	margin-left: 30px;
+	/*background-color: rgba(175, 152, 125, 0.15);*/
+    border-radius: 6px;
+    padding: 0 4px;
+	
 }
 
 /*
@@ -172,18 +213,19 @@
 
 /* EArray */
 .schemeEditor[etype = "EArray"] {
+/*	
 	background-color: rgba(175, 152, 125, 0.15);
     border-radius: 6px;
     padding: 2px 4px;
+*/    
 }
 
 .schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype = "EArray"] {
 	display: table;
-	margin-left: 30px;
 }
 
 .schemeEditor[etype = "EArray"] > .container > .entry {
-	padding-left: 16px;
+	padding-left: 14px;
 	min-height: 20px;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -200,8 +242,23 @@
 	border-right: 1px solid rgba(195, 168, 140, 0.5);
     background: rgba(202, 186, 167, 0.5);
     cursor: move;
+    
+    
 }
 
+.schemeEditor[etype = "EArray"] > .container > .entry > .handle > .icon {
+    position: absolute;
+	width: 6px;
+	height: 20px;
+	background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+DQo8IS0tIENyZWF0ZWQgd2l0aCBJbmtzY2FwZSAoaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvKSAtLT4NCg0KPHN2Zw0KICAgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIg0KICAgeG1sbnM6Y2M9Imh0dHA6Ly9jcmVhdGl2ZWNvbW1vbnMub3JnL25zIyINCiAgIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyINCiAgIHhtbG5zOnN2Zz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciDQogICB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciDQogICB4bWxuczpzb2RpcG9kaT0iaHR0cDovL3NvZGlwb2RpLnNvdXJjZWZvcmdlLm5ldC9EVEQvc29kaXBvZGktMC5kdGQiDQogICB4bWxuczppbmtzY2FwZT0iaHR0cDovL3d3dy5pbmtzY2FwZS5vcmcvbmFtZXNwYWNlcy9pbmtzY2FwZSINCiAgIHdpZHRoPSI2Ig0KICAgaGVpZ2h0PSIyMCINCiAgIHZpZXdCb3g9IjAgMCA2LjAwMDAwMDMgMjAiDQogICBpZD0ic3ZnMiINCiAgIHZlcnNpb249IjEuMSINCiAgIGlua3NjYXBlOnZlcnNpb249IjAuOTEgcjEzNzI1Ig0KICAgc29kaXBvZGk6ZG9jbmFtZT0iaGFuZGxlLnN2ZyI+DQogIDxkZWZzDQogICAgIGlkPSJkZWZzNCIgLz4NCiAgPHNvZGlwb2RpOm5hbWVkdmlldw0KICAgICBpZD0iYmFzZSINCiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIg0KICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiINCiAgICAgYm9yZGVyb3BhY2l0eT0iMS4wIg0KICAgICBpbmtzY2FwZTpwYWdlb3BhY2l0eT0iMC4wIg0KICAgICBpbmtzY2FwZTpwYWdlc2hhZG93PSIyIg0KICAgICBpbmtzY2FwZTp6b29tPSI0NC44Ig0KICAgICBpbmtzY2FwZTpjeD0iNi45MTAyNDA4Ig0KICAgICBpbmtzY2FwZTpjeT0iMTAuMTI5NDExIg0KICAgICBpbmtzY2FwZTpkb2N1bWVudC11bml0cz0icHgiDQogICAgIGlua3NjYXBlOmN1cnJlbnQtbGF5ZXI9ImxheWVyMSINCiAgICAgc2hvd2dyaWQ9ImZhbHNlIg0KICAgICBzaG93Z3VpZGVzPSJ0cnVlIg0KICAgICBpbmtzY2FwZTpndWlkZS1iYm94PSJ0cnVlIg0KICAgICB1bml0cz0icHgiDQogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMTkyMCINCiAgICAgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iMTEzOCINCiAgICAgaW5rc2NhcGU6d2luZG93LXg9Ii04Ig0KICAgICBpbmtzY2FwZTp3aW5kb3cteT0iLTgiDQogICAgIGlua3NjYXBlOndpbmRvdy1tYXhpbWl6ZWQ9IjEiPg0KICAgIDxzb2RpcG9kaTpndWlkZQ0KICAgICAgIHBvc2l0aW9uPSI3LjU4OTI4NjEsMTAiDQogICAgICAgb3JpZW50YXRpb249IjAsMSINCiAgICAgICBpZD0iZ3VpZGU0MTQwIiAvPg0KICAgIDxzb2RpcG9kaTpndWlkZQ0KICAgICAgIHBvc2l0aW9uPSI4LjcwNTM1NzYsMTUuOTgyMTQzIg0KICAgICAgIG9yaWVudGF0aW9uPSIwLDEiDQogICAgICAgaWQ9Imd1aWRlNDE3MiIgLz4NCiAgPC9zb2RpcG9kaTpuYW1lZHZpZXc+DQogIDxtZXRhZGF0YQ0KICAgICBpZD0ibWV0YWRhdGE3Ij4NCiAgICA8cmRmOlJERj4NCiAgICAgIDxjYzpXb3JrDQogICAgICAgICByZGY6YWJvdXQ9IiI+DQogICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2Uvc3ZnK3htbDwvZGM6Zm9ybWF0Pg0KICAgICAgICA8ZGM6dHlwZQ0KICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPg0KICAgICAgICA8ZGM6dGl0bGU+PC9kYzp0aXRsZT4NCiAgICAgIDwvY2M6V29yaz4NCiAgICA8L3JkZjpSREY+DQogIDwvbWV0YWRhdGE+DQogIDxnDQogICAgIGlua3NjYXBlOmxhYmVsPSJMYXllciAxIg0KICAgICBpbmtzY2FwZTpncm91cG1vZGU9ImxheWVyIg0KICAgICBpZD0ibGF5ZXIxIg0KICAgICB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLC0xMDMyLjM2MjMpIj4NCiAgICA8Y2lyY2xlDQogICAgICAgc3R5bGU9ImZpbGw6Izc4NDQyMTtmaWxsLW9wYWNpdHk6MC4xMjU0OTAyO3N0cm9rZTojYWM5ZDkzO3N0cm9rZS13aWR0aDoxLjAwMDAwMDEyO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIg0KICAgICAgIGlkPSJwYXRoNDEzOCINCiAgICAgICBjeD0iMy4wMDIyOTY3Ig0KICAgICAgIGN5PSIxMDQyLjM4MjYiDQogICAgICAgcj0iMi40ODExMzk3IiAvPg0KICAgIDxjaXJjbGUNCiAgICAgICBzdHlsZT0iZmlsbDojNzg0NDIxO2ZpbGwtb3BhY2l0eTowLjEyNTQ5MDI7c3Ryb2tlOiNhYzlkOTM7c3Ryb2tlLXdpZHRoOjEuMDAwMDAwMTI7c3Ryb2tlLWxpbmVjYXA6cm91bmQ7c3Ryb2tlLWxpbmVqb2luOnJvdW5kO3N0cm9rZS1taXRlcmxpbWl0OjQ7c3Ryb2tlLWRhc2hhcnJheTpub25lO3N0cm9rZS1vcGFjaXR5OjEiDQogICAgICAgaWQ9InBhdGg0MTM4LTMiDQogICAgICAgY3g9IjIuOTkxMDcxNSINCiAgICAgICBjeT0iMTAzNS4zNzU2Ig0KICAgICAgIHI9IjIuNDgxMTM5OSIgLz4NCiAgICA8Y2lyY2xlDQogICAgICAgc3R5bGU9ImZpbGw6Izc4NDQyMTtmaWxsLW9wYWNpdHk6MC4xMjU0OTAyO3N0cm9rZTojYWM5ZDkzO3N0cm9rZS13aWR0aDoxLjAwMDAwMDEyO3N0cm9rZS1saW5lY2FwOnJvdW5kO3N0cm9rZS1saW5lam9pbjpyb3VuZDtzdHJva2UtbWl0ZXJsaW1pdDo0O3N0cm9rZS1kYXNoYXJyYXk6bm9uZTtzdHJva2Utb3BhY2l0eToxIg0KICAgICAgIGlkPSJwYXRoNDEzOC0zLTkiDQogICAgICAgY3g9IjMuMDEzMzkyOSINCiAgICAgICBjeT0iMTA0OS40MTU5Ig0KICAgICAgIHI9IjIuNDgxMTQwMSIgLz4NCiAgPC9nPg0KPC9zdmc+DQo=);
+    background-size: 100%;
+    top: 50%;
+    left: 50%;
+    margin-top: -10px;
+    margin-left: -3px;
+}
+
+/*
 .schemeEditor[etype = "EArray"] > .container > .entry > .handle > div {
 	position: absolute;
     left: 2px;
@@ -222,7 +279,7 @@
 .schemeEditor[etype = "EArray"] > .container > .entry > .handle > div:last-child {
 	top: calc(50% + 7px);
 }
-
+*/
 .schemeEditor[etype = "EArray"] > .container > .entry > .value {
 	padding-top: 2px;
     padding-bottom: 2px;
