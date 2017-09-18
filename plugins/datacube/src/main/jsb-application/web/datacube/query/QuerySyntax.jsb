@@ -438,9 +438,9 @@
 	        values: {
 	            '#fieldName': '$valueCondition',
 
-	            '$or': '$or',
-	            '$and': '$and',
-	            '$not': '$notExpr',
+	            '$or': '$orFilter',
+	            '$and': '$andFilter',
+	            '$not': '$filter',
 
 	            '$eq': '$eqExpr',
 	            '$ne': '$neExpr',
@@ -456,6 +456,7 @@
 	        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
 	    });
 
+
 	    new this.ComplexObject({
 	        name: '$postFilter',
 	        desc: 'Filter output data conditions definition',
@@ -463,9 +464,9 @@
 	        values: {
 	            '#outputFieldName': '$valueCondition',
 
-	            '$or': '$or',
-	            '$and': '$and',
-	            '$not': '$notExpr',
+	            '$or': '$orPostFilter',
+	            '$and': '$andPostFilter',
+	            '$not': '$postFilter',
 
 	            '$eq': '$eqExpr',
 	            '$ne': '$neExpr',
@@ -485,6 +486,34 @@
 	        name: '$valueCondition',
 	        values: [ '$eq','$ne', '$gt', '$gte', '$lt', '$lte',
                 '$like', '$ilike', '$in', '$nin' ],
+	    });
+
+	    new this.EArray({
+	        name: '$orFilter',
+	        minOperands: 1,
+	        maxOperands: -1,
+	        values: ['$filter'],
+	    });
+
+	    new this.EArray({
+	        name: '$andFilter',
+	        minOperands: 1,
+	        maxOperands: -1,
+	        values: ['$filter'],
+	    });
+
+	    new this.EArray({
+	        name: '$orPostFilter',
+	        minOperands: 1,
+	        maxOperands: -1,
+	        values: ['$postFilter'],
+	    });
+
+	    new this.EArray({
+	        name: '$andPostFilter',
+	        minOperands: 1,
+	        maxOperands: -1,
+	        values: ['$postFilter'],
 	    });
 
 	    new this.SingleObject({

@@ -9,8 +9,10 @@
 
 /* substrate */
 
-.schemeEditor > .substrate,
-.schemeEditor > .container > .entry > .substrate {
+
+
+.schemeEditor > .container > .entry > .substrate,
+.schemeEditor > .container > .entry > .value > .substrate  {
 	position: absolute;
 	left: -3px;
     top: -1px;
@@ -20,14 +22,13 @@
 	border: 1px solid rgba(255,255,255,0);
 	border-radius: 6px;
 	overflow: hidden;
+	z-index: -1;
 	
 	transition: background-color 100ms, border-color 100ms;
 }
 
-
-
-.schemeEditor.hover > .substrate,
-.schemeEditor > .container > .entry.hover > .substrate {
+.schemeEditor > .container > .entry.hover > .substrate,
+.schemeEditor > .container > .entry > .value.hover > .substrate {
 	background-color: rgb(239, 194, 130);
     opacity: 0.5;
     border-color: rgb(169, 102, 71);
