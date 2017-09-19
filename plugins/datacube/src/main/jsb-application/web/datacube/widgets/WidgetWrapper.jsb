@@ -321,7 +321,9 @@
 					cssClass: 'roundButton btnSettings btn10',
 					tooltip: 'Настроить',
 					onClick: function(evt){
-						$this.showSettings(evt);
+					    JSB().defer(function(){
+					        $this.showSettings(evt);
+					    }, 200, 'widgetSettings_' + $this.getId());
 					}
 				});
 				
@@ -402,7 +404,6 @@
 				height: this.getElement().height(),
 				visibility: 'visible'
 			});
-			
 		},
 		
 		closeSettings: function(){

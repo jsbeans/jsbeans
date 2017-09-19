@@ -17,6 +17,11 @@
 
 .sliceEditorView .schemeEditor.queryEditor[sname = "$query"] {
 	background: transparent;
+	border: none;
     border-radius: 0;
     /*display: block;*/
+}
+
+.sliceEditorView .schemeEditor.queryEditor[sname = "$query"] > .container > .context {
+	display: none;
 }
