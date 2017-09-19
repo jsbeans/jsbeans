@@ -139,6 +139,7 @@
             name: 'Источник',
             binding: 'array',
             key: 'source',
+            collapsable: true,
             items: [
             {
                 name: 'Имя',
@@ -177,6 +178,8 @@
             type: 'group',
             name: 'Подпись',
             key: 'dataLabels',
+            collapsable: true,
+            collapsed: true,
             items: [
             {
                 name: 'Включить подпись',

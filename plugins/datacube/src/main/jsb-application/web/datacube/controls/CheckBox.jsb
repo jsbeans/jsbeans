@@ -6,35 +6,33 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.addClass('dataCube_CheckBox');
+			this.addClass('dataCube_checkBox');
 			this.loadCss('CheckBox.css');
 
 			// construct
 			this.getElement().append(`#dot
-				<label>
-				    <div>
-                        <input type="checkbox" />
-				    </div>
-					{{? self.options.check}}
-					<input type="checkbox">
-					{{?}}
-					<span class="_dwp_caption"></span>
-				</label>
-				<div class="contents"><div class="shadowPanel"></div></div>
+			    <div class="check-elem">
+			        <input type="checkbox" class="flat" style="position: absolute; opacity: 0;">
+			        <ins class="check-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+                </div>
+                <span class="caption"></span>
+                <div class="contents">
+                    <div class="shadowPanel"></div>
+                </div>
 			`);
 
 			if(this.options.label){
 				this.setLabel(this.options.label);
 			}
 
-			this.find('> label').click(function(evt){
-				if(self.options.onClick){
-					self.options.onClick.call(self, evt);
-				}
-			});
-			this.find('> label > input').change(function(){
-				self.setChecked(self.isChecked());
-			});
+            this.find('> .check-elem > ins').click(function(evt){
+                $this.setChecked(!$this.find('> .check-elem').hasClass('checked'));
+
+                if(self.options.onClick){
+                    self.options.onClick.call(self, evt);
+                }
+            });
+
 			this.enable(this.options.enabled);
 
 			if(this.options.check){
@@ -53,14 +51,14 @@
 		},
 
 		setLabel: function(str){
-			this.getElement().find('._dwp_caption').append(str);
+			this.getElement().find('.caption').text(str);
 		},
 
 		isChecked: function(){
 			if(!this.options.check){
 				return false;
 			}
-			return this.find('> label > input').prop('checked');
+			return this.find('> .check-elem > input').prop('checked');
 		},
 
 		isEnabled: function(){
@@ -71,8 +69,17 @@
 			if(!this.options.check){
 				return;
 			}
-			this.find('> label > input').prop('checked', b);
+
+			this.find('> .check-elem > input').prop('checked', b);
+
+			if(b){
+			    this.find('> .check-elem').addClass('checked');
+			} else {
+			    this.find('> .check-elem').removeClass('checked');
+			}
+
 			this.enableContents(b);
+
 			if(this.options.onChange && !dontNotify){
 				this.options.onChange.call(this, b);
 			}

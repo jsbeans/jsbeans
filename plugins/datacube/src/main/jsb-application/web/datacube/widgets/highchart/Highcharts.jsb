@@ -49,6 +49,7 @@
                 name: 'Ось Y',
                 key: 'yAxis',
                 multiple: 'true',
+                collapsable: true,
                 items: [
                 {
                     type: 'group',
@@ -110,7 +111,8 @@
                     type: 'item',
                     name: 'Справа',
                     key: 'opposite',
-                    optional: true
+                    optional: true,
+                    editor: 'none'
                 }
                 ]
             },
@@ -119,6 +121,7 @@
                 name: 'Серии',
                 key: 'series',
                 multiple: 'true',
+                collapsable: true,
                 items: [
                 {
                     name: 'Имя поля',

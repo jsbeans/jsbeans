@@ -356,6 +356,27 @@
 				});
 			}
 
+            if(this.scheme.collapsable){
+                this.addClass('collapsable');
+
+                var collapseButton = this.$('<i class="fa fa-chevron-up"></i>');
+                collapseButton.click(function(evt){
+                    $this.bodyElt.toggleClass('collapsed');
+
+                    var target = $this.$(evt.target);
+                    if(target.hasClass('fa-chevron-up')){
+                        target.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                    } else {
+                        target.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                    }
+                });
+                header.append(collapseButton);
+
+                if(this.scheme.collapsed){
+                    this.bodyElt.addClass('collapsed');
+                }
+            }
+
 			if(!$this.scheme.binding){
 				fillGroup($this.binding);
 			} else if($this.bindingSelector && $this.bindingSelector.isFilled()){
@@ -778,7 +799,9 @@
 
 				if(this.scheme.optional){
 					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; $this.updateUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					header.append(`#dot <div jsb="JSB.DataCube.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; $this.updateUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					// JSB.Widgets.CheckBox
+
 					if(!JSB.isDefined(this.values.used) && this.scheme.optional == 'checked'){
 						JSB.deferUntil(function(){
 							header.find('> div.caption').jsb().setChecked(true);
