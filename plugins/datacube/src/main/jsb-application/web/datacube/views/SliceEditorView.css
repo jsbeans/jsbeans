@@ -22,6 +22,6 @@
     /*display: block;*/
 }
 
-.sliceEditorView .schemeEditor.queryEditor[sname = "$query"] > .container > .context {
+.sliceEditorView .schemeEditor.queryEditor[sname = "$query"] > .context {
 	display: none;
 }

@@ -335,7 +335,7 @@
 							var ctxName = $this.value['$context'];
 							if(JSB.isDefined(ctxName)){
 								var ctxElt = $this.$('<div class="context"></div>').text(ctxName);
-								$this.container.append(ctxElt);
+								$this.append(ctxElt);
 							}
 						}
 						
