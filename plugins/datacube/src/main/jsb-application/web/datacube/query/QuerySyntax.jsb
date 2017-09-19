@@ -150,7 +150,6 @@
 	    new this.Group({
 	        name: '$expression',
 	        values: [
-	            '$macro',
                 '$add', '$sub', '$mul', '$div', '$divz', '$mod',
                 '$greatest', '$least',
                 '$splitString', '$substring', '$trim',
@@ -161,16 +160,23 @@
                 '$array', '$flatArray', '$expandArray',
                 '$gsum', '$gcount', '$gmin', '$gmax',
                 '$grmaxsum', '$grmaxcount', '$grmaxavg',
-                '$case'
+                '$case',
+	            '$macros'
             ]
 	    });
 
 	    new this.Group({
-	        name: '$macro',
+	        name: '$macros',
 	        macro: true,
 	        values: []
 	    });
 
+	    new this.EArray({
+	        name: '$fieldsArray',
+	        minOperands: 1,
+	        maxOperands: -1,
+	        values: ['$field'],
+	    });
 	    new this.SingleObject({
 	        name: '$add',
 	        desc: 'Addition of values (+)',
@@ -266,7 +272,7 @@
 	        desc: 'Extract substring',
             values: {
                 '$field': '$valueDefinition',
-                '$length': '$constInt'
+                '$length': '$constNumber'
             }
         });
 	    new this.ComplexObject({
@@ -653,11 +659,13 @@
 	    });
 	    new this.Group({
 	        name: '$sortDefinition',
-	        values: ['$sortFiled', '$sortExpression']
+	        values: ['$sortField', '$sortExpression']
 	    });
 	    new this.ComplexObject({
-	        name: '$sortFiled',
+	        name: '$sortField',
 	        customKey: '#anyFieldName',
+	        minOperands: 1,
+	        maxOperands: 1,
 	        values: {
 	            '#anyFieldName': '$sortType'
 	        },
@@ -771,11 +779,6 @@
 	    new this.EConstString({
 	        name: '$param'
 	    });
-
-
-        JSB.getLogger().debug('****************** SCHEME BEGIN ******************');
-        JSB.getLogger().debug(JSON.stringify($this.schemeExpressions, 0, 4));
-        JSB.getLogger().debug('****************** SCHEME END ******************');
 	},
 
 	macros: {},
@@ -807,6 +810,23 @@
             structure: structure,
             objectGenerator: objectGenerator
         };
+
+        $this.getSchema().$macros.values.push(name);
+        new this.ComplexObject({
+	        name: name,
+	        values: (function(){
+	            var values = {};
+	            var valueName;
+	            for (var f in structure) if (structure.hasOwnProperty(f)) {
+	                if (!structure[f].name) {
+	                    throw new Error('Field value descriptor name is not defined for macro ' + name);
+	                }
+	                values[f] = structure[f].name;
+	            }
+	            return values;
+	        })()
+        });
+        JSB.getLogger().debug('Registered DataCube query macro ' + name);
     },
 
     unwrapMacros: function(dcQuery) {
@@ -816,9 +836,9 @@
                 if (typeof exp[f] === 'undefined') {
                     throw new Error('Field ' + f + ' is not defined in ' + macro.name);
                 }
-                if (typeof exp[f] !== typeof structure[f]) {
-                    throw new Error('Field ' + f + ' must has type ' + structure[f]);
-                }
+//                if (typeof exp[f] !== typeof structure[f]) {
+//                    throw new Error('Field ' + f + ' must has type ' + structure[f]);
+//                }
             }
         }
 
