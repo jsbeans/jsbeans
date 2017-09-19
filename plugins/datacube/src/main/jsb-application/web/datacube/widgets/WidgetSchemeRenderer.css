@@ -78,11 +78,12 @@
 
 .widgetSchemeRenderer.used > .header > .dataBindingSelector {
 	display: inline-block;
-    height: 30px;
+    height: 24px;
+    padding: 3px 5px 3px 5px;
 }
 
 .widgetSchemeRenderer.used > .header > .dataBindingSelector.refreshable.filled {
-    padding: 4px 45px 4px 5px;
+    padding: 0px 45px 0px 5px;
 }
 
 .widgetSchemeRenderer > .header > ._dwp_comboBox {
@@ -212,6 +213,10 @@
 	vertical-align: top;
 }
 
+.widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .valueEditor input {
+    height: 24px;
+}
+
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .valueEditor.multiEditor {
 	min-width: 400px;
     position: relative;
@@ -221,7 +226,8 @@
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .dataBindingSelector {
 	vertical-align: middle;
-	height: 30px;
+    padding: 3px 5px 6px 5px;
+	height: 24px;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .dataBindingSelector.filled {
@@ -246,15 +252,15 @@
 }
 
 .widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .valueEditor {
-
+    vertical-align: middle;
+    height: 24px;
 }
 
 .widgetSchemeRenderer[entry="item"].hasBinding > .value > .valueContainer > .valueEditor > input {
     display: block;
     width: 100%;
-    height: 34px;
-    padding: 6px 12px;
-    font-size: 14px;
+    height: 24px;
+    padding: 1px 3px;
     line-height: 1.42857143;
     color: #555;
     background-color: #fff;
@@ -287,7 +293,7 @@
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor{
     display: inline-block;
-    padding: 3px 5px 3px 5px;
+    padding: 0px 5px;
     font-size: 14px;
     line-height: 1.42857143;
     color: #555;
@@ -359,7 +365,6 @@
 }
 
 .widgetSchemeRenderer[entry="group"].collapsable > .header {
-    border-bottom: 2px solid #E6E9ED;
     padding: 1px 5px 6px;
     width: 100%;
 }
@@ -371,12 +376,10 @@
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-up,
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-down {
     color: #C5C7CB;
-    /*float: right;*/
-    /*line-height: 20px;*/
     cursor: pointer;
 
     position: absolute;
-    right: 0px;
+    left: -18px;
     top: 3px;
 }
 
@@ -384,8 +387,12 @@
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .dataBindingSelector:not(.filled) + .fa-chevron-down {
     display: none;
 }
-
+/*
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .btnCreate + .fa-chevron-up,
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .btnCreate + .fa-chevron-down {
     right: 25px;
+}
+*/
+.widgetSchemeRenderer .dataBindingSelector > .refresh {
+    padding: 0px 20px 0px 2px;
 }
