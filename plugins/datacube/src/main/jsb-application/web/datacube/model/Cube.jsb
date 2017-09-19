@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.Cube',
+	$name: 'DataCube.Model.Cube',
 	$parent: 'JSB.Workspace.Entry',
 	
 	sourceCount: 0,
@@ -20,12 +20,14 @@
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.DataCube.Providers.DataProviderRepository',
-		           'JSB.DataCube.Model.Slice',
-		           'JSB.DataCube.Query.QueryEngine'],
+		           'DataCube.Providers.DataProviderRepository',
+		           'DataCube.Model.Slice',
+		           'DataCube.Query.QueryEngine',
+		           'DataCube.MaterializationEngine',
+		           'JSB.Crypt.MD5'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.CubeNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.CubeNode');
 		},
 		
 		loaded: false,
@@ -37,6 +39,8 @@
 		fields: {},
 		slices: {},
 		slicePositions: {},
+		materialization: {},
+		materializing: false,
 		nodePosition: null,
 
 		$constructor: function(id, workspace, opts){
@@ -50,8 +54,6 @@
 			if(this.property('slices')){
 				this.sliceCount = this.property('slices');
 			}
-
-            this.queryEngine = new QueryEngine(this);
 		},
 		
 		destroy: function(){
@@ -63,6 +65,8 @@
 		
 		load: function(bRespond){
 			if(!this.loaded){
+			    this.queryEngine = new QueryEngine(this);
+
 				if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
 					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.cube');
 					
@@ -71,11 +75,13 @@
 					// construct data providers
 					for(var i = 0; i < snapshot.providers.length; i++){
 						var pDesc = snapshot.providers[i];
+						var pEntry = null;
 						if(!this.workspace.existsEntry(pDesc.entry)){
 							JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
 							continue;
+						} else {
+							pEntry = this.workspace.entry(pDesc.entry);
 						}
-						var pEntry = this.workspace.entry(pDesc.entry);
 						var pJsb = JSB.get(pDesc.jsb);
 						if(!pJsb){
 							JSB.getLogger().error('Unable to construct data provider "'+pDesc.jsb+'" due to missing its bean');
@@ -110,11 +116,53 @@
 						}
 					}
 					
+					// construct materialization
+					if(snapshot.materialization && Object.keys(snapshot.materialization).length > 0){
+						try {
+							var materialization = {
+								table: snapshot.materialization.table,
+								lastUpdate: snapshot.materialization.lastUpdate,
+								dataProviderEntry: this.workspace.entry(snapshot.materialization.provider.entry),
+								fields: {},
+								indexes: snapshot.materialization.indexes || {}
+							};
+							if(!materialization.dataProviderEntry){
+								throw new Error('Missing materialized source for cube: ' + $this.getName());
+							}
+							var pJsb = JSB.get(snapshot.materialization.provider.jsb);
+							if(!pJsb){
+								throw new Error('Unable to construct data provider "'+snapshot.materialization.provider.jsb+'" due to missing its bean');
+							}
+							var ProviderClass = pJsb.getClass();
+							var providerDesc = DataProviderRepository.queryDataProviderInfo(materialization.dataProviderEntry);
+							materialization.dataProvider = new ProviderClass(snapshot.materialization.provider.id, materialization.dataProviderEntry, this, providerDesc.opts);
+							for(var i = 0; i < snapshot.materialization.fields.length; i++){
+								var fDesc = snapshot.materialization.fields[i];
+								materialization.fields[fDesc.field] = {
+									field: fDesc.field,
+									type: fDesc.type,
+									binding: []
+								}
+								for(var j = 0; j < fDesc.binding.length; j++){
+									materialization.fields[fDesc.field].binding.push({
+										provider: materialization.dataProvider,
+										field: fDesc.binding[j].field,
+										type: fDesc.binding[j].type
+									});
+								}
+							}
+							
+							this.materialization = materialization;
+						} catch(e){
+							JSB.getLogger().error(e);
+						}
+					}
+					
 					// construct slices
 					for(var i = 0; i < snapshot.slices.length; i++){
 						var sDesc = snapshot.slices[i];
 						var slice = this.workspace.entry(sDesc.id);
-						if(!JSB.isInstanceOf(slice, 'JSB.DataCube.Model.Slice')){
+						if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 							continue;
 						}
 						slice.setQuery(sDesc.query);
@@ -126,7 +174,6 @@
 				}
 				this.loaded = true;
 				this.doSync();
-//this.queryEngine.selftTest(); // TODO: remove test
 			}
 			
 			if(!bRespond){
@@ -200,6 +247,36 @@
 				snapshot.fields.push(fDesc);
 			}
 			
+			// prepare materialization
+			if(this.materialization && Object.keys(this.materialization).length > 0){
+				snapshot.materialization = {
+					table: this.materialization.table,
+					lastUpdate: this.materialization.lastUpdate,
+					provider: {
+						id: this.materialization.dataProvider.getId(),
+						jsb: this.materialization.dataProvider.getJsb().$name,
+						entry: this.materialization.dataProviderEntry.getLocalId()
+					},
+					fields: [],
+					indexes: this.materialization.indexes || {}
+				};
+				for(var fName in this.materialization.fields){
+					var fDesc = {
+						field: fName,
+						type: this.materialization.fields[fName].type,
+						binding: []
+					};
+					for(var i = 0; i < this.materialization.fields[fName].binding.length; i++){
+						var bDesc = this.materialization.fields[fName].binding[i];
+						fDesc.binding.push({
+							field: bDesc.field,
+							type: bDesc.type
+						});
+					}
+					snapshot.materialization.fields.push(fDesc);
+				}
+			}
+			
 			// prepare slices
 			for(var sId in this.slices){
 				var sDesc = {
@@ -238,7 +315,7 @@
 				throw new Error('Unable to find provider bean: ' + providerDesc.pType);
 			}
 			var ProviderCls = providerJsb.getClass();
-			var pId = this.getId() + '|dp_' + JSB.generateUid();
+			var pId = this.getLocalId() + '|dp_' + JSB.generateUid();
 			var provider = new ProviderCls(pId, providerEntry, this, providerDesc.opts);
 			this.dataProviders[pId] = provider;
 			this.dataProviderEntries[pId] = providerEntry;
@@ -256,6 +333,9 @@
 		},
 
 		getOrderedDataProviders: function(){
+			if(this.materialization && this.materialization.dataProvider){
+				return [this.materialization.dataProvider];
+			}
 		    function compareProviders(leftProvider, rightProvider){
 		        for(var f in $this.fields){
                     var binding = $this.fields[f].binding;
@@ -448,6 +528,7 @@
 				type: pType
 			});
 			this.fieldCount = Object.keys(this.fields).length;
+			this.removeMaterialization();
 			this.store();
 			this.doSync();
 			return this.fields[nameCandidate];
@@ -493,9 +574,19 @@
 			if(this.fields[n]){
 				return false;
 			}
+			
+			// update fields
 			this.fields[n] = this.fields[oldName];
 			delete this.fields[oldName];
 			this.fields[n].field = n;
+			
+			// update materialization
+			if(this.materialization && this.materialization.fields && this.materialization.fields[oldName]){
+				this.materialization.fields[n] = this.materialization.fields[oldName];
+				delete this.materialization.fields[oldName];
+				this.materialization.fields[n].field = n;
+			}
+			
 			this.store();
 			this.doSync();
 			return this.fields[n];
@@ -516,6 +607,10 @@
 			}
 			
 			this.fieldCount = Object.keys(this.fields).length;
+			
+			// remove materialization
+			this.removeMaterialization();
+			
 			this.store();
 			this.doSync();
 			return true;
@@ -534,7 +629,7 @@
 					break;
 				}
 			}
-			var sId = this.getId() + '|slice_' + JSB.generateUid();
+			var sId = JSB.generateUid();
 			var slice = new Slice(sId, this.workspace, this, sName);
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
@@ -542,6 +637,19 @@
 			this.store();
 			this.doSync();
 			return slice;
+		},
+		
+		removeSlice: function(sId){
+			var slice = this.slices[sId];
+			if(!slice){
+				return;
+			}
+			delete this.slices[sId];
+			this.removeChildEntry(sId);
+			slice.remove();
+			this.sliceCount = Object.keys(this.slices).length;
+			this.store();
+			this.doSync();
 		},
 		
 		getSliceById: function(sId){
@@ -553,6 +661,447 @@
 		
 		getSlices: function(){
 			return this.slices;
+		},
+		
+		getFields: function(){
+			return this.fields;
+		},
+		
+		getManagedFields: function(){
+			if(this.materialization && this.materialization.fields){
+				return this.materialization.fields;
+			}
+			return this.getFields();
+		},
+		
+		isMaterializing: function(){
+			return this.materializing;
+		},
+		
+		isMaterialized: function(){
+			return (this.materialization && Object.keys(this.materialization).length > 0 ? true: false);
+		},
+		
+		getMaterializationInfo: function(){
+			return {
+				materialization: this.materialization,
+				materializing: this.materializing
+			};
+		},
+		
+		startMaterialization: function(database){
+			if(!database){
+				// chose database from currently existed materialization
+				if(this.materialization && this.materialization.dataProviderEntry){
+					database = this.materialization.dataProviderEntry.getParent();
+				} else {
+					return;
+				}
+			}
+			this.materializing = true;
+			this.materializer = MaterializationEngine.createMaterializer(database);
+			
+			// run materialization on deferred manner
+			JSB.defer(function(){
+				function checkStop(){
+					if($this.stopMaterializing){
+						$this.materializing = false;
+						$this.stopMaterializing = false;
+						$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+						return true;
+					}
+					return false;
+				}
+				
+				var materializationDesc = {
+					table: null,
+					indexes: {}
+				};
+				
+				function destroyCurrentMaterialization(){
+					if(materializationDesc.table){
+						$this.materializer.removeTable(materializationDesc.table);
+					}
+					if(materializationDesc.dataProvider){
+						materializationDesc.dataProvider.destroy();
+					}
+				}
+				
+				JSB.getLocker().lock('materialization_' + $this.getId());
+				
+				
+				try {
+					$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
+					var suggestedName = 'cube_' + $this.getLocalId();
+					var fields = {};
+					for(var fName in $this.fields){
+						fields[$this.fields[fName].field] = $this.fields[fName].type;
+					}
+					
+					
+					// create table
+					var tableDesc = $this.materializer.createTable(suggestedName, fields);
+					materializationDesc.table = tableDesc.table;
+					
+					// transmit data
+					var iterator = $this.queryEngine.query({$select: {}}, {});
+					var batch = [];
+					var lastStatusTimestamp = 0;
+					for(var i = 0; ; i++){
+						var el = null;
+						try {
+							el = iterator.next();
+						}catch(e){
+							el = null;
+						}
+						if(!el){
+							break;
+						}
+						
+						if(!JSB.isObject(el)){
+							continue;
+						}
+
+						// translate data into new fields
+						var nEl = {};
+						for(var f in el){
+							if(!fields[f]){
+								continue;
+							}
+							nEl[tableDesc.fieldMap[f]] = el[f];
+						}
+						
+						batch.push(nEl);
+						
+						if(batch.length >= 100){
+							$this.materializer.insert(materializationDesc.table, batch);
+							batch = [];
+							
+							var curTimestamp = Date.now();
+							if(curTimestamp - lastStatusTimestamp > 3000){
+								lastStatusTimestamp = curTimestamp;
+								if(checkStop()){
+									destroyCurrentMaterialization();
+									return;
+								}
+								$this.publish('DataCube.Model.Cube.status', {status: 'Сохранено записей: ' + (i + 1), success: true}, {session: true});
+							}
+
+						}
+					}
+					
+					if(batch.length > 0){
+						$this.materializer.insert(materializationDesc.table, batch);
+					}
+					
+					if(checkStop()){
+						destroyCurrentMaterialization();
+						return;
+					}
+					
+					// rename table if required
+					if(materializationDesc.table != suggestedName){
+						$this.materializer.removeTable(suggestedName);
+						$this.materializer.renameTable(materializationDesc.table, suggestedName);
+						materializationDesc.table = suggestedName;
+					}
+					
+					// prepare materialization object
+					$this.publish('DataCube.Model.Cube.status', {status: 'Обновление схемы базы материализации', success: true}, {session: true});
+					database.extractScheme();
+					var chEntries = database.getChildren();
+					var source = null;
+					for(var chId in chEntries){
+						var tableSource = chEntries[chId];
+						var tDesc = tableSource.getDescriptor();
+						if(tDesc.name == materializationDesc.table){
+							source = tableSource;
+							break;
+						}
+					}
+					
+					if(!source){
+						throw new Error('Internal error: unable to find materialization table');
+					}
+					$this.publish('DataCube.Model.Cube.status', {status: 'Завершение материализации', success: true}, {session: true});
+					var providerDesc = DataProviderRepository.queryDataProviderInfo(source);
+					var providerJsb = JSB.get(providerDesc.pType);
+					if(!providerJsb){
+						throw new Error('Unable to find provider bean: ' + providerDesc.pType);
+					}
+					var ProviderCls = providerJsb.getClass();
+					var pId = $this.getLocalId() + '|dp_' + JSB.generateUid();
+					materializationDesc.dataProvider = new ProviderCls(pId, source, $this, providerDesc.opts);
+					materializationDesc.dataProviderEntry = source;
+					materializationDesc.fields = {};
+					var providerFields = materializationDesc.dataProvider.extractFields();
+					for(var fName in $this.fields){
+						var fDesc = materializationDesc.fields[fName] = {
+							field: fName,
+							type: $this.fields[fName].type,
+							binding: []
+						};
+						var pName = tableDesc.fieldMap[fName];
+						if(providerFields[pName]){
+							fDesc.binding = [{
+								provider: materializationDesc.dataProvider,
+								field: pName,
+								type: providerFields[pName]
+							}];
+							continue;
+						} else {
+							throw new Error('Internal error: failed to find field: "' + fName + '" in materialized table');
+						}
+					}
+					$this.updateIndexes(materializationDesc);
+					materializationDesc.lastUpdate = Date.now();
+					var oldMaterialization = $this.materialization;
+					$this.materialization = materializationDesc;
+					
+					if(oldMaterialization && oldMaterialization.dataProvider){
+						oldMaterialization.dataProvider.destroy();
+					}
+					$this.materializing = false;
+					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+					
+				} catch(e){
+					if(materializationDesc.table){
+						try {
+							$this.materializer.removeTable(materializationDesc.table);	
+						}catch(e){}
+					}
+					$this.materializing = false;
+					$this.publish('DataCube.Model.Cube.status', {status: e.message, success: false}, {session: true});
+					throw e;
+				} finally {
+					$this.materializer.destroy();
+					$this.materializer = null;
+					JSB.getLocker().unlock('materialization_' + $this.getId());
+				}
+				
+				$this.store();
+				$this.doSync();
+			});
+			
+		},
+		
+		stopMaterialization: function(){
+			$this.stopMaterializing = true;
+		},
+		
+		removeMaterialization: function(){
+			var bLocked = false;
+			if(!this.materialization || Object.keys(this.materialization).length == 0){
+				return;
+			}
+			$this.publish('DataCube.Model.Cube.status', {status: 'Удаление материализации', success: true}, {session: true});
+			JSB.getLocker().lock('materialization_' + $this.getId());
+			var materialization = $this.materialization;
+			$this.materialization = {};
+			var materializer = null;
+			try {
+				if(materialization && materialization.dataProvider){
+					materialization.dataProvider.destroy();
+				}
+				
+				if(materialization && materialization.dataProviderEntry){
+					var sourceEntry = materialization.dataProviderEntry;
+					
+					// remove table
+					if(materialization.table){
+						var database = sourceEntry.getParent();
+						materializer = MaterializationEngine.createMaterializer(database);
+						materializer.removeTable(materialization.table);
+					}
+					sourceEntry.remove();
+				} 
+				
+			} finally {
+				if(materializer){
+					materializer.destroy();
+				}
+				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+				JSB.getLocker().unlock('materialization_' + $this.getId());	
+				$this.store();
+				$this.doSync();
+			}
+		},
+		
+		updateIndexes: function(materialization){
+			var bLocked = false;
+			var bCreatedMaterializer = false;
+			var bChanged = false;
+			
+			if(!materialization){
+				JSB.getLocker().lock('materialization_' + $this.getId());
+				bLocked = true;
+				materialization = this.materialization;
+				$this.materializing = true;
+			}
+			
+			var matFields = materialization.fields;
+
+			function extractIndexesForSlice(slice){
+				var q = slice.getQuery();
+				
+				function parseObject(obj){
+					var indexMap = {};
+					if(!JSB.isObject(obj)){
+						return null;
+					}
+					
+					for(var fObj in obj){
+						if(fObj == '$groupBy'){
+							// parse groupBy
+							var groupByObj = obj[fObj];
+							if(!JSB.isArray(groupByObj)){
+								groupByObj = [groupByObj];
+							}
+							var fStr = '';
+							var indexDesc = {};
+							for(var i = 0; i < groupByObj.length; i++){
+								var f = groupByObj[i];
+								if(!matFields[f]){
+									continue;
+								}
+								if(fStr.length > 0){
+									fStr += '|';
+								}
+								fStr += f;
+								indexDesc[f] = true;
+							}
+							var idxName = 'idx_' + MD5.md5(fStr);
+							indexMap[idxName] = indexDesc;
+						} else if(fObj == '$filter') {
+							// parse filter
+							if(!JSB.isObject(obj[fObj])){
+								continue;
+							}
+							var fStr = '';
+							var indexDesc = {};
+							for(var f in obj[fObj]){
+								if(!matFields[f]){
+									continue;
+								}
+								if(fStr.length > 0){
+									fStr += '|';
+								}
+								fStr += f;
+								indexDesc[f] = true;
+							}
+							var idxName = 'idx_' + MD5.md5(fStr);
+							indexMap[idxName] = indexDesc;
+						} else if(JSB.isObject(obj[fObj]) && Object.keys(obj[fObj]).length > 0){
+							var sMap = parseObject(obj[fObj]);
+							if(sMap && Object.keys(sMap).length > 0){
+								JSB.merge(indexMap, sMap);
+							}
+						} else if(JSB.isArray(obj[fObj])){
+							for(var i = 0; i < obj[fObj].length; i++){
+								var sMap = parseObject(obj[fObj][i]);
+								if(sMap && Object.keys(sMap).length > 0){
+									JSB.merge(indexMap, sMap);
+								}
+							}
+						}
+					}
+
+					return indexMap;
+				}
+				
+				return parseObject(q);
+			}
+			
+			try {
+				var materializer = this.materializer;
+				if(!materializer){
+					var database = materialization.dataProviderEntry.getParent();
+					materializer = MaterializationEngine.createMaterializer(database);
+					bCreatedMaterializer = true;
+				}
+
+				$this.publish('DataCube.Model.Cube.status', {status: 'Обновление индексов материализации', success: true}, {session: true});
+				// iterate over slices
+				var cubeIdxMap = {};
+				for(var sId in this.slices){
+					var slice = this.slices[sId];
+					var indexes = extractIndexesForSlice(slice);
+					if(indexes && Object.keys(indexes).length > 0){
+						JSB.merge(cubeIdxMap, indexes);
+					}
+				}
+				// adding new indexes
+				var indexCount = Object.keys(cubeIdxMap).length;
+				var curIndexPos = 0;
+				var lastPcnt = -1;
+				for(var idxName in cubeIdxMap){
+					if(materialization.indexes && materialization.indexes[idxName]){
+						continue;
+					}
+					// translate index fields
+					var idxDesc = {};
+					for(var fName in cubeIdxMap[idxName]){
+						if(materialization.fields[fName] && materialization.fields[fName].binding && materialization.fields[fName].binding.length > 0){
+							var pField = materialization.fields[fName].binding[0].field;
+							idxDesc[pField] = cubeIdxMap[idxName][fName];
+						}
+					}
+					
+					if(Object.keys(idxDesc).length > 0){
+						try {
+							materializer.createIndex(materialization.table, idxName, idxDesc);
+							if(!materialization.indexes){
+								materialization.indexes = {};
+							}
+							materialization.indexes[idxName] = cubeIdxMap[idxName];
+							bChanged = true;
+						} catch(e){
+							JSB.getLogger().warn('Failed to create index ' + idxName + ' for ' + JSON.stringify(idxDesc));
+						}
+					}
+					curIndexPos++;
+					var pcnt = Math.floor(curIndexPos * 100 / indexCount);
+					if(lastPcnt != pcnt){
+						$this.publish('DataCube.Model.Cube.status', {status: 'Создание новых индексов: ' + pcnt + '%', success: true}, {session: true});
+						lastPcnt = pcnt;
+					}
+					
+				}
+				
+				// remove missing indexes
+				$this.publish('DataCube.Model.Cube.status', {status: 'Удаление старых индексов', success: true}, {session: true});
+				var idxToRemove = [];
+				if(materialization.indexes){
+					for(var idxName in materialization.indexes){
+						if(!cubeIdxMap[idxName]){
+							idxToRemove.push(idxName);
+						}
+					}
+				}
+				for(var i = 0; i < idxToRemove.length; i++){
+					var idxName = idxToRemove[i];
+					try {
+						materializer.removeIndex(materialization.table, idxName);
+						delete materialization.indexes[idxName];
+						bChanged = true;
+					}catch(e){
+						JSB.getLogger().warn('Failed to remove index ' + idxName + ' with ' + JSON.stringify(materialization.indexes[idxName]));
+					}
+				}
+			} finally {
+				if(bCreatedMaterializer){
+					materializer.destroy();
+				}
+				if(bLocked){
+					$this.materializing = false;
+					JSB.getLocker().unlock('materialization_' + $this.getId());
+					if(bChanged){
+						$this.store();
+						$this.doSync();
+					}
+					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+				}
+			}
 		},
 		
 		renameSlice: function(sId, newName){
@@ -588,5 +1137,63 @@
 			this.store();
 		},
 
+		parametrizeQuery: function(query){
+			var newQuery = JSB.clone(query);
+			var params = {};
+			var filterOps = {
+				'$eq': true,
+				'$lt': true,
+				'$lte': true,
+				'$gt': true, 
+				'$gte': true,
+				'$ne': true,
+				'$like': true,
+				'$ilike': true,
+				'$in': true,
+				'$nin': true
+			};
+			
+			if(newQuery && Object.keys(newQuery).length > 0){
+	        	// translate $filter
+	        	if(newQuery.$filter || newQuery.$postFilter){
+	        		var c = {i: 1};
+	        		function getNextParam(){
+	        			return 'p' + (c.i++);
+	        		}
+	        		function prepareFilter(scope){
+	        			for(var f in scope){
+	        				if(filterOps[f]){
+	        					var pName = getNextParam();
+	        					params[pName] = scope[f];
+	        					scope[f] = '${'+pName+'}';
+	        				} else if(f == '$and' || f == '$or'){
+	        					var arr = scope[f];
+	        					for(var i = 0; i < arr.length; i++){
+	        						prepareFilter(arr[i]);
+	        					}
+	        				} else {
+	        					prepareFilter(scope[f]);
+	        				}
+	        			}
+	        		}
+	        		if(newQuery.$filter){
+	        			prepareFilter(newQuery.$filter);
+	        		}
+	        		if(newQuery.$postFilter){
+	        			prepareFilter(newQuery.$postFilter);
+	        		}
+	        	}
+            }
+			
+			return {
+				query: newQuery,
+				params: params
+			}
+		},
+		
+		executeQuery: function(query, params, provider){
+			this.load();
+			return this.queryEngine.query(query, params, provider);
+		}
 	}
 }

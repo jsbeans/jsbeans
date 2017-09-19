@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Query.Iterators.FinalizeIterator',
-	$parent: 'JSB.DataCube.Query.Iterators.Iterator',
+	$name: 'DataCube.Query.Iterators.FinalizeIterator',
+	$parent: 'DataCube.Query.Iterators.Iterator',
 
 	$server: {
 		$constructor: function(iterator, queryEngine){
@@ -33,6 +33,7 @@
 
 		close: function() {
 		    this.iterator.close();
+		    this.destroy();
 		},
 
 		_finalizeObject: function(json, finalize) {

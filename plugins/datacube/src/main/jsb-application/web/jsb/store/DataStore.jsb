@@ -5,9 +5,10 @@
 		$require: [
 		],
 
-		$constructor: function(config){
+		$constructor: function(config, storeManager){
 			$base();
 			this.config = config;
+			this.storeManager = storeManager;
 		},
 
 		getName: function(){
@@ -18,16 +19,17 @@
             throw new Error('SQL query not supported for store ' + this.config.name);
 		},
 
-		asParametrizedSQL: function() {
-            throw new Error('Parametrized SQL query not supported for store ' + this.config.name);
-		},
-
-		asMoSQL: function() {
-            throw new Error('Mongo-sql query not supported for store ' + this.config.name);
-		},
-
 		asMongo: function() {
             throw new Error('MongoDB query not supported for store ' + this.config.name);
+		},
+		
+		getType: function(){
+			return this.config.type;
+		},
+
+		close: function() {
+			this.storeManager._removeStore(this);
+		    this.destroy();
 		},
     }
 })

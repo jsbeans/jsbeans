@@ -1,7 +1,7 @@
 {
-	$name: 'JSB.DataCube.GridView',
+	$name: 'DataCube.GridView',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['Handsontable'],
+	$require: ['Handsontable', 'JQuery.UI.Loader'],
 	$client: {
 	    allLoaded: false,
 	    curLoadId: null,
@@ -14,6 +14,7 @@
 			this.loadCss('GridView.css');
 
             this.table = new Handsontable({
+            	noDataMessage: 'Выберите объект на диаграмме',
                 table: {
                     rowHeaders: false,
                     readOnly: false,
@@ -33,30 +34,44 @@
             this.errorText = this.$('<span class="errorText"></span>');
             this.error.append(this.errorText);
             this.append(this.error);
-            
+            // selected
             this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, slice){
-            	JSB.defer(function(){
-            		$this.updateData(slice);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(slice);
             });
 
             this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, cube){
-            	JSB.defer(function(){
-            		$this.updateData(cube);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(cube);
             });
 
             this.subscribe('DataCube.CubeEditor.providerNodeSelected', function(editor, msg, provider){
-            	JSB.defer(function(){
-            		$this.updateData(provider);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(provider);
             });
 
             this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this._updateData(slice);
-                }, 300, 'sliceNodeEdit' + $this.getId());
+                $this._updateData(slice);
             });
+
+            // deselected
+            this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(editor, msg, slice){
+                $this.clear();
+            });
+
+            this.subscribe('DataCube.CubeEditor.cubeNodeDeselected', function(editor, msg, slice){
+                $this.clear();
+            });
+
+            this.subscribe('DataCube.CubeEditor.providerNodeDeselected', function(editor, msg, slice){
+                $this.clear();
+            });
+		},
+
+		clear: function(){
+		    this.error.addClass('hidden');
+            this.table.clear();
+            // this.curData = null;
+            // this.curLoadId = null;
+            // this.params = {};
+            // this.allLoaded = false;
 		},
 
 		// get column number; return header cell content
@@ -132,15 +147,15 @@
 		},
 		
 		updateData: function(source){
-			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 			    this._updateData(source);
-			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Providers.DataProvider')){
+			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
 			    this._updateData({
 			        cube: source.cube,
 			        provider: source,
                     query: { $select: {}}
 			    });
-			} else if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Cube')){
+			} else if(JSB.isInstanceOf(source, 'DataCube.Model.Cube')){
             	this._updateData({
             	cube: source,
             	query: { $select: {}}
@@ -151,6 +166,8 @@
 		},
 
 		_updateData: function(source){
+		    if(this.curData === source) return;
+
             this.error.addClass('hidden');
 
             if(!source.query) return;
@@ -194,7 +211,7 @@
             try{
                 if(this.it) this.it.close();
 
-                this.it = obj.cube.queryEngine.query(obj.query, obj.queryParams, obj.provider);
+                this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider);
                 this.counter = 0;
 
                 return this.loadMore(obj.id);
@@ -234,10 +251,9 @@
                     }
 
                     this.counter++;
-                    res.push(prepareElement(el));
-                    // res.push(el);
+                    //res.push(prepareElement(el));
+                    res.push(el);
                 }
-
                 return {
                     result: res,
                     allLoaded: allLoaded,

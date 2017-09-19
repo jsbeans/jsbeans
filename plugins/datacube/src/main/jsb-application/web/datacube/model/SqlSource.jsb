@@ -1,7 +1,7 @@
 {
-	$name: 'JSB.DataCube.Model.SqlSource',
-	$parent: 'JSB.Workspace.Entry',
-	$require: ['JSB.DataCube.Model.SqlTable'],
+	$name: 'DataCube.Model.SqlSource',
+	$parent: 'DataCube.Model.DatabaseSource',
+	$require: ['DataCube.Model.SqlTable'],
 	
 	details: null,
 	
@@ -17,7 +17,7 @@
 		
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.SqlSourceNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SqlSourceNode');
 		},
 
 		$constructor: function(id, workspace){
@@ -63,7 +63,7 @@
             		$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Обновление схемы ' + pp + '%', success: true}, {session: true});
             		lastPP = pp;
             	}
-			});
+			}, this.settings.filter);
 			$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
 
 			// update entries
@@ -73,6 +73,7 @@
 				for(var tName in sDesc.tables){
 					var tDesc = sDesc.tables[tName];
 					var tId = this.getLocalId() + '|' + sName + '|' + tName;
+					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
 					if(existedTables[tId]){
 						// already exists
 						existedTables[tId].updateDescriptor(tDesc);
@@ -86,7 +87,10 @@
 			
 			// remove unexisted
 			for(var tId in existedTables){
-				this.removeChildEntry(tId);
+				var cEntry = this.removeChildEntry(tId);
+				if(cEntry){
+					cEntry.remove();
+				}
 			}
 			
 			// construct details

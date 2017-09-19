@@ -20,8 +20,12 @@
 		return this.name;
 	},
 	
-	getParent: function(){
+	getParentId: function(){
 		return this.parent;
+	},
+	
+	getWorkspace: function(){
+		return this.workspace;
 	},
 	
 	$client: {
@@ -120,6 +124,7 @@
 			var cEntry = this.workspace.entry(eid);
 			cEntry.parent = null;
 			cEntry.property('parent', cEntry.parent);
+			return cEntry;
 		},
 		
 		addChildEntry: function(entry){
@@ -149,7 +154,10 @@
 		},
 		
 		getParent: function(){
-			return this.parent;
+			if(this.parent){
+				return this.workspace.entry(this.parent);
+			}
+			return null;
 		},
 
 		_locked: function(id, func) {

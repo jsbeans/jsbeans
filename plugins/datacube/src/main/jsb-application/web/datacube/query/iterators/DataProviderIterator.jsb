@@ -1,16 +1,16 @@
 {
-	$name: 'JSB.DataCube.Query.Iterators.DataProviderIterator',
-	$parent: 'JSB.DataCube.Query.Iterators.Iterator',
+	$name: 'DataCube.Query.Iterators.DataProviderIterator',
+	$parent: 'DataCube.Query.Iterators.Iterator',
 
 	$server: {
 		$require: [
-		    'JSB.DataCube.Query.Translators.TranslatorRegistry',
+		    'DataCube.Query.Translators.TranslatorRegistry',
 
-//		    'JSB.DataCube.Providers.SqlTableDataProvider',
-//		    'JSB.DataCube.Providers.InMemoryDataProvider',
+//		    'DataCube.Providers.SqlTableDataProvider',
+//		    'DataCube.Providers.InMemoryDataProvider',
 
-		    'JSB.DataCube.Query.Translators.MoSQLTranslator',
-		    'JSB.DataCube.Query.Translators.LockiTranslator',
+		    'DataCube.Query.Translators.SQLTranslator',
+		    'DataCube.Query.Translators.LockiTranslator',
         ],
 
 		$constructor: function(providerOrProviders, queryEngine){
@@ -18,7 +18,7 @@
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
 		    this.queryEngine = queryEngine;
 		    this.cube = queryEngine.cube;
-		    this.translator = TranslatorRegistry.newTranslator(providerOrProviders, this.cube);
+		    this.translator = TranslatorRegistry.newTranslator(providerOrProviders, this.cube || this.queryEngine);
 		},
 
 		matchDataProvider: function(dataProvider){
@@ -30,13 +30,15 @@
         },
 
 		iterate: function(dcQuery, params){
-		    Log.debug('DataProviderIterator.iterate: ' + JSON.stringify(dcQuery,0,2));
+//		    Log.debug('DataProviderIterator.iterate: ' + JSON.stringify(dcQuery,0,2));
             this.iterator = this.translator.translatedQueryIterator(dcQuery, params);
 		    return this;
 		},
 
 		close: function() {
 		    this.iterator.close();
+		    this.translator.close();
+		    this.destroy();
 		},
 
 		next: function(){

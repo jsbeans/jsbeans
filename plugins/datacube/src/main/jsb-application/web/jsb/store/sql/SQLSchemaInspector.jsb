@@ -9,18 +9,72 @@
 		    $base();
 		},
 
-		extractSchemas: function(jdbcConnection, stageCallback){
+		extractSchemas: function(jdbcConnection, stageCallback, filter){
 			var schemas = {};
             var databaseMetaData = jdbcConnection.getMetaData();
-
-            var tables = databaseMetaData.getTables(null, null, null, ["TABLE", "VIEW"]);
+/*
+            var types = {};
+            var tables = databaseMetaData.getTables(null, null, null, null);
+            while (tables.next()) {
+                var tableSchema = ''+tables.getString("TABLE_SCHEM");
+                var tableName = ''+tables.getString("TABLE_NAME");
+                var tableType = ''+tables.getString("TABLE_TYPE");
+                if(!types[tableType]){
+                	types[tableType] = 1;
+                } else {
+                	types[tableType]++;
+                };
+                
+            }
+*/
+            var skipTypes = {
+            	'INDEX': true,
+            	'SEQUENCE': true,
+            	'SYSTEM INDEX': true,
+            	'SYSTEM TABLE': true,
+            	'SYSTEM TOAST INDEX': true,
+            	'SYSTEM VIEW': true
+            };
+            var tables = databaseMetaData.getTables(null, null, null, null/*['TABLE', 'VIEW']*/);
             var tableArr = [];
+            var rxFilters = [];
+            if(filter && filter.length > 0){
+            	// match filter
+            	var filters = filter.split(',');
+            	for(var i = 0; i < filters.length; i++){
+            		var curFilter = filters[i];
+            		var pattern = '^' + curFilter.trim().replace('.', '\\.').replace('*', '.*?') + '$';
+            		var rx = new RegExp(pattern, 'i');
+            		rxFilters.push(rx);
+            	}
+            }
+            
             while (tables.next()) {
 
                 var tableSchema = ''+tables.getString("TABLE_SCHEM");
                 var tableName = ''+tables.getString("TABLE_NAME");
                 var tableType = ''+tables.getString("TABLE_TYPE");
-
+                
+                if(skipTypes[tableType]){
+                	continue;
+                }
+                
+                var compoundName = tableSchema + '.' + tableName;
+                if(rxFilters && rxFilters.length > 0){
+                	var bMatched = false;
+                	// match filters
+                	for(var i = 0; i < rxFilters.length; i++){
+                		var rx = rxFilters[i];
+                		if(rx.test(compoundName)){
+                			bMatched = true;
+                			break;
+                		}
+                	}
+                	if(!bMatched){
+                		continue;
+                	}
+                }
+                
                 if (!schemas[tableSchema]) {
                     schemas[tableSchema] = {
                         entryType: 'schema',

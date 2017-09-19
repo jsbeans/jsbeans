@@ -117,10 +117,12 @@
 
 		    return this._locked('body', function(){
 		        var localIds = Object.keys(self.body.entries);
+		        //JSB.getLogger().info('count: ' + localIds.length + '; entries: ' + JSON.stringify(localIds));
 		        var i = 0;
 		        return {
 		            next: function() {
-		                while(i < localIds.length && !self.body.entries[localIds[i]]) {
+		            	//JSB.getLogger().info('pos: ' + i + '; entry: ' + localIds[i]);
+		                while(i < localIds.length && (!localIds[i] || !self.body.entries[localIds[i]] || Object.keys(self.body.entries[localIds[i]]).length == 0 || !self.body.entries[localIds[i]].eType)) {
 		                    i++;
 		                }
 
@@ -156,9 +158,7 @@
 		},
 		
 		existsEntry: function(id){
-			var insId = this.entryInstanceId(id);
-			var entry = JSB().getInstance(insId);
-			return !!entry;
+			return !!this.entry(id);
 		},
 		
 		removeEntry: function(id){
@@ -189,7 +189,7 @@
                     	} else if(eType instanceof JSB){
                     		eType = eType.getClass();
                     	} else if(!eType) {
-                    		eType = Entry;
+                    		return null;
                     	}
                         entry = new eType(id, self);
                     }

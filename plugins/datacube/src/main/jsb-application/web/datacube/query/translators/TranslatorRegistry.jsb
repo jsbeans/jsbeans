@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Query.Translators.TranslatorRegistry',
+	$name: 'DataCube.Query.Translators.TranslatorRegistry',
 	$singleton: true,
 
 	$server: {

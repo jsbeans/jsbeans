@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Dialogs.SliceOptionsTool',
+	$name: 'DataCube.Dialogs.SliceOptionsTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager', 
 	           'JSB.Widgets.PrimitiveEditor',
@@ -42,13 +42,13 @@
 				</div>
 
 				<span class="error json1 hidden">Некорректный JSON текста запроса!</span>
-
+<!--
 				<div jsb="JSB.Widgets.GroupBox" caption="Параметры запроса">
                     <div jsb="JSB.Widgets.MultiEditor" class="queryParameters" valuetype="org.jsbeans.types.JsonObject" showhints="false"></div>
                 </div>
 
                 <span class="error json2 hidden">Некорректный JSON параметров запроса!</span>
-				
+-->				
 				<div class="buttons">
 					<div 
 						jsb="JSB.Widgets.Button" 
@@ -65,7 +65,7 @@
 					</div>
 				</div>
 			`);
-
+/*
             this.find('div.queryEditor').resizable({
                 handles: "n, s",
                 // containment: this.getElement(),
@@ -79,6 +79,7 @@
                 minHeight: 20,
                 minWidth: 320
             });
+*/            
 		},
 		
 		
@@ -95,8 +96,8 @@
 			var slice = this.data.data.slice;
 
 			this.find('.name._dwp_primitiveEditor').jsb().setData(slice.getName());
-			this.find('.queryParameters').jsb().setData(JSON.stringify(slice.getQueryParams(), null, 4));
-
+			/*this.find('.queryParameters').jsb().setData(JSON.stringify(slice.getQueryParams(), null, 4));*/
+			
 			var query = slice.getQuery();
 
             if(!query || Object.keys(query).length == 0){
@@ -212,7 +213,7 @@
 		    } catch (ex){
 		        this.find('.error.json1').removeClass('hidden');
 		    }
-
+/*
 		    try{
                 var json2 = this.find('.queryParameters').jsb().getData().getValue();
                 this.find('.error.json2').addClass('hidden');
@@ -220,13 +221,13 @@
             } catch (ex){
                 this.find('.error.json2').removeClass('hidden');
             }
-
-            if(flag1 && flag2){
+*/
+            if(flag1 /*&& flag2*/){
                 // construct response
                 this.data.callback.call(this, {
                     name: this.find('.name._dwp_primitiveEditor').jsb().getData().getValue(),
                     query: json1,
-                    queryParams: json2
+                    queryParams: {}/*json2*/
                 });
 
                 $this.close();

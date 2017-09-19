@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.MapWidget',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.MapWidget',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Карта мира',
 		description: '',
@@ -172,7 +172,8 @@
 	},
 	$scheme: {
         type: 'group',
-        items: [{
+        items: [
+        {
             type: 'group',
             name: 'Источник',
             key: 'source',
@@ -181,6 +182,7 @@
             {
                 name: 'Имя поля',
                 type: 'item',
+                key: 'fieldName',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field'
@@ -188,20 +190,25 @@
             {
                 name: 'Количество',
                 type: 'item',
+                key: 'fieldSize',
                 binding: 'field',
                 itemType: 'number',
                 itemValue: ''
-            },
-            {
-                type: 'item',
-                key: 'autoSize',
-                name: 'Автоматически считать количество',
-                optional: true
-            }]
-        }]
+            }
+            ]
+        },
+        {
+            type: 'item',
+            key: 'autoSize',
+            name: 'Автоматически считать количество',
+            optional: true,
+            editor: 'none'
+        }
+        ]
 	},
-	$require: ['Tipsy'],
 	$client: {
+		$require: ['Tipsy', 'JQuery.UI.Loader'],
+
 		$constructor: function(opts){
 			$base(opts);
 			this.addClass('mapWidget');
@@ -479,9 +486,13 @@
             })
         },
 
-        refresh: function(){
+        refresh: function(opts){
+            if(opts && this == opts.initiator) return;
+
             var context = this.getContext().find('source');
             if(!context.bound()) return;
+
+			$base();
 
             this.getElement().loader();
             JSB().deferUntil(function(){
@@ -489,7 +500,7 @@
 
                 var autoSize = $this.getContext().find('autoSize').used();
 
-                var flag = context.fetch({readAll: true}, function(){
+                var flag = context.fetch({readAll: true, reset: true}, function(){
                     $this.getElement().loader('hide');
                     var data = [];
 
@@ -534,7 +545,7 @@
                 if(!flag) $this.getElement().loader('hide');
             }, function(){
                 return $this.isInit && $this.getElement().is(':visible');
-            })
+            });
         },
 
         rebuildCategories: function(){
@@ -572,6 +583,7 @@
                 });
 
                 // highlight
+                /*
                 item.on("mouseenter", function(_cat){
                         if(this.tipsy) {
                             this.tipsy.show();
@@ -604,10 +616,11 @@
                         var opts = JSB().merge($this._defaults.path.base, typeof $this._aggrs[i].path !== 'undefined' ? $this._aggrs[i].path.base : null);
                         $this.fillStyle(item, opts);
                         $this.onCatLeave(_cat);
-                    })
+                    });
+                */
                 // cat click
-                    .on("click", function(_cat){
-                        $this.onCatClick(_cat);
+                item.on("click", function(_cat){
+                        $this.onCatClick(this, _cat);
                     });
             });
 
@@ -629,6 +642,7 @@
                 $this.fillStyle(item, opts);
 
                 // highlight
+                /*
                 item.on("mouseenter", function(){
                         var opts = JSB().merge($this._defaults.label.selected, typeof $this._aggrs[i].label !== 'undefined' ? $this._aggrs[i].label.selected : null);
                         $this.fillStyle(item, opts);
@@ -637,6 +651,7 @@
                         var opts = JSB().merge($this._defaults.label.base, typeof $this._aggrs[i].label !== 'undefined' ? $this._aggrs[i].label.base : null);
                         $this.fillStyle(item, opts);
                     });
+                */
             });
 
             // exit
@@ -644,6 +659,8 @@
         },
 
         fillStyle: function(item, opts){
+            if(!item || !opts) return;
+
             for(var j in opts.attrs){
                 item.attr(j, opts.attrs[j]);
             }
@@ -705,7 +722,40 @@
         },
 
         // callbacks
-        onCatClick: function(_cat){
+        onCatClick: function(item, _cat){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) return;
+
+            if(this._selectedCat === _cat){
+                // remove old filter
+                this._selectedCat = null;
+                if(this._currentFilter){
+                	this.removeFilter(this._currentFilter);
+                }
+
+                this.fillStyle(d3.select(item), $this._defaults.path.base);
+            } else {
+                // add new filter
+                this.fillStyle(d3.select(item), $this._defaults.path.selected);
+
+                var field = this.getContext().find('source').value().get(0).binding();
+
+                var fDesc = {
+                	sourceId: context.source,
+                	type: '$and',
+                	op: '$eq',
+                	field: field,
+                	value: _cat.id
+                };
+                if(!this.hasFilter(fDesc)){
+                	if(this._currentFilter){
+                		this.removeFilter(this._currentFilter);
+                	}
+                	this._currentFilter = this.addFilter(fDesc);
+                	this.refreshAll();
+                }
+                this._selectedCat = _cat;
+            }
         },
         onCatEnter: function(_cat){
         },

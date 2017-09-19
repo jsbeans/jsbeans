@@ -37,6 +37,7 @@
                 for(var i = 1; i < count + 1; i++) {
                     var name = rs.getMetaData().getColumnLabel(i) || rs.getMetaData().getColumnName(i);
                     json[''+name] = this._getColumnValue(rs, i);
+                    
                 }
 		        return json;
 		    }
@@ -70,6 +71,84 @@
                 }
             }
 		},
+		
+		executeUpdate: function(connection, sql, values, types){
+			if(JSB.isArray(sql)){
+				// batch processing
+				var batch = sql;
+				var lastSql = null;
+				var curStatement = null;
+				connection.setAutoCommit(false);
+				try {
+					for(var b = 0; b < batch.length; b++){
+						var bDesc = batch[b];
+						var sql = bDesc.sql;
+						var values = bDesc.values || null;
+					    var types = bDesc.types || [];
+					    if(sql !== lastSql){
+					    	// commit previous statement
+					    	if(curStatement){
+								curStatement.executeBatch();
+								if(!curStatement.isClosed()) {
+									curStatement.close();
+				                }
+							}
+					    	// create new statement
+					    	lastSql = sql;
+					    	curStatement = connection.prepareStatement(sql);
+					    }
+				    	for (var i = 0; i < values.length; i++) {
+				            var value = values[i];
+				            var type = types.length > i && types[i] || null;
+				            var type = this._getJDBCType(value, type);
+		                    this._setStatementArgument(curStatement, i + 1, value, type);
+				        }
+				    	curStatement.addBatch();
+					}
+					if(curStatement){
+						curStatement.executeBatch();
+						if(!curStatement.isClosed()) {
+							curStatement.close();
+		                }
+						curStatement = null;
+					}
+					connection.commit();
+				} finally {
+					if(curStatement && !curStatement.isClosed()){
+						curStatement.close();
+					}
+				}
+			} else {
+				var values = values || null;
+			    var types = types || [];
+			    connection.setAutoCommit(true);
+				if(JSB.isArray(values)){
+					var st = connection.prepareStatement(sql);
+					try {
+						for (var i = 0; i < values.length; i++) {
+				            var value = values[i];
+				            var type = types.length > i && types[i] || null;
+				            var type = this._getJDBCType(value, type);
+		                    this._setStatementArgument(st, i + 1, value, type);
+				        }
+						return st.executeUpdate();
+					} finally {
+						if (!st.isClosed()) {
+		                    st.close();
+		                }
+					}
+				} else {
+					var st = connection.createStatement();
+					try {
+						return st.executeUpdate(sql);
+					} finally {
+						if (!st.isClosed()) {
+		                    st.close();
+		                }
+					}
+				}
+			}
+		},
 
 		iteratedParametrizedQuery: function(connection, parametrizedSQL, getValue, getType, rowExtractor, onClose) {
 		    var getType = getType || function(){
@@ -96,7 +175,7 @@
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
 
-            Log.debug('Native SQL query: ' + sql);
+            Log.debug('Native SQL query: \n' + sql);
             Log.debug('Native SQL parameters: ' + JSON.stringify(values) + ', ' + JSON.stringify(types));
 
 		    var rs;
@@ -134,12 +213,14 @@
 //                      return columns;
 //                })(),
                 next: function(){
-                    var hasNext = rs.next();
-                    var value = hasNext ? rowExtractor.call($this, rs): null;
-                    if (JSB.isNull(value)) {
-                        this.close();
+                    if (!st.isClosed()) {
+                        var hasNext = rs.next();
+                        var value = hasNext ? rowExtractor.call($this, rs): null;
+                        if (JSB.isNull(value)) {
+                            this.close();
+                        }
+                        return value;
                     }
-                    return value;
                 },
                 close: function(){
                     if (!st.isClosed()) {
@@ -153,8 +234,33 @@
 		},
 
 		// createStatement, prepareStatement, query, execute, call
+		
+		getSupportedTypeMap: function(connection){
+			var databaseMetaData = connection.getMetaData();
+			var rs = databaseMetaData.getTypeInfo();
+			var typeMap = {};
+			while(rs.next()){
+				var typeName = '' + rs.getString('TYPE_NAME');
+				var typeIdx = 0 + rs.getInt('DATA_TYPE');
+				var precision = 0 + rs.getInt('PRECISION');
+				typeMap['' + typeIdx] = {
+					name: typeName,
+					sqlType: typeIdx,
+					precision: precision
+				};
+			}
+			
+			return typeMap;
+		},
+		
+		getVendorTypeForSqlType: function(sqlType, typeMap){
+			if(typeMap['' + sqlType]){
+				return typeMap['' + sqlType].name;
+			}
+			return null;
+		},
 
-		_getJDBCType: function (value, type) {
+        _getJDBCType: function (value, type) {
             var jdbcType = type || null;
             if (JSB.isString(jdbcType)) {
                 jdbcType = JDBCType.valueOf(jdbcType);
@@ -172,6 +278,8 @@
                     jdbcType = JDBCType.BOOLEAN;
                 } else if (JSB.isString(value)) {
                     jdbcType = JDBCType.NVARCHAR;
+                } else if (JSB.isDate(value)) {
+                    jdbcType = JDBCType.DATE;
                 } else {
                     jdbcType = JDBCType.NVARCHAR;
                 }
@@ -228,6 +336,10 @@
         },
 
         _getColumnValue: function(resultSet, i){
+        	var valObj = resultSet.getObject(i);
+        	if(valObj == null){
+        		return null;
+        	}
             var type = 0+resultSet.getMetaData().getColumnType(i);
             switch (type) {
                 case 0+Types.BIT:

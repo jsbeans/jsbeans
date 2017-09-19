@@ -1,11 +1,13 @@
 {
-	$name: 'JSB.DataCube.Editor',
+	$name: 'DataCube.Editor',
 	$parent: 'JSB.Widgets.Page',
-	$require: {
-		SplitLayoutManager: 'JSB.Widgets.SplitLayoutManager',
-		ToolBar: 'JSB.Widgets.ToolBar',
-		ToolManager: 'JSB.Widgets.ToolManager',
-	},
+	$require: [
+	    'JQuery.UI',
+	    'JQuery.UI.Loader',
+		'JSB.Widgets.SplitLayoutManager',
+		'JSB.Widgets.ToolBar',
+		'JSB.Widgets.ToolManager',
+	],
 	
 	$html: {
 		title: 'DataCube',
@@ -75,7 +77,7 @@
 						}
 					},
 					widgetExplorer: {
-						jsb: 'JSB.DataCube.Widgets.WidgetExplorer',
+						jsb: 'DataCube.Widgets.WidgetExplorer',
 						title: 'Виджеты'
 					}
 				}
@@ -94,7 +96,7 @@
 					tooltip: 'Создать подключение к базе данных',
 					element: '<div class="icon"></div>',
 					click: function(){
-						explorer.createNewEntry('JSB.DataCube.Model.SqlSource', {}, 'База');
+						explorer.createNewEntry('DataCube.Model.SqlSource', {}, 'База');
 					}
 				}, 'createSeparator');
 
@@ -103,7 +105,7 @@
 					tooltip: 'Создать подключение к серверу',
 					element: '<div class="icon"></div>',
 					click: function(){
-						explorer.createNewEntry('JSB.DataCube.Model.HttpServer', {}, 'Сервер');
+						explorer.createNewEntry('DataCube.Model.HttpServer', {}, 'Сервер');
 					}
 				}, 'createSeparator');
 
@@ -112,7 +114,7 @@
 					tooltip: 'Создать куб',
 					element: '<div class="icon"></div>',
 					click: function(){
-						explorer.createNewEntry('JSB.DataCube.Model.Cube', {}, 'Куб');
+						explorer.createNewEntry('DataCube.Model.Cube', {}, 'Куб');
 					}
 				}, 'createSeparator');
 
@@ -122,14 +124,14 @@
 					tooltip: 'Создать визуализацию',
 					element: '<div class="icon"></div>',
 					click: function(){
-						explorer.createNewEntry('JSB.DataCube.Model.Dashboard', {}, 'Визуализация');
+						explorer.createNewEntry('DataCube.Model.Dashboard', {}, 'Визуализация');
 					}
 				}, 'createSeparator');
 			});
 			
 			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
 				var leftSplit = $this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb();
-				if(JSB.isInstanceOf(node, 'JSB.DataCube.DashboardNode')){
+				if(JSB.isInstanceOf(node, 'DataCube.DashboardNode')){
 					leftSplit.showPane(1, true);
 				} else {
 					leftSplit.showPane(1, false);

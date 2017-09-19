@@ -1,10 +1,10 @@
 {
-	$name: 'JSB.DataCube.Dialogs.WidgetOptionsTool',
+	$name: 'DataCube.Dialogs.WidgetOptionsTool',
 	$parent: 'JSB.Widgets.Tool',
 	$require: ['JSB.Widgets.ToolManager', 
 	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.ScrollBox',
-	           'JSB.DataCube.Widgets.WidgetSchemeRenderer'],
+	           'DataCube.Widgets.WidgetSchemeRenderer'],
 	$client: {
 		renderer: null,
 		

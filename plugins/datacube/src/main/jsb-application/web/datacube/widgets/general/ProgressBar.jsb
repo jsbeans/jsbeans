@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.ProgressBar',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.ProgressBar',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'ProgressBar',
 		description: '',
@@ -108,16 +108,19 @@
 					items:[{
 						name: 'Линейный',
 						type: 'item',
+						key: 'Line',
 						itemValue: 'Line',
 						editor: 'none'
 					},{
 						name: 'Круговой',
 						type: 'item',
+						key: 'Circle',
 						itemValue: 'Circle',
 						editor: 'none'
 					},{
 						name: 'Дуговой',
 						type: 'item',
+						key: 'SemiCircle',
 						itemValue: 'SemiCircle',
 						editor: 'none'
 					}]
@@ -238,6 +241,8 @@
 			if(!this.getContext().find('series').used()){
 				return;
 			}
+			
+			$base();
 			
 			// construct series descriptors
 			function prepareCss(cssText){

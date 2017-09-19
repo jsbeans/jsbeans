@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.Model.Slice',
+	$name: 'DataCube.Model.Slice',
 	$parent: 'JSB.Workspace.Entry',
 	
 	cube: null,
@@ -29,7 +29,7 @@
 		$require: ['JSB.Workspace.WorkspaceController'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'JSB.DataCube.SliceNode');
+			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SliceNode');
 		},
 		
 		$constructor: function(id, workspace, cube, name){
@@ -79,54 +79,19 @@
 		
 		executeQuery: function(extQuery){
 			var params = {};
-			var filterOps = {
-				'$eq': true,
-				'$lt': true,
-				'$lte': true,
-				'$gt': true, 
-				'$gte': true,
-				'$ne': true,
-				'$like': true,
-				'$ilike': true,
-				'$in': true,
-				'$nin': true
-			};
 			var preparedQuery = JSB.clone(this.query);
             if(!preparedQuery || Object.keys(preparedQuery).length == 0){
             	preparedQuery = { $select: {}};
             }
             if(extQuery && Object.keys(extQuery).length > 0){
-	        	// translate $filter
-	        	if(extQuery.$filter){
-	        		var c = {i: 1};
-	        		function getNextParam(){
-	        			return '_sliceParam' + $this.getId() + '_' + (c.i++);
-	        		}
-	        		function prepareFilter(scope){
-	        			for(var f in scope){
-	        				if(filterOps[f]){
-	        					var pName = getNextParam();
-	        					params[pName] = scope[f];
-	        					scope[f] = '${'+pName+'}';
-	        				} else if(f == '$and' || f == '$or'){
-	        					var arr = scope[f];
-	        					for(var i = 0; i < arr.length; i++){
-	        						prepareFilter(arr[i]);
-	        					}
-	        				} else {
-	        					prepareFilter(scope[f]);
-	        				}
-	        			}
-	        		}
-	        		prepareFilter(extQuery.$filter);
-	        	}
-	        	
-	           	JSB.merge(preparedQuery, extQuery);
+            	
+            	var qDesc = this.cube.parametrizeQuery(extQuery);
+            	params = qDesc.params;
+            	
+	           	JSB.merge(preparedQuery, qDesc.query);
             }
-            
 
-            this.cube.load();
-            return this.cube.queryEngine.query(preparedQuery, params);
+            return this.cube.executeQuery(preparedQuery, params);
 		}
 		
 	}

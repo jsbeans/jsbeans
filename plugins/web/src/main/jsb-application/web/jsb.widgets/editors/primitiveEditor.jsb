@@ -55,10 +55,10 @@
 					this.editBoxElt.attr('type', 'password');
 				}
 			}
-			if (!JSB().isString(this.options.title)) {
+			if (JSB.isString(this.options.title)) {
 				this.getElement().attr('title', this.options.title);
 			}
-			if(!JSB().isNull(this.options.placeholder)){
+			if(!JSB.isNull(this.options.placeholder)){
 				this.editBoxElt.attr('placeholder', this.options.placeholder);
 				this.editBoxElt.placeholder();
 			}
@@ -116,6 +116,9 @@
 			
 			this.editBoxElt.bind('input propertychange', function(evt) {
 				if(JSB().isNull(self.options.mode) || self.options.mode != 'inplace'){
+					if(self.options.ontypeValidation){
+						$this.isValid();
+					}
 					self.trackChanging(evt);
 				}
 			});
@@ -128,6 +131,7 @@
 						self.publish('editComplete');
 						if(self.options.mode == 'inplace'){
 							self.plainElt.text(self.getData().getValue());
+							self.updateTitle();
 							self.endEdit();
 						}
 						if(!JSB().isNull(self.options.onChange)){
@@ -218,10 +222,11 @@
 			readonly: false,
 			multiline: false,
 			placeholder: '',
-			title: '',
+			title: true, // '',
 			password: false,
 			autocomplete: null,
 			dblclick: true,
+			ontypeValidation: false,
 			
 			valueType: 'string',
 			
@@ -246,6 +251,7 @@
 			if(this.options.mode == 'inplace'){
 				this.plainElt.text(this.data.getValue());
 			}
+			this.updateTitle();
 			this.lastVal = this.data.getValue();
 		},
 		
@@ -563,6 +569,12 @@
 						$this.setFocus();
 					}
 				});
+			}
+		},
+		
+		updateTitle: function(){
+			if(this.options.title === true && this.options.mode == 'inplace'){
+				this.plainElt.attr('title', this.plainElt.text());
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.SqlSourceView',
+	$name: 'DataCube.SqlSourceView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -43,6 +43,11 @@
 					</div>
 					
 					<div jsb="JSB.Widgets.GroupBox" caption="Схема базы" class="scheme">
+						<div class="option filter">
+							<div class="icon"></div>
+							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Фильтр"
+								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+						</div>
 						<div class="option buttons">
 							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnLoadScheme" caption="Загрузить схему"
 								onclick="{{=this.callbackAttr(function(evt){$this.extractScheme()})}}"></div>
@@ -76,7 +81,8 @@
 				properties: {
 					user: this.find('.user > .editor').jsb().getData().getValue(),
 					password: this.find('.password > .editor').jsb().getData().getValue()
-				}
+				},
+				filter: this.find('.filter > .editor').jsb().getData().getValue()
 			};
 		},
 		
@@ -85,6 +91,7 @@
 			this.find('.connectionString > .editor').jsb().setData(settings && settings.url ? settings.url : '');
 			this.find('.user > .editor').jsb().setData(settings && settings.properties && settings.properties.user ? settings.properties.user : '');
 			this.find('.password > .editor').jsb().setData(settings && settings.properties && settings.properties.password ? settings.properties.password : '');
+			this.find('.filter > .editor').jsb().setData(settings && settings.filter ? settings.filter : '');
 			this.find('.connectionSettings .message').text('');
 			$this.ignoreHandlers = false;
 		},
@@ -179,7 +186,7 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 1,
-				acceptNode: 'JSB.DataCube.SqlSourceNode',
+				acceptNode: 'DataCube.SqlSourceNode',
 				caption: 'Настройки'
 			});
 		},

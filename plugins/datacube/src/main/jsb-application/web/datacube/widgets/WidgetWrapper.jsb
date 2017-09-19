@@ -1,22 +1,17 @@
 {
-	$name: 'JSB.DataCube.Widgets.WidgetWrapper',
+	$name: 'DataCube.Widgets.WidgetWrapper',
 	$parent: 'JSB.Widgets.Widget',
-	$fixedId: true,
-	$sync: {
-		updateCheckInterval: 0
-	},
 
-	entry: null,
-	wType: null,
+	widgetEntry: null,
 	name: null,
-	values: {},
+	values: null,
 	
 	getName: function(){
 		return this.name;
 	},
 	
 	getWidgetType: function(){
-		return this.wType;
+		return this.widgetEntry.getWidgetType();
 	},
 	
 	getValues: function(){
@@ -24,7 +19,11 @@
 	},
 	
 	getDashboard: function(){
-		return this.entry;
+		return this.widgetEntry.getDashboard();
+	},
+	
+	getWidgetEntry: function(){
+		return this.widgetEntry;
 	},
 	
 	getBindingRelativePath: function(parent, child){
@@ -81,15 +80,20 @@
 		$require: ['JSB.Widgets.Button', 
 		           'JSB.Widgets.PrimitiveEditor',
 		           'JSB.Widgets.ToolManager',
-		           'JSB.DataCube.Dialogs.WidgetOptionsTool',
-		           'JSB.DataCube.Widgets.WidgetSchemeRenderer'],
+		           'DataCube.Dialogs.WidgetOptionsTool',
+		           'DataCube.Widgets.WidgetSchemeRenderer'],
 		
 		owner: null,
 		widget: null,
 		settingsVisible: false,
+		attached: false,
 		
-		$constructor: function(){
+		$constructor: function(widgetEntry, owner, opts){
 			$base();
+			this.widgetEntry = widgetEntry;
+			this.owner = owner;
+			this.name = this.widgetEntry.getName();
+			this.values = this.widgetEntry.getValues();
 			this.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
 			this.settingsContainer = this.$(`#dot
@@ -131,35 +135,48 @@
 				}
 			});
 			
-			this.ensureSynchronized(function(){
-				$this.setTitle($this.getName());
-				$this.updateTabHeader();
-				JSB.lookup($this.wType, function(WidgetClass){
-					$this.widget = new WidgetClass();
-					$this.widgetContainer.append($this.widget.getElement());
-					$this.widget.setWrapper($this);
-				});
+			$this.setTitle($this.getName());
+			$this.updateTabHeader();
+			JSB.lookup($this.getWidgetType(), function(WidgetClass){
+				$this.widget = new WidgetClass();
+				$this.widgetContainer.append($this.widget.getElement());
+				$this.widget.setWrapper($this);
+				$this.widget.refresh();
 			});
 
 			this.subscribe('JSB.Widgets.WidgetContainer.widgetAttached', function(sender, msg, w){
 				if(w == $this){
 					// update header
 					$this.updateTabHeader();
+					$this.attached = true;
 				}
 			});
 			
-			this.subscribe('DataCube.Dashboard.filterChanged', function(sender, msg, opts){
-				if(sender != $this.getOwner().getFilterSelector()){
+			this.subscribe('DataCube.filterChanged', function(sender, msg, opts){
+				if(JSB.isInstanceOf(sender, 'DataCube.Widgets.FilterManager')){
 					return;
 				}
-				if(JSB.isInstanceOf(sender, 'JSB.DataCube.Widgets.FilterSelector')){
-					if(sender.getOwner().getDashboard() != $this.getDashboard()){
-						return;
-					}
+				if(!opts || opts.dashboard != $this.getDashboard()){
+					return;
 				}
 				$this.getWidget().refresh(opts);
 			});
+			
+			if(opts && opts.showSettings){
+				var dashboardContainer = $this.getElement().closest("._jsb_dashboardContainer").jsb();
+				if(!$this.attached || !dashboardContainer || !$this.isContentReady()){
+					JSB.deferUntil(function(){
+						$this.showSettings();
+					}, function(){
+						return $this.attached && $this.getElement().closest("._jsb_dashboardContainer").jsb() && $this.isContentReady();
+					});
+				} else {
+					$this.showSettings();
+				}
+			}
+
 		},
+		
 		
 		setOwner: function(owner){
 			this.owner = owner;
@@ -181,13 +198,41 @@
 			return this.widget;
 		},
 		
+		localizeFilter: function(src){
+			return this.getOwner().getFilterManager().localizeFilter(src);
+		},
+		
+		constructFilterBySource: function(src){
+			return this.getOwner().getFilterManager().constructFilterBySource(src);
+		},
+
+		constructFilterByLocal: function(filters){
+			return this.getOwner().getFilterManager().constructFilterByLocal(filters);
+		},
+
+		hasFilter: function(fDesc){
+			return this.getOwner().getFilterManager().hasFilter(fDesc);
+		},
+		
+		addFilter: function(fDesc, sourceIds, widget){
+			return this.getOwner().getFilterManager().addFilter(fDesc, sourceIds, widget);
+		},
+		
+		removeFilter: function(fItemId, widget){
+			return this.getOwner().getFilterManager().removeFilter(fItemId, widget);
+		},
+		
+		clearFilters: function(widget){
+			this.getOwner().getFilterManager().clearFilters(widget);
+		},
+		
 		extractWidgetScheme: function(curWidgetJsb){
 			var scheme = {};
 			if(!curWidgetJsb){
 				curWidgetJsb = this.widget.getJsb();
 			}
 			while(curWidgetJsb){
-				if(!curWidgetJsb.isSubclassOf('JSB.DataCube.Widgets.Widget')){
+				if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
 					break;
 				}
 				var wScheme = curWidgetJsb.getDescriptor().$scheme;
@@ -196,7 +241,43 @@
 				}
 				curWidgetJsb = curWidgetJsb.getParent();
 			}
+
+			if(!this.checkSchemeKeys(scheme)){
+			    throw 'Ошибка! Не у всех элементов схемы присутствуют ключи!';
+			}
+
 			return scheme;
+		},
+
+		checkSchemeKeys: function(scheme){
+		    var root = true;
+
+            function checkKeys(scheme){
+                switch(scheme.type){
+                    case 'group':
+                        if(!scheme.key){
+                            if(!root){
+                                return false;
+                            } else {
+                                root = false;
+                            }
+                        }
+
+                        for(var i = 0; i < scheme.items.length; i++){
+                            if(!checkKeys(scheme.items[i])) return false;
+                        }
+                        break;
+                    case 'item':
+                    case 'select':
+                    case 'widget':
+                        if(!scheme.key) return false;
+                        break;
+                }
+
+                return true;
+            }
+
+            return checkKeys(scheme);
 		},
 		
 		updateTabHeader: function(){
@@ -228,7 +309,7 @@
 						return /^[\-_\.\s\wа-я]+$/i.test(t);
 					},
 					onChange: function(val){
-						$this.server().rename(val, function(res){
+						$this.getWidgetEntry().server().rename(val, function(res){
 							if(res){
 								$this.name = val;
 							} else {
@@ -242,7 +323,9 @@
 					cssClass: 'roundButton btnSettings btn10',
 					tooltip: 'Настроить',
 					onClick: function(evt){
-						$this.showSettings(evt);
+					    JSB().defer(function(){
+					        $this.showSettings(evt);
+					    }, 200, 'widgetSettings_' + $this.getId());
 					}
 				});
 				
@@ -268,13 +351,17 @@
 							}],
 							callback: function(bDel){
 								if(bDel){
-									$this.entry.server().removeWidgetWrapper($this.getId(), function(res, fail){
+									$this.getDashboard().server().removeWidgetWrapper($this.getWidgetEntry().getLocalId(), function(res, fail){
 										if(res){
 											// remove from dashboard container
 											var container = $this.getContainer();
 											if(container){
 												var dashboardContainer = container.getElement().closest('._jsb_dashboardContainer').jsb();
+												dashboardContainer.placeholders['center'].enable(true);
 												dashboardContainer.removeWidget($this);
+												if($this.getOwner().wrappers[$this.getId()]){
+													delete $this.getOwner().wrappers[$this.getId()];
+												}
 												$this.destroy();
 											}
 										}
@@ -293,9 +380,7 @@
 			editor.setData(this.getName());
 		},
 		
-		showSettings: function(evt){
-			var elt = this.$(evt.currentTarget);
-			
+		showSettings: function(){
 			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
 			dashboardContainer.placeholders['center'].enable(false);
 			
@@ -309,7 +394,7 @@
 			// create scheme renderer
 			this.settingsRenderer = new WidgetSchemeRenderer({
 				scheme: scheme,
-				values: JSB.clone(this.values),
+				values: JSB.clone(this.getValues()),
 				wrapper: $this,
 				onChange: function(){
 //					$this.updateButtons();
@@ -321,7 +406,6 @@
 				height: this.getElement().height(),
 				visibility: 'visible'
 			});
-			
 		},
 		
 		closeSettings: function(){
@@ -340,143 +424,16 @@
 			this.values = this.settingsRenderer.getValues();
 			
 			// store data in wrapper
-			this.server().storeValues(title, this.values, function(){
+			this.getWidgetEntry().server().storeValues(title, this.values, function(sourceDesc){
 				$this.name = title;
 				$this.updateTabHeader();
-				$this.updateWidgetSelectors();
+				$this.getWidget().updateValues(JSB.clone($this.values), sourceDesc);
+				$this.getWidget().refresh();
 			});
 			
 			this.closeSettings();
-		},
-		
-		updateWidgetSelectors: function(){
-			this.getWidget().updateSelectors();
 		}
-	},
-	
-	$server: {
-		$require: ['JSB.DataCube.Providers.DataProviderRepository',
-		           'JSB.DataCube.Query.QueryEngine'],
 		
-		$constructor: function(id, entry, wType, values){
-			this.id = id;
-			this.entry = entry;
-			this.wType = wType;
-			this.values = values || {};
-			$base();
-		},
-		
-		setName: function(name){
-			this.name = name;
-		},
-		
-		rename: function(name){
-			this.setName(name);
-			this.entry.store();
-			this.doSync();
-			return true;
-		},
-		
-		storeValues: function(name, values){
-			this.values = values;
-			this.setName(name);
-			this.entry.store();
-			this.doSync();
-			return true;
-		},
-		
-		getDataSchemeSource: function(ds){
-			if(!ds || !ds.source){
-				throw new Error('Invalid datascheme passed');
-			}
-			return this.entry.workspace.entry(ds.source);
-		},
-		
-		combineDataScheme: function(source){
-			var iterator = null;
-			if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
-				iterator = source.executeQuery();
-			} else {
-				// TODO
-				var dpInfo = DataProviderRepository.queryDataProviderInfo(source);
-				var ProviderClass = JSB.get(dpInfo.pType).getClass();
-				var provider = new ProviderClass(JSB.generateUid(), source, null);
-				provider.extractFields();
-/*				var qe = new QueryEngine(null);
-				iterator = qe.query({$select:{}}, {}, provider);
-*/
-				var buffer = provider.find();
-				iterator = {
-					buffer: buffer,
-					total: buffer.length,
-					pos: 0,
-					next: function(){
-						if(this.pos >= this.total){
-							return null;
-						}
-						return this.buffer[this.pos++];
-					},
-					close: function(){
-						this.buffer = [];
-						this.total = 0;
-						this.pos = 0;
-					}
-				}
-			}
-			if(!iterator){
-				return null;
-			}
-			function processElement(val){
-				if(JSB.isNull(val)){
-					return {type: 'null'};
-				} else if(JSB.isObject(val)){
-					var rDesc = {type: 'object', record: {}};
-					for(var f in val){
-						var cVal = val[f];
-						var r = processElement(cVal);
-						if(r.type != 'null' || !rDesc.record[f]){
-							rDesc.record[f] = JSB.merge(true, rDesc.record[f] || {}, r);
-						}
-						rDesc.record[f].field = f;
-					}
-					return rDesc;
-				} else if(JSB.isArray(val)){
-					var rDesc = {type:'array', arrayType: {type:'null'}};
-					for(var i = 0; i < val.length; i++){
-						var r = processElement(val[i]);
-						if(r && r.type != 'null'){
-							rDesc.arrayType = r;
-						}
-					}
-					return rDesc;
-				} else if(JSB.isString(val)){
-					return {type: 'string'};
-				} else if(JSB.isFloat(val)){
-					return {type: 'float'};
-				} else if(JSB.isInteger(val)){
-					return {type: 'integer'};
-				} else if(JSB.isBoolean(val)){
-					return {type: 'boolean'};
-				} else if(JSB.isDate(val)){
-					return {type: 'date'};
-				}
-			}
-			
-			var recordTypes = {};
-			for(var j = 0; j < 100; j++){
-				var el = iterator.next();
-				if(!el){
-					break;
-				}
-				var r = processElement(el);
-				JSB.merge(true, recordTypes, r);
-			}
-			iterator.close();
-			return {
-				type: 'array',
-				source: source.getLocalId(),
-				arrayType: recordTypes
-			}
-		}
 	}
+	
 }

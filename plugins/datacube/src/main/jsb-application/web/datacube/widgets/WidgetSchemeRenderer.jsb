@@ -1,12 +1,12 @@
 {
-	$name: 'JSB.DataCube.Widgets.WidgetSchemeRenderer',
+	$name: 'DataCube.Widgets.WidgetSchemeRenderer',
 	$parent: 'JSB.Widgets.Control',
 	$require: ['JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.ComboBox',
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.ToolManager',
-	           'JSB.DataCube.Widgets.DataBindingSelector',
-	           'JSB.DataCube.Widgets.EmbeddedWidgetSelector'],
+	           'DataCube.Controls.DataBindingSelector',
+	           'DataCube.Controls.EmbeddedWidgetSelector'],
 	
 	$client: {
 		options: {
@@ -25,6 +25,7 @@
 			this.supply = opts.supply;
 			this.addClass('widgetSchemeRenderer');
 			this.loadCss('WidgetSchemeRenderer.css');
+			JSB().loadCss('tpl/font-awesome/css/font-awesome.min.css');
 			if(this.scheme.name){
 				this.values.name = this.scheme.name;
 			}
@@ -59,7 +60,30 @@
 				this.options.outletHeader.empty();
 			}
 			this.destroyRenderers();
-			
+/*
+			function constructStructure(structure, parentElement){
+			    structure.elements = [];
+
+			    switch(structure.type){
+                    case 'group':
+                        var i = 0;
+                        do{
+                            structure.elements.push(this.constructGroup(structure, parentElement));
+                            i++;
+                        } while(i < structure.values.length);
+                        break;
+                    case 'item':
+                        structure.elements.push(this.constructItem());
+                        break;
+                    case 'select':
+                        structure.elements.push(this.constructSelect());
+                        break;
+                    case 'widget':
+                        structure.elements.push(this.constructWidget());
+                        break;
+                }
+            }
+*/
 			switch(this.scheme.type){
 			case 'group':
 				this.constructGroup();
@@ -85,41 +109,10 @@
 			if(!$this.values.groups){
 				$this.values.groups = [];
 			}
-			
-			function updateGroupUsedVisibility(){
-				if($this.values.used){
-					$this.addClass('used');	
-				} else {
-					$this.removeClass('used');
-				}
-			}
 
-			var header = null;
-			if(this.options.showHeader && this.scheme.name){
-				this.addClass('hasHeader');
-				header = this.$('<div class="header"></div>');
-				this.append(header);
-				
-				if(this.scheme.optional){
-					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateGroupUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
-					JSB.deferUntil(function(){
-						header.find('> div.caption').jsb().setChecked(true);	
-						}, function(){
-						return header.find('> div.caption').jsb();
-					});
+			var header = this.constructHeader();
 
-				} else {
-					// show simple caption
-					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
-					this.values.used = true;
-				}
-			} else {
-				this.values.used = true;
-				header = this.options.outletHeader;
-			}
-			
-			updateGroupUsedVisibility();
+			this.updateUsedVisibility();
 
 			if(header){
 				if((this.scheme.binding == 'field') || ((this.scheme.binding == 'array' || this.scheme.binding == 'record') && !this.binding)){
@@ -128,25 +121,29 @@
 						value: $this.values.binding,
 						wrapper: this.wrapper,
 						onChange: function(){
-							var binding = this.getDataScheme();
+						    var binding = this.getDataScheme();
+
+						    clearBinding($this.values);
+
 							if(!binding){
 								$this.values.binding = null;
 								$this.update();
 								return;
 							}
+
 							if(binding.source){
 								$this.values.binding = binding;
 							} else {
 								$this.values.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
 							}
-							 
+
 							fillGroup(binding);
 						}
 					});
 					header.append(this.bindingSelector.getElement());
 					header.removeClass('hidden');
-
 				}
+				
 				if(this.scheme.multiple){
 					this.addClass('hasMultiple');
 					// create append button
@@ -161,7 +158,6 @@
 					});
 					header.append(btnAdd.getElement());
 					header.removeClass('hidden');
-
 				}
 			}
 			
@@ -206,7 +202,6 @@
 					$this.values.groups.splice(i, 0, gg);
 				}
 			}
-
 			
 			function fillGroupItems(groupIdx, binding, supply){
 				var ul = $this.$('<div class="items"></div>');
@@ -220,6 +215,15 @@
 				var groupValues = $this.values.groups[groupIdx];
 				
 				if($this.scheme.multiple){
+                    var handle = $this.$(`#dot
+                        <div class="sortableHandle">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    `);
+                    ul.append(handle);
+
 					var removeButton = new Button({
 						cssClass: 'roundButton btn10 btnDelete',
 						tooltip: 'Удалить запись',
@@ -258,20 +262,55 @@
 					ul.append(liElt);
 					return liElt;
 				}
-
-
+				// was before key check
+/*
+                for(var i = 0; i < $this.scheme.items.length; i++){
+                    var item = $this.scheme.items[i];
+                    if(!groupValues.items[i]){
+                        groupValues.items[i] = {};
+                    }
+                    addItem(item, groupValues.items[i]);
+                }
+*/
 				for(var i = 0; i < $this.scheme.items.length; i++){
 					var item = $this.scheme.items[i];
-					if(!groupValues.items[i]){
-						groupValues.items[i] = {};
+
+					var value = {};
+					for(var j = 0; j < groupValues.items.length; j ++){
+					    if(groupValues.items[j].key === item.key){
+					        value = groupValues.items[j];
+					        break;
+					    }
 					}
-					addItem(item, groupValues.items[i]);
+
+					addItem(item, value);
 				}
 
+			}
+
+			function clearBinding(values){
+			    if(values && values.groups && values.groups.length > 0){
+                    for(var i = 0; i < values.groups.length; i++){
+                        clearBinding(values.groups[i]);
+                    }
+                } else {
+                    if(values && values.items && values.items.length > 0){
+                        for(var i = 0; i < values.items.length; i++){
+                            clearBinding(values.items[i]);
+                        }
+                    } else {
+                        if(values && values.values && values.values.length > 0){
+                            for(var i = 0; i < values.values.length; i++){
+                                values.values[i].binding = null;
+                            }
+                        }
+                    }
+                }
 			}
 			
 			function fillGroup(childBinding){
 				$this.bodyElt.empty();
+
 				if(!$this.values.binding && $this.scheme.binding){
 					if(!childBinding || childBinding.source){
 						$this.values.binding = childBinding;
@@ -310,18 +349,27 @@
 			this.append(this.bodyElt);
 			if(this.scheme.multiple){
 				this.bodyElt.sortable({
+				    handle: '.sortableHandle',
 					update: function(evt, ui){
 						reorderValues();
 					}
 				});
 			}
-			
+
 			if(!$this.scheme.binding){
 				fillGroup($this.binding);
 			} else if($this.bindingSelector && $this.bindingSelector.isFilled()){
 				fillGroup($this.bindingSelector.getDataScheme());
 			} else if($this.binding){
-				fillGroup($this.binding);
+				if($this.scheme.binding == 'array' || $this.scheme.binding == 'record'){
+					var chBinding = JSB.clone($this.binding);
+					if(chBinding.source){
+						chBinding.propagated = true;
+					}
+					fillGroup(chBinding);
+				} else {
+					fillGroup($this.binding);
+				}
 			}
 		},
 		
@@ -330,42 +378,10 @@
 			if(this.scheme.binding){
 				this.addClass('hasBinding');
 			}
-			
-			function updateItemUsedVisibility(){
-				if($this.values.used){
-					$this.addClass('used');	
-				} else {
-					$this.removeClass('used');
-				}
-			}
 
-			var header = null;
-			if(this.options.showHeader && this.scheme.name){
-				header = this.$('<div class="header"></div>');
-				this.append(header);
-				
-				if(this.scheme.optional){
-					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateItemUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
-					if(!JSB.isDefined(this.values.used) && this.scheme.optional == 'checked'){
-						JSB.deferUntil(function(){
-							header.find('> div.caption').jsb().setChecked(true);	
-							}, function(){
-							return header.find('> div.caption').jsb();
-						});
-					}
-				} else {
-					// show simple caption
-					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
-					this.values.used = true;
-				}
-				
-			} else {
-				this.values.used = true;
-				header = this.options.outletHeader;
-			}
+            var header = this.constructHeader();
 
-			updateItemUsedVisibility();
+			this.updateUsedVisibility();
 			
 			var valElt = this.$('<div class="value"></div>');
 			this.append(valElt);
@@ -412,7 +428,6 @@
 				}
 			}
 
-
 			function setupEditor(idx){
 				var valueDesc = $this.values.values[idx];
 				var editorCls = $this.editorCls;
@@ -442,6 +457,7 @@
 						
 						onChange: function(){
 							var binding = this.getDataScheme();
+
 							if(!binding){
 								valueDesc.binding = null;
 								valContainer.removeClass('isBound');
@@ -520,7 +536,6 @@
 					header.removeClass('hidden');
 				}
 			}
-
 			
 			lookupItemEditor(function(editorCls, options){
 				$this.editorCls = editorCls;
@@ -553,7 +568,6 @@
 				}
 				updateItemButtons();
 			});
-			
 		},
 		
 		constructSelect: function(){
@@ -572,14 +586,6 @@
 					key: '' + i,
 					element: item.name
 				});
-			}
-			
-			function updateSelectUsedVisibility(){
-				if($this.values.used){
-					$this.addClass('used');	
-				} else {
-					$this.removeClass('used');
-				}
 			}
 			
 			function setupValue(idx){
@@ -609,31 +615,10 @@
 				$this.bodyElt.attr('item', item.type);
 
 			}
+
+			var header = this.constructHeader();
 			
-			var header = null;
-			if(this.options.showHeader && this.scheme.name){
-				header = this.$('<div class="header"></div>');
-				this.append(header);
-				
-				if(this.scheme.optional){
-					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateSelectUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
-					JSB.deferUntil(function(){
-						header.find('> div.caption').jsb().setChecked(true);	
-						}, function(){
-						return header.find('> div.caption').jsb();
-					});
-				} else {
-					// show simple caption
-					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
-					this.values.used = true;
-				}
-			} else {
-				header = this.options.outletHeader;
-				this.values.used = true;
-			}
-			
-			updateSelectUsedVisibility();
+			this.updateUsedVisibility();
 			
 			if(header){
 				if(this.scheme.multiple){
@@ -675,40 +660,10 @@
 			if(this.scheme.binding){
 				this.addClass('hasBinding');
 			}
-			
-			function updateWidgetUsedVisibility(){
-				if($this.values.used){
-					$this.addClass('used');	
-				} else {
-					$this.removeClass('used');
-				}
-			}
 
-			var header = null;
-			if(this.options.showHeader && this.scheme.name){
-				header = this.$('<div class="header"></div>');
-				this.append(header);
-				
-				if(this.scheme.optional){
-					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; updateWidgetUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
-					JSB.deferUntil(function(){
-						header.find('> div.caption').jsb().setChecked(true);	
-						}, function(){
-						return header.find('> div.caption').jsb();
-					});
-
-				} else {
-					// show simple caption
-					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
-					this.values.used = true;
-				}
-			} else {
-				this.values.used = true;
-				header = this.options.outletHeader;
-			}
+			var header = this.constructHeader();
 			
-			updateWidgetUsedVisibility();
+			this.updateUsedVisibility();
 			
 			function fillWidgetPane(){
 				var bodyElt = $this.find('> .body');
@@ -746,6 +701,10 @@
 				});
 				header.append(this.widgetSelector.getElement());
 				header.removeClass('hidden');
+
+				if(this.scheme.description){
+				    this.constructSchemeDescription(header, this.scheme.description);
+                }
 			}
 			
 			var bodyElt = this.$('<div class="body"></div>');
@@ -753,6 +712,247 @@
 			if($this.values.widget){
 				fillWidgetPane();
 			}
+		},
+
+		// helpers
+		constructSchemeDescription: function(header, schemeDescription){
+            var description = this.$('<div class="scheme-description hidden">' + schemeDescription + '</div>');
+            header.append(description);
+
+            var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
+
+            descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
+                                  function() { description.addClass( "hidden" ); });
+
+            descriptionIcon.mousemove(function(evt){
+                                if(description.hasClass('show')) return;
+
+                                var descWidth = description.outerWidth(),
+                                    descHeight = description.outerHeight(),
+                                    bodyWidth = $this.$(window).width(),
+                                    bodyHeight = $this.$(window).height(),
+                                    top = evt.pageY,
+                                    left = evt.pageX;
+
+                                if(top + descHeight + 20 > bodyHeight){
+                                    top = bodyHeight - descHeight - 20;
+                                }
+
+                                if(left + descWidth + 20 > bodyWidth){
+                                    left = bodyWidth - descWidth - 20;
+                                }
+
+                                description.offset({top: top + 15, left: left + 15 });
+                           });
+
+            descriptionIcon.click(function(evt){
+                               description.toggleClass('show');
+
+                               var descWidth = description.outerWidth(),
+                                   descHeight = description.outerHeight(),
+                                   bodyWidth = $this.$(window).width(),
+                                   bodyHeight = $this.$(window).height(),
+                                   top = evt.pageY,
+                                   left = evt.pageX;
+
+                               if(top + descHeight + 20 > bodyHeight){
+                                   top = bodyHeight - descHeight - 20;
+                               }
+
+                               if(left + descWidth + 20 > bodyWidth){
+                                   left = bodyWidth - descWidth - 20;
+                               }
+
+                               description.offset({top: top + 15, left: left + 15 });
+                           });
+
+            header.append(descriptionIcon);
+		},
+
+		constructHeader: function(){
+			var header = null;
+			if(this.options.showHeader && this.scheme.name){
+			    this.addClass('hasHeader');
+				header = this.$('<div class="header"></div>');
+				this.append(header);
+
+				if(this.scheme.optional){
+					// show checkbox caption
+					header.append(`#dot <div jsb="JSB.Widgets.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; $this.updateUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
+					if(!JSB.isDefined(this.values.used) && this.scheme.optional == 'checked'){
+						JSB.deferUntil(function(){
+							header.find('> div.caption').jsb().setChecked(true);
+							}, function(){
+							return header.find('> div.caption').jsb();
+						});
+					}
+				} else {
+					// show simple caption
+					header.append(this.$('<div class="caption"></div>').text(this.scheme.name));
+					this.values.used = true;
+				}
+
+				if(this.scheme.description){
+				    this.constructSchemeDescription(header, this.scheme.description);
+                }
+			} else {
+				this.values.used = true;
+				header = this.options.outletHeader;
+			}
+
+			return header;
+		},
+
+		updateUsedVisibility: function(){
+            if($this.values.used){
+                $this.addClass('used');
+            } else {
+                $this.removeClass('used');
+            }
+		},
+
+		// scheme update
+		// todo: убрать избыточность структуры
+		mergeSchemeAndValues: function(scheme, values){
+		    function structScheme(scheme){
+		        var chain = JSB().clone(scheme);
+
+		        switch(scheme.type){
+		            case 'group':
+		                chain.items = {};
+
+		                for(var i = 0; i < scheme.items.length; i++){
+		                    chain.items[scheme.items[i].key] = structScheme(scheme.items[i]);
+		                }
+		                break;
+                    case 'item':
+                        break;
+                    case 'select':
+                        break;
+                    case 'widget':
+                        break;
+		        }
+
+		        return chain;
+		    }
+
+		    var strScheme = structScheme(scheme);
+
+		    if(Object.keys(values).length === 0){
+		        return strScheme;
+		    }
+
+		    function sctructValues(values){
+		        var val = JSB().clone(values);
+
+                switch(values.type){
+                    case 'group':
+                        delete val.groups;
+
+                        if(values.groups.length > 1){   // multiple
+                            val.multiple = true;
+                            val.items = [];
+
+                            for(var i = 0; i < values.groups.length; i++){
+                                var item = {};
+
+                                for(var j =0; j < values.groups[i].items.length; j++){
+                                    item[values.groups[i].items[j].key] = sctructValues(values.groups[i].items[j]);
+                                }
+
+                                val.items.push(item);
+                            }
+                        } else {
+                            val.items = {};
+
+                            for(var i = 0; i < values.groups[0].items.length; i++){
+                                val.items[values.groups[0].items[i].key] = sctructValues(values.groups[0].items[i]);
+                            }
+                        }
+                        break;
+                    case 'item':
+                    case 'select':
+                    case 'widget':
+                        if(values.values.length > 1){   // multiple
+                            val.multiple = true;
+                            val.values = values.values;
+                        } else {
+                            val.values = values.values[0];
+                        }
+                        break;
+                }
+
+                return val;
+		    }
+
+		    var strValues = sctructValues(values);
+
+		    function merge(scheme, values){
+		        var struct = {};
+
+                struct = JSB().clone(scheme);
+
+                switch(scheme.type){
+                    case 'group':
+                        struct = JSB().clone(scheme);
+
+                        if(!values.items) break;
+
+                        if(struct.multiple){
+                            struct.values = [];
+
+                            if(values.multiple){
+                                for(var j = 0; j < values.items.length; j++){
+                                    var val = {};
+
+                                    for(var i in scheme.items){
+                                        val[scheme.items[i].key] = merge(scheme.items[i], values.items[j][i]);
+                                    }
+
+                                    struct.values.push(val);
+                                }
+                            } else {
+                                var val = {};
+
+                                for(var i = 0; i < scheme.items.length; i++){
+                                    val[scheme.items[i].key] = merge(scheme.items[i], values.items[j][i]);
+                                }
+
+                                struct.values.push(val);
+                            }
+                        } else {
+                            struct.values = {};
+
+                            for(var i in scheme.items){
+                                if(values.multiple){    // if multiple was changed in scheme
+                                    debugger;
+                                    // struct.values[scheme.items[i].key] = merge(scheme.items[i], values.items[0]);
+                                } else {
+                                    struct.values[scheme.items[i].key] = merge(scheme.items[i], values.items[i]);
+                                }
+                            }
+                        }
+                        break;
+                    case 'item':
+                        struct = JSB().clone(scheme);
+                        struct.value = values.values;
+                        break;
+                    case 'select':
+                        struct = JSB().clone(scheme);
+                        struct.value = values.values;
+                        break;
+                    case 'widget':
+                        struct = JSB().clone(scheme);
+                        struct.value = values.values;
+                        break;
+                }
+
+		        return struct;
+		    }
+
+		    var result = merge(strScheme, strValues);
+
+		    return result;
 		}
 	}
 }

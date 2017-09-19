@@ -12,6 +12,11 @@
 
 .tableWidget.hasHeader > table.header {
 	display: table;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
 }
 
 .tableWidget > table.header > thead {}
@@ -32,6 +37,7 @@
     color: #6b6b6b;
     text-shadow: 1px 1px #fbfbfb;
     font-weight: normal;
+	display: table-cell;
 }
 
 .tableWidget > table.header > thead > tr > th.col.sortable {
@@ -74,12 +80,14 @@
     max-width: none;
     max-height: none;
     width: 100%;
+	display: table;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody {}
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row {
 	position: relative;
+	display: table-row;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter {}
@@ -90,11 +98,12 @@
     background: linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
 	background: -o-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
 	background: -ms-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
-	
+    cursor: pointer;
+}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter:hover > td.col[type="text"] {
 	color: #fff;
     text-shadow: 1px 1px 4px #000;
-    
-    cursor: pointer;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col {
@@ -103,6 +112,7 @@
 	padding: 0 !important;
 	margin: 0 !important;
 	background: #fff;
+	display: table-cell;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col > div.cell {

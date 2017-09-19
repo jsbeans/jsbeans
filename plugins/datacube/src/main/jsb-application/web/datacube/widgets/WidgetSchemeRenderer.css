@@ -34,6 +34,30 @@
     font-weight: 700;
 }
 
+.widgetSchemeRenderer > .header > .scheme-description{
+    position: absolute;
+    /*top: 5px;*/
+    /* right: -310px; */
+    width: 300px;
+    background: white;
+    box-sizing: border-box;
+    padding: 5px;
+    z-index: 1000;
+    border: 1px solid grey;
+    border-radius: 4px;
+}
+
+.widgetSchemeRenderer > .header > .scheme-description.show{
+    display: block !important;
+}
+
+.widgetSchemeRenderer > .header > i {
+    color: blue;
+    font-size: 14px;
+    margin-left: 5px;
+    cursor: help;
+}
+
 .widgetSchemeRenderer > .header > .btnCreate {
 	position: absolute;
 	right: 2px;
@@ -90,7 +114,8 @@
 .widgetSchemeRenderer.hasMultiple > .body > .items {
     border-top: 1px solid #d0d0d0;
 	cursor: move;
-	padding: 2px 20px 2px 6px;
+	padding: 2px 20px 2px 17px;
+    cursor: initial;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:first-child {
@@ -262,4 +287,35 @@
 }
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer > .sp-dd{
     line-height: 4px;
+}
+.widgetSchemeRenderer.hasMultiple .ui-sortable .sortableHandle{
+    display: block;
+    height: calc(100% - 2px);
+    width: 10px;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    border: 1px solid #d6d4d4;
+    border-radius: 3px;
+    background: #e8decd;
+    cursor: move;
+}
+
+.widgetSchemeRenderer.hasMultiple .ui-sortable .sortableHandle div{
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border: 1px solid #a09f9f;
+    border-radius: 4px;
+    background: #dacfcf;
+}
+
+.widgetSchemeRenderer.hasMultiple .ui-sortable .sortableHandle div:first-child{
+    top: calc(50% - 10px);
+}
+
+.widgetSchemeRenderer.hasMultiple .ui-sortable .sortableHandle div:last-child{
+    top: calc(50% + 10px);
 }

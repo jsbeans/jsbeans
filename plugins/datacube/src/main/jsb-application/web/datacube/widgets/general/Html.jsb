@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.Html',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Html',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Html',
 		description: '',
@@ -114,11 +114,13 @@
 				items: [{
 					type: 'item',
 					name: 'Ключ',
+					key: 'key',
 					itemType: 'string',
 					itemValue: '$field'
 				}, {
 					type: 'item',
 					name: 'Значение',
+					key: 'value',
 					binding: 'field',
 					itemType: 'any'
 				}]
@@ -295,6 +297,7 @@
 		},
 		
 		refresh: function(){
+			$base();
 			var recordContext = this.getContext().find('record');
 			if(recordContext.data()){
 				$this.draw();

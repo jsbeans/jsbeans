@@ -1,133 +1,14 @@
 {
-	$name: 'JSB.DataCube.Query.QueryEngine',
+	$name: 'DataCube.Query.QueryEngine',
 
 	$server: {
 		$require: [
-		    'JSB.DataCube.Query.Iterators.DataProviderIterator',
-		    'JSB.DataCube.Query.Iterators.InnerJoinIterator',
-		    'JSB.DataCube.Query.Iterators.FinalizeIterator',
-		    'JSB.DataCube.Providers.SqlTableDataProvider',
-		    'JSB.DataCube.Query.QuerySyntax'
+		    'DataCube.Query.Iterators.DataProviderIterator',
+		    'DataCube.Query.Iterators.InnerJoinIterator',
+		    'DataCube.Query.Iterators.FinalizeIterator',
+		    'DataCube.Providers.SqlTableDataProvider',
+		    'DataCube.Query.QuerySyntax'
         ],
-
-	    selftTest: function(cube){
-	        [
-	            // select all fields
-                this.query(
-                    { $select: {} }
-                ),
-                // select id field
-                this.query({
-                    $select: {
-                        Subject: 'Cубъект',
-                        "Тип ПКЗ": "Тип ПКЗ"
-
-                    },
-                    $filter: {
-                        $and: [
-                            { Cубъект: {$eq: '${subj1}'} },
-                            { Cубъект: {$eq: '${subj2}'} },
-                        ]
-                    }
-                }, {
-                    subj1: 'Открытое акционерное общество "Монолит"',
-                    subj2: 'Федеральное казенное предприятие "Авангард"'
-                }),
-                this.query({
-                    $select: {
-                        Subject: 'Cубъект',
-                        Values: { $array: {$toInt: {$toDouble: 'Значение'}}},
-                        minValue: { $min: {$toDouble: 'Значение'} },
-                        maxValue: { $max: {$toDouble: 'Значение'}},
-                    },
-                    $filter: {
-                        $and: [
-                            { Cубъект: {$eq: '${subj1}'} },
-                            { Cубъект: {$eq: '${subj2}'} },
-                        ]
-                    },
-                    $groupBy: ['Cубъект'],
-                    $sort: [{'maxValue': -1}] // -1 = DESC, 1 = ASC
-                }, {
-                    subj1: 'Открытое акционерное общество "Монолит"',
-                    subj2: 'Федеральное казенное предприятие "Авангард"'
-                }),
-                this.query({
-                    "$groupBy": [
-                        "Код отрасли"
-                    ],
-                    "$select": {
-                        "gcountAll": {
-                            "$gcount": 1
-                        },
-                        "count": {
-                            "$count": "Код отрасли"
-                        },
-                        "gmax": {
-                            "$gmax": {
-                                "$toInt": "Код отрасли"
-                            }
-                        },
-                        "gcountOtr": {
-                            "$gcount": {
-                                "$distinct": "Код отрасли"
-                            }
-                        }
-                    }
-                }),
-//                //
-//                this.query({
-//                    // produce values with new names from fields or aggregate functions
-//                    // <field_value> : <cube_field_or_function>
-//                    $select: {
-//                        type: 'user_type',
-//                        usersCount: { $sum: 1 },
-//                        totalLogins: { $sum: 'user_logins' },
-//                        avgLogins: { $avg: 'user_logins' },
-//                        maxLogins: { $max: 'user_logins' },
-//                        minLogins: { $min: 'user_logins' },
-//                        mainRoles: { $array: 'mainRole' },
-//                        roles: { $flatArray: 'roles' }
-//
-//                    },
-//                    // filter rows by new or cube fields
-//                    // note: aggregated fields not supported yet
-//                    $filter: {
-//                        user_enabled: { $eq : '${param1}' },
-//                        $or: [
-//                            { user_enabled: { $eq : '${param1}' } },
-//                            { mainRole: { $ne : null } } // not null
-//                        ]
-//                    },
-//
-//                    // note: distinct not supported
-//                    // $distinct: true,
-//
-//                    $groupBy: ['user_type'],
-//
-//                    // sorting by new or old fields
-//                    $sort: ['usersCount', 'totalLogins'],
-//
-//                    // postprocessing with function
-//                    $finalize: function(value) {
-//                        if (value.minLogins > 0) {
-//                            value.newFiled = 'created value';
-//                            return value;
-//                        }
-//                        // without return: filter value
-//                    }
-//                }, {
-//                    param1: true
-//                })
-            ].forEach(function(it){
-debugger;
-                for (var val = it.next(), i=0; !JSB.isNull(val) && i < 5; val = it.next(), i++) {
-                    Log.debug(JSON.stringify(val,0,2));
-                }
-                it.close();
-            });
-
-	    },
 
 		$constructor: function(cube){
 		    this.cube = cube;
@@ -137,14 +18,18 @@ debugger;
 		query: function(dcQuery, params, dataProvider){
 			this.cube.load();
 		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
-//debugger;
-		    Log.debug('QueryEngine.query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
+		    Log.debug('QueryEngine.preparedQuery: \n' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
 		    var it = this.produceIterator(dcQuery, params||{}, dataProvider);
 		    return it;
 		},
 
 		prepareQuery: function(dcQuery, dataProvider) {
+		    // clone query
 		    dcQuery = JSB.merge(true, {}, dcQuery);
+
+		    // unwrap macros to complex expressions
+		    QuerySyntax.unwrapMacros(dcQuery);
+
 		    // fill all cube fields (or linked with dataProvider) for default $select={}
 		    if (Object.keys(dcQuery.$select).length == 0) {
 		        if (dataProvider) {
@@ -154,8 +39,9 @@ debugger;
 		                 dcQuery.$select[name] = field;
 		            }
 		        } else {
-                    for (var f in this.cube.fields) if (this.cube.fields.hasOwnProperty(f)) {
-                        var binding = this.cube.fields[f].binding;
+		        	var managedFields = this.cube.getManagedFields();
+                    for (var f in managedFields) if (managedFields.hasOwnProperty(f)) {
+                        var binding = managedFields[f].binding;
                         for(var b in binding) {
                             if (!dataProvider || binding[b].provider == dataProvider) {
                                 var name = f.replace(new RegExp('"','g'),'');
@@ -169,6 +55,7 @@ debugger;
 
             // generate $groupBy if not defined
             if (!dcQuery.$groupBy) {
+                // TODO: support multi fields in select (n-operators)
                 var aggregateFunctions = QuerySyntax.schemaAggregateOperators;
                 function findField(exp, aggregated){
                     if (JSB.isString(exp)) {
@@ -178,11 +65,24 @@ debugger;
                         };
                     }
                     if (JSB.isPlainObject(exp)) {
-                        var op = Object.keys(exp)[0];
-                        if (aggregateFunctions[op]) {
-                            return findField(exp[op], true);
+                        if (Object.keys(exp).length == 1) {
+                            var op = Object.keys(exp)[0];
+                            if (aggregateFunctions[op]) {
+                                return findField(exp[op], true);
+                            } else {
+                                return findField(exp[op], aggregated);
+                            }
+                        } else {
+                            if (exp.$field && (!exp.$context || exp.$context == dcQuery.$context)) {
+                                return findField(exp.$field, aggregated);
+                            }
                         }
-                        return findField(exp[op], aggregated);
+                    }
+                    if (JSB.isArray(exp)) {
+                        for (var i in exp) {
+                            var f = findField(exp[i], aggregated);
+                            if (f.field) return f;
+                        }
                     }
                     return {
                         field: null,
@@ -223,6 +123,9 @@ debugger;
                     dcQuery.$groupBy = groupFields;
                 }
             }
+
+            this._topGeneralFields(dcQuery);
+
             return dcQuery;
 		},
 
@@ -239,7 +142,11 @@ debugger;
 		                }
 		                collect(q[f]);
 		            }
-		        }
+		        } else if (JSB.isArray(q)) {
+                    for (var i in q) {
+                        collect(q[i]);
+                    }
+                }
 		    }
             collect(dcQuery.$select);
             return {
@@ -253,9 +160,9 @@ debugger;
 		    var joinCount = 0;
 		    for (var i in cubeFields) {
 		        var field = cubeFields[i];
-
-		        if (this.cube.fields[field]) {
-		            var binding = this.cube.fields[field].binding;
+		        var managedFields = this.cube.getManagedFields();
+		        if(managedFields[field]) {
+		            var binding = managedFields[field].binding;
 
 		            // iterate binding providers
 		            for(var b in binding) {
@@ -291,7 +198,7 @@ debugger;
                 for (var i = 0; i < dataProviders.length; i++) {
                     var provider = dataProviders[i];
                     if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, providerIterators.length == 0)) {
-                        if (i > 0) {
+                        if (providerIterators.length > 0) {
                             var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
                             if (provider instanceof SqlTableDataProvider
                                 && prev.getJsb().$name == provider.getJsb().$name
@@ -341,5 +248,63 @@ debugger;
 		        }
 		    };
 		},
+
+		_topGeneralFields: function(dcQuery){
+		    function copyWithTopField(fieldName, obj) {
+		        var res = {};
+		        res[fieldName] = obj[fieldName];
+		        for (var f in obj) if (obj.hasOwnProperty(f) && f != fieldName) {
+		            res[f] = obj[f];
+		        }
+		        return res;
+		    }
+
+		    function isFieldLinkedWith(field, exp) {
+                if (JSB.isPlainObject(exp)) {
+                    if (exp['$field']
+                            && exp['$context'] == dcQuery.$context
+                            && exp['$field'] == field) {
+                        return true;
+                    } else {
+                        for(var p in exp) if (exp.hasOwnProperty(p)) {
+                            if (isFieldLinkedWith(field, exp[p])) {
+                                return true;
+                            }
+                        }
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for(var i in exp) {
+                        if (isFieldLinkedWith(field, exp[i])) {
+                            return true;
+                        }
+                    }
+                } else if (JSB.isString(exp) && exp == field) {
+                    // not true - defined without context (see top where isPlainObject)
+                    return false;
+                }
+                return false;
+		    }
+
+            var select = dcQuery.$select;
+		    var topFields = {};
+		    for (var field in select) if (select.hasOwnProperty(field)) {
+
+                var list = false;
+                for (var nextField in select) {
+                    if (nextField == field) {
+                        list = true;
+                    } else if (list && select.hasOwnProperty(nextField)) {
+                        if (isFieldLinkedWith(field, select[nextField])) {
+                            topFields[field] = Object.keys(topFields).length;
+                        }
+                    }
+                }
+		    }
+
+            for (var field in topFields) if (topFields.hasOwnProperty(field)) {
+		        select = copyWithTopField(field, select);
+		    }
+		    dcQuery.$select = select;
+		}
 	}
 }

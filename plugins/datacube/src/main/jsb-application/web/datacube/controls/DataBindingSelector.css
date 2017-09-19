@@ -1,0 +1,156 @@
+@CHARSET "UTF-8";
+
+.dataBindingSelector {
+    display: inline-block;
+    padding: 6px 5px 6px 5px;
+    height: 34px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    border: 1px solid rgba(2, 47, 78, 0.2);
+    border-radius: 6px;
+    background-color: rgba(24, 108, 138, 0.2);
+}
+
+.dataBindingSelector > .btnDelete {
+	position: absolute;
+	right: 7px;
+	top: 50%;
+	margin-top: -8px;
+	display: none;
+}
+
+.dataBindingSelector > .btnRefresh {
+	position: absolute;
+	right: 27px;
+	top: 50%;
+	margin-top: -8px;
+	display: none;
+}
+
+.dataBindingSelector.filled {
+    padding: 6px 30px 6px 5px;
+}
+
+.dataBindingSelector.refreshable.filled {
+	padding: 6px 45px 6px 5px;
+}
+
+.dataBindingSelector.filled > .btnDelete {
+	display: block;
+}
+
+.dataBindingSelector.filled.refreshable > .btnRefresh {
+	display: block;
+}
+
+
+
+.dataBindingSelector.selectable {
+	cursor: pointer;
+}
+
+.dataBindingSelector.acceptDraggable,
+.dataBindingSelector.selectable:hover {
+	background-color: rgba(156, 92, 29, 0.3);
+    border-color: rgba(105, 45, 0, 0.5);
+}
+
+
+/* placeholder */
+
+.dataBindingSelector > .placeholder {
+	padding: 3px 2px;
+    color: #6c7786;
+    font-size: 10px;
+}
+
+.dataBindingSelector.filled > .placeholder {
+	display: none;
+}
+
+.dataBindingSelector.acceptDraggable > .placeholder,
+.dataBindingSelector.selectable:hover > .placeholder {
+	color: #7b592d;
+}
+
+/* refresh */
+.dataBindingSelector > .refresh {
+	padding: 3px 20px 3px 2px;
+    color: #272f3a;
+    font-size: 10px;
+	display: none;
+}
+
+.dataBindingSelector > .refresh > .icon {
+	width: 16px;
+	height: 16px;
+	position: absolute;
+	right: 2px;
+	top: 50%;
+	margin-top: -8px;
+	background-image: url('/jsb.widgets/images/loading.gif');
+}
+
+.dataBindingSelector.refreshing > .refresh {
+	display: block;
+}
+
+.dataBindingSelector.refreshing > .placeholder,
+.dataBindingSelector.refreshing > .binding,
+.dataBindingSelector.refreshing > .btnDelete,
+.dataBindingSelector.refreshing > .btnRefresh {
+	display: none !important;
+}
+
+/* binding value */
+
+.dataBindingSelector > .binding {
+	padding: 0 2px;
+    height: 18px;
+    display: none;
+}
+
+.dataBindingSelector.filled > .binding {
+	display: block;
+	white-space: nowrap;
+}
+
+.dataBindingSelector > .binding > .renderer {
+	display: block;
+}
+
+.dataBindingSelector > .binding > .renderer > .icon {
+	width: 16px;
+	height: 16px;
+	margin-top: -8px;
+}
+
+.dataBindingSelector > .binding > .renderer > .title {
+	padding-left: 20px;
+	display: inline-block;
+	vertical-align: middle;
+	max-width: 150px;
+}
+
+.dataBindingSelector > .binding > .renderer > .leftParen,
+.dataBindingSelector > .binding > .renderer > .rightParen,
+.dataBindingSelector > .binding > .renderer > .cubeRenderer {
+	vertical-align: middle;
+	max-width: 150px;
+}
+
+.dataBindingSelector > .binding > .renderer > .leftParen {
+	margin-left: 2px;
+}
+
+.dataBindingSelector > .binding > .renderer > .cubeRenderer > .icon {
+	width: 14px;
+	height: 14px;
+	margin-top: -7px;
+}
+
+.dataBindingSelector > .binding > .renderer > .cubeRenderer > .title {
+	font-size: 10px;
+    padding-left: 20px;
+}

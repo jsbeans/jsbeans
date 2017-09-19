@@ -60,7 +60,7 @@
 		},
 
         options: {
-            data: null,
+            data: undefined,
             collapsed: false
         },
 		
@@ -93,21 +93,23 @@
 		},
 		
 		renderElement: function(obj, elt, deep){
-			if(obj == null){
+			if(obj === null){
 				this.renderNull(elt, deep);
-			} else if( typeof(obj) == 'object' ){
-				if(Object.prototype.toString.call(obj) === "[object Array]") {
-					this.renderArray(obj, elt, deep);
-				} else {
-					this.renderObj(obj, elt, deep);
-				}
-			} else if(typeof(obj) == 'boolean'){
+			} else if(obj === undefined){
+				// do nothing
+			} else if(JSB.isDate(obj)){
+				this.renderDate(obj, elt);
+			} else if(JSB.isArray(obj)){
+				this.renderArray(obj, elt, deep);
+			} else if(JSB.isPlainObject(obj)) {
+				this.renderObj(obj, elt, deep);
+			} else if(JSB.isBoolean(obj)){
 				this.renderBool(obj, elt, deep);
-			} else if(typeof(obj) == 'number'){
+			} else if(JSB.isNumber(obj)){
 				this.renderNumber(obj, elt, deep);
-			} else if(typeof(obj) == 'string'){
+			} else if(JSB.isString(obj)){
 				this.renderString(obj, elt, deep);
-			} else if(typeof(obj) == 'function'){
+			} else if(JSB.isFunction(obj)){
 				this.renderFunction(obj, elt, deep);
 			} else {
 				// internal error: unknown type
@@ -239,6 +241,10 @@
 			} else {
 				elt.append('<span class="bool false">false</span>');
 			}
+		},
+		
+		renderDate: function(obj, elt){
+			elt.append(this.$('<span class="date"></span>').text(obj.toLocaleString()));
 		},
 
 		renderNull: function(elt){

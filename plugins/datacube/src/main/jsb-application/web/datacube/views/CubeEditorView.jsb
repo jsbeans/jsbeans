@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.CubeEditorView',
+	$name: 'DataCube.CubeEditorView',
 	$parent: 'JSB.Workspace.BrowserView',
 	
 	$client: {
@@ -19,7 +19,7 @@
 						panes: [{
 							key: 'topPane',
 							size: 0.6,
-							minSize: '50%',
+							minSize: '100px',
 							widgets: 'cubeEditor'
 						},{
 							minSize: '100px',
@@ -30,10 +30,10 @@
 				},
 				widgets: {
 					cubeEditor: {
-						jsb: 'JSB.DataCube.CubeEditor',
+						jsb: 'DataCube.CubeEditor',
 					},
 					gridView: {
-						jsb: 'JSB.DataCube.GridView',
+						jsb: 'DataCube.GridView',
 						title: 'Таблица'
 					},
 				}
@@ -52,8 +52,12 @@
 				return;
 			}
 			cubeEditor.setCurrentEntry(this.node.getEntry());
+
+			var gridView = this.find('div[key="gridView"] > ._dwp_widget').jsb();
+			if(gridView && gridView.table){
+			    gridView.clear();
+			}
 		}
-		
 	},
 	
 	$server: {
@@ -62,8 +66,8 @@
 			WorkspaceController.registerBrowserView(this, {
 				wmKey: 'datacube',
 				priority: 1,
-				acceptNode: 'JSB.DataCube.CubeNode',
-				caption: 'Схема куба'
+				acceptNode: 'DataCube.CubeNode',
+				caption: 'Схема'
 			});
 		},
 	}

@@ -99,7 +99,7 @@
 }
 
 ._dwp_primitiveEditor ._dwp_plain {
-	display: inline-block;
+	display: block;
 	left: 0;
 	top: 0;
 	bottom: 0;

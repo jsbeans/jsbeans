@@ -66,7 +66,6 @@ public class JsHub extends Service {
     
 //	private static Global jsGlobal = new Global();
     private final Map<String, Cancellable> timeoutMap = new ConcurrentHashMap<String, Cancellable>();
-//    private final Map<String, MessageDispatcher> dispatcherMap = new HashMap<>();
     private final Map<String, Map<String, Object>> execMapScript = new ConcurrentHashMap<String, Map<String, Object>>();
     private Main debugger;
     private ContextFactory contextFactory;
@@ -209,23 +208,9 @@ public class JsHub extends Service {
         }
         getSender().tell(msg.createResponse(retLst), getSelf());
     }
-/*
-    private MessageDispatcher getDispatcher() {
-        return this.getDispatcher("kernel.jshub.dispatcher");
-    }
-*/
+    
     private MessageDispatcher getDispatcher(String dName) {
         return Core.getActorSystem().dispatchers().lookup(dName);
-/*
-		if(dispatcherMap.containsKey(dName)){
-			return dispatcherMap.get(dName);
-		}
-
-		MessageDispatcher disp = Core.getActorSystem().dispatchers().lookup(dName);
-		dispatcherMap.put(dName, disp);
-
-		return disp; */
-
     }
 
     private void handleRemoveScope(RemoveScopeMessage msg) {
@@ -237,7 +222,7 @@ public class JsHub extends Service {
     
     private void clearScope(String scopePath){
     	// clear beans
-    	String script = "var sessionScope = JSB().getSessionInstancesScope(); var beanIdsArr = Object.keys(sessionScope); for(var bidx = 0; bidx < beanIdsArr.length; bidx++){ var bInst = sessionScope[beanIdsArr[bidx]]; if(bInst && bInst.destroy){ bInst.destroy(); } }";
+    	String script = "var sessionScope = JSB().getSessionInstancesScope(); var beanIdsArr = Object.keys(sessionScope); for(var bidx = 0; bidx < beanIdsArr.length; bidx++){ var bInst = sessionScope[beanIdsArr[bidx]]; if(bInst && bInst.destroy){ try{ bInst.destroy();} catch(e){ JSB.getLogger().error(e);} } }";
     	try {
 	    	Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(scopePath);
 	    	Context cx = contextFactory.enterContext();

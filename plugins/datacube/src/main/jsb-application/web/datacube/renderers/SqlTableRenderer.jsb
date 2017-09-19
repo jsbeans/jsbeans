@@ -1,6 +1,7 @@
 {
-	$name: 'JSB.DataCube.Renderers.SqlTableRenderer',
+	$name: 'DataCube.Renderers.SqlTableRenderer',
 	$parent: 'JSB.Workspace.EntryRenderer',
+	$require: 'JSB.Widgets.RendererRepository',
 	$client: {
 		$constructor: function(entry, opts){
 			var self = this;
@@ -9,20 +10,33 @@
 			$base(entry, opts);
 			this.addClass('sqlTableRenderer');
 			this.loadCss('SqlTableRenderer.css');
-			this.ensureSynchronized(function(){
+			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();
 				if(e.descriptor.isView){
 					$this.addClass('view');
 				}
 				
+				if(opts.showSource && e.parent){
+					$this.addClass('showSource');
+					$this.server().getSource(e, function(sourceEntry){
+						$this.append('<div class="leftParen">(</div>');
+						$this.append(RendererRepository.createRendererFor(sourceEntry).getElement());
+						$this.append('<div class="rightParen">)</div>');
+					});
+				} else {
+					$this.removeClass('showSource');
+				}
 			});
 		}
 	},
 	
 	$server: {
-		$require: 'JSB.Widgets.RendererRepository',
 		$bootstrap: function(){
-			RendererRepository.registerRenderer(this, 'JSB.DataCube.Model.SqlTable');
+			RendererRepository.registerRenderer(this, 'DataCube.Model.SqlTable');
+		},
+		
+		getSource: function(entry){
+			return entry.workspace.entry(entry.parent);
 		}
 	}
 }

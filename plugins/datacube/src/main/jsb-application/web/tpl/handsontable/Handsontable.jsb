@@ -13,7 +13,7 @@
 			this.loadCss('Handsontable.jsb.css');
 			this.addClass('tableControl');
 
-            this.noData = this.$('<div class="noData hidden">Нет данных</div>');
+            this.noData = this.$('<div class="noData hidden"></div>').text((opts && opts.noDataMessage)||'Нет данных');
             this.append(this.noData);
 
 			this.table = this.$('<div></div>');
@@ -28,7 +28,7 @@
 			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
             JSB().loadCss('tpl/handsontable/handsontable.min.css');
-            JSB().loadScript('tpl/handsontable/handsontable.js', function(){
+            JSB().loadScript('tpl/handsontable/handsontable.min.js', function(){
                 // custom render for all cells
                 function customRenderer(hotInstance, td, row, column, prop, value, cellProperties){
                     // include default renderer
@@ -43,7 +43,7 @@
                 $this.table.resize(function(){
                     JSB().defer(function(){
                         $this.handsontable.render();
-                    }, 300, 'handsontable.resize')
+                    }, 300, 'handsontable.resize' + $this.getId())
                 });
 
                 $this.options.isInit = true;
@@ -148,13 +148,17 @@
             return this.callbacks.createHeader.call(this, i, this.columns[i]);
 		},
 
+		clear: function(){
+            if(this.handsontable) this.handsontable.loadData([[], [], [], [], []]);
+            this.noData.removeClass('hidden');
+            this.table.addClass('hidden');
+		},
+
 		customRenderer: function(hotInstance, td, row, column, prop, value, cellProperties){
 		    if(!this.data) return td;
 		    if(typeof prop === 'number') return td;
 
 		    var val = this.data[row][prop];
-
-		    // if(prop == 'meta') debugger;
 
             // empty object or array
             if((JSB.isObject(val) && Object.keys(val).length === 0) || (JSB.isArray(val) && val.length === 0)){
@@ -260,6 +264,11 @@
                     // empty object or array
                     if((JSB.isObject(data[i][j]) && Object.keys(data[i][j]).length === 0) || (JSB.isArray(data[i][j]) && data[i][j].length === 0)){
                         data[i][j] = " ";
+                        continue;
+                    }
+
+                    if(JSB.isDate(data[i][j])){
+                        data[i][j] = data[i][j].toString();
                         continue;
                     }
 

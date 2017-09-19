@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Widgets.Table',
-	$parent: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Table',
+	$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Таблица',
 		description: '',
@@ -151,7 +151,7 @@
 			editor: 'none'
 		},{
 			type: 'group',
-			name: 'Строки',
+			name: 'Источник',
 			binding: 'array',
 			key: 'rows',
 			items: [{
@@ -203,6 +203,7 @@
 				},{
 					name: 'Выравнивание ячейки',
 					type: 'group',
+					key: 'cellAlign',
 					items:[{
 						name: 'По горизонтали',
 						type: 'select',
@@ -210,16 +211,19 @@
 						items: [{
 							type: 'item',
 							name: 'По левому краю',
+							key: 'left',
 							itemValue: 'left',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'center',
 							itemValue: 'center',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
+							key: 'right',
 							itemValue: 'right',
 							editor: 'none'
 						}]
@@ -230,16 +234,19 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
+							key: 'top',
 							itemValue: 'top',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'middle',
 							itemValue: 'middle',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
+							key: 'bottom',
 							itemValue: 'bottom',
 							editor: 'none'
 						}]
@@ -262,6 +269,7 @@
 				},{
 					name: 'Выравнивание заголовка',
 					type: 'group',
+					key: 'headerAlign',
 					items:[{
 						name: 'По горизонтали',
 						type: 'select',
@@ -269,16 +277,19 @@
 						items: [{
 							type: 'item',
 							name: 'По левому краю',
+							key: 'left',
 							itemValue: 'left',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'center',
 							itemValue: 'center',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
+							key: 'right',
 							itemValue: 'right',
 							editor: 'none'
 						}]
@@ -289,16 +300,19 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
+							key: 'top',
 							itemValue: 'top',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'middle',
 							itemValue: 'middle',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
+							key: 'bottom',
 							itemValue: 'bottom',
 							editor: 'none'
 						}]
@@ -339,7 +353,7 @@
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
-		           'JSB.DataCube.Widgets.SortSelector'],
+		           'DataCube.Controls.SortSelector'],
 		
 		ready: false,
 		headerDesc: [],
@@ -379,54 +393,53 @@
 			this.append(this.scroll);
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
-				if($this.scroll.isReady()){
-					$this.ready = true;	
-				} else {
-					JSB.deferUntil(function(){
-						$this.ready = true;
-					}, function(){
-						return $this.scroll.isReady();
-					});
-				}
-			});
-			
-			$this.header.resize(function(){
-				if(!$this.getElement().is(':visible')){
-					return;
-				}
-				$this.updateHeaderSize();
-			});
-
-			this.scroll.getElement().resize(function(){
-				if(!$this.getElement().is(':visible')){
-					return;
-				}
-				$this.scrollHeight = $this.scroll.getElement().height();
-				$this.appendRows();
-			});
-			
-			$this.scroll.getPane().resize(function(){
-				if(!$this.getElement().is(':visible')){
-					return;
-				}
-				$this.paneHeight = $this.scroll.getPane().height();
-				$this.header.width($this.scroll.getPane().width());
-			});
-			
-			if(!$this.scrollHeight){
 				JSB.deferUntil(function(){
-					$this.scrollHeight = $this.scroll.getElement().height();
+					$this.header.resize(function(){
+						if(!$this.getElement().is(':visible')){
+							return;
+						}
+						$this.updateHeaderSize();
+					});
+
+					$this.scroll.getElement().resize(function(){
+						if(!$this.getElement().is(':visible')){
+							return;
+						}
+						$this.scrollHeight = $this.scroll.getElement().height();
+						$this.appendRows();
+					});
+					
+					$this.scroll.getPane().resize(function(){
+						if(!$this.getElement().is(':visible')){
+							return;
+						}
+						$this.paneHeight = $this.scroll.getPane().height();
+						$this.header.width($this.scroll.getPane().width());
+					});
+/*					
+					if(!$this.scrollHeight){
+						JSB.deferUntil(function(){
+							$this.scrollHeight = $this.scroll.getElement().height();
+						}, function(){
+							return $this.scroll.getElement().height() > 0;
+						});
+					}
+*/
+					$this.ready = true;
 				}, function(){
-					return $this.scroll.getElement().height() > 0;
+					return $this.scroll.isReady();
 				});
-			}
+			});
+			
 		},
 		
 		updateHeaderSize: function(){
 			if($this.header.is(':visible')){
-				$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
+				$this.scroll.getPane().css('padding-top', $this.header.height());
+//				$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
 			} else {
-				$this.scroll.getElement().css('height', '100%');
+				$this.scroll.getPane().css('padding-top', 0);
+//				$this.scroll.getElement().css('height', '100%');
 			}
 		},
 		
@@ -497,20 +510,23 @@
 					// proceed widgets
 					for(var j = 0; j < $this.colDesc.length; j++){
 						row[j].rowKey = key;
-						if(!$this.colDesc[j].widget){
-							continue;
-						}
-						var colName = $this.colDesc[j].title;
-						if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
-							$this.widgetMap[key][colName].setWrapper($this.getWrapper(), row[j].value);
-						} else {
-							var WidgetCls = $this.colDesc[j].widget.cls;
-							var widget = new WidgetCls();
-							widget.setWrapper($this.getWrapper(),  row[j].value);
-							if(!$this.widgetMap[key]){
-								$this.widgetMap[key] = {};
+						if($this.colDesc[j].widget){
+							var colName = $this.colDesc[j].title;
+							if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
+								$this.widgetMap[key][colName].setWrapper($this.getWrapper(), row[j].value);
+								$this.widgetMap[key][colName].refresh();
+							} else {
+								var WidgetCls = $this.colDesc[j].widget.cls;
+								if(WidgetCls){
+									var widget = new WidgetCls();
+									widget.setWrapper($this.getWrapper(),  row[j].value);
+									widget.refresh();
+									if(!$this.widgetMap[key]){
+										$this.widgetMap[key] = {};
+									}
+									$this.widgetMap[key][colName] = widget;
+								}
 							}
-							$this.widgetMap[key][colName] = widget;
 						}
 					}
 				}
@@ -543,11 +559,13 @@
 				
 				rowsSelDataColData
 					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+					.attr('type', function(d){return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
 					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
 					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert});
 			
 				rowsSelDataColData.each(function(d){
-					var cell = d3.select(this).select('div.cell');
+					var tdCell = d3.select(this);
+					var cell = tdCell.select('div.cell');
 					cell.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle});
 					var cellEl = $this.$(cell.node());
 					
@@ -604,6 +622,7 @@
 				rowsSelDataColData.enter()
 				.append('td')
 					.classed('col', true)
+					.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
 					.attr('key', function(d){ return d.key;})
 					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
 					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
@@ -666,6 +685,7 @@
 									.classed('col', true)
 									.attr('key', function(d){ return d.key;})
 									.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+									.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
 									.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
 									.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
 									.append('div')
@@ -686,9 +706,16 @@
 
 				$this.rowAppending = false;
 				if(pRows.length > 0){
-					JSB.defer(function(){
+					var lastRow = $this.rows[$this.rows.length - 1];
+					var lastRowElt = $this.find('.row[key="'+lastRow.key+'"]');
+					JSB.deferUntil(function(){
 						$this.appendRows();	
-					},0);
+					}, function(){
+						if(!$this.getElement().is(':visible')){
+							return true;
+						}
+						return lastRowElt.width() > 0 && lastRowElt.height() > 0;
+					});
 				}
 				
 			})
@@ -809,11 +836,23 @@
 			if(!binding.source){
 				return;
 			}
-			var filters = JSB.clone(d.filter);
-			for(var i = 0; i < filters.length; i++){
-				filters[i].op = '$eq';
+			var bNeedRefresh = false;
+			for(var i = 0; i < d.filter.length; i++){
+				var fDesc = {
+					sourceId: binding.source,
+					type: '$and',
+					op: '$eq',
+					field: d.filter[i].field,
+					value: d.filter[i].value
+				};
+				if(!this.hasFilter(fDesc)){
+					this.addFilter(fDesc);
+					bNeedRefresh = true;
+				}
 			}
-			this.addFilter(binding.source, 'and', filters);
+			if(bNeedRefresh){
+				this.refreshAll();
+			}
 		},
 		
 		updateRows: function(){
@@ -933,6 +972,9 @@
 			if(!this.getContext().find('columns').used()){
 				return;
 			}
+			
+			$base();
+
 			// update col sizes
 			var colSizes = [];
 			var fixedSize = 0;

@@ -1,4 +1,5 @@
-/*! jsBeans v2.6.4 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.6.5 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
 	function JSB(cfg){
@@ -308,8 +309,8 @@
 				return '';
 			}
 			if(this.$_path.length > 0 
-					&& this.$_path[this.$_path.length] != '\\' 
-					&& this.$_path[this.$_path.length] != '/' ){
+					&& this.$_path[this.$_path.length - 1] != '\\'
+					&& this.$_path[this.$_path.length - 1] != '/' ){
 				return this.$_path + '/';
 			}
 			return this.$_path;
@@ -1628,6 +1629,7 @@
 							(this.isPlainObject(copy, true) || (copyIsArray = this.isArray(copy))) && 
 							!this.isJavaObject(copy) && 
 							!(copy instanceof JSB) &&
+							!this.isDate(copy) &&
 							!this.isInstanceOf(copy, 'JSB.Object') &&
 							(!JSB().isClient() || (!(copy instanceof HTMLElement))&&(!(copy == document)))) {
 							if (copyIsArray) {
@@ -2377,6 +2379,8 @@
 */						
 						keepFinalize();
 					}
+					ccall();
+/*					
 					if(self.isSystem()){
 						ccall();
 					} else {
@@ -2384,6 +2388,7 @@
 							ccall();
 						});
 					}
+*/					
 				} else {
 					keepFinalize();
 				}
@@ -2535,7 +2540,17 @@
 				var _s = document.createElement("script");
 			    _s.type = "text/javascript";
 			    if(url.indexOf('http') == -1){
-			    	_s.src = self.getProvider().getServerBase() + url;	 
+			        var serverBase = self.getProvider().getServerBase();
+                    if(serverBase
+                        && serverBase.length > 0
+                        && (serverBase[serverBase.length - 1] == '/' || serverBase[serverBase.length - 1] == '\\')
+                        && url
+                        && url.length > 0
+                        && (url[0] == '/' || url[0] == '\\')){
+
+                        url = url.substr(1);
+                    }
+			    	_s.src = serverBase + url;
 			    } else {
 			    	_s.src = url;
 			    }
@@ -2610,7 +2625,17 @@
 			var _l = document.createElement("link");
 			_l.rel = "stylesheet";
 		    if(url.indexOf('http') == -1){
-		    	_l.href = this.getProvider().getServerBase() + url;	 
+		        var serverBase = this.getProvider().getServerBase();
+		        if(serverBase
+		            && serverBase.length > 0
+		            && (serverBase[serverBase.length - 1] == '/' || serverBase[serverBase.length - 1] == '\\')
+		            && url
+		            && url.length > 0
+		            && (url[0] == '/' || url[0] == '\\')){
+
+                    url = url.substr(1);
+                }
+		    	_l.href = serverBase + url;
 		    } else {
 		    	_l.href = url;
 		    }
@@ -3656,7 +3681,7 @@ JSB({
 
 			} else {
 				// number, string or boolean
-				if(realScope != syncInfoScope.value || (syncInfoScope.value === undefined && realScope !== undefined)|| syncInfoScope.type != 0){
+				if(realScope !== syncInfoScope.value || (syncInfoScope.value === undefined && realScope !== undefined)|| syncInfoScope.type != 0){
 					syncInfoScope.value = realScope;
 					syncInfoScope.type = 0;
 					updated = true;
@@ -4225,7 +4250,11 @@ JSB({
 		},
 
 		ajax: function(url, params, callback){
-			JSB().getProvider().ajax(JSB().getProvider().getServerBase() + url, params, callback);
+			var pUrl = url;
+			if(pUrl.indexOf(':') == -1){
+				pUrl = JSB().getProvider().getServerBase() + pUrl;
+			}
+			JSB().getProvider().ajax(pUrl, params, callback);
 		},
 
 		onBeforeSync: function(syncInfo){
@@ -5274,7 +5303,12 @@ JSB({
 		decodeObject: function(obj){
 			if( typeof(obj) === 'object' ){
 				for( var key in obj ) {
-					var newKey = decodeURIComponent(key);
+					var newKey = null;
+					try {
+						newKey = decodeURIComponent(key);
+					}catch(e){
+						newKey = key;
+					}
 					if(newKey != key){
 						obj[newKey] = obj[key];
 						delete obj[key];
@@ -5283,7 +5317,9 @@ JSB({
 					if(typeof(obj[key]) === 'object'){
 						this.decodeObject(obj[key]);
 					} else if(typeof(obj[key]) === 'string'){
-						obj[key] = decodeURIComponent(obj[key]);
+						try {
+							obj[key] = decodeURIComponent(obj[key]);
+						}catch(e){}
 					}
 				}
 			} else if(typeof(obj) === 'array') {
@@ -5291,7 +5327,9 @@ JSB({
 					if(typeof(obj[i]) === 'object'){
 						this.decodeObject(obj[i]);
 					} else if(typeof(obj[i]) === 'string'){
-						obj[i] = decodeURIComponent(obj[i]);
+						try {
+							obj[i] = decodeURIComponent(obj[i]);
+						}catch(e){}
 					}
 					
 				}
@@ -5875,3 +5913,4 @@ JSB({
 		
 	}
 });
+}

@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Providers.JsonFileDataProvider',
-	$parent: 'JSB.DataCube.Providers.InMemoryDataProvider',
+	$name: 'DataCube.Providers.JsonFileDataProvider',
+	$parent: 'DataCube.Providers.InMemoryDataProvider',
 	
 	$client: {
 		$constructor: function(){
@@ -10,11 +10,11 @@
 	},
 	
 	$server: {
-		$require: 'JSB.DataCube.Providers.DataProviderRepository',
+		$require: 'DataCube.Providers.DataProviderRepository',
 		
 		$bootstrap: function(){
 			DataProviderRepository.registerDataProvider(this, {
-				accepts: 'JSB.DataCube.Model.JsonFile'
+				accepts: 'DataCube.Model.JsonFile'
 			});
 		},
 		

@@ -242,8 +242,8 @@
 }
 
 ._dwp_tabview._dwp_hiddenTabs > ._dwp_clientPane {
-	top: 0;
-	bottom: 0;
+	top: 0 !important;
+	bottom: 0 !important;
 }
 
 ._dwp_tabview > ._dwp_clientPane > ._dwp_clientPaneWrapper {

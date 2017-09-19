@@ -39,8 +39,7 @@
 			this.embeddedWidget.setWrapper(this);
 			elt.css({
 				'left': 0,
-				'top': 0,
-				'visibility': 'hidden'
+				'top': 0
 			});			
 			this.toolManager.getToolArea().append(elt);
 			this.initHandlers();
@@ -137,8 +136,10 @@
 			});
 
             this.$(window).resize(function(){
-                if($this.params)
-                    $this.updatePosition();
+                if($this.params && $this.isVisible()){
+                	$this.updatePosition();
+                }
+                    
             });
 /*
             if(this.options.draggable){
@@ -226,6 +227,7 @@
 		
 		show: function(params){
 			var self = this;
+			this.prepareShow = false;
 			for(var i in this.toolManager.visibleInstances){
 				if(this.toolManager.visibleInstances[i] == this){
 					return;	// already showing
@@ -256,13 +258,8 @@
 				this.removeClass('_dwp_modal');
 			}
 			
-			elt.css({
-				'visibility': 'visible',
-				'opacity': 0
-			});
-			elt.animate({
-				'opacity': 1
-			}, 200);
+			elt.addClass('visible');
+			
 			if( !JSB().isNull(this.embeddedWidget)){
 				this.embeddedWidget.setFocus();
 			}
@@ -1063,40 +1060,35 @@
 		
 		hide: function(bCanceled){
 			var self = this;
+			this.prepareShow = false;
 			if(this.frozen){
 				return;
 			}
-			for(var i in this.toolManager.visibleInstances){
+			for(var i = 0; i < this.toolManager.visibleInstances.length; i++){
 				if(this.toolManager.visibleInstances[i] == this){
 					this.toolManager.visibleInstances.splice(i, 1);
 					break;
 				}
 			}
-			this.getElement().animate({
-				opacity: 0
-			}, 100, function(){
-				self.visible = false;
-				self.getElement().css({
-					'visibility': 'hidden'
+			$this.removeClass('visible');
+			self.visible = false;
+			self.embeddedWidget.onHide(bCanceled);
+			if(!JSB().isNull(self.onHide)){
+				self.onHide(bCanceled);
+			}
+			if(self.options.hideInterval > 0){
+				// unbind handlers
+				self.params.target.selector.unbind({
+					mouseover: self.trackProcs.over,
+					mouseout: self.trackProcs.out
 				});
-				self.embeddedWidget.onHide(bCanceled);
-				if(!JSB().isNull(self.onHide)){
-					self.onHide(bCanceled);
-				}
-				if(self.options.hideInterval > 0){
-					// unbind handlers
-					self.params.target.selector.unbind({
+				if(self.params.handle && self.params.handle.selector){
+					self.params.handle.selector.unbind({
 						mouseover: self.trackProcs.over,
 						mouseout: self.trackProcs.out
 					});
-					if(self.params.handle && self.params.handle.selector){
-						self.params.handle.selector.unbind({
-							mouseover: self.trackProcs.over,
-							mouseout: self.trackProcs.out
-						});
-					}
 				}
-			});
+			}
 			
 			if(this.options.modal){
 				this.hideModalBackground();

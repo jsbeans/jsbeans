@@ -47,7 +47,7 @@
 									}
 								}
 							}
-							if(!dragAccept && $this.options.onDragAccept(d)){
+							if(!dragAccept && (!$this.options.onDragAccept || $this.options.onDragAccept(d))){
 								dragAccept = true;
 							}
 							
@@ -67,7 +67,9 @@
 									}
 								}
 							}
-							$this.options.onDragDrop.call($this, d, callback);
+							if($this.options.onDragDrop){
+								$this.options.onDragDrop.call($this, d, callback);
+							}
 						},
 						onDragStop: function(){
 							$this.enableDragging(false);
@@ -314,7 +316,6 @@
 				this.clientContainer.append(this.widgetContainer.getElement());
 				this.type = 'widget';
 				this.childContainers = [];
-				this.getElement().attr('type', this.type);
 			} else {
 				container.splitBox.getElement().detach();
 				this.splitBox = container.splitBox;
@@ -325,12 +326,16 @@
 				container.childContainers = [];
 				this.childContainers[0].parent = this;
 				this.childContainers[1].parent = this;
-				this.getElement().attr('type', this.type);
 			}
+			this.getElement().attr('type', this.type);
 		},
 		
 		dockWidget: function(widget, side){
 			if(side == 'center'){
+				if(this.type == 'split'){
+					JSB.getLogger().error('Failed to dock widget into center of split');
+					return;
+				}
 				this.addWidget(widget);
 			} else {
 				var splitType = (side == 'left' || side == 'right') ? 'vertical' : 'horizontal';
@@ -347,8 +352,8 @@
 				var c1 = new $class(this.options, this, this.dashboard);
 				var c2 = new $class(this.options, this, this.dashboard);
 				
-				splitBox.addToPane(0, c1);
-				splitBox.addToPane(1, c2);
+				var pane1 = splitBox.addToPane(0, c1);
+				var pane2 = splitBox.addToPane(1, c2);
 				
 				if(side == 'right' || side == 'bottom'){
 					c1.setContainer(this);
@@ -390,6 +395,7 @@
 		
 		setLayout: function(layout){
 			if(layout.type == 'widget'){
+				this.type = 'widget';
 				for(var i = 0; i < layout.widgets.length; i++){
 					var wId = layout.widgets[i];
 					var w = this.dashboard.widgets[wId];
@@ -401,6 +407,7 @@
 					this.undockWidget();
 				}
 			} else {
+				this.type = 'split';
 				this.splitBox = new SplitBox({
 					type: layout.splitType,
 					position: layout.splitPosition,
@@ -422,6 +429,7 @@
 				c1.setLayout(layout.containers[0]);
 				c2.setLayout(layout.containers[1]);
 			}
+			this.getElement().attr('type', this.type);
 		}
 	}
 }

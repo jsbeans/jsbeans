@@ -1,6 +1,6 @@
 {
-	$name: 'JSB.DataCube.Query.Iterators.InnerJoinIterator',
-	$parent: 'JSB.DataCube.Query.Iterators.Iterator',
+	$name: 'DataCube.Query.Iterators.InnerJoinIterator',
+	$parent: 'DataCube.Query.Iterators.Iterator',
 
 	$server: {
 		$constructor: function(iterators, queryEngine){
@@ -17,10 +17,11 @@
 		    this.params = params;
 
 		    // include join condition fields to $select
+		    var managedFields = this.cube.getManagedFields();
 		    for (var i in this.iterators) {
                 var fields = [];
-                for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
-                   var binding = this.cube.fields[field].binding;
+                for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
+                   var binding = managedFields[field].binding;
                    if (binding.length > 1) {
                        for(var b in binding) {
                            if (this.iterators[i].matchDataProvider(binding[b].provider)) {
@@ -51,11 +52,12 @@
                 params: {}
             };
             var leftCFValues = this.getLeftConditionFieldValues(i);
+            var managedFields = this.cube.getManagedFields();
             for (var f in leftCFValues) if (leftCFValues.hasOwnProperty(f)) {
                 var paramName = 'joinParam_' + f;
                 condition.query[f] = {$eq: '${' + paramName + '}'};
                 condition.params[paramName] = leftCFValues[f];
-                this.queryEngine.setParamType(paramName, this.cube.fields[f].type);
+                this.queryEngine.setParamType(paramName, managedFields[f].type);
             }
 
             if (Object.keys(condition.query).length > 0) {
@@ -135,15 +137,17 @@
                     Log.error('Close Iterator failed', e);
                 }
 		    }
+		    this.destroy();
 		},
 
 		getLeftConditionFieldValues: function(i) {
             var rightIt = this.iterators[i];
             var leftCValues = {};
-            for (var field in this.cube.fields) if (this.cube.fields.hasOwnProperty(field)) {
+            var managedFields = this.cube.getManagedFields();
+            for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
                 for (var ii = i-1; ii >= 0; ii--) {
                     var leftIt = this.iterators[ii];
-                    var binding = this.cube.fields[field].binding;
+                    var binding = managedFields[field].binding;
                     var leftMatched = false;
                     var rightMatched = false;
                     for(var b in binding) {

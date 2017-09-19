@@ -39,7 +39,8 @@
 			cellSize: 10,
 			autoLayout: true,
 			highlightSelecting: false,	// highlight elements while selecting
-			
+			background: null,
+
 			links: {
 				'_jsb_diagramUserWiringLink': {
 					
@@ -105,6 +106,11 @@
 			elt.prepend(self.toolContainer);
 
 			self.grid = self.$('<div class="_jsb_diagramGrid"></div>');
+			if(this.options.background){
+			    self.grid.css({
+			        'background': this.options.background
+			    });
+			}
 			self.grid.css({
 				'position': 'absolute'
 			});
@@ -285,11 +291,7 @@
 				mouseout: function(evt){
 					self.publish('_jsb_diagramMouseEvent', {name: 'mouseout', event: evt});
 				},
-				
-				click: function(evt){
-					self.publish('_jsb_diagramMouseEvent', {name: 'click', event: evt});
-				},
-				
+
 				mousedown: function(evt){
 					self.publish('_jsb_diagramMouseEvent', {name: 'mousedown', event: evt});
 				},
@@ -834,6 +836,20 @@
 			return this.highlighted;
 		},
 		
+		select: function(node, bSelect){
+			if(!JSB.isDefined(bSelect)){
+				bSelect = true;
+			}
+			if(JSB.isInstanceOf(node, 'JSB.Widgets.Diagram.Node') || JSB.isInstanceOf(node, 'JSB.Widgets.Diagram.Link')){
+				node.select(bSelect);
+			} else if(JSB.isObject(node)){
+				for(var objId in node){
+					var obj = node[objId];
+					obj.select(bSelect);
+				}
+			}
+		},
+		
 		getNodesUnderCursor: function(pt){
 			var selMap = {};
 			var sheetRc = this.sheet.get(0).getBoundingClientRect();
@@ -961,6 +977,13 @@
 				}
 				lm.execute(manNodeMap[lman]);
 			}
+		},
+
+		getFieldSize: function(){
+		    return {
+		        x: this.grid.width(),
+		        y: this.grid.height()
+		    };
 		}
 	},
 	

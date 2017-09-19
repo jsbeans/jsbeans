@@ -11,6 +11,7 @@
 	
 	setName: function(name){
 		this.descriptor.name = name;
+		this.attr('title', this.descriptor.name);
 	},
 	
 	$client: {
@@ -24,6 +25,7 @@
 			
 			this.icon = this.$('<div class="icon"></div>');
 			this.append(this.icon);
+			this.attr('title', this.descriptor.name);
 		},
 	}
 	

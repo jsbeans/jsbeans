@@ -12,7 +12,8 @@
 	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.Button',
 	           'JQuery.UI.Effects',
-	           'Web'],
+	           'JQuery.UI.Loader',
+	           'JSB.Web'],
 	
 	$sync: {
 		updateCheckInterval: 0
@@ -206,9 +207,11 @@
 			this.installUploadContainer(null);
 
 			$this.toolbar.getElement().resize(function(){
-				$this.tree.getElement().css({
-					top: $this.toolbar.getElement().outerHeight()
-				});
+				JSB.defer(function(){
+					$this.tree.getElement().css({
+						top: $this.toolbar.getElement().outerHeight()
+					});
+				}, 100, 'explorerToolbarResize' + $this.getId());
 			});
 
 			if(this.options.wmKey){
@@ -454,7 +457,7 @@
 								continue;
 							}
 							if(JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
-								if(obj.getEntry().getParent()){
+								if(obj.getEntry().getParentId()){
 									continue;	// node has a fixed parent - skipping
 								}
 							}
@@ -556,7 +559,7 @@
 				var node = sel[i].obj;
 				if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					var entry = node.getEntry();
-					if(entry.getParent()){
+					if(entry.getParentId()){
 						continue;
 					}
 				}
@@ -612,7 +615,7 @@
 			return path;
 		},
 
-		addTreeItem: function(itemDesc, parent, bReplace){
+		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
 			var key = JSB().generateUid();
 			var node = null;
 			
@@ -682,7 +685,13 @@
 						$this.addTreeItem(chDesc, parentKey);
 					}
 				})
-				
+			}
+			function onNodeCollapse(treeNode){
+			    var selected = $this.tree.getSelected();
+
+			    if(selected && $this.tree.isChild(treeNode.key, selected.key, true)){
+			        $this.tree.selectItem(null, null);
+			    }
 			}
 			if(bReplace){
 				curTreeNode = $this.tree.replaceNode({
@@ -691,8 +700,9 @@
 					dynamicChildren: itemDesc.hasEntryChildren,
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
+					onCollapse: onNodeCollapse,
 					cssClass: itemDesc.type,
-					collapsed: itemDesc.type == 'entry'
+					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
 				}, parent);
 			} else {
 				curTreeNode = $this.tree.addNode({
@@ -701,8 +711,9 @@
 					dynamicChildren: itemDesc.hasEntryChildren,
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
+					onCollapse: onNodeCollapse,
 					cssClass: itemDesc.type,
-					collapsed: itemDesc.type == 'entry'
+					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
 				}, parent);
 			}
 			node.treeNode = curTreeNode;
@@ -893,7 +904,7 @@
 			this.tree.clear();
 			for(var id in this.wtree){
 				var desc = this.wtree[id];
-				this.addTreeItem(desc);
+				this.addTreeItem(desc, null, false, {collapsed:true});
 			}
 			
 			this.sort();

@@ -50,7 +50,9 @@
 
             return JSB.locked(this, function(){
                 var store = $this._stores[config.name];
-                if (store && !JSB.isEqual(store.config, config) ) {
+                if (store && !$this._compareConfigs(config, store.config) ) {
+                    Log.debug('Close and recreate Store ' + config.name);
+                    store.close();
                     store = null;
                 }
                 if (!store) {
@@ -60,12 +62,35 @@
                     } else {
                         throw new Error('Not supported store type ' + config.type);
                     }
-                    store = $this._stores[config.name] = new TypedStore(config);
+                    store = $this._stores[config.name] = new TypedStore(config, $this);
                 }
                 return store;
             });
+		},
+
+		_removeStore: function(store){
+            delete $this._stores[store.config.name];
+		},
+
+		_compareConfigs: function(inputConfig, storeConfig){
+		    function compareWithLeft(left, right) {
+		        if (left == right) return true;
+		        if (JSB.isArray(left) && JSB.isArray(right)) {
+                    if (left.length != right.length) return false;
+                    for(var i in left) {
+                        if (!compareWithLeft(left[i], right[i])) return false;
+                    }
+                    return true;
+		        } else if (JSB.isPlainObject(left) && JSB.isPlainObject(right)) {
+                    for(var p in left) if (left.hasOwnProperty(p)) {
+                        if (!compareWithLeft(left[p], right[p])) return false;
+                    }
+                    return true;
+                }
+                return false;
+		    }
+
+            return compareWithLeft(inputConfig, storeConfig);
 		}
-
-
     }
 })

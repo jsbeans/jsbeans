@@ -10,7 +10,7 @@
 
 		connections: {},
 
-		$constructor: function(config){
+		$constructor: function(config, storeManager){
 			$base(JSB.merge({
 //                    type: JSB.Store.Sql.SQLStore,
 //                    url: '',
@@ -18,19 +18,13 @@
 //                        user: '',
 //                        password: '',
 //                    },
-                    maxConnections: 5,
+                    maxConnections: 500,
                     argumentTypes: {
 //                        paramName: java.sql.Types.VALUE,
 //                        'name': 'STRING',
                     }
-			    }, config));
+			    }, config), storeManager);
 			// init MongoSQL global var
-
-			var console = {
-			    log: function(){ Log.debug.apply(Log, arguments); },
-			    error: function(){ Log.debug.apply(Log, arguments); }
-			};
-			`#include 'thirdparty/mongo-sql-bundle.js'`;
 		},
 
         getConnection: function(checkConnection) {
@@ -97,25 +91,28 @@
                 JSB.cancelDefer(conn.deferredCloseKey);
                 delete conn.deferredCloseKey;
             }
+            var closed = false;
             return {
                 get: function(){
+                    if (closed) throw new Error('Connection closed');
                     return conn.jdbcConnection;
                 },
                 close: function(){
+                    closed = true;
                     conn.deferredCloseKey = JSB.generateUid();
                     JSB.defer(function() {
                         closeConnection(conn);
-                    }, $this.closeUselessConnectionTimeoutSec||60, conn.deferredCloseKey);
+                    }, ($this.closeUselessConnectionTimeoutSec||60)*1000, conn.deferredCloseKey);
                     conn.available = true;
                 },
             };
         },
 
 
-        extractSchema: function(stateCallback){
+        extractSchema: function(stateCallback, filter){
             return this.asSQL().connectedJDBC(function(conn){
             	var schemaInspector = new SQLSchemaInspector();
-                var schemas = schemaInspector.extractSchemas(conn, stateCallback);
+                var schemas = schemaInspector.extractSchemas(conn, stateCallback, filter);
                 schemaInspector.destroy();
                 return schemas;
             });
@@ -168,6 +165,7 @@
                 iteratedParametrizedQuery2: function(sql, getValue, getType, rowExtractor, onClose) {
                     var conn = $this.getConnection();
                     try {
+                        sql = sql.replace(new RegExp('`','g'), "\"\"");
                         return JDBC.iteratedParametrizedQuery(conn.get(), sql, getValue, getType, rowExtractor, function onClose2() {
                             conn.close();
                             if (JSB.isFunction(onClose)) {
@@ -182,60 +180,13 @@
             };
 		},
 
-		asMoSQL: function() {
-            return {
-                iteratedQuery: function(query, rowExtractor, onClose) {
-                    var query = JSB.merge({
-                        type: 'select',
-                    }, query, {});
-                    var mosql = MongoSQL.sql(query);
-
-                    var result = $this.asSQL().iteratedQuery(mosql.query, mosql.values, rowExtractor, onClose);
-                    return result;
-                },
-                iteratedParametrizedQuery: function(query, parameters, rowExtractor) {
-                    var query = JSB.merge({
-                        type: 'select',
-                    }, query, {});
-
-                    var mosql = MongoSQL.sql(query);
-                    var parametrizedSQL = mosql.query.replace(/\$(\d?)/g, function(str, param){
-                        var idx = parseInt(param);
-                        return mosql.values[idx - 1];
-                    });
-
-                    var result = $this.asSQL().iteratedParametrizedQuery(parametrizedSQL, parameters, rowExtractor, onClose);
-                    return result;
-                },
-                iteratedParametrizedQuery2: function(query, getValue, getType, rowExtractor, onClose) {
-                    var query = JSB.merge({
-                        type: 'select',
-                    }, query, {});
-
-                    var mosql = MongoSQL.sql(query);
-                    var parametrizedSQL = mosql.query;
-                    parametrizedSQL = parametrizedSQL.replace(/\$(\d?)/g, function(str, param){
-                        var idx = parseInt(param);
-                        return mosql.values[idx - 1];
-                    });
-
-                    parametrizedSQL = parametrizedSQL
-//                            .replace(new RegExp('\\( `','g'), "(\"\"\"")
-//                            .replace(new RegExp('` \\)','g'), "\"\"\")")
-//                            .replace(new RegExp('\\.`','g'), ".\"\"\"")
-//                            .replace(new RegExp("(\\S)`\\s", "g"), "$1\"\"\" ")
-                            .replace(new RegExp('`','g'), "\"\"");
-
-//                    Log.debug('Parametrized SQL Query: ' + parametrizedSQL);
-                    var result = $this.asSQL().iteratedParametrizedQuery2(parametrizedSQL, getValue, getType, rowExtractor, onClose);
-                    return result;
-                },
-            };
-		},
-
-		destroy: function(){
+		close: function() {
+		debugger;
+		    // close all JDBC connections and clear pull
             JSB.locked($this, 'connection', function() {
-                for (var id in this.connections) if ($this.connections.hasOwnProperty(id)) {
+                var ids = Object.keys(this.connections);
+                for (var i in ids) {
+                    var id = ids[i];
                     var conn = this.connections[conn.id];
                     if (conn.jdbcConnection) {
                         if (conn.deferredCloseKey) {
@@ -244,8 +195,10 @@
                         cn.jdbcConnection.close();
                         cn.jdbcConnection = null;
                     }
+                    delete this.connections[conn.id];
                 }
             });
+
 		    $base();
 		},
 

@@ -1,7 +1,5 @@
 .sliceOptionsTool{
 	padding: 5px;
-    min-width: 350px;
-	max-width: 400px;
 }
 
 
@@ -37,7 +35,8 @@
 
 .sliceOptionsTool .queryEditor,
 .sliceOptionsTool .queryParameters {
-	max-height: 200px;
+	height: 400px;
+    width: 600px;
 }
 
 .sliceOptionsTool .error{

@@ -79,6 +79,19 @@
 			if(!this.options.disableWheel){
 				this.getElement().mousewheel(function(evt, delta, deltaX, deltaY){
 					self.addWheelDelta(delta);
+					if(delta > 0){
+						// scroll up
+						if($this.scroll.y < 0){
+							evt.stopPropagation();
+							evt.preventDefault();
+						}
+					} else {
+						// scroll down
+						if($this.scroll.y + $this.scrollPane.height() > $this.getElement().height()){
+							evt.stopPropagation();
+							evt.preventDefault();
+						}
+					}
 					if(self.options.stopPropagation){
 						evt.stopPropagation();
 					}
@@ -93,14 +106,14 @@
 				});
 			}
 			
-			JSB().deferUntil(function(){
+//			JSB().deferUntil(function(){
 				$this.installScroll();
 				$this.setEasing('easeOutExpo');
 				$this.updateScrollbars();
 				$this.ready = true;
-			},function(){
-				return $this.getElement().width() > 0;
-			});
+//			},function(){
+//				return $this.getElement().width() > 0;
+//			});
 
 		},
 		

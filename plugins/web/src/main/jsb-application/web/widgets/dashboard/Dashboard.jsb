@@ -29,7 +29,7 @@
 							}
 						}
 					}
-					if(!dragAccept && $this.options.onDragAccept(d)){
+					if(!dragAccept && (!$this.options.onDragAccept || $this.options.onDragAccept(d))){
 						dragAccept = true;
 					}
 					
@@ -45,7 +45,9 @@
 							}
 						}
 					}
-					$this.options.onDragDrop.call($this, d, callback);
+					if($this.options.onDragDrop){
+						$this.options.onDragDrop.call($this, d, callback);
+					}
 				},
 				onDropWidget: function(widget){
 					$this.dockWidget(widget);

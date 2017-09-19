@@ -1,0 +1,9 @@
+@CHARSET "UTF-8";
+
+.waterfallChart {
+}
+
+.waterfallChart .container {
+	width: 100%;
+	height: 100%;
+}

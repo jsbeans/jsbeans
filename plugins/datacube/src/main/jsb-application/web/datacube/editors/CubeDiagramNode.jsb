@@ -1,7 +1,9 @@
 {
-	$name: 'JSB.DataCube.CubeDiagramNode',
+	$name: 'DataCube.CubeDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.ToolManager'],
+	$require: ['JQuery.UI.Resizable', 
+	           'JSB.Widgets.ToolManager', 
+	           'DataCube.Dialogs.CubeMaterializationTool'],
 	
 	$client: {
 		ready: false,
@@ -50,7 +52,13 @@
 			this.body = this.$(`
 				<div class="body"></div>
 			`);
-			this.status = this.$('<div class="status"></div>');
+			this.status = this.$(`
+				<div class="status">
+					<div class="message"></div>
+					<div class="indicators">
+						<div class="indicator materialization" title="Настройки материализации куба"></div>
+					</div>
+				</div>`);
 			this.append(this.caption);
 			this.append(this.body);
 			this.append(this.status);
@@ -87,6 +95,47 @@
 					return;
 				}
 				$this.caption.find('.name').text(desc.name);
+			});
+			
+			this.subscribe('DataCube.Model.Cube.status', {session: true}, function(sender, msg, params){
+				if(sender != $this.entry){
+					return;
+				}
+				var msgElt = $this.status.find('.message');
+				msgElt.empty();
+				if(params.status){
+					msgElt.append(params.status);
+					msgElt.attr('title', params.status);
+				}
+				if(params.success){
+					msgElt.removeClass('error');
+				} else {
+					msgElt.addClass('error');
+				}
+				$this.updateIndicators();
+			});
+			
+			// indicators
+			this.status.find('.indicator.materialization').click(function(evt){
+				$this.showMaterializationDialog(evt);
+			});
+			
+			this.updateIndicators();
+		},
+		
+		updateIndicators: function(){
+			this.entry.server().getMaterializationInfo(function(mInfo){
+				var matElt = $this.status.find('.indicators > .indicator.materialization');
+				if(mInfo && mInfo.materializing){
+					matElt.addClass('materializing');
+					matElt.removeClass('materialized');
+				} else if(mInfo && Object.keys(mInfo.materialization).length > 0){
+					matElt.addClass('materialized');
+					matElt.removeClass('materializing');
+				} else {
+					matElt.removeClass('materializing');
+					matElt.removeClass('materialized');
+				}
 			});
 		},
 		
@@ -248,12 +297,62 @@
 						var rDesc = this.getRemote(link);
 						var provider = rDesc.node.provider;
 						var field = rDesc.connector.options.field;
-						$this.entry.server().addField(provider.getId(), field, rDesc.node.fields[field], function(desc){
-							$this.addField(desc.field, desc.type);
-							$this.editor.ignoreHandlers = true;
-							link.setSource($this.leftFieldConnectors[desc.field]);
-							$this.editor.ignoreHandlers = false;
+						
+						function addField(){
+							$this.entry.server().addField(provider.getId(), field, rDesc.node.fields[field], function(desc){
+								$this.addField(desc.field, desc.type);
+								$this.editor.ignoreHandlers = true;
+								link.setSource($this.leftFieldConnectors[desc.field]);
+								$this.editor.ignoreHandlers = false;
+							});
+						}
+
+						$this.entry.server().getMaterializationInfo(function(matDesc){
+							if(matDesc.materializing){
+								var elt = welcomeConnector.getOrigin();
+								ToolManager.showMessage({
+									icon: 'infoDialogIcon',
+									text: 'Добавление поля в куб в момент материализации невозможно',
+									buttons: [{text: 'Закрыть', value: true}],
+									target: {
+										selector: elt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: elt
+									}],
+									callback: function(){
+										link.destroy();
+									}
+								});
+							} else if(matDesc.materialization && Object.keys(matDesc.materialization).length > 0){
+								// show ask dialog
+								var elt = welcomeConnector.getOrigin();
+								ToolManager.showMessage({
+									icon: 'warningDialogIcon',
+									text: 'Добавление поля в куб приведет к удалению существующей материализации',
+									buttons: [{text: 'Продолжить', value: true},
+									          {text: 'Отмена', value: false}],
+									target: {
+										selector: elt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: elt
+									}],
+									callback: function(b){
+										if(b){
+											addField();
+										} else {
+											link.destroy();
+										}
+									}
+								});
+							} else {
+								addField();
+							}
 						});
+						
 					}
 				});
 			}
@@ -310,14 +409,58 @@
 				}],
 				callback: function(bDel){
 					if(bDel){
-						$this.entry.server().removeField(field, function(res, fail){
-							if(res){
-								delete $this.fields[field];
-								$this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
-								$this.leftFieldConnectors[field].destroy();
-								delete $this.leftFieldConnectors[field];
-								$this.rightFieldConnectors[field].destroy();
-								delete $this.rightFieldConnectors[field];
+						function removeField(){
+							$this.entry.server().removeField(field, function(res, fail){
+								if(res){
+									delete $this.fields[field];
+									$this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
+									$this.leftFieldConnectors[field].destroy();
+									delete $this.leftFieldConnectors[field];
+									$this.rightFieldConnectors[field].destroy();
+									delete $this.rightFieldConnectors[field];
+								}
+							});
+						}
+						
+						$this.entry.server().getMaterializationInfo(function(matDesc){
+							if(matDesc.materializing){
+								ToolManager.showMessage({
+									icon: 'infoDialogIcon',
+									text: 'Удаление поля из куба в момент материализации невозможно',
+									buttons: [{text: 'Закрыть', value: true}],
+									target: {
+										selector: fElt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: fElt
+									}],
+									callback: function(){
+										
+									}
+								});
+							} else if(matDesc.materialization && Object.keys(matDesc.materialization).length > 0){
+								// show ask dialog
+								ToolManager.showMessage({
+									icon: 'warningDialogIcon',
+									text: 'Удаление поля из куба приведет к удалению существующей материализации',
+									buttons: [{text: 'Продолжить', value: true},
+									          {text: 'Отмена', value: false}],
+									target: {
+										selector: fElt
+									},
+									constraints: [{
+										weight: 10.0,
+										selector: fElt
+									}],
+									callback: function(b){
+										if(b){
+											removeField();
+										} 
+									}
+								});
+							} else {
+								removeField();
 							}
 						});
 					}
@@ -357,6 +500,7 @@
 				this.editor.publish('DataCube.CubeEditor.cubeNodeSelected', this.entry);
 			} else {
 				this.removeClass('selected');
+				this.editor.publish('DataCube.CubeEditor.cubeNodeDeselected', this.entry);
 			}
 		},
 		
@@ -367,6 +511,31 @@
 			} else {
 				elt.removeClass('highlighted');
 			}
+		},
+		
+		showMaterializationDialog: function(evt){
+			var elt = this.$(evt.currentTarget);
+			ToolManager.activate({
+				id: 'cubeMaterializationTool',
+				cmd: 'show',
+				data: {
+					cube: $this.entry,
+				},
+				scope: $this.$('.cubeEditorView'),
+				target: {
+					selector: elt,
+				},
+				constraints: [{
+					selector: elt,
+					weight: 10.0
+				},{
+					selector: $this.getElement(),
+					weight: 10.0
+				}],
+				draggable: true,
+				callback: function(desc){
+				}
+			});
 		}
 	}
 }

@@ -18,6 +18,8 @@
 		})
 	},
 	$client: {
+		ready: false,
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -27,9 +29,9 @@
 			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
 				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
 				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
-				this.data = new Value('', this.options.valueType);
+				this.data = new Value(this.options.value, this.options.valueType);
 			} else {
-				this.data = new Value({value:''}, this.options.valueType);
+				this.data = new Value(this.options.value || '', this.options.valueType);
 			}
 			
 			this.ready = false;
@@ -149,6 +151,7 @@
 					JSB.loadScript([
 					                  'tpl/codemirror/mode/htmlmixed/htmlmixed.js',
 					                  'tpl/codemirror/mode/xml/xml.js',
+					                  'tpl/codemirror/mode/javascript/javascript.js',
 					                  'tpl/codemirror/mode/css/css.js',
 					                  'tpl/codemirror/addon/hint/show-hint.js',
 					                  'tpl/codemirror/addon/hint/html-hint.js',
@@ -175,7 +178,11 @@
 		options: {
 			valueType: 'org.jsbeans.types.JavaScript',
 			showHints: true,
-			validation: true
+			validation: true,
+			value: null,
+			readOnly: false,
+			
+			onChange: null
 		},
 		
 		behavior: {
@@ -217,16 +224,21 @@
 
 			self.editor = window.CodeMirror(this.getElement().get(0), cmOpts);
 			
-			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
-				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
-				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
-				this.editor.getDoc().setValue(this.data.getValue());
-			} else {
-				this.editor.getDoc().setValue(this.data.getValue().value);
+			if(this.data.getValue()){
+				if(this.options.valueType == 'org.jsbeans.types.JsonObject'
+					|| this.options.valueType == 'org.jsbeans.types.JsonArray'
+					|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
+					this.editor.getDoc().setValue(this.data.getValue());
+				} else {
+					this.editor.getDoc().setValue(this.data.getValue());
+				}
 			}
 			self.editor.on('change', function(cm, evt2){
 				if(!JSB.isNull(self.options.onChange)){
-					self.options.onChange(self.editor.getDoc().getValue());
+					var val = self.editor.getDoc().getValue();
+					if($this.isValid()){
+						self.options.onChange.call($this, $this.getData().getValue());
+					}
 				}
 			});
 			
@@ -249,6 +261,38 @@
 				self.editor.refresh();
 			});
 			
+			this.ready = true;
+		},
+		
+		isReady: function(){
+			return this.ready;
+		},
+		
+		isValid: function(){
+			var val = $this.editor.getDoc().getValue();
+			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
+				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
+				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
+				try {
+					eval('(' + val + ')');
+					$this.setErrorMark(false);
+					return true;
+				}catch(e){
+					$this.setErrorMark(true);
+					return false;
+				}
+			} else {
+				$this.setErrorMark(false);
+				return true;
+			}
+		},
+		
+		setErrorMark: function(b){
+			if(b){
+				this.addClass('invalid');
+			} else {
+				this.removeClass('invalid');
+			}
 		},
 		
 		setData: function(data){
@@ -264,12 +308,12 @@
 					}
 
 				} else {
-					this.data = new Value({value:''}, this.options.valueType);
+					this.data = new Value('', this.options.valueType);
 					if(!JSB.isNull(data)){
 						if(!JSB.isNull(data.value)){
-							this.data.setValue(data);
+							this.data.setValue(data.value);
 						} else {
-							this.data.setValue({value: data});
+							this.data.setValue(data);
 						}
 					}
 				}
@@ -289,20 +333,23 @@
 					
 				} else {
 					if(JSB.isNull(this.data.getValue())){
-						this.data.setValue({value: ''});
+						this.data.setValue('');
 					}
-					this.editor.getDoc().setValue(this.data.getValue().value);
+					this.editor.getDoc().setValue(this.data.getValue());
 				}
 			}
 		},
 		
 		getData: function(){
-			if(this.options.valueType == 'org.jsbeans.types.JsonObject'
-				|| this.options.valueType == 'org.jsbeans.types.JsonArray'
-				|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
-				this.data.setValue(eval('(' + this.editor.getDoc().getValue() + ')'));
-			} else {
-				this.data.setValue({value: this.editor.getDoc().getValue()});
+			var val = this.editor.getDoc().getValue();
+			if(val){
+				if(this.options.valueType == 'org.jsbeans.types.JsonObject'
+					|| this.options.valueType == 'org.jsbeans.types.JsonArray'
+					|| this.options.valueType == 'org.jsbeans.types.JsonElement'){
+					this.data.setValue(eval('(' + val + ')'));
+				} else {
+					this.data.setValue(val);
+				}
 			}
 			return this.data;
 		},

@@ -1,13 +1,17 @@
 {
-	$name: 'JSB.DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets.Widget',
 	$parent: 'JSB.Widgets.Widget',
-	$require: 'JSB.DataCube.Widgets.WidgetExplorer',
 	
 	$client: {
 		wrapper: null,
 		context: null,
 		values: null,
 		sort: null,
+		sourceMap: null,
+		sources: null,
+		sourceFilterMap: null,
+
+		$require: ['JSB.Crypt.MD5'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -190,6 +194,35 @@
 					}
 				},
 				
+				getFilters: function(){
+					if(this.selector.length == 0){
+						return null;
+					}
+					
+					var item = this.selector[0];
+					if(!item.binding || !item.binding.source){
+						return null;
+					}
+					if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
+						return JSB().clone($this.sourceFilterMap[item.binding.source]);
+					}
+				},
+				
+				setFilters: function(filters){
+					if(this.selector.length == 0){
+						throw new Error('Wrong selector');
+					}
+					
+					var item = this.selector[0];
+					if(!item.binding || !item.binding.source){
+						throw new Error('Missing source binding in selector');
+					}
+					if(!$this.sourceFilterMap){
+						$this.sourceFilterMap = {};
+					}
+					$this.sourceFilterMap[item.binding.source] = filters;
+				},
+				
 				fetch: function(opts, callback){
 					if(arguments.length == 1 && JSB.isFunction(opts)){
 						callback = opts;
@@ -211,7 +244,7 @@
 						return false;
 					}
 					
-					if(!item.binding.source){
+					if(!item.binding.source || item.binding.propagated){
 						if(item.data){
 							if(opts.reset){
 								item.cursor = 0;
@@ -230,12 +263,29 @@
 							reset: true
 						};
 					}
+
 					JSB.merge(item.fetchOpts, opts);
-					if($this.getWrapper() && $this.getWrapper().getOwner()){
-						item.fetchOpts.filter = $this.getWrapper().getOwner().getFilterSelector().constructFilter(item.binding.source);
+					if($this.getWrapper()){
+						var filterDesc = null;
+						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
+							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source]);
+						} else {
+							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
+						}
+						if(filterDesc){
+							item.fetchOpts.filter = filterDesc.filter;
+							item.fetchOpts.postFilter = filterDesc.postFilter;
+						} else {
+							item.fetchOpts.filter = null;
+							item.fetchOpts.postFilter = null;
+						}
 					}
 					item.fetchOpts.sort = $this.sort;
+
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+						if(fail && fail.message == 'Fetch broke'){
+							return;
+						}
 						if(item.fetchOpts.reset){
 							item.cursor = 0;
 							if(item.data){
@@ -262,17 +312,25 @@
 						return false;
 					}
 					var item = this.selector[0];
-					if(!item.data || !JSB.isArray(item.data)){
-						return false;
-					}
 					if(!JSB.isDefined(item.cursor)){
 						item.cursor = 0;
 					}
-					if(item.cursor >= item.data.length){
+					if(!item.data || (item.cursor > 0 && !JSB.isArray(item.data))){
 						return false;
 					}
 					
-					var dataEl = item.data[item.cursor++];
+					var dataEl = null;
+					
+					if(JSB.isArray(item.data)){
+						if(item.cursor >= item.data.length){
+							return false;
+						}
+						
+						dataEl = item.data[item.cursor++];
+					} else {
+						dataEl = item.data;
+						item.cursor++;
+					}
 					
 					// fills descendant with values
 					traverse(item, dataEl, function(curItem, val, stop){
@@ -419,105 +477,185 @@
 			};
 		},
 		
-		setWrapper: function(w, values){
+		setWrapper: function(w, values, sourceDesc){
 			this.wrapper = w;
-			if(w.getOwner()){
-				this.updateSelectors(values);
-			} else {
-				JSB.deferUntil(function(){
-					$this.updateSelectors(values);
-				}, function(){
-					return $this.wrapper.getOwner();
-				});
-			}
+			this.updateValues(values, sourceDesc);
 		},
 		
 		getWrapper: function(){
 			return this.wrapper;
 		},
 		
-		updateSelectors: function(values){
+		updateValues: function(values, sourceDesc){
 			if(!values){
-				values = JSB.clone(this.wrapper.values);
+				values = JSB.clone(this.getWrapper().getValues());
 			}
 			this.values = values;
 			if(this.values instanceof this.Selector){
 				this.values = this.values.unwrap();
 			}
 			this.context = new this.Selector(this.values);
-			this.refresh();
+			if(sourceDesc){
+				this.sourceMap = sourceDesc.sourceMap;
+				this.sources = sourceDesc.sources;
+			} else {
+				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
+				this.sources = this.getWrapper().getWidgetEntry().getSources();
+			}
 		},
 		
 		getContext: function(){
 			return this.context;
 		},
 		
+		
 		refresh: function(opts){
-//			throw new Error('This method should be overriden');
+			// localize filters
+			this.localizeFilters();
 		},
 		
-		addFilter: function(srcId, type, items, removeFIds){
-			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
-			return filterSelector.addFilter(srcId, type, items, this, removeFIds);
+		refreshAll: function(opts){
+			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
+		},
+		
+		getSourceIds: function(){
+			return Object.keys(this.sourceMap);
+		},
+		
+		localizeFilters: function(){
+			this.sourceFilterMap = {};
+			for(var srcId in this.sources){
+				var src = this.sources[srcId];
+				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
+			}
+		},
+		
+		getLocalFilters: function(){
+			return this.sourceFilterMap;
+		},
+
+		
+		clearFilters: function(){
+			this.getWrapper().clearFilters(this);
+		},
+		
+		hasFilter: function(fDesc){
+			return this.getWrapper().hasFilter(fDesc);
+		},
+		
+		addFilter: function(fDesc){
+			if(!fDesc.sourceId){
+				var sourceArr = this.getSourceIds();
+				if(sourceArr && sourceArr.length > 0){
+					fDesc.sourceId = sourceArr[0];
+				}
+			}
+			if(fDesc.sourceId){
+				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
+					throw new Error('Invalid sourceId');
+				}
+				fDesc.source = this.sources[fDesc.sourceId];
+				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
+			}
+			throw new Error('Missing sourceId');
 		},
 		
 		removeFilter: function(fItemId){
-			var filterSelector = this.getWrapper().getOwner().getFilterSelector();
-			return filterSelector.removeFilter(fItemId, this);
+			// return this.getWrapper().removeFilter(fItemId, this);
+			return this.getWrapper().removeFilter(fItemId);
 		},
 		
 		setSort: function(q){
 			this.sort = q;
 			this.refresh();
+		},
+
+		createFilterHash: function(filter){
+            var str = '';
+		    for(var i in filter){
+		        str += '' + i;
+		    }
+
+		    return MD5.md5(str);
 		}
 	},
 	
 	$server: {
+		$require: 'DataCube.Widgets.WidgetExplorer',
+
 		iterators: {},
+		needBreak: false,
 		
 		destroy: function(){
-			for(var it in this.iterators){
-				this.iterators[it].close();
+			if(!this.isDestroyed()){
+				for(var it in this.iterators){
+					try {
+						this.iterators[it].close();
+					}catch(e){
+						JSB.getLogger().error(e);
+					}
+				}
+				this.iterators = {};
+				$base();
 			}
-			this.iterators = {};
-			$base();
 		},
 		
 		fetch: function(sourceId, dashboard, opts){
 			var batchSize = opts.batchSize || 50;
 			var source = dashboard.workspace.entry(sourceId);
-			if(opts.reset && this.iterators[sourceId]){
-				this.iterators[sourceId].close();
-				delete this.iterators[sourceId];
-			}
-			if(!this.iterators[sourceId]){
-				// figure out data provider
-				if(JSB.isInstanceOf(source, 'JSB.DataCube.Model.Slice')){
-					var extQuery = {};
-					if(opts.filter){
-						extQuery.$filter = opts.filter;
-					}
-					if(opts.sort){
-						extQuery.$sort = [opts.sort];
-					}
-					this.iterators[sourceId] = source.executeQuery(extQuery);
-				} else {
-					// TODO
-				}
-			}
-			
 			var data = [];
-			for(var i = 0; i < batchSize || opts.readAll; i++){
-				var el = null;
-				try {
-					el = this.iterators[sourceId].next();
-				}catch(e){
-					el = null;
+			if(opts.reset){
+				this.needBreak = true;
+			}
+			JSB.getLocker().lock('fetch_' + $this.getId());
+			this.needBreak = false;
+			try {
+				if(opts.reset && this.iterators[sourceId]){
+					this.iterators[sourceId].close();
+					delete this.iterators[sourceId];
 				}
-				if(!el){
-					break;
+				if(!this.iterators[sourceId]){
+					// figure out data provider
+					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+						var extQuery = {};
+						if(opts.filter){
+							extQuery.$filter = opts.filter;
+						}
+						if(opts.postFilter){
+							extQuery.$postFilter = opts.postFilter;
+						}
+						if(opts.sort){
+							extQuery.$sort = [opts.sort];
+						}
+						if(opts.select){
+	                        extQuery.$select = opts.select;
+	                    }
+	                    if(opts.groupBy){
+	                        extQuery.$groupBy = opts.groupBy;
+	                    }
+						this.iterators[sourceId] = source.executeQuery(extQuery);
+					} else {
+						// TODO
+					}
 				}
-				data.push(el);
+			
+				for(var i = 0; i < batchSize || opts.readAll; i++){
+					if(this.needBreak){
+						throw new Error('Fetch broke');
+					}
+					var el = null;
+					try {
+						el = this.iterators[sourceId].next();
+					}catch(e){
+						el = null;
+					}
+					if(!el){
+						break;
+					}
+					data.push(el);
+				}
+			} finally {
+				JSB.getLocker().unlock('fetch_' + $this.getId());
 			}
 			
 			return data;

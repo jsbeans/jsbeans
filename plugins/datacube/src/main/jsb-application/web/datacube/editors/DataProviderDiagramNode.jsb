@@ -1,5 +1,5 @@
 {
-	$name: 'JSB.DataCube.DataProviderDiagramNode',
+	$name: 'DataCube.DataProviderDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository', 'JSB.Widgets.Button'],
 	
@@ -40,7 +40,7 @@
 			this.attr('provider', this.provider.getJsb().$name);
 			
 			this.caption = this.$('<div class="caption"></div>');
-			var renderer = RendererRepository.createRendererFor(this.provider.entry);
+			var renderer = RendererRepository.createRendererFor(this.provider.entry, {showSource: true});
 			this.caption.append(renderer.getElement());
 			
 			// refresh btn
@@ -244,6 +244,7 @@
 				this.editor.publish('DataCube.CubeEditor.providerNodeSelected', this.provider);
 			} else {
 				this.removeClass('selected');
+				this.editor.publish('DataCube.CubeEditor.providerNodeDeselected', this.provider);
 			}
 		},
 		

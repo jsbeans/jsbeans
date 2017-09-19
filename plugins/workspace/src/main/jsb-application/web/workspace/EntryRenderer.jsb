@@ -13,6 +13,8 @@
 			this.icon = this.$('<div class="icon"></div>');
 			this.append(this.icon);
 			
+			this.attr('title', entry.getName());
+			
 			if(this.options.editable){
 				this.editor = new PrimitiveEditor(JSB.merge({
 					mode:'inplace',
@@ -33,6 +35,7 @@
 		},
 		
 		update: function(){
+			this.attr('title', this.object.getName());
 			if(this.editor){
 				this.editor.setData(this.object.getName());
 			} else {
