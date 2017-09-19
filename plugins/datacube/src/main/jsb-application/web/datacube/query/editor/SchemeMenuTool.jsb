@@ -67,6 +67,15 @@
 					var entryId = editor.getId() + '_' + entryType + '_' + entryKey;
 					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
 					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
+				},
+				mouseout: function(){
+					var editor = $this.data.data.editor;
+					var entryKey = $this.data.data.entryKey;
+					var entryType = $this.data.data.entryType;
+					var entryId = editor.getId() + '_' + entryType + '_' + entryKey;
+					JSB.defer(function(){
+						editor.selectHover(entryType, entryKey, false);
+					}, 300, 'DataCube.Query.SchemeEditor.out:' + entryId);
 				}
 			});
 		},

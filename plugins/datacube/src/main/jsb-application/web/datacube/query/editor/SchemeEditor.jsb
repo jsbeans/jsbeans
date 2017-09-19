@@ -233,6 +233,9 @@
 						if(opts && opts.keyword){
 							keyElt.addClass('keyword');
 						}
+						if(opts && opts.selectField){
+							keyElt.addClass('selectField');
+						}
 						entryElt.append(keyElt);
 						
 						// inject entry substrate if it's not a SingleObject
@@ -244,7 +247,6 @@
 						
 						// add separator
 						var sepElt = $this.$('<div class="separator"><div class="icon"></div></div>');
-						sepElt.addClass('selectable');
 						entryElt.append(sepElt);
 						
 						// add value
@@ -265,7 +267,8 @@
 							schemeName: valScheme,
 							scopeName: valName,
 							scope: $this.value,
-							value: $this.value[valName]
+							value: $this.value[valName],
+							expanded: false,
 						}));
 						valueEditor.addClass('value');
 						entryElt.append(valueEditor.getElement());
@@ -280,11 +283,28 @@
 							valueEditor.append(handle);
 							valueEditor.addClass('hasHandle');
 							$this.installHoverHandlers('value', valName, handle, opts);
+							
+							entryElt.addClass('collapsible');
+							if(!$this.options.expanded && $this.scheme.name != '$query'){
+								entryElt.addClass('collapsed');
+							}
+							
+							var cBox = $this.$('<div class="collapsedBox">...</div>');
+							entryElt.append(cBox);
+							cBox.click(function(evt){
+								evt.stopPropagation();
+								entryElt.removeClass('collapsed');
+							});
+							sepElt.click(function(evt){
+								evt.stopPropagation();
+								entryElt.toggleClass('collapsed');
+							});
+						} else if(valScheme.expressionType == 'SingleObject'){
+							var handle = valueEditor.find('> .container > .entry > .key');
+							$this.installHoverHandlers('value', valName, handle, opts);
 						} else {
 							$this.installHoverHandlers('value', valName, null, opts);
 						}
-
-						
 					}
 					
 					// draw values
@@ -307,14 +327,27 @@
 						}*/
 						
 						var acceptedSchemes = $this.combineAcceptedSchemes();
-						for(var vName in $this.scheme.values){
+						var schemeValues = Object.keys($this.scheme.values);
+						
+						if($this.scheme.name == '$query'){
+							schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql'];
+							
+							var ctxName = $this.value['$context'];
+							if(JSB.isDefined(ctxName)){
+								var ctxElt = $this.$('<div class="context"></div>').text(ctxName);
+								$this.container.append(ctxElt);
+							}
+						}
+						
+						for(var i = 0; i < schemeValues.length; i++){
+							var vName = schemeValues[i];
 							if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
 								for(var fName in $this.value){
 									// skip non-customs 
 									if($this.scheme.values[fName]){
 										continue;
 									}
-									drawEntry(fName, valSchemes.obj[fName].scheme, {acceptedSchemes: acceptedSchemes[vName]});
+									drawEntry(fName, valSchemes.obj[fName].scheme, {selectField: $this.scheme.name == '$select', acceptedSchemes: acceptedSchemes[vName]});
 								}
 							} else {
 								if(JSB.isDefined($this.value[vName]) || !optionalMap[vName]){
@@ -354,14 +387,27 @@
 								schemeName: valScheme,
 								scopeName: i,
 								scope: $this.value,
-								value: curVal
+								value: curVal,
+								expanded: false
 							}));
 							valueEditor.addClass('value');
 							entryElt.append(valueEditor.getElement());
-							
+
 							// inject value substrate
 							valueEditor.append('<div class="substrate"></div>');
-							$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
+							
+							var valScheme = QuerySyntax.getSchema()[valScheme];
+							if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
+								var handle = $this.$('<div class="handle"></div>');
+								valueEditor.append(handle);
+								valueEditor.addClass('hasHandle');
+								$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
+							} else if(valScheme.expressionType == 'SingleObject'){
+								var handle = valueEditor.find('> .container > .entry > .key');
+								$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
+							} else {
+								$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
+							}
 						}
 					}
 				} else if($this.scheme.expressionType == 'Group'){

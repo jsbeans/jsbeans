@@ -6,6 +6,7 @@
 		$constructor: function(opts){
 			$base(JSB.merge({}, opts, {
 				schemeName: '$query',
+				expanded: true,
 				elements: {
 					
 				}
