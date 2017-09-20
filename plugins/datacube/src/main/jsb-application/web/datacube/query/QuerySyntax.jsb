@@ -123,7 +123,7 @@
 	            '$sort': '$sort',
 	            '$limit': '$limit',
 	            '$finalize': '$finalize',
-	            '$sql': '$sqlQuery'
+	            '$sql': '$sql'
             },
 	        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$sort', '$finalize', '$sql','$limit']
 	    });
@@ -131,6 +131,7 @@
 	    new this.ComplexObject({
 	        name: '$select',
 	        desc: 'Select output fields definition',
+	        displayName: 'Поля',
 	        customKey: '#outputFieldName',
 	        values: {
 	            '#outputFieldName': '$valueDefinition'
@@ -431,6 +432,7 @@
 
 	    new this.EArray({
 	        name: '$groupBy',
+	        displayName: 'Группировка',
 	        desc: 'Group by values definition',
 	        minOperands: 1,
 	        maxOperands: -1,
@@ -439,13 +441,14 @@
 
 	    new this.ComplexObject({
 	        name: '$filter',
+	        displayName: 'Фильтр',
 	        desc: 'Filter input data conditions definition',
 	        customKey: '#fieldName',
 	        values: {
 	            '#fieldName': '$valueCondition',
 
-	            '$or': '$orFilter',
-	            '$and': '$andFilter',
+	            '$or': '$or',
+	            '$and': '$and',
 	            '$not': '$filter',
 
 	            '$eq': '$eqExpr',
@@ -495,14 +498,20 @@
 	    });
 
 	    new this.EArray({
-	        name: '$orFilter',
+	        name: '$or',
+	        category: 'Логические операторы',
+	        displayName: 'или',
+	        desc: '',
 	        minOperands: 1,
 	        maxOperands: -1,
 	        values: ['$filter'],
 	    });
 
 	    new this.EArray({
-	        name: '$andFilter',
+	        name: '$and',
+	        category: 'Логические операторы',
+	        displayName: 'и',
+	        desc: '',
 	        minOperands: 1,
 	        maxOperands: -1,
 	        values: ['$filter'],
@@ -524,51 +533,71 @@
 
 	    new this.SingleObject({
 	        name: '$eq',
+	        category: 'Операторы сравнения',
+	        displayName: '=',
 	        desc: 'Equals condition (=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$ne',
-	        desc: 'Not qquals condition (!=)',
+	        category: 'Операторы сравнения',
+	        displayName: '&ne;',
+	        desc: 'Not equals condition (!=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$gt',
+	        category: 'Операторы сравнения',
+	        displayName: '&gt;',
 	        desc: 'Greater then condition (>)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$gte',
+	        category: 'Операторы сравнения',
+	        displayName: '&ge;',
 	        desc: 'Greater then or equals condition (>=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$lt',
+	        category: 'Операторы сравнения',
+	        displayName: '&lt;',
 	        desc: 'Less then condition (<)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$lte',
+	        category: 'Операторы сравнения',
+	        displayName: '&le;',
 	        desc: 'Less then or equals condition (<=)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$like',
+	        category: 'Операторы сравнения',
+	        displayName: '&asymp;',
 	        desc: 'Match strings by patterns (LIKE)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$ilike',
+	        category: 'Операторы сравнения',
+	        displayName: '&sim;',
 	        desc: 'Match strings by patterns ignore case (ILIKE)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$in',
+	        category: 'Операторы множеств',
+	        displayName: '&isin;',
 	        desc: 'Match if value in array',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    new this.SingleObject({
 	        name: '$nin',
+	        category: 'Операторы множеств',
+	        displayName: '&notin;',
 	        desc: 'Match if value not in array',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
@@ -646,21 +675,26 @@
 	    });
 	    new this.SingleObject({
 	        name: '$not',
+	        category: 'Логические операторы',
+	        displayName: 'не',
 	        desc: 'Inverse condition (NOT)',
 	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 
 	    new this.EArray({
 	        name: '$sort',
+	        displayName: 'Сортировка',
 	        desc: 'Sort by definition',
 	        minOperands: 1,
 	        maxOperands: -1,
 	        values: ['$sortDefinition'],
 	    });
+	    
 	    new this.Group({
 	        name: '$sortDefinition',
 	        values: ['$sortField', '$sortExpression']
 	    });
+	    
 	    new this.ComplexObject({
 	        name: '$sortField',
 	        customKey: '#anyFieldName',
@@ -670,6 +704,7 @@
 	            '#anyFieldName': '$sortType'
 	        },
 	    });
+	    
 	    new this.ComplexObject({
 	        name: '$sortExpression',
 	        values: {
@@ -677,14 +712,17 @@
 	            '$type': '$sortType',
 	        },
 	    });
+	    
 	    new this.Group({
 	        name: '$sortType',
 	        values: ['$sortTypeAsc', '$sortTypeDesc']
 	    });
+	    
 	    new this.EConstNumber({
 	        name: '$sortTypeAsc',
 	        value: 1,
 	    });
+	    
 	    new this.EConstNumber({
 	        name: '$sortTypeDesc',
 	        value: -1,
@@ -699,6 +737,7 @@
 	        desc: 'Finalize transformation',
 	        values: ['$finalizeFunction', '$finalizeFields']
 	    });
+	    
 	    new this.ComplexObject({
             name: '$finalizeFields',
             customKey: '#field',
@@ -706,6 +745,7 @@
 			    '#field': '$finalizeExpression'
 			}
         });
+	    
 	    new this.ComplexObject({
 	        name: '$finalizeExpression',
 	        values: {
@@ -713,6 +753,7 @@
 //	            '$group': '$finalizeGroup'
 	        },
 	    });
+	    
 	    new this.ComplexObject({
             name: '$finalizeReplace',
 	        desc: 'Replace values map (key - string "value" or regexp "/R/i")',
@@ -721,6 +762,7 @@
 	            '#value': '$replaceWithValue'
 	        },
         });
+	    
 	    new this.Group({
 	        name: '$replaceWithValue',
 	        values: ['$constString', '$constNumber', '$constBoolean'],
@@ -756,12 +798,15 @@
 	    
 	    new this.Group({
 	        name: '$constValue',
-	        values: ['$constNumber', '$contBoolean', '$constString'],
+	        values: ['$constNumber', '$constBoolean', '$constString'],
 	    });
+	    
+	    
 
 	    new this.EConstString({
 	        name: '$fieldName'
 	    });
+	    
 	    new this.EConstString({
 	        name: '$contextName'
 	    });
@@ -769,9 +814,11 @@
 	    new this.EConstNumber({
             name: '$constNumber'
         });
+	    
 	    new this.EConstBoolean({
-            name: '$contBoolean'
+            name: '$constBoolean'
         });
+	    
 	    new this.EConstString({
             name: '$constString'
         });
@@ -779,6 +826,11 @@
 	    new this.EConstString({
 	        name: '$param'
 	    });
+	    
+	    new this.EConstString({
+	        name: '$sql'
+	    });
+
 	},
 
 	macros: {},

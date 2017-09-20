@@ -5,6 +5,7 @@
 	           'JSB.Widgets.Button', 
 	           'JSB.Widgets.PrimitiveEditor', 
 	           'DataCube.Query.SchemeMenuTool',
+	           'DataCube.Query.SchemePopupTool',
 	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
@@ -27,7 +28,7 @@
 				tooltip: 'Добавить поле',
 				onClick: function(evt){
 					evt.stopPropagation();
-					debugger;
+					$this.showPopupTool($this.combineAcceptedSchemes(), $this.$(evt.currentTarget));
 				}
 			});
 			$this.append($this.btnAdd);
@@ -127,7 +128,108 @@
 			if(entryType == 'entry'){
 				return;
 			}
-			debugger;
+			var hoverElt = null;
+			if(entryType == 'entry'){
+				hoverElt = $this.find('> .container > .entry[key="'+entryKey+'"]');
+			} else {
+				hoverElt = $this.find('> .container > .entry[key="'+entryKey+'"] > .value');
+			}
+			$this.showPopupTool(opts.acceptedSchemes, hoverElt, entryType, entryKey);
+		},
+		
+		showPopupTool: function(schemes, targetElt, entryType, entryKey){
+			// prepare list for dialog
+			var itemMap = {};
+			var chosenObjectKey = null;
+			if(JSB.isArray(schemes)){
+				for(var i = 0; i < schemes.length; i++){
+					itemMap[schemes[i]] = true;
+				}
+			} else if(JSB.isObject(schemes)){
+				if(Object.keys(schemes).length == 1){
+					// pass first
+					chosenObjectKey = Object.keys(schemes)[0];
+					for(var i = 0; i < schemes[chosenObjectKey].length; i++){
+						itemMap[schemes[chosenObjectKey][i]] = true;
+					}
+				} else {
+					for(sName in schemes){
+						itemMap[sName] = true;
+					}
+				}
+			} else {
+				throw new Error('Invalid scheme object');
+			}
+			
+			// prepare categories
+			var catMap = {};
+			var skipMap = {
+				'$context': true
+			};
+			for(var item in itemMap){
+				var category = 'Разное';
+				var valObj = null;
+				
+				if(item && item[0] == '#'){
+					// custom field
+					if(item == '#fieldName'){
+						category = 'Поля';
+						valObj = '$field';
+					}
+				} else {
+					if(skipMap[item]){
+						continue;
+					}
+					var itemDesc = QuerySyntax.getSchema()[item];
+					if(!itemDesc){
+						throw new Error('Unable to find scheme declaration: ' + item);
+					}
+					if(itemDesc.category){
+						category = itemDesc.category;
+					}
+					valObj = {
+						item: item,
+						desc: itemDesc.desc,
+						title: itemDesc.displayName
+					};
+				}
+				if(!catMap[category]){
+					catMap[category] = [];
+				}
+				catMap[category].push(valObj);
+			}
+			
+			var itemMap = {};
+			if(Object.keys(catMap).length === 0 ){
+				return;
+			}
+			if(Object.keys(catMap).length > 1){
+				itemMap = catMap;
+			} else {
+				itemMap = catMap[Object.keys(catMap)[0]];
+			}
+			
+			var popupTool = ToolManager.activate({
+				id: 'schemePopupTool',
+				cmd: 'show',
+				data: {
+					editor: $this,
+					items: itemMap,
+					entryType: entryType,
+					entryKey: entryKey
+				},
+				scope: null,
+				target: {
+					selector: targetElt,
+					dock: 'bottom'
+				},
+				constraints: [{
+					selector: targetElt,
+					weight: 10.0
+				}],
+				callback: function(desc){
+				}
+			});
 		},
 		
 		selectHover: function(entryType, entryKey, bSelect){
@@ -229,7 +331,13 @@
 						
 						
 						// add key
-						var keyElt = $this.$('<div class="key"></div>').text(valName).attr('title', valName);
+						var keyElt = $this.$('<div class="key"></div>').attr('title', valName);
+						var keyDecl = QuerySyntax.getSchema()[valName];
+						if(keyDecl && keyDecl.displayName){
+							keyElt.append(keyDecl.displayName);
+						} else {
+							keyElt.text(valName);
+						}
 						if(opts && opts.keyword){
 							keyElt.addClass('keyword');
 						}
@@ -290,7 +398,7 @@
 							}
 							
 							var cBox = $this.$('<div class="collapsedBox">...</div>');
-							entryElt.append(cBox);
+							cBox.insertBefore(valueEditor.getElement());
 							cBox.click(function(evt){
 								evt.stopPropagation();
 								entryElt.removeClass('collapsed');

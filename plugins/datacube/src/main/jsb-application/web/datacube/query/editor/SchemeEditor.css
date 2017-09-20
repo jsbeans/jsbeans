@@ -132,7 +132,7 @@
 .schemeEditor > .container > .entry > .value.hasHandle {
     padding: 0 4px;
 	padding-left: 14px !important;
-	display: table;
+	display: block;
 	/* background-color: rgba(175, 152, 125, 0.15); */
     border-radius: 6px;
 }
@@ -155,7 +155,8 @@
 }
 
 .schemeEditor > .container > .entry.collapsible > .collapsedBox {
-	display: none;
+	display: inline-block;
+	visibility: hidden;
 	font-family: monospace;
     font-weight: bold;
     font-size: 14px;
@@ -165,12 +166,17 @@
     background-color: #d8cdc0;
 	color: #9a714d;
     cursor: pointer;
+    opacity: 0;
+    
+    transition: visibility 300ms, opacity 300ms;
 }
 
 .schemeEditor > .container > .entry.collapsible.collapsed > .collapsedBox {
-	display: inline-block;
+	visibility: visible;
 	vertical-align: top;
-	transition: background-color 300ms, border-color 300ms;
+	opacity: 1;
+	
+	transition: visibility 0ms, opacity 300ms, background-color 300ms, border-color 300ms;
 }
 
 .schemeEditor > .container > .entry.collapsible.collapsed > .collapsedBox:hover {
@@ -180,8 +186,21 @@
     transition: background-color 300ms, border-color 300ms;
 }
 
+.schemeEditor > .container > .entry.collapsible > .value {
+	max-height: 1000px;
+	max-width: 2000px;
+	opacity: 1;
+	
+	transition: max-height 300ms linear, max-width 300ms linear, opacity 300ms linear;
+}
+
 .schemeEditor > .container > .entry.collapsible.collapsed > .value {
-	display: none !important;
+	max-height: 0;
+	max-width: 0;
+	opacity: 0;
+	border: none;
+	
+	transition: max-height 300ms linear, max-width 300ms linear, opacity 300ms linear, border 300ms;
 }
 
 .schemeEditor > .container > .entry.collapsible > .separator {
@@ -246,7 +265,7 @@
 }
 
 .schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype = "ComplexObject"] {
-    display: table;
+    /*display: table;*/
 	/*background-color: rgba(175, 152, 125, 0.15);*/
     border-radius: 6px;
     padding: 0 4px;
@@ -279,7 +298,6 @@
 }
 
 .schemeEditor[etype = "ComplexObject"] > .container > .entry > .value[etype = "EArray"] {
-	display: table;
 }
 
 .schemeEditor[etype = "EArray"] > .container > .entry {
@@ -403,6 +421,7 @@
 
 .schemeEditor[sname = "$query"] > .container > .entry {
 	display: inline-block;
+	vertical-align: top;
     margin: 2px;
     padding: 2px 5px 6px;
     min-width: calc(33% - 4px);
@@ -415,6 +434,8 @@
 
 .schemeEditor[sname = "$query"] > .container > .entry[key="$groupBy"] {}
 
-.schemeEditor[sname = "$query"] > .btnCreate {}
+.schemeEditor[sname = "$query"] > .btnCreate {
+	margin: 4px;
+}
 
 

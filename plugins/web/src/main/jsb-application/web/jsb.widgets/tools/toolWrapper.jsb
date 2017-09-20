@@ -585,7 +585,7 @@
 					elt.css({
 						'left': this.rect.x,
 						'top': this.rect.y,
-						'min-width': this.rect.w
+/*						'min-width': this.rect.w*/
 					});
 					break;
 				}

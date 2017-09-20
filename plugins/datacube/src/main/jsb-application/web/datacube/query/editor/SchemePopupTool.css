@@ -1,0 +1,75 @@
+._dwp_toolWrapper.schemePopupToolWrapper {
+	border-radius: 3px !important;
+    background: #efd9be !important;
+    border: none !important;
+    padding: 0;
+    box-shadow: 1px 1px 3px #585858;
+}
+
+.schemePopupTool {
+	padding: 4px;
+}
+
+.schemePopupTool > .categories {
+	display: inline-block;
+	vertical-align: top;
+    text-align: right;
+    padding: 10px 0;
+}
+
+.schemePopupTool > .categories.hidden {
+	display: none;
+}
+
+.schemePopupTool > .categories > .entry {
+    font-size: 15px;
+	color: #715537;
+	cursor: pointer;
+	padding: 4px 4px 4px 10px;
+	border-radius: 6px 0 0 6px;
+}
+
+.schemePopupTool > .categories > .entry.selected,
+.schemePopupTool > .categories > .entry.selected:hover {
+	background-color: rgb(197, 153, 90);
+    color: #fff;
+    text-shadow: 1px 1px 1px #000;
+	cursor: default;
+}
+
+.schemePopupTool > .categories > .entry:hover {
+	background-color: rgb(232, 196, 145);
+}
+
+.schemePopupTool > .items {
+	display: inline-block;
+	vertical-align: top;
+	background-color: #e8d9c8;
+	width: 350px;
+    min-height: 150px;
+    max-height: 300px;
+	border: 1px solid rgb(197, 153, 90);
+    border-radius: 4px;
+}
+
+.schemePopupTool > .items li._dwp_listBoxItem.selected {
+	background-color: rgb(197, 153, 90);
+	color: #fff;
+	text-shadow: 1px 1px 1px #000;
+}
+
+.schemePopupTool > .items li._dwp_listBoxItem.highlighted {
+	background-color: rgb(232, 196, 145);
+}
+
+.schemePopupTool > .items li._dwp_listBoxItem > .title {
+	color: #7b4500;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.schemePopupTool > .items li._dwp_listBoxItem > .desc {
+	font-size: 11px;
+    color: #73604c;
+}
