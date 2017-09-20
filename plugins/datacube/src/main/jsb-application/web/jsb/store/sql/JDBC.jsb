@@ -180,21 +180,25 @@
 
 		    var rs;
 		    connection.setAutoCommit(false);
-		    if (JSB.isArray(values)) {
-		        var st = connection.prepareStatement(sql);
-		        for (var i = 0; i < values.length; i++) {
-		            var value = values[i];
-		            var type = types.length > i && types[i] || null;
-		            var type = this._getJDBCType(value, type);
-                    this._setStatementArgument(st, i + 1, value, type);
-		        }
-		        st.setFetchSize(10);
-		        rs = st.executeQuery();
-		    } else {
-		        var st = connection.createStatement();
-		        st.setFetchSize(10);
-		        rs = st.executeQuery(sql);
-		    }
+		    try {
+                if (JSB.isArray(values)) {
+                    var st = connection.prepareStatement(sql);
+                    for (var i = 0; i < values.length; i++) {
+                        var value = values[i];
+                        var type = types.length > i && types[i] || null;
+                        var type = this._getJDBCType(value, type);
+                        this._setStatementArgument(st, i + 1, value, type);
+                    }
+                    st.setFetchSize(10);
+                    rs = st.executeQuery();
+                } else {
+                    var st = connection.createStatement();
+                    st.setFetchSize(10);
+                    rs = st.executeQuery(sql);
+                }
+            } catch (e) {
+                connection.rollback();
+            }
 //		        Log.debug('SQL query executed');
 
 		    return {
