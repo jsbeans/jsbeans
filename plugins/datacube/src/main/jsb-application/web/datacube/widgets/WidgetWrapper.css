@@ -126,7 +126,7 @@
 }
 
 .widgetWrapper > .settingsContainer > .scroll {
-	height: calc(100% - 36px);
+	height: calc(100% - 42px);
 }
 
 .widgetWrapper > .widgetContainer {

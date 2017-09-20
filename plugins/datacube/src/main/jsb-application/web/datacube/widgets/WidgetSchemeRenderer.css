@@ -109,10 +109,14 @@
 
 
 .widgetSchemeRenderer.hasHeader > .body {
-	padding-left: 16px;
+	padding-left: 5px;
     margin-top: 3px;
 }
 
+.widgetSchemeRenderer.hasHeader:not(.collapsable):not(.hasMultiple) > .body {
+    padding-left: 5px;
+    border-left: 2px solid lightgrey;
+}
 
 .widgetSchemeRenderer > .body > .items {
 	position: relative;
@@ -361,7 +365,6 @@
     -moz-column-break-inside: avoid;
     column-break-inside: avoid;
     opacity: 1;
-    transition: all .2s ease;
 }
 
 .widgetSchemeRenderer[entry="group"].collapsable > .header {
@@ -369,11 +372,18 @@
     width: 100%;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .body.collapsed {
-    display: none;
+.widgetSchemeRenderer[entry="group"].collapsable > .body
+{
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    max-height: 9000px;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-up,
+.widgetSchemeRenderer[entry="group"].collapsable > .body.collapsed
+{
+    max-height: 0px;
+}
+
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-down {
     color: #C5C7CB;
     cursor: pointer;
@@ -381,18 +391,25 @@
     position: absolute;
     left: -18px;
     top: 3px;
+
+    -o-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .header > .dataBindingSelector:not(.filled) + .fa-chevron-up,
+.widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-down.collapsed {
+    -o-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+}
+
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .dataBindingSelector:not(.filled) + .fa-chevron-down {
     display: none;
 }
-/*
-.widgetSchemeRenderer[entry="group"].collapsable > .header > .btnCreate + .fa-chevron-up,
-.widgetSchemeRenderer[entry="group"].collapsable > .header > .btnCreate + .fa-chevron-down {
-    right: 25px;
-}
-*/
+
 .widgetSchemeRenderer .dataBindingSelector > .refresh {
     padding: 0px 20px 0px 2px;
 }

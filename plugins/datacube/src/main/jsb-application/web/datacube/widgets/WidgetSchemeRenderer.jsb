@@ -359,16 +359,10 @@
             if(this.scheme.collapsable){
                 this.addClass('collapsable');
 
-                var collapseButton = this.$('<i class="fa fa-chevron-up"></i>');
+                var collapseButton = this.$('<i class="fa fa-chevron-down"></i>');
                 collapseButton.click(function(evt){
                     $this.bodyElt.toggleClass('collapsed');
-
-                    var target = $this.$(evt.target);
-                    if(target.hasClass('fa-chevron-up')){
-                        target.removeClass('fa-chevron-up').addClass('fa-chevron-down');
-                    } else {
-                        target.removeClass('fa-chevron-down').addClass('fa-chevron-up');
-                    }
+                    $this.$(this).toggleClass('collapsed');
                 });
                 header.append(collapseButton);
 
