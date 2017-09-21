@@ -472,7 +472,7 @@
 	                                    data: [],
 	                                    type: seriesContext[i].get(2).value().name(),
 	                                    tooltip: {
-	                                        valueSuffix: seriesContext[i].get(3).value().get(0).value(),
+	                                        valueSuffix: seriesContext[i].get(3).value().get(0).value()
 	                                    },
 	                                    yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
 	                                    dashStyle: seriesContext[i].get(5).value().name(),
