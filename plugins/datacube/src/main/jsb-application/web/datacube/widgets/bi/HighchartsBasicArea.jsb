@@ -115,6 +115,7 @@
                         name: 'Формат',
                         key: 'format',
                         itemType: 'string',
+						description: 'Например, {value:.2f}'
                     },
                     {
                         type: 'group',
@@ -209,6 +210,12 @@
                         name: 'Суффикс значения',
                         key: 'valueSuffix',
                         itemType: 'string'
+                    },
+                    {
+                        type: 'item',
+                        name: 'Формат',
+                        itemType: 'string',
+						description: 'The HTML of the point\'s line in the tooltip. Variables are enclosed by curly brackets. Available variables are point.x, point.y, series.name and series.color and other properties on the same form. Defaults to <code>&lt;span style="color:{point.color}"&gt;\u25CF&lt;/span&gt; {series.name}: &lt;b&gt;{point.y}&lt;/b&gt;&lt;br/&gt;</code>.'
                     }
                     ]
                 },
@@ -216,7 +223,7 @@
                     name: 'Индекс yAxis',
                     type: 'item',
                     key: 'iAxisIndex',
-                    itemType: 'string'
+                    description: 'В случаях использования двух или более Y-осей, данный параметр определяет с какой из осей должна быть связана данная серия. Значением данного параметра должен быть индекс (порядковый номер) требуемой оси в массиве осей. При этом, нумерация осей начинается с 0. Значение по умолчанию: 0.'
                 },
                 {
                     name: 'Тип линии',
@@ -420,14 +427,14 @@
         },
 
 		init: function(){
+			
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);
 
             this.getElement().resize(function(){
             	if(!$this.getElement().is(':visible') || !$this.chart){
-                    return;
-                }
-
+            		return;
+            	}
                 JSB.defer(function(){
                     $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }, 300, 'hcResize' + $this.getId());
@@ -475,11 +482,11 @@
 
                 if(Object.keys(globalFilters).length === 0) globalFilters = null;
 
-                if(globalFilters && MD5.md5(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
+                if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
                     return;
                 } else {
-                    this._curFilterHash = globalFilters ? MD5.md5(globalFilters) : undefined;
-                }
+                    this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+                }                
             } else {
                 if(Object.keys(this._curFilters).length > 0){
                     for(var i in this._curFilters){
@@ -594,6 +601,15 @@
 	                                    }
 	                                    //,stack: seriesContext[i].get(8).value()
 	                                };
+									
+									/**
+									**/
+									var tooltipPointFormat = $this.safeGetValue(seriesContext[i], [3,1]);
+									if( tooltipPointFormat ) {
+										series[i].tooltip.pointFormat = tooltipPointFormat;
+									}
+									/**
+									**/
 	                            }
 	
 	                            var a = seriesContext[i].get(1).value();
@@ -634,13 +650,17 @@
 	                    
 	                    var colors = [
 							['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-							['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-							['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-							['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-							['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
+							["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
+							["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
+							["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
+							["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]							
 	                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
 	                    
 	                    var chartOptions = {
+	                    
+	                    	HighchartsBasicArea: {
+	                    		version: 'v-2017-09-21-02'
+	                    	},
 	
 							colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                       
 	                    
@@ -720,7 +740,8 @@
 	                    $this.chart =  $this.container.highcharts();
 	                    
                     } catch(e) {
-                    	console.log("Exception", e);
+						var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
+                    	console.log("Exception", [wTypeName, e]);
                     } finally {
                         $this.getElement().loader('hide');
                     }
@@ -767,6 +788,19 @@
             if(b) return a === null ? undefined : parseInt(a);
             return a === null ? undefined : a;
         },
+		
+		safeGetValue: function(context, args) {
+			if( context !== null && typeof context === 'object') {
+				if( args !== null && (!!args && args.constructor === Array) && args.length) {
+					if(context.get(args[0]) !== null) {
+						var value = context.get(args[0]).value();
+						return (((args.length === 1) || (value === null)) ? value : this.safeGetValue(value, args.slice(1)));
+					}
+				}
+			}
+			
+			return;
+		},
 
         _selectAllCategory: function(cat){
             var series = this.chart.series;

@@ -2,6 +2,12 @@
 	$name:'JSB.Widgets.TabView',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		$constructor: function(opts){
+			$base(opts);
+			this.loadCss('tabView.css');
+			this.init();
+		},
+		
 		options: {
 			allowCloseTab: true,
 			allowNewTab: true,
@@ -11,12 +17,9 @@
 		
 		currentTab: null,
 		tabs: {},
-
-		$constructor: function(opts){
+		
+		init: function(){
 			var self = this;
-			$base(opts);
-			
-			this.loadCss('tabView.css');	
 			this.addClass('_dwp_tabview');
 			
 			if(this.options.tabPosition == 'bottom'){
@@ -58,11 +61,12 @@
 			this.append(this.clientPane);
 			
 			this.tabPane.resize(function(){
+				if(!$this.tabPane.is(':visible')){
+					return;
+				}
 				self.updateSizes();
 			});
-
 		},
-		
 		
 		containsTab: function(tab){
 			var entry = this.resolveTab(tab);
