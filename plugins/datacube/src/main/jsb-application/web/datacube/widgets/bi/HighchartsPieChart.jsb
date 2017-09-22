@@ -143,6 +143,7 @@
             {
                 name: 'Имя',
                 type: 'item',
+                key: 'name',
                 itemType: 'string',
                 itemValue: ''
             },
@@ -154,6 +155,7 @@
                 {
                     type: 'item',
                     name: 'Имена частей',
+                    key: 'partNames',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -161,6 +163,7 @@
                 {
                     type: 'item',
                     name: 'Размеры частей',
+                    key: 'partSize',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -182,6 +185,7 @@
 			{
 				type: 'item',
 				name: 'Формат',
+				key: 'format',
 				itemType: 'string',
 				description: 'A format string for the data label. Available variables are: point.percentage (The point\'s percentage of the total), point.name, point.x (The x value), point.y (The y value), series (The series object. The series name is available through series.name).'
 			}
@@ -195,21 +199,25 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]
