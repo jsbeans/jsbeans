@@ -275,7 +275,7 @@
 				for(var i = 0; i < $this.scheme.items.length; i++){
 					var item = $this.scheme.items[i];
 
-					var value = {};
+					var value = null;
 					for(var j = 0; j < groupValues.items.length; j ++){
 					    if(groupValues.items[j].key === item.key){
 					        value = groupValues.items[j];
@@ -283,9 +283,13 @@
 					    }
 					}
 
+					if(!value){
+					    groupValues.items[i] = {};
+					    value = groupValues.items[i];
+					}
+
 					addItem(item, value);
 				}
-
 			}
 
 			function clearBinding(values){
