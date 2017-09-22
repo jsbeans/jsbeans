@@ -10,6 +10,9 @@
 	lastUpdated: null,
 	
 	$client: {
+		enumWidgets: function(callback){
+			$this.server().getWrappers(callback);
+		}
 	},
 	
 	$server: {
@@ -234,6 +237,11 @@
 			}
 			
 			return sources;
+		},
+		
+		getWrappers: function(){
+			$this.load();
+			return $this.wrappers;
 		}
 	}
 }

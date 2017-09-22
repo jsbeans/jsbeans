@@ -486,6 +486,10 @@
 			return this.wrapper;
 		},
 		
+		getDashboard: function(){
+			return $this.getWrapper().getDashboard();
+		},
+		
 		updateValues: function(values, sourceDesc){
 			if(!values){
 				values = JSB.clone(this.getWrapper().getValues());

@@ -198,6 +198,21 @@
 				// Удаление всех фильтров
 				widget.clearFilters();
 				*/
+				
+				
+				/* 
+				// Доступ к экземпляру визуализации, где размещен виджет
+				var dashboard = widget.getDashboard();
+				console.log(dashboard.getName());
+				
+				// Получение списка дескрипторов виджетов, размещенных на визуализации
+				dashboard.enumWidgets(function(wMap){
+					for(var wId in wMap){
+						console.log(wId + ':' + wMap[wId].getName());
+					}
+				});
+				*/
+
 			});
 		</script>
 		
