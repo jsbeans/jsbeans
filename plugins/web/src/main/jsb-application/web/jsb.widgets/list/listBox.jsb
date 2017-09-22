@@ -23,7 +23,7 @@
 			this.horizontalScrollBox.find('._dwp_scrollPane').addClass('horizontalScrollPane');
 			elt.append(this.horizontalScrollBox.getElement());
 			
-			this.scrollBox = new ScrollBox($jsb.merge({},this.options));
+			this.scrollBox = new ScrollBox($jsb.merge({scrollX: false}, this.options));
 			this.horizontalScrollBox.append(this.scrollBox);
 			
 			this.rootElt = this.$('<ul class="_dwp_listBoxContainer"></ul>');
