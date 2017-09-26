@@ -263,10 +263,7 @@
                 name: 'Цвет серии',
                 key: 'color',
                 itemType: 'color',
-                editor: 'JSB.Widgets.ColorEditor',
-                options: {
-                    mode: 'hexagon'
-                }
+                editor: 'JSB.Widgets.ColorEditor'
             }
             ]
         }]
