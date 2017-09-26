@@ -68,7 +68,7 @@
 			// create item list
 			$this.itemsListBox = new ListBox({
 				onSelectionChanged: function(key, item){
-					$this.data.callback.call($this, {scheme: item.scheme, value: key});
+					$this.data.callback.call($this, {scheme: item.scheme, value: item.value, context: item.context});
 					$this.close();
 				}
 			});
@@ -97,6 +97,11 @@
 					if(b == 'Поля куба'){
 						return 1;
 					} else if(a == 'Поля куба'){
+						return -1;
+					}
+					if(b == 'Столбцы среза'){
+						return 1;
+					} else if(a == 'Столбцы среза'){
 						return -1;
 					}
 					return 0;
@@ -147,14 +152,13 @@
 							var fType = fields[fName];
 							$this.itemsListBox.addItem({
 								key: fName,
+								value: fName,
 								scheme: item,
 								element: `#dot
 									<div class="field" title="{{=fName}}">
 										<div class="icon"></div>
 										<div class="name">{{=fName}}</div>
-										<div class="paren left">(</div>
-										<div class="type">{{=fType}}</div>
-										<div class="paren right">)</div>
+										<div class="type">{{=fType.toLowerCase()}}</div>
 									</div>
 								`
 							});
@@ -162,7 +166,27 @@
 					});
 					
 				} else if(item == '$fieldExpr') {
-					
+					var editor = $this.data.data.editor;
+					var colMap = editor.combineColumns();
+					for(var qName in colMap){
+						var colArr = colMap[qName];
+						for(var j = 0; j < colArr.length; j++){
+							var fName = colArr[j];
+							$this.itemsListBox.addItem({
+								key: fName + '_' + qName,
+								scheme: item,
+								value: fName,
+								context: qName,
+								element: `#dot
+									<div class="column" title="{{=fName}}">
+										<div class="icon"></div>
+										<div class="name">{{=fName}}</div>
+										<div class="qname">{{=qName.toLowerCase()}}</div>
+									</div>
+								`
+							});
+						}
+					}
 				} else {
 					$this.itemsListBox.addItem({
 						key: item.item,
