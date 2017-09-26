@@ -198,6 +198,7 @@
                 }
             } catch (e) {
                 connection.rollback();
+                throw e;
             }
 //		        Log.debug('SQL query executed');
 
