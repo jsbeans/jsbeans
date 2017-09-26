@@ -660,14 +660,17 @@
 		},
 		
 		getSlices: function(){
+			this.load();
 			return this.slices;
 		},
 		
 		getFields: function(){
+			this.load();
 			return this.fields;
 		},
 		
 		getManagedFields: function(){
+			this.load();
 			if(this.materialization && this.materialization.fields){
 				return this.materialization.fields;
 			}

@@ -28,7 +28,7 @@
 				tooltip: 'Добавить поле',
 				onClick: function(evt){
 					evt.stopPropagation();
-					$this.showPopupTool($this.combineAcceptedSchemes(), $this.$(evt.currentTarget));
+					$this.doAdd($this.$(evt.currentTarget));
 				}
 			});
 			$this.append($this.btnAdd);
@@ -49,7 +49,7 @@
 			});
 			$this.append($this.btnEdit);
 */
-			if($this.value){
+			if(JSB.isDefined($this.value)){
 				$this.refresh();
 			}
 			
@@ -137,7 +137,116 @@
 			$this.showPopupTool(opts.acceptedSchemes, hoverElt, entryType, entryKey);
 		},
 		
-		showPopupTool: function(schemes, targetElt, entryType, entryKey){
+		constructEmptyValue: function(schemeName){
+			var value = null;
+			var schemeDesc = QuerySyntax.getSchema()[schemeName];
+			if(schemeDesc.expressionType == 'ComplexObject'){
+				value = {};
+			} else if(schemeDesc.expressionType == 'SingleObject'){
+				value = {};
+				
+				// take first allowed scheme values
+				var schemeVal = schemeDesc.values[0];
+				value[schemeDesc.name] = $this.constructEmptyValue(schemeVal);
+			} else if(schemeDesc.expressionType == 'EArray') {
+				value = [];
+				switch(schemeDesc.name){
+				case '$addValues':
+				case '$subValues':
+					value.push({$const:0});
+					value.push({$const:0});
+					break;
+				case '$mulValues':
+				case '$divValues':
+				case '$divzValues':
+				case '$modValues':
+					value.push({$const:0});
+					value.push({$const:1});
+					break;
+				default:
+					for(var i = 0; i < schemeDesc.minOperands; i++){
+						value.push({$const:0});
+					}
+				}
+			} else if(schemeDesc.expressionType == 'EConstBoolean'){
+				value = false;
+				debugger;
+			} else if(schemeDesc.expressionType == 'EConstString'){
+				value = "";
+				debugger;
+			} else if(schemeDesc.expressionType == 'EConstNumber'){
+				value = 0;
+				debugger;
+			} else {
+				throw new Error('Unexpected empty value type: ' + schemeDesc.expressionType);
+			}
+			
+			return value;
+		},
+		
+		doAdd: function(targetElt){
+			$this.showPopupTool($this.combineAcceptedSchemes(), targetElt, null, null, function(chosenObj){
+				if($this.scheme.expressionType == 'ComplexObject'){
+					
+					function generateColumnName(){
+						var prefix = 'Столбец';
+						for(var idx = 1;; idx++){
+							var suggestedName = prefix + '_' + idx;
+							if(!$this.value[suggestedName]){
+								return suggestedName;
+							}
+						}
+					}
+					
+					var colName = null;
+					var value = null;
+					var schemeName = null;
+					debugger;
+					// detect key
+					if(JSB.isString(chosenObj.key)){
+						if($this.scheme.name == '$select' && chosenObj.key == '#outputFieldName'){
+							// autogenerate column name
+							colName = generateColumnName();
+						} else {
+							throw new Error('Unexpected key: ' + chosenObj.key);
+						}
+					} else {
+						colName = chosenObj.key.value;
+					}
+					
+					// detect value
+					if(chosenObj.value){
+						// resolve via value scheme
+						schemeName = chosenObj.value.scheme;
+						value = chosenObj.value.value;
+					} else {
+						// detect via key scheme
+						schemeName = chosenObj.key.scheme;
+						value = chosenObj.key.value;
+						
+					}
+					
+					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+						
+					} else if(schemeName == '$fieldExpr') {
+						
+					} else {
+						value = $this.constructEmptyValue(schemeName);
+					}
+					
+					$this.value[colName] = value;
+					// draw entry
+					$this.drawObjectEntry(colName, schemeName, {});
+					
+				} else if($this.scheme.expressionType == 'EArray') {
+					debugger;
+				} else {
+					throw new Error('Failed to add something in ' + $this.scheme.expressionType);
+				}
+			});
+		},
+		
+		showPopupTool: function(schemes, targetElt, entryType, entryKey, callback){
 			// prepare list for dialog
 			var itemMap = {};
 			var chosenObjectKey = null;
@@ -166,32 +275,46 @@
 			var skipMap = {
 				'$context': true
 			};
+			var bHasFields = false;
+			var bHasColumns = false;
 			for(var item in itemMap){
 				var category = 'Разное';
 				var valObj = null;
 				
-				if(item && item[0] == '#'){
-					// custom field
-					if(item == '#fieldName'){
-						category = 'Поля';
-						valObj = '$field';
-					}
-				} else {
-					if(skipMap[item]){
+				if(item == '#fieldName' || item == '$fieldName'){
+					if(bHasFields){
 						continue;
 					}
-					var itemDesc = QuerySyntax.getSchema()[item];
-					if(!itemDesc){
-						throw new Error('Unable to find scheme declaration: ' + item);
+					category = 'Поля куба';
+					valObj = item;
+					bHasFields = true;
+				} else if(item == '$fieldExpr') {
+					if(bHasColumns){
+						continue;
 					}
-					if(itemDesc.category){
-						category = itemDesc.category;
+					category = 'Столбцы';
+					valObj = item;
+					bHasColumns = true;
+				} else {
+					if(item && item[0] == '#'){
+						// custom field
+					} else {
+						if(skipMap[item]){
+							continue;
+						}
+						var itemDesc = QuerySyntax.getSchema()[item];
+						if(!itemDesc){
+							throw new Error('Unable to find scheme declaration: ' + item);
+						}
+						if(itemDesc.category){
+							category = itemDesc.category;
+						}
+						valObj = {
+							item: item,
+							desc: itemDesc.desc,
+							title: itemDesc.displayName
+						};
 					}
-					valObj = {
-						item: item,
-						desc: itemDesc.desc,
-						title: itemDesc.displayName
-					};
 				}
 				if(!catMap[category]){
 					catMap[category] = [];
@@ -228,6 +351,19 @@
 					weight: 10.0
 				}],
 				callback: function(desc){
+					var retObj = {
+						key: null,
+						value: null
+					};
+					if(chosenObjectKey){
+						retObj.key = chosenObjectKey;
+						retObj.value = desc;
+					} else {
+						retObj.key = desc;
+					}
+					if(callback){
+						callback.call($this, retObj);
+					}
 				}
 			});
 		},
@@ -310,6 +446,126 @@
 			$this.construct();
 		},
 		
+		drawObjectEntry: function(valName, valScheme, opts){
+			// draw value entry
+			var entryElt = $this.$('<div class="entry"></div>');
+			entryElt.attr('key', valName);
+			$this.container.append(entryElt);
+			
+			// add key
+			var keyElt = $this.$('<div class="key"></div>').attr('title', valName);
+			entryElt.append(keyElt);
+			var keyDecl = QuerySyntax.getSchema()[valName];
+			if(keyDecl && keyDecl.displayName){
+				keyElt.append(keyDecl.displayName);
+			} else {
+				keyElt.text(valName);
+			}
+			
+			// generate replacement schemes
+			var acceptedSchemes = null;
+			
+			
+			// check if it's keyword
+			var bKeyword = false;
+			if($this.scheme.expressionType == 'SingleObject'){
+				acceptedSchemes = $this.combineAcceptedSchemes();
+				if($this.scheme.name == valName){
+					bKeyword = true;
+				}
+			} else if($this.scheme.expressionType == 'ComplexObject'){
+				if($this.scheme.values[valName]){
+					acceptedSchemes = $this.combineAcceptedSchemes(valName);
+					bKeyword = true;
+				} else {
+					if($this.scheme.customKey){
+						acceptedSchemes = $this.combineAcceptedSchemes($this.scheme.customKey);
+					} else {
+						acceptedSchemes = [];
+					}
+				}
+			}
+			
+			if(bKeyword){
+				keyElt.addClass('keyword');
+			}
+			
+			// check if it's output field
+			if($this.scheme.name == '$select'){
+				keyElt.addClass('selectField');
+			}
+			
+			
+			// inject entry substrate if it's not a SingleObject
+			if($this.scheme.expressionType != 'SingleObject'){
+				entryElt.append('<div class="substrate"></div>');
+				$this.installHoverHandlers('entry', valName, keyElt);
+			}
+
+			
+			// add separator
+			var sepElt = $this.$('<div class="separator"><div class="icon"></div></div>');
+			entryElt.append(sepElt);
+			
+			// add value
+			if(!JSB.isDefined($this.value[valName])){
+				// create scope entry
+				var entryScheme = QuerySyntax.getSchema()[valScheme];
+				if(entryScheme.type == 'object'){
+					$this.value[valName] = {};
+				} else if(entryScheme.type == 'array'){
+					$this.value[valName] = [];
+				} else {
+					throw new Error('Unsupported entry type: ' + entryScheme.type);
+				}
+			}
+			
+			var valueEditor = new $class(JSB.merge({}, $this.options, {
+				acceptedSchemes: acceptedSchemes,
+				schemeName: valScheme,
+				scopeName: valName,
+				scope: $this.value,
+				value: $this.value[valName],
+				expanded: false,
+			}));
+			valueEditor.addClass('value');
+			entryElt.append(valueEditor.getElement());
+			
+			// inject value substrate
+			valueEditor.append('<div class="substrate"></div>');
+			
+			// if value is a ComplexObject - inject handle
+			var valScheme = QuerySyntax.getSchema()[valScheme];
+			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
+				var handle = $this.$('<div class="handle"></div>');
+				valueEditor.append(handle);
+				valueEditor.addClass('hasHandle');
+				$this.installHoverHandlers('value', valName, handle, opts);
+				
+				entryElt.addClass('collapsible');
+				if(!$this.options.expanded && $this.scheme.name != '$query'){
+					entryElt.addClass('collapsed');
+				}
+				
+				var cBox = $this.$('<div class="collapsedBox">...</div>');
+				cBox.insertBefore(valueEditor.getElement());
+				cBox.click(function(evt){
+					evt.stopPropagation();
+					entryElt.removeClass('collapsed');
+				});
+				sepElt.click(function(evt){
+					evt.stopPropagation();
+					entryElt.toggleClass('collapsed');
+				});
+			} else if(valScheme.expressionType == 'SingleObject'){
+				var handle = valueEditor.find('> .container > .entry > .key');
+				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
+			} else {
+				$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
+			}
+		},
+
+		
 		construct: function(){
 			if($this.scheme == 1){
 				$this.attr('etype', '1');
@@ -323,103 +579,11 @@
 					
 					var valSchemes = $this.value ? $this.resolve($this.scheme, $this.value) : {};
 					
-					function drawEntry(valName, valScheme, opts){
-						// draw value entry
-						var entryElt = $this.$('<div class="entry"></div>');
-						entryElt.attr('key', valName);
-						$this.container.append(entryElt);
-						
-						
-						// add key
-						var keyElt = $this.$('<div class="key"></div>').attr('title', valName);
-						var keyDecl = QuerySyntax.getSchema()[valName];
-						if(keyDecl && keyDecl.displayName){
-							keyElt.append(keyDecl.displayName);
-						} else {
-							keyElt.text(valName);
-						}
-						if(opts && opts.keyword){
-							keyElt.addClass('keyword');
-						}
-						if(opts && opts.selectField){
-							keyElt.addClass('selectField');
-						}
-						entryElt.append(keyElt);
-						
-						// inject entry substrate if it's not a SingleObject
-						if($this.scheme.expressionType != 'SingleObject'){
-							entryElt.append('<div class="substrate"></div>');
-							$this.installHoverHandlers('entry', valName, keyElt);
-						}
-
-						
-						// add separator
-						var sepElt = $this.$('<div class="separator"><div class="icon"></div></div>');
-						entryElt.append(sepElt);
-						
-						// add value
-						if(!JSB.isDefined($this.value[valName])){
-							// create scope entry
-							var entryScheme = QuerySyntax.getSchema()[valScheme];
-							if(entryScheme.type == 'object'){
-								$this.value[valName] = {};
-							} else if(entryScheme.type == 'array'){
-								$this.value[valName] = [];
-							} else {
-								throw new Error('Unsupported entry type: ' + entryScheme.type);
-							}
-						}
-						
-						var valueEditor = new $class(JSB.merge({}, $this.options, {
-							acceptedSchemes: opts.acceptedSchemes,
-							schemeName: valScheme,
-							scopeName: valName,
-							scope: $this.value,
-							value: $this.value[valName],
-							expanded: false,
-						}));
-						valueEditor.addClass('value');
-						entryElt.append(valueEditor.getElement());
-						
-						// inject value substrate
-						valueEditor.append('<div class="substrate"></div>');
-						
-						// if value is a ComplexObject - inject handle
-						var valScheme = QuerySyntax.getSchema()[valScheme];
-						if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
-							var handle = $this.$('<div class="handle"></div>');
-							valueEditor.append(handle);
-							valueEditor.addClass('hasHandle');
-							$this.installHoverHandlers('value', valName, handle, opts);
-							
-							entryElt.addClass('collapsible');
-							if(!$this.options.expanded && $this.scheme.name != '$query'){
-								entryElt.addClass('collapsed');
-							}
-							
-							var cBox = $this.$('<div class="collapsedBox">...</div>');
-							cBox.insertBefore(valueEditor.getElement());
-							cBox.click(function(evt){
-								evt.stopPropagation();
-								entryElt.removeClass('collapsed');
-							});
-							sepElt.click(function(evt){
-								evt.stopPropagation();
-								entryElt.toggleClass('collapsed');
-							});
-						} else if(valScheme.expressionType == 'SingleObject'){
-							var handle = valueEditor.find('> .container > .entry > .key');
-							$this.installHoverHandlers('value', valName, handle, opts);
-						} else {
-							$this.installHoverHandlers('value', valName, null, opts);
-						}
-					}
-					
+										
 					// draw values
 					if(JSB.isArray($this.scheme.values)){
 						// draw simple object
-						var acceptedSchemes = $this.combineAcceptedSchemes();
-						drawEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme, {keyword: true, acceptedSchemes: acceptedSchemes});
+						$this.drawObjectEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme, {});
 					} else {
 						// construct optional map
 						var optionalMap = {};
@@ -434,7 +598,6 @@
 							debugger;
 						}*/
 						
-						var acceptedSchemes = $this.combineAcceptedSchemes();
 						var schemeValues = Object.keys($this.scheme.values);
 						
 						if($this.scheme.name == '$query'){
@@ -455,14 +618,14 @@
 									if($this.scheme.values[fName]){
 										continue;
 									}
-									drawEntry(fName, valSchemes.obj[fName].scheme, {selectField: $this.scheme.name == '$select', acceptedSchemes: acceptedSchemes[vName]});
+									$this.drawObjectEntry(fName, valSchemes.obj[fName].scheme, {});
 								}
 							} else {
 								if(JSB.isDefined($this.value[vName]) || !optionalMap[vName]){
 									if(!valSchemes.obj[vName]){
 										debugger;
 									}
-									drawEntry(vName, valSchemes.obj[vName].scheme, {keyword: true, acceptedSchemes: acceptedSchemes[vName]});
+									$this.drawObjectEntry(vName, valSchemes.obj[vName].scheme, {});
 								}
 							}
 						}
@@ -545,7 +708,7 @@
 						}
 					});
 					$this.container.append($this.valueEditor.getElement());
-					if($this.value){
+					if(JSB.isDefined($this.value)){
 						$this.valueEditor.setData($this.value);
 					} else {
 						$this.valueEditor.beginEdit();
@@ -559,7 +722,7 @@
 						}
 					});
 					$this.container.append($this.valueEditor.getElement());
-					if($this.value){
+					if(JSB.isDefined($this.value)){
 						$this.valueEditor.setData($this.value);
 					} else {
 						$this.valueEditor.beginEdit();
@@ -571,7 +734,7 @@
 			
 		},
 		
-		combineAcceptedSchemes: function(){
+		combineAcceptedSchemes: function(key){
 			function _combineSchemes(schemeName){
 				var scheme = QuerySyntax.getSchema()[schemeName];
 				if(!scheme){
@@ -591,24 +754,28 @@
 					return [schemeName];
 				}
 			}
-			if(JSB.isObject($this.scheme.values)){
-				var schemes = {};
-				for(var vName in $this.scheme.values){
-					schemes[vName] = _combineSchemes($this.scheme.values[vName]);
-				}
-				return schemes;
-			} else if(JSB.isArray($this.scheme.values)){
-				var schemeMap = {};
-				for(var i = 0; i < $this.scheme.values.length; i++){
-					var schemes = _combineSchemes($this.scheme.values[i]);
-					for(var j = 0; j < schemes.length; j++){
-						schemeMap[schemes[j]] = true;
-					}
-				}
-				
-				return Object.keys(schemeMap);
+			if(key){
+				return _combineSchemes($this.scheme.values[key]);
 			} else {
-				throw new Error('Invalid scheme values format');
+				if(JSB.isObject($this.scheme.values)){
+					var schemes = {};
+					for(var vName in $this.scheme.values){
+						schemes[vName] = _combineSchemes($this.scheme.values[vName]);
+					}
+					return schemes;
+				} else if(JSB.isArray($this.scheme.values)){
+					var schemeMap = {};
+					for(var i = 0; i < $this.scheme.values.length; i++){
+						var schemes = _combineSchemes($this.scheme.values[i]);
+						for(var j = 0; j < schemes.length; j++){
+							schemeMap[schemes[j]] = true;
+						}
+					}
+					
+					return Object.keys(schemeMap);
+				} else {
+					throw new Error('Invalid scheme values format');
+				}
 			}
 		},
 		

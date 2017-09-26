@@ -92,6 +92,17 @@
             }
 
             return this.cube.executeQuery(preparedQuery, params);
+		},
+		
+		getInputFields: function(){
+			$this.getCube().load();
+			var fields = $this.getCube().getManagedFields();
+			var fMap = {};
+			for(var fName in fields){
+				fMap[fName] = fields[fName].type;
+			}
+			
+			return fMap;
 		}
 		
 	}
