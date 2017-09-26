@@ -150,6 +150,7 @@
             {
                 name: 'Данные',
                 type: 'group',
+                multiple: 'true',
                 key: 'data',
                 items: [
                 {
@@ -192,6 +193,14 @@
 			]
 		},
         {
+            name: 'Диаметр внутреннего круга',
+            type: 'item',
+            key: 'innerSize',
+            itemType: 'string',
+            itemValue: '0',
+            description: 'Диаметр внутреннего круга. По умолчанию 0. Диаметр больше 0 делает диаграмму вида бублика. Указывается числовое или процентное значение'
+        },
+        {
             name: 'Цветовая схема по умолчанию',
             key: 'colorScheme',
             type: 'select',
@@ -225,12 +234,12 @@
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
-		
+
 	    _series: {},
 	    _curFilters: {},
 	    _removedFiltersCnt: 0,
 	    _curFilterHash: null,
-		
+
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -253,7 +262,7 @@
         init: function(){
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);
-			
+
             this.getElement().resize(function(){
             	if(!$this.getElement().is(':visible') || !$this.chart){
                     return;
@@ -273,7 +282,7 @@
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
-			
+
 			$base();
 
 // filters section
@@ -325,8 +334,16 @@
                 }
             }
 // end filters section
-
-            var dataValue = this.getContext().find('data').value();
+            var dataValues = this.getContext().find('data').values(),
+                dataSource = [];
+            for(var i = 0; i < dataValues.length; i++){
+                dataSource.push({
+                    name: dataValues[i].get(0),
+                    bName: dataValues[i].get(0).binding()[0],
+                    y: dataValues[i].get(1),
+                    bY: dataValues[i].get(1).binding()[0]
+                });
+            }
 			var tooltipSettings = this.getContext().find('tooltip').value();
 
             $this.getElement().loader();
@@ -335,47 +352,51 @@
                     var data = [];
 
 					try {
-						
-						while(source.next()){
-							var name = dataValue.get(0).value();
-							var y = dataValue.get(1).value();
+                        while(source.next()){
+                            for(var i = 0; i < dataSource.length; i++){
+                                var d = {
+                                    name: dataSource[i].name.value(),
+                                    y: dataSource[i].y.value(),
+                                    sortField: dataSource[i].bName ? dataSource[i].bName : dataSource[i].bY ? dataSource[i].bY : null,
+                                    sortValue: dataSource[i].bName ?  dataSource[i].name.value() : dataSource[i].bY ? dataSource[i].y.value() : null
+                                }
 
-							if(JSB().isArray(name)){
-								for(var j = 0; j < name.length; j++){
-									data.push({
-										name: name[j],
-										y: y[j]
-									});
-								}
-							} else {
-								data.push({
-									name: name,
-									y: y
-								});
-							}
-						}
-						
+                                if(JSB().isArray(d.name)){
+                                    for(var j = 0; j < d.name.length; j++){
+                                        data.push({
+                                            name: d.name[j],
+                                            y: d.y[j],
+                                            sortField: d.bName ? d.bName : d.bY ? d.bY : null,
+                                            sortValue: d.bName ? d.name[j] : d.bY ? d.y[j] : null,
+                                        });
+                                    }
+                                } else {
+                                    data.push(d);
+                                }
+                            }
+                        }
+
 						$this._series = data.reduce(function(arr, el, i){
 							arr[el.name] = i;
 							return arr;
-						}, {});					
-						
+						}, {});
+
 						var colors = [
 							['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
 							["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
 							["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
 							["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
-							["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]							
+							["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]
 						], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-						
+
 						var chartOptions = {
-							
+
 							HighchartsPieChart: {
 								version: 'v-2017-09-21-02'
 							},
-							
+
 							colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
-						
+
 							chart: {
 								plotBackgroundColor: null,
 								plotBorderWidth: null,
@@ -397,7 +418,7 @@
 									showInLegend: true
 								}
 							},
-							
+
 							legend: {
 								rtl: true,
 								layout: 'vertical',
@@ -410,84 +431,85 @@
 								itemMarginBottom: 15,
 								backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
 							},
-							
+
 
 							tooltip: {
-								//valueSuffix: $this.safeGetValue(tooltipSettings, [0]), 
-								pointFormat: $this.safeGetValue(tooltipSettings, [0]) || '{series.name}: <b>{point.percentage:.1f}%</b>' 
+								//valueSuffix: $this.safeGetValue(tooltipSettings, [0]),
+								pointFormat: $this.safeGetValue(tooltipSettings, [0]) || '{series.name}: <b>{point.percentage:.1f}%</b>'
 							},
 
 							credits: {
 								enabled: false
-							},                        
+							},
 
 							series: [{
 								data: data,
 								colorByPoint: true,
+								innerSize: this.getContext().find('innerSize').value(),
 								point: {
-									events: {
-										click: function(evt) {
-											$this._clickEvt = evt;
+                                    events: {
+                                        click: function(evt) {
+                                            $this._clickEvt = evt;
 
-											if(JSB().isFunction($this.options.onClick)){
-												$this.options.onClick.call(this, evt);
-											}
-										},
-										select: function(evt) {
-											var flag = false;
+                                            if(JSB().isFunction($this.options.onClick)){
+                                                $this.options.onClick.call(this, evt);
+                                            }
+                                        },
+                                        select: function(evt) {
+                                            var flag = false;
 
-											if(JSB().isFunction($this.options.onSelect)){
-												flag = $this.options.onSelect.call(this, evt);
-											}
+                                            if(JSB().isFunction($this.options.onSelect)){
+                                                flag = $this.options.onSelect.call(this, evt);
+                                            }
 
-											if(!flag && $this._clickEvt){
-												$this._addPieFilter(evt);
-												$this._clickEvt = null;
-											}
-										},
-										unselect: function(evt) {
-											$this._clickEvt = null;
-											var flag = false;
+                                            if(!flag && $this._clickEvt){
+                                                $this._addPieFilter(evt);
+                                                $this._clickEvt = null;
+                                            }
+                                        },
+                                        unselect: function(evt) {
+                                            $this._clickEvt = null;
+                                            var flag = false;
 
-											if(JSB().isFunction($this.options.onUnselect)){
-												flag = $this.options.onUnselect.call(this, evt);
-											}
+                                            if(JSB().isFunction($this.options.onUnselect)){
+                                                flag = $this.options.onUnselect.call(this, evt);
+                                            }
 
-											if(!flag && $this._removedFiltersCnt === 0){
-												if(Object.keys($this._curFilters).length > 0){
-													if(evt.accumulate){
-														$this.removeFilter($this._curFilters[evt.target.name]);
-														delete $this._curFilters[evt.target.name];
-														$this.refreshAll();
-													} else {
-														for(var i in $this._curFilters){
-															$this.removeFilter($this._curFilters[i]);
-														}
-														$this._curFilters = {};
-														$this.refreshAll();
-													}
-												}
-											} else {
-												$this._removedFiltersCnt--;
-											}
-										},
-										mouseOut: function(evt) {
-											if(JSB().isFunction($this.options.mouseOut)){
-												$this.options.mouseOut.call(this, evt);
-											}
-										},
-										mouseOver: function(evt) {
-											if(JSB().isFunction($this.options.mouseOver)){
-												$this.options.mouseOver.call(this, evt);
-											}
-										}
-									}
-								}								
+                                            if(!flag && $this._removedFiltersCnt === 0){
+                                                if(Object.keys($this._curFilters).length > 0){
+                                                    if(evt.accumulate){
+                                                        $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
+                                                        delete $this._curFilters[evt.target.options.sortValue];
+                                                        $this.refreshAll();
+                                                    } else {
+                                                        for(var i in $this._curFilters){
+                                                            $this.removeFilter($this._curFilters[i]);
+                                                        }
+                                                        $this._curFilters = {};
+                                                        $this.refreshAll();
+                                                    }
+                                                }
+                                            } else {
+                                                $this._removedFiltersCnt--;
+                                            }
+                                        },
+                                        mouseOut: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOut)){
+                                                $this.options.mouseOut.call(this, evt);
+                                            }
+                                        },
+                                        mouseOver: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOver)){
+                                                $this.options.mouseOver.call(this, evt);
+                                            }
+                                        }
+                                    }
+								}
 							}]
 						};
-                    
+
 						$this.container.highcharts(chartOptions);
-						
+
                     } catch(e) {
 						var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
                     	console.log("Exception", [wTypeName, e]);
@@ -495,8 +517,6 @@
                         $this.getElement().loader('hide');
                     }
 					console.log(chartOptions);
-
-                    $this.getElement().loader('hide');
 
                     $this.chart =  $this.container.highcharts();
                 });
@@ -506,18 +526,17 @@
                 return $this.isInit;
             });
         },
-		
+
         _addPieFilter: function(evt){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find('data').value().get(0).binding();
             var fDesc = {
             	sourceId: context.source,
             	type: '$or',
             	op: '$eq',
-            	field: field,
-            	value: evt.target.name
+            	field: evt.target.options.sortField,
+            	value: evt.target.options.sortValue
             };
 
             if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
@@ -530,7 +549,7 @@
                 this._curFilters = {};
             }
 
-            this._curFilters[evt.target.name] = this.addFilter(fDesc);
+            this._curFilters[evt.target.options.sortValue] = this.addFilter(fDesc);
             this.refreshAll();
         },
 		
