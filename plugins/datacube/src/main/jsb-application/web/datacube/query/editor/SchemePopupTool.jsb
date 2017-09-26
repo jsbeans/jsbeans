@@ -66,7 +66,12 @@
 			$this.append($this.categoriesElt);
 			
 			// create item list
-			$this.itemsListBox = new ListBox({});
+			$this.itemsListBox = new ListBox({
+				onSelectionChanged: function(key, item){
+					$this.data.callback.call($this, {scheme: item.scheme, value: key});
+					$this.close();
+				}
+			});
 			$this.itemsListBox.addClass('items');
 			$this.append($this.itemsListBox);
 		},
@@ -87,7 +92,16 @@
 				$this.categoriesElt.removeClass('hidden');
 				
 				// fill categories
-				for(var cat in items){
+				var catArr = Object.keys(items);
+				catArr.sort(function(a, b){
+					if(b == 'Поля куба'){
+						return 1;
+					} else if(a == 'Поля куба'){
+						return -1;
+					}
+					return 0;
+				});
+				for(var i = 0; i < catArr.length; i++){
 					(function(cat){
 						var catEntry = $this.$('<div class="entry"></div>');
 						catEntry.text(cat);
@@ -98,7 +112,7 @@
 						});
 						
 						$this.categoriesElt.append(catEntry);
-					})(cat);
+					})(catArr[i]);
 				}
 				
 				var firstKey = $this.categoriesElt.find('> .entry:first-child').attr('key');
@@ -118,13 +132,49 @@
 			$this.itemsListBox.clear();
 			for(var i = 0; i < items.length; i++){
 				var item = items[i];
-				$this.itemsListBox.addItem({
-					key: item.item,
-					element: `#dot
-						<div class="title">{{=item.title?item.title:item.item}}</div>
-						<div class="desc">{{=item.desc}}</div>
-					`
-				});
+				if(item == '#fieldName' || item == '$fieldName'){
+					var editor = $this.data.data.editor;
+					var slice = editor.options.slice;
+					$this.itemsListBox.getElement().loader();
+					slice.server().getInputFields(function(fields){
+						$this.itemsListBox.getElement().loader('hide');
+						var fArr = Object.keys(fields);
+						fArr.sort(function(a, b){
+							return a.localeCompare(b);
+						});
+						for(var j = 0; j < fArr.length; j++){
+							var fName = fArr[j];
+							var fType = fields[fName];
+							$this.itemsListBox.addItem({
+								key: fName,
+								scheme: item,
+								element: `#dot
+									<div class="field" title="{{=fName}}">
+										<div class="icon"></div>
+										<div class="name">{{=fName}}</div>
+										<div class="paren left">(</div>
+										<div class="type">{{=fType}}</div>
+										<div class="paren right">)</div>
+									</div>
+								`
+							});
+						}
+					});
+					
+				} else if(item == '$fieldExpr') {
+					
+				} else {
+					$this.itemsListBox.addItem({
+						key: item.item,
+						scheme: item.item,
+						element: `#dot
+							<div class="item" scheme="{{=item.item}}">
+								<div class="title">{{=item.title?item.title:item.item}}</div>
+								<div class="desc">{{=item.desc}}</div>
+							</div>
+						`
+					});
+				}
 			}
 		},
 		

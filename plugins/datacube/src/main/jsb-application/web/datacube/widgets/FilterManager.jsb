@@ -79,7 +79,10 @@
 		},
 		
 		clearFilters: function(initiator){
-			
+			var filtersIds = Object.keys($this.filters);
+			for(var i = 0; i < filtersIds.length; i++){
+				$this.removeFilter(filtersIds[i], true);
+			}
 		},
 		
 		hasFilter: function(fDesc){
