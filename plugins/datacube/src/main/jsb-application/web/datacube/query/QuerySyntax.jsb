@@ -908,9 +908,11 @@
 	    return this.schemeExpressions;
     },
 
-    registerMacros: function(name, structure, objectGenerator) {
+    registerMacros: function(def, structure, objectGenerator) {
+        var name = def.name;
         this.macros[name] = {
             name: name,
+            def: def,
             structure: structure,
             objectGenerator: objectGenerator
         };
@@ -918,9 +920,9 @@
         $this.getSchema().$macros.values.push(name);
         new this.ComplexObject({
 	        name: name,
+	        desc: def.desc,
 	        values: (function(){
 	            var values = {};
-	            var valueName;
 	            for (var f in structure) if (structure.hasOwnProperty(f)) {
 	                if (!structure[f].name) {
 	                    throw new Error('Field value descriptor name is not defined for macro ' + name);
@@ -928,6 +930,15 @@
 	                values[f] = structure[f].name;
 	            }
 	            return values;
+	        })(),
+	        optional: (function(){
+	            var optional = [];
+	            for (var f in structure) if (structure.hasOwnProperty(f)) {
+	                if (structure[f].optional) {
+	                    optional.push(f);
+	                }
+	            }
+	            return optional;
 	        })()
         });
         JSB.getLogger().debug('Registered DataCube query macro ' + name);

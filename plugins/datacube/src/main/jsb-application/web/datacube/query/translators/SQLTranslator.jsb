@@ -224,7 +224,10 @@
                         return "'" + exp[op] + "'"
                     } else if (JSB.isNumber(exp[op])) {
                         return '' + exp[op];
+                    } else if (exp[op] == null) {
+                        return 'NULL';
                     }
+                    throw new Error('Unsupported $const type ' + typeof exp[op]);
                 case '$field':
                 case '$context':
                     if (!exp.$field) throw new Error('Field $field is not defined with $context=' + exp.$context);
