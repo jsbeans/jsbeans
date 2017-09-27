@@ -679,6 +679,9 @@
 					return;
 				}
 				$this.server().loadEntryChildren(itemDesc.entry, function(chArr){
+					chArr.sort(function(a, b){
+						return a.name.localeCompare(b.name);
+					});
 					var parentKey = treeNode.key;
 					for(var i = 0; i < chArr.length; i++){
 						var chDesc = chArr[i];

@@ -28,7 +28,11 @@
 			var scrollBox = new ScrollBox();
 			vSplitBox.addToPane(0, scrollBox);
 			
-			this.queryEditor = new QueryEditor();
+			this.queryEditor = new QueryEditor({
+				onChange: function(){
+					$this.updateGrid();
+				}
+			});
 			this.queryEditor.addClass('queryEditor');
 			scrollBox.append(this.queryEditor);
 
@@ -48,14 +52,20 @@
 		},
 		
 		refresh: function(){
-			var entry = this.node.getEntry();
-			if(!JSB.isInstanceOf(entry, 'DataCube.Model.Slice')){
+			this.slice = this.node.getEntry();
+			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
 			}
-			this.queryEditor.setOption('slice', entry);
-			this.queryEditor.set(entry.getQuery());
+			this.query = JSB.clone(this.slice.getQuery());
+			this.queryEditor.setOption('slice', this.slice);
+			this.queryEditor.set(this.query);
+			
+			this.updateGrid();
 		},
 		
+		updateGrid: function(){
+			this.gridView.updateData(this.slice, this.query);
+		}
 	},
 	
 	$server: {

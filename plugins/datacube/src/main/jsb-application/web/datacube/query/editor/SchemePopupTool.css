@@ -46,7 +46,7 @@
 	vertical-align: top;
 	background-color: #e8d9c8;
 	width: 350px;
-    min-height: 180px;
+    min-height: 200px;
     max-height: 300px;
 	border: 1px solid rgb(197, 153, 90);
     border-radius: 4px;
@@ -82,7 +82,7 @@
 
 .schemePopupTool > .items li._dwp_listBoxItem > .field,
 .schemePopupTool > .items li._dwp_listBoxItem > .column {
-	padding-left: 16px;
+	padding-left: 14px;
 	position: relative;
     overflow: hidden;
 	white-space: nowrap;
@@ -118,6 +118,14 @@
 	max-width: 80%;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.schemePopupTool > .items li._dwp_listBoxItem > .field > .name {
+	color: #28436d;
+}
+
+.schemePopupTool > .items li._dwp_listBoxItem > .column > .name {
+	color: #0a540a;
 }
 
 .schemePopupTool > .items li._dwp_listBoxItem > .field > .type,
