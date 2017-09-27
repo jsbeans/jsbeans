@@ -569,9 +569,14 @@
 		drawObjectEntry: function(valName, valScheme, opts){
 			opts = opts || {};
 			// draw value entry
-			var entryElt = $this.$('<div class="entry"></div>');
-			entryElt.attr('key', valName);
-			$this.container.append(entryElt);
+			var entryElt = $this.container.find('> .entry[key="'+valName+'"]');
+			if(entryElt.length == 0){
+				entryElt = $this.$('<div class="entry"></div>');
+				entryElt.attr('key', valName);
+				$this.container.append(entryElt);
+			} else {
+				entryElt.empty();
+			}
 			
 			// add key
 			var keyElt = $this.$('<div class="key"></div>').attr('title', valName);
@@ -692,10 +697,14 @@
 			var curVal = $this.value[i];
 			
 			var acceptedSchemes = $this.combineAcceptedSchemes();
-			
-			var entryElt = $this.$('<div class="entry"></div>');
-			entryElt.attr('key', i);
-			$this.container.append(entryElt);
+			var entryElt = $this.container.find('> .entry[key="'+i+'"]');
+			if(entryElt.length == 0){
+				entryElt = $this.$('<div class="entry"></div>');
+				entryElt.attr('key', i);
+				$this.container.append(entryElt);
+			} else {
+				entryElt.empty();
+			}
 			
 			var keyElt = $this.$('<div class="handle key"><div class="icon"></div></div>');
 			
