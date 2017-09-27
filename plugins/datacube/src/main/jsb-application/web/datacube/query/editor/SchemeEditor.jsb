@@ -9,6 +9,10 @@
 	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
+		options: {
+			onChange: function(){}
+		},
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('SchemeEditor.css')
@@ -33,23 +37,7 @@
 				}
 			});
 			$this.append($this.btnAdd);
-/*
-			$this.btnEdit = new Button({
-				cssClass: 'roundButton btn10 btnEdit',
-				tooltip: 'Редактировать',
-				onClick: function(){
-					if($this.scheme.expressionType == 'EConstString' || $this.scheme.expressionType == 'EConstNumber'){
-						if($this.valueEditor){
-							JSB.defer(function(){
-								$this.valueEditor.beginEdit();	
-							});
-							
-						}
-					}
-				}
-			});
-			$this.append($this.btnEdit);
-*/
+			
 			if(JSB.isDefined($this.value)){
 				$this.refresh();
 			}
@@ -82,6 +70,12 @@
 				});
 					
 			});
+		},
+		
+		notifyChanged: function(){
+			if($this.options.onChange){
+				$this.options.onChange.call($this);
+			}
 		},
 		
 		installHoverHandlers: function(entryType, entryKey, handle, opts){
@@ -120,11 +114,12 @@
 				},
 				click: function(evt){
 					evt.stopPropagation();
-					$this.showHoverMenu(entryType, entryKey, opts);
+					$this.doReplace($this.$(evt.currentTarget), entryType, entryKey);
+					//$this.showHoverMenu(entryType, entryKey);
 				}
 			});
 		},
-		
+/*		
 		showHoverMenu: function(entryType, entryKey, opts){
 			if(entryType == 'entry'){
 				return;
@@ -137,7 +132,7 @@
 			}
 			$this.showPopupTool(opts.acceptedSchemes, hoverElt, entryType, entryKey);
 		},
-		
+*/		
 		combineQueries: function(){
 			// search for root query
 			var queryMap = {};
@@ -261,7 +256,7 @@
 					var colName = null;
 					var value = null;
 					var schemeName = null;
-					debugger;
+					var context = null;
 					// detect key
 					if(JSB.isString(chosenObj.key)){
 						if($this.scheme.name == '$select' && chosenObj.key == '#outputFieldName'){
@@ -279,16 +274,21 @@
 						// resolve via value scheme
 						schemeName = chosenObj.value.scheme;
 						value = chosenObj.value.value;
+						context = chosenObj.value.context;
 					} else {
 						// detect via key scheme
 						schemeName = chosenObj.key.scheme;
 						value = chosenObj.key.value;
+						context = chosenObj.key.context;
 					}
 					
 					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
 						
 					} else if(schemeName == '$fieldExpr') {
-						
+						value = {
+							$field: value,
+							$context: context
+						};
 					} else {
 						value = $this.constructEmptyValue(schemeName);
 					}
@@ -296,15 +296,18 @@
 					$this.value[colName] = value;
 					// draw entry
 					$this.drawObjectEntry(colName, schemeName, {expanded: true});
-					
+					$this.notifyChanged();
 				} else if($this.scheme.expressionType == 'EArray') {
-					debugger;
 					var value = chosenObj.key.value;
+					var context = chosenObj.key.context;
 					var schemeName = chosenObj.key.scheme;
 					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
 						
 					} else if(schemeName == '$fieldExpr') {
-						
+						value = {
+							$field: value,
+							$context: context
+						};
 					} else {
 						value = $this.constructEmptyValue(schemeName);
 					}
@@ -312,10 +315,47 @@
 					$this.value.push(value);
 					// draw entry
 					$this.drawArrayEntry($this.value.length - 1, schemeName, {expanded: true});
-					
+					$this.notifyChanged();
 				} else {
 					throw new Error('Unable to add something in ' + $this.scheme.expressionType);
 				}
+			});
+		},
+		
+		doReplace: function(targetElt, entryType, entryKey){
+			if(entryType == 'entry'){
+				return;
+			}
+			var acceptedSchemes = null;
+			if(JSB.isObject($this.scheme.values) && JSB.isDefined($this.scheme.values[entryKey])){
+				acceptedSchemes = $this.combineAcceptedSchemes(entryKey);
+			} else if(JSB.isObject($this.scheme.values) && $this.scheme.customKey){
+				acceptedSchemes = $this.combineAcceptedSchemes($this.scheme.customKey);
+			} else {
+				acceptedSchemes = $this.combineAcceptedSchemes();
+			}
+			$this.showPopupTool(acceptedSchemes, targetElt, entryType, entryKey, function(chosenObj){
+				debugger;
+				var value = chosenObj.key.value;
+				var context = chosenObj.key.context;
+				var schemeName = chosenObj.key.scheme;
+				if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+					
+				} else if(schemeName == '$fieldExpr') {
+					value = {
+						$field: value,
+						$context: context
+					};
+				} else {
+					value = $this.constructEmptyValue(schemeName);
+				}
+				$this.value[entryKey] = value;
+				if(JSB.isArray($this.value)){
+					$this.drawArrayEntry(entryKey, schemeName, {expanded: true});
+				} else {
+					$this.drawObjectEntry(entryKey, schemeName, {expanded: true});
+				}
+				$this.notifyChanged();
 			});
 		},
 		
@@ -529,9 +569,14 @@
 		drawObjectEntry: function(valName, valScheme, opts){
 			opts = opts || {};
 			// draw value entry
-			var entryElt = $this.$('<div class="entry"></div>');
-			entryElt.attr('key', valName);
-			$this.container.append(entryElt);
+			var entryElt = $this.container.find('> .entry[key="'+valName+'"]');
+			if(entryElt.length == 0){
+				entryElt = $this.$('<div class="entry"></div>');
+				entryElt.attr('key', valName);
+				$this.container.append(entryElt);
+			} else {
+				entryElt.empty();
+			}
 			
 			// add key
 			var keyElt = $this.$('<div class="key"></div>').attr('title', valName);
@@ -652,10 +697,14 @@
 			var curVal = $this.value[i];
 			
 			var acceptedSchemes = $this.combineAcceptedSchemes();
-			
-			var entryElt = $this.$('<div class="entry"></div>');
-			entryElt.attr('key', i);
-			$this.container.append(entryElt);
+			var entryElt = $this.container.find('> .entry[key="'+i+'"]');
+			if(entryElt.length == 0){
+				entryElt = $this.$('<div class="entry"></div>');
+				entryElt.attr('key', i);
+				$this.container.append(entryElt);
+			} else {
+				entryElt.empty();
+			}
 			
 			var keyElt = $this.$('<div class="handle key"><div class="icon"></div></div>');
 			
@@ -694,6 +743,20 @@
 			}
 
 		},
+		
+		
+		constructHeuristic: function(){
+			if($this.scheme.name == '$fieldName'){
+				var valElt = $this.$('<div class="value"></div>').text($this.value);
+				$this.container.append(valElt);
+				return true;
+			} else if($this.scheme.name == '$fieldExpr'){
+				$this.container.append($this.$('<div class="value"></div>').text($this.value['$field']));
+				$this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
+				return true;
+			}
+			return false;
+		},
 
 		
 		construct: function(){
@@ -703,6 +766,13 @@
 			} else {
 				$this.attr('etype', $this.scheme.expressionType);
 				$this.attr('sname', $this.scheme.name);
+				
+				if($this.constructHeuristic()){
+					$this.attr('heuristic', true);
+					return;
+				} else {
+					$this.attr('heuristic', false);
+				}
 				
 				if($this.scheme.expressionType == 'ComplexObject' 
 					|| $this.scheme.expressionType == 'SingleObject'){

@@ -146,19 +146,22 @@
             this._updateData(this.curData);
 		},
 		
-		updateData: function(source){
+		updateData: function(source, query){
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-			    this._updateData(source);
+			    this._updateData({
+			    	cube: source.getCube(),
+			    	query: query || source.getQuery()
+			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
 			    this._updateData({
 			        cube: source.cube,
 			        provider: source,
-                    query: { $select: {}}
+                    query: query || { $select: {}}
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Model.Cube')){
             	this._updateData({
             	cube: source,
-            	query: { $select: {}}
+            	query: query || { $select: {}}
             	});
 			} else {
 				throw new Error('Unsupported node type: ' + source.getJsb().$name);

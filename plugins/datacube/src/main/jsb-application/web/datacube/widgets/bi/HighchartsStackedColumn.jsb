@@ -271,7 +271,7 @@
                     key: 'stack',
                     itemType: 'string',
                     description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
-                }                
+                },
                 /*,
                 {
                     type: 'group',
@@ -308,6 +308,14 @@
 	                    itemType: 'string'
 	                }]
                 }*/
+                {
+                    name: 'Показывать по умолчанию',
+                    type: 'item',
+                    key: 'visible',
+                    editor: 'none',
+                    optional: 'checked',
+                    description: 'Показывать по умолчанию указанную серию на графике.'
+                }
                 ]
             }
             ]
@@ -792,6 +800,7 @@
 												symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
 											},
 											*/
+											visible: seriesContext[i].find('visible').used(),
 											point: {
                                                                                         events: {
                                                                                             click: function(evt) {
