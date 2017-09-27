@@ -157,7 +157,7 @@
                 '$toInt', '$toDouble', '$toBoolean', '$toDate',
                 '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
                 '$distinct',
-                '$sum', '$count','$min', '$max', '$avg',
+                '$last','$first', '$sum', '$count','$min', '$max', '$avg',
                 '$array', '$flatArray', '$expandArray',
                 '$gsum', '$gcount', '$gmin', '$gmax',
                 '$grmaxsum', '$grmaxcount', '$grmaxavg',
@@ -368,6 +368,20 @@
 	        category: 'Функции',
 	        desc: 'Eliminate duplicate values',
 	        values: ['$field', '$expression'],
+	    });
+	    new this.SingleObject({
+	        name: '$first',
+	        category: 'Операторы агрегации',
+	        desc: 'Return first value',
+	        aggregate: true,
+	        values: ['$const', '$expression', '$query', '$field', '$param', 1],
+	    });
+	    new this.SingleObject({
+	        name: '$last',
+	        category: 'Операторы агрегации',
+	        desc: 'Return last value',
+	        aggregate: true,
+	        values: ['$const', '$expression', '$query', '$field', '$param', 1],
 	    });
 	    new this.SingleObject({
 	        name: '$sum',
@@ -888,6 +902,8 @@
 	macros: {},
 
     schemaAggregateOperators: {
+        $first: {},
+        $last: {},
         $sum: {},
         $count: {},
         $min: {},
