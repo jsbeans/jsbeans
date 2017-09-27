@@ -249,6 +249,8 @@
                 case '$divz':
                     return translateDivzOperator(exp[op]);
 
+                case '$concat':
+                    return 'CONCAT' + translateNOperator(exp[op], ',');
             }
 
             // transform operators
@@ -294,6 +296,10 @@
             switch(op) {
                 case '$distinct':
                     return 'DISTINCT(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                case '$first':
+                    return 'FIRST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                case '$last':
+                    return 'LAST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$count':
                     return 'COUNT(' + this._translateExpression(null, exp[op], dcQuery) + ')';
                 case '$sum':
