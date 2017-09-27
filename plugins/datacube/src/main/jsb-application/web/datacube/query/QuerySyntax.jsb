@@ -153,7 +153,7 @@
 	        values: [
                 '$add', '$sub', '$mul', '$div', '$divz', '$mod',
                 '$greatest', '$least',
-                '$splitString', '$substring', '$trim',
+                '$splitString', '$substring', '$trim', '$concat',
                 '$toInt', '$toDouble', '$toBoolean', '$toDate',
                 '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
                 '$distinct',
@@ -293,6 +293,21 @@
 	            '$field': '$valueDefinition',
 	            '$separator': '$constString'
             }
+	    });
+
+
+	    new this.SingleObject({
+	        name: '$concat',
+	        displayName: 'concat',
+	        category: 'Функции',
+	        desc: 'String concatenation',
+	        values: ['$concatValues'],
+	    });
+	    new this.EArray({
+	        name: '$concatValues',
+	        minOperands: 2,
+	        maxOperands: -1,
+	        values: ['$expression', '$query', '$field', '$const', '$param'],
 	    });
 	    
 	    new this.ComplexObject({
