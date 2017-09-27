@@ -88,7 +88,39 @@
             	var qDesc = this.cube.parametrizeQuery(extQuery);
             	params = qDesc.params;
             	
-	           	JSB.merge(preparedQuery, qDesc.query);
+            	// merge queries
+            	if(qDesc.query.$filter && Object.keys(qDesc.query.$filter).length > 0){
+            		if(preparedQuery.$filter){
+            			preparedQuery.$filter = {$and:[preparedQuery.$filter, qDesc.query.$filter]}
+            		} else {
+            			preparedQuery.$filter = qDesc.query.$filter;
+            		}
+            	}
+            	
+            	if(qDesc.query.$postFilter && Object.keys(qDesc.query.$postFilter).length > 0){
+            		if(preparedQuery.$postFilter){
+            			preparedQuery.$postFilter = {$and:[preparedQuery.$postFilter, qDesc.query.$postFilter]}
+            		} else {
+            			preparedQuery.$postFilter = qDesc.query.$postFilter;
+            		}
+            	}
+            	
+            	if(qDesc.query.$sort){
+            		preparedQuery.$sort = qDesc.query.$sort;
+            	}
+            	
+            	if(qDesc.query.$select){
+            		JSB.merge(preparedQuery.$select, qDesc.query.$select);
+            	}
+
+            	if(qDesc.query.$groupBy){
+            		if(!preparedQuery.$groupBy){
+            			preparedQuery.$groupBy = qDesc.query.$groupBy;
+            		} else {
+            			JSB.merge(preparedQuery.$groupBy, qDesc.query.$groupBy);
+            		}
+            	}
+
             }
 
             return this.cube.executeQuery(preparedQuery, params);
