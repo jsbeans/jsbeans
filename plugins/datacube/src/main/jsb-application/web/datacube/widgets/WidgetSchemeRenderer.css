@@ -111,6 +111,7 @@
 .widgetSchemeRenderer.hasHeader > .body {
 	padding-left: 5px;
     margin-top: 3px;
+    overflow: visible;
 }
 
 .widgetSchemeRenderer.hasHeader:not(.collapsable):not(.hasMultiple) > .body {
@@ -372,16 +373,14 @@
     width: 100%;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .body
-{
-    overflow: hidden;
+.widgetSchemeRenderer[entry="group"].collapsable > .body {
     transition: max-height 0.3s ease;
     max-height: 9000px;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .body.collapsed
-{
+.widgetSchemeRenderer[entry="group"].collapsable > .body.collapsed {
     max-height: 0px;
+    overflow: hidden;
 }
 
 .widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-down {

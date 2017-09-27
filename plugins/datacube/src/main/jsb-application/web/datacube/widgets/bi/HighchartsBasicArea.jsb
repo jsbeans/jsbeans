@@ -347,7 +347,8 @@
 	                    key: 'markerSymbol',
 	                    itemType: 'string'
 	                }]
-                }/*,
+                },
+                /*,
                 
                 {
                     name: 'Стек',
@@ -355,6 +356,14 @@
                     itemType: 'string',
                     description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
                 }*/
+                {
+                    name: 'Показывать по умолчанию',
+                    type: 'item',
+                    key: 'visible',
+                    editor: 'none',
+                    optional: 'checked',
+                    description: 'Показывать по умолчанию указанную серию на графике.'
+                }
                 ]
             }
             ]
@@ -537,6 +546,7 @@
 						                    // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
 						                    symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
 	                                    },
+	                                    visible: seriesContext[i].find('visible').used(),
 	                                    point: {
 	                                        events: {
 	                                            click: function(evt) {

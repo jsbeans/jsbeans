@@ -269,6 +269,14 @@
                     key: 'stack',
                     itemType: 'string',
                     description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
+                },
+                {
+                    name: 'Показывать по умолчанию',
+                    type: 'item',
+                    key: 'visible',
+                    editor: 'none',
+                    optional: 'checked',
+                    description: 'Показывать по умолчанию указанную серию на графике.'
                 }
                 ]
             },
@@ -405,6 +413,7 @@
                                         yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
                                         dashStyle: seriesContext[i].get(5).value().name(),
                                         color: $this.isNull(seriesContext[i].get(6).value()),
+                                        visible: seriesContext[i].find('visible').used(),
                                         point: {
                                             events: {
                                                 click: function(evt) {
