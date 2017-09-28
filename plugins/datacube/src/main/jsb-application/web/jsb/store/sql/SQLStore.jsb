@@ -181,21 +181,20 @@
 		},
 
 		close: function() {
-		debugger;
 		    // close all JDBC connections and clear pull
             JSB.locked($this, 'connection', function() {
-                var ids = Object.keys(this.connections);
+                var ids = Object.keys($this.connections);
                 for (var i in ids) {
                     var id = ids[i];
-                    var conn = this.connections[conn.id];
+                    var conn = $this.connections[id];
                     if (conn.jdbcConnection) {
                         if (conn.deferredCloseKey) {
                             JSB.cancelDefer(conn.deferredCloseKey);
                         }
-                        cn.jdbcConnection.close();
-                        cn.jdbcConnection = null;
+                        conn.jdbcConnection.close();
+                        conn.jdbcConnection = null;
                     }
-                    delete this.connections[conn.id];
+                    delete $this.connections[conn.id];
                 }
             });
 
