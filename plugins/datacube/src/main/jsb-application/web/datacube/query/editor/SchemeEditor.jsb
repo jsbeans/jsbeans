@@ -13,6 +13,9 @@
 			onChange: function(){}
 		},
 		
+		collapsible: false,
+		handle: null,
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('SchemeEditor.css')
@@ -24,6 +27,8 @@
 			$this.scope = opts.scope;
 			$this.scopeName = opts.scopeName;
 			$this.value = opts.value;
+			
+			$this.handle = $this.getElement();
 			
 			$this.container = $this.$('<div class="container"></div>');
 			$this.append($this.container);
@@ -76,6 +81,10 @@
 			if($this.options.onChange){
 				$this.options.onChange.call($this);
 			}
+		},
+		
+		isCollapsible: function(){
+			return this.collapsible;
 		},
 		
 		installHoverHandlers: function(entryType, entryKey, handle, opts){
@@ -617,10 +626,15 @@
 			}
 			
 			// check if it's output field
-			if($this.scheme.name == '$select'){
+			if($this.scheme.name == '$select' || $this.scheme.name == '$sortField'){
 				keyElt.addClass('selectField');
 			}
-			
+
+			// check if it's filter field
+			if($this.scheme.name == '$filter'){
+				keyElt.addClass('filterField');
+			}
+
 			
 			// inject entry substrate if it's not a SingleObject
 			if($this.scheme.expressionType != 'SingleObject'){
@@ -661,14 +675,7 @@
 			// inject value substrate
 			valueEditor.append('<div class="substrate"></div>');
 			
-			// if value is a ComplexObject - inject handle
-			var valScheme = QuerySyntax.getSchema()[valScheme];
-			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
-				var handle = $this.$('<div class="handle"></div>');
-				valueEditor.append(handle);
-				valueEditor.addClass('hasHandle');
-				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
-				
+			if(valueEditor.isCollapsible()){
 				entryElt.addClass('collapsible');
 				if(!$this.options.expanded && !opts.expanded && $this.scheme.name != '$query'){
 					entryElt.addClass('collapsed');
@@ -680,12 +687,25 @@
 					evt.stopPropagation();
 					entryElt.removeClass('collapsed');
 				});
+				
 				sepElt.click(function(evt){
 					evt.stopPropagation();
 					entryElt.toggleClass('collapsed');
 				});
+
+			} else {
+				entryElt.removeClass('collapsible');
+				entryElt.removeClass('collapsed');
+			}
+			
+			// if value is a ComplexObject - inject handle
+			var valScheme = QuerySyntax.getSchema()[valScheme];
+			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
+				var handle = valueEditor.getHandle();
+				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
+				
 			} else if(valScheme.expressionType == 'SingleObject'){
-				var handle = valueEditor.find('> .container > .entry > .key');
+				var handle = valueEditor.getHandle();
 				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
 			} else {
 				$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
@@ -731,12 +751,10 @@
 			
 			var valScheme = QuerySyntax.getSchema()[valScheme];
 			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
-				var handle = $this.$('<div class="handle"></div>');
-				valueEditor.append(handle);
-				valueEditor.addClass('hasHandle');
+				var handle = valueEditor.getHandle();
 				$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
 			} else if(valScheme.expressionType == 'SingleObject'){
-				var handle = valueEditor.find('> .container > .entry > .key');
+				var handle = valueEditor.getHandle();
 				$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
 			} else {
 				$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
@@ -744,6 +762,9 @@
 
 		},
 		
+		getHandle: function(){
+			return $this.handle;
+		},
 		
 		constructHeuristic: function(){
 			if($this.scheme.name == '$fieldName'){
@@ -779,6 +800,9 @@
 					
 					var valSchemes = $this.value ? $this.resolve($this.scheme, $this.value) : {};
 					
+					if($this.scheme.expressionType == 'ComplexObject'){
+						$this.collapsible = true;
+					}
 										
 					// draw values
 					if(JSB.isArray($this.scheme.values)){
@@ -837,6 +861,15 @@
 							}
 						}
 					}
+					
+					if($this.scheme.expressionType == 'ComplexObject'){
+						$this.handle = $this.$('<div class="handle"></div>');
+						$this.append($this.handle);
+						$this.addClass('hasHandle');
+					} else {
+						$this.handle = $this.find('> .container > .entry > .key');
+					}
+
 				} else if($this.scheme.expressionType == 'EArray'){
 					if($this.value && !JSB.isArray($this.value)){
 						$this.value = $this.scope[$this.scopeName] = [$this.value];
@@ -848,6 +881,12 @@
 							$this.drawArrayEntry(i, valSchemes.obj[i].scheme);
 						}
 					}
+					
+					$this.handle = $this.$('<div class="handle"></div>');
+					$this.append($this.handle);
+					$this.addClass('hasHandle');
+					$this.collapsible = true;
+
 				} else if($this.scheme.expressionType == 'Group'){
 					throw new Error('Unable to render Group');
 				} else if($this.scheme.expressionType == 'EConstBoolean'){
