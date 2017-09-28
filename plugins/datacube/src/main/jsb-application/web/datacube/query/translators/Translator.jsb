@@ -45,9 +45,6 @@
 		
             function isLinkedWithSelfProviders(exp, byKeyField, byValueField){
                 var provs = $this._extractUsedProviders(dcQuery, exp, byKeyField, byValueField, true);
-                if (provs.length > 1) {
-                    throw new Error('Expression links with some providers - ' + JSON.stringify(exp));
-                }
                 if (provs.length == 0) {
                     // abstract aggregators (sum:1, count:1) - find groupBy provider
                     if (dcQuery.$groupBy && dcQuery.$groupBy[0]) {
@@ -56,9 +53,13 @@
                             return true;
                         }
                     }
-                } else if($this.providers.indexOf(provs[0]) != -1) {
-                    // use only current provider fields
-                    return true;
+                } else {
+                    for (var i in provs) {
+                        if($this.providers.indexOf(provs[i]) != -1) {
+                            // use only current provider fields
+                            return true;
+                        }
+                    }
                 }
             }
 
