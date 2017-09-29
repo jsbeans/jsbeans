@@ -165,7 +165,7 @@
 		
 		    new this.Group({
 		    	name: '$valueDefinition',
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		
 		    new this.Group({
@@ -416,28 +416,28 @@
 		         name: '$trim',
 		         category: 'Функции',
 		         desc: 'Удалить пробельные символы в начале и в конце строки',
-		         values: ['$const', '$expression', '$query', '$field', '$param'],
+		         values: ['$field', '$const', '$expression', '$query', '$param'],
 		     });
 		    new this.SingleObject({
 		        name: '$first',
 		        category: 'Операторы агрегации',
 		        desc: 'Вернуть первое значение в группе',
 		        aggregate: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', 1, '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$last',
 		        category: 'Операторы агрегации',
 		        desc: 'Вернуть последнее значение в группе',
 		        aggregate: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', 1, '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$sum',
 		        category: 'Операторы агрегации',
 		        desc: 'Суммировать значения в группе',
 		        aggregate: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', 1, '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$count',
@@ -451,41 +451,41 @@
 		        category: 'Операторы агрегации',
 		        desc: 'Вернуть минимальное значение в группе',
 		        aggregate: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$max',
 		        category: 'Операторы агрегации',
 		        desc: 'Вернуть максимальное значение в группе',
 		        aggregate: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$avg',
 		        category: 'Операторы агрегации',
 		        desc: 'Вычислить среднее значение в группе (NULL в расчетах не участвует)',
 		        aggregate: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$array',
 		        category: 'Операторы агрегации',
 		        desc: 'Поместить все элементы группы в массив',
 		        aggregate: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$flatArray',
 		        category: 'Операторы агрегации',
 		        desc: 'Объединить все массивы в группы в один массив',
 		        aggregate: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$expandArray',
 		        category: 'Операторы агрегации',
 		        desc: 'Разложить элементы массива в группу элементов',
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$gsum',
@@ -509,7 +509,7 @@
 		        desc: 'Вернуть минимальное значение в таблице (минимальное среди всех групп)',
 		        aggregate: true,
 		        global: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$gmax',
@@ -517,7 +517,7 @@
 		        desc: 'Вернуть максимальное значение в таблице (максимальное среди всех групп)',
 		        aggregate: true,
 		        global: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$grmaxsum',
@@ -541,7 +541,7 @@
 		        desc: 'Вернуть значение с максимальным средним в группе (найти группу с максимальным арифметическим средним)',
 		        aggregate: true,
 		        global: true,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		
 		
@@ -551,7 +551,7 @@
 		        desc: 'Выражения для группировки элементов',
 		        minOperands: 1,
 		        maxOperands: -1,
-		        values: ['$expression', '$field'],
+		        values: ['$field', '$expression'],
 		    });
 		
 		    new this.ComplexObject({
@@ -602,7 +602,8 @@
 		            '$ilike': '$ilikeExpr',
 		            '$in': '$inExpr',
 		            '$nin': '$ninExpr',
-		        }
+		        },
+		        optional: ['#outputFieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
 		    });
 		
 		    // valueCondition
@@ -892,7 +893,7 @@
 		
 		    new this.Group({
 		        name: '$field',
-		        values: ['$fieldExpr', '$fieldName'],
+		        values: ['$fieldName', '$fieldExpr'],
 		    });
 		    
 		    new this.ComplexObject({

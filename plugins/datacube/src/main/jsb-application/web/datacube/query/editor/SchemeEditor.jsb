@@ -201,8 +201,18 @@
 			return colMap;
 		},
 		
-		chooseBestGroupField: function(){
+		chooseBestCubeField: function(){
 			return Object.keys($this.options.cubeFields)[0];
+		},
+		
+		chooseBestColumn: function(){
+			var colMap = $this.combineColumns();
+			for(var qName in colMap){
+				if(colMap[qName].length > 0){
+					return colMap[qName][0];
+				}
+			} 
+			return $this.chooseBestCubeField();
 		},
 		
 		constructEmptyValue: function(schemeName){
@@ -210,15 +220,61 @@
 			if(schemeName == 1){
 				return 1;
 			}
+			
+			function generateColumnName(){
+				var prefix = 'Столбец';
+				for(var idx = 1;; idx++){
+					var suggestedName = prefix + '_' + idx;
+					if(!$this.value[suggestedName]){
+						return suggestedName;
+					}
+				}
+			}
+			
 			var schemeDesc = QuerySyntax.getSchema()[schemeName];
-			if(schemeDesc.expressionType == 'ComplexObject'){
-				value = {};
-			} else if(schemeDesc.expressionType == 'SingleObject'){
+			if(schemeDesc.expressionType == 'ComplexObject' || schemeDesc.expressionType == 'SingleObject'){
 				value = {};
 				
-				// take first allowed scheme values
-				var schemeVal = $this.combineAcceptedSchemes(schemeDesc)[0];
-				value[schemeDesc.name] = $this.constructEmptyValue(schemeVal);
+				var schemeVal = $this.combineAcceptedSchemes(schemeDesc);
+				if(JSB.isArray(schemeVal)){
+					value[schemeDesc.name] = $this.constructEmptyValue(schemeVal[0]);
+				} else {
+					var optMap = {};
+					if(schemeDesc.optional && schemeDesc.optional.length > 0){
+						for(var i = 0; i < schemeDesc.optional.length; i++){
+							if((schemeDesc.name == '$filter' && schemeDesc.optional[i] == '#fieldName')
+								||(schemeDesc.name == '$postFilter' && schemeDesc.optional[i] == '#outputFieldName')){
+								continue;	// use field name always
+							}
+							optMap[schemeDesc.optional[i]] = true;
+						}	
+					}
+					
+					for(var vName in schemeVal){
+						if(optMap[vName]){
+							continue;
+						}
+						
+						var fName = vName;
+						
+						if(schemeDesc.customKey && schemeDesc.customKey == vName){
+							if(schemeDesc.name == '$filter' && vName == '#fieldName'){
+								fName = $this.chooseBestCubeField();
+							} else if(schemeDesc.name == '$sortField' && vName == '#anyFieldName'){
+								fName = $this.chooseBestColumn();
+							} else if(schemeDesc.name == '$select' && vName == '#outputFieldName'){
+								fName = generateColumnName();
+							} else if(schemeDesc.name == '$postFilter' && vName == '#outputFieldName'){
+								fName = $this.chooseBestColumn();
+							} else {
+								debugger;	
+							}
+						} 
+						
+						value[fName] = $this.constructEmptyValue(schemeVal[vName][0]);
+					}
+				}
+				
 			} else if(schemeDesc.expressionType == 'EArray') {
 				value = [];
 				switch(schemeDesc.name){
@@ -235,11 +291,12 @@
 					value.push({$const:1});
 					break;
 				case '$groupBy':
-					value.push($this.chooseBestGroupField());
+					value.push($this.chooseBestCubeField());
 					break;
 				default:
+					var schemeVal = $this.combineAcceptedSchemes(schemeDesc)[0];
 					for(var i = 0; i < schemeDesc.minOperands; i++){
-						value.push({$const:0});
+						value.push($this.constructEmptyValue(schemeVal));
 					}
 				}
 			} else if(schemeDesc.expressionType == 'EConstBoolean'){
@@ -249,11 +306,14 @@
 					value = false;
 				}
 			} else if(schemeDesc.expressionType == 'EConstString'){
-				if(JSB.isDefined(schemeDesc.value)){
+				if(schemeDesc.name == '$fieldName'){
+					value = $this.chooseBestCubeField();
+				} else if(JSB.isDefined(schemeDesc.value)){
 					value = schemeDesc.value;
 				} else {
 					value = "";
 				}
+				
 			} else if(schemeDesc.expressionType == 'EConstNumber'){
 				if(JSB.isDefined(schemeDesc.value)){
 					value = schemeDesc.value;
@@ -439,7 +499,7 @@
 					category = 'Поля куба';
 					valObj = item;
 					bHasFields = true;
-				} else if(item == '$fieldExpr') {
+				} else if(item == '#outputFieldName' || item == '$fieldExpr') {
 					if(bHasColumns){
 						continue;
 					}
@@ -453,18 +513,15 @@
 						if(skipMap[item]){
 							continue;
 						}
+						valObj = {item: item};
 						var itemDesc = QuerySyntax.getSchema()[item];
-						if(!itemDesc){
-							throw new Error('Unable to find scheme declaration: ' + item);
+						if(itemDesc){
+							if(itemDesc.category){
+								category = itemDesc.category;
+							}
+							valObj.desc = itemDesc.desc;
+							valObj.title = itemDesc.displayName;
 						}
-						if(itemDesc.category){
-							category = itemDesc.category;
-						}
-						valObj = {
-							item: item,
-							desc: itemDesc.desc,
-							title: itemDesc.displayName
-						};
 					}
 				}
 				if(!catMap[category]){
@@ -663,6 +720,11 @@
 				// check if it's filter field
 				if($this.scheme.name == '$filter'){
 					keyElt.addClass('filterField');
+				}
+				
+				// check if it's postfilter field
+				if($this.scheme.name == '$postFilter'){
+					keyElt.addClass('postFilterField');
 				}
 			}
 			

@@ -161,7 +161,7 @@
 							`
 						});
 					}
-				} else if(item == '$fieldExpr') {
+				} else if(item == '#outputFieldName' || item == '$fieldExpr') {
 					var editor = $this.data.data.editor;
 					var colMap = editor.combineColumns();
 					for(var qName in colMap){
