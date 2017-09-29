@@ -106,11 +106,11 @@
 				evt.stopPropagation();
 				if(itemWrapper.hasClass('collapsed')){
 					if(itemObj.onCollapse){
-						itemObj.onCollapse.call(this, itemObj);
+						itemObj.onCollapse.call(this, itemObj, true);
 					}
 				} else {
 					if(itemObj.onExpand){
-						itemObj.onExpand.call(this, itemObj);
+						itemObj.onExpand.call(this, itemObj, true);
 					}
 				}
 			}).mouseover(function(evt){

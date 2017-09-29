@@ -6,13 +6,6 @@
 			$base(opts);
 			this.loadCss('SqlTableNode.css');
 			this.addClass('sqlTableNode');
-			
-			this.subscribe('Workspace.Entry.updated', function(){
-			});
-			
 		}
-		
-		
 	}
-	
 }

@@ -22,6 +22,9 @@
 	currentWorkspace: null,
 	manager: null,
 	wmKey: null,
+	wTreeMap: {},
+	mCollapseKeys: {},
+	mExpandKeys: {},
 	
 	$client: {
 		$constructor: function(opts){
@@ -219,6 +222,53 @@
 			}
 			
 			this.publish('Workspace.Explorer.initialized');
+
+			this.subscribe('Workspace.Entry.remove', {session: true}, function(sender, msg, entry){
+			    var nodeDesc = $this.wTreeMap[entry.localId];
+			    if(nodeDesc){
+			        $this.removeTreeItem(nodeDesc.key);
+			        delete $this.wTreeMap[entry.localId];
+			    }
+
+			    var parentDesc = $this.wTreeMap[entry.parent];
+			    if(parentDesc){
+			        var parentChilds = $this.tree.getChildNodes(parentDesc.key);
+			        if(parentChilds.length === 1 && parentChilds[0].indexOf('_dummy') > -1){
+			            $this.tree.deleteNode(parentChilds[0]);
+			        }
+			    }
+			});
+
+            this.subscribe('Workspace.Entry.add', {session: true}, function(sender, msg, entry){
+                var parentKey = $this.wTreeMap[entry.parent] ? $this.wTreeMap[entry.parent].key : null;
+                var parentNode = $this.tree.get(parentKey);
+
+                if(parentNode){
+                    if(parentNode.wrapper.hasClass('collapsed')){
+                        var parentChilds = $this.tree.getChildNodes(parentKey);
+                        if(parentChilds.length === 0){
+                            $this.tree.addNode({
+                                allowHover: false,
+                                allowSelect: false,
+                                key: parentKey + '_dummy',
+                                element: '<div class="_dwp_dummyChild"><div class="icon"></div><div class="text">Загрузка</div></div>'
+                            }, parentKey);
+                        }
+                    } else {
+                        $this.addTreeItem({
+                            entry: entry,
+                            hasEntryChildren: entry.children.length,
+                            name: entry.name,
+                            type: 'entry'
+                        }, parentKey, false, {collapsed:true});
+                    }
+                }
+            });
+
+			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
+			    //console.log(node);
+			    //debugger;
+			});
 		},
 		
 		refreshWorkspaces: function(){
@@ -591,11 +641,13 @@
 		},
 
 		refresh: function(){
+		    this._isReady = false;
 			this.tree.getElement().loader();
 			this.server().loadWorkspaceTree(function(wtree){
 				$this.tree.getElement().loader('hide');
 				$this.wtree = wtree;				
 				$this.redrawTree();
+				$this._isReady = true;
 			});
 		},
 		
@@ -616,7 +668,13 @@
 		},
 
 		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
-			var key = JSB().generateUid();
+		    var key = JSB().generateUid();
+		    this.wTreeMap[itemDesc.entry.localId] = {
+		        id: itemDesc.entry.localId,
+		        key: key,
+		        parent: itemDesc.entry.parent,
+		        parentKey: parent
+		    };
 			var node = null;
 			
 			if(itemDesc.type == 'node'){
@@ -674,10 +732,15 @@
 			node.workspace = this.currentWorkspace;
 			
 			var curTreeNode = null;
-			function onNodeExpand(treeNode){
+			function onNodeExpand(treeNode, isManual){
+			    if(isManual) {
+			        $this.mExpandKeys[treeNode.key] = true;
+			        $this.mCollapseKeys[treeNode.key] = false;
+			    }
 				if(!treeNode.dynamicChildren){
 					return;
 				}
+				$this._isReady = false;
 				$this.server().loadEntryChildren(itemDesc.entry, function(chArr){
 					chArr.sort(function(a, b){
 						return a.name.localeCompare(b.name);
@@ -687,9 +750,14 @@
 						var chDesc = chArr[i];
 						$this.addTreeItem(chDesc, parentKey);
 					}
-				})
+					$this._isReady = true;
+				});
 			}
-			function onNodeCollapse(treeNode){
+			function onNodeCollapse(treeNode, isManual){
+                if(isManual) {
+                    $this.mExpandKeys[treeNode.key] = false;
+                    $this.mCollapseKeys[treeNode.key] = true;
+                }
 			    var selected = $this.tree.getSelected();
 
 			    if(selected && $this.tree.isChild(treeNode.key, selected.key, true)){
@@ -807,7 +875,10 @@
 			}
 			
 			return node;
-			
+		},
+
+		removeTreeItem: function(key){
+		    this.tree.deleteNode(key);
 		},
 
 		checkMove: function(targetNode, sourceNodes){
