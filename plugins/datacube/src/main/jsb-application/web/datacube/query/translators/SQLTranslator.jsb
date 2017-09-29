@@ -130,23 +130,23 @@
             }
 
             function translateNOperator(args, op) {
-                var sql = '(';
+                var sql = '';
                 for (var i in args) {
                     if (i > 0) sql += ' ' + op + ' ';
                     sql += $this._translateExpression(null, args[i], dcQuery);
                 }
-                sql += ')';
+                sql += '';
                 return sql;
             }
 
             function translateDivzOperator(args) {
                 if (args.length != 2) throw new Error('Operator $divz must have two arguments');
 
-                var sql = '(case when ';
+                var sql = 'case when ';
                 sql += $this._translateExpression(null, args[1], dcQuery);
                 sql += " = 0 then NULL else ";
                 sql += $this._translateExpression(null, args[0], dcQuery) + '/' + $this._translateExpression(null, args[1], dcQuery);
-                sql += ' end)';
+                sql += ' end';
                 return sql;
             }
 
@@ -237,20 +237,22 @@
             // n-operators
             switch(op) {
                 case '$add':
-                    return translateNOperator(exp[op], '+');
+                    return '('+ translateNOperator(exp[op], '+') + ')';
                 case '$sub':
-                    return translateNOperator(exp[op], '-');
+                    return '('+ translateNOperator(exp[op], '-') + ')';
                 case '$mod':
-                    return translateNOperator(exp[op], '%');
+                    return '('+ translateNOperator(exp[op], '%') + ')';
                 case '$mul':
-                    return translateNOperator(exp[op], '*');
+                    return '('+ translateNOperator(exp[op], '*') + ')';
                 case '$div':
-                    return translateNOperator(exp[op], '/');
+                    return '('+ translateNOperator(exp[op], '/') + ')';
                 case '$divz':
-                    return translateDivzOperator(exp[op]);
+                    return '('+ translateDivzOperator(exp[op]) + ')';
 
                 case '$concat':
-                    return 'CONCAT' + translateNOperator(exp[op], ',');
+                    return 'CONCAT(' + translateNOperator(exp[op], ',') + ')';
+                case '$concatArray':
+                    return 'ARRAY[' + translateNOperator(exp[op], ',') + ']';
             }
 
             // transform operators
@@ -502,12 +504,12 @@
                     case '$not':
                             return 'NOT ' + $this.translateMultiExpressions(operands[0]) + ' ';
                     case '$eq':
-                        if (operands[1] === null)
+                        if (operands[1] === null || operands[1].$const === null)
                             return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IS NULL ';
                         else
                             return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' = ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
                     case '$ne':
-                        if (operands[1] === null)
+                        if (operands[1] === null || operands[1].$const === null)
                             return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IS NOT NULL ';
                         else
                             return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' != ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
@@ -544,12 +546,12 @@
                 var op = Object.keys(exp)[0];
                 switch(op){
                     case '$eq':
-                        if (exp[op] === null)
+                        if (exp[op] === null || exp[op].$const === null)
                             return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NULL ';
                         else
                             return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' = ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
                     case '$ne':
-                        if (exp[op] === null)
+                        if (exp[op] === null || exp[op].$const === null)
                             return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NOT NULL ';
                         else
                             return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' != ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';

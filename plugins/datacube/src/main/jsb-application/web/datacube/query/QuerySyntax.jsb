@@ -178,20 +178,20 @@
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
 		            '$distinct',
 		            '$last','$first', '$sum', '$count','$min', '$max', '$avg',
-		            '$array', '$flatArray', '$expandArray',
+		            '$array', '$flatArray', '$expandArray', '$concatArray',
 		            '$gsum', '$gcount', '$gmin', '$gmax',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg',
 		            '$case',
 		            '$macros'
 		        ]
 		    });
-		
+
 		    new this.Group({
 		        name: '$macros',
 		        macro: true,
 		        values: []
 		    });
-		
+
 		    new this.EArray({
 		        name: '$fieldsArray',
 		        minOperands: 1,
@@ -276,7 +276,7 @@
 		        maxOperands: -1,
 		        values: ['$expression', '$query', '$field', '$const', '$param'],
 		    });
-		
+
 		    // $greatest
 		    new this.SingleObject({
 		        name: '$greatest',
@@ -290,7 +290,7 @@
 		        maxOperands: -1,
 		        values: ['$expression', '$query', '$field', '$const', '$param'],
 		    });
-		
+
 		    // $least
 		    new this.SingleObject({
 		        name: '$least',
@@ -304,7 +304,7 @@
 		        maxOperands: -1,
 		        values: ['$expression', '$query', '$field', '$const', '$param'],
 		    });
-		
+
 		    new this.ComplexObject({
 		        name: '$splitString',
 		        category: 'Функции',
@@ -314,8 +314,8 @@
 		            '$separator': '$constString'
 		        }
 		    });
-		
-		
+
+
 		    new this.SingleObject({
 		        name: '$concat',
 		        displayName: 'concat',
@@ -323,6 +323,13 @@
 		        desc: 'Соединение строк в одну',
 		        values: ['$concatValues'],
 		    });
+            new this.SingleObject({
+                name: '$concatArray',
+                displayName: 'concatArray',
+                category: 'Функции',
+                desc: 'Формирование массива из заданных значений',
+                values: ['$concatValues'],
+            });
 		    new this.EArray({
 		        name: '$concatValues',
 		        minOperands: 2,
