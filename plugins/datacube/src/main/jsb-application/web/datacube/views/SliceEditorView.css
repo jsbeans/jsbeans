@@ -25,3 +25,8 @@
 .sliceEditorView .schemeEditor.queryEditor[sname = "$query"] > .context {
 	display: none;
 }
+
+.sliceEditorView .multiEditor {
+	width: 100%;
+	height: 100%;
+}

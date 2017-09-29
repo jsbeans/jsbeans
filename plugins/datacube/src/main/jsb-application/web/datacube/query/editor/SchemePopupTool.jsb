@@ -140,31 +140,27 @@
 				if(item == '#fieldName' || item == '$fieldName'){
 					var editor = $this.data.data.editor;
 					var slice = editor.options.slice;
-					$this.itemsListBox.getElement().loader();
-					slice.server().getInputFields(function(fields){
-						$this.itemsListBox.getElement().loader('hide');
-						var fArr = Object.keys(fields);
-						fArr.sort(function(a, b){
-							return a.localeCompare(b);
-						});
-						for(var j = 0; j < fArr.length; j++){
-							var fName = fArr[j];
-							var fType = fields[fName];
-							$this.itemsListBox.addItem({
-								key: fName,
-								value: fName,
-								scheme: item,
-								element: `#dot
-									<div class="field" title="{{=fName}}">
-										<div class="icon"></div>
-										<div class="name">{{=fName}}</div>
-										<div class="type">{{=fType.toLowerCase()}}</div>
-									</div>
-								`
-							});
-						}
+					var fields = editor.options.cubeFields;
+					var fArr = Object.keys(fields);
+					fArr.sort(function(a, b){
+						return a.localeCompare(b);
 					});
-					
+					for(var j = 0; j < fArr.length; j++){
+						var fName = fArr[j];
+						var fType = fields[fName];
+						$this.itemsListBox.addItem({
+							key: fName,
+							value: fName,
+							scheme: item,
+							element: `#dot
+								<div class="field" title="{{=fName}}">
+									<div class="icon"></div>
+									<div class="name">{{=fName}}</div>
+									<div class="type">{{=fType.toLowerCase()}}</div>
+								</div>
+							`
+						});
+					}
 				} else if(item == '$fieldExpr') {
 					var editor = $this.data.data.editor;
 					var colMap = editor.combineColumns();
@@ -189,6 +185,7 @@
 					}
 				} else {
 					$this.itemsListBox.addItem({
+						value: item.item,
 						key: item.item,
 						scheme: item.item,
 						element: `#dot

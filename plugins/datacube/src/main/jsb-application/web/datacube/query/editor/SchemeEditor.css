@@ -256,6 +256,22 @@
 	transition: transform 300ms;
 }
 
+.schemeEditor > .container > .value {}
+
+.schemeEditor > .container > .value.one {
+	padding: 2px;
+    color: #7b4500;
+}
+
+.schemeEditor > .container > .value.null {}
+
+.schemeEditor > .container > .value.string {}
+
+.schemeEditor > .container > .value.number {}
+
+.schemeEditor > .container > .value.boolean {}
+
+
 .schemeEditor > .context {
 	position: absolute;
     right: 0;
@@ -406,8 +422,7 @@
 
 .schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor > ._dwp_plain,
 .schemeEditor[etype = "EConstString"] > .container > ._dwp_editor > ._dwp_plain {
-	padding-top: 2px;
-	padding-bottom: 2px;
+	padding: 2px;
 }
 
 .schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor > input,

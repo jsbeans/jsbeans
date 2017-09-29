@@ -31,6 +31,7 @@
 			this.queryEditor = new QueryEditor({
 				onChange: function(){
 					$this.updateGrid();
+					$this.updateTextQuery();
 				}
 			});
 			this.queryEditor.addClass('queryEditor');
@@ -56,16 +57,24 @@
 			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
 			}
-			this.query = JSB.clone(this.slice.getQuery());
-			this.queryEditor.setOption('slice', this.slice);
-			this.queryEditor.set(this.query);
-			
-			this.updateGrid();
+			this.slice.server().getInputFields(function(fields){
+				$this.query = JSB.clone($this.slice.getQuery());
+				$this.queryEditor.setOption('slice', $this.slice);
+				$this.queryEditor.setOption('cubeFields', fields);
+				$this.queryEditor.set($this.query);
+				
+				$this.updateGrid();
+				$this.updateTextQuery();
+			});
 		},
 		
 		updateGrid: function(){
 			this.gridView.updateData(this.slice, this.query);
-		}
+		},
+		
+		updateTextQuery: function(){
+			this.textQueryEditor.setData(this.query);
+		} 
 	},
 	
 	$server: {

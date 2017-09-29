@@ -296,6 +296,14 @@
 		},
 		
 		setData: function(data){
+			if(!this.ready){
+				JSB.deferUntil(function(){
+					$this.setData(data);
+				}, function(){
+					return $this.ready;
+				});
+				return;
+			}
 			if(JSB.isInstanceOf(data, 'JSB.Widgets.Value')){
 				this.data = data;
 			} else {
