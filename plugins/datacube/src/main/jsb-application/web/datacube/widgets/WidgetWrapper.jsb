@@ -298,12 +298,7 @@
 					cssClass: 'roundButton btnSettings btn10',
 					tooltip: 'Настроить',
 					onClick: function(evt){
-					    $this.publish('Workspace.entryOpen', $this.widgetEntry);
-					    /*
-					    JSB().defer(function(){
-					        $this.showSettings(evt);
-					    }, 200, 'widgetSettings_' + $this.getId());
-					    */
+					    $this.publish('Workspace.Entry.open', $this.widgetEntry);
 					}
 				});
 

@@ -187,16 +187,6 @@
 				}
 			});
 
-			this.toolbar.addItem({
-				key: 'refresh',
-				tooltip: 'Обновить',
-				element: '<div class="icon"></div>',
-				click: function(){
-					$this.refresh();
-				}
-			});
-			
-			
 			this.tree = new TreeView({
 				selectMulti: true,
 				onSelectionChanged: function(key, obj){
@@ -224,6 +214,8 @@
 			this.publish('Workspace.Explorer.initialized');
 
 			this.subscribe('Workspace.Entry.remove', {session: true}, function(sender, msg, entry){
+			    if(entry.workspace !== $this.currentWorkspace) return;
+
 			    var nodeDesc = $this.wTreeMap[entry.localId];
 			    if(nodeDesc){
 			        $this.removeTreeItem(nodeDesc.key);
@@ -240,6 +232,8 @@
 			});
 
             this.subscribe('Workspace.Entry.add', {session: true}, function(sender, msg, entry){
+                if(entry.workspace !== $this.currentWorkspace) return;
+
                 var parentKey = $this.wTreeMap[entry.parent] ? $this.wTreeMap[entry.parent].key : null;
                 var parentNode = $this.tree.get(parentKey);
 
@@ -257,7 +251,7 @@
                     } else {
                         $this.addTreeItem({
                             entry: entry,
-                            hasEntryChildren: entry.children.length,
+                            hasEntryChildren: Object.keys(entry.children).length,
                             name: entry.name,
                             type: 'entry'
                         }, parentKey, false, {collapsed:true});
@@ -266,8 +260,38 @@
             });
 
 			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
-			    //console.log(node);
-			    //debugger;
+			    if(node.workspace !== $this.currentWorkspace) return;
+
+			    var nodeKey = $this.wTreeMap[node.descriptor.entry.localId] ? $this.wTreeMap[node.descriptor.entry.localId].key : null;
+
+			    var parentKeys = {};
+			    function findParent(id){
+			        var parKey = $this.wTreeMap[id].parentKey;
+			        if(parKey){
+			            parentKeys[parKey] = true;
+			            findParent($this.wTreeMap[id].parent);
+			        }
+			    }
+			    findParent(node.descriptor.entry.localId);
+
+			    for(var i in $this.tree.itemMap){
+			        if(!$this.mExpandKeys[i] && nodeKey !== i && !parentKeys[i]){
+			            $this.tree.collapseNode(i);
+			        }
+			    }
+
+			    if(!nodeKey) return;
+			    if(Object.keys(node.descriptor.entry.children).length > 0){
+			        $this.tree.expandNode(nodeKey);
+			    }
+			    $this.tree.selectItem(nodeKey);
+			});
+
+			this.subscribe('Workspace.Entry.open', function(sender, msg, entry){
+			    var nodeKey = $this.wTreeMap[entry.localId] ? $this.wTreeMap[entry.localId].key : null;
+			    if(nodeKey){
+			        $this.publish('Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
+			    }
 			});
 		},
 		
