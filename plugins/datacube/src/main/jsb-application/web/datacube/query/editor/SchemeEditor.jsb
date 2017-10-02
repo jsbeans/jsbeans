@@ -366,23 +366,23 @@
 						schemeName = chosenObj.value.scheme;
 						value = chosenObj.value.value;
 						context = chosenObj.value.context;
+						if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+							
+						} else if(schemeName == '$fieldExpr') {
+							value = {
+								$field: value,
+								$context: context
+							};
+						} else {
+							value = $this.constructEmptyValue(schemeName);
+						}
 					} else {
 						// detect via key scheme
-						schemeName = chosenObj.key.scheme;
-						value = chosenObj.key.value;
+						schemeName = $this.combineAcceptedSchemes(chosenObj.key.scheme)[0];
 						context = chosenObj.key.context;
-					}
-					
-					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-						
-					} else if(schemeName == '$fieldExpr') {
-						value = {
-							$field: value,
-							$context: context
-						};
-					} else {
 						value = $this.constructEmptyValue(schemeName);
 					}
+					
 					
 					$this.value[colName] = value;
 					// draw entry
@@ -427,26 +427,31 @@
 			}
 			$this.showPopupTool(acceptedSchemes, targetElt, entryType, entryKey, function(chosenObj){
 				debugger;
-				var value = chosenObj.key.value;
-				var context = chosenObj.key.context;
-				var schemeName = chosenObj.key.scheme;
-				if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+				if(chosenObj.key){
+					debugger;
+				} else {
+					var value = chosenObj.value.value;
+					var context = chosenObj.value.context;
+					var schemeName = chosenObj.value.scheme;
+					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+						
+					} else if(schemeName == '$fieldExpr') {
+						value = {
+							$field: value,
+							$context: context
+						};
+					} else {
+						value = $this.constructEmptyValue(schemeName);
+					}
+					$this.value[entryKey] = value;
+					if(JSB.isArray($this.value)){
+						$this.drawArrayEntry(entryKey, schemeName, {expanded: true});
+					} else {
+						$this.drawObjectEntry(entryKey, schemeName, {expanded: true});
+					}
+					$this.notifyChanged();
 					
-				} else if(schemeName == '$fieldExpr') {
-					value = {
-						$field: value,
-						$context: context
-					};
-				} else {
-					value = $this.constructEmptyValue(schemeName);
 				}
-				$this.value[entryKey] = value;
-				if(JSB.isArray($this.value)){
-					$this.drawArrayEntry(entryKey, schemeName, {expanded: true});
-				} else {
-					$this.drawObjectEntry(entryKey, schemeName, {expanded: true});
-				}
-				$this.notifyChanged();
 			});
 		},
 		
@@ -454,12 +459,15 @@
 			// prepare list for dialog
 			var itemMap = {};
 			var chosenObjectKey = null;
+			var chooseType = 'key';
 			if(JSB.isArray(schemes)){
 				for(var i = 0; i < schemes.length; i++){
 					itemMap[schemes[i]] = true;
 				}
+				chooseType = 'value';
 			} else if(JSB.isObject(schemes)){
 				if(Object.keys(schemes).length == 1){
+					chooseType = 'value';
 					// pass first
 					chosenObjectKey = Object.keys(schemes)[0];
 					for(var i = 0; i < schemes[chosenObjectKey].length; i++){
@@ -478,7 +486,7 @@
 			var skipMap = {
 				'$context': true
 			};
-			if(JSB.isDefined($this.value) && JSB.isObject($this.value)){
+			if(JSB.isDefined($this.value) && JSB.isObject($this.value) && chooseType == 'key'){
 				for(var vName in $this.value){
 					skipMap[vName] = true;
 				}
@@ -564,11 +572,11 @@
 						key: null,
 						value: null
 					};
-					if(chosenObjectKey){
+					if(chooseType == 'key'){
+						retObj.key = desc;
+					} else {
 						retObj.key = chosenObjectKey;
 						retObj.value = desc;
-					} else {
-						retObj.key = desc;
 					}
 					if(callback){
 						callback.call($this, retObj);
