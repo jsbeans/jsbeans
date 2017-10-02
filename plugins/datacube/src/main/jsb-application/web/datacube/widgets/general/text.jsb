@@ -195,7 +195,7 @@
 			this.loadCss('text.css');
 		},
 
-		refresh: function(){
+		refresh: function(opts){
 		    var source = this.getContext().find('source');
             if(!source.bound()) return;
             
@@ -240,25 +240,6 @@
                     this.highlights.sort(function(a, b){
                         return a.offset - b.offset;
                     });
-                    /*
-                    this.highlights = this.highlights.reduce(function(newArr, el, i, array){
-                        if(i === 0){
-                            newArr.push(el);
-                            return newArr;
-                        }
-
-                        var prevEl = newArr[newArr.length - 1];
-                        var prevEnd = prevEl.offset + prevEl.length;
-
-                        if(prevEnd >= el.offset){
-                            prevEl.length += prevEnd - el.offset + el.length;
-                        }
-
-                        newArr.push(el);
-
-                        return newArr;
-                    }, []);
-                    */
 
                     var fObj = {};
                     this.highlights = this.highlights.filter(function(el){
@@ -299,6 +280,10 @@
                 }
             }
             return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
+        },
+
+        refreshFromCache: function(){
+            this.draw();
         },
 
 		redraw: function(){

@@ -53,6 +53,12 @@
 		},
 
 		refresh: function(){
+		    JSB.defer(function(){
+		        $this._refresh();
+		    }, 300, 'widgetSettingsView_refresh' + this.getId());
+		},
+
+		_refresh: function(){
 			this.entry = this.node.getEntry();
 
             if(this.wrapper) this.wrapper.destroy();
@@ -80,7 +86,7 @@
 
 		updateData: function(){
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
-		    this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values), sourceDesc);
+		    this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
 		    this.wrapper.getWidget().refresh({
                 isCacheMod: true
             });
@@ -94,7 +100,12 @@
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 
             this.entry.server().storeValues(title, this.wrapper.values, function(sourceDesc){
-                $this.wrapper.getWidget().updateValues(JSB.clone($this.wrapper.values), sourceDesc);
+                // $this.wrapper.getWidget().updateValues(JSB.clone($this.wrapper.values), sourceDesc);
+                $this.publish('widgetSettings.updateValues', {
+                    entryId: $this.wrapper.getWidgetEntry().getId(),
+                    values: JSB.clone($this.wrapper.values),
+                    sourceDesc: sourceDesc
+                });
             });
 		},
 

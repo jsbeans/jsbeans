@@ -228,7 +228,7 @@
 
 		},
 		
-		refresh: function(){
+		refresh: function(opts){
 			if(!this.ready){
 				JSB.deferUntil(function(){
 					$this.refresh();
@@ -279,6 +279,10 @@
 				}
 				series.push(serieDesc);
 			}
+
+			if(opts && opts.isCacheMod){
+			    this.storeCache(series);
+			}
 			
 			var recordContext = this.getContext().find('record');
 			if(recordContext.data()){
@@ -290,6 +294,12 @@
 				});
 			}
 		},
+
+        refreshFromCache: function(){
+            var cache = this.getCache();
+            if(!cache) return;
+            this.draw(cache);
+        },
 		
 		draw: function(series){
 			var seriesSel = d3.select(this.getElement().get(0)).selectAll('div.serie');
@@ -381,7 +391,5 @@
 			// sort
 			seriesSelData.order();
 		}
-		
-
 	}
 }

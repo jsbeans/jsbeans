@@ -96,7 +96,6 @@
 	padding: 2px 3px 0 5px;
 }
 
-
 /* group */
 
 .widgetSchemeRenderer > .body {
@@ -156,7 +155,6 @@
     top: 4px;
     z-index: 1;
 }
-
 
 /* items */
 .widgetSchemeRenderer[entry="item"] {}

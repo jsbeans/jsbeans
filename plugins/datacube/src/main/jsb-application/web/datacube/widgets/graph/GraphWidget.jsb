@@ -391,6 +391,8 @@
 
             $base();
 
+            this._isCacheMod = opts && opts.isCacheMod ? opts.isCacheMod : false;
+
             if(this._isRefreshing){
                 JSB().deferUntil(function(){
                     if($this.simulation) $this.simulation.stop();
@@ -614,10 +616,22 @@
 
                         if($this._isInit){
                             $this.removeOldNodes(nodesMap);
+                            if($this._isCacheMod){
+                                $this.storeCache({
+                                    nodes: nodes,
+                                    links: links
+                                });
+                            }
                             $this.createGraph(nodes, links);
                         } else {
                             JSB().deferUntil(function(){
                                 $this.removeOldNodes(nodesMap);
+                                if($this._isCacheMod){
+                                    $this.storeCache({
+                                        nodes: nodes,
+                                        links: links
+                                    });
+                                }
                                 $this.createGraph(nodes, links);
                             }, function(){
                                 return $this._isInit;
@@ -729,6 +743,12 @@
                 }
             });
             */
+        },
+
+        refreshFromCache: function(){
+            var cache = this.getCache();
+            if(!cache) return;
+            this.createGraph(cache.nodes, cache.links);
         },
 
         createGraph: function(nodes, links){

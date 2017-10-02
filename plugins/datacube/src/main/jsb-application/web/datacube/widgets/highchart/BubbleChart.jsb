@@ -270,151 +270,11 @@
                         }, {}));
                     }
 
-                    try{
-                        var chart = {
-                            chart: {
-                                type: 'bubble',
-                                plotBorderWidth: 1,
-                                zoomType: 'xy'
-                            },
-                            title: {
-                                text: this.getContext().find('title').value()
-                            },
+                    $this._buildChart(data);
 
-                            subtitle: {
-                                text: this.getContext().find('subtitle').value()
-                            },
-
-                            legend: {
-                                enabled: this.getContext().find('enableLegend').used()
-                            },
-
-                            plotOptions: {
-                                bubble: {
-                                    allowPointSelect: true,
-                                    point: {
-                                        events: {
-                                            click: function(evt) {
-                                                if(JSB().isFunction($this.options.onClick)){
-                                                    $this.options.onClick.call(this, evt);
-                                                }
-                                            },
-                                            select: function(evt) {
-                                                var flag = false;
-
-                                                if(JSB().isFunction($this.options.onSelect)){
-                                                    flag = $this.options.onSelect.call(this, evt);
-                                                }
-                                                /*
-                                                if(!flag){
-                                                    debugger;
-                                                    // $this._addNewFilter(evt.target.name);
-                                                }
-                                                */
-                                            },
-                                            unselect: function(evt) {
-                                                var flag = false;
-
-                                                if(JSB().isFunction($this.options.onUnselect)){
-                                                    flag = $this.options.onUnselect.call(this, evt);
-                                                }
-                                                /*
-                                                if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                                    $this._notNeedUnselect = false;
-                                                    $this.removeFilter($this._currentFilter);
-                                                    $this.refreshAll();
-                                                }
-                                                */
-                                            },
-                                            mouseOut: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOut)){
-                                                    $this.options.mouseOut.call(this, evt);
-                                                }
-                                            },
-                                            mouseOver: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOver)){
-                                                    $this.options.mouseOver.call(this, evt);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-
-                            credits: {
-                                enabled: false
-                            },
-
-                            series: [{
-                                data: data
-                            }]
-                        };
-
-                        // xAxis
-                        var x = this.getContext().find('xAxis');
-                        if(x.used()){
-                            x = x.value();
-
-                            chart.xAxis = {
-                                title: {
-                                  text: x.get(0).value()
-                                },
-                                labels: {
-                                  format: x.get(1).value()
-                                }
-                            }
-                        }
-
-                        // yAxis
-                        var x = this.getContext().find('yAxis');
-                        if(x.used()){
-                            x = x.value();
-
-                            chart.yAxis = {
-                                title: {
-                                  text: x.get(0).value()
-                                },
-                                labels: {
-                                  format: x.get(1).value()
-                                }
-                            }
-                        }
-
-                        // tooltip
-                        var x = this.getContext().find('tooltip');
-                        if(x.used()){
-                            x = x.value();
-
-                            chart.tooltip = {
-                                useHTML: x.get(0).used(),
-                                headerFormat: x.get(1).value(),
-                                pointFormat: x.get(2).value(),
-                                footerFormat: x.get(3).value(),
-                                followPointer: x.get(4).used()
-                            };
-                        }
-
-                        // plotOptions
-                        var x = this.getContext().find('plotOptions');
-                        if(x.used()){
-                            x = x.find('series').value();
-
-                            chart.plotOptions.series = {
-                                    dataLabels: {
-                                        enabled: x.get(0).used(),
-                                        format: x.get(1).value()
-                                    }
-                            };
-                        }
-                    } catch(ex){
-                        console.log(ex);
-                        return;
-                    } finally{
-                        $this.getElement().loader('hide');
+                    if(opts && opts.isCacheMod){
+                        $this.storeCache(data);
                     }
-
-                    $this.container.highcharts(chart);
-                    $this.chart =  $this.container.highcharts();
                 });
 
 
@@ -423,12 +283,164 @@
             });
         },
 
+        refreshFromCache: function(){
+            var cache = this.getCache();
+            if(!cache) return;
+            this._buildChart(cache);
+        },
+
+        _buildChart: function(data){
+            try{
+                var chart = {
+                    chart: {
+                        type: 'bubble',
+                        plotBorderWidth: 1,
+                        zoomType: 'xy'
+                    },
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    legend: {
+                        enabled: this.getContext().find('enableLegend').used()
+                    },
+
+                    plotOptions: {
+                        bubble: {
+                            allowPointSelect: true,
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    select: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            flag = $this.options.onSelect.call(this, evt);
+                                        }
+                                        /*
+                                        if(!flag){
+                                            debugger;
+                                            // $this._addNewFilter(evt.target.name);
+                                        }
+                                        */
+                                    },
+                                    unselect: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            flag = $this.options.onUnselect.call(this, evt);
+                                        }
+                                        /*
+                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
+                                            $this._notNeedUnselect = false;
+                                            $this.removeFilter($this._currentFilter);
+                                            $this.refreshAll();
+                                        }
+                                        */
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: [{
+                        data: data
+                    }]
+                };
+
+                // xAxis
+                var x = this.getContext().find('xAxis');
+                if(x.used()){
+                    x = x.value();
+
+                    chart.xAxis = {
+                        title: {
+                          text: x.get(0).value()
+                        },
+                        labels: {
+                          format: x.get(1).value()
+                        }
+                    }
+                }
+
+                // yAxis
+                var x = this.getContext().find('yAxis');
+                if(x.used()){
+                    x = x.value();
+
+                    chart.yAxis = {
+                        title: {
+                          text: x.get(0).value()
+                        },
+                        labels: {
+                          format: x.get(1).value()
+                        }
+                    }
+                }
+
+                // tooltip
+                var x = this.getContext().find('tooltip');
+                if(x.used()){
+                    x = x.value();
+
+                    chart.tooltip = {
+                        useHTML: x.get(0).used(),
+                        headerFormat: x.get(1).value(),
+                        pointFormat: x.get(2).value(),
+                        footerFormat: x.get(3).value(),
+                        followPointer: x.get(4).used()
+                    };
+                }
+
+                // plotOptions
+                var x = this.getContext().find('plotOptions');
+                if(x.used()){
+                    x = x.find('series').value();
+
+                    chart.plotOptions.series = {
+                            dataLabels: {
+                                enabled: x.get(0).used(),
+                                format: x.get(1).value()
+                            }
+                    };
+                }
+            } catch(ex){
+                console.log(ex);
+                return;
+            } finally{
+                $this.getElement().loader('hide');
+            }
+
+            $this.container.highcharts(chart);
+            $this.chart =  $this.container.highcharts();
+        },
+
         // events
         _addNewFilter: function(){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
-
-
         }
 	}
 }

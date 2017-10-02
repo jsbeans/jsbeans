@@ -291,6 +291,20 @@
 			    var nodeKey = $this.wTreeMap[entry.localId] ? $this.wTreeMap[entry.localId].key : null;
 			    if(nodeKey){
 			        $this.publish('Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
+			    } else {
+			        var cnt = 0;
+                    JSB.deferUntil(function(){
+                        var nodeKey = $this.wTreeMap[entry.localId] ? $this.wTreeMap[entry.localId].key : null;
+                        $this.publish('Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
+                    }, function(){
+                        if(cnt === 10){
+                            console.log('Error finding entry in workspace');
+                            JSB.cancelDefer('Workspace.Entry.tryFindKey');
+                            return;
+                        }
+                        cnt++;
+                        return $this.wTreeMap[entry.localId];
+                    }, 100, null, 'Workspace.Entry.tryFindKey' + entry.localId);
 			    }
 			});
 		},
@@ -693,12 +707,14 @@
 
 		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
 		    var key = JSB().generateUid();
-		    this.wTreeMap[itemDesc.entry.localId] = {
-		        id: itemDesc.entry.localId,
-		        key: key,
-		        parent: itemDesc.entry.parent,
-		        parentKey: parent
-		    };
+		    if(itemDesc.type === 'entry'){
+                this.wTreeMap[itemDesc.entry.localId] = {
+                    id: itemDesc.entry.localId,
+                    key: key,
+                    parent: itemDesc.entry.parent,
+                    parentKey: parent
+                };
+		    }
 			var node = null;
 			
 			if(itemDesc.type == 'node'){

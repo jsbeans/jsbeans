@@ -1,7 +1,6 @@
 {
 	$name: 'DataCube.Widgets.WidgetWrapper',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['DataCube.Widgets.WidgetEditor'],
 
 	widgetEntry: null,
 	name: null,
@@ -129,19 +128,17 @@
 				$this.getWidget().refresh(opts);
 			});
 
+			this.subscribe('widgetSettings.updateValues', function(sender, msg, opts){
+			    if(opts.entryId !== $this.getWidgetEntry().getId()){
+			        return;
+			    }
+
+			    $this.getWidget().updateValues(opts.values, opts.sourceDesc);
+			    $this.getWidget().refresh();
+			});
+
 			if(opts && opts.showSettings){
-			/*
-				var dashboardContainer = $this.getElement().closest("._jsb_dashboardContainer").jsb();
-				if(!$this.attached || !dashboardContainer || !$this.isContentReady()){
-					JSB.deferUntil(function(){
-						$this.showSettings();
-					}, function(){
-						return $this.attached && $this.getElement().closest("._jsb_dashboardContainer").jsb() && $this.isContentReady();
-					});
-				} else {
-					$this.showSettings();
-				}
-            */
+			    this.publish('Workspace.Entry.open', $this.widgetEntry);
 			}
 		},
 		
@@ -351,94 +348,6 @@
 					.append(closeBtn.getElement());
 			}
 			editor.setData(this.getName());
-		},
-		
-		showSettings: function(){
-		    var scheme = this.extractWidgetScheme();
-
-            ToolManager.activate({
-                id: 'widgetEditor',
-                cmd: 'show',
-                data: {
-                    schemeData: {
-                        scheme: scheme,
-                        values: JSB.clone(this.getValues()),
-                        wrapper: $this
-                    },
-                    title: this.getName(),
-                    widget: this.widget.getJsb().getClass()
-                },
-                target: {
-                    selector: $this.$('body')
-                },
-                callback: function(data){
-                    $this.applySettings(data);
-                }
-            });
-		/*
-			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
-			dashboardContainer.placeholders['center'].enable(false);
-			
-			var scheme = this.extractWidgetScheme();
-			var scroll = this.settingsContainer.find('> .scroll').jsb();
-			scroll.clear();
-			
-			var titleEditor = this.settingsContainer.find('> .header > .caption > .title').jsb();
-			titleEditor.setData(this.getName());
-			
-			// create scheme renderer
-			this.settingsRenderer = new WidgetSchemeRenderer({
-				scheme: scheme,
-				values: JSB.clone(this.getValues()),
-				wrapper: $this,
-				onChange: function(){
-//					$this.updateButtons();
-				}
-			});
-			scroll.append(this.settingsRenderer);
-			this.settingsVisible = true;
-			this.settingsContainer.css({
-				height: this.getElement().height(),
-				visibility: 'visible'
-			});
-		*/
-		},
-		
-		closeSettings: function(){
-			this.settingsVisible = false;
-			this.settingsContainer.css('height',this.getElement().height());
-			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
-			dashboardContainer.placeholders['center'].enable(true);
-			JSB.defer(function(){
-				$this.settingsContainer.css('height','');
-			}, 0);
-		},
-		/*
-		applySettings: function(){
-			var title = this.settingsContainer.find('> .header > .caption > .title').jsb().getData().getValue();
-			this.values = this.settingsRenderer.getValues();
-			
-			// store data in wrapper
-			this.getWidgetEntry().server().storeValues(title, this.values, function(sourceDesc){
-				$this.name = title;
-				$this.updateTabHeader();
-				$this.getWidget().updateValues(JSB.clone($this.values), sourceDesc);
-				$this.getWidget().refresh();
-			});
-			
-			this.closeSettings();
-		}
-		*/
-
-		applySettings: function(data){
-            // store data in wrapper
-            this.getWidgetEntry().server().storeValues(title, this.values, function(sourceDesc){
-                $this.name = data.title;
-                $this.updateTabHeader();
-                $this.getWidget().updateValues(JSB.clone(data.values), sourceDesc);
-                $this.getWidget().refresh();
-            });
 		}
 	}
-	
 }
