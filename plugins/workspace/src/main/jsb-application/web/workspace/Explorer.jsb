@@ -238,24 +238,27 @@
                 var parentNode = $this.tree.get(parentKey);
 
                 if(parentNode){
-                    if(parentNode.wrapper.hasClass('collapsed')){
-                        var parentChilds = $this.tree.getChildNodes(parentKey);
-                        if(parentChilds.length === 0){
-                            $this.tree.addNode({
-                                allowHover: false,
-                                allowSelect: false,
-                                key: parentKey + '_dummy',
-                                element: '<div class="_dwp_dummyChild"><div class="icon"></div><div class="text">Загрузка</div></div>'
-                            }, parentKey);
+                    var keys = {};
+                    function findKeys(id){
+                        if(!id) return;
+                        var key = $this.wTreeMap[id].key;
+                        if(key){
+                            keys[key] = true;
+                            findKeys($this.wTreeMap[id].parent);
                         }
-                    } else {
-                        $this.addTreeItem({
-                            entry: entry,
-                            hasEntryChildren: Object.keys(entry.children).length,
-                            name: entry.name,
-                            type: 'entry'
-                        }, parentKey, false, {collapsed:true});
                     }
+                    findKeys(entry.parent);
+
+                    for(var i in keys){
+                        $this.tree.expandNode(i);
+                    }
+
+                    $this.addTreeItem({
+                        entry: entry,
+                        hasEntryChildren: Object.keys(entry.children).length,
+                        name: entry.name,
+                        type: 'entry'
+                    }, parentKey, false, {collapsed:true});
                 }
             });
 
@@ -291,20 +294,6 @@
 			    var nodeKey = $this.wTreeMap[entry.localId] ? $this.wTreeMap[entry.localId].key : null;
 			    if(nodeKey){
 			        $this.publish('Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
-			    } else {
-			        var cnt = 0;
-                    JSB.deferUntil(function(){
-                        var nodeKey = $this.wTreeMap[entry.localId] ? $this.wTreeMap[entry.localId].key : null;
-                        $this.publish('Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
-                    }, function(){
-                        if(cnt === 10){
-                            console.log('Error finding entry in workspace');
-                            JSB.cancelDefer('Workspace.Entry.tryFindKey');
-                            return;
-                        }
-                        cnt++;
-                        return $this.wTreeMap[entry.localId];
-                    }, 100, null, 'Workspace.Entry.tryFindKey' + entry.localId);
 			    }
 			});
 		},

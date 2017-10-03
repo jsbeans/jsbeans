@@ -318,6 +318,7 @@
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer > .sp-preview{
     height: 10px;
     border-radius: 3px;
+    margin-top: 1px;
 }
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer > .sp-dd{
     line-height: 8px;
@@ -408,5 +409,5 @@
 }
 
 .widgetSchemeRenderer .dataBindingSelector > .refresh {
-    padding: 3px 20px 0px 2px;
+    padding: 0px 20px 0px 2px;
 }

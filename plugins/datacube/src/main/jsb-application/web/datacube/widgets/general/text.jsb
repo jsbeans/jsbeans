@@ -203,6 +203,11 @@
 
             this.getElement().loader();
 
+            if(opts && opts.refreshFromCache){
+                this.redraw();
+                return;
+            }
+
             if(source.data()){
                 $this.update();
             } else {
@@ -280,10 +285,6 @@
                 }
             }
             return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
-        },
-
-        refreshFromCache: function(){
-            this.draw();
         },
 
 		redraw: function(){

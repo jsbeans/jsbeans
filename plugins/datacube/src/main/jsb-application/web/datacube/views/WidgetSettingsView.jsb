@@ -73,7 +73,9 @@
                     wrapper: $this.wrapper,
                     onChange: function(){
                         if(this.scheme.binding === 'field') return; // need data update
-                        $this.setChanges();
+                        JSB().defer(function(){
+                            $this.setChanges();
+                        }, 300, "widgetSettingsView_setChanges" + $this.getId());
                     }
                 });
                 $this.schemeBlock.append($this.widgetSchemeRenderer.getElement());
@@ -112,7 +114,13 @@
 		setChanges: function(){
             this.wrapper.values = this.widgetSchemeRenderer.getValues();
             this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
-            this.wrapper.getWidget().refreshFromCache();
+            try{
+                this.wrapper.getWidget().refresh({
+                    refreshFromCache: true
+                });
+            } catch(ex){
+                //console.log(ex);
+            }
 		}
 	},
 	

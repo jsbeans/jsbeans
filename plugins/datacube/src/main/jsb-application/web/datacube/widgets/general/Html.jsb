@@ -299,13 +299,25 @@
 		refresh: function(opts){
 			$base();
 			var recordContext = this.getContext().find('record');
-			if(recordContext.data()){
-				$this.draw(opts ? opts.isCacheMod : false);
+
+			if(opts && opts.refreshFromCache){
+                var cache = this.getCache();
+                if(!cache) return;
+
+                if(this.getContext().find('useIframe').used()){
+                    this.renderIframe(cache);
+                } else {
+                    this.renderSimple(cache);
+                }
 			} else {
-				recordContext.fetch({batchSize: 1}, function(){
-					recordContext.next();
-					$this.draw(opts ? opts.isCacheMod : false);
-				});
+                if(recordContext.data()){
+                    $this.draw(opts ? opts.isCacheMod : false);
+                } else {
+                    recordContext.fetch({batchSize: 1}, function(){
+                        recordContext.next();
+                        $this.draw(opts ? opts.isCacheMod : false);
+                    });
+                }
 			}
 		},
 		
@@ -330,17 +342,6 @@
 			} else {
 				this.renderSimple(html);
 			}
-		},
-
-		refreshFromCache: function(){
-            var cache = this.getCache();
-            if(!cache) return;
-
-            if(this.getContext().find('useIframe').used()){
-                this.renderIframe(cache);
-            } else {
-                this.renderSimple(cache);
-            }
 		},
 		
 		setIframeMode: function(callback){

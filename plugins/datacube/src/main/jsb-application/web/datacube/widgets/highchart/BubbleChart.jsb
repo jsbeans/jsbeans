@@ -248,6 +248,17 @@
             
 			$base();
 
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
+
             var dataValue = [];
             var dataVal = source.value().get(0).values();
             for(var i = 0; i < dataVal.length; i++){
@@ -276,17 +287,9 @@
                         $this.storeCache(data);
                     }
                 });
-
-
             }, function(){
                 return $this.isInit;
             });
-        },
-
-        refreshFromCache: function(){
-            var cache = this.getCache();
-            if(!cache) return;
-            this._buildChart(cache);
         },
 
         _buildChart: function(data){

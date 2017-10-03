@@ -267,6 +267,17 @@
             
 			$base();
 
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
+
 // filters section
             var globalFilters = source.getFilters();
 
@@ -370,12 +381,6 @@
             }, function(){
                 return $this.isInit;
             });
-        },
-
-        refreshFromCache: function(){
-            var cache = this.getCache();
-            if(!cache) return;
-            this._buildChart(cache);
         },
 
         _buildChart: function(data){

@@ -391,19 +391,35 @@
 
             $base();
 
+            // cache
             this._isCacheMod = opts && opts.isCacheMod ? opts.isCacheMod : false;
 
             if(this._isRefreshing){
                 JSB().deferUntil(function(){
                     if($this.simulation) $this.simulation.stop();
 
-                    $this.innerRefresh();
+                    $this._isRefreshing = true;
+
+                    if(opts && opts.refreshFromCache){
+                        var cache = $this.getCache();
+                        if(!cache) return;
+                        $this.createGraph(cache.nodes, cache.links);
+                    } else {
+                        $this.innerRefresh();
+                    }
                 }, function(){
                     return !$this._isRefreshing;
                 }, 100, 'graphWidget_' + this.getId());
             } else {
                 this._isRefreshing = true;
-                this.innerRefresh();
+
+                if(opts && opts.refreshFromCache){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this.createGraph(cache.nodes, cache.links);
+                } else {
+                    $this.innerRefresh();
+                }
             }
         },
 
@@ -644,7 +660,7 @@
             }
 
             innerFetch(true);
-
+// нагрузочный тест
             /*
             source.fetch({readAll: true, reset: true}, function(){
                 while(source.next() && count <= maxNodes){
@@ -745,15 +761,7 @@
             */
         },
 
-        refreshFromCache: function(){
-            var cache = this.getCache();
-            if(!cache) return;
-            this.createGraph(cache.nodes, cache.links);
-        },
-
         createGraph: function(nodes, links){
-            this._isRefreshing = false;
-
             try{
                 var itemWidth = this.getContext().find('itemWidth').value(),
                     itemHeight = this.getContext().find('itemHeight').value(),
@@ -843,6 +851,8 @@
                 console.log(ex);
                 if($this.simulation) $this.simulation.stop();
                 $this.getElement().loader('hide');
+            } finally {
+                this._isRefreshing = false;
             }
         },
 

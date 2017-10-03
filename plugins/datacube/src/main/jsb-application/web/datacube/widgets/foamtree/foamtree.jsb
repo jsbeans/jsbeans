@@ -529,7 +529,11 @@
             if(this.getContext().find('source').bound()){
                 this.getElement().loader();
 
-                this.getData(opts ? opts.isCacheMod : false);
+                if(opts && opts.refreshFromCache){
+                    this.updateFoamtree(this.getCache());
+                } else {
+                    this.getData(opts ? opts.isCacheMod : false);
+                }
             }
         },
 
@@ -649,10 +653,6 @@
                     return $this.foamtreeContainer.height() > 0 && $this.foamtreeContainer.width() > 0 && $this.isScriptLoaded && $this.getElement().is(':visible');
                 });
             }
-        },
-
-        refreshFromCache: function(){
-            this.updateFoamtree(this.getCache());
         },
 
         // utils
