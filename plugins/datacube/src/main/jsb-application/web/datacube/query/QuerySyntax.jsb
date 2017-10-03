@@ -209,7 +209,7 @@
 		        name: '$addValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$sub',
@@ -222,7 +222,7 @@
 		        name: '$subValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$mul',
@@ -235,7 +235,7 @@
 		        name: '$mulValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$div',
@@ -248,7 +248,7 @@
 		        name: '$divValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$divz',
@@ -261,7 +261,7 @@
 		        name: '$divzValues',
 		        minOperands: 2,
 		        maxOperands: 2,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$mod',
@@ -274,7 +274,7 @@
 		        name: '$modValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
 		    // $greatest
@@ -288,7 +288,7 @@
 		        name: '$greatestValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
 		    // $least
@@ -302,7 +302,7 @@
 		        name: '$leastValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
 		    new this.ComplexObject({
@@ -334,7 +334,7 @@
 		        name: '$concatValues',
 		        minOperands: 2,
 		        maxOperands: -1,
-		        values: ['$expression', '$query', '$field', '$const', '$param'],
+		        values: ['$field', '$expression', '$query', '$const', '$param'],
 		    });
 		    
 		    new this.ComplexObject({

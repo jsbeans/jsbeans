@@ -14,9 +14,9 @@
 .schemeEditor > .container > .entry > .substrate,
 .schemeEditor > .container > .entry > .value > .substrate  {
 	position: absolute;
-	left: 0;
+	left: -3px;
     top: 0;
-    right: 0;
+    right: -3px;
     bottom: 0;
 	background-color: transparent;
 	border: 1px solid rgba(255,255,255,0);
@@ -409,9 +409,16 @@
 .schemeEditor[etype = "EConstNumber"] > .container,
 .schemeEditor[etype = "EConstString"] > .container {}
 
+.schemeEditor[etype = "EConstString"][sname="$constString"] > .container:before,
+.schemeEditor[etype = "EConstString"][sname="$constString"] > .container:after {
+	content: '"';
+	display: inline-block;
+	vertical-align: top;
+}
+
 .schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor,
 .schemeEditor[etype = "EConstString"] > .container > ._dwp_editor {
-	display: block;
+	display: inline-block;
 }
 
 .schemeEditor[etype = "EConstNumber"] > .container > ._dwp_editor.editing,
