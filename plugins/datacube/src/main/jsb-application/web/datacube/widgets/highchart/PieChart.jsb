@@ -384,6 +384,16 @@
                     }
 
                     $this._buildChart(data);
+
+                    var points = $this.chart.series[0].points;
+                    for(var i in $this._curFilters){
+                        for(var j = 0; j < points.length; j++){
+                            if(i === points[j].name){
+                                points[j].select(true, true);
+                                break;
+                            }
+                        }
+                    }
                 });
             }, function(){
                 return $this.isInit;

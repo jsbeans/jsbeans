@@ -326,12 +326,11 @@
                     }
                 }
 
-                if(Object.keys(globalFilters).length === 0) globalFilters = null;
-
-                if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
                     return;
                 } else {
-                    this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    source.setFilters(globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -340,9 +339,9 @@
                         this.chart.series[0].data[this._series[i]].select(false, true);
                     }
                     this._curFilters = {};
-                    this._curFilterHash = null;
                     return;
                 }
+                this._curFilterHash = null;
             }
 // end filters section
             var dataValues = this.getContext().find('data').values(),
@@ -396,6 +395,16 @@
                         }
 
                         $this._buildChart(data);
+
+                        var points = $this.chart.series[0].points;
+                        for(var i in $this._curFilters){
+                            for(var j = 0; j < points.length; j++){
+                                if(i === points[j].name){
+                                    points[j].select(true, true);
+                                    break;
+                                }
+                            }
+                        }
                     } catch(e) {
                         console.log(e);
                     } finally {

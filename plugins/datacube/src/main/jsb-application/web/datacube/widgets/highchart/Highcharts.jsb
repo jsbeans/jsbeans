@@ -450,6 +450,7 @@
                     $this._buildChart(seriesData, xAxis);
 
                     for(var i in $this._curFilters){
+                    debugger;
                         this._selectAllCategory(i);
                     }
                 });
@@ -623,16 +624,16 @@
                         stacking: 'normal'
                     }
                 }
+
+                $this.container.highcharts(chart);
+
+                $this.chart =  $this.container.highcharts();
             } catch(e){
                 console.log(e);
                 return;
             } finally {
                 $this.getElement().loader('hide');
             }
-
-            $this.container.highcharts(chart);
-
-            $this.chart =  $this.container.highcharts();
         },
 
         _addNewFilter: function(evt){
@@ -690,7 +691,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category === cat && series[i].points[j].selected){
+                    if(series[i].points[j].category == cat && series[i].points[j].selected){
                         this._deselectCategoriesCount++;
                         series[i].points[j].select(false, true);
                         break;
