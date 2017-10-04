@@ -379,13 +379,22 @@
                         delete this._curFilters[i];
                     }
                 }
-
+                /*
                 if(Object.keys(globalFilters).length === 0) globalFilters = null;
 
                 if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
                     return;
                 } else {
+            debugger;
                     this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+
+                }
+                */
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    source.setFilters(globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -393,9 +402,9 @@
                         this._deselectAllCategory(i);
                     }
                     this._curFilters = {};
-                    this._curFilterHash = null;
                     return;
                 }
+                this._curFilterHash = null;
             }
 // end filters section
 
@@ -439,6 +448,10 @@
                     }
 
                     $this._buildChart(seriesData, xAxis);
+
+                    for(var i in $this._curFilters){
+                        this._selectAllCategory(i);
+                    }
                 });
             }, function(){
                 return $this.isInit;
