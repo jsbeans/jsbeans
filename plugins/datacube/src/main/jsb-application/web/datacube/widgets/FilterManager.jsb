@@ -259,64 +259,64 @@
 				var orLocal = {$or:[]};
 				var andLocal = {$and:[]};
 				
-				// proceed or
-				if(ffDesc.orFilters.length > 0){
-					for(var i = 0; i < ffDesc.orFilters.length; i++){
-						or.$or.push(ffDesc.orFilters[i]);
-					}
-				}
-				if(or.$or.length == 0){
-					or = null;
-				} else if(or.$or.length == 1){
-					or = or.$or[0];
-				}
-				
 				// proceed and
 				if(ffDesc.andFilters.length > 0){
-					if(or){
-						and.$and.push(or);
-					}
 					for(var i = 0; i < ffDesc.andFilters.length; i++){
 						and.$and.push(ffDesc.andFilters[i]);
 					}
-					if(and.$and.length == 0){
-						and = null;
-					} else if(and.$and.length == 1){
-						and = and.$and[0];
-					}
-					filter = and;
-				} else if(or) {
-					filter = or;
+				}
+				if(and.$and.length == 0){
+					and = null;
+				} else if(and.$and.length == 1){
+					and = and.$and[0];
 				}
 				
-				// proceed or local
-				if(ffDesc.orFiltersLocal.length > 0){
-					for(var i = 0; i < ffDesc.orFiltersLocal.length; i++){
-						orLocal.$or.push(ffDesc.orFiltersLocal[i]);
+				// proceed or
+				if(ffDesc.orFilters.length > 0){
+					if(and){
+						or.$or.push(and);
 					}
-				}
-				if(orLocal.$or.length == 0){
-					orLocal = null;
-				} else if(orLocal.$or.length == 1){
-					orLocal = orLocal.$or[0];
+					for(var i = 0; i < ffDesc.orFilters.length; i++){
+						or.$or.push(ffDesc.orFilters[i]);
+					}
+					if(or.$or.length == 0){
+						or = null;
+					} else if(or.$or.length == 1){
+						or = or.$or[0];
+					}
+					filter = or;
+				} else if(and) {
+					filter = and;
 				}
 				
 				// proceed and local
 				if(ffDesc.andFiltersLocal.length > 0){
-					if(orLocal){
-						andLocal.$and.push(orLocal);
-					}
 					for(var i = 0; i < ffDesc.andFiltersLocal.length; i++){
 						andLocal.$and.push(ffDesc.andFiltersLocal[i]);
 					}
-					if(andLocal.$and.length == 0){
-						andLocal = null;
-					} else if(andLocal.$and.length == 1){
-						andLocal = andLocal.$and[0];
+				}
+				if(andLocal.$and.length == 0){
+					andLocal = null;
+				} else if(andLocal.$and.length == 1){
+					andLocal = andLocal.$and[0];
+				}
+				
+				// proceed or local
+				if(ffDesc.orFiltersLocal.length > 0){
+					if(andLocal){
+						orLocal.$or.push(andLocal);
 					}
-					postFilter = andLocal;
-				} else if(orLocal) {
+					for(var i = 0; i < ffDesc.orFiltersLocal.length; i++){
+						orLocal.$or.push(ffDesc.orFiltersLocal[i]);
+					}
+					if(orLocal.$or.length == 0){
+						orLocal = null;
+					} else if(orLocal.$or.length == 1){
+						orLocal = orLocal.$or[0];
+					}
 					postFilter = orLocal;
+				} else if(andLocal) {
+					postFilter = andLocal;
 				}
 				return {filter: filter, postFilter: postFilter}
 			}
