@@ -909,7 +909,7 @@
 				
 				if(materialization && materialization.dataProviderEntry){
 					var sourceEntry = materialization.dataProviderEntry;
-					
+/*					
 					// remove table
 					if(materialization.table){
 						var database = sourceEntry.getParent();
@@ -917,6 +917,7 @@
 						materializer.removeTable(materialization.table);
 					}
 					sourceEntry.remove();
+*/					
 				} 
 				
 			} finally {

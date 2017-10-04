@@ -337,14 +337,13 @@
             this.isInit = true;
         },
 
-        refresh: function(){
+        refresh: function(opts){
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
             $base();
 
-            var dataValue = [],
-                seriesParams = [];
+            var dataValue = [];
             var dataValues = source.values();
             for(var i = 0; i < dataValues.length; i++){
                 var val = [],
@@ -359,199 +358,212 @@
                     });
                 }
 
-                seriesParams.push({
-                    name: dataValues[i].get(1).value(),
-                    color: dataValues[i].get(2).value()
-                });
-
                 dataValue.push(val);
             }
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    var data = [];
-
-                    while(source.next()){
-                        for(var i = 0; i < dataValue.length; i++){
-                            if(!data[i]) data[i] = [];
-
-                            data[i].push(dataValue[i].reduce(function(newObj, el){
-                                newObj[el.name] = el.value.value()
-                                return newObj;
-                            }, {}));
-                        }
-                    }
-
                     try{
-                    
-	                    var colors = [
-							['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-							['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-							['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-							['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-							['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
-	                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-                    
-                        var chart = {
+                        var data = [];
 
-							colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                        
-                        
-                            chart: {
-                                type: 'scatter'
-                                //,zoomType: 'xy'
-                            },
-                            title: {
-                                text: this.getContext().find('title').value()
-                            },
+                        while(source.next()){
+                            for(var i = 0; i < dataValue.length; i++){
+                                if(!data[i]) data[i] = [];
 
-                            subtitle: {
-                                text: this.getContext().find('subtitle').value()
-                            },
-
-                            legend: {
-                                enabled: this.getContext().find('enableLegend').used()
-	                            ,layout: 'horizontal',
-	                            floating: false,
-	                            align: 'center',
-	                            verticalAlign: 'bottom',
-	                            x: 0,
-	                            y: 0,
-	                            itemDistance: 30,
-	                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-                                
-                            },
-                            
-							credits: {
-	        					enabled: false
-	    					},
-	    					                        
-                            series: []
-                        };
-
-                        for(var i = 0; i < data.length; i++){
-                            chart.series.push({
-                                data: data[i],
-                                name: seriesParams[i].name,
-                                color: seriesParams[i].color
-                            });
-                        }
-
-                        // xAxis
-                        var x = this.getContext().find('xAxis');
-                        if(x.used()){
-                            x = x.value();
-
-                            chart.xAxis = {
-                                title: {
-                                  text: x.get(0).value()
-                                  ,align: 'high'
-                                },
-                                labels: {
-                                  format: x.get(1).value()
-                                }
+                                data[i].push(dataValue[i].reduce(function(newObj, el){
+                                    newObj[el.name] = el.value.value()
+                                    return newObj;
+                                }, {}));
                             }
                         }
 
-                        // yAxis
-                        var x = this.getContext().find('yAxis');
-                        if(x.used()){
-                            x = x.value();
-
-                            chart.yAxis = {
-                                title: {
-                                  text: x.get(0).value()
-                                  ,align: 'high'
-                                },
-                                labels: {
-                                  format: x.get(1).value()
-                                }
-                            }
+                        if(opts && opts.isCacheMod){
+                            $this.storeCache(data);
                         }
 
-                        // plotOptions
-                        var x = this.getContext().find('plotOptions');
-                        if(x.used()){
-                            x = x.value();
-                            var dataLabels = x.get(0).value().get(0).value();
-
-                            chart.plotOptions = {
-                                scatter: {
-                                    tooltip: {
-                                        headerFormat: dataLabels.get(0).value(),
-                                        pointFormat: dataLabels.get(1).value()
-                                    },
-                                    allowPointSelect: true,
-                                    point: {
-                                        events: {
-                                            click: function(evt) {
-                                                if(JSB().isFunction($this.options.onClick)){
-                                                    $this.options.onClick.call(this, evt);
-                                                }
-                                            },
-                                            select: function(evt) {
-                                                var flag = false;
-
-                                                if(JSB().isFunction($this.options.onSelect)){
-                                                    flag = $this.options.onSelect.call(this, evt);
-                                                }
-                                                /*
-                                                if(!flag){
-                                                    $this._addPieFilter(evt.target.name);
-                                                }
-                                                */
-                                            },
-                                            unselect: function(evt) {
-                                                var flag = false;
-
-                                                if(JSB().isFunction($this.options.onUnselect)){
-                                                    flag = $this.options.onUnselect.call(this, evt);
-                                                }
-                                                /*
-                                                if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                                    $this._notNeedUnselect = false;
-                                                    $this.removeFilter($this._currentFilter);
-                                                    $this.refreshAll();
-                                                }
-                                                */
-                                            },
-                                            mouseOut: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOut)){
-                                                    $this.options.mouseOut.call(this, evt);
-                                                }
-                                            },
-                                            mouseOver: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOver)){
-                                                    $this.options.mouseOver.call(this, evt);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            };
-                        }
+                        $this._buildChart(data);
                     } catch(ex){
                         console.log(ex);
-                        return;
                     } finally{
                         $this.getElement().loader('hide');
                     }
-
-                    $this.container.highcharts(chart);
-                    $this.chart =  $this.container.highcharts();
                 });
-
-
             }, function(){
                 return $this.isInit;
             });
         },
 
+        _buildChart: function(data){
+            try{
+                var dataValues = this.getContext().find('source').values(),
+                    seriesParams = [];
+
+                for(var i = 0; i < dataValues.length; i++){
+                    seriesParams.push({
+                        name: dataValues[i].get(1).value(),
+                        color: dataValues[i].get(2).value()
+                    });
+                }
+
+                var colors = [
+                    ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                    ['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
+                    ['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
+                    ['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
+                    ['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
+                ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                var chart = {
+
+                    colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+
+                    chart: {
+                        type: 'scatter'
+                    },
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    legend: {
+                        enabled: this.getContext().find('enableLegend').used()
+                        ,layout: 'horizontal',
+                        floating: false,
+                        align: 'center',
+                        verticalAlign: 'bottom',
+                        x: 0,
+                        y: 0,
+                        itemDistance: 30,
+                        backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: []
+                };
+
+                for(var i = 0; i < data.length; i++){
+                    chart.series.push({
+                        data: data[i],
+                        name: seriesParams[i].name,
+                        color: seriesParams[i].color
+                    });
+                }
+
+                // xAxis
+                var x = this.getContext().find('xAxis');
+                if(x.used()){
+                    x = x.value();
+
+                    chart.xAxis = {
+                        title: {
+                          text: x.get(0).value()
+                          ,align: 'high'
+                        },
+                        labels: {
+                          format: x.get(1).value()
+                        }
+                    }
+                }
+
+                // yAxis
+                var x = this.getContext().find('yAxis');
+                if(x.used()){
+                    x = x.value();
+
+                    chart.yAxis = {
+                        title: {
+                          text: x.get(0).value()
+                          ,align: 'high'
+                        },
+                        labels: {
+                          format: x.get(1).value()
+                        }
+                    }
+                }
+
+                // plotOptions
+                var x = this.getContext().find('plotOptions');
+                if(x.used()){
+                    x = x.value();
+                    var dataLabels = x.get(0).value().get(0).value();
+
+                    chart.plotOptions = {
+                        scatter: {
+                            tooltip: {
+                                headerFormat: dataLabels.get(0).value(),
+                                pointFormat: dataLabels.get(1).value()
+                            },
+                            allowPointSelect: true,
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    select: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            flag = $this.options.onSelect.call(this, evt);
+                                        }
+                                        /*
+                                        if(!flag){
+                                            $this._addPieFilter(evt.target.name);
+                                        }
+                                        */
+                                    },
+                                    unselect: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            flag = $this.options.onUnselect.call(this, evt);
+                                        }
+                                        /*
+                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
+                                            $this._notNeedUnselect = false;
+                                            $this.removeFilter($this._currentFilter);
+                                            $this.refreshAll();
+                                        }
+                                        */
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                }
+
+                $this.container.highcharts(chart);
+                $this.chart =  $this.container.highcharts();
+            } catch(e){
+                console.log(e);
+            }
+        },
+
         // events
         _addNewFilter: function(){
+            /*
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
-            /*
+
             var field = this.getContext().find('data').value().get(0).binding();
 
             this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);

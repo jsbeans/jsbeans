@@ -17,8 +17,10 @@
 	
 	padding: 2px 5px;
 	box-shadow: 2px 2px 8px #585858;
+	/*
 	width: auto !important;
-	height: auto !important; 
+	height: auto !important;
+	*/
 	overflow: visible;
 	opacity: 0;
 	visibility: hidden;

@@ -58,7 +58,6 @@
 				$this.setCurrentWorkspace(w);
 				$this.setCurrentNode(null);	// display root
 			});
-			
 		},
 		
 		setCurrentWorkspace: function(w){

@@ -253,6 +253,17 @@
 
 			$base();
 
+			if(opts && opts.refreshFromCache){
+            	JSB().deferUntil(function(){
+            		var cache = $this.getCache();
+            		if(!cache) return;
+            		$this._buildChart(cache);
+            	}, function(){
+            		return $this.isInit;
+            	});
+            	return;
+            }
+
             var data = [],
                 series = this.getContext().find('series').values(),
                 autoSize = this.getContext().find('autoSize').used(),
@@ -262,94 +273,105 @@
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    while(source.next()){
-                        var el = data;
+                    try{
+                        while(source.next()){
+                            var el = data;
 
-                        for(var i = 0; i < series.length; i++){
-                            var label = series[i].get(0).value();
-                            var weight = series[i].get(1).value();
+                            for(var i = 0; i < series.length; i++){
+                                var label = series[i].get(0).value();
+                                var weight = series[i].get(1).value();
 
-                            var e = null;
-                            for(var j = 0; j < el.length; j++){
-                                if(el[j].label === label){
-                                    e = el[j];
-                                    break;
+                                var e = null;
+                                for(var j = 0; j < el.length; j++){
+                                    if(el[j].label === label){
+                                        e = el[j];
+                                        break;
+                                    }
+                                }
+
+                                if(!e){
+                                    el.push({
+                                        label: label,
+                                        weight: parseInt(weight),
+                                        groups: []
+                                    });
+
+                                    el = el[el.length - 1].groups;
+                                } else {
+                                    el = e.groups;
                                 }
                             }
-
-                            if(!e){
-                                el.push({
-                                    label: label,
-                                    weight: parseInt(weight),
-                                    groups: []
-                                });
-
-                                el = el[el.length - 1].groups;
-                            } else {
-                                el = e.groups;
-                            }
                         }
+
+                        data = $this.procData(data, autoSize, skipSmallGroups, skipEmptyNamedGroups);
+
+                        data = $this.convertToTreemapFormat(data);
+
+                        if(opts && opts.isCacheMod){
+                            $this.storeCache(data);
+                        }
+
+                        $this._buildChart(data);
+                    } catch(e){
+                        console.log(e);
+                    } finally{
+                        $this.getElement().loader('hide');
                     }
-
-                    data = $this.procData(data, autoSize, skipSmallGroups, skipEmptyNamedGroups);
-
-                    data = $this.convertToTreemapFormat(data);
-
-                    $this.getElement().loader('hide');
-
-                    var colors = [
-						['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-						['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-						['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-						['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-						['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
-                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-                    
-                    var chartOptions = {
-						colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                       
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-                        subtitle: {
-                            text: this.getContext().find('subtitle').value()
-                        },
-						colorAxis: {
-        					minColor: '#FFFFFF',
-        					maxColor: colors[colorSchemeIdx][0] || Highcharts.getOptions().colors[0],
-        					labels: {
-								enabled: true
-							}
-    					},   
-						credits: {
-	        				enabled: false
-	    				},
-                        series: [{
-                            type: 'treemap',
-                            layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),
-                            allowDrillToNode: true,
-                            animationLimit: 1000,
-                            dataLabels: {
-                                enabled: true
-                            },
-                            levelIsConstant: false,
-                            data: data,
-                            turboThreshold: 0
-                        }]
-                    };
-                    
-                    try {
-                    	$this.container.highcharts(chartOptions);
-                    } catch(e) {
-                    	console.log("Exception", e);
-                    }
-
-					console.log(colorSchemeIdx, chartOptions);
-
-                    $this.chart =  $this.container.highcharts();
                 });
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(data){
+            try{
+                var colors = [
+                    ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                    ['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
+                    ['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
+                    ['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
+                    ['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
+                ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                var chartOptions = {
+                    colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+                    colorAxis: {
+                        minColor: '#FFFFFF',
+                        maxColor: colors[colorSchemeIdx][0] || Highcharts.getOptions().colors[0],
+                        labels: {
+                            enabled: true
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    series: [{
+                        type: 'treemap',
+                        layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),
+                        allowDrillToNode: true,
+                        animationLimit: 1000,
+                        dataLabels: {
+                            enabled: true
+                        },
+                        levelIsConstant: false,
+                        data: data,
+                        turboThreshold: 0
+                    }]
+                };
+
+                console.log(colorSchemeIdx, chartOptions);
+
+                $this.container.highcharts(chartOptions);
+                $this.chart =  $this.container.highcharts();
+            } catch(e){
+                console.log(e);
+            }
         },
 
         _addNewFilter: function(level, value){

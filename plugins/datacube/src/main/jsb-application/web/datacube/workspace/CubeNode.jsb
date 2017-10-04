@@ -21,7 +21,7 @@
 				if(sender != $this.getEntry()){
 					return;
 				}
-				$this.update(params.status, params.success !== true);
+                $this.update(params.status, params.success !== true);
 			});
 			
 			this.update();

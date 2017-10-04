@@ -296,20 +296,32 @@
 			this.loadCss('Html.css');
 		},
 		
-		refresh: function(){
+		refresh: function(opts){
 			$base();
 			var recordContext = this.getContext().find('record');
-			if(recordContext.data()){
-				$this.draw();
+
+			if(opts && opts.refreshFromCache){
+                var cache = this.getCache();
+                if(!cache) return;
+
+                if(this.getContext().find('useIframe').used()){
+                    this.renderIframe(cache);
+                } else {
+                    this.renderSimple(cache);
+                }
 			} else {
-				recordContext.fetch({batchSize: 1}, function(){
-					recordContext.next();
-					$this.draw();
-				});
+                if(recordContext.data()){
+                    $this.draw(opts ? opts.isCacheMod : false);
+                } else {
+                    recordContext.fetch({batchSize: 1}, function(){
+                        recordContext.next();
+                        $this.draw(opts ? opts.isCacheMod : false);
+                    });
+                }
 			}
 		},
 		
-		draw: function(){
+		draw: function(isCacheMod){
 			var args = this.getContext().find('args').values();
 			var template = this.getContext().find('template').value();
 			var data = {};
@@ -320,6 +332,10 @@
 			}
 			var templateProc = this.doT.template(template);
 			var html = templateProc(data);
+
+			if(isCacheMod){
+			    this.storeCache(html);
+			}
 			
 			if(this.getContext().find('useIframe').used()){
 				this.renderIframe(html);

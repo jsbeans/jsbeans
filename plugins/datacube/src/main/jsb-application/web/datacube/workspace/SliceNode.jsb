@@ -6,13 +6,6 @@
 			$base(opts);
 			this.loadCss('SliceNode.css');
 			this.addClass('sliceNode');
-			
-			this.subscribe('Workspace.Entry.updated', function(){
-			});
-			
 		}
-		
-		
 	}
-	
 }

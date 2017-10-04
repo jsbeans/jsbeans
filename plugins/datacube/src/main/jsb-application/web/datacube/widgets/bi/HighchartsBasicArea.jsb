@@ -461,6 +461,17 @@
             
 			$base();
 
+            if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache.seriesData, cache.xAxis);
+                }, function(){
+                    return $this.isInit;
+                });
+                return;
+            }
+
 // filters section
             var globalFilters = source.getFilters();
 
@@ -509,258 +520,273 @@
             }
 // end filters section
 
-            var seriesContext = this.getContext().find('series').values();
-            var yAxisContext = this.getContext().find('yAxis').values();
-            var xAxisContext = this.getContext().find('xAxis').values();
+            var seriesContext = this.getContext().find('series').values(),
+                xAxisContext = this.getContext().find('xAxis').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    var series = [];
-                    var yAxis = [];
+                    var seriesData = [];
                     var xAxis = [];
                     
                     try {
-	                    while(source.next()){
-	                        for(var i = 0; i < seriesContext.length; i++){
-	                            if(!series[i]){
-	                                series[i] = {
-	                                    name: seriesContext[i].get(0).value(),
-	                                    data: [],
-	                                    type: seriesContext[i].get(2).value().name(),
-	                                    tooltip: {
-	                                        valueSuffix: seriesContext[i].get(3).value().get(0).value()
-	                                    },
-	                                    yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-	                                    dashStyle: seriesContext[i].get(5).value().name(),
-	                                    color: $this.isNull(seriesContext[i].get(6).value()),
-	                                    marker: {
-						                    // The fill color of the point marker
-						                    fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
-						                    // The color of the point marker's outline
-						                    lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
-						                    // The width of the point marker's outline
-						                    lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
-						                    // The radius of the point marker
-						                    radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
-						                    // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
-						                    symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
-	                                    },
-	                                    visible: seriesContext[i].find('visible').used(),
-	                                    point: {
-	                                        events: {
-	                                            click: function(evt) {
-	                                                $this._clickEvt = evt;
-	
-	                                                if(JSB().isFunction($this.options.onClick)){
-	                                                    $this.options.onClick.call(this, evt);
-	                                                }
-	                                            },
-	                                            select: function(evt) {
-	                                                var flag = false;
-	
-	                                                if(JSB().isFunction($this.options.onSelect)){
-	                                                    flag = $this.options.onSelect.call(this, evt);
-	                                                }
-	
-	                                                if(!flag && $this._clickEvt){
-	                                                    evt.preventDefault();
-	                                                    $this._clickEvt = null;
-	                                                    $this._addNewFilter(evt);
-	                                                }
-	                                            },
-	                                            unselect: function(evt) {
-	                                                var flag = false;
-	
-	                                                if(JSB().isFunction($this.options.onUnselect)){
-	                                                    flag = $this.options.onUnselect.call(this, evt);
-	                                                }
-	
-	                                                if(!flag && $this._deselectCategoriesCount === 0){
-	                                                    if(Object.keys($this._curFilters).length > 0){
-	                                                        evt.preventDefault();
-	
-	                                                        if(evt.accumulate){
-	                                                            $this.removeFilter($this._curFilters[evt.target.category]);
-	                                                            $this._deselectAllCategory(evt.target.category);
-	                                                            delete $this._curFilters[evt.target.category];
-	                                                            $this.refreshAll();
-	                                                        } else {
-	                                                            for(var i in $this._curFilters){
-	                                                                $this.removeFilter($this._curFilters[i]);
-	                                                                $this._deselectAllCategory(i);
-	                                                            }
-	                                                            $this._curFilters = {};
-	                                                            $this.refreshAll();
-	                                                        }
-	                                                    }
-	                                                } else {
-	                                                    $this._deselectCategoriesCount--;
-	                                                }
-	                                            },
-	                                            mouseOut: function(evt) {
-	                                                if(JSB().isFunction($this.options.mouseOut)){
-	                                                    $this.options.mouseOut.call(this, evt);
-	                                                }
-	                                            },
-	                                            mouseOver: function(evt) {
-	                                                if(JSB().isFunction($this.options.mouseOver)){
-	                                                    $this.options.mouseOver.call(this, evt);
-	                                                }
-	                                            }
-	                                        }
-	                                    }
-	                                    //,stack: seriesContext[i].get(8).value()
-	                                };
-									
-									/**
-									**/
-									var tooltipPointFormat = $this.safeGetValue(seriesContext[i], [3,1]);
-									if( tooltipPointFormat ) {
-										series[i].tooltip.pointFormat = tooltipPointFormat;
-									}
-									/**
-									**/
-	                            }
-	
-	                            var a = seriesContext[i].get(1).value();
-	                            if(JSB().isArray(a)){
-	                                series[i].data = a;
-	                            } else {
-	                                series[i].data.push(a);
-	                            }
-	                        }
-	                        for(var i = 0; i < xAxisContext.length; i++){
-	                            var a = xAxisContext[i].get(0).value();
-	                            if(JSB().isArray(a)){
-	                                xAxis = a;
-	                            } else {
-	                                xAxis.push(a);
-	                            }
-	                        }
-	
-	                        for(var i = 0; i < yAxisContext.length; i++){
-	                            yAxis[i] = {
-	                                title: {
-	                                    text: yAxisContext[i].get(0).value().get(0).value(),
-	                                    style: {
-	                                        color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
-	                                    },
-	                                    align: 'high'
-	                                },
-	                                labels: {
-	                                    format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
-	                                    style: {
-	                                        color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
-	                                    }
-	                                },
-	                                opposite: yAxisContext[i].get(2).used()
-	                            };
-	                        }
-	                    }
-	                    
-	                    var colors = [
-							['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-							["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
-							["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
-							["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
-							["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]							
-	                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-	                    
-	                    var chartOptions = {
-	                    
-	                    	HighchartsBasicArea: {
-	                    		version: 'v-2017-09-21-02'
-	                    	},
-	
-							colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                       
-	                    
-	                        chart: {
-	                            //zoomType: 'x'
-	                        },
-	
-	                        title: {
-	                            text: this.getContext().find('title').value()
-	                        },
-	
-	                        subtitle: {
-	                            text: this.getContext().find('subtitle').value()
-	                        },
-	
-	                        xAxis: [{
-	                            categories: xAxis,
-	                            crosshair: false,
-	                            title: {
-	                                text: xAxisContext[0].get(1).value().get(0).value(),
-	                                style: {
-	                                    color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
-	                                },
-	                                align: 'high'
-	                            }                            
-	                        }],
-	
-	                        yAxis: yAxis,
-	
-	                        tooltip: {
-	                            shared: true
-	                        },
-	
-	                        legend: {
-	                            layout: 'horizontal',
-	                            floating: false,
-	                            align: 'center',
-	                            verticalAlign: 'bottom',
-	                            x: 0,
-	                            y: 0,
-	                            itemDistance: 30,
-	                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-	                        },
-	
-	                        plotOptions: {
-	                            series: {
-	                                allowPointSelect: true,
-	                                states: {
-	                                    select: {
-	                                        color: null,
-	                                        borderWidth: 5,
-	                                        borderColor: 'Blue'
-	                                    }
-	                                }
-	                            }
-	                        },
-	                        
-							credits: {
-	        					enabled: false
-	    					},                        
-	
-	                        series: series
-	                    };
-	                    
-	                    /*
-	                    if($this.getContext().find('isStacking').used()){
-	                        chartOptions.plotOptions.column = {
-	                            stacking: 'normal'
-	                        }
-	                    }
-	                    */
-	                    
-                    	$this.container.highcharts(chartOptions);
-	
-						console.log(chartOptions);
-	
-	                    $this.chart =  $this.container.highcharts();
-	                    
-                    } catch(e) {
-						var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
-                    	console.log("Exception", [wTypeName, e]);
+                        while(source.next()){
+                            for(var i = 0; i < seriesContext.length; i++){
+                                var a = seriesContext[i].get(1).value();
+                                if(JSB().isArray(a)){
+                                    seriesData[i] = a;
+                                } else {
+                                    if(!seriesData[i]){
+                                        seriesData[i] = [];
+                                    }
+                                    seriesData[i].push(a);
+                                }
+                            }
+
+                            for(var i = 0; i < xAxisContext.length; i++){
+                                var a = xAxisContext[i].get(0).value();
+                                if(JSB().isArray(a)){
+                                    xAxis = a;
+                                } else {
+                                    xAxis.push(a);
+                                }
+                            }
+                        }
+
+                        if(opts && opts.isCacheMod){
+                            $this.storeCache({
+                                seriesData: seriesData,
+                                xAxis: xAxis
+                            });
+                        }
+
+                        $this._buildChart(seriesData, xAxis);
+                    } catch(ex) {
+                        console.log(ex);
                     } finally {
                         $this.getElement().loader('hide');
                     }
                 });
-
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(seriesData, xAxis){
+            try{
+                var seriesContext = this.getContext().find('series').values(),
+                    yAxisContext = this.getContext().find('yAxis').values(),
+                    xAxisContext = this.getContext().find('xAxis').values(),
+                    yAxis = [],
+                    series = [];
+
+                for(var i = 0; i < seriesContext.length; i++){
+                    if(!series[i]){
+                        series[i] = {
+                            name: seriesContext[i].get(0).value(),
+                            data: seriesData[i],
+                            type: seriesContext[i].get(2).value().name(),
+                            tooltip: {
+                                valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                            },
+                            yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
+                            dashStyle: seriesContext[i].get(5).value().name(),
+                            color: $this.isNull(seriesContext[i].get(6).value()),
+                            marker: {
+                                // The fill color of the point marker
+                                fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
+                                // The color of the point marker's outline
+                                lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
+                                // The width of the point marker's outline
+                                lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
+                                // The radius of the point marker
+                                radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
+                                // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
+                                symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
+                            },
+                            visible: seriesContext[i].find('visible').used(),
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        $this._clickEvt = evt;
+
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    select: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            flag = $this.options.onSelect.call(this, evt);
+                                        }
+
+                                        if(!flag && $this._clickEvt){
+                                            evt.preventDefault();
+                                            $this._clickEvt = null;
+                                            $this._addNewFilter(evt);
+                                        }
+                                    },
+                                    unselect: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            flag = $this.options.onUnselect.call(this, evt);
+                                        }
+
+                                        if(!flag && $this._deselectCategoriesCount === 0){
+                                            if(Object.keys($this._curFilters).length > 0){
+                                                evt.preventDefault();
+
+                                                if(evt.accumulate){
+                                                    $this.removeFilter($this._curFilters[evt.target.category]);
+                                                    $this._deselectAllCategory(evt.target.category);
+                                                    delete $this._curFilters[evt.target.category];
+                                                    $this.refreshAll();
+                                                } else {
+                                                    for(var i in $this._curFilters){
+                                                        $this.removeFilter($this._curFilters[i]);
+                                                        $this._deselectAllCategory(i);
+                                                    }
+                                                    $this._curFilters = {};
+                                                    $this.refreshAll();
+                                                }
+                                            }
+                                        } else {
+                                            $this._deselectCategoriesCount--;
+                                        }
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
+                                        }
+                                    }
+                                }
+                            }
+                            //,stack: seriesContext[i].get(8).value()
+                        };
+
+                        /**
+                        **/
+                        var tooltipPointFormat = $this.safeGetValue(seriesContext[i], [3,1]);
+                        if( tooltipPointFormat ) {
+                            series[i].tooltip.pointFormat = tooltipPointFormat;
+                        }
+                        /**
+                        **/
+                    }
+                }
+
+                for(var i = 0; i < yAxisContext.length; i++){
+                    yAxis[i] = {
+                        title: {
+                            text: yAxisContext[i].get(0).value().get(0).value(),
+                            style: {
+                                color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
+                            },
+                            align: 'high'
+                        },
+                        labels: {
+                            format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
+                            style: {
+                                color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
+                            }
+                        },
+                        opposite: yAxisContext[i].get(2).used()
+                    };
+                }
+
+                var colors = [
+                    ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                    ["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
+                    ["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
+                    ["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
+                    ["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]
+                ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                var chartOptions = {
+
+                    HighchartsBasicArea: {
+                        version: 'v-2017-09-21-02'
+                    },
+
+                    colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+
+                    chart: {
+                        //zoomType: 'x'
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    xAxis: [{
+                        categories: xAxis,
+                        crosshair: false,
+                        title: {
+                            text: xAxisContext[0].get(1).value().get(0).value(),
+                            style: {
+                                color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
+                            },
+                            align: 'high'
+                        }
+                    }],
+
+                    yAxis: yAxis,
+
+                    tooltip: {
+                        shared: true
+                    },
+
+                    legend: {
+                        layout: 'horizontal',
+                        floating: false,
+                        align: 'center',
+                        verticalAlign: 'bottom',
+                        x: 0,
+                        y: 0,
+                        itemDistance: 30,
+                        backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                    },
+
+                    plotOptions: {
+                        series: {
+                            allowPointSelect: true,
+                            states: {
+                                select: {
+                                    color: null,
+                                    borderWidth: 5,
+                                    borderColor: 'Blue'
+                                }
+                            }
+                        }
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: series
+                };
+
+                $this.container.highcharts(chartOptions);
+
+                console.log(chartOptions);
+
+                $this.chart =  $this.container.highcharts();
+            } catch(e){
+                var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
+                console.log("Exception", [wTypeName, e]);
+            }
         },
 
         _addNewFilter: function(evt){

@@ -60,30 +60,7 @@
 				this.options.outletHeader.empty();
 			}
 			this.destroyRenderers();
-/*
-			function constructStructure(structure, parentElement){
-			    structure.elements = [];
 
-			    switch(structure.type){
-                    case 'group':
-                        var i = 0;
-                        do{
-                            structure.elements.push(this.constructGroup(structure, parentElement));
-                            i++;
-                        } while(i < structure.values.length);
-                        break;
-                    case 'item':
-                        structure.elements.push(this.constructItem());
-                        break;
-                    case 'select':
-                        structure.elements.push(this.constructSelect());
-                        break;
-                    case 'widget':
-                        structure.elements.push(this.constructWidget());
-                        break;
-                }
-            }
-*/
 			switch(this.scheme.type){
 			case 'group':
 				this.constructGroup();
@@ -262,33 +239,43 @@
 					ul.append(liElt);
 					return liElt;
 				}
-				// was before key check
-/*
-                for(var i = 0; i < $this.scheme.items.length; i++){
-                    var item = $this.scheme.items[i];
-                    if(!groupValues.items[i]){
-                        groupValues.items[i] = {};
-                    }
-                    addItem(item, groupValues.items[i]);
-                }
-*/
+
+				var hasKeys = true;
+				for(var i = 0; i < groupValues.items.length; i ++){
+				    if(!groupValues.items[i].key){
+				        hasKeys = false;
+				        break;
+				    }
+				}
+
 				for(var i = 0; i < $this.scheme.items.length; i++){
 					var item = $this.scheme.items[i];
 
-					var value = null;
-					for(var j = 0; j < groupValues.items.length; j ++){
-					    if(groupValues.items[j].key === item.key){
-					        value = groupValues.items[j];
-					        break;
+					if(hasKeys){
+                        var value = null;
+                        for(var j = 0; j < groupValues.items.length; j ++){
+                            if(groupValues.items[j].key === item.key){
+                                value = groupValues.items[j];
+                                break;
+                            }
+                        }
+
+                        if(!value){
+                            groupValues.items[i] = {};
+                            value = groupValues.items[i];
+                        }
+
+                        addItem(item, value);
+					} else {
+					    if(groupValues.items[i]){
+					        var value = groupValues.items[i];
+					    } else {
+					        groupValues.items[i] = {};
+					        var value = groupValues.items[i];
 					    }
-					}
 
-					if(!value){
-					    groupValues.items[i] = {};
-					    value = groupValues.items[i];
+					    addItem(item, value);
 					}
-
-					addItem(item, value);
 				}
 			}
 
@@ -461,6 +448,7 @@
 					},$this.editorOptions || {}, {
 						onChange: function(val){
 							valueDesc.value = val;
+							if($this.options.onChange) $this.options.onChange.call($this);
 						}
 					}));
 					editor.addClass('valueEditor');
@@ -493,6 +481,7 @@
 							} else {
 								valContainer.removeClass('isBound');
 							}
+							if($this.options.onChange) $this.options.onChange.call($this);
 						}
 					});
 					if(editorCls){
@@ -632,7 +621,6 @@
 				$this.bodyElt.empty();
 				$this.bodyElt.append(itemRenderer.getElement());
 				$this.bodyElt.attr('item', item.type);
-
 			}
 
 			var header = this.constructHeader();
@@ -797,8 +785,13 @@
 
 				if(this.scheme.optional){
 					// show checkbox caption
-					header.append(`#dot <div jsb="JSB.DataCube.CheckBox" class="caption" onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; $this.updateUsedVisibility(); })}}" label="{{=$this.scheme.name}}" checked="{{=$this.values.used}}"></div>`);
-					// JSB.Widgets.CheckBox
+					header.append(`#dot
+					    <div jsb="JSB.DataCube.CheckBox"
+					         class="caption"
+					         onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; $this.updateUsedVisibility(); if($this.options.onChange) $this.options.onChange.call($this); })}}"
+					         label="{{=$this.scheme.name}}"
+					         checked="{{=$this.values.used}}">
+                        </div>`);
 
 					if(!JSB.isDefined(this.values.used) && this.scheme.optional == 'checked'){
 						JSB.deferUntil(function(){

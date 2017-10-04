@@ -354,6 +354,17 @@
             
 			$base();
 
+			if(opts && opts.refreshFromCache){
+            	JSB().deferUntil(function(){
+            		var cache = $this.getCache();
+            		if(!cache) return;
+            		$this._buildChart(cache);
+            	}, function(){
+            		return $this.isInit;
+            	});
+            	return;
+            }
+
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
@@ -559,106 +570,117 @@
                             return 0;
                         });
 
-                        var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
-                        tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
-
-                        var dataGrouping = this.getContext().find('dataGrouping');
-                        if(dataGrouping.used()){
-                            var units = [];
-                            var values = dataGrouping.values();
-                            for(var i = 0; i < values.length; i++){
-                                units.push([values[i].get(0).value().get(0).value(), [values[i].get(1).value()]]);
-                            }
+                        if(opts && opts.isCacheMod){
+                        	$this.storeCache(data);
                         }
 
-                        var xAxis = this.getContext().find('xAxis');
-                        if(xAxis.used()){
-                            var gr = xAxis.values(),
-                                dateTimeLabelFormats = {};
-
-                            for(var i = 0; i < gr.length; i++){
-                                dateTimeLabelFormats[gr[i].value().get(0).value().get(0).value()] = gr[i].value().get(1).value();
-                            }
-                        }
-
-                        var chart = {
-                            chart: {
-                                renderTo: $this.containerId
-                            },
-                            xAxis: {
-                                type: 'datetime',
-                                min: data[0].x,
-                                max: data[data.length - 1].x,
-                                events: {
-                                    afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
-                                }
-                            },
-
-                            title: {
-                                text: this.getContext().find('title').value()
-                            },
-
-                            subtitle: {
-                                text: this.getContext().find('subtitle').value()
-                            },
-
-                            tooltip: {
-                                xDateFormat: tooltipXDateFormat
-                            }
-                        };
-
-                        chart.series = [{
-                            type: 'column',
-                            name: seriesContext.get(0).value(),
-                            data: data,
-                            turboThreshold: 0,
-                            dataGrouping: {
-                                enabled: units !== undefined ? true : false,
-                                units: units
-                            }
-                        }];
-
-                        if(navigator){
-                            chart.navigator = navigator;
-                        }
-
-                        if(scrollbar){
-                            chart.scrollbar = scrollbar;
-                        }
-
-                        if(rangeSelector){
-                            chart.rangeSelector = rangeSelector;
-                        }
-
-                        if(dateTimeLabelFormats){
-                            chart.xAxis.dateTimeLabelFormats = dateTimeLabelFormats;
-                        }
+                        $this._buildChart(data);
                     } catch(e){
                         console.log(e);
-                        if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
-                        return;
                     } finally{
                         $this.getElement().loader('hide');
                     }
-
-                    // create the chart
-                    $this.chart = new Highcharts.stockChart(chart);
-
-                    var ex = $this.chart.navigator.xAxis.getExtremes();
-                    $this._widgetExtremes = {
-                        min: ex.min,
-                        max: ex.max
-                    };
-
-                    if(_bNeedExtremesUpdate){
-                        $this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : ex.dataMin, $this._currentFilters.max ? $this._currentFilters.max : ex.dataMax);
-                    }
-
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 });
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(data){
+            try{
+                var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
+                tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
+
+                var dataGrouping = this.getContext().find('dataGrouping');
+                if(dataGrouping.used()){
+                    var units = [];
+                    var values = dataGrouping.values();
+                    for(var i = 0; i < values.length; i++){
+                        units.push([values[i].get(0).value().get(0).value(), [values[i].get(1).value()]]);
+                    }
+                }
+
+                var xAxis = this.getContext().find('xAxis');
+                if(xAxis.used()){
+                    var gr = xAxis.values(),
+                        dateTimeLabelFormats = {};
+
+                    for(var i = 0; i < gr.length; i++){
+                        dateTimeLabelFormats[gr[i].value().get(0).value().get(0).value()] = gr[i].value().get(1).value();
+                    }
+                }
+
+                var chartOpts = {
+                    chart: {
+                        renderTo: $this.containerId
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        min: data[0].x,
+                        max: data[data.length - 1].x,
+                        events: {
+                            afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
+                        }
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    tooltip: {
+                        xDateFormat: tooltipXDateFormat
+                    }
+                };
+
+                chartOpts.series = [{
+                    type: 'column',
+                    name: seriesContext.get(0).value(),
+                    data: data,
+                    turboThreshold: 0,
+                    dataGrouping: {
+                        enabled: units !== undefined ? true : false,
+                        units: units
+                    }
+                }];
+
+                if(navigator){
+                    chartOpts.navigator = navigator;
+                }
+
+                if(scrollbar){
+                    chartOpts.scrollbar = scrollbar;
+                }
+
+                if(rangeSelector){
+                    chartOpts.rangeSelector = rangeSelector;
+                }
+
+                if(dateTimeLabelFormats){
+                    chartOpts.xAxis.dateTimeLabelFormats = dateTimeLabelFormats;
+                }
+
+                // create the chart
+                $this.chart = new Highcharts.stockChart(chartOpts);
+
+                var ex = $this.chart.navigator.xAxis.getExtremes();
+                $this._widgetExtremes = {
+                    min: ex.min,
+                    max: ex.max
+                };
+
+                if(_bNeedExtremesUpdate){
+                    $this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : ex.dataMin, $this._currentFilters.max ? $this._currentFilters.max : ex.dataMax);
+                }
+
+                $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
+            } catch(ex){
+                console.log(ex);
+                if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
+            }
         },
 
         _addIntervalFilter: function(event){
