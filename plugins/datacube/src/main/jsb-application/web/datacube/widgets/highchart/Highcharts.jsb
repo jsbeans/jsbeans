@@ -450,7 +450,6 @@
                     $this._buildChart(seriesData, xAxis);
 
                     for(var i in $this._curFilters){
-                    debugger;
                         this._selectAllCategory(i);
                     }
                 });
@@ -678,7 +677,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category === cat && !series[i].points[j].selected){
+                    if(series[i].points[j].category == cat && !series[i].points[j].selected){
                         series[i].points[j].select(true, true);
                         break;
                     }
@@ -691,6 +690,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
+                debugger;
                     if(series[i].points[j].category == cat && series[i].points[j].selected){
                         this._deselectCategoriesCount++;
                         series[i].points[j].select(false, true);

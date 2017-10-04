@@ -795,7 +795,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category === cat && !series[i].points[j].selected){
+                    if(series[i].points[j].category == cat && !series[i].points[j].selected){
                         series[i].points[j].select(true, true);
                         break;
                     }
