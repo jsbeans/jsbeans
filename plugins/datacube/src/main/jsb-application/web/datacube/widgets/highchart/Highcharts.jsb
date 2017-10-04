@@ -690,7 +690,6 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                debugger;
                     if(series[i].points[j].category == cat && series[i].points[j].selected){
                         this._deselectCategoriesCount++;
                         series[i].points[j].select(false, true);
