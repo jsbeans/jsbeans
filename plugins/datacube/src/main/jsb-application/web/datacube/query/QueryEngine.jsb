@@ -7,7 +7,8 @@
 		    'DataCube.Query.Iterators.InnerJoinIterator',
 		    'DataCube.Query.Iterators.FinalizeIterator',
 		    'DataCube.Providers.SqlTableDataProvider',
-		    'DataCube.Query.QuerySyntax'
+		    'DataCube.Query.QuerySyntax',
+		    'DataCube.Query.QueryUtils'
         ],
 
 		$constructor: function(cube){
@@ -31,100 +32,16 @@
 		    QuerySyntax.unwrapMacros(dcQuery);
 
 		    // fill all cube fields (or linked with dataProvider) for default $select={}
-		    if (Object.keys(dcQuery.$select).length == 0) {
-		        if (dataProvider) {
-		            var fields = dataProvider.extractFields();
-		            for(var field in fields) if (fields.hasOwnProperty(field)){
-		                var name = field.replace(new RegExp('"','g'),'');
-		                 dcQuery.$select[name] = field;
-		            }
-		        } else {
-		        	var managedFields = this.cube.getManagedFields();
-                    for (var f in managedFields) if (managedFields.hasOwnProperty(f)) {
-                        var binding = managedFields[f].binding;
-                        for(var b in binding) {
-                            if (!dataProvider || binding[b].provider == dataProvider) {
-                                var name = f.replace(new RegExp('"','g'),'');
-                                dcQuery.$select[name] = f;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+		    QueryUtils.generateDefaultSelect(dcQuery, dataProvider || this.cube);
+
+            // embed $globalFilter to $filter/$postFilter of root and sub queries
+            QueryUtils.propagateGlobalFilter(dcQuery, dataProvider || this.cube);
 
             // generate $groupBy if not defined
-            if (!dcQuery.$groupBy) {
-                // TODO: support multi fields in select (n-operators)
-                var aggregateFunctions = QuerySyntax.schemaAggregateOperators;
-                function findField(exp, aggregated){
-                    if (JSB.isString(exp)) {
-                        return {
-                            field: exp,
-                            aggregated: aggregated || false
-                        };
-                    }
-                    if (JSB.isPlainObject(exp)) {
-                        if (Object.keys(exp).length == 1) {
-                            var op = Object.keys(exp)[0];
-                            if (aggregateFunctions[op]) {
-                                return findField(exp[op], true);
-                            } else {
-                                return findField(exp[op], aggregated);
-                            }
-                        } else {
-                            if (exp.$field && (!exp.$context || exp.$context == dcQuery.$context)) {
-                                return findField(exp.$field, aggregated);
-                            }
-                        }
-                    }
-                    if (JSB.isArray(exp)) {
-                        for (var i in exp) {
-                            var f = findField(exp[i], aggregated);
-                            if (f.field) return f;
-                        }
-                    }
-                    return {
-                        field: null,
-                        aggregated: aggregated || false
-                    };
-                }
+            QueryUtils.generateDefaultGroupBy(dcQuery);
 
-                var aggregatedFields = [];
-                var groupFields = [];
-                var unknownAggregate = false;
-                for (var alias in dcQuery.$select) {
-                    var field = findField(dcQuery.$select[alias], false);
-                    if (field.aggregated && field.field){
-                        if (aggregatedFields.indexOf(field.field) == -1)
-                            aggregatedFields.push(field.field);
-                    } else if (field.field) {
-                        if (groupFields.indexOf(field.field) == -1)
-                            groupFields.push(field.field);
-                    } else {
-                        unknownAggregate = true;
-                    }
-                }
-
-//                // add filter fields to groupBy
-//                for (var alias in dcQuery.$filter){
-//                    var field = findField(dcQuery.$select[alias], false);
-//                    if (field.field && groupFields.indexOf(field.field) == -1) {
-//                        groupFields.push(field.field);
-//                    }
-//                }
-
-                if (groupFields.length == 0 && unknownAggregate) {
-                    throw new Error("Define $groupBy");
-                }
-                // if not group by all fields
-                if (Object.keys(dcQuery.$select).length != aggregatedFields.length
-                    && Object.keys(dcQuery.$select).length != groupFields.length) {
-                    dcQuery.$groupBy = groupFields;
-                }
-            }
-
-            this._topGeneralFields(dcQuery);
+            // move top fields that used in other
+            QueryUtils.upperGeneralFields(dcQuery);
 
             return dcQuery;
 		},
@@ -248,63 +165,5 @@
 		        }
 		    };
 		},
-
-		_topGeneralFields: function(dcQuery){
-		    function copyWithTopField(fieldName, obj) {
-		        var res = {};
-		        res[fieldName] = obj[fieldName];
-		        for (var f in obj) if (obj.hasOwnProperty(f) && f != fieldName) {
-		            res[f] = obj[f];
-		        }
-		        return res;
-		    }
-
-		    function isFieldLinkedWith(field, exp) {
-                if (JSB.isPlainObject(exp)) {
-                    if (exp['$field']
-                            && exp['$context'] == dcQuery.$context
-                            && exp['$field'] == field) {
-                        return true;
-                    } else {
-                        for(var p in exp) if (exp.hasOwnProperty(p)) {
-                            if (isFieldLinkedWith(field, exp[p])) {
-                                return true;
-                            }
-                        }
-                    }
-                } else if (JSB.isArray(exp)) {
-                    for(var i in exp) {
-                        if (isFieldLinkedWith(field, exp[i])) {
-                            return true;
-                        }
-                    }
-                } else if (JSB.isString(exp) && exp == field) {
-                    // not true - defined without context (see top where isPlainObject)
-                    return false;
-                }
-                return false;
-		    }
-
-            var select = dcQuery.$select;
-		    var topFields = {};
-		    for (var field in select) if (select.hasOwnProperty(field)) {
-
-                var list = false;
-                for (var nextField in select) {
-                    if (nextField == field) {
-                        list = true;
-                    } else if (list && select.hasOwnProperty(nextField)) {
-                        if (isFieldLinkedWith(field, select[nextField])) {
-                            topFields[field] = Object.keys(topFields).length;
-                        }
-                    }
-                }
-		    }
-
-            for (var field in topFields) if (topFields.hasOwnProperty(field)) {
-		        select = copyWithTopField(field, select);
-		    }
-		    dcQuery.$select = select;
-		}
 	}
 }
