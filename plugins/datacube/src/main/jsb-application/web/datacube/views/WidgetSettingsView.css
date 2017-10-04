@@ -22,7 +22,8 @@
 
 .widgetSettingsView .titleBlock {
     width: 100%;
-    height: 30px;
+    height: 35px;
+    border-bottom: 2px solid lightgray;
 }
 
 .widgetSettingsView .titleBlock ._dwp_primitiveEditor input{
@@ -46,14 +47,18 @@
 .widgetSettingsView .titleBlock ._dwp_button {
     float: right;
     color: #fff;
+    height: 30px;
     border-radius: 3px;
     padding: 3px 12px;
     font-size: 14px;
     font-weight: 400;
     vertical-align: middle;
     line-height: 22px;
-    height: inherit;
     margin-left: 5px;
+}
+
+.widgetSettingsView .titleBlock ._dwp_primitiveEditor {
+    margin-top: 2.5px;
 }
 
 .widgetSettingsView .titleBlock ._dwp_button.btnOk {
@@ -83,7 +88,7 @@
 
 .widgetSettingsView .schemeBlock,
 .widgetSettingsView .widgetBlock {
-    height: calc(100% - 30px);
+    height: calc(100% - 35px);
     display: inline-block;
     vertical-align: top;
     overflow: hidden;
@@ -114,4 +119,5 @@
     text-align: center;
     user-select: none;
     cursor: default;
+    z-index: 10000;
 }

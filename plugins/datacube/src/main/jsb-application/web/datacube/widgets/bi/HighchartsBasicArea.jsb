@@ -567,7 +567,6 @@
                         $this.getElement().loader('hide');
                     }
                 });
-
             }, function(){
                 return $this.isInit;
             });

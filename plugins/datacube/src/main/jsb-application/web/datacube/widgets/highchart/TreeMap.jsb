@@ -277,6 +277,8 @@
                     	$this.storeCache(data);
                     }
 
+                    $this._buildChart(data);
+
                     $this.getElement().loader('hide');
                 });
             }, function(){

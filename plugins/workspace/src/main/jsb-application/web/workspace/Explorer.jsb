@@ -269,6 +269,7 @@
 
 			    var parentKeys = {};
 			    function findParent(id){
+			        if(!id) return;
 			        var parKey = $this.wTreeMap[id].parentKey;
 			        if(parKey){
 			            parentKeys[parKey] = true;

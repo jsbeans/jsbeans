@@ -285,6 +285,17 @@
 
 			$base();
 
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
+
 // filters section
             var globalFilters = source.getFilters();
 
@@ -344,7 +355,6 @@
                     bY: dataValues[i].get(1).binding()[0]
                 });
             }
-			var tooltipSettings = this.getContext().find('tooltip').value();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
@@ -381,150 +391,161 @@
 							return arr;
 						}, {});
 
-						var colors = [
-							['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-							["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
-							["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
-							["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
-							["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]
-						], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+                        if(opts && opts.isCacheMod){
+                            $this.storeCache(data);
+                        }
 
-						var chartOptions = {
-
-							HighchartsPieChart: {
-								version: 'v-2017-09-21-02'
-							},
-
-							colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
-
-							chart: {
-								plotBackgroundColor: null,
-								plotBorderWidth: null,
-								plotShadow: false,
-								type: 'pie'
-							},
-
-							title: {
-								text: this.getContext().find('title').value()
-							},
-
-							plotOptions: {
-								pie: {
-									allowPointSelect: true,
-									cursor: 'pointer',
-									dataLabels: {
-										enabled: false
-									},
-									showInLegend: true
-								}
-							},
-
-							legend: {
-								rtl: true,
-								layout: 'vertical',
-								floating: false,
-								align: 'left',
-								verticalAlign: 'middle',
-								x: 0,
-								y: 0,
-								itemMarginTop: 15,
-								itemMarginBottom: 15,
-								backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-							},
-
-
-							tooltip: {
-								//valueSuffix: $this.safeGetValue(tooltipSettings, [0]),
-								pointFormat: $this.safeGetValue(tooltipSettings, [0]) || '{series.name}: <b>{point.percentage:.1f}%</b>'
-							},
-
-							credits: {
-								enabled: false
-							},
-
-							series: [{
-								data: data,
-								colorByPoint: true,
-								innerSize: this.getContext().find('innerSize').value(),
-								point: {
-                                    events: {
-                                        click: function(evt) {
-                                            $this._clickEvt = evt;
-
-                                            if(JSB().isFunction($this.options.onClick)){
-                                                $this.options.onClick.call(this, evt);
-                                            }
-                                        },
-                                        select: function(evt) {
-                                            var flag = false;
-
-                                            if(JSB().isFunction($this.options.onSelect)){
-                                                flag = $this.options.onSelect.call(this, evt);
-                                            }
-
-                                            if(!flag && $this._clickEvt){
-                                                $this._addPieFilter(evt);
-                                                $this._clickEvt = null;
-                                            }
-                                        },
-                                        unselect: function(evt) {
-                                            $this._clickEvt = null;
-                                            var flag = false;
-
-                                            if(JSB().isFunction($this.options.onUnselect)){
-                                                flag = $this.options.onUnselect.call(this, evt);
-                                            }
-
-                                            if(!flag && $this._removedFiltersCnt === 0){
-                                                if(Object.keys($this._curFilters).length > 0){
-                                                    if(evt.accumulate){
-                                                        $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
-                                                        delete $this._curFilters[evt.target.options.sortValue];
-                                                        $this.refreshAll();
-                                                    } else {
-                                                        for(var i in $this._curFilters){
-                                                            $this.removeFilter($this._curFilters[i]);
-                                                        }
-                                                        $this._curFilters = {};
-                                                        $this.refreshAll();
-                                                    }
-                                                }
-                                            } else {
-                                                $this._removedFiltersCnt--;
-                                            }
-                                        },
-                                        mouseOut: function(evt) {
-                                            if(JSB().isFunction($this.options.mouseOut)){
-                                                $this.options.mouseOut.call(this, evt);
-                                            }
-                                        },
-                                        mouseOver: function(evt) {
-                                            if(JSB().isFunction($this.options.mouseOver)){
-                                                $this.options.mouseOver.call(this, evt);
-                                            }
-                                        }
-                                    }
-								}
-							}]
-						};
-
-						$this.container.highcharts(chartOptions);
-
+                        $this._buildChart(data);
                     } catch(e) {
-						var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
-                    	console.log("Exception", [wTypeName, e]);
+                        console.log(e);
                     } finally {
                         $this.getElement().loader('hide');
                     }
-					console.log(chartOptions);
-
-                    $this.chart =  $this.container.highcharts();
                 });
-
-
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(data){
+            try{
+                var tooltipSettings = this.getContext().find('tooltip').value();
+
+                var colors = [
+                    ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                    ["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
+                    ["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
+                    ["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
+                    ["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]
+                ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                var chartOptions = {
+                    HighchartsPieChart: {
+                        version: 'v-2017-09-21-02'
+                    },
+
+                    colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+
+                    chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: null,
+                        plotShadow: false,
+                        type: 'pie'
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: false
+                            },
+                            showInLegend: true
+                        }
+                    },
+
+                    legend: {
+                        rtl: true,
+                        layout: 'vertical',
+                        floating: false,
+                        align: 'left',
+                        verticalAlign: 'middle',
+                        x: 0,
+                        y: 0,
+                        itemMarginTop: 15,
+                        itemMarginBottom: 15,
+                        backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                    },
+
+
+                    tooltip: {
+                        //valueSuffix: $this.safeGetValue(tooltipSettings, [0]),
+                        pointFormat: $this.safeGetValue(tooltipSettings, [0]) || '{series.name}: <b>{point.percentage:.1f}%</b>'
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: [{
+                        data: data,
+                        colorByPoint: true,
+                        innerSize: this.getContext().find('innerSize').value(),
+                        point: {
+                            events: {
+                                click: function(evt) {
+                                    $this._clickEvt = evt;
+
+                                    if(JSB().isFunction($this.options.onClick)){
+                                        $this.options.onClick.call(this, evt);
+                                    }
+                                },
+                                select: function(evt) {
+                                    var flag = false;
+
+                                    if(JSB().isFunction($this.options.onSelect)){
+                                        flag = $this.options.onSelect.call(this, evt);
+                                    }
+
+                                    if(!flag && $this._clickEvt){
+                                        $this._addPieFilter(evt);
+                                        $this._clickEvt = null;
+                                    }
+                                },
+                                unselect: function(evt) {
+                                    $this._clickEvt = null;
+                                    var flag = false;
+
+                                    if(JSB().isFunction($this.options.onUnselect)){
+                                        flag = $this.options.onUnselect.call(this, evt);
+                                    }
+
+                                    if(!flag && $this._removedFiltersCnt === 0){
+                                        if(Object.keys($this._curFilters).length > 0){
+                                            if(evt.accumulate){
+                                                $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
+                                                delete $this._curFilters[evt.target.options.sortValue];
+                                                $this.refreshAll();
+                                            } else {
+                                                for(var i in $this._curFilters){
+                                                    $this.removeFilter($this._curFilters[i]);
+                                                }
+                                                $this._curFilters = {};
+                                                $this.refreshAll();
+                                            }
+                                        }
+                                    } else {
+                                        $this._removedFiltersCnt--;
+                                    }
+                                },
+                                mouseOut: function(evt) {
+                                    if(JSB().isFunction($this.options.mouseOut)){
+                                        $this.options.mouseOut.call(this, evt);
+                                    }
+                                },
+                                mouseOver: function(evt) {
+                                    if(JSB().isFunction($this.options.mouseOver)){
+                                        $this.options.mouseOver.call(this, evt);
+                                    }
+                                }
+                            }
+                        }
+                    }]
+                };
+
+                $this.container.highcharts(chartOptions);
+
+                console.log(chartOptions);
+
+                $this.chart =  $this.container.highcharts();
+            } catch(e){
+                var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
+                console.log("Exception", [wTypeName, e]);
+            }
         },
 
         _addPieFilter: function(evt){
@@ -563,9 +584,7 @@
 					}
 				}
 			}
-			
 			return;
 		}
-		
 	}
 }

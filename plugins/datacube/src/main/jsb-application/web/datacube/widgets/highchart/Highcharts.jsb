@@ -405,8 +405,8 @@
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    var seriesData = [];
-                    var xAxis = [];
+                    var seriesData = [],
+                        xAxis = [];
 
                     while(source.next()){
                         for(var i = 0; i < seriesContext.length; i++){
@@ -431,14 +431,14 @@
                         }
                     }
 
-                    $this._buildChart(seriesData, xAxis);
-
                     if(opts && opts.isCacheMod){
                         $this.storeCache({
                             seriesData: seriesData,
                             xAxis: xAxis
                         });
                     }
+
+                    $this._buildChart(seriesData, xAxis);
                 });
             }, function(){
                 return $this.isInit;

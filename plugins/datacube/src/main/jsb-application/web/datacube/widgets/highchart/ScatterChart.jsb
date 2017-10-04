@@ -324,8 +324,7 @@
             }
 
             var dataValue = [],
-                seriesParams = [];
-            var dataValues = source.values();
+                dataValues = source.values();
             for(var i = 0; i < dataValues.length; i++){
                 var val = [],
                     a = dataValues[i].values();
@@ -338,11 +337,6 @@
                         value: a[j].get(1)
                     });
                 }
-
-                seriesParams.push({
-                    name: dataValues[i].get(1).value(),
-                    color: dataValues[i].get(2).value()
-                });
 
                 dataValue.push(val);
             }
@@ -378,6 +372,16 @@
 
         _buildChart: function(data){
             try{
+                var dataValues = this.getContext().find('source').values(),
+                    seriesParams = [];
+
+                for(var i = 0; i < dataValues.length; i++){
+                    seriesParams.push({
+                        name: dataValues[i].get(1).value(),
+                        color: dataValues[i].get(2).value()
+                    });
+                }
+
                 var chart = {
                     chart: {
                         type: 'scatter',

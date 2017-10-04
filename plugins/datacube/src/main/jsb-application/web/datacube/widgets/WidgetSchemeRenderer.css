@@ -303,7 +303,7 @@
     border: 1px solid rgba(2, 47, 78, 0.2);
     border-radius: 6px;
     background-color: rgba(24, 108, 138, 0.2);
-    height: 30px;
+    height: 24px;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .colorEditor > .sp-replacer{

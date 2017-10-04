@@ -424,11 +424,13 @@
 						break;
 					}
 				}
+				/*
 				if(!bSel){
 					// select first
 					var firstNodeKey = this.rootElt.find('> li:first-child').attr('key');
 					this.selectItem(firstNodeKey);
 				}
+				*/
 			}
 		},
 		
