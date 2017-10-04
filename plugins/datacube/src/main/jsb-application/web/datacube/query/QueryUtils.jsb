@@ -232,7 +232,7 @@
             var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
-            if (dcQuery.$select[field] == field || dcQuery.$select[field].$field == field) {
+            if (fields[field] && (!dcQuery.$select[field] || dcQuery.$select[field] == field || dcQuery.$select[field].$field == field)) {
                 return true;
             }
             return false;
