@@ -267,6 +267,17 @@
             
 			$base();
 
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
+
 // filters section
             var globalFilters = source.getFilters();
 
@@ -361,130 +372,138 @@
                         return arr;
                     }, {});
 
-                    var chartOptions = {
-                        chart: {
-                            plotBackgroundColor: null,
-                            plotBorderWidth: null,
-                            plotShadow: false,
-                            type: 'pie'
-                        },
-
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-
-                        plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                dataLabels: {
-                                    enabled: this.getContext().find('dataLabels').find('enabled').used(),
-                                    format: this.getContext().find('dataLabels').find('format').value(),
-                                    distance: Number(this.getContext().find('dataLabels').find('distance').value())
-                                },
-                                showInLegend: true
-                            }
-                        },
-
-                        tooltip: {
-                            pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
-                        },
-
-                        credits: {
-                            enabled: false
-                        },
-
-                        series: [{
-                            data: data,
-                            colorByPoint: true,
-                            innerSize: this.getContext().find('innerSize').value(),
-                            point: {
-                                events: {
-                                    click: function(evt) {
-                                        $this._clickEvt = evt;
-
-                                        if(JSB().isFunction($this.options.onClick)){
-                                            $this.options.onClick.call(this, evt);
-                                        }
-                                    },
-                                    select: function(evt) {
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onSelect)){
-                                            flag = $this.options.onSelect.call(this, evt);
-                                        }
-
-                                        if(!flag && $this._clickEvt){
-                                            $this._addPieFilter(evt);
-                                            $this._clickEvt = null;
-                                        }
-                                    },
-                                    unselect: function(evt) {
-                                        $this._clickEvt = null;
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onUnselect)){
-                                            flag = $this.options.onUnselect.call(this, evt);
-                                        }
-
-                                        if(!flag && $this._removedFiltersCnt === 0){
-                                            if(Object.keys($this._curFilters).length > 0){
-                                                if(evt.accumulate){
-                                                    $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
-                                                    delete $this._curFilters[evt.target.options.sortValue];
-                                                    $this.refreshAll();
-                                                } else {
-                                                    for(var i in $this._curFilters){
-                                                        $this.removeFilter($this._curFilters[i]);
-                                                    }
-                                                    $this._curFilters = {};
-                                                    $this.refreshAll();
-                                                }
-                                            }
-                                        } else {
-                                            $this._removedFiltersCnt--;
-                                        }
-                                    },
-                                    mouseOut: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOut)){
-                                            $this.options.mouseOut.call(this, evt);
-                                        }
-                                    },
-                                    mouseOver: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOver)){
-                                            $this.options.mouseOver.call(this, evt);
-                                        }
-                                    }
-                                }
-                            }
-                        }]
-                    };
-
-                    // todo: distance after resize
-                    /*
-                    var dataLabelsDistance = this.getContext().find('dataLabels').find('distance').value();
-                    if(dataLabelsDistance.indexOf('%') > -1){
-                        dataLabelsDistance = Number(dataLabelsDistance.slice(0, dataLabelsDistance.indexOf('%')));
-
-                        var w = $this.getElement().width(),
-                            h = $this.getElement().height();
-
-                        dataLabelsDistance = w <= h ? dataLabelsDistance * w / 100 : dataLabelsDistance * h / 100;
-                    } else {
-                        dataLabelsDistance = Number(dataLabelsDistance);
+                    if(opts && opts.isCacheMod){
+                        $this.storeCache(data);
                     }
-                    chartOptions.plotOptions.pie.dataLabels.distance = dataLabelsDistance;
-                    */
 
-                    $this.container.highcharts(chartOptions);
-
-                    $this.getElement().loader('hide');
-
-                    $this.chart =  $this.container.highcharts();
+                    $this._buildChart(data);
                 });
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(data){
+            var chartOptions = {
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+
+                title: {
+                    text: this.getContext().find('title').value()
+                },
+
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: this.getContext().find('dataLabels').find('enabled').used(),
+                            format: this.getContext().find('dataLabels').find('format').value(),
+                            distance: Number(this.getContext().find('dataLabels').find('distance').value())
+                        },
+                        showInLegend: true
+                    }
+                },
+
+                tooltip: {
+                    pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
+                },
+
+                credits: {
+                    enabled: false
+                },
+
+                series: [{
+                    data: data,
+                    colorByPoint: true,
+                    innerSize: this.getContext().find('innerSize').value(),
+                    point: {
+                        events: {
+                            click: function(evt) {
+                                $this._clickEvt = evt;
+
+                                if(JSB().isFunction($this.options.onClick)){
+                                    $this.options.onClick.call(this, evt);
+                                }
+                            },
+                            select: function(evt) {
+                                var flag = false;
+
+                                if(JSB().isFunction($this.options.onSelect)){
+                                    flag = $this.options.onSelect.call(this, evt);
+                                }
+
+                                if(!flag && $this._clickEvt){
+                                    $this._addPieFilter(evt);
+                                    $this._clickEvt = null;
+                                }
+                            },
+                            unselect: function(evt) {
+                                $this._clickEvt = null;
+                                var flag = false;
+
+                                if(JSB().isFunction($this.options.onUnselect)){
+                                    flag = $this.options.onUnselect.call(this, evt);
+                                }
+
+                                if(!flag && $this._removedFiltersCnt === 0){
+                                    if(Object.keys($this._curFilters).length > 0){
+                                        if(evt.accumulate){
+                                            $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
+                                            delete $this._curFilters[evt.target.options.sortValue];
+                                            $this.refreshAll();
+                                        } else {
+                                            for(var i in $this._curFilters){
+                                                $this.removeFilter($this._curFilters[i]);
+                                            }
+                                            $this._curFilters = {};
+                                            $this.refreshAll();
+                                        }
+                                    }
+                                } else {
+                                    $this._removedFiltersCnt--;
+                                }
+                            },
+                            mouseOut: function(evt) {
+                                if(JSB().isFunction($this.options.mouseOut)){
+                                    $this.options.mouseOut.call(this, evt);
+                                }
+                            },
+                            mouseOver: function(evt) {
+                                if(JSB().isFunction($this.options.mouseOver)){
+                                    $this.options.mouseOver.call(this, evt);
+                                }
+                            }
+                        }
+                    }
+                }]
+            };
+
+            // todo: distance after resize
+            /*
+            var dataLabelsDistance = this.getContext().find('dataLabels').find('distance').value();
+            if(dataLabelsDistance.indexOf('%') > -1){
+                dataLabelsDistance = Number(dataLabelsDistance.slice(0, dataLabelsDistance.indexOf('%')));
+
+                var w = $this.getElement().width(),
+                    h = $this.getElement().height();
+
+                dataLabelsDistance = w <= h ? dataLabelsDistance * w / 100 : dataLabelsDistance * h / 100;
+            } else {
+                dataLabelsDistance = Number(dataLabelsDistance);
+            }
+            chartOptions.plotOptions.pie.dataLabels.distance = dataLabelsDistance;
+            */
+
+            $this.container.highcharts(chartOptions);
+
+            $this.getElement().loader('hide');
+
+            $this.chart =  $this.container.highcharts();
         },
 
         _addPieFilter: function(evt){

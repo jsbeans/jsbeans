@@ -15,7 +15,7 @@
 				if(sender != $this.getEntry()){
 					return;
 				}
-				$this.update();
+                $this.update();
 			});
 			
 			$this.update();

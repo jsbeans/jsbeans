@@ -96,44 +96,8 @@
 			this.values = this.widgetEntry.getValues();
 			this.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
-			this.settingsContainer = this.$(`#dot
-			<div class="settingsContainer">
-				<div class="header">
-					<div class="caption">
-						<div class="icon"></div>
-						<div class="title" jsb="JSB.Widgets.PrimitiveEditor"></div>
-					</div>
-					<div class="buttons">
-						<div jsb="JSB.Widgets.Button"
-							class="btnOk"
-							caption="Сохранить"
-							onclick="{{=this.callbackAttr(function(evt){ $this.applySettings(evt); })}}" >
-						</div>
-						<div jsb="JSB.Widgets.Button"
-						    class="btnCancel"
-						    caption="Отмена"
-							onclick="{{=this.callbackAttr(function(evt){ $this.closeSettings(); })}}" >
-						</div>
-					</div>
-				</div>
-				
-				<div class="scroll" jsb="JSB.Widgets.ScrollBox"></div>
-
-			</div>`);
 			this.widgetContainer = this.$('<div class="widgetContainer"></div>');
 			this.append(this.widgetContainer);
-			this.append(this.settingsContainer);
-			
-			this.settingsContainer.on({
-				'transitionend': function(evt){
-					var elt = $this.$(evt.currentTarget);
-					if($this.settingsVisible){
-						elt.css('height', 'auto');
-					} else {
-						elt.css('visibility', '');
-					}
-				}
-			});
 			
 			$this.setTitle($this.getName());
 			$this.updateTabHeader();
@@ -141,7 +105,9 @@
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
 				$this.widget.setWrapper($this);
-				$this.widget.refresh();
+				$this.widget.refresh({
+				    isCacheMod: opts ? opts.isCacheMod : false
+				});
 			});
 
 			this.subscribe('JSB.Widgets.WidgetContainer.widgetAttached', function(sender, msg, w){
@@ -161,20 +127,19 @@
 				}
 				$this.getWidget().refresh(opts);
 			});
-			
-			if(opts && opts.showSettings){
-				var dashboardContainer = $this.getElement().closest("._jsb_dashboardContainer").jsb();
-				if(!$this.attached || !dashboardContainer || !$this.isContentReady()){
-					JSB.deferUntil(function(){
-						$this.showSettings();
-					}, function(){
-						return $this.attached && $this.getElement().closest("._jsb_dashboardContainer").jsb() && $this.isContentReady();
-					});
-				} else {
-					$this.showSettings();
-				}
-			}
 
+			this.subscribe('widgetSettings.updateValues', function(sender, msg, opts){
+			    if(opts.entryId !== $this.getWidgetEntry().getId()){
+			        return;
+			    }
+
+			    $this.getWidget().updateValues(opts.values, opts.sourceDesc);
+			    $this.getWidget().refresh();
+			});
+
+			if(opts && opts.showSettings){
+			    this.publish('Workspace.Entry.open', $this.widgetEntry);
+			}
 		},
 		
 		
@@ -199,30 +164,37 @@
 		},
 		
 		localizeFilter: function(src){
+		    if(!this.getOwner()) return;
 			return this.getOwner().getFilterManager().localizeFilter(src);
 		},
 		
 		constructFilterBySource: function(src){
+		    if(!this.getOwner()) return;
 			return this.getOwner().getFilterManager().constructFilterBySource(src);
 		},
 
 		constructFilterByLocal: function(filters){
+		    if(!this.getOwner()) return;
 			return this.getOwner().getFilterManager().constructFilterByLocal(filters);
 		},
 
 		hasFilter: function(fDesc){
+		    if(!this.getOwner()) return;
 			return this.getOwner().getFilterManager().hasFilter(fDesc);
 		},
 		
 		addFilter: function(fDesc, sourceIds, widget){
+		    if(!this.getOwner()) return;
 			return this.getOwner().getFilterManager().addFilter(fDesc, sourceIds, widget);
 		},
 		
 		removeFilter: function(fItemId, widget){
+		    if(!this.getOwner()) return;
 			return this.getOwner().getFilterManager().removeFilter(fItemId, widget);
 		},
 		
 		clearFilters: function(widget){
+		    if(!this.getOwner()) return;
 			this.getOwner().getFilterManager().clearFilters(widget);
 		},
 		
@@ -318,17 +290,15 @@
 						});
 					}
 				});
-				
+
 				var settingsBtn = new Button({
 					cssClass: 'roundButton btnSettings btn10',
 					tooltip: 'Настроить',
 					onClick: function(evt){
-					    JSB().defer(function(){
-					        $this.showSettings(evt);
-					    }, 200, 'widgetSettings_' + $this.getId());
+					    $this.publish('Workspace.Entry.open', $this.widgetEntry);
 					}
 				});
-				
+
 				var closeBtn = new Button({
 					cssClass: 'roundButton btnDelete btn10',
 					tooltip: 'Удалить',
@@ -378,62 +348,6 @@
 					.append(closeBtn.getElement());
 			}
 			editor.setData(this.getName());
-		},
-		
-		showSettings: function(){
-			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
-			dashboardContainer.placeholders['center'].enable(false);
-			
-			var scheme = this.extractWidgetScheme();
-			var scroll = this.settingsContainer.find('> .scroll').jsb();
-			scroll.clear();
-			
-			var titleEditor = this.settingsContainer.find('> .header > .caption > .title').jsb();
-			titleEditor.setData(this.getName());
-			
-			// create scheme renderer
-			this.settingsRenderer = new WidgetSchemeRenderer({
-				scheme: scheme,
-				values: JSB.clone(this.getValues()),
-				wrapper: $this,
-				onChange: function(){
-//					$this.updateButtons();
-				}
-			});
-			scroll.append(this.settingsRenderer);
-			this.settingsVisible = true;
-			this.settingsContainer.css({
-				height: this.getElement().height(),
-				visibility: 'visible'
-			});
-		},
-		
-		closeSettings: function(){
-			this.settingsVisible = false;
-			this.settingsContainer.css('height',this.getElement().height());
-			var dashboardContainer = this.getElement().closest('._jsb_dashboardContainer').jsb();
-			dashboardContainer.placeholders['center'].enable(true);
-			JSB.defer(function(){
-				$this.settingsContainer.css('height','');
-			}, 0);
-			
-		},
-		
-		applySettings: function(){
-			var title = this.settingsContainer.find('> .header > .caption > .title').jsb().getData().getValue();
-			this.values = this.settingsRenderer.getValues();
-			
-			// store data in wrapper
-			this.getWidgetEntry().server().storeValues(title, this.values, function(sourceDesc){
-				$this.name = title;
-				$this.updateTabHeader();
-				$this.getWidget().updateValues(JSB.clone($this.values), sourceDesc);
-				$this.getWidget().refresh();
-			});
-			
-			this.closeSettings();
 		}
-		
 	}
-	
 }

@@ -581,6 +581,18 @@
 		    }
 
 		    return MD5.md5(str);
+		},
+
+		storeCache: function(data){
+		    this._cache = data;
+		},
+
+		getCache: function(){
+		    return this._cache;
+		},
+
+		refreshFromCache: function(){
+		    // method must be overridden
 		}
 	},
 	

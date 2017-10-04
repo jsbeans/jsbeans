@@ -228,7 +228,7 @@
 
 		},
 		
-		refresh: function(){
+		refresh: function(opts){
 			if(!this.ready){
 				JSB.deferUntil(function(){
 					$this.refresh();
@@ -381,7 +381,5 @@
 			// sort
 			seriesSelData.order();
 		}
-		
-
 	}
 }

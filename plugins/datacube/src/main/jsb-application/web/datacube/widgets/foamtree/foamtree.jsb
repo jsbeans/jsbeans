@@ -529,11 +529,15 @@
             if(this.getContext().find('source').bound()){
                 this.getElement().loader();
 
-                this.getData();
+                if(opts && opts.refreshFromCache){
+                    this.updateFoamtree(this.getCache());
+                } else {
+                    this.getData(opts ? opts.isCacheMod : false);
+                }
             }
         },
 
-        getData: function(){
+        getData: function(isCacheMod){
             var context = this.getContext().find('source');
             var levels = this.getContext().find('levels').values();
             var data = [];
@@ -575,6 +579,10 @@
                 }
 
                 data = $this.procData(data, autoSize, skipSmallGroups, skipEmptyNamedGroups);
+
+                if(isCacheMod){
+                    $this.storeCache(data);
+                }
 
                 $this.updateFoamtree(data);
             });

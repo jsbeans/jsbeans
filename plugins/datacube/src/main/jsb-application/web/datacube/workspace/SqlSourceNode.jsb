@@ -22,7 +22,7 @@
 				if(sender != $this.getEntry()){
 					return;
 				}
-				$this.update(params.status);
+                $this.update(params.status);
 			});
 			
 			$this.update();
