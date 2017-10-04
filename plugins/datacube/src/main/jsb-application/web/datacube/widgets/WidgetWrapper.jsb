@@ -173,9 +173,9 @@
 			return this.getOwner().getFilterManager().constructFilterBySource(src);
 		},
 
-		constructFilterByLocal: function(filters){
+		constructFilterByLocal: function(filters, src){
 		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().constructFilterByLocal(filters);
+			return this.getOwner().getFilterManager().constructFilterByLocal(filters, src);
 		},
 
 		hasFilter: function(fDesc){

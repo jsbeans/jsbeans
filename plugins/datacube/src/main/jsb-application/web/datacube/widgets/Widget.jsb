@@ -268,7 +268,7 @@
 					if($this.getWrapper()){
 						var filterDesc = null;
 						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
-							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source]);
+							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source], $this.sources[item.binding.source]);
 						} else {
 							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
 						}
@@ -635,7 +635,7 @@
 					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 						var extQuery = {};
 						if(opts.filter){
-							extQuery.$filter = opts.filter;
+							extQuery.$globalFilter = opts.filter;
 						}
 						if(opts.postFilter){
 							extQuery.$postFilter = opts.postFilter;

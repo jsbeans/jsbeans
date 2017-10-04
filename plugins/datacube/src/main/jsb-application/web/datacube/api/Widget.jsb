@@ -85,8 +85,8 @@
 			return WidgetController.getFilterManager().constructFilterBySource(source);
 		},
 
-		constructFilterByLocal: function(filters){
-			return WidgetController.getFilterManager().constructFilterByLocal(filters);
+		constructFilterByLocal: function(filters, src){
+			return WidgetController.getFilterManager().constructFilterByLocal(filters, src);
 		},
 
 		clearFilters: function(widget){

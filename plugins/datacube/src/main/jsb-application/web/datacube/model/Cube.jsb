@@ -1159,7 +1159,7 @@
 			
 			if(newQuery && Object.keys(newQuery).length > 0){
 	        	// translate $filter
-	        	if(newQuery.$filter || newQuery.$postFilter){
+	        	if(newQuery.$filter || newQuery.$globalFilter || newQuery.$postFilter){
 	        		var c = {i: 1};
 	        		function getNextParam(){
 	        			return 'p' + (c.i++);
@@ -1182,6 +1182,9 @@
 	        		}
 	        		if(newQuery.$filter){
 	        			prepareFilter(newQuery.$filter);
+	        		}
+	        		if(newQuery.$globalFilter){
+	        			prepareFilter(newQuery.$globalFilter);
 	        		}
 	        		if(newQuery.$postFilter){
 	        			prepareFilter(newQuery.$postFilter);

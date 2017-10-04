@@ -84,7 +84,6 @@
             	preparedQuery = { $select: {}};
             }
             if(extQuery && Object.keys(extQuery).length > 0){
-            	
             	var qDesc = this.cube.parametrizeQuery(extQuery);
             	params = qDesc.params;
             	
@@ -96,7 +95,15 @@
             			preparedQuery.$filter = qDesc.query.$filter;
             		}
             	}
-            	
+
+            	if(qDesc.query.$globalFilter && Object.keys(qDesc.query.$globalFilter).length > 0){
+            		if(preparedQuery.$globalFilter){
+            			preparedQuery.$globalFilter = {$and:[preparedQuery.$globalFilter, qDesc.query.$globalFilter]}
+            		} else {
+            			preparedQuery.$globalFilter = qDesc.query.$globalFilter;
+            		}
+            	}
+
             	if(qDesc.query.$postFilter && Object.keys(qDesc.query.$postFilter).length > 0){
             		if(preparedQuery.$postFilter){
             			preparedQuery.$postFilter = {$and:[preparedQuery.$postFilter, qDesc.query.$postFilter]}
@@ -122,7 +129,7 @@
             	}
 
             }
-
+            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
             return this.cube.executeQuery(preparedQuery, params);
 		},
 		
