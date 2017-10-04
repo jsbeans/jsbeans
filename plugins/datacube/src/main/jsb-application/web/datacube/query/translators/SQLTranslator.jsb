@@ -37,7 +37,7 @@
 		translateQuery: function(dcQuery, params) {
 		    var sql = this.translateQueryExpression(dcQuery);
 
-//		    Log.debug('Translated SQL Query: \n' + sql);
+		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
         },
 
@@ -151,13 +151,13 @@
             }
 
 
-            function translateSubQuery(subQuery, parentFilters){
-                subQuery = JSB.merge(true, {}, subQuery);
-                if (parentFilters.$filter) {
-                    subQuery.$filter = subQuery.$filter || {};
-                    subQuery.$filter.$and = subQuery.$filter.$and || [];
-                    subQuery.$filter.$and.push(parentFilters.$filter)
-                }
+            function translateSubQuery(subQuery){
+//                subQuery = JSB.merge(true, {}, subQuery);
+//                if (parentFilters.$filter) {
+//                    subQuery.$filter = subQuery.$filter || {};
+//                    subQuery.$filter.$and = subQuery.$filter.$and || [];
+//                    subQuery.$filter.$and.push(parentFilters.$filter)
+//                }
                 return $this.translateQueryExpression(subQuery);
             }
 
@@ -205,10 +205,7 @@
 
             if (exp.$select) {
                 // sub query expression
-                return '(' + translateSubQuery(exp, {
-                    $filter: dcQuery.$filter,
-                    $postFilter: dcQuery.$postFilter
-                }) + ')';
+                return '(' + translateSubQuery(exp) + ')';
             }
 
 		    if (exp.$sql) {

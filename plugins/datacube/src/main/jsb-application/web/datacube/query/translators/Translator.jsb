@@ -114,6 +114,7 @@
                 $groupBy: filterFields(dcQuery.$groupBy, true),
                 $sort: filterFields(dcQuery.$sort, true),
                 $distinct: dcQuery.$distinct,
+                // TODO ???? need $postFilter?
                 // skip $finalize
             };
         },
