@@ -354,12 +354,13 @@
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
 		$constructor: function(opts){
-			var self = this;
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('HighchartsBasicArea.css');
-			JSB().loadScript('tpl/highstock/highcharts-more.js', function(){
-				self.init();
+			JSB().loadScript('tpl/highstock/highstock.js', function(){
+			    JSB().loadScript('tpl/highstock/highcharts-more.js', function(){
+			        $this.init();
+			    });
 			});
 		},
 
@@ -394,217 +395,250 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
-            var seriesContext = this.getContext().find('series').values();
-            var yAxisContext = this.getContext().find('yAxis').values();
-            var xAxisContext = this.getContext().find('xAxis').values();
+            $base();
+
+            if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache.seriesData, cache.xAxis);
+                }, function(){
+                    return $this.isInit;
+                });
+                return;
+            }
+
+            var seriesContext = this.getContext().find('series').values(),
+                xAxisContext = this.getContext().find('xAxis').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    var series = [];
-                    var yAxis = [];
-                    var xAxis = [];
-                    while(source.next()){
-                        for(var i = 0; i < seriesContext.length; i++){
-                            if(!series[i]){
-                                series[i] = {
-                                    name: seriesContext[i].get(0).value(),
-                                    data: [],
-                                    //type: seriesContext[i].get(4).value().name(),
-                                    tooltip: {
-                                        valueSuffix: seriesContext[i].get(5).value().get(0).value()
-                                    },
-                                    yAxis: $this.isNull(seriesContext[i].get(6).value(), true),
-                                    dashStyle: seriesContext[i].get(7).value().name(),
-                                    color: $this.isNull(seriesContext[i].get(8).value()),
-                                    upColor: $this.isNull(seriesContext[i].get(9).value()),
-                                    point: {
-                                        events: {
-                                            click: function(evt) {
-                                                if(JSB().isFunction($this.options.onClick)){
-                                                    $this.options.onClick.call(this, evt);
-                                                }
-                                            },
-                                            select: function(evt) {
-                                                var flag = false;
+                    var seriesData = [],
+                        xAxis = [];
 
-                                                if(JSB().isFunction($this.options.onSelect)){
-                                                    flag = $this.options.onSelect.call(this, evt);
-                                                }
-
-                                                if(!flag){
-                                                    $this._addNewFilter(evt.target.series.index, evt.target.category);
-                                                }
-                                            },
-                                            unselect: function(evt) {
-                                                var flag = false;
-
-                                                if(JSB().isFunction($this.options.onUnselect)){
-                                                    flag = $this.options.onUnselect.call(this, evt);
-                                                }
-
-                                                if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                                    $this._notNeedUnselect = false;
-                                                    $this.removeFilter($this._currentFilter);
-                                                    $this.refreshAll();
-                                                }
-                                            },
-                                            mouseOut: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOut)){
-                                                    $this.options.mouseOut.call(this, evt);
-                                                }
-                                            },
-                                            mouseOver: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOver)){
-                                                    $this.options.mouseOver.call(this, evt);
-                                                }
-                                            }
-                                        }
+                    try{
+                        while(source.next()){
+                            for(var i = 0; i < seriesContext.length; i++){
+                                var a = seriesContext[i].get(1).value(),
+                                    isIntermediateSum = seriesContext[i].get(2).value() !== 0,
+                                    isSum = seriesContext[i].get(3).value() !== 0,
+                                    isIntermediateSumColor = $this.isNull(seriesContext[i].get(10).value()),
+                                    isSumColor = $this.isNull(seriesContext[i].get(11).value());
+                                if(JSB().isArray(a)){
+                                    seriesData[i] = a;
+                                } else {
+                                    if(!seriesData[i]){
+                                        seriesData[i] = [];
                                     }
-                                };
-                            }
-
-                            var a = seriesContext[i].get(1).value();
-                            var isIntermediateSum = seriesContext[i].get(2).value() !== 0;
-                            var isSum = seriesContext[i].get(3).value() !== 0;
-                            var isIntermediateSumColor = $this.isNull(seriesContext[i].get(10).value());
-                            var isSumColor = $this.isNull(seriesContext[i].get(11).value());
-                            
-                            
-                            
-                            if(JSB().isArray(a)){
-                                series[i].data = a;
-                            } else {
-                            	if( isIntermediateSum ) { 
-	                                series[i].data.push({
-	                                	//y: a, 
-	                                	isIntermediateSum: true,
-	                                	color: isIntermediateSumColor
-	                                });
-	                            } else if( isSum ) {
-	                                series[i].data.push({
-	                                	//y: a, 
-	                                	isSum: true,
-	                                	color: isSumColor
-	                                });
-	                            } else {
-	                                series[i].data.push({
-	                                	y: a
-	                                });
-	                            }
-                            }
-                        }
-                        for(var i = 0; i < xAxisContext.length; i++){
-                            var a = xAxisContext[i].get(0).value();
-                            if(JSB().isArray(a)){
-                                xAxis = a;
-                            } else {
-                                xAxis.push(a);
-                            }
-                        }
-
-                        for(var i = 0; i < yAxisContext.length; i++){
-                            yAxis[i] = {
-                                title: {
-                                    text: yAxisContext[i].get(0).value().get(0).value(),
-                                    style: {
-                                        color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
-                                    },
-                                    align: 'high'
-                                },
-                                labels: {
-                                    format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
-                                    style: {
-                                        color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
-                                    }
-                                },
-                                opposite: yAxisContext[i].get(2).used()
-                            };
-                        }
-                    }
-                    
-                    var colors = [
-						['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-						['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-						['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-						['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-						['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
-                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-                    
-                    var chartOptions = {
-
-						colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                       
-                    
-                        chart: {
-                            //zoomType: 'x'
-                            type: 'waterfall'
-                        },
-
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-
-                        subtitle: {
-                            text: this.getContext().find('subtitle').value()
-                        },
-
-                        xAxis: [{
-                            categories: xAxis,
-                            crosshair: false,
-                            title: {
-                                text: xAxisContext[0].get(1).value().get(0).value(),
-                                style: {
-                                    color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
-                                },
-                                align: 'high'
-                            }                            
-                        }],
-
-                        yAxis: yAxis,
-
-                        tooltip: {
-                            shared: true
-                        },
-
-                        legend: {
-                        	enabled: false
-                        },
-
-                        plotOptions: {
-                            series: {
-                                allowPointSelect: true,
-                                states: {
-                                    select: {
-                                        color: null,
-                                        borderWidth: 5,
-                                        borderColor: 'Blue'
+                                    if( isIntermediateSum ) {
+                                        seriesData[i].push({
+                                            //y: a,
+                                            isIntermediateSum: true,
+                                            color: isIntermediateSumColor
+                                        });
+                                    } else if( isSum ) {
+                                        seriesData[i].push({
+                                            //y: a,
+                                            isSum: true,
+                                            color: isSumColor
+                                        });
+                                    } else {
+                                        seriesData[i].push({
+                                            y: a
+                                        });
                                     }
                                 }
                             }
-                        },
-                        
-						credits: {
-        					enabled: false
-    					},                        
 
-                        series: series
-                    };
-                    
-                    try {
-                    	$this.container.highcharts(chartOptions);
-                    } catch(e) {
-                    	console.log("Exception", e);
+                            for(var i = 0; i < xAxisContext.length; i++){
+                                var a = xAxisContext[i].get(0).value();
+                                if(JSB().isArray(a)){
+                                    xAxis = a;
+                                } else {
+                                    xAxis.push(a);
+                                }
+                            }
+                        }
+
+                        if(opts && opts.isCacheMod){
+                            $this.storeCache({
+                                seriesData: seriesData,
+                                xAxis: xAxis
+                            });
+                        }
+
+                        $this._buildChart(seriesData, xAxis);
+                    } catch(e){
+                        console.log(e);
+                    } finally{
+                        $this.getElement().loader('hide');
                     }
-
-					console.log(chartOptions);
-
-                    $this.getElement().loader('hide');
-                    $this.chart =  $this.container.highcharts();
                 });
-
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(seriesData, xAxis){
+            var seriesContext = this.getContext().find('series').values(),
+                yAxisContext = this.getContext().find('yAxis').values(),
+                xAxisContext = this.getContext().find('xAxis').values(),
+                yAxis = [],
+                series = [];
+            try{
+                for(var i = 0; i < seriesContext.length; i++){
+                    if(!series[i]){
+                        series[i] = {
+                            name: seriesContext[i].get(0).value(),
+                            data: seriesData[i],
+                            //type: seriesContext[i].get(4).value().name(),
+                            tooltip: {
+                                valueSuffix: seriesContext[i].get(5).value().get(0).value()
+                            },
+                            yAxis: $this.isNull(seriesContext[i].get(6).value(), true),
+                            dashStyle: seriesContext[i].get(7).value().name(),
+                            color: $this.isNull(seriesContext[i].get(8).value()),
+                            upColor: $this.isNull(seriesContext[i].get(9).value()),
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    select: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            flag = $this.options.onSelect.call(this, evt);
+                                        }
+
+                                        if(!flag){
+                                            $this._addNewFilter(evt.target.series.index, evt.target.category);
+                                        }
+                                    },
+                                    unselect: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            flag = $this.options.onUnselect.call(this, evt);
+                                        }
+
+                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
+                                            $this._notNeedUnselect = false;
+                                            $this.removeFilter($this._currentFilter);
+                                            $this.refreshAll();
+                                        }
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                    }
+                }
+
+                for(var i = 0; i < yAxisContext.length; i++){
+                    yAxis[i] = {
+                        title: {
+                            text: yAxisContext[i].get(0).value().get(0).value(),
+                            style: {
+                                color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
+                            },
+                            align: 'high'
+                        },
+                        labels: {
+                            format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
+                            style: {
+                                color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
+                            }
+                        },
+                        opposite: yAxisContext[i].get(2).used()
+                    };
+                }
+
+                var colors = [
+                    ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                    ['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
+                    ['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
+                    ['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
+                    ['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
+                ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                var chartOptions = {
+
+                    colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+
+                    chart: {
+                        //zoomType: 'x'
+                        type: 'waterfall'
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    xAxis: [{
+                        categories: xAxis,
+                        crosshair: false,
+                        title: {
+                            text: xAxisContext[0].get(1).value().get(0).value(),
+                            style: {
+                                color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
+                            },
+                            align: 'high'
+                        }
+                    }],
+
+                    yAxis: yAxis,
+
+                    tooltip: {
+                        shared: true
+                    },
+
+                    legend: {
+                        enabled: false
+                    },
+
+                    plotOptions: {
+                        series: {
+                            allowPointSelect: true,
+                            states: {
+                                select: {
+                                    color: null,
+                                    borderWidth: 5,
+                                    borderColor: 'Blue'
+                                }
+                            }
+                        }
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: series
+                };
+
+                console.log(chartOptions);
+                $this.container.highcharts(chartOptions);
+                $this.chart =  $this.container.highcharts();
+            } catch(e){
+                console.log(e);
+            }
         },
 
         _addNewFilter: function(index, value){

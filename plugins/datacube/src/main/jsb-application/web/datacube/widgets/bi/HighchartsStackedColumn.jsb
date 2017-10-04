@@ -702,15 +702,24 @@
 		},
 
         refresh: function(opts){
-		
         	try {
-        	
 				if(opts && this == opts.initiator) return;
 
 				var source = this.getContext().find('source');
 				if(!source.bound()) return;
 
 				$base();
+
+                if(opts && opts.refreshFromCache){
+                    JSB().deferUntil(function(){
+                        var cache = $this.getCache();
+                        if(!cache) return;
+                        $this._buildChart(cache.seriesData, cache.xAxis);
+                    }, function(){
+                        return $this.isInit;
+                    });
+                    return;
+                }
 
     // filters section
                 var globalFilters = source.getFilters();
@@ -760,119 +769,26 @@
                 }
     // end filters section
 
-				var seriesContext = this.getContext().find('series').values();
-				var yAxisContext = this.getContext().find('yAxis').values();
-				var xAxisContext = this.getContext().find('xAxis').values();
-				var yAxisStackLabels = this.getContext().find('yAxisStackLabels').values();
-				var plotOptionsColumnDataLabels = this.getContext().find('plotOptionsColumnDataLabels').values();
+                var seriesContext = this.getContext().find('series').values(),
+                    xAxisContext = this.getContext().find('xAxis').values();
 
 				$this.getElement().loader();
 				JSB().deferUntil(function(){
 					source.fetch({readAll: true, reset: true}, function(){
 						try {
-							var series = [];
-							var yAxis = [];
-							var xAxis = [];
+                            var seriesData = [],
+                                xAxis = [];
+
 							while(source.next()){
 								for(var i = 0; i < seriesContext.length; i++){
-									if(!series[i]){
-										series[i] = {
-											name: seriesContext[i].get(0).value(),
-											data: [],
-											type: seriesContext[i].get(2).value().name(),
-											tooltip: {
-												valueSuffix: seriesContext[i].get(3).value().get(0).value()
-											},
-											yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-											//dashStyle: seriesContext[i].get(5).value().name(),
-											color: $this.isNull(seriesContext[i].get(5).value()),
-											/*
-											marker: {
-												// The fill color of the point marker
-												fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
-												// The color of the point marker's outline
-												lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
-												// The width of the point marker's outline
-												lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
-												// The radius of the point marker
-												radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
-												// A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
-												symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
-											},
-											*/
-											visible: seriesContext[i].find('visible').used(),
-											point: {
-                                                                                        events: {
-                                                                                            click: function(evt) {
-                                                                                                $this._clickEvt = evt;
-
-                                                                                                if(JSB().isFunction($this.options.onClick)){
-                                                                                                    $this.options.onClick.call(this, evt);
-                                                                                                }
-                                                                                            },
-                                                                                            select: function(evt) {
-                                                                                                var flag = false;
-
-                                                                                                if(JSB().isFunction($this.options.onSelect)){
-                                                                                                    flag = $this.options.onSelect.call(this, evt);
-                                                                                                }
-
-                                                                                                if(!flag && $this._clickEvt){
-                                                                                                    evt.preventDefault();
-                                                                                                    $this._clickEvt = null;
-                                                                                                    $this._addNewFilter(evt);
-                                                                                                }
-                                                                                            },
-                                                                                            unselect: function(evt) {
-                                                                                                var flag = false;
-
-                                                                                                if(JSB().isFunction($this.options.onUnselect)){
-                                                                                                    flag = $this.options.onUnselect.call(this, evt);
-                                                                                                }
-
-                                                                                                if(!flag && $this._deselectCategoriesCount === 0){
-                                                                                                    if(Object.keys($this._curFilters).length > 0){
-                                                                                                        evt.preventDefault();
-
-                                                                                                        if(evt.accumulate){
-                                                                                                            $this.removeFilter($this._curFilters[evt.target.category]);
-                                                                                                            $this._deselectAllCategory(evt.target.category);
-                                                                                                            delete $this._curFilters[evt.target.category];
-                                                                                                            $this.refreshAll();
-                                                                                                        } else {
-                                                                                                            for(var i in $this._curFilters){
-                                                                                                                $this.removeFilter($this._curFilters[i]);
-                                                                                                                $this._deselectAllCategory(i);
-                                                                                                            }
-                                                                                                            $this._curFilters = {};
-                                                                                                            $this.refreshAll();
-                                                                                                        }
-                                                                                                    }
-                                                                                                } else {
-                                                                                                    $this._deselectCategoriesCount--;
-                                                                                                }
-                                                                                            },
-                                                                                            mouseOut: function(evt) {
-                                                                                                if(JSB().isFunction($this.options.mouseOut)){
-                                                                                                    $this.options.mouseOut.call(this, evt);
-                                                                                                }
-                                                                                            },
-                                                                                            mouseOver: function(evt) {
-                                                                                                if(JSB().isFunction($this.options.mouseOver)){
-                                                                                                    $this.options.mouseOver.call(this, evt);
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    },
-											stack: seriesContext[i].get(6).value()
-										};
-									}
-
 									var a = seriesContext[i].get(1).value();
 									if(JSB().isArray(a)){
-										series[i].data = a;
+										seriesData[i] = a;
 									} else {
-										series[i].data.push(a);
+                                        if(!seriesData[i]){
+                                            seriesData[i] = [];
+                                        }
+										seriesData[i].push(a);
 									}
 								}
 								for(var i = 0; i < xAxisContext.length; i++){
@@ -883,166 +799,22 @@
 										xAxis.push(a);
 									}
 								}
-								
-								for(var i = 0; i < yAxisContext.length; i++){
-									yAxis[i] = {
-										title: {
-											text: yAxisContext[i].get(0).value().get(0).value(),
-											style: {
-												color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
-											},
-											align: 'high'
-										},
-										labels: {
-											format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
-											style: {
-												color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
-											}
-										},
-										stackLabels: {
-											enabled: yAxisStackLabels[0].get(0).used(),
-											align:  $this.isNull(yAxisStackLabels[0].get(1).value()),
-											format: $this.isNull(yAxisStackLabels[0].get(2).value()),
-											rotation: parseInt($this.isNull(yAxisStackLabels[0].get(3).value()), 10),
-											textAlign: $this.isNull(yAxisStackLabels[0].get(4).value()),
-											useHTML: yAxisStackLabels[0].get(5).used(),
-											verticalAlign: $this.isNull(yAxisStackLabels[0].get(6).value()),
-											x: parseInt($this.isNull(yAxisStackLabels[0].get(7).value()), 10),
-											y: parseInt($this.isNull(yAxisStackLabels[0].get(8).value()), 10),
-											style: {
-												color: $this.isNull(yAxisStackLabels[0].get(9).value()) || (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-											}
-										},                                
-										opposite: yAxisContext[i].get(2).used()
-									};
-								}
-							}
-							
-							var colors = [
-								['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-								['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-								['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-								['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-								['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
-							], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-							
-							var chartOptions = {
-
-								colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                       
-							
-								chart: {
-									//zoomType: 'x'
-								},
-
-								title: {
-									text: this.getContext().find('title').value()
-								},
-
-								subtitle: {
-									text: this.getContext().find('subtitle').value()
-								},
-
-								xAxis: [{
-									categories: xAxis,
-									crosshair: false,
-									title: {
-										text: xAxisContext[0].get(1).value().get(0).value(),
-										style: {
-											color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
-										},
-										align: 'high'
-									}                            
-								}],
-
-								yAxis: yAxis,
-
-								tooltip: {
-									shared: false
-								},
-
-								legend: {
-									layout: 'horizontal',
-									floating: false,
-									align: 'center',
-									verticalAlign: 'bottom',
-									x: 0,
-									y: 0,
-									itemDistance: 30,
-									backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-								},
-
-								plotOptions: {
-									column: {
-										stacking: this.getContext().find('stacking').value().name().toString(),
-										dataLabels: {
-											enabled: plotOptionsColumnDataLabels[0].get(0).used(),
-											align: $this.isNull(plotOptionsColumnDataLabels[0].get(1).value()),
-											allowOverlap: plotOptionsColumnDataLabels[0].get(2).used(),
-											backgroundColor: $this.isNull(plotOptionsColumnDataLabels[0].get(3).value()),
-											borderColor: $this.isNull(plotOptionsColumnDataLabels[0].get(4).value()),
-											borderRadius: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(5).value()), 10),
-											borderWidth: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(6).value()), 10),
-											color: $this.isNull(plotOptionsColumnDataLabels[0].get(7).value()) || (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-											crop: plotOptionsColumnDataLabels[0].get(8).used(),
-											format: $this.isNull(plotOptionsColumnDataLabels[0].get(9).value()),
-											inside: $this.isNull(plotOptionsColumnDataLabels[0].get(10).value()),
-											overflow: $this.isNull(plotOptionsColumnDataLabels[0].get(11).value()),
-											padding: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(12).value()), 10),
-											rotation: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(13).value()), 10),
-											shadow: plotOptionsColumnDataLabels[0].get(14).used(),
-											shape: $this.isNull(plotOptionsColumnDataLabels[0].get(15).value()),
-											useHTML: plotOptionsColumnDataLabels[0].get(16).used(),
-											verticalAlign: $this.isNull(plotOptionsColumnDataLabels[0].get(17).value()),
-											x: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(18).value()), 10),
-											y: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(19).value()), 10),
-											zIndex: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(20).value()), 10)
-										}								
-									}
-									/*
-									bar: {
-										dataLabels: {
-											enabled: true
-										}
-									}
-									*/
-									/*,                        
-									series: {
-										allowPointSelect: true,
-										states: {
-											select: {
-												color: null,
-												borderWidth: 5,
-												borderColor: 'Blue'
-											}
-										}
-									}
-									*/
-								},
-								
-								credits: {
-									enabled: false
-								},                        
-
-								series: series
-							};
-							
-							try {
-								$this.container.highcharts(chartOptions);
-							} catch(e) {
-								console.log("Exception", e);
-								$this.getElement().loader('hide');
-								throw new Error("Highcharts setup error");
 							}
 
-							console.log(chartOptions);
+                            if(opts && opts.isCacheMod){
+                                $this.storeCache({
+                                    seriesData: seriesData,
+                                    xAxis: xAxis
+                                });
+                            }
 
-							$this.getElement().loader('hide');
-							$this.chart =  $this.container.highcharts();
-							
+                            $this._buildChart(seriesData, xAxis);
 						} catch(e) {
 							console.log("Exception", e);
 							$this.getElement().loader('hide');
 							throw new Error("Options create error");
+						} finally{
+						    $this.getElement().loader('hide');
 						}
 					});
 
@@ -1056,27 +828,258 @@
 			}
         },
 
-        _addNewFilter: function(index, value){
-            var context = this.getContext().find('source').binding();
-            if(!context.source) return;
+        _buildChart: function(seriesData, xAxis){
+            try{
+                var yAxisStackLabels = this.getContext().find('yAxisStackLabels').values(),
+                    plotOptionsColumnDataLabels = this.getContext().find('plotOptionsColumnDataLabels').values(),
+                    seriesContext = this.getContext().find('series').values(),
+                    yAxisContext = this.getContext().find('yAxis').values(),
+                    xAxisContext = this.getContext().find('xAxis').values(),
+                    yAxis = [],
+                    series = [];
 
-            var field = this.getContext().find("xAxis").get(0).value().binding();
-            if(!field[0]) return;
-            var fDesc = {
-            	sourceId: context.source,
-            	type: '$and',
-            	op: '$eq',
-            	field: field,
-            	value: value
-            };
-            if(!this.hasFilter(fDesc)){
-            	if(this._currentFilter){
-                    this.removeFilter(this._currentFilter);
-                    this._currentFilter = null;
-                    this._notNeedUnselect = true;
-                }
-            	this._currentFilter = this.addFilter(fDesc);
-            	this.refreshAll();
+                    for(var i = 0; i < seriesContext.length; i++){
+                        if(!series[i]){
+                            series[i] = {
+                                name: seriesContext[i].get(0).value(),
+                                data: seriesData[i],
+                                type: seriesContext[i].get(2).value().name(),
+                                tooltip: {
+                                    valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                                },
+                                yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
+                                //dashStyle: seriesContext[i].get(5).value().name(),
+                                color: $this.isNull(seriesContext[i].get(5).value()),
+                                /*
+                                marker: {
+                                    // The fill color of the point marker
+                                    fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
+                                    // The color of the point marker's outline
+                                    lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
+                                    // The width of the point marker's outline
+                                    lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
+                                    // The radius of the point marker
+                                    radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
+                                    // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
+                                    symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
+                                },
+                                */
+                                visible: seriesContext[i].find('visible').used(),
+                                point: {
+                                    events: {
+                                        click: function(evt) {
+                                            $this._clickEvt = evt;
+
+                                            if(JSB().isFunction($this.options.onClick)){
+                                                $this.options.onClick.call(this, evt);
+                                            }
+                                        },
+                                        select: function(evt) {
+                                            var flag = false;
+
+                                            if(JSB().isFunction($this.options.onSelect)){
+                                                flag = $this.options.onSelect.call(this, evt);
+                                            }
+
+                                            if(!flag && $this._clickEvt){
+                                                evt.preventDefault();
+                                                $this._clickEvt = null;
+                                                $this._addNewFilter(evt);
+                                            }
+                                        },
+                                        unselect: function(evt) {
+                                            var flag = false;
+
+                                            if(JSB().isFunction($this.options.onUnselect)){
+                                                flag = $this.options.onUnselect.call(this, evt);
+                                            }
+
+                                            if(!flag && $this._deselectCategoriesCount === 0){
+                                                if(Object.keys($this._curFilters).length > 0){
+                                                    evt.preventDefault();
+
+                                                    if(evt.accumulate){
+                                                        $this.removeFilter($this._curFilters[evt.target.category]);
+                                                        $this._deselectAllCategory(evt.target.category);
+                                                        delete $this._curFilters[evt.target.category];
+                                                        $this.refreshAll();
+                                                    } else {
+                                                        for(var i in $this._curFilters){
+                                                            $this.removeFilter($this._curFilters[i]);
+                                                            $this._deselectAllCategory(i);
+                                                        }
+                                                        $this._curFilters = {};
+                                                        $this.refreshAll();
+                                                    }
+                                                }
+                                            } else {
+                                                $this._deselectCategoriesCount--;
+                                            }
+                                        },
+                                        mouseOut: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOut)){
+                                                $this.options.mouseOut.call(this, evt);
+                                            }
+                                        },
+                                        mouseOver: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOver)){
+                                                $this.options.mouseOver.call(this, evt);
+                                            }
+                                        }
+                                    }
+                                },
+                                stack: seriesContext[i].get(6).value()
+                            };
+                        }
+                    }
+
+                    for(var i = 0; i < yAxisContext.length; i++){
+                        yAxis[i] = {
+                            title: {
+                                text: yAxisContext[i].get(0).value().get(0).value(),
+                                style: {
+                                    color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
+                                },
+                                align: 'high'
+                            },
+                            labels: {
+                                format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
+                                style: {
+                                    color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
+                                }
+                            },
+                            stackLabels: {
+                                enabled: yAxisStackLabels[0].get(0).used(),
+                                align:  $this.isNull(yAxisStackLabels[0].get(1).value()),
+                                format: $this.isNull(yAxisStackLabels[0].get(2).value()),
+                                rotation: parseInt($this.isNull(yAxisStackLabels[0].get(3).value()), 10),
+                                textAlign: $this.isNull(yAxisStackLabels[0].get(4).value()),
+                                useHTML: yAxisStackLabels[0].get(5).used(),
+                                verticalAlign: $this.isNull(yAxisStackLabels[0].get(6).value()),
+                                x: parseInt($this.isNull(yAxisStackLabels[0].get(7).value()), 10),
+                                y: parseInt($this.isNull(yAxisStackLabels[0].get(8).value()), 10),
+                                style: {
+                                    color: $this.isNull(yAxisStackLabels[0].get(9).value()) || (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                                }
+                            },
+                            opposite: yAxisContext[i].get(2).used()
+                        };
+                    }
+
+                    var colors = [
+                        ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                        ['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
+                        ['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
+                        ['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
+                        ['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
+                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                    var chartOptions = {
+
+                        colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+
+                        chart: {
+                            //zoomType: 'x'
+                        },
+
+                        title: {
+                            text: this.getContext().find('title').value()
+                        },
+
+                        subtitle: {
+                            text: this.getContext().find('subtitle').value()
+                        },
+
+                        xAxis: [{
+                            categories: xAxis,
+                            crosshair: false,
+                            title: {
+                                text: xAxisContext[0].get(1).value().get(0).value(),
+                                style: {
+                                    color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
+                                },
+                                align: 'high'
+                            }
+                        }],
+
+                        yAxis: yAxis,
+
+                        tooltip: {
+                            shared: false
+                        },
+
+                        legend: {
+                            layout: 'horizontal',
+                            floating: false,
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            x: 0,
+                            y: 0,
+                            itemDistance: 30,
+                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                        },
+
+                        plotOptions: {
+                            column: {
+                                stacking: this.getContext().find('stacking').value().name().toString(),
+                                dataLabels: {
+                                    enabled: plotOptionsColumnDataLabels[0].get(0).used(),
+                                    align: $this.isNull(plotOptionsColumnDataLabels[0].get(1).value()),
+                                    allowOverlap: plotOptionsColumnDataLabels[0].get(2).used(),
+                                    backgroundColor: $this.isNull(plotOptionsColumnDataLabels[0].get(3).value()),
+                                    borderColor: $this.isNull(plotOptionsColumnDataLabels[0].get(4).value()),
+                                    borderRadius: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(5).value()), 10),
+                                    borderWidth: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(6).value()), 10),
+                                    color: $this.isNull(plotOptionsColumnDataLabels[0].get(7).value()) || (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+                                    crop: plotOptionsColumnDataLabels[0].get(8).used(),
+                                    format: $this.isNull(plotOptionsColumnDataLabels[0].get(9).value()),
+                                    inside: $this.isNull(plotOptionsColumnDataLabels[0].get(10).value()),
+                                    overflow: $this.isNull(plotOptionsColumnDataLabels[0].get(11).value()),
+                                    padding: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(12).value()), 10),
+                                    rotation: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(13).value()), 10),
+                                    shadow: plotOptionsColumnDataLabels[0].get(14).used(),
+                                    shape: $this.isNull(plotOptionsColumnDataLabels[0].get(15).value()),
+                                    useHTML: plotOptionsColumnDataLabels[0].get(16).used(),
+                                    verticalAlign: $this.isNull(plotOptionsColumnDataLabels[0].get(17).value()),
+                                    x: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(18).value()), 10),
+                                    y: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(19).value()), 10),
+                                    zIndex: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(20).value()), 10)
+                                }
+                            }
+                            /*
+                            bar: {
+                                dataLabels: {
+                                    enabled: true
+                                }
+                            }
+                            */
+                            /*,
+                            series: {
+                                allowPointSelect: true,
+                                states: {
+                                    select: {
+                                        color: null,
+                                        borderWidth: 5,
+                                        borderColor: 'Blue'
+                                    }
+                                }
+                            }
+                            */
+                        },
+
+                        credits: {
+                            enabled: false
+                        },
+
+                        series: series
+                    };
+
+                    console.log(chartOptions);
+                    $this.container.highcharts(chartOptions);
+                    $this.chart =  $this.container.highcharts();
+            } catch(e){
+                console.log(e);
+                return;
             }
         },
 

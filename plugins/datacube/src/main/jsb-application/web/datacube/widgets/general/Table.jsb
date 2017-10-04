@@ -806,7 +806,6 @@
 						}
 						
 						row.push(rDesc);	// push cell
-
 					}
 					rows.push({row: row, key: rowKey, filter: rowFilter});
 					if(rows.length >= batchSize){
@@ -825,7 +824,7 @@
 						$this.stopPreFetch = false;
 						callback.call($this, rows, fail);
 					}
-				})
+				});
 			}
 			
 			iterateRows();
