@@ -200,6 +200,10 @@
 			return this.getElement().removeClass(c);
 		},
 		
+		toggleClass: function(c){
+			return this.getElement().toggleClass(c);
+		},
+		
 		hasClass: function(cls){
 			return this.getElement().hasClass(cls);
 		},

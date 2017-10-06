@@ -420,92 +420,92 @@
 		     });
 		    new this.SingleObject({
 		        name: '$first',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть первое значение в группе',
 		        aggregate: true,
-		        values: ['$field', 1, '$const', '$expression', '$query', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$last',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть последнее значение в группе',
 		        aggregate: true,
-		        values: ['$field', 1, '$const', '$expression', '$query', '$param'],
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$sum',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Суммировать значения в группе',
 		        aggregate: true,
-		        values: ['$field', 1, '$const', '$expression', '$query', '$param'],
+		        values: ['$field', '$constOne', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$count',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вычислить число элементов в группе',
 		        aggregate: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$constOne', '$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$min',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть минимальное значение в группе',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$max',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть максимальное значение в группе',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$avg',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вычислить среднее значение в группе (NULL в расчетах не участвует)',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$array',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Поместить все элементы группы в массив',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$flatArray',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Объединить все массивы в группы в один массив',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$expandArray',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Разложить элементы массива в группу элементов',
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$gsum',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Сумма всех элементов таблицы (сумма всех групп)',
 		        aggregate: true,
 		        global: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$constOne', '$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$gcount',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Число всех элементов таблицы (сумма размеров всех групп)',
 		        aggregate: true,
 		        global: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$constOne', '$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$gmin',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть минимальное значение в таблице (минимальное среди всех групп)',
 		        aggregate: true,
 		        global: true,
@@ -513,7 +513,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$gmax',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть максимальное значение в таблице (максимальное среди всех групп)',
 		        aggregate: true,
 		        global: true,
@@ -521,23 +521,23 @@
 		    });
 		    new this.SingleObject({
 		        name: '$grmaxsum',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть значение с максимальной суммой элементов в группе (найти группу с максимальной суммой)',
 		        aggregate: true,
 		        global: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$constOne', '$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$grmaxcount',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть значение с числом элементов самой крупной группы (найти группу с максимальным числом элементов)',
 		        aggregate: true,
 		        global: true,
-		        values: [1, '$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$constOne', '$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$grmaxavg',
-		        category: 'Операторы агрегации',
+		        category: 'Функции агрегации',
 		        desc: 'Вернуть значение с максимальным средним в группе (найти группу с максимальным арифметическим средним)',
 		        aggregate: true,
 		        global: true,
@@ -836,12 +836,24 @@
 		    
 		    new this.EConstNumber({
 		        name: '$sortTypeAsc',
+		    	displayName: 'По возрастанию',
+		    	desc: 'Опция сортировки значения по возрастанию',
 		        value: 1,
 		    });
 		    
 		    new this.EConstNumber({
 		        name: '$sortTypeDesc',
+		    	displayName: 'По убыванию',
+		    	desc: 'Опция сортировки значения по убыванию',
 		        value: -1,
+		    });
+
+		    new this.EConstNumber({
+		        name: '$constOne',
+		    	displayName: '1',
+		    	category: 'Функции агрегации',
+		    	desc: 'Единичный операнд, используемый в функциях агрегации для обобщенного рассчета',
+		        value: 1,
 		    });
 		
 		    new this.EConstNumber({

@@ -26,7 +26,7 @@
 			$base(opts);
 			this.loadCss('SchemeMenuTool.css');
 			this.addClass('schemeMenuTool');
-			
+/*			
 			$this.btnCreate = new Button({
 				cssClass: 'roundButton btn10 btnCreate',
 				tooltip: 'Добавить',
@@ -34,7 +34,7 @@
 				}
 			});
 			$this.append($this.btnCreate);
-			
+*/			
 			$this.btnEdit = new Button({
 				cssClass: 'roundButton btn10 btnEdit',
 				tooltip: 'Редактировать',
@@ -82,6 +82,9 @@
 		
 		
 		update: function(){
+			var actions = this.data.data.actions;
+			$this.btnEdit.enable(actions.allowEdit);
+			$this.btnDelete.enable(actions.allowRemove);
 		}
 		
 		

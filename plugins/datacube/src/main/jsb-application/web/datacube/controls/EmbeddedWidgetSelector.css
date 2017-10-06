@@ -10,14 +10,14 @@
 
 .embeddedWidgetSelector > .btnDelete {
 	position: absolute;
-	right: 2px;
+	right: 4px;
 	top: 50%;
 	margin-top: -8px;
 	display: none;
 }
 
 .embeddedWidgetSelector.filled {
-	padding: 0 20px 0 4px;
+	padding: 0 24px 0 4px;
 }
 
 .embeddedWidgetSelector.filled > .btnDelete {
@@ -53,7 +53,6 @@
 
 .embeddedWidgetSelector > .binding {
 	padding: 0 2px;
-    height: 18px;
     display: none;
 }
 
