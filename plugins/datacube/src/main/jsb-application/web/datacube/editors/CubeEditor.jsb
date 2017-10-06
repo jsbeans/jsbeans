@@ -61,6 +61,7 @@
 				connectors: {
 					cubeFieldLeft: {
 						acceptLocalLinks: false,
+						userLink: false,
 						align: 'left',
 						offsetX: 2,
 						wiringLink: {
@@ -70,18 +71,18 @@
 					},
 					
 					cubeFieldRight: {
-						acceptLocalLinks: false,
+						acceptLocalLinks: false
 					},
 					
 					providerFieldRight: {
 						acceptLocalLinks: false,
+						userLink: false,
 						offsetX: 2,
 						wiringLink: {
 							key: 'bind',
 							type: 'target'
 						}
 					}
-
 				},
 				
 				links: {
@@ -229,19 +230,23 @@
 				fnArr.sort(function(a, b){
 					return a.order - b.order;
 				});
+
 				// connect fields
 				for(var j = 0; j < fnArr.length; j++){
 					var fName = fnArr[j].field;
 					var fDesc = desc.fields[fName];
-					$this.cubeNode.addField(fDesc.field, fDesc.type, fDesc.link);
-					for(var i = 0; i < fDesc.binding.length; i++){
-						var bDesc = fDesc.binding[i];
-						var link = $this.diagram.createLink('bind');
-						link.setSource($this.cubeNode.leftFieldConnectors[fName]);
-						link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field]);
-					}
+					var isKeyField = fDesc.binding.length > 1;
+					$this.cubeNode.addField(fDesc.field, fDesc.type, fDesc.link, isKeyField);
+					if(isKeyField){
+                        for(var i = 0; i < fDesc.binding.length; i++){
+                            var bDesc = fDesc.binding[i];
+                            var link = $this.diagram.createLink('bind');
+                            link.setSource($this.cubeNode.leftFieldConnectors[fName]);
+                            link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field]);
+                        }
+                    }
 				}
-				
+
 				// draw slices
 				for(var i = 0; i < desc.slices.length; i++){
 					var sDesc = desc.slices[i];
@@ -261,6 +266,7 @@
 			this.diagram.clear();
 			this.cubeEntry.server().load(true, function(desc){
 				// draw in diagram
+				$this.cubeDescription = desc;
 				$this.setupCubeNode(desc);
 			});
 		},

@@ -42,7 +42,7 @@
 			this.node = node;
 			this.key = key;
 			JSB().merge(this.options, opts);
-			
+
 			if(opts.handle){
 				JSB().chain([opts.handle, opts.origin], this.node.resolveSelector, function(selArr){
 					self.options.handle = selArr[0];
@@ -85,8 +85,8 @@
 			
 			var cOpts = this.node.diagram.connectorDescs[this.key].options;
 			
-			this.options = JSB().merge({}, cOpts, this.options);
-			
+			this.options = JSB().merge(this.options, cOpts);
+
 			if(this.options.handle && this.options.userLink){
 				var handle = this.options.handle;
 				if(!JSB().isArray(handle)){

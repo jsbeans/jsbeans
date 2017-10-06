@@ -367,17 +367,41 @@
 		    providers.sort(compareProviders);
 		    return providers;
 		},
+
+		createProviderFieldsList: function(provider, fields){
+            var res = {};
+
+            for(var i in fields){
+                res[i] = {
+                    type: fields[i]
+                }
+            }
+
+            for(var i in this.fields){
+                for(var j = 0; j < this.fields[i].binding.length; j++){
+                    if(provider === this.fields[i].binding[j].provider){
+                        if(this.fields[i].binding.length > 1){
+                            res[this.fields[i].binding[j].field].keyField = true;
+                        }
+
+                        res[this.fields[i].binding[j].field].cubeField = i;
+                    }
+                }
+            }
+
+            return res;
+		},
 		
 		extractDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);
 			if(this.dataProviderFields[provider.getId()]){
-				return this.dataProviderFields[provider.getId()];
+				return this.createProviderFieldsList(provider, this.dataProviderFields[provider.getId()]);
 			}
 			var dpFields = provider.extractFields();
 			this.dataProviderFields[provider.getId()] = dpFields;
 			this.store();
 			this.doSync();
-			return dpFields;
+			return this.createProviderFieldsList(provider, dpFields);
 		},
 		
 		prepareFieldName: function(name){
@@ -444,7 +468,7 @@
 				this.doSync();
 			}
 			
-			return {fields: dpNewFields, binding: providerBindingMap};
+			return {fields: this.createProviderFieldsList(provider, dpNewFields), binding: providerBindingMap};
 		},
 		
 		renameDataProviderField: function(provider, oldName, newName, type){

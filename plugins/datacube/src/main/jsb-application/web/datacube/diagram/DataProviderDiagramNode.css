@@ -103,6 +103,7 @@
 
 .dataProviderDiagramNode > .body {
     background: #e8e8e8;
+    max-height:
 }
 
 .dataProviderDiagramNode > .status {
@@ -111,7 +112,7 @@
     background: linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
 	background: -o-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
 	background: -ms-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
-    height: 10px;
+    height: 20px;
 	border-top: 1px solid #5f7698;
 }
 
@@ -170,6 +171,7 @@
 
 .dataProviderDiagramNode > .body > .fields {
 	list-style: none;
+	max-height: 200px;
 }
 
 .dataProviderDiagramNode > .body > .fields > .field {
@@ -188,8 +190,13 @@
 	background-color: #eef4f7;
 }
 
+.dataProviderDiagramNode > .body > .fields > .field > ._dwp_checkBox {
+    display: inline-block;
+    width: 12px;
+}
+
 .dataProviderDiagramNode > .body > .fields > .field > .cell {
-	width: 50%;
+	width: 60%;
 	display: inline-block;
 	min-height: 16px;
 	position: relative;
@@ -200,6 +207,7 @@
 .dataProviderDiagramNode > .body > .fields > .field > .cell.name {
 	min-width: 30%;
 	max-width: 70%;
+	border-right: 1px solid #c7c7c7;
 }
 
 .dataProviderDiagramNode > .body > .fields > .field > .cell.name > .icon {
@@ -213,14 +221,13 @@
 }
 
 .dataProviderDiagramNode > .body > .fields > .field > .cell.name > .text {
-	padding-left: 16px;
 	font-family: monospace;
 	text-overflow: ellipsis;
     overflow: hidden;
 }
 
 .dataProviderDiagramNode > .body > .fields > .field > .cell.type {
-	border-left: 1px solid #c7c7c7;
+	/*border-left: 1px solid #c7c7c7;*/
 }
 
 .dataProviderDiagramNode > .body > .fields > .field > .cell.type > .icon {
@@ -257,4 +264,13 @@
 
 .dataProviderDiagramNode > .body > .fields > .field > .connector.right {
 	right: -4px;
+}
+
+.dataProviderDiagramNode > .body > .fields.keyFields {
+    border-bottom: 2px solid #d4cc92;
+}
+
+.dataProviderDiagramNode > .body > .fields.keyFields > .field > .cell.name {
+    width: 64.5%;
+    max-height: none;
 }

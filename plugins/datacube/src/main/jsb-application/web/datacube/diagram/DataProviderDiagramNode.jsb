@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.DataProviderDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository', 'JSB.Widgets.Button'],
+	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository', 'JSB.Widgets.Button', 'JSB.Widgets.CheckBox', 'JSB.Widgets.Alpha.ScrollBox'],
 	
 	$client: {
 		ready: false,
@@ -64,10 +64,9 @@
 				}
 			});
 			this.caption.append(removeButton.getElement());
-			
-			
+
 			this.body = this.$(`
-				<div class="body">
+                <div class="body">
 					<div class="loading hidden">
 						<div class="icon"></div>
 						<div class="text">Загрузка схемы данных...</div>
@@ -77,14 +76,21 @@
 						<div class="text">MSG</div>
 						<div class="details"></div>
 					</div>
-				</div>
+                </div>
 			`);
 			this.status = this.$('<div class="status"></div>');
 			this.append(this.caption);
 			this.append(this.body);
 			this.append(this.status);
-			this.fieldList = this.$('<div class="fields"></div>');
-			this.body.append(this.fieldList);
+
+			this.keyFieldList = this.$('<div class="fields keyFields"></div>');
+			this.body.append(this.keyFieldList);
+
+			this.fieldList = new ScrollBox({
+			    cssClass: 'fields',
+			    xAxisScroll: false
+			});
+			this.body.append(this.fieldList.getElement());
 
 			// install drag-move selector
 			this.installDragHandle('drag', {
@@ -99,7 +105,7 @@
 				selector: rightBottomGripper,
 				resize: {right: true}
 			});
-			
+
 			if($this.fields){
 				$this.refresh();
 				$this.ready = true;
@@ -160,53 +166,74 @@
 				}
 			}
 			this.fieldList.empty();
+			this.keyFieldList.empty();
+
 			var fieldNames = Object.keys(this.fields);
 			fieldNames.sort(function(a, b){
 				return a.localeCompare(b);
 			});
+
 			for(var i = 0; i < fieldNames.length; i++){
 				var f = fieldNames[i];
 				(function(field){
 					var fElt = $this.$('<div class="field"></div>');
 					fElt.attr('key', field);
+					if(!$this.fields[field].keyField){
+					    var checkbox = new CheckBox({
+					        checked: $this.fields[field].cubeField,
+					        onChange: function(isCheck){
+					            if(isCheck){
+					                $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
+					                    if(desc){
+					                        $this.editor.cubeNode.addField(desc.field, desc.type);
+					                    }
+					                });
+					            } else {
+					                $this.editor.cubeEntry.server().removeField($this.fields[field].cubeField, function(res, fail){
+					                    if(res){
+					                        $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
+					                    } else {
+					                        checkbox.setChecked(false);
+					                    }
+					                });
+					            }
+					        }
+					    });
+					    fElt.append(checkbox.getElement());
+					}
 					fElt.append(`#dot
 						<div class="cell name">
-							<div class="icon"></div>
 							<div class="text"></div>
-						</div><div class="cell type">
+						</div>
+						<div class="cell type">
 							<div class="icon"></div>
 							<div class="text"></div>
 						</div>
-						<div class="connector right"></div>
 					`);
+					if($this.fields[field].keyField){
+					    fElt.append(`#dot <div class="connector right"></div>`);
+					}
 					fElt.find('.cell.name').attr('title', field);
 					fElt.find('.cell.name > .text').text(field);
-					fElt.find('.cell.type > .text').text($this.fields[field]);
-					$this.fieldList.append(fElt);
-					
-					// create right connector
-					var rightConnector = $this.installConnector('providerFieldRight', {
-						origin: fElt.find('.connector.right'),
-						handle: [fElt.find('.connector.right'), fElt.find('.cell.type')],
-						iri: 'connector/field/right/' + field,
-						field: field,
-						onHighlight: function(bEnable, meta){
-							$this.highlightConnector(this, bEnable, meta);
-						},
-						onChangeConnection: function(link){
-						}
-					});
-					$this.rightFieldConnectors[field] = rightConnector;
-					
-					if($this.binding && $this.binding[field]){
-						for(var j = 0; j < $this.binding[field].length; j++){
-							var bDesc = $this.binding[field][j];
-							var link = $this.diagram.createLink('bind');
-							link.setSource($this.editor.cubeNode.leftFieldConnectors[bDesc.field]);
-							link.setTarget(rightConnector);
-						}
+					fElt.find('.cell.type > .text').text($this.fields[field].type);
+
+					if($this.fields[field].keyField){
+					    $this.keyFieldList.append(fElt);
+
+                        // create right connector
+                        var rightConnector = $this.installConnector('providerFieldRight', {
+                            origin: fElt.find('.connector.right'),
+                            handle: [fElt.find('.connector.right'), fElt.find('.cell.type')],
+                            iri: 'connector/field/right/' + field,
+                            field: field,
+                            onHighlight: function(bEnable, meta){
+                                $this.highlightConnector(this, bEnable, meta);
+                            }
+                        });
+                        $this.rightFieldConnectors[field] = rightConnector;
+					} else {
+					    $this.fieldList.append(fElt);
 					}
-					
 				})(f);
 			}
 			
