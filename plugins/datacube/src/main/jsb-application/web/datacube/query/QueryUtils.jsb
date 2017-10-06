@@ -9,12 +9,10 @@
             function collect(q) {
                 if (JSB.isPlainObject(q)) {
                     if (q.$select) {
-//Log.debug('subquery: ' + JSON.stringify(q,0,2));
                         callback(q);
-                    } else {
-                        for (var f in q) if (q.hasOwnProperty(f)) {
-                            collect(q[f]);
-                        }
+                    }
+                    for (var f in q) if (q.hasOwnProperty(f)) {
+                        collect(q[f]);
                     }
                 } else if (JSB.isArray(q)) {
                     for (var i in q) {
@@ -61,6 +59,7 @@
         },
 
         filterFilterByFields: function(filter, isAccepted /** boolean isAccepted(field) */) {
+//debugger;
             function filteredAndOr(array, isAccepted) {
                 if (!JSB.isArray(array)) {
                     throw new Error('Unsupported expression type for operator ' + op);
@@ -116,7 +115,9 @@
                 return Object.keys(resultExps).length > 0 ? resultExps : null;
             }
 
-            return filteredMultiFilter(filter, isAccepted);
+            var filtered = filteredMultiFilter(filter, isAccepted);
+//Log.debug('\nfilterFilterByFields: \n' + JSON.stringify(filter) + '\n' + JSON.stringify(filtered));
+            return filtered;
         },
 
         /** Находит и возвращает массив с названиями полей куба, используемых в фильтре для слияния (join) текущего запроса с другим/родительским
@@ -197,6 +198,7 @@
             }
 
             walkMultiFilter(subQueryFilter);
+//Log.debug('\ncollectSubQueryJoinFields: ' + JSON.stringify(subQueryJoinFields));
             return subQueryJoinFields;
         },
 
@@ -213,6 +215,7 @@
                     return !!context && context == subQuery.$context;
                 }
             );
+//Log.debug('\nskipFields: ' + JSON.stringify(skipFields));
             var subFilter = this.filterFilterByFields(
                 additionalFilter,
                 function isAccepted2(field){
@@ -223,6 +226,8 @@
             if (subFilter) {
                 subQuery.$filter.$and.push(subFilter);
             }
+//Log.debug('\nembededFilter: ' + JSON.stringify(subQuery.$filter));
+//debugger;
         },
 
         /** Возвращает true, если поле принадлежит кубу/провайдеру и используется в запросе без модификаций
@@ -233,8 +238,10 @@
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
             if (fields[field] && (!dcQuery.$select[field] || dcQuery.$select[field] == field || dcQuery.$select[field].$field == field)) {
+//Log.debug('\nisOriginalCubeField: ' + field + '=true');
                 return true;
             }
+//Log.debug('\nisOriginalCubeField: ' + field + '=false');
             return false;
         },
 
@@ -244,9 +251,10 @@
         * 3) $postFilter обновляется только для родительского фильтра (у дочерних заведомо другие выходные поля)
         */
         propagateGlobalFilter: function(dcQuery, cubeOrDataProvider) {
-//debugger;
             // if global filter defined then embed it to all queries/sub queries
             if (dcQuery.$globalFilter && Object.keys(dcQuery.$globalFilter).length > 0) {
+//debugger;
+//Log.debug('\npropagateGlobalFilter START: ' + JSON.stringify(dcQuery,0,2));
                 // recursive find all $select
                 this.walkSubQueries(dcQuery, function(subQuery){
                     $this.embedFilterToSubQuery(
@@ -266,6 +274,7 @@
                         );
                     }
                 });
+//Log.debug('\npropagateGlobalFilter END: ' + JSON.stringify(dcQuery,0,2));
             }
         },
 
