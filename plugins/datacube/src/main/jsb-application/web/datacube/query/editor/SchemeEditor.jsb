@@ -79,6 +79,24 @@
 			});
 		},
 		
+		destroy: function(){
+			// remove child if any
+			var valueEditors = $this.find('> .container > .entry > .schemeEditor');
+			valueEditors.each(function(){
+				var inst = $this.$(this).jsb();
+				if(inst){
+					inst.destroy();
+				}
+			});
+			
+			var pEditors = $this.find('> .container > ._dwp_primitiveEditor');
+			if(pEditors.jsb()){
+				pEditors.jsb().destroy();
+			}
+			
+			$base();
+		},
+		
 		notifyChanged: function(){
 			if($this.options.onChange){
 				$this.options.onChange.call($this);
@@ -115,8 +133,23 @@
 				hoverDesc = $this.hoverEntries;
 				if($this.scheme.customKey == '#outputFieldName' && JSB.isObject($this.scheme.values) && !$this.scheme.values[entryKey] ){
 					allowEdit = true;
+					allowRemove = true;
+				} else {
+					if($this.scheme.expressionType == 'EArray'){
+						allowRemove = true;
+					} else if($this.scheme.expressionType == 'ComplexObject'){
+						
+						if($this.scheme.optional){
+							for(var i = 0; i < $this.scheme.optional.length; i++){
+								if(($this.scheme.values[entryKey] && $this.scheme.optional[i] == entryKey) || (!$this.scheme.values[entryKey] && $this.scheme.optional[i] == $this.scheme.customKey)){
+									allowRemove = true;
+									break;
+								}
+							}
+						}
+					}
 				}
-				allowRemove = true;
+				
 			} else {
 				var valSchemeDesc = $this.resolve($this.scheme, $this.value).obj[entryKey].scheme;
 				if(valSchemeDesc == '$constString' || valSchemeDesc == '$constNumber' || valSchemeDesc == '$constBoolean'){
@@ -143,7 +176,31 @@
 				}
 			}
 			
+			if(allowReplace){
+				elt.addClass('allowReplace');
+			} else {
+				elt.removeClass('allowReplace');
+			}
+
+			if(allowEdit){
+				elt.addClass('allowEdit');
+			} else {
+				elt.removeClass('allowEdit');
+			}
+
 			
+			if(allowRemove){
+				elt.addClass('allowRemove');
+			} else {
+				elt.removeClass('allowRemove');
+			}
+
+			if(allowWrap){
+				elt.addClass('allowWrap');
+			} else {
+				elt.removeClass('allowWrap');
+			}
+
 			hoverDesc[entryKey] = {
 				allowEdit: allowEdit,
 				allowRemove: allowRemove,
@@ -159,6 +216,14 @@
 			handle.on({
 				mouseover: function(evt){
 					evt.stopPropagation();
+					
+					var keyElt = elt;
+					if(entryType == 'value'){
+						keyElt = keyElt.parent();
+					}
+					var entryKey = keyElt.attr('key');
+					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+
 					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
 					JSB.defer(function(){
 						$this.selectHover(entryType, entryKey, true);
@@ -166,6 +231,14 @@
 				},
 				mouseout: function(evt){
 					evt.stopPropagation();
+					
+					var keyElt = elt;
+					if(entryType == 'value'){
+						keyElt = keyElt.parent();
+					}
+					var entryKey = keyElt.attr('key');
+					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+					
 					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
 					JSB.defer(function(){
 						$this.selectHover(entryType, entryKey, false);
@@ -177,6 +250,14 @@
 			if(allowReplace){
 				handle.click(function(evt){
 					evt.stopPropagation();
+					
+					var keyElt = elt;
+					if(entryType == 'value'){
+						keyElt = keyElt.parent();
+					}
+					var entryKey = keyElt.attr('key');
+					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+					
 					$this.doReplace($this.$(evt.currentTarget), entryType, entryKey);
 				});
 			}
@@ -534,6 +615,73 @@
 			});
 		},
 		
+		doRemove: function(targetElt, entryType, entryKey){
+			if(entryType != 'entry'){
+				return;
+			}
+			
+			// remove in query
+			if(JSB.isDefined($this.value[entryKey])){
+				delete $this.value[entryKey];
+			}
+			
+			// remove entry
+			var entryElt = $this.find('> .container > .entry[key="'+entryKey+'"]');
+			if(entryElt.length > 0){
+				var valueEditorElt = entryElt.find('> .schemeEditor');
+				if(valueEditorElt.jsb()){
+					valueEditorElt.jsb().destroy();
+				}
+				
+				entryElt.remove();
+			}
+			
+			
+			$this.notifyChanged();
+		},
+		
+		doEdit: function(targetElt, entryType, entryKey){
+			var editor = null;
+			if(entryType == 'entry'){
+				editor = $this.find('> .container > .entry[key="'+entryKey+'"] > .key > .keyEditor').jsb();
+			} else {
+				editor = $this.find('> .container > .entry[key="'+entryKey+'"] > .value > .container > .value._dwp_primitiveEditor').jsb();
+			}
+			if(editor){
+				JSB.defer(function(){
+					editor.beginEdit();	
+				});
+			}
+		},
+		
+		renameEntry: function(oldKey, newKey){
+			if(!JSB.isDefined($this.value[oldKey])){
+				throw new Error('Missing value in key: ' + oldKey);
+			}
+			$this.value[newKey] = $this.value[oldKey];
+			delete $this.value[oldKey];
+			
+			$this.hoverEntries[newKey] = $this.hoverEntries[oldKey];
+			delete $this.hoverEntries[oldKey];
+			
+			$this.hoverValues[newKey] = $this.hoverValues[oldKey];
+			delete $this.hoverValues[oldKey];
+			
+			var entryElt = $this.find('> .container > .entry[key="'+oldKey+'"]');
+			var keyElt = entryElt.find('> .key');
+			entryElt.attr('key', newKey);
+			keyElt.attr('title', newKey);
+			
+			$this.notifyChanged();
+		},
+		
+		changeConstValue: function(newVal){
+			$this.value = newVal;
+			$this.scope[$this.scopeName] = $this.value;
+			
+			$this.notifyChanged();
+		},
+		
 		showPopupTool: function(schemes, targetElt, entryType, entryKey, existedObj, callback){
 			// prepare list for dialog
 			var itemMap = {};
@@ -727,7 +875,14 @@
 						selector: hoverElt,
 						weight: 10.0
 					}],
-					callback: function(desc){
+					callback: function(cmd){
+						if(cmd == 'edit'){
+							$this.doEdit(hoverElt, entryType, entryKey);
+						} else if(cmd == 'delete'){
+							$this.doRemove(hoverElt, entryType, entryKey);
+						} else {
+							throw new Error('Unexpected menu command: ' + cmd);
+						}
 					}
 				});
 			} else {
@@ -783,7 +938,25 @@
 				keyElt.empty();
 				keyElt.append(keyDecl.displayName);
 			} else {
-				keyElt.text(valName);
+				if($this.scheme.customKey == '#outputFieldName'){
+					var keyEditor = keyElt.find('> .keyEditor').jsb();
+					if(!keyEditor){
+						keyEditor = new PrimitiveEditor({
+							mode: 'inplace',
+							onChange: function(newVal){
+								$this.renameEntry(entryElt.attr('key'), newVal);
+							}
+						});
+						keyEditor.addClass('keyEditor');
+						keyElt.append(keyEditor.getElement());
+						keyElt.addClass('outputField');
+					}
+					keyEditor.setData(valName);
+					
+				} else {
+					keyElt.empty();
+					keyElt.text(valName);
+				}
 			}
 			
 			// generate replacement schemes
@@ -1099,15 +1272,18 @@
 			} else if($this.scheme.expressionType == 'Group'){
 				throw new Error('Unable to render Group');
 			} else if($this.scheme.expressionType == 'EConstBoolean'){
-				debugger;
+				var valElt = $this.$('<div class="value boolean"></div>');
+				valElt.text($this.scheme.displayName);
+				valElt.attr('key', $this.value)
+				$this.container.append(valElt);
 			} else if($this.scheme.expressionType == 'EConstNull'){
 				$this.container.append('<div class="value null">null</div>');
 			} else if($this.scheme.expressionType == 'EConstString'){
 				$this.valueEditor = new PrimitiveEditor({
 					valueType: 'string',
 					mode: 'inplace',
-					onChange: function(){
-						debugger;
+					onChange: function(newVal){
+						$this.changeConstValue(newVal);
 					}
 				});
 				$this.valueEditor.addClass('value string');
@@ -1121,8 +1297,8 @@
 				$this.valueEditor = new PrimitiveEditor({
 					valueType: 'double',
 					mode: 'inplace',
-					onChange: function(){
-						debugger;
+					onChange: function(newVal){
+						$this.changeConstValue(newVal);
 					}
 				});
 				$this.valueEditor.addClass('value number');

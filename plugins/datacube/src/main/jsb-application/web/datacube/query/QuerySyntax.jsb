@@ -929,7 +929,10 @@
 		        values: ['$constNumber', '$constBoolean', '$constString', '$constNull'],
 		    });
 		    
-		    
+		    new this.Group({
+		    	name: '$constBoolean',
+		    	values: ['$constBooleanTrue', '$constBooleanFalse'],
+		    });
 		
 		    new this.EConstString({
 		        name: '$fieldName'
@@ -940,18 +943,34 @@
 		    });
 		
 		    new this.EConstNumber({
+		    	displayName: 'Значение',
+		    	desc: 'Константное значение',
 		        name: '$constNumber'
 		    });
 		    
 		    new this.EConstBoolean({
-		        name: '$constBoolean'
+		        name: '$constBooleanTrue',
+		        displayName: 'true',
+		        desc: 'Булевская истина',
+		        value: true
 		    });
-		    
+
+		    new this.EConstBoolean({
+		        name: '$constBooleanFalse',
+		        displayName: 'false',
+		        desc: 'Булевская ложь',
+		        value: false
+		    });
+
 		    new this.EConstString({
+		    	displayName: 'Строка',
+		    	desc: 'Константная строка',
 		        name: '$constString'
 		    });
 		    
 		    new this.EConstNull({
+		    	displayName: 'null',
+		    	desc: 'Пустое значение',
 		        name: '$constNull'
 		    });
 		

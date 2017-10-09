@@ -26,19 +26,13 @@
 			$base(opts);
 			this.loadCss('SchemeMenuTool.css');
 			this.addClass('schemeMenuTool');
-/*			
-			$this.btnCreate = new Button({
-				cssClass: 'roundButton btn10 btnCreate',
-				tooltip: 'Добавить',
-				onClick: function(){
-				}
-			});
-			$this.append($this.btnCreate);
-*/			
+			
 			$this.btnEdit = new Button({
 				cssClass: 'roundButton btn10 btnEdit',
 				tooltip: 'Редактировать',
-				onClick: function(){
+				onClick: function(evt){
+					$this.close();
+					$this.data.callback.call($this, 'edit');
 				}
 			});
 			$this.append($this.btnEdit);
@@ -46,7 +40,9 @@
 			$this.btnDelete = new Button({
 				cssClass: 'roundButton btn10 btnDelete',
 				tooltip: 'Удалить',
-				onClick: function(){
+				onClick: function(evt){
+					$this.close();
+					$this.data.callback.call($this, 'delete');
 				}
 			});
 			$this.append($this.btnDelete);
