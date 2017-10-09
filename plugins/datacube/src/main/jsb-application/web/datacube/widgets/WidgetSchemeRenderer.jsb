@@ -352,13 +352,12 @@
 
                 var collapseButton = this.$('<i class="fa fa-chevron-down"></i>');
                 collapseButton.click(function(evt){
-                    $this.bodyElt.toggleClass('collapsed');
-                    $this.$(this).toggleClass('collapsed');
+                    $this.toggleClass('collapsed');
                 });
                 header.append(collapseButton);
 
                 if(this.scheme.collapsed){
-                    this.bodyElt.addClass('collapsed');
+                    this.addClass('collapsed');
                 }
             }
 
@@ -712,7 +711,24 @@
 				if(this.scheme.description){
 				    this.constructSchemeDescription(header, this.scheme.description);
                 }
+				
+	            if(this.scheme.collapsable){
+	                this.addClass('collapsable');
+
+	                var collapseButton = this.$('<i class="fa fa-chevron-down"></i>');
+	                collapseButton.click(function(evt){
+	                    $this.toggleClass('collapsed');
+	                });
+	                header.append(collapseButton);
+
+	                if(this.scheme.collapsed){
+	                    this.addClass('collapsed');
+	                }
+	            }
+
 			}
+			
+			
 			
 			var bodyElt = this.$('<div class="body"></div>');
 			this.append(bodyElt);

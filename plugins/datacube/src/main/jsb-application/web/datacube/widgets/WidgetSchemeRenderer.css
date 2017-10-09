@@ -9,6 +9,7 @@
 	padding: 1px 0 1px 0;
 	display: inline-block;
 	margin-left: 6px;
+	line-height: 20px;
 }
 
 .widgetSchemeRenderer > .header.hidden {
@@ -28,11 +29,16 @@
 	display: inline-block;
 	vertical-align: middle;
 	min-width: 100px;
-    /*color: #73879C;*/
-    color: #1e5a9a;
+	color: #3c4e61;
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
     font-size: 13px;
-    font-weight: 700;
+}
+
+.widgetSchemeRenderer[entry="group"] > .header > .caption,
+.widgetSchemeRenderer.collapsable > .header > .caption,
+.widgetSchemeRenderer.hasMultiple > .header > .caption {
+	font-weight: bold;
+	color: #606c7b;
 }
 
 .widgetSchemeRenderer > .header > .scheme-description{
@@ -108,14 +114,17 @@
 
 
 .widgetSchemeRenderer.hasHeader > .body {
-	padding-left: 5px;
-    margin-top: 3px;
     overflow: visible;
 }
 
 .widgetSchemeRenderer.hasHeader:not(.collapsable):not(.hasMultiple):not([entry="select"]) > .body {
-    padding-left: 5px;
-    border-left: 2px solid lightgrey;
+    padding-left: 6px;
+    border-left: 10px solid #cdd0d4;
+    border-radius: 0 0 0 16px;
+}
+
+.widgetSchemeRenderer.hasHeader.collapsable:not(.hasMultiple):not([entry="select"]) > .body {
+	padding-left: 16px;
 }
 
 .widgetSchemeRenderer > .body > .items {
@@ -125,7 +134,7 @@
 .widgetSchemeRenderer.hasMultiple > .body > .items {
     border-top: 1px solid #d0d0d0;
 	cursor: move;
-	padding: 2px 20px 2px 17px;
+	padding: 2px 20px 2px 16px;
     cursor: initial;
 }
 
@@ -161,7 +170,6 @@
 
 .widgetSchemeRenderer[entry="item"] > .header {
 	vertical-align: middle;
-    line-height: 34px;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value {
@@ -191,11 +199,9 @@
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer {
 	margin: 2px 0;
-	border-top: 1px solid #ded7cb;
 }
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:last-child {
-	border-bottom: 1px solid #ded7cb;
 }
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer:nth-child(even) {
@@ -208,7 +214,7 @@
 
 .widgetSchemeRenderer[entry="item"].used.hasMultiple > .value > .valueContainer > .btnDelete {
 	position: absolute;
-	top: 2px;
+	top: 4px;
 	right: 2px;
 }
 
@@ -325,11 +331,11 @@
 }
 .widgetSchemeRenderer.hasMultiple .ui-sortable .sortableHandle{
     display: block;
-    height: calc(100% - 2px);
+    height: calc(100% - 4px);
     width: 10px;
     position: absolute;
     left: 0px;
-    top: 0px;
+    top: 2px;
     border: 1px solid #d6d4d4;
     border-radius: 3px;
     background-color: #f3f3f3;
@@ -355,9 +361,9 @@
     top: calc(50% + 10px);
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable {
+.widgetSchemeRenderer.collapsable {
     width: 100%;
-    padding: 10px 17px;
+    padding: 4px;
     display: inline-block;
     background: #fff;
     border: 1px solid #E6E9ED;
@@ -367,28 +373,29 @@
     opacity: 1;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .header {
-    padding: 1px 5px 6px;
+.widgetSchemeRenderer.collapsable > .header {
     width: 100%;
+    padding-left: 16px;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .body {
+.widgetSchemeRenderer.collapsable > .body {
     transition: max-height 0.3s ease;
     max-height: 9000px;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .body.collapsed {
+.widgetSchemeRenderer.collapsable.collapsed > .body {
     max-height: 0px;
     overflow: hidden;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-down {
+.widgetSchemeRenderer.collapsable > .header > .fa-chevron-down {
     color: #C5C7CB;
     cursor: pointer;
 
     position: absolute;
-    left: -18px;
-    top: 3px;
+    left: -4px;
+    top: 50%;
+    margin-top: -7px;
 
     -o-transition: all 0.3s ease-in-out;
     -moz-transition: all 0.3s ease-in-out;
@@ -396,7 +403,7 @@
     transition: all 0.3s ease-in-out;
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .header > .fa-chevron-down.collapsed {
+.widgetSchemeRenderer.collapsable.collapsed > .header > .fa-chevron-down {
     -o-transform: rotate(-90deg);
     -ms-transform: rotate(-90deg);
     -moz-transform: rotate(-90deg);
@@ -404,7 +411,7 @@
     transform: rotate(-90deg);
 }
 
-.widgetSchemeRenderer[entry="group"].collapsable > .header > .dataBindingSelector:not(.filled) + .fa-chevron-down {
+.widgetSchemeRenderer.collapsable > .header > .dataBindingSelector:not(.filled) + .fa-chevron-down {
     display: none;
 }
 

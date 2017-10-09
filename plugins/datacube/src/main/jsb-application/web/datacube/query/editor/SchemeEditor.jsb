@@ -15,6 +15,8 @@
 		
 		collapsible: false,
 		handle: null,
+		hoverEntries: {},
+		hoverValues: {},
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -77,6 +79,24 @@
 			});
 		},
 		
+		destroy: function(){
+			// remove child if any
+			var valueEditors = $this.find('> .container > .entry > .schemeEditor');
+			valueEditors.each(function(){
+				var inst = $this.$(this).jsb();
+				if(inst){
+					inst.destroy();
+				}
+			});
+			
+			var pEditors = $this.find('> .container > ._dwp_primitiveEditor');
+			if(pEditors.jsb()){
+				pEditors.jsb().destroy();
+			}
+			
+			$base();
+		},
+		
 		notifyChanged: function(){
 			if($this.options.onChange){
 				$this.options.onChange.call($this);
@@ -99,15 +119,111 @@
 				elt = $this.find('> .container > .entry[key="'+entryKey+'"] > .value');
 			}
 			
-			elt.addClass('selectable');
-			
 			if(!handle){
 				handle = elt;
+			}
+			
+			// figure out actions with hover
+			var hoverDesc = $this.hoverValues;
+			var allowEdit = false;
+			var allowRemove = false;
+			var allowReplace = false;
+			var allowWrap = false;
+			if(entryType == 'entry'){
+				hoverDesc = $this.hoverEntries;
+				if($this.scheme.customKey == '#outputFieldName' && JSB.isObject($this.scheme.values) && !$this.scheme.values[entryKey] ){
+					allowEdit = true;
+					allowRemove = true;
+				} else {
+					if($this.scheme.expressionType == 'EArray'){
+						allowRemove = true;
+					} else if($this.scheme.expressionType == 'ComplexObject'){
+						
+						if($this.scheme.optional){
+							for(var i = 0; i < $this.scheme.optional.length; i++){
+								if(($this.scheme.values[entryKey] && $this.scheme.optional[i] == entryKey) || (!$this.scheme.values[entryKey] && $this.scheme.optional[i] == $this.scheme.customKey)){
+									allowRemove = true;
+									break;
+								}
+							}
+						}
+					}
+				}
+				
+			} else {
+				var valSchemeDesc = $this.resolve($this.scheme, $this.value).obj[entryKey].scheme;
+				if(valSchemeDesc == '$constString' || valSchemeDesc == '$constNumber' || valSchemeDesc == '$constBoolean'){
+					allowEdit = true;
+				}
+				
+				if(opts){
+					var ac = null;
+					if(JSB.isObject(opts.acceptedSchemes)){
+						if(Object.keys(opts.acceptedSchemes).length > 1){
+							allowReplace = true;
+						} else {
+							ac = opts.acceptedSchemes[Object.keys(opts.acceptedSchemes)[0]];
+							if(ac.length > 1 || (ac.length == 1 && (ac[0] == '$fieldName' || ac[0] == '$fieldExpr'))){
+								allowReplace = true;	
+							}
+						}
+					} else {
+						ac = opts.acceptedSchemes;
+						if(ac.length > 1 || (ac.length == 1 && (ac[0] == '$fieldName' || ac[0] == '$fieldExpr'))){
+							allowReplace = true;	
+						}
+					}
+				}
+			}
+			
+			if(allowReplace){
+				elt.addClass('allowReplace');
+			} else {
+				elt.removeClass('allowReplace');
+			}
+
+			if(allowEdit){
+				elt.addClass('allowEdit');
+			} else {
+				elt.removeClass('allowEdit');
+			}
+
+			
+			if(allowRemove){
+				elt.addClass('allowRemove');
+			} else {
+				elt.removeClass('allowRemove');
+			}
+
+			if(allowWrap){
+				elt.addClass('allowWrap');
+			} else {
+				elt.removeClass('allowWrap');
+			}
+
+			hoverDesc[entryKey] = {
+				allowEdit: allowEdit,
+				allowRemove: allowRemove,
+				allowReplace: allowReplace,
+				allowWrap: allowWrap
+			};
+			
+				
+			if(!allowEdit && !allowRemove && !allowReplace && !allowWrap){
+				return;
 			}
 			
 			handle.on({
 				mouseover: function(evt){
 					evt.stopPropagation();
+					
+					var keyElt = elt;
+					if(entryType == 'value'){
+						keyElt = keyElt.parent();
+					}
+					var entryKey = keyElt.attr('key');
+					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+
 					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
 					JSB.defer(function(){
 						$this.selectHover(entryType, entryKey, true);
@@ -115,33 +231,38 @@
 				},
 				mouseout: function(evt){
 					evt.stopPropagation();
+					
+					var keyElt = elt;
+					if(entryType == 'value'){
+						keyElt = keyElt.parent();
+					}
+					var entryKey = keyElt.attr('key');
+					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+					
 					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
 					JSB.defer(function(){
 						$this.selectHover(entryType, entryKey, false);
 					}, 300, 'DataCube.Query.SchemeEditor.out:' + entryId);
 
-				},
-				click: function(evt){
-					evt.stopPropagation();
-					$this.doReplace($this.$(evt.currentTarget), entryType, entryKey);
-					//$this.showHoverMenu(entryType, entryKey);
 				}
 			});
-		},
-/*		
-		showHoverMenu: function(entryType, entryKey, opts){
-			if(entryType == 'entry'){
-				return;
+			
+			if(allowReplace){
+				handle.click(function(evt){
+					evt.stopPropagation();
+					
+					var keyElt = elt;
+					if(entryType == 'value'){
+						keyElt = keyElt.parent();
+					}
+					var entryKey = keyElt.attr('key');
+					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+					
+					$this.doReplace($this.$(evt.currentTarget), entryType, entryKey);
+				});
 			}
-			var hoverElt = null;
-			if(entryType == 'entry'){
-				hoverElt = $this.find('> .container > .entry[key="'+entryKey+'"]');
-			} else {
-				hoverElt = $this.find('> .container > .entry[key="'+entryKey+'"] > .value');
-			}
-			$this.showPopupTool(opts.acceptedSchemes, hoverElt, entryType, entryKey);
 		},
-*/		
+		
 		combineQueries: function(){
 			// search for root query
 			var queryMap = {};
@@ -217,9 +338,6 @@
 		
 		constructEmptyValue: function(schemeName, subValues){
 			var value = null;
-			if(schemeName == 1){
-				return 1;
-			}
 			
 			function generateColumnName(){
 				var prefix = 'Столбец';
@@ -295,11 +413,6 @@
 				var schemeVal = $this.combineAcceptedSchemes(schemeDesc)[0];
 				value = [];
 				switch(schemeDesc.name){
-/*				case '$addValues':
-				case '$subValues':
-					value.push({$const:0});
-					value.push({$const:0});
-					break;*/
 				case '$mulValues':
 				case '$divValues':
 				case '$divzValues':
@@ -346,7 +459,7 @@
 		},
 		
 		doAdd: function(targetElt){
-			$this.showPopupTool($this.combineAcceptedSchemes(), targetElt, null, null, function(chosenObj){
+			$this.showPopupTool($this.combineAcceptedSchemes(), targetElt, null, null, null, function(chosenObj){
 				debugger;
 				if($this.scheme.expressionType == 'ComplexObject'){
 					
@@ -438,14 +551,31 @@
 				return;
 			}
 			var acceptedSchemes = null;
+			var existedSchemeDesc = null;
+			
 			if(JSB.isObject($this.scheme.values) && JSB.isDefined($this.scheme.values[entryKey])){
 				acceptedSchemes = $this.combineAcceptedSchemes(entryKey);
+				existedSchemeDesc = $this.resolve($this.scheme.values[entryKey], $this.value[entryKey]);
 			} else if(JSB.isObject($this.scheme.values) && $this.scheme.customKey){
 				acceptedSchemes = $this.combineAcceptedSchemes($this.scheme.customKey);
+				existedSchemeDesc = $this.resolve($this.scheme.values[$this.scheme.customKey], $this.value[entryKey]);
 			} else {
 				acceptedSchemes = $this.combineAcceptedSchemes();
+				existedSchemeDesc = $this.resolve($this.scheme, $this.value).obj[entryKey];
 			}
-			$this.showPopupTool(acceptedSchemes, targetElt, entryType, entryKey, function(chosenObj){
+			
+			var existedObj = {scheme: existedSchemeDesc.scheme, value: $this.value[entryKey]};
+			if(existedObj.scheme == '$fieldName'){
+				
+			} else if(existedObj.scheme == '$sortField'){
+				existedObj.context = $this.scope.$context;
+				existedObj.value = Object.keys($this.value[entryKey])[0];
+			} else if(existedObj.scheme == '$fieldExpr'){
+				existedObj.context = $this.value[entryKey].$context;
+				existedObj.value = $this.value[entryKey].$field;
+			}
+			
+			$this.showPopupTool(acceptedSchemes, targetElt, entryType, entryKey, existedObj, function(chosenObj){
 				if(chosenObj.key){
 					debugger;
 				} else {
@@ -485,7 +615,74 @@
 			});
 		},
 		
-		showPopupTool: function(schemes, targetElt, entryType, entryKey, callback){
+		doRemove: function(targetElt, entryType, entryKey){
+			if(entryType != 'entry'){
+				return;
+			}
+			
+			// remove in query
+			if(JSB.isDefined($this.value[entryKey])){
+				delete $this.value[entryKey];
+			}
+			
+			// remove entry
+			var entryElt = $this.find('> .container > .entry[key="'+entryKey+'"]');
+			if(entryElt.length > 0){
+				var valueEditorElt = entryElt.find('> .schemeEditor');
+				if(valueEditorElt.jsb()){
+					valueEditorElt.jsb().destroy();
+				}
+				
+				entryElt.remove();
+			}
+			
+			
+			$this.notifyChanged();
+		},
+		
+		doEdit: function(targetElt, entryType, entryKey){
+			var editor = null;
+			if(entryType == 'entry'){
+				editor = $this.find('> .container > .entry[key="'+entryKey+'"] > .key > .keyEditor').jsb();
+			} else {
+				editor = $this.find('> .container > .entry[key="'+entryKey+'"] > .value > .container > .value._dwp_primitiveEditor').jsb();
+			}
+			if(editor){
+				JSB.defer(function(){
+					editor.beginEdit();	
+				});
+			}
+		},
+		
+		renameEntry: function(oldKey, newKey){
+			if(!JSB.isDefined($this.value[oldKey])){
+				throw new Error('Missing value in key: ' + oldKey);
+			}
+			$this.value[newKey] = $this.value[oldKey];
+			delete $this.value[oldKey];
+			
+			$this.hoverEntries[newKey] = $this.hoverEntries[oldKey];
+			delete $this.hoverEntries[oldKey];
+			
+			$this.hoverValues[newKey] = $this.hoverValues[oldKey];
+			delete $this.hoverValues[oldKey];
+			
+			var entryElt = $this.find('> .container > .entry[key="'+oldKey+'"]');
+			var keyElt = entryElt.find('> .key');
+			entryElt.attr('key', newKey);
+			keyElt.attr('title', newKey);
+			
+			$this.notifyChanged();
+		},
+		
+		changeConstValue: function(newVal){
+			$this.value = newVal;
+			$this.scope[$this.scopeName] = $this.value;
+			
+			$this.notifyChanged();
+		},
+		
+		showPopupTool: function(schemes, targetElt, entryType, entryKey, existedObj, callback){
 			// prepare list for dialog
 			var itemMap = {};
 			var chosenObjectKey = null;
@@ -583,6 +780,7 @@
 				cmd: 'show',
 				data: {
 					cubeFields: $this.options.cubeFields,
+					selectedObj: existedObj,
 					editor: $this,
 					items: itemMap,
 					entryType: entryType,
@@ -632,6 +830,20 @@
 				return;
 			}
 			
+			var allowEdit = false;
+			var allowRemove = false;
+			
+			if(bSelect){
+				var hoverDesc = $this.hoverValues[entryKey];
+				if(entryType == 'entry'){
+					hoverDesc = $this.hoverEntries[entryKey];
+				}
+				if(hoverDesc){
+					allowEdit = hoverDesc.allowEdit;
+					allowRemove = hoverDesc.allowRemove;
+				}
+			}
+			
 			$this.publish('DataCube.Query.SchemeEditor.selected', {entryType: entryType, entryKey:entryKey, selected: bSelect});
 			if(bSelect){
 				hoverElt.addClass('hover');
@@ -640,14 +852,18 @@
 			}
 			
 			// show popup menu
-			if(bSelect){
+			if(bSelect && (allowEdit || allowRemove)){
 				$this.menuTool = ToolManager.activate({
 					id: 'schemeMenuTool',
 					cmd: 'show',
 					data: {
 						editor: $this,
 						entryType: entryType,
-						entryKey: entryKey
+						entryKey: entryKey,
+						actions: {
+							allowEdit: allowEdit,
+							allowRemove: allowRemove
+						}
 					},
 					scope: null,
 					target: {
@@ -659,7 +875,14 @@
 						selector: hoverElt,
 						weight: 10.0
 					}],
-					callback: function(desc){
+					callback: function(cmd){
+						if(cmd == 'edit'){
+							$this.doEdit(hoverElt, entryType, entryKey);
+						} else if(cmd == 'delete'){
+							$this.doRemove(hoverElt, entryType, entryKey);
+						} else {
+							throw new Error('Unexpected menu command: ' + cmd);
+						}
 					}
 				});
 			} else {
@@ -690,12 +913,7 @@
 				return;
 			}
 			$this.container.empty();
-			
-			if($this.schemeName == 1){
-				$this.scheme = 1;
-			} else {
-				$this.scheme = QuerySyntax.getSchema()[$this.schemeName];
-			}
+			$this.scheme = QuerySyntax.getSchema()[$this.schemeName];
 			$this.construct();
 		},
 		
@@ -720,7 +938,25 @@
 				keyElt.empty();
 				keyElt.append(keyDecl.displayName);
 			} else {
-				keyElt.text(valName);
+				if($this.scheme.customKey == '#outputFieldName'){
+					var keyEditor = keyElt.find('> .keyEditor').jsb();
+					if(!keyEditor){
+						keyEditor = new PrimitiveEditor({
+							mode: 'inplace',
+							onChange: function(newVal){
+								$this.renameEntry(entryElt.attr('key'), newVal);
+							}
+						});
+						keyEditor.addClass('keyEditor');
+						keyElt.append(keyEditor.getElement());
+						keyElt.addClass('outputField');
+					}
+					keyEditor.setData(valName);
+					
+				} else {
+					keyElt.empty();
+					keyElt.text(valName);
+				}
 			}
 			
 			// generate replacement schemes
@@ -840,20 +1076,16 @@
 			}
 			
 			// if value is a ComplexObject - inject handle
-			if(valScheme == 1){
-				$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
+			var valScheme = QuerySyntax.getSchema()[valScheme];
+			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
+				var handle = valueEditor.getHandle();
+				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
+				
+			} else if(valScheme.expressionType == 'SingleObject'){
+				var handle = valueEditor.getHandle();
+				$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
 			} else {
-				var valScheme = QuerySyntax.getSchema()[valScheme];
-				if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
-					var handle = valueEditor.getHandle();
-					$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
-					
-				} else if(valScheme.expressionType == 'SingleObject'){
-					var handle = valueEditor.getHandle();
-					$this.installHoverHandlers('value', valName, handle, {acceptedSchemes: acceptedSchemes});
-				} else {
-					$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
-				}
+				$this.installHoverHandlers('value', valName, null, {acceptedSchemes: acceptedSchemes});
 			}
 		},
 		
@@ -894,19 +1126,15 @@
 			// inject value substrate
 			valueEditor.append('<div class="substrate"></div>');
 			
-			if(valScheme == 1){
-				$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
+			var valScheme = QuerySyntax.getSchema()[valScheme];
+			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
+				var handle = valueEditor.getHandle();
+				$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
+			} else if(valScheme.expressionType == 'SingleObject'){
+				var handle = valueEditor.getHandle();
+				$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
 			} else {
-				var valScheme = QuerySyntax.getSchema()[valScheme];
-				if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
-					var handle = valueEditor.getHandle();
-					$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
-				} else if(valScheme.expressionType == 'SingleObject'){
-					var handle = valueEditor.getHandle();
-					$this.installHoverHandlers('value', i, handle, {acceptedSchemes: acceptedSchemes});
-				} else {
-					$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
-				}
+				$this.installHoverHandlers('value', i, null, {acceptedSchemes: acceptedSchemes});
 			}
 
 		},
@@ -924,6 +1152,12 @@
 				$this.container.append($this.$('<div class="value"></div>').text($this.value['$field']));
 				$this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
 				return true;
+			} else if($this.scheme.name == '$sortTypeAsc') {
+				$this.container.append($this.$('<div class="value fixed">По возрастанию</div>'));
+				return true;
+			} else if($this.scheme.name == '$sortTypeDesc') {
+				$this.container.append($this.$('<div class="value fixed">По убыванию</div>'));
+				return true;
 			}
 			return false;
 		},
@@ -933,153 +1167,149 @@
 /*			if($this.scheme.name == '$select'){
 				debugger;
 			}*/
-			if($this.scheme == 1){
-				$this.attr('etype', '1');
-				$this.attr('sname', '1');
-				$this.container.append('<div class="value one">1</div>');
+			$this.attr('etype', $this.scheme.expressionType);
+			$this.attr('sname', $this.scheme.name);
+			
+			if($this.constructHeuristic()){
+				$this.attr('heuristic', true);
+				return;
 			} else {
-				$this.attr('etype', $this.scheme.expressionType);
-				$this.attr('sname', $this.scheme.name);
+				$this.attr('heuristic', false);
+			}
+			
+			if($this.scheme.expressionType == 'ComplexObject' 
+				|| $this.scheme.expressionType == 'SingleObject'){
 				
-				if($this.constructHeuristic()){
-					$this.attr('heuristic', true);
-					return;
-				} else {
-					$this.attr('heuristic', false);
+				var valSchemes = $this.value ? $this.resolve($this.scheme, $this.value) : {};
+				
+				if($this.scheme.expressionType == 'ComplexObject'){
+					$this.collapsible = true;
 				}
-				
-				if($this.scheme.expressionType == 'ComplexObject' 
-					|| $this.scheme.expressionType == 'SingleObject'){
-					
-					var valSchemes = $this.value ? $this.resolve($this.scheme, $this.value) : {};
-					
-					if($this.scheme.expressionType == 'ComplexObject'){
-						$this.collapsible = true;
-					}
-										
-					// draw values
-					if(JSB.isArray($this.scheme.values)){
-						// draw simple object
-						$this.drawObjectEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme);
-					} else {
-						// construct optional map
-						var optionalMap = {};
-						if($this.scheme.optional && $this.scheme.optional.length > 0){
-							for(var i = 0; i < $this.scheme.optional.length; i++){
-								optionalMap[$this.scheme.optional[i]] = true;
-							}
+									
+				// draw values
+				if(JSB.isArray($this.scheme.values)){
+					// draw simple object
+					$this.drawObjectEntry($this.scheme.name, valSchemes.obj[$this.scheme.name].scheme);
+				} else {
+					// construct optional map
+					var optionalMap = {};
+					if($this.scheme.optional && $this.scheme.optional.length > 0){
+						for(var i = 0; i < $this.scheme.optional.length; i++){
+							optionalMap[$this.scheme.optional[i]] = true;
 						}
+					}
 
-						// draw complex object
+					// draw complex object
 /*						if($this.scheme.customKey){
 							debugger;
 						}*/
+					
+					var schemeValues = Object.keys($this.scheme.values);
+					
+					if($this.scheme.name == '$query'){
+						schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql'];
 						
-						var schemeValues = Object.keys($this.scheme.values);
-						
-						if($this.scheme.name == '$query'){
-							schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql'];
-							
-							var ctxName = $this.value['$context'];
-							if(!JSB.isDefined(ctxName)){
-								if(!$this.parent){
-									ctxName = $this.value['$context'] = $this.generateQueryContextName('main');
-								} else {
-									ctxName = $this.value['$context'] = $this.generateQueryContextName();
-								}
-							} 
-							var ctxElt = $this.$('<div class="context"></div>').text(ctxName);
-							$this.append(ctxElt);
-
-						}
-						
-						for(var i = 0; i < schemeValues.length; i++){
-							var vName = schemeValues[i];
-							if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
-								for(var fName in $this.value){
-									// skip non-customs 
-									if($this.scheme.values[fName]){
-										continue;
-									}
-									$this.drawObjectEntry(fName, valSchemes.obj[fName].scheme);
-								}
+						var ctxName = $this.value['$context'];
+						if(!JSB.isDefined(ctxName)){
+							if(!$this.parent){
+								ctxName = $this.value['$context'] = $this.generateQueryContextName('main');
 							} else {
-								if(JSB.isDefined($this.value[vName]) || !optionalMap[vName]){
-									var vScheme = $this.scheme.values[vName];
-									if(valSchemes && valSchemes.obj && valSchemes.obj[vName]){
-										vScheme = valSchemes.obj[vName].scheme;
-									}
-									$this.drawObjectEntry(vName, vScheme);
+								ctxName = $this.value['$context'] = $this.generateQueryContextName();
+							}
+						} 
+						var ctxElt = $this.$('<div class="context"></div>').text(ctxName);
+						$this.append(ctxElt);
+
+					}
+					
+					for(var i = 0; i < schemeValues.length; i++){
+						var vName = schemeValues[i];
+						if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
+							for(var fName in $this.value){
+								// skip non-customs 
+								if($this.scheme.values[fName]){
+									continue;
 								}
+								$this.drawObjectEntry(fName, valSchemes.obj[fName].scheme);
+							}
+						} else {
+							if(JSB.isDefined($this.value[vName]) || !optionalMap[vName]){
+								var vScheme = $this.scheme.values[vName];
+								if(valSchemes && valSchemes.obj && valSchemes.obj[vName]){
+									vScheme = valSchemes.obj[vName].scheme;
+								}
+								$this.drawObjectEntry(vName, vScheme);
 							}
 						}
 					}
-					
-					if($this.scheme.expressionType == 'ComplexObject'){
-						$this.handle = $this.$('<div class="handle"></div>');
-						$this.append($this.handle);
-						$this.addClass('hasHandle');
-					} else {
-						$this.handle = $this.find('> .container > .entry > .key');
-					}
-
-				} else if($this.scheme.expressionType == 'EArray'){
-					if($this.value && !JSB.isArray($this.value)){
-						$this.value = $this.scope[$this.scopeName] = [$this.value];
-					}
-					
-					if(JSB.isDefined($this.value)){
-						var valSchemes = $this.resolve($this.scheme, $this.value);
-						for(var i = 0; i < $this.value.length; i++){
-							$this.drawArrayEntry(i, valSchemes.obj[i].scheme);
-						}
-					}
-					
+				}
+				
+				if($this.scheme.expressionType == 'ComplexObject'){
 					$this.handle = $this.$('<div class="handle"></div>');
 					$this.append($this.handle);
 					$this.addClass('hasHandle');
-					$this.collapsible = true;
-
-				} else if($this.scheme.expressionType == 'Group'){
-					debugger;
-					throw new Error('Unable to render Group');
-				} else if($this.scheme.expressionType == 'EConstBoolean'){
-					debugger;
-				} else if($this.scheme.expressionType == 'EConstNull'){
-					$this.container.append('<div class="value null">null</div>');
-				} else if($this.scheme.expressionType == 'EConstString'){
-					$this.valueEditor = new PrimitiveEditor({
-						valueType: 'string',
-						mode: 'inplace',
-						onChange: function(){
-							debugger;
-						}
-					});
-					$this.valueEditor.addClass('value string');
-					$this.container.append($this.valueEditor.getElement());
-					if(JSB.isDefined($this.value)){
-						$this.valueEditor.setData($this.value);
-					} else {
-						$this.valueEditor.beginEdit();
-					}
-				} else if($this.scheme.expressionType == 'EConstNumber'){
-					$this.valueEditor = new PrimitiveEditor({
-						valueType: 'double',
-						mode: 'inplace',
-						onChange: function(){
-							debugger;
-						}
-					});
-					$this.valueEditor.addClass('value number');
-					$this.container.append($this.valueEditor.getElement());
-					if(JSB.isDefined($this.value)){
-						$this.valueEditor.setData($this.value);
-					} else {
-						$this.valueEditor.beginEdit();
-					}
-				}  else {
-					throw new Error('Unknown expression type: ' + $this.scheme.expressionType);
+				} else {
+					$this.handle = $this.find('> .container > .entry > .key');
 				}
+
+			} else if($this.scheme.expressionType == 'EArray'){
+				if($this.value && !JSB.isArray($this.value)){
+					$this.value = $this.scope[$this.scopeName] = [$this.value];
+				}
+				
+				if(JSB.isDefined($this.value)){
+					var valSchemes = $this.resolve($this.scheme, $this.value);
+					for(var i = 0; i < $this.value.length; i++){
+						$this.drawArrayEntry(i, valSchemes.obj[i].scheme);
+					}
+				}
+				
+				$this.handle = $this.$('<div class="handle"></div>');
+				$this.append($this.handle);
+				$this.addClass('hasHandle');
+				$this.collapsible = true;
+
+			} else if($this.scheme.expressionType == 'Group'){
+				throw new Error('Unable to render Group');
+			} else if($this.scheme.expressionType == 'EConstBoolean'){
+				var valElt = $this.$('<div class="value boolean"></div>');
+				valElt.text($this.scheme.displayName);
+				valElt.attr('key', $this.value)
+				$this.container.append(valElt);
+			} else if($this.scheme.expressionType == 'EConstNull'){
+				$this.container.append('<div class="value null">null</div>');
+			} else if($this.scheme.expressionType == 'EConstString'){
+				$this.valueEditor = new PrimitiveEditor({
+					valueType: 'string',
+					mode: 'inplace',
+					onChange: function(newVal){
+						$this.changeConstValue(newVal);
+					}
+				});
+				$this.valueEditor.addClass('value string');
+				$this.container.append($this.valueEditor.getElement());
+				if(JSB.isDefined($this.value)){
+					$this.valueEditor.setData($this.value);
+				} else {
+					$this.valueEditor.beginEdit();
+				}
+			} else if($this.scheme.expressionType == 'EConstNumber'){
+				$this.valueEditor = new PrimitiveEditor({
+					valueType: 'double',
+					mode: 'inplace',
+					onChange: function(newVal){
+						$this.changeConstValue(newVal);
+					}
+				});
+				$this.valueEditor.addClass('value number');
+				$this.container.append($this.valueEditor.getElement());
+				if(JSB.isDefined($this.value)){
+					$this.valueEditor.setData($this.value);
+				} else {
+					$this.valueEditor.beginEdit();
+				}
+			}  else {
+				throw new Error('Unknown expression type: ' + $this.scheme.expressionType);
 			}
 			
 		},
@@ -1143,9 +1373,6 @@
 			if(!JSB.isString(schemeName)){
 				schemeName = schemeName.name;
 			}
-			if(scheme == 1 && scheme == value){
-				return {w: 1, scheme: schemeName};
-			}
 			if(!scheme || !scheme.expressionType){
 				return {w: 0, scheme: schemeName};
 			}
@@ -1193,7 +1420,15 @@
 					return {w: 0, scheme: schemeName};
 				}
 				if(JSB.isBoolean(value)){
-					return {w: 1, scheme: schemeName};
+					if(JSB.isDefined(scheme.value)){
+						if(value == scheme.value){
+							return {w: 1, scheme: schemeName};
+						} else {
+							return {w: 0.5, scheme: schemeName};
+						}
+					} else {
+						return {w: 1, scheme: schemeName};
+					}
 				}
 				return {w: 0.5, scheme: schemeName};
 				break;
@@ -1202,7 +1437,15 @@
 					return {w: 0, scheme: schemeName};
 				}
 				if(JSB.isString(value)){
-					return {w: 1, scheme: schemeName};
+					if(JSB.isDefined(scheme.value)){
+						if(value == scheme.value){
+							return {w: 1, scheme: schemeName};
+						} else {
+							return {w: 0.5, scheme: schemeName};
+						}
+					} else {
+						return {w: 1, scheme: schemeName};
+					}
 				} 
 				return {w: 0.5, scheme: schemeName};
 			case 'EConstNumber':
@@ -1210,7 +1453,15 @@
 					return {w: 0, scheme: schemeName};
 				}
 				if(JSB.isNumber(value)){
-					return {w: 1, scheme: schemeName};
+					if(JSB.isDefined(scheme.value)){
+						if(value == scheme.value){
+							return {w: 1, scheme: schemeName};
+						} else {
+							return {w: 0.5, scheme: schemeName};
+						}
+					} else {
+						return {w: 1, scheme: schemeName};
+					}
 				} 
 				return {w: 0.5, scheme: schemeName};
 				break;
