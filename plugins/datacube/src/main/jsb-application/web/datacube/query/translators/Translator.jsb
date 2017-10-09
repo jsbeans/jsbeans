@@ -39,7 +39,7 @@
 		    var translatedQuery = this.translateQuery();
 
 		    // create iterator
-		    if (true){//TODO:translatedQuery.$analyze) {
+		    if (translatedQuery.$analyze) {
 		        return this.analyzeQuery(translatedQuery);
 		    } else {
 		        this.iterator = this.executeQuery(translatedQuery);
