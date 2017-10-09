@@ -290,6 +290,8 @@
                     }
                 });
                 fElt.append(checkbox.getElement());
+            } else {
+                fElt.append('<div class="icon"></div>');
             }
             fElt.append(`#dot
                 <div class="cell name">
@@ -351,13 +353,14 @@
 		},
 
 		updateResizable: function(){
-            var nameCell = this.getElement().find('.field .cell.name');
-            var typeCell = this.getElement().find('.field .cell.type');
+            var nameCells = this.getElement().find('.field .cell.name');
 
-            nameCell.resizable({
+            nameCells.resizable({
                 autoHide: true,
                 handles: "e",
-                alsoResize: nameCell
+                resize: function(evt, ui){
+                    nameCells.width(ui.size.width);
+                }
             });
 		},
 

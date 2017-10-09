@@ -269,14 +269,12 @@
 
 		updateResizable: function(){
             var nameCells = this.getElement().find('.field .cell.name');
-            var typeCells = this.getElement().find('.field .cell.type');
+
             nameCells.resizable({
                 autoHide: true,
                 handles: "e",
-                alsoResize: nameCells,
                 resize: function(evt, ui){
-                    typeCells.css('width', 'calc(100% - '+ui.size.width+'px)');
-                    $this.resized = true;
+                    nameCells.width(ui.size.width);
                 }
             });
 		},
