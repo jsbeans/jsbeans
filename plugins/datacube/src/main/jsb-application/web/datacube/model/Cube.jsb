@@ -581,6 +581,35 @@
 			return this.fields[field];
 		},
 
+		linkFields: function(fields){
+            var nFields = [];
+		    // remove old fields
+		    for(var i = 0; i < fields.length; i++){
+		        nFields.push({
+		            field: this.fields[fields[i].field].binding[0].field,
+		            type: this.fields[fields[i].field].type,
+		            provider: JSB.clone(this.fields[fields[i].field].binding[0].provider)
+		        });
+		        delete this.fields[fields[i].field];
+		    }
+		    // create new field
+		    var nField = this.fields[nFields[0].field] = {
+		        binding: [],
+		        field: nFields[0].field,
+		        link: true,
+		        type: nFields[0].type
+		    };
+
+		    for(var i = 0; i < nFields.length; i++){
+		        nField.binding.push(nFields[i]);
+		    }
+
+		    this.store();
+            this.doSync();
+
+            return nField;
+		},
+
 		renameField: function(oldName, newName){
 			if(!this.fields[oldName]){
 				throw new Error('Field not existed: ' + oldName);

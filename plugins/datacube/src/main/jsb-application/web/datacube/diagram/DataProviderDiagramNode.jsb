@@ -175,6 +175,8 @@
 
 			for(var i = 0; i < fieldNames.length; i++){
 				var f = fieldNames[i];
+				this.createField(f);
+				/*
 				(function(field){
 					var fElt = $this.$('<div class="field"></div>');
 					fElt.attr('key', field);
@@ -235,6 +237,7 @@
 					    $this.fieldList.append(fElt);
 					}
 				})(f);
+				*/
 			}
 			
 			var nameCell = this.fieldList.find('.field .cell.name');
@@ -254,7 +257,85 @@
 					nameCell.css('height', '');
 				}
 			});
-			
+		},
+
+		createField: function(field){
+            var fElt = $this.$('<div class="field"></div>');
+            fElt.attr('key', field);
+            if(!$this.fields[field].keyField){
+                var checkbox = new CheckBox({
+                    checked: $this.fields[field].cubeField,
+                    onChange: function(isCheck){
+                        if(isCheck){
+                            $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
+                                if(desc){
+                                    $this.editor.cubeNode.addField(desc.field, desc.type);
+                                }
+                            });
+                        } else {
+                            $this.editor.cubeEntry.server().removeField($this.fields[field].cubeField, function(res, fail){
+                                if(res){
+                                    $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
+                                } else {
+                                    checkbox.setChecked(false);
+                                }
+                            });
+                        }
+                    }
+                });
+                fElt.append(checkbox.getElement());
+            }
+            fElt.append(`#dot
+                <div class="cell name">
+                    <div class="text"></div>
+                </div>
+                <div class="cell type">
+                    <div class="icon"></div>
+                    <div class="text"></div>
+                </div>
+            `);
+            if($this.fields[field].keyField){
+                fElt.append(`#dot <div class="connector right"></div>`);
+            }
+            fElt.find('.cell.name').attr('title', field);
+            fElt.find('.cell.name > .text').text(field);
+            fElt.find('.cell.type > .text').text($this.fields[field].type);
+
+            if($this.fields[field].keyField){
+                $this.keyFieldList.append(fElt);
+
+                // create right connector
+                var rightConnector = $this.installConnector('providerFieldRight', {
+                    origin: fElt.find('.connector.right'),
+                    handle: [fElt.find('.connector.right'), fElt.find('.cell.type')],
+                    iri: 'connector/field/right/' + field,
+                    field: field,
+                    onHighlight: function(bEnable, meta){
+                        $this.highlightConnector(this, bEnable, meta);
+                    }
+                });
+                $this.rightFieldConnectors[field] = rightConnector;
+            } else {
+                $this.fieldList.append(fElt);
+            }
+		},
+
+		toggleKeyField: function(field, isKey){
+		    $this.fields[field].keyField = isKey;
+
+		    if(isKey){
+                var element = $this.fieldList.find('.field[key=' + field + ']');
+		    } else {
+		        var element = $this.keyFieldList.find('.field[key=' + field + ']');
+		        this.rightFieldConnectors[field].destroy();
+		        delete this.rightFieldConnectors[field];
+		    }
+
+            element.remove();
+            this.createField(field);
+
+            // return right connector
+            return this.rightFieldConnectors[field];
 		},
 		
 		highlightNode: function(bEnable){

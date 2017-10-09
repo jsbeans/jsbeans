@@ -10,6 +10,7 @@
 		cubeEntry: null,
 		cubeNode: null,
 		ignoreHandlers: false,
+		providersNodes: {},
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -211,6 +212,7 @@
 				pnMap[pDesc.provider.getId()] = pNode;
 				pNode.setPosition(pDesc.position.x, pDesc.position.y);
 				dpNodes.push(pNode);
+				$this.providersNodes[pDesc.provider.getId()] = pNode;
 			}
 			JSB.chain(dpNodes, function(node, c){
 				JSB.deferUntil(function(){
@@ -264,6 +266,7 @@
 			}
 			this.cubeEntry = entry;
 			this.diagram.clear();
+			this.providersNodes = {};
 			this.cubeEntry.server().load(true, function(desc){
 				// draw in diagram
 				$this.cubeDescription = desc;

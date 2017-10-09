@@ -220,7 +220,7 @@
 					<div jsb="JSB.Widgets.Button"
 					     class="roundButton btnDelete btn10"
 					     tooltip="Удалить поле"
-					     onclick="{{=$this.callbackAttr(function(evt){evt.stopPropagation(); $this.removeField(fElt.attr('key'), evt)})}}">
+					     onclick="{{=$this.callbackAttr(function(evt){evt.stopPropagation(); $this.removeField(fElt.attr('key'), isKeyField)})}}">
                      </div>
 				`);
 
@@ -252,37 +252,18 @@
 				if(tWidth){
 					fElt.find('.cell.type').width(tWidth);
 				}
-				
-				// create left connector
-				var leftConnector = $this.installConnector('cubeFieldLeft', {
-					origin: fElt.find('.connector.left'),
-					handle: [fElt.find('.connector.left'), fElt.find('.cell.name > .icon'), fElt.find('.cell.name > .text')],
-					iri: 'connector/field/left/' + field,
-					onHighlight: function(bEnable, meta){
-						$this.highlightConnector(this, bEnable, meta);
-					},
-					onChangeConnection: function(link){
-						if(!link || !this.hasLink(link) || $this.editor.ignoreHandlers){
-							return;
-						}
-						var rDesc = this.getRemote(link);
-						var provider = rDesc.node.provider;
-						var pField = rDesc.connector.options.field;
-						var field = fElt.attr('key');
-						$this.entry.server().linkField(field, provider.getId(), pField, rDesc.node.fields[pField], function(desc){
-							if(!$this.fields){
-								$this.fields = {};
-							}
-							if(desc.link){
-								fElt.addClass('link');
-							} else {
-								fElt.removeClass('link');
-							}
-							
-						});						
-					}
-				});
-				$this.leftFieldConnectors[field] = leftConnector;
+				if(isKeyField){
+                    // create left connector
+                    var leftConnector = $this.installConnector('cubeFieldLeft', {
+                        origin: fElt.find('.connector.left'),
+                        handle: [fElt.find('.connector.left'), fElt.find('.cell.name > .icon'), fElt.find('.cell.name > .text')],
+                        iri: 'connector/field/left/' + field,
+                        onHighlight: function(bEnable, meta){
+                            $this.highlightConnector(this, bEnable, meta);
+                        }
+                    });
+                    $this.leftFieldConnectors[field] = leftConnector;
+				}
 				/*
 				// create right connector
 				var rightConnector = $this.installConnector('cubeFieldRight', {
@@ -436,7 +417,7 @@
 			});
 		},
 		
-		removeField: function(field){
+		removeField: function(field, isKeyField){
 			var fElt = $this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]');
 			ToolManager.showMessage({
 				icon: 'removeDialogIcon',
@@ -506,13 +487,17 @@
 			});
 		},
 
-		afterFieldRemove: function(field){
-            delete $this.fields[field];
-            $this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
-            $this.leftFieldConnectors[field].destroy();
-            delete $this.leftFieldConnectors[field];
+		afterFieldRemove: function(field, isKey){
+            delete this.fields[field];
+            this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
+            if(this.leftFieldConnectors[field]){
+                this.leftFieldConnectors[field].destroy();
+                delete this.leftFieldConnectors[field];
+            }
+            /*
             $this.rightFieldConnectors[field].destroy();
             delete $this.rightFieldConnectors[field];
+            */
 		},
 
 		refresh: function(){
@@ -582,24 +567,26 @@
 		},
 
 		createKeyField: function(){
+		    var fArray = [];
+		    for(var i in this.checkedFieldList){
+		        fArray.push({
+		            field: i
+		        });
+		    }
+		    $this.entry.server().linkFields(fArray, function(nField){
+		        for(var i = 0; i < fArray.length; i++){
+		            $this.afterFieldRemove(fArray[i].field);
+		        }
+		        $this.addField(nField.field, nField.type, true, true);
 
-		debugger;
-		/*
-            var rDesc = this.getRemote(link);
-            var provider = rDesc.node.provider;
-            var pField = rDesc.connector.options.field;
-            var field = fElt.attr('key');
-            $this.entry.server().linkField(field, provider.getId(), pField, rDesc.node.fields[pField], function(desc){
-                if(!$this.fields){
-                    $this.fields = {};
-                }
-                if(desc.link){
-                    fElt.addClass('link');
-                } else {
-                    fElt.removeClass('link');
-                }
-            });
-        */
+		        for(var i = 0; i < nField.binding.length; i++){
+		            var rightConnector = $this.editor.providersNodes[nField.binding[i].provider.getId()].toggleKeyField(fArray[i].field, true);
+
+                    var link = $this.diagram.createLink('bind');
+                    link.setSource(rightConnector);
+                    link.setTarget($this.leftFieldConnectors[nField.field]);
+		        }
+		    });
 		}
 	}
 }
