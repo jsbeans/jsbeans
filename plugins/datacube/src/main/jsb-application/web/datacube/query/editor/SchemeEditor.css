@@ -55,8 +55,8 @@
 	display: none;
 }
 
-.schemeEditor[etype = "ComplexObject"][heuristic="false"] > .btnCreate,
-.schemeEditor[etype = "EArray"][heuristic="false"] > .btnCreate {
+.schemeEditor[etype = "ComplexObject"][heuristic="false"][canadd="true"] > .btnCreate,
+.schemeEditor[etype = "EArray"][heuristic="false"][canadd="true"] > .btnCreate {
 	display: inline-block;
 }
 
@@ -279,9 +279,11 @@
 
 .schemeEditor > .container > .value {}
 
-.schemeEditor > .container > .value.fixed {
+.schemeEditor > .container > .value.fixed,
+.schemeEditor > .container > .value.fixed.number,
+.schemeEditor > .container > .value.fixed.string {
 	padding: 2px;
-    color: #7b4500;
+	color: #7b4500;
 }
 
 .schemeEditor > .container > .value.null {
@@ -451,8 +453,8 @@
 .schemeEditor[etype = "EConstNumber"] > .container,
 .schemeEditor[etype = "EConstString"] > .container {}
 
-.schemeEditor[etype = "EConstString"][sname="$constString"] > .container:before,
-.schemeEditor[etype = "EConstString"][sname="$constString"] > .container:after {
+.schemeEditor.allowEdit[etype = "EConstString"] > .container:before,
+.schemeEditor.allowEdit[etype = "EConstString"] > .container:after {
 	content: '"';
 	display: inline-block;
 	vertical-align: top;
@@ -511,7 +513,8 @@
     background-color: rgba(175, 152, 125, 0.15);
 }
 
-.schemeEditor[sname = "$query"] > .container > .entry[key="$select"] {
+.schemeEditor[sname = "$query"] > .container > .entry[key="$select"],
+.schemeEditor[sname = "$query"] > .container > .entry[key="$from"] {
 	min-width: calc(66% - 4px);
 }
 

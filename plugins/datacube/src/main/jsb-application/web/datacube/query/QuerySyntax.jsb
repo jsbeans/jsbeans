@@ -214,7 +214,7 @@
 		    new this.EArray({
 		        name: '$addValues',
 		        minOperands: 2,
-		        maxOperands: -1,
+		        maxOperands: 2,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -227,7 +227,7 @@
 		    new this.EArray({
 		        name: '$subValues',
 		        minOperands: 2,
-		        maxOperands: -1,
+		        maxOperands: 2,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -240,7 +240,7 @@
 		    new this.EArray({
 		        name: '$mulValues',
 		        minOperands: 2,
-		        maxOperands: -1,
+		        maxOperands: 2,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -253,7 +253,7 @@
 		    new this.EArray({
 		        name: '$divValues',
 		        minOperands: 2,
-		        maxOperands: -1,
+		        maxOperands: 2,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -279,7 +279,7 @@
 		    new this.EArray({
 		        name: '$modValues',
 		        minOperands: 2,
-		        maxOperands: -1,
+		        maxOperands: 2,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
@@ -311,10 +311,15 @@
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
-		    new this.ComplexObject({
+		    new this.SingleObject({
 		        name: '$splitString',
 		        category: 'Функции',
 		        desc: 'Разделить строку на несколько (получить массив строк)',
+		        values: ['$splitStringExpr']
+		    });
+		    
+		    new this.ComplexObject({
+		        name: '$splitStringExpr',
 		        values: {
 		            '$field': '$valueDefinition',
 		            '$separator': '$constString'
@@ -343,15 +348,22 @@
 		        values: ['$field', '$expression', '$query', '$const', '$param'],
 		    });
 		    
-		    new this.ComplexObject({
+		    new this.SingleObject({
 		        name: '$substring',
 		        category: 'Функции',
 		        desc: 'Извлечь подстроку',
+		        values: ['$substringExpr']
+		    });
+		    
+		    new this.ComplexObject({
+		        name: '$substringExpr',
 		        values: {
 		            '$field': '$valueDefinition',
 		            '$length': '$constNumber'
 		        }
 		    });
+
+		    
 		    new this.ComplexObject({
 		        name: '$if',
 		        displayName: 'if/then/else',
@@ -865,6 +877,8 @@
 
 		    new this.EConstNumber({
 		        name: '$limit',
+		        value: 10,
+		        editable: true
 		    });
 		
 		    new this.Group({
@@ -912,11 +926,14 @@
 		
 		    new this.Group({
 		        name: '$field',
+		        displayName: 'Поле',
+		        desc: 'Поле',
 		        values: ['$fieldName', '$fieldExpr'],
 		    });
 		    
 		    new this.ComplexObject({
 		        name: '$fieldExpr',
+		        displayName: 'Поле',
 		        desc: 'Поле',
 		        values: {
 		            '$field': '$fieldName',
@@ -952,7 +969,8 @@
 		    new this.EConstNumber({
 		    	displayName: 'Значение',
 		    	desc: 'Константное значение',
-		        name: '$constNumber'
+		        name: '$constNumber',
+		        editable: true
 		    });
 		    
 		    new this.EConstBoolean({
@@ -972,7 +990,8 @@
 		    new this.EConstString({
 		    	displayName: 'Строка',
 		    	desc: 'Константная строка',
-		        name: '$constString'
+		        name: '$constString',
+		        editable: true
 		    });
 		    
 		    new this.EConstNull({
@@ -987,7 +1006,8 @@
 		    });
 		    
 		    new this.EConstString({
-		        name: '$sql'
+		        name: '$sql',
+		        editable: true
 		    });
 		
 		},

@@ -152,9 +152,13 @@
 				
 			} else {
 				var valSchemeDesc = $this.resolve($this.scheme, $this.value).obj[entryKey].scheme;
-				if(valSchemeDesc == '$constString' || valSchemeDesc == '$constNumber' || valSchemeDesc == '$constBoolean'){
+				var valScheme = QuerySyntax.getSchema()[valSchemeDesc];
+				if(valScheme.editable){
 					allowEdit = true;
 				}
+/*				if(valSchemeDesc == '$constString' || valSchemeDesc == '$constNumber' || valSchemeDesc == '$constBoolean'){
+					allowEdit = true;
+				}*/
 				
 				if(opts){
 					var ac = null;
@@ -409,7 +413,6 @@
 				}
 				
 			} else if(schemeDesc.expressionType == 'EArray') {
-				debugger;
 				var schemeVal = $this.combineAcceptedSchemes(schemeDesc)[0];
 				value = [];
 				switch(schemeDesc.name){
@@ -460,11 +463,10 @@
 		
 		doAdd: function(targetElt){
 			$this.showPopupTool($this.combineAcceptedSchemes(), targetElt, null, null, null, function(chosenObj){
-				debugger;
 				if($this.scheme.expressionType == 'ComplexObject'){
 					
-					function generateColumnName(){
-						var prefix = 'Столбец';
+					function generateColumnName(prefix){
+						prefix = prefix || 'Столбец';
 						for(var idx = 1;; idx++){
 							var suggestedName = prefix + '_' + idx;
 							if(!$this.value[suggestedName]){
@@ -477,11 +479,17 @@
 					var value = null;
 					var schemeName = null;
 					var context = null;
+					var askRename = false;
 					// detect key
 					if(JSB.isString(chosenObj.key)){
 						if($this.scheme.name == '$select' && chosenObj.key == '#outputFieldName'){
 							// autogenerate column name
-							colName = generateColumnName();
+							var prefix = null;
+							if(chosenObj.value && (chosenObj.value.scheme == '$fieldName' || chosenObj.value.scheme == '$fieldExpr')){
+								prefix = chosenObj.value.value;
+							}
+							colName = generateColumnName(prefix);
+							askRename = true;
 						} else {
 							throw new Error('Unexpected key: ' + chosenObj.key);
 						}
@@ -516,6 +524,10 @@
 					$this.value[colName] = value;
 					// draw entry
 					$this.drawObjectEntry(colName, schemeName, {expanded: true});
+					if(askRename){
+						$this.doEdit('entry', colName);
+					}
+					$this.updateButtons();
 					$this.notifyChanged();
 				} else if($this.scheme.expressionType == 'EArray') {
 					var value = chosenObj.value.value;
@@ -539,6 +551,7 @@
 					$this.value.push(value);
 					// draw entry
 					$this.drawArrayEntry($this.value.length - 1, schemeName, {expanded: true});
+					$this.updateButtons();
 					$this.notifyChanged();
 				} else {
 					throw new Error('Unable to add something in ' + $this.scheme.expressionType);
@@ -622,7 +635,11 @@
 			
 			// remove in query
 			if(JSB.isDefined($this.value[entryKey])){
-				delete $this.value[entryKey];
+				if(JSB.isArray($this.value)){
+					$this.value.splice(entryKey, 1);
+				} else {
+					delete $this.value[entryKey];
+				}
 			}
 			
 			// remove entry
@@ -636,11 +653,11 @@
 				entryElt.remove();
 			}
 			
-			
+			$this.updateButtons();
 			$this.notifyChanged();
 		},
 		
-		doEdit: function(targetElt, entryType, entryKey){
+		doEdit: function(entryType, entryKey){
 			var editor = null;
 			if(entryType == 'entry'){
 				editor = $this.find('> .container > .entry[key="'+entryKey+'"] > .key > .keyEditor').jsb();
@@ -682,8 +699,7 @@
 			$this.notifyChanged();
 		},
 		
-		showPopupTool: function(schemes, targetElt, entryType, entryKey, existedObj, callback){
-			// prepare list for dialog
+		combineCategoryMap: function(schemes){
 			var itemMap = {};
 			var chosenObjectKey = null;
 			var chooseType = 'key';
@@ -774,6 +790,23 @@
 			} else {
 				itemMap = catMap[Object.keys(catMap)[0]];
 			}
+			
+			return {
+				itemMap: itemMap,
+				chosenObjectKey: chosenObjectKey,
+				chooseType: chooseType
+			};
+		},
+		
+		showPopupTool: function(schemes, targetElt, entryType, entryKey, existedObj, callback){
+			// prepare list for dialog
+			var acceptedDesc = $this.combineCategoryMap(schemes);
+			if(!acceptedDesc){
+				return;
+			}
+			var itemMap = acceptedDesc.itemMap;
+			var chosenObjectKey = acceptedDesc.chosenObjectKey;
+			var chooseType = acceptedDesc.chooseType;
 			
 			var popupTool = ToolManager.activate({
 				id: 'schemePopupTool',
@@ -877,7 +910,7 @@
 					}],
 					callback: function(cmd){
 						if(cmd == 'edit'){
-							$this.doEdit(hoverElt, entryType, entryKey);
+							$this.doEdit(entryType, entryKey);
 						} else if(cmd == 'delete'){
 							$this.doRemove(hoverElt, entryType, entryKey);
 						} else {
@@ -1143,6 +1176,20 @@
 			return $this.handle;
 		},
 		
+		updateButtons: function(){
+			var catDesc = $this.combineCategoryMap($this.combineAcceptedSchemes());
+			
+			var bCanAdd = catDesc && ((JSB.isObject(catDesc.itemMap) && Object.keys(catDesc.itemMap).length > 0)||(JSB.isArray(catDesc.itemMap) && catDesc.itemMap.length > 0));
+			
+			if(JSB.isArray($this.value) && JSB.isDefined($this.scheme.maxOperands) && $this.scheme.maxOperands >= 0){
+				if($this.value.length >= $this.scheme.maxOperands){
+					bCanAdd = false;
+				}
+			}
+			
+			$this.attr('canadd', bCanAdd);
+		},
+		
 		constructHeuristic: function(){
 			if($this.scheme.name == '$fieldName'){
 				var valElt = $this.$('<div class="value"></div>').text($this.value);
@@ -1252,6 +1299,7 @@
 					$this.handle = $this.find('> .container > .entry > .key');
 				}
 
+				$this.updateButtons();
 			} else if($this.scheme.expressionType == 'EArray'){
 				if($this.value && !JSB.isArray($this.value)){
 					$this.value = $this.scope[$this.scopeName] = [$this.value];
@@ -1268,45 +1316,57 @@
 				$this.append($this.handle);
 				$this.addClass('hasHandle');
 				$this.collapsible = true;
-
+				$this.updateButtons();
 			} else if($this.scheme.expressionType == 'Group'){
 				throw new Error('Unable to render Group');
 			} else if($this.scheme.expressionType == 'EConstBoolean'){
 				var valElt = $this.$('<div class="value boolean"></div>');
-				valElt.text($this.scheme.displayName);
+				valElt.text($this.value);
 				valElt.attr('key', $this.value)
 				$this.container.append(valElt);
 			} else if($this.scheme.expressionType == 'EConstNull'){
 				$this.container.append('<div class="value null">null</div>');
 			} else if($this.scheme.expressionType == 'EConstString'){
-				$this.valueEditor = new PrimitiveEditor({
-					valueType: 'string',
-					mode: 'inplace',
-					onChange: function(newVal){
-						$this.changeConstValue(newVal);
+				if($this.scheme.editable){
+					$this.valueEditor = new PrimitiveEditor({
+						valueType: 'string',
+						mode: 'inplace',
+						onChange: function(newVal){
+							$this.changeConstValue(newVal);
+						}
+					});
+					$this.valueEditor.addClass('value string');
+					$this.container.append($this.valueEditor.getElement());
+					if(JSB.isDefined($this.value)){
+						$this.valueEditor.setData($this.value);
+					} else {
+						$this.valueEditor.beginEdit();
 					}
-				});
-				$this.valueEditor.addClass('value string');
-				$this.container.append($this.valueEditor.getElement());
-				if(JSB.isDefined($this.value)){
-					$this.valueEditor.setData($this.value);
 				} else {
-					$this.valueEditor.beginEdit();
+					var valElt = $this.$('<div class="value string fixed"></div>');
+					valElt.text($this.value);
+					$this.container.append(valElt);
 				}
 			} else if($this.scheme.expressionType == 'EConstNumber'){
-				$this.valueEditor = new PrimitiveEditor({
-					valueType: 'double',
-					mode: 'inplace',
-					onChange: function(newVal){
-						$this.changeConstValue(newVal);
+				if($this.scheme.editable){
+					$this.valueEditor = new PrimitiveEditor({
+						valueType: 'double',
+						mode: 'inplace',
+						onChange: function(newVal){
+							$this.changeConstValue(newVal);
+						}
+					});
+					$this.valueEditor.addClass('value number');
+					$this.container.append($this.valueEditor.getElement());
+					if(JSB.isDefined($this.value)){
+						$this.valueEditor.setData($this.value);
+					} else {
+						$this.valueEditor.beginEdit();
 					}
-				});
-				$this.valueEditor.addClass('value number');
-				$this.container.append($this.valueEditor.getElement());
-				if(JSB.isDefined($this.value)){
-					$this.valueEditor.setData($this.value);
 				} else {
-					$this.valueEditor.beginEdit();
+					var valElt = $this.$('<div class="value number fixed"></div>');
+					valElt.text($this.value);
+					$this.container.append(valElt);
 				}
 			}  else {
 				throw new Error('Unknown expression type: ' + $this.scheme.expressionType);
