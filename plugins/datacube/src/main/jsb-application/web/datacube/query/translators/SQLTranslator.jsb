@@ -6,7 +6,8 @@
 		$require: [
 		    'DataCube.Query.QueryParser',
 		    'DataCube.Query.Translators.TranslatorRegistry',
-		    'DataCube.Providers.SqlTableDataProvider'
+		    'DataCube.Providers.SqlTableDataProvider',
+		    'DataCube.Query.QueryUtils'
         ],
 
 		$bootstrap: function(){
@@ -17,12 +18,19 @@
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		},
 
-		executeQuery: function(translatedQuery, params){
+		translateQuery: function() {
+		    this._collectContextQueries();
+		    var sql = this.translateQueryExpression(this.dcQuery);
+		    Log.debug('Translated SQL Query: \n' + sql);
+            return sql;
+        },
+
+		executeQuery: function(translatedQuery){
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asSQL().iteratedParametrizedQuery2(
 		        translatedQuery,
 		        function getValue(param) {
-		            return params[param];
+		            return $this.params[param];
 		        },
 		        function getType(param) {
 		            for (var i in $this.providers) {
@@ -34,38 +42,82 @@
 		    return iterator;
         },
 
-		translateQuery: function(dcQuery, params) {
-		    var sql = this.translateQueryExpression(dcQuery);
+		analyzeQuery: function(translatedQuery){
+		    var json = {
+		        translatedQuery: translatedQuery,
+		        preparedQuery: this.dcQuery,
+		        params: this.params
+		    };
+		    return {
+		        next: function(){
+                    try {
+                        return json;
+                    } finally {
+                        if (json) json = null;
+                    }
+		        },
+		        close: function(){
+		        }
+		    };
+		},
 
-		    Log.debug('Translated SQL Query: \n' + sql);
-            return sql;
-        },
-
-		translateQueryExpression: function(dcQuery) {
+		translateQueryExpression: function(query) {
 		    var sql = '';
-		    if (dcQuery.$sql) {
-		        sql += this._prepareEmbeddedSQL(dcQuery.$sql, dcQuery);
+		    if (query.$sql) {
+		        sql += this._prepareEmbeddedSQL(query.$sql, query);
 		    } else {
-                var columns = this._translateExpressions(dcQuery);
-                var from  = this._translateFrom(dcQuery);
-                var where = this._translateWhere(dcQuery);
-                var group = this._translateGroup(dcQuery);
-                var order = this._translateOrder(dcQuery);
-                var limit = dcQuery.$limit ? ' LIMIT ' + dcQuery.$limit: '';
-                from  = dcQuery.$context ? from + ' ' + this._quotedName(dcQuery.$context, true) : from;
+                var columns = this._translateSelectColumns(query);
+                var from  = this._translateFrom(query);
+                var where = this._translateWhere(query, this._extractWhereOrHavingFilter(query, true));
+                var group = this._translateGroup(query);
+                //TODO: HAVING is not support filter by alias: if $filter contains alias of aggregate expression move it to $postFilter
+                var having = this._translateWhere(query, this._extractWhereOrHavingFilter(query, false));
+                var order = this._translateOrder(query);
+                var offset = query.$offset ? ' OFFSET ' + query.$offset: '';
+                var limit = query.$limit ? ' LIMIT ' + query.$limit: '';
                 where = where ? ' WHERE ' + where : ' ';
                 group = group ? ' GROUP BY ' + group : ' ';
+                having = having ? ' HAVING ' + having : ' ';
                 order = order ? ' ORDER BY ' + order : ' ';
 
-                sql += 'SELECT ' + columns + ' FROM ' + from + where + group + order + limit;
+                sql += 'SELECT ' + columns + ' FROM ' + from + where + group + having + order + offset + limit;
             }
 
-		    if (dcQuery.$postFilter) {
-		        sql = 'SELECT * FROM (' + sql + ') "result" WHERE ' + this._translateWhere(dcQuery, dcQuery.$postFilter, "result");
+		    if (query.$postFilter) {
+		        var wrappedQuery = JSB.merge({}, query, {
+		            $context: 'wrapped_' + query.$context
+		        });
+		        this._registerContextQuery(wrappedQuery);
+		        sql = 'SELECT * FROM (' + sql + ') AS ' + this._quotedName(wrappedQuery.$context) + ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
 		    }
 
 //		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
+        },
+
+        _generateUid: function(){
+            //return JSB.generateUid();
+            return '' + (this.lastId = (this.lastId||0) + 1);
+        },
+
+        _registerContextQuery:function(query){
+            this.contextQueries[query.$context] = query;
+        },
+
+        _collectContextQueries:function(){
+            var idx = 0;
+            this.contextQueries = {};
+            QueryUtils.walkSubQueries(this.dcQuery, function(query){
+                if (!query.$context) query.$context = 'context_' + idx++;
+                $this._registerContextQuery(query);
+            });
+        },
+
+        _getQueryByContext: function(context) {
+            if (!context) throw new Error('Undefined context');
+            var query = this.contextQueries[context];
+            if (!query) throw new Error('Unknown query context ' + context);
+            return query;
         },
 
         _prepareEmbeddedSQL: function(sql, dcQuery){
@@ -76,7 +128,7 @@
                     var binding = managedFields[field].binding;
                     for(var b in binding) {
                         if (this.providers.indexOf(binding[b].provider) != -1) {
-                            var name = this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
+                            var name = this._printTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
                             while(sql.indexOf('$cube.' + this._quotedName(field)) > 0) {
                                 sql = sql.replace('$cube.' + this._quotedName(field), name);
                             }
@@ -91,49 +143,106 @@
             return sql;
         },
 
-        _translateExpressions: function(dcQuery){
+        _extractWhereOrHavingFilter: function(query, whereOrHaving /*where is true, having is false*/) {
+            function isHaving(filteredField, filteredExpr){
+                // is aggregated alias
+                if (query.$select[filteredField]) {
+                    var e = query.$select[filteredField];
+                    if(QueryUtils.isAggregatedExpression(e)) {
+                        return true;
+                    }
+                }
+                // is not simple cube field
+                if (filteredExpr == filteredField || filteredExpr.$field == filteredField) {
+                    return false;
+                }
+                // is in groupBy expression
+                for(var i in query.$groupBy) {
+                    var groupByExpr = query.$groupBy[i];
+                    if (JSB.isEqual(groupByExpr, filteredExpr)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            var filter = QueryUtils.filterFilterByFields(query.$filter || {}, function(filteredField, filteredExpr){
+                return whereOrHaving
+                        ? !isHaving.call(null, filteredField, filteredExpr)
+                        : isHaving.call(null, filteredField, filteredExpr);
+            });
+            return filter ? filter : {};
+        },
+
+        _translateSelectColumns: function(query){
             var sqlColumns = '';
-            var select = dcQuery.$select;
+            var select = query.$select;
             var i = 0;
             for (var alias in select) if (select.hasOwnProperty(alias)) {
                 if (i++ > 0) sqlColumns += ', '
-                sqlColumns += this._translateExpression(alias, select[alias], dcQuery) + ' AS ' + this._quotedName(alias, true);
+                // in SELECT expression force use table fields
+                sqlColumns += this._translateExpression(select[alias], query, true) + ' AS ' + this._quotedName(alias);
             }
             return sqlColumns;
         },
 
-        _translateExpression: function(alias, exp, dcQuery, forceTableAlias) {
-            function translateGlobalAggregate(subExp, func){
-                var column = $this._translateExpression(null, subExp, dcQuery);
-		        var subAlias = JSB.generateUid();
-                var as     = ' AS ' + $this._quotedName(subAlias, true) + '';
-                var from   = $this._translateFrom(dcQuery);
-                var where  = $this._translateWhere(dcQuery);
-                where = where ? ' WHERE ' + where : '';
+        _translateExpression: function(exp, dcQuery, useFieldNotAlias) {
 
-                return '(SELECT ' + func + '(' + column + ')' + as + ' FROM ' + from + where + ')';
+            function translateGlobalAggregate(subExp, func){
+                var subQuery = JSB.merge({}, dcQuery, {
+                    $context: ''+dcQuery.$context+'_globAgg_' + $this._generateUid()
+                });
+		        $this._registerContextQuery(subQuery);
+                var column = $this._translateExpression(subExp, subQuery, useFieldNotAlias);
+		        var subAlias = 'val_'+$this._generateUid();
+                var from   = $this._translateFrom(subQuery);
+                var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
+                var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
+                where = where ? ' WHERE ' + where : '';
+                having = having ? ' HAVING ' + having : '';
+
+                return '(SELECT ' + func + '(' + column + ')' + ' AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + having + ')';
+            }
+
+            function unwrapGroupByAliases(subQuery) {
+                for(var i in subQuery.$groupBy) {
+                    var groupByExpr = subQuery.$groupBy[i];
+                    // is parent alias replace by expression
+                    if (JSB.isString(groupByExpr) && dcQuery.$select[groupByExpr]) {
+                        var aliasExpr = dcQuery.$select[groupByExpr];
+                        subQuery.$groupBy[i] = aliasExpr;
+                    }
+                }
+                return subQuery;
             }
 
             function translateMaxGroupAggregate(subExp, func){
-                var from  =  $this._translateFrom(dcQuery);
-                var where =  $this._translateWhere(dcQuery);
-		        var group =  $this._translateGroup(dcQuery);
-		        var column = $this._translateExpression(null, subExp, dcQuery);
-		        var subAlias = JSB.generateUid();
-		        var subTableAlias = 'sub_table_' + JSB.generateUid();
-                var as     = ' AS ' + $this._quotedName(subAlias, true) +'';
+                var subQuery = JSB.merge(true, {}, dcQuery, {
+                    $context: ''+dcQuery.$context+'_maxGroup_' + $this._generateUid()
+                });
+		        $this._registerContextQuery(subQuery);
+                var from  =  $this._translateFrom(subQuery);
+                var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
+                var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
+		        var group =  $this._translateGroup(unwrapGroupByAliases(subQuery));
+		        var column = $this._translateExpression(subExp, subQuery, useFieldNotAlias);
+		        var subAlias = 'val_' + $this._generateUid();
                 where = (where ? ' WHERE ' + where : ' ');
+                having = having ? ' HAVING ' + having : '';
                 group = (group ? ' GROUP BY ' + group : '');
 
-                var subQ = '(SELECT ' + func + '(' + column + ')' + as + ' FROM ' + from + where + group + ') ' + $this._quotedName(subTableAlias, true);
-                return '(SELECT MAX(' + $this._quotedName(subAlias, true) + ') FROM ' + subQ + ')';
+                var subQ = 'SELECT ' + func + '(' + column + ') AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + group + having;
+                return '(' +
+                    'SELECT MAX(' + $this._quotedName(subAlias) + ') ' +
+                    'FROM (' + subQ + ') AS ' + $this._quotedName(subQuery.$context) +
+                    ')';
             }
 
             function translateNOperator(args, op) {
                 var sql = '';
                 for (var i in args) {
                     if (i > 0) sql += ' ' + op + ' ';
-                    sql += $this._translateExpression(null, args[i], dcQuery);
+                    sql += $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
                 }
                 sql += '';
                 return sql;
@@ -143,31 +252,25 @@
                 if (args.length != 2) throw new Error('Operator $divz must have two arguments');
 
                 var sql = 'case when ';
-                sql += $this._translateExpression(null, args[1], dcQuery);
+                sql += $this._translateExpression(args[1], dcQuery, useFieldNotAlias);
                 sql += " = 0 then NULL else ";
-                sql += $this._translateExpression(null, args[0], dcQuery) + '/' + $this._translateExpression(null, args[1], dcQuery);
+                sql += $this._translateExpression(args[0], dcQuery, useFieldNotAlias) +
+                        '/' + $this._translateExpression(args[1], dcQuery, useFieldNotAlias);
                 sql += ' end';
                 return sql;
             }
 
-
             function translateSubQuery(subQuery){
-//                subQuery = JSB.merge(true, {}, subQuery);
-//                if (parentFilters.$filter) {
-//                    subQuery.$filter = subQuery.$filter || {};
-//                    subQuery.$filter.$and = subQuery.$filter.$and || [];
-//                    subQuery.$filter.$and.push(parentFilters.$filter)
-//                }
                 return $this.translateQueryExpression(subQuery);
             }
 
             function translateCaseExpression($cond, $then, $else){
                 var sql = 'case when ';
-                sql += $this._translateWhere(dcQuery, $cond, forceTableAlias);
+                sql += $this._translateWhere(dcQuery, $cond);
                 sql += " then ";
-                sql += $this._translateExpression(null, $then, dcQuery);
+                sql += $this._translateExpression($then, dcQuery, useFieldNotAlias);
                 sql += " else ";
-                sql += $this._translateExpression(null, $else, dcQuery);
+                sql += $this._translateExpression($else, dcQuery, useFieldNotAlias);
                 sql += ' end';
                 return sql;
             }
@@ -177,8 +280,8 @@
                     // is parameter value - as is
                     return exp;
                 } else {
-                    // is dataprovider or cube field
-                    return this._translateField(exp, dcQuery, forceTableAlias, !!forceTableAlias);
+                    // is field
+                    return this._translateField(exp, dcQuery.$context, useFieldNotAlias);
                 }
             }
 
@@ -190,7 +293,7 @@
                 var sql = '';
                 for (var i in exp) {
                     if (i > 0) sql += ', ';
-                    sql += $this._translateExpression(null, exp[i], dcQuery, forceTableAlias);
+                    sql += $this._translateExpression(exp[i], dcQuery, useFieldNotAlias);
                 }
                 sql += '';
                 return sql;
@@ -227,8 +330,14 @@
                     throw new Error('Unsupported $const type ' + typeof exp[op]);
                 case '$field':
                 case '$context':
-                    if (!exp.$field) throw new Error('Field $field is not defined with $context=' + exp.$context);
-                    return this._translateField(exp.$field, dcQuery, exp.$context, forceTableAlias, !!forceTableAlias);
+                    if (!exp.$field) throw new Error('Field $field is not defined:' + JSON.stringify(exp));
+                    return this._translateField(
+                            exp.$field,
+                            // if context is not defined then use current
+                            exp.$context || dcQuery.$context,
+                            // if foreign context force use table field not alias
+                            useFieldNotAlias || (exp.$context || dcQuery.$context) != dcQuery.$context
+                    );
             }
 
             // n-operators
@@ -258,62 +367,62 @@
                     return '(' + translateCaseExpression(exp[op].$cond, exp[op].$then, exp[op].$else) + ')';
 
                 case '$greatest':
-                    return 'GREATEST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'GREATEST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$least':
-                    return 'LEAST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'LEAST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
 
                 case '$splitString':
-                    return 'string_to_array(' + this._translateExpression(null, exp[op].$field, dcQuery) + ", '" + exp[op].$separator + "'" + ')';
+                    return 'string_to_array(' + this._translateExpression(exp[op].$field, dcQuery, useFieldNotAlias) + ", '" + exp[op].$separator + "'" + ')';
                 case '$substring':
-                    return 'substring(' + this._translateExpression(null, exp[op].$field, dcQuery) + " for " + exp[op].$length + ')';
+                    return 'substring(' + this._translateExpression(exp[op].$field, dcQuery, useFieldNotAlias) + " for " + exp[op].$length + ')';
                 case '$trim':
-                    return 'TRIM(both from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'TRIM(both from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
 
                 case '$toInt':
-                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as int)';
+                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as int)';
                 case '$toDouble':
-                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as double precision)';
+                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as double precision)';
                 case '$toBoolean':
-                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as boolean)';
+                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as boolean)';
                 case '$toString':
-                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as varchar)';
+                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as varchar)';
                 case '$toDate':
-                    return 'CAST((' + this._translateExpression(null, exp[op], dcQuery) + ' ) as date)';
+                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as date)';
 
                 case '$dateYear':
-                    return 'extract(isoyear from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'extract(isoyear from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$dateMonth':
-                    return 'extract(month from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'extract(month from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$dateTotalSeconds':
-                    return 'extract(epoch from ' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'extract(epoch from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
 
                 case '$dateIntervalOrder':
-                    return 'CAST((extract(epoch from ' + this._translateExpression(null, exp.$dateIntervalOrder.$field, dcQuery) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
+                    return 'CAST((extract(epoch from ' + this._translateExpression(exp.$dateIntervalOrder.$field, dcQuery, useFieldNotAlias) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
             }
 
             // aggregate operators
             switch(op) {
                 case '$distinct':
-                    return 'DISTINCT(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$first':
-                    return 'FIRST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$last':
-                    return 'LAST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'LAST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$count':
-                    return 'COUNT(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'COUNT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$sum':
-                    return 'SUM(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'SUM(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$max':
-                    return 'MAX(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'MAX(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$min':
-                    return 'MIN(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'MIN(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$avg':
-                    return 'AVG(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'AVG(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$array':
                 case '$flatArray':
-                    return 'ARRAY_AGG(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$expandArray':
-                    return 'UNNEST(' + this._translateExpression(null, exp[op], dcQuery) + ')';
+                    return 'UNNEST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
             }
 
             // global sub query operators
@@ -338,49 +447,67 @@
             throw new Error('Unsupported select expression ' + op);
         },
 
-        _translateField: function(field, dcQuery, tableAlias, asAlias) {
-            if (asAlias) {
-                return tableAlias
-                        ? this._quotedName(tableAlias, true) + '.' + this._quotedName(field, true)
-                        : this._quotedName(field, true);
-            }
-            var tableAlias = tableAlias || dcQuery.$context;
-            if (this.cube) {
-            	var managedFields = this.cube.getManagedFields();
-                if (managedFields[field]) {
-                    // is in Cube print full name
-                    var binding = managedFields[field].binding;
-                    for(var b in binding) {
-                        if (this.providers.indexOf(binding[b].provider) != -1) {
-                            return tableAlias
-                                    ? this._quotedName(tableAlias, true) + '.' + this._quotedName(binding[b].field)
-                                    : this._translateTableName(binding[b].provider.getTableFullName()) + '.' + this._quotedName(binding[b].field) + '';
-                                }
-                    }
-                }
-            }
-            // is in DataProvider print full name
-            for(var i in this.providers){
-                if(this.providers[i].extractFields()[field]) {
-                    if (tableAlias) {
-                        return this._quotedName(tableAlias, true) + '.' + this._quotedName(field);
-                    } else {
-                        return this._translateTableName(this.providers[i].getTableFullName()) + '.' + this._quotedName(field);
-                    }
-                }
-            }
-
-            // or table alias or main alias
-            if (tableAlias) {
-                return this._quotedName(tableAlias, true) + '.' + this._quotedName(field);
-            } else if (dcQuery.$select[field]) {
-                return this._quotedName(field);
-            }
-
-            throw new Error('Unknown data provider field or alias ' + field);
+        _isAliasField: function(field, context) {
+            var query = this._getQueryByContext(context);
+            return !!query.$select[field];
         },
 
-        _translateTableName: function(tableName){
+        _translateField: function(field, context, useFieldNotAlias) {
+            /** notes:
+                * В подзапросах нельзя использовать алиасы из других запросов
+            */
+            // is allow use aliases
+            if (!useFieldNotAlias) {
+                // is alias return as is
+                if (this._isAliasField(field, context)) {
+                    return this._quotedName(field);
+                }
+            }
+
+            return this._translateCubeField(field, context);
+        },
+
+        _translateCubeField: function(field, context){
+            if (this.cube) {
+            	var managedFields = this.cube.getManagedFields();
+                if (!managedFields[field]) {
+                    throw new Error('Cube has no field ' + field);
+                }
+                var binding = managedFields[field].binding;
+                for(var b in binding) {
+                    if (this.providers.indexOf(binding[b].provider) != -1) {
+                        return this._printFieldTableAlias(field, context, binding[b].provider) + '.' + this._quotedName(binding[b].field);
+                    }
+                }
+            } else {
+                for(var i in this.providers){
+                    if(this.providers[i].extractFields()[field]) {
+                        return this._printFieldTableAlias(field, context, this.providers[i]) + '.' + this._quotedName(field);
+                    }
+                }
+                throw new Error('Has no providers with field ' + field);
+            }
+        },
+
+        _printTableAlias: function(context, provider){
+            if (provider) {
+                var idx = this.providers.indexOf(provider);
+                if (idx > 0) {
+                    return this._quotedName(context + '_join_' + idx);
+                }
+            }
+            return this._quotedName(context);
+        },
+
+        _printFieldTableAlias: function(field, context, provider){
+            if (!!context) {
+                return this._printTableAlias(context, provider);
+            } else {
+                return this._printTableName(provider.getTableFullName());
+            }
+        },
+
+        _printTableName: function(tableName){
             if (tableName.startsWith('"') && tableName.endsWith('"')) {
                 return tableName;
             } else {
@@ -404,7 +531,7 @@
             return '"' + name + '"';
         },
 
-        _translateFrom: function(dcQuery) {
+        _translateFrom: function(query) {
             function translateJoinWith(leftProvider, joinedProviders){
                 var sqlJoins = '';
                 var managedFields = $this.cube.getManagedFields();
@@ -425,27 +552,34 @@
                                 joinedProviders.push(rightProvider);
 
                                 if (on.length > 0) on += ' AND ';
-                                on += $this._translateTableName(rightProvider.getTableFullName()) + '.' + $this._quotedName(binding[b].field) +
-                                       ' = ' + $this._translateTableName(leftProvider.getTableFullName()) + '.' + $this._quotedName(binding[leftPosition].field);
+                                on += $this._printTableAlias(query.$context, rightProvider) + '.' + $this._quotedName(binding[b].field) +
+                                       ' = ' + $this._printTableAlias(query.$context, leftProvider) + '.' + $this._quotedName(binding[leftPosition].field);
+//                                on += $this._printTableName(rightProvider.getTableFullName()) + '.' + $this._quotedName(binding[b].field) +
+//                                       ' = ' + $this._printTableName(leftProvider.getTableFullName()) + '.' + $this._quotedName(binding[leftPosition].field);
                             }
                         }
                     }
                     if (on.length > 0) {
-                        sqlJoins += $this._translateTableName(rightProvider.getTableFullName()) + ' ON ' + on;
+                        var tableAlias = $this._printTableAlias(query.$context, rightProvider);
+                        sqlJoins += $this._printTableName(rightProvider.getTableFullName()) + ' AS ' + tableAlias + ' ON ' + on;
                     }
                 }
                 return sqlJoins;
             }
 
-            if (dcQuery.$from) {
-                //if (!dcQuery.$from.$context) throw new Error('Field $context is not defined in sub query $from');
-                if (!dcQuery.$context) throw new Error('Field $context is not defined query with $from');
-                return '(' + this.translateQueryExpression(dcQuery.$from) +
-                            ') ';// + this._quotedName(dcQuery.$from.$context, true);
+            // is select from sub-query
+            if (query.$from) {
+                var tableAlias = this._printTableAlias(query.$context, null);
+                return '(' + this.translateQueryExpression(query.$from) + ') AS ' + tableAlias;
             }
 
-            var sqlFrom = this._translateTableName(this.providers[0].getTableFullName());
+            // is select from cube/providers
+            var tableAlias = this._printTableAlias(query.$context, this.providers[0]);
+            var sqlFrom = this._printTableName(this.providers[0].getTableFullName()) + ' AS ' + tableAlias;
             if (this.providers.length > 1) {
+                if (!query.$context) {
+                    throw new Error('Joins supported only with defined $context');
+                }
                 if (!this.cube) {
                     throw new Error('Joins supported only with defined cube');
                 }
@@ -466,11 +600,11 @@
             return sqlFrom;
         },
 
-        _translateWhere: function(dcQuery, filterExp, forceTableAlias) {
+        _translateWhere: function(query, filterExp) {
 
-            function translateOpExpressions(exps, op) {
+            function translateAndOrExpressions(exps, op) {
                 if (!JSB.isArray(exps)) {
-                    throw new Error('Unsupported expression type for operator ' + op);
+                    throw new Error('Unsupported expression type (must be array) for operator ' + op);
                 }
 
                 var sql = '(';
@@ -485,97 +619,68 @@
 
             function translateBinCondition(op, operands) {
                 if (!JSB.isArray(operands)) {
-                    throw new Error('Operands for ' + op + ' must be array not ' + typeof operands);
+                    throw new Error('Unsupported expression type (must be array) for operator ' + op + ' :' + JSON.stringify(operands));
                 }
                 if (op != '$not' && operands.length != 2) {
-                    throw new Error('Operator ' + op + ' support only 2 operands');
+                    throw new Error('Operator ' + op + ' support only 2 operands:' + JSON.stringify(operands));
                 }
                 if (op == '$not' && operands.length != 1) {
-                    throw new Error('Operator ' + op + ' support only 1 operands');
+                    throw new Error('Operator ' + op + ' support only 1 operands:' + JSON.stringify(operands));
                 }
                 if (operands[0] == null) {
-                    throw new Error('First operand cannot be null');
+                    throw new Error('First operand cannot be null:' + JSON.stringify(operands));
                 }
 
+                var sqlOp = null;
                 switch(op){
                     case '$not':
                             return 'NOT ' + $this.translateMultiExpressions(operands[0]) + ' ';
                     case '$eq':
-                        if (operands[1] === null || operands[1].$const === null)
-                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IS NULL ';
-                        else
-                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' = ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
                     case '$ne':
                         if (operands[1] === null || operands[1].$const === null)
-                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IS NOT NULL ';
+                            return $this._translateExpression(operands[0], query) +
+                                    (op == '$eq' ? ' IS NULL ' : ' IS NOT NULL ');
+                        else if (op == '$eq')
+                            sqlOp = ' = ';
                         else
-                            return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' != ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                            sqlOp = ' != ';
+                        break;
                     case '$gt':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' > ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                        sqlOp = ' > '; break;
                     case '$gte':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' >= ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                        sqlOp = ' >= '; break;
                     case '$lt':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' < ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                        sqlOp = ' < '; break;
                     case '$lte':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' <= ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
-
+                        sqlOp = ' <= '; break;
                     case '$like':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' ~~ ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                        sqlOp = ' ~~ '; break;
                     case '$ilike':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' ~~* ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                        sqlOp = ' ~~* '; break;
                     case '$in':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' IN ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                        sqlOp = ' IN '; break;
                     case '$nin':
-                        return $this._translateExpression(null, operands[0], dcQuery, forceTableAlias) + ' NOT IN ' + $this._translateExpression(null, operands[1], dcQuery, forceTableAlias) + ' ';
+                        sqlOp = ' NOT IN '; break;
+                    default:
+                        throw new Error('Unsupported condition expression ' + op);
                 }
-                throw new Error('Unsupported binary condition expression ' + op);
-
+                return $this._translateExpression(operands[0], query) + sqlOp + $this._translateExpression(operands[1], query) + ' ';
             }
 
             function translateCondition(field, exp) {
                 if (!JSB.isPlainObject(exp)) {
-                    throw new Error('Expression type must be object not ' + typeof exp);
+                    throw new Error('Unexpected condition operator type (must be object) ' + field + ': ' + JSON.stringify(exp));
                 }
                 if (Object.keys(exp).length != 1) {
-                    throw new Error('Unexpected expressions count on field ' + field);
+                    throw new Error('Unexpected condition operators count (allow only single) on field ' + field + ': ' + JSON.stringify(exp));
                 }
-
                 var op = Object.keys(exp)[0];
-                switch(op){
-                    case '$eq':
-                        if (exp[op] === null || exp[op].$const === null)
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NULL ';
-                        else
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' = ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$ne':
-                        if (exp[op] === null || exp[op].$const === null)
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IS NOT NULL ';
-                        else
-                            return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' != ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$gt':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' > ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$gte':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' >= ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$lt':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' < ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$lte':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' <= ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-
-                    case '$like':
-                        return $$this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~ ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$ilike':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' ~~* ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$in':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' IN ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                    case '$nin':
-                        return $this._translateField(field, dcQuery, forceTableAlias, !!forceTableAlias) + ' NOT IN ' + $this._translateExpression(null, exp[op], dcQuery, forceTableAlias) + ' ';
-                }
-                throw new Error('Unsupported condition expression ' + op);
+                return translateBinCondition(op, [{$field: field}, exp[op]]);
             }
 
             function translateMultiExpressions(exps) {
                 if (!JSB.isPlainObject(exps)) {
-                    throw new Error('Unsupported expression type ' + exps);
+                    throw new Error('Unexpected multi condition expression type (must be object)' + ': ' + JSON.stringify(exps));
                 }
 
                 // translate by single field
@@ -587,10 +692,10 @@
                         var op = field;
                         switch(op) {
                             case '$or':
-                                sql +=  '(' + translateOpExpressions(exps[op], 'OR') + ')';
+                                sql +=  '(' + translateAndOrExpressions(exps[op], 'OR') + ')';
                                 break;
                             case '$and':
-                                sql += '(' + translateOpExpressions(exps[op], 'AND') + ')';
+                                sql += '(' + translateAndOrExpressions(exps[op], 'AND') + ')';
                                 break;
                             default:
                                 // $op: [left, right] expression
@@ -602,42 +707,43 @@
                 }
                 return sql;
             }
-            var filterExp = filterExp || dcQuery.$filter;
+            var filterExp = filterExp || query.$filter;
             return filterExp ? translateMultiExpressions(filterExp) : '';
         },
 
-        _translateGroup: function(dcQuery) {
-            var group = dcQuery.$groupBy;
-            if (group && !JSB.isArray(group)) {
-                throw new Error('Unsupported groupBy expression type ' + group);
-            }
-
+        _translateGroup: function(query) {
             var sql = '';
-            for (var i in group) {
-                if (i > 0) sql += ', ';
-                //sql += $this._translateField(group[i], dcQuery);
-                sql += $this._translateExpression(null, group[i], dcQuery);
+            if (query.$groupBy) {
+                if (!JSB.isArray(query.$groupBy)) {
+                    throw new Error('Unsupported $groupBy expression type (must be array):' + JSON.stringify(query.$groupBy));
+                }
+
+                for (var i in query.$groupBy) {
+                    if (i > 0) sql += ', ';
+                    sql += $this._translateExpression(query.$groupBy[i], query);
+                }
             }
             return sql;
         },
 
-        _translateOrder: function(dcQuery) {
-            var sort = dcQuery.$sort;
-            if (sort && !JSB.isArray(sort)) {
-                throw new Error('Unsupported sort expression type ' + sort);
-            }
-
+        _translateOrder: function(query) {
             var sql = '';
-            for (var i in sort) {
-                if (i > 0) sql += ', ';
-                var val = sort[i];
-                if (val.$expr && val.$type) {
-                var key = val.$type < 0 ? ' DESC' : ' ASC';
-                    sql += $this._translateExpression(null, val.$expr, dcQuery) + key;
-                } else {
-                    var field = Object.keys(val)[0];
-                    var key = val[field] < 0 ? ' DESC' : ' ASC';
-                    sql += $this._translateField(field, dcQuery) + key;
+            if (query.$sort) {
+                var sort = query.$sort;
+                if (!JSB.isArray(sort)) {
+                    throw new Error('Unsupported $sort expression type (must be array):' + JSON.stringify(sort));
+                }
+                for (var i in sort) {
+                    if (i > 0) sql += ', ';
+                    var val = sort[i];
+                    if (val.$expr && val.$type) {
+                    var key = val.$type < 0 ? ' DESC' : ' ASC';
+                        sql += $this._translateExpression(val.$expr, query) + key;
+                    } else {
+                        var field = Object.keys(val)[0];
+                        var key = val[field] < 0 ? ' DESC' : ' ASC';
+                        sql += $this._translateExpression({$field:field}, query) + key;
+                    }
                 }
             }
             return sql;

@@ -24,21 +24,34 @@
 		        this.iterator.close();
 		    }
 
-            // translate query
-            var subQuery = this.extractSelfSubQuery(dcQuery, params);
-		    var translatedQuery = this.translateQuery(dcQuery, params);
+            // extract sub-query for current providers
+            // TODO: починить вернуть !!!! - отключено временно !!!!
+            var subQuery = dcQuery;//this.extractSelfSubQuery(dcQuery, params);
+
+            // store dcQuery and params
+		    if (this.dcQuery) {
+		        throw new Error('SQLTranslator does not support reuse, create new instance');
+		    }
+		    this.dcQuery = subQuery;
+		    this.params = params;
+
+            // translate query to dataprovider format
+		    var translatedQuery = this.translateQuery();
 
 		    // create iterator
-		    this.iterator = this.executeQuery(translatedQuery, params);
-
-		    return {
-		        next: function(){
-		            return $this.translateResult($this.iterator.next());
-		        },
-		        close:function(){
-		            $this.iterator.close();
-		        }
-		    };
+		    if (true){//TODO:translatedQuery.$analyze) {
+		        return this.analyzeQuery(translatedQuery);
+		    } else {
+		        this.iterator = this.executeQuery(translatedQuery);
+                return {
+                    next: function(){
+                        return $this.translateResult($this.iterator.next());
+                    },
+                    close:function(){
+                        $this.iterator.close();
+                    }
+                };
+		    }
 		},
 
 		extractSelfSubQuery: function(dcQuery, params){
@@ -107,7 +120,7 @@
 		        // provider query
 		        return JSB.merge(true, {}, dcQuery, {$finalize: null});
 		    }
-
+debugger;
             return {
                 $select: filterSubQuery(dcQuery.$select, false, true),
                 $filter: filterSubQuery(dcQuery.$filter, true, false),
@@ -127,7 +140,10 @@
 		    throw new 'Not implemented';
 		},
 
-		executeQuery: function(translatedQuery, params){
+		executeQuery: function(translatedQuery){
+            throw new 'Not implemented';
+        },
+        analyzeQuery: function(translatedQuery){
             throw new 'Not implemented';
         },
 

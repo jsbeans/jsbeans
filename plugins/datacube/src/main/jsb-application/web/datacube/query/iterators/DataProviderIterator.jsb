@@ -18,7 +18,6 @@
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
 		    this.queryEngine = queryEngine;
 		    this.cube = queryEngine.cube;
-		    this.translator = TranslatorRegistry.newTranslator(providerOrProviders, this.cube || this.queryEngine);
 		},
 
 		matchDataProvider: function(dataProvider){
@@ -30,14 +29,17 @@
         },
 
 		iterate: function(dcQuery, params){
-//		    Log.debug('DataProviderIterator.iterate: ' + JSON.stringify(dcQuery,0,2));
-            this.iterator = this.translator.translatedQueryIterator(dcQuery, params);
-		    return this;
+		    try {
+                var translator = TranslatorRegistry.newTranslator(this.providers, this.cube || this.queryEngine);
+                this.iterator = translator.translatedQueryIterator(dcQuery, params);
+                return this;
+		    } finally {
+		        if(translator) translator.close();
+		    }
 		},
 
 		close: function() {
 		    this.iterator.close();
-		    this.translator.close();
 		    this.destroy();
 		},
 

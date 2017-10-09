@@ -31,7 +31,7 @@
                 } else if (JSB.isPlainObject(q) && q.$field) {
                     if (!JSB.isString(q.$field)) throw new Error('Invalid $field value type ' + typeof q.$field);
                     cubeFields[q.$field] = q;
-                } else if (JSB.isPlainObject(q)) {
+                } else if (JSB.isPlainObject(q) && JSB.isNull(q.$const)) {
                     for (var f in q) if (q.hasOwnProperty(f)) {
                         collect(q[f]);
                     }
@@ -58,7 +58,7 @@
             return Object.keys(cubeFields)[0];
         },
 
-        filterFilterByFields: function(filter, isAccepted /** boolean isAccepted(field) */) {
+        filterFilterByFields: function(filter, isAccepted /** boolean isAccepted(field, expr) */) {
 //debugger;
             function filteredAndOr(array, isAccepted) {
                 if (!JSB.isArray(array)) {
@@ -77,8 +77,8 @@
 
             function filteredBinaryCondition(op, args, isAccepted) {
                 for (var i in args) {
-                    var field = extractSingleField(args[i]);
-                    if (!isAccepted(field)) {
+                    var field = $this.extractSingleField(args[i]);
+                    if (!isAccepted(field, args[i])) {
                         return null;
                     }
                 }
@@ -107,8 +107,16 @@
                         }
                     } else {
                         // field: {$eq: expr}
-                        if (isAccepted(field)) {
-                            resultExps[field] = exps[field];
+                        if (isAccepted(field, field)) {
+                            var rightExpr = exps[field][Object.keys(exps[field])[0]];
+                            var rightField = $this.extractSingleField(rightExpr);
+                            if (!rightField || isAccepted(rightField, rightExpr)) {
+                                resultExps[field] = exps[field];
+                            } else {
+                                //check
+                                debugger;
+                            }
+
                         }
                     }
                 }
@@ -247,33 +255,24 @@
 
         /** Встроить глобальный фильтр в фильры главного и дочерних запросов, но с оговорками:
         * 1) если поле является join (сравнивается по eq с любым полем другого запроса), то пропускаем
-        * 2) если поле принадлежит кубу/провайдеру, то встраивать в $filter, иначе в $postFilter
-        * 3) $postFilter обновляется только для родительского фильтра (у дочерних заведомо другие выходные поля)
         */
         propagateGlobalFilter: function(dcQuery, cubeOrDataProvider) {
             // if global filter defined then embed it to all queries/sub queries
-            if (dcQuery.$globalFilter && Object.keys(dcQuery.$globalFilter).length > 0) {
+            if (dcQuery.$cubeFilter && Object.keys(dcQuery.$cubeFilter).length > 0) {
 //debugger;
 //Log.debug('\npropagateGlobalFilter START: ' + JSON.stringify(dcQuery,0,2));
                 // recursive find all $select
                 this.walkSubQueries(dcQuery, function(subQuery){
                     $this.embedFilterToSubQuery(
                         dcQuery, subQuery, '$filter',
-                        dcQuery.$globalFilter,
+                        dcQuery.$cubeFilter,
                         function(field){
-                            return $this.isOriginalCubeField(field, dcQuery, cubeOrDataProvider);
+//                            return $this.isOriginalCubeField(field, dcQuery, cubeOrDataProvider);
+                            return true;
                         }
                     );
-                    if (subQuery == dcQuery) {
-                        $this.embedFilterToSubQuery(
-                            dcQuery, subQuery, '$postFilter',
-                            dcQuery.$globalFilter,
-                            function(field){
-                                return !$this.isOriginalCubeField(field, dcQuery, cubeOrDataProvider);
-                            }
-                        );
-                    }
                 });
+                delete dcQuery.$cubeFilter;
 //Log.debug('\npropagateGlobalFilter END: ' + JSON.stringify(dcQuery,0,2));
             }
         },
@@ -299,6 +298,25 @@
                     }
                 }
             }
+		},
+
+		isAggregatedExpression: function(expr){
+		    function findAggregated(e) {
+                if (JSB.isPlainObject(e)) {
+                    for (var f in e) if (e.hasOwnProperty(f)) {
+                        if (QuerySyntax.isAggregateOperator(f)) {
+                            return true;
+                        }
+                        findAggregated(e[f]);
+                    }
+                } else if (JSB.isArray(e)) {
+                    for (var i in e) {
+                        findAggregated(e[i]);
+                    }
+                }
+                return false;
+		    }
+		    return findAggregated(expr);
 		},
 
         /** Поднять в запросе наверх (изменить порядок ключей в json) поля/алиасы, которые используются в других полях
@@ -377,7 +395,7 @@
                         aggregated: aggregated || false
                     };
                 }
-                if (JSB.isPlainObject(exp)) {
+                if (JSB.isPlainObject(exp) && JSB.isNull(exp.$const)) {
                     if (Object.keys(exp).length == 1) {
                         var op = Object.keys(exp)[0];
                         if (aggregateFunctions[op]) {
@@ -437,7 +455,14 @@
             }
 		},
 
-
+        mergeFilters: function (dcQuery){
+            if (dcQuery.$postFilter) {
+                if (!dcQuery.$filter) dcQuery.$filter = {};
+                if (!dcQuery.$filter.$and) dcQuery.$filter.$and = [];
+                dcQuery.$filter.$and.push(dcQuery.$postFilter);
+                delete dcQuery.$postFilter;
+            }
+        },
 
 
 

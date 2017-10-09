@@ -129,7 +129,7 @@
             	}
 
             }
-            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
+//            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
             return this.cube.executeQuery(preparedQuery, params);
 		},
 		

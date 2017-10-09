@@ -10,6 +10,12 @@
 	getSchema: function (){
 	    return this.schemeExpressions;
 	},
+
+	isAggregateOperator: function(op){
+	    var desc = this.getSchema()[op];
+	    if (!desc) throw new Error('Operator ' + op + ' is not defined in schema');
+	    return !!desc.aggregate;
+	},
 	
 	$client: {
 		$constructor: function(){
@@ -484,7 +490,8 @@
 		    new this.SingleObject({
 		        name: '$expandArray',
 		        category: 'Операторы агрегации',
-		        desc: 'Разложить элементы массива в группу элементов',
+		        desc: 'Разложить элементы массива как множество элементов ($array/$flatArray наоборот)',
+		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
