@@ -33,10 +33,11 @@
             {
                 type: 'group',
                 name: 'Ось Х',
+                collapsable: true,
                 key: 'xAxis',
                 items: [
                 {
-                    name: 'Катагории',
+                    name: 'Категории',
                     type: 'item',
                     key: 'category',
                     binding: 'field',

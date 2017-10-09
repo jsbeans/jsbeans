@@ -162,6 +162,13 @@
 				binding: 'field',
 				editor: 'none'
 			},{
+				name: 'Фильтрующие поля',
+				type: 'item',
+				multiple: true,
+				key: 'rowFilter',
+				binding: 'field',
+				editor: 'none'
+			},{
 				name: 'Столбцы',
 				type: 'group',
 				multiple: 'auto',
@@ -190,6 +197,7 @@
 							name: 'Виджет',
 							key: 'widget',
 							type: 'widget',
+							collapsable: true
 						},{
 							type: 'item',
 							key: 'widgetSort',
@@ -203,6 +211,8 @@
 				},{
 					name: 'Выравнивание ячейки',
 					type: 'group',
+		            collapsable: true,
+		            collapsed: true,
 					key: 'cellAlign',
 					items:[{
 						name: 'По горизонтали',
@@ -269,6 +279,8 @@
 				},{
 					name: 'Выравнивание заголовка',
 					type: 'group',
+		            collapsable: true,
+		            collapsed: true,
 					key: 'headerAlign',
 					items:[{
 						name: 'По горизонтали',
@@ -339,13 +351,6 @@
 					itemValue: 'auto',
 					key: 'colWidth'
 				}]
-			},{
-				name: 'Фильтрующие поля',
-				type: 'item',
-				multiple: true,
-				key: 'rowFilter',
-				binding: 'field',
-				editor: 'none'
 			}]
 		}]
 	},

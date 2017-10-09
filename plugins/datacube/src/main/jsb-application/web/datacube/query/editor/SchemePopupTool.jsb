@@ -4,6 +4,9 @@
 	$require: ['JSB.Widgets.ToolManager', 'JSB.Widgets.Button', 'JSB.Widgets.ListBox'],
 	$client: {
 		
+		cubeFieldsCat: 'Поля куба',
+		sliceFieldsCat: 'Столбцы среза',
+		
 		$bootstrap: function(){
 			// register tooltip
 			var self = this;
@@ -68,12 +71,24 @@
 			// create item list
 			$this.itemsListBox = new ListBox({
 				onSelectionChanged: function(key, item){
+					if($this.ignoreHandlers){
+						return;
+					}
 					$this.data.callback.call($this, {scheme: item.scheme, value: item.value, context: item.context});
 					$this.close();
 				}
 			});
 			$this.itemsListBox.addClass('items');
 			$this.append($this.itemsListBox);
+			
+			$this.subscribe('DataCube.Query.SchemeEditor.selected', function(sender, msg, params){
+				var editor = $this.data.data.editor;
+				var entryKey = $this.data.data.entryKey;
+				var entryType = $this.data.data.entryType;
+				if(sender == editor && params.entryType == entryType && params.entryKey == entryKey && !params.selected){
+					$this.close();
+				}
+			});
 		},
 		
 		
@@ -82,11 +97,11 @@
 			
 			
 			var items = $this.data.data.items;
+			var selected = $this.data.data.selectedObj;
 			
 			if(JSB.isArray(items)){
 				// hide categories
 				$this.categoriesElt.addClass('hidden');
-				
 				$this.fillItems(items);
 			} else {
 				$this.categoriesElt.removeClass('hidden');
@@ -94,14 +109,14 @@
 				// fill categories
 				var catArr = Object.keys(items);
 				catArr.sort(function(a, b){
-					if(b == 'Поля куба'){
+					if(b == $this.cubeFieldsCat){
 						return 1;
-					} else if(a == 'Поля куба'){
+					} else if(a == $this.cubeFieldsCat){
 						return -1;
 					}
-					if(b == 'Столбцы среза'){
+					if(b == $this.sliceFieldsCat){
 						return 1;
-					} else if(a == 'Столбцы среза'){
+					} else if(a == $this.sliceFieldsCat){
 						return -1;
 					}
 					return 0;
@@ -120,10 +135,34 @@
 					})(catArr[i]);
 				}
 				
-				var firstKey = $this.categoriesElt.find('> .entry:first-child').attr('key');
-				$this.selectCategory(firstKey);
+				var category = $this.categoriesElt.find('> .entry:first-child').attr('key');
+				if(selected){
+					category = $this.findCategoryByItem(selected.scheme) || category;
+				} 
+				$this.selectCategory(category);
 			}
-			
+		},
+		
+		findCategoryByItem: function(scheme){
+			var obj = $this.data.data.items;
+			if(JSB.isArray(obj)){
+				return;
+			}
+			for(var cat in obj){
+				var items = obj[cat];
+				for(var i = 0; i < items.length; i++){
+					var item = items[i];
+					if(JSB.isString(item)){
+						if(item == scheme){
+							return cat;
+						}
+					} else {
+						if(item.item == scheme){
+							return cat;
+						}
+					}
+				}
+			}
 		},
 		
 		selectCategory: function(cat){
@@ -134,7 +173,10 @@
 		},
 		
 		fillItems: function(items){
+			$this.ignoreHandlers = true;
+			var selected = $this.data.data.selectedObj;
 			$this.itemsListBox.clear();
+			var chosenListItem = null;
 			for(var i = 0; i < items.length; i++){
 				var item = items[i];
 				if(item == '#fieldName' || item == '$fieldName'){
@@ -148,7 +190,7 @@
 					for(var j = 0; j < fArr.length; j++){
 						var fName = fArr[j];
 						var fType = fields[fName];
-						$this.itemsListBox.addItem({
+						var listItem = $this.itemsListBox.addItem({
 							key: fName,
 							value: fName,
 							scheme: item,
@@ -160,6 +202,9 @@
 								</div>
 							`
 						});
+						if(selected && selected.scheme == item && selected.value == fName){
+							chosenListItem = listItem;
+						}
 					}
 				} else if(item == '#outputFieldName' || item == '$fieldExpr' || item == '$sortField') {
 					var editor = $this.data.data.editor;
@@ -168,7 +213,7 @@
 						var colArr = colMap[qName];
 						for(var j = 0; j < colArr.length; j++){
 							var fName = colArr[j];
-							$this.itemsListBox.addItem({
+							var listItem = $this.itemsListBox.addItem({
 								key: fName + '_' + qName,
 								scheme: item,
 								value: fName,
@@ -181,10 +226,15 @@
 									</div>
 								`
 							});
+							if(selected && selected.scheme == item && selected.value == fName){
+								chosenListItem = listItem;
+							}
+
 						}
 					}
+
 				} else {
-					$this.itemsListBox.addItem({
+					var listItem = $this.itemsListBox.addItem({
 						value: item.item,
 						key: item.item,
 						scheme: item.item,
@@ -195,8 +245,18 @@
 							</div>
 						`
 					});
+					if(selected && selected.scheme == item.item){
+						chosenListItem = listItem;
+					}
+
 				}
 			}
+			if(chosenListItem){
+				$this.itemsListBox.selectItem(chosenListItem.key);
+				$this.itemsListBox.scrollTo(chosenListItem.key);
+			}
+
+			$this.ignoreHandlers = false;
 		},
 		
 		
