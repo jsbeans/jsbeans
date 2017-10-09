@@ -226,7 +226,7 @@
 				};
 				snapshot.providers.push(pDesc);
 			}
-			
+
 			// prepare fields
 			for(var fName in this.fields){
 				var fDesc = {
@@ -604,6 +604,8 @@
 		        nField.binding.push(nFields[i]);
 		    }
 
+		    this.fieldCount = Object.keys(this.fields).length;
+
 		    this.store();
             this.doSync();
 
@@ -644,29 +646,39 @@
 			this.doSync();
 			return this.fields[n];
 		},
-		
+
 		removeField: function(field){
 			if(!this.fields[field]){
 				return false;
 			}
-			var order = this.fields[field].order;
+
+			var binding = JSB.clone(this.fields[field].binding),
+			    nFields = [];
+
 			delete this.fields[field];
-			
-			// fix ordering
-			for(var fName in this.fields){
-				if(this.fields[fName].order >= order){
-					this.fields[fName].order--;
-				}
+
+			if(binding.length > 1){ // key field
+			    for(var i = 0; i < binding.length; i++){
+			        this.fields[binding[i].field] = {
+                        binding: [binding[i]],
+                        field: binding[i].field,
+                        type: binding[i].type
+			        };
+
+			        nFields.push(binding[i]);
+			    }
+			} else {
+			    nFields.push(binding[0]);
 			}
-			
+
 			this.fieldCount = Object.keys(this.fields).length;
-			
+
 			// remove materialization
 			this.removeMaterialization();
-			
+
 			this.store();
 			this.doSync();
-			return true;
+			return nFields;
 		},
 		
 		addSlice: function(){

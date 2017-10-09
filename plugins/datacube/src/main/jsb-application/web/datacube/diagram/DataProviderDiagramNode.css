@@ -201,7 +201,12 @@
 	min-height: 16px;
 	position: relative;
 	vertical-align: top;
-	padding: 2px;
+    padding: 3px;
+    box-sizing: border-box;
+}
+
+.dataProviderDiagramNode > .body > .fields > .field > .cell.type {
+    width: calc(40% - 17px);
 }
 
 .dataProviderDiagramNode > .body > .fields > .field > .cell.name {
@@ -271,6 +276,6 @@
 }
 
 .dataProviderDiagramNode > .body > .fields.keyFields > .field > .cell.name {
-    width: 64.5%;
+    width: calc(60% + 17px);
     max-height: none;
 }

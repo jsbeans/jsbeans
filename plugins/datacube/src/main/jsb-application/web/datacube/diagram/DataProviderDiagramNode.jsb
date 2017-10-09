@@ -12,9 +12,6 @@
 		rightFieldConnectors: {},
 		
 		options: {
-			onHighlight: function(bEnable){
-				this.highlightNode(bEnable);
-			},
 			onSelect: function(bEnable){
 				this.selectNode(bEnable);
 			},
@@ -175,91 +172,14 @@
 
 			for(var i = 0; i < fieldNames.length; i++){
 				var f = fieldNames[i];
-				this.createField(f);
-				/*
-				(function(field){
-					var fElt = $this.$('<div class="field"></div>');
-					fElt.attr('key', field);
-					if(!$this.fields[field].keyField){
-					    var checkbox = new CheckBox({
-					        checked: $this.fields[field].cubeField,
-					        onChange: function(isCheck){
-					            if(isCheck){
-					                $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
-					                    if(desc){
-					                        $this.editor.cubeNode.addField(desc.field, desc.type);
-					                    }
-					                });
-					            } else {
-					                $this.editor.cubeEntry.server().removeField($this.fields[field].cubeField, function(res, fail){
-					                    if(res){
-					                        $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
-					                    } else {
-					                        checkbox.setChecked(false);
-					                    }
-					                });
-					            }
-					        }
-					    });
-					    fElt.append(checkbox.getElement());
-					}
-					fElt.append(`#dot
-						<div class="cell name">
-							<div class="text"></div>
-						</div>
-						<div class="cell type">
-							<div class="icon"></div>
-							<div class="text"></div>
-						</div>
-					`);
-					if($this.fields[field].keyField){
-					    fElt.append(`#dot <div class="connector right"></div>`);
-					}
-					fElt.find('.cell.name').attr('title', field);
-					fElt.find('.cell.name > .text').text(field);
-					fElt.find('.cell.type > .text').text($this.fields[field].type);
-
-					if($this.fields[field].keyField){
-					    $this.keyFieldList.append(fElt);
-
-                        // create right connector
-                        var rightConnector = $this.installConnector('providerFieldRight', {
-                            origin: fElt.find('.connector.right'),
-                            handle: [fElt.find('.connector.right'), fElt.find('.cell.type')],
-                            iri: 'connector/field/right/' + field,
-                            field: field,
-                            onHighlight: function(bEnable, meta){
-                                $this.highlightConnector(this, bEnable, meta);
-                            }
-                        });
-                        $this.rightFieldConnectors[field] = rightConnector;
-					} else {
-					    $this.fieldList.append(fElt);
-					}
-				})(f);
-				*/
+				this.createField(f, true);
 			}
-			
-			var nameCell = this.fieldList.find('.field .cell.name');
-			var typeCell = this.fieldList.find('.field .cell.type');
-			var fieldElt = this.fieldList.find('.field');
-			nameCell.resizable({
-				autoHide: true,
-				handles: "e",
-				alsoResize: nameCell,
-				start: function(evt, ui){
-					nameCell.resizable('option', 'minWidth', fieldElt.width() * 0.3);
-					nameCell.resizable('option', 'maxWidth', fieldElt.width() * 0.7);
-				},
-				resize: function(evt, ui){
-					var sz = nameCell.outerWidth();
-					typeCell.css('width', 'calc(100% - '+ui.size.width+'px)');
-					nameCell.css('height', '');
-				}
-			});
+
+			this.updateResizable();
 		},
 
-		createField: function(field){
+		createField: function(field, notUpdateResizable){
+		// todo: Добавление по алфавиту
             var fElt = $this.$('<div class="field"></div>');
             fElt.attr('key', field);
             if(!$this.fields[field].keyField){
@@ -267,17 +187,103 @@
                     checked: $this.fields[field].cubeField,
                     onChange: function(isCheck){
                         if(isCheck){
-                            $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
-                                if(desc){
-                                    $this.editor.cubeNode.addField(desc.field, desc.type);
+                            function addField(){
+                                $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
+                                    if(desc){
+                                        $this.editor.cubeNode.addField(desc.field, desc.type);
+                                    }
+                                });
+                            }
+
+                            $this.editor.cubeEntry.server().getMaterializationInfo(function(matDesc){
+                                if(matDesc.materializing){
+                                    ToolManager.showMessage({
+                                        icon: 'infoDialogIcon',
+                                        text: 'Добавление поля в куб в момент материализации невозможно',
+                                        buttons: [{text: 'Закрыть', value: true}],
+                                        target: {
+                                            selector: fElt
+                                        },
+                                        constraints: [{
+                                            weight: 10.0,
+                                            selector: fElt
+                                        }]
+                                    });
+                                    $this.setCheckField(field, false);
+                                } else if(matDesc.materialization && Object.keys(matDesc.materialization).length > 0){
+                                    ToolManager.showMessage({
+                                        icon: 'warningDialogIcon',
+                                        text: 'Добавление поля в куб приведет к удалению существующей материализации',
+                                        buttons: [{text: 'Продолжить', value: true},
+                                                  {text: 'Отмена', value: false}],
+                                        target: {
+                                            selector: fElt
+                                        },
+                                        constraints: [{
+                                            weight: 10.0,
+                                            selector: fElt
+                                        }],
+                                        callback: function(b){
+                                            if(b){
+                                                addField();
+                                            } else {
+                                                $this.setCheckField(field, false);
+                                            }
+                                        }
+                                    });
+                                } else {
+                                    addField();
                                 }
                             });
                         } else {
-                            $this.editor.cubeEntry.server().removeField($this.fields[field].cubeField, function(res, fail){
-                                if(res){
-                                    $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
+                            function removeField(){
+                                $this.editor.cubeEntry.server().removeField($this.fields[field].cubeField, function(res, fail){
+                                    if(res){
+                                        $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
+                                    } else {
+                                        checkbox.setChecked(false);
+                                    }
+                                });
+                            }
+
+                            $this.editor.cubeEntry.server().getMaterializationInfo(function(matDesc){
+                                if(matDesc.materializing){
+                                    ToolManager.showMessage({
+                                        icon: 'infoDialogIcon',
+                                        text: 'Удаление поля из куба в момент материализации невозможно',
+                                        buttons: [{text: 'Закрыть', value: true}],
+                                        target: {
+                                            selector: fElt
+                                        },
+                                        constraints: [{
+                                            weight: 10.0,
+                                            selector: fElt
+                                        }]
+                                    });
+                                    $this.setCheckField(field, true);
+                                } else if(matDesc.materialization && Object.keys(matDesc.materialization).length > 0){
+                                    ToolManager.showMessage({
+                                        icon: 'warningDialogIcon',
+                                        text: 'Удаление поля из куба приведет к удалению существующей материализации',
+                                        buttons: [{text: 'Продолжить', value: true},
+                                                  {text: 'Отмена', value: false}],
+                                        target: {
+                                            selector: fElt
+                                        },
+                                        constraints: [{
+                                            weight: 10.0,
+                                            selector: fElt
+                                        }],
+                                        callback: function(b){
+                                            if(b){
+                                                removeField();
+                                            } else {
+                                                $this.setCheckField(field, true);
+                                            }
+                                        }
+                                    });
                                 } else {
-                                    checkbox.setChecked(false);
+                                    removeField();
                                 }
                             });
                         }
@@ -309,14 +315,15 @@
                     origin: fElt.find('.connector.right'),
                     handle: [fElt.find('.connector.right'), fElt.find('.cell.type')],
                     iri: 'connector/field/right/' + field,
-                    field: field,
-                    onHighlight: function(bEnable, meta){
-                        $this.highlightConnector(this, bEnable, meta);
-                    }
+                    field: field
                 });
                 $this.rightFieldConnectors[field] = rightConnector;
             } else {
                 $this.fieldList.append(fElt);
+            }
+
+            if(!notUpdateResizable){
+                this.updateResizable();
             }
 		},
 
@@ -324,9 +331,10 @@
 		    $this.fields[field].keyField = isKey;
 
 		    if(isKey){
-                var element = $this.fieldList.find('.field[key=' + field + ']');
+                var element = $this.fieldList.find('.field[key="' + field + '"]');
 		    } else {
-		        var element = $this.keyFieldList.find('.field[key=' + field + ']');
+		        var element = $this.keyFieldList.find('.field[key="' + field + '"]');
+		        $this.fields[field].cubeField = true;
 		        this.rightFieldConnectors[field].destroy();
 		        delete this.rightFieldConnectors[field];
 		    }
@@ -337,13 +345,20 @@
             // return right connector
             return this.rightFieldConnectors[field];
 		},
-		
-		highlightNode: function(bEnable){
-			if(bEnable){
-				this.addClass('highlighted');
-			} else {
-				this.removeClass('highlighted');
-			}
+
+		setCheckField: function(field, isCheck){
+		    this.fieldList.find('.field[key="' + field + '"] > ._dwp_checkBox').jsb().setChecked(isCheck, true);
+		},
+
+		updateResizable: function(){
+            var nameCell = this.getElement().find('.field .cell.name');
+            var typeCell = this.getElement().find('.field .cell.type');
+
+            nameCell.resizable({
+                autoHide: true,
+                handles: "e",
+                alsoResize: nameCell
+            });
 		},
 
 		selectNode: function(bEnable){
@@ -353,15 +368,6 @@
 			} else {
 				this.removeClass('selected');
 				this.editor.publish('DataCube.CubeEditor.providerNodeDeselected', this.provider);
-			}
-		},
-		
-		highlightConnector: function(connector, bEnable, meta){
-			var elt = connector.options.origin;
-			if(bEnable){
-				elt.addClass('highlighted');
-			} else {
-				elt.removeClass('highlighted');
 			}
 		}
 	}

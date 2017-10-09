@@ -238,7 +238,7 @@
 					var fName = fnArr[j].field;
 					var fDesc = desc.fields[fName];
 					var isKeyField = fDesc.binding.length > 1;
-					$this.cubeNode.addField(fDesc.field, fDesc.type, fDesc.link, isKeyField);
+					$this.cubeNode.addField(fDesc.field, fDesc.type, fDesc.link, isKeyField, true);
 					if(isKeyField){
                         for(var i = 0; i < fDesc.binding.length; i++){
                             var bDesc = fDesc.binding[i];
@@ -248,6 +248,7 @@
                         }
                     }
 				}
+				$this.cubeNode.updateResizable();
 
 				// draw slices
 				for(var i = 0; i < desc.slices.length; i++){
@@ -278,6 +279,7 @@
 			this.cubeEntry.server().addDataProvider(dpEntry, function(provider){
 				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:provider, editor: $this});
 				pNode.setPosition(pt.x, pt.y);
+				$this.providersNodes[provider.getId()] = pNode;
 			});
 		},
 		
