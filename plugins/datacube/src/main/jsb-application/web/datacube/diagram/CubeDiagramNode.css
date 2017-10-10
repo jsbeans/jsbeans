@@ -231,6 +231,11 @@
 }
 
 .cubeDiagramNode > .body > .fields > .providerBlock {
+    border-bottom: 1px solid #5f7698;
+}
+
+.cubeDiagramNode > .body > .fields > .providerBlock:last-child {
+    border-bottom: none;
 }
 
 .cubeDiagramNode > .body > .fields > .providerBlock:nth-child(odd) {
@@ -253,6 +258,10 @@
 	background-color: #c6dae4 !important;
 }
 
+.cubeDiagramNode > .body > .fields .field:hover > .cell.name {
+    padding-right: 14px;
+}
+
 .cubeDiagramNode > .body > .fields .field:nth-child(odd) {
 	background-color: #e0eaef;
 }
@@ -268,13 +277,14 @@
 	position: relative;
 	vertical-align: top;
 	padding: 2px;
+	box-sizing: border-box;
 }
 
 .cubeDiagramNode > .body > .fields .field > .cell.name {
+    width: 60%;
 	min-width: 30%;
 	max-width: 70%;
     border-right: 1px solid #c7c7c7;
-    padding-right: 16px;
 }
 
 .cubeDiagramNode > .body > .fields .field > .cell.name > ._dwp_checkBox {
@@ -300,14 +310,8 @@
 	font-family: monospace;
 	text-overflow: ellipsis;
     overflow: hidden;
-	max-width: 100%;
-    display: inline-block;
-    padding-left: 0;
+	max-width: calc(100% - 20px);
     vertical-align: middle;
-}
-
-.cubeDiagramNode > .body > .fields .field:hover > .cell.name > .text {
-	padding-right: 20px;
 }
 
 .cubeDiagramNode > .body > .fields .field > .cell.name > .text._dwp_primitiveEditor > ._dwp_plain {
@@ -316,6 +320,10 @@
 
 .cubeDiagramNode > .body > .fields .field > .cell.name > .text._dwp_primitiveEditor > input {
 	font-family: monospace;
+}
+
+.cubeDiagramNode > .body > .fields .field > .cell.type {
+    width: 40%;
 }
 
 .cubeDiagramNode > .body > .fields .field > .cell.type > .icon {
