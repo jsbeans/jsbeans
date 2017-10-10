@@ -238,7 +238,7 @@
 					var fName = fnArr[j].field;
 					var fDesc = desc.fields[fName];
 					var isKeyField = fDesc.binding.length > 1;
-					$this.cubeNode.addField(fDesc.field, fDesc.type, isKeyField ? null : fDesc.binding[0].provider.getId(), fDesc.link, isKeyField, true);
+					$this.cubeNode.addField(fDesc.field, fDesc.type, isKeyField ? null : fDesc.binding[0].provider ? fDesc.binding[0].provider.getId() : null, fDesc.link, isKeyField, true);
 					if(isKeyField){
                         for(var i = 0; i < fDesc.binding.length; i++){
                             var bDesc = fDesc.binding[i];
@@ -267,6 +267,7 @@
 			}
 			this.cubeEntry = entry;
 			this.diagram.clear();
+
 			this.providersNodes = {};
 			this.cubeEntry.server().load(true, function(desc){
 				// draw in diagram

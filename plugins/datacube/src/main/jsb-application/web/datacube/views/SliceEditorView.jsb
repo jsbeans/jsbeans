@@ -22,6 +22,9 @@
                 cssClass: "btnOk",
                 caption: "Сохранить",
                 onClick: function(){
+                    $this.savedMessage.fadeIn(1600, "linear", function(){
+                        $this.savedMessage.fadeOut(1600, "linear");
+                    });
                     $this.slice.cube.server().updateSliceSettings($this.slice.getLocalId(), {
                         name: $this.titleEditor.getData().getValue(),
                         query: $this.query,
@@ -84,11 +87,15 @@
 			});
 			vSplitBox.addToPane(1, this.textQueryEditor);
 			
-			
-			
 			// add grid view
 			this.gridView = new GridView();
 			hSplitBox.addToPane(1, this.gridView);
+
+            this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
+            this.savedMessage.click(function(){
+                $this.savedMessage.css('display', 'none');
+            });
+            this.append(this.savedMessage);
 		},
 		
 		refresh: function(){
