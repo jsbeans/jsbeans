@@ -473,12 +473,12 @@
             return false;
         },
 
-        _translateField: function(field, context, useFieldNotAlias) {
+        _translateField: function(field, context, forceFieldNotAlias) {
             /** notes:
                 * В подзапросах нельзя использовать алиасы из других запросов
             */
             // is allow use aliases
-            if (!useFieldNotAlias) {
+            if (!forceFieldNotAlias) {
                 // is alias and not cube field as-is expression return quoted alias
                 var query = this._getQueryByContext(context);
                 if (!!query.$select[field] && !this.isCubeFieldExpression(query.$select[field])) {
@@ -486,14 +486,26 @@
                 }
             }
 
-            return this._translateCubeField(field, context);
+            var name = this._translateCubeField(field, context);
+            if (!name) {
+                if (forceFieldNotAlias) {
+                    var query = this._getQueryByContext(context);
+                    if (!!query.$select[field]) {
+                        name = this._quotedName(field);
+                    }
+                }
+            }
+            if (!name) {
+                throw new Error('Cube or dataprovider has no field ' + field);
+            }
+            return name;
         },
 
         _translateCubeField: function(field, context){
             if (this.cube) {
             	var managedFields = this.cube.getManagedFields();
                 if (!managedFields[field]) {
-                    throw new Error('Cube has no field ' + field);
+                    return null;
                 }
                 var binding = managedFields[field].binding;
                 for(var b in binding) {
@@ -507,8 +519,8 @@
                         return this._printFieldTableAlias(field, context, this.providers[i]) + '.' + this._quotedName(field);
                     }
                 }
-                throw new Error('Has no providers with field ' + field);
             }
+            return null;
         },
 
         _printTableAlias: function(context, provider){
