@@ -465,11 +465,12 @@
                     }
                 }
 
-                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                if(Object.keys(globalFilters).length === 0) globalFilters = null;
+
+                if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
                     return;
                 } else {
-                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    source.setFilters(globalFilters);
+                    this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -477,9 +478,9 @@
                         this._deselectAllCategory(i);
                     }
                     this._curFilters = {};
+                    this._curFilterHash = null;
                     return;
                 }
-                this._curFilterHash = null;
             }
 // end filters section
 
@@ -497,12 +498,12 @@
 							for(var i = 0; i < seriesContext.length; i++){
 								var a = seriesContext[i].get(1).value();
 								if(JSB().isArray(a)){
-									seriesData[i] = a;
+									seriesData[i].data = a;
 								} else {
                                     if(!seriesData[i]){
                                         seriesData[i] = [];
                                     }
-									seriesData[i].push(a);
+									seriesData[i].data.push(a);
 								}
 							}
 							for(var i = 0; i < xAxisContext.length; i++){
@@ -524,11 +525,12 @@
 
                         $this._buildChart(seriesData, xAxis);
 					} catch(e) {
-					    console.log(e);
+
 					} finally {
 						$this.getElement().loader('hide');
 					}
                 });
+
             }, function(){
                 return $this.isInit;
             });
@@ -757,8 +759,8 @@
 
                     $this.chart =  $this.container.highcharts();
             } catch(e){
-                var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
-                console.log("Exception", [wTypeName, e]);
+                    var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
+                    console.log("Exception", [wTypeName, e]);
             }
         },
 
@@ -817,7 +819,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category == cat && !series[i].points[j].selected){
+                    if(series[i].points[j].category === cat && !series[i].points[j].selected){
                         series[i].points[j].select(true, true);
                         break;
                     }
@@ -830,7 +832,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category == cat && series[i].points[j].selected){
+                    if(series[i].points[j].category === cat && series[i].points[j].selected){
                         this._deselectCategoriesCount++;
                         series[i].points[j].select(false, true);
                         break;

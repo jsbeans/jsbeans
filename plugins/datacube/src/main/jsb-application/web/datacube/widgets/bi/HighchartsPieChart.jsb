@@ -297,6 +297,7 @@
 			}
 
 // filters section
+/*
             var globalFilters = source.getFilters();
 
             if(globalFilters){
@@ -343,6 +344,7 @@
                 }
                 this._curFilterHash = null;
             }
+*/
 // end filters section
             var dataValues = this.getContext().find('data').values(),
                 dataSource = [];
