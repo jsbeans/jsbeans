@@ -234,7 +234,7 @@
                 var subQ = 'SELECT ' + func + '(' + column + ') AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + group + having;
                 return '(' +
                     'SELECT MAX(' + $this._quotedName(subAlias) + ') ' +
-                    'FROM (' + subQ + ') AS ' + $this._quotedName(subQuery.$context) +
+                    'FROM (' + subQ + ') AS ' + $this._quotedName(subQuery.$context+'_inner') +
                     ')';
             }
 
@@ -447,9 +447,30 @@
             throw new Error('Unsupported select expression ' + op);
         },
 
-        _isAliasField: function(field, context) {
-            var query = this._getQueryByContext(context);
-            return !!query.$select[field];
+        isCubeFieldExpression: function(exp) {
+            if (JSB.isPlainObject(exp) && exp.$field) {
+                exp = exp.$field;
+            }
+            if (JSB.isString(exp)) {
+                // is parameter
+                if (exp.match(/^\$\{.*\}/g)) {
+                    return false;
+                }
+                var field = exp;
+                if (this.cube) {
+                    var managedFields = this.cube.getManagedFields();
+                    if (managedFields[field]) {
+                        return true;
+                    }
+                } else {
+                    for(var i in this.providers){
+                        if(this.providers[i].extractFields()[field]) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
         },
 
         _translateField: function(field, context, useFieldNotAlias) {
@@ -458,8 +479,9 @@
             */
             // is allow use aliases
             if (!useFieldNotAlias) {
-                // is alias return as is
-                if (this._isAliasField(field, context)) {
+                // is alias and not cube field as-is expression return quoted alias
+                var query = this._getQueryByContext(context);
+                if (!!query.$select[field] && !this.isCubeFieldExpression(query.$select[field])) {
                     return this._quotedName(field);
                 }
             }
