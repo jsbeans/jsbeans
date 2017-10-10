@@ -39,7 +39,7 @@
 		    var translatedQuery = this.translateQuery();
 
 		    // create iterator
-		    if (translatedQuery.$analyze) {
+		    if (this.dcQuery.$analyze) {
 		        return this.analyzeQuery(translatedQuery);
 		    } else {
 		        this.iterator = this.executeQuery(translatedQuery);
