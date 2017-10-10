@@ -86,8 +86,7 @@
 				selector: rightBottomGripper,
 				resize: {right: true}
 			});
-			
-			$this.refresh();
+
 			$this.ready = true;
 			
 			this.getElement().resize(function(){
@@ -152,7 +151,7 @@
 			});
 		},
 		
-		addField: function(field, type, isLink, isKeyField, notUpdateResizable){
+		addField: function(field, type, provider, isLink, isKeyField, notUpdateResizable){
 		// todo: Добавление по алфавиту
 			var fElt = null;
             if(!$this.fields){
@@ -241,7 +240,14 @@
             if(isKeyField){
                 $this.keyFieldList.append(fElt);
             } else {
-                $this.fieldList.append(fElt);
+                var providerBlock = this.fieldList.find('.providerBlock[key="' + provider + '"]');
+
+                if(providerBlock.length === 0){
+                    providerBlock = this.$('<div class="providerBlock" key="' + provider + '"></div>');
+                    this.fieldList.append(providerBlock);
+                }
+
+                providerBlock.append(fElt);
             }
 
             if(nWidth){
@@ -268,13 +274,22 @@
 		},
 
 		updateResizable: function(){
-            var nameCells = this.getElement().find('.field .cell.name');
+            var keyCells = this.keyFieldList.find('.field .cell.name'),
+                cells = this.fieldList.find('.field .cell.name');
 
-            nameCells.resizable({
+            keyCells.resizable({
                 autoHide: true,
                 handles: "e",
                 resize: function(evt, ui){
-                    nameCells.width(ui.size.width);
+                    keyCells.width(ui.size.width);
+                }
+            });
+
+            cells.resizable({
+                autoHide: true,
+                handles: "e",
+                resize: function(evt, ui){
+                    cells.width(ui.size.width);
                 }
             });
 		},
@@ -383,7 +398,7 @@
 
 		afterFieldRemove: function(field, nFields){
             delete this.fields[field];
-            this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
+            this.find('.fields .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
             if(this.leftFieldConnectors[field]){
                 this.leftFieldConnectors[field].destroy();
                 delete this.leftFieldConnectors[field];
@@ -401,20 +416,6 @@
             } else {
                 this.editor.providersNodes[nFields[0].provider.getId()].setCheckField(nFields[0].field, false);
             }
-		},
-
-		refresh: function(){
-			this.fieldList.empty();
-			if(this.fields){
-				var fieldNames = Object.keys(this.fields);
-				fieldNames.sort(function(a, b){
-					return a.localeCompare(b);
-				});
-				for(var i = 0; i < fieldNames.length; i++){
-					var f = fieldNames[i];
-					this.addField(f, this.fields[f]);
-				}
-			}
 		},
 
 		selectNode: function(bEnable){
@@ -467,7 +468,7 @@
 		            $this.afterFieldRemove(fArray[i].field);
 		        }
 		        $this.fields[nField.field] = nField.type;
-		        $this.addField(nField.field, nField.type, true, true);
+		        $this.addField(nField.field, nField.type, null, true, true);
 
 		        for(var i = 0; i < nField.binding.length; i++){
 		            var rightConnector = $this.editor.providersNodes[nField.binding[i].provider.getId()].toggleKeyField(fArray[i].field, true);

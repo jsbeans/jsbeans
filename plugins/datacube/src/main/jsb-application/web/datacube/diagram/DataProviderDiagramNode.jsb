@@ -75,7 +75,13 @@
 					</div>
                 </div>
 			`);
-			this.status = this.$('<div class="status"></div>');
+			this.status = this.$(`
+			    <div class="status">
+                    <div class="toolbar">
+                        <div class="selectAll" title="Выделить все"></div>
+                        <div class="deselectAll" title="Снять выделение со всех"></div>
+                    </div>
+                </div>`);
 			this.append(this.caption);
 			this.append(this.body);
 			this.append(this.status);
@@ -112,6 +118,32 @@
 					$this.ready = true;
 				});
 			}
+
+			this.status.find('.selectAll').click(function(evt){
+			    var fields = $this.fieldList.find('.field > ._dwp_checkBox');
+
+			    for(var i = 0; i < fields.length; i++){
+			        var jsb = $this.$(fields[i]).jsb();
+			        if(!jsb.isChecked()){
+			            jsb.setChecked(true);
+			        }
+			    }
+
+			    // $this.$(this).addClass('disabled');
+			});
+
+			this.status.find('.deselectAll').click(function(evt){
+			    var fields = $this.fieldList.find('.field > ._dwp_checkBox');
+
+			    for(var i = 0; i < fields.length; i++){
+			        var jsb = $this.$(fields[i]).jsb();
+			        if(jsb.isChecked()){
+			            jsb.setChecked(false);
+			        }
+			    }
+
+			    // $this.$(this).addClass('disabled');
+			});
 			
 			this.getElement().resize(function(){
 				var nameCell = $this.fieldList.find('.field .cell.name');
@@ -171,8 +203,7 @@
 			});
 
 			for(var i = 0; i < fieldNames.length; i++){
-				var f = fieldNames[i];
-				this.createField(f, true);
+				this.createField(fieldNames[i], true);
 			}
 
 			this.updateResizable();
@@ -183,14 +214,19 @@
             var fElt = $this.$('<div class="field"></div>');
             fElt.attr('key', field);
             if(!$this.fields[field].keyField){
+                var loader = this.$('<div class="loader hidden"></div>')
+
                 var checkbox = new CheckBox({
                     checked: $this.fields[field].cubeField,
                     onChange: function(isCheck){
                         if(isCheck){
                             function addField(){
+                                loader.removeClass('hidden');
                                 $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
+                                    loader.addClass('hidden');
                                     if(desc){
-                                        $this.editor.cubeNode.addField(desc.field, desc.type);
+                                        $this.editor.cubeNode.addField(desc.field, desc.type, desc.binding[0].provider.getId());
+                                        $this.fields[field].cubeField = desc.field;
                                     }
                                 });
                             }
@@ -237,11 +273,13 @@
                             });
                         } else {
                             function removeField(){
+                                loader.removeClass('hidden');
                                 $this.editor.cubeEntry.server().removeField($this.fields[field].cubeField, function(res, fail){
+                                    loader.addClass('hidden');
                                     if(res){
                                         $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
                                     } else {
-                                        checkbox.setChecked(false);
+                                        checkbox.setChecked(false, true);
                                     }
                                 });
                             }
@@ -289,7 +327,8 @@
                         }
                     }
                 });
-                fElt.append(checkbox.getElement());
+                fElt.append(checkbox.getElement())
+                    .append(loader);
             } else {
                 fElt.append('<div class="icon"></div>');
             }
@@ -336,7 +375,6 @@
                 var element = $this.fieldList.find('.field[key="' + field + '"]');
 		    } else {
 		        var element = $this.keyFieldList.find('.field[key="' + field + '"]');
-		        $this.fields[field].cubeField = true;
 		        this.rightFieldConnectors[field].destroy();
 		        delete this.rightFieldConnectors[field];
 		    }
@@ -353,17 +391,31 @@
 		},
 
 		updateResizable: function(){
-            var nameCells = this.getElement().find('.field .cell.name');
+		    var keyCells = this.keyFieldList.find('.field .cell.name'),
+		        cells = this.fieldList.find('.field .cell.name');
 
-            nameCells.resizable({
+            keyCells.resizable({
                 autoHide: true,
                 handles: "e",
                 resize: function(evt, ui){
-                    nameCells.width(ui.size.width);
+                    keyCells.width(ui.size.width);
+                }
+            });
+
+            cells.resizable({
+                autoHide: true,
+                handles: "e",
+                resize: function(evt, ui){
+                    cells.width(ui.size.width);
                 }
             });
 		},
-
+/*
+		updateToolbar: function(){
+		    var allChecked,
+		        allUnchecked;
+		},
+*/
 		selectNode: function(bEnable){
 			if(bEnable){
 				this.addClass('selected');
