@@ -1,7 +1,12 @@
 {
 	$name: 'DataCube.DataProviderDiagramNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
-	$require: ['JQuery.UI.Resizable', 'JSB.Widgets.RendererRepository', 'JSB.Widgets.Button', 'JSB.Widgets.CheckBox', 'JSB.Widgets.Alpha.ScrollBox'],
+	$require: ['JQuery.UI.Resizable', 
+	           'JSB.Widgets.RendererRepository', 
+	           'JSB.Widgets.Button', 
+	           'JSB.Widgets.CheckBox', 
+	           'JSB.Widgets.Alpha.ScrollBox',
+	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
 		ready: false,

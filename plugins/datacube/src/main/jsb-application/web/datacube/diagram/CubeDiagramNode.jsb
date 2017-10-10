@@ -313,7 +313,7 @@
 		},
 		
 		beginEditField: function(field){
-			var editor = $this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"] > .cell.name > .text').jsb();
+			var editor = $this.find('.fields .field[key="'+$this.prepareFieldKey(field)+'"] > .cell.name > .text').jsb();
 			editor.beginEdit();
 		},
 		
@@ -321,14 +321,14 @@
 			$this.entry.server().renameField(oldName, newName, function(desc){
 				$this.fields[desc.field] = desc.type;
 				delete $this.fields[oldName];
-				var fElt = $this.find('.fields > .field[key="'+$this.prepareFieldKey(oldName)+'"]');
+				var fElt = $this.find('.fields .field[key="'+$this.prepareFieldKey(oldName)+'"]');
 				fElt.attr('key', desc.field);
 				fElt.find('.cell.name').attr('title', desc.field);
 			});
 		},
 		
 		removeField: function(field){
-			var fElt = $this.find('.fields > .field[key="'+$this.prepareFieldKey(field)+'"]');
+			var fElt = $this.find('.fields .field[key="'+$this.prepareFieldKey(field)+'"]');
 			ToolManager.showMessage({
 				icon: 'removeDialogIcon',
 				text: 'Вы уверены что хотите удалить поле "'+$this.prepareFieldKey(field)+'"?',

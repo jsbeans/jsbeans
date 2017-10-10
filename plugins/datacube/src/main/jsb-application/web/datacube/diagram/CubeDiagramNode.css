@@ -99,7 +99,6 @@
     background: linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
 	background: -o-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
 	background: -ms-linear-gradient(top, #c1d9ef 0%, #a6c3df 70%, #9db5ce 100%);
-    height: 20px;
 	border-top: 1px solid #5f7698;
 }
 
@@ -114,6 +113,12 @@
     width: 100%;
     height: 20px;
     box-sizing: border-box;
+	border-top: 1px solid #9aabc3;
+    background: -webkit-linear-gradient(top, #dbe4ea 0%, #c8daea 10%, #c2d5e8 100%);
+    background: -moz-linear-gradient(top, #dbe4ea 0%, #c8daea 10%, #c2d5e8 100%);
+    background: linear-gradient(top, #dbe4ea 0%, #c8daea 10%, #c2d5e8 100%);
+	background: -o-linear-gradient(top, #dbe4ea 0%, #c8daea 10%, #c2d5e8 100%);
+	background: -ms-linear-gradient(top, #dbe4ea 0%, #c8daea 10%, #c2d5e8 100%);
 }
 
 .cubeDiagramNode > .status > .message.error {
@@ -222,11 +227,10 @@
 
 .cubeDiagramNode > .body > .fields {
 	list-style: none;
-	max-height: 200px;
+	max-height: 300px;
 }
 
 .cubeDiagramNode > .body > .fields > .providerBlock {
-    border-bottom: 1px solid blue;
 }
 
 .cubeDiagramNode > .body > .fields > .providerBlock:nth-child(odd) {
@@ -270,7 +274,7 @@
 	min-width: 30%;
 	max-width: 70%;
     border-right: 1px solid #c7c7c7;
-    padding-right: 10px;
+    padding-right: 16px;
 }
 
 .cubeDiagramNode > .body > .fields .field > .cell.name > ._dwp_checkBox {
