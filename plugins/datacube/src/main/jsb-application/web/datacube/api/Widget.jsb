@@ -104,6 +104,10 @@
 		removeFilter: function(fItemId, widget){
 			return WidgetController.getFilterManager().removeFilter(fItemId, widget);
 		},
+		
+		getFilterManager: function(){
+			return WidgetController.getFilterManager();
+		}
 	},
 	
 	$server: {

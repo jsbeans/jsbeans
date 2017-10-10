@@ -96,11 +96,11 @@
             		}
             	}
 
-            	if(qDesc.query.$globalFilter && Object.keys(qDesc.query.$globalFilter).length > 0){
-            		if(preparedQuery.$globalFilter){
-            			preparedQuery.$globalFilter = {$and:[preparedQuery.$globalFilter, qDesc.query.$globalFilter]}
+            	if(qDesc.query.$cubeFilter && Object.keys(qDesc.query.$cubeFilter).length > 0){
+            		if(preparedQuery.$cubeFilter){
+            			preparedQuery.$cubeFilter = {$and:[preparedQuery.$cubeFilter, qDesc.query.$cubeFilter]}
             		} else {
-            			preparedQuery.$globalFilter = qDesc.query.$globalFilter;
+            			preparedQuery.$cubeFilter = qDesc.query.$cubeFilter;
             		}
             	}
 

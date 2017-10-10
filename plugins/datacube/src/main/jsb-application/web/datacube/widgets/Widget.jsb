@@ -569,6 +569,14 @@
 			return this.getWrapper().removeFilter(fItemId);
 		},
 		
+		getFilters: function(){
+			return this.getFilterManager().getFilters();
+		}, 
+		
+		getFilterManager: function(){
+			return this.getWrapper().getFilterManager();
+		},
+		
 		setSort: function(q){
 			this.sort = q;
 			this.refresh();
@@ -635,7 +643,7 @@
 					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 						var extQuery = {};
 						if(opts.filter){
-							extQuery.$globalFilter = opts.filter;
+							extQuery.$cubeFilter = opts.filter;
 						}
 						if(opts.postFilter){
 							extQuery.$postFilter = opts.postFilter;

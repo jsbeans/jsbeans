@@ -40,7 +40,7 @@
 							key: 'leftPane',
 							size: 0.2,
 							split: 'horizontal',
-							minSize: 350,
+							minSize: 380,
 							panes: [{
 								key: 'workspaceExplorer',
 								widgets: 'workspaceExplorer',

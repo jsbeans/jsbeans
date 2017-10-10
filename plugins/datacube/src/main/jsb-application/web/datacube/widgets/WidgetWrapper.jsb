@@ -198,6 +198,10 @@
 			this.getOwner().getFilterManager().clearFilters(widget);
 		},
 		
+		getFilterManager: function(){
+			return this.getOwner().getFilterManager();
+		},
+		
 		extractWidgetScheme: function(curWidgetJsb){
 			var scheme = {};
 			if(!curWidgetJsb){
