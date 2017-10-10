@@ -10,6 +10,7 @@
 		cubeEntry: null,
 		cubeNode: null,
 		ignoreHandlers: false,
+		providersNodes: {},
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -61,6 +62,7 @@
 				connectors: {
 					cubeFieldLeft: {
 						acceptLocalLinks: false,
+						userLink: false,
 						align: 'left',
 						offsetX: 2,
 						wiringLink: {
@@ -70,18 +72,18 @@
 					},
 					
 					cubeFieldRight: {
-						acceptLocalLinks: false,
+						acceptLocalLinks: false
 					},
 					
 					providerFieldRight: {
 						acceptLocalLinks: false,
+						userLink: false,
 						offsetX: 2,
 						wiringLink: {
 							key: 'bind',
 							type: 'target'
 						}
 					}
-
 				},
 				
 				links: {
@@ -210,6 +212,7 @@
 				pnMap[pDesc.provider.getId()] = pNode;
 				pNode.setPosition(pDesc.position.x, pDesc.position.y);
 				dpNodes.push(pNode);
+				$this.providersNodes[pDesc.provider.getId()] = pNode;
 			}
 			JSB.chain(dpNodes, function(node, c){
 				JSB.deferUntil(function(){
@@ -229,19 +232,24 @@
 				fnArr.sort(function(a, b){
 					return a.order - b.order;
 				});
+
 				// connect fields
 				for(var j = 0; j < fnArr.length; j++){
 					var fName = fnArr[j].field;
 					var fDesc = desc.fields[fName];
-					$this.cubeNode.addField(fDesc.field, fDesc.type, fDesc.link);
-					for(var i = 0; i < fDesc.binding.length; i++){
-						var bDesc = fDesc.binding[i];
-						var link = $this.diagram.createLink('bind');
-						link.setSource($this.cubeNode.leftFieldConnectors[fName]);
-						link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field]);
-					}
+					var isKeyField = fDesc.binding.length > 1;
+					$this.cubeNode.addField(fDesc.field, fDesc.type, isKeyField ? null : fDesc.binding[0].provider.getId(), fDesc.link, isKeyField, true);
+					if(isKeyField){
+                        for(var i = 0; i < fDesc.binding.length; i++){
+                            var bDesc = fDesc.binding[i];
+                            var link = $this.diagram.createLink('bind');
+                            link.setSource($this.cubeNode.leftFieldConnectors[fName]);
+                            link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field]);
+                        }
+                    }
 				}
-				
+				$this.cubeNode.updateResizable();
+
 				// draw slices
 				for(var i = 0; i < desc.slices.length; i++){
 					var sDesc = desc.slices[i];
@@ -259,8 +267,10 @@
 			}
 			this.cubeEntry = entry;
 			this.diagram.clear();
+			this.providersNodes = {};
 			this.cubeEntry.server().load(true, function(desc){
 				// draw in diagram
+				$this.cubeDescription = desc;
 				$this.setupCubeNode(desc);
 			});
 		},
@@ -269,6 +279,7 @@
 			this.cubeEntry.server().addDataProvider(dpEntry, function(provider){
 				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:provider, editor: $this});
 				pNode.setPosition(pt.x, pt.y);
+				$this.providersNodes[provider.getId()] = pNode;
 			});
 		},
 		

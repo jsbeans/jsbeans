@@ -104,7 +104,7 @@
                 query = {
                     $select: {}
                 }
-
+                /*
                 slice.cube.server().load(true, function(desc){
                     if(!desc) return;
 
@@ -114,6 +114,7 @@
 
                     $this.find('.queryEditor').jsb().setData(JSON.stringify(query, null, 4));
                 });
+                */
             } else {
                 this.find('.queryEditor').jsb().setData(JSON.stringify(query, null, 4));
             }

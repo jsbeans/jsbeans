@@ -226,7 +226,7 @@
 				};
 				snapshot.providers.push(pDesc);
 			}
-			
+
 			// prepare fields
 			for(var fName in this.fields){
 				var fDesc = {
@@ -367,17 +367,41 @@
 		    providers.sort(compareProviders);
 		    return providers;
 		},
+
+		createProviderFieldsList: function(provider, fields){
+            var res = {};
+
+            for(var i in fields){
+                res[i] = {
+                    type: fields[i]
+                }
+            }
+
+            for(var i in this.fields){
+                for(var j = 0; j < this.fields[i].binding.length; j++){
+                    if(provider === this.fields[i].binding[j].provider){
+                        if(this.fields[i].binding.length > 1){
+                            res[this.fields[i].binding[j].field].keyField = true;
+                        }
+
+                        res[this.fields[i].binding[j].field].cubeField = i;
+                    }
+                }
+            }
+
+            return res;
+		},
 		
 		extractDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);
 			if(this.dataProviderFields[provider.getId()]){
-				return this.dataProviderFields[provider.getId()];
+				return this.createProviderFieldsList(provider, this.dataProviderFields[provider.getId()]);
 			}
 			var dpFields = provider.extractFields();
 			this.dataProviderFields[provider.getId()] = dpFields;
 			this.store();
 			this.doSync();
-			return dpFields;
+			return this.createProviderFieldsList(provider, dpFields);
 		},
 		
 		prepareFieldName: function(name){
@@ -444,7 +468,7 @@
 				this.doSync();
 			}
 			
-			return {fields: dpNewFields, binding: providerBindingMap};
+			return {fields: this.createProviderFieldsList(provider, dpNewFields), binding: providerBindingMap};
 		},
 		
 		renameDataProviderField: function(provider, oldName, newName, type){
@@ -557,6 +581,37 @@
 			return this.fields[field];
 		},
 
+		linkFields: function(fields){
+            var nFields = [];
+		    // remove old fields
+		    for(var i = 0; i < fields.length; i++){
+		        nFields.push({
+		            field: this.fields[fields[i].field].binding[0].field,
+		            type: this.fields[fields[i].field].type,
+		            provider: JSB.clone(this.fields[fields[i].field].binding[0].provider)
+		        });
+		        delete this.fields[fields[i].field];
+		    }
+		    // create new field
+		    var nField = this.fields[nFields[0].field] = {
+		        binding: [],
+		        field: nFields[0].field,
+		        link: true,
+		        type: nFields[0].type
+		    };
+
+		    for(var i = 0; i < nFields.length; i++){
+		        nField.binding.push(nFields[i]);
+		    }
+
+		    this.fieldCount = Object.keys(this.fields).length;
+
+		    this.store();
+            this.doSync();
+
+            return nField;
+		},
+
 		renameField: function(oldName, newName){
 			if(!this.fields[oldName]){
 				throw new Error('Field not existed: ' + oldName);
@@ -591,29 +646,39 @@
 			this.doSync();
 			return this.fields[n];
 		},
-		
+
 		removeField: function(field){
 			if(!this.fields[field]){
 				return false;
 			}
-			var order = this.fields[field].order;
+
+			var binding = JSB.clone(this.fields[field].binding),
+			    nFields = [];
+
 			delete this.fields[field];
-			
-			// fix ordering
-			for(var fName in this.fields){
-				if(this.fields[fName].order >= order){
-					this.fields[fName].order--;
-				}
+
+			if(binding.length > 1){ // key field
+			    for(var i = 0; i < binding.length; i++){
+			        this.fields[binding[i].field] = {
+                        binding: [binding[i]],
+                        field: binding[i].field,
+                        type: binding[i].type
+			        };
+
+			        nFields.push(binding[i]);
+			    }
+			} else {
+			    nFields.push(binding[0]);
 			}
-			
+
 			this.fieldCount = Object.keys(this.fields).length;
-			
+
 			// remove materialization
 			this.removeMaterialization();
-			
+
 			this.store();
 			this.doSync();
-			return true;
+			return nFields;
 		},
 		
 		addSlice: function(){

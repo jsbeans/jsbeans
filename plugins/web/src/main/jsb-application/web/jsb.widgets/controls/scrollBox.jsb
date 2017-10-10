@@ -8,6 +8,9 @@
 			var self = this;
 			$base(opts);
 			this.loadCss('scrollBox.css');
+			if(opts && opts.cssClass){
+			    this.addClass(opts.cssClass);
+			}
 			JSB().loadScript('tpl/iscroll/iscroll-probe.js', function(){
 				self.init();
 			});
