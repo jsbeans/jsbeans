@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.SliceEditorView',
 	$parent: 'JSB.Workspace.BrowserView',
-	$require: ['JSB.Widgets.SplitBox', 'DataCube.GridView', 'JSB.Widgets.ScrollBox', 'JSB.Widgets.MultiEditor', 'DataCube.Query.QueryEditor'],
+	$require: ['JSB.Widgets.SplitBox', 'DataCube.GridView', 'JSB.Widgets.ScrollBox', 'JSB.Widgets.PrimitiveEditor', 'JSB.Widgets.Button', 'JSB.Widgets.MultiEditor', 'DataCube.Query.QueryEditor'],
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
@@ -11,6 +11,43 @@
 			
 			this.loadCss('SliceEditorView.css');
 			this.addClass('sliceEditorView');
+
+			this.titleBlock = this.$('<div class="titleBlock"></div>');
+            this.append(this.titleBlock);
+
+            this.titleEditor = new PrimitiveEditor();
+            this.titleBlock.append(this.titleEditor.getElement());
+
+            this.saveBtn = new Button({
+                cssClass: "btnOk",
+                caption: "Сохранить",
+                onClick: function(){
+                    $this.slice.cube.server().updateSliceSettings($this.slice.getLocalId(), {
+                        name: $this.titleEditor.getData().getValue(),
+                        query: $this.query,
+                        queryParams: {}
+                    });
+                }
+            });
+            this.titleBlock.append(this.saveBtn.getElement());
+
+            this.updateBtn = new Button({
+                cssClass: "btnUpdate",
+                caption: "Обновить",
+                onClick: function(){
+                    debugger;
+                }
+            });
+            this.titleBlock.append(this.updateBtn.getElement());
+
+            this.analyzeBtn = new Button({
+                cssClass: "btnUpdate",
+                caption: "Анализировать",
+                onClick: function(){
+                    debugger;
+                }
+            });
+            this.titleBlock.append(this.analyzeBtn.getElement());
 			
 			var hSplitBox = new SplitBox({
 				type: 'horizontal',
@@ -54,6 +91,7 @@
 		
 		refresh: function(){
 			this.slice = this.node.getEntry();
+			this.titleEditor.setData(this.slice.getName());
 			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
 			}
