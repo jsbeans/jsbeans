@@ -32,8 +32,8 @@
 	height: 100%;
 }
 
-.sliceEditorView ._dwp_splitbox {
-    height: calc(100% - 35px);
+.sliceEditorView > ._dwp_splitbox {
+    height: calc(100% - 36px);
 }
 
 .sliceEditorView .titleBlock {

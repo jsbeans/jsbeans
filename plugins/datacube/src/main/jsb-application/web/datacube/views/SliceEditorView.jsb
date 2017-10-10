@@ -38,7 +38,7 @@
                 cssClass: "btnUpdate",
                 caption: "Обновить",
                 onClick: function(){
-                    debugger;
+                	$this.updateGrid();
                 }
             });
             this.titleBlock.append(this.updateBtn.getElement());
@@ -47,7 +47,9 @@
                 cssClass: "btnUpdate",
                 caption: "Анализировать",
                 onClick: function(){
-                    debugger;
+                	var q = JSB.clone($this.query);
+                	q['$analyze'] = true;
+                	$this.updateGrid(q);
                 }
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
@@ -113,8 +115,9 @@
 			});
 		},
 		
-		updateGrid: function(){
-			this.gridView.updateData(this.slice, this.query);
+		updateGrid: function(query){
+			query = query || this.query;
+			this.gridView.updateData(this.slice, query);
 		},
 		
 		updateTextQuery: function(){
