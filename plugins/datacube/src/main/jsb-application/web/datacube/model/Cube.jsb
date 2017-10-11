@@ -35,6 +35,7 @@
 		dataProviderEntries: {},
 		dataProviderFields: {},
 		dataProviderPositions: {},
+		dataProviderSizes: {},
 		fieldOrder: [],
 		fields: {},
 		slices: {},
@@ -42,6 +43,7 @@
 		materialization: {},
 		materializing: false,
 		nodePosition: null,
+		nodeSize: null,
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
@@ -71,6 +73,7 @@
 					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.cube');
 					
 					this.nodePosition = snapshot.position;
+					this.nodeSize = snapshot.size;
 					
 					// construct data providers
 					for(var i = 0; i < snapshot.providers.length; i++){
@@ -183,6 +186,7 @@
 			// construct response for drawing
 			var desc = {
 				cubePosition: this.nodePosition,
+				cubeSize: this.nodeSize,
 				providers: [],
 				fields: this.fields,
 				slices: []
@@ -211,7 +215,8 @@
 				providers: [],
 				fields: [],
 				slices: [],
-				position: this.nodePosition
+				position: this.nodePosition,
+				size: this.nodeSize
 			};
 			
 			// prepare providers
@@ -306,6 +311,11 @@
 		updateCubeNodePosition: function(pt){
 			this.nodePosition = pt;
 			this.store();
+		},
+
+		updateCubeNodeSize: function(size){
+		    this.nodeSize = size;
+		    this.store();
 		},
 		
 		addDataProvider: function(providerEntry){
@@ -632,7 +642,7 @@
                                 provider: JSB.clone(f.binding[j].provider)
                             });
 		                }
-		                delete f;
+		                delete this.fields[fields[i].field];
 		            }
 		        } else {
                     nFields.push({
@@ -640,7 +650,7 @@
                         type: f.type,
                         provider: JSB.clone(f.binding[0].provider)
                     });
-		            delete f;
+		            delete this.fields[fields[i].field];
 		        }
 		    }
 
@@ -727,6 +737,7 @@
 
 			this.store();
 			this.doSync();
+
 			return nFields;
 		},
 		

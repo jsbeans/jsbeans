@@ -29,7 +29,6 @@
 				JSB.defer(function(){
 					self.entry.server().updateCubeNodePosition({x: x, y: y});
 				}, 500, 'posChanged_' + this.getId());
-				
 			}
 		},
 		
@@ -67,6 +66,19 @@
             this.keyFieldList = this.$('<div class="fields keyFields"></div>');
             this.body.append(this.keyFieldList);
 
+			// search
+            this.body.append(`#dot
+                <div class="search">
+                    <div
+                        jsb="JSB.Widgets.PrimitiveEditor"
+                        onChange="{{=this.callbackAttr(function(){ var editor = this; JSB.defer(function(){ $this.search(editor) }, 300, 'searchDefer_' + $this.getId()); })}}"
+                    >
+                    </div>
+                    <div class="icon">
+                    </div>
+                </div>
+            `);
+
             this.fieldList = new ScrollBox({
                 cssClass: 'fields',
                 xAxisScroll: false
@@ -90,10 +102,17 @@
 			$this.ready = true;
 			
 			this.getElement().resize(function(){
+			    /*
 				var nameCell = $this.fieldList.find('.field .cell.name');
 				var typeCell = $this.fieldList.find('.field .cell.type');
 				var sz = nameCell.outerWidth();
 				typeCell.css('width', 'calc(100% - '+sz+'px)');
+				*/
+				JSB.defer(function(){
+				    $this.entry.server().updateCubeNodeSize({
+				        width: $this.getElement().width()
+				    });
+				}, 300, 'cubeResize_' + $this.getId());
 			});
 			
 			this.subscribe('Workspace.renameEntry', function(sender, msg, desc){
@@ -152,7 +171,6 @@
 		},
 		
 		addField: function(field, type, provider, isLink, isKeyField, notUpdateResizable){
-		// todo: Добавление по алфавиту
 			var fElt = null;
             if(!$this.fields){
                 $this.fields = {};
@@ -293,7 +311,7 @@
                     var providerBlocks = $this.fieldList.find('.providerBlock');
 
                     for(var i = 0; i < providerBlocks.length; i++){
-                        var fields = providerBlocks[i].find('.field');
+                        var fields = this.$(providerBlocks[i]).find('.field');
 
                         fields.sort(function(a, b){
                             var an = $this.$(a).find('.name .text').text(),
@@ -476,6 +494,7 @@
 
                     this.editor.providersNodes[nFields[i].binding[0].provider.getId()].toggleKeyField(nFields[i].binding[0].field, false);
                 }
+                $this.reorderFields();
             } else {
                 this.editor.providersNodes[nFields[0].binding[0].provider.getId()].setCheckField(nFields[0].binding[0].field, false);
             }
@@ -542,6 +561,24 @@
 		        }
 		        $this.reorderKeyFields();
 		    });
+		},
+
+		search: function(editor){
+		    var fields = this.fieldList.find('.field'),
+		        val = editor.getData().getValue();
+
+		    if(!val || val.length == 0){
+		        fields.removeClass('hidden');
+		    } else {
+                fields.each(function(i, el){
+                    var text = $this.$(el).find('.name .text').text();
+                    if(text.match(val)){
+                        $this.$(el).removeClass('hidden');
+                    } else {
+                        $this.$(el).addClass('hidden');
+                    }
+                });
+		    }
 		}
 	}
 }

@@ -202,6 +202,9 @@
 			}
 			this.cubeNode = $this.diagram.createNode('cubeDiagramNode', {editor: $this, entry: $this.cubeEntry});
 			this.cubeNode.setPosition(cubePos.x, cubePos.y);
+			if(desc.cubeSize){
+			    this.cubeNode.getElement().width(desc.cubeSize.width);
+			}
 			
 			// create providers
 			var dpNodes = [];

@@ -4,7 +4,8 @@
 	$require: ['JQuery.UI.Resizable', 
 	           'JSB.Widgets.RendererRepository', 
 	           'JSB.Widgets.Button', 
-	           'JSB.Widgets.CheckBox', 
+	           'JSB.Widgets.CheckBox',
+	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Widgets.Alpha.ScrollBox',
 	           'JSB.Widgets.ToolManager'],
 	
@@ -93,6 +94,19 @@
 
 			this.keyFieldList = this.$('<div class="fields keyFields"></div>');
 			this.body.append(this.keyFieldList);
+
+			// search
+            this.body.append(`#dot
+                <div class="search">
+                    <div
+                        jsb="JSB.Widgets.PrimitiveEditor"
+                        onChange="{{=this.callbackAttr(function(){ var editor = this; JSB.defer(function(){ $this.search(editor) }, 300, 'searchDefer_' + $this.getId()); })}}"
+                    >
+                    </div>
+                    <div class="icon">
+                    </div>
+                </div>
+            `);
 
 			this.fieldList = new ScrollBox({
 			    cssClass: 'fields',
@@ -215,9 +229,9 @@
 		},
 
 		createField: function(field, notUpdateResizable){
-		// todo: Добавление по алфавиту
             var fElt = $this.$('<div class="field"></div>');
             fElt.attr('key', field);
+
             if(!$this.fields[field].keyField){
                 var loader = this.$('<div class="loader hidden"></div>')
 
@@ -406,12 +420,12 @@
 
 		    if(isKey){
                 var e = $this.keyFieldList.find('.field[key="' + field + '"]');
-                if(e){
+                if(e.length > 0){
                     return this.rightFieldConnectors[field];
                 }
 		    } else {
                 var e = $this.fieldList.find('.field[key="' + field + '"]');
-                if(e){
+                if(e.length > 0){
                     return;
                 }
 
@@ -467,6 +481,24 @@
 				this.removeClass('selected');
 				this.editor.publish('DataCube.CubeEditor.providerNodeDeselected', this.provider);
 			}
+		},
+
+		search: function(editor){
+		    var fields = this.fieldList.find('.field'),
+		        val = editor.getData().getValue();
+
+		    if(!val || val.length == 0){
+		        fields.removeClass('hidden');
+		    } else {
+                fields.each(function(i, el){
+                    var text = $this.$(el).find('.name .text').text();
+                    if(text.match(val)){
+                        $this.$(el).removeClass('hidden');
+                    } else {
+                        $this.$(el).addClass('hidden');
+                    }
+                });
+		    }
 		}
 	}
 }

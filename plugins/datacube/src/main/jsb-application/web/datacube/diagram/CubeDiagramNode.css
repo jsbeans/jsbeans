@@ -414,3 +414,32 @@
     border-bottom: 2px solid #5f7698;
     max-height: none;
 }
+
+.cubeDiagramNode > .body > .search {
+    position: relative;
+    box-sizing: border-box;
+    padding: 3px 4px;
+    background-color: #eef4f7;
+}
+
+.cubeDiagramNode > .body > .search * {
+    box-sizing: border-box;
+}
+
+.cubeDiagramNode > .body > .search > ._dwp_editor {
+    width: 100%;
+}
+
+.cubeDiagramNode > .body > .search > ._dwp_editor > input {
+    padding-right: 22px;
+}
+
+.cubeDiagramNode > .body > .search > .icon {
+    position: absolute;
+    right: 8px;
+    top: 5px;
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pjxzdmcgdmlld0JveD0iMCAwIDIxIDIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxzdHlsZT4uY2xzLTEsLmNscy0ye2ZpbGw6bm9uZTtzdHJva2U6IzhlOGU4ZTtzdHJva2UtbWl0ZXJsaW1pdDoxMDt9LmNscy0ye3N0cm9rZS1saW5lY2FwOnJvdW5kO308L3N0eWxlPjwvZGVmcz48dGl0bGUvPjxnIGRhdGEtbmFtZT0iTGF5ZXIgMiIgaWQ9IkxheWVyXzIiPjxnIGRhdGEtbmFtZT0iTGF5ZXIgMSIgaWQ9IkxheWVyXzEtMiI+PGNpcmNsZSBjbGFzcz0iY2xzLTEiIGN4PSI4LjQ3IiBjeT0iOC40NyIgcj0iNy45NyIvPjxsaW5lIGNsYXNzPSJjbHMtMiIgeDE9IjE0LjEzIiB4Mj0iMjAuNSIgeTE9IjE0LjEzIiB5Mj0iMjAuNSIvPjwvZz48L2c+PC9zdmc+);
+}
