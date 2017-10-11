@@ -866,7 +866,6 @@
 						fields[$this.fields[fName].field] = $this.fields[fName].type;
 					}
 					
-					
 					// create table
 					var tableDesc = $this.materializer.createTable(suggestedName, fields);
 					materializationDesc.table = tableDesc.table;

@@ -40,7 +40,7 @@
                     type: 'item',
                     key: 'categories',
                     binding: 'field',
-                    itemType: 'any',
+                    itemType: 'any'
                 },
                 {
                     type: 'group',
@@ -51,7 +51,7 @@
                         type: 'item',
                         name: 'Текст',
                         key: 'text',
-                        itemType: 'string',
+                        itemType: 'string'
                     },
                     {
                         type: 'group',
@@ -363,7 +363,32 @@
                     editor: 'none',
                     optional: 'checked',
                     description: 'Показывать по умолчанию указанную серию на графике.'
-                }
+                },
+                {
+                    type: 'group',
+                    name: 'Drilldown',
+                    key: 'drilldown',
+	                items: [
+						{
+							name: 'Идентификатор рабочей области (wsid)',
+							type: 'item',
+							key: 'widgetWsid',
+							itemType: 'string'
+						},
+						{
+							name: 'Идентификатор виджета (wid)',
+							type: 'item',
+							key: 'widgetWid',
+							itemType: 'string'
+						},
+						{
+							name: 'Поле для фильтрации',
+							type: 'item',
+							key: 'widgetFilter',
+							itemType: 'string'
+						}
+					]
+				}
                 ]
             }
             ]
@@ -407,8 +432,14 @@
                 editor: 'none'
             }
             ]
-        }        
-        
+        },
+		{
+			name: 'Использовать Drilldown',
+			type: 'item',
+			key: 'useDrilldown',
+			editor: 'none',
+			optional: true
+		}
         ]
     },
 	$client: {
@@ -473,7 +504,11 @@
             }
 
 // filters section
-            var globalFilters = source.getFilters();
+/**
+Не используем globalFilters, если требуется drilldown
+**/
+if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
+	            var globalFilters = source.getFilters();
 
             if(globalFilters){
                 var binding = this.getContext().find("xAxis").get(0).value().binding()[0],
@@ -481,7 +516,6 @@
 
                 for(var i in globalFilters){
                     var cur = globalFilters[i];
-
                     if(cur.field === binding && cur.op === '$eq'){
                         if(!this._curFilters[cur.value]){
                             this._curFilters[cur.value] = cur.id;
@@ -492,6 +526,7 @@
 
                         delete globalFilters[i];
                     }
+                    
                 }
 
                 for(var i in this._curFilters){
@@ -518,6 +553,7 @@
                     return;
                 }
             }
+}            
 // end filters section
 
             var seriesContext = this.getContext().find('series').values(),
@@ -579,7 +615,8 @@
                     yAxisContext = this.getContext().find('yAxis').values(),
                     xAxisContext = this.getContext().find('xAxis').values(),
                     yAxis = [],
-                    series = [];
+                    series = [],
+					that = this;
 
                 for(var i = 0; i < seriesContext.length; i++){
                     if(!series[i]){
@@ -606,14 +643,196 @@
                                 symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
                             },
                             visible: seriesContext[i].find('visible').used(),
+							widgetWsid: seriesContext[i].find('widgetWsid').value(),
+							widgetWid: seriesContext[i].find('widgetWid').value(),
+							widgetFilter: seriesContext[i].find('widgetFilter').value(),
                             point: {
                                 events: {
                                     click: function(evt) {
-                                        $this._clickEvt = evt;
+										
+										/**
+										Пользователь явно отметил "Использовать Drilldown", 
+										иначе используется "штатный" функционал
+										**/
+										if( that.getContext().find('useDrilldown').used() ) {
+											/**
+											**/
+											if(this.series.hasOwnProperty('options') && 
+												this.series.options.hasOwnProperty('widgetWsid') && this.series.options.widgetWsid && this.series.options.widgetWsid.length && 
+												this.series.options.hasOwnProperty('widgetWid') && this.series.options.widgetWid && this.series.options.widgetWid.length && 
+												this.series.options.hasOwnProperty('widgetFilter')) {
 
-                                        if(JSB().isFunction($this.options.onClick)){
-                                            $this.options.onClick.call(this, evt);
-                                        }
+												var wsid = this.series.options.widgetWsid,
+													wid = this.series.options.widgetWid,
+													filterField = this.series.options.widgetFilter,
+													/**
+													Значение на оси Х ... 
+													**/
+													filterValue = this.category, 
+													/**
+													Идентификатор установленного в результате drilldown-а фильтра
+													**/
+													myFilterId = null,
+													/**
+													Контейнер, в котором находится текущий виджет
+													**/
+													el = $this.container[0].parentNode.parentNode, 
+													/**
+													Идентификатор создаваемого виджета
+													**/
+													id = ['drilldownWidgetContainer', wsid, wid].join("_"),
+													prevId = ['prevDrilldownWidgetContainer', wsid, wid].join("_"),
+													/**
+													Контейнер, в который будет помещён новый widget
+													**/
+													div = document.createElement('div'), 
+													/**
+													Контейнер для кнопки "Назад"
+													**/
+													back = document.createElement('div');
+												
+												/**
+												Скрываем текущий виджет
+												**/
+												el.style.display = 'none';
+												
+												/**
+												Кнопка "назад"
+												**/
+												back.setAttribute('class', 'drilldown-back-container');
+												back.innerHTML = '<a href="#" class="drilldown-back-button">&larr;&nbsp;Назад</a>';
+												back.addEventListener("click", function(e) {
+													/**
+													Отображаем "родительский" виджет
+													**/
+													document.getElementById(back.parentNode.getAttribute('prev')).style.display = 'block';
+													/**
+													Удалить ранее установленный фильтр...
+													**/
+													try {
+														JSB.getInstance('DataCube.Api.WidgetController')
+														.lookupWidget(wid, function(widget){
+															widget.removeFilter(myFilterId);
+															widget.refresh();
+														});		
+													} catch(e) {
+														console.log(e);
+													}
+													/**
+													Удаляем контейнер текущего виджета вместе со всем содержимым
+													**/
+													back.parentNode.parentNode.removeChild(back.parentNode);
+												});
+												div.appendChild(back);
+
+												/**
+												Если el.id нету - создать его
+												**/
+												if( !el.hasOwnProperty('id') ) {
+													el.setAttribute('id', prevId);
+												}
+												/**
+												**/
+												div.setAttribute('id', id);
+												div.setAttribute('prev', el.getAttribute('id'));
+												el.parentNode.insertBefore(div,el.nextSibling);
+												 
+												/**
+												**/
+												JSB.create('DataCube.Api.Widget', {
+													wsid: wsid, 
+													wid: wid,
+													onCreateWidget: function(widget){
+														this.$('#' + id).append(widget.getElement());
+														widget.useInDrilldown = true;
+														widget.refresh();
+														//console.log(that.getFilterManager());
+														//console.log(that.getFilters());
+													}
+												});
+												
+												/**
+												Если указано фильтрующее поле и есть значение по оси Х - применям фильтр
+												**/
+												if( filterField && filterValue && filterField.length && filterValue.length) {
+													try {
+														JSB.getInstance('DataCube.Api.WidgetController')
+														.lookupWidget(wid, function(widget){
+															/**
+															Дожидаемся загрузеки виджета
+															**/
+															JSB.deferUntil(function() {
+																var filterDesc = {
+																	type: '$and',
+																	op: '$eq',
+																	field: filterField,
+																	value: filterValue
+																};
+																/**
+																Прменяем drilldown-фильтр
+																**/
+																myFilterId = widget.addFilter(filterDesc);
+																/**
+																Применяем "родительские" фильтры, хотя они вроде как уже должны бы быть применены
+																**/
+																var parentWidgetFilters = that.getFilters();
+																for(var i in parentWidgetFilters){
+																	if(parentWidgetFilters.hasOwnProperty(i)) {
+																		if(parentWidgetFilters[i].hasOwnProperty('type') && 
+																			parentWidgetFilters[i].hasOwnProperty('op') && 
+																			parentWidgetFilters[i].hasOwnProperty('field') && 
+																			parentWidgetFilters[i].hasOwnProperty('value') ) {
+																			
+																			filterDesc = {
+																				type: parentWidgetFilters[i].type,
+																				op: parentWidgetFilters[i].op,
+																				field: parentWidgetFilters[i].field,
+																				value: parentWidgetFilters[i].value
+																			};		
+
+																			if(!widget.hasFilter(filterDesc)) {
+																				widget.addFilter(filterDesc);
+																			}
+																		}
+																	}
+																}
+																/**
+																**/
+																widget.refresh();	
+
+																/*
+																console.log('fmt', that.getFilterManager());
+																console.log('ft', that.getFilters());
+																console.log('fmw', widget.getFilterManager());
+																console.log('fw', widget.getFilters());
+																*/
+																
+															}, function() {
+																return widget.isInit;
+															});
+														});		
+													} catch(e) {
+														console.log(e);
+													}
+												}
+												
+											} else {
+												/**
+												Нет необходимых настроек - серия не поддерживает drilldown
+												**/
+											}
+											
+											/**
+											**/
+											return false;
+										
+										} else {
+											$this._clickEvt = evt;
+
+											if(JSB().isFunction($this.options.onClick)){
+												$this.options.onClick.call(this, evt);
+											}
+										}
                                     },
                                     select: function(evt) {
                                         var flag = false;
@@ -663,6 +882,16 @@
                                         }
                                     },
                                     mouseOver: function(evt) {
+										/**
+										Если используется drilldown, то на поддерживающих его объектах курсор меняется на "лапку"
+										**/
+                                    	if( that.getContext().find('useDrilldown').used() && this.series.hasOwnProperty('options') && 
+											this.series.options.hasOwnProperty('widgetWsid') && this.series.options.widgetWsid && this.series.options.widgetWsid.length && 
+											this.series.options.hasOwnProperty('widgetWid') && this.series.options.widgetWid && this.series.options.widgetWid.length && 
+											this.series.options.hasOwnProperty('widgetFilter')) {
+												this.graphic.element.style.cursor = 'pointer';
+                                    	}
+                                    	
                                         if(JSB().isFunction($this.options.mouseOver)){
                                             $this.options.mouseOver.call(this, evt);
                                         }
@@ -713,7 +942,7 @@
                 var chartOptions = {
 
                     HighchartsBasicArea: {
-                        version: 'v-2017-09-21-02'
+                    	version: 'v-2017-10-11-01'
                     },
 
                     colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
