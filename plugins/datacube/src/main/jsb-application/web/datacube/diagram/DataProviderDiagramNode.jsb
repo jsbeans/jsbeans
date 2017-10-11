@@ -383,8 +383,8 @@
                 }
 
                 fields.sort(function(a, b){
-                    var an = $this.$(a).find('.name ._dwp_plain').text(),
-                        bn = $this.$(b).find('.name ._dwp_plain').text();
+                    var an = $this.$(a).find('.name .text').text(),
+                        bn = $this.$(b).find('.name .text').text();
 
                     if(an && bn){
                         return an.toUpperCase().localeCompare(bn.toUpperCase());

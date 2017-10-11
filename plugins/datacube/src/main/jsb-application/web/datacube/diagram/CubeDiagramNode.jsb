@@ -280,8 +280,8 @@
                     var fields = providerBlock.find('.field');
 
                     fields.sort(function(a, b){
-                        var an = $this.$(a).find('.name ._dwp_plain').text(),
-                            bn = $this.$(b).find('.name ._dwp_plain').text();
+                        var an = $this.$(a).find('.name .text').text(),
+                            bn = $this.$(b).find('.name .text').text();
 
                         if(an && bn){
                             return an.toUpperCase().localeCompare(bn.toUpperCase());
@@ -298,8 +298,8 @@
                         var fields = providerBlocks[i].find('.field');
 
                         fields.sort(function(a, b){
-                            var an = $this.$(a).find('.name ._dwp_plain').text(),
-                                bn = $this.$(b).find('.name ._dwp_plain').text();
+                            var an = $this.$(a).find('.name .text').text(),
+                                bn = $this.$(b).find('.name .text').text();
 
                             if(an && bn){
                                 return an.toUpperCase().localeCompare(bn.toUpperCase());
@@ -319,8 +319,8 @@
                 var fields = $this.keyFieldList.find('.field');
 
                 fields.sort(function(a, b){
-                    var an = $this.$(a).find('.name ._dwp_plain').text(),
-                        bn = $this.$(b).find('.name ._dwp_plain').text();
+                    var an = $this.$(a).find('.name .text').text(),
+                        bn = $this.$(b).find('.name .text').text();
 
                     if(an && bn){
                         return an.toUpperCase().localeCompare(bn.toUpperCase());
