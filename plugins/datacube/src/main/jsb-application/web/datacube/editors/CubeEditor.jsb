@@ -230,7 +230,7 @@
 					})
 				}
 				fnArr.sort(function(a, b){
-					return a.order - b.order;
+					return a.field.localeCompare(b.field);
 				});
 
 				// connect fields

@@ -273,6 +273,66 @@
 			return fElt;
 		},
 
+		reorderFields: function(providerId){
+		    JSB().defer(function(){
+                if(providerId){ // reorder only one provider
+                    var providerBlock = $this.fieldList.find('.providerBlock[key="' + providerId + '"]');
+                    var fields = providerBlock.find('.field');
+
+                    fields.sort(function(a, b){
+                        var an = $this.$(a).find('.name ._dwp_plain').text(),
+                            bn = $this.$(b).find('.name ._dwp_plain').text();
+
+                        if(an && bn){
+                            return an.toUpperCase().localeCompare(bn.toUpperCase());
+                        }
+
+                        return 0;
+                    });
+
+                    fields.detach().appendTo(providerBlock);
+                } else {    // reorder all
+                    var providerBlocks = $this.fieldList.find('.providerBlock');
+
+                    for(var i = 0; i < providerBlocks.length; i++){
+                        var fields = providerBlocks[i].find('.field');
+
+                        fields.sort(function(a, b){
+                            var an = $this.$(a).find('.name ._dwp_plain').text(),
+                                bn = $this.$(b).find('.name ._dwp_plain').text();
+
+                            if(an && bn){
+                                return an.toUpperCase().localeCompare(bn.toUpperCase());
+                            }
+
+                            return 0;
+                        });
+
+                        fields.detach().appendTo(providerBlocks[i]);
+                    }
+                }
+		    }, 300, "reorderFields_" + this.getId());
+		},
+
+		reorderKeyFields: function(){
+		    JSB().defer(function(){
+                var fields = $this.keyFieldList.find('.field');
+
+                fields.sort(function(a, b){
+                    var an = $this.$(a).find('.name ._dwp_plain').text(),
+                        bn = $this.$(b).find('.name ._dwp_plain').text();
+
+                    if(an && bn){
+                        return an.toUpperCase().localeCompare(bn.toUpperCase());
+                    }
+
+                    return 0;
+                });
+
+                fields.detach().appendTo($this.keyFieldList);
+		    }, 300, "reorderFields_" + this.getId());
+		},
+
 		updateResizable: function(){
             var keyCells = this.keyFieldList.find('.field .cell.name'),
                 cells = this.fieldList.find('.field .cell.name');
@@ -324,6 +384,11 @@
 				var fElt = $this.find('.fields .field[key="'+$this.prepareFieldKey(oldName)+'"]');
 				fElt.attr('key', desc.field);
 				fElt.find('.cell.name').attr('title', desc.field);
+				if(desc.binding.length > 1){
+				    $this.reorderKeyFields();
+				} else {
+				    $this.reorderFields(desc.binding[0].provider.getId());
+				}
 			});
 		},
 		
@@ -471,12 +536,13 @@
 		        $this.addField(nField.field, nField.type, null, true, true);
 
 		        for(var i = 0; i < nField.binding.length; i++){
-		            var rightConnector = $this.editor.providersNodes[nField.binding[i].provider.getId()].toggleKeyField(fArray[i].field, true);
+		            var rightConnector = $this.editor.providersNodes[nField.binding[i].provider.getId()].toggleKeyField(nField.binding[i].field, true);
 
                     var link = $this.diagram.createLink('bind');
                     link.setSource($this.leftFieldConnectors[nField.field]);
                     link.setTarget(rightConnector);
 		        }
+		        $this.reorderKeyFields();
 		    });
 		}
 	}

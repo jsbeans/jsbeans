@@ -231,6 +231,7 @@
                                     loader.addClass('hidden');
                                     if(desc){
                                         $this.editor.cubeNode.addField(desc.field, desc.type, desc.binding[0].provider.getId());
+                                        $this.editor.cubeNode.reorderFields(desc.binding[0].provider.getId());
                                         $this.fields[field].cubeField = desc.field;
                                     }
                                 });
@@ -373,6 +374,33 @@
             }
 		},
 
+		reorderFields: function(isKey){
+		    JSB().defer(function(){
+                if(isKey){
+                    var fields = $this.keyFieldList.find('.field');
+                } else {
+                    var fields = $this.fieldList.find('.field');
+                }
+
+                fields.sort(function(a, b){
+                    var an = $this.$(a).find('.name ._dwp_plain').text(),
+                        bn = $this.$(b).find('.name ._dwp_plain').text();
+
+                    if(an && bn){
+                        return an.toUpperCase().localeCompare(bn.toUpperCase());
+                    }
+
+                    return 0;
+                });
+
+                if(isKey){
+                    fields.detach().appendTo($this.keyFieldList);
+                } else {
+                    fields.detach().appendTo($this.fieldList);
+                }
+		    }, 300, "reorderFields_" + this.getId());
+		},
+
 		toggleKeyField: function(field, isKey){
 		    $this.fields[field].keyField = isKey;
 
@@ -386,6 +414,7 @@
 
             element.remove();
             this.createField(field);
+            this.reorderFields(isKey);
 
             // return right connector
             return this.rightFieldConnectors[field];

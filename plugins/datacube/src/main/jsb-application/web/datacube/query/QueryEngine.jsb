@@ -114,6 +114,7 @@
             if (!dataProvider) {
                 for (var i = 0; i < dataProviders.length; i++) {
                     var provider = dataProviders[i];
+                    // TODO: поддержать случай, когда между двумя используемыми в запросе полями есть перевязочные таблицы с полями, которые не используется
                     if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, providerIterators.length == 0)) {
                         if (providerIterators.length > 0) {
                             var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
