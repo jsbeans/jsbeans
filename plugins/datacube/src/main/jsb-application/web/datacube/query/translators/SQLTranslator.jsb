@@ -405,9 +405,12 @@
                 case '$distinct':
                     return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$first':
-                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return '(ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + '))[1]';
+//                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$last':
-                    return 'LAST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    var lastVal = this._translateExpression(exp[op], dcQuery, useFieldNotAlias);
+                    return '(ARRAY_AGG(' + lastVal + '))[ARRAY_LENGTH(ARRAY_AGG(' + lastVal + '),1)]';
+//                    return 'LAST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$count':
                     return 'COUNT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$sum':
