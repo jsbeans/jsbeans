@@ -189,29 +189,27 @@
             `);
 
             if(isKeyField){
-                fElt.find('.cell.name').prepend('<div class="icon"></div>');
-
                 fElt.append(`#dot
                     <div class="connector left"></div>
                 `);
-            } else {
-                var checkbox = new CheckBox({
-                    onChange: function(isChecked){
-                        if(isChecked){
-                            $this.checkedFieldList[field] = true;
-                        } else {
-                            delete $this.checkedFieldList[field];
-                        }
-
-                        if(Object.keys($this.checkedFieldList).length >= 2){
-                            $this.status.find('.toolbar > .link').removeClass('disabled');
-                        } else {
-                            $this.status.find('.toolbar > .link').addClass('disabled');
-                        }
-                    }
-                });
-                fElt.find('.cell.name').prepend(checkbox.getElement());
             }
+
+            var checkbox = new CheckBox({
+                onChange: function(isChecked){
+                    if(isChecked){
+                        $this.checkedFieldList[field] = true;
+                    } else {
+                        delete $this.checkedFieldList[field];
+                    }
+
+                    if(Object.keys($this.checkedFieldList).length >= 2){
+                        $this.status.find('.toolbar > .link').removeClass('disabled');
+                    } else {
+                        $this.status.find('.toolbar > .link').addClass('disabled');
+                    }
+                }
+            });
+            fElt.find('.cell.name').prepend(checkbox.getElement());
 
             fElt.append(`#dot
                 <div jsb="JSB.Widgets.Button"

@@ -557,7 +557,7 @@
 			this.doSync();
 			return this.fields[nameCandidate];
 		},
-		
+/*
 		linkField: function(field, pId, pField, pType){
 			if(!this.fields[field]){
 				throw new Error('Field not existed: ' + field);
@@ -580,7 +580,8 @@
 			this.doSync();
 			return this.fields[field];
 		},
-
+*/
+/*
 		linkFields: function(fields){
             var nFields = [];
 		    // remove old fields
@@ -599,6 +600,58 @@
 		        link: true,
 		        type: nFields[0].type
 		    };
+
+		    for(var i = 0; i < nFields.length; i++){
+		        nField.binding.push(nFields[i]);
+		    }
+
+		    this.fieldCount = Object.keys(this.fields).length;
+
+		    this.store();
+            this.doSync();
+
+            return nField;
+		},
+*/
+
+		linkFields: function(fields){
+            var nFields = [],
+                nField;
+
+		    for(var i = 0; i < fields.length; i++){
+		        var f = this.fields[fields[i].field];
+
+		        if(f.binding.length > 1){   // key field
+		            if(!nField){
+		                nField = f;
+		            } else {
+		                for(var j = 0; j < f.binding.length; j++){
+                            nFields.push({
+                                field: f.binding[j].field,
+                                type: f.binding[j].type,
+                                provider: JSB.clone(f.binding[j].provider)
+                            });
+		                }
+		                delete f;
+		            }
+		        } else {
+                    nFields.push({
+                        field: f.binding[0].field,
+                        type: f.type,
+                        provider: JSB.clone(f.binding[0].provider)
+                    });
+		            delete f;
+		        }
+		    }
+
+		    if(!nField){
+                var nField = this.fields[nFields[0].field] = {
+                    binding: [],
+                    field: nFields[0].field,
+                    link: true,
+                    type: nFields[0].type
+                };
+		    }
 
 		    for(var i = 0; i < nFields.length; i++){
 		        nField.binding.push(nFields[i]);

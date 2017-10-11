@@ -414,7 +414,3 @@
     border-bottom: 2px solid #5f7698;
     max-height: none;
 }
-.cubeDiagramNode > .body > .fields.keyFields .field > .cell.name > .text {
-    display: block;
-    padding-left: 16px;
-}
