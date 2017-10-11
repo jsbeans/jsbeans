@@ -67,7 +67,7 @@
             this.body.append(this.keyFieldList);
 
 			// search
-            this.body.append(`#dot
+            this.search = this.$(`#dot
                 <div class="search">
                     <div
                         jsb="JSB.Widgets.PrimitiveEditor"
@@ -78,6 +78,7 @@
                     </div>
                 </div>
             `);
+            this.body.append(this.search);
 
             this.fieldList = new ScrollBox({
                 cssClass: 'fields',
@@ -102,12 +103,6 @@
 			$this.ready = true;
 			
 			this.getElement().resize(function(){
-			    /*
-				var nameCell = $this.fieldList.find('.field .cell.name');
-				var typeCell = $this.fieldList.find('.field .cell.type');
-				var sz = nameCell.outerWidth();
-				typeCell.css('width', 'calc(100% - '+sz+'px)');
-				*/
 				JSB.defer(function(){
 				    $this.entry.server().updateCubeNodeSize({
 				        width: $this.getElement().width()
@@ -285,6 +280,8 @@
             if(!notUpdateResizable){
                 this.updateResizable();
             }
+
+            //this.updateSearchVisibility();
 
 			return fElt;
 		},
@@ -498,6 +495,8 @@
             } else {
                 this.editor.providersNodes[nFields[0].binding[0].provider.getId()].setCheckField(nFields[0].binding[0].field, false);
             }
+
+            //this.updateSearchVisibility();
 		},
 
 		selectNode: function(bEnable){
@@ -578,6 +577,14 @@
                         $this.$(el).addClass('hidden');
                     }
                 });
+		    }
+		},
+
+		updateSearchVisibility: function(){
+		    if(this.fieldList.children.length > 0){
+		        this.search.removeClass('hidden');
+		    } else {
+		        this.search.addClass('hidden');
 		    }
 		}
 	}

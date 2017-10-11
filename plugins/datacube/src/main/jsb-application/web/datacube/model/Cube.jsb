@@ -97,6 +97,7 @@
 						this.dataProviderEntries[pDesc.id] = pEntry;
 						this.dataProviderFields[pDesc.id] = pDesc.fields;
 						this.dataProviderPositions[pDesc.id] = pDesc.position;
+						this.dataProviderSizes[pDesc.id] = pDesc.size;
 					}
 					
 					// construct fields
@@ -194,7 +195,8 @@
 			for(var pId in this.dataProviders){
 				desc.providers.push({
 					provider: this.dataProviders[pId],
-					position: this.dataProviderPositions[pId]
+					position: this.dataProviderPositions[pId],
+					size: this.dataProviderSizes[pId]
 				});
 			}
 			for(var sId in this.slices){
@@ -227,7 +229,8 @@
 					jsb: provider.getJsb().$name,
 					entry: this.dataProviderEntries[pId].getLocalId(),
 					fields: this.dataProviderFields[pId],
-					position: this.dataProviderPositions[pId]
+					position: this.dataProviderPositions[pId],
+					size: this.dataProviderSizes[pId]
 				};
 				snapshot.providers.push(pDesc);
 			}
@@ -389,7 +392,7 @@
 
             for(var i in this.fields){
                 for(var j = 0; j < this.fields[i].binding.length; j++){
-                    if(provider === this.fields[i].binding[j].provider){
+                    if(provider.getId() == this.fields[i].binding[j].provider.getId()){
                         if(this.fields[i].binding.length > 1){
                             res[this.fields[i].binding[j].field].keyField = true;
                         }
@@ -428,7 +431,6 @@
 
 			return name;
 		},
-		
 		
 		refreshDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);
@@ -535,6 +537,11 @@
 			this.dataProviderPositions[provider.getId()] = pt;
 			this.store();
 		},
+
+		updateDataProviderNodeSize: function(pId, size){
+		    this.dataProviderSizes[pId] = size;
+			this.store();
+		},
 		
 		addField: function(pId, pField, pType){
 			var provider = this.getProviderById(pId);
@@ -567,62 +574,6 @@
 			this.doSync();
 			return this.fields[nameCandidate];
 		},
-/*
-		linkField: function(field, pId, pField, pType){
-			if(!this.fields[field]){
-				throw new Error('Field not existed: ' + field);
-			}
-			var provider = this.getProviderById(pId);
-			// check if binding already existed
-			for(var i = 0; i < this.fields[field].binding.length; i++){
-				if(this.fields[field].binding[i].field == pField && this.fields[field].binding[i].provider == provider){
-					return this.fields[field];
-				}
-			}
-			
-			this.fields[field].binding.push({
-				provider: provider,
-				field: pField,
-				type: pType
-			});
-			this.fields[field].link = this.fields[field].binding.length > 0;
-			this.store();
-			this.doSync();
-			return this.fields[field];
-		},
-*/
-/*
-		linkFields: function(fields){
-            var nFields = [];
-		    // remove old fields
-		    for(var i = 0; i < fields.length; i++){
-		        nFields.push({
-		            field: this.fields[fields[i].field].binding[0].field,
-		            type: this.fields[fields[i].field].type,
-		            provider: JSB.clone(this.fields[fields[i].field].binding[0].provider)
-		        });
-		        delete this.fields[fields[i].field];
-		    }
-		    // create new field
-		    var nField = this.fields[nFields[0].field] = {
-		        binding: [],
-		        field: nFields[0].field,
-		        link: true,
-		        type: nFields[0].type
-		    };
-
-		    for(var i = 0; i < nFields.length; i++){
-		        nField.binding.push(nFields[i]);
-		    }
-
-		    this.fieldCount = Object.keys(this.fields).length;
-
-		    this.store();
-            this.doSync();
-
-            return nField;
-		},
-*/
 
 		linkFields: function(fields){
             var nFields = [],
@@ -639,7 +590,7 @@
                             nFields.push({
                                 field: f.binding[j].field,
                                 type: f.binding[j].type,
-                                provider: JSB.clone(f.binding[j].provider)
+                                provider: f.binding[j].provider
                             });
 		                }
 		                delete this.fields[fields[i].field];
@@ -648,7 +599,7 @@
                     nFields.push({
                         field: f.binding[0].field,
                         type: f.type,
-                        provider: JSB.clone(f.binding[0].provider)
+                        provider: f.binding[0].provider
                     });
 		            delete this.fields[fields[i].field];
 		        }
@@ -1323,7 +1274,6 @@
 		},
 		
 		executeQuery: function(query, params, provider){
-			this.load();
 			return this.queryEngine.query(query, params, provider);
 		}
 	}

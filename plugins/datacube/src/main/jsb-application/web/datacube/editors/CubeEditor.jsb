@@ -214,6 +214,9 @@
 				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:pDesc.provider, editor: $this});
 				pnMap[pDesc.provider.getId()] = pNode;
 				pNode.setPosition(pDesc.position.x, pDesc.position.y);
+				if(pDesc.size){
+				    pNode.getElement().width(pDesc.size.width);
+				}
 				dpNodes.push(pNode);
 				$this.providersNodes[pDesc.provider.getId()] = pNode;
 			}

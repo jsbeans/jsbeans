@@ -165,10 +165,13 @@
 			});
 			
 			this.getElement().resize(function(){
-				var nameCell = $this.fieldList.find('.field .cell.name');
-				var typeCell = $this.fieldList.find('.field .cell.type');
-				var sz = nameCell.outerWidth();
-				typeCell.css('width', 'calc(100% - '+sz+'px)');
+			    if($this.editor.cubeEntry){
+                    JSB.defer(function(){
+                        $this.editor.cubeEntry.server().updateDataProviderNodeSize($this.provider.getId(), {
+                            width: $this.getElement().width()
+                        });
+                    }, 300, 'dataProviderResize_' + $this.getId());
+			    }
 			});
 		},
 		
