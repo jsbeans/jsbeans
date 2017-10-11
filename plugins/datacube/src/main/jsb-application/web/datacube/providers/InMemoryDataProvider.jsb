@@ -45,20 +45,35 @@
 		},
 		
 		addRecord: function(r){
-			for(var f in r){
+			// flatten object fields
+			var nr = {};
+			
+			function _translateObject(obj, prefix){
+				prefix = prefix || '';
+				for(var f in obj){
+					if(JSB.isObject(obj[f])){
+						_translateObject(obj[f], prefix + f + '_');
+					} else {
+						nr[prefix + f] = obj[f];
+					}
+				}
+			}
+			_translateObject(r);
+			
+			for(var f in nr){
 				if(!f || f.length == 0){
 					continue;
 				}
 				// detect field type
 				if(!this.fields[f]){
-					var fType = this.detectFieldType(r[f]);
+					var fType = this.detectFieldType(nr[f]);
 					if(fType){
 						this.fields[f] = fType;
 					}
 				}
 				
 			}
-			this.collection.insert(r);
+			this.collection.insert(nr);
 
 		},
 		
