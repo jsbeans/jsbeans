@@ -24,7 +24,8 @@
 			var sqlFields = {};
 			var fieldMap = {};
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			var typeMap = JDBC.getSupportedTypeMap(connection);
 			var vendor = JDBC.getDatabaseVendor(connection);
 			var suggestedName = cName;
@@ -69,7 +70,7 @@
 				}
 				throw e;
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 			return {table: suggestedName, fieldMap: fieldMap};
 		},
@@ -79,7 +80,8 @@
 				return;
 			}
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, tName, null);
@@ -88,7 +90,7 @@
 				}
 				JDBC.executeUpdate(connection, 'drop table ' + tName);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		},
 		
@@ -97,7 +99,8 @@
 				return;
 			}
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, oldName, null);
@@ -106,13 +109,14 @@
 				}
 				JDBC.executeUpdate(connection, 'alter table ' + oldName + ' rename to ' + newName);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		},
 		
 		createIndex: function(tName, idxName, idxFields){
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
@@ -131,13 +135,14 @@
 				sql += ')';
 				JDBC.executeUpdate(connection, sql);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		},
 		
 		removeIndex: function(tName, idxName){
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
@@ -145,13 +150,14 @@
 					JDBC.executeUpdate(connection, 'drop index ' + idxName);
 				}
 			} finally {
-				connection.close();
+				connWrap.close();
 			}		
 		},
 		
 		insert: function(tName, objArr){
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			if(!JSB.isArray(objArr)){
 				objArr = [objArr];
 			}
@@ -193,10 +199,9 @@
 						values: values
 					});
 				}
-				debugger;
 				JDBC.executeUpdate(connection, batch);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		}
 	}

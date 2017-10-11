@@ -1572,6 +1572,9 @@
 					res[vName] = curDesc;
 				}
 				if(Object.keys(res).length === 0){
+					if(scheme.expressionType == 'ComplexObject'){
+						return {obj:{}, w:1, scheme: schemeName};
+					}
 					return {w: 0};
 				}
 				return {obj:res, w: extractIntegratedWeight(res, true), scheme: schemeName};
