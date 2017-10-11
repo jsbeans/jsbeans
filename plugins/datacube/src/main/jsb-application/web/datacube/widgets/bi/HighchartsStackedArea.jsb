@@ -448,6 +448,10 @@
 			}
 
 // filters section
+/**
+Не используем globalFilters, если требуется drilldown
+**/
+if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {			
             var globalFilters = source.getFilters();
 
             if(globalFilters){
@@ -492,6 +496,7 @@
                 }
                 this._curFilterHash = null;
             }
+}            
 // end filters section
 
             var seriesContext = this.getContext().find('series').values(),

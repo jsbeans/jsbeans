@@ -297,6 +297,10 @@
 			}
 
 // filters section
+/**
+Не используем globalFilters, если требуется drilldown
+**/
+if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {			
             var globalFilters = source.getFilters();
 
             if(globalFilters){
@@ -343,6 +347,7 @@
                 }
                 this._curFilterHash = null;
             }
+}            
 // end filters section
             var dataValues = this.getContext().find('data').values(),
                 dataSource = [];
@@ -430,7 +435,7 @@
 
                 var chartOptions = {
                     HighchartsPieChart: {
-                        version: 'v-2017-09-21-02'
+                    	version: 'v-2017-10-11-01'
                     },
 
                     colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
