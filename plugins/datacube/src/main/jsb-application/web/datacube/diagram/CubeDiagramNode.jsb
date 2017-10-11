@@ -189,29 +189,27 @@
             `);
 
             if(isKeyField){
-                fElt.find('.cell.name').prepend('<div class="icon"></div>');
-
                 fElt.append(`#dot
                     <div class="connector left"></div>
                 `);
-            } else {
-                var checkbox = new CheckBox({
-                    onChange: function(isChecked){
-                        if(isChecked){
-                            $this.checkedFieldList[field] = true;
-                        } else {
-                            delete $this.checkedFieldList[field];
-                        }
-
-                        if(Object.keys($this.checkedFieldList).length >= 2){
-                            $this.status.find('.toolbar > .link').removeClass('disabled');
-                        } else {
-                            $this.status.find('.toolbar > .link').addClass('disabled');
-                        }
-                    }
-                });
-                fElt.find('.cell.name').prepend(checkbox.getElement());
             }
+
+            var checkbox = new CheckBox({
+                onChange: function(isChecked){
+                    if(isChecked){
+                        $this.checkedFieldList[field] = true;
+                    } else {
+                        delete $this.checkedFieldList[field];
+                    }
+
+                    if(Object.keys($this.checkedFieldList).length >= 2){
+                        $this.status.find('.toolbar > .link').removeClass('disabled');
+                    } else {
+                        $this.status.find('.toolbar > .link').addClass('disabled');
+                    }
+                }
+            });
+            fElt.find('.cell.name').prepend(checkbox.getElement());
 
             fElt.append(`#dot
                 <div jsb="JSB.Widgets.Button"
@@ -280,8 +278,8 @@
                     var fields = providerBlock.find('.field');
 
                     fields.sort(function(a, b){
-                        var an = $this.$(a).find('.name ._dwp_plain').text(),
-                            bn = $this.$(b).find('.name ._dwp_plain').text();
+                        var an = $this.$(a).find('.name .text').text(),
+                            bn = $this.$(b).find('.name .text').text();
 
                         if(an && bn){
                             return an.toUpperCase().localeCompare(bn.toUpperCase());
@@ -298,8 +296,8 @@
                         var fields = providerBlocks[i].find('.field');
 
                         fields.sort(function(a, b){
-                            var an = $this.$(a).find('.name ._dwp_plain').text(),
-                                bn = $this.$(b).find('.name ._dwp_plain').text();
+                            var an = $this.$(a).find('.name .text').text(),
+                                bn = $this.$(b).find('.name .text').text();
 
                             if(an && bn){
                                 return an.toUpperCase().localeCompare(bn.toUpperCase());
@@ -319,8 +317,8 @@
                 var fields = $this.keyFieldList.find('.field');
 
                 fields.sort(function(a, b){
-                    var an = $this.$(a).find('.name ._dwp_plain').text(),
-                        bn = $this.$(b).find('.name ._dwp_plain').text();
+                    var an = $this.$(a).find('.name .text').text(),
+                        bn = $this.$(b).find('.name .text').text();
 
                     if(an && bn){
                         return an.toUpperCase().localeCompare(bn.toUpperCase());
@@ -474,12 +472,12 @@
             if(nFields.length > 1){
                 for(var i = 0; i < nFields.length; i++){
                     this.fields[nFields[i].field] = nFields[i].type;
-                    this.addField(nFields[i].field, nFields[i].type, false, false);
+                    this.addField(nFields[i].field, nFields[i].type, nFields[i].binding[0].provider.getId(), false, false);
 
-                    this.editor.providersNodes[nFields[i].provider.getId()].toggleKeyField(nFields[i].field, false);
+                    this.editor.providersNodes[nFields[i].binding[0].provider.getId()].toggleKeyField(nFields[i].binding[0].field, false);
                 }
             } else {
-                this.editor.providersNodes[nFields[0].provider.getId()].setCheckField(nFields[0].field, false);
+                this.editor.providersNodes[nFields[0].binding[0].provider.getId()].setCheckField(nFields[0].binding[0].field, false);
             }
 		},
 

@@ -383,8 +383,8 @@
                 }
 
                 fields.sort(function(a, b){
-                    var an = $this.$(a).find('.name ._dwp_plain').text(),
-                        bn = $this.$(b).find('.name ._dwp_plain').text();
+                    var an = $this.$(a).find('.name .text').text(),
+                        bn = $this.$(b).find('.name .text').text();
 
                     if(an && bn){
                         return an.toUpperCase().localeCompare(bn.toUpperCase());
@@ -396,7 +396,7 @@
                 if(isKey){
                     fields.detach().appendTo($this.keyFieldList);
                 } else {
-                    fields.detach().appendTo($this.fieldList);
+                    fields.detach().appendTo($this.fieldList.getElement());
                 }
 		    }, 300, "reorderFields_" + this.getId());
 		},
@@ -405,14 +405,23 @@
 		    $this.fields[field].keyField = isKey;
 
 		    if(isKey){
-                var element = $this.fieldList.find('.field[key="' + field + '"]');
+                var e = $this.keyFieldList.find('.field[key="' + field + '"]');
+                if(e){
+                    return this.rightFieldConnectors[field];
+                }
 		    } else {
-		        var element = $this.keyFieldList.find('.field[key="' + field + '"]');
+                var e = $this.fieldList.find('.field[key="' + field + '"]');
+                if(e){
+                    return;
+                }
+
 		        this.rightFieldConnectors[field].destroy();
 		        delete this.rightFieldConnectors[field];
 		    }
 
+		    var element = $this.find('.field[key="' + field + '"]');
             element.remove();
+
             this.createField(field);
             this.reorderFields(isKey);
 
