@@ -474,12 +474,12 @@
             if(nFields.length > 1){
                 for(var i = 0; i < nFields.length; i++){
                     this.fields[nFields[i].field] = nFields[i].type;
-                    this.addField(nFields[i].field, nFields[i].type, false, false);
+                    this.addField(nFields[i].field, nFields[i].type, nFields[i].binding[0].provider.getId(), false, false);
 
-                    this.editor.providersNodes[nFields[i].provider.getId()].toggleKeyField(nFields[i].field, false);
+                    this.editor.providersNodes[nFields[i].binding[0].provider.getId()].toggleKeyField(nFields[i].binding[0].field, false);
                 }
             } else {
-                this.editor.providersNodes[nFields[0].provider.getId()].setCheckField(nFields[0].field, false);
+                this.editor.providersNodes[nFields[0].binding[0].provider.getId()].setCheckField(nFields[0].binding[0].field, false);
             }
 		},
 

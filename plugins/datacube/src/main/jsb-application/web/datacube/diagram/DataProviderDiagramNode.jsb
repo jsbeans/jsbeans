@@ -396,7 +396,7 @@
                 if(isKey){
                     fields.detach().appendTo($this.keyFieldList);
                 } else {
-                    fields.detach().appendTo($this.fieldList);
+                    fields.detach().appendTo($this.fieldList.getElement());
                 }
 		    }, 300, "reorderFields_" + this.getId());
 		},

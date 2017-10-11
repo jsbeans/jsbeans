@@ -652,23 +652,19 @@
 				return false;
 			}
 
-			var binding = JSB.clone(this.fields[field].binding),
+			var oldField = JSB.clone(this.fields[field]),
 			    nFields = [];
 
 			delete this.fields[field];
 
-			if(binding.length > 1){ // key field
-			    for(var i = 0; i < binding.length; i++){
-			        this.fields[binding[i].field] = {
-                        binding: [binding[i]],
-                        field: binding[i].field,
-                        type: binding[i].type
-			        };
+			if(oldField.binding.length > 1){ // key field
+			    for(var i = 0; i < oldField.binding.length; i++){
+			        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field, oldField.binding[i].type);
 
-			        nFields.push(binding[i]);
+			        nFields.push(f);
 			    }
 			} else {
-			    nFields.push(binding[0]);
+			    nFields.push(oldField);
 			}
 
 			this.fieldCount = Object.keys(this.fields).length;
