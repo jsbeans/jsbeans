@@ -265,19 +265,23 @@
             if(isKeyField){
                 $this.keyFieldList.append(fElt);
             } else {
-                var providerBlock = this.fieldList.find('.providerBlock[key="' + provider.id + '"]');
+                if(provider){
+                    var providerBlock = this.fieldList.find('.providerBlock[key="' + provider.id + '"]');
 
-                if(providerBlock.length === 0){
-                    providerBlock = this.$('<div class="providerBlock" key="' + provider.id + '"><div class="caption">' + provider.name + '</div></div>');
-                    providerBlock.find('.caption').hover(function(){
-                        $this.editor.providersNodes[provider.id].highlightNode(true);
-                    }, function(){
-                        $this.editor.providersNodes[provider.id].highlightNode(false);
-                    });
-                    this.fieldList.append(providerBlock);
+                    if(providerBlock.length === 0){
+                        providerBlock = this.$('<div class="providerBlock" key="' + provider.id + '"><div class="caption">' + provider.name + '</div></div>');
+                        providerBlock.find('.caption').hover(function(){
+                            $this.editor.providersNodes[provider.id].highlightNode(true);
+                        }, function(){
+                            $this.editor.providersNodes[provider.id].highlightNode(false);
+                        });
+                        this.fieldList.append(providerBlock);
+                    }
+
+                    providerBlock.append(fElt);
+                } else {
+                    this.fieldList.append(fElt);
                 }
-
-                providerBlock.append(fElt);
             }
 
             if(nWidth){
