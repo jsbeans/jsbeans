@@ -1274,6 +1274,7 @@
 		},
 		
 		executeQuery: function(query, params, provider){
+		    this.load();
 			return this.queryEngine.query(query, params, provider);
 		}
 	}
