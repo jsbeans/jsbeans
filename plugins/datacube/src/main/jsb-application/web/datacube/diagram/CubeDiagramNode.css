@@ -240,7 +240,7 @@
 
 .cubeDiagramNode > .body > .fields {
 	list-style: none;
-	max-height: 300px;
+	max-height: 400px;
     background: #eef4f7;
 }
 
@@ -251,6 +251,8 @@
 .cubeDiagramNode > .body > .fields > .providerBlock > .caption {
     background: #b6cfe7;
     padding: 2px 5px;
+	font-size: 11px;
+    color: #314c6d;
 }
 
 .cubeDiagramNode > .body > .fields > .providerBlock > .caption:hover {
