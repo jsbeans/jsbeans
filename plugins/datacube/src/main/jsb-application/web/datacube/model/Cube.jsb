@@ -1049,7 +1049,7 @@
 								fStr += f;
 								indexDesc[f] = true;
 							}
-							var idxName = 'idx_' + MD5.md5(fStr);
+							var idxName = 'idx_' +  MD5.md5($this.getLocalId() + '_' + fStr);
 							indexMap[idxName] = indexDesc;
 						} else if(fObj == '$filter') {
 							// parse filter
@@ -1068,7 +1068,7 @@
 								fStr += f;
 								indexDesc[f] = true;
 							}
-							var idxName = 'idx_' + MD5.md5(fStr);
+							var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + fStr);
 							indexMap[idxName] = indexDesc;
 						} else if(JSB.isObject(obj[fObj]) && Object.keys(obj[fObj]).length > 0){
 							var sMap = parseObject(obj[fObj]);
@@ -1100,8 +1100,15 @@
 				}
 
 				$this.publish('DataCube.Model.Cube.status', {status: 'Обновление индексов материализации', success: true}, {session: true});
-				// iterate over slices
 				var cubeIdxMap = {};
+				// generate single indexes
+				for(var f in matFields){
+					var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + f);
+					var indexDesc = {};
+					indexDesc[f] = true;
+					cubeIdxMap[idxName] = indexDesc;
+				}
+				// iterate over slices
 				for(var sId in this.slices){
 					var slice = this.slices[sId];
 					var indexes = extractIndexesForSlice(slice);
@@ -1109,6 +1116,7 @@
 						JSB.merge(cubeIdxMap, indexes);
 					}
 				}
+				
 				// adding new indexes
 				var indexCount = Object.keys(cubeIdxMap).length;
 				var curIndexPos = 0;
