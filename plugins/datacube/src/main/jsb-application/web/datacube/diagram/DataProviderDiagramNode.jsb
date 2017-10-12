@@ -247,8 +247,9 @@
                                 $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
                                     loader.addClass('hidden');
                                     if(desc){
-                                        $this.editor.cubeNode.addField(desc.field, desc.type, desc.binding[0].provider.getId());
+                                        $this.editor.cubeNode.addField(desc.field, desc.type, { id: desc.binding[0].provider.getId(), name: desc.binding[0].provider.getName() });
                                         $this.editor.cubeNode.reorderFields(desc.binding[0].provider.getId());
+                                        $this.editor.cubeNode.updateInterface();
                                         $this.fields[field].cubeField = desc.field;
                                     }
                                 });
@@ -297,7 +298,7 @@
                         } else {
                             function removeField(){
                                 loader.removeClass('hidden');
-                                $this.editor.cubeEntry.server().removeField($this.fields[field].cubeField, function(res, fail){
+                                $this.editor.cubeEntry.server().removeFields($this.fields[field].cubeField, function(res, fail){
                                     loader.addClass('hidden');
                                     if(res){
                                         $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
@@ -502,6 +503,14 @@
                     }
                 });
 		    }
+		},
+
+		highlightNode: function(bEnable){
+			if(bEnable){
+				this.addClass('highlighted');
+			} else {
+				this.removeClass('highlighted');
+			}
 		}
 	}
 }

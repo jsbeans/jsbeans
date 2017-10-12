@@ -55,6 +55,7 @@
 				<div class="status">
                     <div class="toolbar">
                         <div class="link disabled" title="Объединение полей"></div>
+                        <div class="remove disabled" title="Удаление полей"></div>
                         <div class="materialization" title="Настройки материализации куба"></div>
                     </div>
 					<div class="message hidden"></div>
@@ -71,7 +72,7 @@
                 <div class="search">
                     <div
                         jsb="JSB.Widgets.PrimitiveEditor"
-                        onChange="{{=this.callbackAttr(function(){ var editor = this; JSB.defer(function(){ $this.search(editor) }, 300, 'searchDefer_' + $this.getId()); })}}"
+                        onChange="{{=this.callbackAttr(function(){ var editor = this; JSB.defer(function(){ $this.searchFunction(editor) }, 300, 'searchDefer_' + $this.getId()); })}}"
                     >
                     </div>
                     <div class="icon">
@@ -145,7 +146,12 @@
 			    $this.createKeyField();
 			    $this.$(this).addClass('disabled');
 			});
-			
+			this.status.find('.remove').click(function(){
+			    $this.removeField(Object.keys($this.checkedFieldList));
+			    $this.checkedFieldList = {};
+			    $this.$(this).addClass('disabled');
+			});
+
 			this.updateIndicators();
 		},
 		
@@ -215,10 +221,18 @@
                         delete $this.checkedFieldList[field];
                     }
 
-                    if(Object.keys($this.checkedFieldList).length >= 2){
+                    var keysCount = Object.keys($this.checkedFieldList).length;
+
+                    if(keysCount >= 2){
                         $this.status.find('.toolbar > .link').removeClass('disabled');
                     } else {
                         $this.status.find('.toolbar > .link').addClass('disabled');
+                    }
+
+                    if(keysCount >= 1){
+                        $this.status.find('.toolbar > .remove').removeClass('disabled');
+                    } else {
+                        $this.status.find('.toolbar > .remove').addClass('disabled');
                     }
                 }
             });
@@ -251,10 +265,15 @@
             if(isKeyField){
                 $this.keyFieldList.append(fElt);
             } else {
-                var providerBlock = this.fieldList.find('.providerBlock[key="' + provider + '"]');
+                var providerBlock = this.fieldList.find('.providerBlock[key="' + provider.id + '"]');
 
                 if(providerBlock.length === 0){
-                    providerBlock = this.$('<div class="providerBlock" key="' + provider + '"></div>');
+                    providerBlock = this.$('<div class="providerBlock" key="' + provider.id + '"><div class="caption">' + provider.name + '</div></div>');
+                    providerBlock.find('.caption').hover(function(){
+                        $this.editor.providersNodes[provider.id].highlightNode(true);
+                    }, function(){
+                        $this.editor.providersNodes[provider.id].highlightNode(false);
+                    });
                     this.fieldList.append(providerBlock);
                 }
 
@@ -280,8 +299,6 @@
             if(!notUpdateResizable){
                 this.updateResizable();
             }
-
-            //this.updateSearchVisibility();
 
 			return fElt;
 		},
@@ -406,10 +423,15 @@
 		},
 		
 		removeField: function(field){
-			var fElt = $this.find('.fields .field[key="'+$this.prepareFieldKey(field)+'"]');
+		    if(JSB.isArray(field)){
+		        var fElt = this.status.find('.remove');
+		    } else {
+		        var fElt = this.find('.fields .field[key="'+$this.prepareFieldKey(field)+'"]');
+		    }
+
 			ToolManager.showMessage({
 				icon: 'removeDialogIcon',
-				text: 'Вы уверены что хотите удалить поле "'+$this.prepareFieldKey(field)+'"?',
+				text: 'Вы уверены что хотите удалить поля?',
 				buttons: [{text: 'Удалить', value: true},
 				          {text: 'Нет', value: false}],
 				target: {
@@ -422,7 +444,7 @@
 				callback: function(bDel){
 					if(bDel){
 						function removeField(){
-							$this.entry.server().removeField(field, function(res, fail){
+							$this.entry.server().removeFields(field, function(res, fail){
 							    if(fail) return;
 							    $this.afterFieldRemove(field, res);
 							});
@@ -432,7 +454,7 @@
 							if(matDesc.materializing){
 								ToolManager.showMessage({
 									icon: 'infoDialogIcon',
-									text: 'Удаление поля из куба в момент материализации невозможно',
+									text: 'Удаление полей из куба в момент материализации невозможно',
 									buttons: [{text: 'Закрыть', value: true}],
 									target: {
 										selector: fElt
@@ -449,7 +471,7 @@
 								// show ask dialog
 								ToolManager.showMessage({
 									icon: 'warningDialogIcon',
-									text: 'Удаление поля из куба приведет к удалению существующей материализации',
+									text: 'Удаление полей из куба приведет к удалению существующей материализации',
 									buttons: [{text: 'Продолжить', value: true},
 									          {text: 'Отмена', value: false}],
 									target: {
@@ -474,29 +496,41 @@
 			});
 		},
 
-		afterFieldRemove: function(field, nFields){
-            delete this.fields[field];
-            this.find('.fields .field[key="'+$this.prepareFieldKey(field)+'"]').remove();
-            if(this.leftFieldConnectors[field]){
-                this.leftFieldConnectors[field].destroy();
-                delete this.leftFieldConnectors[field];
-            }
+		afterFieldRemove: function(fields, nFields){
+		    if(!JSB.isArray(fields)){
+		        fields = [fields];
+		    }
 
-            if(!nFields) return;
+		    for(var i = 0; i < fields.length; i++){
+		        delete this.fields[fields[i]];
+		        this.find('.fields .field[key="'+$this.prepareFieldKey(fields[i])+'"]').remove();
 
-            if(nFields.length > 1){
-                for(var i = 0; i < nFields.length; i++){
-                    this.fields[nFields[i].field] = nFields[i].type;
-                    this.addField(nFields[i].field, nFields[i].type, nFields[i].binding[0].provider.getId(), false, false);
-
-                    this.editor.providersNodes[nFields[i].binding[0].provider.getId()].toggleKeyField(nFields[i].binding[0].field, false);
+                if(this.leftFieldConnectors[fields[i]]){
+                    this.leftFieldConnectors[fields[i]].destroy();
+                    delete this.leftFieldConnectors[fields[i]];
                 }
-                $this.reorderFields();
-            } else {
-                this.editor.providersNodes[nFields[0].binding[0].provider.getId()].setCheckField(nFields[0].binding[0].field, false);
+		    }
+
+            if(!nFields || nFields.length === 0){
+                this.updateInterface();
+                return;
             }
 
-            //this.updateSearchVisibility();
+            for(var i = 0; i < nFields.add.length; i++){
+                this.fields[nFields.add[i].field] = nFields.add[i].type;
+                this.addField(nFields.add[i].field, nFields.add[i].type, { id: nFields.add[i].binding[0].provider.getId(), name: nFields.add[i].binding[0].provider.getName() }, false, false);
+
+                this.editor.providersNodes[nFields.add[i].binding[0].provider.getId()].toggleKeyField(nFields.add[i].binding[0].field, false);
+            }
+
+            for(var i = 0; i < nFields.uncheck.length; i++){
+                this.editor.providersNodes[nFields.uncheck[i].binding[0].provider.getId()].setCheckField(nFields.uncheck[i].binding[0].field, false);
+            }
+
+            this.updateInterface();
+            if(nFields.add.length > 0){
+                this.reorderFields();
+            }
 		},
 
 		selectNode: function(bEnable){
@@ -558,11 +592,12 @@
                     link.setSource($this.leftFieldConnectors[nField.field]);
                     link.setTarget(rightConnector);
 		        }
+		        $this.updateInterface();
 		        $this.reorderKeyFields();
 		    });
 		},
 
-		search: function(editor){
+		searchFunction: function(editor){
 		    var fields = this.fieldList.find('.field'),
 		        val = editor.getData().getValue();
 
@@ -580,8 +615,15 @@
 		    }
 		},
 
-		updateSearchVisibility: function(){
-		    if(this.fieldList.children.length > 0){
+		updateInterface: function(){
+            this.fieldList.find('.providerBlock').each(function(i, el){
+                var element = $this.$(el);
+                if(element.children().length === 1){
+                    element.remove();
+                }
+            });
+
+		    if(this.fieldList.getElement().children().length > 0){
 		        this.search.removeClass('hidden');
 		    } else {
 		        this.search.addClass('hidden');

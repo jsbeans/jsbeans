@@ -660,7 +660,7 @@
 			this.doSync();
 			return this.fields[n];
 		},
-
+/*
 		removeField: function(field){
 			if(!this.fields[field]){
 				return false;
@@ -680,6 +680,46 @@
 			} else {
 			    nFields.push(oldField);
 			}
+
+			this.fieldCount = Object.keys(this.fields).length;
+
+			// remove materialization
+			this.removeMaterialization();
+
+			this.store();
+			this.doSync();
+
+			return nFields;
+		},
+*/
+		removeFields: function(fields){
+		    if(!JSB.isArray(fields)){
+		        fields = [fields];
+		    }
+
+		    var nFields = {
+		        add: [],
+		        uncheck: []
+		    };
+
+		    for(var i = 0; i < fields.length; i++){
+                if(!this.fields[fields[i]]){
+                    continue;
+                }
+
+                var oldField = JSB.clone(this.fields[fields[i]]);
+                delete this.fields[fields[i]];
+
+                if(oldField.binding.length > 1){ // key field
+                    for(var i = 0; i < oldField.binding.length; i++){
+                        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field, oldField.binding[i].type);
+
+                        nFields.add.push(f);
+                    }
+                } else {
+                    nFields.uncheck.push(oldField);
+                }
+		    }
 
 			this.fieldCount = Object.keys(this.fields).length;
 
