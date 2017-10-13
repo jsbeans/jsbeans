@@ -18,7 +18,7 @@
 						split: 'horizontal',
 						panes: [{
 							key: 'topPane',
-							size: 0.6,
+							size: 0.75,
 							minSize: '100px',
 							widgets: 'cubeEditor'
 						},{
