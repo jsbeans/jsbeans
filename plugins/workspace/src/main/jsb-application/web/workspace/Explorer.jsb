@@ -94,7 +94,6 @@
 					}, parentNode ? parentNode.treeNode.key : null);
 					uploadNode.treeNode = curTreeNode;
 				}
-				
 			});
 			
 			var downloadItem = this.toolbar.addItem({
@@ -998,6 +997,7 @@
 						var node = itemObj.obj;
 						if(JSB().isInstanceOf(node, 'JSB.Workspace.ExplorerNode') && node.descriptor && node.descriptor.entry){
 							node.descriptor.entry.destroy();
+							$this.publish("Workspace.deleteNode");
 						}
 					});
 				}

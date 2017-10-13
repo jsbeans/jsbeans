@@ -28,6 +28,14 @@
 				}
 				$this.setCurrentNode(node);
 			});
+
+            this.subscribe('Workspace.deleteNode', function(sender){
+                if(!$jsb.isInstanceOf(sender, 'JSB.Workspace.Explorer') || sender.wmKey != $this.wmKey){
+                    return;
+                }
+                $this.setCurrentNode(null);
+                $this.publish('Workspace.nodeOpen', null);
+            });
 			
 			this.subscribe(['Workspace.renameCategory', 'Workspace.renameEntry', 'Workspace.moveEntry'], function(sender, msg, params){
 				$this.refresh();
