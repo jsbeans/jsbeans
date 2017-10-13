@@ -290,9 +290,9 @@
 			});
 		},
 		
-		addSlice: function(){
+		addSlice: function(checkedFieldList){
 			this.cubeEntry.server().addSlice(function(slice){
-				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this});
+				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this, fields: checkedFieldList});
 				var cubeRect = $this.cubeNode.getRect();
 				sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
 				

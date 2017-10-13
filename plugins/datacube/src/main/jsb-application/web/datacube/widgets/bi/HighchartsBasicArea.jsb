@@ -36,11 +36,19 @@
                 key: 'xAxis',
                 items: [
                 {
-                    name: 'Категории',
-                    type: 'item',
+                    type: 'group',
+                    name: 'Данные осей',
                     key: 'categories',
-                    binding: 'field',
-                    itemType: 'any'
+                    multiple: 'true',
+                    items: [
+                        {
+                            name: 'Категории',
+                            type: 'item',
+                            key: 'categoriesItem',
+                            binding: 'field',
+                            itemType: 'any'
+                        }
+                    ]
                 },
                 {
                     type: 'group',
@@ -69,7 +77,21 @@
                         ]
                     }
                     ]
-                }]
+                },
+                {
+                    type: 'group',
+                    name: 'Подписи',
+                    key: 'labels',
+                    items: [
+                    {
+                        type: 'item',
+                        name: 'Поворот',
+                        key: 'rotation',
+                        itemType: 'string'
+                    }
+                    ]
+                }
+                ]
             },
             {
                 type: 'group',
@@ -455,7 +477,9 @@
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('HighchartsBasicArea.css');
 			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				self.init();
+			    JSB().loadScript('tpl/highstock/plugins/grouped-categories.js', function(){
+			        self.init();
+			    });
 			});
 		},
 
@@ -557,14 +581,66 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 // end filters section
 
             var seriesContext = this.getContext().find('series').values(),
-                xAxisContext = this.getContext().find('xAxis').values();
+                xAxisContext = this.getContext().find('xAxis').find('categories').values();
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    var seriesData = [];
-                    var xAxis = [];
-                    
+                    var seriesData = [],
+                        xAxisCategories = [];
+                    /*
+                    function rec(i, length){
+                        if(i === length){
+                            return {};
+                        }
+                        var a = xAxisContext[i].get(0).value();
+                        var obj = {};
+                        obj[a] = rec(i + 1, length);
+                        return obj;
+                    }
+
+                    function rec2(obj){
+                        var cat = [];
+                        for(var i in obj){
+                            var categories = rec2(obj[i]);
+                            cat.push({
+                                name: i,
+                                categories: categories.length > 0 ? categories : undefined
+                            })
+                        }
+                        return cat;
+                    }
+                    */
+                    function rec(i, length){
+                        if(i === length){
+                            return undefined;
+                        }
+                        return [{
+                            name: xAxisContext[i].get(0).value(),
+                            categories: rec(i + 1, length)
+                        }];
+                    }
+
+                    function merge(obj1, obj2){
+                        for(var i = 0; i < obj2.length; i++){
+                            var f = false;
+                            for(var j = 0; j < obj1.length; j++){
+                                if(obj2[i].name === obj1[j].name){
+                                    f = true;
+                                    if(obj1[j].categories){
+                                        obj1[j].categories = merge(obj1[j].categories, obj2[i].categories);
+                                    } else {
+                                        obj1[j].categories = obj2[i].categories;
+                                    }
+                                }
+                            }
+                            if(!f){
+                                obj1.push(obj2[i]);
+                            }
+                        }
+                        return obj1;
+                    }
+
                     try {
                         while(source.next()){
                             for(var i = 0; i < seriesContext.length; i++){
@@ -579,24 +655,22 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                 }
                             }
 
-                            for(var i = 0; i < xAxisContext.length; i++){
-                                var a = xAxisContext[i].get(0).value();
-                                if(JSB().isArray(a)){
-                                    xAxis = a;
-                                } else {
-                                    xAxis.push(a);
-                                }
+                            if(xAxisContext.length > 1){
+                                xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
+                            } else {
+                                var a = xAxisContext[0].get(0).value();
+                                xAxisCategories.push(a ? a : 'Null')
                             }
                         }
 
                         if(opts && opts.isCacheMod){
                             $this.storeCache({
                                 seriesData: seriesData,
-                                xAxis: xAxis
+                                xAxis: xAxisCategories
                             });
                         }
 
-                        $this._buildChart(seriesData, xAxis);
+                        $this._buildChart(seriesData, xAxisCategories);
                     } catch(ex) {
                         console.log(ex);
                     } finally {
@@ -609,7 +683,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
             });
         },
 
-        _buildChart: function(seriesData, xAxis){
+        _buildChart: function(seriesData, xAxisData){
             try{
                 var seriesContext = this.getContext().find('series').values(),
                     yAxisContext = this.getContext().find('yAxis').values(),
@@ -931,6 +1005,20 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     };
                 }
 
+                xAxis = {
+                    categories: xAxisData,
+                    title: {
+                        text: xAxisContext[0].get(1).value().get(0).value(),
+                        style: {
+                            color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
+                        },
+                        align: 'high'
+                    },
+                    labels: {
+                        rotation: xAxisContext[0].get(2).value().get(0).value()
+                    }
+                }
+
                 var colors = [
                     ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
                     ["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
@@ -959,17 +1047,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                         text: this.getContext().find('subtitle').value()
                     },
 
-                    xAxis: [{
-                        categories: xAxis,
-                        crosshair: false,
-                        title: {
-                            text: xAxisContext[0].get(1).value().get(0).value(),
-                            style: {
-                                color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
-                            },
-                            align: 'high'
-                        }
-                    }],
+                    xAxis: xAxis,
 
                     yAxis: yAxis,
 
@@ -1008,9 +1086,9 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     series: series
                 };
 
-                $this.container.highcharts(chartOptions);
-
                 console.log(chartOptions);
+
+                $this.container.highcharts(chartOptions);
 
                 $this.chart =  $this.container.highcharts();
             } catch(e){

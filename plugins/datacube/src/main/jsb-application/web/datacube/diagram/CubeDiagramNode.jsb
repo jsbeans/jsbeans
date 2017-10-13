@@ -45,7 +45,7 @@
 					<div class="name">{{=this.entry.getName()}}</div>
 					
 					<div jsb="JSB.Widgets.Button" class="roundButton btnCreate btn10" tooltip="Создать срез"
-						onclick="{{=$this.callbackAttr(function(evt){ $this.editor.addSlice(); evt.stopPropagation(); })}}"></div>
+						onclick="{{=$this.callbackAttr(function(evt){ $this.editor.addSlice($this.checkedFieldList); evt.stopPropagation(); })}}"></div>
 				</div>
 			`);
 			this.body = this.$(`
@@ -270,7 +270,7 @@
 
                     if(providerBlock.length === 0){
                         providerBlock = this.$('<div class="providerBlock" key="' + provider.id + '"><div class="caption">' + provider.name + '</div></div>');
-                        providerBlock.find('.caption').hover(function(){
+                        providerBlock.hover(function(){
                             $this.editor.providersNodes[provider.id].highlightNode(true);
                         }, function(){
                             $this.editor.providersNodes[provider.id].highlightNode(false);

@@ -56,7 +56,7 @@
 				}
 			}); 
 			this.caption.append(refreshButton.getElement());
-			
+			/*
 			var removeButton = new Button({
 				cssClass: 'roundButton btn10 btnDelete',
 				tooltip: 'Удалить',
@@ -67,7 +67,7 @@
 				}
 			});
 			this.caption.append(removeButton.getElement());
-
+			*/
 			this.body = this.$(`
                 <div class="body">
 					<div class="loading hidden">
@@ -205,6 +205,7 @@
 					$this.fields = desc.fields;
 					$this.binding = desc.binding;
 					$this.refresh();
+					$this.updateLinks();
 				}
 			});
 		},
@@ -471,12 +472,17 @@
                 }
             });
 		},
-/*
-		updateToolbar: function(){
-		    var allChecked,
-		        allUnchecked;
+
+		updateLinks: function(){
+		    for(var i in this.fields){
+		        if(this.fields[i].keyField){
+                    var link = this.diagram.createLink('bind');
+                    link.setSource(this.editor.cubeNode.leftFieldConnectors[this.fields[i].cubeField]);
+                    link.setTarget(this.rightFieldConnectors[i]);
+		        }
+		    }
 		},
-*/
+
 		selectNode: function(bEnable){
 			if(bEnable){
 				this.addClass('selected');

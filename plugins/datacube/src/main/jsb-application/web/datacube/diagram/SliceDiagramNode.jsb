@@ -36,6 +36,17 @@
 			$base(diagram, key, opts);
 			this.editor = opts.editor;
 			this.slice = opts.slice;
+
+            if(opts.fields){
+                var q = {};
+                for(var i in opts.fields){
+                    q[i] = i;
+                }
+                this.slice.query = {
+                    $select: q
+                }
+            }
+
 			this.loadCss('SliceDiagramNode.css');
 			this.addClass('sliceDiagramNode');
 			
@@ -132,12 +143,6 @@
 					selector: $this.getElement(),
 					weight: 10.0
 				},
-				/*
-				{
-				    selector: $this.$('.gridView'),
-                    weight: 10.0
-				}
-				*/
 				],
 				draggable: true,
 				callback: function(desc){
