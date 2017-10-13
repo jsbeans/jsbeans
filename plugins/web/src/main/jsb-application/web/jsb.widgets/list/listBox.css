@@ -36,6 +36,10 @@
 	border: 1px solid rgba(255,255,255,0);
 }
 
+._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem[filtered="true"]{
+	display: none;
+}
+
 ._dwp_listBox ul._dwp_listBoxContainer li._dwp_listBoxItem.allowSelect {
 	cursor: pointer;
 }

@@ -310,6 +310,7 @@
 			itemObj.wrapper = this.wrapItem(itemObj);
 			this.rootElt.append(itemObj.wrapper);
 			this.itemList.push(itemObj);
+			this._applyFilteredToItem(itemObj);
 			if(!JSB().isNull(itemObj.key)){
 			    this.itemMap[itemObj.key] = itemObj;
 			}
@@ -644,6 +645,25 @@
 				this.scrollBox.scrollTo(-left, -top);
 			} else {
 				this.scrollBox.scrollToElement(target, y, arg);
+			}
+		},
+		
+		_applyFilteredToItem: function(itemObj){
+			var filterCallback = this.options.filter;
+			var filtered = false;
+			if(filterCallback){
+				filtered = !filterCallback.call(this, itemObj);
+			}
+			itemObj.wrapper.attr('filtered', filtered);
+			itemObj.filtered = filtered;
+		},
+		
+		setFilter: function(filterCallback){
+			this.setOption('filter', filterCallback);
+			
+			// iterate over all items and apply filter
+			for(var i = 0; i < this.itemList.length; i++){
+				this._applyFilteredToItem(this.itemList[i]);
 			}
 		}
 	}
