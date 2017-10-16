@@ -53,6 +53,7 @@
 				onClick: function(evt){
 					evt.stopPropagation();
 					$this.refreshScheme();
+					$this.editor.cubeNode.refreshFields();
 				}
 			}); 
 			this.caption.append(refreshButton.getElement());
@@ -205,7 +206,7 @@
 					$this.fields = desc.fields;
 					$this.binding = desc.binding;
 					$this.refresh();
-					$this.updateLinks();
+					$this.updateNodeLinks();
 				}
 			});
 		},
@@ -473,7 +474,7 @@
             });
 		},
 
-		updateLinks: function(){
+		updateNodeLinks: function(){
 		    for(var i in this.fields){
 		        if(this.fields[i].keyField){
                     var link = this.diagram.createLink('bind');

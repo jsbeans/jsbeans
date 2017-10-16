@@ -409,7 +409,7 @@
                     }
                 }, function(){
                     return !$this._isRefreshing;
-                }, 100, 'graphWidget_' + this.getId());
+                }, 300, 'graphWidget_' + this.getId());
             } else {
                 this._isRefreshing = true;
 
@@ -571,7 +571,7 @@
                                 nodesMap[se] = true;
                             }
 
-                            if(!nodesMap[te]){
+                            if(!nodesMap[te] && !$this._nodeList[te]){
                                 var teEntry = JSB().clone(viewList[targetElement.binding()]);
 
                                 if(teEntry){

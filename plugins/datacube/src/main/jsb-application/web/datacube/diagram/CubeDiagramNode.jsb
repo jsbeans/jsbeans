@@ -170,6 +170,19 @@
 				}
 			});
 		},
+		// updateFieldsType
+		refreshFields: function(){
+		    this.entry.server().getFields(function(fields){
+		        if(!fields) return;
+
+		        for(var i in fields){
+		            if($this.fields[i] !== fields[i].type){
+		                $this.getElement().find('.field[key="' + i + '"] > .type > .text').text(fields[i].type);
+		                $this.fields[i] = fields[i].type;
+		            }
+		        }
+		    });
+		},
 		
 		addField: function(field, type, provider, isLink, isKeyField, notUpdateResizable){
 			var fElt = null;

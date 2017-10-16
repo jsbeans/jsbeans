@@ -1004,7 +1004,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                         opposite: yAxisContext[i].get(2).used()
                     };
                 }
-                
+
                 xAxis = {
                     categories: xAxisData,
                     title: {
