@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Query.SchemePopupTool',
 	$parent: 'JSB.Widgets.Tool',
-	$require: ['JSB.Widgets.ToolManager', 'JSB.Widgets.Button', 'JSB.Widgets.ListBox'],
+	$require: ['JSB.Widgets.ToolManager', 'JSB.Widgets.Button', 'JSB.Widgets.ListBox', 'JSB.Widgets.PrimitiveEditor'],
 	$client: {
 		
 		cubeFieldsCat: 'Поля куба',
@@ -68,6 +68,7 @@
 			$this.categoriesElt = $this.$('<div class="categories"></div>');
 			$this.append($this.categoriesElt);
 			
+			
 			// create item list
 			$this.itemsListBox = new ListBox({
 				onSelectionChanged: function(key, item){
@@ -80,6 +81,28 @@
 			});
 			$this.itemsListBox.addClass('items');
 			$this.append($this.itemsListBox);
+			
+			// add search box
+			var searchBoxElt = $this.$('<div class="searchBox"></div>');
+			$this.searchEditor = new PrimitiveEditor({
+				onChange: function(str){
+					$this.itemsListBox.setFilter(function(item){
+						if(!str || str.length == 0){
+							return true;
+						}
+						var strLc = str.toLowerCase();
+						if((item.value && item.value.toLowerCase().indexOf(strLc) >= 0)||(item.desc && item.desc.toLowerCase().indexOf(strLc) >= 0)){
+							return true;
+						}
+						return false;
+					});
+				}
+			});
+			
+			searchBoxElt.append($this.searchEditor.getElement());
+			searchBoxElt.append('<div class="icon"></div>');
+			$this.itemsListBox.getElement().prepend(searchBoxElt);
+
 			
 			$this.subscribe('DataCube.Query.SchemeEditor.selected', function(sender, msg, params){
 				var editor = $this.data.data.editor;
@@ -176,6 +199,8 @@
 			$this.ignoreHandlers = true;
 			var selected = $this.data.data.selectedObj;
 			$this.itemsListBox.clear();
+			$this.itemsListBox.setFilter(null);
+			$this.searchEditor.setData('');
 			var chosenListItem = null;
 			for(var i = 0; i < items.length; i++){
 				var item = items[i];
@@ -194,6 +219,7 @@
 							key: fName,
 							value: fName,
 							scheme: item,
+							desc: null,
 							element: `#dot
 								<div class="field" title="{{=fName}}">
 									<div class="icon"></div>
@@ -218,6 +244,7 @@
 								scheme: item,
 								value: fName,
 								context: qName,
+								desc: null,
 								element: `#dot
 									<div class="column" title="{{=fName}}">
 										<div class="icon"></div>
@@ -238,6 +265,7 @@
 						value: item.item,
 						key: item.item,
 						scheme: item.item,
+						desc: item.desc,
 						element: `#dot
 							<div class="item" scheme="{{=item.item}}">
 								<div class="title">{{=item.title?item.title:item.item}}</div>
