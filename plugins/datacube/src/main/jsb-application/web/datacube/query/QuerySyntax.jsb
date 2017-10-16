@@ -180,7 +180,7 @@
 		            '$add', '$sub', '$mul', '$div', '$divz', '$mod',
 		            '$greatest', '$least',
 		            '$splitString', '$substring', '$trim', '$concat',
-		            '$toInt', '$toDouble', '$toBoolean', '$toDate',
+		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
 		            '$distinct',
 		            '$last','$first', '$sum', '$count','$min', '$max', '$avg',
@@ -398,6 +398,12 @@
 		        name: '$toDate',
 		        category: 'Конвертация типов',
 		        desc: 'Преобразование к дате',
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$toString',
+		        category: 'Конвертация типов',
+		        desc: 'Преобразование к строке',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({

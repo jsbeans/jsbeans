@@ -124,7 +124,6 @@
 			var cEntry = this.workspace.entry(eid);
 			cEntry.parent = null;
 			cEntry.property('parent', cEntry.parent);
-			debugger;
             this.publish('Workspace.Entry.remove', cEntry, {session: true});
 			return cEntry;
 		},
