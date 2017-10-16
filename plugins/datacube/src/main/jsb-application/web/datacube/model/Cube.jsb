@@ -337,6 +337,10 @@
 			this.doSync();
 			return provider;
 		},
+
+		getFields: function(){
+		    return this.fields;
+		},
 		
 		getProviderById: function(pId){
 			if(!this.dataProviders[pId]){
