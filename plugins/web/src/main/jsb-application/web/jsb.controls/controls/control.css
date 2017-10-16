@@ -1,0 +1,34 @@
+@CHARSET "UTF-8";
+
+.jsb-control {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+	box-sizing: border-box;
+
+	display: block;
+	position: relative;
+	overflow: hidden;
+	
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.jsb-control,
+.jsb-control * {
+	margin: 0;
+	padding: 0;
+	line-height: inherit;
+}
+
+.jsb-control.disabled {
+    opacity: .65;
+    pointer-events: none;
+    background-color: #e6e6e6;
+    border-color: #eaeaea;
+    cursor: not-allowed;
+    color: #cacaca;
+}

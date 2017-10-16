@@ -1,0 +1,25 @@
+.jsb-checkbox > .check-elem {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    background: url(/datacube/images/greenCheckBox.png) no-repeat;
+    border: none;
+    cursor: pointer;
+}
+
+.jsb-checkbox > .check-elem.checked {
+    background-position: -22px 0;
+}
+
+.jsb-checkbox > .caption{
+    vertical-align: middle;
+    line-height: 20px;
+}
+
+.jsb-checkbox > .contents.disabled,
+.jsb-checkbox.disabled {
+    display: none;
+}
