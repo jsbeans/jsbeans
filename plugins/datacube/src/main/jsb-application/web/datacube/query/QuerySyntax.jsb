@@ -401,7 +401,7 @@
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
-		        name: 'toString',
+		        name: '$toString',
 		        category: 'Конвертация типов',
 		        desc: 'Преобразование к строке',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],

@@ -72,7 +72,7 @@
 			
 			this.queryEditor = new QueryEditor({
 				onChange: function(){
-					$this.updateGrid();
+//					$this.updateGrid();
 					$this.updateTextQuery();
 				}
 			});
