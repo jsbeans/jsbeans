@@ -758,7 +758,11 @@
                     sql += sqlJoins;
                 }
             } else {
-                sql += sqlUnions + ' AS ' + this._quotedName(unionsAlias);
+                if (sqlUnions.indexOf(' UNION ALL ')) {
+                    sql += '(' + sqlUnions + ') AS ' + this._quotedName(unionsAlias);
+                } else {
+                    sql += sqlUnions + ' AS ' + this._quotedName(unionsAlias);
+                }
             }
 
             // print SELECT (mapped fields) FROM (view)

@@ -349,7 +349,12 @@
             var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
-            if (fields[field] && (!dcQuery.$select[field] || dcQuery.$select[field] == field || dcQuery.$select[field].$field == field)) {
+//            if (fields[field] && (!dcQuery.$select[field] || dcQuery.$select[field] == field || dcQuery.$select[field].$field == field)) {
+            if (fields[field] || (
+                    dcQuery.$select[field] && (
+                        dcQuery.$select[field] == field || dcQuery.$select[field].$field == field
+                    )
+                )) {
 //Log.debug('\nisOriginalCubeField: ' + field + '=true');
                 return true;
             }
