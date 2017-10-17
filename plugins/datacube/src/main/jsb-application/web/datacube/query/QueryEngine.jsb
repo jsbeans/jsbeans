@@ -31,8 +31,8 @@
 		    // unwrap macros to complex expressions
 		    QuerySyntax.unwrapMacros(dcQuery);
 
-		    // fill all cube fields (or linked with dataProvider) for default $select={}
-		    QueryUtils.generateDefaultSelect(dcQuery, dataProvider || this.cube);
+//		    // fill all cube fields (or linked with dataProvider) for default $select={}
+//		    QueryUtils.generateDefaultSelect(dcQuery, dataProvider || this.cube);
 
             // embed $globalFilter to $filter/$postFilter of root and sub queries
             QueryUtils.propagateGlobalFilter(dcQuery, dataProvider || this.cube);
@@ -46,31 +46,31 @@
             return dcQuery;
 		},
 
-		extractFields: function(dcQuery) {
-		    var cubeFields = [];
-		    var outputFields = [];
-		    function collect(q) {
-		        if (JSB.isString(q)) {
-		            cubeFields.push(q);
-		        } else if (JSB.isPlainObject(q)) {
-		            for (var f in q) if (q.hasOwnProperty(f)) {
-		                if (!f.match(/^\$/)) {
-		                    outputFields.push(f);
-		                }
-		                collect(q[f]);
-		            }
-		        } else if (JSB.isArray(q)) {
-                    for (var i in q) {
-                        collect(q[i]);
-                    }
-                }
-		    }
-            collect(dcQuery.$select);
-            return {
-		        cubeFields: cubeFields,
-		        outputFields : outputFields
-		    };
-		},
+//		extractFields: function(dcQuery) {
+//		    var cubeFields = [];
+//		    var outputFields = [];
+//		    function collect(q) {
+//		        if (JSB.isString(q)) {
+//		            cubeFields.push(q);
+//		        } else if (JSB.isPlainObject(q)) {
+//		            for (var f in q) if (q.hasOwnProperty(f)) {
+//		                if (!f.match(/^\$/)) {
+//		                    outputFields.push(f);
+//		                }
+//		                collect(q[f]);
+//		            }
+//		        } else if (JSB.isArray(q)) {
+//                    for (var i in q) {
+//                        collect(q[i]);
+//                    }
+//                }
+//		    }
+//            collect(dcQuery.$select);
+//            return {
+//		        cubeFields: cubeFields,
+//		        outputFields : outputFields
+//		    };
+//		},
 
 		isDataProviderLinkedWithCubeFields: function(provider, cubeFields, useJoinFields) {
 		    var count = 0;
@@ -106,32 +106,21 @@
 		},
 
 		produceIterator: function(dcQuery, params, dataProvider) {
-            // collect only iterator of used in query providers
-            var usedCubeFields = this.extractFields(dcQuery).cubeFields;
-            var dataProviders = this.cube.getOrderedDataProviders();
+//		    return {
+//		        next: function(){},
+//		        close: function(){}
+//		    }; // TODO DEBUG remove
             var providerIterators = [];
-
-            if (!dataProvider) {
-                for (var i = 0; i < dataProviders.length; i++) {
-                    var provider = dataProviders[i];
-                    // TODO: поддержать случай, когда между двумя используемыми в запросе полями есть перевязочные таблицы с полями, которые не используется
-                    if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, providerIterators.length == 0)) {
-                        if (providerIterators.length > 0) {
-                            var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
-                            if (provider instanceof SqlTableDataProvider
-                                && prev.getJsb().$name == provider.getJsb().$name
-                                && prev.getStore().getName() == provider.getStore().getName()) {
-                                // merge provider
-                                providerIterators[providerIterators.length - 1] = new DataProviderIterator(
-                                    providerIterators[providerIterators.length - 1].getDataProviders().concat(provider), this);
-                                continue;
-                            }
-                        }
-                        providerIterators.push(new DataProviderIterator(provider, this));
-                    }
-                }
-            } else {
+//debugger;
+            if (dataProvider) {
                 providerIterators.push(new DataProviderIterator(dataProvider, this));
+            } else {
+                var dataProviders = this.cube.getOrderedDataProviders();
+                var groups = this.groupProviders(dcQuery, this.sqlStoreDataProviderKey);
+                for(var i in groups) {
+                    var providers = groups[i];
+                    providerIterators.push(new DataProviderIterator(providers, this));
+                }
             }
 
             if (providerIterators.length == 0) {
@@ -142,29 +131,111 @@
                 };
             }
 
-            var joinIterator = providerIterators.length == 1
+            var providersIterator = providerIterators.length == 1
                     ? providerIterators[0]
                     : new InnerJoinIterator(providerIterators, this);
 
 		    if (dcQuery.$finalize) {
-		        return new FinalizeIterator(joinIterator, this).iterate(dcQuery, params);
+		        return new FinalizeIterator(providersIterator, this).iterate(dcQuery, params);
 		    }
 
-		    var it = joinIterator.iterate(dcQuery, params);
-
+		    var it = providersIterator.iterate(dcQuery, params);
 		    return {
 		        next: function(){
 		            var next = it.next();
-		            if (next) {
-		                //Log.debug(JSON.stringify(next));
-		            }
+//		            if (next) {
+//		                Log.debug(JSON.stringify(next));
+//		            }
 		            return next;
 		        },
 		        close: function(){
-		            Log.debug('Iterator closed');
+//		            Log.debug('Iterator closed');
 		            it.close();
 		        }
 		    };
+		},
+
+		sqlStoreDataProviderKey: function (provider) {
+		    // store key or unique
+            return provider instanceof SqlTableDataProvider
+                ? provider.getJsb().$name + '/' + provider.getStore().getName()
+                : provider.name;
+        },
+
+		groupProviders: function(dcQuery, getProviderGroupKey){
+		    /**
+		        1) собрать все провайдеры, связанные с запросом
+		        2) удалить избыточные провайдеры, т.е. для которых все используемые в запросе
+		           поля являются "объединенными" и присутствуют в другом провайдере
+		        3) объединить однотипные провайдеры в группы
+		    */
+		    function allFieldsBindingAndAllInOther(prov){
+		        var allFieldsBinding = true;
+		        var allInOther = true;
+		        for (var f in prov.cubeFields) if (prov.cubeFields.hasOwnProperty(f)) {
+		            if (!prov.cubeFields[f]) {
+		                allFieldsBinding = false;
+		                break;
+		            }
+		            var fieldInOther = false;
+		            for (var name in providers) if (providers.hasOwnProperty(name)) {
+		                if (prov.provider.name != name) {
+		                    if(providers[name].cubeFields.hasOwnProperty(f)) {
+		                        fieldInOther = true;
+		                        break;
+		                    }
+                        }
+		            }
+		            if (!fieldInOther) {
+		                allInOther = false;
+		                break;
+		            }
+		        }
+		        return allFieldsBinding && allInOther;
+		    }
+
+		    // collect used providers by name and all used cube fields
+		    var providers = {}; // name: {provider, cubeFields}
+		    QueryUtils.walkCubeFields(
+		        dcQuery, /**includeSubQueries=*/true, this.cube,
+		        function (field, context, query, binding){
+                    for (var i in binding) {
+                        var name = binding[i].provider.name;
+                        var prov = providers[name] = providers[name] || {
+                            provider: binding[i].provider,
+                            cubeFields: {}
+                        };
+                        var hasOtherBinding = binding.length > 1;
+                        prov.cubeFields[field] = hasOtherBinding;
+                    }
+                }
+            );
+
+            // filter providers
+		    for (var name in providers) if (providers.hasOwnProperty(name)) {
+		        if (allFieldsBindingAndAllInOther(providers[name])) {
+		            delete providers[name];
+		        }
+		    }
+
+		    // group SqlTableDataProvider
+		    /** TODO note: сейчас реализовано с учетом только "плоского" UNION (объединения с общими полями):
+		        после добавления настроек JOIN при объединении в группы необходимо упорядочить
+		        и учитывать пути слияний таблиц (т.е. сначала надо упорядочить и если по середи
+		        оказывается "чужой" провайдер, то группу нужно разорвать для внешнего слияния через JoinIterator)
+		     */
+		    var groupsMap = {/**key:[provider]*/}; //
+		    for (var name in providers) if (providers.hasOwnProperty(name)) {
+		        var prov = providers[name];
+		        var key = getProviderGroupKey(prov.provider);
+                groupsMap[key] = groupsMap[key] || [];
+                groupsMap[key].push(prov.provider);
+		    }
+		    var groups = []; // [[]]
+		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
+		        groups.push(groupsMap[k]);
+		    }
+		    return groups;
 		},
 	}
 }
