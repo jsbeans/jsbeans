@@ -22,6 +22,10 @@
                     $this.options.onchange.call($this, $this.$(this).prop("checked"));
                 });
             }
+
+            this.getElement().click(function(evt){
+                evt.stopPropagation();
+            });
 	    },
 
 	    options: {

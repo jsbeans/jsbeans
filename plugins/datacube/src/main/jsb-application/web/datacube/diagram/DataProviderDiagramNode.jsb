@@ -70,17 +70,17 @@
 			});
 			this.caption.append(removeButton.getElement());
 
-            var checked = opts.provider.mode === 'union' ? true : false;
+            var checked = opts.provider.mode === 'join' ? true : false;
             this.caption.append(`#dot
                 <div class="providerMode">
                     <span>Режим: </span>
-                    <span>Join</span>
+                    <span>Union</span>
                     <div
                      jsb="JSB.Controls.Switch"
                      checked="{{=checked}}"
                      onchange="{{=this.callbackAttr(function(b){ $this.providerModeChange(b); })}}"
                      ></div>
-                    <span>Union</span>
+                    <span>Join</span>
                 </div>
             `);
 
@@ -500,10 +500,12 @@
 		},
 
 		providerModeChange: function(b){
-		    // false - Join, true - Union
-		    this.editor.cubeEntry.server().changeProviderMode(this.provider.getId(), b ? "union" : "join", function(res, fail){
+		    // true - Join, false - Union
+		    this.editor.cubeEntry.server().changeProviderMode(this.provider.getId(), b ? "join" : "union", function(res, fail){
 		        if(fail){
 		            $this.caption.find('[jsb="JSB.Controls.Switch"]').jsb().setChecked(!b, true);
+		        } else{
+		            $this.provider.mode = b ? "join" : "union";
 		        }
 		    });
 		},
