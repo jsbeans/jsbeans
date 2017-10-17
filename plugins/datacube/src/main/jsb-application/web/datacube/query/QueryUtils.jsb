@@ -11,6 +11,9 @@
                     if (q.$select) {
                         callback(q);
                     }
+                    if (q.$from) {
+                        callback(q.$from);
+                    }
                     for (var f in q) if (q.hasOwnProperty(f)) {
                         collect(q[f]);
                     }
@@ -23,7 +26,106 @@
             collect(query);
         },
 
-        extractFields: function(valueExp) {
+        walkQueryFields: function(dcQuery, includeSubQueries/**all or current query`s fields*/, callback /*(field, context, query)*/){
+            function walkMultiFilter(exps, fieldsCallback){
+                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                    if (field.startsWith('$')) {
+                        var op = field;
+                        switch(op) {
+                            case '$or':
+                            case '$and':
+                                for (var i in exps[op]) {
+                                    walkMultiFilter(exps[op][i], fieldsCallback);
+                                }
+                                break;
+                            default:
+                                // $op: [left, right] expression
+                                fieldsCallback($this.extractFields(exps[op], !includeSubQueries));
+                        }
+                    } else {
+                        // field: {$eq: expr}
+                        fieldsCallback([{$field: field, $context: null}]); // left
+                        fieldsCallback($this.extractFields(exps[field, !includeSubQueries])); // right
+                    }
+                }
+            }
+            function walkQuery(query){
+                function walkFields (fields) {
+                    for (var f in fields) if (fields.hasOwnProperty(f)) {
+                        var field = fields[f];
+                        callback(field.$field, field.$context || query.$context, query);
+                    }
+                }
+
+                // walk $select
+                for(var alias in query.$select) {
+                    walkFields([{$field: alias, $context: null}]);
+                    walkFields($this.extractFields(query.$select[alias], true/**skipSubQuery*/));
+                }
+
+                // walk $filter
+                walkMultiFilter(query.$filter, walkFields);
+
+                // walk $groupBy
+                walkFields($this.extractFields(query.$groupBy, true/**skipSubQuery*/));
+
+                // walk $sort
+                for (var i in query.$sort) {
+                    var val = query.$sort[i];
+                    if (val.$expr && val.$type) {
+                        walkFields($this.extractFields(val.$expr, true/**skipSubQuery*/));
+                    } else {
+                        var field = Object.keys(val)[0];
+                        walkFields([{$field: field, $context: null}]);
+                    }
+                }
+                // TODO: walk $sql by "cube."
+
+            }
+
+            if (includeSubQueries) {
+                this.walkSubQueries(dcQuery, walkQuery);
+            } else {
+                walkQuery(dcQuery);
+            }
+        },
+
+        walkDataProviderFields: function(dcQuery, includeSubQueries, provider, callback/**(field, context, query)*/){
+		    var queriesByContext = {};
+		    this.walkSubQueries(dcQuery, function(query){
+                if (query.$context) {
+                    queriesByContext[query.$context] = query;
+                }
+		    });
+		    this.walkQueryFields(dcQuery, includeSubQueries, function(field, context, query) {
+		        var isFieldNotAlias = $this.isOriginalCubeField(
+		                field, context && queriesByContext[context] || query, provider);
+                if (isFieldNotAlias) {
+                    callback(field, context, query);
+                }
+            });
+        },
+
+        walkCubeFields: function(dcQuery, includeSubQueries, cube, callback/**(field, context, query, binding)*/){
+		    var queriesByContext = {};
+		    this.walkSubQueries(dcQuery, function(query){
+                if (query.$context) {
+                    queriesByContext[query.$context] = query;
+                }
+		    });
+		    this.walkQueryFields(dcQuery, includeSubQueries, function(field, context, query) {
+		        var fieldQuery = context && queriesByContext[context];
+		        var isFieldNotAlias = $this.isOriginalCubeField(
+		                field, fieldQuery || query, cube);
+                if (isFieldNotAlias) {
+                    var managedFields = cube.getManagedFields();
+                    var binding = managedFields[field].binding;
+                    callback(field, context, query, binding);
+                }
+            });
+        },
+
+        extractFields: function(valueExp, skipSubQuery) {
             var cubeFields = {};
             function collect(q) {
                 if (JSB.isString(q)) {
@@ -32,8 +134,10 @@
                     if (!JSB.isString(q.$field)) throw new Error('Invalid $field value type ' + typeof q.$field);
                     cubeFields[q.$field] = q;
                 } else if (JSB.isPlainObject(q) && JSB.isNull(q.$const)) {
-                    for (var f in q) if (q.hasOwnProperty(f)) {
-                        collect(q[f]);
+                    if (!q.$select || !skipSubQuery ) {
+                        for (var f in q) if (q.hasOwnProperty(f)) {
+                            collect(q[f]);
+                        }
                     }
                 } else if (JSB.isArray(q)) {
                     for (var i in q) {
@@ -62,7 +166,7 @@
 //debugger;
             function filteredAndOr(array, isAccepted) {
                 if (!JSB.isArray(array)) {
-                    throw new Error('Unsupported expression type for operator ' + op);
+                    throw new Error('Unsupported expression type for operator $and/$or');
                 }
 
                 var resultArray = [];

@@ -17,7 +17,7 @@
 		    $base();
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
 		    this.queryEngine = queryEngine;
-		    this.cube = queryEngine.cube;
+		    this.cube = JSB.isArray(providerOrProviders) ? queryEngine.cube : null;
 		},
 
 		matchDataProvider: function(dataProvider){
