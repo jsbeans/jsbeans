@@ -6,7 +6,8 @@
 	           'JSB.Widgets.Button', 
 	           'JSB.Widgets.CheckBox',
 	           'JSB.Widgets.PrimitiveEditor',
-	           'JSB.Widgets.Alpha.ScrollBox',
+	           'JSB.Controls.ScrollBox',
+	           'JSB.Controls.Switch',
 	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
@@ -57,7 +58,7 @@
 				}
 			}); 
 			this.caption.append(refreshButton.getElement());
-			/*
+			// remove btn
 			var removeButton = new Button({
 				cssClass: 'roundButton btn10 btnDelete',
 				tooltip: 'Удалить',
@@ -68,7 +69,21 @@
 				}
 			});
 			this.caption.append(removeButton.getElement());
-			*/
+
+            var checked = opts.provider.mode === 'union' ? true : false;
+            this.caption.append(`#dot
+                <div class="providerMode">
+                    <span>Режим: </span>
+                    <span>Join</span>
+                    <div
+                     jsb="JSB.Controls.Switch"
+                     checked="{{=checked}}"
+                     onchange="{{=this.callbackAttr(function(b){ $this.providerModeChange(b); })}}"
+                     ></div>
+                    <span>Union</span>
+                </div>
+            `);
+
 			this.body = this.$(`
                 <div class="body">
 					<div class="loading hidden">
@@ -218,7 +233,7 @@
 					conn.destroy();
 				}
 			}
-			this.fieldList.empty();
+			this.fieldList.clear();
 			this.keyFieldList.empty();
 
 			var fieldNames = Object.keys(this.fields);
@@ -482,6 +497,15 @@
                     link.setTarget(this.rightFieldConnectors[i]);
 		        }
 		    }
+		},
+
+		providerModeChange: function(b){
+		    // false - Join, true - Union
+		    this.editor.cubeEntry.server().changeProviderMode(this.provider.getId(), b ? "union" : "join", function(res, fail){
+		        if(fail){
+		            $this.caption.find('[jsb="JSB.Controls.Switch"]').jsb().setChecked(!b, true);
+		        }
+		    });
 		},
 
 		selectNode: function(bEnable){

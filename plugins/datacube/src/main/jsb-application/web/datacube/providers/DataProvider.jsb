@@ -8,6 +8,7 @@
 	entry: null,
 	cube: null,
 	name: null,
+	mode: null,
 	
 	getName: function(){
 		return this.name;
@@ -20,6 +21,7 @@
 			this.entry = pEntry;
 			this.cube = cube;
 			this.id = id;
+			this.mode = opts.mode;
 			$base();
 		},
 		

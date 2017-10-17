@@ -38,9 +38,6 @@
                 this.getElement().attr('title', this.options.tooltip);
             }
 
-            // options enable
-            this.enable(this.options.enabled);
-
             // options events
             for(var i in this.options){
                 if(i.substr(0, 2) === 'on'){

@@ -5,7 +5,7 @@
 	           'JSB.Widgets.ToolManager', 
 	           'DataCube.Dialogs.CubeMaterializationTool',
 	           'JSB.Widgets.CheckBox',
-	           'JSB.Widgets.Alpha.ScrollBox'],
+	           'JSB.Controls.ScrollBox'],
 	
 	$client: {
 		ready: false,

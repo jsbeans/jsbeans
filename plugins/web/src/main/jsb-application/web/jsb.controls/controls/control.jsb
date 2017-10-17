@@ -27,6 +27,9 @@
             if(this.options.cssClass){
                 this.addClass(this.options.cssClass);
             }
+
+            // options enable
+            this.enable(this.options.enabled);
 		},
 
         options: {
@@ -150,6 +153,15 @@
 			return this._isFocused;
 		},
 
+		localToScreen: function(x, y){
+			var pt = this.getRelativePosition();
+			return {x: x + pt.left, y: y + pt.top};
+		},
+
+		loseFocus: function(){
+			this._isFocused = false;
+		},
+
 		on: function(eventName, func){
 		    if(!JSB().isFunction(func)) return;
 
@@ -190,15 +202,6 @@
 		screenToLocal: function(x, y){
 			var pt = this.getRelativePosition();
 			return {x: x - pt.left, y: y - pt.top};
-		},
-
-		localToScreen: function(x, y){
-			var pt = this.getRelativePosition();
-			return {x: x + pt.left, y: y + pt.top};
-		},
-
-		loseFocus: function(){
-			this._isFocused = false;
 		}
 	}
 }

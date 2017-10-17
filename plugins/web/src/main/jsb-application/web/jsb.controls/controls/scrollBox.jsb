@@ -11,6 +11,14 @@
 			$base(opts);
 			this.addClass('scrollBox');
 			this.loadCss('scrollBox.css');
+
+            if(!this.options.xAxisScroll){
+                this.getElement().css('overflow-x', 'hidden');
+            }
+
+            if(!this.options.yAxisScroll){
+                this.getElement().css('overflow-y', 'hidden');
+            }
 			
 			this.getElement().scroll(function(evt){
 				var scrollHeight = evt.target.scrollHeight,
@@ -48,6 +56,10 @@
 				$this._oldScroll.y = scrollTop;
 			});
 
+            this.getElement().mousewheel(function(evt){
+                evt.stopPropagation();
+            });
+
 			this.getElement().resize(function(evt){
                 if(!$this.getElement().is(':visible')){
                     return;
@@ -66,6 +78,11 @@
 			onScroll: null,
 			onChangeVisible: null
 		},
+
+        options: {
+            xAxisScroll: true,
+            yAxisScroll: true
+        },
 
 		/**
          * Очищает элемент.

@@ -92,7 +92,7 @@
 						}
 						var ProviderClass = pJsb.getClass();
 						var providerDesc = DataProviderRepository.queryDataProviderInfo(pEntry);
-						var provider = new ProviderClass(pDesc.id, pEntry, this, providerDesc.opts);
+						var provider = new ProviderClass(pDesc.id, pEntry, this, pDesc);
 						this.dataProviders[pDesc.id] = provider;
 						this.dataProviderEntries[pDesc.id] = pEntry;
 						this.dataProviderFields[pDesc.id] = pDesc.fields;
@@ -139,7 +139,7 @@
 							}
 							var ProviderClass = pJsb.getClass();
 							var providerDesc = DataProviderRepository.queryDataProviderInfo(materialization.dataProviderEntry);
-							materialization.dataProvider = new ProviderClass(snapshot.materialization.provider.id, materialization.dataProviderEntry, this, providerDesc.opts);
+							materialization.dataProvider = new ProviderClass(snapshot.materialization.provider.id, materialization.dataProviderEntry, this, providerDesc);
 							for(var i = 0; i < snapshot.materialization.fields.length; i++){
 								var fDesc = snapshot.materialization.fields[i];
 								materialization.fields[fDesc.field] = {
@@ -208,8 +208,14 @@
 			
 			return desc;
 		},
-		
+
 		store: function(){
+            JSB.defer(function(){
+                $this._store();
+            }, 200, "storeDefer_" + this.getId());
+		},
+
+		_store: function(){
 			var mtxName = 'store_' + this.getId();
 			JSB.getLocker().lock(mtxName);
 			// construct snapshot
@@ -229,6 +235,7 @@
 					jsb: provider.getJsb().$name,
 					entry: this.dataProviderEntries[pId].getLocalId(),
 					fields: this.dataProviderFields[pId],
+					mode: provider.mode,
 					position: this.dataProviderPositions[pId],
 					size: this.dataProviderSizes[pId]
 				};
@@ -408,7 +415,14 @@
 
             return res;
 		},
-		
+
+		changeProviderMode: function(providerId, mode){
+		    var provider = this.getProviderById(providerId);
+		    provider.mode = mode;
+            this.store();
+            this.doSync();
+		},
+
 		extractDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);
 			if(this.dataProviderFields[provider.getId()]){

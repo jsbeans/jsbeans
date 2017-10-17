@@ -160,7 +160,7 @@
 		},
 		
 		resolveElement: function(c){
-			if(JSB().isInstanceOf(c, 'JSB.Widgets.Control')){
+			if(JSB().isInstanceOf(c, 'JSB.Widgets.Control') || JSB().isInstanceOf(c, 'JSB.Controls.Control')){
 				c = c.getElement();
 			} else if(!JSB().isString(c)){
 				c = this.$(c);
