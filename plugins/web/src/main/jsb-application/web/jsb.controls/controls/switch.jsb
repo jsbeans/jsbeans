@@ -25,6 +25,9 @@
 
             this.getElement().click(function(evt){
                 evt.stopPropagation();
+                if($this.options.onclick && JSB.isFunction(this.options.onclick)){
+                    $this.options.onclick.call($this, $this.$(this).prop("checked"));
+                }
             });
 	    },
 

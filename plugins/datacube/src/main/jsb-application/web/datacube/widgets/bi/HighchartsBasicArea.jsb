@@ -330,6 +330,55 @@
                     editor: 'JSB.Widgets.ColorEditor'
                 },
                 {
+                    name: 'Цветовая схема',
+                    type: 'group',
+                    key: 'colorScheme',
+                    optional: true,
+                    items: [
+                    {
+                        name: 'Уровень оси Х',
+                        type: 'item',
+                        key: 'xLevel',
+                        itemType: 'string'
+                    },
+                    {
+                        name: 'Схема',
+                        type: 'select',
+                        key: 'scheme',
+                        items: [
+                        {
+                            name: '#1',
+                            type: 'item',
+                            key: 'color1',
+                            editor: 'none',
+                            itemValue: 0
+                        },
+                        {
+                            name: '#2',
+                            type: 'item',
+                            key: 'color2',
+                            editor: 'none',
+                            itemValue: 1
+                        },
+                        {
+                            name: '#3',
+                            type: 'item',
+                            key: 'color3',
+                            editor: 'none',
+                            itemValue: 2
+                        },
+                        {
+                            name: '#4',
+                            type: 'item',
+                            key: 'color4',
+                            editor: 'none',
+                            itemValue: 3
+                        }
+                        ]
+                    }
+                    ]
+                },
+                {
                     type: 'group',
                     name: 'Маркер',
                     key: 'marker',
@@ -483,6 +532,14 @@
 			});
 		},
 
+		colors: [
+            ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+            ["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
+            ["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
+            ["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
+            ["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]
+        ],
+
         options: {
             onClick: null,
             onSelect: null,
@@ -583,11 +640,24 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
             var seriesContext = this.getContext().find('series').values(),
                 xAxisContext = this.getContext().find('xAxis').find('categories').values();
 
+            var colorSettings = [];
+            for(var i = 0; i < seriesContext.length; i++){
+                var seriesColorScheme = seriesContext[i].find('colorScheme');
+                if(seriesColorScheme.used()){
+                    colorSettings[i] = {
+                        xLevel: seriesColorScheme.value().get(0).value() - 1,
+                        scheme: seriesColorScheme.value().get(1).value().value(),
+                        k: 0
+                    }
+                }
+            }
+
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
                     var seriesData = [],
-                        xAxisCategories = [];
+                        xAxisCategories = [],
+                        colorMap = {};
                     /*
                     function rec(i, length){
                         if(i === length){
@@ -645,13 +715,32 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                         while(source.next()){
                             for(var i = 0; i < seriesContext.length; i++){
                                 var a = seriesContext[i].get(1).value();
+
+                                if(!seriesData[i]){
+                                    seriesData[i] = [];
+                                }
+
+                                if(colorSettings[i]){
+                                    if(!colorMap[xAxisContext[colorSettings[i].xLevel].get(0).value()]){
+                                        if(colorSettings[i].k === $this.colors[colorSettings[i].scheme].length){
+                                            colorSettings[i].k = 0;
+                                        }
+                                        colorMap[xAxisContext[colorSettings[i].xLevel].get(0).value()] = $this.colors[colorSettings[i].scheme][colorSettings[i].k];
+                                        colorSettings[i].k++;
+                                    }
+                                }
+
                                 if(JSB().isArray(a)){
                                     seriesData[i] = a;
                                 } else {
-                                    if(!seriesData[i]){
-                                        seriesData[i] = [];
+                                    if(colorSettings[i]){
+                                        seriesData[i].push({
+                                            y: a,
+                                            color: colorMap[xAxisContext[colorSettings[i].xLevel].get(0).value()]
+                                        });
+                                    } else {
+                                        seriesData[i].push(a);
                                     }
-                                    seriesData[i].push(a);
                                 }
                             }
 
@@ -659,7 +748,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                 xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
                             } else {
                                 var a = xAxisContext[0].get(0).value();
-                                xAxisCategories.push(a ? a : 'Null')
+                                xAxisCategories.push(a ? a : 'Null');
                             }
                         }
 
@@ -706,15 +795,15 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                             color: $this.isNull(seriesContext[i].get(6).value()),
                             marker: {
                                 // The fill color of the point marker
-                                fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
+                                fillColor: $this.isNull(seriesContext[i].get(8).value().get(0).value()),
                                 // The color of the point marker's outline
-                                lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
+                                lineColor: $this.isNull(seriesContext[i].get(8).value().get(1).value()),
                                 // The width of the point marker's outline
-                                lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
+                                lineWidth: (($this.isNull(seriesContext[i].get(8).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(8).value().get(2).value()),10) : undefined),
                                 // The radius of the point marker
-                                radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
+                                radius: (($this.isNull(seriesContext[i].get(8).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(8).value().get(3).value()),10) : undefined),
                                 // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
-                                symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
+                                symbol: $this.isNull(seriesContext[i].get(8).value().get(4).value())
                             },
                             visible: seriesContext[i].find('visible').used(),
 							widgetWsid: seriesContext[i].find('widgetWsid').value(),
@@ -1025,19 +1114,15 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     ["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
                     ["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
                     ["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]
-                ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+                ],
+                colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
 
                 var chartOptions = {
-
                     HighchartsBasicArea: {
                     	version: 'v-2017-10-11-01'
                     },
 
                     colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
-
-                    chart: {
-                        //zoomType: 'x'
-                    },
 
                     title: {
                         text: this.getContext().find('title').value()
