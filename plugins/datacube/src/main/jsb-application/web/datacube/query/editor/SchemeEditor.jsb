@@ -466,8 +466,11 @@
 				if($this.scheme.expressionType == 'ComplexObject'){
 					
 					function generateColumnName(prefix){
+						if(prefix && !$this.value[prefix]){
+							return prefix;
+						}
 						prefix = prefix || 'Столбец';
-						for(var idx = 1;; idx++){
+						for(var idx = 2;; idx++){
 							var suggestedName = prefix + '_' + idx;
 							if(!$this.value[suggestedName]){
 								return suggestedName;
