@@ -390,8 +390,7 @@
                 case '$toDate':
                     return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as date)';
                 case '$toTimestamp':
-                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as timestamp)';
-
+                    return 'to_timestamp(CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as double precision))';
                 case '$dateYear':
                     return 'extract(isoyear from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$dateMonth':

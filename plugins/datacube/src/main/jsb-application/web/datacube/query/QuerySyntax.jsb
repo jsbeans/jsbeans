@@ -187,7 +187,7 @@
 		            '$array', '$flatArray', '$expandArray', '$concatArray',
 		            '$gsum', '$gcount', '$gmin', '$gmax',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg',
-		            '$case',
+		            '$if',
 		            '$macros'
 		        ]
 		    });
@@ -363,11 +363,14 @@
 		        }
 		    });
 
+		    new this.SingleObject({
+		        name: '$if',
+		        desc: 'Условное выражение выбора значения по условию',
+		        values: ['$ifExpr']
+		    });
 		    
 		    new this.ComplexObject({
-		        name: '$if',
-		        displayName: 'if/then/else',
-		        desc: 'Условное выражение выбора значения по условию',
+		        name: '$ifExpr',
 		        values: {
 		            '$cond': '$filter',
 		            '$then': '$valueDefinition',
