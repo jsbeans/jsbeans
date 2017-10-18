@@ -169,30 +169,6 @@
 		           поля являются "объединенными" и присутствуют в другом провайдере
 		        3) объединить однотипные провайдеры в группы
 		    */
-		    function allFieldsBindingAndAllInOther(prov){
-		        var allFieldsBinding = true;
-		        var allInOther = true;
-		        for (var f in prov.cubeFields) if (prov.cubeFields.hasOwnProperty(f)) {
-		            if (!prov.cubeFields[f]) {
-		                allFieldsBinding = false;
-		                break;
-		            }
-		            var fieldInOther = false;
-		            for (var name in providers) if (providers.hasOwnProperty(name)) {
-		                if (prov.provider.name != name) {
-		                    if(providers[name].cubeFields.hasOwnProperty(f)) {
-		                        fieldInOther = true;
-		                        break;
-		                    }
-                        }
-		            }
-		            if (!fieldInOther) {
-		                allInOther = false;
-		                break;
-		            }
-		        }
-		        return allFieldsBinding && allInOther;
-		    }
 
 		    // collect used providers by name and all used cube fields
 		    var providers = {}; // name: {provider, cubeFields}
@@ -211,12 +187,8 @@
                 }
             );
 
-            // filter providers
-		    for (var name in providers) if (providers.hasOwnProperty(name)) {
-		        if (allFieldsBindingAndAllInOther(providers[name])) {
-		            delete providers[name];
-		        }
-		    }
+            // filter redundant providers
+            QueryUtils.removeRedundantBindingProviders(providers);
 
 		    // group SqlTableDataProvider
 		    /** TODO note: сейчас реализовано с учетом только "плоского" UNION (объединения с общими полями):

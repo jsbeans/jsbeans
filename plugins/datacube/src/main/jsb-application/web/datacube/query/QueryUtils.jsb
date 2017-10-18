@@ -125,6 +125,39 @@
             });
         },
 
+        removeRedundantBindingProviders: function (providersFieldsMap/**name: {provider, cubeFields:{field:hasOtherBinding}}*/){
+		    function allFieldsBindingAndAllInOther(prov){
+		        var allFieldsBinding = true;
+		        var allInOther = true;
+		        for (var f in prov.cubeFields) if (prov.cubeFields.hasOwnProperty(f)) {
+		            if (!prov.cubeFields[f]) {
+		                allFieldsBinding = false;
+		                break;
+		            }
+		            var fieldInOther = false;
+		            for (var name in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(name)) {
+		                if (prov.provider.name != name) {
+		                    if(providersFieldsMap[name].cubeFields.hasOwnProperty(f)) {
+		                        fieldInOther = true;
+		                        break;
+		                    }
+                        }
+		            }
+		            if (!fieldInOther) {
+		                allInOther = false;
+		                break;
+		            }
+		        }
+		        return allFieldsBinding && allInOther;
+		    }
+
+		    for (var name in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(name)) {
+		        if (allFieldsBindingAndAllInOther(providersFieldsMap[name])) {
+		            delete providersFieldsMap[name];
+		        }
+		    }
+        },
+
         extractFields: function(valueExp, skipSubQuery) {
             var cubeFields = {};
             function collect(q) {
