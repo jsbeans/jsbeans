@@ -565,7 +565,26 @@
 		selectNode: function(bEnable){
 			if(bEnable){
 				this.addClass('selected');
-				this.editor.publish('DataCube.CubeEditor.cubeNodeSelected', this.entry);
+
+				var q = {};
+				if(Object.keys(this.checkedFieldList).length > 0){
+                    for(var i in this.checkedFieldList){
+                        q[i] = i;
+                    }
+				} else {
+                    var visibleFields = this.body.find('.field:visible').toArray();
+                    var visibleKeys = visibleFields.reduce(function(arr, el){
+                        arr.push(el.getAttribute("key"));
+                        return arr;
+                    }, []);
+
+
+                    for(var i = 0; i < visibleKeys.length && i < 20; i++){
+                        q[visibleKeys[i]] = visibleKeys[i];
+                    }
+				}
+
+				this.editor.publish('DataCube.CubeEditor.cubeNodeSelected', { cube: this.entry, query: { $select: q } });
 			} else {
 				this.removeClass('selected');
 				this.editor.publish('DataCube.CubeEditor.cubeNodeDeselected', this.entry);
