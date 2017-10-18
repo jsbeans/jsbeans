@@ -336,7 +336,7 @@
 			}
 			var ProviderCls = providerJsb.getClass();
 			var pId = this.getLocalId() + '|dp_' + JSB.generateUid();
-			var provider = new ProviderCls(pId, providerEntry, this, providerDesc.opts);
+			var provider = new ProviderCls(pId, providerEntry, this, providerDesc);
 			this.dataProviders[pId] = provider;
 			this.dataProviderEntries[pId] = providerEntry;
 			this.sourceCount = Object.keys(this.dataProviders).length;

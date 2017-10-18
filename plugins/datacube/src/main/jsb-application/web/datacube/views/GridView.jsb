@@ -150,18 +150,21 @@
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 			    this._updateData({
 			    	cube: source.getCube(),
-			    	query: query || source.getQuery()
+			    	query: query || source.getQuery(),
+			    	type: 'slice'
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
 			    this._updateData({
 			        cube: source.cube,
 			        provider: source,
-                    query: query || { $select: {}}
+                    query: query || { $select: {}},
+                    type: 'dataProvider'
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Model.Cube')){
             	this._updateData({
-            	cube: source,
-            	query: query || { $select: {}}
+                    cube: source,
+                    query: query || { $select: {}},
+                    type: 'cube'
             	});
 			} else {
 				throw new Error('Unsupported node type: ' + source.getJsb().$name);
@@ -180,11 +183,8 @@
 
             $this.getElement().loader();
             var preparedQuery = source.query;
-            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
-            	preparedQuery = { $select: {}};
-            }
 
-            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, id: this.curLoadId }, function(res){
+            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, id: this.curLoadId, type: source.type }, function(res){
                 if(res.id !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
@@ -213,6 +213,31 @@
 	    loadData: function(obj) {
             try{
                 if(this.it) this.it.close();
+
+                switch(obj.type){
+                    case 'cube':
+                        var fields = obj.cube.getFields();
+                        var q = {};
+                        for(var i in fields){
+                            q[i] = i;
+                        }
+                        obj.query = {
+                            $select: q
+                        }
+                        break;
+                    case 'dataProvider':
+                        var fields = obj.provider.extractFields();
+                        var q = {};
+                        for(var i in fields){
+                            q[i] = i;
+                        }
+                        obj.query = {
+                            $select: q
+                        }
+                        break;
+                    case 'slice':
+                        break;
+                }
 
                 this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider);
                 this.counter = 0;
