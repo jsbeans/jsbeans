@@ -363,19 +363,17 @@
 		        }
 		    });
 
+
 		    new this.SingleObject({
 		        name: '$coalesce',
 		        desc: 'Возвращает первое не NULL значение, перебирая заданные выражения по очереди',
-		        values: ['$coalesceExpr']
+		        values: ['$coalesceValues'],
 		    });
-
-		    new this.ComplexObject({
-		        name: '$coalesceExpr',
-		        values: {
-		            '$cond': '$filter',
-		            '$then': '$valueDefinition',
-		            '$else': '$valueDefinition'
-		        }
+		    new this.EArray({
+		        name: '$coalesceValues',
+		        minOperands: 2,
+		        maxOperands: -1,
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
 		    new this.SingleObject({
