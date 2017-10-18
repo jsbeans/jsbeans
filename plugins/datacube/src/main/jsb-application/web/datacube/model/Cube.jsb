@@ -848,8 +848,14 @@
 					var tableDesc = $this.materializer.createTable(suggestedName, fields);
 					materializationDesc.table = tableDesc.table;
 					
+					// generate query
+					var q = {$select:{}};
+					for(var fName in fields){
+						q.$select[fName] = fName;
+					}
+					
 					// transmit data
-					var iterator = $this.queryEngine.query({$select: {}}, {});
+					var iterator = $this.queryEngine.query(q, {});
 					var batch = [];
 					var lastStatusTimestamp = 0;
 					for(var i = 0; ; i++){
@@ -924,7 +930,6 @@
 							break;
 						}
 					}
-					
 					if(!source){
 						throw new Error('Internal error: unable to find materialization table');
 					}
@@ -936,7 +941,7 @@
 					}
 					var ProviderCls = providerJsb.getClass();
 					var pId = $this.getLocalId() + '|dp_' + JSB.generateUid();
-					materializationDesc.dataProvider = new ProviderCls(pId, source, $this, providerDesc.opts);
+					materializationDesc.dataProvider = new ProviderCls(pId, source, $this, providerDesc);
 					materializationDesc.dataProviderEntry = source;
 					materializationDesc.fields = {};
 					var providerFields = materializationDesc.dataProvider.extractFields();
