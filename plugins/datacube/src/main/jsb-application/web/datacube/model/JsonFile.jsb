@@ -21,7 +21,7 @@
 			});
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.JsonFileNode');
 		},
-
+		
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
 			if(opts){
@@ -30,16 +30,30 @@
 				}
 				if(opts.fileData){
 					// try to parse JSON
-					var charsets = ['UTF-8','Windows-1251'];
+					var charsets = ['UTF-8','Windows-1251','UTF-16LE','UTF-16BE'];
 					var json = null;
 					for(var i = 0; i < charsets.length; i++){
 						var charset = charsets[i];
 						var decoder = new Decoder(charset);
 						try {
 							var jsonStr = decoder.decode(opts.fileData);
-							json = JSON.parse(jsonStr);
+							var chrx = /[\{\[]/i;
+							var j = 0;
+							for(; j < jsonStr.length; j++){
+								if(chrx.test(jsonStr[j])){
+									break;
+								}
+							}
+							if(j > 0 && j < jsonStr.length){
+								jsonStr = jsonStr.substr(j);
+							}
+							if(j >= jsonStr.length){
+								continue;
+							}
+							json = eval('(' + jsonStr + ')');
 							break;
 						} catch(e){
+							JSB.getLogger().warn(e);
 							continue;
 						} finally {
 							decoder.close();	
@@ -49,7 +63,7 @@
 						throw new Error('Wrong file specified: ' + opts.fileName);
 					}
 					this.records = 1;
-					if($jsb.isArray(json)){
+					if(JSB.isArray(json)){
 						this.records = json.length;
 					}
 					this.property('records', this.records);
