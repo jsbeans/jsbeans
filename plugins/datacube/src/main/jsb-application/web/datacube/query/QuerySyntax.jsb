@@ -187,7 +187,7 @@
 		            '$array', '$flatArray', '$expandArray', '$concatArray',
 		            '$gsum', '$gcount', '$gmin', '$gmax',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg',
-		            '$if',
+		            '$if', '$coalesce',
 		            '$macros'
 		        ]
 		    });
@@ -360,6 +360,21 @@
 		        values: {
 		            '$field': '$valueDefinition',
 		            '$length': '$constNumber'
+		        }
+		    });
+
+		    new this.SingleObject({
+		        name: '$coalesce',
+		        desc: 'Возвращает первое не NULL значение, перебирая заданные выражения по очереди',
+		        values: ['$coalesceExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$coalesceExpr',
+		        values: {
+		            '$cond': '$filter',
+		            '$then': '$valueDefinition',
+		            '$else': '$valueDefinition'
 		        }
 		    });
 
