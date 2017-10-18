@@ -44,6 +44,10 @@
     text-align: right;
 }
 
+.dataProviderDiagramNode > .caption > .providerMode span {
+    vertical-align: middle;
+}
+
 .dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input:checked + label:before {
     background-color: #f1f1f1;
 }

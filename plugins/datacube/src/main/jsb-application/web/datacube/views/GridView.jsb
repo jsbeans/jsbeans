@@ -39,8 +39,8 @@
                 $this.updateData(slice);
             });
 
-            this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, cube){
-                $this.updateData(cube);
+            this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, obj){
+                $this.updateData(obj.cube, obj.query);
             });
 
             this.subscribe('DataCube.CubeEditor.providerNodeSelected', function(editor, msg, provider){
@@ -157,13 +157,13 @@
 			    this._updateData({
 			        cube: source.cube,
 			        provider: source,
-                    query: query || { $select: {}},
+                    query: query,
                     type: 'dataProvider'
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Model.Cube')){
             	this._updateData({
                     cube: source,
-                    query: query || { $select: {}},
+                    query: query,
                     type: 'cube'
             	});
 			} else {
@@ -216,14 +216,16 @@
 
                 switch(obj.type){
                     case 'cube':
-                        var fields = obj.cube.getFields();
-                        var q = {};
-                        for(var i in fields){
-                            q[i] = i;
+                        if(!obj.query.$select){
+                            var fields = obj.cube.getFields();
+                            var q = {};
+                            for(var i in fields){
+                                q[i] = i;
+                            }
+                            obj.query = JSB.merge(obj.query, {
+                                $select: q
+                            });
                         }
-                        obj.query = JSB.merge(obj.query, {
-                            $select: q
-                        });
                         break;
                     case 'dataProvider':
                         var fields = obj.provider.extractFields();
