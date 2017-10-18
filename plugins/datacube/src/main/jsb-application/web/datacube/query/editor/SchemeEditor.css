@@ -97,7 +97,14 @@
 .schemeEditor > .container > .entry > .key.postFilterField,
 .schemeEditor > .container > .entry > .key.outputField {
 	color: #0a540a;
-	padding-left: 14px;
+	padding: 2px 0 2px 14px;
+}
+
+.schemeEditor > .container > .entry.allowEdit > .key.selectField,
+.schemeEditor > .container > .entry.allowEdit > .key.postFilterField,
+.schemeEditor > .container > .entry.allowEdit > .key.outputField {
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 .schemeEditor > .container > .entry > .key.selectField::before,
@@ -500,7 +507,9 @@
 	border: 1px solid #c5ab95;
 }
 
-.schemeEditor[sname = "$query"] > .container {}
+.schemeEditor[sname = "$query"] > .container {
+	white-space: normal;
+}
 
 .schemeEditor[sname = "$query"] > .container > .entry {
 	display: inline-block;
