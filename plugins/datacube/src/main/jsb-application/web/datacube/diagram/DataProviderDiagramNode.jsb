@@ -73,7 +73,6 @@
             var checked = opts.provider.mode === 'join' ? true : false;
             this.caption.append(`#dot
                 <div class="providerMode">
-                    <span>Режим: </span>
                     <span>Union</span>
                     <div
                      jsb="JSB.Controls.Switch"
