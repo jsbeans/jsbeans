@@ -175,12 +175,29 @@
 		    this.entry.server().getFields(function(fields){
 		        if(!fields) return;
 
+                for(var i in $this.leftFieldConnectors){
+                    $this.leftFieldConnectors[i].destroy();
+                    delete $this.leftFieldConnectors[i];
+                }
+
+                $this.keyFieldList.empty();
+                $this.fieldList.clear();
+
+                for(var i in fields){
+                    var isKeyField = fields[i].binding.length > 1;
+                    $this.addField(fields[i].field, fields[i].type, isKeyField ? null : fields[i].binding[0].provider ? { id: fields[i].binding[0].provider.getId(), name: fields[i].binding[0].provider.getName() } : null, fields[i].link, isKeyField, true);
+                }
+                $this.updateNodeLinks(fields);
+                $this.updateResizable();
+
+		        /*
 		        for(var i in fields){
 		            if($this.fields[i] !== fields[i].type){
 		                $this.getElement().find('.field[key="' + i + '"] > .type > .text').text(fields[i].type);
 		                $this.fields[i] = fields[i].type;
 		            }
 		        }
+		        */
 		    });
 		},
 		
@@ -676,6 +693,18 @@
 		    } else {
 		        this.search.addClass('hidden');
 		    }
+		},
+
+		updateNodeLinks: function(fields){
+            for(var i in fields){
+                if(fields[i].link){
+                    for(var j = 0; j < fields[i].binding.length; j++){
+                        var link = this.diagram.createLink('bind');
+                        link.setSource(this.leftFieldConnectors[fields[i].field]);
+                        link.setTarget(this.editor.providersNodes[fields[i].binding[j].provider.getId()].rightFieldConnectors[fields[i].binding[j].field]);
+                    }
+                }
+            }
 		}
 	}
 }

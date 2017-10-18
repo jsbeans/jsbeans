@@ -492,7 +492,7 @@
 					});
 				}
 			}
-			
+
 			if(bNeedStore){
 				this.store();
 				this.doSync();
@@ -534,11 +534,27 @@
 					
 					if(!dpFields[bDesc.field]){
 						bindingArr.splice(i, 1);
+					} else {
+					    if(bDesc.type !== dpFields[bDesc.field]){
+					        bDesc.type = dpFields[bDesc.field];
+					    }
 					}
 				}
+
 				if(bindingArr.length == 0){
 					fieldsToRemove.push(fName);
 					bNeedStore = true;
+				}
+				if(bindingArr.length == 1){
+				    fDesc.link = false;
+				}
+				if(bindingArr.length >= 2){
+				    var first = bindingArr[0].type;
+				    for(var i = 1; i < bindingArr.length; i++){
+				        if(first !== bindingArr[i].type){
+				            this.removeFields(fName);
+				        }
+				    }
 				}
 			}
 			for(var i = 0; i < fieldsToRemove.length; i++){

@@ -54,7 +54,6 @@
 				onClick: function(evt){
 					evt.stopPropagation();
 					$this.refreshScheme();
-					$this.editor.cubeNode.refreshFields();
 				}
 			}); 
 			this.caption.append(refreshButton.getElement());
@@ -220,7 +219,8 @@
 					$this.fields = desc.fields;
 					$this.binding = desc.binding;
 					$this.refresh();
-					$this.updateNodeLinks();
+					// $this.updateNodeLinks();
+					$this.editor.cubeNode.refreshFields();
 				}
 			});
 		},
