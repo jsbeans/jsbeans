@@ -149,7 +149,12 @@
                 if (query.$select[filteredField]) {
                     var e = query.$select[filteredField];
                     if(QueryUtils.isAggregatedExpression(e)) {
-                        return true;
+                        // if cube field has same name
+                        if($this.cube && $this.cube.getManagedFields()[filteredField]) {
+                            return false;
+                        } else {
+                            return true;
+                        }
                     }
                 }
                 // is not simple cube field
@@ -343,6 +348,9 @@
 
             // n-operators
             switch(op) {
+                case '$coalesce':
+                    return 'COALESCE('+ translateNOperator(exp[op], ',') + ')';
+
                 case '$add':
                     return '('+ translateNOperator(exp[op], '+') + ')';
                 case '$sub':
