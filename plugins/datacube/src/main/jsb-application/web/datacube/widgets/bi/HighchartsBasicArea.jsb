@@ -845,7 +845,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 													/**
 													Значение на оси Х ... 
 													**/
-													filterValue = this.category, 
+													filterValue = this.category.hasOwnProperty("name") ? this.category.name : this.category, 
 													/**
 													Идентификатор установленного в результате drilldown-а фильтра
 													**/
@@ -933,61 +933,65 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 												**/
 												if( filterField && filterValue && filterField.length && filterValue.length) {
 													try {
-														JSB.getInstance('DataCube.Api.WidgetController')
-														.lookupWidget(wid, function(widget){
-															/**
-															Дожидаемся загрузеки виджета
-															**/
-															JSB.deferUntil(function() {
-																var filterDesc = {
-																	type: '$and',
-																	op: '$eq',
-																	field: filterField,
-																	value: filterValue
-																};
+														JSB.deferUntil(function() {	
+															JSB.getInstance('DataCube.Api.WidgetController')
+															.lookupWidget(wid, function(widget){
 																/**
-																Прменяем drilldown-фильтр
+																Дожидаемся загрузеки виджета
 																**/
-																myFilterId = widget.addFilter(filterDesc);
-																/**
-																Применяем "родительские" фильтры, хотя они вроде как уже должны бы быть применены
-																**/
-																var parentWidgetFilters = that.getFilters();
-																for(var i in parentWidgetFilters){
-																	if(parentWidgetFilters.hasOwnProperty(i)) {
-																		if(parentWidgetFilters[i].hasOwnProperty('type') && 
-																			parentWidgetFilters[i].hasOwnProperty('op') && 
-																			parentWidgetFilters[i].hasOwnProperty('field') && 
-																			parentWidgetFilters[i].hasOwnProperty('value') ) {
-																			
-																			filterDesc = {
-																				type: parentWidgetFilters[i].type,
-																				op: parentWidgetFilters[i].op,
-																				field: parentWidgetFilters[i].field,
-																				value: parentWidgetFilters[i].value
-																			};		
-
-																			if(!widget.hasFilter(filterDesc)) {
-																				widget.addFilter(filterDesc);
+																JSB.deferUntil(function() {
+																	var filterDesc = {
+																		type: '$and',
+																		op: '$eq',
+																		field: filterField,
+																		value: filterValue
+																	};
+																	/**
+																	Прменяем drilldown-фильтр
+																	**/
+																	myFilterId = widget.addFilter(filterDesc);
+																	/**
+																	Применяем "родительские" фильтры, хотя они вроде как уже должны бы быть применены
+																	**/
+																	var parentWidgetFilters = that.getFilters();
+																	for(var i in parentWidgetFilters){
+																		if(parentWidgetFilters.hasOwnProperty(i)) {
+																			if(parentWidgetFilters[i].hasOwnProperty('type') && 
+																				parentWidgetFilters[i].hasOwnProperty('op') && 
+																				parentWidgetFilters[i].hasOwnProperty('field') && 
+																				parentWidgetFilters[i].hasOwnProperty('value') ) {
+																				
+																				filterDesc = {
+																					type: parentWidgetFilters[i].type,
+																					op: parentWidgetFilters[i].op,
+																					field: parentWidgetFilters[i].field,
+																					value: parentWidgetFilters[i].value
+																				};		
+	
+																				if(!widget.hasFilter(filterDesc)) {
+																					widget.addFilter(filterDesc);
+																				}
 																			}
 																		}
 																	}
-																}
-																/**
-																**/
-																widget.refresh();	
-
-																/*
-																console.log('fmt', that.getFilterManager());
-																console.log('ft', that.getFilters());
-																console.log('fmw', widget.getFilterManager());
-																console.log('fw', widget.getFilters());
-																*/
-																
-															}, function() {
-																return widget.isInit;
-															});
-														});		
+																	/**
+																	**/
+																	widget.refresh();	
+	
+																	/*
+																	console.log('fmt', that.getFilterManager());
+																	console.log('ft', that.getFilters());
+																	console.log('fmw', widget.getFilterManager());
+																	console.log('fw', widget.getFilters());
+																	*/
+																	
+																}, function() {
+																	return widget.isInit;
+																});
+															});		
+														}, function() {
+															return (JSB.getInstance('DataCube.Api.WidgetController') !== undefined);
+														}); 
 													} catch(e) {
 														console.log(e);
 													}

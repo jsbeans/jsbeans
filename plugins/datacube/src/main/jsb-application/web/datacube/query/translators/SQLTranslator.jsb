@@ -802,7 +802,7 @@
             var allFields = {/**cubeField: true*/};
 		    QueryUtils.walkDataProviderFields(
 		        query, /**includeSubQueries=*/false, this.providers[0],
-		        function(fieldQuery, context, query){
+		        function(field, context, fieldQuery){
 		            if (fieldQuery == query) {
                         allFields[field] = (allFields[field]||0) + 1;
                     }
