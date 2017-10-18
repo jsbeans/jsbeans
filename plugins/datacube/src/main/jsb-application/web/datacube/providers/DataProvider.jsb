@@ -21,7 +21,9 @@
 			this.entry = pEntry;
 			this.cube = cube;
 			this.id = id;
-			this.mode = opts.mode;
+			if(opts && opts.mode){
+				this.mode = opts.mode;
+			} 
 			$base();
 		},
 		
