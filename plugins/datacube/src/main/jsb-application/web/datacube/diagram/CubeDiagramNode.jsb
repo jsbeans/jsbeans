@@ -237,9 +237,10 @@
                     var keysCount = Object.keys($this.checkedFieldList).length;
 
                     if(keysCount >= 2){
-                        var f = true;
+                        var f = true,
+                            a = Object.keys($this.checkedFieldList)[0];
                         for(var i in $this.checkedFieldList){
-                            if($this.fields[field] !== $this.checkedFieldList[i]){
+                            if($this.checkedFieldList[a] !== $this.checkedFieldList[i]){
                                 f = false;
                                 break;
                             }
