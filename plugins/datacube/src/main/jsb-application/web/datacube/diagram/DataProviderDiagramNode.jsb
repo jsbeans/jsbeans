@@ -529,7 +529,7 @@
 		    } else {
                 fields.each(function(i, el){
                     var text = $this.$(el).find('.name .text').text();
-                    if(text.match(val)){
+                    if(text.toLowerCase().match(val.toLowerCase())){
                         $this.$(el).removeClass('hidden');
                     } else {
                         $this.$(el).addClass('hidden');

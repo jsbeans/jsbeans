@@ -389,6 +389,8 @@
                     return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as varchar)';
                 case '$toDate':
                     return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as date)';
+                case '$toTimestamp':
+                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as timestamp)';
 
                 case '$dateYear':
                     return 'extract(isoyear from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
