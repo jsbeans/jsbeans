@@ -464,6 +464,20 @@
             }
             ]
         },
+        {
+            type: 'group',
+            name: 'Легенда',
+            key: 'legend',
+            items: [
+            {
+                name: 'Активна',
+                type: 'item',
+                key: 'enabled',
+                optional: true,
+                editor: 'none'
+            }
+            ]
+        },
         /*
         {
             name: 'Стек',
@@ -1141,6 +1155,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     },
 
                     legend: {
+                        enabled: this.getContext().find('legend').find('enabled').used(),
                         layout: 'horizontal',
                         floating: false,
                         align: 'center',
