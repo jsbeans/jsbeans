@@ -229,7 +229,7 @@
             var checkbox = new CheckBox({
                 onChange: function(isChecked){
                     if(isChecked){
-                        $this.checkedFieldList[field] = true;
+                        $this.checkedFieldList[field] = $this.fields[field];
                     } else {
                         delete $this.checkedFieldList[field];
                     }
@@ -237,7 +237,19 @@
                     var keysCount = Object.keys($this.checkedFieldList).length;
 
                     if(keysCount >= 2){
-                        $this.status.find('.toolbar > .link').removeClass('disabled');
+                        var f = true,
+                            a = Object.keys($this.checkedFieldList)[0];
+                        for(var i in $this.checkedFieldList){
+                            if($this.checkedFieldList[a] !== $this.checkedFieldList[i]){
+                                f = false;
+                                break;
+                            }
+                        }
+                        if(f){
+                            $this.status.find('.toolbar > .link').removeClass('disabled');
+                        } else {
+                            $this.status.find('.toolbar > .link').addClass('disabled');
+                        }
                     } else {
                         $this.status.find('.toolbar > .link').addClass('disabled');
                     }

@@ -143,7 +143,7 @@
                 };
 		    }
 
-            this._updateData(this.curData);
+            this._updateData(this.curData, true);
 		},
 		
 		updateData: function(source, query){
@@ -171,8 +171,8 @@
 			}
 		},
 
-		_updateData: function(source){
-		    if(this.curData === source) return;
+		_updateData: function(source, isSort){
+		    if(this.curData === source && !isSort) return;
 
             this.error.addClass('hidden');
 
@@ -221,9 +221,9 @@
                         for(var i in fields){
                             q[i] = i;
                         }
-                        obj.query = {
+                        obj.query = JSB.merge(obj.query, {
                             $select: q
-                        }
+                        });
                         break;
                     case 'dataProvider':
                         var fields = obj.provider.extractFields();
@@ -231,9 +231,9 @@
                         for(var i in fields){
                             q[i] = i;
                         }
-                        obj.query = {
+                        obj.query = JSB.merge(obj.query, {
                             $select: q
-                        }
+                        });
                         break;
                     case 'slice':
                         break;

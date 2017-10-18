@@ -23,7 +23,7 @@
 	background: -ms-linear-gradient(top, #f1efc5 0%, #e0e0a8 60%, #d4cc92 100%);
 	
 	
-    padding: 2px 46px 2px 4px;
+    padding: 2px 4px;
 	cursor: move;
     border-bottom: 1px solid #988e5f;
     position: relative;
@@ -41,6 +41,7 @@
 
 .dataProviderDiagramNode > .caption > .providerMode {
     padding: 1px 2px;
+    text-align: right;
 }
 
 .dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input:checked + label:before {
@@ -48,15 +49,14 @@
 }
 
 .dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input + label:after {
-    background-color: #8ce196;
+    background-color: rgb(255, 197, 0);
 }
 
 .dataProviderDiagramNode > .caption > .renderer {
 	white-space: nowrap;
-	padding-top: 1px;
-	padding-bottom: 1px;
 	overflow: hidden;
     display: block;
+    padding: 1px 40px 1px 0;
 }
 
 .dataProviderDiagramNode > .caption > .renderer > .icon {}
