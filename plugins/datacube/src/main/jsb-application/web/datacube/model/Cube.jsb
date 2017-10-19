@@ -44,6 +44,7 @@
 		materializing: false,
 		nodePosition: null,
 		nodeSize: null,
+		defaultFields: null,
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
@@ -74,6 +75,7 @@
 					
 					this.nodePosition = snapshot.position;
 					this.nodeSize = snapshot.size;
+					this.defaultFields = snapshot.defaultFields;
 					
 					// construct data providers
 					for(var i = 0; i < snapshot.providers.length; i++){
@@ -188,6 +190,7 @@
 			var desc = {
 				cubePosition: this.nodePosition,
 				cubeSize: this.nodeSize,
+				defaultFields: this.defaultFields,
 				providers: [],
 				fields: this.fields,
 				slices: []
@@ -224,7 +227,8 @@
 				fields: [],
 				slices: [],
 				position: this.nodePosition,
-				size: this.nodeSize
+				size: this.nodeSize,
+				defaultFields: this.defaultFields
 			};
 			
 			// prepare providers
@@ -733,6 +737,12 @@
 			this.doSync();
 
 			return nFields;
+		},
+
+		setDefaultFields: function(fields){
+		    this.defaultFields = fields;
+            this.store();
+            this.doSync();
 		},
 		
 		addSlice: function(){

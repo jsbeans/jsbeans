@@ -53,7 +53,7 @@
 }
 
 .dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input + label:after {
-    background-color: rgb(255, 197, 0);
+    background-color: rgb(232, 187, 32);
 }
 
 .dataProviderDiagramNode > .caption > .renderer {

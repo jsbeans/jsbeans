@@ -256,6 +256,9 @@
 				}
 				$this.cubeNode.updateResizable();
 
+				// mark default fields
+				$this.cubeNode.markDefaultFields(desc.defaultFields);
+
 				// draw slices
 				for(var i = 0; i < desc.slices.length; i++){
 					var sDesc = desc.slices[i];

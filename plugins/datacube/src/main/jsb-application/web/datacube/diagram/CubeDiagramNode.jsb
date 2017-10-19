@@ -15,6 +15,7 @@
 		checkedFieldList: {},
 		leftFieldConnectors: {},
 		rightFieldConnectors: {},
+		defaultFields: {},
 		
 		options: {
 			onSelect: function(bEnable){
@@ -45,7 +46,7 @@
 					<div class="name">{{=this.entry.getName()}}</div>
 					
 					<div jsb="JSB.Widgets.Button" class="roundButton btnCreate btn10" tooltip="Создать срез"
-						onclick="{{=$this.callbackAttr(function(evt){ $this.editor.addSlice($this.checkedFieldList); evt.stopPropagation(); })}}"></div>
+						onclick="{{=$this.callbackAttr(function(evt){ $this.editor.addSlice(JSB.merge($this.defaultFields, $this.checkedFieldList)); evt.stopPropagation(); })}}"></div>
 				</div>
 			`);
 			this.body = this.$(`
@@ -57,6 +58,7 @@
                         <div class="selectAll" title="Выделить все"></div>
                         <div class="deselectAll" title="Снять выделение со всех"></div>
                         <div class="link disabled" title="Объединение полей"></div>
+                        <div class="default disabled" title="Установить поля по-умолчанию"></div>
                         <div class="remove disabled" title="Удаление полей"></div>
                         <div class="materialization" title="Настройки материализации куба"></div>
                     </div>
@@ -141,6 +143,9 @@
 			});
 
 			// toolbar
+			this.status.find('.materialization').click(function(evt){
+				$this.showMaterializationDialog(evt);
+			});
             this.status.find('.selectAll').click(function(evt){
                 var fields = $this.body.find('.field > .name > ._dwp_checkBox');
 
@@ -161,13 +166,15 @@
                     }
                 }
             });
-			this.status.find('.materialization').click(function(evt){
-				$this.showMaterializationDialog(evt);
-			});
+            this.status.find('.default').click(function(){
+                $this.setDefaultFields();
+                $this.$(this).addClass('disabled');
+            });
 			this.status.find('.link').click(function(){
 			    $this.createKeyField();
 			    $this.$(this).addClass('disabled');
 			});
+
 			this.status.find('.remove').click(function(){
 			    $this.removeField(Object.keys($this.checkedFieldList));
 			    $this.checkedFieldList = {};
@@ -211,6 +218,9 @@
                 }
                 $this.updateNodeLinks(fields);
                 $this.updateResizable();
+
+                $this.status.find('.link').addClass('disabled');
+                $this.status.find('.remove').addClass('disabled');
 
 		        /*
 		        for(var i in fields){
@@ -295,8 +305,10 @@
 
                     if(keysCount >= 1){
                         $this.status.find('.toolbar > .remove').removeClass('disabled');
+                        $this.status.find('.toolbar > .default').removeClass('disabled');
                     } else {
                         $this.status.find('.toolbar > .remove').addClass('disabled');
+                        $this.status.find('.toolbar > .default').addClass('disabled');
                     }
                 }
             });
@@ -598,6 +610,29 @@
             this.updateInterface();
             if(nFields.add.length > 0){
                 this.reorderFields();
+            }
+		},
+
+		setDefaultFields: function(){
+		    var fields = this.checkedFieldList;
+		    this.entry.server().setDefaultFields(fields, function(res, fail){
+		        if(fail) return;
+
+		        for(var i in fields){
+		            $this.body.find('.field[key="' + i + '"] > .name > ._dwp_checkBox').jsb().setChecked(false);
+		        }
+
+		        $this.checkedFieldList = {};
+		        $this.markDefaultFields(fields);
+		    });
+		},
+
+		markDefaultFields: function(fields){
+            this.defaultFields = fields;
+            this.body.find('.field').removeClass('default');
+
+            for(var i in fields){
+                this.body.find('.field[key="' + i + '"]').addClass('default');
             }
 		},
 
