@@ -6,6 +6,7 @@
 	           'JSB.Widgets.Button',
 	           'JSB.Widgets.ToolManager',
 	           'DataCube.Controls.DataBindingSelector',
+	           'DataCube.Controls.WidgetBindingSelector',
 	           'DataCube.Controls.EmbeddedWidgetSelector'],
 	
 	$client: {
@@ -498,6 +499,17 @@
 					if(valueDesc.binding){
 						valContainer.addClass('isBound');
 					}
+				}
+
+				if($this.scheme.binding == 'readyWidget'){
+				    var bindingSelector = new WidgetBindingSelector({
+				        value: valueDesc.value,
+				        onChange: function(val){
+				            valueDesc.value = val;
+				            if($this.options.onChange) $this.options.onChange.call($this);
+				        }
+				    });
+				    valContainer.append(bindingSelector.getElement());
 				}
 				
 				if($this.scheme.multiple){

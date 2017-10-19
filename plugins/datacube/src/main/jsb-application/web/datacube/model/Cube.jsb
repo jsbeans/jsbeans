@@ -535,8 +535,8 @@
 					if(!dpFields[bDesc.field]){
 						bindingArr.splice(i, 1);
 					} else {
-					    if(bDesc.type !== dpFields[bDesc.field]){
-					        bDesc.type = dpFields[bDesc.field];
+					    if(fDesc.type != dpFields[bDesc.field]){
+					        fDesc.type = dpFields[bDesc.field];
 					    }
 					}
 				}

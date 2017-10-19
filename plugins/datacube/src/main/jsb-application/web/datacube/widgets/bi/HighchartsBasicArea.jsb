@@ -441,16 +441,11 @@
                     key: 'drilldown',
 	                items: [
 						{
-							name: 'Идентификатор рабочей области (wsid)',
-							type: 'item',
-							key: 'widgetWsid',
-							itemType: 'string'
-						},
-						{
-							name: 'Идентификатор виджета (wid)',
-							type: 'item',
-							key: 'widgetWid',
-							itemType: 'string'
+                            name: 'Виджет',
+                            type: 'item',
+                            key: 'widget',
+                            editor: 'none',
+                            binding: 'readyWidget'
 						},
 						{
 							name: 'Поле для фильтрации',
@@ -820,8 +815,8 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                 symbol: $this.isNull(seriesContext[i].get(8).value().get(4).value())
                             },
                             visible: seriesContext[i].find('visible').used(),
-							widgetWsid: seriesContext[i].find('widgetWsid').value(),
-							widgetWid: seriesContext[i].find('widgetWid').value(),
+							widgetWsid: seriesContext[i].find('widget').value().widgetWsid,
+							widgetWid: seriesContext[i].find('widget').value().widgetWid,
 							widgetFilter: seriesContext[i].find('widgetFilter').value(),
                             point: {
                                 events: {

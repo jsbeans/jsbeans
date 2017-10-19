@@ -20,6 +20,10 @@
     text-decoration: none;
 }
 
+.jsb-button > .icon {
+    background-size: 100%;
+}
+
 .jsb-button:active,
 .jsb-button:focus {
     outline: 0;
