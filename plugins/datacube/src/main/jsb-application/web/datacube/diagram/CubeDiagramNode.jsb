@@ -54,6 +54,8 @@
 			this.status = this.$(`
 				<div class="status">
                     <div class="toolbar">
+                        <div class="selectAll" title="Выделить все"></div>
+                        <div class="deselectAll" title="Снять выделение со всех"></div>
                         <div class="link disabled" title="Объединение полей"></div>
                         <div class="remove disabled" title="Удаление полей"></div>
                         <div class="materialization" title="Настройки материализации куба"></div>
@@ -137,8 +139,28 @@
 				}
 				$this.updateIndicators();
 			});
-			
+
 			// toolbar
+            this.status.find('.selectAll').click(function(evt){
+                var fields = $this.body.find('.field > .name > ._dwp_checkBox');
+
+                for(var i = 0; i < fields.length; i++){
+                    var jsb = $this.$(fields[i]).jsb();
+                    if(!jsb.isChecked()){
+                        jsb.setChecked(true);
+                    }
+                }
+            });
+            this.status.find('.deselectAll').click(function(evt){
+                var fields = $this.body.find('.field > .name > ._dwp_checkBox');
+
+                for(var i = 0; i < fields.length; i++){
+                    var jsb = $this.$(fields[i]).jsb();
+                    if(jsb.isChecked()){
+                        jsb.setChecked(false);
+                    }
+                }
+            });
 			this.status.find('.materialization').click(function(evt){
 				$this.showMaterializationDialog(evt);
 			});

@@ -196,6 +196,9 @@
 
                 if(res.result.length !== 0) {
                     $this.table.loadData(res.result);
+                    if(!res.allLoaded && $this.table.getElement().height() >= $this.table.getElement().find('.ht_master.handsontable > div.wtHolder').height()){
+                        $this.preLoader($this.table.getRowCount());
+                    }
                 } else {
                     $this.table.loadData(null);
                 }
