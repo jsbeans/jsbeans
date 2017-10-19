@@ -149,7 +149,12 @@
                 if (query.$select[filteredField]) {
                     var e = query.$select[filteredField];
                     if(QueryUtils.isAggregatedExpression(e)) {
-                        return true;
+                        // if cube field has same name
+                        if($this.cube && $this.cube.getManagedFields()[filteredField]) {
+                            return false;
+                        } else {
+                            return true;
+                        }
                     }
                 }
                 // is not simple cube field
@@ -343,6 +348,9 @@
 
             // n-operators
             switch(op) {
+                case '$coalesce':
+                    return 'COALESCE('+ translateNOperator(exp[op], ',') + ')';
+
                 case '$add':
                     return '('+ translateNOperator(exp[op], '+') + ')';
                 case '$sub':
@@ -390,8 +398,7 @@
                 case '$toDate':
                     return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as date)';
                 case '$toTimestamp':
-                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as timestamp)';
-
+                    return 'to_timestamp(CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as double precision))';
                 case '$dateYear':
                     return 'extract(isoyear from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$dateMonth':

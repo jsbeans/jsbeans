@@ -187,7 +187,7 @@
 		            '$array', '$flatArray', '$expandArray', '$concatArray',
 		            '$gsum', '$gcount', '$gmin', '$gmax',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg',
-		            '$case',
+		            '$if', '$coalesce',
 		            '$macros'
 		        ]
 		    });
@@ -363,11 +363,27 @@
 		        }
 		    });
 
+
+		    new this.SingleObject({
+		        name: '$coalesce',
+		        desc: 'Возвращает первое не NULL значение, перебирая заданные выражения по очереди',
+		        values: ['$coalesceValues'],
+		    });
+		    new this.EArray({
+		        name: '$coalesceValues',
+		        minOperands: 2,
+		        maxOperands: -1,
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+
+		    new this.SingleObject({
+		        name: '$if',
+		        desc: 'Условное выражение выбора значения по условию',
+		        values: ['$ifExpr']
+		    });
 		    
 		    new this.ComplexObject({
-		        name: '$if',
-		        displayName: 'if/then/else',
-		        desc: 'Условное выражение выбора значения по условию',
+		        name: '$ifExpr',
 		        values: {
 		            '$cond': '$filter',
 		            '$then': '$valueDefinition',

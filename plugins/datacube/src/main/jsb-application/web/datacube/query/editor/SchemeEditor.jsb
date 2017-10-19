@@ -131,7 +131,7 @@
 			var allowWrap = false;
 			if(entryType == 'entry'){
 				hoverDesc = $this.hoverEntries;
-				if($this.scheme.customKey == '#outputFieldName' && JSB.isObject($this.scheme.values) && !$this.scheme.values[entryKey] ){
+				if(($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value')&& JSB.isObject($this.scheme.values) && !$this.scheme.values[entryKey] ){
 					allowEdit = true;
 					allowRemove = true;
 				} else {
@@ -340,6 +340,10 @@
 			return $this.chooseBestCubeField();
 		},
 		
+		chooseBestValue: function(){
+			return null;
+		},
+		
 		constructEmptyValue: function(schemeName, subValues){
 			var value = null;
 			
@@ -401,8 +405,10 @@
 								fName = $this.chooseBestColumn();
 							} else if(schemeDesc.name == '$select' && vName == '#outputFieldName'){
 								fName = generateColumnName();
-							} else if(schemeDesc.name == '$postFilter' && vName == '#outputFieldName'){
+							} else if((schemeDesc.name == '$postFilter' && vName == '#outputFieldName')||(schemeDesc.name == '$finalizeFields' && vName == '#field')){
 								fName = $this.chooseBestColumn();
+							} else if(vName == '#value') {
+								fName = $this.chooseBestValue();
 							} else {
 								debugger;	
 							}
@@ -712,7 +718,7 @@
 				}
 				chooseType = 'value';
 			} else if(JSB.isObject(schemes)){
-				if(Object.keys(schemes).length == 1){
+				if(Object.keys(schemes).length == 1 && $this.scheme.name == '$select'){
 					chooseType = 'value';
 					// pass first
 					chosenObjectKey = Object.keys(schemes)[0];
@@ -974,7 +980,7 @@
 				keyElt.empty();
 				keyElt.append(keyDecl.displayName);
 			} else {
-				if($this.scheme.customKey == '#outputFieldName'){
+				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value'){
 					var keyEditor = keyElt.find('> .keyEditor').jsb();
 					if(!keyEditor){
 						keyEditor = new PrimitiveEditor({
@@ -985,7 +991,6 @@
 						});
 						keyEditor.addClass('keyEditor');
 						keyElt.append(keyEditor.getElement());
-						keyElt.addClass('outputField');
 					}
 					keyEditor.setData(valName);
 					
@@ -993,6 +998,11 @@
 					keyElt.empty();
 					keyElt.text(valName);
 				}
+				
+				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#field'){
+					keyElt.addClass('outputField');
+				}
+
 			}
 			
 			// generate replacement schemes
