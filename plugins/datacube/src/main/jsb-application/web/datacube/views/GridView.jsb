@@ -176,8 +176,6 @@
 
             this.error.addClass('hidden');
 
-            if(!source.query) return;
-
             this.curLoadId = JSB().generateUid();
             this.curData = source;
 
