@@ -534,9 +534,17 @@
                             while(source.next()){
                                 var val = value.value();
 
-                                if(!JSB().isDate(val)) return;
-
-                                var dateValue = val.getTime();
+                                if(!JSB().isDate(val)){
+                                    var dateValue = val.getTime();
+                                    $this._dataFormat = 'datetime';
+                                } else {
+                                    if(typeof val === 'number'){
+                                         var dateValue = val;
+                                        $this._dataFormat = 'number';
+                                    } else {
+                                        return;
+                                    }
+                                }
 
                                 if(autoCount){
                                     var e = null;
@@ -709,7 +717,7 @@
                         type: '$and',
                         op: '$gte',
                         field: field,
-                        value: new Date(event.min)
+                        value: $this._dataFormat === 'datetime' ? new Date(event.min) : event.min
                     };
                     $this._currentFilters.min = event.min;
                     $this._currentFilters.minId = $this.addFilter(fDesc);
@@ -734,7 +742,7 @@
                         type: '$and',
                         op: '$lte',
                         field: field,
-                        value: new Date(event.max)
+                        value: $this._dataFormat === 'datetime' ? new Date(event.max) : event.max
                     };
                     $this._currentFilters.max = event.max;
                     $this._currentFilters.maxId = $this.addFilter(fDesc);
