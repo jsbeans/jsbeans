@@ -65,9 +65,12 @@
 			this.manager = w.workspaceManager;
 		},
 		
-		addView: function(id, title, viewCls){
+		addView: function(id, title, icon, viewCls){
 			if(!this.views[id]){
 				this.views[id] = this.tabView.addTab(title, viewCls, {id: id, dontSwitchOnCreate: true });
+				if(icon){
+					this.views[id].tab.find('> ._dwp_icon').css('background-image', 'url(' + icon + ')');
+				}
 				this.views[id].tab.resize(function(){
 					JSB.defer(function(){
 						$this.updateNavigator();
@@ -122,7 +125,7 @@
 							c.call($this);
 						} else {
 							$jsb.lookup(viewDesc.viewType, function(cls){
-								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, cls);
+								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, viewDesc.icon, cls);
 								c.call($this);
 							});
 						}

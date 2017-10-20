@@ -229,7 +229,8 @@
 						this.browserViewRegistry[wmKey][aNode].push({
 							viewType: viewType,
 							priority: viewOpts.priority || 0,
-							caption: viewOpts.caption
+							caption: viewOpts.caption,
+							icon: viewOpts.icon
 						});
 					}
 				}

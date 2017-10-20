@@ -294,6 +294,7 @@
 						}
 						item.fetchOpts.reset = false;
 						if(data){
+							data = $this.decompressData(data);
 							if(!item.data){
 								item.data = data;
 							} else {
@@ -477,6 +478,23 @@
 			};
 		},
 		
+		decompressData: function(dataObj){
+			if(!dataObj){
+				return null;
+			}
+			var data = [];
+			for(var i = 0; i < dataObj.data.length; i++){
+				var cItem = dataObj.data[i];
+				var item = {};
+				for(var fIdx in cItem){
+					var fName = dataObj.dict[parseInt(fIdx)];
+					item[fName] = cItem[fIdx];
+				}
+				data.push(item);
+			}
+			return data;
+		},
+		
 		setWrapper: function(w, values, sourceDesc){
 			this.wrapper = w;
 			this.updateValues(values, sourceDesc);
@@ -624,6 +642,32 @@
 			}
 		},
 		
+		compressData: function(data){
+			var encoded = {
+				data: [],
+				dict: []
+			};
+			
+			var encMap = {};
+			var cIdx = 0;
+			for(var i = 0; i < data.length; i++){
+				var item = data[i];
+				var cItem = {};
+				for(var fName in item){
+					if(!encMap[fName]){
+						// generate encoded field name
+						var cIdx = encoded.dict.length;
+						encoded.dict.push(fName);
+						encMap[fName] = '' + cIdx;
+					}
+					cItem[encMap[fName]] = item[fName];
+				}
+				encoded.data.push(cItem);
+			}
+			
+			return encoded;
+		},
+		
 		fetch: function(sourceId, dashboard, opts){
 			var batchSize = opts.batchSize || 50;
 			var source = dashboard.workspace.entry(sourceId);
@@ -682,7 +726,9 @@
 				JSB.getLocker().unlock('fetch_' + $this.getId());
 			}
 			
-			return data;
+			
+			
+			return this.compressData(data);
 		}
 	}
 }

@@ -33,6 +33,7 @@
 	border: none;
     min-height: initial;
     padding: 1px 6px 2px 4px;
+    margin-right: 1px;
 }
 
 .dashboardEditor ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {
