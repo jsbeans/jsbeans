@@ -47,8 +47,10 @@
 									}
 								}
 							}
-							if(!dragAccept && (!$this.options.onDragAccept || $this.options.onDragAccept(d))){
-								dragAccept = true;
+							if(!dragAccept && $this.options.onDragAccept){
+								if($this.options.onDragAccept(d)){
+									dragAccept = true;
+								}
 							}
 							
 							if(dragAccept){

@@ -330,17 +330,22 @@
 				var value = args[i].get(1).value();
 				data[key] = value;
 			}
-			var templateProc = this.doT.template(template);
-			var html = templateProc(data);
-
-			if(isCacheMod){
-			    this.storeCache(html);
-			}
 			
-			if(this.getContext().find('useIframe').used()){
-				this.renderIframe(html);
-			} else {
-				this.renderSimple(html);
+			try {
+				var templateProc = this.doT.template(template);
+				var html = templateProc(data);
+	
+				if(isCacheMod){
+				    this.storeCache(html);
+				}
+				
+				if(this.getContext().find('useIframe').used()){
+					this.renderIframe(html);
+				} else {
+					this.renderSimple(html);
+				}
+			} catch(e){
+				JSB.getLogger().error(e);
 			}
 		},
 		

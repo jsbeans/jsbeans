@@ -75,7 +75,7 @@
                         if(this.scheme.binding === 'field') return; // need data update
                         JSB().defer(function(){
                             $this.setChanges();
-                        }, 300, "widgetSettingsView_setChanges" + $this.getId());
+                        }, 800, "widgetSettingsView_setChanges" + $this.getId());
                     }
                 });
                 $this.schemeBlock.append($this.widgetSchemeRenderer.getElement());

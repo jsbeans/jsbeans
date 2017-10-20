@@ -89,7 +89,7 @@
 		attached: false,
 		
 		$constructor: function(widgetEntry, owner, opts){
-			$base();
+			$base(opts);
 			this.widgetEntry = widgetEntry;
 			this.owner = owner;
 			this.name = this.widgetEntry.getName();
@@ -100,7 +100,10 @@
 			this.append(this.widgetContainer);
 			
 			$this.setTitle($this.getName());
-			$this.updateTabHeader();
+			
+			if(!$this.options.viewMode){
+				$this.updateTabHeader();
+			}
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
@@ -113,7 +116,9 @@
 			this.subscribe('JSB.Widgets.WidgetContainer.widgetAttached', function(sender, msg, w){
 				if(w == $this){
 					// update header
-					$this.updateTabHeader();
+					if(!$this.options.viewMode){
+						$this.updateTabHeader();
+					}
 					$this.attached = true;
 				}
 			});

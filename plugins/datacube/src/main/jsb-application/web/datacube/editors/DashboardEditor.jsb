@@ -17,7 +17,7 @@
 			$base(opts);
 			
 			this.loadCss('DashboardEditor.css');
-			this.addClass('dashboardEditor');
+			this.addClass('dashboardEditor loading');
 			
 			this.filterManager = new FilterManager(this);
 			
@@ -68,8 +68,11 @@
 			});
 			this.append(this.dashboard);
 			
+			this.loadingBack = $this.$('<div class="loadingBack"><div class="message"><div class="icon"></div></div></div>');
+			this.append(this.loadingBack);
+			
 			this.filterSelector.getElement().resize(function(){
-				$this.dashboard.getElement().css('height', 'calc(100% - '+$this.filterSelector.getElement().outerHeight()+'px)');
+				$this.dashboard.getElement().css('height', 'calc(100% - '+($this.filterSelector.getElement().outerHeight() + 4)+'px)');
 			});
 		},
 		
@@ -79,6 +82,7 @@
 			}
 			this.entry = entry;
 			this.filterManager.clear();
+			$this.addClass('loading');
 			this.entry.server().load(function(dashboardDesc){
 				// remove old wrappers
 				for(var wId in $this.wrappers){
@@ -127,6 +131,10 @@
 				$this.ignoreHandlers = true;
 				$this.dashboard.setLayout(desc);
 				$this.ignoreHandlers = false;
+				JSB.defer(function(){
+					$this.removeClass('loading');
+				}, 300);
+				
 			});
 		},
 		
