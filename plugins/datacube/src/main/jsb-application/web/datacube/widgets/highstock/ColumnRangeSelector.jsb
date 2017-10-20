@@ -513,21 +513,6 @@
                                     y: queryResult[i].dateCount
                                 });
                             }
-
-                            var navigator = {
-                                adaptToUpdatedData: false,
-                                series: {
-                                    data: data
-                                }
-                            }
-
-                            var scrollbar = {
-                                liveRedraw: false
-                            }
-
-                            var rangeSelector = {
-                                enabled: false
-                            }
                         } else {
                             var data = [];
 
@@ -582,7 +567,7 @@
                         	$this.storeCache(data);
                         }
 
-                        $this._buildChart(data);
+                        $this._buildChart(data, _bNeedExtremesUpdate);
                     } catch(e){
                         console.log(e);
                     } finally{
@@ -594,7 +579,10 @@
             });
         },
 
-        _buildChart: function(data){
+        _buildChart: function(data, _bNeedExtremesUpdate){
+        	var seriesContext = this.getContext().find('series').value(),
+        		fixedColumns = this.getContext().find('fixedColumns');
+        	
             try{
                 var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
                 tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
@@ -616,6 +604,23 @@
                     for(var i = 0; i < gr.length; i++){
                         dateTimeLabelFormats[gr[i].value().get(0).value().get(0).value()] = gr[i].value().get(1).value();
                     }
+                }
+                
+                if(fixedColumns.used()){
+                    var scrollbar = {
+                        liveRedraw: false
+                    }
+
+                    var rangeSelector = {
+                        enabled: false
+                    }
+                    
+                    var navigator = {
+                        adaptToUpdatedData: false,
+                        series: {
+                            data: data
+                        }
+                    }                    
                 }
 
                 var chartOpts = {
