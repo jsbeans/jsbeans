@@ -534,7 +534,7 @@
                             while(source.next()){
                                 var val = value.value();
 
-                                if(!JSB().isDate(val)){
+                                if(JSB().isDate(val)){
                                     var dateValue = val.getTime();
                                     $this._dataFormat = 'datetime';
                                 } else {
