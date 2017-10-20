@@ -60,12 +60,14 @@
 			this.clientPane = this.$('<div class="_dwp_clientPane"></div>');
 			this.append(this.clientPane);
 			
-			this.tabPane.resize(function(){
-				if(!$this.tabPane.is(':visible')){
-					return;
-				}
-				self.updateSizes();
-			});
+			if(this.options.showTabs){
+				this.tabPane.resize(function(){
+					if(!$this.tabPane.is(':visible')){
+						return;
+					}
+					self.updateSizes();
+				});
+			}
 		},
 		
 		containsTab: function(tab){
