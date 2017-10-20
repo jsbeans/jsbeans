@@ -792,6 +792,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
                 for(var i = 0; i < seriesContext.length; i++){
                     if(!series[i]){
+                        var drilldown = seriesContext[i].find('widget').value();
                         series[i] = {
                             name: seriesContext[i].get(0).value(),
                             data: seriesData[i],
@@ -815,8 +816,8 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                 symbol: $this.isNull(seriesContext[i].get(8).value().get(4).value())
                             },
                             visible: seriesContext[i].find('visible').used(),
-							widgetWsid: seriesContext[i].find('widget').value().widgetWsid,
-							widgetWid: seriesContext[i].find('widget').value().widgetWid,
+							widgetWsid: drilldown ? drilldown.widgetWsid : undefined,
+							widgetWid: drilldown ? drilldown.widgetWid : undefined,
 							widgetFilter: seriesContext[i].find('widgetFilter').value(),
                             point: {
                                 events: {
