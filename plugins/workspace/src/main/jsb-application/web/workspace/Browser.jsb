@@ -65,12 +65,12 @@
 			this.manager = w.workspaceManager;
 		},
 		
-		addView: function(id, title, view){
+		addView: function(id, title, viewCls){
 			if(!this.views[id]){
-				this.views[id] = this.tabView.addTab(title, view, {id: id});
+				this.views[id] = this.tabView.addTab(title, viewCls, {id: id, dontSwitchOnCreate: true });
 				this.views[id].tab.resize(function(){
 					JSB.defer(function(){
-						$this.updateNavigator();	
+						$this.updateNavigator();
 					}, 100, 'addView_' + $this.getId());
 				});
 			}
@@ -87,6 +87,9 @@
 		},
 		
 		getActiveView: function(){
+		    if(!this.tabView.getCurrentTab()){
+		        return null;
+		    }
 			return this.tabView.getCurrentTab().id;
 		},
 		
@@ -106,6 +109,10 @@
 			if(this.nodeViewRegistry[nodeType]){
 				this.updateViewsForNode();
 			} else {
+                // hide all tabs
+                var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab');
+                tabs.css('display', 'none');
+
 				WorkspaceController.server().queryBrowserViews(this.wmKey, nodeType, function(viewArr){
 					$this.nodeViewRegistry[nodeType] = viewArr;
 					// ensure all view jsbs loaded
@@ -115,7 +122,7 @@
 							c.call($this);
 						} else {
 							$jsb.lookup(viewDesc.viewType, function(cls){
-								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, new cls());
+								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, cls);
 								c.call($this);
 							});
 						}
@@ -130,7 +137,7 @@
 			var nodeType = this.currentNode ? this.currentNode.getJsb().$name : null;
 			var viewArr = this.nodeViewRegistry[nodeType];
 			var currentViewId = this.getActiveView();
-			
+
 			// hide all tabs
 			var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab');
 			tabs.css('display', 'none');
@@ -155,7 +162,7 @@
 			
 			// activate view
 			var bActivated = false;
-			if(!ignorePrevView){
+			if(!ignorePrevView && currentViewId){
 				for(var i = 0; i < viewArr.length; i++){
 					if(viewArr[i].viewEntry.id == currentViewId){
 						this.activateView(currentViewId);
