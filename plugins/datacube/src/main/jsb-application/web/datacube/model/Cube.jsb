@@ -453,6 +453,32 @@
 
 			return name;
 		},
+
+		removeProvider: function(pId){
+		    var fieldsForRemove = [];
+
+            for(var i in this.fields){
+                for(var j = 0; j < this.fields[i].binding.length; j++){
+                    var field = this.fields[i].binding[j];
+                    if(field.provider.getId() == pId){
+                        fieldsForRemove.push(i);
+                    }
+                }
+            }
+
+            this.removeFields(fieldsForRemove);
+            delete this.dataProviders[pId];
+            delete this.dataProviderFields[pId];
+            delete this.dataProviderEntries[pId];
+            delete this.dataProviderPositions[pId];
+            delete this.dataProviderSizes[pId];
+            this.sourceCount--;
+
+		    this.store();
+            this.doSync();
+
+            this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+		},
 		
 		refreshDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);

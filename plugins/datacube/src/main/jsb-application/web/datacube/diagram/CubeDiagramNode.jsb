@@ -199,7 +199,7 @@
 				}
 			});
 		},
-		// updateFieldsType
+
 		refreshFields: function(){
 		    this.entry.server().getFields(function(fields){
 		        if(!fields) return;

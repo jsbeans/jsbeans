@@ -58,16 +58,35 @@
 			}); 
 			this.caption.append(refreshButton.getElement());
 			// remove btn
-			var removeButton = new Button({
+			this.removeButton = new Button({
 				cssClass: 'roundButton btn10 btnDelete',
 				tooltip: 'Удалить',
-				enabled: false,
 				onClick: function(evt){
 					evt.stopPropagation();
-					debugger;
+					ToolManager.showMessage({
+                        icon: 'removeDialogIcon',
+                        text: 'Вы уверены что хотите удалить провайдер?',
+                        buttons: [{text: 'Удалить', value: true},
+                                  {text: 'Нет', value: false}],
+                        target: {
+                            selector: this.getElement()
+                        },
+                        constraints: [{
+                            weight: 10.0,
+                            selector: this.getElement()
+                        }],
+                        callback: function(bDel){
+                            $this.editor.cubeEntry.server().removeProvider($this.provider.getId(), function(res, fail){
+                                if(!fail){
+                                    $this.editor.cubeNode.refreshFields();
+                                    $this.destroy();
+                                }
+                            });
+                        }
+                    });
 				}
 			});
-			this.caption.append(removeButton.getElement());
+			this.caption.append(this.removeButton.getElement());
 
             var checked = opts.provider.mode === 'join' ? true : false;
             this.caption.append(`#dot
@@ -221,6 +240,7 @@
 					$this.refresh();
 					// $this.updateNodeLinks();
 					$this.editor.cubeNode.refreshFields();
+                    $this.removeButton.enable($this.keyFieldList.find('.field').length == 0);
 				}
 			});
 		},
@@ -243,6 +263,8 @@
 			for(var i = 0; i < fieldNames.length; i++){
 				this.createField(fieldNames[i], true);
 			}
+
+			this.removeButton.enable(this.keyFieldList.find('.field').length == 0);
 
 			this.updateResizable();
 		},
@@ -458,6 +480,8 @@
 
             this.createField(field);
             this.reorderFields(isKey);
+
+            this.removeButton.enable(this.keyFieldList.find('.field').length == 0);
 
             // return right connector
             return this.rightFieldConnectors[field];

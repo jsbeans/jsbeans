@@ -1,10 +1,12 @@
 .scrollBox{
+    height: 100%;
 	overflow: auto;
 }
 
 /* IE, Edge & Firefox not support -webkit-scrollbar */
 .scrollBox::-webkit-scrollbar{
-    width: 10px;
+    width: 9px;
+    height: 9px;
     background-color: #F5F5F5;
 }
 
@@ -21,17 +23,17 @@
 }
 
 .scrollBox::-webkit-scrollbar-button{
-	height:10px;
-	width: 10px;
+	height: 9px;
+	width: 9px;
 	background: url('../images/scrollBox.png');
 }
 
 .scrollBox::-webkit-scrollbar-button:vertical:increment{
-	background-position: 0px 0px;
+	background-position: -1px 0px;
 }
 
 .scrollBox::-webkit-scrollbar-button:vertical:decrement{
-	background-position: -10px 0px;
+	background-position: -11px 0px;
 }
 
 .scrollBox::-webkit-scrollbar-button:horizontal:increment{
