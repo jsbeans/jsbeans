@@ -104,18 +104,22 @@
 }
 
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab.active {
-	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
-	background: -moz-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
-	background: linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
-	background: -o-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
-	background: -ms-linear-gradient(top, #fff, #EEE 20%, #FFFFFF) !important;
+    background: rgba(241, 241, 241, 0.7);
+    border-bottom: 1px solid rgb(241, 241, 241);
+    /*
+	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #FFFFFF);
+	background: -moz-linear-gradient(top, #fff, #EEE 20%, #FFFFFF);
+	background: linear-gradient(top, #fff, #EEE 20%, #FFFFFF);
+	background: -o-linear-gradient(top, #fff, #EEE 20%, #FFFFFF);
+	background: -ms-linear-gradient(top, #fff, #EEE 20%, #FFFFFF);
+	*/
 	cursor: default;
 }
-
+/*
 ._dwp_tabview._dwp_tabTop > ._dwp_tabPane > li._dwp_tab.active {
 	border-bottom: 1px solid rgba(0,0,0,0);
 }
-
+*/
 ._dwp_tabview._dwp_tabBottom > ._dwp_tabPane > li._dwp_tab.active {
 	border-top: 1px solid rgba(0,0,0,0);
 }
@@ -126,11 +130,14 @@
 
 
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab:hover {
+/*
 	background: -webkit-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
 	background: -moz-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
 	background: linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
 	background: -o-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
 	background: -ms-linear-gradient(top, #fff, #E4EFF3 20%, #B6CCD4);
+*/
+    background: rgba(233, 233, 233, 0.74);
 }
 
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab.disabled:hover {

@@ -219,6 +219,7 @@
                 $this.updateNodeLinks(fields);
                 $this.updateResizable();
 
+                $this.checkedFieldList = {};
                 $this.status.find('.link').addClass('disabled');
                 $this.status.find('.remove').addClass('disabled');
 
