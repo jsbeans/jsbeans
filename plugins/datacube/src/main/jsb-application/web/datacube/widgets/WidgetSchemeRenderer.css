@@ -237,6 +237,7 @@
 	vertical-align: middle;
     padding: 3px 5px 6px 5px;
 	height: 24px;
+    max-width: 100%;
 }
 
 .widgetSchemeRenderer[entry="item"] > .value > .valueContainer > .dataBindingSelector.filled {

@@ -48,12 +48,10 @@
     color: #555;
     text-shadow: 1px 1px 1px #FFFFFF;
     vertical-align: middle;
-    text-shadow: 1px 1px 5px #dcdcdc;
 }
 
 .dataCubeEditor > .dcHeader .dcSubTitle {
 	display: inline-block;
-    text-shadow: 1px 1px 4px #d4d4d4;
 }
 
 .dataCubeEditor > ._jsb_splitLayoutManager {}
