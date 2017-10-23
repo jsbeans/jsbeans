@@ -460,6 +460,8 @@
 				}
 			} else if(schemeDesc.expressionType == 'EConstNull'){
 				value = null;
+			} else if(schemeDesc.expressionType == 'Group'){
+				return $this.constructEmptyValue(schemeDesc.values[0]);
 			} else {
 				throw new Error('Unexpected empty value type: ' + schemeDesc.expressionType);
 			}
@@ -1282,6 +1284,7 @@
 
 					}
 					
+					var usedFields = {};
 					for(var i = 0; i < schemeValues.length; i++){
 						var vName = schemeValues[i];
 						if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
@@ -1290,17 +1293,34 @@
 								if($this.scheme.values[fName]){
 									continue;
 								}
+								usedFields[fName] = true;
 								$this.drawObjectEntry(fName, valSchemes.obj[fName].scheme);
 							}
 						} else {
 							if(JSB.isDefined($this.value[vName]) || !optionalMap[vName]){
 								var vScheme = $this.scheme.values[vName];
+								if(!JSB.isDefined($this.value[vName])){
+									$this.value[vName] = $this.constructEmptyValue(vScheme);
+									valSchemes = $this.value ? $this.resolve($this.scheme, $this.value) : {};
+								}
 								if(valSchemes && valSchemes.obj && valSchemes.obj[vName]){
 									vScheme = valSchemes.obj[vName].scheme;
 								}
+								usedFields[vName] = true;
 								$this.drawObjectEntry(vName, vScheme);
 							}
 						}
+					}
+					
+					// remove non-used fields
+					var rArr = [];
+					for(var fName in $this.value){
+						if(!usedFields[fName]){
+							rArr.push(fName);
+						}
+					}
+					for(var i = 0; i < rArr.length; i++){
+						delete $this.value[rArr[i]];
 					}
 				}
 				
@@ -1451,30 +1471,35 @@
 			}
 			
 			function extractIntegratedWeight(desc, forceArray){
-				var w = 1;
+				var w = 0;
+				var sCnt = 0;
 				if(!desc){
 					return 0;
 				}
 				if(forceArray){
 					for(var v in desc){
+						sCnt++;
 						var curW = extractIntegratedWeight(desc[v]);
 						if(JSB.isDefined(curW)){
-							w *= curW;
-						} else {
-							w = 0;
+							w += curW;
 						}
+					}
+					if(sCnt > 0){
+						w /= sCnt;
 					}
 				} else {
 					if(JSB.isDefined(desc.w)){
 						w = desc.w;
 					} else if(JSB.isDefined(desc.obj)){
 						for(var v in desc.obj){
+							sCnt++;
 							var curW = extractIntegratedWeight(desc.obj[v]);
 							if(JSB.isDefined(curW)){
-								w *= curW;
-							} else {
-								w = 0;
+								w += curW;
 							}
+						}
+						if(sCnt > 0){
+							w /= sCnt;
 						}
 					}
 				}
