@@ -3,11 +3,14 @@
 	$parent: 'DataCube.Query.Translators.Translator',
 
 	$server: {
+		vendor: 'PostgreSQL',
+		
 		$require: [
 		    'DataCube.Query.QueryParser',
 		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Providers.SqlTableDataProvider',
-		    'DataCube.Query.QueryUtils'
+		    'DataCube.Query.QueryUtils',
+		    'JSB.Store.Sql.JDBC'
         ],
 
 		$bootstrap: function(){
@@ -641,7 +644,7 @@
 
                     if (fieldsSql.length > 0) fieldsSql += ', ';
                     if (isNull) {
-                        fieldsSql += 'CAST(NULL AS ' + $this.cube.getManagedFields()[cubeField].type + ')';
+                        fieldsSql += 'CAST(NULL AS ' + JDBC.translateType( $this.cube.getManagedFields()[cubeField].type, $this.vendor) + ')';
                     } else {
                         var binding = $this.cube.getManagedFields()[cubeField].binding;
                         for (var i in binding) {
