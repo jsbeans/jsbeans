@@ -85,6 +85,13 @@
                     items: [
                     {
                         type: 'item',
+                        name: 'Показывать подписи',
+                        key: 'enabled',
+                        optional: true,
+                        editor: 'none'
+                    },
+                    {
+                        type: 'item',
                         name: 'Поворот',
                         key: 'rotation',
                         itemType: 'string'
@@ -1118,7 +1125,8 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                         align: 'high'
                     },
                     labels: {
-                        rotation: xAxisContext[0].get(2).value().get(0).value()
+                        enabled: xAxisContext[0].get(2).value().get(0).used(),
+                        rotation: xAxisContext[0].get(2).value().get(1).value()
                     }
                 }
 
