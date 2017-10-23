@@ -65,7 +65,7 @@
 					evt.stopPropagation();
 					ToolManager.showMessage({
                         icon: 'removeDialogIcon',
-                        text: 'Вы уверены что хотите удалить провайдер?',
+                        text: 'Вы уверены что хотите удалить провайдер? \n Удаление провайдера приведёт к удалению материализации.',
                         buttons: [{text: 'Удалить', value: true},
                                   {text: 'Нет', value: false}],
                         target: {
