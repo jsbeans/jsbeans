@@ -23,7 +23,7 @@
 
 		translateQuery: function() {
 		    this._collectContextQueries();
-		    //this._verifyFields();
+		    this._verifyFields();
 		    var sql = this.translateQueryExpression(this.dcQuery);
 		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
@@ -47,7 +47,7 @@
         },
 
 		analyzeQuery: function(translatedQuery){
-		    //this._verifyFields();
+		    this._verifyFields();
 		    var json = {
 		        translatedQuery: translatedQuery,
 		        preparedQuery: this.dcQuery,
@@ -79,11 +79,14 @@
                         return;
                     }
                     // is alias
-                    if(fieldQuery.$select && fieldQuery.$select[field]) {
+                    var query = fieldQuery || $this.dcQuery;
+                    if(query.$select && query.$select[field]) {
                         return;
                     }
-                    // TODO $from
-                    // TODO $sql
+                    if(query.$sql || query.$from) {
+                        // ignore for subquery or embedded sql
+                        return;
+                    }
                     throw new Error('Поле не определено: ' + field);
 		        }
 		    );
