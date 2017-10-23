@@ -14,6 +14,10 @@
 		return this.name;
 	},
 	
+	getMode: function(){
+		return this.mode || 'union';
+	},
+	
 	$server: {
 		$disableRpcInstance: true,
 		

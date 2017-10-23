@@ -8,8 +8,7 @@
 		           'DataCube.MaterializationEngine',
 		           'JSB.Store.Sql.JDBC',
 		           'java:java.sql.JDBCType',
-		           'java:java.sql.Types',
-		           'JSB.Text.Translit'],
+		           'java:java.sql.Types'],
 		           
 		$bootstrap: function(){
 			MaterializationEngine.registerMaterializer('DataCube.Model.SqlSource', this);
