@@ -1,6 +1,7 @@
 .scrollBox{
     height: 100%;
 	overflow: auto;
+	padding-right: 3px;
 }
 
 /* IE, Edge & Firefox not support -webkit-scrollbar */
