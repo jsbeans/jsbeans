@@ -365,6 +365,11 @@
 				return [this.materialization.dataProvider];
 			}
 		    function compareProviders(leftProvider, rightProvider){
+		        // by mode
+		        if ((leftProvider.mode||'union') != (rightProvider.mode||'union')) {
+		            return rightProvider.mode == 'join' ? -1 : 1;
+		        }
+		        // by position
 		        for(var f in $this.fields){
                     var binding = $this.fields[f].binding;
                     if (binding.length > 1) {

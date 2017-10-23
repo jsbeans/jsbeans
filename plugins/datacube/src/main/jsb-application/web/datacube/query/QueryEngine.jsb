@@ -4,7 +4,7 @@
 	$server: {
 		$require: [
 		    'DataCube.Query.Iterators.DataProviderIterator',
-		    'DataCube.Query.Iterators.InnerJoinIterator',
+		    'DataCube.Query.Iterators.LeftJoinIterator',
 		    'DataCube.Query.Iterators.FinalizeIterator',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QuerySyntax',
@@ -133,7 +133,7 @@
 
             var providersIterator = providerIterators.length == 1
                     ? providerIterators[0]
-                    : new InnerJoinIterator(providerIterators, this);
+                    : new LeftJoinIterator(providerIterators, this);
 
 		    if (dcQuery.$finalize) {
 		        return new FinalizeIterator(providersIterator, this).iterate(dcQuery, params);
