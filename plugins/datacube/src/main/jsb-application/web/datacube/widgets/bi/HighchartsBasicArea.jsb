@@ -87,7 +87,7 @@
                         type: 'item',
                         name: 'Показывать подписи',
                         key: 'enabled',
-                        optional: true,
+                        optional: 'checked',
                         editor: 'none'
                     },
                     {
@@ -605,10 +605,11 @@
 Не используем globalFilters, если требуется drilldown
 **/
 if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
-	            var globalFilters = source.getFilters();
+            var globalFilters = source.getFilters();
 
             if(globalFilters){
-                var binding = this.getContext().find("xAxis").get(0).value().binding()[0],
+                var categories = this.getContext().find("xAxis").find('categories').values(),
+                    binding = categories[categories.length - 1].binding()[0],
                     newFilters = {};
 
                 for(var i in globalFilters){
@@ -1262,7 +1263,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category === cat && !series[i].points[j].selected){
+                    if(series[i].points[j].category.name === cat && !series[i].points[j].selected){
                         series[i].points[j].select(true, true);
                         break;
                     }
@@ -1275,7 +1276,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category === cat && series[i].points[j].selected){
+                    if(series[i].points[j].category.name === cat && series[i].points[j].selected){
                         this._deselectCategoriesCount++;
                         series[i].points[j].select(false, true);
                         break;
