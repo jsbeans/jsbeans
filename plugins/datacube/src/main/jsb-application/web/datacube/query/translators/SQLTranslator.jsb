@@ -20,6 +20,7 @@
 
 		translateQuery: function() {
 		    this._collectContextQueries();
+		    //this._verifyFields();
 		    var sql = this.translateQueryExpression(this.dcQuery);
 		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
@@ -43,6 +44,7 @@
         },
 
 		analyzeQuery: function(translatedQuery){
+		    //this._verifyFields();
 		    var json = {
 		        translatedQuery: translatedQuery,
 		        preparedQuery: this.dcQuery,
@@ -59,6 +61,29 @@
 		        close: function(){
 		        }
 		    };
+		},
+
+		_verifyFields: function(){
+            QueryUtils.walkQueryFields(
+		        this.dcQuery, /**includeSubQueries=*/true,
+		        function verifyField(field, context, fieldQuery) {
+                    // is cube field
+                    if ($this.cube && $this.cube.getManagedFields()[field]) {
+                        return;
+                    }
+                    // is provider field
+                    if ($this.providers[0].extractFields()[field]) {
+                        return;
+                    }
+                    // is alias
+                    if(fieldQuery.$select && fieldQuery.$select[field]) {
+                        return;
+                    }
+                    // TODO $from
+                    // TODO $sql
+                    throw new Error('Поле не определено: ' + field);
+		        }
+		    );
 		},
 
 		translateQueryExpression: function(query) {
@@ -616,7 +641,7 @@
 
                     if (fieldsSql.length > 0) fieldsSql += ', ';
                     if (isNull) {
-                        fieldsSql += 'NULL';
+                        fieldsSql += 'CAST(NULL AS ' + $this.cube.getManagedFields()[cubeField].type + ')';
                     } else {
                         var binding = $this.cube.getManagedFields()[cubeField].binding;
                         for (var i in binding) {
