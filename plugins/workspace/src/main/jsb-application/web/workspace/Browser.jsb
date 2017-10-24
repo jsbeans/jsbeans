@@ -4,7 +4,7 @@
 	
 	$require: ['JSB.Workspace.WorkspaceController',
 	           'JSB.Workspace.Navigator',
-	           'JSB.Widgets.TabView',
+	           'JSB.Controls.TabView',
 	           'JSB.Widgets.Button',
 	           'JQuery.UI.Effects'],
 	
@@ -69,7 +69,7 @@
 			if(!this.views[id]){
 				this.views[id] = this.tabView.addTab(title, viewCls, {id: id, dontSwitchOnCreate: true });
 				if(icon){
-					this.views[id].tab.find('> ._dwp_icon').css('background-image', 'url(' + icon + ')');
+					this.views[id].tab.find('> .icon').css('background-image', 'url(' + icon + ')');
 				}
 				this.views[id].tab.resize(function(){
 					JSB.defer(function(){
@@ -113,7 +113,7 @@
 				this.updateViewsForNode();
 			} else {
                 // hide all tabs
-                var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab');
+                var tabs = this.tabView.find('> .tabPane > li');
                 tabs.css('display', 'none');
 
 				WorkspaceController.server().queryBrowserViews(this.wmKey, nodeType, function(viewArr){
@@ -142,7 +142,7 @@
 			var currentViewId = this.getActiveView();
 
 			// hide all tabs
-			var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab');
+			var tabs = this.tabView.find('> .tabPane > li');
 			tabs.css('display', 'none');
 			
 			if(viewArr.length == 0){
@@ -194,7 +194,7 @@
 		},
 		
 		updateNavigator: function(){
-			var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab:visible');
+			var tabs = this.tabView.find('> ul.tabPane > li:visible');
 			var size = 22;
 			for(var i = 0; i < tabs.length; i++){
 				size += this.$(tabs[i]).outerWidth();

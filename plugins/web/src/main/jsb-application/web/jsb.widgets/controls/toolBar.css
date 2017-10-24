@@ -2,13 +2,6 @@
 
 ._dwp_toolBar ul._dwp_tbContainer {
 	list-style-type: none;
-	/*
-	background: -webkit-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
-    background: -moz-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
-    background: linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
-    background: -o-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
-    background: -ms-linear-gradient(top, #FFFFFF 0%, #f3f3f3 50%, #ECECEC 50%, #f1f1f1 100%);
-    */
     background: rgba(241, 241, 241, 0.7);
     border-bottom: 1px solid #BEBEBE;
 	padding: 3px;
@@ -34,14 +27,6 @@
 }
 
 ._dwp_toolBar ul._dwp_tbContainer li._dwp_toolBarItem.allowHover:hover {
-    /*
-	background: -webkit-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-	background: -moz-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-    background: linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-    background: -o-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-    background: -ms-linear-gradient(top,rgba(238, 235, 151, 0.9) 0%, rgba(250, 248, 199, 1) 40%, rgba(223, 213, 125, 0.9) 100%);
-	border: 1px solid #AA9527;
-	*/
     background: rgb(220, 220, 220);
     border: 1px solid rgb(158, 158, 158);
 }

@@ -86,7 +86,6 @@
     height: calc(100% - 35px);
     display: inline-block;
     vertical-align: top;
-    overflow: hidden;
 }
 
 .widgetSettingsView .schemeBlock {

@@ -9,8 +9,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			
-			this.loadCss('DashboardEditorView.css');
+
 			this.addClass('dashboardEditorView');
 		},
 		

@@ -3,7 +3,7 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['DataCube.Widgets.WidgetSchemeRenderer',
-                   'JSB.Widgets.ScrollBox',
+                   'JSB.Controls.ScrollBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button'

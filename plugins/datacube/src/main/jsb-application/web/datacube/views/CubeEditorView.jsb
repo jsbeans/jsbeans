@@ -7,8 +7,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			
-			this.loadCss('CubeEditorView.css');
+
 			this.addClass('cubeEditorView');
 			
 			this.layoutManager = new SplitLayoutManager({

@@ -47,6 +47,13 @@
                             key: 'categoriesItem',
                             binding: 'field',
                             itemType: 'any'
+                        },
+                        {
+                            name: 'Фильтрующие поля',
+                            type: 'item',
+                            key: 'isFilterField',
+                            optional: true,
+                            editor: 'none'
                         }
                     ]
                 },
@@ -453,12 +460,6 @@
                             key: 'widget',
                             editor: 'none',
                             binding: 'readyWidget'
-						},
-						{
-							name: 'Поле для фильтрации',
-							type: 'item',
-							key: 'widgetFilter',
-							itemType: 'string'
 						}
 					]
 				}
@@ -535,6 +536,7 @@
         _curFilters: {},
         _deselectCategoriesCount: 0,
         _curFilterHash: null,
+        _widgetFilters: [],
         	    
 		$constructor: function(opts){
 			var self = this;
@@ -651,7 +653,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     return;
                 }
             }
-}            
+}
 // end filters section
 
             var seriesContext = this.getContext().find('series').values(),
@@ -675,29 +677,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     var seriesData = [],
                         xAxisCategories = [],
                         colorMap = {};
-                    /*
-                    function rec(i, length){
-                        if(i === length){
-                            return {};
-                        }
-                        var a = xAxisContext[i].get(0).value();
-                        var obj = {};
-                        obj[a] = rec(i + 1, length);
-                        return obj;
-                    }
 
-                    function rec2(obj){
-                        var cat = [];
-                        for(var i in obj){
-                            var categories = rec2(obj[i]);
-                            cat.push({
-                                name: i,
-                                categories: categories.length > 0 ? categories : undefined
-                            })
-                        }
-                        return cat;
-                    }
-                    */
                     function rec(i, length){
                         if(i === length){
                             return undefined;
@@ -794,13 +774,25 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                 var seriesContext = this.getContext().find('series').values(),
                     yAxisContext = this.getContext().find('yAxis').values(),
                     xAxisContext = this.getContext().find('xAxis').values(),
+                    xAxisCategories = this.getContext().find('xAxis').find('categories').values(),
                     yAxis = [],
                     series = [],
 					that = this;
 
+                var filterFields = [];
+                for(var i = 0; i < xAxisCategories.length ; i++){
+                    if(xAxisCategories[i].get(1).used()){
+                        filterFields.push({
+                            index: xAxisCategories.length - i - 1,
+                            binding: xAxisCategories[i].get(0).binding()[0]
+                        });
+                    }
+                }
+
                 for(var i = 0; i < seriesContext.length; i++){
                     if(!series[i]){
                         var drilldown = seriesContext[i].find('widget').value();
+
                         series[i] = {
                             name: seriesContext[i].get(0).value(),
                             data: seriesData[i],
@@ -826,11 +818,10 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                             visible: seriesContext[i].find('visible').used(),
 							widgetWsid: drilldown ? drilldown.widgetWsid : undefined,
 							widgetWid: drilldown ? drilldown.widgetWid : undefined,
-							widgetFilter: seriesContext[i].find('widgetFilter').value(),
+							widgetFilter: filterFields,
                             point: {
                                 events: {
                                     click: function(evt) {
-										
 										/**
 										Пользователь явно отметил "Использовать Drilldown", 
 										иначе используется "штатный" функционал
@@ -845,11 +836,6 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
 												var wsid = this.series.options.widgetWsid,
 													wid = this.series.options.widgetWid,
-													filterField = this.series.options.widgetFilter,
-													/**
-													Значение на оси Х ... 
-													**/
-													filterValue = this.category.hasOwnProperty("name") ? this.category.name : this.category, 
 													/**
 													Идентификатор установленного в результате drilldown-а фильтра
 													**/
@@ -871,7 +857,24 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 													Контейнер для кнопки "Назад"
 													**/
 													back = document.createElement('div');
-												
+
+                                                var catArr = [];
+                                                function findCategories(categories){
+                                                    catArr.push(categories.name);
+                                                    if(categories.parent){
+                                                        catArr.push(findCategories(categories.parent));
+                                                    }
+                                                }
+                                                findCategories(this.category);
+
+                                                var filters = [];
+                                                for(var i = 0; i < this.series.options.widgetFilter.length; i++){
+                                                    filters.push({
+                                                        binding: this.series.options.widgetFilter[i].binding,
+                                                        value: catArr[this.series.options.widgetFilter[i].index]
+                                                    })
+                                                }
+
 												/**
 												Скрываем текущий виджет
 												**/
@@ -935,7 +938,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 												/**
 												Если указано фильтрующее поле и есть значение по оси Х - применям фильтр
 												**/
-												if( filterField && filterValue && filterField.length && filterValue.length) {
+												if(filters) {
 													try {
 														JSB.deferUntil(function() {	
 															JSB.getInstance('DataCube.Api.WidgetController')
@@ -944,16 +947,19 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 																Дожидаемся загрузеки виджета
 																**/
 																JSB.deferUntil(function() {
-																	var filterDesc = {
-																		type: '$and',
-																		op: '$eq',
-																		field: filterField,
-																		value: filterValue
-																	};
-																	/**
+                                                                    /**
 																	Прменяем drilldown-фильтр
 																	**/
-																	myFilterId = widget.addFilter(filterDesc);
+																    for(var i = 0; i < filters.length; i++){
+                                                                        var filterDesc = {
+                                                                            type: '$and',
+                                                                            op: '$eq',
+                                                                            field: filters[i].binding,
+                                                                            value: filters[i].value
+                                                                        };
+
+                                                                        myFilterId = widget.addFilter(filterDesc);
+																    }
 																	/**
 																	Применяем "родительские" фильтры, хотя они вроде как уже должны бы быть применены
 																	**/
@@ -1211,7 +1217,6 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
             if(!context.source) return;
 
             var categories = this.getContext().find("xAxis").find('categories').values();
-
             var field = categories[categories.length - 1].binding()[0];
             if(!field) return;
 

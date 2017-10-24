@@ -36,11 +36,19 @@
                 key: 'xAxis',
                 items: [
                 {
-                    name: 'Категории',
-                    type: 'item',
-                    key: 'category',
-                    binding: 'field',
-                    itemType: 'any',
+                    type: 'group',
+                    name: 'Данные осей',
+                    key: 'categories',
+                    multiple: 'true',
+                    items: [
+                        {
+                            name: 'Категории',
+                            type: 'item',
+                            key: 'categoriesItem',
+                            binding: 'field',
+                            itemType: 'any'
+                        }
+                    ]
                 },
                 {
                     type: 'group',
@@ -69,7 +77,28 @@
                         ]
                     }
                     ]
-                }]
+                },
+                {
+                    type: 'group',
+                    name: 'Подписи',
+                    key: 'labels',
+                    items: [
+                    {
+                        type: 'item',
+                        name: 'Показывать подписи',
+                        key: 'enabled',
+                        optional: 'checked',
+                        editor: 'none'
+                    },
+                    {
+                        type: 'item',
+                        name: 'Поворот',
+                        key: 'rotation',
+                        itemType: 'string'
+                    }
+                    ]
+                }
+                ]
             },
             {
                 type: 'group',
@@ -317,6 +346,20 @@
                     description: 'Показывать по умолчанию указанную серию на графике.'
                 }
                 ]
+            }
+            ]
+        },
+        {
+            type: 'group',
+            name: 'Легенда',
+            key: 'legend',
+            items: [
+            {
+                name: 'Активна',
+                type: 'item',
+                key: 'enabled',
+                optional: true,
+                editor: 'none'
             }
             ]
         },
@@ -672,7 +715,9 @@
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('HighchartsStackedColumn.css');
 			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				self.init();
+                JSB().loadScript('tpl/highstock/plugins/grouped-categories.js', function(){
+                    self.init();
+                });
 			});
 		},
 
@@ -729,7 +774,8 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                 var globalFilters = source.getFilters();
 
                 if(globalFilters){
-                    var binding = this.getContext().find("xAxis").get(0).value().binding()[0],
+                    var categories = this.getContext().find("xAxis").find('categories').values(),
+                        binding = categories[categories.length - 1].binding()[0],
                         newFilters = {};
 
                     for(var i in globalFilters){
@@ -774,45 +820,78 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
     // end filters section
 
                 var seriesContext = this.getContext().find('series').values(),
-                    xAxisContext = this.getContext().find('xAxis').values();
+                    xAxisContext = this.getContext().find('xAxis').find('categories').values();
 
 				$this.getElement().loader();
 				JSB().deferUntil(function(){
 					source.fetch({readAll: true, reset: true}, function(){
-						try {
-                            var seriesData = [],
-                                xAxis = [];
+                        var seriesData = [],
+                            xAxisCategories = [],
+                            colorMap = {};
 
-							while(source.next()){
-								for(var i = 0; i < seriesContext.length; i++){
-									var a = seriesContext[i].get(1).value();
-									if(JSB().isArray(a)){
-										seriesData[i] = a;
-									} else {
-                                        if(!seriesData[i]){
-                                            seriesData[i] = [];
+                        function rec(i, length){
+                            if(i === length){
+                                return undefined;
+                            }
+
+                            return [{
+                                name: xAxisContext[i].get(0).value(),
+                                categories: rec(i + 1, length)
+                            }];
+                        }
+
+                        function merge(obj1, obj2){
+                            for(var i = 0; i < obj2.length; i++){
+                                var f = false;
+                                for(var j = 0; j < obj1.length; j++){
+                                    if(obj2[i].name === obj1[j].name){
+                                        f = true;
+                                        if(obj1[j].categories){
+                                            obj1[j].categories = merge(obj1[j].categories, obj2[i].categories);
+                                        } else {
+                                            obj1[j].categories = obj2[i].categories;
                                         }
-										seriesData[i].push(a);
-									}
-								}
-								for(var i = 0; i < xAxisContext.length; i++){
-									var a = xAxisContext[i].get(0).value();
-									if(JSB().isArray(a)){
-										xAxis = a;
-									} else {
-										xAxis.push(a);
-									}
-								}
-							}
+                                    }
+                                }
+                                if(!f){
+                                    obj1.push(obj2[i]);
+                                }
+                            }
+                            return obj1;
+                        }
+
+						try {
+                            while(source.next()){
+                                for(var i = 0; i < seriesContext.length; i++){
+                                    var a = seriesContext[i].get(1).value();
+
+                                    if(!seriesData[i]){
+                                        seriesData[i] = [];
+                                    }
+
+                                    if(JSB().isArray(a)){
+                                        seriesData[i] = a;
+                                    } else {
+                                        seriesData[i].push(a);
+                                    }
+                                }
+
+                                if(xAxisContext.length > 1){
+                                    xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
+                                } else {
+                                    var a = xAxisContext[0].get(0).value();
+                                    xAxisCategories.push(a ? a : 'Null');
+                                }
+                            }
 
                             if(opts && opts.isCacheMod){
                                 $this.storeCache({
                                     seriesData: seriesData,
-                                    xAxis: xAxis
+                                    xAxis: xAxisCategories
                                 });
                             }
 
-                            $this._buildChart(seriesData, xAxis);
+                            $this._buildChart(seriesData, xAxisCategories);
 						} catch(e) {
 							console.log("Exception", e);
 							$this.getElement().loader('hide');
@@ -832,7 +911,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 			}
         },
 
-        _buildChart: function(seriesData, xAxis){
+        _buildChart: function(seriesData, xAxisData){
             try{
                 var yAxisStackLabels = this.getContext().find('yAxisStackLabels').values(),
                     plotOptionsColumnDataLabels = this.getContext().find('plotOptionsColumnDataLabels').values(),
@@ -994,17 +1073,20 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                             text: this.getContext().find('subtitle').value()
                         },
 
-                        xAxis: [{
-                            categories: xAxis,
-                            crosshair: false,
+                        xAxis: {
+                            categories: xAxisData,
                             title: {
                                 text: xAxisContext[0].get(1).value().get(0).value(),
                                 style: {
                                     color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
                                 },
                                 align: 'high'
+                            },
+                            labels: {
+                                enabled: xAxisContext[0].get(2).value().get(0).used(),
+                                rotation: xAxisContext[0].get(2).value().get(1).value()
                             }
-                        }],
+                        },
 
                         yAxis: yAxis,
 
@@ -1013,6 +1095,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                         },
 
                         legend: {
+                            enabled: this.getContext().find('legend').find('enabled').used(),
                             layout: 'horizontal',
                             floating: false,
                             align: 'center',
@@ -1091,15 +1174,16 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find("xAxis").get(0).value().binding()[0];
-            if(!field[0]) return;
+            var categories = this.getContext().find("xAxis").find('categories').values();
+            var field = categories[categories.length - 1].binding()[0];
+            if(!field) return;
 
             var fDesc = {
                 sourceId: context.source,
                 type: '$or',
                 op: '$eq',
                 field: field,
-                value: evt.target.category
+                value: evt.target.category.name
             };
 
             if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
@@ -1129,7 +1213,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category == cat && !series[i].points[j].selected){
+                    if(series[i].points[j].category.name == cat && !series[i].points[j].selected){
                         series[i].points[j].select(true, true);
                         break;
                     }
@@ -1142,7 +1226,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category == cat && series[i].points[j].selected){
+                    if(series[i].points[j].category.name == cat && series[i].points[j].selected){
                         this._deselectCategoriesCount++;
                         series[i].points[j].select(false, true);
                         break;
