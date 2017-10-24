@@ -125,7 +125,7 @@
             });
         },
 
-        removeRedundantBindingProviders: function (providersFieldsMap/**name: {provider, cubeFields:{field:hasOtherBinding}}*/){
+        removeRedundantBindingProviders: function (providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/){
 		    function allFieldsBindingAndAllInOther(prov){
 		        var allFieldsBinding = true;
 		        var allInOther = true;
@@ -135,9 +135,9 @@
 		                break;
 		            }
 		            var fieldInOther = false;
-		            for (var name in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(name)) {
-		                if (prov.provider.name != name) {
-		                    if(providersFieldsMap[name].cubeFields.hasOwnProperty(f)) {
+		            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+		                if (prov.provider.id != id) {
+		                    if(providersFieldsMap[id].cubeFields.hasOwnProperty(f)) {
 		                        fieldInOther = true;
 		                        break;
 		                    }
@@ -151,9 +151,9 @@
 		        return allFieldsBinding && allInOther;
 		    }
 
-		    for (var name in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(name)) {
-		        if (allFieldsBindingAndAllInOther(providersFieldsMap[name])) {
-		            delete providersFieldsMap[name];
+		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+		        if (allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
+		            delete providersFieldsMap[id];
 		        }
 		    }
         },

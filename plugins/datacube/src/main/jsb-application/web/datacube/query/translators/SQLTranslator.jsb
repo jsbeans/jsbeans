@@ -114,7 +114,7 @@
                 sql += 'SELECT ' + columns + ' FROM ' + from + where + group + having + order + offset + limit;
             }
 
-		    if (query.$postFilter) {
+		    if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
 		        var wrappedQuery = JSB.merge({}, query, {
 		            $context: 'wrapped_' + query.$context
 		        });
@@ -1054,7 +1054,9 @@
                 return sql;
             }
             var filterExp = filterExp || query.$filter;
-            return filterExp ? translateMultiExpressions(filterExp) : '';
+            return filterExp && Object.keys(filterExp).length > 0
+                    ? translateMultiExpressions(filterExp)
+                    : '';
         },
 
         _translateGroup: function(query) {

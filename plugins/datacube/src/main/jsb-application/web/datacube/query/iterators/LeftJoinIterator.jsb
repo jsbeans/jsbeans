@@ -94,7 +94,7 @@
 		    }
 //debugger;
             // clear nulls and last value
-            while(this.values.length > 0 && JSB.isNull(this.values[this.values.length - 1])) {
+            while(this.values.length > 0 && this.values[this.values.length - 1] == null) {
                 this.values.pop();
             }
             this.values.pop();
@@ -112,7 +112,7 @@
 		        var leftCFValues = i > 0 ? this.getLeftConditionFieldValues(i) : null;
 		        for (;;) {
 		             this.values[i] = iterator.next();
-		             if (JSB.isNull(this.values[i])) break;
+		             if (this.values[i] == null) break;
 		             // test value for join
 		             if (leftCFValues && !checkCondition(i, leftCFValues)) {
 		                // next value
@@ -121,7 +121,7 @@
 		             break;
 		        }
 
-		        if (JSB.isNull($this.values[i])) {
+		        if ($this.values[i] == null) {
 		            if (i > 0) {
                         this.initialized[i] = false;
 //		                 // INNER JOIN: jump to prev iterator and next value
@@ -140,7 +140,7 @@
 
             // fill empty fields
             for (var field in this.fields) if (this.fields.hasOwnProperty(field)) {
-                if (JSB.isNull(value[field])) {
+                if (typeof value[field] === 'undefined') {
                     value[field] = null;
                 }
             }

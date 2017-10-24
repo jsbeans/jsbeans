@@ -5,6 +5,7 @@
 		$require: [
 		    'DataCube.Query.Iterators.DataProviderIterator',
 		    'DataCube.Query.Iterators.LeftJoinIterator',
+		    'DataCube.Query.Iterators.UnionIterator',
 		    'DataCube.Query.Iterators.FinalizeIterator',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QuerySyntax',
@@ -45,32 +46,6 @@
 
             return dcQuery;
 		},
-
-//		extractFields: function(dcQuery) {
-//		    var cubeFields = [];
-//		    var outputFields = [];
-//		    function collect(q) {
-//		        if (JSB.isString(q)) {
-//		            cubeFields.push(q);
-//		        } else if (JSB.isPlainObject(q)) {
-//		            for (var f in q) if (q.hasOwnProperty(f)) {
-//		                if (!f.match(/^\$/)) {
-//		                    outputFields.push(f);
-//		                }
-//		                collect(q[f]);
-//		            }
-//		        } else if (JSB.isArray(q)) {
-//                    for (var i in q) {
-//                        collect(q[i]);
-//                    }
-//                }
-//		    }
-//            collect(dcQuery.$select);
-//            return {
-//		        cubeFields: cubeFields,
-//		        outputFields : outputFields
-//		    };
-//		},
 
 		isDataProviderLinkedWithCubeFields: function(provider, cubeFields, useJoinFields) {
 		    var count = 0;
@@ -131,9 +106,7 @@
                 };
             }
 
-            var providersIterator = providerIterators.length == 1
-                    ? providerIterators[0]
-                    : new LeftJoinIterator(providerIterators, this);
+            var providersIterator = this._unionAndJoinIterators(providerIterators);
 
 		    if (dcQuery.$finalize) {
 		        return new FinalizeIterator(providersIterator, this).iterate(dcQuery, params);
@@ -155,11 +128,47 @@
 		    };
 		},
 
+		_unionAndJoinIterators: function(providerIterators) {
+		    if (providerIterators.length == 1) {
+		        return providerIterators[0];
+		    }
+		    var unionIterators = [];
+		    var joinIterators = [];
+		    for (var i in providerIterators) {
+		        var providerIterator = providerIterators[i];
+		        var providers = providerIterator.getDataProviders();
+		        var isUnion = true;
+		        for (var p in providers) {
+		            if ((providers[p].mode||'union') != 'union') {
+		                isUnion = false;
+		            }
+		        }
+		        if (isUnion) {
+		            unionIterators.push(providerIterator);
+		        } else {
+		            joinIterators.push(providerIterator);
+		        }
+		    }
+
+            if (unionIterators.length > 0) {
+                var unionIterator = unionIterators.length > 1
+                        ? new UnionIterator(unionIterators, this)
+                        : unionIterators[0];
+
+                if (joinIterators.length == 0) {
+                    return unionIterator;
+                }
+                joinIterators = [unionIterator].concat(joinIterators);
+            }
+
+		    return new LeftJoinIterator(joinIterators, this);
+		},
+
 		sqlStoreDataProviderKey: function (provider) {
 		    // store key or unique
             return provider instanceof SqlTableDataProvider
                 ? provider.getJsb().$name + '/' + provider.getStore().getName()
-                : provider.name;
+                : provider.id;
         },
 
 		groupProviders: function(dcQuery, getProviderGroupKey){
@@ -171,13 +180,13 @@
 		    */
 
 		    // collect used providers by name and all used cube fields
-		    var providers = {}; // name: {provider, cubeFields}
+		    var providers = {}; // id: {provider, cubeFields}
 		    QueryUtils.walkCubeFields(
 		        dcQuery, /**includeSubQueries=*/true, this.cube,
 		        function (field, context, query, binding){
                     for (var i in binding) {
-                        var name = binding[i].provider.name;
-                        var prov = providers[name] = providers[name] || {
+                        var id = binding[i].provider.id;
+                        var prov = providers[id] = providers[id] || {
                             provider: binding[i].provider,
                             cubeFields: {}
                         };
@@ -197,8 +206,8 @@
 		        оказывается "чужой" провайдер, то группу нужно разорвать для внешнего слияния через JoinIterator)
 		     */
 		    var groupsMap = {/**key:[provider]*/}; //
-		    for (var name in providers) if (providers.hasOwnProperty(name)) {
-		        var prov = providers[name];
+		    for (var id in providers) if (providers.hasOwnProperty(id)) {
+		        var prov = providers[id];
 		        var key = getProviderGroupKey(prov.provider);
                 groupsMap[key] = groupsMap[key] || [];
                 groupsMap[key].push(prov.provider);
