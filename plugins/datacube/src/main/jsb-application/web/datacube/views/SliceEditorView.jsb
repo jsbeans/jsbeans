@@ -1,7 +1,13 @@
 {
 	$name: 'DataCube.SliceEditorView',
 	$parent: 'JSB.Workspace.BrowserView',
-	$require: ['JSB.Widgets.SplitBox', 'DataCube.GridView', 'JSB.Widgets.ScrollBox', 'JSB.Widgets.PrimitiveEditor', 'JSB.Widgets.Button', 'JSB.Widgets.MultiEditor', 'DataCube.Query.QueryEditor'],
+	$require: ['JSB.Widgets.SplitBox', 
+	           'DataCube.GridView', 
+	           'JSB.Controls.ScrollBox', 
+	           'JSB.Widgets.PrimitiveEditor', 
+	           'JSB.Widgets.Button', 
+	           'JSB.Widgets.MultiEditor', 
+	           'DataCube.Query.QueryEditor'],
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
