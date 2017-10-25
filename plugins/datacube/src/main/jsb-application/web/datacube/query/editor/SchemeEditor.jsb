@@ -1267,6 +1267,7 @@
 						}*/
 					
 					var schemeValues = Object.keys($this.scheme.values);
+					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
 						schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql'];
@@ -1281,10 +1282,9 @@
 						} 
 						var ctxElt = $this.$('<div class="context"></div>').text(ctxName);
 						$this.append(ctxElt);
-
+						usedFields['$context'] = true;
 					}
 					
-					var usedFields = {};
 					for(var i = 0; i < schemeValues.length; i++){
 						var vName = schemeValues[i];
 						if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){

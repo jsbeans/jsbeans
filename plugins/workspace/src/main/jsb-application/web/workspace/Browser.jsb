@@ -86,7 +86,6 @@
 				return;
 			}
 			this.tabView.switchTab(id);
-			this.views[id].ctrl.setCurrentNode(this.currentNode, this.currentWorkspace);
 		},
 		
 		getActiveView: function(){
