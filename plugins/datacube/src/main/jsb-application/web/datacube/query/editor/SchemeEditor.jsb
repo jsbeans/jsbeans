@@ -1055,7 +1055,7 @@
 			// inject entry substrate if it's not a SingleObject
 			if($this.scheme.expressionType != 'SingleObject'){
 				if(entryElt.find('> .substrate').length == 0){
-					entryElt.append('<div class="substrate"></div>');
+					entryElt.prepend('<div class="substrate"></div>');
 					$this.installHoverHandlers('entry', valName, keyElt);
 				}
 			}
@@ -1098,7 +1098,7 @@
 			entryElt.append(valueEditor.getElement());
 			
 			// inject value substrate
-			valueEditor.append('<div class="substrate"></div>');
+			valueEditor.prepend('<div class="substrate"></div>');
 			
 			if(valueEditor.isCollapsible()){
 				entryElt.addClass('collapsible');
@@ -1156,7 +1156,7 @@
 			entryElt.append(keyElt);
 			
 			// inject entry substrate
-			entryElt.append('<div class="substrate"></div>');
+			entryElt.prepend('<div class="substrate"></div>');
 			$this.installHoverHandlers('entry', i, keyElt);
 			
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
@@ -1172,7 +1172,7 @@
 			entryElt.append(valueEditor.getElement());
 
 			// inject value substrate
-			valueEditor.append('<div class="substrate"></div>');
+			valueEditor.prepend('<div class="substrate"></div>');
 			
 			var valScheme = QuerySyntax.getSchema()[valScheme];
 			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
