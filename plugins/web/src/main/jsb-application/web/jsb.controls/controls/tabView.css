@@ -19,7 +19,7 @@
 	padding: 3px 6px 0 6px;
     height: 40px;
     border-bottom: 1px solid #ddd;
-    background: #fafafa;
+    background: rgba(241, 241, 241, 1);
 }
 
 .jsb-tabview > .tabPane.top > li {
@@ -30,7 +30,6 @@
     display: inline-block;
     margin: 1px 2px 0px;
     padding: 3px 10px;
-    font-weight: 600;
     text-align: center;
     color: #aaa;
     border: 0px solid #ddd;
@@ -63,7 +62,7 @@
 .jsb-tabview > .tabPane.top > li.active {
     color: #555;
     border: 1px solid #ddd;
-    border-top: 2px solid orange;
+    border-top: 2px solid #d37531;
     border-bottom: 1px solid #fff;
     background: #fff;
     cursor: default;

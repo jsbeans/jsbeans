@@ -866,6 +866,8 @@
 			
 			// run materialization on deferred manner
 			JSB.defer(function(){
+				JSB.getLocker().lock('materialization_' + $this.getId());
+				
 				function checkStop(){
 					if($this.stopMaterializing){
 						$this.materializing = false;
@@ -890,11 +892,20 @@
 					}
 				}
 				
-				JSB.getLocker().lock('materialization_' + $this.getId());
-				
-				
 				try {
 					$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
+					
+					// create table list description
+					var tables = {};
+					for(var fName in $this.fields){
+						var fDesc = $this.fields[fName];
+						for(var i = 0; i < fDesc.binding.length; i++){
+							var pDesc = fDesc.binding[i];
+							var pId = pDesc.provider.getId();
+//							if(!tables[])
+						}
+					}
+					
 					var suggestedName = 'cube_' + $this.getLocalId();
 					var fields = {};
 					for(var fName in $this.fields){
