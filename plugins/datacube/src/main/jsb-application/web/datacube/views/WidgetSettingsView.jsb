@@ -53,12 +53,6 @@
 		},
 
 		refresh: function(){
-		    JSB.defer(function(){
-		        $this._refresh();
-		    }, 300, 'widgetSettingsView_refresh' + this.getId());
-		},
-
-		_refresh: function(){
 			this.entry = this.node.getEntry();
 
             if(this.wrapper) this.wrapper.destroy();
