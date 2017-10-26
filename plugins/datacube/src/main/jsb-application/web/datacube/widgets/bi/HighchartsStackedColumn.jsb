@@ -10,6 +10,7 @@
     $scheme: {
         type: 'group',
         items: [
+        // Заголовок
         {
             name: 'Заголовок',
             type: 'item',
@@ -17,6 +18,7 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Подзаголовок
         {
             name: 'Подзаголовок',
             type: 'item',
@@ -24,12 +26,14 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Источник
         {
             type: 'group',
             name: 'Источник',
             key: 'source',
             binding: 'array',
             items: [
+            // Ось Х
             {
                 type: 'group',
                 name: 'Ось Х',
@@ -100,6 +104,7 @@
                 }
                 ]
             },
+            // Ось Y
             {
                 type: 'group',
                 name: 'Ось Y',
@@ -167,9 +172,31 @@
                     name: 'Справа',
                     key: 'opposite',
                     optional: true
+                },
+                {
+                    name: 'Тип',
+                    type: 'select',
+                    key: 'type',
+                    items: [
+                    {
+                        name: 'Линейная',
+                        type: 'item',
+                        key: 'linear',
+                        editor: 'none',
+                        itemValue: 'linear'
+                    },
+                    {
+                        name: 'Логарифмическая',
+                        type: 'item',
+                        key: 'logarithmic',
+                        editor: 'none',
+                        itemValue: 'logarithmic'
+                    }
+                    ]
                 }
                 ]
             },
+            // Серии
             {
                 type: 'group',
                 name: 'Серии',
@@ -350,6 +377,7 @@
             }
             ]
         },
+        // Легенда
         {
             type: 'group',
             name: 'Легенда',
@@ -364,6 +392,7 @@
             }
             ]
         },
+        // Цветовая схема
         {
             name: 'Цветовая схема по умолчанию',
             key: 'colorScheme',
@@ -395,6 +424,7 @@
             }
             ]
         },
+        // Режим накопления
         {
             name: 'Режим накопления',
             key: 'stacking',
@@ -872,6 +902,13 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
 						try {
                             while(source.next()){
+                                if(xAxisContext.length > 1){
+                                    xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
+                                } else {
+                                    var a = xAxisContext[0].get(0).value();
+                                    xAxisCategories.push(a ? a : 'Null');
+                                }
+
                                 for(var i = 0; i < dataSource.length; i++){
                                     if(!JSB.isString(dataSource[i].name)){    // composite series
                                         if(!seriesData[i]){
@@ -905,13 +942,6 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                         }
                                     }
                                 }
-
-                                if(xAxisContext.length > 1){
-                                    xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
-                                } else {
-                                    var a = xAxisContext[0].get(0).value();
-                                    xAxisCategories.push(a ? a : 'Null');
-                                }
                             }
 
                             var data = [];
@@ -929,6 +959,14 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                         })
                                     }
                                 }
+                            }
+
+                            if(data.length < xAxisCategories.length){
+                                var cats = [];
+                                for(var i = 0; i < xAxisCategories.length; i = i + data.length){
+                                    cats.push(xAxisCategories[i]);
+                                }
+                                xAxisCategories = cats;
                             }
 
                             if(opts && opts.isCacheMod){
@@ -1092,7 +1130,8 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                     color: $this.isNull(yAxisStackLabels[0].get(9).value()) || (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
                                 }
                             },
-                            opposite: yAxisContext[i].get(2).used()
+                            opposite: yAxisContext[i].get(2).used(),
+                            type: yAxisContext[i].find('type').value().value()
                         };
                     }
 

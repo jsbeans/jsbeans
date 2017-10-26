@@ -114,6 +114,27 @@
                     key: 'opposite',
                     optional: true,
                     editor: 'none'
+                },
+                {
+                    name: 'Тип',
+                    type: 'select',
+                    key: 'type',
+                    items: [
+                    {
+                        name: 'Линейная',
+                        type: 'item',
+                        key: 'linear',
+                        editor: 'none',
+                        itemValue: 'linear'
+                    },
+                    {
+                        name: 'Логарифмическая',
+                        type: 'item',
+                        key: 'logarithmic',
+                        editor: 'none',
+                        itemValue: 'logarithmic'
+                    }
+                    ]
                 }
                 ]
             },
@@ -610,7 +631,8 @@
                                 color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
                             }
                         },
-                        opposite: yAxisContext[i].get(2).used()
+                        opposite: yAxisContext[i].get(2).used(),
+                        type: yAxisContext[i].find('type').value().value()
                     };
                 }
 
