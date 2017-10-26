@@ -82,6 +82,10 @@
 	display: none;
 }
 
+.dataBindingSelector > .refresh > * {
+    vertical-align: middle;
+}
+
 .dataBindingSelector > .refresh > .icon {
 	width: 16px;
 	height: 16px;

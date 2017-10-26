@@ -127,6 +127,7 @@
 	$scheme: {
         type: 'group',
         items: [
+        // Заголовок
         {
             name: 'Заголовок',
             type: 'item',
@@ -134,6 +135,7 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Источник
         {
             type: 'group',
             name: 'Источник',
@@ -173,6 +175,92 @@
             }
             ]
         },
+        // Легенда
+        {
+            name: 'Легенда',
+            type: 'group',
+            key: 'legend',
+            items: [
+            {
+                name: 'Расположение',
+                type: 'select',
+                key: 'layout',
+                items: [
+                {
+                    name: 'Горизонтальное',
+                    type: 'item',
+                    key: 'horizontal',
+                    editor: 'none',
+                    itemValue: 'horizontal'
+                },
+                {
+                    name: 'Вертикальное',
+                    type: 'item',
+                    key: 'vertical',
+                    editor: 'none',
+                    itemValue: 'vertical'
+                }
+                ]
+            },
+            {
+                name: 'Горизонтальное выравнивание',
+                type: 'select',
+                key: 'align',
+                items: [
+                {
+                    name: 'По левому краю',
+                    type: 'item',
+                    key: 'left',
+                    editor: 'none',
+                    itemValue: 'left'
+                },
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'center',
+                    editor: 'none',
+                    itemValue: 'center'
+                },
+                {
+                    name: 'По правому краю',
+                    type: 'item',
+                    key: 'right',
+                    editor: 'none',
+                    itemValue: 'right'
+                }
+                ]
+            },
+            {
+                name: 'Вертикальное выравнивание',
+                type: 'select',
+                key: 'verticalAlign',
+                items: [
+                {
+                    name: 'По нижнему краю',
+                    type: 'item',
+                    key: 'bottom',
+                    editor: 'none',
+                    itemValue: 'bottom'
+                },
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'middle',
+                    editor: 'none',
+                    itemValue: 'middle'
+                },
+                {
+                    name: 'По верхнему краю',
+                    type: 'item',
+                    key: 'top',
+                    editor: 'none',
+                    itemValue: 'top'
+                }
+                ]
+            }
+            ]
+        },
+        // Tooltip
 		{
 			type: 'group',
 			key: 'tooltip',
@@ -192,6 +280,7 @@
 			}
 			]
 		},
+		// Диаметр внутреннего круга
         {
             name: 'Диаметр внутреннего круга',
             type: 'item',
@@ -200,6 +289,7 @@
             itemValue: '0',
             description: 'Диаметр внутреннего круга. По умолчанию 0. Диаметр больше 0 делает диаграмму вида бублика. Указывается числовое или процентное значение'
         },
+        // Цветовая схема
         {
             name: 'Цветовая схема по умолчанию',
             key: 'colorScheme',
@@ -464,10 +554,10 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
                     legend: {
                         rtl: true,
-                        layout: 'vertical',
+                        layout: this.getContext().find('legend').find('layout').value().value(),
                         floating: false,
-                        align: 'left',
-                        verticalAlign: 'middle',
+                        align: this.getContext().find('legend').find('align').value().value(),
+                        verticalAlign: this.getContext().find('legend').find('verticalAlign').value().value(),
                         x: 0,
                         y: 0,
                         itemMarginTop: 15,
