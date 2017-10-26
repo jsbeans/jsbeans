@@ -126,6 +126,7 @@
 				
 				$this.updateQuery();
 				$this.updateTextQuery();
+				$this.updateGrid();
 			});
 		},
 		
