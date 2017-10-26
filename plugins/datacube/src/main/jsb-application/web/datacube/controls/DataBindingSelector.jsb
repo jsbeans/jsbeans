@@ -205,7 +205,7 @@
 			
 			function collectFields(desc, items, path){
 				if(desc.type == 'array'){
-					collectFields(desc.arrayType, items);
+					collectFields(desc.arrayType, items, path);
 				} else if(desc.type == 'object'){
 					for(var f in desc.record){
 						var rf = desc.record[f];

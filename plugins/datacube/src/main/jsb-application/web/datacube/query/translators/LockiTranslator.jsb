@@ -22,14 +22,16 @@
             var result = this.providers[0].find();
 
             var fieldsMap = {};
-            var managedFields = this.cube.getManagedFields();
-            for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
-                var binding = managedFields[field].binding;
-                for(var b in binding) {
-                    if (this.providers[0] == binding[b].provider) {
-                        fieldsMap[field] = binding[b].field;
-                    }
-                }
+            if(this.cube){
+	            var managedFields = this.cube.getManagedFields();
+	            for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
+	                var binding = managedFields[field].binding;
+	                for(var b in binding) {
+	                    if (this.providers[0] == binding[b].provider) {
+	                        fieldsMap[field] = binding[b].field;
+	                    }
+	                }
+	            }
             }
 
             var i = 0;
