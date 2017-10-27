@@ -24,30 +24,40 @@
 		        this.iterator.close();
 		    }
 
-            // translate query
-            var subQuery = this.extractSelfSubQuery(dcQuery, params);
-		    var translatedQuery = this.translateQuery(dcQuery, params);
+            // extract sub-query for current providers
+            // TODO: починить вернуть !!!! - отключено временно !!!!
+            var subQuery = dcQuery;//this.extractSelfSubQuery(dcQuery, params);
+
+            // store dcQuery and params
+		    if (this.dcQuery) {
+		        throw new Error('SQLTranslator does not support reuse, create new instance');
+		    }
+		    this.dcQuery = subQuery;
+		    this.params = params;
+
+            // translate query to dataprovider format
+		    var translatedQuery = this.translateQuery();
 
 		    // create iterator
-		    this.iterator = this.executeQuery(translatedQuery, params);
-
-		    return {
-		        next: function(){
-		            return $this.translateResult($this.iterator.next());
-		        },
-		        close:function(){
-		            $this.iterator.close();
-		        }
-		    };
+		    if (this.dcQuery.$analyze) {
+		        return this.analyzeQuery(translatedQuery);
+		    } else {
+		        this.iterator = this.executeQuery(translatedQuery);
+                return {
+                    next: function(){
+                        return $this.translateResult($this.iterator.next());
+                    },
+                    close:function(){
+                        $this.iterator.close();
+                    }
+                };
+		    }
 		},
 
 		extractSelfSubQuery: function(dcQuery, params){
 		
             function isLinkedWithSelfProviders(exp, byKeyField, byValueField){
                 var provs = $this._extractUsedProviders(dcQuery, exp, byKeyField, byValueField, true);
-                if (provs.length > 1) {
-                    throw new Error('Expression links with some providers - ' + JSON.stringify(exp));
-                }
                 if (provs.length == 0) {
                     // abstract aggregators (sum:1, count:1) - find groupBy provider
                     if (dcQuery.$groupBy && dcQuery.$groupBy[0]) {
@@ -56,9 +66,13 @@
                             return true;
                         }
                     }
-                } else if($this.providers.indexOf(provs[0]) != -1) {
-                    // use only current provider fields
-                    return true;
+                } else {
+                    for (var i in provs) {
+                        if($this.providers.indexOf(provs[i]) != -1) {
+                            // use only current provider fields
+                            return true;
+                        }
+                    }
                 }
             }
 
@@ -73,16 +87,16 @@
                 return newExpr;
 		    }
 
-		    function filterFields(groupBy) {
-		        var newGroupBy = [];
-                for (var i in groupBy) {
-                    var used = isLinkedWithSelfProviders(groupBy[i], false, true);
-                    if (used) {
-                        newGroupBy.push(groupBy[i]);
-                    }
-                }
-                return newGroupBy;
-		    }
+//		    function filterFields(groupBy) {
+//		        var newGroupBy = [];
+//                for (var i in groupBy) {
+//                    var used = isLinkedWithSelfProviders(groupBy[i], false, true);
+//                    if (used) {
+//                        newGroupBy.push(groupBy[i]);
+//                    }
+//                }
+//                return newGroupBy;
+//		    }
 
 		    function filterFields(sort, allowAlias) {
 		        var newSort = [];
@@ -106,13 +120,14 @@
 		        // provider query
 		        return JSB.merge(true, {}, dcQuery, {$finalize: null});
 		    }
-
+debugger;
             return {
                 $select: filterSubQuery(dcQuery.$select, false, true),
                 $filter: filterSubQuery(dcQuery.$filter, true, false),
-                $groupBy: filterFields(dcQuery.$groupBy),
+                $groupBy: filterFields(dcQuery.$groupBy, true),
                 $sort: filterFields(dcQuery.$sort, true),
                 $distinct: dcQuery.$distinct,
+                // TODO ???? need $postFilter?
                 // skip $finalize
             };
         },
@@ -125,7 +140,10 @@
 		    throw new 'Not implemented';
 		},
 
-		executeQuery: function(translatedQuery, params){
+		executeQuery: function(translatedQuery){
+            throw new 'Not implemented';
+        },
+        analyzeQuery: function(translatedQuery){
             throw new 'Not implemented';
         },
 

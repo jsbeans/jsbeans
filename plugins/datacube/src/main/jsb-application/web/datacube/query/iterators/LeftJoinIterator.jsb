@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Iterators.InnerJoinIterator',
+	$name: 'DataCube.Query.Iterators.LeftJoinIterator',
 	$parent: 'DataCube.Query.Iterators.Iterator',
 
 	$server: {
@@ -15,6 +15,13 @@
 		iterate: function(dcQuery, params){
 		    this.dcQuery = dcQuery;
 		    this.params = params;
+
+		    // store fields
+		    this.fields = {};
+            var managedFields = this.cube.getManagedFields();
+            for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
+                this.fields[field] = true;
+            }
 
 		    // include join condition fields to $select
 		    var managedFields = this.cube.getManagedFields();
@@ -86,6 +93,12 @@
 		        return true;
 		    }
 //debugger;
+            // clear nulls and last value
+            while(this.values.length > 0 && this.values[this.values.length - 1] == null) {
+                this.values.pop();
+            }
+            this.values.pop();
+
             // left to right fill values and right to left for get next
 		    for (var i = this.values.length; i < this.iterators.length; ) {
 		        var iterator = this.iterators[i];
@@ -99,7 +112,7 @@
 		        var leftCFValues = i > 0 ? this.getLeftConditionFieldValues(i) : null;
 		        for (;;) {
 		             this.values[i] = iterator.next();
-		             if (JSB.isNull(this.values[i])) break;
+		             if (this.values[i] == null) break;
 		             // test value for join
 		             if (leftCFValues && !checkCondition(i, leftCFValues)) {
 		                // next value
@@ -108,12 +121,12 @@
 		             break;
 		        }
 
-		        if (JSB.isNull($this.values[i])) {
+		        if ($this.values[i] == null) {
 		            if (i > 0) {
                         this.initialized[i] = false;
-		                // jump to prev iterator and next value
-                        i--;
-                        continue;
+//		                 // INNER JOIN: jump to prev iterator and next value
+//                        i--;
+//                        continue;
 		            } else {
 		                // complete
                         return null;
@@ -121,10 +134,16 @@
 		        }
                 i++;
 		    }
-//debugger;
-		    // return merged copy
+
+		    // merge and copy
 		    var value = JSB.merge.apply(null, [{}].concat(this.values));
-		    this.values.pop();
+
+            // fill empty fields
+            for (var field in this.fields) if (this.fields.hasOwnProperty(field)) {
+                if (typeof value[field] === 'undefined') {
+                    value[field] = null;
+                }
+            }
 		    return value;
 		},
 

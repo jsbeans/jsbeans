@@ -5056,6 +5056,7 @@ JSB({
 		bulkTimeoutVal: 300,
 		updateRpcTimeout: 300,
 		maxBatchSize: 30,
+		crossDomainBatchSize: 1,
 
 		// methods
 		getServerBase: function(){
@@ -5078,6 +5079,7 @@ JSB({
 					this.crossDomain = false;
 				} else {
 					this.crossDomain = true;
+					this.maxBatchSize = this.crossDomainBatchSize;
 				}
 			}
 			var ch = this.basePath.charAt(this.basePath.length - 1);

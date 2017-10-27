@@ -108,16 +108,19 @@
 					items:[{
 						name: 'Линейный',
 						type: 'item',
+						key: 'Line',
 						itemValue: 'Line',
 						editor: 'none'
 					},{
 						name: 'Круговой',
 						type: 'item',
+						key: 'Circle',
 						itemValue: 'Circle',
 						editor: 'none'
 					},{
 						name: 'Дуговой',
 						type: 'item',
+						key: 'SemiCircle',
 						itemValue: 'SemiCircle',
 						editor: 'none'
 					}]
@@ -225,7 +228,7 @@
 
 		},
 		
-		refresh: function(){
+		refresh: function(opts){
 			if(!this.ready){
 				JSB.deferUntil(function(){
 					$this.refresh();
@@ -378,7 +381,5 @@
 			// sort
 			seriesSelData.order();
 		}
-		
-
 	}
 }

@@ -110,12 +110,21 @@
 				skip = params.skip;
 			}
 			
+			var q = params.query;
+			if(Object.keys(q.$select).length == 0){
+				// insert all cube fields
+				var fields = cube.getManagedFields();
+				for(var fName in fields){
+					q.$select[fName] = fName;
+				}
+			}
+			
 			// read
-			var qDesc = cube.parametrizeQuery(params.query);
+			var qDesc = cube.parametrizeQuery(q);
 			
 			var it = cube.executeQuery(qDesc.query, qDesc.params);
 			if(!it){
-				throw new Error('Failed to execute query: ' + JSON.stringify(query));
+				throw new Error('Failed to execute query: ' + JSON.stringify(params.query));
 			}
 			
 			var cnt = 0;

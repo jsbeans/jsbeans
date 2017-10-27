@@ -54,8 +54,9 @@
                       clientHeight = evt.target.clientHeight;
 
                     // for content preloader
-                    if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight)
-                      $this.preLoad(evt);
+                    if(scrollTop !== 0 && scrollTop > $this._oldScroll.y && scrollHeight - scrollTop <= 2 * clientHeight){
+                        $this.preLoad(evt);
+                    }
 
                     $this._oldScroll.y = scrollTop;
                 });
@@ -184,6 +185,14 @@
             // basic types
             td.innerHTML = '<div class="tableCell">' + val + '</div>';
             return td;
+		},
+
+		getColumnCount: function(){
+		    return this.handsontable.countCols();
+		},
+
+		getRowCount: function(){
+		    return this.handsontable.countRows();
 		},
 
 		isInit: function(){

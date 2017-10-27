@@ -35,6 +35,7 @@
 		dataProviderEntries: {},
 		dataProviderFields: {},
 		dataProviderPositions: {},
+		dataProviderSizes: {},
 		fieldOrder: [],
 		fields: {},
 		slices: {},
@@ -42,6 +43,8 @@
 		materialization: {},
 		materializing: false,
 		nodePosition: null,
+		nodeSize: null,
+		defaultFields: null,
 
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace);
@@ -71,6 +74,8 @@
 					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.cube');
 					
 					this.nodePosition = snapshot.position;
+					this.nodeSize = snapshot.size;
+					this.defaultFields = snapshot.defaultFields;
 					
 					// construct data providers
 					for(var i = 0; i < snapshot.providers.length; i++){
@@ -89,11 +94,12 @@
 						}
 						var ProviderClass = pJsb.getClass();
 						var providerDesc = DataProviderRepository.queryDataProviderInfo(pEntry);
-						var provider = new ProviderClass(pDesc.id, pEntry, this, providerDesc.opts);
+						var provider = new ProviderClass(pDesc.id, pEntry, this, pDesc);
 						this.dataProviders[pDesc.id] = provider;
 						this.dataProviderEntries[pDesc.id] = pEntry;
 						this.dataProviderFields[pDesc.id] = pDesc.fields;
 						this.dataProviderPositions[pDesc.id] = pDesc.position;
+						this.dataProviderSizes[pDesc.id] = pDesc.size;
 					}
 					
 					// construct fields
@@ -135,7 +141,7 @@
 							}
 							var ProviderClass = pJsb.getClass();
 							var providerDesc = DataProviderRepository.queryDataProviderInfo(materialization.dataProviderEntry);
-							materialization.dataProvider = new ProviderClass(snapshot.materialization.provider.id, materialization.dataProviderEntry, this, providerDesc.opts);
+							materialization.dataProvider = new ProviderClass(snapshot.materialization.provider.id, materialization.dataProviderEntry, this, providerDesc);
 							for(var i = 0; i < snapshot.materialization.fields.length; i++){
 								var fDesc = snapshot.materialization.fields[i];
 								materialization.fields[fDesc.field] = {
@@ -183,6 +189,8 @@
 			// construct response for drawing
 			var desc = {
 				cubePosition: this.nodePosition,
+				cubeSize: this.nodeSize,
+				defaultFields: this.defaultFields,
 				providers: [],
 				fields: this.fields,
 				slices: []
@@ -190,7 +198,8 @@
 			for(var pId in this.dataProviders){
 				desc.providers.push({
 					provider: this.dataProviders[pId],
-					position: this.dataProviderPositions[pId]
+					position: this.dataProviderPositions[pId],
+					size: this.dataProviderSizes[pId]
 				});
 			}
 			for(var sId in this.slices){
@@ -202,8 +211,14 @@
 			
 			return desc;
 		},
-		
+
 		store: function(){
+            JSB.defer(function(){
+                $this._store();
+            }, 200, "storeDefer_" + this.getId());
+		},
+
+		_store: function(){
 			var mtxName = 'store_' + this.getId();
 			JSB.getLocker().lock(mtxName);
 			// construct snapshot
@@ -211,7 +226,9 @@
 				providers: [],
 				fields: [],
 				slices: [],
-				position: this.nodePosition
+				position: this.nodePosition,
+				size: this.nodeSize,
+				defaultFields: this.defaultFields
 			};
 			
 			// prepare providers
@@ -222,11 +239,13 @@
 					jsb: provider.getJsb().$name,
 					entry: this.dataProviderEntries[pId].getLocalId(),
 					fields: this.dataProviderFields[pId],
-					position: this.dataProviderPositions[pId]
+					mode: provider.mode,
+					position: this.dataProviderPositions[pId],
+					size: this.dataProviderSizes[pId]
 				};
 				snapshot.providers.push(pDesc);
 			}
-			
+
 			// prepare fields
 			for(var fName in this.fields){
 				var fDesc = {
@@ -307,6 +326,11 @@
 			this.nodePosition = pt;
 			this.store();
 		},
+
+		updateCubeNodeSize: function(size){
+		    this.nodeSize = size;
+		    this.store();
+		},
 		
 		addDataProvider: function(providerEntry){
 			var providerDesc = DataProviderRepository.queryDataProviderInfo(providerEntry);
@@ -316,13 +340,17 @@
 			}
 			var ProviderCls = providerJsb.getClass();
 			var pId = this.getLocalId() + '|dp_' + JSB.generateUid();
-			var provider = new ProviderCls(pId, providerEntry, this, providerDesc.opts);
+			var provider = new ProviderCls(pId, providerEntry, this, providerDesc);
 			this.dataProviders[pId] = provider;
 			this.dataProviderEntries[pId] = providerEntry;
 			this.sourceCount = Object.keys(this.dataProviders).length;
 			this.store();
 			this.doSync();
 			return provider;
+		},
+
+		getFields: function(){
+		    return this.fields;
 		},
 		
 		getProviderById: function(pId){
@@ -337,6 +365,11 @@
 				return [this.materialization.dataProvider];
 			}
 		    function compareProviders(leftProvider, rightProvider){
+		        // by mode
+		        if ((leftProvider.mode||'union') != (rightProvider.mode||'union')) {
+		            return rightProvider.mode == 'join' ? -1 : 1;
+		        }
+		        // by position
 		        for(var f in $this.fields){
                     var binding = $this.fields[f].binding;
                     if (binding.length > 1) {
@@ -367,17 +400,48 @@
 		    providers.sort(compareProviders);
 		    return providers;
 		},
-		
+
+		createProviderFieldsList: function(provider, fields){
+            var res = {};
+
+            for(var i in fields){
+                res[i] = {
+                    type: fields[i]
+                }
+            }
+
+            for(var i in this.fields){
+                for(var j = 0; j < this.fields[i].binding.length; j++){
+                    if(provider.getId() == this.fields[i].binding[j].provider.getId()){
+                        if(this.fields[i].binding.length > 1){
+                            res[this.fields[i].binding[j].field].keyField = true;
+                        }
+
+                        res[this.fields[i].binding[j].field].cubeField = i;
+                    }
+                }
+            }
+
+            return res;
+		},
+
+		changeProviderMode: function(providerId, mode){
+		    var provider = this.getProviderById(providerId);
+		    provider.mode = mode;
+            this.store();
+            this.doSync();
+		},
+
 		extractDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);
 			if(this.dataProviderFields[provider.getId()]){
-				return this.dataProviderFields[provider.getId()];
+				return this.createProviderFieldsList(provider, this.dataProviderFields[provider.getId()]);
 			}
 			var dpFields = provider.extractFields();
 			this.dataProviderFields[provider.getId()] = dpFields;
 			this.store();
 			this.doSync();
-			return dpFields;
+			return this.createProviderFieldsList(provider, dpFields);
 		},
 		
 		prepareFieldName: function(name){
@@ -394,7 +458,32 @@
 
 			return name;
 		},
-		
+
+		removeProvider: function(pId){
+		    var fieldsForRemove = [];
+
+            for(var i in this.fields){
+                for(var j = 0; j < this.fields[i].binding.length; j++){
+                    var field = this.fields[i].binding[j];
+                    if(field.provider.getId() == pId){
+                        fieldsForRemove.push(i);
+                    }
+                }
+            }
+
+            this.removeFields(fieldsForRemove);
+            delete this.dataProviders[pId];
+            delete this.dataProviderFields[pId];
+            delete this.dataProviderEntries[pId];
+            delete this.dataProviderPositions[pId];
+            delete this.dataProviderSizes[pId];
+            this.sourceCount--;
+
+		    this.store();
+            this.doSync();
+
+            this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+		},
 		
 		refreshDataProviderFields: function(pId){
 			var provider = this.getProviderById(pId);
@@ -438,13 +527,13 @@
 					});
 				}
 			}
-			
+
 			if(bNeedStore){
 				this.store();
 				this.doSync();
 			}
 			
-			return {fields: dpNewFields, binding: providerBindingMap};
+			return {fields: this.createProviderFieldsList(provider, dpNewFields), binding: providerBindingMap};
 		},
 		
 		renameDataProviderField: function(provider, oldName, newName, type){
@@ -477,14 +566,30 @@
 					if(bDesc.provider != provider){
 						continue;
 					}
-					
+
 					if(!dpFields[bDesc.field]){
 						bindingArr.splice(i, 1);
+					} else {
+					    if(fDesc.type != dpFields[bDesc.field]){
+					        fDesc.type = dpFields[bDesc.field];
+					    }
 					}
 				}
+
 				if(bindingArr.length == 0){
 					fieldsToRemove.push(fName);
 					bNeedStore = true;
+				}
+				if(bindingArr.length == 1){
+				    fDesc.link = false;
+				}
+				if(bindingArr.length >= 2){
+				    var first = bindingArr[0].type;
+				    for(var i = 1; i < bindingArr.length; i++){
+				        if(first !== bindingArr[i].type){
+				            this.removeFields(fName);
+				        }
+				    }
 				}
 			}
 			for(var i = 0; i < fieldsToRemove.length; i++){
@@ -499,6 +604,11 @@
 		updateDataProviderNodePosition: function(pId, pt){
 			var provider = this.getProviderById(pId);
 			this.dataProviderPositions[provider.getId()] = pt;
+			this.store();
+		},
+
+		updateDataProviderNodeSize: function(pId, size){
+		    this.dataProviderSizes[pId] = size;
 			this.store();
 		},
 		
@@ -533,28 +643,56 @@
 			this.doSync();
 			return this.fields[nameCandidate];
 		},
-		
-		linkField: function(field, pId, pField, pType){
-			if(!this.fields[field]){
-				throw new Error('Field not existed: ' + field);
-			}
-			var provider = this.getProviderById(pId);
-			// check if binding already existed
-			for(var i = 0; i < this.fields[field].binding.length; i++){
-				if(this.fields[field].binding[i].field == pField && this.fields[field].binding[i].provider == provider){
-					return this.fields[field];
-				}
-			}
-			
-			this.fields[field].binding.push({
-				provider: provider,
-				field: pField,
-				type: pType
-			});
-			this.fields[field].link = this.fields[field].binding.length > 0;
-			this.store();
-			this.doSync();
-			return this.fields[field];
+
+		linkFields: function(fields){
+            var nFields = [],
+                nField;
+
+		    for(var i = 0; i < fields.length; i++){
+		        var f = this.fields[fields[i].field];
+
+		        if(f.binding.length > 1){   // key field
+		            if(!nField){
+		                nField = f;
+		            } else {
+		                for(var j = 0; j < f.binding.length; j++){
+                            nFields.push({
+                                field: f.binding[j].field,
+                                type: f.binding[j].type,
+                                provider: f.binding[j].provider
+                            });
+		                }
+		                delete this.fields[fields[i].field];
+		            }
+		        } else {
+                    nFields.push({
+                        field: f.binding[0].field,
+                        type: f.type,
+                        provider: f.binding[0].provider
+                    });
+		            delete this.fields[fields[i].field];
+		        }
+		    }
+
+		    if(!nField){
+                var nField = this.fields[nFields[0].field] = {
+                    binding: [],
+                    field: nFields[0].field,
+                    link: true,
+                    type: nFields[0].type
+                };
+		    }
+
+		    for(var i = 0; i < nFields.length; i++){
+		        nField.binding.push(nFields[i]);
+		    }
+
+		    this.fieldCount = Object.keys(this.fields).length;
+
+		    this.store();
+            this.doSync();
+
+            return nField;
 		},
 
 		renameField: function(oldName, newName){
@@ -591,29 +729,51 @@
 			this.doSync();
 			return this.fields[n];
 		},
-		
-		removeField: function(field){
-			if(!this.fields[field]){
-				return false;
-			}
-			var order = this.fields[field].order;
-			delete this.fields[field];
-			
-			// fix ordering
-			for(var fName in this.fields){
-				if(this.fields[fName].order >= order){
-					this.fields[fName].order--;
-				}
-			}
-			
+
+		removeFields: function(fields){
+		    if(!JSB.isArray(fields)){
+		        fields = [fields];
+		    }
+
+		    var nFields = {
+		        add: [],
+		        uncheck: []
+		    };
+
+		    for(var i = 0; i < fields.length; i++){
+                if(!this.fields[fields[i]]){
+                    continue;
+                }
+
+                var oldField = JSB.clone(this.fields[fields[i]]);
+                delete this.fields[fields[i]];
+
+                if(oldField.binding.length > 1){ // key field
+                    for(var i = 0; i < oldField.binding.length; i++){
+                        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field, oldField.binding[i].type);
+
+                        nFields.add.push(f);
+                    }
+                } else {
+                    nFields.uncheck.push(oldField);
+                }
+		    }
+
 			this.fieldCount = Object.keys(this.fields).length;
-			
+
 			// remove materialization
 			this.removeMaterialization();
-			
+
 			this.store();
 			this.doSync();
-			return true;
+
+			return nFields;
+		},
+
+		setDefaultFields: function(fields){
+		    this.defaultFields = fields;
+            this.store();
+            this.doSync();
 		},
 		
 		addSlice: function(){
@@ -660,14 +820,17 @@
 		},
 		
 		getSlices: function(){
+			this.load();
 			return this.slices;
 		},
 		
 		getFields: function(){
+			this.load();
 			return this.fields;
 		},
 		
 		getManagedFields: function(){
+			this.load();
 			if(this.materialization && this.materialization.fields){
 				return this.materialization.fields;
 			}
@@ -703,6 +866,8 @@
 			
 			// run materialization on deferred manner
 			JSB.defer(function(){
+				JSB.getLocker().lock('materialization_' + $this.getId());
+				
 				function checkStop(){
 					if($this.stopMaterializing){
 						$this.materializing = false;
@@ -727,24 +892,38 @@
 					}
 				}
 				
-				JSB.getLocker().lock('materialization_' + $this.getId());
-				
-				
 				try {
 					$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
+					
+					// create table list description
+					var tables = {};
+					for(var fName in $this.fields){
+						var fDesc = $this.fields[fName];
+						for(var i = 0; i < fDesc.binding.length; i++){
+							var pDesc = fDesc.binding[i];
+							var pId = pDesc.provider.getId();
+//							if(!tables[])
+						}
+					}
+					
 					var suggestedName = 'cube_' + $this.getLocalId();
 					var fields = {};
 					for(var fName in $this.fields){
 						fields[$this.fields[fName].field] = $this.fields[fName].type;
 					}
 					
-					
 					// create table
 					var tableDesc = $this.materializer.createTable(suggestedName, fields);
 					materializationDesc.table = tableDesc.table;
 					
+					// generate query
+					var q = {$select:{}};
+					for(var fName in fields){
+						q.$select[fName] = fName;
+					}
+					
 					// transmit data
-					var iterator = $this.queryEngine.query({$select: {}}, {});
+					var iterator = $this.queryEngine.query(q, {});
 					var batch = [];
 					var lastStatusTimestamp = 0;
 					for(var i = 0; ; i++){
@@ -819,7 +998,6 @@
 							break;
 						}
 					}
-					
 					if(!source){
 						throw new Error('Internal error: unable to find materialization table');
 					}
@@ -831,7 +1009,7 @@
 					}
 					var ProviderCls = providerJsb.getClass();
 					var pId = $this.getLocalId() + '|dp_' + JSB.generateUid();
-					materializationDesc.dataProvider = new ProviderCls(pId, source, $this, providerDesc.opts);
+					materializationDesc.dataProvider = new ProviderCls(pId, source, $this, providerDesc);
 					materializationDesc.dataProviderEntry = source;
 					materializationDesc.fields = {};
 					var providerFields = materializationDesc.dataProvider.extractFields();
@@ -906,7 +1084,7 @@
 				
 				if(materialization && materialization.dataProviderEntry){
 					var sourceEntry = materialization.dataProviderEntry;
-					
+/*					
 					// remove table
 					if(materialization.table){
 						var database = sourceEntry.getParent();
@@ -914,6 +1092,7 @@
 						materializer.removeTable(materialization.table);
 					}
 					sourceEntry.remove();
+*/					
 				} 
 				
 			} finally {
@@ -970,7 +1149,7 @@
 								fStr += f;
 								indexDesc[f] = true;
 							}
-							var idxName = 'idx_' + MD5.md5(fStr);
+							var idxName = 'idx_' +  MD5.md5($this.getLocalId() + '_' + fStr);
 							indexMap[idxName] = indexDesc;
 						} else if(fObj == '$filter') {
 							// parse filter
@@ -989,7 +1168,7 @@
 								fStr += f;
 								indexDesc[f] = true;
 							}
-							var idxName = 'idx_' + MD5.md5(fStr);
+							var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + fStr);
 							indexMap[idxName] = indexDesc;
 						} else if(JSB.isObject(obj[fObj]) && Object.keys(obj[fObj]).length > 0){
 							var sMap = parseObject(obj[fObj]);
@@ -1021,8 +1200,15 @@
 				}
 
 				$this.publish('DataCube.Model.Cube.status', {status: 'Обновление индексов материализации', success: true}, {session: true});
-				// iterate over slices
 				var cubeIdxMap = {};
+				// generate single indexes
+				for(var f in matFields){
+					var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + f);
+					var indexDesc = {};
+					indexDesc[f] = true;
+					cubeIdxMap[idxName] = indexDesc;
+				}
+				// iterate over slices
 				for(var sId in this.slices){
 					var slice = this.slices[sId];
 					var indexes = extractIndexesForSlice(slice);
@@ -1030,6 +1216,7 @@
 						JSB.merge(cubeIdxMap, indexes);
 					}
 				}
+				
 				// adding new indexes
 				var indexCount = Object.keys(cubeIdxMap).length;
 				var curIndexPos = 0;
@@ -1155,7 +1342,7 @@
 			
 			if(newQuery && Object.keys(newQuery).length > 0){
 	        	// translate $filter
-	        	if(newQuery.$filter || newQuery.$postFilter){
+	        	if(newQuery.$filter || newQuery.$cubeFilter || newQuery.$postFilter){
 	        		var c = {i: 1};
 	        		function getNextParam(){
 	        			return 'p' + (c.i++);
@@ -1179,6 +1366,9 @@
 	        		if(newQuery.$filter){
 	        			prepareFilter(newQuery.$filter);
 	        		}
+	        		if(newQuery.$cubeFilter){
+	        			prepareFilter(newQuery.$cubeFilter);
+	        		}
 	        		if(newQuery.$postFilter){
 	        			prepareFilter(newQuery.$postFilter);
 	        		}
@@ -1192,7 +1382,7 @@
 		},
 		
 		executeQuery: function(query, params, provider){
-			this.load();
+		    this.load();
 			return this.queryEngine.query(query, params, provider);
 		}
 	}

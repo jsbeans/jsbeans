@@ -162,6 +162,13 @@
 				binding: 'field',
 				editor: 'none'
 			},{
+				name: 'Фильтрующие поля',
+				type: 'item',
+				multiple: true,
+				key: 'rowFilter',
+				binding: 'field',
+				editor: 'none'
+			},{
 				name: 'Столбцы',
 				type: 'group',
 				multiple: 'auto',
@@ -190,6 +197,7 @@
 							name: 'Виджет',
 							key: 'widget',
 							type: 'widget',
+							collapsable: true
 						},{
 							type: 'item',
 							key: 'widgetSort',
@@ -203,6 +211,9 @@
 				},{
 					name: 'Выравнивание ячейки',
 					type: 'group',
+		            collapsable: true,
+		            collapsed: true,
+					key: 'cellAlign',
 					items:[{
 						name: 'По горизонтали',
 						type: 'select',
@@ -210,16 +221,19 @@
 						items: [{
 							type: 'item',
 							name: 'По левому краю',
+							key: 'left',
 							itemValue: 'left',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'center',
 							itemValue: 'center',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
+							key: 'right',
 							itemValue: 'right',
 							editor: 'none'
 						}]
@@ -230,16 +244,19 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
+							key: 'top',
 							itemValue: 'top',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'middle',
 							itemValue: 'middle',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
+							key: 'bottom',
 							itemValue: 'bottom',
 							editor: 'none'
 						}]
@@ -262,6 +279,9 @@
 				},{
 					name: 'Выравнивание заголовка',
 					type: 'group',
+		            collapsable: true,
+		            collapsed: true,
+					key: 'headerAlign',
 					items:[{
 						name: 'По горизонтали',
 						type: 'select',
@@ -269,16 +289,19 @@
 						items: [{
 							type: 'item',
 							name: 'По левому краю',
+							key: 'left',
 							itemValue: 'left',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'center',
 							itemValue: 'center',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'По правому краю',
+							key: 'right',
 							itemValue: 'right',
 							editor: 'none'
 						}]
@@ -289,16 +312,19 @@
 						items: [{
 							type: 'item',
 							name: 'Сверху',
+							key: 'top',
 							itemValue: 'top',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Посередине',
+							key: 'middle',
 							itemValue: 'middle',
 							editor: 'none'
 						},{
 							type: 'item',
 							name: 'Снизу',
+							key: 'bottom',
 							itemValue: 'bottom',
 							editor: 'none'
 						}]
@@ -325,13 +351,6 @@
 					itemValue: 'auto',
 					key: 'colWidth'
 				}]
-			},{
-				name: 'Фильтрующие поля',
-				type: 'item',
-				multiple: true,
-				key: 'rowFilter',
-				binding: 'field',
-				editor: 'none'
 			}]
 		}]
 	},
@@ -421,9 +440,11 @@
 		
 		updateHeaderSize: function(){
 			if($this.header.is(':visible')){
-				$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
+				$this.scroll.getPane().css('padding-top', $this.header.height());
+//				$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
 			} else {
-				$this.scroll.getElement().css('height', '100%');
+				$this.scroll.getPane().css('padding-top', 0);
+//				$this.scroll.getElement().css('height', '100%');
 			}
 		},
 		
@@ -501,13 +522,15 @@
 								$this.widgetMap[key][colName].refresh();
 							} else {
 								var WidgetCls = $this.colDesc[j].widget.cls;
-								var widget = new WidgetCls();
-								widget.setWrapper($this.getWrapper(),  row[j].value);
-								widget.refresh();
-								if(!$this.widgetMap[key]){
-									$this.widgetMap[key] = {};
+								if(WidgetCls){
+									var widget = new WidgetCls();
+									widget.setWrapper($this.getWrapper(),  row[j].value);
+									widget.refresh();
+									if(!$this.widgetMap[key]){
+										$this.widgetMap[key] = {};
+									}
+									$this.widgetMap[key][colName] = widget;
 								}
-								$this.widgetMap[key][colName] = widget;
 							}
 						}
 					}
@@ -788,7 +811,6 @@
 						}
 						
 						row.push(rDesc);	// push cell
-
 					}
 					rows.push({row: row, key: rowKey, filter: rowFilter});
 					if(rows.length >= batchSize){
@@ -807,7 +829,7 @@
 						$this.stopPreFetch = false;
 						callback.call($this, rows, fail);
 					}
-				})
+				});
 			}
 			
 			iterateRows();

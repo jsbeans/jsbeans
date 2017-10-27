@@ -8,9 +8,14 @@
 	entry: null,
 	cube: null,
 	name: null,
+	mode: null,
 	
 	getName: function(){
 		return this.name;
+	},
+	
+	getMode: function(){
+		return this.mode || 'union';
 	},
 	
 	$server: {
@@ -20,6 +25,9 @@
 			this.entry = pEntry;
 			this.cube = cube;
 			this.id = id;
+			if(opts && opts.mode){
+				this.mode = opts.mode;
+			} 
 			$base();
 		},
 		

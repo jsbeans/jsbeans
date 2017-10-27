@@ -8,6 +8,9 @@
 			var self = this;
 			$base(opts);
 			this.loadCss('scrollBox.css');
+			if(opts && opts.cssClass){
+			    this.addClass(opts.cssClass);
+			}
 			JSB().loadScript('tpl/iscroll/iscroll-probe.js', function(){
 				self.init();
 			});
@@ -79,6 +82,19 @@
 			if(!this.options.disableWheel){
 				this.getElement().mousewheel(function(evt, delta, deltaX, deltaY){
 					self.addWheelDelta(delta);
+					if(delta > 0){
+						// scroll up
+						if($this.scroll.y < 0){
+							evt.stopPropagation();
+							evt.preventDefault();
+						}
+					} else {
+						// scroll down
+						if($this.scroll.y + $this.scrollPane.height() > $this.getElement().height()){
+							evt.stopPropagation();
+							evt.preventDefault();
+						}
+					}
 					if(self.options.stopPropagation){
 						evt.stopPropagation();
 					}

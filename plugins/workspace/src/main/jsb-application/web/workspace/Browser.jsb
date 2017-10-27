@@ -4,7 +4,7 @@
 	
 	$require: ['JSB.Workspace.WorkspaceController',
 	           'JSB.Workspace.Navigator',
-	           'JSB.Widgets.TabView',
+	           'JSB.Controls.TabView',
 	           'JSB.Widgets.Button',
 	           'JQuery.UI.Effects'],
 	
@@ -58,7 +58,6 @@
 				$this.setCurrentWorkspace(w);
 				$this.setCurrentNode(null);	// display root
 			});
-			
 		},
 		
 		setCurrentWorkspace: function(w){
@@ -66,12 +65,15 @@
 			this.manager = w.workspaceManager;
 		},
 		
-		addView: function(id, title, view){
+		addView: function(id, title, icon, viewCls){
 			if(!this.views[id]){
-				this.views[id] = this.tabView.addTab(title, view, {id: id});
+				this.views[id] = this.tabView.addTab(title, viewCls, {id: id, dontSwitchOnCreate: true });
+				if(icon){
+					this.views[id].tab.find('> .icon').css('background-image', 'url(' + icon + ')');
+				}
 				this.views[id].tab.resize(function(){
 					JSB.defer(function(){
-						$this.updateNavigator();	
+						$this.updateNavigator();
 					}, 100, 'addView_' + $this.getId());
 				});
 			}
@@ -84,10 +86,13 @@
 				return;
 			}
 			this.tabView.switchTab(id);
-			this.views[id].ctrl.setCurrentNode(this.currentNode, this.currentWorkspace);
+			$this.views[id].ctrl.setCurrentNode($this.currentNode, $this.currentWorkspace);
 		},
 		
 		getActiveView: function(){
+		    if(!this.tabView.getCurrentTab()){
+		        return null;
+		    }
 			return this.tabView.getCurrentTab().id;
 		},
 		
@@ -107,6 +112,10 @@
 			if(this.nodeViewRegistry[nodeType]){
 				this.updateViewsForNode();
 			} else {
+                // hide all tabs
+                var tabs = this.tabView.find('> .tabPane > li');
+                tabs.css('display', 'none');
+
 				WorkspaceController.server().queryBrowserViews(this.wmKey, nodeType, function(viewArr){
 					$this.nodeViewRegistry[nodeType] = viewArr;
 					// ensure all view jsbs loaded
@@ -116,7 +125,7 @@
 							c.call($this);
 						} else {
 							$jsb.lookup(viewDesc.viewType, function(cls){
-								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, new cls());
+								viewDesc.viewEntry = $this.addView(viewDesc.viewType, viewDesc.caption, viewDesc.icon, cls);
 								c.call($this);
 							});
 						}
@@ -131,9 +140,9 @@
 			var nodeType = this.currentNode ? this.currentNode.getJsb().$name : null;
 			var viewArr = this.nodeViewRegistry[nodeType];
 			var currentViewId = this.getActiveView();
-			
+
 			// hide all tabs
-			var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab');
+			var tabs = this.tabView.find('> .tabPane > li');
 			tabs.css('display', 'none');
 			
 			if(viewArr.length == 0){
@@ -156,7 +165,7 @@
 			
 			// activate view
 			var bActivated = false;
-			if(!ignorePrevView){
+			if(!ignorePrevView && currentViewId){
 				for(var i = 0; i < viewArr.length; i++){
 					if(viewArr[i].viewEntry.id == currentViewId){
 						this.activateView(currentViewId);
@@ -185,7 +194,7 @@
 		},
 		
 		updateNavigator: function(){
-			var tabs = this.tabView.find('> ul._dwp_tabPane > li._dwp_tab:visible');
+			var tabs = this.tabView.find('> ul.tabPane > li:visible');
 			var size = 22;
 			for(var i = 0; i < tabs.length; i++){
 				size += this.$(tabs[i]).outerWidth();

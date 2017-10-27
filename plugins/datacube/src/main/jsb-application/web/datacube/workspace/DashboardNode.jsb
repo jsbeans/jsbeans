@@ -13,15 +13,16 @@
 				</div>
 			`);
 			
-			this.subscribe('Workspace.Entry.updated', function(){
-				$this.update();
+			this.subscribe('Workspace.Entry.updated', function(sender){
+                if(sender != $this.getEntry()){
+                    return;
+                }
+                $this.update();
 			});
 		},
 		
 		update: function(){
 			this.find('.status > .widgets > .count').text(this.descriptor.entry.getWidgetCount());
 		}
-		
 	}
-	
 }

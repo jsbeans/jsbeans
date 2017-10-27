@@ -50,15 +50,14 @@
 }
 
 ._dwp_comboBox._dwp_dropDown > ._dwp_dropBtn {
-	width: 10px;
+	width: 12px;
 	height: 10px;
 	position: absolute;
-    right: 2px;
+    right: 4px;
     top: 50%;
     margin-top: -5px;
     padding: 0 2px 0 0;
     
-	border-left: 1px solid #AD906C;
 	background-image: url('../images/icons.png');
 	background-position: -48px -20px;
 }

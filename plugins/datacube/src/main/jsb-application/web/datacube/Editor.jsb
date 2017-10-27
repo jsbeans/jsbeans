@@ -40,7 +40,7 @@
 							key: 'leftPane',
 							size: 0.2,
 							split: 'horizontal',
-							minSize: 350,
+							minSize: 380,
 							panes: [{
 								key: 'workspaceExplorer',
 								widgets: 'workspaceExplorer',
@@ -131,7 +131,7 @@
 			
 			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
 				var leftSplit = $this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb();
-				if(JSB.isInstanceOf(node, 'DataCube.DashboardNode')){
+				if(JSB.isInstanceOf(node, 'DataCube.DashboardNode') || JSB.isInstanceOf(node, 'DataCube.WidgetNode')){
 					leftSplit.showPane(1, true);
 				} else {
 					leftSplit.showPane(1, false);
@@ -143,6 +143,4 @@
 	$server: {
 		
 	}
-	
-	
 }

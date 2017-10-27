@@ -217,21 +217,19 @@
 			// set data
 			chosenInstance.setData({data: params.data, callback: params.callback});
 			chosenInstance.compCntr = 0;
+			chosenInstance.prepareShow = true;
 			
-			JSB().deferUntil(function(){
-				chosenInstance.show(JSB().merge({
-					scope: scope 
-				}, params));
-				if(!JSB().isNull(params.onShow)){
-					params.onShow.call(self);
-				}
-			},function(){
-				if(JSB().isNull(chosenInstance.oldW)){
+			function readyToShow(){
+				var bFalse = false;
+				if(JSB.isNull(chosenInstance.oldW)){
 					chosenInstance.oldW = chosenInstance.getElement().outerWidth(true);
-					return false;
+					bFalse = true;
 				}
 				if(JSB().isNull(chosenInstance.oldH)){
 					chosenInstance.oldH = chosenInstance.getElement().outerHeight(true);
+					bFalse = true;
+				}
+				if(bFalse){
 					return false;
 				}
 				if(chosenInstance.getElement().outerWidth(true) != chosenInstance.oldW || chosenInstance.getElement().outerHeight(true) != chosenInstance.oldH){
@@ -249,7 +247,33 @@
 					return false;
 				}
 				return true;
-			}, 50);
+			}
+			
+			if(readyToShow()){
+				if(!chosenInstance.prepareShow){
+					return;
+				}
+				chosenInstance.show(JSB.merge({
+					scope: scope 
+				}, params));
+				if(!JSB.isNull(params.onShow)){
+					params.onShow.call(self);
+				}
+			} else {
+				JSB().deferUntil(function(){
+					if(!chosenInstance.prepareShow){
+						return;
+					}
+					chosenInstance.show(JSB.merge({
+						scope: scope 
+					}, params));
+					if(!JSB.isNull(params.onShow)){
+						params.onShow.call(self);
+					}
+				},function(){
+					return readyToShow();
+				}, 10);
+			}
 			
 			return chosenInstance;
 		},

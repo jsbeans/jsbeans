@@ -84,14 +84,64 @@
             	preparedQuery = { $select: {}};
             }
             if(extQuery && Object.keys(extQuery).length > 0){
-            	
             	var qDesc = this.cube.parametrizeQuery(extQuery);
             	params = qDesc.params;
             	
-	           	JSB.merge(preparedQuery, qDesc.query);
-            }
+            	// merge queries
+            	if(qDesc.query.$filter && Object.keys(qDesc.query.$filter).length > 0){
+            		if(preparedQuery.$filter){
+            			preparedQuery.$filter = {$and:[preparedQuery.$filter, qDesc.query.$filter]}
+            		} else {
+            			preparedQuery.$filter = qDesc.query.$filter;
+            		}
+            	}
 
+            	if(qDesc.query.$cubeFilter && Object.keys(qDesc.query.$cubeFilter).length > 0){
+            		if(preparedQuery.$cubeFilter){
+            			preparedQuery.$cubeFilter = {$and:[preparedQuery.$cubeFilter, qDesc.query.$cubeFilter]}
+            		} else {
+            			preparedQuery.$cubeFilter = qDesc.query.$cubeFilter;
+            		}
+            	}
+
+            	if(qDesc.query.$postFilter && Object.keys(qDesc.query.$postFilter).length > 0){
+            		if(preparedQuery.$postFilter){
+            			preparedQuery.$postFilter = {$and:[preparedQuery.$postFilter, qDesc.query.$postFilter]}
+            		} else {
+            			preparedQuery.$postFilter = qDesc.query.$postFilter;
+            		}
+            	}
+            	
+            	if(qDesc.query.$sort){
+            		preparedQuery.$sort = qDesc.query.$sort;
+            	}
+            	
+            	if(qDesc.query.$select){
+            		JSB.merge(preparedQuery.$select, qDesc.query.$select);
+            	}
+
+            	if(qDesc.query.$groupBy){
+            		if(!preparedQuery.$groupBy){
+            			preparedQuery.$groupBy = qDesc.query.$groupBy;
+            		} else {
+            			JSB.merge(preparedQuery.$groupBy, qDesc.query.$groupBy);
+            		}
+            	}
+
+            }
+//            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
             return this.cube.executeQuery(preparedQuery, params);
+		},
+		
+		getInputFields: function(){
+			$this.getCube().load();
+			var fields = $this.getCube().getManagedFields();
+			var fMap = {};
+			for(var fName in fields){
+				fMap[fName] = fields[fName].type;
+			}
+			
+			return fMap;
 		}
 		
 	}

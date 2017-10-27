@@ -98,21 +98,25 @@
             {
                 name: 'sliceAndDice',
                 type: 'item',
+                key: 'sliceAndDice',
                 editor: 'none'
             },
             {
                 name: 'squarified',
                 type: 'item',
+                key: 'squarified',
                 editor: 'none'
             },
             {
                 name: 'stripes',
                 type: 'item',
+                key: 'stripes',
                 editor: 'none'
             },
             {
                 name: 'strip',
                 type: 'item',
+                key: 'strip',
                 editor: 'none'
             }
             ]
@@ -120,6 +124,7 @@
         {
             type: 'item',
             name: 'Альтернативное направление',
+            key: 'opposite',
             optional: true
         },
         {
@@ -158,12 +163,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'fieldName',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
                 },{
                     name: 'Вес',
                     type: 'item',
+                    key: 'fieldWeight',
                     binding: 'field',
                     itemType: 'number',
                     itemValue: ''
@@ -213,6 +220,17 @@
 
 			$base();
 
+			if(opts && opts.refreshFromCache){
+            	JSB().deferUntil(function(){
+            		var cache = $this.getCache();
+            		if(!cache) return;
+            		$this._buildChart(cache);
+            	}, function(){
+            		return $this.isInit;
+            	});
+            	return;
+            }
+
             var data = [],
                 series = this.getContext().find('series').values(),
                 autoSize = this.getContext().find('autoSize').used(),
@@ -255,66 +273,80 @@
 
                     data = $this.convertToTreemapFormat(data);
 
+                    if(opts && opts.isCacheMod){
+                    	$this.storeCache(data);
+                    }
+
+                    $this._buildChart(data);
+
                     $this.getElement().loader('hide');
-
-                    $this.container.highcharts({
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-                        subtitle: {
-                            text: this.getContext().find('subtitle').value()
-                        },
-                        /*
-                        plotOptions: {
-                            treemap: {
-                                allowPointSelect: true,
-                                point: {
-                                    events: {
-                                        select: function(evt) {
-                                            this.update({
-                                                borderColor: 'green',
-                                                borderWidth: 4
-                                            });
-
-                                            debugger;
-
-                                            // $this._addNewFilter(evt.target.series.index, evt.target.name);
-                                        },
-                                        unselect: function(evt) {
-                                            this.update({
-                                                borderColor: '#E0E0E0',
-                                                borderWidth: 1
-                                            });
-                                            if(!$this._notNeedUnselect){
-                                                $this._notNeedUnselect = false;
-                                                $this.removeFilter($this._currentFilter);
-                                                $this.refreshAll();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        */
-                        series: [{
-                            type: 'treemap',
-                            layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),
-                            allowDrillToNode: true,
-                            animationLimit: 1000,
-                            dataLabels: {
-                                enabled: true
-                            },
-                            levelIsConstant: false,
-                            data: data,
-                            turboThreshold: 0
-                        }]
-                    });
-
-                    $this.chart =  $this.container.highcharts();
                 });
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(data){
+            var chartOpts = {
+                title: {
+                    text: this.getContext().find('title').value()
+                },
+                subtitle: {
+                    text: this.getContext().find('subtitle').value()
+                },
+                /*
+                plotOptions: {
+                    treemap: {
+                        allowPointSelect: true,
+                        point: {
+                            events: {
+                                select: function(evt) {
+                                    this.update({
+                                        borderColor: 'green',
+                                        borderWidth: 4
+                                    });
+
+                                    debugger;
+
+                                    // $this._addNewFilter(evt.target.series.index, evt.target.name);
+                                },
+                                unselect: function(evt) {
+                                    this.update({
+                                        borderColor: '#E0E0E0',
+                                        borderWidth: 1
+                                    });
+                                    if(!$this._notNeedUnselect){
+                                        $this._notNeedUnselect = false;
+                                        $this.removeFilter($this._currentFilter);
+                                        $this.refreshAll();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                */
+
+                credits: {
+                    enabled: false
+                },
+
+                series: [{
+                    type: 'treemap',
+                    layoutAlgorithm: this.getContext().find('layoutAlgorithm').value().name(),
+                    allowDrillToNode: true,
+                    animationLimit: 1000,
+                    dataLabels: {
+                        enabled: true
+                    },
+                    levelIsConstant: false,
+                    data: data,
+                    turboThreshold: 0
+                }]
+            };
+
+            $this.container.highcharts(chartOpts);
+            $this.chart =  $this.container.highcharts();
         },
 
         _addNewFilter: function(level, value){

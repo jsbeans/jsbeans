@@ -124,6 +124,7 @@
 			var cEntry = this.workspace.entry(eid);
 			cEntry.parent = null;
 			cEntry.property('parent', cEntry.parent);
+            this.publish('Workspace.Entry.remove', cEntry, {session: true});
 			return cEntry;
 		},
 		
@@ -140,6 +141,7 @@
 				cat = this.category() + '/' + cat;
 			}
 			entry.category(cat);
+			this.publish('Workspace.Entry.add', entry, {session: true});
 		},
 		
 		getChildren: function(){

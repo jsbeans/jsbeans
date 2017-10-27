@@ -33,6 +33,7 @@
             {
                 name: 'Дата',
                 type: 'item',
+                key: 'date',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field',
@@ -41,6 +42,7 @@
             {
                 name: 'Количество',
                 type: 'item',
+                key: 'count',
                 binding: 'field',
                 itemType: 'string',
                 itemValue: '$field',
@@ -49,6 +51,7 @@
             {
                 type: 'item',
                 name: 'Автоподсчёт',
+                key: 'autoCount',
                 optional: true,
                 editor: 'none',
                 description: 'Автоматический подсчёт количества значений для каждой даты (считается количество одинаковых дат)'
@@ -63,6 +66,7 @@
             {
                 name: 'Имя серии',
                 type: 'item',
+                key: 'seriesName',
                 itemType: 'string',
                 itemValue: '',
                 description: 'Имя серии. Выводится во всплывающей подсказке'
@@ -78,6 +82,7 @@
                 {
                     name: 'Формат даты',
                     type: 'item',
+                    key: 'dateFormat',
                     description: 'Формат даты во всплывающей подсказке (%d - день, %m - месяц, %y - год)'
                 }
             ]
@@ -92,53 +97,62 @@
                 {
                     name: 'Единица измерения',
                     type: 'select',
+                    key: 'timeUnit',
                     description: 'Группируемая диница измерения',
                     items: [
                     {
                         name: 'Миллисекунда',
                         type: 'item',
+                        key: 'millisecond',
                         editor: 'none',
                         itemValue: 'millisecond'
                     },
                     {
                         name: 'Секунда',
                         type: 'item',
+                        key: 'second',
                         editor: 'none',
                         itemValue: 'second'
                     },
                     {
                         name: 'Минута',
                         type: 'item',
+                        key: 'minute',
                         editor: 'none',
                         itemValue: 'minute'
                     },
                     {
                         name: 'Час',
                         type: 'item',
+                        key: 'hour',
                         editor: 'none',
                         itemValue: 'hour'
                     },
                     {
                         name: 'День',
                         type: 'item',
+                        key: 'day',
                         editor: 'none',
                         itemValue: 'day'
                     },
                     {
                         name: 'Неделя',
                         type: 'item',
+                        key: 'week',
                         editor: 'none',
                         itemValue: 'week'
                     },
                     {
                         name: 'Месяц',
                         type: 'item',
+                        key: 'month',
                         editor: 'none',
                         itemValue: 'month'
                     },
                     {
                         name: 'Год',
                         type: 'item',
+                        key: 'year',
                         editor: 'none',
                         itemValue: 'year'
                     }
@@ -147,6 +161,7 @@
                 {
                     name: 'Группировка',
                     type: 'item',
+                    key: 'grouping',
                     itemType: 'string',
                     itemValue: '',
                     description: 'Массив допустимых группировок, через запятую (1, 2, 4)'
@@ -162,16 +177,19 @@
             {
                 name: 'Начальная дата',
                 type: 'item',
+                key: 'startDate',
                 itemType: 'string'
             },
             {
                 name: 'Конечная дата',
                 type: 'item',
+                key: 'endDate',
                 itemType: 'string'
             },
             {
                 name: 'Число столбцов',
                 type: 'item',
+                key: 'columnCount',
                 itemType: 'string'
             }
             ]
@@ -185,57 +203,67 @@
             {
                 type: 'group',
                 name: 'Формат дат',
+                key: 'dateFormat',
                 multiple: 'true',
                 items: [
                 {
                     name: 'Единица измерения',
                     type: 'select',
+                    key: 'timeUnit',
                     items: [
                     {
                         name: 'Миллисекунда',
                         type: 'item',
+                        key: 'millisecond',
                         editor: 'none',
                         itemValue: 'millisecond'
                     },
                     {
                         name: 'Секунда',
                         type: 'item',
+                        key: 'second',
                         editor: 'none',
                         itemValue: 'second'
                     },
                     {
                         name: 'Минута',
                         type: 'item',
+                        key: 'minute',
                         editor: 'none',
                         itemValue: 'minute'
                     },
                     {
                         name: 'Час',
                         type: 'item',
+                        key: 'hour',
                         editor: 'none',
                         itemValue: 'hour'
                     },
                     {
                         name: 'День',
                         type: 'item',
+                        key: 'day',
                         editor: 'none',
                         itemValue: 'day'
                     },
                     {
                         name: 'Неделя',
                         type: 'item',
+                        key: 'week',
                         editor: 'none',
                         itemValue: 'week'
                     },
                     {
                         name: 'Месяц',
                         type: 'item',
+                        key: 'month',
                         editor: 'none',
                         itemValue: 'month'
                     },
                     {
                         name: 'Год',
                         type: 'item',
+                        key: 'year',
                         editor: 'none',
                         itemValue: 'year'
                     }
@@ -244,6 +272,7 @@
                 {
                     name: 'Формат',
                     type: 'item',
+                    key: 'format',
                     itemType: 'string',
                     itemValue: '',
                     description: 'Формат даты'
@@ -324,6 +353,17 @@
             }
             
 			$base();
+
+			if(opts && opts.refreshFromCache){
+            	JSB().deferUntil(function(){
+            		var cache = $this.getCache();
+            		if(!cache) return;
+            		$this._buildChart(cache);
+            	}, function(){
+            		return $this.isInit;
+            	});
+            	return;
+            }
 
             var source = this.getContext().find('source');
             if(!source.bound()) return;
@@ -473,30 +513,23 @@
                                     y: queryResult[i].dateCount
                                 });
                             }
-
-                            var navigator = {
-                                adaptToUpdatedData: false,
-                                series: {
-                                    data: data
-                                }
-                            }
-
-                            var scrollbar = {
-                                liveRedraw: false
-                            }
-
-                            var rangeSelector = {
-                                enabled: false
-                            }
                         } else {
                             var data = [];
 
                             while(source.next()){
                                 var val = value.value();
 
-                                if(!JSB().isDate(val)) return;
-
-                                var dateValue = val.getTime();
+                                if(JSB().isDate(val)){
+                                    var dateValue = val.getTime();
+                                    $this._dataFormat = 'datetime';
+                                } else {
+                                    if(typeof val === 'number'){
+                                         var dateValue = val;
+                                        $this._dataFormat = 'number';
+                                    } else {
+                                        return;
+                                    }
+                                }
 
                                 if(autoCount){
                                     var e = null;
@@ -530,106 +563,137 @@
                             return 0;
                         });
 
-                        var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
-                        tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
-
-                        var dataGrouping = this.getContext().find('dataGrouping');
-                        if(dataGrouping.used()){
-                            var units = [];
-                            var values = dataGrouping.values();
-                            for(var i = 0; i < values.length; i++){
-                                units.push([values[i].get(0).value().get(0).value(), [values[i].get(1).value()]]);
-                            }
+                        if(opts && opts.isCacheMod){
+                        	$this.storeCache(data);
                         }
 
-                        var xAxis = this.getContext().find('xAxis');
-                        if(xAxis.used()){
-                            var gr = xAxis.values(),
-                                dateTimeLabelFormats = {};
-
-                            for(var i = 0; i < gr.length; i++){
-                                dateTimeLabelFormats[gr[i].value().get(0).value().get(0).value()] = gr[i].value().get(1).value();
-                            }
-                        }
-
-                        var chart = {
-                            chart: {
-                                renderTo: $this.containerId
-                            },
-                            xAxis: {
-                                type: 'datetime',
-                                min: data[0].x,
-                                max: data[data.length - 1].x,
-                                events: {
-                                    afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
-                                }
-                            },
-
-                            title: {
-                                text: this.getContext().find('title').value()
-                            },
-
-                            subtitle: {
-                                text: this.getContext().find('subtitle').value()
-                            },
-
-                            tooltip: {
-                                xDateFormat: tooltipXDateFormat
-                            }
-                        };
-
-                        chart.series = [{
-                            type: 'column',
-                            name: seriesContext.get(0).value(),
-                            data: data,
-                            turboThreshold: 0,
-                            dataGrouping: {
-                                enabled: units !== undefined ? true : false,
-                                units: units
-                            }
-                        }];
-
-                        if(navigator){
-                            chart.navigator = navigator;
-                        }
-
-                        if(scrollbar){
-                            chart.scrollbar = scrollbar;
-                        }
-
-                        if(rangeSelector){
-                            chart.rangeSelector = rangeSelector;
-                        }
-
-                        if(dateTimeLabelFormats){
-                            chart.xAxis.dateTimeLabelFormats = dateTimeLabelFormats;
-                        }
+                        $this._buildChart(data, _bNeedExtremesUpdate);
                     } catch(e){
                         console.log(e);
-                        if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
-                        return;
                     } finally{
                         $this.getElement().loader('hide');
                     }
-
-                    // create the chart
-                    $this.chart = new Highcharts.stockChart(chart);
-
-                    var ex = $this.chart.navigator.xAxis.getExtremes();
-                    $this._widgetExtremes = {
-                        min: ex.min,
-                        max: ex.max
-                    };
-
-                    if(_bNeedExtremesUpdate){
-                        $this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : ex.dataMin, $this._currentFilters.max ? $this._currentFilters.max : ex.dataMax);
-                    }
-
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 });
             }, function(){
                 return $this.isInit;
             });
+        },
+
+        _buildChart: function(data, _bNeedExtremesUpdate){
+        	var seriesContext = this.getContext().find('series').value(),
+        		fixedColumns = this.getContext().find('fixedColumns');
+        	
+            try{
+                var tooltipXDateFormat = this.getContext().find('tooltip').value().get(0).value();
+                tooltipXDateFormat = tooltipXDateFormat === null ? undefined : tooltipXDateFormat;
+
+                var dataGrouping = this.getContext().find('dataGrouping');
+                if(dataGrouping.used()){
+                    var units = [];
+                    var values = dataGrouping.values();
+                    for(var i = 0; i < values.length; i++){
+                        units.push([values[i].get(0).value().get(0).value(), [values[i].get(1).value()]]);
+                    }
+                }
+
+                var xAxis = this.getContext().find('xAxis');
+                if(xAxis.used()){
+                    var gr = xAxis.values(),
+                        dateTimeLabelFormats = {};
+
+                    for(var i = 0; i < gr.length; i++){
+                        dateTimeLabelFormats[gr[i].value().get(0).value().get(0).value()] = gr[i].value().get(1).value();
+                    }
+                }
+                
+                if(fixedColumns.used()){
+                    var scrollbar = {
+                        liveRedraw: false
+                    }
+
+                    var rangeSelector = {
+                        enabled: false
+                    }
+                    
+                    var navigator = {
+                        adaptToUpdatedData: false,
+                        series: {
+                            data: data
+                        }
+                    }                    
+                }
+
+                var chartOpts = {
+                    chart: {
+                        renderTo: $this.containerId
+                    },
+                    xAxis: {
+                        type: 'datetime',
+                        min: data[0].x,
+                        max: data[data.length - 1].x,
+                        events: {
+                            afterSetExtremes: function(event){ $this._addIntervalFilter(event);}
+                        }
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    tooltip: {
+                        xDateFormat: tooltipXDateFormat
+                    }
+                };
+
+                chartOpts.series = [{
+                    type: 'column',
+                    name: seriesContext.get(0).value(),
+                    data: data,
+                    turboThreshold: 0,
+                    dataGrouping: {
+                        enabled: units !== undefined ? true : false,
+                        units: units
+                    }
+                }];
+
+                if(navigator){
+                    chartOpts.navigator = navigator;
+                }
+
+                if(scrollbar){
+                    chartOpts.scrollbar = scrollbar;
+                }
+
+                if(rangeSelector){
+                    chartOpts.rangeSelector = rangeSelector;
+                }
+
+                if(dateTimeLabelFormats){
+                    chartOpts.xAxis.dateTimeLabelFormats = dateTimeLabelFormats;
+                }
+
+                // create the chart
+                $this.chart = new Highcharts.stockChart(chartOpts);
+
+                var ex = $this.chart.navigator.xAxis.getExtremes();
+                $this._widgetExtremes = {
+                    min: ex.min,
+                    max: ex.max
+                };
+
+                if(_bNeedExtremesUpdate){
+                    $this.chart.xAxis[0].setExtremes($this._currentFilters.min ? $this._currentFilters.min : ex.dataMin, $this._currentFilters.max ? $this._currentFilters.max : ex.dataMax);
+                }
+
+                $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
+            } catch(ex){
+                console.log(ex);
+                if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
+            }
         },
 
         _addIntervalFilter: function(event){
@@ -658,7 +722,7 @@
                         type: '$and',
                         op: '$gte',
                         field: field,
-                        value: new Date(event.min)
+                        value: $this._dataFormat === 'datetime' ? new Date(event.min) : event.min
                     };
                     $this._currentFilters.min = event.min;
                     $this._currentFilters.minId = $this.addFilter(fDesc);
@@ -683,7 +747,7 @@
                         type: '$and',
                         op: '$lte',
                         field: field,
-                        value: new Date(event.max)
+                        value: $this._dataFormat === 'datetime' ? new Date(event.max) : event.max
                     };
                     $this._currentFilters.max = event.max;
                     $this._currentFilters.maxId = $this.addFilter(fDesc);

@@ -36,56 +36,42 @@
             this.append(this.error);
             // selected
             this.subscribe('DataCube.CubeEditor.sliceNodeSelected', function(editor, msg, slice){
-            	JSB.defer(function(){
-            		$this.updateData(slice);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(slice);
             });
 
-            this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, cube){
-            	JSB.defer(function(){
-            		$this.updateData(cube);
-            	}, 300, 'updateData_' + $this.getId());
+            this.subscribe('DataCube.CubeEditor.cubeNodeSelected', function(editor, msg, obj){
+                $this.updateData(obj.cube, obj.query);
             });
 
             this.subscribe('DataCube.CubeEditor.providerNodeSelected', function(editor, msg, provider){
-            	JSB.defer(function(){
-            		$this.updateData(provider);
-            	}, 300, 'updateData_' + $this.getId());
+                $this.updateData(provider);
             });
 
             this.subscribe('DataCube.CubeEditor.sliceNodeEdit', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this._updateData(slice);
-                }, 300, 'sliceNodeEdit' + $this.getId());
+                $this._updateData(slice);
             });
 
             // deselected
             this.subscribe('DataCube.CubeEditor.sliceNodeDeselected', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this.clear();
-                }, 300, 'sliceNodeDeselected' + $this.getId());
+                $this.clear();
             });
 
             this.subscribe('DataCube.CubeEditor.cubeNodeDeselected', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this.clear();
-                }, 300, 'cubeNodeDeselected' + $this.getId());
+                $this.clear();
             });
 
             this.subscribe('DataCube.CubeEditor.providerNodeDeselected', function(editor, msg, slice){
-                JSB.defer(function(){
-                    $this.clear();
-                }, 300, 'providerNodeDeselected' + $this.getId());
+                $this.clear();
             });
 		},
 
 		clear: function(){
 		    this.error.addClass('hidden');
             this.table.clear();
-            this.curData = null;
-            this.curLoadId = null;
-            this.params = {};
-            this.allLoaded = false;
+            // this.curData = null;
+            // this.curLoadId = null;
+            // this.params = {};
+            // this.allLoaded = false;
 		},
 
 		// get column number; return header cell content
@@ -157,45 +143,46 @@
                 };
 		    }
 
-            this._updateData(this.curData);
+            this._updateData(this.curData, true);
 		},
 		
-		updateData: function(source){
+		updateData: function(source, query){
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-			    this._updateData(source);
+			    this._updateData({
+			    	cube: source.getCube(),
+			    	query: query || source.getQuery(),
+			    	type: 'slice'
+			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
 			    this._updateData({
 			        cube: source.cube,
 			        provider: source,
-                    query: { $select: {}}
+                    query: query,
+                    type: 'dataProvider'
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Model.Cube')){
             	this._updateData({
-            	cube: source,
-            	query: { $select: {}}
+                    cube: source,
+                    query: query,
+                    type: 'cube'
             	});
 			} else {
 				throw new Error('Unsupported node type: ' + source.getJsb().$name);
 			}
 		},
 
-		_updateData: function(source){
-		    if(this.curData === source) return;
+		_updateData: function(source, isSort){
+		    if(this.curData === source && !isSort) return;
 
             this.error.addClass('hidden');
-
-            if(!source.query) return;
 
             this.curLoadId = JSB().generateUid();
             this.curData = source;
 
             $this.getElement().loader();
             var preparedQuery = source.query;
-            if(!preparedQuery || Object.keys(preparedQuery).length == 0){
-            	preparedQuery = { $select: {}};
-            }
 
-            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, id: this.curLoadId }, function(res){
+            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, id: this.curLoadId, type: source.type }, function(res){
                 if(res.id !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
@@ -209,6 +196,9 @@
 
                 if(res.result.length !== 0) {
                     $this.table.loadData(res.result);
+                    if(!res.allLoaded && $this.table.getElement().height() >= $this.table.getElement().find('.ht_master.handsontable > div.wtHolder').height()){
+                        $this.preLoader($this.table.getRowCount());
+                    }
                 } else {
                     $this.table.loadData(null);
                 }
@@ -224,6 +214,33 @@
 	    loadData: function(obj) {
             try{
                 if(this.it) this.it.close();
+
+                switch(obj.type){
+                    case 'cube':
+                        if(!obj.query.$select){
+                            var fields = obj.cube.getFields();
+                            var q = {};
+                            for(var i in fields){
+                                q[i] = i;
+                            }
+                            obj.query = JSB.merge(obj.query, {
+                                $select: q
+                            });
+                        }
+                        break;
+                    case 'dataProvider':
+                        var fields = obj.provider.extractFields();
+                        var q = {};
+                        for(var i in fields){
+                            q[i] = i;
+                        }
+                        obj.query = JSB.merge(obj.query, {
+                            $select: q
+                        });
+                        break;
+                    case 'slice':
+                        break;
+                }
 
                 this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider);
                 this.counter = 0;

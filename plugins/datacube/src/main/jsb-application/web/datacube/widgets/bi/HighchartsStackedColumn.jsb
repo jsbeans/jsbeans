@@ -10,6 +10,7 @@
     $scheme: {
         type: 'group',
         items: [
+        // Заголовок
         {
             name: 'Заголовок',
             type: 'item',
@@ -17,6 +18,7 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Подзаголовок
         {
             name: 'Подзаголовок',
             type: 'item',
@@ -24,39 +26,54 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Источник
         {
             type: 'group',
             name: 'Источник',
             key: 'source',
             binding: 'array',
             items: [
+            // Ось Х
             {
                 type: 'group',
                 name: 'Ось Х',
                 key: 'xAxis',
                 items: [
                 {
-                    name: 'Категории',
-                    type: 'item',
-                    binding: 'field',
-                    itemType: 'any',
+                    type: 'group',
+                    name: 'Данные осей',
+                    key: 'categories',
+                    multiple: 'true',
+                    items: [
+                        {
+                            name: 'Категории',
+                            type: 'item',
+                            key: 'categoriesItem',
+                            binding: 'field',
+                            itemType: 'any'
+                        }
+                    ]
                 },
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -64,8 +81,30 @@
                         ]
                     }
                     ]
-                }]
+                },
+                {
+                    type: 'group',
+                    name: 'Подписи',
+                    key: 'labels',
+                    items: [
+                    {
+                        type: 'item',
+                        name: 'Показывать подписи',
+                        key: 'enabled',
+                        optional: 'checked',
+                        editor: 'none'
+                    },
+                    {
+                        type: 'item',
+                        name: 'Поворот',
+                        key: 'rotation',
+                        itemType: 'string'
+                    }
+                    ]
+                }
+                ]
             },
+            // Ось Y
             {
                 type: 'group',
                 name: 'Ось Y',
@@ -75,19 +114,23 @@
                 {
                     type: 'group',
                     name: 'Заголовок',
+                    key: 'title',
                     items: [
                     {
                         type: 'item',
                         name: 'Текст',
+                        key: 'text',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -99,19 +142,23 @@
                 {
                     type: 'group',
                     name: 'Значения',
+                    key: 'labels',
                     items: [
                     {
                         type: 'item',
                         name: 'Формат',
+                        key: 'format',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -123,10 +170,33 @@
                 {
                     type: 'item',
                     name: 'Справа',
+                    key: 'opposite',
                     optional: true
+                },
+                {
+                    name: 'Тип',
+                    type: 'select',
+                    key: 'type',
+                    items: [
+                    {
+                        name: 'Линейная',
+                        type: 'item',
+                        key: 'linear',
+                        editor: 'none',
+                        itemValue: 'linear'
+                    },
+                    {
+                        name: 'Логарифмическая',
+                        type: 'item',
+                        key: 'logarithmic',
+                        editor: 'none',
+                        itemValue: 'logarithmic'
+                    }
+                    ]
                 }
                 ]
             },
+            // Серии
             {
                 type: 'group',
                 name: 'Серии',
@@ -136,12 +206,15 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'seriesName',
+                    binding: 'field',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'seriesData',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -149,10 +222,12 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'type',
                     items:[
                     {
                         name: 'column',
                         type: 'item',
+                        key: 'column',
                         editor: 'none'
                     }
                     ]
@@ -160,10 +235,12 @@
                 {
                     type: 'group',
                     name: 'Tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         type: 'item',
                         name: 'Суффикс значения',
+                        key: 'valueSuffix',
                         itemType: 'string'
                     }
                     ]
@@ -171,7 +248,8 @@
                 {
                     name: 'Индекс yAxis',
                     type: 'item',
-                    itemType: 'string'
+                    key: 'yAxisIndex',
+                    description: 'В случаях использования двух или более Y-осей, данный параметр определяет с какой из осей должна быть связана данная серия. Значением данного параметра должен быть индекс (порядковый номер) требуемой оси в массиве осей. При этом, нумерация осей начинается с 0. Значение по умолчанию: 0.'
                 },
                 /*
                 {
@@ -239,6 +317,7 @@
                 {
                     name: 'Цвет',
                     type: 'item',
+                    key: 'color',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -246,9 +325,10 @@
                 {
                     name: 'Стек',
                     type: 'item',
+                    key: 'stack',
                     itemType: 'string',
                     description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
-                }                
+                },
                 /*,
                 {
                     type: 'group',
@@ -285,10 +365,34 @@
 	                    itemType: 'string'
 	                }]
                 }*/
+                {
+                    name: 'Показывать по умолчанию',
+                    type: 'item',
+                    key: 'visible',
+                    editor: 'none',
+                    optional: 'checked',
+                    description: 'Показывать по умолчанию указанную серию на графике.'
+                }
                 ]
             }
             ]
         },
+        // Легенда
+        {
+            type: 'group',
+            name: 'Легенда',
+            key: 'legend',
+            items: [
+            {
+                name: 'Активна',
+                type: 'item',
+                key: 'enabled',
+                optional: true,
+                editor: 'none'
+            }
+            ]
+        },
+        // Цветовая схема
         {
             name: 'Цветовая схема по умолчанию',
             key: 'colorScheme',
@@ -297,25 +401,30 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]
         },
+        // Режим накопления
         {
             name: 'Режим накопления',
             key: 'stacking',
@@ -324,11 +433,13 @@
             {
                 name: 'normal',
                 type: 'item',
+                key: 'normal',
                 editor: 'none'
             },
             {
                 name: 'percent',
                 type: 'item',
+                key: 'percent',
                 editor: 'none'
             }
             ]
@@ -356,18 +467,21 @@
 				// 0	enabled: false
 				type: 'item',
 				name: 'Включено',
+				key: 'enabled',
 				optional: true
 			},
 			{
 				// 1	align: undefined
                 type: 'item',
 				name: 'align',
+				key: 'align',
                 itemType: 'string'
 			},
 			{
 				// 2	format: "{total}"
                 type: 'item',
 				name: 'format',
+				key: 'format',
                 itemType: 'string',
                 itemValue: '{total}'
 			},
@@ -375,6 +489,7 @@
 				// 3	rotation: 0
                 type: 'item',
 				name: 'rotation',
+				key: 'rotation',
                 itemType: 'number',
                 itemValue: '0'
 			},
@@ -382,36 +497,42 @@
 				// 4	textAlign: undefined
                 type: 'item',
 				name: 'textAlign',
+				key: 'textAlign',
                 itemType: 'string'
 			},
 			{
 				// 5	useHTML: false
 				type: 'item',
 				name: 'useHTML',
+				key: 'useHTML',
 				optional: true
 			},
 			{
 				// 6	verticalAlign: undefined	
                 type: 'item',
 				name: 'verticalAlign',
+				key: 'verticalAlign',
                 itemType: 'string'
 			},
 			{
 				// 7	x: undefined	
                 type: 'item',
 				name: 'x',
+				key: 'x',
                 itemType: 'number'
 			},
 			{
 				// 8	y: undefined	
                 type: 'item',
 				name: 'y',
+				key: 'y',
                 itemType: 'number'
 			},
 			{
 				//	9	color**: undefined
 				type: 'item',
 				name: 'color',
+				key: 'color',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			}			
@@ -451,12 +572,14 @@
 				// 0	enabled: false
 				type: 'item',
 				name: 'Включено',
+				key: 'enabled',
 				optional: true
 			},
 			{
 				// 1	align: "center"
                 type: 'item',
 				name: 'align',
+				key: 'align',
                 itemType: 'string',
 				itemValue: "center"
 			},
@@ -464,12 +587,14 @@
 				// 2	allowOverlap: false
 				type: 'item',
 				name: 'allowOverlap',
+				key: 'allowOverlap',
 				optional: true
 			},
 			{
 				//	3	backgroundColor: undefined
 				type: 'item',
 				name: 'backgroundColor',
+				key: 'backgroundColor',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			},
@@ -477,6 +602,7 @@
 				//	4	borderColor: undefined
 				type: 'item',
 				name: 'borderColor',
+				key: 'borderColor',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			},
@@ -484,6 +610,7 @@
 				//	5	borderRadius: 0
 				type: 'item',
 				name: 'borderRadius',
+				key: 'borderRadius',
                 itemType: 'number',
 				itemValue: '0'
 			},
@@ -491,6 +618,7 @@
 				//	6	borderWidth: 0
 				type: 'item',
 				name: 'borderWidth',
+				key: 'borderWidth',
                 itemType: 'number',
 				itemValue: '0'
 			},
@@ -498,6 +626,7 @@
 				//	7	color: undefined
 				type: 'item',
 				name: 'color',
+				key: 'color',
 				itemType: 'color',
 				editor: 'JSB.Widgets.ColorEditor'
 			},
@@ -505,12 +634,14 @@
 				// 8	crop: true
 				type: 'item',
 				name: 'crop',
+				key: 'crop',
 				optional: true
 			},
 			{
 				// 9	format: "{y}"
                 type: 'item',
 				name: 'format',
+				key: 'format',
                 itemType: 'string',
                 itemValue: '{y}'
 			},
@@ -518,12 +649,14 @@
 				// 10	inside: undefined
                 type: 'item',
 				name: 'inside',
+				key: 'inside',
                 itemType: 'string'
 			},
 			{
 				//	11	overflow: "justify"
 				type: 'item',
 				name: 'overflow',
+				key: 'overflow',
                 itemType: 'string',
 				itemValue: 'justify'
 			},
@@ -531,6 +664,7 @@
 				//	12	padding: 5
 				type: 'item',
 				name: 'padding',
+				key: 'padding',
                 itemType: 'number',
 				itemValue: '5'
 			},
@@ -538,6 +672,7 @@
 				// 13	rotation: 0
                 type: 'item',
 				name: 'rotation',
+				key: 'rotation',
                 itemType: 'number',
                 itemValue: '0'
 			},
@@ -545,12 +680,14 @@
 				// 14	shadow: false
 				type: 'item',
 				name: 'shadow',
+				key: 'shadow',
 				optional: true
 			},
 			{
 				// 15	shape: "square"
                 type: 'item',
 				name: 'shape',
+				key: 'shape',
                 itemType: 'string',
                 itemValue: 'square'
 			},
@@ -558,18 +695,21 @@
 				// 16	useHTML: false
 				type: 'item',
 				name: 'useHTML',
+				key: 'useHTML',
 				optional: true
 			},
 			{
 				// 17	verticalAlign: undefined	
                 type: 'item',
 				name: 'verticalAlign',
+				key: 'verticalAlign',
                 itemType: 'string'
 			},
 			{
 				// 18	x: 0	
                 type: 'item',
 				name: 'x',
+				key: 'x',
                 itemType: 'number',
 				itemValue: '0'
 			},
@@ -577,6 +717,7 @@
 				// 19	y: -6	
                 type: 'item',
 				name: 'y',
+				key: 'y',
                 itemType: 'number',
 				itemValue: '-6'
 			},
@@ -584,6 +725,7 @@
 				// 20	zIndex: 6
                 type: 'item',
 				name: 'zIndex',
+				key: 'zIndex',
                 itemType: 'number',
 				itemValue: '6'
 			}
@@ -593,13 +735,20 @@
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
+
+        _curFilters: {},
+        _deselectCategoriesCount: 0,
+        _curFilterHash: null,
+
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('HighchartsStackedColumn.css');
 			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				self.init();
+                JSB().loadScript('tpl/highstock/plugins/grouped-categories.js', function(){
+                    self.init();
+                });
 			});
 		},
 
@@ -629,276 +778,211 @@
 		},
 
         refresh: function(opts){
-		
         	try {
-        	
 				if(opts && this == opts.initiator) return;
 
 				var source = this.getContext().find('source');
 				if(!source.bound()) return;
 
-				var seriesContext = this.getContext().find('series').values();
-				var yAxisContext = this.getContext().find('yAxis').values();
-				var xAxisContext = this.getContext().find('xAxis').values();
-				var yAxisStackLabels = this.getContext().find('yAxisStackLabels').values();
-				var plotOptionsColumnDataLabels = this.getContext().find('plotOptionsColumnDataLabels').values();
+				$base();
+
+                if(opts && opts.refreshFromCache){
+                    JSB().deferUntil(function(){
+                        var cache = $this.getCache();
+                        if(!cache) return;
+                        $this._buildChart(cache.seriesData, cache.xAxis);
+                    }, function(){
+                        return $this.isInit;
+                    });
+                    return;
+                }
+
+    // filters section
+/**
+Не используем globalFilters, если требуется drilldown
+**/
+if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {                
+                var globalFilters = source.getFilters();
+
+                if(globalFilters){
+                    var categories = this.getContext().find("xAxis").find('categories').values(),
+                        binding = categories[categories.length - 1].binding()[0],
+                        newFilters = {};
+
+                    for(var i in globalFilters){
+                        var cur = globalFilters[i];
+
+                        if(cur.field === binding && cur.op === '$eq'){
+                            if(!this._curFilters[cur.value]){
+                                this._curFilters[cur.value] = cur.id;
+                                this._selectAllCategory(cur.value);
+                            }
+
+                            newFilters[cur.value] = true;
+
+                            delete globalFilters[i];
+                        }
+                    }
+
+                    for(var i in this._curFilters){
+                        if(!newFilters[i]){
+                            this._deselectAllCategory(i);
+                            delete this._curFilters[i];
+                        }
+                    }
+
+                    if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                        return;
+                    } else {
+                        this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                        source.setFilters(globalFilters);
+                    }
+                } else {
+                    if(Object.keys(this._curFilters).length > 0){
+                        for(var i in this._curFilters){
+                            this._deselectAllCategory(i);
+                        }
+                        this._curFilters = {};
+                        return;
+                    }
+                    this._curFilterHash = null;
+                }
+}                
+    // end filters section
+
+                var seriesContext = this.getContext().find('series').values(),
+                    xAxisContext = this.getContext().find('xAxis').find('categories').values(),
+                    dataSource = [];
+
+                for(var i = 0; i < seriesContext.length; i++){
+                    var name = seriesContext[i].get(0);
+                    dataSource.push({
+                        name: name.binding() ? name : name.value(),
+                        value: seriesContext[i].get(1)
+                    });
+                }
 
 				$this.getElement().loader();
 				JSB().deferUntil(function(){
 					source.fetch({readAll: true, reset: true}, function(){
+                        var seriesData = [],
+                            xAxisCategories = [],
+                            colorMap = {};
+
+                        function rec(i, length){
+                            if(i === length){
+                                return undefined;
+                            }
+
+                            return [{
+                                name: xAxisContext[i].get(0).value(),
+                                categories: rec(i + 1, length)
+                            }];
+                        }
+
+                        function merge(obj1, obj2){
+                            for(var i = 0; i < obj2.length; i++){
+                                var f = false;
+                                for(var j = 0; j < obj1.length; j++){
+                                    if(obj2[i].name === obj1[j].name){
+                                        f = true;
+                                        if(obj1[j].categories){
+                                            obj1[j].categories = merge(obj1[j].categories, obj2[i].categories);
+                                        } else {
+                                            obj1[j].categories = obj2[i].categories;
+                                        }
+                                    }
+                                }
+                                if(!f){
+                                    obj1.push(obj2[i]);
+                                }
+                            }
+                            return obj1;
+                        }
+
 						try {
-							var series = [];
-							var yAxis = [];
-							var xAxis = [];
-							while(source.next()){
-								for(var i = 0; i < seriesContext.length; i++){
-									if(!series[i]){
-										series[i] = {
-											name: seriesContext[i].get(0).value(),
-											data: [],
-											type: seriesContext[i].get(2).value().name(),
-											tooltip: {
-												valueSuffix: seriesContext[i].get(3).value().get(0).value()
-											},
-											yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-											//dashStyle: seriesContext[i].get(5).value().name(),
-											color: $this.isNull(seriesContext[i].get(5).value()),
-											/*
-											marker: {
-												// The fill color of the point marker
-												fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
-												// The color of the point marker's outline
-												lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
-												// The width of the point marker's outline
-												lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
-												// The radius of the point marker
-												radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
-												// A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
-												symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
-											},
-											*/
-											point: {
-												events: {
-													click: function(evt) {
-														if(JSB().isFunction($this.options.onClick)){
-															$this.options.onClick.call(this, evt);
-														}
-													},
-													select: function(evt) {
-														var flag = false;
+                            while(source.next()){
+                                if(xAxisContext.length > 1){
+                                    xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
+                                } else {
+                                    var a = xAxisContext[0].get(0).value();
+                                    xAxisCategories.push(a ? a : 'Null');
+                                }
 
-														if(JSB().isFunction($this.options.onSelect)){
-															flag = $this.options.onSelect.call(this, evt);
-														}
+                                for(var i = 0; i < dataSource.length; i++){
+                                    if(!JSB.isString(dataSource[i].name)){    // composite series
+                                        if(!seriesData[i]){
+                                            seriesData[i] = {
+                                                data: {},
+                                                simple: false
+                                            };
+                                        }
 
-														if(!flag){
-															$this._addNewFilter(evt.target.series.index, evt.target.category);
-														}
-													},
-													unselect: function(evt) {
-														var flag = false;
+                                        if(!seriesData[i].data[dataSource[i].name.value()]){
+                                            seriesData[i].data[dataSource[i].name.value()] = [];
+                                        }
 
-														if(JSB().isFunction($this.options.onUnselect)){
-															flag = $this.options.onUnselect.call(this, evt);
-														}
+                                        seriesData[i].data[dataSource[i].name.value()].push(dataSource[i].value.value());
+                                    } else {    // simple series
+                                        if(!seriesData[i]){
+                                            seriesData[i] = {
+                                                index: i,
+                                                simple: true,
+                                                name: dataSource[i].name,
+                                                data: []
+                                            };
+                                        }
 
-														if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-															$this._notNeedUnselect = false;
-															$this.removeFilter($this._currentFilter);
-															$this.refreshAll();
-														}
-													},
-													mouseOut: function(evt) {
-														if(JSB().isFunction($this.options.mouseOut)){
-															$this.options.mouseOut.call(this, evt);
-														}
-													},
-													mouseOver: function(evt) {
-														if(JSB().isFunction($this.options.mouseOver)){
-															$this.options.mouseOver.call(this, evt);
-														}
-													}
-												}
-											},
-											stack: seriesContext[i].get(6).value()
-										};
-									}
+                                        var d = dataSource[i].value.value();
 
-									var a = seriesContext[i].get(1).value();
-									if(JSB().isArray(a)){
-										series[i].data = a;
-									} else {
-										series[i].data.push(a);
-									}
-								}
-								for(var i = 0; i < xAxisContext.length; i++){
-									var a = xAxisContext[i].get(0).value();
-									if(JSB().isArray(a)){
-										xAxis = a;
-									} else {
-										xAxis.push(a);
-									}
-								}
-								
-								for(var i = 0; i < yAxisContext.length; i++){
-									yAxis[i] = {
-										title: {
-											text: yAxisContext[i].get(0).value().get(0).value(),
-											style: {
-												color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
-											},
-											align: 'high'
-										},
-										labels: {
-											format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
-											style: {
-												color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
-											}
-										},
-										stackLabels: {
-											enabled: yAxisStackLabels[0].get(0).used(),
-											align:  $this.isNull(yAxisStackLabels[0].get(1).value()),
-											format: $this.isNull(yAxisStackLabels[0].get(2).value()),
-											rotation: parseInt($this.isNull(yAxisStackLabels[0].get(3).value()), 10),
-											textAlign: $this.isNull(yAxisStackLabels[0].get(4).value()),
-											useHTML: yAxisStackLabels[0].get(5).used(),
-											verticalAlign: $this.isNull(yAxisStackLabels[0].get(6).value()),
-											x: parseInt($this.isNull(yAxisStackLabels[0].get(7).value()), 10),
-											y: parseInt($this.isNull(yAxisStackLabels[0].get(8).value()), 10),
-											style: {
-												color: $this.isNull(yAxisStackLabels[0].get(9).value()) || (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
-											}
-										},                                
-										opposite: yAxisContext[i].get(2).used()
-									};
-								}
-							}
-							
-							var colors = [
-								['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-								['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-								['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-								['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-								['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
-							], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-							
-							var chartOptions = {
+                                        if(JSB().isArray(d)){
+                                            seriesData[i].data = d;
+                                        } else {
+                                            seriesData[i].data.push(d);
+                                        }
+                                    }
+                                }
+                            }
 
-								colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],                       
-							
-								chart: {
-									//zoomType: 'x'
-								},
+                            var data = [];
+                            for(var i = 0; i < seriesData.length; i++){
+                                if(seriesData[i].simple){
+                                    data.push(seriesData[i]);
+                                } else {
+                                    var obj = seriesData[i].data;
 
-								title: {
-									text: this.getContext().find('title').value()
-								},
+                                    for(var j in obj){
+                                        data.push({
+                                            index: i,
+                                            name: j,
+                                            data: obj[j]
+                                        })
+                                    }
+                                }
+                            }
 
-								subtitle: {
-									text: this.getContext().find('subtitle').value()
-								},
+                            if(data.length < xAxisCategories.length){
+                                var cats = [];
+                                for(var i = 0; i < xAxisCategories.length; i = i + data.length){
+                                    cats.push(xAxisCategories[i]);
+                                }
+                                xAxisCategories = cats;
+                            }
 
-								xAxis: [{
-									categories: xAxis,
-									crosshair: false,
-									title: {
-										text: xAxisContext[0].get(1).value().get(0).value(),
-										style: {
-											color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
-										},
-										align: 'high'
-									}                            
-								}],
+                            if(opts && opts.isCacheMod){
+                                $this.storeCache({
+                                    seriesData: data,
+                                    xAxis: xAxisCategories
+                                });
+                            }
 
-								yAxis: yAxis,
-
-								tooltip: {
-									shared: false
-								},
-
-								legend: {
-									layout: 'horizontal',
-									floating: false,
-									align: 'center',
-									verticalAlign: 'bottom',
-									x: 0,
-									y: 0,
-									itemDistance: 30,
-									backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-								},
-
-								plotOptions: {
-									column: {
-										stacking: this.getContext().find('stacking').value().name().toString(),
-										dataLabels: {
-											enabled: plotOptionsColumnDataLabels[0].get(0).used(),
-											align: $this.isNull(plotOptionsColumnDataLabels[0].get(1).value()),
-											allowOverlap: plotOptionsColumnDataLabels[0].get(2).used(),
-											backgroundColor: $this.isNull(plotOptionsColumnDataLabels[0].get(3).value()),
-											borderColor: $this.isNull(plotOptionsColumnDataLabels[0].get(4).value()),
-											borderRadius: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(5).value()), 10),
-											borderWidth: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(6).value()), 10),
-											color: $this.isNull(plotOptionsColumnDataLabels[0].get(7).value()) || (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
-											crop: plotOptionsColumnDataLabels[0].get(8).used(),
-											format: $this.isNull(plotOptionsColumnDataLabels[0].get(9).value()),
-											inside: $this.isNull(plotOptionsColumnDataLabels[0].get(10).value()),
-											overflow: $this.isNull(plotOptionsColumnDataLabels[0].get(11).value()),
-											padding: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(12).value()), 10),
-											rotation: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(13).value()), 10),
-											shadow: plotOptionsColumnDataLabels[0].get(14).used(),
-											shape: $this.isNull(plotOptionsColumnDataLabels[0].get(15).value()),
-											useHTML: plotOptionsColumnDataLabels[0].get(16).used(),
-											verticalAlign: $this.isNull(plotOptionsColumnDataLabels[0].get(17).value()),
-											x: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(18).value()), 10),
-											y: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(19).value()), 10),
-											zIndex: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(20).value()), 10)
-										}								
-									}
-									/*
-									bar: {
-										dataLabels: {
-											enabled: true
-										}
-									}
-									*/
-									/*,                        
-									series: {
-										allowPointSelect: true,
-										states: {
-											select: {
-												color: null,
-												borderWidth: 5,
-												borderColor: 'Blue'
-											}
-										}
-									}
-									*/
-								},
-								
-								credits: {
-									enabled: false
-								},                        
-
-								series: series
-							};
-							
-							try {
-								$this.container.highcharts(chartOptions);
-							} catch(e) {
-								console.log("Exception", e);
-								$this.getElement().loader('hide');
-								throw new Error("Highcharts setup error");
-							}
-
-							console.log(chartOptions);
-
-							$this.getElement().loader('hide');
-							$this.chart =  $this.container.highcharts();
-							
+                            $this._buildChart(data, xAxisCategories);
 						} catch(e) {
 							console.log("Exception", e);
 							$this.getElement().loader('hide');
 							throw new Error("Options create error");
+						} finally{
+						    $this.getElement().loader('hide');
 						}
 					});
 
@@ -912,27 +996,295 @@
 			}
         },
 
-        _addNewFilter: function(index, value){
+        _buildChart: function(seriesData, xAxisData){
+            try{
+                var yAxisStackLabels = this.getContext().find('yAxisStackLabels').values(),
+                    plotOptionsColumnDataLabels = this.getContext().find('plotOptionsColumnDataLabels').values(),
+                    seriesContext = this.getContext().find('series').values(),
+                    yAxisContext = this.getContext().find('yAxis').values(),
+                    xAxisContext = this.getContext().find('xAxis').values(),
+                    yAxis = [],
+                    series = [];
+
+                    for(var j = 0; j < seriesData.length; j++){
+                        if(!series[j]){
+                            series[j] = {
+                                name: seriesData[j].name,
+                                data: seriesData[j].data,
+                                type: seriesContext[seriesData[j].index].get(2).value().name(),
+                                tooltip: {
+                                    valueSuffix: seriesContext[seriesData[j].index].get(3).value().get(0).value()
+                                },
+                                yAxis: $this.isNull(seriesContext[seriesData[j].index].get(4).value(), true),
+                                //dashStyle: seriesContext[seriesData[j].index].get(5).value().name(),
+                                color: $this.isNull(seriesContext[seriesData[j].index].get(5).value()),
+                                /*
+                                marker: {
+                                    // The fill color of the point marker
+                                    fillColor: $this.isNull(seriesContext[seriesData[j].index].get(7).value().get(0).value()),
+                                    // The color of the point marker's outline
+                                    lineColor: $this.isNull(seriesContext[seriesData[j].index].get(7).value().get(1).value()),
+                                    // The width of the point marker's outline
+                                    lineWidth: (($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(2).value()),10) : undefined),
+                                    // The radius of the point marker
+                                    radius: (($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(3).value()),10) : undefined),
+                                    // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
+                                    symbol: $this.isNull(seriesContext[seriesData[j].index].get(7).value().get(4).value())
+                                },
+                                */
+                                visible: seriesContext[seriesData[j].index].find('visible').used(),
+                                point: {
+                                    events: {
+                                        click: function(evt) {
+                                            $this._clickEvt = evt;
+
+                                            if(JSB().isFunction($this.options.onClick)){
+                                                $this.options.onClick.call(this, evt);
+                                            }
+                                        },
+                                        select: function(evt) {
+                                            var flag = false;
+
+                                            if(JSB().isFunction($this.options.onSelect)){
+                                                flag = $this.options.onSelect.call(this, evt);
+                                            }
+
+                                            if(!flag && $this._clickEvt){
+                                                evt.preventDefault();
+                                                $this._clickEvt = null;
+                                                $this._addNewFilter(evt);
+                                            }
+                                        },
+                                        unselect: function(evt) {
+                                            var flag = false;
+
+                                            if(JSB().isFunction($this.options.onUnselect)){
+                                                flag = $this.options.onUnselect.call(this, evt);
+                                            }
+
+                                            if(!flag && $this._deselectCategoriesCount === 0){
+                                                if(Object.keys($this._curFilters).length > 0){
+                                                    evt.preventDefault();
+
+                                                    if(evt.accumulate){
+                                                        $this.removeFilter($this._curFilters[evt.target.category]);
+                                                        $this._deselectAllCategory(evt.target.category);
+                                                        delete $this._curFilters[evt.target.category];
+                                                        $this.refreshAll();
+                                                    } else {
+                                                        for(var i in $this._curFilters){
+                                                            $this.removeFilter($this._curFilters[i]);
+                                                            $this._deselectAllCategory(i);
+                                                        }
+                                                        $this._curFilters = {};
+                                                        $this.refreshAll();
+                                                    }
+                                                }
+                                            } else {
+                                                $this._deselectCategoriesCount--;
+                                            }
+                                        },
+                                        mouseOut: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOut)){
+                                                $this.options.mouseOut.call(this, evt);
+                                            }
+                                        },
+                                        mouseOver: function(evt) {
+                                            if(JSB().isFunction($this.options.mouseOver)){
+                                                $this.options.mouseOver.call(this, evt);
+                                            }
+                                        }
+                                    }
+                                },
+                                stack: seriesContext[seriesData[j].index].get(6).value()
+                            };
+                        }
+                    }
+
+                    for(var i = 0; i < yAxisContext.length; i++){
+                        yAxis[i] = {
+                            title: {
+                                text: yAxisContext[i].get(0).value().get(0).value(),
+                                style: {
+                                    color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
+                                },
+                                align: 'high'
+                            },
+                            labels: {
+                                format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
+                                style: {
+                                    color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
+                                }
+                            },
+                            stackLabels: {
+                                enabled: yAxisStackLabels[0].get(0).used(),
+                                align:  $this.isNull(yAxisStackLabels[0].get(1).value()),
+                                format: $this.isNull(yAxisStackLabels[0].get(2).value()),
+                                rotation: parseInt($this.isNull(yAxisStackLabels[0].get(3).value()), 10),
+                                textAlign: $this.isNull(yAxisStackLabels[0].get(4).value()),
+                                useHTML: yAxisStackLabels[0].get(5).used(),
+                                verticalAlign: $this.isNull(yAxisStackLabels[0].get(6).value()),
+                                x: parseInt($this.isNull(yAxisStackLabels[0].get(7).value()), 10),
+                                y: parseInt($this.isNull(yAxisStackLabels[0].get(8).value()), 10),
+                                style: {
+                                    color: $this.isNull(yAxisStackLabels[0].get(9).value()) || (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                                }
+                            },
+                            opposite: yAxisContext[i].get(2).used(),
+                            type: yAxisContext[i].find('type').value().value()
+                        };
+                    }
+
+                    var colors = [
+                        ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                        ['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
+                        ['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
+                        ['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
+                        ['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
+                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                    var chartOptions = {
+
+                        colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+
+                        chart: {
+                            //zoomType: 'x'
+                        },
+
+                        title: {
+                            text: this.getContext().find('title').value()
+                        },
+
+                        subtitle: {
+                            text: this.getContext().find('subtitle').value()
+                        },
+
+                        xAxis: {
+                            categories: xAxisData,
+                            title: {
+                                text: xAxisContext[0].get(1).value().get(0).value(),
+                                style: {
+                                    color: $this.isNull(xAxisContext[0].get(1).value().get(1).value().get(0).value())
+                                },
+                                align: 'high'
+                            },
+                            labels: {
+                                enabled: xAxisContext[0].get(2).value().get(0).used(),
+                                rotation: xAxisContext[0].get(2).value().get(1).value()
+                            }
+                        },
+
+                        yAxis: yAxis,
+
+                        tooltip: {
+                            shared: false
+                        },
+
+                        legend: {
+                            enabled: this.getContext().find('legend').find('enabled').used(),
+                            layout: 'horizontal',
+                            floating: false,
+                            align: 'center',
+                            verticalAlign: 'bottom',
+                            x: 0,
+                            y: 0,
+                            itemDistance: 30,
+                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                        },
+
+                        plotOptions: {
+                            column: {
+                                stacking: this.getContext().find('stacking').value().name().toString(),
+                                dataLabels: {
+                                    enabled: plotOptionsColumnDataLabels[0].get(0).used(),
+                                    align: $this.isNull(plotOptionsColumnDataLabels[0].get(1).value()),
+                                    allowOverlap: plotOptionsColumnDataLabels[0].get(2).used(),
+                                    backgroundColor: $this.isNull(plotOptionsColumnDataLabels[0].get(3).value()),
+                                    borderColor: $this.isNull(plotOptionsColumnDataLabels[0].get(4).value()),
+                                    borderRadius: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(5).value()), 10),
+                                    borderWidth: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(6).value()), 10),
+                                    color: $this.isNull(plotOptionsColumnDataLabels[0].get(7).value()) || (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+                                    crop: plotOptionsColumnDataLabels[0].get(8).used(),
+                                    format: $this.isNull(plotOptionsColumnDataLabels[0].get(9).value()),
+                                    inside: $this.isNull(plotOptionsColumnDataLabels[0].get(10).value()),
+                                    overflow: $this.isNull(plotOptionsColumnDataLabels[0].get(11).value()),
+                                    padding: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(12).value()), 10),
+                                    rotation: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(13).value()), 10),
+                                    shadow: plotOptionsColumnDataLabels[0].get(14).used(),
+                                    shape: $this.isNull(plotOptionsColumnDataLabels[0].get(15).value()),
+                                    useHTML: plotOptionsColumnDataLabels[0].get(16).used(),
+                                    verticalAlign: $this.isNull(plotOptionsColumnDataLabels[0].get(17).value()),
+                                    x: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(18).value()), 10),
+                                    y: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(19).value()), 10),
+                                    zIndex: parseInt($this.isNull(plotOptionsColumnDataLabels[0].get(20).value()), 10)
+                                }
+                            }
+                            /*
+                            bar: {
+                                dataLabels: {
+                                    enabled: true
+                                }
+                            }
+                            */
+                            /*,
+                            series: {
+                                allowPointSelect: true,
+                                states: {
+                                    select: {
+                                        color: null,
+                                        borderWidth: 5,
+                                        borderColor: 'Blue'
+                                    }
+                                }
+                            }
+                            */
+                        },
+
+                        credits: {
+                            enabled: false
+                        },
+
+                        series: series
+                    };
+
+                    console.log(chartOptions);
+                    $this.container.highcharts(chartOptions);
+                    $this.chart =  $this.container.highcharts();
+            } catch(e){
+                console.log(e);
+                return;
+            }
+        },
+
+        _addNewFilter: function(evt){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find("xAxis").get(0).value().binding();
-            if(!field[0]) return;
+            var categories = this.getContext().find("xAxis").find('categories').values();
+            var field = categories[categories.length - 1].binding()[0];
+            if(!field) return;
+
             var fDesc = {
-            	sourceId: context.source,
-            	type: '$and',
-            	op: '$eq',
-            	field: field,
-            	value: value
+                sourceId: context.source,
+                type: '$or',
+                op: '$eq',
+                field: field,
+                value: evt.target.category.name
             };
-            if(!this.hasFilter(fDesc)){
-            	if(this._currentFilter){
-                    this.removeFilter(this._currentFilter);
-                    this._currentFilter = null;
-                    this._notNeedUnselect = true;
+
+            if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
+                for(var i in this._curFilters){
+                    this._deselectAllCategory(i);
+                    this.removeFilter(this._curFilters[i]);
                 }
-            	this._currentFilter = this.addFilter(fDesc);
-            	this.refreshAll();
+
+                this._curFilters = {};
+            }
+
+            if(!this.hasFilter(fDesc)){
+                this._selectAllCategory(evt.target.category);
+                this._curFilters[evt.target.category] = this.addFilter(fDesc);
+                this.refreshAll();
             }
         },
 
@@ -940,6 +1292,33 @@
         isNull: function(a, b){
             if(b) return a === null ? undefined : parseInt(a);
             return a === null ? undefined : a;
+        },
+
+        _selectAllCategory: function(cat){
+            var series = this.chart.series;
+
+            for(var i = 0; i < series.length; i++){
+                for(var j = 0; j < series[i].points.length; j++){
+                    if(series[i].points[j].category.name == cat && !series[i].points[j].selected){
+                        series[i].points[j].select(true, true);
+                        break;
+                    }
+                }
+            }
+        },
+
+        _deselectAllCategory: function(cat){
+            var series = this.chart.series;
+
+            for(var i = 0; i < series.length; i++){
+                for(var j = 0; j < series[i].points.length; j++){
+                    if(series[i].points[j].category.name == cat && series[i].points[j].selected){
+                        this._deselectCategoriesCount++;
+                        series[i].points[j].select(false, true);
+                        break;
+                    }
+                }
+            }
         }
 	}
 }

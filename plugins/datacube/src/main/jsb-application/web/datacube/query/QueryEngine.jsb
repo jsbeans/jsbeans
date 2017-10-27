@@ -4,130 +4,13 @@
 	$server: {
 		$require: [
 		    'DataCube.Query.Iterators.DataProviderIterator',
-		    'DataCube.Query.Iterators.InnerJoinIterator',
+		    'DataCube.Query.Iterators.LeftJoinIterator',
+		    'DataCube.Query.Iterators.UnionIterator',
 		    'DataCube.Query.Iterators.FinalizeIterator',
 		    'DataCube.Providers.SqlTableDataProvider',
-		    'DataCube.Query.QuerySyntax'
+		    'DataCube.Query.QuerySyntax',
+		    'DataCube.Query.QueryUtils'
         ],
-
-	    selftTest: function(cube){
-	        [
-	            // select all fields
-                this.query(
-                    { $select: {} }
-                ),
-                // select id field
-                this.query({
-                    $select: {
-                        Subject: 'Cубъект',
-                        "Тип ПКЗ": "Тип ПКЗ"
-
-                    },
-                    $filter: {
-                        $and: [
-                            { Cубъект: {$eq: '${subj1}'} },
-                            { Cубъект: {$eq: '${subj2}'} },
-                        ]
-                    }
-                }, {
-                    subj1: 'Открытое акционерное общество "Монолит"',
-                    subj2: 'Федеральное казенное предприятие "Авангард"'
-                }),
-                this.query({
-                    $select: {
-                        Subject: 'Cубъект',
-                        Values: { $array: {$toInt: {$toDouble: 'Значение'}}},
-                        minValue: { $min: {$toDouble: 'Значение'} },
-                        maxValue: { $max: {$toDouble: 'Значение'}},
-                    },
-                    $filter: {
-                        $and: [
-                            { Cубъект: {$eq: '${subj1}'} },
-                            { Cубъект: {$eq: '${subj2}'} },
-                        ]
-                    },
-                    $groupBy: ['Cубъект'],
-                    $sort: [{'maxValue': -1}] // -1 = DESC, 1 = ASC
-                }, {
-                    subj1: 'Открытое акционерное общество "Монолит"',
-                    subj2: 'Федеральное казенное предприятие "Авангард"'
-                }),
-                this.query({
-                    "$groupBy": [
-                        "Код отрасли"
-                    ],
-                    "$select": {
-                        "gcountAll": {
-                            "$gcount": 1
-                        },
-                        "count": {
-                            "$count": "Код отрасли"
-                        },
-                        "gmax": {
-                            "$gmax": {
-                                "$toInt": "Код отрасли"
-                            }
-                        },
-                        "gcountOtr": {
-                            "$gcount": {
-                                "$distinct": "Код отрасли"
-                            }
-                        }
-                    }
-                }),
-//                //
-//                this.query({
-//                    // produce values with new names from fields or aggregate functions
-//                    // <field_value> : <cube_field_or_function>
-//                    $select: {
-//                        type: 'user_type',
-//                        usersCount: { $sum: 1 },
-//                        totalLogins: { $sum: 'user_logins' },
-//                        avgLogins: { $avg: 'user_logins' },
-//                        maxLogins: { $max: 'user_logins' },
-//                        minLogins: { $min: 'user_logins' },
-//                        mainRoles: { $array: 'mainRole' },
-//                        roles: { $flatArray: 'roles' }
-//
-//                    },
-//                    // filter rows by new or cube fields
-//                    // note: aggregated fields not supported yet
-//                    $filter: {
-//                        user_enabled: { $eq : '${param1}' },
-//                        $or: [
-//                            { user_enabled: { $eq : '${param1}' } },
-//                            { mainRole: { $ne : null } } // not null
-//                        ]
-//                    },
-//
-//                    // note: distinct not supported
-//                    // $distinct: true,
-//
-//                    $groupBy: ['user_type'],
-//
-//                    // sorting by new or old fields
-//                    $sort: ['usersCount', 'totalLogins'],
-//
-//                    // postprocessing with function
-//                    $finalize: function(value) {
-//                        if (value.minLogins > 0) {
-//                            value.newFiled = 'created value';
-//                            return value;
-//                        }
-//                        // without return: filter value
-//                    }
-//                }, {
-//                    param1: true
-//                })
-            ].forEach(function(it){
-debugger;
-                for (var val = it.next(), i=0; !JSB.isNull(val) && i < 5; val = it.next(), i++) {
-                    Log.debug(JSON.stringify(val,0,2));
-                }
-                it.close();
-            });
-
-	    },
 
 		$constructor: function(cube){
 		    this.cube = cube;
@@ -149,119 +32,19 @@ debugger;
 		    // unwrap macros to complex expressions
 		    QuerySyntax.unwrapMacros(dcQuery);
 
-		    // fill all cube fields (or linked with dataProvider) for default $select={}
-		    if (Object.keys(dcQuery.$select).length == 0) {
-		        if (dataProvider) {
-		            var fields = dataProvider.extractFields();
-		            for(var field in fields) if (fields.hasOwnProperty(field)){
-		                var name = field.replace(new RegExp('"','g'),'');
-		                 dcQuery.$select[name] = field;
-		            }
-		        } else {
-		        	var managedFields = this.cube.getManagedFields();
-                    for (var f in managedFields) if (managedFields.hasOwnProperty(f)) {
-                        var binding = managedFields[f].binding;
-                        for(var b in binding) {
-                            if (!dataProvider || binding[b].provider == dataProvider) {
-                                var name = f.replace(new RegExp('"','g'),'');
-                                dcQuery.$select[name] = f;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+//		    // fill all cube fields (or linked with dataProvider) for default $select={}
+//		    QueryUtils.generateDefaultSelect(dcQuery, dataProvider || this.cube);
+
+            // embed $globalFilter to $filter/$postFilter of root and sub queries
+            QueryUtils.propagateGlobalFilter(dcQuery, dataProvider || this.cube);
 
             // generate $groupBy if not defined
-            if (!dcQuery.$groupBy) {
-                // TODO: support multi fields in select (n-operators)
-                var aggregateFunctions = QuerySyntax.schemaAggregateOperators;
-                function findField(exp, aggregated){
-                    if (JSB.isString(exp)) {
-                        return {
-                            field: exp,
-                            aggregated: aggregated || false
-                        };
-                    }
-                    if (JSB.isPlainObject(exp)) {
-                        var op = Object.keys(exp)[0];
-                        if (aggregateFunctions[op]) {
-                            return findField(exp[op], true);
-                        }
-                        return findField(exp[op], aggregated);
-                    }
-                    if (JSB.isArray(exp)) {
-                        for (var i in exp) {
-                            var f = findField(exp[i], aggregated);
-                            if (f.field) return f;
-                        }
-                    }
-                    return {
-                        field: null,
-                        aggregated: aggregated || false
-                    };
-                }
+            QueryUtils.generateDefaultGroupBy(dcQuery);
 
-                var aggregatedFields = [];
-                var groupFields = [];
-                var unknownAggregate = false;
-                for (var alias in dcQuery.$select) {
-                    var field = findField(dcQuery.$select[alias], false);
-                    if (field.aggregated && field.field){
-                        if (aggregatedFields.indexOf(field.field) == -1)
-                            aggregatedFields.push(field.field);
-                    } else if (field.field) {
-                        if (groupFields.indexOf(field.field) == -1)
-                            groupFields.push(field.field);
-                    } else {
-                        unknownAggregate = true;
-                    }
-                }
+            // move top fields that used in other
+            QueryUtils.upperGeneralFields(dcQuery);
 
-//                // add filter fields to groupBy
-//                for (var alias in dcQuery.$filter){
-//                    var field = findField(dcQuery.$select[alias], false);
-//                    if (field.field && groupFields.indexOf(field.field) == -1) {
-//                        groupFields.push(field.field);
-//                    }
-//                }
-
-                if (groupFields.length == 0 && unknownAggregate) {
-                    throw new Error("Define $groupBy");
-                }
-                // if not group by all fields
-                if (Object.keys(dcQuery.$select).length != aggregatedFields.length
-                    && Object.keys(dcQuery.$select).length != groupFields.length) {
-                    dcQuery.$groupBy = groupFields;
-                }
-            }
             return dcQuery;
-		},
-
-		extractFields: function(dcQuery) {
-		    var cubeFields = [];
-		    var outputFields = [];
-		    function collect(q) {
-		        if (JSB.isString(q)) {
-		            cubeFields.push(q);
-		        } else if (JSB.isPlainObject(q)) {
-		            for (var f in q) if (q.hasOwnProperty(f)) {
-		                if (!f.match(/^\$/)) {
-		                    outputFields.push(f);
-		                }
-		                collect(q[f]);
-		            }
-		        } else if (JSB.isArray(q)) {
-                    for (var i in q) {
-                        collect(q[i]);
-                    }
-                }
-		    }
-            collect(dcQuery.$select);
-            return {
-		        cubeFields: cubeFields,
-		        outputFields : outputFields
-		    };
 		},
 
 		isDataProviderLinkedWithCubeFields: function(provider, cubeFields, useJoinFields) {
@@ -298,31 +81,21 @@ debugger;
 		},
 
 		produceIterator: function(dcQuery, params, dataProvider) {
-            // collect only iterator of used in query providers
-            var usedCubeFields = this.extractFields(dcQuery).cubeFields;
-            var dataProviders = this.cube.getOrderedDataProviders();
+//		    return {
+//		        next: function(){},
+//		        close: function(){}
+//		    }; // TODO DEBUG remove
             var providerIterators = [];
-
-            if (!dataProvider) {
-                for (var i = 0; i < dataProviders.length; i++) {
-                    var provider = dataProviders[i];
-                    if ($this.isDataProviderLinkedWithCubeFields(provider, usedCubeFields, providerIterators.length == 0)) {
-                        if (providerIterators.length > 0) {
-                            var prev = providerIterators[providerIterators.length - 1].getDataProviders()[0];
-                            if (provider instanceof SqlTableDataProvider
-                                && prev.getJsb().$name == provider.getJsb().$name
-                                && prev.getStore().getName() == provider.getStore().getName()) {
-                                // merge provider
-                                providerIterators[providerIterators.length - 1] = new DataProviderIterator(
-                                    providerIterators[providerIterators.length - 1].getDataProviders().concat(provider), this);
-                                continue;
-                            }
-                        }
-                        providerIterators.push(new DataProviderIterator(provider, this));
-                    }
-                }
-            } else {
+//debugger;
+            if (dataProvider) {
                 providerIterators.push(new DataProviderIterator(dataProvider, this));
+            } else {
+                var dataProviders = this.cube.getOrderedDataProviders();
+                var groups = this.groupProviders(dcQuery, this.sqlStoreDataProviderKey);
+                for(var i in groups) {
+                    var providers = groups[i];
+                    providerIterators.push(new DataProviderIterator(providers, this));
+                }
             }
 
             if (providerIterators.length == 0) {
@@ -333,29 +106,117 @@ debugger;
                 };
             }
 
-            var joinIterator = providerIterators.length == 1
-                    ? providerIterators[0]
-                    : new InnerJoinIterator(providerIterators, this);
+            var providersIterator = this._unionAndJoinIterators(providerIterators);
 
 		    if (dcQuery.$finalize) {
-		        return new FinalizeIterator(joinIterator, this).iterate(dcQuery, params);
+		        return new FinalizeIterator(providersIterator, this).iterate(dcQuery, params);
 		    }
 
-		    var it = joinIterator.iterate(dcQuery, params);
-
+		    var it = providersIterator.iterate(dcQuery, params);
 		    return {
 		        next: function(){
 		            var next = it.next();
-		            if (next) {
-		                //Log.debug(JSON.stringify(next));
-		            }
+//		            if (next) {
+//		                Log.debug(JSON.stringify(next));
+//		            }
 		            return next;
 		        },
 		        close: function(){
-		            Log.debug('Iterator closed');
+//		            Log.debug('Iterator closed');
 		            it.close();
 		        }
 		    };
+		},
+
+		_unionAndJoinIterators: function(providerIterators) {
+		    if (providerIterators.length == 1) {
+		        return providerIterators[0];
+		    }
+		    var unionIterators = [];
+		    var joinIterators = [];
+		    for (var i in providerIterators) {
+		        var providerIterator = providerIterators[i];
+		        var providers = providerIterator.getDataProviders();
+		        var isUnion = true;
+		        for (var p in providers) {
+		            if ((providers[p].mode||'union') != 'union') {
+		                isUnion = false;
+		            }
+		        }
+		        if (isUnion) {
+		            unionIterators.push(providerIterator);
+		        } else {
+		            joinIterators.push(providerIterator);
+		        }
+		    }
+
+            if (unionIterators.length > 0) {
+                var unionIterator = unionIterators.length > 1
+                        ? new UnionIterator(unionIterators, this)
+                        : unionIterators[0];
+
+                if (joinIterators.length == 0) {
+                    return unionIterator;
+                }
+                joinIterators = [unionIterator].concat(joinIterators);
+            }
+
+		    return new LeftJoinIterator(joinIterators, this);
+		},
+
+		sqlStoreDataProviderKey: function (provider) {
+		    // store key or unique
+            return provider instanceof SqlTableDataProvider
+                ? provider.getJsb().$name + '/' + provider.getStore().getName()
+                : provider.id;
+        },
+
+		groupProviders: function(dcQuery, getProviderGroupKey){
+		    /**
+		        1) собрать все провайдеры, связанные с запросом
+		        2) удалить избыточные провайдеры, т.е. для которых все используемые в запросе
+		           поля являются "объединенными" и присутствуют в другом провайдере
+		        3) объединить однотипные провайдеры в группы
+		    */
+
+		    // collect used providers by name and all used cube fields
+		    var providers = {}; // id: {provider, cubeFields}
+		    QueryUtils.walkCubeFields(
+		        dcQuery, /**includeSubQueries=*/true, this.cube,
+		        function (field, context, query, binding){
+                    for (var i in binding) {
+                        var id = binding[i].provider.id;
+                        var prov = providers[id] = providers[id] || {
+                            provider: binding[i].provider,
+                            cubeFields: {}
+                        };
+                        var hasOtherBinding = binding.length > 1;
+                        prov.cubeFields[field] = hasOtherBinding;
+                    }
+                }
+            );
+
+            // filter redundant providers
+            QueryUtils.removeRedundantBindingProviders(providers);
+
+		    // group SqlTableDataProvider
+		    /** TODO note: сейчас реализовано с учетом только "плоского" UNION (объединения с общими полями):
+		        после добавления настроек JOIN при объединении в группы необходимо упорядочить
+		        и учитывать пути слияний таблиц (т.е. сначала надо упорядочить и если по середи
+		        оказывается "чужой" провайдер, то группу нужно разорвать для внешнего слияния через JoinIterator)
+		     */
+		    var groupsMap = {/**key:[provider]*/}; //
+		    for (var id in providers) if (providers.hasOwnProperty(id)) {
+		        var prov = providers[id];
+		        var key = getProviderGroupKey(prov.provider);
+                groupsMap[key] = groupsMap[key] || [];
+                groupsMap[key].push(prov.provider);
+		    }
+		    var groups = []; // [[]]
+		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
+		        groups.push(groupsMap[k]);
+		    }
+		    return groups;
 		},
 	}
 }

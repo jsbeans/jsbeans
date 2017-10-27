@@ -168,12 +168,14 @@
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'fieldName',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'data',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -181,10 +183,12 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'style',
                     items:[
                     {
                         name: 'column',
                         type: 'group',
+                        key: 'column',
                         items: [{
                             name: 'Положение точек',
                             key: 'pointPlacement',
@@ -193,16 +197,19 @@
                             {
                                 name: 'between',
                                 type: 'item',
+                                key: 'between',
                                 editor: 'none'
                             },
                             {
                                 name: 'null',
                                 type: 'item',
+                                key: 'null',
                                 editor: 'none'
                             },
                             {
                                 name: 'on',
                                 type: 'item',
+                                key: 'on',
                                 editor: 'none'
                             }
                             ]
@@ -211,10 +218,12 @@
                     {
                         name: 'line',
                         type: 'item',
+                        key: 'line',
                     },
                     {
                         name: 'area',
                         type: 'item',
+                        key: 'area',
                     }
                     ]
                 }
@@ -260,11 +269,22 @@
 			this.isInit = true;
 		},
 
-		refresh: function(){
+		refresh: function(opts){
 		    var source = this.getContext().find('source');
 		    if(!source.bound()) return;
 		    
 			$base();
+
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
 
 		    var seriesContext = this.getContext().find('series').values();
 
@@ -303,100 +323,118 @@
 
                     $this.getElement().loader('hide');
 
-                    $this.container.highcharts({
-                        chart: {
-                            polar: true
-                        },
+                    if(opts && opts.isCacheMod){
+                        $this.storeCache(series);
+                    }
 
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-
-                        pane: {
-                            startAngle: 0,
-                            endAngle: 360
-                        },
-
-                        xAxis: {
-                            tickInterval: 45,
-                            min: 0,
-                            max: 360,
-                            labels: {
-                                formatter: function () {
-                                    return this.value + '°';
-                                }
-                            }
-                        },
-
-                        yAxis: {
-                            min: 0
-                        },
-
-                        plotOptions: {
-                            series: {
-                                pointStart: 0,
-                                pointInterval: 45
-                            },
-                            column: {
-                                pointPadding: 0,
-                                groupPadding: 0
-                            },
-                            allowPointSelect: true,
-                            point: {
-                                events: {
-                                    click: function(evt) {
-                                        if(JSB().isFunction($this.options.onClick)){
-                                            $this.options.onClick.call(this, evt);
-                                        }
-                                    },
-                                    select: function(evt) {
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onSelect)){
-                                            flag = $this.options.onSelect.call(this, evt);
-                                        }
-                                        /*
-                                        if(!flag){
-                                            $this._addPieFilter(evt.target.name);
-                                        }
-                                        */
-                                    },
-                                    unselect: function(evt) {
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onUnselect)){
-                                            flag = $this.options.onUnselect.call(this, evt);
-                                        }
-                                        /*
-                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                            $this._notNeedUnselect = false;
-                                            $this.removeFilter($this._currentFilter);
-                                            $this.refreshAll();
-                                        }
-                                        */
-                                    },
-                                    mouseOut: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOut)){
-                                            $this.options.mouseOut.call(this, evt);
-                                        }
-                                    },
-                                    mouseOver: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOver)){
-                                            $this.options.mouseOver.call(this, evt);
-                                        }
-                                    }
-                                }
-                            }
-                        },
-
-                        series: series
-                    });
-
-                    $this.chart =  $this.container.highcharts();
+                    $this._buildChart(series);
                 });
 		    }, function(){
 		        return $this.isInit;
 		    });
+		},
+
+		_buildChart: function(data){
+		    try{
+                var chartOpts = {
+                    chart: {
+                        polar: true
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    pane: {
+                        startAngle: 0,
+                        endAngle: 360
+                    },
+
+                    xAxis: {
+                        tickInterval: 45,
+                        min: 0,
+                        max: 360,
+                        labels: {
+                            formatter: function () {
+                                return this.value + '°';
+                            }
+                        }
+                    },
+
+                    yAxis: {
+                        min: 0
+                    },
+
+                    plotOptions: {
+                        series: {
+                            pointStart: 0,
+                            pointInterval: 45
+                        },
+                        column: {
+                            pointPadding: 0,
+                            groupPadding: 0
+                        },
+                        allowPointSelect: true,
+                        point: {
+                            events: {
+                                click: function(evt) {
+                                    if(JSB().isFunction($this.options.onClick)){
+                                        $this.options.onClick.call(this, evt);
+                                    }
+                                },
+                                select: function(evt) {
+                                    var flag = false;
+
+                                    if(JSB().isFunction($this.options.onSelect)){
+                                        flag = $this.options.onSelect.call(this, evt);
+                                    }
+                                    /*
+                                    if(!flag){
+                                        $this._addPieFilter(evt.target.name);
+                                    }
+                                    */
+                                },
+                                unselect: function(evt) {
+                                    var flag = false;
+
+                                    if(JSB().isFunction($this.options.onUnselect)){
+                                        flag = $this.options.onUnselect.call(this, evt);
+                                    }
+                                    /*
+                                    if(!flag && $this._currentFilter && !$this._notNeedUnselect){
+                                        $this._notNeedUnselect = false;
+                                        $this.removeFilter($this._currentFilter);
+                                        $this.refreshAll();
+                                    }
+                                    */
+                                },
+                                mouseOut: function(evt) {
+                                    if(JSB().isFunction($this.options.mouseOut)){
+                                        $this.options.mouseOut.call(this, evt);
+                                    }
+                                },
+                                mouseOver: function(evt) {
+                                    if(JSB().isFunction($this.options.mouseOver)){
+                                        $this.options.mouseOver.call(this, evt);
+                                    }
+                                }
+                            }
+                        }
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: data
+                };
+
+                $this.container.highcharts(chartOpts);
+
+                $this.chart =  $this.container.highcharts();
+            } catch(ex){
+                console.log(ex);
+            }
 		}
 	}
 }

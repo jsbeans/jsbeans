@@ -10,6 +10,7 @@
 			JDBCType:       'java:java.sql.JDBCType',
 			Types:          'java:java.sql.Types',
 			SqlDate:        'java:java.sql.Date',
+			ArrayHelper: 	'java:org.jsbeans.helpers.ArrayHelper'
 		},
 
 		$constructor: function(){
@@ -72,6 +73,11 @@
             }
 		},
 		
+		getDatabaseVendor: function(connection){
+			var databaseMetaData = connection.getMetaData();
+			return '' + databaseMetaData.getDatabaseProductName();
+		},
+		
 		executeUpdate: function(connection, sql, values, types){
 			if(JSB.isArray(sql)){
 				// batch processing
@@ -101,7 +107,7 @@
 				            var value = values[i];
 				            var type = types.length > i && types[i] || null;
 				            var type = this._getJDBCType(value, type);
-		                    this._setStatementArgument(curStatement, i + 1, value, type);
+		                    this._setStatementArgument(curStatement, i + 1, value, type, connection);
 				        }
 				    	curStatement.addBatch();
 					}
@@ -129,7 +135,7 @@
 				            var value = values[i];
 				            var type = types.length > i && types[i] || null;
 				            var type = this._getJDBCType(value, type);
-		                    this._setStatementArgument(st, i + 1, value, type);
+		                    this._setStatementArgument(st, i + 1, value, type, connection);
 				        }
 						return st.executeUpdate();
 					} finally {
@@ -175,26 +181,31 @@
 		    var types = types || [];
 		    var rowExtractor = rowExtractor || this.RowExtractors.Json;
 
-            Log.debug('Native SQL query: ' + sql);
+            Log.debug('Native SQL query: \n' + sql);
             Log.debug('Native SQL parameters: ' + JSON.stringify(values) + ', ' + JSON.stringify(types));
 
 		    var rs;
 		    connection.setAutoCommit(false);
-		    if (JSB.isArray(values)) {
-		        var st = connection.prepareStatement(sql);
-		        for (var i = 0; i < values.length; i++) {
-		            var value = values[i];
-		            var type = types.length > i && types[i] || null;
-		            var type = this._getJDBCType(value, type);
-                    this._setStatementArgument(st, i + 1, value, type);
-		        }
-		        st.setFetchSize(10);
-		        rs = st.executeQuery();
-		    } else {
-		        var st = connection.createStatement();
-		        st.setFetchSize(10);
-		        rs = st.executeQuery(sql);
-		    }
+		    try {
+                if (JSB.isArray(values)) {
+                    var st = connection.prepareStatement(sql);
+                    for (var i = 0; i < values.length; i++) {
+                        var value = values[i];
+                        var type = types.length > i && types[i] || null;
+                        var type = this._getJDBCType(value, type);
+                        this._setStatementArgument(st, i + 1, value, type, connection);
+                    }
+                    st.setFetchSize(10);
+                    rs = st.executeQuery();
+                } else {
+                    var st = connection.createStatement();
+                    st.setFetchSize(10);
+                    rs = st.executeQuery(sql);
+                }
+            } catch (e) {
+                connection.rollback();
+                throw e;
+            }
 //		        Log.debug('SQL query executed');
 
 		    return {
@@ -213,12 +224,14 @@
 //                      return columns;
 //                })(),
                 next: function(){
-                    var hasNext = rs.next();
-                    var value = hasNext ? rowExtractor.call($this, rs): null;
-                    if (JSB.isNull(value)) {
-                        this.close();
+                    if (!st.isClosed()) {
+                        var hasNext = rs.next();
+                        var value = hasNext ? rowExtractor.call($this, rs): null;
+                        if (JSB.isNull(value)) {
+                            this.close();
+                        }
+                        return value;
                     }
-                    return value;
                 },
                 close: function(){
                     if (!st.isClosed()) {
@@ -241,22 +254,68 @@
 				var typeName = '' + rs.getString('TYPE_NAME');
 				var typeIdx = 0 + rs.getInt('DATA_TYPE');
 				var precision = 0 + rs.getInt('PRECISION');
-				typeMap['' + typeIdx] = {
+				var typeKey = '' + typeIdx;
+				if(!typeMap[typeKey]){
+					typeMap[typeKey] = [];
+				}
+				typeMap[typeKey].push({
 					name: typeName,
 					sqlType: typeIdx,
 					precision: precision
-				};
+				});
 			}
 			
 			return typeMap;
 		},
 		
 		getVendorTypeForSqlType: function(sqlType, typeMap){
-			if(typeMap['' + sqlType]){
-				return typeMap['' + sqlType].name;
+			var arr = typeMap['' + sqlType];
+			if(arr && arr.length > 0){
+				return arr[0].name;
 			}
 			return null;
 		},
+
+		getVendorTypesForSqlType: function(sqlType, typeMap){
+			var arr = typeMap['' + sqlType];
+			var nameMap = {};
+			if(arr && arr.length > 0){
+				for(var i = 0; i < arr.length; i++){
+					nameMap[arr[i].name] = arr[i];
+				}
+			}
+			return nameMap;
+		},
+		
+		_typeMap: {
+			'PostgreSQL': {
+				'integer': 'int8',
+				'int': 'int8',
+				'boolean': 'bool',
+				'nvarchar': 'varchar',
+				'varchar': 'varchar',
+				'string': 'text',
+				'float': 'real',
+				'double': 'double precision',
+				'number': 'numeric',
+				'date': 'timestamp',
+				'time': 'timestamp',
+				'datetime': 'timestamp',
+				'timestamp': 'timestamp',
+				'array': '_text',
+				'object': 'text'
+			}
+		},
+		
+		translateType: function(jsonType, vendor){
+			var vendorTypeMap = this._typeMap[vendor];
+			if(!vendorTypeMap){
+				throw new Error('Unsupported database vendor: ' + vendor);
+			}
+			var sqlType = jsonType.toLowerCase();
+			return vendorTypeMap[sqlType] || sqlType;
+		},
+
 
         _getJDBCType: function (value, type) {
             var jdbcType = type || null;
@@ -278,6 +337,8 @@
                     jdbcType = JDBCType.NVARCHAR;
                 } else if (JSB.isDate(value)) {
                     jdbcType = JDBCType.DATE;
+                } else if(JSB.isArray(value)) {
+                	jdbcType = JDBCType.ARRAY;
                 } else {
                     jdbcType = JDBCType.NVARCHAR;
                 }
@@ -285,7 +346,7 @@
             return jdbcType;
         },
 
-        _setStatementArgument: function (st, idx, value, type) {
+        _setStatementArgument: function (st, idx, value, type, connection) {
             if (JSB.isNull(value)) {
                 st.setNull(idx, type.getVendorTypeNumber());
             } else {
@@ -296,11 +357,13 @@
                         st.setBoolean(idx, value);
                         break;
                     case 0+Types.TINYINT:
-                    case 0+Types.BIGINT:
                     case 0+Types.SMALLINT:
-                    case 0+Types.INTEGER:
                         st.setInt(idx, value);
                         break;
+                    case 0+Types.INTEGER:
+                    case 0+Types.BIGINT:
+                    	st.setLong(idx, value);
+                    	break;
                     case 0+Types.REAL:
                     case 0+Types.FLOAT:
                     case 0+Types.DOUBLE:
@@ -314,19 +377,38 @@
                     case 0+Types.LONGVARCHAR:
                     case 0+Types.CHAR:
                     case 0+Types.VARCHAR:
+                    case 0+Types.NVARCHAR:
                     case 0+Types.CLOB:
                     case 0+Types.OTHER:
-                        st.setString(idx, value);
+                    	if(JSB.isObject(value) || JSB.isArray(value)){
+                    		value = JSON.stringify(value);
+                    	}
+                        st.setString(idx, '' + value);
                         break;
                     case 0+Types.DATE:
                     case 0+Types.TIME:
                     case 0+Types.TIMESTAMP:
                         st.setDate(idx, new SqlDate(value.getTime()));
                         break;
+                    case 0+Types.ARRAY:
+                    	var newArr = [];
+                    	for(var i = 0; i < value.length; i++){
+                    		if(JSB.isObject(value[i]) || JSB.isArray(value[i])){
+                    			newArr.push(JSON.stringify(value[i]));
+                        	} else {
+                        		newArr.push('' + value[i]);
+                        	}
+                    	}
+                    	var vendor = this.getDatabaseVendor(connection);
+                    	st.setArray(idx, connection.createArrayOf(this.translateType('string', vendor), ArrayHelper.toArray(newArr)));
+                    	break;
                     case 0+Types.NULL:
                         st.setNull(idx, 0);
                         break;
                     default:
+                    	if(JSB.isObject(value) || JSB.isArray(value)){
+                    		value = JSON.stringify(value);
+                    	}
                         st.setString(idx, ''+value);
                         break;
                 }

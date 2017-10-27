@@ -33,11 +33,13 @@
             {
                 type: 'group',
                 name: 'Ось Х',
+                collapsable: true,
                 key: 'xAxis',
                 items: [
                 {
-                    name: 'Катагории',
+                    name: 'Категории',
                     type: 'item',
+                    key: 'category',
                     binding: 'field',
                     itemType: 'any',
                 }
@@ -48,23 +50,28 @@
                 name: 'Ось Y',
                 key: 'yAxis',
                 multiple: 'true',
+                collapsable: true,
                 items: [
                 {
                     type: 'group',
+                    key: 'title',
                     name: 'Заголовок',
                     items: [
                     {
                         type: 'item',
+                        key: 'text',
                         name: 'Текст',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
+                        key: 'style',
                         name: 'Стиль',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -76,19 +83,23 @@
                 {
                     type: 'group',
                     name: 'Значения',
+                    key: 'labels',
                     items: [
                     {
                         type: 'item',
                         name: 'Формат',
+                        key: 'format',
                         itemType: 'string',
                     },
                     {
                         type: 'group',
                         name: 'Стиль',
+                        key: 'style',
                         items: [
                         {
                             type: 'item',
                             name: 'Цвет',
+                            key: 'color',
                             binding: 'field',
                             itemType: 'color',
                             editor: 'JSB.Widgets.ColorEditor'
@@ -100,7 +111,30 @@
                 {
                     type: 'item',
                     name: 'Справа',
-                    optional: true
+                    key: 'opposite',
+                    optional: true,
+                    editor: 'none'
+                },
+                {
+                    name: 'Тип',
+                    type: 'select',
+                    key: 'type',
+                    items: [
+                    {
+                        name: 'Линейная',
+                        type: 'item',
+                        key: 'linear',
+                        editor: 'none',
+                        itemValue: 'linear'
+                    },
+                    {
+                        name: 'Логарифмическая',
+                        type: 'item',
+                        key: 'logarithmic',
+                        editor: 'none',
+                        itemValue: 'logarithmic'
+                    }
+                    ]
                 }
                 ]
             },
@@ -109,16 +143,20 @@
                 name: 'Серии',
                 key: 'series',
                 multiple: 'true',
+                collapsable: true,
                 items: [
                 {
                     name: 'Имя поля',
                     type: 'item',
+                    key: 'fieldName',
+                    binding: 'field',
                     itemType: 'string',
                     itemValue: ''
                 },
                 {
                     name: 'Данные',
                     type: 'item',
+                    key: 'data',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field'
@@ -126,20 +164,24 @@
                 {
                     name: 'Тип отображения',
                     type: 'select',
+                    key: 'type',
                     items:[
                     {
                         name: 'column',
                         type: 'item',
+                        key: 'column',
                         editor: 'none'
                     },
                     {
                         name: 'spline',
                         type: 'item',
+                        key: 'spline',
                         editor: 'none'
                     },
                     {
                         name: 'area',
                         type: 'item',
+                        key: 'area',
                         editor: 'none'
                     }
                     ]
@@ -147,10 +189,12 @@
                 {
                     type: 'group',
                     name: 'Tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         type: 'item',
                         name: 'Суффикс значения',
+                        key: 'valueSuffix',
                         itemType: 'string',
                     }
                     ]
@@ -158,65 +202,78 @@
                 {
                     name: 'yAxis',
                     type: 'item',
+                    key: 'yAxis',
                     itemType: 'string',
                 },
                 {
                     name: 'Тип линии',
                     type: 'select',
+                    key: 'dashStyle',
                     items:[
                     {
                         name: 'Solid',
                         type: 'item',
+                        key: 'solid',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDash',
                         type: 'item',
+                        key: 'shortDash',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDot',
                         type: 'item',
+                        key: 'shortDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDot',
                         type: 'item',
+                        key: 'shortDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'ShortDashDotDot',
                         type: 'item',
+                        key: 'shortDashDotDot',
                         editor: 'none'
                     },
                     {
                         name: 'Dot',
                         type: 'item',
+                        key: 'dot',
                         editor: 'none'
                     },
                     {
                         name: 'Dash',
                         type: 'item',
+                        key: 'dash',
                         editor: 'none'
                     },
                     {
                         name: 'LongDash',
                         type: 'item',
+                        key: 'longDash',
                         editor: 'none'
                     },
                     {
                         name: 'DashDot',
                         type: 'item',
+                        key: 'dashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDot',
                         type: 'item',
+                        key: 'longDashDot',
                         editor: 'none'
                     },
                     {
                         name: 'LongDashDotDot',
                         type: 'item',
+                        key: 'longDashDotDot',
                         editor: 'none'
                     }
                     ]
@@ -224,6 +281,7 @@
                 {
                     name: 'Цвет',
                     type: 'item',
+                    key: 'color',
                     binding: 'field',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor'
@@ -231,8 +289,17 @@
                 {
                     name: 'Стек',
                     type: 'item',
+                    key: 'stack',
                     itemType: 'string',
                     description: 'Имя стека. Для объединения серий в один столбец следет указать одинаковые имена стеков. Работает только при отмеченном поле "Стек".'
+                },
+                {
+                    name: 'Показывать по умолчанию',
+                    type: 'item',
+                    key: 'visible',
+                    editor: 'none',
+                    optional: 'checked',
+                    description: 'Показывать по умолчанию указанную серию на графике.'
                 }
                 ]
             },
@@ -296,6 +363,17 @@
             
 			$base();
 
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache.seriesData, cache.xAxis);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
+
 // filters section
             var globalFilters = source.getFilters();
 
@@ -324,13 +402,22 @@
                         delete this._curFilters[i];
                     }
                 }
-
+                /*
                 if(Object.keys(globalFilters).length === 0) globalFilters = null;
 
                 if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
                     return;
                 } else {
+            debugger;
                     this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+
+                }
+                */
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    source.setFilters(globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -338,210 +425,286 @@
                         this._deselectAllCategory(i);
                     }
                     this._curFilters = {};
-                    this._curFilterHash = null;
                     return;
                 }
+                this._curFilterHash = null;
             }
 // end filters section
 
-            var seriesContext = this.getContext().find('series').values();
-            var yAxisContext = this.getContext().find('yAxis').values();
-            var xAxisContext = this.getContext().find('xAxis').values();
+            var seriesContext = this.getContext().find('series').values(),
+                xAxisContext = this.getContext().find('xAxis').values(),
+                dataSource = [];
+
+            for(var i = 0; i < seriesContext.length; i++){
+                var name = seriesContext[i].get(0);
+                dataSource.push({
+                    name: name.binding() ? name : name.value(),
+                    value: seriesContext[i].get(1)
+                });
+            }
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
                 source.fetch({readAll: true, reset: true}, function(){
-                    var series = [];
-                    var yAxis = [];
-                    var xAxis = [];
+                    var seriesData = [],
+                        xAxis = [];
 
-                    try{
-                        while(source.next()){
-                            for(var i = 0; i < seriesContext.length; i++){
-                                if(!series[i]){
-                                    series[i] = {
-                                        name: seriesContext[i].get(0).value(),
-                                        data: [],
-                                        type: seriesContext[i].get(2).value().name(),
-                                        tooltip: {
-                                            valueSuffix: seriesContext[i].get(3).value().get(0).value()
-                                        },
-                                        yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-                                        dashStyle: seriesContext[i].get(5).value().name(),
-                                        color: $this.isNull(seriesContext[i].get(6).value()),
-                                        point: {
-                                            events: {
-                                                click: function(evt) {
-                                                    $this._clickEvt = evt;
-
-                                                    if(JSB().isFunction($this.options.onClick)){
-                                                        $this.options.onClick.call(this, evt);
-                                                    }
-                                                },
-                                                select: function(evt) {
-                                                    var flag = false;
-
-                                                    if(JSB().isFunction($this.options.onSelect)){
-                                                        flag = $this.options.onSelect.call(this, evt);
-                                                    }
-
-                                                    if(!flag && $this._clickEvt){
-                                                        evt.preventDefault();
-                                                        $this._clickEvt = null;
-                                                        $this._addNewFilter(evt);
-                                                    }
-                                                },
-                                                unselect: function(evt) {
-                                                    var flag = false;
-
-                                                    if(JSB().isFunction($this.options.onUnselect)){
-                                                        flag = $this.options.onUnselect.call(this, evt);
-                                                    }
-
-                                                    if(!flag && $this._deselectCategoriesCount === 0){
-                                                        if(Object.keys($this._curFilters).length > 0){
-                                                            evt.preventDefault();
-
-                                                            if(evt.accumulate){
-                                                                $this.removeFilter($this._curFilters[evt.target.category]);
-                                                                $this._deselectAllCategory(evt.target.category);
-                                                                delete $this._curFilters[evt.target.category];
-                                                                $this.refreshAll();
-                                                            } else {
-                                                                for(var i in $this._curFilters){
-                                                                    $this.removeFilter($this._curFilters[i]);
-                                                                    $this._deselectAllCategory(i);
-                                                                }
-                                                                $this._curFilters = {};
-                                                                $this.refreshAll();
-                                                            }
-                                                        }
-                                                    } else {
-                                                        $this._deselectCategoriesCount--;
-                                                    }
-                                                },
-                                                mouseOut: function(evt) {
-                                                    if(JSB().isFunction($this.options.mouseOut)){
-                                                        $this.options.mouseOut.call(this, evt);
-                                                    }
-                                                },
-                                                mouseOver: function(evt) {
-                                                    if(JSB().isFunction($this.options.mouseOver)){
-                                                        $this.options.mouseOver.call(this, evt);
-                                                    }
-                                                }
-                                            }
-                                        },
-                                        stack: seriesContext[i].get(7).value()
+                    while(source.next()){
+                        for(var i = 0; i < dataSource.length; i++){
+                            if(!JSB.isString(dataSource[i].name)){    // composite series
+                                if(!seriesData[i]){
+                                    seriesData[i] = {
+                                        data: {},
+                                        simple: false
                                     };
                                 }
 
-                                var a = seriesContext[i].get(1).value();
-                                if(JSB().isArray(a)){
-                                    series[i].data = a;
-                                } else {
-                                    series[i].data.push(a);
+                                if(!seriesData[i].data[dataSource[i].name.value()]){
+                                    seriesData[i].data[dataSource[i].name.value()] = [];
                                 }
-                            }
 
-                            for(var i = 0; i < xAxisContext.length; i++){
-                                var a = xAxisContext[i].get(0).value();
-                                if(JSB().isArray(a)){
-                                    xAxis = a;
-                                } else {
-                                    xAxis.push(a);
+                                seriesData[i].data[dataSource[i].name.value()].push(dataSource[i].value.value());
+                            } else {    // simple series
+                                if(!seriesData[i]){
+                                    seriesData[i] = {
+                                        index: i,
+                                        simple: true,
+                                        name: dataSource[i].name,
+                                        data: []
+                                    };
                                 }
-                            }
 
-                            for(var i = 0; i < yAxisContext.length; i++){
-                                yAxis[i] = {
-                                    title: {
-                                        text: yAxisContext[i].get(0).value().get(0).value(),
-                                        style: {
-                                            color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
-                                        }
-                                    },
-                                    labels: {
-                                        format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
-                                        style: {
-                                            color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
-                                        }
-                                    },
-                                    opposite: yAxisContext[i].get(2).used()
-                                };
+                                var d = dataSource[i].value.value();
+
+                                if(JSB().isArray(d)){
+                                    seriesData[i].data = d;
+                                } else {
+                                    seriesData[i].data.push(d);
+                                }
                             }
                         }
 
-                        var chart = {
-                            chart: {
-                                zoomType: 'x'
-                            },
+                        for(var i = 0; i < xAxisContext.length; i++){
+                            var a = xAxisContext[i].get(0).value();
+                            if(JSB().isArray(a)){
+                                xAxis = a;
+                            } else {
+                                xAxis.push(a);
+                            }
+                        }
+                    }
 
-                            title: {
-                                text: this.getContext().find('title').value()
-                            },
+                    var data = [];
+                    for(var i = 0; i < seriesData.length; i++){
+                        if(seriesData[i].simple){
+                            data.push(seriesData[i]);
+                        } else {
+                            var obj = seriesData[i].data;
 
-                            subtitle: {
-                                text: this.getContext().find('subtitle').value()
-                            },
+                            for(var j in obj){
+                                data.push({
+                                    index: i,
+                                    name: j,
+                                    data: obj[j]
+                                })
+                            }
+                        }
+                    }
 
-                            xAxis: [{
-                                categories: xAxis,
-                                crosshair: true
-                            }],
+                    if(opts && opts.isCacheMod){
+                        $this.storeCache({
+                            seriesData: data,
+                            xAxis: xAxis
+                        });
+                    }
 
-                            yAxis: yAxis,
+                    $this._buildChart(data, xAxis);
 
+                    for(var i in $this._curFilters){
+                        this._selectAllCategory(i);
+                    }
+                });
+            }, function(){
+                return $this.isInit;
+            });
+        },
+
+        _buildChart: function(seriesData, xAxis){
+            var seriesContext = this.getContext().find('series').values(),
+                yAxisContext = this.getContext().find('yAxis').values(),
+                yAxis = [],
+                series = [];
+
+            try{
+                for(var j = 0; j < seriesData.length; j++){
+                    if(!series[j]){
+                        series[j] = {
+                            name: seriesData[j].name,
+                            data: seriesData[j].data,
+                            type: seriesContext[seriesData[j].index].get(2).value().name(),
                             tooltip: {
-                                shared: true
+                                valueSuffix: seriesContext[seriesData[j].index].get(3).value().get(0).value()
                             },
+                            yAxis: $this.isNull(seriesContext[seriesData[j].index].get(4).value(), true),
+                            dashStyle: seriesContext[seriesData[j].index].get(5).value().name(),
+                            color: $this.isNull(seriesContext[seriesData[j].index].get(6).value()),
+                            visible: seriesContext[seriesData[j].index].find('visible').used(),
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        $this._clickEvt = evt;
 
-                            legend: {
-                                layout: 'vertical',
-                                align: 'left',
-                                x: 80,
-                                verticalAlign: 'top',
-                                y: 55,
-                                floating: true,
-                                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-                            },
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    select: function(evt) {
+                                        var flag = false;
 
-                            plotOptions: {
-                                series: {
-                                    allowPointSelect: true,
-                                    states: {
-                                        select: {
-                                            color: null,
-                                            borderWidth: 5,
-                                            borderColor: 'Blue'
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            flag = $this.options.onSelect.call(this, evt);
+                                        }
+
+                                        if(!flag && $this._clickEvt){
+                                            evt.preventDefault();
+                                            $this._clickEvt = null;
+                                            $this._addNewFilter(evt);
+                                        }
+                                    },
+                                    unselect: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            flag = $this.options.onUnselect.call(this, evt);
+                                        }
+
+                                        if(!flag && $this._deselectCategoriesCount === 0){
+                                            if(Object.keys($this._curFilters).length > 0){
+                                                evt.preventDefault();
+
+                                                if(evt.accumulate){
+                                                    $this.removeFilter($this._curFilters[evt.target.category]);
+                                                    $this._deselectAllCategory(evt.target.category);
+                                                    delete $this._curFilters[evt.target.category];
+                                                    $this.refreshAll();
+                                                } else {
+                                                    for(var i in $this._curFilters){
+                                                        $this.removeFilter($this._curFilters[i]);
+                                                        $this._deselectAllCategory(i);
+                                                    }
+                                                    $this._curFilters = {};
+                                                    $this.refreshAll();
+                                                }
+                                            }
+                                        } else {
+                                            $this._deselectCategoriesCount--;
+                                        }
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
                                         }
                                     }
                                 }
                             },
-
-                            series: series
+                            stack: seriesContext[seriesData[j].index].get(7).value()
                         };
+                    }
+                }
 
-                        if($this.getContext().find('isStacking').used()){
-                            chart.plotOptions.column = {
-                                stacking: 'normal'
+                for(var i = 0; i < yAxisContext.length; i++){
+                    yAxis[i] = {
+                        title: {
+                            text: yAxisContext[i].get(0).value().get(0).value(),
+                            style: {
+                                color: $this.isNull(yAxisContext[i].get(0).value().get(1).value().get(0).value())
+                            }
+                        },
+                        labels: {
+                            format: $this.isNull(yAxisContext[i].get(1).value().get(0).value()),
+                            style: {
+                                color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
+                            }
+                        },
+                        opposite: yAxisContext[i].get(2).used(),
+                        type: yAxisContext[i].find('type').value().value()
+                    };
+                }
+
+                var chart = {
+                    chart: {
+                        zoomType: 'x'
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    xAxis: [{
+                        categories: xAxis,
+                        crosshair: true
+                    }],
+
+                    yAxis: yAxis,
+
+                    tooltip: {
+                        shared: true
+                    },
+
+                    legend: {
+                        layout: 'vertical',
+                        align: 'left',
+                        x: 80,
+                        verticalAlign: 'top',
+                        y: 55,
+                        floating: true,
+                        backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                    },
+
+                    plotOptions: {
+                        series: {
+                            allowPointSelect: true,
+                            states: {
+                                select: {
+                                    color: null,
+                                    borderWidth: 5,
+                                    borderColor: 'Blue'
+                                }
                             }
                         }
-                    } catch(e){
-                        console.log(e);
-                        return;
-                    } finally {
-                        $this.getElement().loader('hide');
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: series
+                };
+
+                if($this.getContext().find('isStacking').used()){
+                    chart.plotOptions.column = {
+                        stacking: 'normal'
                     }
+                }
 
-                    $this.container.highcharts(chart);
+                $this.container.highcharts(chart);
 
-                    $this.chart =  $this.container.highcharts();
-                });
-
-            }, function(){
-                return $this.isInit;
-            });
+                $this.chart =  $this.container.highcharts();
+            } catch(e){
+                console.log(e);
+                return;
+            } finally {
+                $this.getElement().loader('hide');
+            }
         },
 
         _addNewFilter: function(evt){
@@ -586,7 +749,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category === cat && !series[i].points[j].selected){
+                    if(series[i].points[j].category == cat && !series[i].points[j].selected){
                         series[i].points[j].select(true, true);
                         break;
                     }
@@ -599,7 +762,7 @@
 
             for(var i = 0; i < series.length; i++){
                 for(var j = 0; j < series[i].points.length; j++){
-                    if(series[i].points[j].category === cat && series[i].points[j].selected){
+                    if(series[i].points[j].category == cat && series[i].points[j].selected){
                         this._deselectCategoriesCount++;
                         series[i].points[j].select(false, true);
                         break;

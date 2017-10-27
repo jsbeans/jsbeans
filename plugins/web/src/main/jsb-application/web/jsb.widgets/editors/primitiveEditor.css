@@ -16,8 +16,6 @@
 	top: 0;
 	right: 0;
 	bottom: 0;
-/*	height: 18px !important; */
-	height: 100% !important;
 	width: 100%;
 	
 	border-radius: 4px;
@@ -101,7 +99,7 @@
 }
 
 ._dwp_primitiveEditor ._dwp_plain {
-	display: inline-block;
+	display: block;
 	left: 0;
 	top: 0;
 	bottom: 0;

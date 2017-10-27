@@ -36,6 +36,17 @@
 			$base(diagram, key, opts);
 			this.editor = opts.editor;
 			this.slice = opts.slice;
+
+            if(opts.fields){
+                var q = {};
+                for(var i in opts.fields){
+                    q[i] = i;
+                }
+                this.slice.query = {
+                    $select: q
+                }
+            }
+
 			this.loadCss('SliceDiagramNode.css');
 			this.addClass('sliceDiagramNode');
 			
@@ -45,7 +56,7 @@
 					<div class="name">{{=this.slice.getName()}}</div>
 					
 					<div jsb="JSB.Widgets.Button" class="roundButton btnEdit btn10" tooltip="Редактировать срез"
-						onclick="{{=$this.callbackAttr(function(evt){ $this.showSettings(evt); evt.stopPropagation(); })}}"></div>
+						onclick="{{=$this.callbackAttr(function(evt){ $this.publish('Workspace.Entry.open', $this.slice); })}}"></div>
 					<div jsb="JSB.Widgets.Button" class="roundButton btnDelete btn10" tooltip="Удалить срез"
 						onclick="{{=$this.callbackAttr(function(evt){ $this.removeSlice(evt); evt.stopPropagation(); })}}"></div>
 				</div>
@@ -132,12 +143,6 @@
 					selector: $this.getElement(),
 					weight: 10.0
 				},
-				/*
-				{
-				    selector: $this.$('.gridView'),
-                    weight: 10.0
-				}
-				*/
 				],
 				draggable: true,
 				callback: function(desc){

@@ -8,9 +8,6 @@
     border: none !important;
 }
 
-.dataCubeEditor {
-}
-
 .dataCubeEditor > .dcHeader {
 	position: absolute;
 	width: 100%;
@@ -19,11 +16,7 @@
     border: none;
     box-sizing: border-box;
     padding: 0;
-    background: -webkit-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -moz-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -o-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -ms-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
+    background: rgba(241, 241, 241, 0.2);
 }
 
 .dataCubeEditor > .dcHeader .dcLogo {
@@ -51,26 +44,10 @@
 	display: inline-block;
 }
 
-
-
-.dataCubeEditor > ._jsb_splitLayoutManager {}
-
-.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitter.vertical {
-	background: -webkit-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -moz-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -o-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -ms-linear-gradient(top, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-}
-
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitter.vertical,
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitter.horizontal {
-	background: -webkit-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -moz-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -o-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
-    background: -ms-linear-gradient(left, rgba(213, 213, 213, 0.5) 0%, #F0F0F0 50%, #D5D5D5 100%);
+    background: rgba(213, 213, 213, 0.36);
 }
-
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitPane[key="workspaceExplorer"],
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitPane[key="leftPane"] {
@@ -83,14 +60,31 @@
 	background: transparent;
 }
 
-.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane {
-	background: -webkit-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -moz-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -o-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -ms-linear-gradient(top, #EFEDEE 0%, #F0F0F0 50%, #E9E9E9 50%, #DFDFDF 100%);
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane {}
+
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {
+	background: #fff;
+    border-bottom: 1px solid #fff;
 }
 
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText {
+	text-shadow: none;
+}
+
+.dataCubeEditor .workspaceExplorer ._dwp_treeview ._dwp_treeViewNode.selected > ._dwp_nodeHeader {
+    background: rgb(220, 220, 220);
+    border: 1px solid rgb(158, 158, 158);
+}
+
+.dataCubeEditor .workspaceExplorer ._dwp_treeview ._dwp_treeViewNode.highlighted > ._dwp_nodeHeader {
+    background: rgba(220, 220, 220, 0.45);
+    border: 1px solid rgb(158, 158, 158);
+}
+
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane {
+    background: rgba(241, 241, 241, 0.7);
+    border-bottom: 1px solid #BEBEBE;
+}
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_tab[clientid="workspaceExplorer"] > ._dwp_icon {
 	width: 16px;
@@ -106,7 +100,6 @@
 	background-size: 100%;
 	margin-right: 4px;
 }
-
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_tab[clientid="workspaceExplorer"] ._dwp_primitiveEditor {
 	padding-right: 32px;

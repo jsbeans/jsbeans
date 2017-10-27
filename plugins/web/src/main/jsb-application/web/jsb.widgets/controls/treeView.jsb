@@ -1,9 +1,7 @@
 {
 	$name:'JSB.Widgets.TreeView',
 	$parent: 'JSB.Widgets.Control',
-	$require: {
-		ScrollBox: 'JSB.Widgets.ScrollBox'
-	},
+	$require: ['JSB.Controls.ScrollBox'],
 	$client: {
 		$constructor: function(opts){
 			var self = this;
@@ -106,11 +104,11 @@
 				evt.stopPropagation();
 				if(itemWrapper.hasClass('collapsed')){
 					if(itemObj.onCollapse){
-						itemObj.onCollapse.call(this, itemObj);
+						itemObj.onCollapse.call(this, itemObj, true);
 					}
 				} else {
 					if(itemObj.onExpand){
-						itemObj.onExpand.call(this, itemObj);
+						itemObj.onExpand.call(this, itemObj, true);
 					}
 				}
 			}).mouseover(function(evt){
@@ -424,11 +422,13 @@
 						break;
 					}
 				}
+				/*
 				if(!bSel){
 					// select first
 					var firstNodeKey = this.rootElt.find('> li:first-child').attr('key');
 					this.selectItem(firstNodeKey);
 				}
+				*/
 			}
 		},
 		

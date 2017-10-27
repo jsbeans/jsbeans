@@ -10,6 +10,7 @@
 		cubeEntry: null,
 		cubeNode: null,
 		ignoreHandlers: false,
+		providersNodes: {},
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -61,6 +62,7 @@
 				connectors: {
 					cubeFieldLeft: {
 						acceptLocalLinks: false,
+						userLink: false,
 						align: 'left',
 						offsetX: 2,
 						wiringLink: {
@@ -70,18 +72,18 @@
 					},
 					
 					cubeFieldRight: {
-						acceptLocalLinks: false,
+						acceptLocalLinks: false
 					},
 					
 					providerFieldRight: {
 						acceptLocalLinks: false,
+						userLink: false,
 						offsetX: 2,
 						wiringLink: {
 							key: 'bind',
 							type: 'target'
 						}
 					}
-
 				},
 				
 				links: {
@@ -200,6 +202,9 @@
 			}
 			this.cubeNode = $this.diagram.createNode('cubeDiagramNode', {editor: $this, entry: $this.cubeEntry});
 			this.cubeNode.setPosition(cubePos.x, cubePos.y);
+			if(desc.cubeSize){
+			    this.cubeNode.getElement().width(desc.cubeSize.width);
+			}
 			
 			// create providers
 			var dpNodes = [];
@@ -209,7 +214,11 @@
 				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:pDesc.provider, editor: $this});
 				pnMap[pDesc.provider.getId()] = pNode;
 				pNode.setPosition(pDesc.position.x, pDesc.position.y);
+				if(pDesc.size){
+				    pNode.getElement().width(pDesc.size.width);
+				}
 				dpNodes.push(pNode);
+				$this.providersNodes[pDesc.provider.getId()] = pNode;
 			}
 			JSB.chain(dpNodes, function(node, c){
 				JSB.deferUntil(function(){
@@ -227,21 +236,29 @@
 					})
 				}
 				fnArr.sort(function(a, b){
-					return a.order - b.order;
+					return a.field.localeCompare(b.field);
 				});
+
 				// connect fields
 				for(var j = 0; j < fnArr.length; j++){
 					var fName = fnArr[j].field;
 					var fDesc = desc.fields[fName];
-					$this.cubeNode.addField(fDesc.field, fDesc.type, fDesc.link);
-					for(var i = 0; i < fDesc.binding.length; i++){
-						var bDesc = fDesc.binding[i];
-						var link = $this.diagram.createLink('bind');
-						link.setSource($this.cubeNode.leftFieldConnectors[fName]);
-						link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field]);
-					}
+					var isKeyField = fDesc.binding.length > 1;
+					$this.cubeNode.addField(fDesc.field, fDesc.type, isKeyField ? null : fDesc.binding[0].provider ? { id: fDesc.binding[0].provider.getId(), name: fDesc.binding[0].provider.getName() }: null, fDesc.link, isKeyField, true);
+					if(isKeyField){
+                        for(var i = 0; i < fDesc.binding.length; i++){
+                            var bDesc = fDesc.binding[i];
+                            var link = $this.diagram.createLink('bind');
+                            link.setSource($this.cubeNode.leftFieldConnectors[fName]);
+                            link.setTarget(pnMap[bDesc.provider.getId()].rightFieldConnectors[bDesc.field]);
+                        }
+                    }
 				}
-				
+				$this.cubeNode.updateResizable();
+
+				// mark default fields
+				$this.cubeNode.markDefaultFields(desc.defaultFields);
+
 				// draw slices
 				for(var i = 0; i < desc.slices.length; i++){
 					var sDesc = desc.slices[i];
@@ -259,8 +276,11 @@
 			}
 			this.cubeEntry = entry;
 			this.diagram.clear();
+
+			this.providersNodes = {};
 			this.cubeEntry.server().load(true, function(desc){
 				// draw in diagram
+				$this.cubeDescription = desc;
 				$this.setupCubeNode(desc);
 			});
 		},
@@ -269,12 +289,13 @@
 			this.cubeEntry.server().addDataProvider(dpEntry, function(provider){
 				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:provider, editor: $this});
 				pNode.setPosition(pt.x, pt.y);
+				$this.providersNodes[provider.getId()] = pNode;
 			});
 		},
 		
-		addSlice: function(){
+		addSlice: function(checkedFieldList){
 			this.cubeEntry.server().addSlice(function(slice){
-				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this});
+				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this, fields: checkedFieldList});
 				var cubeRect = $this.cubeNode.getRect();
 				sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
 				

@@ -28,17 +28,20 @@
     cursor: pointer;
     box-sizing: border-box;
     position: relative;
-	border: 1px solid rgba(2, 47, 78, 0.2);
-    background-color: rgba(24, 108, 138, 0.2);
+	border: 1px solid rgba(2, 47, 78, 0);
+	color: #5f3601;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag:hover {
 	background-color: rgba(156, 92, 29, 0.3);
     border-color: rgba(105, 45, 0, 0.5);
+    
+    transition: background-color 300ms, border-color 300ms;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .renderer {
 	padding-bottom: 2px;
+	max-width: 300px;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .icon,

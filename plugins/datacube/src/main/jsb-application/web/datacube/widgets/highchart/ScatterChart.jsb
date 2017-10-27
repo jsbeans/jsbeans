@@ -132,11 +132,13 @@
             {
                 name: 'Заголовок',
                 type: 'item',
+                key: 'title',
                 itemType: 'string',
             },
             {
                 name: 'Формат значений',
                 type: 'item',
+                key: 'format',
                 itemType: 'string',
             }
             ]
@@ -151,11 +153,13 @@
             {
                 name: 'Заголовок',
                 type: 'item',
+                key: 'title',
                 itemType: 'string',
             },
             {
                 name: 'Формат значений',
                 type: 'item',
+                key: 'format',
                 itemType: 'string',
             }
             ]
@@ -170,20 +174,24 @@
             {
                 type: 'group',
                 name: 'scatter',
+                key: 'scatter',
                 items: [
                 {
                     type: 'group',
                     name: 'tooltip',
+                    key: 'tooltip',
                     items: [
                     {
                         name: 'headerFormat',
                         type: 'item',
+                        key: 'headerFormat',
                         itemType: 'string',
                         itemValue: ''
                     },
                     {
                         name: 'pointFormat',
                         type: 'item',
+                        key: 'pointFormat',
                         itemType: 'string',
                         itemValue: ''
                     }
@@ -209,21 +217,25 @@
                 {
                     type: 'select',
                     name: 'Имя поля',
+                    key: 'fieldName',
                     itemType: 'string',
                     items: [
                         {
                             type: 'item',
                             name: 'x',
+                            key: 'x',
                             editor: 'none'
                         },
                         {
                             type: 'item',
                             name: 'y',
+                            key: 'y',
                             editor: 'none'
                         },
                         {
                             type: 'item',
                             name: 'другое',
+                            key: 'other',
                             itemType: 'string',
                             itemValue: ''
                         }
@@ -232,6 +244,7 @@
                 {
                     type: 'item',
                     name: 'Поле',
+                    key: 'field',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -241,17 +254,16 @@
             {
                 type: 'item',
                 name: 'Имя серии',
+                key: 'seriesName',
                 itemType: 'string',
                 itemValue: ''
             },
             {
                 type: 'item',
                 name: 'Цвет серии',
+                key: 'color',
                 itemType: 'color',
-                editor: 'JSB.Widgets.ColorEditor',
-                options: {
-                    mode: 'hexagon'
-                }
+                editor: 'JSB.Widgets.ColorEditor'
             }
             ]
         }]
@@ -294,15 +306,25 @@
             this.isInit = true;
         },
 
-        refresh: function(){
+        refresh: function(opts){
             var source = this.getContext().find('source');
             if(!source.bound()) return;
             
 			$base();
 
+			if(opts && opts.refreshFromCache){
+            	JSB().deferUntil(function(){
+            		var cache = $this.getCache();
+            		if(!cache) return;
+            		$this._buildChart(cache);
+            	}, function(){
+            		return $this.isInit;
+            	});
+            	return;
+            }
+
             var dataValue = [],
-                seriesParams = [];
-            var dataValues = source.values();
+                dataValues = source.values();
             for(var i = 0; i < dataValues.length; i++){
                 var val = [],
                     a = dataValues[i].values();
@@ -315,11 +337,6 @@
                         value: a[j].get(1)
                     });
                 }
-
-                seriesParams.push({
-                    name: dataValues[i].get(1).value(),
-                    color: dataValues[i].get(2).value()
-                });
 
                 dataValue.push(val);
             }
@@ -340,148 +357,168 @@
                         }
                     }
 
-                    try{
-                        var chart = {
-                            chart: {
-                                type: 'scatter',
-                                zoomType: 'xy'
-                            },
-                            title: {
-                                text: this.getContext().find('title').value()
-                            },
-
-                            subtitle: {
-                                text: this.getContext().find('subtitle').value()
-                            },
-
-                            legend: {
-                                enabled: this.getContext().find('enableLegend').used()
-                            },
-
-                            series: []
-                        };
-
-                        for(var i = 0; i < data.length; i++){
-                            chart.series.push({
-                                data: data[i],
-                                name: seriesParams[i].name,
-                                color: seriesParams[i].color
-                            });
-                        }
-
-                        // xAxis
-                        var x = this.getContext().find('xAxis');
-                        if(x.used()){
-                            x = x.value();
-
-                            chart.xAxis = {
-                                title: {
-                                  text: x.get(0).value()
-                                },
-                                labels: {
-                                  format: x.get(1).value()
-                                }
-                            }
-                        }
-
-                        // yAxis
-                        var x = this.getContext().find('yAxis');
-                        if(x.used()){
-                            x = x.value();
-
-                            chart.yAxis = {
-                                title: {
-                                  text: x.get(0).value()
-                                },
-                                labels: {
-                                  format: x.get(1).value()
-                                }
-                            }
-                        }
-
-                        // plotOptions
-                        var x = this.getContext().find('plotOptions');
-                        if(x.used()){
-                            x = x.value();
-                            var dataLabels = x.get(0).value().get(0).value();
-
-                            chart.plotOptions = {
-                                scatter: {
-                                    tooltip: {
-                                        headerFormat: dataLabels.get(0).value(),
-                                        pointFormat: dataLabels.get(1).value()
-                                    },
-                                    allowPointSelect: true,
-                                    point: {
-                                        events: {
-                                            click: function(evt) {
-                                                if(JSB().isFunction($this.options.onClick)){
-                                                    $this.options.onClick.call(this, evt);
-                                                }
-                                            },
-                                            select: function(evt) {
-                                                var flag = false;
-
-                                                if(JSB().isFunction($this.options.onSelect)){
-                                                    flag = $this.options.onSelect.call(this, evt);
-                                                }
-                                                /*
-                                                if(!flag){
-                                                    $this._addPieFilter(evt.target.name);
-                                                }
-                                                */
-                                            },
-                                            unselect: function(evt) {
-                                                var flag = false;
-
-                                                if(JSB().isFunction($this.options.onUnselect)){
-                                                    flag = $this.options.onUnselect.call(this, evt);
-                                                }
-                                                /*
-                                                if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                                    $this._notNeedUnselect = false;
-                                                    $this.removeFilter($this._currentFilter);
-                                                    $this.refreshAll();
-                                                }
-                                                */
-                                            },
-                                            mouseOut: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOut)){
-                                                    $this.options.mouseOut.call(this, evt);
-                                                }
-                                            },
-                                            mouseOver: function(evt) {
-                                                if(JSB().isFunction($this.options.mouseOver)){
-                                                    $this.options.mouseOver.call(this, evt);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            };
-                        }
-                    } catch(ex){
-                        console.log(ex);
-                        return;
-                    } finally{
-                        $this.getElement().loader('hide');
+                    if(opts && opts.isCacheMod){
+                    	$this.storeCache(data);
                     }
 
-                    $this.container.highcharts(chart);
-                    $this.chart =  $this.container.highcharts();
+                    $this._buildChart(data);
+
+                    $this.getElement().loader('hide');
                 });
-
-
             }, function(){
                 return $this.isInit;
             });
         },
 
+        _buildChart: function(data){
+            try{
+                var dataValues = this.getContext().find('source').values(),
+                    seriesParams = [];
+
+                for(var i = 0; i < dataValues.length; i++){
+                    seriesParams.push({
+                        name: dataValues[i].get(1).value(),
+                        color: dataValues[i].get(2).value()
+                    });
+                }
+
+                var chart = {
+                    chart: {
+                        type: 'scatter',
+                        zoomType: 'xy'
+                    },
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    subtitle: {
+                        text: this.getContext().find('subtitle').value()
+                    },
+
+                    legend: {
+                        enabled: this.getContext().find('enableLegend').used()
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: []
+                };
+
+                for(var i = 0; i < data.length; i++){
+                    chart.series.push({
+                        data: data[i],
+                        name: seriesParams[i].name,
+                        color: seriesParams[i].color
+                    });
+                }
+
+                // xAxis
+                var x = this.getContext().find('xAxis');
+                if(x.used()){
+                    x = x.value();
+
+                    chart.xAxis = {
+                        title: {
+                          text: x.get(0).value()
+                        },
+                        labels: {
+                          format: x.get(1).value()
+                        }
+                    }
+                }
+
+                // yAxis
+                var x = this.getContext().find('yAxis');
+                if(x.used()){
+                    x = x.value();
+
+                    chart.yAxis = {
+                        title: {
+                          text: x.get(0).value()
+                        },
+                        labels: {
+                          format: x.get(1).value()
+                        }
+                    }
+                }
+
+                // plotOptions
+                var x = this.getContext().find('plotOptions');
+                if(x.used()){
+                    x = x.value();
+                    var dataLabels = x.get(0).value().get(0).value();
+
+                    chart.plotOptions = {
+                        scatter: {
+                            tooltip: {
+                                headerFormat: dataLabels.get(0).value(),
+                                pointFormat: dataLabels.get(1).value()
+                            },
+                            allowPointSelect: true,
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    select: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            flag = $this.options.onSelect.call(this, evt);
+                                        }
+                                        /*
+                                        if(!flag){
+                                            $this._addPieFilter(evt.target.name);
+                                        }
+                                        */
+                                    },
+                                    unselect: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            flag = $this.options.onUnselect.call(this, evt);
+                                        }
+                                        /*
+                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
+                                            $this._notNeedUnselect = false;
+                                            $this.removeFilter($this._currentFilter);
+                                            $this.refreshAll();
+                                        }
+                                        */
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                }
+
+                $this.container.highcharts(chart);
+                $this.chart =  $this.container.highcharts();
+            } catch(ex){
+                console.log(ex);
+            }
+        },
+
         // events
         _addNewFilter: function(){
+            /*
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
-            /*
+
             var field = this.getContext().find('data').value().get(0).binding();
 
             this._currentFilter = this.addFilter(context.source, 'and', [{ field: field, value: value, op: '$eq' }], this._currentFilter);

@@ -139,10 +139,12 @@
             name: 'Источник',
             binding: 'array',
             key: 'source',
+            collapsable: true,
             items: [
             {
                 name: 'Имя',
                 type: 'item',
+                key: 'name',
                 itemType: 'string',
                 itemValue: ''
             },
@@ -155,6 +157,7 @@
                 {
                     type: 'item',
                     name: 'Имена частей',
+                    key: 'partName',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -162,6 +165,7 @@
                 {
                     type: 'item',
                     name: 'Размеры частей',
+                    key: 'partSize',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -170,10 +174,98 @@
             }
             ]
         },
+        // Легенда
+        {
+            name: 'Легенда',
+            type: 'group',
+            key: 'legend',
+            items: [
+            {
+                name: 'Расположение',
+                type: 'select',
+                key: 'layout',
+                items: [
+                {
+                    name: 'Горизонтальное',
+                    type: 'item',
+                    key: 'horizontal',
+                    editor: 'none',
+                    itemValue: 'horizontal'
+                },
+                {
+                    name: 'Вертикальное',
+                    type: 'item',
+                    key: 'vertical',
+                    editor: 'none',
+                    itemValue: 'vertical'
+                }
+                ]
+            },
+            {
+                name: 'Горизонтальное выравнивание',
+                type: 'select',
+                key: 'align',
+                items: [
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'center',
+                    editor: 'none',
+                    itemValue: 'center'
+                },
+                {
+                    name: 'По левому краю',
+                    type: 'item',
+                    key: 'left',
+                    editor: 'none',
+                    itemValue: 'left'
+                },
+                {
+                    name: 'По правому краю',
+                    type: 'item',
+                    key: 'right',
+                    editor: 'none',
+                    itemValue: 'right'
+                }
+                ]
+            },
+            {
+                name: 'Вертикальное выравнивание',
+                type: 'select',
+                key: 'verticalAlign',
+                items: [
+                {
+                    name: 'По нижнему краю',
+                    type: 'item',
+                    key: 'bottom',
+                    editor: 'none',
+                    itemValue: 'bottom'
+                },
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'middle',
+                    editor: 'none',
+                    itemValue: 'middle'
+                },
+                {
+                    name: 'По верхнему краю',
+                    type: 'item',
+                    key: 'top',
+                    editor: 'none',
+                    itemValue: 'top'
+                }
+                ]
+            }
+            ]
+        },
+        // Подпись
         {
             type: 'group',
             name: 'Подпись',
             key: 'dataLabels',
+            collapsable: true,
+            collapsed: true,
             items: [
             {
                 name: 'Включить подпись',
@@ -261,6 +353,17 @@
             
 			$base();
 
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
+
 // filters section
             var globalFilters = source.getFilters();
 
@@ -290,13 +393,20 @@
                         delete this._curFilters[i];
                     }
                 }
-
+/*
                 if(Object.keys(globalFilters).length === 0) globalFilters = null;
 
                 if(globalFilters && this.createFilterHash(globalFilters) === this._curFilterHash || !globalFilters && !this._curFilterHash){ // update data not require
                     return;
                 } else {
                     this._curFilterHash = globalFilters ? this.createFilterHash(globalFilters) : undefined;
+                }
+*/
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    source.setFilters(globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -305,9 +415,9 @@
                         this.chart.series[0].data[this._series[i]].select(false, true);
                     }
                     this._curFilters = {};
-                    this._curFilterHash = null;
                     return;
                 }
+                this._curFilterHash = null;
             }
 // end filters section
             var dataValues = this.getContext().find('data').values(),
@@ -315,7 +425,9 @@
             for(var i = 0; i < dataValues.length; i++){
                 dataSource.push({
                     name: dataValues[i].get(0),
-                    y: dataValues[i].get(1)
+                    bName: dataValues[i].get(0).binding()[0],
+                    y: dataValues[i].get(1),
+                    bY: dataValues[i].get(1).binding()[0]
                 });
             }
 
@@ -328,14 +440,18 @@
                         for(var i = 0; i < dataSource.length; i++){
                             var d = {
                                 name: dataSource[i].name.value(),
-                                y: dataSource[i].y.value()
+                                y: dataSource[i].y.value(),
+                                sortField: dataSource[i].bName ? dataSource[i].bName : dataSource[i].bY ? dataSource[i].bY : null,
+                                sortValue: dataSource[i].bName ?  dataSource[i].name.value() : dataSource[i].bY ? dataSource[i].y.value() : null
                             }
 
                             if(JSB().isArray(d.name)){
                                 for(var j = 0; j < d.name.length; j++){
                                     data.push({
                                         name: d.name[j],
-                                        y: d.y[j]
+                                        y: d.y[j],
+                                        sortField: d.bName ? d.bName : d.bY ? d.bY : null,
+                                        sortValue: d.bName ? d.name[j] : d.bY ? d.y[j] : null,
                                     });
                                 }
                             } else {
@@ -349,139 +465,160 @@
                         return arr;
                     }, {});
 
-                    var chartOptions = {
-                        chart: {
-                            plotBackgroundColor: null,
-                            plotBorderWidth: null,
-                            plotShadow: false,
-                            type: 'pie'
-                        },
-
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
-
-                        plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                dataLabels: {
-                                    enabled: this.getContext().find('dataLabels').find('enabled').used(),
-                                    format: this.getContext().find('dataLabels').find('format').value(),
-                                    distance: Number(this.getContext().find('dataLabels').find('distance').value())
-                                },
-                                showInLegend: true
-                            }
-                        },
-
-                        tooltip: {
-                            pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
-                        },
-
-                        series: [{
-                            data: data,
-                            colorByPoint: true,
-                            innerSize: this.getContext().find('innerSize').value(),
-                            point: {
-                                events: {
-                                    click: function(evt) {
-                                        $this._clickEvt = evt;
-
-                                        if(JSB().isFunction($this.options.onClick)){
-                                            $this.options.onClick.call(this, evt);
-                                        }
-                                    },
-                                    select: function(evt) {
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onSelect)){
-                                            flag = $this.options.onSelect.call(this, evt);
-                                        }
-
-                                        if(!flag && $this._clickEvt){
-                                            $this._addPieFilter(evt);
-                                            $this._clickEvt = null;
-                                        }
-                                    },
-                                    unselect: function(evt) {
-                                        $this._clickEvt = null;
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onUnselect)){
-                                            flag = $this.options.onUnselect.call(this, evt);
-                                        }
-
-                                        if(!flag && $this._removedFiltersCnt === 0){
-                                            if(Object.keys($this._curFilters).length > 0){
-                                                if(evt.accumulate){
-                                                    $this.removeFilter($this._curFilters[evt.target.name]);
-                                                    delete $this._curFilters[evt.target.name];
-                                                    $this.refreshAll();
-                                                } else {
-                                                    for(var i in $this._curFilters){
-                                                        $this.removeFilter($this._curFilters[i]);
-                                                    }
-                                                    $this._curFilters = {};
-                                                    $this.refreshAll();
-                                                }
-                                            }
-                                        } else {
-                                            $this._removedFiltersCnt--;
-                                        }
-                                    },
-                                    mouseOut: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOut)){
-                                            $this.options.mouseOut.call(this, evt);
-                                        }
-                                    },
-                                    mouseOver: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOver)){
-                                            $this.options.mouseOver.call(this, evt);
-                                        }
-                                    }
-                                }
-                            }
-                        }]
-                    };
-
-                    // todo: distance after resize
-                    /*
-                    var dataLabelsDistance = this.getContext().find('dataLabels').find('distance').value();
-                    if(dataLabelsDistance.indexOf('%') > -1){
-                        dataLabelsDistance = Number(dataLabelsDistance.slice(0, dataLabelsDistance.indexOf('%')));
-
-                        var w = $this.getElement().width(),
-                            h = $this.getElement().height();
-
-                        dataLabelsDistance = w <= h ? dataLabelsDistance * w / 100 : dataLabelsDistance * h / 100;
-                    } else {
-                        dataLabelsDistance = Number(dataLabelsDistance);
+                    if(opts && opts.isCacheMod){
+                        $this.storeCache(data);
                     }
-                    chartOptions.plotOptions.pie.dataLabels.distance = dataLabelsDistance;
-                    */
 
-                    $this.container.highcharts(chartOptions);
+                    $this._buildChart(data);
 
-                    $this.getElement().loader('hide');
-
-                    $this.chart =  $this.container.highcharts();
+                    var points = $this.chart.series[0].points;
+                    for(var i in $this._curFilters){
+                        for(var j = 0; j < points.length; j++){
+                            if(i === points[j].name){
+                                points[j].select(true, true);
+                                break;
+                            }
+                        }
+                    }
                 });
             }, function(){
                 return $this.isInit;
             });
         },
 
+        _buildChart: function(data){
+            var chartOptions = {
+                chart: {
+                    type: 'pie'
+                },
+
+                title: {
+                    text: this.getContext().find('title').value()
+                },
+
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+
+                        dataLabels: {
+                            enabled: this.getContext().find('dataLabels').find('enabled').used(),
+                            format: this.getContext().find('dataLabels').find('format').value(),
+                            distance: Number(this.getContext().find('dataLabels').find('distance').value())
+                        },
+                        showInLegend: true
+                    }
+                },
+
+                credits: {
+                    enabled: false
+                },
+
+                legend: {
+                    layout: this.getContext().find('legend').find('layout').value().value(),
+                    align: this.getContext().find('legend').find('align').value().value(),
+                    verticalAlign: this.getContext().find('legend').find('verticalAlign').value().value()
+                },
+
+                series: [{
+                    data: data,
+                    colorByPoint: true,
+                    innerSize: this.getContext().find('innerSize').value(),
+                    point: {
+                        events: {
+                            click: function(evt) {
+                                $this._clickEvt = evt;
+
+                                if(JSB().isFunction($this.options.onClick)){
+                                    $this.options.onClick.call(this, evt);
+                                }
+                            },
+                            select: function(evt) {
+                                var flag = false;
+
+                                if(JSB().isFunction($this.options.onSelect)){
+                                    flag = $this.options.onSelect.call(this, evt);
+                                }
+
+                                if(!flag && $this._clickEvt){
+                                    $this._addPieFilter(evt);
+                                    $this._clickEvt = null;
+                                }
+                            },
+                            unselect: function(evt) {
+                                $this._clickEvt = null;
+                                var flag = false;
+
+                                if(JSB().isFunction($this.options.onUnselect)){
+                                    flag = $this.options.onUnselect.call(this, evt);
+                                }
+
+                                if(!flag && $this._removedFiltersCnt === 0){
+                                    if(Object.keys($this._curFilters).length > 0){
+                                        if(evt.accumulate){
+                                            $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
+                                            delete $this._curFilters[evt.target.options.sortValue];
+                                            $this.refreshAll();
+                                        } else {
+                                            for(var i in $this._curFilters){
+                                                $this.removeFilter($this._curFilters[i]);
+                                            }
+                                            $this._curFilters = {};
+                                            $this.refreshAll();
+                                        }
+                                    }
+                                } else {
+                                    $this._removedFiltersCnt--;
+                                }
+                            },
+                            mouseOut: function(evt) {
+                                if(JSB().isFunction($this.options.mouseOut)){
+                                    $this.options.mouseOut.call(this, evt);
+                                }
+                            },
+                            mouseOver: function(evt) {
+                                if(JSB().isFunction($this.options.mouseOver)){
+                                    $this.options.mouseOver.call(this, evt);
+                                }
+                            }
+                        }
+                    }
+                }]
+            };
+
+            // todo: distance after resize
+            /*
+            var dataLabelsDistance = this.getContext().find('dataLabels').find('distance').value();
+            if(dataLabelsDistance.indexOf('%') > -1){
+                dataLabelsDistance = Number(dataLabelsDistance.slice(0, dataLabelsDistance.indexOf('%')));
+
+                var w = $this.getElement().width(),
+                    h = $this.getElement().height();
+
+                dataLabelsDistance = w <= h ? dataLabelsDistance * w / 100 : dataLabelsDistance * h / 100;
+            } else {
+                dataLabelsDistance = Number(dataLabelsDistance);
+            }
+            chartOptions.plotOptions.pie.dataLabels.distance = dataLabelsDistance;
+            */
+
+            $this.container.highcharts(chartOptions);
+
+            $this.getElement().loader('hide');
+
+            $this.chart =  $this.container.highcharts();
+        },
+
         _addPieFilter: function(evt){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find('data').value().get(0).binding();
             var fDesc = {
             	sourceId: context.source,
             	type: '$or',
             	op: '$eq',
-            	field: field,
-            	value: evt.target.name
+            	field: evt.target.options.sortField,
+            	value: evt.target.options.sortValue
             };
 
             if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
@@ -494,7 +631,7 @@
                 this._curFilters = {};
             }
 
-            this._curFilters[evt.target.name] = this.addFilter(fDesc);
+            this._curFilters[evt.target.options.sortValue] = this.addFilter(fDesc);
             this.refreshAll();
         }
 	}

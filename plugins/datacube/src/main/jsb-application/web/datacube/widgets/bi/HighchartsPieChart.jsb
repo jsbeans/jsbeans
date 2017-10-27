@@ -127,6 +127,7 @@
 	$scheme: {
         type: 'group',
         items: [
+        // Заголовок
         {
             name: 'Заголовок',
             type: 'item',
@@ -134,6 +135,7 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Источник
         {
             type: 'group',
             name: 'Источник',
@@ -143,18 +145,20 @@
             {
                 name: 'Имя',
                 type: 'item',
+                key: 'name',
                 itemType: 'string',
                 itemValue: ''
             },
             {
                 name: 'Данные',
                 type: 'group',
-                key: 'data',
                 multiple: 'true',
+                key: 'data',
                 items: [
                 {
                     type: 'item',
                     name: 'Имена частей',
+                    key: 'partNames',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -162,6 +166,7 @@
                 {
                     type: 'item',
                     name: 'Размеры частей',
+                    key: 'partSize',
                     binding: 'field',
                     itemType: 'string',
                     itemValue: '$field',
@@ -170,6 +175,121 @@
             }
             ]
         },
+        // Легенда
+        {
+            name: 'Легенда',
+            type: 'group',
+            key: 'legend',
+            items: [
+            {
+                name: 'Расположение',
+                type: 'select',
+                key: 'layout',
+                items: [
+                {
+                    name: 'Горизонтальное',
+                    type: 'item',
+                    key: 'horizontal',
+                    editor: 'none',
+                    itemValue: 'horizontal'
+                },
+                {
+                    name: 'Вертикальное',
+                    type: 'item',
+                    key: 'vertical',
+                    editor: 'none',
+                    itemValue: 'vertical'
+                }
+                ]
+            },
+            {
+                name: 'Горизонтальное выравнивание',
+                type: 'select',
+                key: 'align',
+                items: [
+                {
+                    name: 'По левому краю',
+                    type: 'item',
+                    key: 'left',
+                    editor: 'none',
+                    itemValue: 'left'
+                },
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'center',
+                    editor: 'none',
+                    itemValue: 'center'
+                },
+                {
+                    name: 'По правому краю',
+                    type: 'item',
+                    key: 'right',
+                    editor: 'none',
+                    itemValue: 'right'
+                }
+                ]
+            },
+            {
+                name: 'Вертикальное выравнивание',
+                type: 'select',
+                key: 'verticalAlign',
+                items: [
+                {
+                    name: 'По нижнему краю',
+                    type: 'item',
+                    key: 'bottom',
+                    editor: 'none',
+                    itemValue: 'bottom'
+                },
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'middle',
+                    editor: 'none',
+                    itemValue: 'middle'
+                },
+                {
+                    name: 'По верхнему краю',
+                    type: 'item',
+                    key: 'top',
+                    editor: 'none',
+                    itemValue: 'top'
+                }
+                ]
+            }
+            ]
+        },
+        // Tooltip
+		{
+			type: 'group',
+			key: 'tooltip',
+			name: 'Tooltip',
+			items: [
+			/*{
+				type: 'item',
+				name: 'Суффикс значения',
+				itemType: 'string'
+			},*/
+			{
+				type: 'item',
+				name: 'Формат',
+				key: 'format',
+				itemType: 'string',
+				description: 'A format string for the data label. Available variables are: point.percentage (The point\'s percentage of the total), point.name, point.x (The x value), point.y (The y value), series (The series object. The series name is available through series.name).'
+			}
+			]
+		},
+		// Диаметр внутреннего круга
+        {
+            name: 'Диаметр внутреннего круга',
+            type: 'item',
+            key: 'innerSize',
+            itemType: 'string',
+            itemValue: '0',
+            description: 'Диаметр внутреннего круга. По умолчанию 0. Диаметр больше 0 делает диаграмму вида бублика. Указывается числовое или процентное значение'
+        },
+        // Цветовая схема
         {
             name: 'Цветовая схема по умолчанию',
             key: 'colorScheme',
@@ -178,67 +298,38 @@
             {
                 name: '#1',
                 type: 'item',
+                key: 'color1',
                 editor: 'none'
             },
             {
                 name: '#2',
                 type: 'item',
+                key: 'color2',
                 editor: 'none'
             },
             {
                 name: '#3',
                 type: 'item',
+                key: 'color3',
                 editor: 'none'
             },
             {
                 name: '#4',
                 type: 'item',
+                key: 'color4',
                 editor: 'none'
             }
             ]
-        },
-        {
-            type: 'group',
-            name: 'Подпись',
-            key: 'dataLabels',
-            items: [
-            {
-                name: 'Включить подпись',
-                type: 'item',
-                key: 'enabled',
-                optional: true,
-                editor: 'none'
-            },
-            {
-                name: 'Формат подписи',
-                type: 'item',
-                key: 'format',
-                itemType: 'string',
-                itemValue: '{y}',
-                description: 'В качестве переменных в строке можно использовать имя {point.name} и значение {y}'
-            },
-            {
-                name: 'Расстояние от окружности',
-                type: 'item',
-                key: 'distance',
-                itemType: 'string',
-                itemValue: '30',
-                description: 'Положительное значение указывает расстояние снаружи окружности, отрицательное - внутри'
-            }
-            ]
-        },
-        {
-            name: 'Диаметр внутреннего круга',
-            type: 'item',
-            key: 'innerSize',
-            itemType: 'string',
-            itemValue: '0',
-            description: 'Диаметр внутреннего круга. По умолчанию 0. Диаметр больше 0 делает диаграмму вида бублика. Указывается числовое или процентное значение'
-        }
-        ]
+        }]
     },
 	$client: {
 	    $require: ['JQuery.UI.Loader'],
+
+	    _series: {},
+	    _curFilters: {},
+	    _removedFiltersCnt: 0,
+	    _curFilterHash: null,
+
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -270,6 +361,7 @@
                 JSB.defer(function(){
                     $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
                 }, 300, 'hcResize' + $this.getId());
+
             });
 
             this.isInit = true;
@@ -281,12 +373,80 @@
             var source = this.getContext().find('source');
             if(!source.bound()) return;
 
+			$base();
+
+			if(opts && opts.refreshFromCache){
+                JSB().deferUntil(function(){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this._buildChart(cache);
+                }, function(){
+                    return $this.isInit;
+                });
+			    return;
+			}
+
+// filters section
+/**
+Не используем globalFilters, если требуется drilldown
+**/
+if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {			
+            var globalFilters = source.getFilters();
+
+            if(globalFilters){
+                var binding = source.value().get(1).value().get(0).binding()[0],
+                    newFilters = {};
+
+                for(var i in globalFilters){
+                    var cur = globalFilters[i];
+
+                    if(cur.field === binding && cur.op === '$eq'){
+                        if(!this._curFilters[cur.value]){
+                            this._curFilters[cur.value] = cur.id;
+                            this.chart.series[0].data[this._series[cur.value]].select(true, true);
+                        }
+
+                        newFilters[cur.value] = true;
+
+                        delete globalFilters[i];
+                    }
+                }
+
+                for(var i in this._curFilters){
+                    if(!newFilters[i]){
+                        this._removedFiltersCnt++;
+                        this.chart.series[0].data[this._series[i]].select(false, true);
+                        delete this._curFilters[i];
+                    }
+                }
+
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    source.setFilters(globalFilters);
+                }
+            } else {
+                if(Object.keys(this._curFilters).length > 0){
+                    this._removedFiltersCnt = Object.keys(this._curFilters).length;
+                    for(var i in this._curFilters){
+                        this.chart.series[0].data[this._series[i]].select(false, true);
+                    }
+                    this._curFilters = {};
+                    return;
+                }
+                this._curFilterHash = null;
+            }
+}            
+// end filters section
             var dataValues = this.getContext().find('data').values(),
                 dataSource = [];
             for(var i = 0; i < dataValues.length; i++){
                 dataSource.push({
                     name: dataValues[i].get(0),
-                    y: dataValues[i].get(1)
+                    bName: dataValues[i].get(0).binding()[0],
+                    y: dataValues[i].get(1),
+                    bY: dataValues[i].get(1).binding()[0]
                 });
             }
 
@@ -295,175 +455,240 @@
                 source.fetch({readAll: true, reset: true}, function(){
                     var data = [];
 
-                    while(source.next()){
-                        for(var i = 0; i < dataSource.length; i++){
-                            var d = {
-                                name: dataSource[i].name.value(),
-                                y: dataSource[i].y.value()
-                            }
-
-                            if(JSB().isArray(d.name)){
-                                for(var j = 0; j < d.name.length; j++){
-                                    data.push({
-                                        name: d.name[j],
-                                        y: d.y[j]
-                                    });
+					try {
+                        while(source.next()){
+                            for(var i = 0; i < dataSource.length; i++){
+                                var d = {
+                                    name: dataSource[i].name.value(),
+                                    y: dataSource[i].y.value(),
+                                    sortField: dataSource[i].bName ? dataSource[i].bName : dataSource[i].bY ? dataSource[i].bY : null,
+                                    sortValue: dataSource[i].bName ?  dataSource[i].name.value() : dataSource[i].bY ? dataSource[i].y.value() : null
                                 }
-                            } else {
-                                data.push(d);
+
+                                if(JSB().isArray(d.name)){
+                                    for(var j = 0; j < d.name.length; j++){
+                                        data.push({
+                                            name: d.name[j],
+                                            y: d.y[j],
+                                            sortField: d.bName ? d.bName : d.bY ? d.bY : null,
+                                            sortValue: d.bName ? d.name[j] : d.bY ? d.y[j] : null,
+                                        });
+                                    }
+                                } else {
+                                    data.push(d);
+                                }
                             }
                         }
-                    }
-                    
-                    var colors = [
-						['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
-						['#110C08', '#35312F', '#626A7A', '#9A554B', '#D88A82', '#BBBBBB', '#E0DFDE', '#EEEDEB', '#F4F4F4'],
-						['#1C3E7E', '#006DA9', '#B2D3E5', '#BFC6D9', '#EFB9BF', '#CA162A'],
-						['#1C3E7E', '#FF553E', '#FFCCC5', '#D0D0D0', '#8E8E8E', '#636363'],
-						['#4FBDE2', '#CAEBF6', '#89CBC6', '#DBEFEE', '#8A5C91', '#DCCEDE', '#4F3928', '#CAC3BE', '#FFF3D9']
-                    ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
-                    
-					var chartOptions = {
-                    	
-                    	colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
-                    
-                        chart: {
-                            plotBackgroundColor: null,
-                            plotBorderWidth: null,
-                            plotShadow: false,
-                            type: 'pie'
-                        },
 
-                        title: {
-                            text: this.getContext().find('title').value()
-                        },
+						$this._series = data.reduce(function(arr, el, i){
+							arr[el.name] = i;
+							return arr;
+						}, {});
 
-                        plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                dataLabels: {
-                                    enabled: this.getContext().find('dataLabels').find('enabled').used(),
-                                    format: this.getContext().find('dataLabels').find('format').value(),
-                                    distance: Number(this.getContext().find('dataLabels').find('distance').value())
-                                },
-                                showInLegend: true
-                            }
-                        },
-                        
-                        legend: {
-                        	rtl: true,
-                            layout: 'vertical',
-                            floating: false,
-                            align: 'left',
-                            verticalAlign: 'middle',
-                            x: 0,
-                            y: 0,
-  							itemMarginTop: 15,
-            				itemMarginBottom: 15,
-                            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
-                        },
-                        
+                        if(opts && opts.isCacheMod){
+                            $this.storeCache(data);
+                        }
 
-                        tooltip: {
-                            pointFormat: this.getContext().find('source').value().get(0).value() + ': <b>{point.percentage:.1f}%</b>'
-                        },
+                        $this._buildChart(data);
 
-						credits: {
-        					enabled: false
-    					},                        
-
-                        series: [{
-                            data: data,
-                            colorByPoint: true,
-                            innerSize: this.getContext().find('innerSize').value(),
-                            point: {
-                                events: {
-                                    click: function(evt) {
-                                        if(JSB().isFunction($this.options.onClick)){
-                                            $this.options.onClick.call(this, evt);
-                                        }
-                                    },
-                                    select: function(evt) {
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onSelect)){
-                                            flag = $this.options.onSelect.call(this, evt);
-                                        }
-
-                                        if(!flag){
-                                            $this._addPieFilter(evt.target.name);
-                                        }
-                                    },
-                                    unselect: function(evt) {
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onUnselect)){
-                                            flag = $this.options.onUnselect.call(this, evt);
-                                        }
-
-                                        if(!flag && $this._currentFilter && !$this._notNeedUnselect){
-                                            $this._notNeedUnselect = false;
-                                            $this.removeFilter($this._currentFilter);
-                                            $this.refreshAll();
-                                        }
-                                    },
-                                    mouseOut: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOut)){
-                                            $this.options.mouseOut.call(this, evt);
-                                        }
-                                    },
-                                    mouseOver: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOver)){
-                                            $this.options.mouseOver.call(this, evt);
-                                        }
-                                    }
+                        var points = $this.chart.series[0].points;
+                        for(var i in $this._curFilters){
+                            for(var j = 0; j < points.length; j++){
+                                if(i === points[j].name){
+                                    points[j].select(true, true);
+                                    break;
                                 }
                             }
-                        }]
-                    };
-                    
-                    try {
-                    	$this.container.highcharts(chartOptions);
+                        }
                     } catch(e) {
-                    	console.log("Exception", e);
+                        console.log(e);
+                    } finally {
+                        $this.getElement().loader('hide');
                     }
-
-					console.log(chartOptions);
-
-                    $this.getElement().loader('hide');
-
-                    $this.chart =  $this.container.highcharts();
                 });
-
-
             }, function(){
                 return $this.isInit;
             });
         },
 
-        _addPieFilter: function(value){
+        _buildChart: function(data){
+            try{
+                var tooltipSettings = this.getContext().find('tooltip').value();
+
+                var colors = [
+                    ['#7cb5ec', '#434348', '#90ed7d', '#f7a35c', '#8085e9', '#f15c80', '#e4d354', '#2b908f', '#f45b5b', '#91e8e1'],
+                    ["#626a7a", "#9a554b", "#adadad", "#738299", "#d88a82", "#d1d1d1", "#110c08", "#b5cce2", "#e5e5e5"],
+                    ["#1c3e7e", "#ca162a", "#006da9", "#b2d3e5", "#efb9bf", "#bfc6d9"],
+                    ["#1c3e7e", "#ff553e", "#8e8e8e", "#ffccc5", "#d0d0d0", "#636363"],
+                    ["#4fbde2", "#ffd682", "#89cbc6", "#8a5c91", "#cac3be", "#caebf6", "#fff3d9", "#dbefee", "#dccede", "#4f3928"]
+                ], colorSchemeIdx = parseInt(this.getContext().find('colorScheme').value().name().toString().replace(/\D/g,''), 10);
+
+                var chartOptions = {
+                    HighchartsPieChart: {
+                    	version: 'v-2017-10-11-01'
+                    },
+
+                    colors: !colors.hasOwnProperty(colorSchemeIdx) ? colors[0] : colors[colorSchemeIdx],
+
+                    chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: null,
+                        plotShadow: false,
+                        type: 'pie'
+                    },
+
+                    title: {
+                        text: this.getContext().find('title').value()
+                    },
+
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: false
+                            },
+                            showInLegend: true
+                        }
+                    },
+
+                    legend: {
+                        rtl: true,
+                        layout: this.getContext().find('legend').find('layout').value().value(),
+                        floating: false,
+                        align: this.getContext().find('legend').find('align').value().value(),
+                        verticalAlign: this.getContext().find('legend').find('verticalAlign').value().value(),
+                        x: 0,
+                        y: 0,
+                        itemMarginTop: 15,
+                        itemMarginBottom: 15,
+                        backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+                    },
+
+
+                    tooltip: {
+                        //valueSuffix: $this.safeGetValue(tooltipSettings, [0]),
+                        pointFormat: $this.safeGetValue(tooltipSettings, [0]) || '{series.name}: <b>{point.percentage:.1f}%</b>'
+                    },
+
+                    credits: {
+                        enabled: false
+                    },
+
+                    series: [{
+                        data: data,
+                        colorByPoint: true,
+                        innerSize: this.getContext().find('innerSize').value(),
+                        point: {
+                            events: {
+                                click: function(evt) {
+                                    $this._clickEvt = evt;
+
+                                    if(JSB().isFunction($this.options.onClick)){
+                                        $this.options.onClick.call(this, evt);
+                                    }
+                                },
+                                select: function(evt) {
+                                    var flag = false;
+
+                                    if(JSB().isFunction($this.options.onSelect)){
+                                        flag = $this.options.onSelect.call(this, evt);
+                                    }
+
+                                    if(!flag && $this._clickEvt){
+                                        $this._addPieFilter(evt);
+                                        $this._clickEvt = null;
+                                    }
+                                },
+                                unselect: function(evt) {
+                                    $this._clickEvt = null;
+                                    var flag = false;
+
+                                    if(JSB().isFunction($this.options.onUnselect)){
+                                        flag = $this.options.onUnselect.call(this, evt);
+                                    }
+
+                                    if(!flag && $this._removedFiltersCnt === 0){
+                                        if(Object.keys($this._curFilters).length > 0){
+                                            if(evt.accumulate){
+                                                $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
+                                                delete $this._curFilters[evt.target.options.sortValue];
+                                                $this.refreshAll();
+                                            } else {
+                                                for(var i in $this._curFilters){
+                                                    $this.removeFilter($this._curFilters[i]);
+                                                }
+                                                $this._curFilters = {};
+                                                $this.refreshAll();
+                                            }
+                                        }
+                                    } else {
+                                        $this._removedFiltersCnt--;
+                                    }
+                                },
+                                mouseOut: function(evt) {
+                                    if(JSB().isFunction($this.options.mouseOut)){
+                                        $this.options.mouseOut.call(this, evt);
+                                    }
+                                },
+                                mouseOver: function(evt) {
+                                    if(JSB().isFunction($this.options.mouseOver)){
+                                        $this.options.mouseOver.call(this, evt);
+                                    }
+                                }
+                            }
+                        }
+                    }]
+                };
+
+                $this.container.highcharts(chartOptions);
+
+                console.log(chartOptions);
+
+                $this.chart =  $this.container.highcharts();
+            } catch(e){
+                var wTypeName = $this.hasOwnProperty('wrapper') && $this.wrapper.hasOwnProperty('widgetEntry') && $this.wrapper.widgetEntry.hasOwnProperty('wType') ? $this.wrapper.widgetEntry.wType : '';
+                console.log("Exception", [wTypeName, e]);
+            }
+        },
+
+        _addPieFilter: function(evt){
             var context = this.getContext().find('source').binding();
             if(!context.source) return;
 
-            var field = this.getContext().find('data').value().get(0).binding();
             var fDesc = {
             	sourceId: context.source,
-            	type: '$and',
+            	type: '$or',
             	op: '$eq',
-            	field: field,
-            	value: value
+            	field: evt.target.options.sortField,
+            	value: evt.target.options.sortValue
             };
 
-            if(!this.hasFilter(fDesc)){
-            	if(this._currentFilter){
-            		this.removeFilter(this._currentFilter);
-            		this._currentFilter = null;
-            		this._notNeedUnselect = true;
-            	}
-            	this._currentFilter = this.addFilter(fDesc);
-            	this.refreshAll();
+            if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
+                this._removedFiltersCnt = Object.keys(this._curFilters).length;
+
+                for(var i in this._curFilters){
+                    this.removeFilter(this._curFilters[i]);
+                }
+
+                this._curFilters = {};
             }
-        }
+
+            this._curFilters[evt.target.options.sortValue] = this.addFilter(fDesc);
+            this.refreshAll();
+        },
+		
+		safeGetValue: function(context, args) {
+			console.log(arguments);
+			if( context !== null && typeof context === 'object') {
+				if( args !== null && (!!args && args.constructor === Array) && args.length) {
+					if(context.get(args[0]) !== null) {
+						var value = context.get(args[0]).value();
+						return (((args.length === 1) || (value === null)) ? value : this.safeGetValue(value, args.slice(1)));
+					}
+				}
+			}
+			return;
+		}
 	}
 }

@@ -2,6 +2,12 @@
 	$name:'JSB.Widgets.TabView',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
+		$constructor: function(opts){
+			$base(opts);
+			this.loadCss('tabView.css');
+			this.init();
+		},
+		
 		options: {
 			allowCloseTab: true,
 			allowNewTab: true,
@@ -11,12 +17,9 @@
 		
 		currentTab: null,
 		tabs: {},
-
-		$constructor: function(opts){
+		
+		init: function(){
 			var self = this;
-			$base(opts);
-			
-			this.loadCss('tabView.css');	
 			this.addClass('_dwp_tabview');
 			
 			if(this.options.tabPosition == 'bottom'){
@@ -57,19 +60,22 @@
 			this.clientPane = this.$('<div class="_dwp_clientPane"></div>');
 			this.append(this.clientPane);
 			
-			this.tabPane.resize(function(){
-				self.updateSizes();
-			});
-
+			if(this.options.showTabs){
+				this.tabPane.resize(function(){
+					if(!$this.tabPane.is(':visible')){
+						return;
+					}
+					self.updateSizes();
+				});
+			}
 		},
-		
 		
 		containsTab: function(tab){
 			var entry = this.resolveTab(tab);
 			return !JSB().isNull(entry);
 		},
 		
-		addTab: function(title, ctrl, opts){
+		addTab: function(title, cls, opts){
 			var self = this;
 			opts = opts || {};
 			var uid = opts.id || JSB().generateUid();
@@ -106,17 +112,30 @@
 			// add client
 			var clientWrap = this.$('<div key="'+uid+'" class="_dwp_clientPaneWrapper"></div>');
 			clientWrap.css({display:'none'});
-			clientWrap.append(ctrl.getElement());
+
+			if(JSB.isFunction(cls)){
+                self.tabs[uid] = {
+                    id: uid,
+                    title: title,
+                    tab: tab,
+                    wrap: clientWrap,
+                    cls: cls,
+                    opts: opts
+                };
+			} else {
+			    clientWrap.append(cls.getElement());
+
+                self.tabs[uid] = {
+                    id: uid,
+                    title: title,
+                    tab: tab,
+                    wrap: clientWrap,
+                    ctrl: cls,
+                    opts: opts
+                };
+			}
+
 			this.clientPane.append(clientWrap);
-			
-			self.tabs[uid] = {
-				id: uid,
-				title: title,
-				tab: tab,
-				wrap: clientWrap,
-				ctrl: ctrl,
-				opts: opts
-			};
 			
 			if(!(this.options.dontSwitchOnCreate || opts.dontSwitchOnCreate)){
 				this.switchTab(uid);
@@ -127,6 +146,11 @@
 			}
 			
 			return self.tabs[uid];
+		},
+
+		activateTab: function(uid){
+		    this.tabs[uid].ctrl = new this.tabs[uid].cls();
+		    this.tabs[uid].wrap.append(this.tabs[uid].ctrl.getElement());
 		},
 		
 		resolveTab: function(tab){
@@ -188,6 +212,9 @@
 			showArea.css('display','');
 			self.clientPane.find('._dwp_clientPaneWrapper[key="' + activeTab.attr('clientId') + '"]').css('display','none');
 			self.currentTab = entry;
+			if(!entry.ctrl){
+			    this.activateTab(entry.id);
+			}
 			if(this.options.onSwitchTab){
 				this.options.onSwitchTab.call(self, tab);
 			}

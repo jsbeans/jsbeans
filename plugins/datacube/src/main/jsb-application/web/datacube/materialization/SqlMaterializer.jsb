@@ -8,8 +8,7 @@
 		           'DataCube.MaterializationEngine',
 		           'JSB.Store.Sql.JDBC',
 		           'java:java.sql.JDBCType',
-		           'java:java.sql.Types',
-		           'JSB.Text.Translit'],
+		           'java:java.sql.Types'],
 		           
 		$bootstrap: function(){
 			MaterializationEngine.registerMaterializer('DataCube.Model.SqlSource', this);
@@ -19,96 +18,15 @@
 			$base(engine, source);
 		},
 		
-		translateType: function(jsonType, typeMap){
-			var sqlType = jsonType.toLowerCase();
-			switch(sqlType){
-			case 'int':
-			case 'integer':
-				sqlType = JDBC.getVendorTypeForSqlType(Types.INTEGER, typeMap);
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.DECIMAL, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.BIGINT, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.BIGINT, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.REAL, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.FLOAT, typeMap);
-				}
-				break;
-			case 'boolean':
-				sqlType = JDBC.getVendorTypeForSqlType(Types.BOOLEAN, typeMap);
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.BIT, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.INTEGER, typeMap);
-				}
-				break;
-			case 'nvarchar':
-			case 'varchar':
-			case 'string':
-				sqlType = JDBC.getVendorTypeForSqlType(Types.VARCHAR, typeMap);
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.NVARCHAR, typeMap);
-				}
-				break;
-			case 'float':
-				sqlType = JDBC.getVendorTypeForSqlType(Types.FLOAT, typeMap);
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.REAL, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
-				}
-
-				break;
-			case 'double':
-			case 'number':
-				sqlType = JDBC.getVendorTypeForSqlType(Types.NUMERIC, typeMap);
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.DOUBLE, typeMap);
-				}
-				break;
-			case 'date':
-			case 'time':
-			case 'datetime':
-			case 'timestamp':
-				sqlType = JDBC.getVendorTypeForSqlType(Types.TIMESTAMP, typeMap);
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.DATE, typeMap);
-				}
-				if(!sqlType){
-					sqlType = JDBC.getVendorTypeForSqlType(Types.TIME, typeMap);
-				}
-				break;
-			case 'array':
-				sqlType = JDBCType.ARRAY.getName();
-				break;
-			}
-			return sqlType;
-		},
 		
 		createTable: function(cName, fields){
 			var sqlFields = {};
 			var fieldMap = {};
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			var typeMap = JDBC.getSupportedTypeMap(connection);
+			var vendor = JDBC.getDatabaseVendor(connection);
 			var suggestedName = cName;
 			try {
 				var databaseMetaData = connection.getMetaData();
@@ -128,7 +46,7 @@
 				
 				var fNameArr = Object.keys(fields);
 				for(var i = 0; i < fNameArr.length; i++){
-					sql = 'alter table ' + suggestedName + ' add column "c' + i + '_' + fNameArr[i] + '" ' + this.translateType(fields[fNameArr[i]], typeMap);
+					sql = 'alter table ' + suggestedName + ' add column "c' + i + '_' + fNameArr[i] + '" ' + JDBC.translateType(fields[fNameArr[i]], vendor);
 					JDBC.executeUpdate(connection, sql);
 					
 					// extract current field
@@ -151,9 +69,8 @@
 				}
 				throw e;
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
-			
 			return {table: suggestedName, fieldMap: fieldMap};
 		},
 		
@@ -162,7 +79,8 @@
 				return;
 			}
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, tName, null);
@@ -171,7 +89,7 @@
 				}
 				JDBC.executeUpdate(connection, 'drop table ' + tName);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		},
 		
@@ -180,7 +98,8 @@
 				return;
 			}
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, oldName, null);
@@ -189,13 +108,14 @@
 				}
 				JDBC.executeUpdate(connection, 'alter table ' + oldName + ' rename to ' + newName);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		},
 		
 		createIndex: function(tName, idxName, idxFields){
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
@@ -214,13 +134,14 @@
 				sql += ')';
 				JDBC.executeUpdate(connection, sql);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		},
 		
 		removeIndex: function(tName, idxName){
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			try {
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
@@ -228,13 +149,14 @@
 					JDBC.executeUpdate(connection, 'drop index ' + idxName);
 				}
 			} finally {
-				connection.close();
+				connWrap.close();
 			}		
 		},
 		
 		insert: function(tName, objArr){
 			var store = this.source.getStore();
-			var connection = store.getConnection(true).get();
+			var connWrap = store.getConnection(true);
+			var connection = connWrap.get();
 			if(!JSB.isArray(objArr)){
 				objArr = [objArr];
 			}
@@ -278,7 +200,7 @@
 				}
 				JDBC.executeUpdate(connection, batch);
 			} finally {
-				connection.close();
+				connWrap.close();
 			}
 		}
 	}

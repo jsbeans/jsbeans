@@ -7,6 +7,8 @@
 			this.addClass('graphNode');
 			this.loadCss('GraphNode.css');
 
+			this.entry = opts.entry;
+
 			this.append(`#dot
                 <div class="connector"></div>
             `);
@@ -36,21 +38,21 @@
                 this.getElement().css(this.entry.nodeCss);
             }
 
-            if(this.entry.cls){
-                this.addClass('widgetMode');
-                this.widget = new this.entry.cls();
-                this.append(this.widget.getElement());
-                this.widget.setWrapper(this.entry.wrapper,  JSB().clone(this.entry.value.unwrap()));
-                this.widget.refresh();
-            } else if(this.entry.header){
-                this.addClass('simpleMode');
-                this.header = this.$(`#dot
+			if(this.entry.cls){
+			    this.addClass('widgetMode');
+			    this.widget = new this.entry.cls();
+			    this.append(this.widget.getElement());
+			    this.widget.setWrapper(this.entry.wrapper,  JSB().clone(this.entry.value.unwrap()));
+			    this.widget.refresh();
+			} else if(this.entry.header){
+			    this.addClass('simpleMode');
+			    this.header = this.$(`#dot
                     <div class="caption">{{=this.entry.header}}</div>
                 `);
                 this.append(this.header);
-            }
+			}
 
-            if(this.entry.caption){
+			if(this.entry.caption){
                 this.caption = this.$('<div class="graphNodePopup hidden">' + this.entry.caption + '</div>');
                 this.append(this.caption);
 
@@ -60,7 +62,9 @@
                 this.getElement().mousemove(function(evt){
                     $this.caption.offset({top: evt.pageY + 10, left: evt.pageX + 10 });
                 });
-            }
+			}
+
+			this._createConnectors();
 		},
 
 		clearOldData: function(){

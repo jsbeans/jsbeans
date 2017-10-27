@@ -76,6 +76,7 @@
                 name: 'Связи',
                 key: 'graphGroups',
                 multiple: true,
+                collapsable: true,
                 items: [
                 {
                    name: 'Начальный элемент',
@@ -108,6 +109,7 @@
                 type: 'group',
                 key: 'viewTypes',
                 multiple: 'true',
+                collapsable: true,
                 items:[
                 {
                     name: 'Элемент',
@@ -209,6 +211,9 @@
             {
                 type: 'group',
                 name: 'Дополнительные настройки алгоритма расположения',
+                key: 'advancedSettings',
+                collapsable: true,
+                collapsed: true,
                 items: [
                 {
                     type: 'group',
@@ -321,6 +326,7 @@
 
         _nodeList: {},
         _namesList: {},
+        _isRefreshing: false,
 
         $constructor: function(opts){
             $base(opts);
@@ -385,6 +391,39 @@
 
             $base();
 
+            // cache
+            this._isCacheMod = opts && opts.isCacheMod ? opts.isCacheMod : false;
+
+            if(this._isRefreshing){
+                JSB().deferUntil(function(){
+                    if($this.simulation) $this.simulation.stop();
+
+                    $this._isRefreshing = true;
+
+                    if(opts && opts.refreshFromCache){
+                        var cache = $this.getCache();
+                        if(!cache) return;
+                        $this.createGraph(cache.nodes, cache.links);
+                    } else {
+                        $this.innerRefresh();
+                    }
+                }, function(){
+                    return !$this._isRefreshing;
+                }, 300, 'graphWidget_' + this.getId());
+            } else {
+                this._isRefreshing = true;
+
+                if(opts && opts.refreshFromCache){
+                    var cache = $this.getCache();
+                    if(!cache) return;
+                    $this.createGraph(cache.nodes, cache.links);
+                } else {
+                    $this.innerRefresh();
+                }
+            }
+        },
+
+        innerRefresh: function(){
             this.getElement().loader();
 
             var viewTypes = this.getContext().find('viewTypes').values(),
@@ -502,7 +541,7 @@
                                 se = sourceElement.value(),
                                 te = targetElement.value();
 
-                            if(!nodesMap[se]){
+                            if(!nodesMap[se] && !$this._nodeList[se]){
                                 var seEntry = JSB().clone(viewList[sourceElement.binding()]);
 
                                 if(seEntry){
@@ -521,19 +560,18 @@
 
                                 nodesMap[se] = seEntry;
 
-                                if($this._nodeList[se]){
-                                    $this._nodeList[se].updateEntry(seEntry);
-                                } else {
-                                    var node = $this.diagram.createNode('graphNode', {entry: seEntry});
-                                    if(itemWidth && itemHeight){
-                                        node.getElement().width(itemWidth);
-                                        node.getElement().height(itemHeight);
-                                    }
-                                    $this._nodeList[se] = node;
+                                var node = $this.diagram.createNode('graphNode', {entry: seEntry});
+                                if(itemWidth && itemHeight){
+                                    node.getElement().width(itemWidth);
+                                    node.getElement().height(itemHeight);
                                 }
+                                $this._nodeList[se] = node;
+                            }
+                            if(!nodesMap[se] && $this._nodeList[se]){
+                                nodesMap[se] = true;
                             }
 
-                            if(!nodesMap[te]){
+                            if(!nodesMap[te] && !$this._nodeList[te]){
                                 var teEntry = JSB().clone(viewList[targetElement.binding()]);
 
                                 if(teEntry){
@@ -552,16 +590,15 @@
 
                                 nodesMap[te] = teEntry;
 
-                                if($this._nodeList[te]){
-                                    $this._nodeList[te].updateEntry(teEntry);
-                                } else {
-                                    var node = $this.diagram.createNode('graphNode', {entry: teEntry});
-                                    if(itemWidth && itemHeight){
-                                        node.getElement().width(itemWidth);
-                                        node.getElement().height(itemHeight);
-                                    }
-                                    $this._nodeList[te] = node;
+                                var node = $this.diagram.createNode('graphNode', {entry: teEntry});
+                                if(itemWidth && itemHeight){
+                                    node.getElement().width(itemWidth);
+                                    node.getElement().height(itemHeight);
                                 }
+                                $this._nodeList[te] = node;
+                            }
+                            if(!nodesMap[te] && $this._nodeList[te]){
+                                nodesMap[te] = true;
                             }
 
                             var flag = true,
@@ -595,10 +632,22 @@
 
                         if($this._isInit){
                             $this.removeOldNodes(nodesMap);
+                            if($this._isCacheMod){
+                                $this.storeCache({
+                                    nodes: nodes,
+                                    links: links
+                                });
+                            }
                             $this.createGraph(nodes, links);
                         } else {
                             JSB().deferUntil(function(){
                                 $this.removeOldNodes(nodesMap);
+                                if($this._isCacheMod){
+                                    $this.storeCache({
+                                        nodes: nodes,
+                                        links: links
+                                    });
+                                }
                                 $this.createGraph(nodes, links);
                             }, function(){
                                 return $this._isInit;
@@ -611,7 +660,7 @@
             }
 
             innerFetch(true);
-
+// нагрузочный тест
             /*
             source.fetch({readAll: true, reset: true}, function(){
                 while(source.next() && count <= maxNodes){
@@ -781,9 +830,14 @@
                 });
 
                 function ticked(){
-                    nodes.forEach(function(el){
-                        $this._nodeList[el.id].setPosition(el.x, el.y);
-                    });
+                    try{
+                        nodes.forEach(function(el){
+                            $this._nodeList[el.id].setPosition(el.x, el.y);
+                        });
+                    } catch(ex){
+                        console.log(ex);
+                        if($this.simulation) $this.simulation.stop();
+                    }
                 }
 
                 $this.getElement().loader('hide');
@@ -795,8 +849,10 @@
                           .links(links);
             } catch(ex){
                 console.log(ex);
-                if(this.simulation) this.simulation.stop();
+                if($this.simulation) $this.simulation.stop();
                 $this.getElement().loader('hide');
+            } finally {
+                this._isRefreshing = false;
             }
         },
 

@@ -11,7 +11,19 @@
 			$base(opts);
 			this.addClass('scrollBox');
 			this.loadCss('scrollBox.css');
-			
+
+            if(this.options.cssClass){
+                this.addClass(this.options.cssClass);
+            }
+
+            if(!this.options.xAxisScroll){
+                this.getElement().css('overflow-x', 'hidden');
+            }
+
+            if(!this.options.yAxisScroll){
+                this.getElement().css('overflow-y', 'hidden');
+            }
+
 			this.getElement().scroll(function(evt){
 				var scrollHeight = evt.target.scrollHeight,
 					scrollWidth = evt.target.scrollWidth,
@@ -43,6 +55,10 @@
 				$this._oldScroll.x = scrollLeft;
 				$this._oldScroll.y = scrollTop;
 			});
+
+			this.getElement().mousewheel(function(evt){
+			    evt.stopPropagation();
+			});
 		},
 		
 		events:{
@@ -52,15 +68,45 @@
 			onMinY: null,
 			preLoad: null
 		},
-		
+
+		options: {
+		    xAxisScroll: true,
+		    yAxisScroll: true
+		},
+
+		/**
+         * Очищает элемент.
+         */
 		clear: function(){
 			this.getElement().empty();
 		},
-		
+
+		empty: function(){
+		    this.getElement().empty();
+		},
+
+        /**
+         * Возвращает текущую позицию скроллбокса.
+         *
+         * @return {{number}, {number}} Объект {x, y}
+         */
 		getScrollPosition: function(){
 			return { x: this.getElement().scrollLeft, y: this.getElement().scrollTop };
 		},
-		
+
+		/**
+         * Устанавливает позицию скроллбокса.
+         *
+         * @param {number}, {number} Координаты по осям x и y
+         */
+		scrollTo: function(x, y){
+		    this.setScrollPosition(x, y);
+		},
+
+		scrollToElement: function(target, vAlign, hAlign){
+            // todo
+		},
+		/*
 		setScrollPosition: function(pos){
 			if(!pos){
 				throw new Error('Incorrect function parameters("setScrollPosition" need 1 parameter)');
@@ -73,5 +119,19 @@
 			if(pos.y)
 				this.getElement().setTop(pos.y);
 		}
+		*/
+
+		/**
+         * Устанавливает позицию скроллбокса.
+         *
+         * @param {number}, {number} Координаты по осям x и y
+         */
+        setScrollPosition: function(x, y){
+            if(x)
+                this.getElement().setLeft(x);
+
+            if(y)
+                this.getElement().setTop(y);
+        }
 	}
 }

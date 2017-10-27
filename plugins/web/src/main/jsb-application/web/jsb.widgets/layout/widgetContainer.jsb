@@ -149,6 +149,5 @@
 		getClientContainer: function(){
 			return this.getElement();
 		}
-
 	}
 }

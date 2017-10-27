@@ -85,7 +85,8 @@
 					if($this.options.showHints){
 						scripts.push('tpl/codemirror/addon/hint/show-hint.js');
 						scripts.push('tpl/codemirror/addon/hint/javascript-hint.js');
-						scripts.push('tpl/jshint/jshint.js');
+						// disabled because add fields to String.prototype
+						// scripts.push('tpl/jshint/jshint.js');
 					}
 					
 					scripts.push('tpl/codemirror/addon/lint/lint.js');
@@ -296,6 +297,14 @@
 		},
 		
 		setData: function(data){
+			if(!this.ready){
+				JSB.deferUntil(function(){
+					$this.setData(data);
+				}, function(){
+					return $this.ready;
+				});
+				return;
+			}
 			if(JSB.isInstanceOf(data, 'JSB.Widgets.Value')){
 				this.data = data;
 			} else {

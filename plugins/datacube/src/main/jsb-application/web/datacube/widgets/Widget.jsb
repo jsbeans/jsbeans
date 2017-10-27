@@ -268,7 +268,7 @@
 					if($this.getWrapper()){
 						var filterDesc = null;
 						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
-							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source]);
+							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source], $this.sources[item.binding.source]);
 						} else {
 							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
 						}
@@ -283,6 +283,9 @@
 					item.fetchOpts.sort = $this.sort;
 
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+						if(fail && fail.message == 'Fetch broke'){
+							return;
+						}
 						if(item.fetchOpts.reset){
 							item.cursor = 0;
 							if(item.data){
@@ -291,6 +294,7 @@
 						}
 						item.fetchOpts.reset = false;
 						if(data){
+							data = $this.decompressData(data);
 							if(!item.data){
 								item.data = data;
 							} else {
@@ -456,6 +460,7 @@
 						}
 						return null;
 					} else if(item.type == 'select'){
+					    // return resolveValue(item.items[item.chosenIdx].values[0]);
 						return new $this.Selector(item.items[item.chosenIdx]);
 					} else if(item.type == 'group'){
 						if(item.groups.length == 0){
@@ -474,6 +479,23 @@
 			};
 		},
 		
+		decompressData: function(dataObj){
+			if(!dataObj){
+				return null;
+			}
+			var data = [];
+			for(var i = 0; i < dataObj.data.length; i++){
+				var cItem = dataObj.data[i];
+				var item = {};
+				for(var fIdx in cItem){
+					var fName = dataObj.dict[parseInt(fIdx)];
+					item[fName] = cItem[fIdx];
+				}
+				data.push(item);
+			}
+			return data;
+		},
+		
 		setWrapper: function(w, values, sourceDesc){
 			this.wrapper = w;
 			this.updateValues(values, sourceDesc);
@@ -481,6 +503,10 @@
 		
 		getWrapper: function(){
 			return this.wrapper;
+		},
+		
+		getDashboard: function(){
+			return $this.getWrapper().getDashboard();
 		},
 		
 		updateValues: function(values, sourceDesc){
@@ -562,6 +588,14 @@
 			return this.getWrapper().removeFilter(fItemId);
 		},
 		
+		getFilters: function(){
+			return this.getFilterManager().getFilters();
+		}, 
+		
+		getFilterManager: function(){
+			return this.getWrapper().getFilterManager();
+		},
+		
 		setSort: function(q){
 			this.sort = q;
 			this.refresh();
@@ -574,6 +608,18 @@
 		    }
 
 		    return MD5.md5(str);
+		},
+
+		storeCache: function(data){
+		    this._cache = data;
+		},
+
+		getCache: function(){
+		    return this._cache;
+		},
+
+		refreshFromCache: function(){
+		    // method must be overridden
 		}
 	},
 	
@@ -581,6 +627,7 @@
 		$require: 'DataCube.Widgets.WidgetExplorer',
 
 		iterators: {},
+		needBreak: false,
 		
 		destroy: function(){
 			if(!this.isDestroyed()){
@@ -596,53 +643,93 @@
 			}
 		},
 		
+		compressData: function(data){
+			var encoded = {
+				data: [],
+				dict: []
+			};
+			
+			var encMap = {};
+			var cIdx = 0;
+			for(var i = 0; i < data.length; i++){
+				var item = data[i];
+				var cItem = {};
+				for(var fName in item){
+					if(!encMap[fName]){
+						// generate encoded field name
+						var cIdx = encoded.dict.length;
+						encoded.dict.push(fName);
+						encMap[fName] = '' + cIdx;
+					}
+					cItem[encMap[fName]] = item[fName];
+				}
+				encoded.data.push(cItem);
+			}
+			
+			return encoded;
+		},
+		
 		fetch: function(sourceId, dashboard, opts){
 			var batchSize = opts.batchSize || 50;
 			var source = dashboard.workspace.entry(sourceId);
-			if(opts.reset && this.iterators[sourceId]){
-				this.iterators[sourceId].close();
-				delete this.iterators[sourceId];
-			}
-			if(!this.iterators[sourceId]){
-				// figure out data provider
-				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-					var extQuery = {};
-					if(opts.filter){
-						extQuery.$filter = opts.filter;
-					}
-					if(opts.postFilter){
-						extQuery.$postFilter = opts.postFilter;
-					}
-					if(opts.sort){
-						extQuery.$sort = [opts.sort];
-					}
-					if(opts.select){
-                        extQuery.$select = opts.select;
-                    }
-                    if(opts.groupBy){
-                        extQuery.$groupBy = opts.groupBy;
-                    }
-					this.iterators[sourceId] = source.executeQuery(extQuery);
-				} else {
-					// TODO
-				}
-			}
-			
 			var data = [];
-			for(var i = 0; i < batchSize || opts.readAll; i++){
-				var el = null;
-				try {
-					el = this.iterators[sourceId].next();
-				}catch(e){
-					el = null;
+			if(opts.reset){
+				this.needBreak = true;
+			}
+			JSB.getLocker().lock('fetch_' + $this.getId());
+			this.needBreak = false;
+			try {
+				if(opts.reset && this.iterators[sourceId]){
+					this.iterators[sourceId].close();
+					delete this.iterators[sourceId];
 				}
-				if(!el){
-					break;
+				if(!this.iterators[sourceId]){
+					// figure out data provider
+					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+						var extQuery = {};
+						if(opts.filter){
+							extQuery.$cubeFilter = opts.filter;
+						}
+						if(opts.postFilter){
+							extQuery.$postFilter = opts.postFilter;
+						}
+						if(opts.sort){
+							extQuery.$sort = [opts.sort];
+						}
+						if(opts.select){
+	                        extQuery.$select = opts.select;
+	                    }
+	                    if(opts.groupBy){
+	                        extQuery.$groupBy = opts.groupBy;
+	                    }
+						this.iterators[sourceId] = source.executeQuery(extQuery);
+					} else {
+						// TODO
+					}
 				}
-				data.push(el);
+			
+				for(var i = 0; i < batchSize || opts.readAll; i++){
+					if(this.needBreak){
+						throw new Error('Fetch broke');
+					}
+					var el = null;
+					try {
+						el = this.iterators[sourceId].next();
+					}catch(e){
+						el = null;
+					}
+					if(!el){
+						break;
+					}
+					data.push(el);
+				}
+			} finally {
+				JSB.getLocker().unlock('fetch_' + $this.getId());
 			}
 			
-			return data;
+			
+			
+			return this.compressData(data);
 		}
 	}
 }

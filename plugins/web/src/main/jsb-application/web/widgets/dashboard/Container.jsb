@@ -47,8 +47,10 @@
 									}
 								}
 							}
-							if(!dragAccept && (!$this.options.onDragAccept || $this.options.onDragAccept(d))){
-								dragAccept = true;
+							if(!dragAccept && $this.options.onDragAccept){
+								if($this.options.onDragAccept(d)){
+									dragAccept = true;
+								}
 							}
 							
 							if(dragAccept){
@@ -192,13 +194,15 @@
 		},
 		
 		undockWidget: function(widget){
-			if(widget){
+			if(widget && this.widgetContainer){
 				this.widgetContainer.detachWidget(widget);
 			}
 			
-			if(Object.keys(this.widgetContainer.widgets).length == 0){
+			if(!this.widgetContainer || Object.keys(this.widgetContainer.widgets).length == 0){
 				// unwind container hierarchy
-				this.widgetContainer.destroy();
+				if(this.widgetContainer){
+					this.widgetContainer.destroy();
+				}
 				this.widgetContainer = null;
 				var parentContainer = this.parent;
 				if(parentContainer == this.dashboard){
@@ -403,7 +407,7 @@
 						this.addWidget(w);
 					}
 				}
-				if(Object.keys(this.widgetContainer.widgets).length == 0){
+				if(!this.widgetContainer || Object.keys(this.widgetContainer.widgets).length == 0){
 					this.undockWidget();
 				}
 			} else {

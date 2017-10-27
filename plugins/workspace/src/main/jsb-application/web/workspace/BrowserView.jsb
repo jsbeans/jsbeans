@@ -19,6 +19,9 @@
 		},
 		
 		setCurrentNode: function(node, workspace){
+			if(this.node == node){
+				return;
+			}
 			this.node = node;
 			this.workspace = workspace;
 			this.refresh();

@@ -3,7 +3,7 @@
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
-		$require: ['JSB.Widgets.ScrollBox',
+		$require: ['JSB.Controls.ScrollBox',
 		           'JSB.Widgets.GroupBox',
 		           'JSB.Widgets.ItemList',
 		           'JSB.Widgets.ItemList.BlockView',

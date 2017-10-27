@@ -18,20 +18,29 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('Dashboard.css');
-			this.addClass('dataCubeDashboard');
+			this.addClass('dataCubeDashboard loading');
 			
 			this.filterManager = new FilterManager(this);
 			
+			this.headerElt = this.$('<div class="header"></div>');
+			this.append(this.headerElt);
+
+			this.titleElt = this.$('<div class="title cell"></div>');
+			this.headerElt.append(this.titleElt);
+			
 			this.filterSelector = new FilterSelector(this, this.filterManager);
-			this.append(this.filterSelector);
+			this.headerElt.append($this.$('<div class="filter cell"></div>').append(this.filterSelector.getElement()));
 			
 			this.dashboard = new Dashboard({
-				emptyText: 'Перетащите сюда виджет'
+				emptyText: '',
 			});
 			this.append(this.dashboard);
 			
-			this.filterSelector.getElement().resize(function(){
-				$this.dashboard.getElement().css('height', 'calc(100% - '+$this.filterSelector.getElement().outerHeight()+'px)');
+			this.loadingBack = $this.$('<div class="loadingBack"><div class="message"><div class="icon"></div></div></div>');
+			this.append(this.loadingBack);
+			
+			this.headerElt.resize(function(){
+				$this.dashboard.getElement().css('height', 'calc(100% - '+($this.headerElt.outerHeight() + 4)+'px)');
 			});
 			
 			this.server().getEntry(function(e){
@@ -44,6 +53,8 @@
 				return;
 			}
 			this.entry = entry;
+			$this.addClass('loading');
+			this.titleElt.text(this.entry.getName());
 			this.filterManager.clear();
 			this.entry.server().load(function(dashboardDesc){
 				// remove old wrappers
@@ -55,7 +66,7 @@
 				$this.wrappers = {};
 				var wWrappers = {};
 				for(var wId in dashboardDesc.wrappers){
-					var wWrapper = new WidgetWrapper(dashboardDesc.wrappers[wId], $this);
+					var wWrapper = new WidgetWrapper(dashboardDesc.wrappers[wId], $this, {viewMode: true});
 					wWrappers[wId] = wWrapper;
 					$this.wrappers[wWrapper.getId()] = wWrapper;
 				}
@@ -91,6 +102,10 @@
 				$this.ignoreHandlers = true;
 				$this.dashboard.setLayout(desc);
 				$this.ignoreHandlers = false;
+				
+				JSB.defer(function(){
+					$this.removeClass('loading');
+				}, 1000);
 			});
 		},
 		
