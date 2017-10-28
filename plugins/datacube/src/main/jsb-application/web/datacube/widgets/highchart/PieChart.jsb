@@ -259,10 +259,10 @@
             }
             ]
         },
-        // Подпись
+        // Подписи
         {
             type: 'group',
-            name: 'Подпись',
+            name: 'Подписи',
             key: 'dataLabels',
             collapsable: true,
             collapsed: true,

@@ -260,6 +260,39 @@
             }
             ]
         },
+        // Подписи
+        {
+            type: 'group',
+            name: 'Подпись',
+            key: 'dataLabels',
+            collapsable: true,
+            collapsed: true,
+            items: [
+            {
+                name: 'Включить подпись',
+                type: 'item',
+                key: 'enabled',
+                optional: true,
+                editor: 'none'
+            },
+            {
+                name: 'Формат подписи',
+                type: 'item',
+                key: 'format',
+                itemType: 'string',
+                itemValue: '{y}',
+                description: 'В качестве переменных в строке можно использовать имя {point.name} и значение {y}'
+            },
+            {
+                name: 'Расстояние от окружности',
+                type: 'item',
+                key: 'distance',
+                itemType: 'string',
+                itemValue: '30',
+                description: 'Положительное значение указывает расстояние снаружи окружности, отрицательное - внутри'
+            }
+            ]
+        },
         // Tooltip
 		{
 			type: 'group',
@@ -546,7 +579,9 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                             allowPointSelect: true,
                             cursor: 'pointer',
                             dataLabels: {
-                                enabled: false
+                                enabled: this.getContext().find('dataLabels').find('enabled').used(),
+                                format: this.getContext().find('dataLabels').find('format').value(),
+                                distance: Number(this.getContext().find('dataLabels').find('distance').value())
                             },
                             showInLegend: true
                         }
@@ -558,10 +593,6 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                         floating: false,
                         align: this.getContext().find('legend').find('align').value().value(),
                         verticalAlign: this.getContext().find('legend').find('verticalAlign').value().value(),
-                        x: 0,
-                        y: 0,
-                        itemMarginTop: 15,
-                        itemMarginBottom: 15,
                         backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
                     },
 
