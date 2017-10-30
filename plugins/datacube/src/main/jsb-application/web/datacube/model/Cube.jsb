@@ -924,7 +924,7 @@
 						for(var i = 0; i < fDesc.binding.length; i++){
 							var pDesc = fDesc.binding[i];
 							var pId = pDesc.provider.getId();
-							var tId = 'union';
+							var tId = 'union_' + pId;
 							if(pDesc.provider.getMode() != 'union'){
 								tId = 'join_' + pId;
 							}
@@ -945,11 +945,12 @@
 					var tIdx = 1;
 					for(var tId in materializationDesc.tables){
 						var fields = tableFieldMap[tId];
-						var suggestedName = 'cube_' + $this.getLocalId() + '_' + (materializationDesc.tables[tId].mode == 'union' ? 'u' : ('j' + tIdx) );
-						if(materializationDesc.tables[tId].mode != 'union'){
+						var suggestedName = 'cube_' + $this.getLocalId() + '_' + (materializationDesc.tables[tId].mode == 'union' ? ('u' + tIdx) : ('j' + tIdx) );
+						tIdx++;
+/*						if(materializationDesc.tables[tId].mode != 'union'){
 							tIdx++;	
 						}
-						
+*/						
 						// create table
 						var tableDesc = $this.materializer.createTable(suggestedName, fields);
 						materializationDesc.tables[tId].table = tableDesc.table;
@@ -1056,6 +1057,9 @@
 								if(curTimestamp - lastStatusTimestamp > 3000){
 									lastStatusTimestamp = curTimestamp;
 									if(checkStop()){
+										try {
+											iterator.close();
+										} catch(e){}
 										destroyCurrentMaterialization();
 										return;
 									}
@@ -1068,6 +1072,10 @@
 						if(batch.length > 0){
 							$this.materializer.insert(materializationDesc.tables[tId].table, batch);
 						}
+						
+						try {
+							iterator.close();
+						} catch(e){}
 						
 						if(checkStop()){
 							destroyCurrentMaterialization();
