@@ -68,6 +68,7 @@
 		clear: function(){
 		    this.error.addClass('hidden');
             this.table.clear();
+            this.server().clearIterator();
             // this.curData = null;
             // this.curLoadId = null;
             // this.params = {};
@@ -210,6 +211,15 @@
 
 	$server: {
 	    it: null,
+	    
+	    clearIterator: function(){
+	    	if(this.it) {
+	    		try {
+	    			this.it.close();
+	    		} catch(e){}
+	    		this.it = null;
+	    	}
+	    },
 
 	    loadData: function(obj) {
             try{

@@ -1,6 +1,7 @@
 .jsb-switch {
     display: inline-block;
     vertical-align: middle;
+    overflow: inherit;
 }
 
 .jsb-switch > input{
@@ -41,9 +42,12 @@
 
 .jsb-switch > input + label:after {
     width: 10px;
+    height: 10px;
     background-color: #fff;
     border-radius: 100%;
     box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.33);
+    margin-top: -1px;
+    margin-left: -4px;
     transition: margin 0.4s;
 }
 

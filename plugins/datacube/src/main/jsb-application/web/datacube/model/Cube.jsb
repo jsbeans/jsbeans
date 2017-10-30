@@ -966,6 +966,9 @@
 						var batch = [];
 						var lastStatusTimestamp = 0;
 						for(var i = 0; ; i++){
+/*							if(i > 5000){
+								break;
+							}*/
 							var el = null;
 							try {
 								el = iterator.next();
@@ -982,14 +985,68 @@
 	
 							// translate data into new fields
 							var nEl = {};
+							var bIncorrect = false;
 							for(var f in el){
 								if(!fields[f]){
 									continue;
 								}
-								nEl[tableDesc.fieldMap[f]] = el[f];
+								var val = el[f];
+								
+								// check correspondence val to it's type
+								switch(fields[f].toLowerCase()){
+								case 'string':
+									if(!JSB.isNull(val) && !JSB.isString(val)){
+										val = '' + val;
+									}
+									break;
+								case 'integer':
+									if(!JSB.isNull(val) && !JSB.isInteger(val)){
+										val = parseInt(val);
+										if(JSB.isNaN(val)){
+											bIncorrect = true;
+										}
+									}
+									break;
+								case 'float':
+								case 'double':
+									if(!JSB.isNull(val) && !JSB.isFloat(val)){
+										val = parseFloat(val);
+										if(JSB.isNaN(val)){
+											bIncorrect = true;
+										}
+									}
+									break;
+								case 'boolean':
+									if(!JSB.isNull(val) && !JSB.isBoolean(val)){
+										if(val.toLowerCase() == 'true'){
+											val = true;
+										} else {
+											val = false;
+										}
+									}
+									break;
+								case 'date':
+									if(!JSB.isNull(val) && !JSB.isDate(val)){
+										val = Date.parse(val);
+										if(JSB.isNaN(val)){
+											bIncorrect = true;
+										} else {
+											val = new Date(val);
+										}
+									}
+									break;
+								case 'array':
+									break;
+								case 'object':
+									break;
+								}
+								
+								nEl[tableDesc.fieldMap[f]] = val;
 							}
 							
-							batch.push(nEl);
+							if(!bIncorrect && Object.keys(nEl).length > 0){
+								batch.push(nEl);
+							}
 							
 							if(batch.length >= 100){
 								$this.materializer.insert(materializationDesc.tables[tId].table, batch);
@@ -1068,8 +1125,7 @@
 							}
 						}
 					}
-					
-//					$this.updateIndexes(materializationDesc);
+					$this.updateIndexes(materializationDesc);
 					materializationDesc.lastUpdate = Date.now();
 					var oldMaterialization = $this.materialization;
 					$this.materialization = materializationDesc;
@@ -1218,12 +1274,12 @@
 							}
 							var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + fStr);
 							indexMap[idxName] = indexDesc;
-						} else if(JSB.isObject(obj[fObj]) && Object.keys(obj[fObj]).length > 0){
+						} else if(obj[fObj] && JSB.isObject(obj[fObj]) && Object.keys(obj[fObj]).length > 0){
 							var sMap = parseObject(obj[fObj]);
 							if(sMap && Object.keys(sMap).length > 0){
 								JSB.merge(indexMap, sMap);
 							}
-						} else if(JSB.isArray(obj[fObj])){
+						} else if(obj[fObj] && JSB.isArray(obj[fObj])){
 							for(var i = 0; i < obj[fObj].length; i++){
 								var sMap = parseObject(obj[fObj][i]);
 								if(sMap && Object.keys(sMap).length > 0){
@@ -1242,7 +1298,10 @@
 			try {
 				var materializer = this.materializer;
 				if(!materializer){
-					var database = materialization.dataProviderEntry.getParent();
+					if(Object.keys(materialization.tables).length == 0){
+						throw new Error('Materialization contains no tables to build index on');
+					}
+					var database = materialization.tables[Object.keys(materialization.tables)[0]].dataProviderEntry.getParent();
 					materializer = MaterializationEngine.createMaterializer(database);
 					bCreatedMaterializer = true;
 				}
@@ -1251,6 +1310,9 @@
 				var cubeIdxMap = {};
 				// generate single indexes
 				for(var f in matFields){
+					if(!matFields[f].binding || matFields[f].binding.length < 2){
+						continue;
+					}
 					var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + f);
 					var indexDesc = {};
 					indexDesc[f] = true;
@@ -1266,63 +1328,92 @@
 				}
 				
 				// adding new indexes
-				var indexCount = Object.keys(cubeIdxMap).length;
-				var curIndexPos = 0;
-				var lastPcnt = -1;
-				for(var idxName in cubeIdxMap){
-					if(materialization.indexes && materialization.indexes[idxName]){
-						continue;
-					}
-					// translate index fields
-					var idxDesc = {};
-					for(var fName in cubeIdxMap[idxName]){
-						if(materialization.fields[fName] && materialization.fields[fName].binding && materialization.fields[fName].binding.length > 0){
-							var pField = materialization.fields[fName].binding[0].field;
-							idxDesc[pField] = cubeIdxMap[idxName][fName];
-						}
-					}
-					
-					if(Object.keys(idxDesc).length > 0){
-						try {
-							materializer.createIndex(materialization.table, idxName, idxDesc);
-							if(!materialization.indexes){
-								materialization.indexes = {};
+				for(var tId in materialization.tables){
+
+					var tableIdxMap = {};
+					var tDesc = materialization.tables[tId];
+					for(var cubeIdxName in cubeIdxMap){
+						var cubeIdxDesc = cubeIdxMap[cubeIdxName];
+						var tableIdxDesc = {};
+						var tableIdxStr = tDesc.table;
+						for(var fName in cubeIdxDesc){
+							if(materialization.fields[fName] && materialization.fields[fName].binding && materialization.fields[fName].binding.length > 0){
+								for(var i = 0; i < materialization.fields[fName].binding.length; i++){
+									if(materialization.fields[fName].binding[i].provider == tDesc.dataProvider){
+										var pField = materialization.fields[fName].binding[i].field;
+										tableIdxDesc[pField] = cubeIdxDesc[fName];
+										if(tableIdxStr.length > 0){
+											tableIdxStr += '|';
+										}
+										tableIdxStr += fName;
+										break;
+									}
+								}
 							}
-							materialization.indexes[idxName] = cubeIdxMap[idxName];
-							bChanged = true;
-						} catch(e){
-							JSB.getLogger().warn('Failed to create index ' + idxName + ' for ' + JSON.stringify(idxDesc));
 						}
-					}
-					curIndexPos++;
-					var pcnt = Math.floor(curIndexPos * 100 / indexCount);
-					if(lastPcnt != pcnt){
-						$this.publish('DataCube.Model.Cube.status', {status: 'Создание новых индексов: ' + pcnt + '%', success: true}, {session: true});
-						lastPcnt = pcnt;
+						var tableIdxName = 'idx_' +  MD5.md5($this.getLocalId() + '_' + tableIdxStr);
+						if(Object.keys(tableIdxDesc).length == 0){
+							continue;
+						}
+						
+						tableIdxMap[tableIdxName] = tableIdxDesc;
 					}
 					
+					var indexCount = Object.keys(tableIdxMap).length;
+					var curIndexPos = 0;
+					var lastPcnt = -1;
+
+					for(var idxName in tableIdxMap){
+						if(tDesc.indexes && tDesc.indexes[idxName]){
+							continue;
+						}
+						var idxDesc = tableIdxMap[idxName];
+						
+						if(Object.keys(idxDesc).length > 0){
+							try {
+								materializer.createIndex(tDesc.table, idxName, idxDesc);
+								if(!tDesc.indexes){
+									tDesc.indexes = {};
+								}
+								tDesc.indexes[idxName] = tableIdxMap[idxName];
+								bChanged = true;
+							} catch(e){
+								JSB.getLogger().warn('Failed to create index ' + idxName + ' for ' + JSON.stringify(idxDesc));
+							}
+						}
+						
+						curIndexPos++;
+						var pcnt = Math.floor(curIndexPos * 100 / indexCount);
+						if(lastPcnt != pcnt){
+							$this.publish('DataCube.Model.Cube.status', {status: 'Создание новых индексов: ' + pcnt + '%', success: true}, {session: true});
+							lastPcnt = pcnt;
+						}
+						
+					}
+					
+					// remove missing indexes
+					$this.publish('DataCube.Model.Cube.status', {status: 'Удаление старых индексов', success: true}, {session: true});
+					var idxToRemove = [];
+					if(tDesc.indexes){
+						for(var idxName in tDesc.indexes){
+							if(!tableIdxMap[idxName]){
+								idxToRemove.push(idxName);
+							}
+						}
+					}
+					for(var i = 0; i < idxToRemove.length; i++){
+						var idxName = idxToRemove[i];
+						try {
+							materializer.removeIndex(tDesc.table, idxName);
+							delete tDesc.indexes[idxName];
+							bChanged = true;
+						}catch(e){
+							JSB.getLogger().warn('Failed to remove index ' + idxName + ' with ' + JSON.stringify(materialization.indexes[idxName]));
+						}
+					}
+
 				}
 				
-				// remove missing indexes
-				$this.publish('DataCube.Model.Cube.status', {status: 'Удаление старых индексов', success: true}, {session: true});
-				var idxToRemove = [];
-				if(materialization.indexes){
-					for(var idxName in materialization.indexes){
-						if(!cubeIdxMap[idxName]){
-							idxToRemove.push(idxName);
-						}
-					}
-				}
-				for(var i = 0; i < idxToRemove.length; i++){
-					var idxName = idxToRemove[i];
-					try {
-						materializer.removeIndex(materialization.table, idxName);
-						delete materialization.indexes[idxName];
-						bChanged = true;
-					}catch(e){
-						JSB.getLogger().warn('Failed to remove index ' + idxName + ' with ' + JSON.stringify(materialization.indexes[idxName]));
-					}
-				}
 			} finally {
 				if(bCreatedMaterializer){
 					materializer.destroy();
