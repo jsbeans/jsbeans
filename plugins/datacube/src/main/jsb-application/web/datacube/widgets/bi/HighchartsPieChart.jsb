@@ -127,6 +127,7 @@
 	$scheme: {
         type: 'group',
         items: [
+        // Заголовок
         {
             name: 'Заголовок',
             type: 'item',
@@ -134,6 +135,7 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Источник
         {
             type: 'group',
             name: 'Источник',
@@ -173,6 +175,125 @@
             }
             ]
         },
+        // Легенда
+        {
+            name: 'Легенда',
+            type: 'group',
+            key: 'legend',
+            items: [
+            {
+                name: 'Расположение',
+                type: 'select',
+                key: 'layout',
+                items: [
+                {
+                    name: 'Горизонтальное',
+                    type: 'item',
+                    key: 'horizontal',
+                    editor: 'none',
+                    itemValue: 'horizontal'
+                },
+                {
+                    name: 'Вертикальное',
+                    type: 'item',
+                    key: 'vertical',
+                    editor: 'none',
+                    itemValue: 'vertical'
+                }
+                ]
+            },
+            {
+                name: 'Горизонтальное выравнивание',
+                type: 'select',
+                key: 'align',
+                items: [
+                {
+                    name: 'По левому краю',
+                    type: 'item',
+                    key: 'left',
+                    editor: 'none',
+                    itemValue: 'left'
+                },
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'center',
+                    editor: 'none',
+                    itemValue: 'center'
+                },
+                {
+                    name: 'По правому краю',
+                    type: 'item',
+                    key: 'right',
+                    editor: 'none',
+                    itemValue: 'right'
+                }
+                ]
+            },
+            {
+                name: 'Вертикальное выравнивание',
+                type: 'select',
+                key: 'verticalAlign',
+                items: [
+                {
+                    name: 'По нижнему краю',
+                    type: 'item',
+                    key: 'bottom',
+                    editor: 'none',
+                    itemValue: 'bottom'
+                },
+                {
+                    name: 'По центру',
+                    type: 'item',
+                    key: 'middle',
+                    editor: 'none',
+                    itemValue: 'middle'
+                },
+                {
+                    name: 'По верхнему краю',
+                    type: 'item',
+                    key: 'top',
+                    editor: 'none',
+                    itemValue: 'top'
+                }
+                ]
+            }
+            ]
+        },
+        // Подписи
+        {
+            type: 'group',
+            name: 'Подпись',
+            key: 'dataLabels',
+            collapsable: true,
+            collapsed: true,
+            items: [
+            {
+                name: 'Включить подпись',
+                type: 'item',
+                key: 'enabled',
+                optional: true,
+                editor: 'none'
+            },
+            {
+                name: 'Формат подписи',
+                type: 'item',
+                key: 'format',
+                itemType: 'string',
+                itemValue: '{y}',
+                description: 'В качестве переменных в строке можно использовать имя {point.name} и значение {y}'
+            },
+            {
+                name: 'Расстояние от окружности',
+                type: 'item',
+                key: 'distance',
+                itemType: 'string',
+                itemValue: '30',
+                description: 'Положительное значение указывает расстояние снаружи окружности, отрицательное - внутри'
+            }
+            ]
+        },
+        // Tooltip
 		{
 			type: 'group',
 			key: 'tooltip',
@@ -192,6 +313,7 @@
 			}
 			]
 		},
+		// Диаметр внутреннего круга
         {
             name: 'Диаметр внутреннего круга',
             type: 'item',
@@ -200,6 +322,7 @@
             itemValue: '0',
             description: 'Диаметр внутреннего круга. По умолчанию 0. Диаметр больше 0 делает диаграмму вида бублика. Указывается числовое или процентное значение'
         },
+        // Цветовая схема
         {
             name: 'Цветовая схема по умолчанию',
             key: 'colorScheme',
@@ -456,7 +579,9 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                             allowPointSelect: true,
                             cursor: 'pointer',
                             dataLabels: {
-                                enabled: false
+                                enabled: this.getContext().find('dataLabels').find('enabled').used(),
+                                format: this.getContext().find('dataLabels').find('format').value(),
+                                distance: Number(this.getContext().find('dataLabels').find('distance').value())
                             },
                             showInLegend: true
                         }
@@ -464,14 +589,10 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
                     legend: {
                         rtl: true,
-                        layout: 'vertical',
+                        layout: this.getContext().find('legend').find('layout').value().value(),
                         floating: false,
-                        align: 'left',
-                        verticalAlign: 'middle',
-                        x: 0,
-                        y: 0,
-                        itemMarginTop: 15,
-                        itemMarginBottom: 15,
+                        align: this.getContext().find('legend').find('align').value().value(),
+                        verticalAlign: this.getContext().find('legend').find('verticalAlign').value().value(),
                         backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
                     },
 

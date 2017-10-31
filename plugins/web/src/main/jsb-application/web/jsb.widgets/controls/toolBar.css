@@ -2,7 +2,7 @@
 
 ._dwp_toolBar ul._dwp_tbContainer {
 	list-style-type: none;
-    background: rgba(241, 241, 241, 0.7);
+    background: rgba(241, 241, 241, 1);
     border-bottom: 1px solid #BEBEBE;
 	padding: 3px;
 }

@@ -1,7 +1,13 @@
 {
 	$name: 'DataCube.SliceEditorView',
 	$parent: 'JSB.Workspace.BrowserView',
-	$require: ['JSB.Widgets.SplitBox', 'DataCube.GridView', 'JSB.Widgets.ScrollBox', 'JSB.Widgets.PrimitiveEditor', 'JSB.Widgets.Button', 'JSB.Widgets.MultiEditor', 'DataCube.Query.QueryEditor'],
+	$require: ['JSB.Widgets.SplitBox', 
+	           'DataCube.GridView', 
+	           'JSB.Controls.ScrollBox', 
+	           'JSB.Widgets.PrimitiveEditor', 
+	           'JSB.Widgets.Button', 
+	           'JSB.Widgets.MultiEditor', 
+	           'DataCube.Query.QueryEditor'],
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
@@ -72,7 +78,6 @@
 			
 			this.queryEditor = new QueryEditor({
 				onChange: function(){
-//					$this.updateGrid();
 					$this.updateTextQuery();
 				}
 			});
@@ -83,7 +88,17 @@
 			this.textQueryEditor = new MultiEditor({
 				valueType: "org.jsbeans.types.JsonObject",
 				showHints: false,
-				readOnly: true
+				readOnly: false,
+				onChange: function(q){
+					if($this.ignoreHandlers){
+						return;
+					}
+					JSB.defer(function(){
+						$this.query = q;
+						$this.updateQuery();
+					}, 600, 'textQueryChanged_' + $this.getId());
+					
+				}
 			});
 			vSplitBox.addToPane(1, this.textQueryEditor);
 			
@@ -108,21 +123,31 @@
 				$this.query = JSB.clone($this.slice.getQuery());
 				$this.queryEditor.setOption('slice', $this.slice);
 				$this.queryEditor.setOption('cubeFields', fields);
-				$this.queryEditor.set($this.query);
 				
-				$this.updateGrid();
+				$this.updateQuery();
 				$this.updateTextQuery();
+				$this.updateGrid();
 			});
 		},
 		
 		updateGrid: function(query){
 			query = query || this.query;
-			this.gridView.updateData(this.slice, query);
+			$this.gridView.updateData($this.slice, query);
 		},
 		
 		updateTextQuery: function(){
-			this.textQueryEditor.setData(this.query);
-		} 
+			$this.ignoreHandlers = true;
+			$this.textQueryEditor.setData($this.query);
+			$this.ignoreHandlers = false;
+		},
+		
+		updateQuery: function(){
+			$this.ignoreHandlers = true;
+			try {
+				$this.queryEditor.set($this.query);
+			}catch(e){}
+			$this.ignoreHandlers = false;
+		}
 	},
 	
 	$server: {

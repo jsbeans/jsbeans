@@ -283,6 +283,11 @@
 				$this.itemsListBox.selectItem(chosenListItem.key);
 				$this.itemsListBox.scrollTo(chosenListItem.key);
 			}
+			
+			JSB.defer(function(){
+				$this.searchEditor.setFocus();	
+			}, 300);
+			
 
 			$this.ignoreHandlers = false;
 		},

@@ -114,6 +114,27 @@
                     key: 'opposite',
                     optional: true,
                     editor: 'none'
+                },
+                {
+                    name: 'Тип',
+                    type: 'select',
+                    key: 'type',
+                    items: [
+                    {
+                        name: 'Линейная',
+                        type: 'item',
+                        key: 'linear',
+                        editor: 'none',
+                        itemValue: 'linear'
+                    },
+                    {
+                        name: 'Логарифмическая',
+                        type: 'item',
+                        key: 'logarithmic',
+                        editor: 'none',
+                        itemValue: 'logarithmic'
+                    }
+                    ]
                 }
                 ]
             },
@@ -128,6 +149,7 @@
                     name: 'Имя поля',
                     type: 'item',
                     key: 'fieldName',
+                    binding: 'field',
                     itemType: 'string',
                     itemValue: ''
                 },
@@ -410,7 +432,16 @@
 // end filters section
 
             var seriesContext = this.getContext().find('series').values(),
-                xAxisContext = this.getContext().find('xAxis').values();
+                xAxisContext = this.getContext().find('xAxis').values(),
+                dataSource = [];
+
+            for(var i = 0; i < seriesContext.length; i++){
+                var name = seriesContext[i].get(0);
+                dataSource.push({
+                    name: name.binding() ? name : name.value(),
+                    value: seriesContext[i].get(1)
+                });
+            }
 
             $this.getElement().loader();
             JSB().deferUntil(function(){
@@ -419,15 +450,37 @@
                         xAxis = [];
 
                     while(source.next()){
-                        for(var i = 0; i < seriesContext.length; i++){
-                            var a = seriesContext[i].get(1).value();
-                            if(JSB().isArray(a)){
-                                seriesData[i] = a;
-                            } else {
+                        for(var i = 0; i < dataSource.length; i++){
+                            if(!JSB.isString(dataSource[i].name)){    // composite series
                                 if(!seriesData[i]){
-                                    seriesData[i] = [];
+                                    seriesData[i] = {
+                                        data: {},
+                                        simple: false
+                                    };
                                 }
-                                seriesData[i].push(a);
+
+                                if(!seriesData[i].data[dataSource[i].name.value()]){
+                                    seriesData[i].data[dataSource[i].name.value()] = [];
+                                }
+
+                                seriesData[i].data[dataSource[i].name.value()].push(dataSource[i].value.value());
+                            } else {    // simple series
+                                if(!seriesData[i]){
+                                    seriesData[i] = {
+                                        index: i,
+                                        simple: true,
+                                        name: dataSource[i].name,
+                                        data: []
+                                    };
+                                }
+
+                                var d = dataSource[i].value.value();
+
+                                if(JSB().isArray(d)){
+                                    seriesData[i].data = d;
+                                } else {
+                                    seriesData[i].data.push(d);
+                                }
                             }
                         }
 
@@ -441,14 +494,31 @@
                         }
                     }
 
+                    var data = [];
+                    for(var i = 0; i < seriesData.length; i++){
+                        if(seriesData[i].simple){
+                            data.push(seriesData[i]);
+                        } else {
+                            var obj = seriesData[i].data;
+
+                            for(var j in obj){
+                                data.push({
+                                    index: i,
+                                    name: j,
+                                    data: obj[j]
+                                })
+                            }
+                        }
+                    }
+
                     if(opts && opts.isCacheMod){
                         $this.storeCache({
-                            seriesData: seriesData,
+                            seriesData: data,
                             xAxis: xAxis
                         });
                     }
 
-                    $this._buildChart(seriesData, xAxis);
+                    $this._buildChart(data, xAxis);
 
                     for(var i in $this._curFilters){
                         this._selectAllCategory(i);
@@ -466,19 +536,19 @@
                 series = [];
 
             try{
-                for(var i = 0; i < seriesContext.length; i++){
-                    if(!series[i]){
-                        series[i] = {
-                            name: seriesContext[i].get(0).value(),
-                            data: seriesData[i],
-                            type: seriesContext[i].get(2).value().name(),
+                for(var j = 0; j < seriesData.length; j++){
+                    if(!series[j]){
+                        series[j] = {
+                            name: seriesData[j].name,
+                            data: seriesData[j].data,
+                            type: seriesContext[seriesData[j].index].get(2).value().name(),
                             tooltip: {
-                                valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                                valueSuffix: seriesContext[seriesData[j].index].get(3).value().get(0).value()
                             },
-                            yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-                            dashStyle: seriesContext[i].get(5).value().name(),
-                            color: $this.isNull(seriesContext[i].get(6).value()),
-                            visible: seriesContext[i].find('visible').used(),
+                            yAxis: $this.isNull(seriesContext[seriesData[j].index].get(4).value(), true),
+                            dashStyle: seriesContext[seriesData[j].index].get(5).value().name(),
+                            color: $this.isNull(seriesContext[seriesData[j].index].get(6).value()),
+                            visible: seriesContext[seriesData[j].index].find('visible').used(),
                             point: {
                                 events: {
                                     click: function(evt) {
@@ -542,7 +612,7 @@
                                     }
                                 }
                             },
-                            stack: seriesContext[i].get(7).value()
+                            stack: seriesContext[seriesData[j].index].get(7).value()
                         };
                     }
                 }
@@ -561,7 +631,8 @@
                                 color: $this.isNull(yAxisContext[i].get(1).value().get(1).value().get(0).value())
                             }
                         },
-                        opposite: yAxisContext[i].get(2).used()
+                        opposite: yAxisContext[i].get(2).used(),
+                        type: yAxisContext[i].find('type').value().value()
                     };
                 }
 

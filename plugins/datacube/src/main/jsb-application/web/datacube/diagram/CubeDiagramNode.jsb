@@ -59,8 +59,8 @@
                         <div class="deselectAll" title="Снять выделение со всех"></div>
                         <div class="link disabled" title="Объединение полей"></div>
                         <div class="default disabled" title="Установить поля по-умолчанию"></div>
-                        <div class="remove disabled" title="Удаление полей"></div>
                         <div class="materialization" title="Настройки материализации куба"></div>
+                        <div class="remove disabled" title="Удаление полей"></div>
                     </div>
 					<div class="message hidden"></div>
 				</div>`);

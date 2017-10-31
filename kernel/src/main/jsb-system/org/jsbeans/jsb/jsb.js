@@ -1090,7 +1090,11 @@ if(!(function(){return this;}).call(null).JSB){
 		},
 		
 		isNumber: function(obj){
-			return typeof(obj) === 'number';
+			return typeof(obj) === 'number' && !JSB.isNaN(obj);
+		},
+		
+		isNaN: function(obj){
+			return isNaN(obj);
 		},
 		
 		isFloat: function(n){

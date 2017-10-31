@@ -460,6 +460,7 @@
 						}
 						return null;
 					} else if(item.type == 'select'){
+					    // return resolveValue(item.items[item.chosenIdx].values[0]);
 						return new $this.Selector(item.items[item.chosenIdx]);
 					} else if(item.type == 'group'){
 						if(item.groups.length == 0){

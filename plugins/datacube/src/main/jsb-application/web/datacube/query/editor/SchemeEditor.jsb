@@ -10,6 +10,9 @@
 	
 	$client: {
 		options: {
+			schemeName: null,
+			expanded: false,
+			
 			onChange: function(){}
 		},
 		
@@ -1055,7 +1058,7 @@
 			// inject entry substrate if it's not a SingleObject
 			if($this.scheme.expressionType != 'SingleObject'){
 				if(entryElt.find('> .substrate').length == 0){
-					entryElt.append('<div class="substrate"></div>');
+					entryElt.prepend('<div class="substrate"></div>');
 					$this.installHoverHandlers('entry', valName, keyElt);
 				}
 			}
@@ -1098,7 +1101,7 @@
 			entryElt.append(valueEditor.getElement());
 			
 			// inject value substrate
-			valueEditor.append('<div class="substrate"></div>');
+			valueEditor.prepend('<div class="substrate"></div>');
 			
 			if(valueEditor.isCollapsible()){
 				entryElt.addClass('collapsible');
@@ -1156,7 +1159,7 @@
 			entryElt.append(keyElt);
 			
 			// inject entry substrate
-			entryElt.append('<div class="substrate"></div>');
+			entryElt.prepend('<div class="substrate"></div>');
 			$this.installHoverHandlers('entry', i, keyElt);
 			
 			var valueEditor = new $class(JSB.merge({}, $this.options, {
@@ -1172,7 +1175,7 @@
 			entryElt.append(valueEditor.getElement());
 
 			// inject value substrate
-			valueEditor.append('<div class="substrate"></div>');
+			valueEditor.prepend('<div class="substrate"></div>');
 			
 			var valScheme = QuerySyntax.getSchema()[valScheme];
 			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
@@ -1267,6 +1270,7 @@
 						}*/
 					
 					var schemeValues = Object.keys($this.scheme.values);
+					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
 						schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql'];
@@ -1281,10 +1285,9 @@
 						} 
 						var ctxElt = $this.$('<div class="context"></div>').text(ctxName);
 						$this.append(ctxElt);
-
+						usedFields['$context'] = true;
 					}
 					
-					var usedFields = {};
 					for(var i = 0; i < schemeValues.length; i++){
 						var vName = schemeValues[i];
 						if(JSB.isDefined($this.scheme.customKey) && vName == $this.scheme.customKey){
@@ -1486,6 +1489,8 @@
 					}
 					if(sCnt > 0){
 						w /= sCnt;
+					} else {
+						w = 1;
 					}
 				} else {
 					if(JSB.isDefined(desc.w)){
@@ -1500,6 +1505,8 @@
 						}
 						if(sCnt > 0){
 							w /= sCnt;
+						} else {
+							w = 1;
 						}
 					}
 				}
@@ -1642,7 +1649,7 @@
 					}
 					res.push(curDesc);
 				}
-				if(res.length === 0){
+				if(res.length === 0 && value.length > 0){
 					return {w: 0};
 				}
 				return {obj:res, w: extractIntegratedWeight(res, true), scheme: schemeName};

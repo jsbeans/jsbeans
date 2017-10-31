@@ -10,6 +10,7 @@
     $scheme: {
         type: 'group',
         items: [
+        // Заголовок
         {
             name: 'Заголовок',
             type: 'item',
@@ -17,6 +18,7 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Подзаголовок
         {
             name: 'Подзаголовок',
             type: 'item',
@@ -24,12 +26,14 @@
             itemType: 'string',
             itemValue: ''
         },
+        // Источник
         {
             type: 'group',
             name: 'Источник',
             key: 'source',
             binding: 'array',
             items: [
+            // Ось Х
             {
                 type: 'group',
                 name: 'Ось Х',
@@ -100,6 +104,7 @@
                 }
                 ]
             },
+            // Ось Y
             {
                 type: 'group',
                 name: 'Ось Y',
@@ -167,9 +172,31 @@
                     name: 'Справа',
                     key: 'opposite',
                     optional: true
+                },
+                {
+                    name: 'Тип',
+                    type: 'select',
+                    key: 'type',
+                    items: [
+                    {
+                        name: 'Линейная',
+                        type: 'item',
+                        key: 'linear',
+                        editor: 'none',
+                        itemValue: 'linear'
+                    },
+                    {
+                        name: 'Логарифмическая',
+                        type: 'item',
+                        key: 'logarithmic',
+                        editor: 'none',
+                        itemValue: 'logarithmic'
+                    }
+                    ]
                 }
                 ]
             },
+            // Серии
             {
                 type: 'group',
                 name: 'Серии',
@@ -180,6 +207,7 @@
                     name: 'Имя поля',
                     type: 'item',
                     key: 'seriesName',
+                    binding: 'field',
                     itemType: 'string',
                     itemValue: ''
                 },
@@ -349,6 +377,7 @@
             }
             ]
         },
+        // Легенда
         {
             type: 'group',
             name: 'Легенда',
@@ -363,6 +392,7 @@
             }
             ]
         },
+        // Цветовая схема
         {
             name: 'Цветовая схема по умолчанию',
             key: 'colorScheme',
@@ -394,6 +424,7 @@
             }
             ]
         },
+        // Режим накопления
         {
             name: 'Режим накопления',
             key: 'stacking',
@@ -820,7 +851,16 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
     // end filters section
 
                 var seriesContext = this.getContext().find('series').values(),
-                    xAxisContext = this.getContext().find('xAxis').find('categories').values();
+                    xAxisContext = this.getContext().find('xAxis').find('categories').values(),
+                    dataSource = [];
+
+                for(var i = 0; i < seriesContext.length; i++){
+                    var name = seriesContext[i].get(0);
+                    dataSource.push({
+                        name: name.binding() ? name : name.value(),
+                        value: seriesContext[i].get(1)
+                    });
+                }
 
 				$this.getElement().loader();
 				JSB().deferUntil(function(){
@@ -862,36 +902,81 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
 						try {
                             while(source.next()){
-                                for(var i = 0; i < seriesContext.length; i++){
-                                    var a = seriesContext[i].get(1).value();
-
-                                    if(!seriesData[i]){
-                                        seriesData[i] = [];
-                                    }
-
-                                    if(JSB().isArray(a)){
-                                        seriesData[i] = a;
-                                    } else {
-                                        seriesData[i].push(a);
-                                    }
-                                }
-
                                 if(xAxisContext.length > 1){
                                     xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
                                 } else {
                                     var a = xAxisContext[0].get(0).value();
                                     xAxisCategories.push(a ? a : 'Null');
                                 }
+
+                                for(var i = 0; i < dataSource.length; i++){
+                                    if(!JSB.isString(dataSource[i].name)){    // composite series
+                                        if(!seriesData[i]){
+                                            seriesData[i] = {
+                                                data: {},
+                                                simple: false
+                                            };
+                                        }
+
+                                        if(!seriesData[i].data[dataSource[i].name.value()]){
+                                            seriesData[i].data[dataSource[i].name.value()] = [];
+                                        }
+
+                                        seriesData[i].data[dataSource[i].name.value()].push(dataSource[i].value.value());
+                                    } else {    // simple series
+                                        if(!seriesData[i]){
+                                            seriesData[i] = {
+                                                index: i,
+                                                simple: true,
+                                                name: dataSource[i].name,
+                                                data: []
+                                            };
+                                        }
+
+                                        var d = dataSource[i].value.value();
+
+                                        if(JSB().isArray(d)){
+                                            seriesData[i].data = d;
+                                        } else {
+                                            seriesData[i].data.push(d);
+                                        }
+                                    }
+                                }
+                            }
+
+                            var data = [];
+                            for(var i = 0; i < seriesData.length; i++){
+                                if(seriesData[i].simple){
+                                    data.push(seriesData[i]);
+                                } else {
+                                    var obj = seriesData[i].data;
+
+                                    for(var j in obj){
+                                        data.push({
+                                            index: i,
+                                            name: j,
+                                            data: obj[j]
+                                        })
+                                    }
+                                }
+                            }
+
+                            if(data.length < xAxisCategories.length){
+                                var cats = [];
+                                for(var i = 0; i < xAxisCategories.length; i = i + data.length){
+                                    cats.push(xAxisCategories[i]);
+                                }
+                                xAxisCategories = cats;
                             }
 
                             if(opts && opts.isCacheMod){
                                 $this.storeCache({
-                                    seriesData: seriesData,
+                                    seriesData: data,
                                     xAxis: xAxisCategories
                                 });
                             }
 
-                            $this._buildChart(seriesData, xAxisCategories);
+                            $this._buildChart(data, xAxisCategories);
 						} catch(e) {
 							console.log("Exception", e);
 							$this.getElement().loader('hide');
@@ -921,33 +1006,33 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     yAxis = [],
                     series = [];
 
-                    for(var i = 0; i < seriesContext.length; i++){
-                        if(!series[i]){
-                            series[i] = {
-                                name: seriesContext[i].get(0).value(),
-                                data: seriesData[i],
-                                type: seriesContext[i].get(2).value().name(),
+                    for(var j = 0; j < seriesData.length; j++){
+                        if(!series[j]){
+                            series[j] = {
+                                name: seriesData[j].name,
+                                data: seriesData[j].data,
+                                type: seriesContext[seriesData[j].index].get(2).value().name(),
                                 tooltip: {
-                                    valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                                    valueSuffix: seriesContext[seriesData[j].index].get(3).value().get(0).value()
                                 },
-                                yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-                                //dashStyle: seriesContext[i].get(5).value().name(),
-                                color: $this.isNull(seriesContext[i].get(5).value()),
+                                yAxis: $this.isNull(seriesContext[seriesData[j].index].get(4).value(), true),
+                                //dashStyle: seriesContext[seriesData[j].index].get(5).value().name(),
+                                color: $this.isNull(seriesContext[seriesData[j].index].get(5).value()),
                                 /*
                                 marker: {
                                     // The fill color of the point marker
-                                    fillColor: $this.isNull(seriesContext[i].get(7).value().get(0).value()),
+                                    fillColor: $this.isNull(seriesContext[seriesData[j].index].get(7).value().get(0).value()),
                                     // The color of the point marker's outline
-                                    lineColor: $this.isNull(seriesContext[i].get(7).value().get(1).value()),
+                                    lineColor: $this.isNull(seriesContext[seriesData[j].index].get(7).value().get(1).value()),
                                     // The width of the point marker's outline
-                                    lineWidth: (($this.isNull(seriesContext[i].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(2).value()),10) : undefined),
+                                    lineWidth: (($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(2).value()),10) : undefined),
                                     // The radius of the point marker
-                                    radius: (($this.isNull(seriesContext[i].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(7).value().get(3).value()),10) : undefined),
+                                    radius: (($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[seriesData[j].index].get(7).value().get(3).value()),10) : undefined),
                                     // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
-                                    symbol: $this.isNull(seriesContext[i].get(7).value().get(4).value())
+                                    symbol: $this.isNull(seriesContext[seriesData[j].index].get(7).value().get(4).value())
                                 },
                                 */
-                                visible: seriesContext[i].find('visible').used(),
+                                visible: seriesContext[seriesData[j].index].find('visible').used(),
                                 point: {
                                     events: {
                                         click: function(evt) {
@@ -1011,7 +1096,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                         }
                                     }
                                 },
-                                stack: seriesContext[i].get(6).value()
+                                stack: seriesContext[seriesData[j].index].get(6).value()
                             };
                         }
                     }
@@ -1045,7 +1130,8 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                                     color: $this.isNull(yAxisStackLabels[0].get(9).value()) || (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
                                 }
                             },
-                            opposite: yAxisContext[i].get(2).used()
+                            opposite: yAxisContext[i].get(2).used(),
+                            type: yAxisContext[i].find('type').value().value()
                         };
                     }
 

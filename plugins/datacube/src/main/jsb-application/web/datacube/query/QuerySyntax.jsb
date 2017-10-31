@@ -596,7 +596,7 @@
 		        name: '$groupBy',
 		        displayName: 'Группировка',
 		        desc: 'Выражения для группировки элементов',
-		        minOperands: 1,
+		        minOperands: 0,
 		        maxOperands: -1,
 		        values: ['$field', '$expression'],
 		    });
@@ -1101,7 +1101,7 @@
 		            return optional;
 		        })()
 		    });
-		    JSB.getLogger().debug('Registered DataCube query macro ' + name);
+//		    JSB.getLogger().debug('Registered DataCube query macro ' + name);
 		},
 		
 		unwrapMacros: function(dcQuery) {

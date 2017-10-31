@@ -8,9 +8,6 @@
     border: none !important;
 }
 
-.dataCubeEditor {
-}
-
 .dataCubeEditor > .dcHeader {
 	position: absolute;
 	width: 100%;
@@ -19,7 +16,7 @@
     border: none;
     box-sizing: border-box;
     padding: 0;
-    background: rgba(241, 241, 241, 0.6);
+    background: rgba(241, 241, 241, 0.2);
 }
 
 .dataCubeEditor > .dcHeader .dcLogo {
@@ -47,8 +44,6 @@
 	display: inline-block;
 }
 
-.dataCubeEditor > ._jsb_splitLayoutManager {}
-
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitter.vertical,
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_splitter.horizontal {
     background: rgba(213, 213, 213, 0.36);
@@ -63,6 +58,17 @@
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="workspaceExplorer"] > ._dwp_tabview > ._dwp_tabPane {
 	background: transparent;
+}
+
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane {}
+
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active {
+	background: #fff;
+    border-bottom: 1px solid #fff;
+}
+
+.dataCubeEditor > ._jsb_splitLayoutManager ._dwp_widgetContainer[key="widgetExplorer"] > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText {
+	text-shadow: none;
 }
 
 .dataCubeEditor .workspaceExplorer ._dwp_treeview ._dwp_treeViewNode.selected > ._dwp_nodeHeader {
@@ -94,7 +100,6 @@
 	background-size: 100%;
 	margin-right: 4px;
 }
-
 
 .dataCubeEditor > ._jsb_splitLayoutManager ._dwp_tab[clientid="workspaceExplorer"] ._dwp_primitiveEditor {
 	padding-right: 32px;

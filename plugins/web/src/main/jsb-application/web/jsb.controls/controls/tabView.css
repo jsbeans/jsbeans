@@ -18,6 +18,8 @@
 	top: 0;
 	padding: 3px 6px 0 6px;
     height: 40px;
+    border-bottom: 1px solid #ddd;
+    background: rgba(241, 241, 241, 1);
 }
 
 .jsb-tabview > .tabPane.top > li {
@@ -26,22 +28,29 @@
 	min-height: 25px;
 	cursor: pointer;
     display: inline-block;
-    margin: 0 2px -1px;
-    padding: 5px 10px;
-    font-weight: 600;
+    margin: 1px 2px 0px;
+    padding: 3px 10px;
     text-align: center;
     color: #aaa;
     border: 0px solid #ddd;
-    border-width: 1px 1px 1px 1px;
+    border-width: 1px 1px 0px 1px;
     background: #f1f1f1;
     border-radius: 3px 3px 0 0;
-    height: 40px;
+    height: 35px;
 }
 
 .jsb-tabview > .tabPane.top > li > .icon,
 .jsb-tabview > .tabPane.top > li > .title {
     display: inline-block;
     vertical-align: middle;
+}
+
+.jsb-tabview > .tabPane.top > li > .icon {
+    margin-right: 6px;
+}
+
+.jsb-tabview > .tabPane.top > li > .title {
+    font-weight: normal;
 }
 
 .jsb-tabview > .tabPane.top > li.disabled {
@@ -53,10 +62,11 @@
 .jsb-tabview > .tabPane.top > li.active {
     color: #555;
     border: 1px solid #ddd;
-    border-top: 2px solid orange;
+    border-top: 2px solid #d37531;
     border-bottom: 1px solid #fff;
     background: #fff;
     cursor: default;
+    height: 36px;
 }
 
 .jsb-tabview > .tabPane.top > li:not(.active):hover {
