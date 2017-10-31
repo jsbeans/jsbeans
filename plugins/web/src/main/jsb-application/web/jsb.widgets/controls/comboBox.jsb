@@ -20,7 +20,8 @@
 			items: [],
 			value: '',
 			enabled: true,
-			onChange: function(key, obj){}
+			onChange: function(key, obj){},
+			onEditorChange: function(value, evt){}
 		},
 		
 		init: function(){
@@ -44,7 +45,8 @@
 				// create editable
 				this.addClass('_dwp_editable');
 				this.editor = new Editor({
-					placeholder: this.options.placeholder
+					placeholder: this.options.placeholder,
+					onChange: this.options.onEditorChange
 				});
 				this.append(this.editor);
 				this.ddBtn = this.$('<div class="_dwp_dropBtn"><div class="_dwp_dropIcon"></div></div>');
