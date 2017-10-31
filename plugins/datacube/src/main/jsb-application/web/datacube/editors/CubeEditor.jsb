@@ -213,7 +213,9 @@
 				var pDesc = desc.providers[i];
 				var pNode = $this.diagram.createNode('dataProviderDiagramNode', {provider:pDesc.provider, editor: $this});
 				pnMap[pDesc.provider.getId()] = pNode;
-				pNode.setPosition(pDesc.position.x, pDesc.position.y);
+				if(pDesc.position && JSB.isDefined(pDesc.position.x) && JSB.isDefined(pDesc.position.y)){
+					pNode.setPosition(pDesc.position.x, pDesc.position.y);
+				}
 				if(pDesc.size){
 				    pNode.getElement().width(pDesc.size.width);
 				}
@@ -263,7 +265,9 @@
 				for(var i = 0; i < desc.slices.length; i++){
 					var sDesc = desc.slices[i];
 					var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: sDesc.slice, editor: $this});
-					sNode.setPosition(sDesc.position.x, sDesc.position.y);
+					if(sDesc.position && JSB.isDefined(sDesc.position.x) && JSB.isDefined(sDesc.position.y)){
+						sNode.setPosition(sDesc.position.x, sDesc.position.y);
+					}
 				}
 				
 				$this.ignoreHandlers = false;

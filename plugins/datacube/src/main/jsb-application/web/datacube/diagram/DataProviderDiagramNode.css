@@ -44,16 +44,22 @@
     text-align: right;
 }
 
-.dataProviderDiagramNode > .caption > .providerMode span {
+.dataProviderDiagramNode > .caption > .providerMode > span {
     vertical-align: middle;
+	font-size: 11px;
+	color: #5d5c23;
+    text-shadow: 1px 1px #e0e0c9;
 }
 
-.dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input:checked + label:before {
-    background-color: #f1f1f1;
+.dataProviderDiagramNode > .caption > .providerMode > div[jsb="JSB.Controls.Switch"] {
+	margin-top: 1px;
+}
+
+.dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input + label:before {
+    background-color: #a5a17b;
 }
 
 .dataProviderDiagramNode > .caption > .providerMode .jsb-switch > input + label:after {
-    background-color: rgb(232, 187, 32);
 }
 
 .dataProviderDiagramNode > .caption > .renderer {

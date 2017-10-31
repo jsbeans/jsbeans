@@ -156,7 +156,7 @@
 		},
 
 		customRenderer: function(hotInstance, td, row, column, prop, value, cellProperties){
-		    if(!this.data) return td;
+		    if(!this.data || !this.data[row]) return td;
 		    if(typeof prop === 'number') return td;
 
 		    var val = this.data[row][prop];
