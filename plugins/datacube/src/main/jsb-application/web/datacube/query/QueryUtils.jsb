@@ -136,6 +136,7 @@
 		            }
 		            var fieldInOther = false;
 		            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+		                if (prov == providersFieldsMap[id]) continue;
 		                if (prov.provider.id != id) {
 		                    if(providersFieldsMap[id].cubeFields.hasOwnProperty(f)) {
 		                        fieldInOther = true;
