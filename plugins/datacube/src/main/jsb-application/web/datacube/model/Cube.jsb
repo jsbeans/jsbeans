@@ -855,6 +855,16 @@
 			return this.getFields();
 		},
 		
+		getOutputFields: function(){
+			var fields = $this.getManagedFields();
+			var fMap = {};
+			for(var fName in fields){
+				fMap[fName] = fields[fName].type;
+			}
+			
+			return fMap;
+		},
+		
 		isMaterializing: function(){
 			return this.materializing;
 		},
@@ -1496,7 +1506,7 @@
 	        		}
 	        		function prepareFilter(scope){
 	        			for(var f in scope){
-	        				if(filterOps[f]){
+	        				if(filterOps[f] && !JSB.isObject(scope[f]) && !JSB.isArray(scope[f])){
 	        					var pName = getNextParam();
 	        					params[pName] = scope[f];
 	        					scope[f] = '${'+pName+'}';

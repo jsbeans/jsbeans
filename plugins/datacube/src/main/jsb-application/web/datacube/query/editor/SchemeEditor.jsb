@@ -10,6 +10,9 @@
 	
 	$client: {
 		options: {
+			schemeName: null,
+			expanded: false,
+			
 			onChange: function(){}
 		},
 		
@@ -1486,6 +1489,8 @@
 					}
 					if(sCnt > 0){
 						w /= sCnt;
+					} else {
+						w = 1;
 					}
 				} else {
 					if(JSB.isDefined(desc.w)){
@@ -1500,6 +1505,8 @@
 						}
 						if(sCnt > 0){
 							w /= sCnt;
+						} else {
+							w = 1;
 						}
 					}
 				}
@@ -1642,7 +1649,7 @@
 					}
 					res.push(curDesc);
 				}
-				if(res.length === 0){
+				if(res.length === 0 && value.length > 0){
 					return {w: 0};
 				}
 				return {obj:res, w: extractIntegratedWeight(res, true), scheme: schemeName};
