@@ -199,6 +199,7 @@
 			var cubePos = {x: -150, y: -150};
 			if(desc.cubePosition){
 				cubePos = desc.cubePosition;
+				$this.diagram.setPan({x:-(cubePos.x + 150), y:-(cubePos.y + 150)});
 			}
 			this.cubeNode = $this.diagram.createNode('cubeDiagramNode', {editor: $this, entry: $this.cubeEntry});
 			this.cubeNode.setPosition(cubePos.x, cubePos.y);
