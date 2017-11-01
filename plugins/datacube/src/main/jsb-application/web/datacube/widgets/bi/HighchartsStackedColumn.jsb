@@ -204,7 +204,7 @@
                 multiple: 'true',
                 items: [
                 {
-                    name: 'Имя поля',
+                    name: 'Серия',
                     type: 'item',
                     key: 'seriesName',
                     binding: 'field',

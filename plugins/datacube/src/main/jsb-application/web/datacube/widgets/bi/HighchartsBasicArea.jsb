@@ -206,9 +206,10 @@
                 multiple: 'true',
                 items: [
                 {
-                    name: 'Имя поля',
+                	name: 'Серия',
                     type: 'item',
                     key: 'name',
+                    binding: 'field',
                     itemType: 'string',
                     itemValue: ''
                 },
@@ -367,7 +368,7 @@
                 {
                     name: 'Цветовая схема',
                     type: 'group',
-                    key: 'colorScheme',
+                    key: 'serieColorScheme',
                     optional: true,
                     items: [
                     {
@@ -678,11 +679,18 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 // end filters section
 
             var seriesContext = this.getContext().find('series').values(),
-                xAxisContext = this.getContext().find('xAxis').find('categories').values();
+                xAxisContext = this.getContext().find('xAxis').find('categories').values(),
+                dataSource = [];
 
             var colorSettings = [];
             for(var i = 0; i < seriesContext.length; i++){
-                var seriesColorScheme = seriesContext[i].find('colorScheme');
+            	var name = seriesContext[i].get(0);
+                dataSource.push({
+                    name: name.binding() ? name : name.value(),
+                    value: seriesContext[i].get(1)
+                });
+                var seriesColorScheme = seriesContext[i].find('serieColorScheme');
+                
                 if(seriesColorScheme.used()){
                     colorSettings[i] = {
                         xLevel: seriesColorScheme.value().get(0).value() - 1,
@@ -690,6 +698,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                         k: 0
                     }
                 }
+                
             }
 
             $this.getElement().loader();
@@ -731,37 +740,60 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
                     try {
                         while(source.next()){
-                            for(var i = 0; i < seriesContext.length; i++){
-                                var a = seriesContext[i].get(1).value();
-
-                                if(!seriesData[i]){
-                                    seriesData[i] = [];
-                                }
-
-                                if(colorSettings[i]){
-                                    if(!colorMap[xAxisContext[colorSettings[i].xLevel].get(0).value()]){
-                                        if(colorSettings[i].k === $this.colors[colorSettings[i].scheme].length){
-                                            colorSettings[i].k = 0;
-                                        }
-                                        colorMap[xAxisContext[colorSettings[i].xLevel].get(0).value()] = $this.colors[colorSettings[i].scheme][colorSettings[i].k];
+                        	for(var i = 0; i < dataSource.length; i++){
+                        		if(colorSettings[i]){
+                        			var xLvl = Math.min(colorSettings[i].xLevel, xAxisContext.length - 1);
+                                    if(!colorMap[xAxisContext[xLvl].get(0).value()]){
+                                        colorMap[xAxisContext[xLvl].get(0).value()] = $this.colors[colorSettings[i].scheme][colorSettings[i].k % $this.colors[colorSettings[i].scheme].length];
                                         colorSettings[i].k++;
                                     }
                                 }
+                                if(!JSB.isString(dataSource[i].name)){    // composite series
+                                    if(!seriesData[i]){
+                                        seriesData[i] = {
+                                            data: {},
+                                            simple: false
+                                        };
+                                    }
 
-                                if(JSB().isArray(a)){
-                                    seriesData[i] = a;
-                                } else {
+                                    if(!seriesData[i].data[dataSource[i].name.value()]){
+                                        seriesData[i].data[dataSource[i].name.value()] = [];
+                                    }
                                     if(colorSettings[i]){
-                                        seriesData[i].push({
-                                            y: a,
-                                            color: colorMap[xAxisContext[colorSettings[i].xLevel].get(0).value()]
-                                        });
+                                    	var xLvl = Math.min(colorSettings[i].xLevel, xAxisContext.length - 1);
+                                    	seriesData[i].data[dataSource[i].name.value()].push({
+                                    		y: dataSource[i].value.value(),
+                                    		color: colorMap[xAxisContext[xLvl].get(0).value()]
+                                    	});
                                     } else {
-                                        seriesData[i].push(a);
+                                    	seriesData[i].data[dataSource[i].name.value()].push(dataSource[i].value.value());
+                                    }
+                                } else {    // simple series
+                                    if(!seriesData[i]){
+                                        seriesData[i] = {
+                                            index: i,
+                                            simple: true,
+                                            name: dataSource[i].name,
+                                            data: []
+                                        };
+                                    }
+
+                                    var a = dataSource[i].value.value();
+
+                                    if(JSB().isArray(a)){
+                                        seriesData[i].data = a;
+                                    } else {
+                                        if(colorSettings[i]){
+                                            seriesData[i].data.push({
+                                                y: a,
+                                                color: colorMap[xAxisContext[colorSettings[i].xLevel].get(0).value()]
+                                            });
+                                        } else {
+                                            seriesData[i].data.push(a);
+                                        }
                                     }
                                 }
                             }
-
                             if(xAxisContext.length > 1){
                                 xAxisCategories = merge(xAxisCategories, rec(0, xAxisContext.length));
                             } else {
@@ -770,14 +802,39 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                             }
                         }
 
+                        var data = [];
+                        for(var i = 0; i < seriesData.length; i++){
+                            if(seriesData[i].simple){
+                                data.push(seriesData[i]);
+                            } else {
+                                var obj = seriesData[i].data;
+
+                                for(var j in obj){
+                                    data.push({
+                                        index: i,
+                                        name: j,
+                                        data: obj[j]
+                                    })
+                                }
+                            }
+                        }
+
+                        if(data.length < xAxisCategories.length){
+                            var cats = [];
+                            for(var i = 0; i < xAxisCategories.length; i = i + data.length){
+                                cats.push(xAxisCategories[i]);
+                            }
+                            xAxisCategories = cats;
+                        }
+
                         if(opts && opts.isCacheMod){
                             $this.storeCache({
-                                seriesData: seriesData,
+                                seriesData: data,
                                 xAxis: xAxisCategories
                             });
                         }
 
-                        $this._buildChart(seriesData, xAxisCategories);
+                        $this._buildChart(data, xAxisCategories);
                     } catch(ex) {
                         console.log(ex);
                     } finally {
@@ -810,33 +867,34 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
                     }
                 }
 
-                for(var i = 0; i < seriesContext.length; i++){
+                for(var i = 0; i < seriesData.length; i++){
+                	var curSeriesContext = seriesContext[seriesData[i].index];
                     if(!series[i]){
-                        var drilldown = seriesContext[i].find('widget').value();
+                        var drilldown = curSeriesContext.find('widget').value();
 
                         series[i] = {
-                            name: seriesContext[i].get(0).value(),
-                            data: seriesData[i],
-                            type: seriesContext[i].get(2).value().name(),
+                            name: seriesData[i].name,
+                            data: seriesData[i].data,
+                            type: curSeriesContext.get(2).value().name(),
                             tooltip: {
-                                valueSuffix: seriesContext[i].get(3).value().get(0).value()
+                                valueSuffix: curSeriesContext.get(3).value().get(0).value()
                             },
-                            yAxis: $this.isNull(seriesContext[i].get(4).value(), true),
-                            dashStyle: seriesContext[i].get(5).value().name(),
-                            color: $this.isNull(seriesContext[i].get(6).value()),
+                            yAxis: $this.isNull(curSeriesContext.get(4).value(), true),
+                            dashStyle: curSeriesContext.get(5).value().name(),
+                            color: $this.isNull(curSeriesContext.get(6).value()),
                             marker: {
                                 // The fill color of the point marker
-                                fillColor: $this.isNull(seriesContext[i].get(8).value().get(0).value()),
+                                fillColor: $this.isNull(curSeriesContext.get(8).value().get(0).value()),
                                 // The color of the point marker's outline
-                                lineColor: $this.isNull(seriesContext[i].get(8).value().get(1).value()),
+                                lineColor: $this.isNull(curSeriesContext.get(8).value().get(1).value()),
                                 // The width of the point marker's outline
-                                lineWidth: (($this.isNull(seriesContext[i].get(8).value().get(2).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(8).value().get(2).value()),10) : undefined),
+                                lineWidth: (($this.isNull(curSeriesContext.get(8).value().get(2).value()) !== undefined) ? parseInt($this.isNull(curSeriesContext.get(8).value().get(2).value()),10) : undefined),
                                 // The radius of the point marker
-                                radius: (($this.isNull(seriesContext[i].get(8).value().get(3).value()) !== undefined) ? parseInt($this.isNull(seriesContext[i].get(8).value().get(3).value()),10) : undefined),
+                                radius: (($this.isNull(curSeriesContext.get(8).value().get(3).value()) !== undefined) ? parseInt($this.isNull(curSeriesContext.get(8).value().get(3).value()),10) : undefined),
                                 // A predefined shape or symbol for the marker. When null, the symbol is pulled from options.symbols. Other possible values are "circle", "square", "diamond", "triangle" and "triangle-down". Additionally, the URL to a graphic can be given on this form: "url(graphic.png)".
-                                symbol: $this.isNull(seriesContext[i].get(8).value().get(4).value())
+                                symbol: $this.isNull(curSeriesContext.get(8).value().get(4).value())
                             },
-                            visible: seriesContext[i].find('visible').used(),
+                            visible: curSeriesContext.find('visible').used(),
 							widgetWsid: drilldown ? drilldown.widgetWsid : undefined,
 							widgetWid: drilldown ? drilldown.widgetWid : undefined,
 							widgetFilter: filterFields,
@@ -1115,7 +1173,7 @@ if( !(this.hasOwnProperty('useInDrilldown') && this.useInDrilldown) ) {
 
                         /**
                         **/
-                        var tooltipPointFormat = $this.safeGetValue(seriesContext[i], [3,1]);
+                        var tooltipPointFormat = $this.safeGetValue(curSeriesContext, [3,1]);
                         if( tooltipPointFormat ) {
                             series[i].tooltip.pointFormat = tooltipPointFormat;
                         }

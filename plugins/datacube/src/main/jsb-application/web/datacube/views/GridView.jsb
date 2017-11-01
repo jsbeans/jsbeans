@@ -95,10 +95,11 @@
 		preLoader: function(rowCount){
 		    if(this.allLoaded) return;
 
-            this.curLoadId = JSB().generateUid();
 		    $this.getElement().loader();
-            $this.server().loadMore(this.curLoadId, function(res){
-                if(res.id !== $this.curLoadId) return;
+            this.curLoadId = JSB().generateUid();
+            var storedLoadId = this.curLoadId;
+            $this.server().loadMore(function(res){
+                if(storedLoadId !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
 
@@ -177,17 +178,17 @@
 
             this.error.addClass('hidden');
 
-            this.curLoadId = JSB().generateUid();
             this.curData = source;
 
             $this.getElement().loader();
             var preparedQuery = source.query;
+            this.curLoadId = JSB().generateUid();
+            var storedLoadId = this.curLoadId;
 
-            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, id: this.curLoadId, type: source.type }, function(res){
-                if(res.id !== $this.curLoadId) return;
+            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, type: source.type }, function(res){
+                if(storedLoadId !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
-
                 if(!res) return;
                 if(res.error){
                     $this.errorText.text(res.error.message);
@@ -223,7 +224,11 @@
 
 	    loadData: function(obj) {
             try{
-                if(this.it) this.it.close();
+                if(this.it) {
+                	try {
+                		this.it.close();
+                	}catch(e){}
+                }
 
                 switch(obj.type){
                     case 'cube':
@@ -255,20 +260,19 @@
                 this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider);
                 this.counter = 0;
 
-                return this.loadMore(obj.id);
+                return this.loadMore();
             } catch(e){
                 JSB().getLogger().error(e);
 
                 return {
                     result: null,
                     allLoaded: true,
-                    error: e,
-                    id: obj.id
+                    error: e
                 }
             }
 	    },
 
-	    loadMore: function(id){
+	    loadMore: function(){
 	    	function prepareElement(el){
 	    		for(var f in el){
 	    		    if(el[f] instanceof Date){
@@ -298,17 +302,15 @@
                 return {
                     result: res,
                     allLoaded: allLoaded,
-                    error: null,
-                    id: id
+                    error: null
                 };
             } catch(e){
                 JSB().getLogger().error(e);
 
                 return {
                     result: null,
-                     allLoaded: true,
-                     error: e,
-                     id: id
+                    allLoaded: true,
+                    error: e
                 }
             }
 	    }

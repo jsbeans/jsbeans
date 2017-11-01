@@ -589,11 +589,18 @@
 		},
 		
 		getFilters: function(){
-			return this.getFilterManager().getFilters();
+			var fm = this.getFilterManager();
+			if(fm){
+				return fm.getFilters();	
+			}
+			return null;
 		}, 
 		
 		getFilterManager: function(){
-			return this.getWrapper().getFilterManager();
+			if(this.getWrapper() && this.getWrapper().getFilterManager){
+				return this.getWrapper().getFilterManager();	
+			}
+			return null;
 		},
 		
 		setSort: function(q){
