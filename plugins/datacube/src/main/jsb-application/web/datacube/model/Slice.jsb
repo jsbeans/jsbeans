@@ -69,6 +69,7 @@
 		},
 		
 		updateSettings: function(desc){
+			$this.getCube().load();
 			this.name = desc.name;
 			this.query = desc.query;
 			this.title(this.name);
@@ -78,6 +79,7 @@
 		},
 		
 		executeQuery: function(extQuery){
+			$this.getCube().load();
 			var params = {};
 			var preparedQuery = JSB.clone(this.query);
             if(!preparedQuery || Object.keys(preparedQuery).length == 0){

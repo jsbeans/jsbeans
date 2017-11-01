@@ -96,6 +96,7 @@
 		},
 		
 		rename: function(name){
+			this.getDashboard().load();
 			this.setName(name);
 			this.getDashboard().store();
 			this.doSync();
@@ -103,6 +104,7 @@
 		},
 		
 		storeValues: function(name, values){
+			this.getDashboard().load();
 			this.values = values;
 			this.sourceMap = this.generateInteroperationMap(values);
 			this.sources = {};

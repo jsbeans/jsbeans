@@ -230,6 +230,9 @@
 		},
 
 		_store: function(){
+			if(!this.loaded){
+				this.load();
+			}
 			var mtxName = 'store_' + this.getId();
 			JSB.getLocker().lock(mtxName);
 			// construct snapshot
@@ -341,16 +344,19 @@
 		},
 		
 		updateCubeNodePosition: function(pt){
+			this.load();
 			this.nodePosition = pt;
 			this.store();
 		},
 
 		updateCubeNodeSize: function(size){
+			this.load();
 		    this.nodeSize = size;
 		    this.store();
 		},
 		
 		addDataProvider: function(providerEntry){
+			this.load();
 			var providerDesc = DataProviderRepository.queryDataProviderInfo(providerEntry);
 			var providerJsb = JSB.get(providerDesc.pType);
 			if(!providerJsb){
@@ -368,10 +374,12 @@
 		},
 
 		getFields: function(){
+			this.load();
 		    return this.fields;
 		},
 		
 		getProviderById: function(pId){
+			this.load();
 			if(!this.dataProviders[pId]){
 				throw new Error('Unable to find data provider by id: ' + pId);
 			}
@@ -379,6 +387,7 @@
 		},
 
 		getOrderedDataProviders: function(){
+			this.load();
 			if(this.materialization && this.materialization.dataProvider){
 				return [this.materialization.dataProvider];
 			}
@@ -420,6 +429,7 @@
 		},
 
 		createProviderFieldsList: function(provider, fields){
+			this.load();
             var res = {};
 
             for(var i in fields){
@@ -444,6 +454,7 @@
 		},
 
 		changeProviderMode: function(providerId, mode){
+			this.load();
 		    var provider = this.getProviderById(providerId);
 		    provider.mode = mode;
             this.store();
@@ -451,6 +462,7 @@
 		},
 
 		extractDataProviderFields: function(pId){
+			this.load();
 			var provider = this.getProviderById(pId);
 			if(this.dataProviderFields[provider.getId()]){
 				return this.createProviderFieldsList(provider, this.dataProviderFields[provider.getId()]);
@@ -478,6 +490,7 @@
 		},
 
 		removeProvider: function(pId){
+			this.load();
 		    var fieldsForRemove = [];
 
             for(var i in this.fields){
@@ -504,6 +517,7 @@
 		},
 		
 		refreshDataProviderFields: function(pId){
+			this.load();
 			var provider = this.getProviderById(pId);
 			var dpNewFields = provider.extractFields();
 			var dpFields = this.dataProviderFields[provider.getId()];
@@ -555,6 +569,7 @@
 		},
 		
 		renameDataProviderField: function(provider, oldName, newName, type){
+			this.load();
 			// iterate over all fields in cube
 			for(var fName in this.fields){
 				var fDesc = this.fields[fName];
@@ -573,6 +588,7 @@
 		},
 		
 		removeUnexistedFields: function(provider){
+			this.load();
 			var bNeedStore = false;
 			var dpFields = this.dataProviderFields[provider.getId()];
 			var fieldsToRemove = [];
@@ -620,17 +636,20 @@
 		},
 		
 		updateDataProviderNodePosition: function(pId, pt){
+			this.load();
 			var provider = this.getProviderById(pId);
 			this.dataProviderPositions[provider.getId()] = pt;
 			this.store();
 		},
 
 		updateDataProviderNodeSize: function(pId, size){
+			this.load();
 		    this.dataProviderSizes[pId] = size;
 			this.store();
 		},
 		
 		addField: function(pId, pField, pType){
+			this.load();
 			var provider = this.getProviderById(pId);
 			var nameCandidate = this.prepareFieldName(pField);
 			if(this.fields[nameCandidate]){
@@ -663,6 +682,7 @@
 		},
 
 		linkFields: function(fields){
+			this.load();
             var nFields = [],
                 nField;
 
@@ -714,6 +734,7 @@
 		},
 
 		renameField: function(oldName, newName){
+			this.load();
 			if(!this.fields[oldName]){
 				throw new Error('Field not existed: ' + oldName);
 			}
@@ -749,6 +770,7 @@
 		},
 
 		removeFields: function(fields){
+			this.load();
 		    if(!JSB.isArray(fields)){
 		        fields = [fields];
 		    }
@@ -789,12 +811,14 @@
 		},
 
 		setDefaultFields: function(fields){
+			this.load();
 		    this.defaultFields = fields;
             this.store();
             this.doSync();
 		},
 		
 		addSlice: function(){
+			this.load();
 			// generate slice name map
 			var snMap = {};
 			for(var sId in this.slices){
@@ -818,6 +842,7 @@
 		},
 		
 		removeSlice: function(sId){
+			this.load();
 			var slice = this.slices[sId];
 			if(!slice){
 				return;
@@ -831,6 +856,7 @@
 		},
 		
 		getSliceById: function(sId){
+			this.load();
 			if(!this.slices[sId]){
 				throw new Error('Unable to find slice with id: ' + sId);
 			}
@@ -866,14 +892,17 @@
 		},
 		
 		isMaterializing: function(){
+			this.load();
 			return this.materializing;
 		},
 		
 		isMaterialized: function(){
+			this.load();
 			return (this.materialization && Object.keys(this.materialization).length > 0 ? true: false);
 		},
 		
 		getMaterializationInfo: function(){
+			this.load();
 			return {
 				materialization: this.materialization,
 				materializing: this.materializing
@@ -881,6 +910,7 @@
 		},
 		
 		startMaterialization: function(database){
+			this.load();
 			if(!database){
 				return;
 /*				// chose database from currently existed materialization
@@ -1186,6 +1216,7 @@
 		},
 		
 		removeMaterialization: function(){
+			this.load();
 			var bLocked = false;
 			if(!this.materialization || Object.keys(this.materialization).length == 0){
 				return;
@@ -1229,6 +1260,7 @@
 		},
 		
 		updateIndexes: function(materialization){
+			this.load();
 			var bLocked = false;
 			var bCreatedMaterializer = false;
 			var bChanged = false;
@@ -1449,6 +1481,7 @@
 		},
 		
 		renameSlice: function(sId, newName){
+			this.load();
 			var slice = this.getSliceById(sId);
 			if(slice.getName() == newName){
 				return slice;
@@ -1463,6 +1496,7 @@
 		},
 		
 		updateSliceSettings: function(sId, desc){
+			this.load();
 			var slice = this.getSliceById(sId);
 			this.renameSlice(sId, desc.name);
 			if(desc.query){
@@ -1476,6 +1510,7 @@
 		},
 		
 		updateSliceNodePosition: function(sId, pt){
+			this.load();
 			var slice = this.getSliceById(sId);
 			this.slicePositions[sId] = pt;
 			this.store();

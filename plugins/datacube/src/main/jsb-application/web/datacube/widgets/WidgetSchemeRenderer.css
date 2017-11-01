@@ -28,7 +28,6 @@
 .widgetSchemeRenderer > .header > .caption {
 	display: inline-block;
 	vertical-align: middle;
-	min-width: 100px;
 	color: #3c4e61;
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
     font-size: 13px;

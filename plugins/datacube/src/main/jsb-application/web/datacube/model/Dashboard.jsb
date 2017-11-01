@@ -46,6 +46,7 @@
 		},
 		
 		updateLayout: function(layout){
+			this.load();
 			// check layout to be stored
 			function checkLayoutFailed(lEntry){
 				if(lEntry && lEntry.widgets){
@@ -82,6 +83,7 @@
 		},
 		
 		createWidgetWrapper: function(wType, wName){
+			this.load();
 			var wwId = JSB.generateUid();
 			var wWrapper = new Widget(wwId, this.workspace, this, wName, wType, {});
 			this.wrappers[wwId] = wWrapper;
@@ -93,6 +95,7 @@
 		},
 		
 		removeWidgetWrapper: function(wwId){
+			this.load();
 			if(!this.wrappers[wwId]){
 				throw new Error('Failed to find widget wrapper with id: ' + wwId);
 			}
@@ -111,6 +114,7 @@
 		fixupLayout: function(){},
 		
 		store: function(){
+			this.load();
 			var mtxName = 'store_' + this.getId();
 			JSB.getLocker().lock(mtxName);
 			try {
@@ -202,6 +206,7 @@
 					
 					this.widgetCount = Object.keys(this.wrappers).length;
 					if(bNeedStore){
+						this.loaded = true;
 						this.store();
 						this.doSync();
 					}
