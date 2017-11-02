@@ -108,8 +108,10 @@
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
 				$this.widget.setWrapper($this);
-				$this.widget.refresh({
-				    isCacheMod: opts ? opts.isCacheMod : false
+				$this.widget.ensureInitialized(function(){
+					$this.widget.refresh({
+					    isCacheMod: opts ? opts.isCacheMod : false
+					});
 				});
 			});
 
@@ -130,7 +132,9 @@
 				if(!opts || opts.dashboard != $this.getDashboard()){
 					return;
 				}
-				$this.getWidget().refresh(opts);
+				$this.widget.ensureInitialized(function(){
+			    	 $this.getWidget().refresh(opts);
+				});
 			});
 
 			this.subscribe('widgetSettings.updateValues', function(sender, msg, opts){
@@ -139,7 +143,9 @@
 			    }
 
 			    $this.getWidget().updateValues(opts.values, opts.sourceDesc);
-			    $this.getWidget().refresh();
+			    $this.widget.ensureInitialized(function(){
+			    	 $this.getWidget().refresh();
+				});
 			});
 
 			if(opts && opts.showSettings){

@@ -267,6 +267,7 @@
 			});
 
 			this.isInit = true;
+			$this.setInitialized();
 		},
 
 		refresh: function(opts){

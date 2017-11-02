@@ -344,6 +344,7 @@
                 background: 'none',
                 onInit: function(){
                     $this._diagramInit = true;
+                    $this.setInitialized();
                 },
                 nodes: {
                     graphNode: {

@@ -10,6 +10,8 @@
 		sourceMap: null,
 		sources: null,
 		sourceFilterMap: null,
+		ready: false,
+		initCallbacks: [],
 
 		$require: ['JSB.Crypt.MD5'],
 		
@@ -477,6 +479,24 @@
 					}
 				}
 			};
+		},
+		
+		ensureInitialized: function(callback){
+			if(this.ready){
+				callback.call(this);
+				return;
+			}
+			this.initCallbacks.push(callback);
+		},
+		
+		setInitialized: function(){
+			this.ready = true;
+			if(this.initCallbacks.length > 0){
+				for(var i = 0; i < this.initCallbacks.length; i++){
+					this.initCallbacks[i].call(this);
+				}
+				this.initCallbacks = [];
+			}
 		},
 		
 		decompressData: function(dataObj){

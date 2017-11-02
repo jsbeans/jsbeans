@@ -224,6 +224,7 @@
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.ready = true;
+				$this.setInitialized();
 			});
 
 		},

@@ -31,24 +31,25 @@
 				$this.widget = new WidgetClass();
 				$this.append($this.widget);
 				$this.widget.setWrapper($this);
-				
-				$this.subscribe('DataCube.filterChanged', function(sender, msg, params){
-					if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){
-						return;
-					}
-					$this.widget.refresh(params);
-				});
+				$this.widget.ensureInitialized(function(){
+					$this.subscribe('DataCube.filterChanged', function(sender, msg, params){
+						if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){
+							return;
+						}
+						$this.widget.refresh(params);
+					});
 
-				$this.publish('DataCube.Api.Widget.widgetCreated', {wsid: $this.options.wsid, wid: $this.options.wid});
-				if($this.options.onCreateWidget){
-					if(JSB.isString($this.options.onCreateWidget)){
-						$this.options.onCreateWidget = eval('(' + $this.options.onCreateWidget + ')');
+					$this.publish('DataCube.Api.Widget.widgetCreated', {wsid: $this.options.wsid, wid: $this.options.wid});
+					if($this.options.onCreateWidget){
+						if(JSB.isString($this.options.onCreateWidget)){
+							$this.options.onCreateWidget = eval('(' + $this.options.onCreateWidget + ')');
+						}
+						$this.options.onCreateWidget.call($this, $this.widget);
 					}
-					$this.options.onCreateWidget.call($this, $this.widget);
-				}
-				if($this.options.auto){
-					$this.widget.refresh();
-				}
+					if($this.options.auto){
+						$this.widget.refresh();
+					}
+				});
 
 			});
 		},

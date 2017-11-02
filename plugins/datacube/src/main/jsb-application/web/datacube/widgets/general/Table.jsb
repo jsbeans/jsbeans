@@ -431,6 +431,7 @@
 					}
 */
 					$this.ready = true;
+					$this.setInitialized();
 				}, function(){
 					return $this.scroll.isReady();
 				});

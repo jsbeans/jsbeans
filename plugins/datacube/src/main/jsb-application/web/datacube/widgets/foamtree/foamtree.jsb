@@ -518,6 +518,7 @@
             JSB().loadScript(['datacube/widgets/foamtree/foamtree.js'],
                 function(){
                     $this.isScriptLoaded = true;
+                    $this.setInitialized();
                 }
             );
         },

@@ -294,6 +294,7 @@
 			
 			this.addClass('htmlWidget');
 			this.loadCss('Html.css');
+			$this.setInitialized();
 		},
 		
 		refresh: function(opts){

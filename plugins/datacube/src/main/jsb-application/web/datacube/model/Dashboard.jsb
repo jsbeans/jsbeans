@@ -143,8 +143,14 @@
 		},
 		
 		load: function(){
+			var bLocked = false;
+			var bNeedStore = false;
 			if(!this.loaded){
-				var bNeedStore = false;
+				var mtxName = 'load_' + this.getId();
+				JSB.getLocker().lock(mtxName);
+				bLocked = true;
+			}
+			if(!this.loaded){
 				if(this.workspace.existsArtifact(this.getLocalId() + '.dashboard')){
 					var mtxName = 'load_' + this.getId();
 					JSB.getLocker().lock(mtxName);
@@ -205,13 +211,16 @@
 					}
 					
 					this.widgetCount = Object.keys(this.wrappers).length;
-					if(bNeedStore){
-						this.loaded = true;
-						this.store();
-						this.doSync();
-					}
 				}
 				this.loaded = true;
+			}
+			if(bLocked){
+				var mtxName = 'load_' + this.getId();
+				JSB.getLocker().unlock(mtxName);
+			}
+			if(bNeedStore){
+				this.store();
+				this.doSync();
 			}
 			
 			return {

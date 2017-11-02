@@ -67,6 +67,12 @@
 		},
 		
 		load: function(bRespond){
+			var bLocked = false;
+			if(!this.loaded){
+				var mtxName = 'load_' + this.getId();
+				JSB.getLocker().lock(mtxName);
+				bLocked = true;
+			}
 			if(!this.loaded){
 			    this.queryEngine = new QueryEngine(this);
 
@@ -191,6 +197,10 @@
 				}
 				this.loaded = true;
 				this.doSync();
+			}
+			if(bLocked){
+				var mtxName = 'load_' + this.getId();
+				JSB.getLocker().unlock(mtxName);
 			}
 			
 			if(!bRespond){

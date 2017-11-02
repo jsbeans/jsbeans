@@ -193,6 +193,7 @@
 			$base(opts);
 			this.addClass('textWidget');
 			this.loadCss('text.css');
+			$this.setInitialized();
 		},
 
 		refresh: function(opts){

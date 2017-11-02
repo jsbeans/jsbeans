@@ -466,6 +466,7 @@
             this.aggrGroup = this.catMap_SVG.append("g").attr("class", "leaflet-zoom-hide aggrGroup");
 
             this.isInit = true;
+            $this.setInitialized();
 
             // this.rebuildCategories();
 
