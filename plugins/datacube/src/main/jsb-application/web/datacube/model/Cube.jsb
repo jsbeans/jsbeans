@@ -974,7 +974,8 @@
 						for(var i = 0; i < fDesc.binding.length; i++){
 							var pDesc = fDesc.binding[i];
 							var pId = pDesc.provider.getId();
-							var tId = 'union_' + pId;
+//							var tId = 'union_' + pId;
+							var tId = 'union';
 							if(pDesc.provider.getMode() != 'union'){
 								tId = 'join_' + pId;
 							}

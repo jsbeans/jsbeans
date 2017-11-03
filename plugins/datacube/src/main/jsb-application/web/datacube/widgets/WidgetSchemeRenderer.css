@@ -34,8 +34,7 @@
 }
 
 .widgetSchemeRenderer[entry="group"] > .header > .caption,
-.widgetSchemeRenderer.collapsable > .header > .caption,
-.widgetSchemeRenderer.hasMultiple > .header > .caption {
+.widgetSchemeRenderer.collapsable > .header > .caption {
 	font-weight: bold;
 	color: #606c7b;
 }
@@ -89,6 +88,11 @@
 
 .widgetSchemeRenderer.used > .header > .dataBindingSelector.refreshable.filled {
     padding: 0px 45px 0px 5px;
+}
+
+.widgetSchemeRenderer > .header > .embeddedWidgetSelector {
+	margin-left: 6px;
+	vertical-align: middle;
 }
 
 .widgetSchemeRenderer > .header > ._dwp_comboBox {
@@ -146,7 +150,7 @@
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(even) {
-	background-color: #fff;
+	background-color: #fdfdfd;
 }
 
 .widgetSchemeRenderer.hasMultiple > .body > .items:nth-child(odd) {
