@@ -195,16 +195,11 @@
                     }
                 }
             );
+            // TODO: add join path providers (now all providers must have field in query)
 
             // filter redundant providers
-            QueryUtils.removeRedundantBindingProviders(providers);
+            QueryUtils.removeRedundantBindingProviders(providers, /**removeJoins=*/true, /**removeUnions=*/false);
 
-		    // group SqlTableDataProvider
-		    /** TODO note: сейчас реализовано с учетом только "плоского" UNION (объединения с общими полями):
-		        после добавления настроек JOIN при объединении в группы необходимо упорядочить
-		        и учитывать пути слияний таблиц (т.е. сначала надо упорядочить и если по середи
-		        оказывается "чужой" провайдер, то группу нужно разорвать для внешнего слияния через JoinIterator)
-		     */
 		    var groupsMap = {/**key:[provider]*/}; //
 		    for (var id in providers) if (providers.hasOwnProperty(id)) {
 		        var prov = providers[id];

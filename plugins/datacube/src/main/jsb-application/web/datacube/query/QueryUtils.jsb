@@ -125,35 +125,44 @@
             });
         },
 
-        removeRedundantBindingProviders: function (providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/){
+        /** Удаляет провайдеры, все поля которых есть в других JOIN провайдерах, исключает лишние JOIN.
+        Если поле есть и в UNION и в JOIN провайдерах, то приоритет отдается JOIN провайдеру.
+        */
+        removeRedundantBindingProviders: function (
+                providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/,
+                removeJoins, removeUnions
+            ) {
 		    function allFieldsBindingAndAllInOther(prov){
 		        var allFieldsBinding = true;
-		        var allInOther = true;
+		        var allInOtherJoined = true;
 		        for (var f in prov.cubeFields) if (prov.cubeFields.hasOwnProperty(f)) {
 		            if (!prov.cubeFields[f]) {
 		                allFieldsBinding = false;
 		                break;
 		            }
-		            var fieldInOther = false;
+		            var fieldInOtherJoined = false;
 		            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 		                if (prov == providersFieldsMap[id]) continue;
 		                if (prov.provider.id != id) {
 		                    if(providersFieldsMap[id].cubeFields.hasOwnProperty(f)) {
-		                        fieldInOther = true;
+		                        fieldInOtherJoined = true;
 		                        break;
 		                    }
                         }
 		            }
-		            if (!fieldInOther) {
-		                allInOther = false;
+		            if (!fieldInOtherJoined) {
+		                allInOtherJoined = false;
 		                break;
 		            }
 		        }
-		        return allFieldsBinding && allInOther;
+		        return allFieldsBinding && allInOtherJoined;
 		    }
 
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
-		        if (allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
+		        var canRemoved = removeJoins && providersFieldsMap[id].provider.mode == 'join'
+		                || removeUnions && (providersFieldsMap[id].provider.mode||'union') == 'union';
+
+		        if (canRemoved && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
 		            delete providersFieldsMap[id];
 		        }
 		    }
@@ -168,6 +177,14 @@
                     if (!JSB.isString(q.$field)) throw new Error('Invalid $field value type ' + typeof q.$field);
                     cubeFields[q.$field] = q;
                 } else if (JSB.isPlainObject(q) && JSB.isNull(q.$const)) {
+                    if (q.$if && q.$if.$cond) {
+                        for (var f in q.$if.$cond) if (q.$if.$cond.hasOwnProperty(f)) {
+                            if (!f.startsWith('$')) {
+                                cubeFields[f] = {$field:f};
+                            }
+                        }
+                    }
+
                     if (!q.$select || !skipSubQuery ) {
                         for (var f in q) if (q.hasOwnProperty(f)) {
                             collect(q[f]);
