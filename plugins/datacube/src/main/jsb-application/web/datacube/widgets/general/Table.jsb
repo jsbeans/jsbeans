@@ -155,24 +155,31 @@
 			binding: 'array',
 			key: 'rows',
 			items: [{
-				name: 'Идентификация',
-				type: 'item',
-				multiple: true,
-				key: 'rowKey',
-				binding: 'field',
-				editor: 'none'
-			},{
-				name: 'Фильтрующие поля',
-				type: 'item',
-				multiple: true,
-				key: 'rowFilter',
-				binding: 'field',
-				editor: 'none'
+				name: 'Строки',
+				type: 'group',
+				key: 'rowSettings',
+				collapsable: true,
+				items:[{
+					name: 'Идентификация',
+					type: 'item',
+					multiple: true,
+					key: 'rowKey',
+					binding: 'field',
+					editor: 'none'
+				},{
+					name: 'Фильтрующие поля',
+					type: 'item',
+					multiple: true,
+					key: 'rowFilter',
+					binding: 'field',
+					editor: 'none'
+				}]
 			},{
 				name: 'Столбцы',
 				type: 'group',
 				multiple: 'auto',
 				key: 'columns',
+				collapsable: true,
 				items: [{
 					name: 'Название',
 					key: 'title',
@@ -180,15 +187,38 @@
 					itemType: 'string',
 					itemValue: '$field'
 				},{
-					name: 'Способ отображения ячейки',
+					name: 'Отображение ячейки',
 					type: 'select',
 					key: 'view',
 					items:[{
-						type: 'item',
-						name: 'Текст',
-						key: 'text',
-						binding: 'field',
-						itemType: 'any'
+						name: 'Текстовая строка',
+						type: 'group',
+						key: 'textGroup',
+						items:[{
+							type: 'item',
+							name: 'Текст',
+							key: 'text',
+							binding: 'field',
+							itemType: 'any'
+						},{
+							type: 'item',
+							key: 'textSort',
+							name: 'Использовать сортировку',
+							optional: 'checked',
+							editor: 'none'
+						},{
+							type: 'group',
+							key: 'contextFilter',
+							name: 'Использовать контексный фильтр',
+							optional: true,
+							items: [{
+								type: 'item',
+								key: 'contextFilterFixed',
+								name: 'Всегда показывать фильтр',
+								optional: true,
+								editor: 'none'
+							}]
+						}]
 					},{
 						name: 'Встроенный виджет',
 						type: 'group',
@@ -201,21 +231,39 @@
 						},{
 							type: 'item',
 							key: 'widgetSort',
-							name: 'Использовать поля для сортировки',
+							name: 'Использовать сортировку',
 							optional: true,
 							multiple: true,
 							binding: 'field',
 							editor: 'none'
+						},{
+							type: 'group',
+							key: 'widgetContextFilter',
+							name: 'Использовать контексный поиск',
+							optional: true,
+							items: [{
+								type: 'item',
+								key: 'widgetContextFilterField',
+								name: 'Фильтровать по полю',
+								binding: 'field',
+								editor: 'none'
+							},{
+								type: 'item',
+								key: 'widgetСontextFilterFixed',
+								name: 'Всегда показывать фильтр',
+								optional: true,
+								editor: 'none'
+							}]
 						}]
 					}]
 				},{
-					name: 'Выравнивание ячейки',
+					name: 'Стиль ячейки',
 					type: 'group',
 		            collapsable: true,
 		            collapsed: true,
 					key: 'cellAlign',
 					items:[{
-						name: 'По горизонтали',
+						name: 'Горизонтальное выравнивание',
 						type: 'select',
 						key: 'alignHorz',
 						items: [{
@@ -238,7 +286,7 @@
 							editor: 'none'
 						}]
 					},{
-						name: 'По вертикали',
+						name: 'Вертикальное выравнивание',
 						type: 'select',
 						key: 'alignVert',
 						items: [{
@@ -260,30 +308,30 @@
 							itemValue: 'bottom',
 							editor: 'none'
 						}]
-					}]
-					
-				},{
-					name: 'CSS стиль ячейки',
-					type: 'item',
-					optional: true,
-					itemType: 'string',
-					itemValue: `/* Заполните объект CSS значениями */
+					},{
+						name: 'CSS стиль ячейки',
+						type: 'item',
+						optional: true,
+						itemType: 'string',
+						itemValue: `/* Заполните объект CSS значениями */
 {
 	font-family: 'arial';
 }`,
-					key: 'css',
-					editor: 'JSB.Widgets.MultiEditor',
-					options: {
-						valueType: 'org.jsbeans.types.Css'
-					}
+						key: 'css',
+						editor: 'JSB.Widgets.MultiEditor',
+						options: {
+							valueType: 'org.jsbeans.types.Css'
+						}
+					}]
+					
 				},{
-					name: 'Выравнивание заголовка',
+					name: 'Стиль заголовка',
 					type: 'group',
 		            collapsable: true,
 		            collapsed: true,
 					key: 'headerAlign',
 					items:[{
-						name: 'По горизонтали',
+						name: 'Горизонтальное выравнивание',
 						type: 'select',
 						key: 'hAlignHorz',
 						items: [{
@@ -306,7 +354,7 @@
 							editor: 'none'
 						}]
 					},{
-						name: 'По вертикали',
+						name: 'Вертикальное выравнивание',
 						type: 'select',
 						key: 'hAlignVert',
 						items: [{
@@ -328,22 +376,22 @@
 							itemValue: 'bottom',
 							editor: 'none'
 						}]
-					}]
-					
-				},{
-					name: 'CSS стиль заголовка',
-					type: 'item',
-					optional: true,
-					itemType: 'string',
-					itemValue: `/* Заполните объект CSS значениями */
+					},{
+						name: 'CSS стиль заголовка',
+						type: 'item',
+						optional: true,
+						itemType: 'string',
+						itemValue: `/* Заполните объект CSS значениями */
 {
 	font-family: 'arial';
 }`,
-					key: 'hCss',
-					editor: 'JSB.Widgets.MultiEditor',
-					options: {
-						valueType: 'org.jsbeans.types.Css'
-					}
+						key: 'hCss',
+						editor: 'JSB.Widgets.MultiEditor',
+						options: {
+							valueType: 'org.jsbeans.types.Css'
+						}
+					}]
+					
 				},{
 					name: 'Ширина столбца',
 					type: 'item',
@@ -358,7 +406,8 @@
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
-		           'DataCube.Controls.SortSelector'],
+		           'DataCube.Controls.SortSelector',
+		           'DataCube.Controls.FilterEntry'],
 		
 		ready: false,
 		headerDesc: [],
@@ -752,7 +801,8 @@
 					colName: $this.colDesc[i].title,
 					colKey: $this.colDesc[i].key,
 					colType: colType,
-					valueSelector: valueSelector
+					valueSelector: valueSelector,
+					textSelector: $this.colDesc[i].textSelector
 				});
 			}
 			function preFetch(){
@@ -804,8 +854,8 @@
 							column: cols[i].colName,
 							colIdx: i
 						};
-						if(cols[i].colType == 'text'){
-							rDesc.value = cols[i].valueSelector.value();
+						if(cols[i].colType == 'textGroup'){
+							rDesc.value = cols[i].textSelector.value();
 						} else if(cols[i].colType == 'widgetGroup'){
 							var vals = JSB.clone($this.colDesc[i].widget.values.unwrap());
 							rDesc.value = vals;
@@ -917,6 +967,66 @@
 						.attr('style', function(d){ return d.hStyle.cssStyle})
 						.style('text-align', function(d){ return d.hStyle.alignHorz})
 						.style('vertical-align', function(d){ return d.hStyle.alignVert})
+						.each(function(d){
+							var elt = $this.$(this);
+							var hWrapper = elt.find('> .hWrapper');
+							elt.find('> .hWrapper > .text').text(d.title);
+							
+							// sort
+							var sortSelector = hWrapper.find('> .sortSelector').jsb();
+							if(d.sortFields && d.sortFields.length > 0){
+								if(!sortSelector){
+									sortSelector = new SortSelector(d.sortFields, {
+										onChange: function(q){
+											$this.updateOrder(this, q);
+										}
+									});
+									hWrapper.append(sortSelector.getElement());
+								}
+								elt.addClass('sortable');
+							} else {
+								if(sortSelector){
+									sortSelector.destroy();
+								}
+								elt.removeClass('sortable');
+							}
+							
+							// filter
+							var filterEntry = elt.find('> .filterEntry').jsb();
+							var filterButtonElt = hWrapper.find('> .filterButton');
+							if(d.contextFilterField && d.contextFilterField.length > 0){
+								elt.addClass('contextFilter');
+								if(d.contextFilterFixed){
+									elt.addClass('contextFilterFixed');
+									if(filterButtonElt.length > 0){
+										filterButtonElt.remove();
+									}
+								} else {
+									elt.removeClass('contextFilterFixed');
+									if(filterButtonElt.length == 0){
+										filterButtonElt = $this.$('<div class="filterButton"></div>');
+										hWrapper.append(filterButtonElt);
+										filterButtonElt.click(function(){
+											elt.toggleClass('filtered');
+										});
+									}
+								}
+								if(!filterEntry){
+									filterEntry = new FilterEntry(d.contextFilterField, {
+										
+									});
+									elt.append(filterEntry.getElement());
+								}
+							} else {
+								elt.removeClass('contextFilter');
+								if(filterEntry){
+									filterEntry.destroy();
+								}
+								if(filterButtonElt.length > 0){
+									filterButtonElt.remove();
+								}
+							}
+						});
 						
 					colData.enter()
 						.append('th')
@@ -927,7 +1037,11 @@
 							.style('vertical-align', function(d){ return d.hStyle.alignVert})
 							.each(function(d){
 								var elt = $this.$(this);
-								elt.append($this.$('<span class="text"></span>').text(d.title));
+								var hWrapper = $this.$('<div class="hWrapper"></div>');
+								elt.append(hWrapper);
+								hWrapper.append($this.$('<div class="text"></div>').text(d.title));
+								
+								// sort
 								if(d.sortFields && d.sortFields.length > 0){
 									elt.addClass('sortable');
 									var sortSelector = new SortSelector(d.sortFields, {
@@ -935,9 +1049,25 @@
 											$this.updateOrder(this, q);
 										}
 									});
-									elt.append(sortSelector.getElement());
-								} else {
-									elt.removeClass('sortable');
+									hWrapper.append(sortSelector.getElement());
+								}
+								
+								// filter
+								if(d.contextFilterField && d.contextFilterField.length > 0){
+									elt.addClass('contextFilter');
+									if(d.contextFilterFixed){
+										elt.addClass('contextFilterFixed');
+									} else {
+										var filterButtonElt = $this.$('<div class="filterButton"></div>');
+										hWrapper.append(filterButtonElt);
+										filterButtonElt.click(function(){
+											elt.toggleClass('filtered');
+										});
+									}
+									var filterEntry = new FilterEntry(d.contextFilterField, {
+										
+									});
+									elt.append(filterEntry.getElement());
 								}
 							});
 					
@@ -1073,12 +1203,16 @@
 						cssStyle: hCssStyle
 					},
 					widget: null,
-					sortFields: null
+					textSelector: null,
+					sortFields: null,
+					contextFilterField: null,
+					contextFilterFixed: false
 				};
 				
 				// check for widget
 				var viewSelector = gArr[i].find('view').value();
 				if(viewSelector.key() == 'widgetGroup'){
+					// embedded widget
 					var widgetSelector = viewSelector.find('widget');
 					var wType = widgetSelector.unwrap().widget.jsb;
 					var wName = widgetSelector.unwrap().widget.name;
@@ -1092,8 +1226,32 @@
 					if(sortSelector.used()){
 						desc.sortFields = sortSelector.binding();
 					}
+					var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
+					if(widgetContextFilterSelector.used()){
+						if(widgetContextFilterSelector.find('widgetContextFilterFixed').used()){
+							desc.contextFilterFixed = true;
+						}
+						var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
+						if(widgetContextFilterFieldSelector.used()){
+							desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+						}
+					}
+
 				} else {
-					desc.sortFields = viewSelector.binding();
+					// simple text
+					var textSelector = viewSelector.find('text');
+					desc.textSelector = textSelector;
+					var sortSelector = viewSelector.find('textSort');
+					if(sortSelector.used()){
+						desc.sortFields = textSelector.binding();
+					}
+					var contextFilterSelector = viewSelector.find('contextFilter');
+					if(contextFilterSelector.used()){
+						if(contextFilterSelector.find('contextFilterFixed').used()){
+							desc.contextFilterFixed = true;
+						}
+						desc.contextFilterField = textSelector.binding();
+					}
 				}
 				
 				this.colDesc.push(desc);
