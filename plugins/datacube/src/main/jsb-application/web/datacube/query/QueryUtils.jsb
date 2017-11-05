@@ -125,13 +125,10 @@
             });
         },
 
-        /** Удаляет провайдеры, все поля которых есть в других JOIN провайдерах, исключает лишние JOIN.
-        Если поле есть и в UNION и в JOIN провайдерах, то приоритет отдается JOIN провайдеру.
+        /** Удаляет провайдеры, все поля которых есть в других JOIN провайдерах, исключает лишние JOIN и UNION.
+        Если поле есть и в UNION и в JOIN провайдерах, то приоритет отдается UNION провайдерам, т.к. они слева в LEFT JOIN.
         */
-        removeRedundantBindingProviders: function (
-                providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/,
-                removeJoins, removeUnions
-            ) {
+        removeRedundantBindingProviders: function (providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/) {
 		    function allFieldsBindingAndAllInOther(prov){
 		        var allFieldsBinding = true;
 		        var allInOtherJoined = true;
@@ -158,11 +155,17 @@
 		        return allFieldsBinding && allInOtherJoined;
 		    }
 
+            // first remove joins (in LEFT JOIN left is unions)
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
-		        var canRemoved = removeJoins && providersFieldsMap[id].provider.mode == 'join'
-		                || removeUnions && (providersFieldsMap[id].provider.mode||'union') == 'union';
-
-		        if (canRemoved && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
+		        if (providersFieldsMap[id].provider.mode == 'join'
+		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
+		            delete providersFieldsMap[id];
+		        }
+		    }
+            // then remove unions
+		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+		        if ((providersFieldsMap[id].provider.mode||'union') == 'union'
+		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
 		            delete providersFieldsMap[id];
 		        }
 		    }
@@ -177,16 +180,12 @@
                     if (!JSB.isString(q.$field)) throw new Error('Invalid $field value type ' + typeof q.$field);
                     cubeFields[q.$field] = q;
                 } else if (JSB.isPlainObject(q) && JSB.isNull(q.$const)) {
-                    if (q.$if && q.$if.$cond) {
-                        for (var f in q.$if.$cond) if (q.$if.$cond.hasOwnProperty(f)) {
-                            if (!f.startsWith('$')) {
-                                cubeFields[f] = {$field:f};
-                            }
-                        }
-                    }
 
                     if (!q.$select || !skipSubQuery ) {
                         for (var f in q) if (q.hasOwnProperty(f)) {
+                            if (!f.startsWith('$')) {
+                                cubeFields[f] = {$field:f};
+                            }
                             collect(q[f]);
                         }
                     }

@@ -767,51 +767,78 @@
             function buildUNIONsSqlAndFieldsMap(allFields, providers, unionsAlias) {
                 var sqlUnions = '';
                 var unionsCount = 0;
+                var lastProv;
                 for(var id in providers) if(providers.hasOwnProperty(id)) {
                     var prov = providers[id];
                     if ((prov.provider.mode||'union') != 'union') continue;
-
                     unionsCount++;
-                    if (sqlUnions .length > 0) sqlUnions  += ' UNION ALL ';
-
-                    // print unions view columns and build fieldsMap
-                    var fieldsSql = '';
-                    var skipNulls = false;
-                    forEachViewColumn(allFields, prov,
-                        function visitField(cubeField, isNull, binding){
-                            if (skipNulls && isNull) {
-                                // skip field if skipNulls
-                                return;
-                            }
-                            if (allFields[cubeField]) {
-                                // skip isJoined fields
-                                return;
-                            }
-
-                            if (fieldsSql.length > 0) fieldsSql += ', ';
-                            if (isNull) {
-                                var fieldType = $this.cube.getManagedFields()[cubeField].type;
-                                fieldsSql += 'CAST(NULL AS ' + JDBC.translateType(fieldType, $this.vendor) + ')';
-                            } else {
-                                fieldsSql += $this._quotedName(binding.field);
-                            }
-                            fieldsSql += ' AS ' + $this._quotedName(cubeField);
-
-                            fieldsMap[cubeField] = isNull && fieldsMap[cubeField] || {
+                    lastProv = prov;
+                }
+                if (unionsCount == 1) {
+                    forEachCubeFieldBinding(allFields, function(cubeField, binding){
+                        // if current provider build fieldsMap
+                        if (lastProv.provider == binding.provider) {
+                            fieldsMap[cubeField] = {
                                 context: query.$context,
                                 cubeField: cubeField,
 
-                                providerField: binding && binding.field || null,
-                                providerTable: binding && binding.provider.getTableFullName() || null,
+                                providerField: binding.field,
+                                providerTable: binding.provider.getTableFullName(),
 
                                 tableAlias: unionsAlias,
-                                fieldAlias: cubeField
+                                fieldAlias: binding.field
                             };
+                            return true;
                         }
-                    );
+                    });
+                    sqlUnions += $this._printTableName(lastProv.provider.getTableFullName());
 
-                    sqlUnions += '(SELECT ' + fieldsSql + ' FROM '+
-                        $this._printTableName(prov.provider.getTableFullName()) + ')';
+                } else {
+
+                    for(var id in providers) if(providers.hasOwnProperty(id)) {
+                        var prov = providers[id];
+                        if ((prov.provider.mode||'union') != 'union') continue;
+                        if (sqlUnions .length > 0) sqlUnions  += ' UNION ALL ';
+
+                        // print unions view columns and build fieldsMap
+                        var fieldsSql = '';
+                        var skipNulls = false;
+                        forEachViewColumn(allFields, prov,
+                            function visitField(cubeField, isNull, binding){
+                                if (skipNulls && isNull) {
+                                    // skip field if skipNulls
+                                    return;
+                                }
+                                if (allFields[cubeField]) {
+                                    // skip isJoined fields
+                                    return;
+                                }
+
+                                if (fieldsSql.length > 0) fieldsSql += ', ';
+                                if (isNull) {
+                                    var fieldType = $this.cube.getManagedFields()[cubeField].type;
+                                    fieldsSql += 'CAST(NULL AS ' + JDBC.translateType(fieldType, $this.vendor) + ')';
+                                } else {
+                                    fieldsSql += $this._quotedName(binding.field);
+                                }
+                                fieldsSql += ' AS ' + $this._quotedName(cubeField);
+
+                                fieldsMap[cubeField] = isNull && fieldsMap[cubeField] || {
+                                    context: query.$context,
+                                    cubeField: cubeField,
+
+                                    providerField: binding && binding.field || null,
+                                    providerTable: binding && binding.provider.getTableFullName() || null,
+
+                                    tableAlias: unionsAlias,
+                                    fieldAlias: cubeField
+                                };
+                            }
+                        );
+
+                        sqlUnions += '(SELECT ' + fieldsSql + ' FROM '+
+                            $this._printTableName(prov.provider.getTableFullName()) + ')';
+                    }
                 }
                 if (unionsCount > 1) {
                     var sql = '(' + sqlUnions + ') AS ' + $this._quotedName(unionsAlias);
