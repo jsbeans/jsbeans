@@ -174,7 +174,7 @@
         extractFields: function(valueExp, skipSubQuery) {
             var cubeFields = {};
             function collect(q) {
-                if (JSB.isString(q)) {
+                if (JSB.isString(q) && !q.startsWith('$')) {
                     cubeFields[q] = {$field:q};
                 } else if (JSB.isPlainObject(q) && q.$field) {
                     if (!JSB.isString(q.$field)) throw new Error('Invalid $field value type ' + typeof q.$field);
@@ -366,15 +366,14 @@
 
         /** встроить дополнительный фильтр в текущий по $and с фильтрацией по названию используемого поля
         */
-        embedFilterToSubQuery: function (dcQuery, subQuery, filterName, additionalFilter, isAccepted) {
-//debugger;
-            if (!subQuery.$filter) subQuery.$filter = {};
-            if (!subQuery.$filter.$and) subQuery.$filter.$and = [];
+        embedFilterToSubQuery: function (query, additionalFilter, isAccepted) {
+            if (!query.$filter) query.$filter = {};
+            if (!query.$filter.$and) query.$filter.$and = [];
 
             var skipFields = this.collectSubQueryJoinFields(
-                subQuery.$filter,
+                query.$filter,
                 function isForeignContext(context) {
-                    return !!context && context == subQuery.$context;
+                    return !!context && context != query.$context;
                 }
             );
 //Log.debug('\nskipFields: ' + JSON.stringify(skipFields));
@@ -386,7 +385,7 @@
             );
 
             if (subFilter) {
-                subQuery.$filter.$and.push(subFilter);
+                query.$filter.$and.push(subFilter);
             }
 //Log.debug('\nembededFilter: ' + JSON.stringify(subQuery.$filter));
 //debugger;
@@ -418,12 +417,10 @@
         propagateGlobalFilter: function(dcQuery, cubeOrDataProvider) {
             // if global filter defined then embed it to all queries/sub queries
             if (dcQuery.$cubeFilter && Object.keys(dcQuery.$cubeFilter).length > 0) {
-//debugger;
-//Log.debug('\npropagateGlobalFilter START: ' + JSON.stringify(dcQuery,0,2));
                 // recursive find all $select
                 this.walkSubQueries(dcQuery, function(subQuery){
                     $this.embedFilterToSubQuery(
-                        dcQuery, subQuery, '$filter',
+                        subQuery,
                         dcQuery.$cubeFilter,
                         function(field){
 //                            return $this.isOriginalCubeField(field, dcQuery, cubeOrDataProvider);
@@ -432,7 +429,6 @@
                     );
                 });
                 delete dcQuery.$cubeFilter;
-//Log.debug('\npropagateGlobalFilter END: ' + JSON.stringify(dcQuery,0,2));
             }
         },
 
