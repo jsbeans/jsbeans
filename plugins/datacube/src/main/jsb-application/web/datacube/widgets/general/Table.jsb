@@ -218,6 +218,13 @@
 								optional: true,
 								editor: 'none'
 							}]
+						},{
+							type: 'item',
+							key: 'textFormat',
+							name: 'Форматировать числа',
+							optional: true,
+							itemType: 'string',
+							itemValue: '0,0.[00]'
 						}]
 					},{
 						name: 'Встроенный виджет',
@@ -407,7 +414,8 @@
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
 		           'DataCube.Controls.SortSelector',
-		           'DataCube.Controls.FilterEntry'],
+		           'DataCube.Controls.FilterEntry',
+		           'JSB.Number.Format'],
 		
 		ready: false,
 		headerDesc: [],
@@ -641,8 +649,13 @@
 							cellEl.attr('widget', widget.getId());
 						}
 					} else {
-						cellEl.text(d.value);
+						var val = d.value;
+						if($this.colDesc[d.colIdx].format){
+							val = Format.format(val, $this.colDesc[d.colIdx].format)
+						}
+						cellEl.text(val);
 						cellEl.attr('title', d.value);
+						
 						if(cellEl.attr('widget')){
 							cellEl.removeAttr('widget');
 						}
@@ -693,8 +706,13 @@
 									cellEl.append(widget.getElement());
 									cellEl.attr('widget', widget.getId());
 								} else {
+									var val = d.value;
+									if($this.colDesc[d.colIdx].format){
+										val = Format.format(val, $this.colDesc[d.colIdx].format)
+									}
+									
 									cellEl.attr('title', d.value);
-									cellEl.text(d.value);
+									cellEl.text(val);
 								}
 							});
 					
@@ -754,7 +772,12 @@
 												cellEl.append(widget.getElement());
 												cellEl.attr('widget', widget.getId());
 											} else {
-												cellEl.text(d.value);
+												var val = d.value;
+												if($this.colDesc[d.colIdx].format){
+													val = Format.format(val, $this.colDesc[d.colIdx].format)
+												}
+												
+												cellEl.text(val);
 												cellEl.attr('title', d.value);
 											}
 										});
@@ -1204,6 +1227,7 @@
 					},
 					widget: null,
 					textSelector: null,
+					format: null,
 					sortFields: null,
 					contextFilterField: null,
 					contextFilterFixed: false
@@ -1251,6 +1275,10 @@
 							desc.contextFilterFixed = true;
 						}
 						desc.contextFilterField = textSelector.binding();
+					}
+					var formatSelector = viewSelector.find('textFormat');
+					if(formatSelector.used()){
+						desc.format = formatSelector.value();
 					}
 				}
 				
