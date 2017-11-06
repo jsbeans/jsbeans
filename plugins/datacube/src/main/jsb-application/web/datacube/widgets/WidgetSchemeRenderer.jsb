@@ -101,7 +101,7 @@
 						onChange: function(){
 						    var binding = this.getDataScheme();
 
-						    clearBinding($this.values);
+						    //clearBinding($this.values);
 
 							if(!binding){
 								$this.values.binding = null;

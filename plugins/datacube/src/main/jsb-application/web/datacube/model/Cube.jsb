@@ -992,7 +992,6 @@
 							tableFieldMap[tId][fName] = fDesc.type;
 						}
 					}
-					
 					var tIdx = 1;
 					for(var tId in materializationDesc.tables){
 						var fields = tableFieldMap[tId];
@@ -1018,9 +1017,12 @@
 						var batch = [];
 						var lastStatusTimestamp = 0;
 						for(var i = 0; ; i++){
-/*							if(i > 5000){
+							
+							if(i > 5000){
 								break;
-							}*/
+							}
+							
+							
 							var el = null;
 							try {
 								el = iterator.next();
@@ -1553,9 +1555,13 @@
 	        		function prepareFilter(scope){
 	        			for(var f in scope){
 	        				if(filterOps[f] && !JSB.isObject(scope[f]) && !JSB.isArray(scope[f])){
+/*	        					
 	        					var pName = getNextParam();
 	        					params[pName] = scope[f];
 	        					scope[f] = '${'+pName+'}';
+*/
+	        					scope[f] = {$const:scope[f]};
+
 	        				} else if(f == '$and' || f == '$or'){
 	        					var arr = scope[f];
 	        					for(var i = 0; i < arr.length; i++){

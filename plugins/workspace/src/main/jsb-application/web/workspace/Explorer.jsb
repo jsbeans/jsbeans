@@ -1037,11 +1037,18 @@
 				if(JSB().isArray(item)){
 					item = item[0];
 				}
-				if(JSB().isInstanceOf(item.obj, 'JSB.Workspace.FolderNode')){
-					parentKey = item.key;
-				} else {
-					// move up to nearest parent
-					parentKey = item.parent;
+				var curItem = item;
+				while(curItem){
+					if(JSB().isInstanceOf(curItem.obj, 'JSB.Workspace.FolderNode')){
+						parentKey = curItem.key;
+						break;
+					} else {
+						if(curItem.parent){
+							curItem = this.tree.get(curItem.parent);
+						} else {
+							curItem = null;
+						}
+					}
 				}
 			}
 			
@@ -1103,11 +1110,18 @@
 				if(JSB().isArray(item)){
 					item = item[0];
 				}
-				if(JSB().isInstanceOf(item.obj, 'JSB.Workspace.FolderNode')){
-					parentKey = item.key;
-				} else {
-					// move up to nearest parent
-					parentKey = item.parent;
+				var curItem = item;
+				while(curItem){
+					if(JSB().isInstanceOf(curItem.obj, 'JSB.Workspace.FolderNode')){
+						parentKey = curItem.key;
+						break;
+					} else {
+						if(curItem.parent){
+							curItem = this.tree.get(curItem.parent);
+						} else {
+							curItem = null;
+						}
+					}
 				}
 			}
 			this.server().loadEntryNames(function(names){
