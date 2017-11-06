@@ -650,7 +650,7 @@
 						}
 					} else {
 						var val = d.value;
-						if($this.colDesc[d.colIdx].format){
+						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
 							val = Format.format(val, $this.colDesc[d.colIdx].format)
 						}
 						cellEl.text(val);
@@ -707,7 +707,7 @@
 									cellEl.attr('widget', widget.getId());
 								} else {
 									var val = d.value;
-									if($this.colDesc[d.colIdx].format){
+									if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
 										val = Format.format(val, $this.colDesc[d.colIdx].format)
 									}
 									
@@ -773,7 +773,7 @@
 												cellEl.attr('widget', widget.getId());
 											} else {
 												var val = d.value;
-												if($this.colDesc[d.colIdx].format){
+												if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
 													val = Format.format(val, $this.colDesc[d.colIdx].format)
 												}
 												
