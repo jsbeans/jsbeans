@@ -275,11 +275,16 @@
                     ')';
             }
 
-            function translateNOperator(args, op) {
+            function translateNOperator(args, op, wrapper) {
                 var sql = '';
                 for (var i in args) {
                     if (i > 0) sql += ' ' + op + ' ';
-                    sql += $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
+                    var arg = $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
+                    if (wrapper) {
+                        sql += wrapper(arg, i);
+                    } else {
+                        sql += arg;
+                    }
                 }
                 sql += '';
                 return sql;
@@ -383,15 +388,15 @@
                     return 'COALESCE('+ translateNOperator(exp[op], ',') + ')';
 
                 case '$add':
-                    return '('+ translateNOperator(exp[op], '+') + ')';
+                    return '('+ translateNOperator(exp[op], '+', function(arg, n){return 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$sub':
-                    return '('+ translateNOperator(exp[op], '-') + ')';
+                    return '('+ translateNOperator(exp[op], '-', function(arg, n){return 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$mod':
-                    return '('+ translateNOperator(exp[op], '%') + ')';
+                    return '('+ translateNOperator(exp[op], '%', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$mul':
-                    return '('+ translateNOperator(exp[op], '*') + ')';
+                    return '('+ translateNOperator(exp[op], '*', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$div':
-                    return '('+ translateNOperator(exp[op], '/') + ')';
+                    return '('+ translateNOperator(exp[op], '/', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$divz':
                     return '('+ translateDivzOperator(exp[op]) + ')';
 
