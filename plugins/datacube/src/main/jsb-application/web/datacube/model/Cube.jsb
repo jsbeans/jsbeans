@@ -1017,11 +1017,11 @@
 						var batch = [];
 						var lastStatusTimestamp = 0;
 						for(var i = 0; ; i++){
-							
+/*							
 							if(i > 5000){
 								break;
 							}
-							
+*/							
 							
 							var el = null;
 							try {
