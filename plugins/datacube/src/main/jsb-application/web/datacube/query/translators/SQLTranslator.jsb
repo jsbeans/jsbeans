@@ -119,7 +119,8 @@
 		            $context: 'wrapped_' + query.$context
 		        });
 		        this._registerContextQuery(wrappedQuery);
-		        sql = 'SELECT * FROM (' + sql + ') AS ' + this._quotedName(wrappedQuery.$context) + ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
+		        sql = 'SELECT * FROM (' + sql + ') AS ' + this._quotedName(wrappedQuery.$context) +
+		              ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
 		    }
 
 //		    Log.debug('Translated SQL Query: \n' + sql);
@@ -316,6 +317,11 @@
                 sql += ' end';
                 return sql;
             }
+            function wrapEmptyToNull(exp) {
+                //disabled
+                //return "case when (" + exp + ") == '' then NULL else (" + exp + ") end";
+                return exp;
+            }
 
             if (JSB.isString(exp)) {
                 if (exp.match(/^\$\{.*\}/g)) {
@@ -424,26 +430,26 @@
                     return 'TRIM(both from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
 
                 case '$toInt':
-                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as int)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as int)';
                 case '$toDouble':
-                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as double precision)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as double precision)';
                 case '$toBoolean':
-                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as boolean)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as boolean)';
                 case '$toString':
                     return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as varchar)';
                 case '$toDate':
-                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as date)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as date)';
                 case '$toTimestamp':
-                    return 'to_timestamp(CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as double precision))';
+                    return 'to_timestamp(CAST((' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as double precision))';
                 case '$dateYear':
-                    return 'extract(isoyear from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'extract(isoyear from ' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ')';
                 case '$dateMonth':
-                    return 'extract(month from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'extract(month from ' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ')';
                 case '$dateTotalSeconds':
-                    return 'extract(epoch from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'extract(epoch from ' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ')';
 
                 case '$dateIntervalOrder':
-                    return 'CAST((extract(epoch from ' + this._translateExpression(exp.$dateIntervalOrder.$field, dcQuery, useFieldNotAlias) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
+                    return 'CAST((extract(epoch from ' + (this._translateExpression(exp.$dateIntervalOrder.$field, dcQuery, useFieldNotAlias)) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
             }
 
             // aggregate operators
@@ -533,6 +539,10 @@
                     // print alias
                     return this._quotedName(field);
                 }
+            }
+            if (!this.contextFieldsMap[context]){
+                // print alias
+                return this._quotedName(field);
             }
 
             var nameSql = this._translateCubeField(cubeField || field, context);

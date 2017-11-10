@@ -29,6 +29,9 @@
 		    // clone query
 		    dcQuery = JSB.merge(true, {}, dcQuery);
 
+		    // patch links to aliases if alias is cube field
+		    QueryUtils.patchSimpleFieldAliases(dcQuery, dataProvider || this.cube);
+
 		    // unwrap macros to complex expressions
 		    QuerySyntax.unwrapMacros(dcQuery);
 

@@ -476,7 +476,7 @@
 
         /** Поднять в запросе наверх (изменить порядок ключей в json) поля/алиасы, которые используются в других полях
         */
-		upperGeneralFields: function(dcQuery, cubeOrDataProvider){
+		upperGeneralFields: function(dcQuery){
 		    function copyWithTopField(fieldName, obj) {
 		        var res = {};
 		        res[fieldName] = obj[fieldName];
@@ -619,7 +619,56 @@
             }
         },
 
+        /** Производит замену алиасов на поле куба, если алиас равен полю куба
+        */
+        patchSimpleFieldAliases: function(dcQuery, cubeOrDataProvider) {
+            var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
+                        ? cubeOrDataProvider.getManagedFields()
+                        : cubeOrDataProvider.extractFields();
+		    var queriesByContext = {};
+		    this.walkSubQueries(dcQuery, function(query){
+                if (query.$context) {
+                    queriesByContext[query.$context] = query;
+                }
+		    });
 
+		    this.walkSubQueries(dcQuery, function(query){
+                patchFields(query, query);
+		    });
+
+            function patchFields(exp, query) {
+                var fieldName = JSB.isPlainObject(exp) && exp.$field;
+                if (fieldName) {
+                    var fieldQuery = exp.$context || query.$context ? queriesByContext[exp.$context || query.$context] : query;
+                    var isAlias = !!fieldQuery.$select[fieldName];
+                    if (isAlias) {
+
+                        var isSimpleFiledAlias = fieldQuery.$select[fieldName].$field && fieldQuery.$select[fieldName].$field != fieldName
+                                    || JSB.isString(fieldQuery.$select[fieldName]) && !fieldQuery.$select[fieldName].startsWith('$') && fieldQuery.$select[fieldName] != fieldName;
+                        if (isSimpleFiledAlias) {
+                            var cubeField = fieldQuery.$select[fieldName].$field && fieldQuery.$select[fieldName].$field
+                                    || JSB.isString(fieldQuery.$select[fieldName]) && fieldQuery.$select[fieldName];
+                            if(fields[cubeField]) {
+                                // replace alias to field
+                                exp.$field = cubeField;
+                            }
+                        }
+                    }
+                } else if (JSB.isPlainObject(exp)) {
+                    if (!exp.$select || exp == query) {
+                        for (var f in exp) if (exp.hasOwnProperty(f)) {
+                            if (f != '$postFilter') {
+                                patchFields(exp[f]);
+                            }
+                        }
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for (var i in exp) {
+                        patchFields(exp[i]);
+                    }
+                }
+            }
+        }
 
 	}
 }
