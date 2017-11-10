@@ -111,8 +111,10 @@
 
 							if(binding.source){
 								$this.values.binding = binding;
+								$this.values.bindingType = 'source';
 							} else {
 								$this.values.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
+								$this.values.bindingType = binding.type;
 							}
 
 							fillGroup(binding);
@@ -306,8 +308,10 @@
 				if(!$this.values.binding && $this.scheme.binding){
 					if(!childBinding || childBinding.source){
 						$this.values.binding = childBinding;
+						$this.values.bindingType = 'source';
 					} else {
 						$this.values.binding = $this.wrapper.getBindingRelativePath($this.binding, childBinding);
+						$this.values.bindingType = childBinding.type;
 					}
 				}
 				if($this.values && $this.values.groups && $this.values.groups.length > 0){
@@ -472,8 +476,10 @@
 							}
 							if(binding.source){
 								valueDesc.binding = binding;
+								valueDesc.bindingType = 'source';
 							} else {
 								valueDesc.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
+								valueDesc.bindingType = binding.type;
 							}
 							 
 							if(valueDesc.binding){
@@ -492,8 +498,10 @@
 						var binding = bindingSelector.getDataScheme();
 						if(binding.source){
 							valueDesc.binding = binding;
+							valueDesc.bindingType = 'source';
 						} else {
 							valueDesc.binding = $this.wrapper.getBindingRelativePath($this.binding, binding);
+							valueDesc.bindingType = binding.type;
 						}
 					}
 					if(valueDesc.binding){

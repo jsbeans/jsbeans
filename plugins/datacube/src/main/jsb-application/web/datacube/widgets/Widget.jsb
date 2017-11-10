@@ -12,6 +12,7 @@
 		sourceFilterMap: null,
 		ready: false,
 		initCallbacks: [],
+		contextFilter: {},
 
 		$require: ['JSB.Crypt.MD5'],
 		
@@ -162,7 +163,31 @@
 						}
 					}
 				},
-				
+
+				bindingType: function(){
+					if(this.selector.length == 0){
+						return;
+					}
+					
+					var item = this.selector[0];
+					if(!item.used){
+						return;
+					}
+					if(item.type == 'group' || item.type == 'select'){
+						return item.bindingType;
+					} else if(item.type == 'item'){
+						var bArr = [];
+						for(var i = 0; i < item.values.length; i++){
+							bArr.push(item.values[i].bindingType);
+						}
+						return bArr;
+					} else if(item.type == 'widget'){
+						if(item.widget && item.widget.jsb){
+							return item.widget;
+						}
+					}
+				},
+
 				name: function(){
 					if(this.selector.length == 0){
 						return null;
@@ -283,6 +308,11 @@
 						}
 					}
 					item.fetchOpts.sort = $this.sort;
+					if(Object.keys($this.contextFilter).length > 0){
+						item.fetchOpts.contextFilter = $this.contextFilter;
+					} else {
+						item.fetchOpts.contextFilter = null;
+					}
 
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(fail && fail.message == 'Fetch broke'){
@@ -627,6 +657,14 @@
 			this.sort = q;
 			this.refresh();
 		},
+		
+		setContextFilter: function(q){
+			this.contextFilter = q;
+		},
+		
+		getContextFilter: function(){
+			return JSB.clone(this.contextFilter);
+		},
 
 		createFilterHash: function(filter){
             var str = '';
@@ -719,6 +757,13 @@
 						}
 						if(opts.postFilter){
 							extQuery.$postFilter = opts.postFilter;
+						}
+						if(opts.contextFilter){
+							if(extQuery.$postFilter && Object.keys(extQuery.$postFilter).length > 0){
+								extQuery.$postFilter = {'$and':[extQuery.$postFilter, opts.contextFilter]};
+							} else {
+								extQuery.$postFilter = opts.contextFilter;
+							}
 						}
 						if(opts.sort){
 							extQuery.$sort = [opts.sort];

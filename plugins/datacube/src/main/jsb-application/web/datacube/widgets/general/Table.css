@@ -44,6 +44,7 @@
 
 .tableWidget > table.header > thead > tr > th.col > .hWrapper {
 	display: block;
+	position: relative;
 	overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -103,8 +104,10 @@
 	display: none;
 }
 
-.tableWidget > table.header > thead > tr > th.col.filtered > .filterEntry {
+.tableWidget > table.header > thead > tr > th.col.filtered > .filterEntry,
+.tableWidget > table.header > thead > tr > th.col.contextFilterFixed > .filterEntry {
 	display: block;
+	margin: 4px 2px 2px 2px;
 }
 
 

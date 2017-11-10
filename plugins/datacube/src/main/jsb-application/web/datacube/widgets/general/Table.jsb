@@ -191,12 +191,12 @@
 					type: 'select',
 					key: 'view',
 					items:[{
-						name: 'Текстовая строка',
+						name: 'Текст',
 						type: 'group',
 						key: 'textGroup',
 						items:[{
 							type: 'item',
-							name: 'Текст',
+							name: 'Значение',
 							key: 'text',
 							binding: 'field',
 							itemType: 'any'
@@ -246,7 +246,7 @@
 						},{
 							type: 'group',
 							key: 'widgetContextFilter',
-							name: 'Использовать контексный поиск',
+							name: 'Использовать контексный фильтр',
 							optional: true,
 							items: [{
 								type: 'item',
@@ -1017,8 +1017,16 @@
 							// filter
 							var filterEntry = elt.find('> .filterEntry').jsb();
 							var filterButtonElt = hWrapper.find('> .filterButton');
-							if(d.contextFilterField && d.contextFilterField.length > 0){
+							if(d.contextFilterField && d.contextFilterFieldType){
 								elt.addClass('contextFilter');
+								if(!filterEntry){
+									filterEntry = new FilterEntry({
+										onChange: function(filter){
+											$this.updateContextFilter(filter);
+										}
+									});
+									elt.append(filterEntry.getElement());
+								}
 								if(d.contextFilterFixed){
 									elt.addClass('contextFilterFixed');
 									if(filterButtonElt.length > 0){
@@ -1031,15 +1039,20 @@
 										hWrapper.append(filterButtonElt);
 										filterButtonElt.click(function(){
 											elt.toggleClass('filtered');
+											if(elt.hasClass('filtered')){
+												var filter = filterEntry.getFilter();
+												$this.updateContextFilter(filter);
+												filterEntry.setFocus();
+											} else {
+												// clear field filter
+												var filter = {};
+												filter[d.contextFilterField] = null;
+												$this.updateContextFilter(filter);
+											}
 										});
 									}
 								}
-								if(!filterEntry){
-									filterEntry = new FilterEntry(d.contextFilterField, {
-										
-									});
-									elt.append(filterEntry.getElement());
-								}
+								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
 							} else {
 								elt.removeClass('contextFilter');
 								if(filterEntry){
@@ -1076,8 +1089,15 @@
 								}
 								
 								// filter
-								if(d.contextFilterField && d.contextFilterField.length > 0){
+								if(d.contextFilterField && d.contextFilterFieldType){
 									elt.addClass('contextFilter');
+									var filterEntry = new FilterEntry({
+										onChange: function(filter){
+											$this.updateContextFilter(filter);
+										}
+									});
+									elt.append(filterEntry.getElement());
+									
 									if(d.contextFilterFixed){
 										elt.addClass('contextFilterFixed');
 									} else {
@@ -1085,12 +1105,19 @@
 										hWrapper.append(filterButtonElt);
 										filterButtonElt.click(function(){
 											elt.toggleClass('filtered');
+											if(elt.hasClass('filtered')){
+												var filter = filterEntry.getFilter();
+												$this.updateContextFilter(filter);
+												filterEntry.setFocus();
+												filterEntry.setFocus();
+											} else {
+												var filter = {};
+												filter[d.contextFilterField] = null;
+												$this.updateContextFilter(filter);
+											}
 										});
 									}
-									var filterEntry = new FilterEntry(d.contextFilterField, {
-										
-									});
-									elt.append(filterEntry.getElement());
+									filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
 								}
 							});
 					
@@ -1115,6 +1142,21 @@
 				}
 			});
 			this.setSort(sortQuery);
+		},
+		
+		updateContextFilter: function(q){
+			var curFilter = this.getContextFilter();
+			for(var f in q){
+				if(q[f] && Object.keys(q[f]).length > 0){
+					curFilter[f] = q[f];
+				} else {
+					if(curFilter[f]){
+						delete curFilter[f];
+					}
+				}
+			}
+			this.setContextFilter(curFilter);
+			this.refresh();
 		},
 		
 		refresh: function(opts){
@@ -1200,7 +1242,7 @@
 				}
 				
 				var hAlignVert = 'top';
-				var hAlignVertSelector = gArr[i].find('alignVert');
+				var hAlignVertSelector = gArr[i].find('hAlignVert');
 				if(hAlignVertSelector.used()){
 					hAlignVert = hAlignVertSelector.value().value();
 				}
@@ -1252,12 +1294,13 @@
 					}
 					var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
 					if(widgetContextFilterSelector.used()){
-						if(widgetContextFilterSelector.find('widgetContextFilterFixed').used()){
+						if(widgetContextFilterSelector.find('widgetСontextFilterFixed').used()){
 							desc.contextFilterFixed = true;
 						}
 						var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
 						if(widgetContextFilterFieldSelector.used()){
-							desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+							desc.contextFilterField = widgetContextFilterFieldSelector.binding()[0];
+							desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType()[0];
 						}
 					}
 
@@ -1274,7 +1317,8 @@
 						if(contextFilterSelector.find('contextFilterFixed').used()){
 							desc.contextFilterFixed = true;
 						}
-						desc.contextFilterField = textSelector.binding();
+						desc.contextFilterField = textSelector.binding()[0];
+						desc.contextFilterFieldType = textSelector.bindingType()[0];
 					}
 					var formatSelector = viewSelector.find('textFormat');
 					if(formatSelector.used()){

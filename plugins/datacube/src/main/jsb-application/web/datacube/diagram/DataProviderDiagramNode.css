@@ -331,6 +331,7 @@
 
 .dataProviderDiagramNode > .body > .fields.keyFields {
     border-bottom: 2px solid #d4cc92;
+	max-height: inherit;
 }
 
 .dataProviderDiagramNode > .body > .search {

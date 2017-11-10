@@ -3,6 +3,37 @@
 .filterEntry {
 	position: relative;
 	box-sizing: border-box;
-	overflow: hidden;
 	display: inline-block;
+}
+
+.filterEntry > ._dwp_primitiveEditor {
+	display: block;
+}
+
+.filterEntry.showOp > ._dwp_primitiveEditor {
+	padding-left: 22px;
+}
+
+.filterEntry > .opSelector {
+	display: none;
+}
+
+.filterEntry.showOp > .opSelector {
+	position: absolute;
+    display: block;
+    padding: 0 3px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    text-shadow: none;
+	border-radius: 4px;
+	top: 50%;
+    left: 0;
+    margin-top: -10px;
+    transition: background-color 300ms, color 300ms;
+}
+
+.filterEntry.showOp > .opSelector:hover {
+	background-color: #e2653c;
+    color: #fff;
 }

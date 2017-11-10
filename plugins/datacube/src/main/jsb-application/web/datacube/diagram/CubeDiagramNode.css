@@ -447,7 +447,7 @@
 
 .cubeDiagramNode > .body > .fields.keyFields {
     border-bottom: 2px solid #5f7698;
-    max-height: none;
+    max-height: inherit;
 }
 
 .cubeDiagramNode > .body > .search {
