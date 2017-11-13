@@ -779,7 +779,7 @@
                 }
 
             }
-            function buildUNIONsSqlAndFieldsMap(allFields, providers, unionsAlias) {
+            function buildUNIONsSqlAndFieldsMap(allFields, providers, unionsAlias, unionsFields) {
                 var sqlUnions = '';
                 var unionsCount = 0;
                 var lastProv;
@@ -803,6 +803,7 @@
                                 tableAlias: unionsAlias,
                                 fieldAlias: binding.field
                             };
+                            unionsFields[cubeField] = binding.field;
                             return true;
                         }
                     });
@@ -848,6 +849,7 @@
                                     tableAlias: unionsAlias,
                                     fieldAlias: cubeField
                                 };
+                                unionsFields[cubeField] = cubeField;
                             }
                         );
 
@@ -879,7 +881,7 @@
                 }
                 return Object.keys(fields);
             }
-            function buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, hasUnions) {
+            function buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, hasUnions, unionsFields) {
                 var sqlJoins = '';
                 for(var p in providers) if(providers.hasOwnProperty(p)) {
                     var prov = providers[p];
@@ -908,7 +910,7 @@
                                 providerTable: binding && binding.provider.getTableFullName() || null,
 
                                 tableAlias: isJoinedField ? joinedViewAlias : unionsAlias,
-                                fieldAlias: isJoinedField ? binding.field : cubeField
+                                fieldAlias: isJoinedField ? binding.field : unionsFields[cubeField]
                             };
                         }
                     );
@@ -919,7 +921,7 @@
                         if (sqlOn.length > 0) sqlOn  += ' AND ';
                         var cubeField = joinOnFields[i];
                         var providerField = fieldsMap[cubeField].providerField;
-                        sqlOn += $this._quotedName(unionsAlias) + '.' + $this._quotedName(cubeField);
+                        sqlOn += $this._quotedName(unionsAlias) + '.' + $this._quotedName(unionsFields[cubeField]);
                         sqlOn += ' = ';
                         sqlOn += $this._quotedName(joinedViewAlias) + '.' + $this._quotedName(providerField);
                     }
@@ -929,7 +931,7 @@
                 var sql = '';
                 if (sqlJoins.length > 0) {
                     if (hasUnions) {
-                        sql += 'LEFT JOIN ' + sqlJoins;
+                        sql += ' LEFT JOIN ' + sqlJoins;
                     } else {
                         sql += sqlJoins;
                     }
@@ -963,10 +965,11 @@
 
             // build UNIONs
             var unionsAlias = query.$context + '_unions';
-            var sqlUnions = buildUNIONsSqlAndFieldsMap(allFields, providers, unionsAlias);
+            var unionsFields = {};
+            var sqlUnions = buildUNIONsSqlAndFieldsMap(allFields, providers, unionsAlias, unionsFields);
 
             // build JOINs
-            var sqlJoins = buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, sqlUnions.length > 0);
+            var sqlJoins = buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, sqlUnions.length > 0, unionsFields);
 
             var sql = sqlUnions + sqlJoins;
             return sql;
