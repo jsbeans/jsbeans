@@ -543,7 +543,7 @@
 		        if(fail){
 		            $this.caption.find('[jsb="JSB.Controls.Switch"]').jsb().setChecked(!b, true);
 		        } else{
-		            $this.provider.getMode() = b ? "join" : "union";
+		            $this.provider.options = res;
 		        }
 		    });
 		},
