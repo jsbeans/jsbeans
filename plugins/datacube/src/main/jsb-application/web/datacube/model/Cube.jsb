@@ -100,7 +100,7 @@
 						}
 						var ProviderClass = pJsb.getClass();
 						var providerDesc = DataProviderRepository.queryDataProviderInfo(pEntry);
-						var provider = new ProviderClass(pDesc.id, pEntry, this, pDesc);
+						var provider = new ProviderClass(pDesc.id, pEntry, this, pDesc.options || {mode: pDesc.mode});
 						this.dataProviders[pDesc.id] = provider;
 						this.dataProviderEntries[pDesc.id] = pEntry;
 						this.dataProviderFields[pDesc.id] = pDesc.fields;
@@ -149,7 +149,7 @@
 								}
 								var ProviderClass = pJsb.getClass();
 								var providerDesc = DataProviderRepository.queryDataProviderInfo(dataProviderEntry);
-								var dataProvider = new ProviderClass(snapshot.materialization.tables[tId].provider.id, dataProviderEntry, this, snapshot.materialization.tables[tId].provider);
+								var dataProvider = new ProviderClass(snapshot.materialization.tables[tId].provider.id, dataProviderEntry, this, snapshot.materialization.tables[tId].provider.options || {mode:snapshot.materialization.tables[tId].provider.mode});
 								
 								materialization.tables[tId] = {
 									table: snapshot.materialization.tables[tId].table,
@@ -263,7 +263,7 @@
 					jsb: provider.getJsb().$name,
 					entry: this.dataProviderEntries[pId].getLocalId(),
 					fields: this.dataProviderFields[pId],
-					mode: provider.getMode(),
+					options: provider.getOptions(),
 					position: this.dataProviderPositions[pId],
 					size: this.dataProviderSizes[pId]
 				};
@@ -304,7 +304,7 @@
 							id: this.materialization.tables[tId].dataProvider.getId(),
 							jsb: this.materialization.tables[tId].dataProvider.getJsb().$name,
 							entry: this.materialization.tables[tId].dataProviderEntry.getLocalId(),
-							mode: this.materialization.tables[tId].dataProvider.getMode()
+							options: this.materialization.tables[tId].dataProvider.getOptions()
 						},
 						indexes: this.materialization.tables[tId].indexes || {}
 					};
@@ -403,8 +403,8 @@
 			}
 		    function compareProviders(leftProvider, rightProvider){
 		        // by mode
-		        if ((leftProvider.mode||'union') != (rightProvider.mode||'union')) {
-		            return rightProvider.mode == 'join' ? -1 : 1;
+		        if ((leftProvider.getMode()||'union') != (rightProvider.getMode()||'union')) {
+		            return rightProvider.getMode() == 'join' ? -1 : 1;
 		        }
 		        // by position
 		        for(var f in $this.fields){
@@ -463,12 +463,34 @@
             return res;
 		},
 
-		changeProviderMode: function(providerId, mode){
+		changeProviderOptions: function(providerId, opts){
 			this.load();
-		    var provider = this.getProviderById(providerId);
-		    provider.mode = mode;
-            this.store();
-            this.doSync();
+			var provider = this.getProviderById(providerId);
+			var curOpts = provider.getOptions();
+			var bChanged = false;
+			for(var o in opts){
+				if(JSB.isNull(opts[o]) && !JSB.isNull(curOpts[o])){
+					delete curOpts[o];
+					bChanged = true;
+				} else {
+					if(curOpts[o] != opts[o]){
+						curOpts[o] = opts[o];
+						bChanged = true;
+					}
+				}
+			}
+			if(bChanged){
+				provider.setOptions(curOpts);
+				this.store();
+	            this.doSync();
+			}
+			return curOpts;
+		},
+		
+		getProviderOptions: function(providerId){
+			this.load();
+			var provider = this.getProviderById(providerId);
+			return provider.getOptions();
 		},
 
 		extractDataProviderFields: function(pId){
@@ -532,6 +554,7 @@
 			var dpNewFields = provider.extractFields();
 			var dpFields = this.dataProviderFields[provider.getId()];
 			var bNeedStore = false;
+/*			
 			if(dpFields && Object.keys(dpFields).length > 0){
 				 // perform update existed fields
 				for(var fName in dpNewFields){
@@ -544,6 +567,7 @@
 					}
 				}
 			}
+*/			
 			this.dataProviderFields[provider.getId()] = dpNewFields;
 			if(this.removeUnexistedFields(provider)){
 				bNeedStore = true;
@@ -661,7 +685,14 @@
 		addField: function(pId, pField, pType){
 			this.load();
 			var provider = this.getProviderById(pId);
-			var nameCandidate = this.prepareFieldName(pField);
+			var pfName = pField;
+			if(provider.getOption('useComments')){
+				var fMap = provider.extractFields({comment:true, type:true});
+				if(fMap[pField].comment){
+					pfName = fMap[pField].comment;
+				}
+			}
+			var nameCandidate = this.prepareFieldName(pfName);
 			if(this.fields[nameCandidate]){
 				// lookup appropriate name
 				for(var cnt = 2; ; cnt++){

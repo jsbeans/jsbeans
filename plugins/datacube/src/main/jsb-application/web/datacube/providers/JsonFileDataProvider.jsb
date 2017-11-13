@@ -68,11 +68,11 @@
 			}
 		},
 		
-		extractFields: function(){
+		extractFields: function(opts){
 			if(!this.filled){
 				this.fill();
 			}
-			return $base();
+			return $base(opts);
 		},
 		
 		find: function(q){

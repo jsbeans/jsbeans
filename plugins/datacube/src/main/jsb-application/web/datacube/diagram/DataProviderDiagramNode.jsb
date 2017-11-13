@@ -88,7 +88,7 @@
 			});
 			this.caption.append(this.removeButton.getElement());
 
-            var checked = opts.provider.mode === 'join' ? true : false;
+            var checked = opts.provider.getMode() === 'join' ? true : false;
             this.caption.append(`#dot
                 <div class="providerMode">
                     <span>Union</span>
@@ -119,6 +119,7 @@
                     <div class="toolbar">
                         <div class="selectAll" title="Выделить все"></div>
                         <div class="deselectAll" title="Снять выделение со всех"></div>
+                        <div class="useComments" title="Использовать содержимое комментариев для формирования названий полей куба"></div>
                     </div>
                 </div>`);
 			this.append(this.caption);
@@ -196,6 +197,20 @@
 
 			    // $this.$(this).addClass('disabled');
 			});
+			
+			var useCommentsElt = this.status.find('.useComments');
+			useCommentsElt.click(function(evt){
+				useCommentsElt.toggleClass('selected');
+				if(useCommentsElt.hasClass('selected')){
+					$this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:true}, function(){});
+				} else {
+					$this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:false}, function(){});
+				}
+			});
+			
+			if(opts.provider.getOption('useComments')){
+				useCommentsElt.addClass('selected');
+			}
 			
 			this.getElement().resize(function(){
 			    if($this.editor.cubeEntry){
@@ -524,11 +539,11 @@
 
 		providerModeChange: function(b){
 		    // true - Join, false - Union
-		    this.editor.cubeEntry.server().changeProviderMode(this.provider.getId(), b ? "join" : "union", function(res, fail){
+		    this.editor.cubeEntry.server().changeProviderOptions(this.provider.getId(), b ? {mode:"join"} : {mode:"union"}, function(res, fail){
 		        if(fail){
 		            $this.caption.find('[jsb="JSB.Controls.Switch"]').jsb().setChecked(!b, true);
 		        } else{
-		            $this.provider.mode = b ? "join" : "union";
+		            $this.provider.getMode() = b ? "join" : "union";
 		        }
 		    });
 		},

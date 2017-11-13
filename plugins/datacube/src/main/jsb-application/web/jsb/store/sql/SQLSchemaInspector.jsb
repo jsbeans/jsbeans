@@ -120,6 +120,7 @@
                         datatypeName: '' + JDBCType.valueOf(columns.getInt("DATA_TYPE")).toString(),
                         size: ''+columns.getString("COLUMN_SIZE"),
                         decimalDigits: ''+columns.getString("DECIMAL_DIGITS"),
+                        comment: '' + columns.getString("REMARKS"),
                         nullable: columns.getString("IS_NULLABLE").equalsIgnoreCase('YES'),
                         autoIncrment: columns.getString("IS_AUTOINCREMENT").equalsIgnoreCase('YES'),
                     }, tableDesc.columns[columnName]);

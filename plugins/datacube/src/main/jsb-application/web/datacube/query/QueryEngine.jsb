@@ -142,7 +142,7 @@
 		        var providers = providerIterator.getDataProviders();
 		        var isUnion = true;
 		        for (var p in providers) {
-		            if ((providers[p].mode||'union') != 'union') {
+		            if ((providers[p].getMode()||'union') != 'union') {
 		                isUnion = false;
 		            }
 		        }

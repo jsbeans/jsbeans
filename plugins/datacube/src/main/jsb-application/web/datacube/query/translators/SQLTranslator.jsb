@@ -666,7 +666,7 @@
                                     var id = binding[i].provider.id;
                                     var prov = providers[id] = providers[id] || {
                                         provider: binding[i].provider,
-                                        isJoinedProvider: (binding[i].provider.mode||'union') == 'join',
+                                        isJoinedProvider: (binding[i].provider.getMode()||'union') == 'join',
                                         cubeFields: {/**hasOtherBinding*/},
                                         providerFields: {/**providerField: cubeField*/}
                                     };
@@ -710,7 +710,7 @@
                         var hasJoin = false;
                         for(var r = 0; r < binding.length; r++) {
                             if ($this.providers.indexOf(binding[r].provider) != -1
-                                    && binding[r].provider.mode == 'join') {
+                                    && binding[r].provider.getMode() == 'join') {
                                 hasJoin = true;
                                 break;
                             }
@@ -747,7 +747,7 @@
                     var binding = managedField.binding;
                     for (var i in binding) {
                         if ($this.providers.indexOf(binding[i].provider) != -1) {
-                            if (binding[i].provider.mode != 'join') {
+                            if (binding[i].provider.getMode() != 'join') {
                                 isJoined = false;
                             }
                         }
@@ -785,7 +785,7 @@
                 var lastProv;
                 for(var id in providers) if(providers.hasOwnProperty(id)) {
                     var prov = providers[id];
-                    if ((prov.provider.mode||'union') != 'union') continue;
+                    if ((prov.provider.getMode()||'union') != 'union') continue;
                     unionsCount++;
                     lastProv = prov;
                 }
@@ -812,7 +812,7 @@
 
                     for(var id in providers) if(providers.hasOwnProperty(id)) {
                         var prov = providers[id];
-                        if ((prov.provider.mode||'union') != 'union') continue;
+                        if ((prov.provider.getMode()||'union') != 'union') continue;
                         if (sqlUnions .length > 0) sqlUnions  += ' UNION ALL ';
 
                         // print unions view columns and build fieldsMap
@@ -883,7 +883,7 @@
                 var sqlJoins = '';
                 for(var p in providers) if(providers.hasOwnProperty(p)) {
                     var prov = providers[p];
-                    if (prov.provider.mode != 'join') continue;
+                    if (prov.provider.getMode() != 'join') continue;
 
                     if (sqlJoins.length > 0) sqlJoins += ' LEFT JOIN ';
 
@@ -1126,7 +1126,7 @@
 //                    var binding = managedField.binding;
 //                    for (var i in binding) {
 //                        if (this.providers.indexOf(binding[i].provider) != -1) {
-//                            if (binding[i].provider.mode != 'join') {
+//                            if (binding[i].provider.getMode() != 'join') {
 //                                isJoined = false;
 //                            }
 //                        }
@@ -1139,7 +1139,7 @@
 //                var sqlUnions = '';
 //                for(var p in providers) if(providers.hasOwnProperty(p)) {
 //                    var prov = providers[p];
-//                    if (prov.provider.mode == 'join') continue;
+//                    if (prov.provider.getMode() == 'join') continue;
 //
 //                    if (sqlUnions .length > 0) sqlUnions  += ' UNION ALL ';
 //                    sqlUnions += printTableView(allFields, prov, true, false);
@@ -1150,7 +1150,7 @@
 //                var sqlJoins = '';
 //                for(var p in providers) if(providers.hasOwnProperty(p)) {
 //                    var prov = providers[p];
-//                    if (prov.provider.mode != 'join') continue;
+//                    if (prov.provider.getMode() != 'join') continue;
 //
 //                    if (sqlJoins.length > 0) sqlJoins += ' LEFT JOIN ';
 //                    var joinedViewAlias = query.$context + '_joined_' + this.providers.indexOf(prov.provider);
@@ -1193,7 +1193,7 @@
 //                        var binding = managedFields[cubeField].binding;;
 //                        for (var p = 0; p < binding.length; p++) {
 //                            var idx = this.providers.indexOf(binding[p].provider);
-//                            if (binding[p].provider.mode == 'join' && idx != -1) {
+//                            if (binding[p].provider.getMode() == 'join' && idx != -1) {
 //                                var joinedViewAlias = query.$context + '_joined_' + idx;
 //                                fieldsSql += this._quotedName(joinedViewAlias) + '.' + this._quotedName(cubeField);
 //                                break;

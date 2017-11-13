@@ -157,14 +157,14 @@
 
             // first remove joins (in LEFT JOIN left is unions)
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
-		        if (providersFieldsMap[id].provider.mode == 'join'
+		        if (providersFieldsMap[id].provider.getMode() == 'join'
 		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
 		            delete providersFieldsMap[id];
 		        }
 		    }
             // then remove unions
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
-		        if ((providersFieldsMap[id].provider.mode||'union') == 'union'
+		        if ((providersFieldsMap[id].provider.getMode()||'union') == 'union'
 		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
 		            delete providersFieldsMap[id];
 		        }

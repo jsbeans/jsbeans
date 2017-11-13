@@ -40,8 +40,26 @@
 			return null;
 		},
 		
-		extractFields: function(){
-			return this.fields;
+		extractFields: function(opts){
+			var fields = {};
+			for(var fName in this.fields){
+				if(opts && Object.keys(opts).length > 0){
+					var fDesc = {};
+					if(opts.name){
+						fDesc.name = fName;
+					}
+					if(opts.type){
+						fDesc.type = this.fields[fName];
+					}
+					if(opts.comment){
+						fDesc.comment = '';
+					}
+					fields[fName] = fDesc;
+				} else {
+					fields[fName] = this.fields[fName];
+				}
+			}
+			return fields;
 		},
 		
 		addRecord: function(r){

@@ -60,12 +60,25 @@
 			return name;
 		},
 		
-		extractFields: function(){
+		extractFields: function(opts){
 			var desc = this.getTableDescriptor();
 			var fields = {};
 			for(var colName in desc.columns){
 				var type = desc.columns[colName].datatypeName;
-				fields[colName] = type;
+				var fDesc = type;
+				if(opts && Object.keys(opts).length > 0){
+					fDesc = {};
+					if(opts.type){
+						fDesc.type = type;
+					}
+					if(opts.comment){
+						fDesc.comment = desc.columns[colName].comment;
+					}
+					if(opts.name){
+						fDesc.name = desc.columns[colName].name;
+					}
+				}
+				fields[colName] = fDesc;
 			}
 			return fields;
 		}

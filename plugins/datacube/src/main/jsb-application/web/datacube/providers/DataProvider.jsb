@@ -8,14 +8,20 @@
 	entry: null,
 	cube: null,
 	name: null,
-	mode: null,
+	options: {
+		mode: 'union'
+	},
 	
 	getName: function(){
 		return this.name;
 	},
 	
 	getMode: function(){
-		return this.mode || 'union';
+		return this.options.mode || 'union';
+	},
+	
+	getOption: function(opt){
+		return this.options[opt];
 	},
 	
 	$server: {
@@ -25,18 +31,26 @@
 			this.entry = pEntry;
 			this.cube = cube;
 			this.id = id;
-			if(opts && opts.mode){
-				this.mode = opts.mode;
-			} 
+			if(opts){
+				this.setOptions(opts)
+			}
 			$base();
 		},
 		
-		extractFields: function(){
+		extractFields: function(opts){
 			throw new Error('Method "extractFields" should be overriden');
 		},
 		
 		find: function(q){
 			throw new Error('Method "find" should be overriden');
+		},
+		
+		getOptions: function(){
+			return JSB.clone(this.options);
+		},
+		
+		setOptions: function(opts){
+			this.options = opts;
 		}
 	}
 }
