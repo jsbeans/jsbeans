@@ -90,7 +90,7 @@
 			$this.refresh();
 			$this.ready = true;
 			
-			this.subscribe('Workspace.renameEntry', function(sender, msg, desc){
+			this.subscribe('DataCube.Model.Slice.renameSlice', {session: true}, function(sender, msg, desc){
 				var entry = desc.entry;
 				if($this.entry != entry){
 					return;

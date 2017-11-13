@@ -52,8 +52,13 @@
 		},
 		
 		setName: function(name){
+		    if(this.name === name){
+		        return;
+		    }
 			this.name = name;
 			this.title(this.name);
+			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
+			this.doSync();
 		},
 		
 		setQuery: function(q){
