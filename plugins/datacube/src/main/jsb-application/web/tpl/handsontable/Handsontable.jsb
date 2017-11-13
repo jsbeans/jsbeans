@@ -28,7 +28,7 @@
 			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
             JSB().loadCss('tpl/handsontable/handsontable.min.css');
-            JSB().loadScript('tpl/handsontable/handsontable.min.js', function(){
+            JSB().loadScript('tpl/handsontable/handsontable.min.js', function(){    //tpl/handsontable/handsontable.min.js
                 // custom render for all cells
                 function customRenderer(hotInstance, td, row, column, prop, value, cellProperties){
                     // include default renderer
@@ -282,9 +282,11 @@
                     }
 
                     // object or array
+                    /*
                     if(JSB.isObject(data[i][j]) || JSB.isArray(data[i][j])){
                         data[i][j] = null;
                     }
+                    */
 		        }
 		    }
 
