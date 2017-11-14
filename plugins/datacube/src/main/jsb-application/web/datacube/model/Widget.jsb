@@ -55,12 +55,8 @@
 				this.wType = wType;
 				this.property('wType', wType);
 				this.values = values;
-				this.sourceMap = this.generateInteroperationMap(values);
+				this.updateInteroperationMap();
 				this.property('values', values);
-				this.property('sourceMap', this.sourceMap);
-				for(var sId in this.sourceMap){
-					this.sources[sId] = this.workspace.entry(sId);
-				}
 			} else {
 				var bNeedSave = false;
 				if(this.property('dashboard')){
@@ -75,13 +71,10 @@
 				}
 				if(this.property('sourceMap')){
 					this.sourceMap = this.property('sourceMap');
+					this.updateSources();
 				} else {
-					this.sourceMap = this.generateInteroperationMap(this.values);
-					this.property('sourceMap', this.sourceMap);
+					this.updateInteroperationMap();
 					bNeedSave = true;
-				}
-				for(var sId in this.sourceMap){
-					this.sources[sId] = this.workspace.entry(sId);
 				}
 				
 				if(bNeedSave){
@@ -106,14 +99,21 @@
 		storeValues: function(name, values){
 			this.getDashboard().load();
 			this.values = values;
-			this.sourceMap = this.generateInteroperationMap(values);
-			this.sources = {};
-			for(var sId in this.sourceMap){
-				this.sources[sId] = this.workspace.entry(sId);
-			}
 			this.property('values', values);
-			this.property('sourceMap', this.sourceMap);
 			this.setName(name);
+			
+			this.updateInteroperationMap();
+			
+			// update interoperation maps in other widgets of current dashboard
+			var widgets = this.getDashboard().getWrappers();
+			for(var wId in widgets){
+				if(widgets[wId] == this){
+					continue;
+				}
+				widgets[wId].updateInteroperationMap();
+				widgets[wId].doSync();
+			}
+			
 			this.getDashboard().store();
 			this.doSync();
 			return {sources: this.sources, sourceMap: this.sourceMap};
@@ -130,7 +130,14 @@
 		    // todo * scheme refactoring
 		},
 		
-		generateInteroperationMap: function(values){
+		updateSources: function(){
+			this.sources = {};
+			for(var sId in this.sourceMap){
+				this.sources[sId] = this.workspace.entry(sId);
+			}
+		},
+		
+		updateInteroperationMap: function(){
 			var sourceMap = {};
 			
 			function traverseValues(src, callback){
@@ -161,7 +168,7 @@
 				}
 			}
 			
-			traverseValues(values, function(entry, stop){
+			traverseValues(this.values, function(entry, stop){
 				if(entry.type == 'widget'){
 					stop();
 					return;
@@ -183,6 +190,9 @@
 				}
 			});
 			
+			this.sourceMap = sourceMap;
+			this.property('sourceMap', this.sourceMap);
+			this.updateSources();
 			return sourceMap;
 		},
 		
