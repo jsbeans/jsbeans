@@ -415,7 +415,8 @@
 		           'JSB.Crypt.MD5',
 		           'DataCube.Controls.SortSelector',
 		           'DataCube.Controls.FilterEntry',
-		           'JSB.Number.Format'],
+		           'JSB.Number.Format',
+		           'JQuery.UI.Loader'],
 		
 		ready: false,
 		headerDesc: [],
@@ -896,7 +897,11 @@
 						return;
 					}
 				}
+				if(rowsContext.isReset()){
+					$this.setDeferredLoader();
+				}
 				rowsContext.fetch({batchSize: batchSize - rows.length},function(data, fail){
+					$this.cancelDeferredLoader();
 					if(data && data.length){
 						iterateRows();
 					} else {
@@ -907,6 +912,22 @@
 			}
 			
 			iterateRows();
+		},
+		
+		setDeferredLoader: function(){
+			JSB.defer(function(){
+				$this.getElement().loader();
+				$this.deferredLoader = true;
+			}, 600, 'deferredLoader_' + $this.getId());
+		},
+		
+		cancelDeferredLoader: function(){
+			if($this.deferredLoader){
+				$this.deferredLoader = false;
+				$this.getElement().loader('hide');
+			} else {
+				JSB.cancelDefer('deferredLoader_' + $this.getId());
+			}
 		},
 		
 		onRowClick: function(d){
@@ -999,13 +1020,14 @@
 							var sortSelector = hWrapper.find('> .sortSelector').jsb();
 							if(d.sortFields && d.sortFields.length > 0){
 								if(!sortSelector){
-									sortSelector = new SortSelector(d.sortFields, {
+									sortSelector = new SortSelector({
 										onChange: function(q){
 											$this.updateOrder(this, q);
 										}
 									});
 									hWrapper.append(sortSelector.getElement());
 								}
+								sortSelector.setFields(d.sortFields);
 								elt.addClass('sortable');
 							} else {
 								if(sortSelector){
@@ -1080,12 +1102,13 @@
 								// sort
 								if(d.sortFields && d.sortFields.length > 0){
 									elt.addClass('sortable');
-									var sortSelector = new SortSelector(d.sortFields, {
+									var sortSelector = new SortSelector({
 										onChange: function(q){
 											$this.updateOrder(this, q);
 										}
 									});
 									hWrapper.append(sortSelector.getElement());
+									sortSelector.setFields(d.sortFields);
 								}
 								
 								// filter
@@ -1142,21 +1165,27 @@
 				}
 			});
 			this.setSort(sortQuery);
+			this.refresh();
 		},
 		
 		updateContextFilter: function(q){
 			var curFilter = this.getContextFilter();
+			var bChanged = false;
 			for(var f in q){
 				if(q[f] && Object.keys(q[f]).length > 0){
 					curFilter[f] = q[f];
+					bChanged = true;
 				} else {
 					if(curFilter[f]){
 						delete curFilter[f];
+						bChanged = true;
 					}
 				}
 			}
-			this.setContextFilter(curFilter);
-			this.refresh();
+			if(bChanged){
+				this.setContextFilter(curFilter);
+				this.refresh();
+			}
 		},
 		
 		refresh: function(opts){

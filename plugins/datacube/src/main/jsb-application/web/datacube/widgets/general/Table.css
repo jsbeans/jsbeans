@@ -47,6 +47,7 @@
 	position: relative;
 	overflow: hidden;
     text-overflow: ellipsis;
+    min-height: 18px;
 }
 
 .tableWidget > table.header > thead > tr > th.col.sortable > .hWrapper,
@@ -62,15 +63,13 @@
 .tableWidget > table.header > thead > tr > th.col > .hWrapper > .text {
 	display: inline-block;
     vertical-align: middle;
-	min-height: 16px;
 }
 
 .tableWidget > table.header > thead > tr > th.col > .hWrapper > .sortSelector {
 	display: inline-block;
 	vertical-align: middle;
     position: absolute;
-    top: 50%;
-    margin-top: -9px;
+    top: 0;
     right: 2px;
 }
 
@@ -81,8 +80,7 @@
 .tableWidget > table.header > thead > tr > th.col > .hWrapper > .filterButton {
 	position: absolute;
     right: 2px;
-    top: 50%;
-    margin-top: -8px;
+    top: 1px;
 	vertical-align: middle;
     display: inline-block;
     width: 16px;
@@ -101,13 +99,36 @@
 }
 
 .tableWidget > table.header > thead > tr > th.col > .filterEntry {
-	display: none;
+	display: block;
+	visibility: hidden;
+    height: 0;
+    
+    transition: height 300ms, visibility 300ms;
+}
+
+.tableWidget > table.header > thead > tr > th.col > .filterEntry > ._dwp_editor,
+.tableWidget > table.header > thead > tr > th.col > .filterEntry > .opSelector {
+	opacity: 0;
+	
+	transition: opacity 300ms;
 }
 
 .tableWidget > table.header > thead > tr > th.col.filtered > .filterEntry,
 .tableWidget > table.header > thead > tr > th.col.contextFilterFixed > .filterEntry {
-	display: block;
-	margin: 4px 2px 2px 2px;
+	visibility: visible;
+    margin: 4px 2px 2px 2px;
+    height: 20px;
+    
+    transition: height 300ms;
+}
+
+.tableWidget > table.header > thead > tr > th.col.filtered > .filterEntry > ._dwp_editor,
+.tableWidget > table.header > thead > tr > th.col.filtered > .filterEntry > .opSelector,
+.tableWidget > table.header > thead > tr > th.col.contextFilterFixed > .filterEntry > ._dwp_editor,
+.tableWidget > table.header > thead > tr > th.col.contextFilterFixed > .filterEntry > .opSelector {
+	opacity: 1;
+	
+	transition: opacity 300ms;
 }
 
 
@@ -124,7 +145,10 @@
 
 .tableWidget > .pane {}
 
-.tableWidget > .pane > ._dwp_scrollPane {}
+.tableWidget > .pane > ._dwp_scrollPane {
+	transition: padding-top 300ms;
+	transition-duration: 300ms !important;
+}
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows {
 	table-layout: fixed;

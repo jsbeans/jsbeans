@@ -222,7 +222,7 @@
 			}
 			function processElement(val, path){
 				if(JSB.isNull(val)){
-					return {type: 'null'};
+					return {};
 				} else if(JSB.isObject(val)){
 					var rDesc = {type: 'object', record: {}};
 					for(var f in val){
@@ -234,9 +234,7 @@
 							curPath = f;
 						}
 						var r = processElement(cVal, curPath);
-						if(r.type != 'null' || !rDesc.record[f]){
-							rDesc.record[f] = JSB.merge(true, rDesc.record[f] || {}, r);
-						}
+						rDesc.record[f] = JSB.merge(true, rDesc.record[f] || {}, r);
 						rDesc.record[f].field = f;
 						if(path){
 							rDesc.record[f].path = path;
@@ -244,10 +242,10 @@
 					}
 					return rDesc;
 				} else if(JSB.isArray(val)){
-					var rDesc = {type:'array', arrayType: {type:'null'}};
+					var rDesc = {type:'array', arrayType: {}};
 					for(var i = 0; i < val.length; i++){
 						var r = processElement(val[i], path);
-						if(r && r.type != 'null'){
+						if(r && Object.keys(r).length > 0){
 							rDesc.arrayType = r;
 						}
 					}
@@ -264,7 +262,6 @@
 					return {type: 'date'};
 				}
 			}
-			
 			var recordTypes = {};
 			for(var j = 0; j < 100; j++){
 				var el = iterator.next();

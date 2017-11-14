@@ -8,7 +8,8 @@
 		options: {
 			wsid: null,
 			wid: null,
-			onCreateWidget: null
+			onCreateWidget: null,
+			auto: true
 		},
 		widgetEntry: null,
 		values: null,
