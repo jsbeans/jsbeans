@@ -88,6 +88,10 @@
 		settingsVisible: false,
 		attached: false,
 		
+		options: {
+			auto: true
+		},
+		
 		$constructor: function(widgetEntry, owner, opts){
 			$base(opts);
 			this.widgetEntry = widgetEntry;
@@ -108,11 +112,13 @@
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
 				$this.widget.setWrapper($this);
-				$this.widget.ensureInitialized(function(){
-					$this.widget.refresh({
-					    isCacheMod: opts ? opts.isCacheMod : false
+				if($this.options.auto){
+					$this.widget.ensureInitialized(function(){
+						$this.widget.refresh({
+						    isCacheMod: $this.options.isCacheMod || false
+						});
 					});
-				});
+				}
 			});
 
 			this.subscribe('JSB.Widgets.WidgetContainer.widgetAttached', function(sender, msg, w){

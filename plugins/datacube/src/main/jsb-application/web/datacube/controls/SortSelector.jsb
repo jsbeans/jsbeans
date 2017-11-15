@@ -8,9 +8,8 @@
 		sortDir: null,
 		sortField: null,
 		
-		$constructor: function(sortFields, opts){
+		$constructor: function(opts){
 			$base(opts);
-			this.sortFields = sortFields;
 			this.loadCss('SortSelector.css');
 			this.addClass('sortSelector');
 			
@@ -39,7 +38,6 @@
 						$this.sortField = $this.sortFields[0];
 						toggleOrder();
 					} else {
-						// TODO: drop down list
 						$this.showDropList(function(){
 							toggleOrder();
 						});
@@ -78,6 +76,20 @@
 					}
 				}
 			});
+		},
+		
+		setFields: function(sortFields){
+			$this.sortFields = sortFields;
+			if(!$this.sortField || !$this.sortFields || $this.sortFields.length == 0){
+				return;
+			}
+			for(var i = 0; i < $this.sortFields.length; i++){
+				if($this.sortField == $this.sortFields[i]){
+					return;
+				}
+			}
+			
+			$this.clear();
 		},
 		
 		clear: function(){

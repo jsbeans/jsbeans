@@ -221,6 +221,18 @@
 					}
 				},
 				
+				isReset: function(){
+					if(this.selector.length == 0){
+						return;
+					}
+					
+					var item = this.selector[0];
+					if(item.fetchOpts && item.fetchOpts.reset){
+						return true;
+					}
+					return false;
+				},
+				
 				getFilters: function(){
 					if(this.selector.length == 0){
 						return null;
@@ -443,7 +455,8 @@
 				},
 				
 				values: function(){
-					function resolveValue(valueDesc){
+					function resolveValue(item, valueDesc){
+					    // todo: defaultValue, valueType
 						return valueDesc.value;
 					}
 					if(this.selector.length == 0){
@@ -454,7 +467,7 @@
 					if(item.type == 'item'){
 						if(item.values && item.values.length > 0){
 							for(var i = 0; i < item.values.length; i++){
-								vals.push(resolveValue(item.values[i]));
+								vals.push(resolveValue(item, item.values[i]));
 							}
 						}
 					} else if(item.type == 'group'){
@@ -475,8 +488,9 @@
 				},
 				
 				value: function(){
-					function resolveValue(valueDesc){
-						return valueDesc.value;
+					function resolveValue(item){
+					    // todo: defaultValue, valueType
+						return item.values[0].value;
 					}
 
 					if(this.selector.length == 0){
@@ -488,7 +502,7 @@
 					}
 					if(item.type == 'item'){
 						if(item.values && item.values.length > 0){
-							return resolveValue(item.values[0]);
+							return resolveValue(item);
 						}
 						return null;
 					} else if(item.type == 'select'){
@@ -655,7 +669,6 @@
 		
 		setSort: function(q){
 			this.sort = q;
-			this.refresh();
 		},
 		
 		setContextFilter: function(q){
@@ -798,8 +811,6 @@
 			} finally {
 				JSB.getLocker().unlock('fetch_' + $this.getId());
 			}
-			
-			
 			
 			return this.compressData(data);
 		}

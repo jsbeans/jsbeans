@@ -56,7 +56,7 @@
 			this.entry = this.node.getEntry();
 
             if(this.wrapper) this.wrapper.destroy();
-            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true });
+            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, auto: false });
             this.widgetBlock.append(this.wrapper.getElement());
 
             if(this.widgetSchemeRenderer) this.widgetSchemeRenderer.destroy();
@@ -108,13 +108,16 @@
 		setChanges: function(){
             this.wrapper.values = this.widgetSchemeRenderer.getValues();
             this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
-            try{
-                this.wrapper.getWidget().refresh({
-                    refreshFromCache: true
-                });
-            } catch(ex){
-                //console.log(ex);
-            }
+            this.wrapper.getWidget().ensureInitialized(function(){
+	            try {
+	                $this.wrapper.getWidget().refresh({
+	                    refreshFromCache: true
+	                });
+	            } catch(ex){
+	                //console.log(ex);
+	            }
+        	});
+
 		}
 	},
 	
