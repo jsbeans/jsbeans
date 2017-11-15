@@ -1215,6 +1215,9 @@
 
         _translateQueryDataProviderView: function(query) {
 //debugger;
+            this.contextFieldsMap = this.contextFieldsMap || {/**queryContext: {}*/};
+            var fieldsMap = this.contextFieldsMap[query.$context] = this.contextFieldsMap[query.$context] || {};
+
             if (this.providers.length != 1) {
                 throw new Error('Multiple or not defined provider');
             }
@@ -1233,6 +1236,16 @@
                 if (fieldsSql.length > 0) fieldsSql += ', ';
                 fieldsSql += this._quotedName(providerField);
                 fieldsSql += ' AS ' + this._quotedName(providerField);
+                fieldsMap[providerField] = {
+                    context: query.$context,
+                    cubeField: providerField,
+
+                    providerField: providerField,
+                    providerTable: this.providers[0].getTableFullName(),
+
+                    tableAlias: query.$context,
+                    fieldAlias: providerField
+                };
             }
             if (fieldsSql.length == 0) fieldsSql += 'NULL';
 

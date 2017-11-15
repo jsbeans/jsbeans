@@ -582,6 +582,10 @@
 					if(bDesc.provider != provider){
 						continue;
 					}
+					if(bDesc.type != dpNewFields[bDesc.field]){
+						bDesc.type = dpNewFields[bDesc.field];
+						bNeedStore = true;
+					}
 					if(!providerBindingMap[bDesc.field]){
 						providerBindingMap[bDesc.field] = [];
 					}
@@ -1000,10 +1004,28 @@
 					$this.publish('DataCube.Model.Cube.status', {status: 'Подготовка к материализации', success: true}, {session: true});
 					
 					// create table list description
+					var conflictMap = {};
 					for(var fName in $this.fields){
 						var fDesc = $this.fields[fName];
+						var lastType = null, lastProvider = null, lastField = null;
 						for(var i = 0; i < fDesc.binding.length; i++){
 							var pDesc = fDesc.binding[i];
+							if(!lastType){
+								lastType = pDesc.type;
+								lastProvider = pDesc.provider;
+								lastField = pDesc.field;
+							} else {
+								if(pDesc.type != lastType){
+									if(!conflictMap[fName]){
+										conflictMap[fName] = [{field: lastField, type: lastType, provider: lastProvider}];
+									}
+									conflictMap[fName].push({
+										field: pDesc.field,
+										type: pDesc.type,
+										provider: pDesc.provider
+									});
+								}
+							}
 							var pId = pDesc.provider.getId();
 //							var tId = 'union_' + pId;
 							var tId = 'union';
@@ -1022,6 +1044,17 @@
 							}
 							tableFieldMap[tId][fName] = fDesc.type;
 						}
+					}
+					if(Object.keys(conflictMap).length > 0){
+						// generate error
+						var errorStr = 'В кубе "' + $this.getName() + '" найдены конфликты типов у полей:\n';
+						for(var fn in conflictMap){
+							errorStr += '* "' + fn + '": \n';
+							for(var c = 0; c < conflictMap[fn].length; c++){
+								errorStr += '\t' + conflictMap[fn][c].provider.getName() + '.' + conflictMap[fn][c].field + '(' + conflictMap[fn][c].type + ')\n'
+							}
+						}
+						throw new Error(errorStr);
 					}
 					var tIdx = 1;
 					for(var tId in materializationDesc.tables){
