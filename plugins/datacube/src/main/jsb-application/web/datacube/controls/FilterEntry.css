@@ -4,6 +4,7 @@
 	position: relative;
 	box-sizing: border-box;
 	display: inline-block;
+	overflow: hidden;
 }
 
 .filterEntry > ._dwp_primitiveEditor {

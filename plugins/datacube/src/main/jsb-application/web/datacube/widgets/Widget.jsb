@@ -221,6 +221,18 @@
 					}
 				},
 				
+				isReset: function(){
+					if(this.selector.length == 0){
+						return;
+					}
+					
+					var item = this.selector[0];
+					if(item.fetchOpts && item.fetchOpts.reset){
+						return true;
+					}
+					return false;
+				},
+				
 				getFilters: function(){
 					if(this.selector.length == 0){
 						return null;
@@ -657,7 +669,6 @@
 		
 		setSort: function(q){
 			this.sort = q;
-			this.refresh();
 		},
 		
 		setContextFilter: function(q){
