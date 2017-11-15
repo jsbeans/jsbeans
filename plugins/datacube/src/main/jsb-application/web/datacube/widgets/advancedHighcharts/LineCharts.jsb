@@ -1001,6 +1001,44 @@
                 }
                 ]
             },
+            // Опции точек
+            {
+                name: 'Опции точек',
+                type: 'group',
+                key: 'plotOptions',
+                collapsable: true,
+                collapsed: true,
+                items: [
+                {
+                    name: 'Тип стека',
+                    type: 'select',
+                    key: 'stacking',
+                    items: [
+                        {
+                            name: 'Нет',
+                            type: 'item',
+                            key: 'none',
+                            editor: 'none',
+                            itemValue: undefined
+                        },
+                        {
+                            name: 'Нормальный',
+                            type: 'item',
+                            key: 'normal',
+                            editor: 'none',
+                            itemValue: 'normal'
+                        },
+                        {
+                            name: 'Процентный',
+                            type: 'item',
+                            key: 'percent',
+                            editor: 'none',
+                            itemValue: 'percent'
+                        }
+                    ]
+                }
+                ]
+            },
             // Авторство
             {
                 name: 'Авторская подпись',
@@ -1175,10 +1213,10 @@
 
             this.getElement().loader();
             dataSource.fetch({readAll: true, reset: true}, function(){
-                $this.getElement().loader('hide');
                 try{
                     var seriesData = [],
-                        xAxisData = [];
+                        xAxisData = [],
+                        useCompositeSeries = false;
 
                     while(dataSource.next()){
                         // xAxis
@@ -1189,7 +1227,11 @@
                             var name = seriesContext[i].find('name'),
                                 data = seriesContext[i].find('data');
 
-                            if(!JSB.isString(name)){    // composite series
+                        // todo: unified composite and simple series
+
+                            if(name.bound()){    // composite series
+                                useCompositeSeries = true;
+
                                 if(!seriesData[i]){
                                     seriesData[i] = {
                                         data: {},
@@ -1201,7 +1243,10 @@
                                     seriesData[i].data[name.value()] = [];
                                 }
 
-                                seriesData[i].data[name.value()].push(data.value());
+                                seriesData[i].data[name.value()].push({
+                                    x: xAxisCategories.value(),
+                                    y: data.value()
+                                });
                             } else {    // simple series
                                 if(!seriesData[i]){
                                     seriesData[i] = {
@@ -1212,15 +1257,28 @@
                                     };
                                 }
 
-                                var d = data.value();
-
-                                if(JSB().isArray(d)){
-                                    seriesData[i].data = d;
-                                } else {
-                                    seriesData[i].data.push(d);
-                                }
+                                seriesData[i].data.push({
+                                    x: xAxisCategories.value(),
+                                    y: data.value()
+                                });
                             }
                         }
+                    }
+
+                    // resolve xAxis for composite series
+                    if(useCompositeSeries){
+                        var cats = [];
+                        for(var i = 0; i < xAxisData.length; i = i + data.length){
+                            cats.push(xAxisData[i]);
+                        }
+                        xAxisData = cats;
+                    }
+
+                    function resolveData(data){
+                        for(var i in data){
+                            data[i].x = xAxisData.indexOf(data[i].x);
+                        }
+                        return data;
                     }
 
                     // resolve data if use composite series
@@ -1239,15 +1297,6 @@
                                 });
                             }
                         }
-                    }
-
-                    // resolve xAxis for composite series
-                    if(data.length !== seriesData.length && data.length < xAxisData.length){
-                        var cats = [];
-                        for(var i = 0; i < xAxisData.length; i = i + data.length){
-                            cats.push(xAxisData[i]);
-                        }
-                        xAxisData = cats;
                     }
 
                     if(opts && opts.isCacheMod){
@@ -1280,6 +1329,7 @@
             try{
                 var creditsContext = this.getContext().find('credits').value(),
                     legendContext = this.getContext().find('legend').value(),
+                    plotOptionsContext = this.getContext().find('plotOptions').value(),
                     seriesContext = this.getContext().find('series').values(),
                     titleContext = this.getContext().find('header').value(),
                     xAxisContext = this.getContext().find('xAxis').value(),
@@ -1349,6 +1399,9 @@
                         width: legendContext.find('width').value(),
                         x: legendContext.find('x').value(),
                         y: legendContext.find('y').value()
+                    },
+                    plotOptions: {
+                        stacking: plotOptionsContext.find('stacking').value().value()
                     },
                     series: series,
                     title: {
