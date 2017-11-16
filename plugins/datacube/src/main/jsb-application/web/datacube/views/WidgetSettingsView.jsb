@@ -56,7 +56,7 @@
 			this.entry = this.node.getEntry();
 
             if(this.wrapper) this.wrapper.destroy();
-            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, auto: false });
+            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true });
             this.widgetBlock.append(this.wrapper.getElement());
 
             if(this.widgetSchemeRenderer) this.widgetSchemeRenderer.destroy();
@@ -117,7 +117,6 @@
 	                //console.log(ex);
 	            }
         	});
-
 		}
 	},
 	

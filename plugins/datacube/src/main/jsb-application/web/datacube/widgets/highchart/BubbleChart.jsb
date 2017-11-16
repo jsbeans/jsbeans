@@ -229,12 +229,12 @@
             this.append(this.container);
 
             this.getElement().resize(function(){
-                if(!$this.getElement().is(':visible') || !$this.chart){
-                    return;
-                }
                 JSB.defer(function(){
+                    if(!$this.getElement().is(':visible') || !$this.chart){
+                        return;
+                    }
                     $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
-                }, 300, 'bcResize' + $this.getId());
+                }, 500, 'bcResize' + $this.getId());
             });
 
             this.isInit = true;
