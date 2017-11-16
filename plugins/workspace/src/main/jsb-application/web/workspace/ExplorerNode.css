@@ -22,18 +22,20 @@
     height: 20px;
 }
 
-.workspaceExplorerNode > .roundButton.btn10 {
+.workspaceExplorerNode > .toolbox {
 	position: absolute;
 	top: 50%;
 	margin-top: -8px;
+	right: 0;
+	z-index: 1;
+}
+
+.workspaceExplorerNode > .toolbox.hidden {
 	display: none;
 }
 
-.workspaceExplorerNode > .btnEdit {
-    right: 5px;
-}
-
-li._dwp_treeViewNode.selected > ._dwp_nodeHeader > ._dwp_itemContainer > .workspaceExplorerNode > .roundButton,
-li._dwp_treeViewNode.highlighted > ._dwp_nodeHeader > ._dwp_itemContainer > .workspaceExplorerNode > .roundButton {
+.workspaceExplorerNode > .toolbox > .roundButton {
 	display: inline-block;
+	vertical-align: top;
+	margin: 0 2px;
 }

@@ -286,12 +286,11 @@
 				return;
 			}
 			if(this.options.mode == 'inplace'){
-				var elt = this.getElement(); 
-				elt.css({
-					width: elt.width(),
-					height: elt.height()
+				this.editBoxElt.css({
+					width: this.plainElt.outerWidth(),
+					height: this.plainElt.outerHeight()
 				});
-				elt.addClass('editing');
+				this.addClass('editing');
 				this.editBoxElt.focus();
 				this.editBoxElt.select();
 			}
@@ -300,10 +299,9 @@
 		
 		endEdit: function(){
 			if(this.options.mode == 'inplace'){
-				var elt = this.getElement();
-				elt.removeClass('editing');
+				this.removeClass('editing');
 				this.editBoxElt.val(this.plainElt.text());
-				elt.css({
+				this.editBoxElt.css({
 					width: '',
 					height: ''
 				});

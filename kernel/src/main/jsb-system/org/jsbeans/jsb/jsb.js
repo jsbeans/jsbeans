@@ -4005,6 +4005,58 @@ JSB({
 		}
 	},
 	
+	ensureTrigger: function(key, callback, valOrCondOpt){
+		if(!$this.$_ecMap){
+			$this.$_ecMap = {};
+		}
+		if(!$this.$_ecMap[key]){
+			$this.$_ecMap[key] = {cArr:[]};
+		}
+		if(!JSB.isDefined(valOrCondOpt)){
+			valOrCondOpt = true;	// default value expecation
+		}
+		var bMatched = false;
+		if(JSB.isDefined($this.$_ecMap[key].val)){
+			if(JSB.isFunction(valOrCondOpt)){
+				bMatched = valOrCondOpt.call($this, $this.$_ecMap[key].val);
+			} else {
+				bMatched = ($this.$_ecMap[key].val == valOrCondOpt);
+			}
+		}
+		if(bMatched){
+			callback.call($this);
+		} else {
+			$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt});
+		}
+
+	},
+	
+	setTrigger: function(key, valOpt){
+		if(!$this.$_ecMap){
+			$this.$_ecMap = {};
+		}
+		if(!$this.$_ecMap[key]){
+			$this.$_ecMap[key] = {cArr:[]};
+		}
+		if(!JSB.isDefined(valOpt)){
+			valOpt = true;	// default value
+		}
+		$this.$_ecMap[key].val = valOpt;
+		for(var i = $this.$_ecMap[key].cArr.length - 1; i >= 0; i--){
+			var cDesc = $this.$_ecMap[key].cArr[i];
+			var bMatched = false;
+			if(JSB.isFunction(cDesc.cond)){
+				bMatched = cDesc.cond.call($this, $this.$_ecMap[key].val);
+			} else {
+				bMatched = ($this.$_ecMap[key].val == cDesc.cond);
+			}
+			if(bMatched){
+				 $this.$_ecMap[key].cArr.splice(i, 1);
+				 cDesc.exec.call($this);
+			}
+		}
+	},
+	
 	$client:{
 		$bootstrap: function(){
 			// use 'this' to access members

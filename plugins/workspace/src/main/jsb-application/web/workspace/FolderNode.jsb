@@ -40,12 +40,23 @@
 					self.editor.beginEdit();
 				}
 			});
-			this.append(editBtn);
+			this.toolbox.append(editBtn.getElement());
 		},
 		
 		setName: function(name){
 			this.descriptor.name = name;
 			this.editor.setData(this.descriptor.name);
+		},
+		
+		updateState: function(){
+			var isToolboxVisible = this.isSelected() || this.isHighlighted();
+			if(isToolboxVisible){
+				$this.toolbox.removeClass('hidden');
+				$this.editor.getElement().css('padding-right', this.toolbox.width());
+			} else {
+				$this.toolbox.addClass('hidden');
+				$this.editor.getElement().css('padding-right', 0);
+			}
 		}
 		
 	}

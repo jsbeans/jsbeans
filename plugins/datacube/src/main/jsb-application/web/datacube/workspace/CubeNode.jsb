@@ -1,7 +1,11 @@
 {
 	$name: 'DataCube.CubeNode',
 	$parent: 'JSB.Workspace.EntryNode',
+	$require: 'JSB.Widgets.Button',
+	
 	$client: {
+		childrenLoaded: false,
+		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -9,6 +13,16 @@
 			this.addClass('cubeNode');
 			
 			this.append('<div class="status"></div>');
+			
+			var createSliceBtn = new Button({
+				cssClass: 'roundButton btnCreate btn10',
+				tooltip: 'Создать срез',
+				onClick: function(evt){
+					evt.stopPropagation();
+					$this.createSlice();
+				}
+			});
+			$this.toolbox.append(createSliceBtn.getElement());
 			
 			this.subscribe('Workspace.Entry.updated', function(sender){
 				if(sender != $this.descriptor.entry){
@@ -25,6 +39,21 @@
 			});
 			
 			this.update();
+			
+		},
+		
+		createSlice: function(){
+			$this.explorer.expandNode($this, function(){
+				$this.getEntry().server().addSlice(function(slice){
+					var node = $this.explorer.addTreeItem({
+                        entry: slice,
+                        hasEntryChildren: 0,
+                        name: slice.getName(),
+                        type: 'entry'
+                    }, $this.treeNode.key, false, {collapsed:true});
+					$this.explorer.publish('Workspace.nodeOpen', node);
+				});
+			});
 		},
 		
 		update: function(status, bFail){

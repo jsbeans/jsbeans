@@ -36,7 +36,9 @@
 			selectMulti: false,
 			collapsed: false,
 			// events
-			onSelectionChanged: null
+			onSelectionChanged: function(key, item, evt){},
+			onNodeSelected: function(key, bSelected, evt){},
+			onNodeHighlighted: function(key, bHighlighted, evt){}
 		},
 		
 		itemMap: {},
@@ -159,8 +161,16 @@
 			return itemWrapper;
 		},
 		
-		unhighlightAll: function(){
-			this.rootElt.find('li._dwp_treeViewNode').removeClass('highlighted');
+		unhighlightAll: function(excludeKey){
+			var hItems = this.rootElt.find('li._dwp_treeViewNode.highlighted');
+			hItems.removeClass('highlighted');
+			for(var i = 0; i < hItems.length; i++){
+				var hKey = this.$(hItems[i]).attr('key');
+				if(excludeKey && hKey == excludeKey){
+					continue;
+				}
+				this.options.onNodeHighlighted.call(this, hKey, false);
+			}
 			this.lastHighlighted = null;
 		},
 		
@@ -170,8 +180,9 @@
 			}
 			var item = this.itemMap[key];
 			var wrapper = this.rootElt.find('li._dwp_treeViewNode[key="'+key+'"]');
-			this.unhighlightAll();
+			this.unhighlightAll(key);
 			wrapper.addClass('highlighted');
+			this.options.onNodeHighlighted.call(this, key, true);
 			this.lastHighlighted = key;
 		},
 		
@@ -220,7 +231,7 @@
 						selItem.push(self.itemMap[k]);
 					}
 				}
-				self.options.onSelectionChanged.call(self, selKey, selItem, evt);
+				self.options.onSelectionChanged.call($this, selKey, selItem, evt);
 			}
 			
 			if(this.options.selectMulti){
@@ -230,6 +241,7 @@
 						if(this.$(itemWrapper[i]).attr('key') == key){
 							// remove key selection
 							this.$(itemWrapper[i]).removeClass(selectedCls);
+							$this.options.onNodeSelected.call($this, key, false, evt);
 							callChanged();
 							return;
 						}
@@ -240,6 +252,10 @@
 					}
 					// remove old selection
 					itemWrapper.removeClass(selectedCls);
+					for(var i = 0; i < itemWrapper.length; i++ ){
+						var wKey = this.$(itemWrapper[i]).attr('key');
+						$this.options.onNodeSelected.call($this, wKey, false, evt);
+					}
 				}
 			} else {
 				if(itemWrapper.length > 0){
@@ -247,6 +263,7 @@
 					if(oldKey == key){
 						return;
 					}
+					$this.options.onNodeSelected.call($this, oldKey, false, evt);
 					itemWrapper.removeClass(selectedCls);
 				}
 			}
@@ -254,6 +271,7 @@
 				itemWrapper = this.rootElt.find('li._dwp_treeViewNode[key="'+key+'"]');
 				if(itemWrapper.length > 0){
 					itemWrapper.addClass(selectedCls);
+					$this.options.onNodeSelected.call($this, key, true, evt);
 				}
 				
 				this.selStack.push(key);
@@ -307,6 +325,17 @@
 		    } else {
 		        return this.getChildNodes(parentKey).indexOf(childKey) > -1;
 		    }
+		},
+		
+		isDynamicChildren: function(key){
+			if(!key){
+				return false;
+			}
+			var parentObj = this.itemMap[key];
+			if(!parentObj){
+				return false;
+			}
+			return parentObj.dynamicChildren;
 		},
 		
 		addNode: function(item, parentKey){
@@ -582,12 +611,12 @@
 		},
 		
 		classRemove: function(el, className) {
-			if (el.classList)
+			if (el.classList){
 				el.classList.remove(className)
-			else if (hasClass(el, className)) {
-				var reg = new RegExp('(\\s|^)' + className + '(\\s|$)')
-				el.className=el.className.replace(reg, ' ')
-				}
+			} else if (hasClass(el, className)) {
+				var reg = new RegExp('(\\s|^)' + className + '(\\s|$)');
+				el.className=el.className.replace(reg, ' ');
+			}
 		}
 	}
 }

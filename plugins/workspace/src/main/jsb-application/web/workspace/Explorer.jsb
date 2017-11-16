@@ -190,7 +190,14 @@
 				selectMulti: true,
 				onSelectionChanged: function(key, obj){
 					$this.updateToolbar();
+				},
+				onNodeSelected: function(key, bSelected, evt){
+					$this.publish('Workspace.Explorer.nodeSelected', {node: $this.tree.get(key).obj, selected: bSelected});
+				},
+				onNodeHighlighted: function(key, bHighlighted, evt){
+					$this.publish('Workspace.Explorer.nodeHighlighted', {node: $this.tree.get(key).obj, selected: bHighlighted});
 				}
+
 			});
 			this.append(this.tree);
 			
@@ -234,24 +241,8 @@
                 if(entry.workspace !== $this.currentWorkspace) return;
 
                 var parentKey = $this.wTreeMap[entry.parent] ? $this.wTreeMap[entry.parent].key : null;
-                var parentNode = $this.tree.get(parentKey);
 
-                if(parentNode){
-                    var keys = {};
-                    function findKeys(id){
-                        if(!id) return;
-                        var key = $this.wTreeMap[id].key;
-                        if(key){
-                            keys[key] = true;
-                            findKeys($this.wTreeMap[id].parent);
-                        }
-                    }
-                    findKeys(entry.parent);
-
-                    for(var i in keys){
-                        $this.tree.expandNode(i);
-                    }
-
+                if(!parentKey || !$this.tree.isDynamicChildren(parentKey)){
                     $this.addTreeItem({
                         entry: entry,
                         hasEntryChildren: Object.keys(entry.children).length,
@@ -696,14 +687,6 @@
 
 		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
 		    var key = JSB().generateUid();
-		    if(itemDesc.type === 'entry'){
-                this.wTreeMap[itemDesc.entry.localId] = {
-                    id: itemDesc.entry.localId,
-                    key: key,
-                    parent: itemDesc.entry.parent,
-                    parentKey: parent
-                };
-		    }
 			var node = null;
 			
 			if(itemDesc.type == 'node'){
@@ -742,6 +725,9 @@
 				$this.installDropContainer(node);
 				$this.installUploadContainer(node);
 			} else if(itemDesc.type == 'entry') {
+				if(this.wTreeMap[itemDesc.entry.localId]){
+					return this.wTreeMap[itemDesc.entry.localId].node;
+				}
 				var nodeSlice = this.currentWorkspace.workspaceManager.exlorerNodeTypes;
 				var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
 				if(!nodeType || !JSB.get(nodeType)){
@@ -753,6 +739,14 @@
 					allowOpen: true,
 					allowEdit: true
 				});
+				this.wTreeMap[itemDesc.entry.localId] = {
+                    id: itemDesc.entry.localId,
+                    key: key,
+                    parent: itemDesc.entry.parent,
+                    parentKey: parent,
+                    node: node
+                };
+
 			} else {
 				throw new Error('not implemented');
 			}
@@ -780,6 +774,7 @@
 						$this.addTreeItem(chDesc, parentKey);
 					}
 					$this._isReady = true;
+					treeNode.obj.setTrigger('Workspace.Explorer.nodeChildrenLoaded');
 				});
 			}
 			function onNodeCollapse(treeNode, isManual){
@@ -904,6 +899,18 @@
 			}
 			
 			return node;
+		},
+		
+		expandNode: function(node, callback){
+			var key = node.treeNode.key;
+			$this.tree.expandNode(key);
+			if($this.tree.isDynamicChildren(key)){
+				node.ensureTrigger('Workspace.Explorer.nodeChildrenLoaded', function(){
+					callback.call($this);
+				});
+			} else {
+				callback.call($this);
+			}
 		},
 
 		removeTreeItem: function(key){

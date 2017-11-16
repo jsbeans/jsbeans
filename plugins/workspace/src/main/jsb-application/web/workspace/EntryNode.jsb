@@ -5,8 +5,8 @@
 		Editor: 'JSB.Widgets.PrimitiveEditor',
 		Button: 'JSB.Widgets.Button',
 		RendererRepository: 'JSB.Widgets.RendererRepository',
-
 	},
+	
 	$client: {
 		renderer: null,
 		
@@ -43,7 +43,6 @@
 				}
 				
 				$this.append($this.renderer);
-				var paddingRight = 4;
 				
 				if($this.options.allowEdit){
 					// add buttons
@@ -55,8 +54,7 @@
 							self.renderer.beginEdit();
 						}
 					});
-					$this.append(editBtn);
-					paddingRight += 20;
+					$this.toolbox.append(editBtn.getElement());
 				}
 				
 				if($this.options.allowOpen){
@@ -68,17 +66,25 @@
 							$this.explorer.publish('Workspace.nodeOpen', $this);
 						}
 					});
-					$this.append(openBtn);
-					paddingRight += 20;
+					$this.toolbox.append(openBtn.getElement());
 				}
-				
-				$this.renderer.getElement().css('padding-right', paddingRight);
-
 			});
 		},
 		
 		getEntry: function(){
 			return this.descriptor.entry;
+		},
+		
+		updateState: function(){
+			var isToolboxVisible = this.isSelected() || this.isHighlighted();
+			if(isToolboxVisible){
+				$this.toolbox.removeClass('hidden');
+				$this.renderer.getElement().css('padding-right', this.toolbox.width());
+			} else {
+				$this.toolbox.addClass('hidden');
+				$this.renderer.getElement().css('padding-right', 0);
+			}
+			
 		}
 		
 	},
