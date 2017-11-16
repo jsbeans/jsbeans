@@ -681,7 +681,6 @@
                 key: 'header',
                 collapsable: true,
                 collapsed: true,
-                description: 'Заголовок виджета',
                 items: [
                 {
                     name: 'Текст',
@@ -1164,12 +1163,12 @@
                 $this.append($this.container);
 
                 $this.getElement().resize(function(){
-                    if(!$this.getElement().is(':visible') || !$this.chart){
-                        return;
-                    }
                     JSB.defer(function(){
+                        if(!$this.getElement().is(':visible') || !$this.chart){
+                            return;
+                        }
                         $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
-                    }, 300, 'hcResize' + $this.getId());
+                    }, 500, 'hcResize' + $this.getId());
                 });
 
                 $this._isInit = true;
@@ -1209,14 +1208,22 @@
             // todo: global filtration
 
             var seriesContext = this.getContext().find('series').values(),
-                xAxisCategories = this.getContext().find('xAxis').find('categories');
+                xAxisCategories = this.getContext().find('xAxis').find('categories'),
+                useCompositeSeries = false;
+
+            for(var i = 0; i < seriesContext.length; i++){
+                if(seriesContext[i].find('name').bound()){
+                    useCompositeSeries = true;
+                    break;
+                }
+            }
 
             this.getElement().loader();
             dataSource.fetch({readAll: true, reset: true}, function(){
+                $this.getElement().loader('hide');
                 try{
                     var seriesData = [],
-                        xAxisData = [],
-                        useCompositeSeries = false;
+                        xAxisData = [];
 
                     while(dataSource.next()){
                         // xAxis
@@ -1225,17 +1232,12 @@
                         // series data
                         for(var i = 0; i < seriesContext.length; i++){
                             var name = seriesContext[i].find('name'),
-                                data = seriesContext[i].find('data');
-
-                        // todo: unified composite and simple series
-
-                            if(name.bound()){    // composite series
-                                useCompositeSeries = true;
+                                data = seriesContext[i].find('data'),
+                                x = xAxisCategories.value();
 
                                 if(!seriesData[i]){
                                     seriesData[i] = {
-                                        data: {},
-                                        simple: false
+                                        data: {}
                                     };
                                 }
 
@@ -1244,58 +1246,44 @@
                                 }
 
                                 seriesData[i].data[name.value()].push({
-                                    x: xAxisCategories.value(),
+                                    x: x ? x : undefined,
                                     y: data.value()
                                 });
-                            } else {    // simple series
-                                if(!seriesData[i]){
-                                    seriesData[i] = {
-                                        index: i,
-                                        simple: true,
-                                        name: name,
-                                        data: []
-                                    };
-                                }
-
-                                seriesData[i].data.push({
-                                    x: xAxisCategories.value(),
-                                    y: data.value()
-                                });
-                            }
                         }
                     }
 
                     // resolve xAxis for composite series
                     if(useCompositeSeries){
-                        var cats = [];
-                        for(var i = 0; i < xAxisData.length; i = i + data.length){
-                            cats.push(xAxisData[i]);
+                        var cats = {};
+                        for(var i = 0; i < xAxisData.length; i++){
+                            cats[xAxisData[i]] = true;
                         }
-                        xAxisData = cats;
+                        xAxisData = [];
+                        for(var i in cats){
+                            xAxisData.push(i);
+                        }
                     }
 
                     function resolveData(data){
                         for(var i in data){
-                            data[i].x = xAxisData.indexOf(data[i].x);
+                            if(data[i].x){
+                                data[i].x = xAxisData.indexOf(data[i].x);
+                            }
                         }
                         return data;
                     }
 
-                    // resolve data if use composite series
+                    // resolve data
                     var data = [];
                     for(var i = 0; i < seriesData.length; i++){
-                        if(seriesData[i].simple){
-                            data.push(seriesData[i]);
-                        } else {
-                            var obj = seriesData[i].data;
+                        var obj = seriesData[i].data;
 
-                            for(var j in obj){
-                                data.push({
-                                    index: i,
-                                    name: j,
-                                    data: obj[j]
-                                });
-                            }
+                        for(var j in obj){
+                            data.push({
+                                index: i,
+                                name: j,
+                                data: resolveData(obj[j])
+                            });
                         }
                     }
 
@@ -1317,15 +1305,15 @@
         },
 
         // refresh after data and/or style changes
-        buildChart: function(data, xAxisCategories){
+        _buildChart: function(data, xAxisCategories){
             JSB().deferUntil(function(){
-                $this._buildChart(data, xAxisCategories);
+                $this.innerBuildChart(data, xAxisCategories);
             }, function(){
                 return $this._isInit;
             })
         },
 
-        _buildChart: function(seriesData, xAxisCategories){
+        innerBuildChart: function(seriesData, xAxisCategories){
             try{
                 var creditsContext = this.getContext().find('credits').value(),
                     legendContext = this.getContext().find('legend').value(),
@@ -1401,7 +1389,9 @@
                         y: legendContext.find('y').value()
                     },
                     plotOptions: {
-                        stacking: plotOptionsContext.find('stacking').value().value()
+                        series: {
+                            stacking: plotOptionsContext.find('stacking').value().value()
+                        }
                     },
                     series: series,
                     title: {
