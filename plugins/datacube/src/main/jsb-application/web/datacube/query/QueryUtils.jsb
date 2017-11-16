@@ -27,6 +27,16 @@
         },
 
         walkQueryFields: function(dcQuery, includeSubQueries/**all or current query`s fields*/, callback /*(field, context, query)*/){
+            if (!includeSubQueries) {
+                // обход так же будет со всеми подзапросами, чтобы захватить используемые поля заданного запроса в подзапросах
+                var oldCallback = callback;
+                callback = function(field, context, query){
+                    if (query == dcQuery) {
+                        oldCallback(field, context, query);
+                    }
+                };
+            }
+
             function walkMultiFilter(exps, fieldsCallback){
                 for (var field in exps) if (exps.hasOwnProperty(field)) {
                     if (field.startsWith('$')) {
@@ -83,11 +93,12 @@
 
             }
 
-            if (includeSubQueries) {
-                this.walkSubQueries(dcQuery, walkQuery);
-            } else {
-                walkQuery(dcQuery);
-            }
+//            if (includeSubQueries) {
+//                this.walkSubQueries(dcQuery, walkQuery);
+//            } else {
+//                walkQuery(dcQuery);
+//            }
+            this.walkSubQueries(dcQuery, walkQuery);
         },
 
         walkDataProviderFields: function(dcQuery, includeSubQueries, provider, callback/**(field, context, query)*/){
@@ -129,7 +140,7 @@
         Если поле есть и в UNION и в JOIN провайдерах, то приоритет отдается UNION провайдерам, т.к. они слева в LEFT JOIN.
         */
         removeRedundantBindingProviders: function (providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/) {
-		    function allFieldsBindingAndAllInOther(prov){
+		    function allFieldsBindingAndAllInOther(prov, mode){
 		        var allFieldsBinding = true;
 		        var allInOtherJoined = true;
 		        for (var f in prov.cubeFields) if (prov.cubeFields.hasOwnProperty(f)) {
@@ -140,7 +151,8 @@
 		            var fieldInOtherJoined = false;
 		            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 		                if (prov == providersFieldsMap[id]) continue;
-		                if (prov.provider.id != id) {
+		                if (prov.provider.id != id &&
+		                        (!mode || mode == (prov.provider.getMode()||'union')) ) {
 		                    if(providersFieldsMap[id].cubeFields.hasOwnProperty(f)) {
 		                        fieldInOtherJoined = true;
 		                        break;
@@ -162,10 +174,10 @@
 		            delete providersFieldsMap[id];
 		        }
 		    }
-            // then remove unions
+            // then remove unions - only fields in join
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 		        if ((providersFieldsMap[id].provider.getMode()||'union') == 'union'
-		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
+		                && allFieldsBindingAndAllInOther(providersFieldsMap[id], 'join')) {
 		            delete providersFieldsMap[id];
 		        }
 		    }
