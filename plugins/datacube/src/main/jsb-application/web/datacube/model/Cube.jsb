@@ -700,7 +700,7 @@
 			if(this.fields[nameCandidate]){
 				// lookup appropriate name
 				for(var cnt = 2; ; cnt++){
-					nameCandidate = pField + cnt;
+					nameCandidate = this.prepareFieldName(pfName) + cnt;
 					if(!this.fields[nameCandidate]){
 						break;
 					}
@@ -1080,6 +1080,7 @@
 						var iterator = $this.queryEngine.query(q, {});
 						var batch = [];
 						var lastStatusTimestamp = 0;
+						var lastCount = 0;
 						for(var i = 0; ; i++){
 /*							
 							if(i > 5000){
@@ -1171,8 +1172,9 @@
 								batch = [];
 								
 								var curTimestamp = Date.now();
-								if(curTimestamp - lastStatusTimestamp > 3000){
+								if(curTimestamp - lastStatusTimestamp > 3000 && i - lastCount > 1000){
 									lastStatusTimestamp = curTimestamp;
+									lastCount = i;
 									if(checkStop()){
 										try {
 											iterator.close();
@@ -1180,6 +1182,7 @@
 										destroyCurrentMaterialization();
 										return;
 									}
+									
 									$this.publish('DataCube.Model.Cube.status', {status: 'Сохранено записей: ' + (i + 1), success: true}, {session: true});
 								}
 	

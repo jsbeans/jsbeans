@@ -103,7 +103,9 @@
 				if(sender != cube){
 					return;
 				}
-				$this.updatePanes(params.status, params.success != true);
+				JSB.defer(function(){
+					$this.updatePanes(params.status, params.success != true);	
+				}, 800, 'DataCube.Model.Cube.status' + $this.getId());
 			});
 		},
 		
@@ -118,7 +120,11 @@
 		
 		updatePanes: function(msg, bFail){
 			var cube = this.data.data.cube;
+			var mInfoId = $this.mInfoId = JSB.generateUid();
 			cube.server().getMaterializationInfo(function(mInfo){
+				if($this.mInfoId != mInfoId){
+					return;
+				}
 				if(mInfo && Object.keys(mInfo.materialization).length > 0){
 					$this.find('.unmaterialized').addClass('hidden');
 					$this.find('.materialized')
