@@ -1306,11 +1306,11 @@
 
         // refresh after data and/or style changes
         _buildChart: function(data, xAxisCategories){
-            JSB().deferUntil(function(){
-                $this.innerBuildChart(data, xAxisCategories);
-            }, function(){
-                return $this._isInit;
-            })
+            JSB.defer(function(){
+                $this.ensureInitialized(function(){
+                    $this.innerBuildChart(data, xAxisCategories);
+                });
+            }, 300, '_buildChart_' + this.getId());
         },
 
         innerBuildChart: function(seriesData, xAxisCategories){

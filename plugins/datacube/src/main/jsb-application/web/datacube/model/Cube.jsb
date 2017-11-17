@@ -862,7 +862,7 @@
             this.doSync();
 		},
 		
-		addSlice: function(){
+		addSlice: function(selectedFields, isMerge){
 			this.load();
 			// generate slice name map
 			var snMap = {};
@@ -878,6 +878,39 @@
 			}
 			var sId = JSB.generateUid();
 			var slice = new Slice(sId, this.workspace, this, sName);
+
+			// add default fields or selected fields
+			if(selectedFields && Object.keys(selectedFields).length > 0){
+			    if(isMerge && this.defaultFields){
+                    var q = {};
+                    for(var i in this.defaultFields){
+                        q[i] = i;
+                    }
+                    for(var i in selectedFields){
+                        q[i] = i;
+                    }
+                    slice.setQuery({
+                        $select: q
+                    });
+			    } else {
+                    var q = {};
+                    for(var i in selectedFields){
+                        q[i] = i;
+                    }
+                    slice.setQuery({
+                        $select: q
+                    });
+			    }
+			} else if(this.defaultFields){
+                var q = {};
+                for(var i in this.defaultFields){
+                    q[i] = i;
+                }
+                slice.setQuery({
+                    $select: q
+                });
+			}
+
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
 			this.addChildEntry(slice);

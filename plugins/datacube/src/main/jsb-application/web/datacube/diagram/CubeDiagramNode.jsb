@@ -46,7 +46,7 @@
 					<div class="name">{{=this.entry.getName()}}</div>
 					
 					<div jsb="JSB.Widgets.Button" class="roundButton btnCreate btn10" tooltip="Создать срез"
-						onclick="{{=$this.callbackAttr(function(evt){ $this.editor.addSlice(JSB.merge($this.defaultFields, $this.checkedFieldList)); evt.stopPropagation(); })}}"></div>
+						onclick="{{=$this.callbackAttr(function(evt){ $this.editor.addSlice($this.checkedFieldList); evt.stopPropagation(); })}}"></div>
 				</div>
 			`);
 			this.body = this.$(`
