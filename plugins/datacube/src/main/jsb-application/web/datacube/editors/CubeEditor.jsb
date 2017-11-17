@@ -299,8 +299,8 @@
 		},
 		
 		addSlice: function(checkedFieldList){
-			this.cubeEntry.server().addSlice(function(slice){
-				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this, fields: checkedFieldList});
+			this.cubeEntry.server().addSlice(checkedFieldList, false, function(slice){
+				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this});
 				var cubeRect = $this.cubeNode.getRect();
 				sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
 				
