@@ -66,18 +66,20 @@
 			Bridge.sleep(msec);
 		},
 		
-		tell: function(svcName, msgType, msgBody){
+		tell: function(svcName, msgType, msgBody, node){
 			Bridge.tell({
 				serviceName: svcName,
 				messageType: msgType,
-				messageBody: msgBody
+				messageBody: msgBody,
+				node: node
 			});
 		},
 		
-		ask: function(svcName, msgType, arg1, arg2){
+		ask: function(svcName, msgType, arg1, arg2, arg3){
 			var callback = null;
 			var msgBody = null;
 			var timeout = null;
+			var node = null;
 			if(JSB().isPlainObject(svcName)){
 				var aDesc = svcName;
 				svcName = aDesc.service;
@@ -85,13 +87,20 @@
 				callback = aDesc.callback;
 				msgBody = aDesc.messageBody || {};
 				timeout = aDesc.timeout;
+				node = aDesc.node;
 			} else {
 				if(JSB().isFunction(arg1)){
 					callback = arg1;
 					msgBody = arg2;
-				} else {
+					node = arg3;
+				} else if(JSB().isFunction(arg2)){
 					msgBody = arg1;
 					callback = arg2;
+					node = arg3;
+				} else {
+					msgBody = arg1;
+					node = arg2;
+					callback = arg3;
 				}
 				if(msgBody == undefined){
 					msgBody = null;
@@ -108,6 +117,7 @@
 				messageBody: msgBody,
 				async: callback ? true: false,
 				timeout: timeout,
+				node: node,
 				callback: callback
 			});
 		},

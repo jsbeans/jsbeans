@@ -120,14 +120,14 @@ public class Core {
 
     private static void startActorSystem() {
         String clusterId = null;
-        if (config.hasPath("kernel.clusterId")) {
-            clusterId = config.getString("kernel.clusterId");
+        if (config.hasPath("kernel.cluster.id")) {
+            clusterId = config.getString("kernel.cluster.id");
             if (clusterId.length() == 0) {
                 clusterId = null;
             }
         }
         if (clusterId == null) {
-            clusterId = "default";
+            clusterId = "jsBeans";
         }
 
         String ipAddr = config.getString("akka.remote.netty.tcp.hostname");
@@ -161,7 +161,7 @@ public class Core {
                 Config config = loadPluginConfig(plugin.getConfigurationName());
                 // merge main and plugin config
                 if (config != null) {
-                    Core.mergeConfigWith(config, true);
+                    Core.mergeConfigWith(config, false);
                     log.debug("Plugin '{}' ({}) configured", plugin.getName(), type.getName());
                 } else {
                     log.warn("Plugin configuration '{}' not found", plugin.getName());

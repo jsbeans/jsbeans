@@ -48,10 +48,10 @@ public class HttpService extends Service {
     }
 
     private void startJettyServer() {
-        Integer portVal = ConfigHelper.getConfigInt(WEB_PORT_KEY);
-        if (portVal == null) {
-            portVal = 8888;
-        }
+    	Integer portVal = 8888;
+    	if(ConfigHelper.has(WEB_PORT_KEY)){
+    		portVal = ConfigHelper.getConfigInt(WEB_PORT_KEY);
+    	}
 
         Server server = new Server(portVal);
         server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", -1);

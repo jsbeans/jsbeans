@@ -22,6 +22,7 @@ public class JsAskMessage implements Message {
     private String messageTypeName;
     private NativeObject messageData = null;
     private ScriptableObject callback = null;
+    private String node = null;
     private String token = null;
     private String scopePath = null;
     private String user = null;
@@ -124,5 +125,13 @@ public class JsAskMessage implements Message {
 
     public Timeout getTimeout() {
         return this.timeout;
+    }
+    
+    public void setNode(String node){
+    	this.node = node;
+    }
+    
+    public String getNode(){
+    	return this.node;
     }
 }

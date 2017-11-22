@@ -281,6 +281,10 @@ public class JsBridge {
         } else {
             msg = new JsAskMessage(token, sessionId, svcName, msgType);
         }
+        if(tellObject.get("node") != null){
+        	msg.setNode(tellObject.get("node").toString());
+        }
+
         if (user != null) {
             msg.setUser(user.toString());
         }
@@ -337,6 +341,10 @@ public class JsBridge {
             if (async.booleanValue()) {
                 ScriptableObject callback = (ScriptableObject) askObject.get("callback");
                 JsAskMessage askMsg = new JsAskMessage(token, sessionId, svcName, msgType, msgBody, callback, timeout);
+                if(askObject.get("node") != null){
+                	askMsg.setNode(askObject.get("node").toString());
+                }
+
                 if (user != null) {
                     askMsg.setUser(user.toString());
                 }
@@ -360,6 +368,10 @@ public class JsBridge {
                 if (user != null) {
                     askMsg.setUser(user.toString());
                 }
+                if(askObject.get("node") != null){
+                	askMsg.setNode(askObject.get("node").toString());
+                }
+
                 Future<Object> f = ActorHelper.futureAsk(jsHubSvc, askMsg, timeout);
                 Object result = null;
                 try {

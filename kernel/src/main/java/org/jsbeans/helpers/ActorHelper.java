@@ -52,6 +52,14 @@ public class ActorHelper {
     public static ActorSelection getActorSelection(String serviceName) {
         return Core.getActorSystem().actorSelection("/user/" + serviceName);
     }
+    
+	public static ActorSelection getActorSelection(String nodeId, String serviceName) {
+		if(nodeId.indexOf("://") != -1){
+			return Core.getActorSystem().actorSelection(nodeId + "/user/" + serviceName);
+		}
+		return Core.getActorSystem().actorSelection("akka.tcp://" + nodeId + "/user/" + serviceName);
+	}
+
 
     public static ActorSelection getActorSelection(UntypedActorContext context, String name) {
         return context.actorSelection(name);

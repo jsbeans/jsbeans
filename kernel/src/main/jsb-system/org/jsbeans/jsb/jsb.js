@@ -4341,6 +4341,15 @@ JSB({
 			f.prototype = this.jsb.$_clientProcs;
 			return new f();
 		},
+		
+		server: function(node){
+			var f = function(){
+				this.__instance = $this;
+				this.__node = node;
+			};
+			f.prototype = this.jsb.$_serverProcs;
+			return new f();
+		},
 
 		onBeforeSync: function(syncInfo){
 			var bUpdateServer = false;

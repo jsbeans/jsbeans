@@ -472,6 +472,19 @@
 			return value;
 		},
 		
+		getDefaultAggregateForCubeField: function(cubeField){
+			var fType = $this.options.cubeFields[cubeField];
+			if(fType){
+				fType = fType.toLowerCase();
+				if(fType == 'string' || fType == 'varchar' || fType == 'nvarchar' || fType == 'text'){
+					return '$first';
+				} else if(fType == 'decimal' || fType == 'integer'|| fType == 'float'|| fType == 'double'){
+					return '$sum';
+				}
+			}
+			return null;
+		},
+		
 		doAdd: function(targetElt){
 			$this.showPopupTool($this.combineAcceptedSchemes(), targetElt, null, null, null, function(chosenObj){
 				if($this.scheme.expressionType == 'ComplexObject'){
@@ -494,6 +507,8 @@
 					var schemeName = null;
 					var context = null;
 					var askRename = false;
+					var bGroupByChanged = false;
+					
 					// detect key
 					if(JSB.isString(chosenObj.key)){
 						if($this.scheme.name == '$select' && chosenObj.key == '#outputFieldName'){
@@ -509,6 +524,10 @@
 						}
 					} else {
 						colName = chosenObj.key.value;
+						
+						if($this.scheme.name == '$query' && colName == '$groupBy'){
+							bGroupByChanged = true;
+						}
 					}
 					
 					// detect value
@@ -518,7 +537,29 @@
 						value = chosenObj.value.value;
 						context = chosenObj.value.context;
 						if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-							
+							if($this.scheme.name == '$select'){
+								// check for field is not existed in groupBy section
+								if($this.parent.value.$groupBy && $this.parent.value.$groupBy.length > 0){
+									var bGroupExisted = false;
+									for(var i = 0; i < $this.parent.value.$groupBy.length; i++){
+										var groupByField = $this.parent.value.$groupBy[i];
+										if(groupByField == value){
+											bGroupExisted = true;
+											break;
+										}
+									}
+									if(!bGroupExisted){
+										// setup default aggregate function for field
+										var aggFunc = $this.getDefaultAggregateForCubeField(value);
+										if(aggFunc){
+											var val = {};
+											val[aggFunc] = value;
+											value = val;
+											schemeName = aggFunc;
+										}
+									}
+								}
+							}
 						} else if(schemeName == '$fieldExpr') {
 							value = {
 								$field: value,
@@ -541,14 +582,23 @@
 					if(askRename){
 						$this.doEdit('entry', colName);
 					}
+					if(bGroupByChanged && $this.scheme.name == '$query'){
+						var selectEditor = $this.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
+						if(selectEditor){
+							selectEditor.updateSelectFieldsUsingGroup();
+						}
+					}
 					$this.updateButtons();
 					$this.notifyChanged();
 				} else if($this.scheme.expressionType == 'EArray') {
 					var value = chosenObj.value.value;
 					var context = chosenObj.value.context;
 					var schemeName = chosenObj.value.scheme;
+					var bGroupByChanged = false;
 					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-						
+						if($this.scheme.name == '$groupBy'){
+							bGroupByChanged = true;
+						}
 					} else if(schemeName == '$fieldExpr') {
 						value = {
 							$field: value,
@@ -565,6 +615,12 @@
 					$this.value.push(value);
 					// draw entry
 					$this.drawArrayEntry($this.value.length - 1, schemeName, {expanded: true});
+					if(bGroupByChanged){
+						var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
+						if(selectEditor){
+							selectEditor.updateSelectFieldsUsingGroup();
+						}
+					}
 					$this.updateButtons();
 					$this.notifyChanged();
 				} else {
@@ -636,6 +692,12 @@
 					} else {
 						$this.drawObjectEntry(entryKey, schemeName, {expanded: true});
 					}
+					if($this.scheme.name == '$groupBy'){
+						var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
+						if(selectEditor){
+							selectEditor.updateSelectFieldsUsingGroup();
+						}
+					}
 					$this.notifyChanged();
 					
 				}
@@ -667,6 +729,18 @@
 				entryElt.remove();
 			}
 			
+			if($this.scheme.name == '$query' && entryKey == '$groupBy'){
+				var selectEditor = $this.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
+				if(selectEditor){
+					selectEditor.updateSelectFieldsUsingGroup();
+				}
+			} else if($this.scheme.name == '$groupBy'){
+				var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
+				if(selectEditor){
+					selectEditor.updateSelectFieldsUsingGroup();
+				}
+			}
+			
 			$this.updateButtons();
 			$this.notifyChanged();
 		},
@@ -682,6 +756,71 @@
 				JSB.defer(function(){
 					editor.beginEdit();	
 				});
+			}
+		},
+		
+		updateSelectFieldsUsingGroup: function(){
+			var groupFields = {};
+			if($this.parent.value.$groupBy && $this.parent.value.$groupBy.length > 0){
+				for(var i = 0; i < $this.parent.value.$groupBy.length; i++){
+					var gVal = $this.parent.value.$groupBy[i];
+					if(JSB.isString(gVal)){
+						groupFields[gVal] = true;
+					}
+				}
+			}
+			
+			// iterate over all select fields
+			var bChanged = false;
+			var r = $this.resolve($this.scheme, $this.value);
+			for(var alias in $this.value){
+				var fVal = $this.value[alias];
+				var fScheme = r.obj[alias].scheme;
+				if(!fScheme){
+					continue;
+				}
+				if(Object.keys(groupFields).length > 0){
+					if(fScheme == '$fieldName' || fScheme == '$fieldExpr'){
+						// direct field - check existence in groupBy 
+						if(!groupFields[fVal]){
+							// wrap aggregate
+							var aggFunc = $this.getDefaultAggregateForCubeField(fVal);
+							if(aggFunc){
+								var val = {};
+								val[aggFunc] = fVal;
+								$this.value[alias] = val;
+								bChanged = true;
+							}
+						}
+					} else {
+						var sDesc = QuerySyntax.getSchema()[fScheme];
+						if(sDesc && sDesc.aggregate){
+							var nestedScheme = r.obj[alias].obj[fScheme].scheme;
+							if(nestedScheme == '$fieldName' || nestedScheme == '$fieldExpr'){
+								var aggField = fVal[fScheme];
+								if(aggField && JSB.isString(aggField) && groupFields[aggField]){
+									// unwrap aggregate
+									$this.value[alias] = aggField;
+									bChanged = true;
+								}
+							}
+						}
+					}
+				} else {
+					// disable all aggregates
+					var sDesc = QuerySyntax.getSchema()[fScheme];
+					if(sDesc && sDesc.aggregate){
+						var aggVal = fVal[fScheme];
+						if(aggVal){
+							// unwrap aggregate
+							$this.value[alias] = aggVal;
+							bChanged = true;
+						}
+					}
+				}
+			}
+			if(bChanged){
+				$this.refresh();
 			}
 		},
 		

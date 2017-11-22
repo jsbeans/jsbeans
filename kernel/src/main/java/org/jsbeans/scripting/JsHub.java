@@ -343,7 +343,13 @@ public class JsHub extends Service {
 //					Scriptable sharedScope = this.getArgument(0);
                         MessageDispatcher md = this.getArgument(1);
                         // obtain target actor
-                        ActorSelection targetActor = ActorHelper.getActorSelection(msg.getTargetServiceName());
+                        ActorSelection targetActor = null;
+                        if(msg.getNode() != null){
+                        	// clustered ask
+                        	targetActor = ActorHelper.getActorSelection(msg.getNode(), msg.getTargetServiceName());
+                        } else {
+                        	targetActor = ActorHelper.getActorSelection(msg.getTargetServiceName());
+                        }
                         if (targetActor == null) {
                             throw new ChannelException(String.format("Unable to locate service with name: '%s' due to trying to send them message from JS", msg.getTargetServiceName()));
                         }

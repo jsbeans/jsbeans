@@ -101,7 +101,7 @@ public class ConfigHelper {
         if (val == null) {
             return null;
         }
-        return (Integer) val.unwrapped();
+        return (Integer) Integer.parseInt(val.unwrapped().toString());
     }
 
     public static Long getConfigLong(String path) {
@@ -113,7 +113,7 @@ public class ConfigHelper {
         if (val == null) {
             return null;
         }
-        return (Long) val.unwrapped();
+        return (Long) Long.parseLong(val.unwrapped().toString());
     }
 
     public static Timeout getConfigTimeout(String path) {

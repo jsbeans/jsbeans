@@ -214,7 +214,7 @@
 		    new this.EArray({
 		        name: '$addValues',
 		        minOperands: 2,
-		        maxOperands: 2,
+		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -227,7 +227,7 @@
 		    new this.EArray({
 		        name: '$subValues',
 		        minOperands: 2,
-		        maxOperands: 2,
+		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -240,7 +240,7 @@
 		    new this.EArray({
 		        name: '$mulValues',
 		        minOperands: 2,
-		        maxOperands: 2,
+		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -253,7 +253,7 @@
 		    new this.EArray({
 		        name: '$divValues',
 		        minOperands: 2,
-		        maxOperands: 2,
+		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -266,7 +266,7 @@
 		    new this.EArray({
 		        name: '$divzValues',
 		        minOperands: 2,
-		        maxOperands: 2,
+		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -279,7 +279,7 @@
 		    new this.EArray({
 		        name: '$modValues',
 		        minOperands: 2,
-		        maxOperands: 2,
+		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 
