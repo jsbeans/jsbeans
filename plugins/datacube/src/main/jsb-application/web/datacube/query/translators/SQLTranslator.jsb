@@ -984,9 +984,11 @@
             }
             function buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, hasUnions, unionsFields) {
                 var sqlJoins = '';
+                var firstProv;
                 for(var p in providers) if(providers.hasOwnProperty(p)) {
                     var prov = providers[p];
                     if (prov.provider.getMode() != 'join') continue;
+                    firstProv = firstProv || prov;
 
                     if (sqlJoins.length > 0) sqlJoins += ' LEFT JOIN ';
 
@@ -1003,7 +1005,7 @@
                             }
 
                             var isJoinedField = allFields[cubeField];
-                            fieldsMap[cubeField] = isNull && fieldsMap[cubeField] || {
+                            fieldsMap[cubeField] = {
                                 context: query.$context,
                                 cubeField: cubeField,
 
@@ -1011,7 +1013,12 @@
                                 providerTable: binding && binding.provider.getTableFullName() || null,
 
                                 tableAlias: isJoinedField ? joinedViewAlias : unionsAlias,
-                                fieldAlias: isJoinedField ? binding.field : unionsFields[cubeField]
+                                fieldAlias: isJoinedField ? binding.field : unionsFields[cubeField],
+
+                                joinOn: fieldsMap[cubeField] && fieldsMap[cubeField].joinOn || binding && {
+                                        tableAlias: joinedViewAlias,
+                                        fieldAlias: binding.field
+                                    } || null
                             };
                         }
                     );
@@ -1019,14 +1026,21 @@
                     var sqlOn = '';
                     var joinOnFields = extractJoinOnCubeFields(prov.provider);
                     for (var i in joinOnFields) {
-                        if (sqlOn.length > 0) sqlOn  += ' AND ';
                         var cubeField = joinOnFields[i];
+                        // is joined and without UNIONs - skip first ON
+                        if (!unionsFields[cubeField] && firstProv == prov) continue;
+
+                        if (sqlOn.length > 0) sqlOn  += ' AND ';
                         var providerField = fieldsMap[cubeField].providerField;
-                        sqlOn += $this._quotedName(unionsAlias) + '.' + $this._quotedName(unionsFields[cubeField]);
+                        sqlOn += unionsFields[cubeField]
+                                ? $this._quotedName(unionsAlias) + '.' + $this._quotedName(unionsFields[cubeField])
+                                : $this._quotedName(fieldsMap[cubeField].joinOn.tableAlias) + '.' + $this._quotedName(fieldsMap[cubeField].joinOn.fieldAlias);
                         sqlOn += ' = ';
                         sqlOn += $this._quotedName(joinedViewAlias) + '.' + $this._quotedName(providerField);
                     }
-                    sqlJoins += ' ON ' + sqlOn;
+                    if (sqlOn) {
+                        sqlJoins += ' ON ' + sqlOn;
+                    }
                 }
 
                 var sql = '';
