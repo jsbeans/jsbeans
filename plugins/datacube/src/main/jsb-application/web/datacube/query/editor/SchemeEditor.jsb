@@ -83,6 +83,12 @@
 		},
 		
 		destroy: function(){
+			this.destroyNestedEditors();
+			
+			$base();
+		},
+		
+		destroyNestedEditors: function(){
 			// remove child if any
 			var valueEditors = $this.find('> .container > .entry > .schemeEditor');
 			valueEditors.each(function(){
@@ -96,8 +102,6 @@
 			if(pEditors.jsb()){
 				pEditors.jsb().destroy();
 			}
-			
-			$base();
 		},
 		
 		notifyChanged: function(){
@@ -141,7 +145,6 @@
 					if($this.scheme.expressionType == 'EArray'){
 						allowRemove = true;
 					} else if($this.scheme.expressionType == 'ComplexObject'){
-						
 						if($this.scheme.optional){
 							for(var i = 0; i < $this.scheme.optional.length; i++){
 								if(($this.scheme.values[entryKey] && $this.scheme.optional[i] == entryKey) || (!$this.scheme.values[entryKey] && $this.scheme.optional[i] == $this.scheme.customKey)){
@@ -149,6 +152,9 @@
 									break;
 								}
 							}
+						}
+						if($this.scheme.name == '$filter'){
+							allowReplace = true;
 						}
 					}
 				}
@@ -630,37 +636,76 @@
 		},
 		
 		doReplace: function(targetElt, entryType, entryKey){
-			if(entryType == 'entry'){
+			if(entryType == 'entry' && $this.scheme.name != '$filter'){
 				return;
 			}
 			var acceptedSchemes = null;
 			var existedSchemeDesc = null;
-			
-			if(JSB.isObject($this.scheme.values) && JSB.isDefined($this.scheme.values[entryKey])){
-				acceptedSchemes = $this.combineAcceptedSchemes(entryKey);
-				existedSchemeDesc = $this.resolve($this.scheme.values[entryKey], $this.value[entryKey]);
-			} else if(JSB.isObject($this.scheme.values) && $this.scheme.customKey){
-				acceptedSchemes = $this.combineAcceptedSchemes($this.scheme.customKey);
-				existedSchemeDesc = $this.resolve($this.scheme.values[$this.scheme.customKey], $this.value[entryKey]);
-			} else {
+			var existedObj = null;
+			if(entryType == 'entry'){
 				acceptedSchemes = $this.combineAcceptedSchemes();
-				existedSchemeDesc = $this.resolve($this.scheme, $this.value).obj[entryKey];
-			}
-			
-			var existedObj = {scheme: existedSchemeDesc.scheme, value: $this.value[entryKey]};
-			if(existedObj.scheme == '$fieldName'){
+				if(JSB.isObject($this.scheme.values) && JSB.isDefined($this.scheme.values[entryKey])){
+					existedObj = {scheme: entryKey, value: entryKey};
+				} else if(JSB.isObject($this.scheme.values) && $this.scheme.customKey){
+					existedObj = {scheme: $this.scheme.customKey, value: entryKey};
+				} else {
+					throw new Error('Internal scheme error');
+				}
+			} else {
+				if(JSB.isObject($this.scheme.values) && JSB.isDefined($this.scheme.values[entryKey])){
+					acceptedSchemes = $this.combineAcceptedSchemes(entryKey);
+					existedSchemeDesc = $this.resolve($this.scheme.values[entryKey], $this.value[entryKey]);
+				} else if(JSB.isObject($this.scheme.values) && $this.scheme.customKey){
+					acceptedSchemes = $this.combineAcceptedSchemes($this.scheme.customKey);
+					existedSchemeDesc = $this.resolve($this.scheme.values[$this.scheme.customKey], $this.value[entryKey]);
+				} else {
+					acceptedSchemes = $this.combineAcceptedSchemes();
+					existedSchemeDesc = $this.resolve($this.scheme, $this.value).obj[entryKey];
+				}
 				
-			} else if(existedObj.scheme == '$sortField'){
-				existedObj.context = $this.scope.$context;
-				existedObj.value = Object.keys($this.value[entryKey])[0];
-			} else if(existedObj.scheme == '$fieldExpr'){
-				existedObj.context = $this.value[entryKey].$context;
-				existedObj.value = $this.value[entryKey].$field;
+				existedObj = {scheme: existedSchemeDesc.scheme, value: $this.value[entryKey]};
+				if(existedObj.scheme == '$fieldName'){
+					
+				} else if(existedObj.scheme == '$sortField'){
+					existedObj.context = $this.scope.$context;
+					existedObj.value = Object.keys($this.value[entryKey])[0];
+				} else if(existedObj.scheme == '$fieldExpr'){
+					existedObj.context = $this.value[entryKey].$context;
+					existedObj.value = $this.value[entryKey].$field;
+				}
 			}
 			
 			$this.showPopupTool(acceptedSchemes, targetElt, entryType, entryKey, existedObj, function(chosenObj){
 				if(chosenObj.key){
-					debugger;
+					var newKey = chosenObj.key.value;
+					if(newKey == entryKey){
+						return;
+					}
+					if(existedObj.scheme == chosenObj.key.scheme){
+						// just replace key
+						$this.value[newKey] = $this.value[entryKey];
+					} else {
+						$this.value[newKey] = $this.constructEmptyValue(acceptedSchemes[chosenObj.key.scheme][0]);
+					}
+					delete $this.value[entryKey];
+					
+					// detect new key value scheme
+					var newValDesc = null;
+					if(JSB.isObject($this.scheme.values) && JSB.isDefined($this.scheme.values[newKey])){
+						newValDesc = $this.resolve($this.scheme.values[newKey], $this.value[newKey]);	
+					} else if(JSB.isObject($this.scheme.values) && $this.scheme.customKey){
+						newValDesc = $this.resolve($this.scheme.values[$this.scheme.customKey], $this.value[newKey]);
+					} else {
+						throw new Error('Internal scheme error');
+					}
+					
+					if(JSB.isArray($this.value)){
+						$this.drawArrayEntry(newKey, newValDesc.scheme, {expanded: true});
+					} else {
+						$this.drawObjectEntry(newKey, newValDesc.scheme, {expanded: true});
+					}
+					$this.removeEntry(entryKey);
+					$this.notifyChanged();
 				} else {
 					var value = chosenObj.value.value;
 					var context = chosenObj.value.context;
@@ -1098,9 +1143,25 @@
 				});
 				return;
 			}
+			
+			this.destroyNestedEditors();
 			$this.container.empty();
 			$this.scheme = QuerySyntax.getSchema()[$this.schemeName];
 			$this.construct();
+		},
+		
+		removeEntry: function(entryKey){
+			var entryElt = $this.container.find('> .entry[key="'+entryKey+'"]');
+			
+			var valueEditors = entryElt.find('> .schemeEditor');
+			valueEditors.each(function(){
+				var inst = $this.$(this).jsb();
+				if(inst){
+					inst.destroy();
+				}
+			});
+			
+			entryElt.remove();
 		},
 		
 		drawObjectEntry: function(valName, valScheme, opts){
