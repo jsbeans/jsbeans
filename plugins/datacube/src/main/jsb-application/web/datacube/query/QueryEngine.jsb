@@ -41,8 +41,8 @@
             // embed $globalFilter to $filter/$postFilter of root and sub queries
             QueryUtils.propagateGlobalFilter(dcQuery, dataProvider || this.cube);
 
-            // generate $groupBy if not defined
-            QueryUtils.generateDefaultGroupBy(dcQuery);
+//            // generate $groupBy if not defined
+//            QueryUtils.generateDefaultGroupBy(dcQuery);
 
             // move top fields that used in other
             QueryUtils.upperGeneralFields(dcQuery);
