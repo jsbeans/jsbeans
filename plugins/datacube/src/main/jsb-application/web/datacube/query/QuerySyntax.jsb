@@ -137,7 +137,7 @@
 		
 		    new this.ComplexObject({
 		        name: '$query',
-		        desc: 'Запрос',
+		        desc: 'Подзапрос',
 		        values: {
 		            '$context': '$contextName',
 		            '$filter': '$filter',
@@ -166,6 +166,7 @@
 		
 		    new this.Group({
 		    	name: '$from',
+		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query'],
 		    });
 		
@@ -603,7 +604,7 @@
 		
 		    new this.ComplexObject({
 		        name: '$filter',
-		        displayName: 'Фильтр',
+		        displayName: 'Фильтрация полей',
 		        desc: 'Фильтрация строк таблицы по условию (условия накладываются на поля куба)',
 		        customKey: '#fieldName',
 		        values: {
@@ -630,6 +631,7 @@
 		
 		    new this.ComplexObject({
 		        name: '$postFilter',
+		        displayName: 'Фильтрация столбцов',
 		        desc: 'Фильтрация результатов запроса по условию (условия накладываются на выходные поля запроса)',
 		        customKey: '#outputFieldName',
 		        values: {
@@ -840,7 +842,7 @@
 		        name: '$not',
 		        category: 'Логические операторы',
 		        displayName: 'не',
-		        desc: 'Inverse condition (NOT)',
+		        desc: 'Инверсия (NOT)',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		
@@ -905,6 +907,7 @@
 
 		    new this.EConstNumber({
 		        name: '$limit',
+		        desc: 'Ограничение количества строк результата',
 		        value: 10,
 		        editable: true
 		    });
@@ -933,7 +936,7 @@
 		    
 		    new this.ComplexObject({
 		        name: '$finalizeReplace',
-		        desc: 'Замена эелементов по таблице соответствия ключ-значение (ключем может быть строка "value" или регулярное выражение "/R/i")',
+		        desc: 'Замена элементов по таблице соответствия ключ-значение (ключем может быть строка "value" или регулярное выражение "/R/i")',
 		        customKey: '#value',
 		        values: {
 		            '#value': '$replaceWithValue'
@@ -995,8 +998,8 @@
 		    });
 		
 		    new this.EConstNumber({
-		    	displayName: 'Значение',
-		    	desc: 'Константное значение',
+		    	displayName: 'Число',
+		    	desc: 'Константное число',
 		        name: '$constNumber',
 		        editable: true
 		    });
@@ -1035,6 +1038,7 @@
 		    
 		    new this.EConstString({
 		        name: '$sql',
+		        displayName: 'Использовать нативный SQL запрос',
 		        editable: true
 		    });
 		

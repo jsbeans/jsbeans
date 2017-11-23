@@ -15,6 +15,8 @@ package org.jsbeans.web;
 
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -35,8 +37,9 @@ import org.jsbeans.services.ServiceManagerService;
  */
 @DependsOn({JsHub.class, JsbRegistryService.class, SecurityService.class})
 public class HttpService extends Service {
-    private static final String WEB_FOLDER_KEY = "web.folder";
-    private static final String WEB_PORT_KEY = "web.http-port";
+//    private static final String WEB_FOLDER_KEY = "web.folder";
+    private static final String WEB_PORT_KEY = "web.http.port";
+    private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     @Override
@@ -82,6 +85,15 @@ public class HttpService extends Service {
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
         
         server.setHandler(context);
+        
+        // set requestHeaderSize for long cross-domain GET requests
+        if(ConfigHelper.has(WEB_REQUEST_HEADER_SIZE)){
+    		int requestHeaderSize = ConfigHelper.getConfigInt(WEB_REQUEST_HEADER_SIZE);
+            for (Connector c : server.getConnectors()) {
+            	c.setRequestHeaderSize(requestHeaderSize);
+            }
+    	}
+        
         try {
             this.getLog().debug(String.format("Starting Jetty web server at %d", portVal.intValue()));
             server.start();

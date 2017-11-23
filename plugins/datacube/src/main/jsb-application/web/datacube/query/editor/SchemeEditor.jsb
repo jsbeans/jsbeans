@@ -138,7 +138,10 @@
 			var allowWrap = false;
 			if(entryType == 'entry'){
 				hoverDesc = $this.hoverEntries;
-				if(($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value')&& JSB.isObject($this.scheme.values) && !$this.scheme.values[entryKey] ){
+				if(($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value') 
+					&& $this.scheme.name != '$postFilter' 
+					&& JSB.isObject($this.scheme.values) 
+					&& !$this.scheme.values[entryKey] ){
 					allowEdit = true;
 					allowRemove = true;
 				} else {
@@ -153,7 +156,7 @@
 								}
 							}
 						}
-						if($this.scheme.name == '$filter'){
+						if($this.scheme.name == '$filter' || $this.scheme.name == '$postFilter'){
 							allowReplace = true;
 						}
 					}
@@ -636,7 +639,7 @@
 		},
 		
 		doReplace: function(targetElt, entryType, entryKey){
-			if(entryType == 'entry' && $this.scheme.name != '$filter'){
+			if(entryType == 'entry' && $this.scheme.name != '$filter' && $this.scheme.name != '$postFilter'){
 				return;
 			}
 			var acceptedSchemes = null;
