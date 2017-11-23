@@ -231,6 +231,130 @@ debugger;
             }
             return providers;
         },
+//         _getView: function(fields, directProvider){
+//            function FieldView(field) {
+//                if (fields.indexOf(field) == -1) throw new Error('Failed field for this view');
+//
+//                this.descriptor = {providers:{}};
+//
+//                var managedFields = $this.cube.getManagedFields();
+//                var desc = managedFields[field];
+//                var binding = desc.binding;
+//                for (var b : binding) {
+//                    if ($this.providers.indexOf(binding[b].provider) == -1) continue;
+//
+//                    var providerField = binding[b].field;
+//                    this.descriptor.cubeField = field;
+//                    this.descriptor.providerField = providerField;
+//
+//                    this.descriptor.providers[binding[b].provider.id] = binding[b].provider;
+//                    this.descriptor.shared = (this.descriptor.shared === false) || false;
+//                    this.descriptor.joined = (this.descriptor.joined === true) || binding[b].provider.getMode() == 'join';
+//                }
+//                this.descriptor.joinOn = this.descriptor.shared && this.descriptor.joined;
+//            }
+//            function View() {
+//                var fieldViews = {};
+//                this.fieldView = function fieldView(field) {
+//                    return fieldViews[field] || fieldViews[field] = new FieldView(field);
+//                };
+//                this.forEachFieldView = function forEachFieldView(callback){
+//                    for (var i in fields) {
+//                        var field = fields[i];
+//                        var fieldView = this.fieldView(field)
+//                        callback.call(fieldView.descriptor, fieldView);
+//                    }
+//                };
+//                this.forEachProvider = function (callback){
+//                    var providers = {};
+//                    this.forEachFieldView(function(fieldView){
+//                        for (var id in this.providers) {
+//                            this.providers[id]
+//                        }
+//                    });
+//                };
+//            }
+//            return new View();
+//         },
+
+//        _getCubeView: function(dcQuery, directProvider){
+//            function ProviderView (provider, joinOnFields) {
+//                this.provider = provider;
+//
+//                function findProviderFieldBind (queryField){
+//                    var cubeFields = $this.cube.managedFields();
+//                    var binding = cubeFields[queryField].binding;
+//                    for (var b in binding) {
+//                        if (binding[b].provider == provider) {
+//                            return binding[b];
+//                        }
+//                    }
+//                };
+//
+//                /** for each used provider fields include join on*/
+//                this.forEachFields = function(callback /**call(fieldDesc)*/){
+//                    var providerFields = provider.extractFields();
+//                    var fields = {};
+//                    QueryUtils.walkQueryFields(dcQuery, false, function (queryField, context, query) {
+//                        if (fields[queryField]) return;
+//
+//                        // TODO учесть алиасы с совпадающими названиями
+//                        var providerField =
+//                                directProvider == provider
+//                                ? queryField
+//                                : findProviderFieldBind(queryField);
+//
+//                        if ((!providerField || !providerFields[providerField]) && !isAlias) {
+//                            throw new Error('Failed provider field ' + providerField);
+//                        }
+//                        var fieldDesc = fields[queryField] = {};
+//                        fieldDesc.isResultField = dcQuery.hasOwnProperty(queryField) && dcQuery[queryField] != queryField;
+//                        fieldDesc.queryField = queryField;
+//                        fieldDesc.providerField = providerField;
+//                        fieldDesc.provider = providerField && provider;
+//                        callback.call(fieldDesc);
+//                    });
+//                    for (var field : joinOnFields) {
+//                        if (!fields[joinOnFields.providerField]) {
+//                            var fieldDesc = fields[joinOnFields.providerField] = {};
+//                            fieldDesc.providerField = joinOnFields.providerField;
+//                            fieldDesc.provider = joinOnFields.provider;
+//                            callback.call(fieldDesc);
+//                        }
+//                    }
+//                };
+//            }
+//
+//            function JoinOnView (leftView, rightProviderView){
+//                this.leftView = leftView;
+//                this.rightProviderView = rightProviderView;
+//
+//                this.forEachFields = function(callback){
+//
+//                };
+//            }
+//
+//            function UnionsView (providerViews) {
+//                this.providerViews = providerViews;
+//
+//                this.forEachFields = function(callback){
+//                    for(var pv in providerViews) {
+//                        var providerView = providerViews[pv];
+//                        providerView.forEachFields(function (){
+//                            var fieldDesc = this;
+//                            // TODO
+//                            callback.call(fieldDesc);
+//                        });
+//                    }
+//                };
+//            }
+//
+//            return new (function CubeView(query) {
+//                this.query = query;
+//                this.view = null;//TODO
+//
+//            })(dcQuery);
+//        },
 
 		close: function() {
 		    throw new Error('Not implemented');

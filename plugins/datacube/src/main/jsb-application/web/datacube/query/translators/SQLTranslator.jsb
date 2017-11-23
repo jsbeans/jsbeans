@@ -10,6 +10,7 @@
 		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
+		    'DataCube.Query.QuerySyntax',
 		    'JSB.Store.Sql.JDBC'
         ],
 
@@ -23,8 +24,11 @@
 
 		translateQuery: function() {
 		    this._collectContextQueries();
+		    this._prepareWithViews();
 		    this._verifyFields();
-		    var sql = this.translateQueryExpression(this.dcQuery);
+		    var sql = '';
+		    sql += this._translateWith();
+		    sql += this.translateQueryExpression(this.dcQuery);
 		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
         },
@@ -106,12 +110,13 @@
                 var order = this._translateOrder(query);
                 var offset = query.$offset ? ' OFFSET ' + query.$offset: '';
                 var limit = query.$limit ? ' LIMIT ' + query.$limit: '';
+                from = from ? ' FROM ' + from : ' ';
                 where = where ? ' WHERE ' + where : ' ';
                 group = group ? ' GROUP BY ' + group : ' ';
                 having = having ? ' HAVING ' + having : ' ';
                 order = order ? ' ORDER BY ' + order : ' ';
 
-                sql += 'SELECT ' + columns + ' FROM ' + from + where + group + having + order + offset + limit;
+                sql += 'SELECT ' + columns + from + where + group + having + order + offset + limit;
             }
 
 		    if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
@@ -132,17 +137,91 @@
             return '' + (this.lastId = (this.lastId||0) + 1);
         },
 
-        _registerContextQuery:function(query){
+        _registerContextQuery: function(query){
             this.contextQueries[query.$context] = query;
         },
 
-        _collectContextQueries:function(){
+        _collectContextQueries: function(){
             var idx = 0;
             this.contextQueries = {};
             QueryUtils.walkSubQueries(this.dcQuery, function(query){
                 if (!query.$context) query.$context = 'context_' + idx++;
                 $this._registerContextQuery(query);
             });
+        },
+
+        _extractViewKey: function (query, global){
+            var key = {
+                $groupBy: query.$groupBy,
+                $filter: query.$filter,
+                global: global
+            };
+            return JSON.stringify(key);
+        },
+
+        _prepareWithViews: function(){
+            function forEach$g (callback){
+                for (var alias in $this.dcQuery.$select) {
+                    var exp = $this.dcQuery.$select[alias];
+                    if (typeof exp === 'object' && QuerySyntax.getSchema()[Object.keys(exp)[0]].global) {
+                        callback(alias, exp);
+                    }
+                }
+            }
+
+            var withViews = {};
+            // extract views for $g* expression
+            QueryUtils.walkSubQueries(this.dcQuery, function(query){
+                forEach$g(function(alias, exp){
+                    var viewKey = $this._extractViewKey(query, true);
+                    var view = withViews[viewKey] = withViews[viewKey] || {
+                        viewKey: viewKey,
+                        fields: {},
+                        global: true,
+                        name: 'global_view_' + Object.keys(withViews).length
+                    };
+                    var field = 'global_' + alias;//JSON.stringify(expr);
+                    if (view.fields[field]) {
+                        throw new Error('Result field alias ' + alias + ' has some expressions');
+                    }
+                    view.fields[field] = query.$select[alias];
+                });
+            });
+            for (var id in withViews) {
+                var view = withViews[id];
+                var from = this._translateFrom(this.dcQuery);
+
+                var columns = '';
+                for (var field in view.fields) {
+                    if (columns.length != 0) columns += ', ';
+                    columns += this._translateExpression(view.fields[field], this.dcQuery, true) + ' AS ' + this._quotedName(field);
+                }
+
+                if (view.global) {
+                    view.sql = 'SELECT ' + columns;
+                } else {
+                    var where = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, true));
+                    var group = this._translateGroup(this.dcQuery);
+                    var having = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, false));
+                    where = where ? ' WHERE ' + where : ' ';
+                    group = group ? ' GROUP BY ' + group : ' ';
+                    having = having ? ' HAVING ' + having : ' ';
+                    from = from ? ' FROM ' + from : ' ';
+
+                    view.sql = 'SELECT ' + columns + from + where + group + having;
+                }
+            }
+            this.withViews = withViews;
+        },
+
+        _translateWith: function(){
+            var sqlWith = '';
+            for (var id in this.withViews) {
+                if (sqlWith.length > 0) sqlWith += ', ';
+                var view = this.withViews[id];
+                sqlWith += '\n\t' + this._quotedName(view.name) + ' AS (' + view.sql + ')'
+            }
+            return sqlWith.length > 0 ? 'WITH' + sqlWith + '\n' : '';
         },
 
         _getQueryByContext: function(context) {
@@ -227,19 +306,61 @@
         _translateExpression: function(exp, dcQuery, useFieldNotAlias) {
 
             function translateGlobalAggregate(subExp, func){
-                var subQuery = JSB.merge({}, dcQuery, {
-                    $context: ''+dcQuery.$context+'_globAgg_' + $this._generateUid()
-                });
-		        $this._registerContextQuery(subQuery);
-                var from   = $this._translateFrom(subQuery);
-                var column = $this._translateExpression(subExp, subQuery, useFieldNotAlias);
-		        var subAlias = 'val_'+$this._generateUid();
-                var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
-                var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
-                where = where ? ' WHERE ' + where : '';
-                having = having ? ' HAVING ' + having : '';
+                var viewKey = $this._extractViewKey(dcQuery, true);
+                if ($this.withViews && $this.withViews[viewKey]) {
+                    var view = $this.withViews[viewKey];
+                    for (var f in view.fields) {
+                        if (JSB.isEqual(exp, view.fields[f])) {
+                            return '(SELECT ' +  $this._quotedName(f) + ' FROM ' + $this._quotedName(view.name) + ')';
+                        }
+                    }
+                } else {
+                    var subQuery = JSB.merge({}, dcQuery, {
+                        $context: ''+dcQuery.$context+'_globAgg_' + $this._generateUid()
+                    });
+                    $this._registerContextQuery(subQuery);
+                    var from   = $this._translateFrom(subQuery);
+                    var column = $this._translateExpression(subExp === 1 ? '*' : subExp, subQuery, useFieldNotAlias);
+                    var subAlias = 'val_'+$this._generateUid();
+                    var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
+                    var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
+                    where = where ? ' WHERE ' + where : '';
+                    having = having ? ' HAVING ' + having : '';
 
-                return '(SELECT ' + func + '(' + column + ')' + ' AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + having + ')';
+                    return '(SELECT ' + func + '(' + column + ')' + ' AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + having + ')';
+                }
+            }
+
+            function translateMaxGroupAggregate(subExp, func){
+                var viewKey = $this._extractViewKey(dcQuery, true);
+                if ($this.withViews && $this.withViews[viewKey]) {
+                    var view = $this.withViews[viewKey];
+                    for (var f in view.fields) {
+                        if (JSB.isEqual(exp, view.fields[f])) {
+                            return '(SELECT ' +  $this._quotedName(f) + ' FROM ' + $this._quotedName(view.name) + ')';
+                        }
+                    }
+                } else {
+                    var subQuery = JSB.merge(true, {}, dcQuery, {
+                        $context: ''+dcQuery.$context+'_maxGroup_' + $this._generateUid()
+                    });
+                    $this._registerContextQuery(subQuery);
+                    var from  =  $this._translateFrom(subQuery);
+                    var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
+                    var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
+                    var group =  $this._translateGroup(unwrapGroupByAliases(subQuery));
+                    var column = $this._translateExpression(subExp === 1 ? '*' : subExp, subQuery, useFieldNotAlias);
+                    var subAlias = 'val_' + $this._generateUid();
+                    where = (where ? ' WHERE ' + where : ' ');
+                    having = having ? ' HAVING ' + having : '';
+                    group = (group ? ' GROUP BY ' + group : '');
+
+                    var subQ = 'SELECT ' + func + '(' + column + ') AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + group + having;
+                    return '(' +
+                        'SELECT MAX(' + $this._quotedName(subAlias) + ') AS ' + $this._quotedName(subAlias) +
+                        'FROM (' + subQ + ') AS ' + $this._quotedName(subQuery.$context+'_inner') +
+                        ')';
+                    }
             }
 
             function unwrapGroupByAliases(subQuery) {
@@ -252,28 +373,6 @@
                     }
                 }
                 return subQuery;
-            }
-
-            function translateMaxGroupAggregate(subExp, func){
-                var subQuery = JSB.merge(true, {}, dcQuery, {
-                    $context: ''+dcQuery.$context+'_maxGroup_' + $this._generateUid()
-                });
-		        $this._registerContextQuery(subQuery);
-                var from  =  $this._translateFrom(subQuery);
-                var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
-                var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
-		        var group =  $this._translateGroup(unwrapGroupByAliases(subQuery));
-		        var column = $this._translateExpression(subExp, subQuery, useFieldNotAlias);
-		        var subAlias = 'val_' + $this._generateUid();
-                where = (where ? ' WHERE ' + where : ' ');
-                having = having ? ' HAVING ' + having : '';
-                group = (group ? ' GROUP BY ' + group : '');
-
-                var subQ = 'SELECT ' + func + '(' + column + ') AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + group + having;
-                return '(' +
-                    'SELECT MAX(' + $this._quotedName(subAlias) + ') ' +
-                    'FROM (' + subQ + ') AS ' + $this._quotedName(subQuery.$context+'_inner') +
-                    ')';
             }
 
             function translateNOperator(args, op, wrapper) {
@@ -323,6 +422,10 @@
                 return exp;
             }
 
+            if (exp == '*' || exp == 1 || exp == -1) {
+                return exp;
+            }
+
             if (JSB.isString(exp)) {
                 if (exp.match(/^\$\{.*\}/g)) {
                     // is parameter value - as is
@@ -331,10 +434,6 @@
                     // is field
                     return this._translateField(exp, dcQuery.$context, useFieldNotAlias);
                 }
-            }
-
-            if (exp == 1 || exp == -1) {
-                return exp;
             }
 
             if (JSB.isArray(exp)) {
@@ -464,7 +563,9 @@
                     return '(ARRAY_AGG(' + lastVal + '))[ARRAY_LENGTH(ARRAY_AGG(' + lastVal + '),1)]';
 //                    return 'LAST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$count':
-                    return 'COUNT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return exp.$count == 1
+                            ? 'COUNT(*)'
+                            : 'COUNT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$sum':
                     return 'SUM(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$max':
@@ -883,9 +984,11 @@
             }
             function buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, hasUnions, unionsFields) {
                 var sqlJoins = '';
+                var firstProv;
                 for(var p in providers) if(providers.hasOwnProperty(p)) {
                     var prov = providers[p];
                     if (prov.provider.getMode() != 'join') continue;
+                    firstProv = firstProv || prov;
 
                     if (sqlJoins.length > 0) sqlJoins += ' LEFT JOIN ';
 
@@ -902,7 +1005,7 @@
                             }
 
                             var isJoinedField = allFields[cubeField];
-                            fieldsMap[cubeField] = isNull && fieldsMap[cubeField] || {
+                            fieldsMap[cubeField] = {
                                 context: query.$context,
                                 cubeField: cubeField,
 
@@ -910,7 +1013,12 @@
                                 providerTable: binding && binding.provider.getTableFullName() || null,
 
                                 tableAlias: isJoinedField ? joinedViewAlias : unionsAlias,
-                                fieldAlias: isJoinedField ? binding.field : unionsFields[cubeField]
+                                fieldAlias: isJoinedField ? binding.field : unionsFields[cubeField],
+
+                                joinOn: fieldsMap[cubeField] && fieldsMap[cubeField].joinOn || binding && {
+                                        tableAlias: joinedViewAlias,
+                                        fieldAlias: binding.field
+                                    } || null
                             };
                         }
                     );
@@ -918,14 +1026,21 @@
                     var sqlOn = '';
                     var joinOnFields = extractJoinOnCubeFields(prov.provider);
                     for (var i in joinOnFields) {
-                        if (sqlOn.length > 0) sqlOn  += ' AND ';
                         var cubeField = joinOnFields[i];
+                        // is joined and without UNIONs - skip first ON
+                        if (!unionsFields[cubeField] && firstProv == prov) continue;
+
+                        if (sqlOn.length > 0) sqlOn  += ' AND ';
                         var providerField = fieldsMap[cubeField].providerField;
-                        sqlOn += $this._quotedName(unionsAlias) + '.' + $this._quotedName(unionsFields[cubeField]);
+                        sqlOn += unionsFields[cubeField]
+                                ? $this._quotedName(unionsAlias) + '.' + $this._quotedName(unionsFields[cubeField])
+                                : $this._quotedName(fieldsMap[cubeField].joinOn.tableAlias) + '.' + $this._quotedName(fieldsMap[cubeField].joinOn.fieldAlias);
                         sqlOn += ' = ';
                         sqlOn += $this._quotedName(joinedViewAlias) + '.' + $this._quotedName(providerField);
                     }
-                    sqlJoins += ' ON ' + sqlOn;
+                    if (sqlOn) {
+                        sqlJoins += ' ON ' + sqlOn;
+                    }
                 }
 
                 var sql = '';
@@ -938,7 +1053,7 @@
                 }
                 return sql;
             }
-
+// debugger;
             //      begin ...
 
             this.contextFieldsMap = this.contextFieldsMap || {/**queryContext: {}*/};
@@ -972,7 +1087,7 @@
             var sqlJoins = buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, sqlUnions.length > 0, unionsFields);
 
             var sql = sqlUnions + sqlJoins;
-            return sql;
+            return sql.match(/^\s+$/) ? '' : sql;
         },
 
 
