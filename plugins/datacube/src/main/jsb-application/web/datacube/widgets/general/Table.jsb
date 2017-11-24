@@ -415,7 +415,7 @@
 		           'JSB.Crypt.MD5',
 		           'DataCube.Controls.SortSelector',
 		           'DataCube.Controls.FilterEntry',
-		           'JSB.Number.Format',
+		           'JSB.Numeral',
 		           'JQuery.UI.Loader'],
 		
 		ready: false,
@@ -437,6 +437,7 @@
 			
 			this.addClass('tableWidget');
 			this.loadCss('Table.css');
+			Numeral.setLocale('ru');
 			
 			this.header = this.$('<table class="header" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr></tr></thead></table>');
 			this.append(this.header);
@@ -652,7 +653,7 @@
 					} else {
 						var val = d.value;
 						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-							val = Format.format(val, $this.colDesc[d.colIdx].format)
+							val = Numeral.format(val, $this.colDesc[d.colIdx].format)
 						}
 						cellEl.text(val);
 						cellEl.attr('title', d.value);
@@ -709,7 +710,7 @@
 								} else {
 									var val = d.value;
 									if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-										val = Format.format(val, $this.colDesc[d.colIdx].format)
+										val = Numeral.format(val, $this.colDesc[d.colIdx].format)
 									}
 									
 									cellEl.attr('title', d.value);
@@ -775,7 +776,7 @@
 											} else {
 												var val = d.value;
 												if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-													val = Format.format(val, $this.colDesc[d.colIdx].format)
+													val = Numeral.format(val, $this.colDesc[d.colIdx].format)
 												}
 												
 												cellEl.text(val);

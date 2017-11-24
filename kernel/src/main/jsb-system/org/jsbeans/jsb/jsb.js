@@ -999,7 +999,7 @@ if(!(function(){return this;}).call(null).JSB){
 							if(scope[procName] || blackProcs[procName]){
 								continue;
 							}
-							scope[procName] = eval('(function(){JSB().proxyRpcCall.call(this.__instance, "'+procName+'", arguments);})');
+							scope[procName] = eval('(function(){JSB().proxyRpcCall.call(this.__instance, this.__node, "'+procName+'", arguments);})');
 						}
 					}
 					
@@ -1051,7 +1051,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 		
-		proxyRpcCall: function(name, argsO){
+		proxyRpcCall: function(node, name, argsO){
 			var callback = null;
 			var args = [];
 			for(var i in argsO){
@@ -1065,7 +1065,7 @@ if(!(function(){return this;}).call(null).JSB){
 					args.splice(i, 1);
 				}
 			}
-			this.rpc(name, args, callback);
+			this.rpc(name, args, callback, node);
 		},
 
 		getDescriptor: function(){
@@ -4244,6 +4244,7 @@ JSB({
 			}
 		},
 		
+		// on client side
 		rpc: function(procName, arg1, arg2, arg3, arg4){
 			var params = null;
 			var callback = null;
@@ -4421,6 +4422,7 @@ JSB({
 			return retSlice;
 		},
 		
+		// on server side
 		rpc: function(procName, arg1, arg2, arg3){
 			var params = null;
 			var callback = null;
