@@ -3,23 +3,30 @@
 	$singleton: true,
 
 	$server: {
-	    $require: ['DataCube.Query.QuerySyntax'],
+	    $require: [
+	        'DataCube.Query.QuerySyntax',
+		    'JSB.Crypt.MD5'
+        ],
 
-        walkSubQueries: function (query, callback) {
-            function collect(q) {
+        /** Enumerate all sub-queries (from inners to root)*/
+        walkSubQueries: function (query, callback/**callback(q, isFromQuery, isValueQuery)*/) {
+            function collect(q, key) {
                 if (JSB.isPlainObject(q)) {
-                    if (q.$select) {
-                        callback(q);
-                    }
+                    // from
                     if (q.$from) {
-                        callback(q.$from);
+                        collect(q.$from, '$from');
                     }
-                    for (var f in q) if (q.hasOwnProperty(f)) {
-                        collect(q[f]);
+                    // inner values
+                    for (var f in q) if (f != '$from' && q.hasOwnProperty(f)) {
+                        collect(q[f], f);
+                    }
+                    // query
+                    if (q.$select) {
+                        callback(q, key == '$from', key != '$from' && q != query);
                     }
                 } else if (JSB.isArray(q)) {
                     for (var i in q) {
-                        collect(q[i]);
+                        collect(q[i], i);
                     }
                 }
             }
@@ -55,7 +62,7 @@
                     } else {
                         // field: {$eq: expr}
                         fieldsCallback([{$field: field, $context: null}]); // left
-                        fieldsCallback($this.extractFields(exps[field, !includeSubQueries])); // right
+                        fieldsCallback($this.extractFields(exps[field], !includeSubQueries)); // right
                     }
                 }
             }
@@ -680,7 +687,119 @@
                     }
                 }
             }
-        }
+        },
+
+        /** Обходит выражения со значением для указанного запроса */
+        walkValueExpressions: function (dcQuery, callback/**(exp, alias)*/){
+            // обход так же будет со всеми подзапросами, чтобы захватить используемые поля заданного запроса в подзапросах
+            var oldCallback = callback;
+            callback = function(exps, alias){
+                if (this == dcQuery) {
+                    return oldCallback(exps, alias);
+                }
+            };
+
+            function walkMultiFilter(exps){
+                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                    if (field.startsWith('$')) {
+                        var op = field;
+                        switch(op) {
+                            case '$or':
+                            case '$and':
+                                for (var i in exps[op]) {
+                                    walkMultiFilter(exps[op][i]);
+                                }
+                                break;
+                            default:
+                                // $op: [left, right] expression
+                                for(var i in exps[op]) {
+                                    callback.call(query, exps[op][i]);
+                                }
+                        }
+                    } else {
+                        // field: {$eq: expr}
+                        var e = exps[field];
+                        var op = Object.keys(e)[0];
+                        callback.call(query, e[op]);
+                    }
+                }
+            }
+            function walkQuery(query){
+                // walk $select
+                for(var alias in query.$select) {
+                    callback.call(query, query.$select[alias], alias);
+                }
+
+                // walk $filter
+                walkMultiFilter(query.$filter);
+
+                // walk $groupBy
+                for(var i in query.$groupBy) {
+                    callback.call(query, query.$groupBy[i], alias);
+                }
+
+                // walk $sort
+                for (var i in query.$sort) {
+                    var val = query.$sort[i];
+                    if (val.$expr && val.$type) {
+                        callback.call(query, val.$expr);
+                    } else {
+                        var field = Object.keys(val)[0];
+                        callback.call(query, field);
+                    }
+                }
+            }
+
+            this.walkSubQueries(dcQuery, walkQuery);
+        },
+
+        extractViews: function (dcQuery){
+            function extractViewBody(query){
+                var key = {
+                    $groupBy: query.$groupBy,
+                    $filter: query.$filter
+                };
+                return key;
+            }
+            function extractViewId(query){
+                return MD5.md5(JSON.stringify(extractViewBody(query)));
+            }
+            function extractExpId(exp){
+                return MD5.md5(JSON.stringify(exp));
+            }
+            function ensureView(query){
+                var id = extractViewId(query);
+                return views[id] = views[id] || {
+                    id: id,
+                    body: extractViewBody(query),
+                    fieldExpressions:{},
+                    fieldAliases:{},
+                    name: 'view_' + Object.keys(views).length
+                };
+            }
+
+            var views = {};
+
+            $this.walkSubQueries(this.dcQuery, function(query, isFromQuery, isValueQuery){
+                if (query.$sql) {
+                    return; // skip embedded SQL query
+                }
+
+                var view = ensureView(query);
+                if (!view) {
+                    return; // no view
+                }
+                var fieldIdAlias = {};
+                $this.walkValueExpressions(query, function callback(exp, alias) {
+                    var expId = extractExpId(exp);
+                    view.fieldAliases[expId] = view.fieldAliases[expId] || alias;
+                    view.fieldExpressions[expId] = view.fieldExpressions[expId] || exp;
+                });
+
+            });
+
+            // TODO build $with and replace value expressions and $from
+        },
 
 	}
 }

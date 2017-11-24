@@ -24,7 +24,7 @@
 
 		translateQuery: function() {
 		    this._collectContextQueries();
-		    this._prepareWithViews();
+//		    this._prepareWithViews();
 		    this._verifyFields();
 		    var sql = '';
 		    sql += this._translateWith();
