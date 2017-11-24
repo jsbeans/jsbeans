@@ -876,6 +876,9 @@
 			if(!JSB.isDefined($this.value[oldKey])){
 				throw new Error('Missing value in key: ' + oldKey);
 			}
+			if(oldKey == newKey){
+				return;
+			}
 			$this.value[newKey] = $this.value[oldKey];
 			delete $this.value[oldKey];
 			
