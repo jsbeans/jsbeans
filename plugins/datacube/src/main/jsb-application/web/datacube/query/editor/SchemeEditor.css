@@ -518,6 +518,7 @@
     padding: 2px 5px 6px;
     min-width: calc(33% - 4px);
     background-color: rgba(175, 152, 125, 0.15);
+    border-radius: 4px;
 }
 
 .schemeEditor[sname = "$query"] > .container > .entry[key="$select"],

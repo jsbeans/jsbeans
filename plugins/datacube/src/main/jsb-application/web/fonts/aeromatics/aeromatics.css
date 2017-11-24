@@ -1,0 +1,24 @@
+
+@font-face {
+    font-family: 'aeromatics_b';
+    src: url('aero_matics_bold.eot');
+    src: url('aero_matics_bold.eot?#iefix') format('embedded-opentype'),
+         url('aero_matics_bold.woff') format('woff'),
+         url('aero_matics_bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'aeromatics_bi';
+    src: url('aero_matics_bold_italic.eot');
+    src: url('aero_matics_bold_italic.eot?#iefix') format('embedded-opentype'),
+         url('aero_matics_bold_italic.woff') format('woff'),
+         url('aero_matics_bold_italic.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'aeromatics_di';
+    src: url('aero_matics_display_italic.eot');
+    src: url('aero_matics_display_italic.eot?#iefix') format('embedded-opentype'),
+         url('aero_matics_display_italic.woff') format('woff'),
+         url('aero_matics_display_italic.ttf') format('truetype');
+}

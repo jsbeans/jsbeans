@@ -455,8 +455,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$distinct',
-		        category: 'Функции',
-		        desc: 'Пропустить повторения (уменьшает число эелемнтов в группе)',
+		        desc: 'Пропустить повторения (уменьшает число элелемнтов в группе)',
 		        values: ['$field', '$expression', '$query'],
 		    });
 		    new this.SingleObject({
@@ -872,6 +871,8 @@
 		    
 		    new this.ComplexObject({
 		        name: '$sortExpression',
+		        category: 'Выражения',
+		        desc: 'Сортировка по значению выражения',
 		        values: {
 		            '$expr': '$valueDefinition',
 		            '$type': '$sortType',
@@ -1033,12 +1034,13 @@
 		
 		
 		    new this.EConstString({
-		        name: '$param'
+		        name: '$param',
+		        disabled:true
 		    });
 		    
 		    new this.EConstString({
 		        name: '$sql',
-		        displayName: 'Использовать нативный SQL запрос',
+		        desc: 'Использовать нативный SQL запрос',
 		        editable: true
 		    });
 		

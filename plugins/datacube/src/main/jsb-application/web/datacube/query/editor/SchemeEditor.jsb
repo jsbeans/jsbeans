@@ -603,11 +603,7 @@
 					var value = chosenObj.value.value;
 					var context = chosenObj.value.context;
 					var schemeName = chosenObj.value.scheme;
-					var bGroupByChanged = false;
 					if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-						if($this.scheme.name == '$groupBy'){
-							bGroupByChanged = true;
-						}
 					} else if(schemeName == '$fieldExpr') {
 						value = {
 							$field: value,
@@ -624,7 +620,7 @@
 					$this.value.push(value);
 					// draw entry
 					$this.drawArrayEntry($this.value.length - 1, schemeName, {expanded: true});
-					if(bGroupByChanged){
+					if($this.scheme.name == '$groupBy'){
 						var selectEditor = $this.parent.find('> .container > .entry[key="$select"] > .schemeEditor').jsb();
 						if(selectEditor){
 							selectEditor.updateSelectFieldsUsingGroup();
@@ -810,10 +806,29 @@
 		updateSelectFieldsUsingGroup: function(){
 			var groupFields = {};
 			if($this.parent.value.$groupBy && $this.parent.value.$groupBy.length > 0){
+				var r = $this.resolve($this.scheme, $this.value);
 				for(var i = 0; i < $this.parent.value.$groupBy.length; i++){
 					var gVal = $this.parent.value.$groupBy[i];
+					var cubeField = null;
 					if(JSB.isString(gVal)){
-						groupFields[gVal] = true;
+						cubeField = gVal;
+					} else if(JSB.isObject(gVal) && gVal.$field){
+						// lookup cube field corresponded to alias
+						if($this.value[gVal.$field]){
+							// extract cube name from alias
+							var aliasScheme = r.obj[gVal.$field].scheme;
+							if(aliasScheme == '$fieldName' && JSB.isString($this.value[gVal.$field])){
+								cubeField = $this.value[gVal.$field];
+							} else if(QuerySyntax.getSchema()[aliasScheme].aggregate){
+								// try to get nested field
+								if(r.obj[gVal.$field].obj[aliasScheme].scheme == '$fieldName' && JSB.isString($this.value[gVal.$field][aliasScheme])){
+									cubeField = $this.value[gVal.$field][aliasScheme];
+								} 
+							}
+						}
+					}
+					if(cubeField && JSB.isString(cubeField)){
+						groupFields[cubeField] = true;
 					}
 				}
 			}
@@ -970,6 +985,9 @@
 						}
 						valObj = {item: item};
 						var itemDesc = QuerySyntax.getSchema()[item];
+						if(itemDesc.disabled){
+							continue;
+						}
 						if(itemDesc){
 							if(itemDesc.category){
 								category = itemDesc.category;

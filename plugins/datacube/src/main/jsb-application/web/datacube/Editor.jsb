@@ -19,16 +19,21 @@
 			$base(opts);
 			this.loadCss('Editor.css');
 			this.addClass('dataCubeEditor');
-			$this.init();
-			
+			$this.server().getVersion(function(v){
+				$this.dcVersion = v;
+				$this.init();
+			});
 		},
 		
 		init: function(){
-			this.append(`
+			this.append(`#dot
 				<div class="dcHeader">
 					<div class="dcLogo"></div>
-					<div class="dcTitle">DataCube</div>
-					<div class="dcSubTitle">Editor</div>
+					<div class="dcTitle">
+						<div class="caption">DataCube</div>
+						<div class="version">{{=$this.dcVersion}}</div>
+					</div>
+					
 				</div>
 			`);
 			this.layoutManager = new SplitLayoutManager({
@@ -141,6 +146,8 @@
 	},
 	
 	$server: {
-		
+		getVersion: function(){
+			return Config.get('build.version');
+		}
 	}
 }
