@@ -331,37 +331,37 @@
                 }
             }
 
-            function translateMaxGroupAggregate(subExp, func){
-                var viewKey = $this._extractViewKey(dcQuery, true);
-                if ($this.withViews && $this.withViews[viewKey]) {
-                    var view = $this.withViews[viewKey];
-                    for (var f in view.fields) {
-                        if (JSB.isEqual(exp, view.fields[f])) {
-                            return '(SELECT ' +  $this._quotedName(f) + ' FROM ' + $this._quotedName(view.name) + ')';
-                        }
-                    }
-                } else {
-                    var subQuery = JSB.merge(true, {}, dcQuery, {
-                        $context: ''+dcQuery.$context+'_maxGroup_' + $this._generateUid()
-                    });
-                    $this._registerContextQuery(subQuery);
-                    var from  =  $this._translateFrom(subQuery);
-                    var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
-                    var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
-                    var group =  $this._translateGroup(unwrapGroupByAliases(subQuery));
-                    var column = $this._translateExpression(subExp === 1 ? '*' : subExp, subQuery, useFieldNotAlias);
-                    var subAlias = 'val_' + $this._generateUid();
-                    where = (where ? ' WHERE ' + where : ' ');
-                    having = having ? ' HAVING ' + having : '';
-                    group = (group ? ' GROUP BY ' + group : '');
-
-                    var subQ = 'SELECT ' + func + '(' + column + ') AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + group + having;
-                    return '(' +
-                        'SELECT MAX(' + $this._quotedName(subAlias) + ') AS ' + $this._quotedName(subAlias) +
-                        'FROM (' + subQ + ') AS ' + $this._quotedName(subQuery.$context+'_inner') +
-                        ')';
-                    }
-            }
+//            function translateMaxGroupAggregate(subExp, func){
+//                var viewKey = $this._extractViewKey(dcQuery, true);
+//                if ($this.withViews && $this.withViews[viewKey]) {
+//                    var view = $this.withViews[viewKey];
+//                    for (var f in view.fields) {
+//                        if (JSB.isEqual(exp, view.fields[f])) {
+//                            return '(SELECT ' +  $this._quotedName(f) + ' FROM ' + $this._quotedName(view.name) + ')';
+//                        }
+//                    }
+//                } else {
+//                    var subQuery = JSB.merge(true, {}, dcQuery, {
+//                        $context: ''+dcQuery.$context+'_maxGroup_' + $this._generateUid()
+//                    });
+//                    $this._registerContextQuery(subQuery);
+//                    var from  =  $this._translateFrom(subQuery);
+//                    var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
+//                    var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
+//                    var group =  $this._translateGroup(unwrapGroupByAliases(subQuery));
+//                    var column = $this._translateExpression(subExp === 1 ? '*' : subExp, subQuery, useFieldNotAlias);
+//                    var subAlias = 'val_' + $this._generateUid();
+//                    where = (where ? ' WHERE ' + where : ' ');
+//                    having = having ? ' HAVING ' + having : '';
+//                    group = (group ? ' GROUP BY ' + group : '');
+//
+//                    var subQ = 'SELECT ' + func + '(' + column + ') AS ' + $this._quotedName(subAlias) + ' FROM ' + from + where + group + having;
+//                    return '(' +
+//                        'SELECT MAX(' + $this._quotedName(subAlias) + ') AS ' + $this._quotedName(subAlias) +
+//                        'FROM (' + subQ + ') AS ' + $this._quotedName(subQuery.$context+'_inner') +
+//                        ')';
+//                    }
+//            }
 
             function unwrapGroupByAliases(subQuery) {
                 for(var i in subQuery.$groupBy) {
@@ -592,12 +592,12 @@
                 case '$gsum':
                     return '(' + translateGlobalAggregate(exp[op], 'SUM') + ')';
 
-                case '$grmaxsum':
-                    return '(' + translateMaxGroupAggregate(exp[op], 'SUM') + ')';
-                case '$grmaxavg':
-                    return '(' + translateMaxGroupAggregate(exp[op], 'AVG') + ')';
-                case '$grmaxcount':
-                    return '(' + translateMaxGroupAggregate(exp[op], 'COUNT') + ')';
+//                case '$grmaxsum':
+//                    return '(' + translateMaxGroupAggregate(exp[op], 'SUM') + ')';
+//                case '$grmaxavg':
+//                    return '(' + translateMaxGroupAggregate(exp[op], 'AVG') + ')';
+//                case '$grmaxcount':
+//                    return '(' + translateMaxGroupAggregate(exp[op], 'COUNT') + ')';
             }
 
             throw new Error('Unsupported select expression ' + op);
@@ -995,7 +995,7 @@
                     var joinedViewAlias = query.$context + '_joined_' + $this.providers.indexOf(prov.provider);
 
                     sqlJoins += $this._printTableName(prov.provider.getTableFullName());
-                    sqlJoins += ' AS ' + joinedViewAlias;
+                    sqlJoins += ' AS ' + $this._quotedName(joinedViewAlias);
 
                     forEachViewColumn(allFields, prov,
                         function visitField(cubeField, isNull, binding){

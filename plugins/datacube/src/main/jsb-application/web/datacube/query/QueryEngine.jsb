@@ -32,8 +32,9 @@
 		    // patch links to aliases if alias is cube field
 		    QueryUtils.patchSimpleFieldAliases(dcQuery, dataProvider || this.cube);
 
-		    // unwrap macros to complex expressions
+		    // unwrap macros and $grmax* to complex expressions
 		    QuerySyntax.unwrapMacros(dcQuery);
+		    QueryUtils.unwrapGrOperators(dcQuery);
 
 //		    // fill all cube fields (or linked with dataProvider) for default $select={}
 //		    QueryUtils.generateDefaultSelect(dcQuery, dataProvider || this.cube);

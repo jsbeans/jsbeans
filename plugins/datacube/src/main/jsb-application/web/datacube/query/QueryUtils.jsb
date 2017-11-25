@@ -689,75 +689,158 @@
             }
         },
 
-        /** Обходит выражения со значением для указанного запроса */
-        walkValueExpressions: function (dcQuery, callback/**(exp, alias)*/){
+        /** Обходит выражения со значением для указанного запроса и заменяет их, если callback вернул новое выражение*/
+        updateValueExpressions: function (dcQuery, callback/**(exp, alias)*/){
             // обход так же будет со всеми подзапросами, чтобы захватить используемые поля заданного запроса в подзапросах
             var oldCallback = callback;
             callback = function(exps, alias){
                 if (this == dcQuery) {
-                    return oldCallback(exps, alias);
+                    return oldCallback.call(this, exps, alias);
                 }
             };
 
-            function walkMultiFilter(exps){
-                for (var field in exps) if (exps.hasOwnProperty(field)) {
-                    if (field.startsWith('$')) {
-                        var op = field;
-                        switch(op) {
-                            case '$or':
-                            case '$and':
-                                for (var i in exps[op]) {
-                                    walkMultiFilter(exps[op][i]);
-                                }
-                                break;
-                            default:
-                                // $op: [left, right] expression
-                                for(var i in exps[op]) {
-                                    callback.call(query, exps[op][i]);
-                                }
-                        }
-                    } else {
-                        // field: {$eq: expr}
-                        var e = exps[field];
-                        var op = Object.keys(e)[0];
-                        callback.call(query, e[op]);
-                    }
-                }
-            }
+//            function walkMultiFilter(exps){
+//                var replaceFields = {};
+//                for (var field in exps) if (exps.hasOwnProperty(field)) {
+//                    if (field.startsWith('$')) {
+//                        var op = field;
+//                        switch(op) {
+//                            case '$or':
+//                            case '$and':
+//                                for (var i in exps[op]) {
+//                                    walkMultiFilter(exps[op][i]);
+//                                }
+//                                break;
+//                            default:
+//                                // $op: [left, right] expression
+//                                for(var i in exps[op]) {
+//                                    var replace = callback.call(query, exps[op][i]);
+//                                    if (replace) {
+//                                        exps[op][i] = replace;
+//                                    }
+//                                }
+//                        }
+//                    } else {
+//                        // field: {$eq: expr}
+//                        var e = exps[field];
+//                        var op = Object.keys(e)[0];
+//                        var replaceField = callback.call(query, field);
+//                        var replaceValue = callback.call(query, e[op]);
+//                        if (replaceField && replaceValue) {
+//                            var newExp = {};
+//                            newExp[op] = [{$field: replaceField}, replaceValue];
+//                            replaceFields[field] = newExp;
+//                        }
+//                    }
+//                }
+//
+//                for (var rf in replaceFields) {
+//                    delete exps[rf];
+//                    if(!exps.$and) exps.$and = [];
+//                    exps.$and.push(replaceFields[rf]);
+//                }
+//            }
             function walkQuery(query){
                 // walk $select
                 for(var alias in query.$select) {
-                    callback.call(query, query.$select[alias], alias);
+                    var replace = callback.call(query, query.$select[alias], alias);
+                    if (replace) {
+                        query.$select[alias] = replace;
+                    }
                 }
-
-                // walk $filter
-                walkMultiFilter(query.$filter);
-
-                // walk $groupBy
-                for(var i in query.$groupBy) {
-                    callback.call(query, query.$groupBy[i], alias);
-                }
+//
+//                // walk $filter
+//                walkMultiFilter(query.$filter);
+//
+//                // walk $groupBy
+//                for(var i in query.$groupBy) {
+//                    var replace = callback.call(query, query.$groupBy[i], alias);
+//                    if (replace) {
+//                        query.$groupBy[i] = replace;
+//                    }
+//                }
 
                 // walk $sort
                 for (var i in query.$sort) {
                     var val = query.$sort[i];
+                    var exp;
                     if (val.$expr && val.$type) {
-                        callback.call(query, val.$expr);
+                        exp = val.$expr;
                     } else {
-                        var field = Object.keys(val)[0];
-                        callback.call(query, field);
+                        exp = Object.keys(val)[0];
+                    }
+                    var replace = callback.call(query, exp);
+                    if (replace) {
+                        query.$sort[i] = {
+                            $expr: replace,
+                            $type: val.$type == null ? val.$type : val[exp]
+                        }
                     }
                 }
             }
 
             this.walkSubQueries(dcQuery, walkQuery);
         },
+/*
+{
+  "$groupBy": [
+    "date"
+  ],
+  "$context": "main",
+  "$select": {
+    "Дата": "date",
+    "Количество": {
+      "$count": 1
+    },
+    "Столбец_2": {
+      "$select": {
+        "max": {
+          "$max": {
+            "$field": "count"
+          }
+        }
+      },
+      "$from": {
+        "$select": {
+          "count": {
+            "$count": 1
+          }
+        },
+        "$groupBy": [
+          "date"
+        ]
+      }
+    },
+    "Столбец_3": {
+      "$select": {
+        "max": {
+          "$max": {
+            "$field": "sum"
+          }
+        }
+      },
+      "$from": {
+        "$select": {
+          "sum": {
+            "$sum": 1
+          }
+        },
+        "$groupBy": [
+          "date"
+        ]
+      }
+    }
+  }
+}
+*/
 
-        extractViews: function (dcQuery){
+        /** Формирует для запроса $with*/
+        buildWithViews: function (dcQuery){
             function extractViewBody(query){
                 var key = {
                     $groupBy: query.$groupBy,
-                    $filter: query.$filter
+                    $filter: query.$filter,
+                    $from: query.$from
                 };
                 return key;
             }
@@ -767,39 +850,161 @@
             function extractExpId(exp){
                 return MD5.md5(JSON.stringify(exp));
             }
-            function ensureView(query){
+            function hasView(query){
+                if (!query.$groupBy && !query.$filter && !query.$from) {
+                    return false;
+                }
+                // ViewBody имеется хотя бы в одном подзапросе
+                var viewId = extractViewId(query);
+                var count = 0;
+                $this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
+                    if (extractViewId(query) == viewId) {
+                        count++;
+                    }
+                });
+                return count > 1;
+            }
+            function ensureView(query, name){
                 var id = extractViewId(query);
-                return views[id] = views[id] || {
+                if (views[id]) {
+                    return views[id];
+                }
+                viewOrder.push(id);
+                return views[id] = {
                     id: id,
                     body: extractViewBody(query),
                     fieldExpressions:{},
                     fieldAliases:{},
-                    name: 'view_' + Object.keys(views).length
+                    name: name || ('view_' + Object.keys(views).length)
                 };
             }
 
             var views = {};
+            var viewOrder = [];
+debugger;
+            // load existed $with
+            dcQuery.$with = dcQuery.$with || {};
+            for (var name in dcQuery.$with) {
+                var view = ensureView(dcQuery.$with[name], name);
+                for(var alias in dcQuery.$with[name].$select) {
+                    var exp = dcQuery.$with[name].$select[alias];
+                    var expId = extractExpId(exp);
+                    view.fieldAliases[expId] = view.fieldAliases[expId] || alias;
+                    view.fieldExpressions[expId] = view.fieldExpressions[expId] || exp;
+                }
+            }
 
-            $this.walkSubQueries(this.dcQuery, function(query, isFromQuery, isValueQuery){
+            $this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
                 if (query.$sql) {
                     return; // skip embedded SQL query
                 }
 
-                var view = ensureView(query);
-                if (!view) {
+                if (!hasView(query)) {
                     return; // no view
                 }
-                var fieldIdAlias = {};
-                $this.walkValueExpressions(query, function callback(exp, alias) {
+                var view = ensureView(query);
+                $this.updateValueExpressions(query, function callback(exp, alias) {
+                    // //TODO: не все выражения можно копировать - может образоваться рекурсия
                     var expId = extractExpId(exp);
                     view.fieldAliases[expId] = view.fieldAliases[expId] || alias;
                     view.fieldExpressions[expId] = view.fieldExpressions[expId] || exp;
                 });
+                // transform query: // replace values by view`s
+                $this.updateValueExpressions(query, function callback(exp, alias) {
+                    var expId = extractExpId(exp);
+                    var fieldAlias = view.fieldAliases[expId] = view.fieldAliases[expId] || expId;
 
+                    return {$field: fieldAlias, $context: view.name};
+                });
+                delete query.$groupBy;
+                delete query.$filter;
+                delete query.$from;
+                query.$from = view.name;
             });
+
+            dcQuery.$with = dcQuery.$with || {};
+            for (var i in viewOrder) {
+                var id = viewOrder[i];
+                var view = views[id];
+                dcQuery.$with[views.name] = JSB.merge({
+                    $select: (function(){
+                        var select = {};
+                        for (var fid in fieldAliases) {
+                            var fieldAlias = view.fieldAliases[expId];
+                            var fieldExpr = view.fieldExpressions[expId];
+                            select[fieldAlias] = fieldExpr;
+                        }
+                        return select;
+                    })()
+                }, view.body);
+            }
 
             // TODO build $with and replace value expressions and $from
         },
+
+        /** Разворачивает $gr* агрегаторы в натуральные подзапросы */
+		unwrapGrOperators: function(dcQuery) {
+		    function unwrapForQuery(query) {
+                function createSubQuery(op, exp) {
+                    var innerOp;
+                    switch(op){
+                        case '$grmaxcount': innerOp = 'count'; break;
+                        case '$grmaxsum': innerOp = 'sum'; break;
+                        case '$grmaxavg': innerOp = 'avg'; break;
+                    }
+                    return {
+                        $select: {
+                            "max": {
+                                $max: {$field: innerOp}
+                            }
+                        },
+                        $from: {
+                            $select: (function(){
+                                var sel = {};
+                                sel[innerOp] = {};
+                                sel[innerOp]['$'+innerOp] = exp;
+                                return sel;
+                            })(),
+                            $groupBy: query.$groupBy && query.$groupBy.slice() || undefined,
+                            $filter: query.$filter && query.$filter.slice() || undefined,
+                            $from: query.$from || undefined
+                        }
+                    };
+                }
+
+                function unwrapExpression(exp, setFunc) {
+                    if (JSB.isPlainObject(exp)) {
+                        if (exp.$select) return; // skip subquery
+
+                        var key = Object.keys(exp)[0];
+                        if (key.startsWith('$grmax')) {
+                            setFunc(createSubQuery(key, exp[key]));
+                        }
+                        for (var f in exp) if(exp.hasOwnProperty(f)) {
+                            unwrapExpression(exp[f], function(newExp){
+                               exp[f] = newExp;
+                           });
+                        }
+                    } else if (JSB.isArray(exp)) {
+                        for (var i in exp) {
+                            unwrapExpression(exp[i], function(newExp){
+                                exp[i] = newExp;
+                            });
+                        }
+                    }
+                }
+
+                for (var alias in dcQuery.$select) if(dcQuery.$select.hasOwnProperty(alias)) {
+                    unwrapExpression(dcQuery.$select[alias], function(newExp){
+                        dcQuery.$select[alias] = newExp;
+                    });
+                }
+            } // unwrapForQuery
+
+            this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
+                unwrapForQuery(query);
+            });
+		}
 
 	}
 }
