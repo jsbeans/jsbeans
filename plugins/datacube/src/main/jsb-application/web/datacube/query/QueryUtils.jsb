@@ -965,8 +965,8 @@ debugger;
                                 sel[innerOp]['$'+innerOp] = exp;
                                 return sel;
                             })(),
-                            $groupBy: query.$groupBy && query.$groupBy.slice() || undefined,
-                            $filter: query.$filter && query.$filter.slice() || undefined,
+                            $groupBy: query.$groupBy && JSB.clone(query.$groupBy) || undefined,
+                            $filter: query.$filter && JSB.clone(query.$filter) || undefined,
                             $from: query.$from || undefined
                         }
                     };
