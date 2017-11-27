@@ -651,6 +651,16 @@
 			// return this.getWrapper().removeFilter(fItemId, this);
 			return this.getWrapper().removeFilter(fItemId);
 		},
+
+		removeAllFilters: function(){
+            var fm = this.getFilterManager();
+            if(fm){
+                var filters = fm.getFilters();
+                for(var i in filters){
+                    this.removeFilter(i);
+                }
+            }
+		},
 		
 		getFilters: function(){
 			var fm = this.getFilterManager();
