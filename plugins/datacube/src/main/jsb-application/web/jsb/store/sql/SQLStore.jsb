@@ -121,7 +121,7 @@
 		asSQL: function() {
             return {
                 connectedJDBC: function(func){
-                    var conn = $this.getConnection();
+                    var conn = $this.getConnection(true);
                     try {
                         return func.call(null, conn.get());
                     } finally {
@@ -129,7 +129,7 @@
                     }
                 },
                 iteratedQuery: function(sql, values, types, rowExtractor, onClose) {
-                    var conn = $this.getConnection();
+                    var conn = $this.getConnection(true);
                     try {
                         return JDBC.iteratedQuery(conn, sql, values, types, rowExtractor, function onClose2() {
                             conn.close();

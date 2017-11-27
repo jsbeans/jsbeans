@@ -137,6 +137,9 @@
 		                field, fieldQuery || query, cube);
                 if (isFieldNotAlias) {
                     var managedFields = cube.getManagedFields();
+                    if (!managedFields[field]) {
+                        throw 'Cube field is undefined: ' + field;
+                    }
                     var binding = managedFields[field].binding;
                     callback(field, context, query, binding);
                 }
