@@ -438,14 +438,16 @@
             if (dcQuery.$cubeFilter && Object.keys(dcQuery.$cubeFilter).length > 0) {
                 // recursive find all $select
                 this.walkSubQueries(dcQuery, function(subQuery){
-                    $this.embedFilterToSubQuery(
-                        subQuery,
-                        dcQuery.$cubeFilter,
-                        function(field){
-//                            return $this.isOriginalCubeField(field, dcQuery, cubeOrDataProvider);
-                            return true;
-                        }
-                    );
+                    if (!subQuery.$from) {
+                        $this.embedFilterToSubQuery(
+                            subQuery,
+                            dcQuery.$cubeFilter,
+                            function(field){
+    //                            return $this.isOriginalCubeField(field, dcQuery, cubeOrDataProvider);
+                                return true;
+                            }
+                        );
+                    }
                 });
                 delete dcQuery.$cubeFilter;
             }
