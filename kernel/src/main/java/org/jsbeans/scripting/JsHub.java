@@ -51,8 +51,8 @@ import java.util.concurrent.TimeUnit;
 
 @DependsOn({SecurityService.class})
 public class JsHub extends Service {
-    private static final boolean openDebugger = ConfigHelper.getConfigBoolean("kernel.jshub.openDebugger");
-    private static final boolean createDump = ConfigHelper.getConfigBoolean("kernel.jshub.createDump");
+    private static final boolean openDebugger = ConfigHelper.has("kernel.jshub.openDebugger") ? ConfigHelper.getConfigBoolean("kernel.jshub.openDebugger") : false;
+    private static final boolean createDump = ConfigHelper.has("kernel.jshub.createDump") ? ConfigHelper.getConfigBoolean("kernel.jshub.createDump"):false;
     
     //	private static final String JSS_FOLDER_KEY = "kernel.jss.folder";
     private static final long completeDelta = ConfigHelper.getConfigInt("kernel.jshub.stateCompleteTimeout");
