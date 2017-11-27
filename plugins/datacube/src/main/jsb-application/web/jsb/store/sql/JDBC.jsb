@@ -203,7 +203,9 @@
                     rs = st.executeQuery(sql);
                 }
             } catch (e) {
-                connection.rollback();
+            	try{
+            		connection.rollback();
+            	}catch(x){}
                 throw e;
             }
 //		        Log.debug('SQL query executed');
