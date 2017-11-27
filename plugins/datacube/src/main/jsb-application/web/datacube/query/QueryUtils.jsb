@@ -149,7 +149,7 @@
         /** Удаляет провайдеры, все поля которых есть в других JOIN провайдерах, исключает лишние JOIN и UNION.
         Если поле есть и в UNION и в JOIN провайдерах, то приоритет отдается UNION провайдерам, т.к. они слева в LEFT JOIN.
         */
-        removeRedundantBindingProviders: function (providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/) {
+        removeRedundantBindingProviders: function (providersFieldsMap/**id: {provider, cubeFields:{field:hasOtherBinding}}*/, cube) {
 		    function allFieldsBindingAndAllInOther(prov, mode){
 		        var allFieldsBinding = true;
 		        var allInOtherJoined = true;
@@ -162,7 +162,7 @@
 		            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 		                if (prov == providersFieldsMap[id]) continue;
 		                if (prov.provider.id != id &&
-		                        (!mode || mode == (prov.provider.getMode()||'union')) ) {
+		                        (!mode || mode == (providersFieldsMap[id].provider.getMode()||'union')) ) {
 		                    if(providersFieldsMap[id].cubeFields.hasOwnProperty(f)) {
 		                        fieldInOtherJoined = true;
 		                        break;
@@ -177,6 +177,19 @@
 		        return allFieldsBinding && allInOtherJoined;
 		    }
 
+//            var fields = {};
+//            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+//		        for (var f in providersFieldsMap[id].cubeFields) {
+//		            fields[f] = fields[f] || [];
+//		        }
+//            }
+//            for (var f in fields) if (fields.hasOwnProperty(f)) {
+//                var binding = cube.getManagedFields()[f].binding;
+//                for (var b in binding) {
+//                    fields[f].push(binding[b].provider.name + '/' + binding[b].field);
+//                }
+//            }
+//debugger;
             // first remove joins (in LEFT JOIN left is unions)
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 		        if (providersFieldsMap[id].provider.getMode() == 'join'

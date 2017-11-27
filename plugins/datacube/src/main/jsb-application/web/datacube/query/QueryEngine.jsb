@@ -202,7 +202,7 @@
             // TODO: add join path providers (now all providers must have field in query)
 
             // filter redundant providers
-            QueryUtils.removeRedundantBindingProviders(providers);
+            QueryUtils.removeRedundantBindingProviders(providers, this.cube);
 
 		    var groupsMap = {/**key:[provider]*/}; //
 		    for (var id in providers) if (providers.hasOwnProperty(id)) {
