@@ -168,7 +168,7 @@
                 },
 
                 iteratedParametrizedQuery2: function(sql, getValue, getType, rowExtractor, onClose) {
-                    var conn = $this.getConnection();
+                    var conn = $this.getConnection(true);
                     try {
                         sql = sql.replace(new RegExp('`','g'), "\"\"");
                         return JDBC.iteratedParametrizedQuery(conn.get(), sql, getValue, getType, rowExtractor, function onClose2() {
