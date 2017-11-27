@@ -767,9 +767,11 @@
 			JSB.getLocker().lock('fetch_' + $this.getId());
 			this.needBreak = false;
 			try {
-				if(opts.reset && this.iterators[sourceId]){
-					this.iterators[sourceId].close();
-					delete this.iterators[sourceId];
+				if(opts.reset && $this.iterators[sourceId]){
+					try {
+						$this.iterators[sourceId].close();
+					}catch(e){}
+					delete $this.iterators[sourceId];
 				}
 				if(!this.iterators[sourceId]){
 					// figure out data provider
@@ -809,11 +811,17 @@
 					}
 					var el = null;
 					try {
-						el = this.iterators[sourceId].next();
+						el = $this.iterators[sourceId].next();
 					}catch(e){
 						el = null;
 					}
 					if(!el){
+						if($this.iterators[sourceId]){
+							try {
+								$this.iterators[sourceId].close();
+							}catch(e){}
+							delete $this.iterators[sourceId];
+						}
 						break;
 					}
 					data.push(el);
