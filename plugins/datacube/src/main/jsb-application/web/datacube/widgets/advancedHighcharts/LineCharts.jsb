@@ -313,7 +313,7 @@
                         editor: 'JSB.Widgets.ColorEditor'
                     },
                     {
-                        name: 'Ширина оси',
+                        name: 'Толщина оси',
                         type: 'item',
                         key: 'lineWidth',
                         itemType: 'number'
@@ -516,7 +516,7 @@
                         editor: 'JSB.Widgets.ColorEditor'
                     },
                     {
-                        name: 'Ширина оси',
+                        name: 'Толщина оси',
                         type: 'item',
                         key: 'lineWidth',
                         itemType: 'number'
@@ -667,7 +667,7 @@
                         ]
                     },
                     {
-                        name: 'Ширина линии сетки',
+                        name: 'Толщина линии сетки',
                         type: 'item',
                         key: 'gridLineWidth',
                         itemType: 'number'
@@ -1000,7 +1000,121 @@
                 }
                 ]
             },
-            // Опции точек
+            // Tooltip
+            {
+                name: 'Всплывающая подсказка',
+                type: 'group',
+                key: 'mainTooltip',
+                collapsable: true,
+                collapsed: true,
+                items: [
+                {
+                    name: 'Активны',
+                    type: 'item',
+                    key: 'enabled',
+                    optional: 'checked',
+                    editor: 'none'
+                },
+                {
+                    name: 'Цвет фона',
+                    type: 'item',
+                    key: 'backgroundColor',
+                    itemType: 'color',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
+                {
+                    name: 'Цвет границы',
+                    type: 'item',
+                    key: 'borderColor',
+                    itemType: 'color',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
+                {
+                    name: 'Радиус границы',
+                    type: 'item',
+                    key: 'borderRadius',
+                    itemType: 'number'
+                },
+                {
+                    name: 'Толщина границы',
+                    type: 'item',
+                    key: 'borderRadius',
+                    itemType: 'number'
+                },
+                {
+                    name: 'Использовать HTML',
+                    type: 'item',
+                    key: 'useHTML',
+                    optional: true,
+                    editor: 'none'
+                },
+                {
+                    name: 'Формат верхнего колонтитула',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: '',
+                    key: 'headerFormat',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    options: {
+                        valueType: 'org.jsbeans.types.Html'
+                    }
+                },
+                {
+                    name: 'Формат точек',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: '',
+                    key: 'pointFormat',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    options: {
+                        valueType: 'org.jsbeans.types.Html'
+                    }
+                },
+                {
+                    name: 'Формат нижнего колонтитула',
+                    type: 'item',
+                    itemType: 'string',
+                    itemValue: '',
+                    key: 'footerFormat',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    options: {
+                        valueType: 'org.jsbeans.types.Html'
+                    }
+                },
+                {
+                    name: 'Внутренний отступ',
+                    type: 'item',
+                    key: 'padding',
+                    itemType: 'number'
+                },
+                {
+                    name: 'Тень',
+                    type: 'item',
+                    key: 'shadow',
+                    optional: 'checked',
+                    editor: 'none'
+                },
+                {
+                    name: 'Количество символов после запятой',
+                    type: 'item',
+                    key: 'valueDecimals',
+                    itemType: 'number'
+                },
+                {
+                    name: 'Префикс значения',
+                    type: 'item',
+                    key: 'valuePrefix',
+                    itemType: 'string'
+                },
+                {
+                    name: 'Постфикс значения',
+                    type: 'item',
+                    key: 'valueSuffix',
+                    itemType: 'string'
+                }
+                ]
+            },
+            // Опции точек (не полный список)
             {
                 name: 'Опции точек',
                 type: 'group',
@@ -1320,6 +1434,7 @@
                     plotOptionsContext = this.getContext().find('plotOptions').value(),
                     seriesContext = this.getContext().find('series').values(),
                     titleContext = this.getContext().find('header').value(),
+                    tooltipContext = this.getContext().find('mainTooltip').value(),
                     xAxisContext = this.getContext().find('xAxis').value(),
                     yAxisContext = this.getContext().find('yAxis').value(),
                     series = [];
@@ -1404,6 +1519,21 @@
                         fontSize: titleContext.find('fontSize').value(),
                         x: titleContext.find('x').value(),
                         y: titleContext.find('y').value()
+                    },
+                    tooltip: {
+                        enabled: tooltipContext.find('enabled').used(),
+                        backgroundColor: tooltipContext.find('backgroundColor').value(),
+                        borderColor: tooltipContext.find('borderColor').value(),
+                        borderRadius: tooltipContext.find('borderRadius').value(),
+                        useHTML: tooltipContext.find('useHTML').used(),
+                        headerFormat: tooltipContext.find('headerFormat').value(),
+                        pointFormat: tooltipContext.find('pointFormat').value(),
+                        footerFormat: tooltipContext.find('footerFormat').value(),
+                        padding: tooltipContext.find('padding').value(),
+                        shadow: tooltipContext.find('shadow').used(),
+                        valueDecimals: tooltipContext.find('valueDecimals').value(),
+                        valuePrefix: tooltipContext.find('valuePrefix').value(),
+                        valueSuffix: tooltipContext.find('valueSuffix').value()
                     },
                     xAxis: {
                         categories: xAxisCategories,
