@@ -55,7 +55,12 @@
                     if (conn) {
                         if (checkConnection) {
                             try {
-                                conn.jdbcConnection.isValid(this.config.checkResponseTimeoutSec||5);
+                                var bOk = conn.jdbcConnection.isValid(this.config.checkResponseTimeoutSec||5);
+                                if(!bOk){
+                                	closeConnection(conn);
+                                    conn = null;
+                                	continue;
+                                }
                             } catch(e) {
                                 closeConnection(conn);
                                 conn = null;
@@ -163,7 +168,7 @@
                 },
 
                 iteratedParametrizedQuery2: function(sql, getValue, getType, rowExtractor, onClose) {
-                    var conn = $this.getConnection();
+                    var conn = $this.getConnection(true);
                     try {
                         sql = sql.replace(new RegExp('`','g'), "\"\"");
                         return JDBC.iteratedParametrizedQuery(conn.get(), sql, getValue, getType, rowExtractor, function onClose2() {

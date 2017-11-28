@@ -716,17 +716,21 @@
 
 		iterators: {},
 		needBreak: false,
+		completed: {},
 		
 		destroy: function(){
 			if(!this.isDestroyed()){
 				for(var it in this.iterators){
 					try {
-						this.iterators[it].close();
+						if(this.iterators[it]){
+							this.iterators[it].close();
+						}
 					}catch(e){
 						JSB.getLogger().error(e);
 					}
 				}
 				this.iterators = {};
+				this.completed = {};
 				$base();
 			}
 		},
@@ -767,13 +771,18 @@
 			JSB.getLocker().lock('fetch_' + $this.getId());
 			this.needBreak = false;
 			try {
-				if(opts.reset && $this.iterators[sourceId]){
-					try {
-						$this.iterators[sourceId].close();
-					}catch(e){}
-					delete $this.iterators[sourceId];
+				if(opts.reset && ($this.iterators[sourceId] || $this.completed[sourceId])){
+					if($this.iterators[sourceId]){
+						try {
+							$this.iterators[sourceId].close();
+						}catch(e){}
+						delete $this.iterators[sourceId];
+					}
+					if($this.completed[sourceId]){
+						delete $this.completed[sourceId];
+					}
 				}
-				if(!this.iterators[sourceId]){
+				if(!$this.iterators[sourceId] && !$this.completed[sourceId]){
 					// figure out data provider
 					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 						var extQuery = {};
@@ -799,7 +808,8 @@
 	                    if(opts.groupBy){
 	                        extQuery.$groupBy = opts.groupBy;
 	                    }
-						this.iterators[sourceId] = source.executeQuery(extQuery);
+	                    $this.iterators[sourceId] = source.executeQuery(extQuery);
+						$this.completed[sourceId] = false;
 					} else {
 						// TODO
 					}
@@ -808,6 +818,9 @@
 				for(var i = 0; i < batchSize || opts.readAll; i++){
 					if(this.needBreak){
 						throw new Error('Fetch broke');
+					}
+					if($this.completed[sourceId]){
+						break;
 					}
 					var el = null;
 					try {
@@ -822,6 +835,7 @@
 							}catch(e){}
 							delete $this.iterators[sourceId];
 						}
+						$this.completed[sourceId] = true;
 						break;
 					}
 					data.push(el);
