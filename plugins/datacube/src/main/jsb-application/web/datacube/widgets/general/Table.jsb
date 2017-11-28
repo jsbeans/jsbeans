@@ -160,7 +160,7 @@
 				key: 'rowSettings',
 				collapsable: true,
 				items:[{
-					name: 'Идентификация',
+					name: 'Поля идентификации строк',
 					type: 'item',
 					multiple: true,
 					key: 'rowKey',
@@ -173,6 +173,19 @@
 					key: 'rowFilter',
 					binding: 'field',
 					editor: 'none'
+				},{
+					name: 'Отображать первый столбец в виде дерева',
+					type: 'group',
+					optional: true,
+					key: 'useTree',
+					items:[{
+						name: 'Поля идентификации родительских строк',
+						type: 'item',
+						multiple: true,
+						key: 'parentRowKey',
+						binding: 'field',
+						editor: 'none'
+					}]
 				}]
 			},{
 				name: 'Столбцы',
