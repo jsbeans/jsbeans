@@ -740,7 +740,7 @@
         _translateFrom: function(query) {
             // is select from sub-query
             if (query.$from) {
-                debugger; // TODO update uery.$from
+//                debugger; // TODO update uery.$from
                 return '(' + this.translateQueryExpression(query.$from) + ') AS ' + this._quotedName(query.$context);
             }
 

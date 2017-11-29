@@ -89,8 +89,22 @@
                 }
                 return false;
 		    }
+		    
+		    var left = {
+		    	name: inputConfig.name,
+		    	type: inputConfig.type,
+		    	url: inputConfig.url,
+		    	properties: inputConfig.properties
+		    };
 
-            return compareWithLeft(inputConfig, storeConfig);
+		    var right = {
+		    	name: storeConfig.name,
+		    	type: storeConfig.type,
+		    	url: storeConfig.url,
+		    	properties: storeConfig.properties
+		    };
+
+            return compareWithLeft(left, right);
 		}
     }
 })

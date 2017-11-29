@@ -346,6 +346,9 @@
 							}
 						}
 						if(callback){
+							if(fail){
+								JSB.getLogger().error(fail);
+							}
 							callback.call($this, data, fail);
 						}
 					});
@@ -526,21 +529,11 @@
 		},
 		
 		ensureInitialized: function(callback){
-			if(this.ready){
-				callback.call(this);
-				return;
-			}
-			this.initCallbacks.push(callback);
+			this.ensureTrigger('_widgetInitialized', callback);
 		},
 		
 		setInitialized: function(){
-			this.ready = true;
-			if(this.initCallbacks.length > 0){
-				for(var i = 0; i < this.initCallbacks.length; i++){
-					this.initCallbacks[i].call(this);
-				}
-				this.initCallbacks = [];
-			}
+			this.setTrigger('_widgetInitialized');
 		},
 		
 		decompressData: function(dataObj){
@@ -808,7 +801,7 @@
 	                    if(opts.groupBy){
 	                        extQuery.$groupBy = opts.groupBy;
 	                    }
-	                    $this.iterators[sourceId] = source.executeQuery(extQuery);
+                    	$this.iterators[sourceId] = source.executeQuery(extQuery);
 						$this.completed[sourceId] = false;
 					} else {
 						// TODO

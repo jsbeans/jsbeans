@@ -247,7 +247,6 @@
 }
 
 .schemeEditor > .container > .entry.collapsible > .value {
-	max-height: 4000px;
 	max-width: 2000px;
 	opacity: 1;
 	

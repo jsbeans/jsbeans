@@ -32,9 +32,6 @@
                 JSB.locked($this, 'connection', function() {
                     if (cn.jdbcConnection) {
                         delete $this.connections[cn.id];
-                        if (cn.deferredCloseKey) {
-                            JSB.cancelDefer(cn.deferredCloseKey);
-                        }
                         cn.jdbcConnection.close();
                         cn.jdbcConnection = null;
                     }
@@ -44,7 +41,11 @@
             var conn = null;
             for (var id in this.connections) if (this.connections.hasOwnProperty(id)) {
                 conn = this.connections[id];
-                if (conn.available) {
+                if (conn && conn.available) {
+                	if(conn.deferredCloseKey){
+                		JSB.cancelDefer(conn.deferredCloseKey);
+                		conn.deferredCloseKey = null;
+                	}
                     conn = JSB.locked(this, 'connection', function(){
                         if (conn.available) {
                             conn.available = false;
@@ -99,17 +100,21 @@
             var closed = false;
             return {
                 get: function(){
-                    if (closed) throw new Error('Connection closed');
+                    if(closed) throw new Error('Connection closed');
                     return conn.jdbcConnection;
                 },
                 close: function(){
+                	if(closed) throw new Error('Connection already closed');
                     closed = true;
                     conn.deferredCloseKey = JSB.generateUid();
+                    conn.available = true;
                     JSB.defer(function() {
                         closeConnection(conn);
                     }, ($this.closeUselessConnectionTimeoutSec||60)*1000, conn.deferredCloseKey);
-                    conn.available = true;
                 },
+                closed: function(){
+                	return closed;
+                }
             };
         },
 

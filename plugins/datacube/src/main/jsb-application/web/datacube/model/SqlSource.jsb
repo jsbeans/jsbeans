@@ -32,8 +32,10 @@
 		
 		updateSettings: function(settings){
 			this.settings = JSB.merge({
-				name: settings.url,
+				name: $this.getLocalId(),
 				type: 'JSB.Store.Sql.SQLStore',
+				url: '',
+				properties: {}
 			}, settings);
 			this.property('settings', this.settings);
 			this.workspace.store();
