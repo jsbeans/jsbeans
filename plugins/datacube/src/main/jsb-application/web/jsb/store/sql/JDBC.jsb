@@ -51,7 +51,6 @@
             for (var p in properties) if (properties.hasOwnProperty(p)) {
                 connectionProps.put(p, properties[p]);
             }
-JSB.getLogger().debug('DriverManager.getConnection: ' + url);
 		    return DriverManager.getConnection(url, connectionProps);
 		},
 

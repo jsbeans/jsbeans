@@ -44,7 +44,7 @@ if(!(function(){return this;}).call(null).JSB){
 			var parentExisted = this.get(cfg.$parent);
 			this.lookup(cfg.$parent, function(par){
 				if(!par || !par.jsb || par.jsb.$name != cfg.$parent){
-					throw 'Unable to create bean "' + cfg.$name + '" due to wrong parent specified: "' + cfg.$parent + '"' + (par && par.jsb ? '; found: '+par.jsb.$name: '');
+					throw new Error('Unable to create bean "' + cfg.$name + '" due to wrong parent specified: "' + cfg.$parent + '"' + (par && par.jsb ? '; found: '+par.jsb.$name: ''));
 				}
 				self._create(cfg, par.jsb);
 			});
@@ -379,7 +379,7 @@ if(!(function(){return this;}).call(null).JSB){
 						delete req[alToRemove[i]];
 					}
 				} else {
-					throw 'Invalid $require format in bean "'+name+'"';
+					throw new Error('Invalid $require format in bean "'+name+'"');
 				}
 			}
 			
@@ -409,7 +409,7 @@ if(!(function(){return this;}).call(null).JSB){
 		
 		unregister: function(obj){
 			if(!obj || !obj.getId || !obj.getJsb){
-				throw 'Wrong object to unregister';
+				throw new Error('Wrong object to unregister');
 			}
 			var id = obj.getId();
 			if(!id){
@@ -437,10 +437,10 @@ if(!(function(){return this;}).call(null).JSB){
 		
 		_create: function(cfg, parent){
 			if(cfg.$format == 'jso'){
-				throw 'Unable to create bean "' + cfg.$name + '" due to JSO format is no longer supported';
+				throw new Error('Unable to create bean "' + cfg.$name + '" due to JSO format is no longer supported');
 			}
 			if(!this.isString(cfg.$name)){
-				throw "Class name required to create managed object";
+				throw new Error("Class name required to create managed object");
 			}
 			var self = this;
 			var logger = this.getLogger();
@@ -665,19 +665,19 @@ if(!(function(){return this;}).call(null).JSB){
 							for(var alias in e){
 								var requiredJsb = e[alias];
 								if(!self.isString(requiredJsb)){
-									throw 'Invalid required entity declaration "' + JSON.stringify(requiredJsb) + '" in bean ' + self.$name;
+									throw new Error('Invalid required entity declaration "' + JSON.stringify(requiredJsb) + '" in bean ' + self.$name);
 								}
 								if(requireMap[requiredJsb]){
-									throw 'Duplicate require "' + requiredJsb + '" in bean ' + self.$name;
+									throw new Error('Duplicate require "' + requiredJsb + '" in bean ' + self.$name);
 								} else {
 									if(!self.isString(alias)){
-										throw 'Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.$name+'" requirement';
+										throw new Error('Invalid alias "' + JSON.stringify(alias) + '" in bean "'+self.$name+'" requirement');
 									}
 									if(!/^[A-Za-z_][A-Za-z_\d]*$/.test(alias)){
-										throw 'Invalid alias "' + alias + '" in bean "'+self.$name+'" requirement';
+										throw new Error('Invalid alias "' + alias + '" in bean "'+self.$name+'" requirement');
 									}
 									if(reverseRequireMap[alias]){
-										throw 'Duplicate require alias "' + alias + '" in bean ' + self.$name + '. Please choose another alias name';
+										throw new Error('Duplicate require alias "' + alias + '" in bean ' + self.$name + '. Please choose another alias name');
 									}
 									requireMap[requiredJsb] = alias;
 									reverseRequireMap[alias] = requiredJsb;
@@ -785,7 +785,7 @@ if(!(function(){return this;}).call(null).JSB){
 						// extract proc declaration
 						var declM = procStr.match(/^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/);
 						if(!declM){
-							throw 'Internal error: wrong procStr: ' + procStr;
+							throw new Error('Internal error: wrong procStr: ' + procStr);
 						}
 						var fName = declM[1];
 						if(fName.length === 0){
@@ -833,14 +833,14 @@ if(!(function(){return this;}).call(null).JSB){
 							var protectedMethod = false;
 							if(mtdName[0] == '_'){
 								if(mtdName.length < 2){
-									throw 'Invalid method name "' + mtdName + '" in bean ' + self.$name;
+									throw new Error('Invalid method name "' + mtdName + '" in bean ' + self.$name);
 								}
 								// private or protected method
 								protectedMethod = true;
 								
 								if(mtdName[1] == '_'){
 									if(mtdName.length < 3){
-										throw 'Invalid method name "' + mtdName + '" in bean ' + self.$name;
+										throw new Error('Invalid method name "' + mtdName + '" in bean ' + self.$name);
 									}
 									
 									// private method
@@ -1672,7 +1672,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			if(this._readyState == 0){
 				// class function is not created yet - internal error
-				throw 'FATAL: Failed to create instance of bean: "'+this.$name+'" due to class function is not created yet';
+				throw new Error('FATAL: Failed to create instance of bean: "'+this.$name+'" due to class function is not created yet');
 			} else if(this._readyState == 1){
 				var msg = 'ERROR: Failed to create instance of bean: "'+this.$name+'" due to some of its requires has not been initialized:';
 				for(var rName in this._requireMap){
@@ -1698,7 +1698,7 @@ if(!(function(){return this;}).call(null).JSB){
 						msg += '\r\n\tBean "' + rName + '" is incompleted for unknown reqson';
 					}
 				}
-				throw msg;
+				throw new Error(msg);
 			}
 		},
 
@@ -1927,13 +1927,13 @@ if(!(function(){return this;}).call(null).JSB){
 			var self = this;
 			if(name.toLowerCase().indexOf('java:') == 0){
 				if(this.isClient()){
-					throw 'Failed to load java require "'+name+'" on client side in bean "'+this.$name+'"';
+					throw new Error('Failed to load java require "'+name+'" on client side in bean "'+this.$name+'"');
 				}
 				var qualifiedName = name.substr(5).trim();
 				var scopeStr = 'Packages.' + qualifiedName;
 				var curJavaScope = eval(scopeStr);
 				if(!curJavaScope){
-					throw 'Failed to load java require due to missing java object "'+qualifiedName+'"';
+					throw new Error('Failed to load java require due to missing java object "'+qualifiedName+'"');
 				}
 /*				
 				var qNameParts = qualifiedName.split('.');
@@ -1950,11 +1950,11 @@ if(!(function(){return this;}).call(null).JSB){
 			} else {
 				this.lookup(name, function(cls){
 					if(self.isNull(cls)){
-						throw 'Failed to lookup require: "' + name + '", expecting for object but nothing returned';
+						throw new Error('Failed to lookup require: "' + name + '", expecting for object but nothing returned');
 					}
 					var jsb = cls.jsb;
 					if(self.isNull(jsb)){
-						throw 'Failed to lookup require: "' + name + '", jsb is null';
+						throw new Error('Failed to lookup require: "' + name + '", jsb is null');
 					}
 					if(!jsb._ready && jsb.isSingleton()){
 						self.lookup(name, callback);
@@ -2005,7 +2005,7 @@ if(!(function(){return this;}).call(null).JSB){
 					// check bean is existed
 					var repoEntry = this.getRepository().get(name);
 					if(!repoEntry){
-						throw 'Bean "'+name+'" is missing in repository' + (this.$name ? '; required by "' + this.$name + '"' : '');
+						throw new Error('Bean "'+name+'" is missing in repository' + (this.$name ? '; required by "' + this.$name + '"' : ''));
 					}
 				}
 			}
@@ -2895,7 +2895,7 @@ if(!(function(){return this;}).call(null).JSB){
 				this.forkJoinHandles[forkHandle].callback = callback;
 				this._checkJoinCallback(forkHandle);
 			} else {
-				throw 'JSB.join: missing callback argument';
+				throw new Error('JSB.join: missing callback argument');
 			}
 		},
 		
@@ -2915,7 +2915,7 @@ if(!(function(){return this;}).call(null).JSB){
 			var self = this;
 			var procArr = [];
 			if(arguments.length < 3){
-				throw 'JSB.chain: wrong argument passed';
+				throw new Error('JSB.chain: wrong argument passed');
 			}
 			for(var i = 1; i < arguments.length; i++){
 				if(JSB().isFunction(arguments[i])){
@@ -2923,7 +2923,7 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 			if(procArr.length < 2){
-				throw 'JSB.chain: no chain callbacks passed';
+				throw new Error('JSB.chain: no chain callbacks passed');
 			}
 			var scope = {curIdx: 0};
 			
@@ -3274,7 +3274,7 @@ if(!(function(){return this;}).call(null).JSB){
 					if(JSB().isBean(cls)){
 						obj = cls;
 						if(obj.$_bindKey != id && obj.getId() != id){
-							throw 'constructInstanceFromRemote: Wrong singleton ID retrieved';
+							throw new Error('constructInstanceFromRemote: Wrong singleton ID retrieved');
 						}
 					} else {
 						// check for fixedId
@@ -3491,7 +3491,7 @@ JSB({
 
 			// get calling proc
 			if(ctxStack.length < 2){
-				throw 'Invalid "getSuperClass" function call';
+				throw new Error('Invalid "getSuperClass" function call');
 			}
 
 			var callerCtx = ctxStack[ctxStack.length - 2];
@@ -3499,7 +3499,7 @@ JSB({
 			
 			var sClass = cls.$superclass;
 			if(JSB().isNull(sClass) || JSB().isNull(sClass.jsb)){
-				throw 'Wrong parent class found';
+				throw new Error('Wrong parent class found');
 			}
 			return sClass;
 		}
@@ -3507,7 +3507,7 @@ JSB({
 		var curScope = this.$constructor.$superclass;
 		while(true){
 			if(JSB().isNull(curScope) || JSB().isNull(curScope.jsb)){
-				throw 'Unable to find className: "' + className + '"in "' + this.jsb.$name + '" hierarchy stack';
+				throw new Error('Unable to find className: "' + className + '"in "' + this.jsb.$name + '" hierarchy stack');
 			}
 			if(curScope.jsb.$name == className){
 				return curScope; 
@@ -3746,7 +3746,7 @@ JSB({
 						id: JSB().isClient() ? (syncScope.value.$_bindKey || syncScope.value.getId()) : syncScope.value.getId()
 					};
 				} else {
-					throw 'getScopeSlice: unknown syncScope.type';
+					throw new Error('getScopeSlice: unknown syncScope.type');
 				}
 			}
 			return {
@@ -4498,7 +4498,7 @@ JSB({
 		var name = beanCfg.$name;
 		if(!name || name.length == 0){
 			var err = 'Bean has no name: ' + JSON.stringify(beanCfg);
-			throw err;
+			throw new Error(err);
 		}
 		JSB.merge(beanCfg, opts);
 		this.registerPath(beanCfg);
@@ -4576,11 +4576,11 @@ JSB({
 	
 	_resolveMessage: function(msg, opts){
 		if($jsb.isArray(msg)){
-			throw 'Message objects can only be a string or JSON object';
+			throw new Error('Message objects can only be a string or JSON object');
 		}
 		
 		if(!$jsb.isString(msg)){
-			throw 'Expecting string message';
+			throw new Error('Expecting string message');
 		}
 		var msgObj = {
 			message: msg
@@ -4602,7 +4602,7 @@ JSB({
 	_subscribe: function(w, msgObj, callback){
 		var msg = msgObj.message;
 		if(!w.getId()){
-			throw 'Failed to subscribe uninitialized bean';
+			throw new Error('Failed to subscribe uninitialized bean');
 		}
 		var objId = w.getSession() + '/' + w.getId();
 		if(!msgObj.callId){
@@ -4738,7 +4738,7 @@ JSB({
 	
 	publish: function(w, msgObj, params, arg1, arg2){
 		if($jsb.isArray(msgObj)){
-			throw 'Publishing array of messages is not supported';
+			throw new Error('Publishing array of messages is not supported');
 		}
 		var callback = null, opts = null;
 		if($jsb.isObject(arg1)){
@@ -4941,7 +4941,7 @@ JSB({
 			} else if($jsb.isString(bytes)){
 				binary = bytes;
 			} else {
-				throw 'Error';
+				throw new Error('Error');
 			}
 			if(buffer){
 				var base64 = Uint8ArrayToBase64(buffer);
@@ -5008,7 +5008,7 @@ JSB({
 			} else if($jsb.isString(bytes)) {
 				buffer = bytes;
 			} else {
-				throw 'Error';
+				throw new Error('Error');
 			}
 			return '' + BufferHelper.base64Encode(buffer);
 		},
@@ -5684,11 +5684,11 @@ JSB({
 		executeClientRpc: function(jsoName, instanceId, procName, params){
 			var serverInstance = JSB().constructServerInstanceFromClientId(jsoName, instanceId);
 			if(!serverInstance){
-				throw 'Unable to find Bean server instance: ' + jsoName + '(' + instanceId + ')';
+				throw new Error('Unable to find Bean server instance: ' + jsoName + '(' + instanceId + ')');
 			}
 			
 			if(!serverInstance[procName]){
-				throw 'Failed to call method "' + procName + '" in bean "' + jsoName + '". Method not exists'
+				throw new Error('Failed to call method "' + procName + '" in bean "' + jsoName + '". Method not exists');
 			}
 			
 			if(JSB().isArray(params)){

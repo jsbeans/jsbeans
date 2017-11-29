@@ -34,6 +34,10 @@
                         delete $this.connections[cn.id];
                         cn.jdbcConnection.close();
                         cn.jdbcConnection = null;
+                        if (cn.deferredCloseKey) {
+                            JSB.cancelDefer(cn.deferredCloseKey);
+                            delete cn.deferredCloseKey;
+                        }
                     }
                 });
             }
@@ -42,10 +46,6 @@
             for (var id in this.connections) if (this.connections.hasOwnProperty(id)) {
                 conn = this.connections[id];
                 if (conn && conn.available) {
-                	if(conn.deferredCloseKey){
-                		JSB.cancelDefer(conn.deferredCloseKey);
-                		conn.deferredCloseKey = null;
-                	}
                     conn = JSB.locked(this, 'connection', function(){
                         if (conn.available) {
                             conn.available = false;
