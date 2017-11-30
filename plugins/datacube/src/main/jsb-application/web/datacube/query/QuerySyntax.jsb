@@ -187,7 +187,7 @@
 		            '$last','$first', '$sum', '$count','$min', '$max', '$avg',
 		            '$array', '$flatArray', '$expandArray', '$concatArray',
 		            '$gsum', '$gcount', '$gmin', '$gmax',
-		            '$grmaxsum', '$grmaxcount', '$grmaxavg',
+		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
 		            '$macros'
 		        ]
@@ -589,6 +589,22 @@
 		        aggregate: true,
 		        global: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$grmax',
+		        category: 'Функции агрегации',
+		        desc: 'Вернуть максимальное значение группы (найти группу с максимальным значением агрегированного выражения)',
+		        aggregate: true,
+		        global: true,
+		        values: ['$constOne', '$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$grmin',
+		        category: 'Функции агрегации',
+		        desc: 'Вернуть минимальное значение группы (найти группу с минимальным значением агрегированного выражения)',
+		        aggregate: true,
+		        global: true,
+		        values: ['$constOne', '$const', '$expression', '$query', '$field', '$param'],
 		    });
 		
 		
@@ -1065,6 +1081,8 @@
 		    $grmaxsum: {},
 		    $grmaxcount: {},
 		    $grmaxavg: {},
+		    $grmax: {},
+		    $grmin: {},
 		},
 		
 		

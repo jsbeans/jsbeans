@@ -138,7 +138,7 @@
                 if (isFieldNotAlias) {
                     var managedFields = cube.getManagedFields();
                     if (!managedFields[field]) {
-                        throw 'Cube field is undefined: ' + field;
+                        throw new Error('Cube field is undefined: ' + field);
                     }
                     var binding = managedFields[field].binding;
                     callback(field, context, query, binding);
@@ -854,13 +854,28 @@
 
         /** Формирует для запроса $with*/
         buildWithViews: function (dcQuery){
+            function extractSubFilter(query, forViewOrQuery /**forView=true*/) {
+                var skipFields = $this.collectSubQueryJoinFields(
+                    query.$filter|| {},
+                    function (context) {
+                        var isForeignContext = !!context && context != query.$context;
+                        return forViewOrQuery ? !isForeignContext : isForeignContext;
+                    }
+                );
+                var filter = $this.filterFilterByFields(query.$filter, function(filteredField, filteredExpr){
+                    return skipFields.indexOf(filteredField) == -1;
+                });
+            }
             function extractViewBody(query){
                 var key = {
                     $groupBy: query.$groupBy,
-                    $filter: query.$filter,
+                    $filter: extractSubFilter(query, true),
                     $from: query.$from
                 };
                 return key;
+            }
+            function extractExtFilter(query){
+                return subFilter(query, true);
             }
             function extractViewId(query){
                 return MD5.md5(JSON.stringify(extractViewBody(query)));
@@ -922,22 +937,25 @@ debugger;
                 }
                 var view = ensureView(query);
                 $this.updateValueExpressions(query, function callback(exp, alias) {
-                    // //TODO: не все выражения можно копировать - может образоваться рекурсия
                     var expId = extractExpId(exp);
                     view.fieldAliases[expId] = view.fieldAliases[expId] || alias;
                     view.fieldExpressions[expId] = view.fieldExpressions[expId] || exp;
+
                 });
                 // transform query: // replace values by view`s
                 $this.updateValueExpressions(query, function callback(exp, alias) {
                     var expId = extractExpId(exp);
                     var fieldAlias = view.fieldAliases[expId] = view.fieldAliases[expId] || expId;
 
+//                    var expFields = $this.extractFields(valueExp, skipSubQuery);
+//                    // TODO filter foreign fields
+
                     return {$field: fieldAlias, $context: view.name};
                 });
                 delete query.$groupBy;
-                delete query.$filter;
                 delete query.$from;
                 query.$from = view.name;
+                query.$filter = extractSubFilter(query, false);
             });
 
             dcQuery.$with = dcQuery.$with || {};
@@ -969,18 +987,38 @@ debugger;
                         case '$grmaxcount': innerOp = 'count'; break;
                         case '$grmaxsum': innerOp = 'sum'; break;
                         case '$grmaxavg': innerOp = 'avg'; break;
+
+                        case '$grmax': innerOp = 'value'; break;
+                        case '$grmin': innerOp = 'value'; break;
+                        default:
+                            throw new Error('Unknown operator ' + op);
                     }
                     return {
-                        $select: {
-                            "max": {
-                                $max: {$field: innerOp}
+                        $select: (function(){
+                            var sel = {};
+                            switch(op){
+                                case '$grmaxcount':
+                                case '$grmaxsum':
+                                case '$grmaxavg':
+                                case '$grmax':
+                                    sel['max'] = {$max: {$field: innerOp}};
+                                    break;
+                                case '$grmin':
+                                    sel['min'] = {$min: {$field: innerOp}};
+                                    break;
+                                break;
                             }
-                        },
+                            return sel;
+                        })(),
                         $from: {
                             $select: (function(){
                                 var sel = {};
                                 sel[innerOp] = {};
-                                sel[innerOp]['$'+innerOp] = exp;
+                                if (innerOp == 'value') {
+                                    sel[innerOp] = exp;
+                                } else {
+                                    sel[innerOp]['$'+innerOp] = exp;
+                                }
                                 return sel;
                             })(),
                             $groupBy: query.$groupBy && JSB.clone(query.$groupBy) || undefined,
@@ -995,7 +1033,7 @@ debugger;
                         if (exp.$select) return; // skip subquery
 
                         var key = Object.keys(exp)[0];
-                        if (key.startsWith('$grmax')) {
+                        if (key.startsWith('$grmax') || key.startsWith('$grmin')) {
                             setFunc(createSubQuery(key, exp[key]));
                         }
                         for (var f in exp) if(exp.hasOwnProperty(f)) {
