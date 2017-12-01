@@ -284,7 +284,7 @@
         ]
     },
 	$client: {
-		$require: ['JQuery.UI.Loader'],
+		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 		_currentFilters: {
 		    min: null,
 		    minId: null,
@@ -299,7 +299,7 @@
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			JSB().loadCss('tpl/highstock/css/highcharts.css');
-			JSB().loadScript(['tpl/highstock/highstock.js'], function(){ // 'tpl/highstock/adapters/standalone-framework.js'
+/*			JSB().loadScript(['tpl/highstock/highstock.js'], function(){ // 'tpl/highstock/adapters/standalone-framework.js'
 			    Highcharts.setOptions({
 			        lang: {
                         contextButtonTitle: "Меню виджета",
@@ -327,7 +327,8 @@
 			    });
 
 				$this.init();
-			});
+			});*/
+			$this.init();
 		},
 
 		init: function(){

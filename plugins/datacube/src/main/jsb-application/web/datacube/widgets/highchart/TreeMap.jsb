@@ -181,16 +181,15 @@
         }]
     },
 	$client: {
-		$require: ['JQuery.UI.Loader'],
+		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 		
 		$constructor: function(opts){
-			var self = this;
 			$base(opts);
 			this.getElement().addClass('treeMap');
 			this.loadCss('TreeMap.css');
-			JSB().loadScript(['tpl/highstock/adapters/standalone-framework.js', 'tpl/highstock/highstock.js'], function(){
+			JSB().loadScript(['tpl/highstock/adapters/standalone-framework.js'], function(){
 				JSB().loadScript('tpl/highstock/modules/treemap.js', function(){
-					self.init();	
+					$this.init();	
 				});
 			});
 		},

@@ -203,17 +203,18 @@
         }]
     },
 	$client: {
-	    $require: ['JQuery.UI.Loader'],
+	    $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
         $constructor: function(opts){
             var self = this;
             $base(opts);
             this.getElement().addClass('pieChart');
             this.loadCss('PieChart.css');
-            JSB().loadScript('tpl/highstock/highstock.js', function(){
+/*            JSB().loadScript('tpl/highstock/highstock.js', function(){
                 JSB().loadScript('tpl/highstock/highcharts-more.js', function(){
-                    self.init();
+                    $this.init();
                 });
-            });
+            });*/
+            $this.init();
         },
 
         options: {

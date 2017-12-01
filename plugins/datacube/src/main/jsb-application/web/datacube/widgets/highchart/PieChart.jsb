@@ -303,7 +303,7 @@
         ]
     },
 	$client: {
-	    $require: ['JQuery.UI.Loader'],
+	    $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 
 	    _series: {},
 	    _curFilters: {},
@@ -315,9 +315,10 @@
 			$base(opts);
 			this.getElement().addClass('pieChart');
 			this.loadCss('PieChart.css');
-			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				self.init();
-			});
+/*			JSB().loadScript('tpl/highstock/highstock.js', function(){
+				$this.init();
+			});*/
+			$this.init();
 		},
 
         options: {

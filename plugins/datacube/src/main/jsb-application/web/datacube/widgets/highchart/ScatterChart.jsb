@@ -269,16 +269,16 @@
         }]
     },
 	$client: {
-		$require: ['JQuery.UI.Loader'],
+		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 		
 		$constructor: function(opts){
-			var self = this;
 			$base(opts);
 			this.getElement().addClass('scatterChart');
 			this.loadCss('ScatterChart.css');
-			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				self.init();
-			});
+/*			JSB().loadScript('tpl/highstock/highstock.js', function(){
+				$this.init();
+			});*/
+			$this.init();
 		},
 
         options: {

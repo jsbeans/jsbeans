@@ -315,7 +315,7 @@
         ]
     },
 	$client: {
-	    $require: ['JQuery.UI.Loader'],
+	    $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 
         _curFilters: {},
         _deselectCategoriesCount: 0,
@@ -326,9 +326,10 @@
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			this.loadCss('Highcharts.css');
-			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				self.init();
-			});
+/*			JSB().loadScript('tpl/highstock/highstock.js', function(){
+				$this.init();
+			});*/
+			$this.init();
 		},
 
         options: {

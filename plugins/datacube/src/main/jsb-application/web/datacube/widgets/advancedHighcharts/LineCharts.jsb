@@ -1268,26 +1268,24 @@
     },
 
     $client: {
-        $require: ['JQuery.UI.Loader'],
+        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
         $constructor: function(opts){
             $base(opts);
-            this.getElement().addClass('highchartsWidget');
-            JSB().loadScript('tpl/highstock/highstock.js', function(){
-                $this.container = $this.$('<div class="container"></div>');
-                $this.append($this.container);
+            $this.getElement().addClass('highchartsWidget');
+            $this.container = $this.$('<div class="container"></div>');
+            $this.append($this.container);
 
-                $this.getElement().resize(function(){
-                    JSB.defer(function(){
-                        if(!$this.getElement().is(':visible') || !$this.chart){
-                            return;
-                        }
-                        $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
-                    }, 500, 'hcResize' + $this.getId());
-                });
-
-                $this._isInit = true;
-                $this.setInitialized();
+            $this.getElement().resize(function(){
+                JSB.defer(function(){
+                    if(!$this.getElement().is(':visible') || !$this.chart){
+                        return;
+                    }
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
+                }, 500, 'hcResize' + $this.getId());
             });
+
+            $this._isInit = true;
+            $this.setInitialized();
         },
 
         // inner variables

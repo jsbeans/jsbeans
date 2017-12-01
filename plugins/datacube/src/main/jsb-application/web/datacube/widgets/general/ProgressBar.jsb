@@ -147,6 +147,13 @@
 					key: 'val'
 				},{
 					type: 'item',
+					key: 'textFormat',
+					name: 'Формат значения',
+					optional: true,
+					itemType: 'string',
+					itemValue: '0,0.[00]'
+				},{
+					type: 'item',
 					name: 'Цвет столбца',
                     itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor',
@@ -207,6 +214,7 @@
 	},
 	
 	$client: {
+		$require: 'JSB.Numeral',
 		ready: false,
 		widgets: [],
 		
@@ -221,6 +229,8 @@
 			
 			this.addClass('progressBar');
 			this.loadCss('ProgressBar.css');
+			
+			Numeral.setLocale('ru');
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.ready = true;
@@ -278,6 +288,9 @@
 				if(gArr[i].find('textCss').used()){
 					serieDesc.textCss = prepareCss(gArr[i].find('textCss').value());
 				}
+				if(gArr[i].find('textFormat').used()){
+					serieDesc.format = gArr[i].find('textFormat').value();
+				}
 				series.push(serieDesc);
 			}
 			
@@ -326,8 +339,8 @@
 								easing: 'easeInOut'
 							});
 						}, 0)
-						if(JSB.isFloat(val)){
-							val = val.toFixed(2);
+						if(JSB.isNumber(val) && d.format){
+							val = Numeral.format(val, d.format);
 						}
 						widget.setText('' + val);
 						d3.select(this).select('.progressbar-text').attr('style', d.textCss);
@@ -363,8 +376,8 @@
 					duration: 800,
 					easing: 'easeInOut'
 				});
-				if(JSB.isFloat(val)){
-					val = val.toFixed(2);
+				if(JSB.isNumber(val) && d.format){
+					val = Numeral.format(val, d.format);
 				}
 				widget.setText('' + val);
 				
