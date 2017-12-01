@@ -983,16 +983,16 @@
 						if(skipMap[item]){
 							continue;
 						}
-						valObj = {item: item};
+						valObj = {item: item, desc: $this.scheme.valueDesc && $this.scheme.valueDesc[item]};
 						var itemDesc = QuerySyntax.getSchema()[item];
-						if(itemDesc.disabled){
-							continue;
-						}
 						if(itemDesc){
+							if(itemDesc.disabled){
+								continue;
+							}
 							if(itemDesc.category){
 								category = itemDesc.category;
 							}
-							valObj.desc = itemDesc.desc;
+							valObj.desc = valObj.desc || itemDesc.desc;
 							valObj.title = itemDesc.displayName;
 						}
 					}
@@ -1199,12 +1199,17 @@
 			} 
 			
 			// add key
+			var keyName = valName;
+			var keyComment = $this.scheme.valueDesc && $this.scheme.valueDesc[valName];
 			var keyElt = entryElt.find('> .key');
 			if(keyElt.length == 0){
-				keyElt = $this.$('<div class="key"></div>').attr('title', valName);
+				keyElt = $this.$('<div class="key"></div>');
 				entryElt.append(keyElt);
 			} 
 			var keyDecl = QuerySyntax.getSchema()[valName];
+			if(keyDecl && keyDecl.desc){
+				keyComment = keyComment || keyDecl.desc;
+			}
 			if(keyDecl && keyDecl.displayName){
 				keyElt.empty();
 				keyElt.append(keyDecl.displayName);
@@ -1230,9 +1235,15 @@
 				
 				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#field'){
 					keyElt.addClass('outputField');
+					keyComment = 'Поле';
 				}
 
 			}
+			var keyTooltip = keyName;
+			if(keyComment){
+				keyTooltip += '\n' + keyComment;
+			}
+			keyElt.get(0).setAttribute('title', keyTooltip);
 			
 			// generate replacement schemes
 			var acceptedSchemes = null;
@@ -1434,11 +1445,11 @@
 		
 		constructHeuristic: function(){
 			if($this.scheme.name == '$fieldName'){
-				var valElt = $this.$('<div class="value"></div>').text($this.value);
+				var valElt = $this.$('<div class="value"></div>').text($this.value).attr('title', $this.value);
 				$this.container.append(valElt);
 				return true;
 			} else if($this.scheme.name == '$fieldExpr'){
-				$this.container.append($this.$('<div class="value"></div>').text($this.value['$field']));
+				$this.container.append($this.$('<div class="value"></div>').text($this.value['$field']).attr('title', $this.value['$field']));
 				$this.container.append($this.$('<div class="context"></div>').text($this.value['$context']));
 				return true;
 			} else if($this.scheme.name == '$sortTypeAsc') {

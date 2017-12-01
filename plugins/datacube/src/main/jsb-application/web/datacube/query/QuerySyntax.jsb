@@ -1115,6 +1115,16 @@
 		            }
 		            return values;
 		        })(),
+		        valueDesc: (function(){
+		        	var valueDesc = {};
+		            for (var f in structure) if (structure.hasOwnProperty(f)) {
+		                if (!structure[f].desc) {
+		                    continue;
+		                }
+		                valueDesc[f] = structure[f].desc;
+		            }
+		            return valueDesc;
+		        })(),
 		        optional: (function(){
 		            var optional = [];
 		            for (var f in structure) if (structure.hasOwnProperty(f)) {

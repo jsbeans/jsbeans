@@ -138,6 +138,7 @@
 }
 
 .schemeEditor > .container > .entry > .key.outputField > .keyEditor {
+	display: block;
 	vertical-align: top;
 }
 
