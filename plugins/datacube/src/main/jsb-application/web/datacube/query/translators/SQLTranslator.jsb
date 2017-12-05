@@ -471,6 +471,8 @@
                         return "'" + exp[op] + "'"
                     } else if (JSB.isNumber(exp[op])) {
                         return '' + exp[op];
+                    } else if (JSB.isBoolean(exp[op])) {
+                        return ('' + exp[op]).toUpperCase();
                     } else if (exp[op] == null) {
                         return 'NULL';
                     }

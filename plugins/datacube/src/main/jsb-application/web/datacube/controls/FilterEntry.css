@@ -8,16 +8,32 @@
 }
 
 .filterEntry > ._dwp_primitiveEditor {
-	display: block;
+	display: none;
 }
 
-.filterEntry.showOp > ._dwp_primitiveEditor {
-	padding-left: 22px;
+.filterEntry > ._dwp_comboBox {
+	display: none;
 }
 
 .filterEntry > .opSelector {
 	display: none;
 }
+
+
+.filterEntry.showEditor > ._dwp_primitiveEditor {
+	display: block;
+}
+
+.filterEntry.showOp.showEditor > ._dwp_primitiveEditor {
+	padding-left: 22px;
+}
+
+
+.filterEntry.showBoolean > ._dwp_comboBox {
+	display: block;
+	padding: 1px 8px;
+}
+
 
 .filterEntry.showOp > .opSelector {
 	position: absolute;

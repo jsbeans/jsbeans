@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Controls.FilterEntry',
 	$parent: 'JSB.Widgets.Control',
-	$require: ['JSB.Widgets.PrimitiveEditor', 'JSB.Widgets.ToolManager'],
+	$require: ['JSB.Widgets.PrimitiveEditor', 'JSB.Widgets.ToolManager', 'JSB.Widgets.ComboBox'],
 	
 	$client: {
 		filterField: null,
@@ -53,6 +53,15 @@
 			
 			this.append(this.editor);
 			
+			this.booleanEditor = new ComboBox({
+				items: [{key: 'any', element:'Любое'},{key:'true', element:'true'}, {key:'false', element:'false'}],
+				value: 'any',
+				onChange: function(){
+					$this.update();
+				}
+			});
+			this.append(this.booleanEditor);
+			
 			this.opSelector = this.$('<div class="opSelector"></div>');
 			this.opSelector.click(function(){
 				// show op list
@@ -86,7 +95,9 @@
 			}
 			this.filterField = field;
 			this.filterFieldType = type;
-			this.classed('showOp', this.filterFieldType != 'string');
+			this.classed('showOp', this.filterFieldType != 'string' && this.filterFieldType != 'boolean');
+			this.classed('showEditor', this.filterFieldType != 'boolean');
+			this.classed('showBoolean', this.filterFieldType == 'boolean');
 			this.editor.setData('');
 		},
 		
@@ -104,11 +115,12 @@
 			var fieldFilter = {};
 			var filter = {};
 			fieldFilter[$this.filterField] = filter;
-			var val = $this.editor.getData().getValue();
+			
 			if(this.filterFieldType == 'integer' 
 				|| this.filterFieldType == 'float' 
-				|| this.filterFieldType == 'double' 
-				|| this.filterFieldType == 'boolean'){
+				|| this.filterFieldType == 'double'){
+				
+				var val = $this.editor.getData().getValue();
 				// use op
 				if(val && val.length > 0){
 					switch($this.filterFieldType){
@@ -131,7 +143,16 @@
 						filter[$this.curOp] = {'$const': val};
 					}
 				}
+			} else if(this.filterFieldType == 'boolean'){
+				var val = $this.booleanEditor.getData().key;
+				// use ilike
+				if(val == 'true'){
+					filter['$eq'] = {'$const': true};
+				} else if(val == 'false'){
+					filter['$eq'] = {'$const': false};
+				}
 			} else if(this.filterFieldType == 'string'){
+				var val = $this.editor.getData().getValue();
 				// use ilike
 				if(val && val.length > 0){
 					filter['$ilike'] = {'$const': '%' + val + '%'};
