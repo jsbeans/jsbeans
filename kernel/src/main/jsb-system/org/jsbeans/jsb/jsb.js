@@ -4028,7 +4028,27 @@ JSB({
 		} else {
 			$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt});
 		}
-
+	},
+	
+	matchTrigger: function(key, valOrCondOpt){
+		if(!$this.$_ecMap){
+			$this.$_ecMap = {};
+		}
+		if(!$this.$_ecMap[key]){
+			$this.$_ecMap[key] = {cArr:[]};
+		}
+		if(!JSB.isDefined(valOrCondOpt)){
+			valOrCondOpt = true;	// default value expecation
+		}
+		var bMatched = false;
+		if(JSB.isDefined($this.$_ecMap[key].val)){
+			if(JSB.isFunction(valOrCondOpt)){
+				bMatched = valOrCondOpt.call($this, $this.$_ecMap[key].val);
+			} else {
+				bMatched = ($this.$_ecMap[key].val == valOrCondOpt);
+			}
+		}
+		return bMatched;
 	},
 	
 	setTrigger: function(key, valOpt){

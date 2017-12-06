@@ -9,9 +9,6 @@
 	rendererMap: {},
 	
 	$client: {
-		ready: false,
-		callbackArr: [],
-		
 		$constructor: function(){
 			$base();
 			this.doSync();
@@ -26,29 +23,17 @@
 						c.call($this);
 					})
 				}, function(){
-					$this.ready = true;
-					for(var i = 0; i < $this.callbackArr.length; i++){
-						$this.callbackArr[i].call($this);
-					}
-					$this.callbackArr = [];
+					$this.setTrigger('ready');
 				});
 			});
 		},
 		
-		isReady: function(){
-			return this.ready;
-		},
-		
 		ensureReady: function(callback){
-			if(this.isReady()){
-				callback.call($this);
-			} else {
-				this.callbackArr.push(callback);
-			}
+			this.ensureTrigger('ready', callback);
 		},
 		
 		createRendererFor: function(obj, opts){
-			if(!this.ready){
+			if(!this.matchTrigger('ready')){
 				throw new Error('RendererRepository has not been initialized yet');
 			}
 			if(!JSB.isBean(obj)){
