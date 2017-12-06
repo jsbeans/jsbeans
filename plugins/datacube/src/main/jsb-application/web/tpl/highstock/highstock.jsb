@@ -8,6 +8,7 @@
 				`#include 'highstock.js'`;
 				`#include 'highcharts-more.js'`;
 				`#include 'plugins/grouped-categories.js'`;
+				`#include 'modules/no-data-to-display.js'`;
 				
 				Highcharts.setOptions({
 			        lang: {
@@ -22,6 +23,7 @@
                         months: [ "Январь" , "Февраль" , "Март" , "Апрель" , "Май" , "Июнь" , "Июль" , "Август" , "Сентябрь" , "Октябрь" , "Ноябрь" , "Декабрь"],
                         numericSymbolMagnitude: 1000,
                         numericSymbols: [ "k" , "M" , "G" , "T" , "P" , "E"],
+                        noData: 'Нет данных',
                         printChart: "Печать виджета",
                         rangeSelectorFrom: "От",
                         rangeSelectorTo: "До",

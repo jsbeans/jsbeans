@@ -32,7 +32,7 @@
                     $this.events.onScroll.call($this, evt);
                 }
 				
-				// for content preloader
+				// for content preloader    todo: not fire when scroll up
 				if(scrollTop !== 0 && scrollHeight - scrollTop <= 2 * clientHeight && JSB().isFunction($this.events.preLoad))
 					$this.events.preLoad.call($this, evt);
 				
