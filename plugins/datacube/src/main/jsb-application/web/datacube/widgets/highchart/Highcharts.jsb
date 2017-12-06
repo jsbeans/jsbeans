@@ -715,13 +715,12 @@
 
             var field = this.getContext().find("xAxis").get(0).value().binding()[0];
             if(!field[0]) return;
-
             var fDesc = {
                 sourceId: context.source,
                 type: '$or',
                 op: '$eq',
                 field: field,
-                value: evt.target.category
+                value: evt.target.category.name
             };
 
             if(!evt.accumulate && Object.keys(this._curFilters).length > 0){

@@ -469,8 +469,10 @@
 			this.scroll.addClass('pane');
 			this.append(this.scroll);
 			
+			this.append('<div class="noDataMessage">Нет данных</div>');
+			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
-				JSB.deferUntil(function(){
+				$this.scroll.ensureTrigger('ready', function(){
 					$this.header.resize(function(){
 						if(!$this.getElement().is(':visible')){
 							return;
@@ -504,8 +506,6 @@
 */
 					$this.ready = true;
 					$this.setInitialized();
-				}, function(){
-					return $this.scroll.isReady();
 				});
 			});
 			
@@ -810,7 +810,7 @@
 						return lastRowElt.width() > 0 && lastRowElt.height() > 0;
 					});
 				}
-				
+				$this.classed('noData', $this.rows.length == 0);
 			})
 		},
 		

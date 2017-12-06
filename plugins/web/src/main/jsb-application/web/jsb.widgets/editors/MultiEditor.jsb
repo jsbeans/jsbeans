@@ -18,8 +18,6 @@
 		})
 	},
 	$client: {
-		ready: false,
-		
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
@@ -262,11 +260,8 @@
 				self.editor.refresh();
 			});
 			
-			this.ready = true;
-		},
-		
-		isReady: function(){
-			return this.ready;
+			this.setTrigger('ready');
+//			this.ready = true;
 		},
 		
 		isValid: function(){

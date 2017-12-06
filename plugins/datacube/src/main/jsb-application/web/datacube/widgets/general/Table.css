@@ -225,3 +225,20 @@
 .tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col:last-child {
 	border-right: none;
 }
+
+/* no data message */
+.tableWidget > .noDataMessage {
+	display: none;
+}
+
+.tableWidget.noData > .noDataMessage {
+	display: block;
+	z-index: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    font-size: 18px;
+    color: #6f6f6f;
+    margin-left: -55px;
+    margin-top: -10px;
+}

@@ -2,26 +2,19 @@
 	$name:'JSB.Widgets.ScrollBox',
 	$parent: 'JSB.Widgets.Control',
 	$client: {
-		ready: false,
-		
 		$constructor: function(opts){
-			var self = this;
 			$base(opts);
 			this.loadCss('scrollBox.css');
 			if(opts && opts.cssClass){
 			    this.addClass(opts.cssClass);
 			}
 			JSB().loadScript('tpl/iscroll/iscroll-probe.js', function(){
-				self.init();
+				$this.init();
 			});
 		},
 		
 		options: {
 			scrollbars: true
-		},
-		
-		isReady: function(){
-			return $this.ready;
 		},
 		
 		init: function(){
@@ -113,7 +106,8 @@
 				$this.installScroll();
 				$this.setEasing('easeOutExpo');
 				$this.updateScrollbars();
-				$this.ready = true;
+				$this.setTrigger('ready');
+//				$this.ready = true;
 //			},function(){
 //				return $this.getElement().width() > 0;
 //			});

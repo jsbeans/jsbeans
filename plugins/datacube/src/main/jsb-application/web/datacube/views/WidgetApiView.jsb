@@ -226,6 +226,25 @@
 		},
 		
 		updateFrame: function(){
+			var multiEditor = this.find('.htmlView div[jsb="JSB.Widgets.MultiEditor"]').jsb();
+			if(multiEditor.ensureTrigger('ready', function(){
+				var html = $this.find('.htmlView div[jsb="JSB.Widgets.MultiEditor"]').jsb().getData().getValue();
+				var iframe = $this.find('.widgetView iframe');
+				var iframeNode = iframe.get(0);
+				iframeNode.src = "about:blank";
+				JSB.defer(function(){
+					var doc = iframeNode.contentDocument;
+					doc.designMode = "on";
+					
+					// put data into iframe
+					doc.open();
+					doc.write(html);
+					doc.close();
+					
+					doc.designMode = "off";
+				});
+			}));
+/*			
 			if(!this.find('.htmlView div[jsb="JSB.Widgets.MultiEditor"]').jsb() || !this.find('.htmlView div[jsb="JSB.Widgets.MultiEditor"]').jsb().isReady()){
 				JSB.deferUntil(function(){
 					$this.updateFrame();
@@ -234,21 +253,7 @@
 				});
 				return;
 			}
-			var html = this.find('.htmlView div[jsb="JSB.Widgets.MultiEditor"]').jsb().getData().getValue();
-			var iframe = this.find('.widgetView iframe');
-			var iframeNode = iframe.get(0);
-			iframeNode.src = "about:blank";
-			JSB.defer(function(){
-				var doc = iframeNode.contentDocument;
-				doc.designMode = "on";
-				
-				// put data into iframe
-				doc.open();
-				doc.write(html);
-				doc.close();
-				
-				doc.designMode = "off";
-			});
+*/			
 		},
 		
 		refresh: function(){
