@@ -120,11 +120,16 @@
 						};
 						for(var j = 0; j < fDesc.binding.length; j++){
 							var bDesc = fDesc.binding[j];
-							this.fields[fDesc.field].binding.push({
-								provider: this.dataProviders[bDesc.provider],
-								field: bDesc.field,
-								type: bDesc.type
-							});
+							if(this.dataProviders[bDesc.provider]){
+								this.fields[fDesc.field].binding.push({
+									provider: this.dataProviders[bDesc.provider],
+									field: bDesc.field,
+									type: bDesc.type
+								});
+							}
+						}
+						if(this.fields[fDesc.field].binding.length == 0){
+							delete this.fields[fDesc.field];
 						}
 					}
 					
@@ -167,11 +172,17 @@
 									binding: []
 								}
 								for(var j = 0; j < fDesc.binding.length; j++){
-									materialization.fields[fDesc.field].binding.push({
-										provider: JSB.getInstance(fDesc.binding[j].provider),
-										field: fDesc.binding[j].field,
-										type: fDesc.binding[j].type
-									});
+									var provider = JSB.getInstance(fDesc.binding[j].provider);
+									if(provider){
+										materialization.fields[fDesc.field].binding.push({
+											provider: provider,
+											field: fDesc.binding[j].field,
+											type: fDesc.binding[j].type
+										});
+									}
+								}
+								if(materialization.fields[fDesc.field].binding.length == 0){
+									delete materialization.fields[fDesc.field];
 								}
 							}
 							
