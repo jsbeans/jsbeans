@@ -56,12 +56,7 @@
                     if (conn) {
                         if (checkConnection) {
                             try {
-                                var bOk = conn.jdbcConnection.isValid(this.config.checkResponseTimeoutSec||5);
-                                if(!bOk){
-                                	closeConnection(conn);
-                                    conn = null;
-                                	continue;
-                                }
+                                JDBC.validationQuery(conn.jdbcConnection, this.config.checkResponseTimeoutSec||5);
                             } catch(e) {
                                 closeConnection(conn);
                                 conn = null;

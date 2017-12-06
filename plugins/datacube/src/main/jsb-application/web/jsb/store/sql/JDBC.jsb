@@ -155,6 +155,23 @@
 			}
 		},
 
+		validationQuery: function(connection, timeoutSecs) {
+		    connection.setAutoCommit(false);
+		    try {
+                var st = connection.createStatement();
+                try {
+                    st.executeQuery('SELECT 1');
+                } finally {
+                    st.close();
+                }
+            } catch (e) {
+            	try{
+            		connection.rollback();
+            	}catch(x){}
+                throw e;
+            }
+		},
+
 		iteratedParametrizedQuery: function(connection, parametrizedSQL, getValue, getType, rowExtractor, onClose) {
 		    var getType = getType || function(){
 		        return null;

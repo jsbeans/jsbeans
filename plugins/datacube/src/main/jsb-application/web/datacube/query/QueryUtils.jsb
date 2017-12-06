@@ -8,7 +8,12 @@
 		    'JSB.Crypt.MD5'
         ],
 
-        /** Enumerate all sub-queries (from inners to root)*/
+        /**
+        * 1) рассматривается рекурсивно (от листьев к главному запросу) лобой тип запроса, с вледующем порядке:
+        *    - подзапрос $from
+        *    - подзапросы в выоажениях условий, сортировки, группировки (все, кроме $from и $select)
+        *    - подзапросы в $select
+        */
         walkSubQueries: function (query, callback/**callback(q, isFromQuery, isValueQuery)*/) {
             function collect(q, key) {
                 if (JSB.isPlainObject(q)) {
@@ -17,8 +22,12 @@
                         collect(q.$from, '$from');
                     }
                     // inner values
-                    for (var f in q) if (f != '$from' && q.hasOwnProperty(f)) {
+                    for (var f in q) if (f != '$from' && f != '$select' && q.hasOwnProperty(f)) {
                         collect(q[f], f);
+                    }
+                    // from
+                    if (q.$select) {
+                        collect(q.$select, '$select');
                     }
                     // query
                     if (q.$select) {
@@ -247,16 +256,16 @@
             return Object.keys(cubeFields)[0];
         },
 
-        filterFilterByFields: function(filter, isAccepted /** boolean isAccepted(field, expr) */) {
+        filterFilterByFields: function(filter, isAccepted /** boolean isAccepted(field, expr, opPath) */) {
 //debugger;
-            function filteredAndOr(array, isAccepted) {
+            function filteredAndOr(array, isAccepted, path) {
                 if (!JSB.isArray(array)) {
                     throw new Error('Unsupported expression type for operator $and/$or');
                 }
 
                 var resultArray = [];
                 for (var i in array) {
-                    var fil = filteredMultiFilter(array[i], isAccepted);
+                    var fil = filteredMultiFilter(array[i], isAccepted, path);
                     if (fil) {
                         resultArray.push(fil);
                     }
@@ -264,17 +273,17 @@
                 return resultArray.length > 0 ? resultArray : null;
             }
 
-            function filteredBinaryCondition(op, args, isAccepted) {
+            function filteredBinaryCondition(op, args, isAccepted, path) {
                 for (var i in args) {
                     var field = $this.extractSingleField(args[i]);
-                    if (!isAccepted(field, args[i])) {
+                    if (!isAccepted(field, args[i], path)) {
                         return null;
                     }
                 }
                 return args;
             }
 
-            function filteredMultiFilter(exps, isAccepted) {
+            function filteredMultiFilter(exps, isAccepted, path) {
                 if (!JSB.isPlainObject(exps)) {
                     throw new Error('Unsupported expression type ' + exps);
                 }
@@ -286,20 +295,21 @@
                         switch(op) {
                             case '$or':
                             case '$and':
-                                resultExps[op] = filteredAndOr(exps[op], isAccepted);
+                                resultExps[op] = filteredAndOr(exps[op], isAccepted, path.concat([op]));
                                 if (!resultExps[op]) delete resultExps[op];
                                 break;
                             default:
                                 // $op: [left, right] expression
-                                resultExps[op] = filteredBinaryCondition(op, exps[op], isAccepted);
+                                resultExps[op] = filteredBinaryCondition(op, exps[op], isAccepted, path.concat([op]));
                                 if (!resultExps[op]) delete resultExps[op];
                         }
                     } else {
                         // field: {$eq: expr}
                         if (isAccepted(field, field)) {
-                            var rightExpr = exps[field][Object.keys(exps[field])[0]];
+                            var opp = Object.keys(exps[field])[0];
+                            var rightExpr = exps[field][opp];
                             var rightField = $this.extractSingleField(rightExpr);
-                            if (!rightField || isAccepted(rightField, rightExpr)) {
+                            if (!rightField || isAccepted(rightField, rightExpr, path.concat([opp]))) {
                                 resultExps[field] = exps[field];
                             } else {
                                 //check
@@ -312,7 +322,7 @@
                 return Object.keys(resultExps).length > 0 ? resultExps : null;
             }
 
-            var filtered = filteredMultiFilter(filter, isAccepted);
+            var filtered = filteredMultiFilter(filter, isAccepted, ['$and']);
 //Log.debug('\nfilterFilterByFields: \n' + JSON.stringify(filter) + '\n' + JSON.stringify(filtered));
             return filtered;
         },
@@ -394,16 +404,29 @@
                 }
             }
 
-            walkMultiFilter(subQueryFilter);
+            walkMultiFilter(subQueryFilter||{});
 //Log.debug('\ncollectSubQueryJoinFields: ' + JSON.stringify(subQueryJoinFields));
             return subQueryJoinFields;
         },
 
         /** встроить дополнительный фильтр в текущий по $and с фильтрацией по названию используемого поля
         */
-        embedFilterToSubQuery: function (query, additionalFilter, isAccepted) {
-            if (!query.$filter) query.$filter = {};
-            if (!query.$filter.$and) query.$filter.$and = [];
+        embedFilterToSubQuery: function (cubeOrDataProvider, query, additionalFilter, isAccepted) {
+            if (query.$from) {
+                // skip query with $from
+                return;
+            }
+
+            var cubeFields = {};
+            $this.walkQueryFields(query, /**includeSubQueries=*/false, function (field, context, query) {
+                if ($this.isOriginalCubeField(field, query, cubeOrDataProvider)) {
+                    cubeFields[field] = true;
+                }
+            });
+            if (Object.keys(cubeFields).length == 0) {
+                // skip abstract query (without from)
+                return;
+            }
 
             var skipFields = this.collectSubQueryJoinFields(
                 query.$filter,
@@ -411,7 +434,7 @@
                     return !!context && context != query.$context;
                 }
             );
-//Log.debug('\nskipFields: ' + JSON.stringify(skipFields));
+            //Log.debug('\nskipFields: ' + JSON.stringify(skipFields));
             var subFilter = this.filterFilterByFields(
                 additionalFilter,
                 function isAccepted2(field){
@@ -420,10 +443,11 @@
             );
 
             if (subFilter) {
+                if (!query.$filter) query.$filter = {};
+                if (!query.$filter.$and) query.$filter.$and = [];
                 query.$filter.$and.push(subFilter);
             }
-//Log.debug('\nembededFilter: ' + JSON.stringify(subQuery.$filter));
-//debugger;
+            //Log.debug('\nembededFilter: ' + JSON.stringify(subQuery.$filter));
         },
 
         /** Возвращает true, если поле принадлежит кубу/провайдеру и используется в запросе без модификаций
@@ -439,10 +463,10 @@
                         dcQuery.$select[field] == field || dcQuery.$select[field].$field == field
                     )
                 )) {
-//Log.debug('\nisOriginalCubeField: ' + field + '=true');
+                //Log.debug('\nisOriginalCubeField: ' + field + '=true');
                 return true;
             }
-//Log.debug('\nisOriginalCubeField: ' + field + '=false');
+            //Log.debug('\nisOriginalCubeField: ' + field + '=false');
             return false;
         },
 
@@ -456,6 +480,7 @@
                 this.walkSubQueries(dcQuery, function(subQuery){
                     if (!subQuery.$from) {
                         $this.embedFilterToSubQuery(
+                            cubeOrDataProvider,
                             subQuery,
                             dcQuery.$cubeFilter,
                             function(field){
@@ -705,277 +730,6 @@
                     }
                 }
             }
-        },
-
-        /** Обходит выражения со значением для указанного запроса и заменяет их, если callback вернул новое выражение*/
-        updateValueExpressions: function (dcQuery, callback/**(exp, alias)*/){
-            // обход так же будет со всеми подзапросами, чтобы захватить используемые поля заданного запроса в подзапросах
-            var oldCallback = callback;
-            callback = function(exps, alias){
-                if (this == dcQuery) {
-                    return oldCallback.call(this, exps, alias);
-                }
-            };
-
-//            function walkMultiFilter(exps){
-//                var replaceFields = {};
-//                for (var field in exps) if (exps.hasOwnProperty(field)) {
-//                    if (field.startsWith('$')) {
-//                        var op = field;
-//                        switch(op) {
-//                            case '$or':
-//                            case '$and':
-//                                for (var i in exps[op]) {
-//                                    walkMultiFilter(exps[op][i]);
-//                                }
-//                                break;
-//                            default:
-//                                // $op: [left, right] expression
-//                                for(var i in exps[op]) {
-//                                    var replace = callback.call(query, exps[op][i]);
-//                                    if (replace) {
-//                                        exps[op][i] = replace;
-//                                    }
-//                                }
-//                        }
-//                    } else {
-//                        // field: {$eq: expr}
-//                        var e = exps[field];
-//                        var op = Object.keys(e)[0];
-//                        var replaceField = callback.call(query, field);
-//                        var replaceValue = callback.call(query, e[op]);
-//                        if (replaceField && replaceValue) {
-//                            var newExp = {};
-//                            newExp[op] = [{$field: replaceField}, replaceValue];
-//                            replaceFields[field] = newExp;
-//                        }
-//                    }
-//                }
-//
-//                for (var rf in replaceFields) {
-//                    delete exps[rf];
-//                    if(!exps.$and) exps.$and = [];
-//                    exps.$and.push(replaceFields[rf]);
-//                }
-//            }
-            function walkQuery(query){
-                // walk $select
-                for(var alias in query.$select) {
-                    var replace = callback.call(query, query.$select[alias], alias);
-                    if (replace) {
-                        query.$select[alias] = replace;
-                    }
-                }
-//
-//                // walk $filter
-//                walkMultiFilter(query.$filter);
-//
-//                // walk $groupBy
-//                for(var i in query.$groupBy) {
-//                    var replace = callback.call(query, query.$groupBy[i], alias);
-//                    if (replace) {
-//                        query.$groupBy[i] = replace;
-//                    }
-//                }
-
-                // walk $sort
-                for (var i in query.$sort) {
-                    var val = query.$sort[i];
-                    var exp;
-                    if (val.$expr && val.$type) {
-                        exp = val.$expr;
-                    } else {
-                        exp = Object.keys(val)[0];
-                    }
-                    var replace = callback.call(query, exp);
-                    if (replace) {
-                        query.$sort[i] = {
-                            $expr: replace,
-                            $type: val.$type == null ? val.$type : val[exp]
-                        }
-                    }
-                }
-            }
-
-            this.walkSubQueries(dcQuery, walkQuery);
-        },
-/*
-{
-  "$groupBy": [
-    "date"
-  ],
-  "$context": "main",
-  "$select": {
-    "Дата": "date",
-    "Количество": {
-      "$count": 1
-    },
-    "Столбец_2": {
-      "$select": {
-        "max": {
-          "$max": {
-            "$field": "count"
-          }
-        }
-      },
-      "$from": {
-        "$select": {
-          "count": {
-            "$count": 1
-          }
-        },
-        "$groupBy": [
-          "date"
-        ]
-      }
-    },
-    "Столбец_3": {
-      "$select": {
-        "max": {
-          "$max": {
-            "$field": "sum"
-          }
-        }
-      },
-      "$from": {
-        "$select": {
-          "sum": {
-            "$sum": 1
-          }
-        },
-        "$groupBy": [
-          "date"
-        ]
-      }
-    }
-  }
-}
-*/
-
-        /** Формирует для запроса $with*/
-        buildWithViews: function (dcQuery){
-            function extractSubFilter(query, forViewOrQuery /**forView=true*/) {
-                var skipFields = $this.collectSubQueryJoinFields(
-                    query.$filter|| {},
-                    function (context) {
-                        var isForeignContext = !!context && context != query.$context;
-                        return forViewOrQuery ? !isForeignContext : isForeignContext;
-                    }
-                );
-                var filter = $this.filterFilterByFields(query.$filter, function(filteredField, filteredExpr){
-                    return skipFields.indexOf(filteredField) == -1;
-                });
-            }
-            function extractViewBody(query){
-                var key = {
-                    $groupBy: query.$groupBy,
-                    $filter: extractSubFilter(query, true),
-                    $from: query.$from
-                };
-                return key;
-            }
-            function extractExtFilter(query){
-                return subFilter(query, true);
-            }
-            function extractViewId(query){
-                return MD5.md5(JSON.stringify(extractViewBody(query)));
-            }
-            function extractExpId(exp){
-                return MD5.md5(JSON.stringify(exp));
-            }
-            function hasView(query){
-                if (!query.$groupBy && !query.$filter && !query.$from) {
-                    return false;
-                }
-                // ViewBody имеется хотя бы в одном подзапросе
-                var viewId = extractViewId(query);
-                var count = 0;
-                $this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
-                    if (extractViewId(query) == viewId) {
-                        count++;
-                    }
-                });
-                return count > 1;
-            }
-            function ensureView(query, name){
-                var id = extractViewId(query);
-                if (views[id]) {
-                    return views[id];
-                }
-                viewOrder.push(id);
-                return views[id] = {
-                    id: id,
-                    body: extractViewBody(query),
-                    fieldExpressions:{},
-                    fieldAliases:{},
-                    name: name || ('view_' + Object.keys(views).length)
-                };
-            }
-
-            var views = {};
-            var viewOrder = [];
-debugger;
-            // load existed $with
-            dcQuery.$with = dcQuery.$with || {};
-            for (var name in dcQuery.$with) {
-                var view = ensureView(dcQuery.$with[name], name);
-                for(var alias in dcQuery.$with[name].$select) {
-                    var exp = dcQuery.$with[name].$select[alias];
-                    var expId = extractExpId(exp);
-                    view.fieldAliases[expId] = view.fieldAliases[expId] || alias;
-                    view.fieldExpressions[expId] = view.fieldExpressions[expId] || exp;
-                }
-            }
-
-            $this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
-                if (query.$sql) {
-                    return; // skip embedded SQL query
-                }
-
-                if (!hasView(query)) {
-                    return; // no view
-                }
-                var view = ensureView(query);
-                $this.updateValueExpressions(query, function callback(exp, alias) {
-                    var expId = extractExpId(exp);
-                    view.fieldAliases[expId] = view.fieldAliases[expId] || alias;
-                    view.fieldExpressions[expId] = view.fieldExpressions[expId] || exp;
-
-                });
-                // transform query: // replace values by view`s
-                $this.updateValueExpressions(query, function callback(exp, alias) {
-                    var expId = extractExpId(exp);
-                    var fieldAlias = view.fieldAliases[expId] = view.fieldAliases[expId] || expId;
-
-//                    var expFields = $this.extractFields(valueExp, skipSubQuery);
-//                    // TODO filter foreign fields
-
-                    return {$field: fieldAlias, $context: view.name};
-                });
-                delete query.$groupBy;
-                delete query.$from;
-                query.$from = view.name;
-                query.$filter = extractSubFilter(query, false);
-            });
-
-            dcQuery.$with = dcQuery.$with || {};
-            for (var i in viewOrder) {
-                var id = viewOrder[i];
-                var view = views[id];
-                dcQuery.$with[views.name] = JSB.merge({
-                    $select: (function(){
-                        var select = {};
-                        for (var fid in fieldAliases) {
-                            var fieldAlias = view.fieldAliases[expId];
-                            var fieldExpr = view.fieldExpressions[expId];
-                            select[fieldAlias] = fieldExpr;
-                        }
-                        return select;
-                    })()
-                }, view.body);
-            }
-
-            // TODO build $with and replace value expressions and $from
         },
 
         /** Разворачивает $gr* агрегаторы в натуральные подзапросы */
