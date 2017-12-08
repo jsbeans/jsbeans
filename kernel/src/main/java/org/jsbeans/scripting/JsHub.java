@@ -47,6 +47,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 @DependsOn({SecurityService.class})
@@ -65,6 +67,7 @@ public class JsHub extends Service {
     private final Map<String, JsCmdState> stateMap = new ConcurrentHashMap<String, JsCmdState>();
     
 //	private static Global jsGlobal = new Global();
+    private ThreadPoolExecutor threadPool = null;
     private final Map<String, Cancellable> timeoutMap = new ConcurrentHashMap<String, Cancellable>();
     private final Map<String, Map<String, Object>> execMapScript = new ConcurrentHashMap<String, Map<String, Object>>();
     private Main debugger;
@@ -87,17 +90,19 @@ public class JsHub extends Service {
 
     @Override
     protected void onInit() throws PlatformException {
-//		try {
+    	this.threadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                60L, TimeUnit.SECONDS,
+                new SynchronousQueue<Runnable>());
         this.contextFactory = new ContextFactory();
         this.context = contextFactory.enterContext();
         this.context.setOptimizationLevel(jsOptimizationLevel);
         this.context.setLanguageVersion(jsLanguageVersion);
         this.sharedScope = this.context.initStandardObjects(null, true);
+        
 
         Object wrappedBridge = Context.javaToJS(JsBridge.getInstance(), sharedScope);
         ScriptableObject.putProperty(sharedScope, "Bridge", wrappedBridge);
         JsObjectSerializerHelper.getInstance().initScopeTree(sharedScope);
-//			this.loadJSS();
 
         if (openDebugger) {
             this.openDebugger(new DebuggerMessage());
@@ -113,11 +118,6 @@ public class JsHub extends Service {
                 Message.TICK,
                 Core.getActorSystem().dispatcher(),
                 getSelf());
-
-//		} catch (IOException e) {
-//			throw new PlatformException(e);
-//		}
-
     }
 
     public void openDebugger(DebuggerMessage msg) {
@@ -555,7 +555,6 @@ public class JsHub extends Service {
 
     private void executeScript(ExecuteScriptMessage msg) throws PlatformException {
         String token = msg.getToken() != null ? msg.getToken() : UUID.randomUUID().toString();
-        Scriptable execScope = null;
 
         if (msg.isAsync()) {
             JsCmdState state = new JsCmdState(token);
@@ -574,8 +573,130 @@ public class JsHub extends Service {
         if (msg.getScopePath() == null) {
             msg.setScopePath("");
         }
-        execScope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(msg.getScopePath());
+        
+        ActorRef self = this.getSelf();
+        ActorRef sender = this.getSender();
+        Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(msg.getScopePath());
+        this.threadPool.execute(new Runnable() {
+			@Override
+			public void run() {
+                JsObject jsResult = null;
 
+                // put wrapped entries if any
+                if (msg.getWrapped() != null) {
+                    for (String key : msg.getWrapped().keySet()) {
+                        Object obj = msg.getWrapped().get(key);
+                        ScriptableObject.putProperty(scope, key, obj);
+                    }
+                }
+
+                Context cx = contextFactory.enterContext();
+                cx.setOptimizationLevel(jsOptimizationLevel);
+                cx.setLanguageVersion(jsLanguageVersion);
+                String scriptId = UUID.randomUUID().toString();
+                try {
+                    if (msg.isAsync()) {
+                        // send local message to update status
+                        UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
+                        uMsg.status = ExecutionStatus.EXECUTING;
+                        uMsg.token = token;
+                        self.tell(uMsg, self);
+                    }
+
+                    // execute script
+                    cx.putThreadLocal("token", token);
+                    cx.putThreadLocal("session", msg.getScopePath());
+                    cx.putThreadLocal("user", msg.getUser());
+                    cx.putThreadLocal("userToken", msg.getUserToken());
+                    cx.putThreadLocal("clientAddr", msg.getClientAddr());
+                    cx.putThreadLocal("clientRequestId", msg.getClientRequestId());
+                    cx.putThreadLocal("scope", scope);
+                    cx.putThreadLocal("_jsbCallingContext", null);
+                    Object resultObj = null;
+                    if (msg.getBody() != null) {
+                    	if(createDump){
+                    		dumpScript(scriptId, msg.getBody(), null, true);
+                    	}
+                        resultObj = cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null);
+                    } else if (msg.getFunction() != null) {
+                    	Object[] args = msg.getArgs();
+                        List<Object> objArr = new ArrayList<Object>();
+                    	if(args.length > 0){
+                            JsObjectSerializerHelper jser = new JsObjectSerializerHelper();
+                            for (Object obj : args) {
+                                objArr.add(jser.jsonElementToNativeObject(GsonWrapper.toGsonJsonElement(obj), cx, scope));
+                            }
+                    	}
+                        if(createDump){
+                        	dumpScript(scriptId, null, msg.getFunction(), true);
+                        }
+                        resultObj = msg.getFunction().call(cx, scope, scope, objArr.toArray());
+                    }
+                    jsResult = new JsObjectSerializerHelper().serializeNative(resultObj);
+
+                    UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
+                    if (msg.isTemporaryScope()) {
+                        self.tell(new RemoveScopeMessage(msg.getScopePath()), ActorRef.noSender());
+                    }
+                    // success
+                    uMsg.status = ExecutionStatus.SUCCESS;
+                    uMsg.result = jsResult;
+                    if (msg.isAsync()) {
+                        self.tell(uMsg, self);
+                    } else {
+                        if (!sender.equals(ActorRef.noSender())) {
+                            sender.tell(uMsg, self);
+                        }
+                    }
+                } catch (Throwable e) {
+                    StringBuilder sb = new StringBuilder("Execute script error: ");
+                    sb.append(e.getMessage()).append("\n");
+                    sb.append("--> Script executed: ");
+                    if (msg.getBody() != null) {
+                        sb.append(msg.getBody());
+                    } else {
+                        sb.append("Serialized function: \n");
+                        try {
+                            sb.append(serializeFunction(msg.getFunction()));
+                        } catch (UnsupportedEncodingException e1) {
+                            sb.append("(serialize error: " + e1.getMessage() + ")");
+                        }
+                    }
+
+                    if (e instanceof RhinoException) {
+                        RhinoException re = (RhinoException) e;
+                        sb.append("\n--> Stack trace:\n").append(re.getScriptStackTrace());
+                    }
+                    getLog().error(e, sb.toString());
+
+                    String messageStr = "";
+                    Throwable ex = e.getCause();
+                    if (ex.getCause() instanceof EcmaError) {
+                        messageStr = ex.getLocalizedMessage();
+                    } else {
+                        messageStr = e.getMessage();
+                    }
+                    UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
+                    uMsg.status = ExecutionStatus.FAIL;
+                    uMsg.error = messageStr;
+
+                    if (msg.isAsync()) {
+                        self.tell(uMsg, self);
+                    } else {
+                        if (!sender.equals(ActorRef.noSender())) {
+                            sender.tell(uMsg, self);
+                        }
+                    }
+                } finally {
+                	if(createDump){
+                		dumpScript(scriptId, null, null, false);
+                	}
+                    Context.exit();
+                }
+			}
+		});
+
+/*
         String dispatcher = msg.getDispatcher();
         if (dispatcher == null) {
             dispatcher = "kernel.jshub.dispatcher";
@@ -711,7 +832,7 @@ public class JsHub extends Service {
                     }
                 }
             }
-        });
+        });*/
     }
 
     private String getScriptNameByToken(String token) {
