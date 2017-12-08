@@ -801,7 +801,7 @@
 	                    if(opts.groupBy){
 	                        extQuery.$groupBy = opts.groupBy;
 	                    }
-                    	$this.iterators[sourceId] = source.executeQuery(extQuery);
+                    	$this.iterators[sourceId] = source.executeQuery(extQuery, true);
 						$this.completed[sourceId] = false;
 					} else {
 						// TODO

@@ -26,7 +26,7 @@
 	$client: {},
 	
 	$server: {
-		$require: ['JSB.Workspace.WorkspaceController'],
+		$require: ['JSB.Workspace.WorkspaceController', 'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SliceNode');
@@ -49,6 +49,7 @@
 					this.query = this.property('query');
 				}
 			}
+			this.queryCache = new QueryCache(this.cube);
 		},
 		
 		setName: function(name){
@@ -64,6 +65,7 @@
 		setQuery: function(q){
 			this.query = q;
 			this.property('query', this.query);
+			this.queryCache.clear();
 			this.doSync();
 		},
 
@@ -79,11 +81,12 @@
 			this.query = desc.query;
 			this.title(this.name);
 			this.property('query', this.query);
+			this.queryCache.clear();
 			this.cube.store();
 			this.doSync();
 		},
 		
-		executeQuery: function(extQuery){
+		executeQuery: function(extQuery, useCache){
 			$this.getCube().load();
 			var params = {};
 			var preparedQuery = JSB.clone(this.query);
@@ -137,6 +140,9 @@
 
             }
 //            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
+            if(useCache){
+            	return this.queryCache.executeQuery(preparedQuery, params);
+            }
             return this.cube.executeQuery(preparedQuery, params);
 		},
 		
