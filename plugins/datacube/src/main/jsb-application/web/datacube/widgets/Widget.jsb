@@ -458,9 +458,19 @@
 				},
 				
 				values: function(){
-					function resolveValue(item, valueDesc){
-					    // todo: defaultValue, valueType
-						return valueDesc.value;
+					function resolveValue(valueDesc){
+					    if(valueDesc.value && valueDesc.value.length === 0){
+					        return;
+					    }
+/*
+                        switch(valueDesc.bindingType){
+                            case 'number':
+                                return Number(valueDesc.value);
+                            default:
+                                return valueDesc.value;
+                        }
+*/
+                        return valueDesc.value;
 					}
 					if(this.selector.length == 0){
 						return null;
@@ -470,7 +480,7 @@
 					if(item.type == 'item'){
 						if(item.values && item.values.length > 0){
 							for(var i = 0; i < item.values.length; i++){
-								vals.push(resolveValue(item, item.values[i]));
+								vals.push(resolveValue(item.values[i]));
 							}
 						}
 					} else if(item.type == 'group'){
@@ -492,8 +502,19 @@
 				
 				value: function(){
 					function resolveValue(item){
-					    // todo: defaultValue, valueType
-						return item.values[0].value;
+					    if(item.values[0].value && item.values[0].value.length === 0){
+					        return;
+					    }
+//itemType
+/*
+                        switch(item.values[0].bindingType){
+                            case 'number':
+                                return Number(item.values[0].value);
+                            default:
+                                return item.values[0].value;
+                        }
+*/
+                        return item.values[0].value;
 					}
 
 					if(this.selector.length == 0){
