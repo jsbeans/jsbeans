@@ -316,8 +316,8 @@
                 }, 500, 'hcResize' + $this.getId());
             });
 
-            this.isInit = true;
-            $this.setInitialized();
+            this.setInitialized();
+            $this.isInit = true;
 		},
 
         refresh: function(opts){
@@ -648,7 +648,7 @@
 
                 // create the chart
                 if(!$this.chart){
-                    $this.chart = Highcharts.stockChart($this.containerId, chartOpts);
+                    $this.chart = Highcharts.stockChart($this.container.html(), chartOpts);
                 } else {
                     $this.chart.update(chartOpts);
                 }
@@ -668,6 +668,14 @@
                 console.log(ex);
                 if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
             }
+        },
+
+        destroy: function(){
+            if(this.chart){
+                this.chart.destroy();
+            }
+
+            $base();
         },
 
         _addIntervalFilter: function(event){
