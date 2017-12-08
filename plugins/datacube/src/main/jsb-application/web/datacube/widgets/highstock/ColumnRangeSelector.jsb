@@ -299,35 +299,6 @@
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
 			JSB().loadCss('tpl/highstock/css/highcharts.css');
-/*			JSB().loadScript(['tpl/highstock/highstock.js'], function(){ // 'tpl/highstock/adapters/standalone-framework.js'
-			    Highcharts.setOptions({
-			        lang: {
-                        contextButtonTitle: "Меню виджета",
-                        decimalPoint: ".",
-                        downloadJPEG: "Скачать в формате JPEG",
-                        downloadPDF: "Скачать в формате PDF",
-                        downloadPNG: "Скачать в формате PNG",
-                        downloadSVG: "Скачать в формате SVG",
-                        invalidDate: undefined,
-                        loading: "Загрузка...",
-                        months: [ "Январь" , "Февраль" , "Март" , "Апрель" , "Май" , "Июнь" , "Июль" , "Август" , "Сентябрь" , "Октябрь" , "Ноябрь" , "Декабрь"],
-                        numericSymbolMagnitude: 1000,
-                        numericSymbols: [ "k" , "M" , "G" , "T" , "P" , "E"],
-                        printChart: "Печать виджета",
-                        rangeSelectorFrom: "От",
-                        rangeSelectorTo: "До",
-                        rangeSelectorZoom: "Зум",
-                        resetZoom: "Сбросить зум",
-                        resetZoomTitle: "Масштаб 1:1",
-                        shortMonths: [ "Янв" , "Фев" , "Мар" , "Апр" , "Май" , "Июн" , "Июл" , "Авг" , "Сен" , "Окт" , "Ноя" , "Дек"],
-                        shortWeekdays: ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
-                        thousandsSep: " ",
-                        weekdays: ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
-                    }
-			    });
-
-				$this.init();
-			});*/
 			$this.init();
 		},
 
@@ -626,9 +597,6 @@
                 }
 
                 var chartOpts = {
-                    chart: {
-                        renderTo: $this.containerId
-                    },
                     xAxis: {
                         type: 'datetime',
                         min: data[0].x,
@@ -679,7 +647,11 @@
                 }
 
                 // create the chart
-                $this.chart = new Highcharts.stockChart(chartOpts);
+                if(!$this.chart){
+                    $this.chart = Highcharts.stockChart($this.containerId, chartOpts);
+                } else {
+                    $this.chart.update(chartOpts);
+                }
 
                 var ex = $this.chart.navigator.xAxis.getExtremes();
                 $this._widgetExtremes = {
