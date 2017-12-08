@@ -439,7 +439,7 @@
                             key: 'align',
                             items: [
                             {
-                                name: 'Слева',
+                                name: 'Снизу',
                                 type: 'item',
                                 key: 'low',
                                 editor: 'none',
@@ -453,7 +453,7 @@
                                 itemValue: 'middle'
                             },
                             {
-                                name: 'Справа',
+                                name: 'Сверху',
                                 type: 'item',
                                 key: 'high',
                                 editor: 'none',
@@ -1009,7 +1009,7 @@
                 collapsed: true,
                 items: [
                 {
-                    name: 'Активны',
+                    name: 'Активна',
                     type: 'item',
                     key: 'enabled',
                     optional: 'checked',
@@ -1038,7 +1038,7 @@
                 {
                     name: 'Толщина границы',
                     type: 'item',
-                    key: 'borderRadius',
+                    key: 'borderWidth',
                     itemType: 'number'
                 },
                 {
@@ -1114,7 +1114,7 @@
                 }
                 ]
             },
-            // Опции точек (не полный список)
+            // Опции точек (неполный список)
             {
                 name: 'Опции точек',
                 type: 'group',
@@ -1284,16 +1284,21 @@
                 }, 500, 'hcResize' + $this.getId());
             });
 
-            $this._isInit = true;
             $this.setInitialized();
         },
 
         // inner variables
-        _isInit: false,
+        _curFilters: {},
+        _deselectCategoriesCount: 0,
+        _curFilterHash: null,
 
         // events
         options: {
-            // todo
+            onClick: null,
+            onSelect: null,
+            onUnselect: null,
+            onMouseOver: null,
+            onMouseOut: null
         },
 
         // refresh after data changes
@@ -1317,7 +1322,50 @@
 
             $base();
 
-            // todo: global filtration
+            // filters section
+            var globalFilters = dataSource.getFilters();
+            if(globalFilters){
+                var binding = this.getContext().find("xAxis").get(0).value().binding()[0],
+                    newFilters = {};
+
+                for(var i in globalFilters){
+                    var cur = globalFilters[i];
+
+                    if(cur.field === binding && cur.op === '$eq'){
+                        if(!this._curFilters[cur.value]){
+                            this._curFilters[cur.value] = cur.id;
+                            this._selectAllCategory(cur.value);
+                        }
+
+                        newFilters[cur.value] = true;
+
+                        delete globalFilters[i];
+                    }
+                }
+
+                for(var i in this._curFilters){
+                    if(!newFilters[i]){
+                        this._deselectAllCategory(i);
+                        delete this._curFilters[i];
+                    }
+                }
+
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                    return;
+                } else {
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    source.setFilters(globalFilters);
+                }
+            } else {
+                if(Object.keys(this._curFilters).length > 0){
+                    for(var i in this._curFilters){
+                        this._deselectAllCategory(i);
+                    }
+                    this._curFilters = {};
+                    return;
+                }
+                this._curFilterHash = null;
+            }
 
             var seriesContext = this.getContext().find('series').values(),
                 xAxisCategories = this.getContext().find('xAxis').find('categories'),
@@ -1483,7 +1531,6 @@
                         borderColor: legendContext.find('borderColor').value(),
                         borderRadius: legendContext.find('borderRadius').value(),
                         borderWidth: legendContext.find('borderWidth').value(),
-                        borderWidth: legendContext.find('borderWidth').value(),
                         floating: legendContext.find('floating').used(),
                         itemDistance: legendContext.find('itemDistance').value(),
                         itemWidth: legendContext.find('itemWidth').value(),
@@ -1503,6 +1550,69 @@
                     },
                     plotOptions: {
                         series: {
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        $this._clickEvt = evt;
+
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    select: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            flag = $this.options.onSelect.call(this, evt);
+                                        }
+
+                                        if(!flag && $this._clickEvt){
+                                            evt.preventDefault();
+                                            $this._clickEvt = null;
+                                            $this._addNewFilter(evt);
+                                        }
+                                    },
+                                    unselect: function(evt) {
+                                        var flag = false;
+
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            flag = $this.options.onUnselect.call(this, evt);
+                                        }
+
+                                        if(!flag && $this._deselectCategoriesCount === 0){
+                                            if(Object.keys($this._curFilters).length > 0){
+                                                evt.preventDefault();
+
+                                                if(evt.accumulate){
+                                                    $this.removeFilter($this._curFilters[evt.target.category]);
+                                                    $this._deselectAllCategory(evt.target.category);
+                                                    delete $this._curFilters[evt.target.category];
+                                                    $this.refreshAll();
+                                                } else {
+                                                    for(var i in $this._curFilters){
+                                                        $this.removeFilter($this._curFilters[i]);
+                                                        $this._deselectAllCategory(i);
+                                                    }
+                                                    $this._curFilters = {};
+                                                    $this.refreshAll();
+                                                }
+                                            }
+                                        } else {
+                                            $this._deselectCategoriesCount--;
+                                        }
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
+                                        }
+                                    }
+                                }
+                            },
                             stacking: plotOptionsContext.find('stacking').value().value()
                         }
                     },
@@ -1523,6 +1633,7 @@
                         backgroundColor: tooltipContext.find('backgroundColor').value(),
                         borderColor: tooltipContext.find('borderColor').value(),
                         borderRadius: tooltipContext.find('borderRadius').value(),
+                        borderWidth: tooltipContext.find('borderWidth').value(),
                         useHTML: tooltipContext.find('useHTML').used(),
                         headerFormat: tooltipContext.find('headerFormat').value(),
                         pointFormat: tooltipContext.find('pointFormat').value(),
@@ -1596,12 +1707,69 @@
                         gridLineWidth: yAxisContext.find('gridLineWidth').value()
                     }
                 }
-
+debugger;
                 this.container.highcharts(chartOpts);
                 this.chart =  $this.container.highcharts();
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
+            }
+        },
+
+        _addNewFilter: function(evt){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) return;
+
+            var field = this.getContext().find("xAxis").get(0).value().binding()[0];
+            if(!field[0]) return;
+            var fDesc = {
+                sourceId: context.source,
+                type: '$or',
+                op: '$eq',
+                field: field,
+                value: evt.target.category.name
+            };
+
+            if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
+                for(var i in this._curFilters){
+                    this._deselectAllCategory(i);
+                    this.removeFilter(this._curFilters[i]);
+                }
+
+                this._curFilters = {};
+            }
+
+            if(!this.hasFilter(fDesc)){
+                this._selectAllCategory(evt.target.category);
+                this._curFilters[evt.target.category] = this.addFilter(fDesc);
+                this.refreshAll();
+            }
+        },
+
+        _selectAllCategory: function(cat){
+            var series = this.chart.series;
+
+            for(var i = 0; i < series.length; i++){
+                for(var j = 0; j < series[i].points.length; j++){
+                    if(series[i].points[j].category == cat && !series[i].points[j].selected){
+                        series[i].points[j].select(true, true);
+                        break;
+                    }
+                }
+            }
+        },
+
+        _deselectAllCategory: function(cat){
+            var series = this.chart.series;
+
+            for(var i = 0; i < series.length; i++){
+                for(var j = 0; j < series[i].points.length; j++){
+                    if(series[i].points[j].category == cat && series[i].points[j].selected){
+                        this._deselectCategoriesCount++;
+                        series[i].points[j].select(false, true);
+                        break;
+                    }
+                }
             }
         }
     }
