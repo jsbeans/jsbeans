@@ -597,6 +597,10 @@
                 }
 
                 var chartOpts = {
+                    chart: {
+                        renderTo: $this.containerId
+                    },
+
                     xAxis: {
                         type: 'datetime',
                         min: data[0].x,
@@ -647,11 +651,7 @@
                 }
 
                 // create the chart
-                if(!$this.chart){
-                    $this.chart = Highcharts.stockChart($this.container.html(), chartOpts);
-                } else {
-                    $this.chart.update(chartOpts);
-                }
+                $this.chart = new Highcharts.stockChart(chartOpts);
 
                 var ex = $this.chart.navigator.xAxis.getExtremes();
                 $this._widgetExtremes = {
@@ -668,14 +668,6 @@
                 console.log(ex);
                 if($this.chart && $this.chart.series[0]) $this.chart.series[0].remove();
             }
-        },
-
-        destroy: function(){
-            if(this.chart){
-                this.chart.destroy();
-            }
-
-            $base();
         },
 
         _addIntervalFilter: function(event){
