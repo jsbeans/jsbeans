@@ -115,20 +115,17 @@
 					type: 'item',
 					name: 'Ключ',
 					key: 'key',
-					itemType: 'string',
 					itemValue: '$field'
 				}, {
 					type: 'item',
 					name: 'Значение',
 					key: 'value',
-					binding: 'field',
-					itemType: 'any'
+					binding: 'field'
 				}]
 			},{
 				name: 'Шаблон',
 				type: 'item',
 				key: 'template',
-				itemType: 'string',
 				itemValue: `<ul style="padding-left:20px; list-style-type: disc;">
 {{for(var f in it) { }}
 	<li>

@@ -428,14 +428,12 @@
                     type: 'item',
                     key: 'fieldName',
                     binding: 'field',
-                    itemType: 'string',
                     itemValue: '$field'
                 },{
                     name: 'Вес',
                     type: 'item',
                     key: 'fieldWeight',
                     binding: 'field',
-                    itemType: 'number',
                     itemValue: ''
                 }
                 ]

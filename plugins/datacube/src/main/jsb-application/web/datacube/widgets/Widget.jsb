@@ -458,19 +458,22 @@
 				},
 				
 				values: function(){
-					function resolveValue(valueDesc){
-					    if(valueDesc.value && valueDesc.value.length === 0){
-					        return;
-					    }
-/*
-                        switch(valueDesc.bindingType){
+					function resolveValue(itemType, valueDesc){
+					    return valueDesc.value;
+					    /*
+                        switch(itemType){
                             case 'number':
                                 return Number(valueDesc.value);
+                            case 'string':
+                                if(valueDesc.value){
+                                    return valueDesc.value;
+                                } else {
+                                    return;
+                                }
                             default:
                                 return valueDesc.value;
                         }
-*/
-                        return valueDesc.value;
+                        */
 					}
 					if(this.selector.length == 0){
 						return null;
@@ -480,7 +483,7 @@
 					if(item.type == 'item'){
 						if(item.values && item.values.length > 0){
 							for(var i = 0; i < item.values.length; i++){
-								vals.push(resolveValue(item.values[i]));
+								vals.push(resolveValue(item.itemType, item.values[i]));
 							}
 						}
 					} else if(item.type == 'group'){
@@ -502,21 +505,33 @@
 				
 				value: function(){
 					function resolveValue(item){
-					    if(item.values[0].value && item.values[0].value.length === 0){
-					        return;
+					    if(item.values[0].binding){
+					        return item.values[0].value;
 					    }
-//itemType
-/*
-                        switch(item.values[0].bindingType){
+
+                        switch(item.itemType){
                             case 'number':
-                                return Number(item.values[0].value);
+                                if(item.values[0].value !== null){
+                                    return Number(item.values[0].value);
+                                } else {
+                                    return item.defaultValue !== undefined ? item.defaultValue : undefined;
+                                }
+                            case 'string':
+                                if(item.values[0].value){
+                                    return item.values[0].value;
+                                } else {
+                                    return item.defaultValue !== undefined ? item.defaultValue : undefined;
+                                }
+                            case 'color':
+                                if(item.values[0].value !== null){
+                                    return item.values[0].value;
+                                } else {
+                                    return item.defaultValue !== undefined ? item.defaultValue : undefined;
+                                }
                             default:
                                 return item.values[0].value;
                         }
-*/
-                        return item.values[0].value;
 					}
-
 					if(this.selector.length == 0){
 						return null;
 					}

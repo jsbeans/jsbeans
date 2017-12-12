@@ -102,7 +102,6 @@
                 name: 'Текст',
                 key: 'text',
                 binding: 'field',
-                itemType: 'string',
                 itemValue: '$field',
             },
             {
@@ -110,7 +109,6 @@
                 name: 'Разметка',
                 key: 'annotations',
                 binding: 'field',
-                itemType: 'string',
                 itemValue: '$field',
             },
             /*
@@ -124,28 +122,24 @@
                     type: 'item',
                     name: 'Id фрагмента',
                     binding: 'field',
-                    itemType: 'string',
                     itemValue: '$field',
                 },
                 {
                     type: 'item',
                     name: 'Id документа',
                     binding: 'field',
-                    itemType: 'string',
                     itemValue: '$field',
                 },
                 {
                     type: 'item',
                     name: 'Начальный индекс',
                     binding: 'field',
-                    itemType: 'string',
                     itemValue: '$field',
                 },
                 {
                     type: 'item',
                     name: 'Конечный индекс',
                     binding: 'field',
-                    itemType: 'string',
                     itemValue: '$field',
                 }
                 ]
@@ -162,7 +156,6 @@
                 name: 'CSS стиль текста',
                 type: 'item',
                 optional: true,
-                itemType: 'string',
                 itemValue: `/* Заполните объект CSS значениями */`,
                 key: 'cssText',
                 editor: 'JSB.Widgets.MultiEditor',
@@ -174,7 +167,6 @@
                 name: 'CSS стиль выделений',
                 type: 'item',
                 optional: true,
-                itemType: 'string',
                 itemValue: `/* Заполните объект CSS значениями */`,
                 key: 'cssMark',
                 editor: 'JSB.Widgets.MultiEditor',

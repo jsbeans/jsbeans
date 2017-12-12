@@ -35,14 +35,14 @@
                         type: 'item',
                         key: 'name',
                         binding: 'field',
-                        itemType: 'string'
+                        itemType: 'any'
                     },
                     {
                         name: 'Данные',
                         type: 'item',
                         key: 'data',
                         binding: 'field',
-                        itemType: 'string'
+                        itemType: 'any'
                     },
                     {
                         name: 'Тип',
@@ -195,7 +195,8 @@
                             name: 'Поворот',
                             type: 'item',
                             key: 'rotation',
-                            itemType: 'number'
+                            itemType: 'number',
+                            defaultValue: 0
                         },
                         {
                             name: 'Шаг',
@@ -208,13 +209,15 @@
                             type: 'item',
                             key: 'fontColor',
                             itemType: 'fontColor',
-                            editor: 'JSB.Widgets.ColorEditor'
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#666666'
                         },
                         {
                             name: 'Размер шрифта',
                             type: 'item',
                             key: 'fontSize',
-                            itemType: 'number'
+                            itemType: 'string',
+                            defaultValue: '11px'
                         }
                         ]
                     },
@@ -262,7 +265,8 @@
                             name: 'Поворот',
                             type: 'item',
                             key: 'rotation',
-                            itemType: 'number'
+                            itemType: 'number',
+                            defaultValue: 0
                         },
                         {
                             name: 'Отступ',
@@ -275,13 +279,15 @@
                             type: 'item',
                             key: 'color',
                             itemType: 'color',
-                            editor: 'JSB.Widgets.ColorEditor'
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#666666'
                         },
                         {
                             name: 'X',
                             type: 'item',
                             key: 'x',
-                            itemType: 'number'
+                            itemType: 'number',
+                            defaultValue: 0
                         },
                         {
                             name: 'Y',
@@ -310,19 +316,22 @@
                         type: 'item',
                         key: 'lineColor',
                         itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        defaultValue: '#ccd6eb'
                     },
                     {
                         name: 'Толщина оси',
                         type: 'item',
                         key: 'lineWidth',
-                        itemType: 'number'
+                        itemType: 'number',
+                        defaultValue: 1
                     },
                     {
                         name: 'Отступ оси',
                         type: 'item',
                         key: 'offset',
-                        itemType: 'number'
+                        itemType: 'number',
+                        defaultValue: 0
                     },
                     {
                         name: 'Напротив',
@@ -343,7 +352,8 @@
                         type: 'item',
                         key: 'tickColor',
                         itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        defaultValue: '#ccd6eb'
                     },
                     {
                         name: 'Интервал отметок',
@@ -398,7 +408,8 @@
                             name: 'Поворот',
                             type: 'item',
                             key: 'rotation',
-                            itemType: 'number'
+                            itemType: 'number',
+                            defaultValue: 0
                         },
                         {
                             name: 'Шаг',
@@ -411,13 +422,15 @@
                             type: 'item',
                             key: 'fontColor',
                             itemType: 'fontColor',
-                            editor: 'JSB.Widgets.ColorEditor'
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#666666'
                         },
                         {
                             name: 'Размер шрифта',
                             type: 'item',
                             key: 'fontSize',
-                            itemType: 'number'
+                            itemType: 'string',
+                            defaultValue: '11px'
                         }
                         ]
                     },
@@ -431,7 +444,8 @@
                             name: 'Текст',
                             type: 'item',
                             key: 'text',
-                            itemType: 'string'
+                            itemType: 'string',
+                            defaultValue: 'Значения'
                         },
                         {
                             name: 'Расположение',
@@ -465,7 +479,8 @@
                             name: 'Поворот',
                             type: 'item',
                             key: 'rotation',
-                            itemType: 'number'
+                            itemType: 'number',
+                            defaultValue: 270
                         },
                         {
                             name: 'Отступ',
@@ -478,13 +493,15 @@
                             type: 'item',
                             key: 'color',
                             itemType: 'color',
-                            editor: 'JSB.Widgets.ColorEditor'
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#666666'
                         },
                         {
                             name: 'X',
                             type: 'item',
                             key: 'x',
-                            itemType: 'number'
+                            itemType: 'number',
+                            defaultValue: 0
                         },
                         {
                             name: 'Y',
@@ -513,19 +530,22 @@
                         type: 'item',
                         key: 'lineColor',
                         itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        defaultValue: '#ccd6eb'
                     },
                     {
                         name: 'Толщина оси',
                         type: 'item',
                         key: 'lineWidth',
-                        itemType: 'number'
+                        itemType: 'number',
+                        defaultValue: 0
                     },
                     {
                         name: 'Отступ оси',
                         type: 'item',
                         key: 'offset',
-                        itemType: 'number'
+                        itemType: 'number',
+                        defaultValue: 0
                     },
                     {
                         name: 'Напротив',
@@ -546,7 +566,8 @@
                         type: 'item',
                         key: 'tickColor',
                         itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        defaultValue: '#ccd6eb'
                     },
                     {
                         name: 'Интервал отметок',
@@ -580,7 +601,8 @@
                         type: 'item',
                         key: 'gridLineColor',
                         itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        defaultValue: '#e6e6e6'
                     },
                     {
                         name: 'Тип линии сетки',
@@ -670,7 +692,8 @@
                         name: 'Толщина линии сетки',
                         type: 'item',
                         key: 'gridLineWidth',
-                        itemType: 'number'
+                        itemType: 'number',
+                        defaultValue: 1
                     }
                 ]
             },
@@ -686,7 +709,8 @@
                     name: 'Текст',
                     type: 'item',
                     key: 'text',
-                    itemType: 'string'
+                    itemType: 'string',
+                    defaultValue: ''
                 },
                 {
                     name: 'Горизонтальное выравнивание',
@@ -722,6 +746,13 @@
                     key: 'verticalAlign',
                     items: [
                     {
+                        name: 'Нет',
+                        type: 'item',
+                        key: 'undefined',
+                        editor: 'none',
+                        itemValue: undefined
+                    },
+                    {
                         name: 'Верх',
                         type: 'item',
                         key: 'top',
@@ -755,32 +786,37 @@
                     name: 'Отступ',
                     type: 'item',
                     key: 'margin',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 15
                 },
                 {
                     name: 'Цвет шрифта',
                     type: 'item',
                     key: 'fontColor',
                     itemType: 'color',
-                    editor: 'JSB.Widgets.ColorEditor'
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#333333'
                 },
                 {
                     name: 'Размер шрифта',
                     type: 'item',
                     key: 'fontSize',
-                    itemType: 'number'
+                    itemType: 'string',
+                    defaultValue: '18px'
                 },
                 {
                     name: 'X',
                     type: 'item',
                     key: 'x',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 0
                 },
                 {
                     name: 'Y',
                     type: 'item',
                     key: 'y',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 10
                 }
                 ]
             },
@@ -894,13 +930,15 @@
                     name: 'Радиус границы',
                     type: 'item',
                     key: 'borderRadius',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 0
                 },
                 {
                     name: 'Толщина границы',
                     type: 'item',
                     key: 'borderWidth',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 0
                 },
                 {
                     name: 'Обтекание',
@@ -913,7 +951,8 @@
                     name: 'Интервал между подписями',
                     type: 'item',
                     key: 'itemDistance',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 20
                 },
                 {
                     name: 'Ширина подписей',
@@ -925,13 +964,15 @@
                     name: 'Отступ сверху',
                     type: 'item',
                     key: 'itemMarginTop',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 0
                 },
                 {
                     name: 'Отступ снизу',
                     type: 'item',
                     key: 'itemMarginBottom',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 0
                 },
                 {
                     name: 'Стиль подписей',
@@ -944,19 +985,22 @@
                         type: 'item',
                         key: 'color',
                         itemType: 'color',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        defaultValue: '#333333'
                     },
                     {
                         name: 'Размер шрифта',
                         type: 'item',
                         key: 'fontSize',
-                        itemType: 'string'
+                        itemType: 'string',
+                        defaultValue: '12px'
                     },
                     {
                         name: 'Полнота шрифта',
                         type: 'item',
                         key: 'fontWeight',
-                        itemType: 'string'
+                        itemType: 'string',
+                        defaultValue: 'bold'
                     }
                     ]
                 },
@@ -964,7 +1008,8 @@
                     name: 'Формат подписей',
                     type: 'item',
                     key: 'labelFormat',
-                    itemType: 'string'
+                    itemType: 'string',
+                    defaultValue: '{name}'
                 },
                 {
                     name: 'Обратный порядок',
@@ -990,13 +1035,15 @@
                     name: 'Расположение по оси Х',
                     type: 'item',
                     key: 'x',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 0
                 },
                 {
                     name: 'Расположение по оси Y',
                     type: 'item',
                     key: 'y',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 0
                 }
                 ]
             },
@@ -1020,7 +1067,8 @@
                     type: 'item',
                     key: 'backgroundColor',
                     itemType: 'color',
-                    editor: 'JSB.Widgets.ColorEditor'
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#f8f8f8'
                 },
                 {
                     name: 'Цвет границы',
@@ -1033,13 +1081,15 @@
                     name: 'Радиус границы',
                     type: 'item',
                     key: 'borderRadius',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 3
                 },
                 {
                     name: 'Толщина границы',
                     type: 'item',
                     key: 'borderWidth',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 1
                 },
                 {
                     name: 'Использовать HTML',
@@ -1057,7 +1107,8 @@
                     editor: 'JSB.Widgets.MultiEditor',
                     options: {
                         valueType: 'org.jsbeans.types.Html'
-                    }
+                    },
+                    defaultValue: '<span style="font-size: 10px">{point.key}</span><br/>'
                 },
                 {
                     name: 'Формат точек',
@@ -1068,7 +1119,8 @@
                     editor: 'JSB.Widgets.MultiEditor',
                     options: {
                         valueType: 'org.jsbeans.types.Html'
-                    }
+                    },
+                    defaultValue: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y}</b><br/>'
                 },
                 {
                     name: 'Формат нижнего колонтитула',
@@ -1085,7 +1137,8 @@
                     name: 'Внутренний отступ',
                     type: 'item',
                     key: 'padding',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: 8
                 },
                 {
                     name: 'Тень',
@@ -1171,26 +1224,30 @@
                     name: 'Текст',
                     type: 'item',
                     key: 'text',
-                    itemType: 'string'
+                    itemType: 'string',
+                    defaultValue: 'Highcharts.com'
                 },
                 {
                     name: 'Ссылка',
                     type: 'item',
                     key: 'href',
-                    itemType: 'string'
+                    itemType: 'string',
+                    defaultValue: 'http://www.highcharts.com'
                 },
                 {
                     name: 'Цвет шрифта',
                     type: 'item',
                     key: 'fontColor',
                     itemType: 'color',
-                    editor: 'JSB.Widgets.ColorEditor'
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#999999'
                 },
                 {
                     name: 'Размер шрифта',
                     type: 'item',
                     key: 'fontSize',
-                    itemType: 'number'
+                    itemType: 'string',
+                    defaultValue: '9px'
                 },
                 {
                     name: 'Горизонтальное выравнивание',
@@ -1252,13 +1309,15 @@
                     name: 'X',
                     type: 'item',
                     key: 'x',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: -10
                 },
                 {
                     name: 'Y',
                     type: 'item',
                     key: 'y',
-                    itemType: 'number'
+                    itemType: 'number',
+                    defaultValue: -5
                 }
                 ]
             }
@@ -1271,7 +1330,7 @@
         $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
         $constructor: function(opts){
             $base(opts);
-            $this.getElement().addClass('highchartsWidget');
+            $this.addClass('highchartsWidget');
             $this.container = $this.$('<div class="container"></div>');
             $this.append($this.container);
 
@@ -1280,7 +1339,7 @@
                     if(!$this.getElement().is(':visible') || !$this.chart){
                         return;
                     }
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height());
                 }, 500, 'hcResize' + $this.getId());
             });
 
@@ -1354,7 +1413,7 @@
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    source.setFilters(globalFilters);
+                    dataSource.setFilters(globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -1508,7 +1567,7 @@
 
                 var chartOpts = {
                     credits: {
-                        enabled: creditsContext.find('enabled').value(),
+                        enabled: creditsContext.find('enabled').used(),
                         text: creditsContext.find('text').value(),
                         href: creditsContext.find('href').value(),
                         style: {
@@ -1516,8 +1575,8 @@
                            fontSize: creditsContext.find('fontSize').value()
                         },
                         position: {
-                            align: creditsContext.find('align').value(),
-                            verticalAlign: creditsContext.find('verticalAlign').value(),
+                            align: creditsContext.find('align').value().value(),
+                            verticalAlign: creditsContext.find('verticalAlign').value().value(),
                             x: creditsContext.find('x').value(),
                             y: creditsContext.find('y').value()
                         }
@@ -1707,9 +1766,12 @@
                         gridLineWidth: yAxisContext.find('gridLineWidth').value()
                     }
                 }
-debugger;
-                this.container.highcharts(chartOpts);
-                this.chart =  $this.container.highcharts();
+
+                if(this.chart){
+                    this.chart.update(chartOpts);
+                } else {
+                    this.chart = Highcharts.chart(this.container.get(0), chartOpts);
+                }
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
@@ -1717,7 +1779,7 @@ debugger;
         },
 
         _addNewFilter: function(evt){
-            var context = this.getContext().find('source').binding();
+            var context = this.getContext().find('dataSource').binding();
             if(!context.source) return;
 
             var field = this.getContext().find("xAxis").get(0).value().binding()[0];

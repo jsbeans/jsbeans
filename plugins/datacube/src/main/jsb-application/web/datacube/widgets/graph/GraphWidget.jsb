@@ -83,7 +83,6 @@
                    type: 'item',
                    key: 'sourceElement',
                    binding: 'field',
-                   itemType: 'string',
                    itemValue: '$field',
                 },
                 {
@@ -91,14 +90,12 @@
                    type: 'item',
                    key: 'targetElement',
                    binding: 'field',
-                   itemType: 'string',
                    itemValue: '$field',
                 },
                 {
                     name: 'CSS стиль связи',
                     type: 'item',
                     key: 'linkCss',
-                    itemType: 'string',
                     editor: 'JSB.Widgets.MultiEditor',
                     description: 'JSON-объект с описанием css-свойств связей'
                 }
@@ -117,7 +114,6 @@
                     key: 'element',
                     binding: 'field',
                     multiple: 'true',
-                    itemType: 'string',
                     itemValue: '$field'
                 },
                 {
@@ -135,7 +131,6 @@
                            name: 'Заголовки',
                            key: 'header',
                            binding: 'field',
-                           itemType: 'string',
                            description: 'Заголовок внутри вершины'
                        }
                        ]
@@ -158,7 +153,6 @@
                     type: 'item',
                     key: 'name',
                     binding: 'field',
-                    itemType: 'string',
                     itemValue: '$field',
                     description: 'Имя вершин, отображаемое в легенде'
                 },
@@ -167,7 +161,6 @@
                     type: 'item',
                     key: 'caption',
                     binding: 'field',
-                    itemType: 'string',
                     itemValue: '$field',
                     description: 'Надпись, отображаемая при наведении на вершину'
                 },
@@ -175,7 +168,6 @@
                     name: 'CSS стиль элемента',
                     type: 'item',
                     key: 'nodeCss',
-                    itemType: 'string',
                     editor: 'JSB.Widgets.MultiEditor',
                     description: 'JSON-объект с описанием css-свойств вершин'
                 }
@@ -186,7 +178,6 @@
                 name: 'Максимальное число вершин',
                 key: 'maxNodes',
                 binding: 'field',
-                itemType: 'string',
                 itemValue: '100',
                 description: 'Максимальное отображаемое число вершин'
             },
@@ -195,7 +186,6 @@
                 name: 'Высота ячейки',
                 key: 'itemHeight',
                 binding: 'field',
-                itemType: 'string',
                 itemValue: '50',
                 description: 'Высота объекта вершины'
             },
@@ -204,7 +194,6 @@
                 name: 'Ширина ячейки',
                 key: 'itemWidth',
                 binding: 'field',
-                itemType: 'string',
                 itemValue: '50',
                 description: 'Ширина объекта вершины'
             },
@@ -224,35 +213,30 @@
                             type: 'item',
                             name: 'alpha',
                             key: 'alpha',
-                            itemType: 'number',
                             itemValue: '1',
                         },
                         {
                             type: 'item',
                             name: 'alphaMin',
                             key: 'alphaMin',
-                            itemType: 'number',
                             itemValue: '0.001',
                         },
                         {
                             type: 'item',
                             name: 'alphaDecay',
                             key: 'alphaDecay',
-                            itemType: 'number',
                             itemValue: '0.0228',
                         },
                         {
                             type: 'item',
                             name: 'alphaTarget',
                             key: 'alphaTarget',
-                            itemType: 'number',
                             itemValue: '0',
                         },
                         {
                             type: 'item',
                             name: 'velocityDecay',
                             key: 'velocityDecay',
-                            itemType: 'number',
                             itemValue: '0.4',
                         }
                     ]
@@ -266,21 +250,18 @@
                             type: 'item',
                             name: 'radius',
                             key: 'radius',
-                            itemType: 'number',
                             itemValue: '1',
                         },
                         {
                             type: 'item',
                             name: 'strength',
                             key: 'strength',
-                            itemType: 'number',
                             itemValue: '0.7',
                         },
                         {
                             type: 'item',
                             name: 'iterations',
                             key: 'iterations',
-                            itemType: 'number',
                             itemValue: '1',
                         }
                     ]
@@ -294,7 +275,6 @@
                             type: 'item',
                             name: 'distance',
                             key: 'distance',
-                            itemType: 'number',
                             itemValue: '30',
                         },
                         /*
@@ -302,7 +282,6 @@
                             type: 'item',
                             name: 'strength',
                             key: 'strength',
-                            itemType: 'number',
                             itemValue: '',
                         },
                         */
@@ -310,7 +289,6 @@
                             type: 'item',
                             name: 'iterations',
                             key: 'iterations',
-                            itemType: 'number',
                             itemValue: '1',
                         }
                     ]

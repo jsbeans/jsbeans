@@ -36,6 +36,12 @@
 			if(this.scheme.type){
 				this.values.type = this.scheme.type;
 			}
+			if(this.scheme.itemType){
+			    this.values.itemType = this.scheme.itemType;
+			}
+			if(this.scheme.defaultValue !== undefined){
+			    this.values.defaultValue = this.scheme.defaultValue;
+			}
 			this.update();
 		},
 		

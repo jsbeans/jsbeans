@@ -14,14 +14,12 @@
             name: 'Заголовок',
             type: 'item',
             key: 'title',
-            itemType: 'string',
             itemValue: ''
         },
         {
             name: 'Подзаголовок',
             type: 'item',
             key: 'subtitle',
-            itemType: 'string',
             itemValue: ''
         },
         {
@@ -35,7 +33,6 @@
                 type: 'item',
                 key: 'date',
                 binding: 'field',
-                itemType: 'string',
                 itemValue: '$field',
                 description: 'Массив дат в формате Date или String'
             },
@@ -44,7 +41,6 @@
                 type: 'item',
                 key: 'count',
                 binding: 'field',
-                itemType: 'string',
                 itemValue: '$field',
                 description: 'Количество значений для каждой даты'
             },
@@ -67,7 +63,6 @@
                 name: 'Имя серии',
                 type: 'item',
                 key: 'seriesName',
-                itemType: 'string',
                 itemValue: '',
                 description: 'Имя серии. Выводится во всплывающей подсказке'
             }
@@ -162,7 +157,6 @@
                     name: 'Группировка',
                     type: 'item',
                     key: 'grouping',
-                    itemType: 'string',
                     itemValue: '',
                     description: 'Массив допустимых группировок, через запятую (1, 2, 4)'
                 }
@@ -177,20 +171,17 @@
             {
                 name: 'Начальная дата',
                 type: 'item',
-                key: 'startDate',
-                itemType: 'string'
+                key: 'startDate'
             },
             {
                 name: 'Конечная дата',
                 type: 'item',
-                key: 'endDate',
-                itemType: 'string'
+                key: 'endDate'
             },
             {
                 name: 'Число столбцов',
                 type: 'item',
-                key: 'columnCount',
-                itemType: 'string'
+                key: 'columnCount'
             }
             ]
         },
@@ -273,7 +264,6 @@
                     name: 'Формат',
                     type: 'item',
                     key: 'format',
-                    itemType: 'string',
                     itemValue: '',
                     description: 'Формат даты'
                 }
@@ -298,7 +288,6 @@
 		$constructor: function(opts){
 			$base(opts);
 			this.getElement().addClass('highchartsWidget');
-			JSB().loadCss('tpl/highstock/css/highcharts.css');
 			$this.init();
 		},
 
