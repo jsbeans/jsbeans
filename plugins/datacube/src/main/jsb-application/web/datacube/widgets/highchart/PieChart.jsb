@@ -313,11 +313,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.getElement().addClass('pieChart');
-			this.loadCss('PieChart.css');
-/*			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				$this.init();
-			});*/
+			this.addClass('highchartsWidget');
 			$this.init();
 		},
 

@@ -9,7 +9,9 @@
 				`#include 'highcharts-more.js'`;
 				`#include 'plugins/grouped-categories.js'`;
 				`#include 'modules/no-data-to-display.js'`;
-				
+
+				$this.loadCss('css/customHighcharts.css');
+
 				Highcharts.setOptions({
 			        lang: {
                         contextButtonTitle: "Меню виджета",

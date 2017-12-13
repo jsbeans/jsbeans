@@ -127,21 +127,18 @@
 				},{
 					type: 'item',
 					name: 'Минимум',
-					itemType: 'integer',
 					itemValue: 0,
 					binding: 'field',
 					key: 'min'
 				},{
 					type: 'item',
 					name: 'Максимум',
-					itemType: 'integer',
 					itemValue: 100,
 					binding: 'field',
 					key: 'max'
 				},{
 					type: 'item',
 					name: 'Значение',
-					itemType: 'integer',
 					itemValue: 50,
 					binding: 'field',
 					key: 'val'
@@ -150,39 +147,33 @@
 					key: 'textFormat',
 					name: 'Формат значения',
 					optional: true,
-					itemType: 'string',
 					itemValue: '0,0.[00]'
 				},{
 					type: 'item',
 					name: 'Цвет столбца',
-                    itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor',
 					itemValue: '#555',
 					key: 'colColor'
 				},{
 					type: 'item',
 					name: 'Толщина столбца',
-					itemType: 'float',
 					itemValue: 4,
 					key: 'colWidth'
 				},{
 					type: 'item',
 					name: 'Цвет дорожки',
-                    itemType: 'color',
                     editor: 'JSB.Widgets.ColorEditor',
 					itemValue: '#eee',
 					key: 'trailColor'
 				},{
 					type: 'item',
 					name: 'Толщина дорожки',
-					itemType: 'float',
 					itemValue: 2,
 					key: 'trailWidth'
 				},{
 					name: 'CSS стиль',
 					type: 'item',
 					optional: true,
-					itemType: 'string',
 					itemValue: `/* Заполните объект CSS значениями */
 {
 	
@@ -197,7 +188,6 @@
 					name: 'CSS стиль текста',
 					type: 'item',
 					optional: true,
-					itemType: 'string',
 					itemValue: `/* Заполните объект CSS значениями */
 {
 	font-family: 'arial';

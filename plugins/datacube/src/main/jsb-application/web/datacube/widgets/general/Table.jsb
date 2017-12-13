@@ -197,7 +197,6 @@
 					name: 'Название',
 					key: 'title',
 					type: 'item',
-					itemType: 'string',
 					itemValue: '$field'
 				},{
 					name: 'Отображение ячейки',
@@ -211,8 +210,7 @@
 							type: 'item',
 							name: 'Значение',
 							key: 'text',
-							binding: 'field',
-							itemType: 'any'
+							binding: 'field'
 						},{
 							type: 'item',
 							key: 'textSort',
@@ -236,7 +234,6 @@
 							key: 'textFormat',
 							name: 'Форматировать числа',
 							optional: true,
-							itemType: 'string',
 							itemValue: '0,0.[00]'
 						}]
 					},{
@@ -332,7 +329,6 @@
 						name: 'CSS стиль ячейки',
 						type: 'item',
 						optional: true,
-						itemType: 'string',
 						itemValue: `/* Заполните объект CSS значениями */
 {
 	font-family: 'arial';
@@ -400,7 +396,6 @@
 						name: 'CSS стиль заголовка',
 						type: 'item',
 						optional: true,
-						itemType: 'string',
 						itemValue: `/* Заполните объект CSS значениями */
 {
 	font-family: 'arial';
@@ -415,7 +410,6 @@
 				},{
 					name: 'Ширина столбца',
 					type: 'item',
-					itemType: 'string',
 					itemValue: 'auto',
 					key: 'colWidth'
 				}]

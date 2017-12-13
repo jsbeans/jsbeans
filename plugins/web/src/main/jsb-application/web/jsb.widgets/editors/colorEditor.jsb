@@ -163,6 +163,10 @@
                     $this._initHexagon();
                     break;
 			}
+
+            if(this.options.color){
+                $this.setData($this.options.color);
+            }
 		},
 
 		options: {
@@ -176,8 +180,9 @@
 
             switch(this.options.mode){
                 case 'spectrum':
-                    if(this.editBoxElt)
+                    if(this.editBoxElt){
                         this.editBoxElt.spectrum('set', val);
+                    }
                     break;
                 case 'hexagon':
                     if(this._currentColor)

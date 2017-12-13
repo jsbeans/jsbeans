@@ -185,8 +185,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.getElement().addClass('treeMap');
-			this.loadCss('TreeMap.css');
+			this.addClass('highchartsWidget');
 			JSB().loadScript(['tpl/highstock/adapters/standalone-framework.js'], function(){
 				JSB().loadScript('tpl/highstock/modules/treemap.js', function(){
 					$this.init();	

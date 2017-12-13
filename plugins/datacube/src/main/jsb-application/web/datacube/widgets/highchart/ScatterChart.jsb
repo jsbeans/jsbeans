@@ -273,11 +273,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.getElement().addClass('scatterChart');
-			this.loadCss('ScatterChart.css');
-/*			JSB().loadScript('tpl/highstock/highstock.js', function(){
-				$this.init();
-			});*/
+            this.addClass('highchartsWidget');
 			$this.init();
 		},
 
