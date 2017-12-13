@@ -465,7 +465,6 @@
 					$this.appendRows();
 				}
 			});
-			this.scroll.append('<table class="rows" cellpadding="0" cellspacing="0"><colgroup></colgroup><tbody></tbody></table>');
 			this.scroll.addClass('pane');
 			this.append(this.scroll);
 			
@@ -473,6 +472,8 @@
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.scroll.ensureTrigger('ready', function(){
+					$this.scroll.append('<table class="rows" cellpadding="0" cellspacing="0"><colgroup></colgroup><tbody></tbody></table>');
+
 					$this.header.resize(function(){
 						if(!$this.getElement().is(':visible')){
 							return;
@@ -556,7 +557,6 @@
 				}
 			}
 			
-			var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
 			this.fetchRowsBatch(fetchSize, function(rows, fail){
 				if(fail){
 					JSB.getLogger().error(fail);
@@ -617,6 +617,7 @@
 				$this.rows = $this.rows.concat(pRows);
 				
 				// accociate with DOM
+				var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
 				var rowsSel = tbody.selectAll('tr.row');
 				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
 				rowsSelData.each(function(d){
@@ -811,7 +812,7 @@
 					});
 				}
 				$this.classed('noData', $this.rows.length == 0);
-			})
+			});
 		},
 		
 		fetchRowsBatch: function(batchSize, callback){

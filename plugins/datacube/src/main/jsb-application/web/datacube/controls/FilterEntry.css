@@ -29,9 +29,13 @@
 }
 
 
-.filterEntry.showBoolean > ._dwp_comboBox {
+.filterEntry.showBoolean > ._dwp_comboBox._dwp_dropDown {
 	display: block;
 	padding: 1px 8px;
+}
+
+.filterEntry.showBoolean > ._dwp_comboBox._dwp_dropDown:active {
+	padding: 2px 7px 0 9px;
 }
 
 

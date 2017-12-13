@@ -2829,7 +2829,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 		
-		fork: function(param, proc){
+		fork: function(param, proc, opts){
 			var self = this;
 			var count = 1;
 			var locker = this.getLocker();
@@ -2857,7 +2857,7 @@ if(!(function(){return this;}).call(null).JSB){
 			
 			for(var i = 0; i < count; i++ ){
 				(function(idx){
-					JSB().defer(function(){
+					var forkFunc = function(){
 						var res = null;
 						try {
 							var p = null; 
@@ -2883,14 +2883,19 @@ if(!(function(){return this;}).call(null).JSB){
 							locker.unlock('_jsb_fork_' + h);
 							self._checkJoinCallback(h);
 						}
-					}, 0);
+					}
+					if(opts && opts.singleThreaded){
+						forkFunc();
+					} else {
+						JSB().defer(forkFunc, 0);
+					}
 				})(i);
 			}
 			
 			return h;
 		},
 		
-		join: function(forkHandle, callback){
+		join: function(forkHandle, callback, opts){
 			if(callback){
 				this.forkJoinHandles[forkHandle].callback = callback;
 				this._checkJoinCallback(forkHandle);
@@ -2911,15 +2916,21 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 		
-		chain: function(params){
+		chain: function(){
 			var self = this;
 			var procArr = [];
+			var opts = null;
+			var params = null;
 			if(arguments.length < 3){
 				throw new Error('JSB.chain: wrong argument passed');
 			}
-			for(var i = 1; i < arguments.length; i++){
-				if(JSB().isFunction(arguments[i])){
+			for(var i = 0; i < arguments.length; i++){
+				if(JSB.isFunction(arguments[i])){
 					procArr.push(arguments[i]);
+				} else if(JSB.isObject(arguments[i])){
+					opts = arguments[i];
+				} else if(JSB.isArray(arguments[i])){
+					params = arguments[i];
 				}
 			}
 			if(procArr.length < 2){
@@ -2940,7 +2951,7 @@ if(!(function(){return this;}).call(null).JSB){
 						generateForkJoinTask(nObj);
 					}
 				} else {
-					self.join(self.fork(pObj, forkProc), generateForkJoinTask);
+					self.join(self.fork(pObj, forkProc, opts), generateForkJoinTask, opts);
 				}
 			}
 			
@@ -2951,83 +2962,136 @@ if(!(function(){return this;}).call(null).JSB){
 			var self = this;
 			var reverseBindMap = this.getReverseBindMap();
 			var isServer = this.isServer();
+			var dict = {};
+			var path = [];
 			function _substComplexObjectInRpcResult(res){
 				if(JSB().isPlainObject(res)){
 					if(JSB().isArrayBuffer(res)){
-						return {
-							__type: 'ArrayBuffer',
-							__data: JSB().Base64.encode(res)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'ArrayBuffer',
+								__data: JSB().Base64.encode(res)
+							}
 						};
+						return {};
 					} else if(JSB().isInt8Array(res)){
-						return {
-							__type: 'Int8Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Int8Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isUint8Array(res)){
-						return {
-							__type: 'Uint8Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Uint8Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isUint8ClampedArray(res)){
-						return {
-							__type: 'Uint8ClampedArray',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Uint8ClampedArray',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isInt16Array(res)){
-						return {
-							__type: 'Int16Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Int16Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isUint16Array(res)){
-						return {
-							__type: 'Uint16Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Uint16Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isInt32Array(res)){
-						return {
-							__type: 'Int32Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Int32Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isUint32Array(res)){
-						return {
-							__type: 'Uint32Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Uint32Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isFloat32Array(res)){
-						return {
-							__type: 'Float32Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Float32Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isFloat64Array(res)){
-						return {
-							__type: 'Float64Array',
-							__data: JSB().Base64.encode(res.buffer)
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Float64Array',
+								__data: JSB().Base64.encode(res.buffer)
+							}
 						};
+						return {};
 					} else if(JSB().isDate(res)){
-						return {
-							__type: 'Date',
-							__data: res.getTime()
+						dict[JSB.generateUid()] = {
+							p: [JSB.clone(path)],
+							d: {
+								__type: 'Date',
+								__data: res.getTime()
+							}
 						};
+						return {};
 					} else if(JSB().isBean(res)){
-						// encode jso object
+						// encode jsb object
+						var bId = res.getId();
 						if(isServer){
-							return {
-								__type: 'Bean',
-								__jsb : res.getJsb().$name,
-								__id: !self.isNull(reverseBindMap) && !self.isNull(reverseBindMap[res.getId()]) && Object.keys(reverseBindMap[res.getId()]).length > 0 ? Object.keys(reverseBindMap[res.getId()])[0] : res.getId()
-							};
-						} else {
-							return {
-								__type: 'Bean',
-								__jsb : res.getJsb().$name,
-								__id: res.getId()
-							};
+							bId = !self.isNull(reverseBindMap) && !self.isNull(reverseBindMap[res.getId()]) && Object.keys(reverseBindMap[res.getId()]).length > 0 ? Object.keys(reverseBindMap[res.getId()])[0] : res.getId();
 						}
+						var dEntry = dict[bId];
+						if(!dEntry){
+							dEntry = dict[bId] = {
+								p: [],
+								d: {
+									__type: 'Bean',
+									__jsb: res.getJsb().$name,
+									__id: bId
+								}
+							}
+						}
+						dEntry.p.push(JSB.clone(path));
+						return {};
+
 					} else {
 						// parse json object
 						var nobj = {};
 						for(var f in res){
+							path.push(f);
 							nobj[f] = _substComplexObjectInRpcResult(res[f]);
+							path.pop();
 						}
 						return nobj;
 					}
@@ -3035,112 +3099,118 @@ if(!(function(){return this;}).call(null).JSB){
 					// parse array
 					var nobj = [];
 					for(var f in res){
+						path.push(f);
 						nobj[f] = _substComplexObjectInRpcResult(res[f]);
+						path.pop();
 					}
 					return nobj;
 				}
 				return res;
 			}
 			
-			return _substComplexObjectInRpcResult(res);
+			// prepare response
+			var dt = _substComplexObjectInRpcResult(res);
+			var dictVals = [];
+			for(var dk in dict){
+				dictVals.push(dict[dk]);
+			}
+			
+			return {__dt:dt, __di:dictVals};
 		},
 		
 		injectComplexObjectInRpcResult: function(res, callback){
 			var self = this;
-			function iterateResult(obj){
-				// scan field names
-				var fNames = {};
-				var fnCnt = 0;
-				for(var f in obj){
-					fNames[f] = false;
-					fnCnt++;
-				}
-				if(fnCnt > 0){
-					for(var f in fNames ){
-						(function(fn){
-							self.injectComplexObjectInRpcResult(obj[fn], function(r){
-								obj[fn] = r;
-								fNames[fn] = true;
-								for(var i in fNames){
-									if(!fNames[i]){
-										return;
-									}
-								}
-								if(callback){
-									callback(obj);
-								}
-							});
-						})(f);
-					}
-				} else {
-					if(callback){
-						callback(obj);
-					}
-				}
-			}
-			if(this.isPlainObject(res) && !this.isBean(res)){
-				if(res.__type && res.__type == 'Bean' && this.isString(res.__jsb) && this.isString(res.__id)){
-					// this is a server object reference
-					this.constructInstanceFromRemote(res.__jsb, res.__id, function(fObj){
-						if(callback){
-							callback(fObj);
-						}
-					});
-				} else if(res.__type && res.__type == 'ArrayBuffer'){
-					if(callback){
-						callback(JSB().Base64.decode(res.__data));
-					} 
-				} else if(res.__type && res.__type == 'Int8Array'){
-					if(callback){
-						callback(new Int8Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Uint8Array'){
-					if(callback){
-						callback(new Uint8Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Uint8ClampedArray'){
-					if(callback){
-						callback(new Uint8ClampedArray(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Int16Array'){
-					if(callback){
-						callback(new Int16Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Uint16Array'){
-					if(callback){
-						callback(new Uint16Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Int32Array'){
-					if(callback){
-						callback(new Int32Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Uint32Array'){
-					if(callback){
-						callback(new Uint32Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Float32Array'){
-					if(callback){
-						callback(new Float32Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Float64Array'){
-					if(callback){
-						callback(new Float64Array(JSB().Base64.decode(res.__data)));
-					} 
-				} else if(res.__type && res.__type == 'Date'){
-					if(callback){
-						callback(new Date(res.__data));
-					} 
-				} else {
-					// parse json object
-					iterateResult(res);
-				}
-			} else if(this.isArray(res)){
-				// parse json array
-				iterateResult(res);
-			} else {
+			if(!res || !JSB.isArray(res.__di)){
+				// didn't use subst before
 				if(callback){
 					callback(res);
 				}
+				return;
+			}
+			var obj = res.__dt; 
+
+			if(res.__di.length == 0){
+				if(callback){
+					callback(obj);
+				}
+				return;
+			} else {
+				JSB.chain(res.__di, function(complexDesc, callback){
+					var res = complexDesc.d;
+					if(res.__type && res.__type == 'Bean' && self.isString(res.__jsb) && self.isString(res.__id)){
+						// this is a server object reference
+						self.constructInstanceFromRemote(res.__jsb, res.__id, function(fObj){
+							if(callback){
+								callback(fObj);
+							}
+						});
+					} else if(res.__type && res.__type == 'ArrayBuffer'){
+						if(callback){
+							callback(JSB().Base64.decode(res.__data));
+						} 
+					} else if(res.__type && res.__type == 'Int8Array'){
+						if(callback){
+							callback(new Int8Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Uint8Array'){
+						if(callback){
+							callback(new Uint8Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Uint8ClampedArray'){
+						if(callback){
+							callback(new Uint8ClampedArray(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Int16Array'){
+						if(callback){
+							callback(new Int16Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Uint16Array'){
+						if(callback){
+							callback(new Uint16Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Int32Array'){
+						if(callback){
+							callback(new Int32Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Uint32Array'){
+						if(callback){
+							callback(new Uint32Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Float32Array'){
+						if(callback){
+							callback(new Float32Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Float64Array'){
+						if(callback){
+							callback(new Float64Array(JSB().Base64.decode(res.__data)));
+						} 
+					} else if(res.__type && res.__type == 'Date'){
+						if(callback){
+							callback(new Date(res.__data));
+						} 
+					} else {
+						throw new Error('Unknown ComplexObject type');
+					}
+				}, function(objectArr){
+					for(var i = 0; i < res.__di.length; i++){
+						var cDescPathArr = res.__di[i].p;
+						var iObj = objectArr[i];
+						for(var k = 0; k < cDescPathArr.length; k++){
+							// inject by path
+							var cDescPath = cDescPathArr[k];
+							var curObj = obj;
+							for(var j = 0; j < cDescPath.length - 1; j++){
+								curObj = curObj[cDescPath[j]];
+							}
+							curObj[cDescPath[cDescPath.length - 1]] = iObj;
+						}
+					}
+					if(callback){
+						callback(obj);
+					}
+				}, {
+					singleThreaded: true
+				});
 			}
 		},
 		
@@ -4300,13 +4370,13 @@ JSB({
 			}, function(res){
 				var inst = this;
 				var args = arguments;
-				if(disableInjectJsb){
+/*				if(disableInjectJsb){
 					args[0] = res;
 					if(callback){
 						self.jsb.putCallingContext(callCtx);
 						callback.apply(inst, args);	
 					}
-				} else {
+				} else {*/
 					JSB().injectComplexObjectInRpcResult(res, function(r){
 						args[0] = r;
 						if(callback){
@@ -4314,7 +4384,7 @@ JSB({
 							callback.apply(inst, args);	
 						}
 					});
-				}
+/*				}*/
 			} );
 		},
 
@@ -5619,11 +5689,14 @@ JSB({
 											}
 										}, 0);
 									}
+									JSB().injectComplexObjectInRpcResult(params, doCall);
+/*									
 									if(cInst == self && proc == 'handleRpcResponse'){
 										doCall(params);
 									} else {
 										JSB().injectComplexObjectInRpcResult(params, doCall);
 									}
+*/									
 								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
 							}
 						} 
@@ -5669,8 +5742,7 @@ JSB({
 			});
 			var ret = null, fail = null;
 			try {
-				var res = this.executeClientRpc(jsoName, instanceId, procName, np.res);
-				ret = $jsb.substComplexObjectInRpcResult(res);
+				ret = this.executeClientRpc(jsoName, instanceId, procName, np.res);
 			} catch(e){
 				fail = e;
 				if($jsb.getLogger()){
@@ -5696,7 +5768,7 @@ JSB({
 				}
 				this.rpc('handleRpcResponse', [[respPacket]], null, $jsb.getCurrentSession());
 			} else {
-				return ret;
+				return $jsb.substComplexObjectInRpcResult(ret);
 			}
 		},
 
