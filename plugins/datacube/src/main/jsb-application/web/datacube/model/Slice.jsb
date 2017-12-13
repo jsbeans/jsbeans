@@ -140,7 +140,7 @@
 
             }
 //            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
-            if(useCache){
+            if(useCache && Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled')){
             	return this.queryCache.executeQuery(preparedQuery, params);
             }
             return this.cube.executeQuery(preparedQuery, params);
