@@ -2965,7 +2965,18 @@ if(!(function(){return this;}).call(null).JSB){
 			var dict = {};
 			var path = [];
 			function _substComplexObjectInRpcResult(res){
-				if(JSB().isPlainObject(res)){
+				if(JSB.isString(res) || JSB.isNumber(res) || JSB.isNull(res) || JSB.isBoolean(res) ){
+					return res;
+				} else if(JSB.isArray(res)){
+					// parse array
+					var nobj = [];
+					for(var f in res){
+						path.push(f);
+						nobj[f] = _substComplexObjectInRpcResult(res[f]);
+						path.pop();
+					}
+					return nobj;
+				} else if(JSB.isObject(res)){
 					if(JSB().isArrayBuffer(res)){
 						dict[JSB.generateUid()] = {
 							p: [JSB.clone(path)],
@@ -3095,15 +3106,6 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 						return nobj;
 					}
-				} else if(JSB().isArray(res)){
-					// parse array
-					var nobj = [];
-					for(var f in res){
-						path.push(f);
-						nobj[f] = _substComplexObjectInRpcResult(res[f]);
-						path.pop();
-					}
-					return nobj;
 				}
 				return res;
 			}
