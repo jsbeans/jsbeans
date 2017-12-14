@@ -2965,9 +2965,128 @@ if(!(function(){return this;}).call(null).JSB){
 			var dict = {};
 			var path = [];
 			function _substComplexObjectInRpcResult(res){
-				if(JSB.isString(res) || JSB.isNumber(res) || JSB.isNull(res) || JSB.isBoolean(res) ){
+				if(res == null || res == undefined){
 					return res;
-				} else if(JSB.isArray(res)){
+				}
+				var tof = typeof(res);
+				if(tof === 'number' || tof === 'boolean'){
+					return res;
+				}
+				var rType = Object.prototype.toString.call(res);
+				if(rType === '[object String]'){
+					return res;
+				} 
+				if(rType === "[object ArrayBuffer]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'ArrayBuffer',
+							__data: JSB().Base64.encode(res)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Int8Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Int8Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Uint8Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Uint8Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Uint8ClampedArray]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Uint8ClampedArray',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Int16Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Int16Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Uint16Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Uint16Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Int32Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Int32Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Uint32Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Uint32Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Float32Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Float32Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === "[object Float64Array]"){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Float64Array',
+							__data: JSB().Base64.encode(res.buffer)
+						}
+					};
+					return {};
+				} 
+				if(rType === '[object Date]'){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Date',
+							__data: res.getTime()
+						}
+					};
+					return {};
+				}
+				if(rType === "[object Array]"){
 					// parse array
 					var nobj = [];
 					for(var f in res){
@@ -2976,138 +3095,38 @@ if(!(function(){return this;}).call(null).JSB){
 						path.pop();
 					}
 					return nobj;
-				} else if(JSB.isObject(res)){
-					if(JSB().isArrayBuffer(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'ArrayBuffer',
-								__data: JSB().Base64.encode(res)
-							}
-						};
-						return {};
-					} else if(JSB().isInt8Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Int8Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isUint8Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Uint8Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isUint8ClampedArray(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Uint8ClampedArray',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isInt16Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Int16Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isUint16Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Uint16Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isInt32Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Int32Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isUint32Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Uint32Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isFloat32Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Float32Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isFloat64Array(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Float64Array',
-								__data: JSB().Base64.encode(res.buffer)
-							}
-						};
-						return {};
-					} else if(JSB().isDate(res)){
-						dict[JSB.generateUid()] = {
-							p: [JSB.clone(path)],
-							d: {
-								__type: 'Date',
-								__data: res.getTime()
-							}
-						};
-						return {};
-					} else if(JSB().isBean(res)){
-						// encode jsb object
-						var bId = res.getId();
-						if(isServer){
-							bId = !self.isNull(reverseBindMap) && !self.isNull(reverseBindMap[res.getId()]) && Object.keys(reverseBindMap[res.getId()]).length > 0 ? Object.keys(reverseBindMap[res.getId()])[0] : res.getId();
-						}
-						var dEntry = dict[bId];
-						if(!dEntry){
-							dEntry = dict[bId] = {
-								p: [],
-								d: {
-									__type: 'Bean',
-									__jsb: res.getJsb().$name,
-									__id: bId
-								}
-							}
-						}
-						dEntry.p.push(JSB.clone(path));
-						return {};
-
-					} else {
-						// parse json object
-						var nobj = {};
-						for(var f in res){
-							path.push(f);
-							nobj[f] = _substComplexObjectInRpcResult(res[f]);
-							path.pop();
-						}
-						return nobj;
-					}
 				}
-				return res;
+				if(JSB().isBean(res)){
+					// encode jsb object
+					var bId = res.getId();
+					if(isServer){
+						bId = !self.isNull(reverseBindMap) && !self.isNull(reverseBindMap[res.getId()]) && Object.keys(reverseBindMap[res.getId()]).length > 0 ? Object.keys(reverseBindMap[res.getId()])[0] : res.getId();
+					}
+					var dEntry = dict[bId];
+					if(!dEntry){
+						dEntry = dict[bId] = {
+							p: [],
+							d: {
+								__type: 'Bean',
+								__jsb: res.getJsb().$name,
+								__id: bId
+							}
+						}
+					}
+					dEntry.p.push(JSB.clone(path));
+					return {};
+				} 
+				if(JSB.isPlainObject(res)){
+					// parse json object
+					var nobj = {};
+					for(var f in res){
+						path.push(f);
+						nobj[f] = _substComplexObjectInRpcResult(res[f]);
+						path.pop();
+					}
+					return nobj;
+				}
+				return {};
 			}
 			
 			// prepare response
@@ -5746,6 +5765,7 @@ JSB({
 			try {
 				ret = this.executeClientRpc(jsoName, instanceId, procName, np.res);
 			} catch(e){
+				debugger;
 				fail = e;
 				if($jsb.getLogger()){
 					$jsb.getLogger().error(e);
