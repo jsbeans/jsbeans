@@ -7,6 +7,7 @@
 	           'JSB.Widgets.ToolManager',
 	           'DataCube.Controls.DataBindingSelector',
 	           'DataCube.Controls.WidgetBindingSelector',
+	           'DataCube.Controls.JsonBindingSelector',
 	           'DataCube.Controls.EmbeddedWidgetSelector'],
 	
 	$client: {
@@ -517,6 +518,17 @@
 
 				if($this.scheme.binding == 'readyWidget'){
 				    var bindingSelector = new WidgetBindingSelector({
+				        value: valueDesc.value,
+				        onChange: function(val){
+				            valueDesc.value = val;
+				            if($this.options.onChange) $this.options.onChange.call($this);
+				        }
+				    });
+				    valContainer.append(bindingSelector.getElement());
+				}
+
+				if($this.scheme.binding == 'json'){
+				    var bindingSelector = new JsonBindingSelector({
 				        value: valueDesc.value,
 				        onChange: function(val){
 				            valueDesc.value = val;

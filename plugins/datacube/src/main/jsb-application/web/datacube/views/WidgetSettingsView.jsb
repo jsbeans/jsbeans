@@ -84,7 +84,8 @@
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 		    this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
 		    this.wrapper.getWidget().refresh({
-                isCacheMod: true
+                isCacheMod: true,
+                needMapUpdate: true
             });
 		},
 
