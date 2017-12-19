@@ -303,6 +303,40 @@
             return sqlColumns;
         },
 
+        _extractType: function (exp) {
+            if (!$this.cube) {
+                // TODO: support dataProvider
+                return null;
+            }
+            if (JSB.isString(exp)) {
+                var fieldType = $this.cube.getManagedFields()[exp] && $this.cube.getManagedFields()[exp].type;
+                return fieldType;
+            }
+            if (JSB.isArray(exp)) {
+                var type;
+                for(var i in exp) {
+                    type = $this._extractType(exp[i]);
+                    if (type) {
+                        return type;
+                    }
+                }
+            }
+            if (JSB.isObject(exp)) {
+                if (exp.$toString) return 'string';
+                if (exp.$toInt) return 'int';
+                if (exp.$toDouble) return 'double';
+                if (exp.$toBoolean) return 'boolean';
+                if (exp.$toDate) return 'date';
+                if (exp.$toTimestamp) return 'timestamp';
+                if (exp.$dateYear) return 'int';
+                if (exp.$dateMonth) return 'int';
+                if (exp.$dateTotalSeconds) return 'int';
+                if (exp.$dateIntervalOrder) return 'int';
+                return $this._extractType(exp);
+            }
+            return null;
+        },
+
         _translateExpression: function(exp, dcQuery, useFieldNotAlias) {
 
             function translateGlobalAggregate(subExp, func){
@@ -381,7 +415,7 @@
                     if (i > 0) sql += ' ' + op + ' ';
                     var arg = $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
                     if (wrapper) {
-                        sql += wrapper(arg, i);
+                        sql += wrapper(arg, i, $this._extractType(args[i]));
                     } else {
                         sql += arg;
                     }
@@ -495,15 +529,15 @@
                     return 'COALESCE('+ translateNOperator(exp[op], ',') + ')';
 
                 case '$add':
-                    return '('+ translateNOperator(exp[op], '+', function(arg, n){return 'COALESCE('+arg+', 0.0)'}) + ')';
+                    return '('+ translateNOperator(exp[op], '+', function(arg, n, type){return type == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$sub':
-                    return '('+ translateNOperator(exp[op], '-', function(arg, n){return 'COALESCE('+arg+', 0.0)'}) + ')';
+                    return '('+ translateNOperator(exp[op], '-', function(arg, n, type){return type == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$mod':
-                    return '('+ translateNOperator(exp[op], '%', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '%', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$mul':
-                    return '('+ translateNOperator(exp[op], '*', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '*', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$div':
-                    return '('+ translateNOperator(exp[op], '/', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '/', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$divz':
                     return '('+ translateDivzOperator(exp[op]) + ')';
 

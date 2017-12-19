@@ -42,6 +42,9 @@
             // embed $globalFilter to $filter/$postFilter of root and sub queries
             QueryUtils.propagateGlobalFilter(dcQuery, dataProvider || this.cube);
 
+            // standardize $filter
+            QueryUtils.unwrapFilters(dcQuery, true);
+
 //            // generate $groupBy if not defined
 //            QueryUtils.generateDefaultGroupBy(dcQuery);
 
@@ -90,7 +93,6 @@
 //		        close: function(){}
 //		    }; // TODO DEBUG remove
             var providerIterators = [];
-//debugger;
             if (dataProvider) {
                 providerIterators.push(new DataProviderIterator(dataProvider, this));
             } else {
