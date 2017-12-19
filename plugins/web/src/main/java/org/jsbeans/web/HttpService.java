@@ -40,6 +40,8 @@ public class HttpService extends Service {
 //    private static final String WEB_FOLDER_KEY = "web.folder";
     private static final String WEB_PORT_KEY = "web.http.port";
     private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
+    private static final String WEB_RESPONSE_BUFFER_SIZE = "web.http.responseBufferSize";
+    
     private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
     @Override
@@ -93,6 +95,15 @@ public class HttpService extends Service {
             	c.setRequestHeaderSize(requestHeaderSize);
             }
     	}
+        
+        // set responseBufferSize for large response
+        if(ConfigHelper.has(WEB_RESPONSE_BUFFER_SIZE)){
+    		int responseBufferSize = ConfigHelper.getConfigInt(WEB_RESPONSE_BUFFER_SIZE);
+            for (Connector c : server.getConnectors()) {
+            	c.setResponseBufferSize(responseBufferSize);
+            }
+    	}
+
         
         try {
             this.getLog().debug(String.format("Starting Jetty web server at %d", portVal.intValue()));

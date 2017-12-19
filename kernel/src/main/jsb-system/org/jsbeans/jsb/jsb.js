@@ -1582,6 +1582,44 @@ if(!(function(){return this;}).call(null).JSB){
 			return null;
 		},
 		
+		getDescendants: function(p){
+			var jsbMap = {};
+			if(!p){
+				p = this;
+			} else if(JSB.isString(p)){
+				p = JSB.get(p);
+			} else {
+				throw new Error('Invalid arg');
+			}
+			var objArr = JSB().objects;
+			for(var i in objArr){
+				var o = objArr[i];
+				if(o.isSubclassOf(p) && o !== p){
+					jsbMap[o.$name] = o;
+				}
+			}
+			return jsbMap;
+		},
+
+		getAscendants: function(p){
+			var jsbMap = {};
+			if(!p){
+				p = this;
+			} else if(JSB.isString(p)){
+				p = JSB.get(p);
+			} else {
+				throw new Error('Invalid arg');
+			}
+			var objArr = JSB().objects;
+			for(var i in objArr){
+				var o = objArr[i];
+				if(p.isSubclassOf(o) && o !== p){
+					jsbMap[o.$name] = o;
+				}
+			}
+			return jsbMap;
+		},
+		
 		clone: function(obj){
 			if(this.isArray(obj)){
 				return this.merge(true, [], obj);
