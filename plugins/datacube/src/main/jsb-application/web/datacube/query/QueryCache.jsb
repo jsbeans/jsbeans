@@ -2,7 +2,7 @@
 	$name: 'DataCube.Query.QueryCache',
 	
 	$server: {
-		$require: ['JSB.Crypt.MD5'],
+		$require: ['DataCube.Query.QueryCacheController', 'JSB.Crypt.MD5'],
 		
 		cube: null,
 		batchSize: 10,
@@ -10,6 +10,7 @@
 		cacheMap: {},
 		
 		$constructor: function(cube){
+			$base();
 			this.cube = cube;
 			if(Config.has('datacube.queryCache.batchSize')){
 				this.batchSize = Config.get('datacube.queryCache.batchSize');
@@ -17,9 +18,13 @@
 			if(Config.has('datacube.queryCache.closeIteratorTimeout')){
 				this.closeIteratorTimeout = Config.get('datacube.queryCache.closeIteratorTimeout');
 			}
-
+			QueryCacheController.registerCache(this);
 		},
 		
+		destroy: function(){
+			QueryCacheController.unregisterCache(this);
+			$base();
+		},
 		
 		generateQueryId: function(query){
 			return MD5.md5(JSB.stringify(query));
@@ -30,6 +35,10 @@
 		},
 		
 		update: function(){},
+		
+		getCacheMap: function(){
+			return this.cacheMap;
+		},
 		
 		executeQuery: function(query, params){
 			var qId = this.generateQueryId(query);

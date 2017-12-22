@@ -381,7 +381,7 @@
                     if (i > 0) sql += ' ' + op + ' ';
                     var arg = $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
                     if (wrapper) {
-                        sql += wrapper(arg, i);
+                        sql += wrapper(arg, i, QueryUtils.extractType(args[i], dcQuery, $this.cube || $this.providers[0]));
                     } else {
                         sql += arg;
                     }
@@ -495,15 +495,15 @@
                     return 'COALESCE('+ translateNOperator(exp[op], ',') + ')';
 
                 case '$add':
-                    return '('+ translateNOperator(exp[op], '+', function(arg, n){return 'COALESCE('+arg+', 0.0)'}) + ')';
+                    return '('+ translateNOperator(exp[op], '+', function(arg, n, type){return type == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$sub':
-                    return '('+ translateNOperator(exp[op], '-', function(arg, n){return 'COALESCE('+arg+', 0.0)'}) + ')';
+                    return '('+ translateNOperator(exp[op], '-', function(arg, n, type){return type == 'date' ? arg : 'COALESCE('+arg+', 0.0)'}) + ')';
                 case '$mod':
-                    return '('+ translateNOperator(exp[op], '%', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '%', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$mul':
-                    return '('+ translateNOperator(exp[op], '*', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '*', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$div':
-                    return '('+ translateNOperator(exp[op], '/', function(arg, n){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
+                    return '('+ translateNOperator(exp[op], '/', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$divz':
                     return '('+ translateDivzOperator(exp[op]) + ')';
 

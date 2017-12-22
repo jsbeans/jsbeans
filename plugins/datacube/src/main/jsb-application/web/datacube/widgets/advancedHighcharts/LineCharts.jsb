@@ -1439,7 +1439,6 @@
 
             this.getElement().loader();
             dataSource.fetch({readAll: true, reset: true}, function(){
-                $this.getElement().loader('hide');
                 try{
                     var seriesData = [],
                         xAxisData = [];

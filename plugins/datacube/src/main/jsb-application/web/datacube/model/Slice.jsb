@@ -49,7 +49,7 @@
 					this.query = this.property('query');
 				}
 			}
-			this.queryCache = new QueryCache(this.cube);
+			this.cacheEnabled = Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled');
 		},
 		
 		setName: function(name){
@@ -65,7 +65,7 @@
 		setQuery: function(q){
 			this.query = q;
 			this.property('query', this.query);
-			this.queryCache.clear();
+			this.invalidate();
 			this.doSync();
 		},
 
@@ -81,7 +81,7 @@
 			this.query = desc.query;
 			this.title(this.name);
 			this.property('query', this.query);
-			this.queryCache.clear();
+			this.invalidate();
 			this.cube.store();
 			this.doSync();
 		},
@@ -140,8 +140,11 @@
 
             }
 //            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
-            if(useCache && Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled')){
-            	return this.queryCache.executeQuery(preparedQuery, params);
+            if(useCache && this.cacheEnabled){
+				if(!this.queryCache){
+					this.queryCache = new QueryCache(this.cube);
+				}
+				return this.queryCache.executeQuery(preparedQuery, params);
             }
             return this.cube.executeQuery(preparedQuery, params);
 		},
@@ -155,6 +158,12 @@
 			}
 			
 			return fMap;
+		},
+		
+		invalidate: function(){
+			if(this.queryCache){
+				this.queryCache.clear();
+			}
 		}
 		
 	}

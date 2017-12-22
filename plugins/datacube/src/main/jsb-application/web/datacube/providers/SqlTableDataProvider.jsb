@@ -27,6 +27,13 @@
 		$constructor: function(id, pEntry, cube, opts){
 			$base(id, pEntry, cube, opts);
 			this.name = pEntry.getName();
+			
+			this.subscribe('DataCube.Model.SqlTable.updated', function(sender){
+				if($this.entry != sender){
+					return;
+				}
+				$this.getCube().invalidate();
+			});
 		},
 		
 		getTableDescriptor: function(){

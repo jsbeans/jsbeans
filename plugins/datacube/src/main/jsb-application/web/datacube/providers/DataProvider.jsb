@@ -20,6 +20,10 @@
 		return this.options.mode || 'union';
 	},
 	
+	getCube: function(){
+		return this.cube;
+	},
+	
 	getOption: function(opt){
 		return this.options[opt];
 	},
