@@ -883,7 +883,72 @@
 
             walkQueryFilter(dcQuery, '$filter');
             walkQueryFilter(dcQuery, '$postFilter');
-		}
+		},
+
+        extractType: function (exp, query, cubeOrDataProvider) {
+            function extractFieldType(field){
+                if (query.$from) {
+                    var fromFieldExpression = query.$from.$select[field];
+                    var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider);
+                } else {
+                    var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
+                                ? cubeOrDataProvider.getManagedFields()
+                                : cubeOrDataProvider.extractFields();
+                    var fieldType = fields[exp] && fields[exp].type || null;
+                }
+                return fieldType;
+            }
+            if (JSB.isString(exp)) {
+                var fieldType = extractFieldType(exp);
+                return fieldType;
+            }
+            if (JSB.isArray(exp)) {
+                for(var i in exp) {
+                    var type = $this.extractType(exp[i], query, cubeOrDataProvider);
+                    if (type) {
+                        return type;
+                    }
+                }
+            }
+            if (JSB.isObject(exp)) {
+                if (exp.$toString) return 'string';
+                if (exp.$toInt) return 'int';
+                if (exp.$toDouble) return 'double';
+                if (exp.$toBoolean) return 'boolean';
+                if (exp.$toDate) return 'date';
+                if (exp.$toTimestamp) return 'timestamp';
+                if (exp.$dateYear) return 'int';
+                if (exp.$dateMonth) return 'int';
+                if (exp.$dateTotalSeconds) return 'int';
+                if (exp.$dateIntervalOrder) return 'int';
+                if (exp.$const) {
+                    if (JSB.isString(exp.$const)) return 'string';
+                    if (JSB.isInteger(exp.$const)) return 'int';
+                    if (JSB.isFloat(exp.$const)) return 'double';
+                    if (JSB.isBoolean(exp.$const)) return 'boolean';
+                    if (JSB.isDate(exp.$const)) return 'date';
+                    throw new Error('Unsupported $const type ' + typeof exp.$const);
+                }
+                if (exp.$field) {
+                    if (!exp.$context || exp.$context == query.$context) {
+                        var fieldType = extractFieldType(exp.$field);
+                        return fieldType;
+                    } else {
+                        var outerQuery = $this._getQueryByContext(query.$context);
+                        if (outerQuery) throw new Error('Unknown query context ' + query.$context);
+                        var fieldType = $this.extractType(outerQuery.$select[exp.$field], outerQuery, cubeOrDataProvider);
+                        return fieldType;
+                    }
+                }
+                for(var op in exp) {
+                    var type = $this.extractType(exp[op], query, cubeOrDataProvider);
+                    if (type) {
+                        return type;
+                    }
+                }
+            }
+            return null;
+        },
 
 	}
 }

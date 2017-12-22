@@ -732,6 +732,7 @@
 			});
 			this.fieldCount = Object.keys(this.fields).length;
 			this.removeMaterialization();
+			this.invalidate();
 			this.store();
 			this.doSync();
 			return this.fields[nameCandidate];
@@ -782,7 +783,7 @@
 		    }
 
 		    this.fieldCount = Object.keys(this.fields).length;
-
+		    this.invalidate();
 		    this.store();
             this.doSync();
 
@@ -819,7 +820,7 @@
 				delete this.materialization.fields[oldName];
 				this.materialization.fields[n].field = n;
 			}
-			
+			this.invalidate();
 			this.store();
 			this.doSync();
 			return this.fields[n];
@@ -859,7 +860,7 @@
 
 			// remove materialization
 			this.removeMaterialization();
-
+			this.invalidate();
 			this.store();
 			this.doSync();
 
@@ -1704,6 +1705,18 @@
 		executeQuery: function(query, params, provider){
 		    this.load();
 			return this.queryEngine.query(query, params, provider);
+		},
+		
+		invalidate: function(){
+			JSB.defer(function(){
+				// invalidate slices
+				for(var slId in $this.slices){
+					var slice = $this.slices[slId];
+					if(slice){
+						slice.invalidate();
+					}
+				}
+			}, 100, 'invalidate_' + this.getId());
 		}
 	}
 }

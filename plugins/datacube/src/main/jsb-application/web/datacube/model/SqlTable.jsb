@@ -18,9 +18,17 @@
 				this.descriptor = opts;
 				this.property('descriptor', this.descriptor);
 				this.title(this.descriptor.schema + '.' + this.descriptor.name);
+				$this.publish('DataCube.Model.SqlTable.updated');
 			} else {
 				this.descriptor = this.property('descriptor');
 			}
+			
+			this.subscribe('DataCube.Model.SqlSource.updateSettings', function(sender){
+				if($this.getParent() != sender){
+					return;
+				}
+				$this.publish('DataCube.Model.SqlTable.updated');
+			});
 		},
 		
 		updateDescriptor: function(desc){
@@ -28,6 +36,7 @@
 			this.property('descriptor', this.descriptor);
 			this.title(this.descriptor.schema + '.' + this.descriptor.name);
 			this.doSync();
+			$this.publish('DataCube.Model.SqlTable.updated');
 		},
 		
 		getDescriptor: function(){

@@ -39,6 +39,7 @@
 			}, settings);
 			this.property('settings', this.settings);
 			this.workspace.store();
+			this.publish('DataCube.Model.SqlSource.updateSettings');
 		},
 		
 		testConnection: function(settings){

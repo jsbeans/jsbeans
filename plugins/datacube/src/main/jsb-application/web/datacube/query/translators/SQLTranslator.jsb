@@ -303,40 +303,6 @@
             return sqlColumns;
         },
 
-        _extractType: function (exp) {
-            if (!$this.cube) {
-                // TODO: support dataProvider
-                return null;
-            }
-            if (JSB.isString(exp)) {
-                var fieldType = $this.cube.getManagedFields()[exp] && $this.cube.getManagedFields()[exp].type;
-                return fieldType;
-            }
-            if (JSB.isArray(exp)) {
-                var type;
-                for(var i in exp) {
-                    type = $this._extractType(exp[i]);
-                    if (type) {
-                        return type;
-                    }
-                }
-            }
-            if (JSB.isObject(exp)) {
-                if (exp.$toString) return 'string';
-                if (exp.$toInt) return 'int';
-                if (exp.$toDouble) return 'double';
-                if (exp.$toBoolean) return 'boolean';
-                if (exp.$toDate) return 'date';
-                if (exp.$toTimestamp) return 'timestamp';
-                if (exp.$dateYear) return 'int';
-                if (exp.$dateMonth) return 'int';
-                if (exp.$dateTotalSeconds) return 'int';
-                if (exp.$dateIntervalOrder) return 'int';
-                return $this._extractType(exp);
-            }
-            return null;
-        },
-
         _translateExpression: function(exp, dcQuery, useFieldNotAlias) {
 
             function translateGlobalAggregate(subExp, func){
@@ -415,7 +381,7 @@
                     if (i > 0) sql += ' ' + op + ' ';
                     var arg = $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
                     if (wrapper) {
-                        sql += wrapper(arg, i, $this._extractType(args[i]));
+                        sql += wrapper(arg, i, QueryUtils.extractType(args[i], dcQuery, $this.cube || $this.providers[0]));
                     } else {
                         sql += arg;
                     }
