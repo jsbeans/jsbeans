@@ -814,7 +814,39 @@
             this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
                 unwrapForQuery(query);
             });
-		}
+		},
+
+        _extractFilterByContext: function (query, includeCurrent, includeForeign){
+            var skipFields = $this.collectSubQueryJoinFields(
+                query.$filter|| {},
+                function isSkipped(context) {
+                    var isForeignContext = !!context && context != query.$context;
+                    return !includeCurrent && !includeForeign ||
+                            isForeignContext ? !includeForeign : !includeCurrent;
+                }
+            );
+            var filter = $this.filterFilterByFields(query.$filter, function(filteredField, filteredExpr, path){
+                return skipFields.indexOf(filteredField) == -1;
+            });
+            return filter;
+        },
+
+        findSubQueries: function(exp) {
+            var subQueries = [];
+            function walk(e){
+                if (JSB.isObject(e)) {
+                    if (e.$select) {
+                        subQueries.push(e);
+                    }
+                }
+                if (JSB.isObject(e) || JSB.isArray(e)) {
+                    for(var i in e) {
+                        walk(e[i]);
+                    }
+                }
+                return subQueries.length > 0 ? subQueries : null;
+            };
+        },
 
 	}
 }
