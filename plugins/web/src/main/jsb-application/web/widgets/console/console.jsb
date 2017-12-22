@@ -623,7 +623,7 @@
 						});
 						fc.attachWidget(embeddedWidget);
 						
-					} else if(JSB.isInstanceOf(embeddedWidget, 'JSB.Widgets.Control')){
+					} else if(JSB.isInstanceOf(embeddedWidget, 'JSB.Widgets.Control') || JSB.isInstanceOf(embeddedWidget, 'JSB.Controls.Control')){
 						container.addClass('control');
 						container.append(embeddedWidget.getElement());
 					} else {

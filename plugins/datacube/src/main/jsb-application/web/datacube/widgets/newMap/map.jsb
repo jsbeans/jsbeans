@@ -34,21 +34,20 @@
                         name: 'Регион',
                         type: 'item',
                         key: 'region',
-                        binding: 'field',
-                        //editor: 'none'
+                        binding: 'field'
                     },
                     {
                         name: 'Количество',
                         type: 'item',
                         key: 'value',
-                        binding: 'field',
-                        //editor: 'none'
+                        binding: 'field'
                     },
                     {
                         name: 'Привязка к',
                         type: 'item',
                         key: 'linkTo',
-                        itemType: 'string'
+                        itemType: 'string',
+                        description: 'Имя json-карты'
                     },
                     {
                         name: 'Цвет',
@@ -125,7 +124,8 @@
                     name: 'Ссылка на сервер с картами',
                     type: 'item',
                     key: 'url',
-                    itemType: 'string'
+                    itemType: 'string',
+                    description: 'Ссылка формата http://url/{z}/{x}/{y}.png'
                 }
                 ]
             },
@@ -141,14 +141,16 @@
                     name: 'Имя',
                     type: 'item',
                     key: 'name',
-                    itemType: 'string'
+                    itemType: 'string',
+                    description: 'Имя используется для привзяки данных к карте'
                 },
                 {
                     name: 'wrapLongitude',
                     type: 'item',
                     key: 'wrapLongitude',
                     itemType: 'number',
-                    defaultValue: -30
+                    defaultValue: -30,
+                    description: 'Сдвиг по долготе. Для карты России желательно устанавливать значение "-30"'
                 },
                 {
                     name: 'Geojson',
@@ -161,7 +163,8 @@
                     name: 'Имя региона',
                     type: 'item',
                     key: 'regionName',
-                    itemType: 'string'
+                    itemType: 'string',
+                    description: 'Имя поля с именем региона в файле geojson'
                 }
                 ]
             }
@@ -405,8 +408,10 @@
                                     if(data && data.color){
                                         return {fillColor: data.color, color: data.color, fillOpacity: 0.7};
                                     }
-
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].regionName], data.data);
+                                    if(!reg){
+                                        return;
+                                    }
                                     return {fillColor: reg.color, color: reg.color, fillOpacity: 0.7};
                                 },
                                 coordsToLatLng: function(point){
@@ -417,6 +422,9 @@
                                 },
                                 onEachFeature: function(feature, layer){
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].regionName], data.data);
+                                    if(!reg){
+                                        return;
+                                    }
                                     layer.bindTooltip(reg.region + ': ' + reg.value);
                                 }
                             }).addTo($this.map);
@@ -434,27 +442,44 @@
                 this._isMapsLoaded = true;
                 return;
             }
+
+            var params = {
+                workspaceId: this.getWrapper().getDashboard().workspace.getLocalId(),
+                maps: []
+            };
+            for(var i = 0; i < this._maps.length; i++){
+                params.maps.push({
+                    desc: this._maps[i].desc
+                });
+            }
+
             this.getElement().loader();
-            this.server().loadMaps(this.getWrapper().getDashboard().workspace, this._maps, function(res){
+            this.ajax('datacube/widgets/newMap/map.jsb', params, function(result, obj){
                 if($this._isDataLoaded){
                     $this.getElement().loader('hide');
                 }
-                $this._isMapsLoaded = true;
 
-                if(!res){
+                if(result !== 'success'){
+                    $this._isMapsLoaded = true;
                     return;
                 }
 
-                for(var i = 0; i < res.length; i++){
-                    res[i].data = JSON.parse(res[i].data);
+                obj = obj.result;
+
+                for(var i = 0; i < obj.length; i++){
+                    $this._maps[i].data = obj[i].data;
                 }
 
-                $this._maps = res;
+                $this._isMapsLoaded = true;
             });
         },
 
         // utils
         findRegion: function(region, array){
+            if(!region){
+                return;
+            }
+
             if(Translit.lang(region) === 'cyr'){
                 region = Translit.c2l(region);
             }
@@ -464,6 +489,10 @@
 
             for(var j = 0; j < array.length; j++){
                 var name = array[j].region;
+                if(!name){
+                    continue;
+                }
+
                 if(Translit.lang(name) === 'cyr'){
                     name = Translit.c2l(name).results[0].value;
                 }
@@ -479,6 +508,7 @@
     },
 
     $server: {
+        $require: ['JSB.Workspace.WorkspaceController', 'JSB.Web'],
         loadMaps: function(workspace, maps){
             for(var i = 0; i < maps.length; i++){
                 if(!maps[i].desc){
@@ -488,6 +518,26 @@
             }
 
             return maps;
+        },
+
+        post: function(params){
+            var wm = WorkspaceController.ensureManager('datacube');
+            if(!wm){
+                throw new Error('Internal error: missing WorkspaceManager for datacube');
+            }
+            var w = wm.workspace(params.workspaceId);
+            if(!w){
+                throw new Error('Unable to find workspace with id: ' + params.workspaceId);
+            }
+
+            for(var i = 0; i < params.maps.length; i++){
+                if(!params.maps[i].desc){
+                    continue;
+                }
+                params.maps[i].data = w.entry(params.maps[i].desc.id).read();
+            }
+
+            return Web.response(params.maps, {mode:'json'})
         }
     }
 }
