@@ -37,7 +37,7 @@
                         binding: 'field'
                     },
                     {
-                        name: 'Количество',
+                        name: 'Значение',
                         type: 'item',
                         key: 'value',
                         binding: 'field'
@@ -154,6 +154,13 @@
                         itemType: 'color',
                         editor: 'JSB.Widgets.ColorEditor',
                         defaultValue: 'rgb(115, 115, 115)'
+                    },
+                    {
+                        name: 'Показывать значения на регионах',
+                        type: 'item',
+                        key: 'showValuesPermanent',
+                        optional: true,
+                        editor: 'none'
                     }
                     ]
                 }
@@ -220,7 +227,7 @@
         ]
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow', 'JSB.Text.Translit'],
+        $require: ['JSB.Utils.Rainbow'],
 
         $constructor: function(opts){
             $base(opts);
@@ -231,8 +238,8 @@
             this.addClass('mapWidget');
             this.loadCss('map.css');
 
-            this.loadCss('leaflet/leaflet.css');
-            JSB.loadScript('datacube/widgets/map/leaflet/leaflet.js', function(){
+            JSB.loadCss('tpl/leaflet/leaflet.css');
+            JSB.loadScript('tpl/leaflet/leaflet.js', function(){
                 $this.setInitialized();
             });
 
@@ -332,7 +339,8 @@
 
                             if(!regions[i]){
                                 regions[i] = {
-                                    data: []
+                                    data: [],
+                                    showValuesPermanent: regionsContext[i].find('showValuesPermanent').used()
                                 };
                             }
 
@@ -430,6 +438,8 @@
                 for(var i = 0; i < this._maps.length; i++){
                     if(this._maps[i].data){
                         (function(i, data){
+                            var tooltipLayers = [];
+
                             L.geoJSON($this._maps[i].data, {
                                 style: function (feature) {
                                     if(data && data.color){
@@ -450,17 +460,36 @@
                                 onEachFeature: function(feature, layer){
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
                                     if(!reg){
-                                        layer.bindTooltip(feature.properties[$this._maps[i].compareTo] + ': Нет данных');
+                                        layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false});
                                         return;
                                     }
-                                    layer.bindTooltip(reg.region + ': ' + reg.value);
+                                    layer.bindPopup(reg.region + ': ' + reg.value);
+
+                                    if(data.regions[i].showValuesPermanent){
+                                        layer.bindTooltip(String(reg.value), {permanent: true, /*direction: "center",*/ interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        tooltipLayers.push(layer);
+                                    }
 
                                     layer.on({
-                                        // todo: filter
-                                        click: undefined
+                                        click: function(evt){
+                                            $this._addFilter(evt, {
+                                                regionValue: feature.properties[$this._maps[i].compareTo],
+                                                seriesIndex: i
+                                            });
+                                        },
+                                        mouseover: function(){
+                                            this.openPopup();
+                                        },
+                                        mouseout: function(){
+                                            this.closePopup();
+                                        }
                                     });
                                 }
                             }).addTo($this.map);
+
+                            for(var j = 0; j < tooltipLayers.length; j++){
+                                tooltipLayers[j].openTooltip();
+                            }
                         })(i, data);
                     }
                 }
@@ -468,6 +497,24 @@
                 console.log('Build chart exception!');
                 console.log(ex);
             }
+        },
+
+        _addFilter: function(evt, opts){
+            var dataSource = this.getContext().find('dataSource').binding();
+            if(!dataSource.source) return;
+
+            var field = this.getContext().find("regions").values()[opts.seriesIndex].find('value').binding()[0];
+            if(!field[0]) return;
+
+            var fDesc = {
+                sourceId: dataSource.source,
+                type: '$or',
+                op: '$eq',
+                field: field,
+                value: opts.regionValue
+            };
+            this.addFilter(fDesc);
+            this.refreshAll();
         },
 
         loadMaps: function(){
