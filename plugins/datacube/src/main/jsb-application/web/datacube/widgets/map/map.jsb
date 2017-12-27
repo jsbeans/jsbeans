@@ -227,7 +227,7 @@
         ]
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow'],
+        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader'],
 
         $constructor: function(opts){
             $base(opts);
@@ -254,6 +254,7 @@
         },
 
         // inner variables
+        _curFilters: {},
         _isMapsLoaded: false,
         _isDataLoaded: false,
         _maps: [],
@@ -503,7 +504,7 @@
             var dataSource = this.getContext().find('dataSource').binding();
             if(!dataSource.source) return;
 
-            var field = this.getContext().find("regions").values()[opts.seriesIndex].find('value').binding()[0];
+            var field = this.getContext().find("regions").values()[opts.seriesIndex].find('region').binding()[0];
             if(!field[0]) return;
 
             var fDesc = {
@@ -513,8 +514,19 @@
                 field: field,
                 value: opts.regionValue
             };
-            this.addFilter(fDesc);
-            this.refreshAll();
+
+            if(!evt.originalEvent.ctrlKey && !evt.originalEvent.shiftKey && Object.keys(this._curFilters).length > 0){
+                for(var i in this._curFilters){
+                    this.removeFilter(this._curFilters[i]);
+                }
+
+                this._curFilters = {};
+            }
+
+            if(!this.hasFilter(fDesc)){
+                this._curFilters[opts.regionValue] = this.addFilter(fDesc);
+                this.refreshAll();
+            }
         },
 
         loadMaps: function(){
