@@ -299,7 +299,7 @@
         ]
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader'],
+        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5'],
 
         $constructor: function(opts){
             $base(opts);
@@ -353,7 +353,8 @@
             try{
                 var regionsContext = this.getContext().find('regions').values(),
                     regionsColors = [],
-                    maps = [];
+                    maps = [],
+                    newMapHash = '';
 
                 for(var i = 0; i < regionsContext.length; i++){
                     var colorSelector = regionsContext[i].find('color').value();
@@ -392,6 +393,7 @@
                                 compareTo: jsonMapSelector.find('compareTo').value().key(),
                                 wrapLongitude: -30
                             });
+                            newMapHash += 'geojson/russianRegions.json';
                             break;
                         case 'russianRegionsMPT':
                             maps.push({
@@ -400,11 +402,13 @@
                                 compareTo: jsonMapSelector.find('compareTo').value().key(),
                                 wrapLongitude: -30
                             });
+                            newMapHash += 'geojson/russianRegionsMPT.json';
                             break;
                     }
+
                 }
 
-                var newMapHash = this.createFilterHash(maps);
+                newMapHash = MD5.md5(newMapHash);
                 if(newMapHash !== this._mapHash){
                     this._mapHash = newMapHash;
                     this._maps = maps;
