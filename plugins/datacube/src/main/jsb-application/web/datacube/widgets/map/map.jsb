@@ -221,6 +221,13 @@
                         defaultValue: 'rgb(115, 115, 115)'
                     },
                     {
+                        name: 'Толщина границы',
+                        type: 'item',
+                        key: 'borderWidth',
+                        itemType: 'number',
+                        defaultValue: 1
+                    },
+                    {
                         name: 'Показывать значения на регионах',
                         type: 'item',
                         key: 'showValuesPermanent',
@@ -374,6 +381,7 @@
 
                     regionsColors[i].defaultColor = regionsContext[i].find('defaultColor').value();
                     regionsColors[i].borderColor = regionsContext[i].find('borderColor').value();
+                    regionsColors[i].borderWidth = regionsContext[i].find('borderWidth').value();
 
                     var jsonMapSelector  = regionsContext[i].find('geojson').value();
                     switch(jsonMapSelector.key()){
@@ -461,6 +469,7 @@
 
                             regions[i].defaultColor = regionsColors[i].defaultColor;
                             regions[i].borderColor = regionsColors[i].borderColor;
+                            regions[i].borderWidth = regionsColors[i].borderWidth;
                         }
                     }
 
@@ -528,9 +537,9 @@
                                     }
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
                                     if(!reg){
-                                        return {fillColor: data.regions[i].defaultColor, color: data.regions[i].borderColor, fillOpacity: 0.7};
+                                        return {fillColor: data.regions[i].defaultColor, color: data.regions[i].borderColor, weight: data.regions[i].borderWidth, fillOpacity: 0.7};
                                     }
-                                    return {fillColor: reg.color, color: reg.borderColor, fillOpacity: 0.7};
+                                    return {fillColor: reg.color, color: data.regions[i].borderColor, weight: data.regions[i].borderWidth, fillOpacity: 0.7};
                                 },
                                 coordsToLatLng: function(point){
                                     if(point[0] > $this._maps[i].wrapLongitude){
@@ -672,12 +681,13 @@
     },
 
     $server: {
-        $require: ['JSB.Web', 'java:org.jsbeans.helpers.FileHelper'],
+        $require: ['JSB.Web', 'JSB.IO.FileSystem'],
 
         post: function(params){
             for(var i = 0; i < params.maps.length; i++){
-                if(FileHelper.fileExists($jsb.getFullPath() + '/' + params.maps[i].path)){
-                    params.maps[i].data = JSON.parse(FileHelper.readStringFromFile($jsb.getFullPath() + '/' + params.maps[i].path));
+                if(FileSystem.exists($jsb.getFullPath() + '/' + params.maps[i].path)){
+                    params.maps[i].data = eval('(' + FileSystem.read($jsb.getFullPath() + '/' + params.maps[i].path, 'r') + ')');
+                    //params.maps[i].data = JSON.parse(FileSystem.read($jsb.getFullPath() + '/' + params.maps[i].path, 'r'));
                 }
             }
 
