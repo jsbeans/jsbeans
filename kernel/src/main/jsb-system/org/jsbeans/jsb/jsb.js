@@ -5803,7 +5803,6 @@ JSB({
 			try {
 				ret = this.executeClientRpc(jsoName, instanceId, procName, np.res);
 			} catch(e){
-				debugger;
 				fail = e;
 				if($jsb.getLogger()){
 					$jsb.getLogger().error(e);
