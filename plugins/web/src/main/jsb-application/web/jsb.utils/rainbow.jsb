@@ -27,26 +27,44 @@
                 }
             },
 
-            this.colourAt = function (number){
-                return calcHex(number, startColour.substring(0,2), endColour.substring(0,2))
-                    + calcHex(number, startColour.substring(2,4), endColour.substring(2,4))
-                    + calcHex(number, startColour.substring(4,6), endColour.substring(4,6));
+            this.colourAt = function (number, func){
+                return calcHex(number, startColour.substring(0,2), endColour.substring(0,2), func)
+                    + calcHex(number, startColour.substring(2,4), endColour.substring(2,4), func)
+                    + calcHex(number, startColour.substring(4,6), endColour.substring(4,6), func);
             }
 
-            function calcHex(number, channelStart_Base16, channelEnd_Base16)
+            function calcHex(num, channelStart_Base16, channelEnd_Base16, func)
             {
-                var num = number;
                 if (num < minNum) {
                     num = minNum;
                 }
                 if (num > maxNum) {
                     num = maxNum;
                 }
-                var numRange = maxNum - minNum;
+
+
                 var cStart_Base10 = parseInt(channelStart_Base16, 16);
                 var cEnd_Base10 = parseInt(channelEnd_Base16, 16);
-                var cPerUnit = (cEnd_Base10 - cStart_Base10)/numRange;
-                var c_Base10 = Math.round(cPerUnit * (num - minNum) + cStart_Base10);
+
+                switch(func){
+                    case 'quadratic':
+                        var numRange = Math.pow(maxNum, 2) - Math.pow(minNum, 2);
+                        var cPerUnit = (cEnd_Base10 - cStart_Base10) / numRange;
+                        var c_Base10 = Math.round(cPerUnit * (Math.pow(num, 2) - Math.pow(minNum, 2)) + cStart_Base10);
+                        break;
+                    case 'logarithmic':
+                        var numRange = Math.log(maxNum) - Math.log(minNum);
+                        var cPerUnit = (cEnd_Base10 - cStart_Base10) / numRange;
+                        var c_Base10 = Math.round(cPerUnit * (Math.log(num) - Math.log(minNum)) + cStart_Base10);
+                        break;
+                    case 'linear':
+                    default:
+                        var numRange = maxNum - minNum;
+                        var cPerUnit = (cEnd_Base10 - cStart_Base10) / numRange;
+                        var c_Base10 = Math.round(cPerUnit * (num - minNum) + cStart_Base10);
+                        break;
+                }
+
                 return formatHex(c_Base10.toString(16));
             }
 
@@ -273,15 +291,15 @@
 		return this;
 	},
 
-	colourAt: function (number){
+	colourAt: function (number, func){
         if (isNaN(number)) {
             throw new TypeError(number + ' is not a number');
         } else if (this.gradients.length === 1) {
-            return this.gradients[0].colourAt(number);
+            return this.gradients[0].colourAt(number, func);
         } else {
             var segment = (this.maxNum - this.minNum)/(this.gradients.length);
             var index = Math.min(Math.floor((Math.max(number, this.minNum) - this.minNum)/segment), this.gradients.length - 1);
-            return this.gradients[index].colourAt(number);
+            return this.gradients[index].colourAt(number, func);
         }
     },
 

@@ -85,11 +85,50 @@
                                 ]
                             }
                             ]
+                        },
+                        {
+                            name: 'Карта регионов России MPT',
+                            type: 'group',
+                            key: 'russianRegionsMPT',
+                            editor: 'none',
+                            items: [
+                            {
+                                name: 'Сопоставление по',
+                                type: 'select',
+                                key: 'compareTo',
+                                items: [
+                                {
+                                    name: 'Имя региона',
+                                    type: 'item',
+                                    key: 'NAME_1',
+                                    editor: 'none'
+                                },
+                                {
+                                    name: 'Номер по конституции',
+                                    type: 'item',
+                                    key: 'KONST_NUM',
+                                    editor: 'none'
+                                },
+                                {
+                                    name: 'Код OKTMO',
+                                    type: 'item',
+                                    key: 'OKTMO',
+                                    editor: 'none'
+                                },
+                                {
+                                    name: 'ISO',
+                                    type: 'item',
+                                    key: 'ISO',
+                                    editor: 'none'
+                                }
+                                ]
+                            }
+                            ]
                         }
                         ]
                     },
                     {
-                        name: 'Цвет',
+                        name: 'Цвет заливки',
                         type: 'select',
                         key: 'color',
                         items: [
@@ -128,14 +167,32 @@
                                 itemType: 'color',
                                 editor: 'JSB.Widgets.ColorEditor'
                             },
-                            /*
                             {
-                                name: 'Шаг',
-                                type: 'item',
-                                key: 'step',
-                                itemType: 'number'
+                                name: 'Функция вычисления цвета',
+                                type: 'select',
+                                key: 'functionType',
+                                editor: 'none',
+                                items: [
+                                {
+                                    name: 'Линейная',
+                                    type: 'item',
+                                    key: 'linear',
+                                    editor: 'none'
+                                },
+                                {
+                                    name: 'Логарифмическая',
+                                    type: 'item',
+                                    key: 'logarithmic',
+                                    editor: 'none'
+                                },
+                                {
+                                    name: 'Квадратичная',
+                                    type: 'item',
+                                    key: 'quadratic',
+                                    editor: 'none'
+                                }
+                                ]
                             }
-                            */
                             ]
                         },
                         {
@@ -148,9 +205,17 @@
                         ]
                     },
                     {
-                        name: 'Цвет регионов без данных',
+                        name: 'Цвет заливки регионов без данных',
                         type: 'item',
                         key: 'defaultColor',
+                        itemType: 'color',
+                        editor: 'JSB.Widgets.ColorEditor',
+                        defaultValue: 'rgb(115, 115, 115)'
+                    },
+                    {
+                        name: 'Цвет границ регионов',
+                        type: 'item',
+                        key: 'borderColor',
                         itemType: 'color',
                         editor: 'JSB.Widgets.ColorEditor',
                         defaultValue: 'rgb(115, 115, 115)'
@@ -278,55 +343,69 @@
 
             $base();
 
-            var regionsContext = this.getContext().find('regions').values(),
-                regionsColors = [],
-                maps = [];
+            try{
+                var regionsContext = this.getContext().find('regions').values(),
+                    regionsColors = [],
+                    maps = [];
 
-            for(var i = 0; i < regionsContext.length; i++){
-                var colorSelector = regionsContext[i].find('color').value();
-                switch(colorSelector.key()){
-                    case 'simpleColor':
-                        regionsColors[i] = {
-                            simpleColor: colorSelector.value().value()
-                        }
-                        break;
-                    case 'rangeColor':
-                        regionsColors[i] = {
-                            rangeColor: {
-                                startColor: colorSelector.find('startColor').value(),
-                                endColor: colorSelector.find('endColor').value(),
-                                //step: colorSelector.find('step').value()
+                for(var i = 0; i < regionsContext.length; i++){
+                    var colorSelector = regionsContext[i].find('color').value();
+                    switch(colorSelector.key()){
+                        case 'simpleColor':
+                            regionsColors[i] = {
+                                simpleColor: colorSelector.value().value()
                             }
-                        }
-                        break;
-                    case 'sourceColor':
-                        regionsColors[i] = {
-                            sourceColor: colorSelector
-                        }
-                        break;
+                            break;
+                        case 'rangeColor':
+                            regionsColors[i] = {
+                                rangeColor: {
+                                    startColor: colorSelector.find('startColor').value(),
+                                    endColor: colorSelector.find('endColor').value(),
+                                    functionType: colorSelector.find('functionType').value().key()
+                                }
+                            }
+                            break;
+                        case 'sourceColor':
+                            regionsColors[i] = {
+                                sourceColor: colorSelector
+                            }
+                            break;
+                    }
+
+                    regionsColors[i].defaultColor = regionsContext[i].find('defaultColor').value();
+                    regionsColors[i].borderColor = regionsContext[i].find('borderColor').value();
+
+                    var jsonMapSelector  = regionsContext[i].find('geojson').value();
+                    switch(jsonMapSelector.key()){
+                        case 'russianRegions':
+                            maps.push({
+                                data: null,
+                                path: 'geojson/russianRegions.json',
+                                compareTo: jsonMapSelector.find('compareTo').value().key(),
+                                wrapLongitude: -30
+                            });
+                            break;
+                        case 'russianRegionsMPT':
+                            maps.push({
+                                data: null,
+                                path: 'geojson/russianRegionsMPT.json',
+                                compareTo: jsonMapSelector.find('compareTo').value().key(),
+                                wrapLongitude: -30
+                            });
+                            break;
+                    }
                 }
 
-                regionsColors[i].defaultColor = regionsContext[i].find('defaultColor').value();
-
-                var jsonMapSelector  = regionsContext[i].find('geojson').value();
-                switch(jsonMapSelector.key()){
-                    case 'russianRegions':
-                        maps.push({
-                            data: null,
-                            path: 'geojson/russianRegions.json',
-                            compareTo: jsonMapSelector.find('compareTo').value().key(),
-                            wrapLongitude: -30
-                        });
-                        break;
+                var newMapHash = this.createFilterHash(maps);
+                if(newMapHash !== this._mapHash){
+                    this._mapHash = newMapHash;
+                    this._maps = maps;
+                    this._isMapsLoaded = false;
+                    this.loadMaps();
                 }
-            }
-
-            var newMapHash = this.createFilterHash(maps);
-            if(newMapHash !== this._mapHash){
-                this._mapHash = newMapHash;
-                this._maps = maps;
-                this._isMapsLoaded = false;
-                this.loadMaps();
+            } catch(ex){
+                console.log('Parse scheme exception!');
+                console.log(ex);
             }
 
             this.getElement().loader();
@@ -377,10 +456,11 @@
                             });
 
                             for(var j = 0; j < regions[i].data.length; j++){
-                                regions[i].data[j].color = '#' + rainbow.colourAt(regions[i].data[j].value);
+                                regions[i].data[j].color = '#' + rainbow.colourAt(regions[i].data[j].value, regionsColors[i].rangeColor.functionType);
                             }
 
                             regions[i].defaultColor = regionsColors[i].defaultColor;
+                            regions[i].borderColor = regionsColors[i].borderColor;
                         }
                     }
 
@@ -448,9 +528,9 @@
                                     }
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
                                     if(!reg){
-                                        return {fillColor: data.regions[i].defaultColor, color: data.regions[i].defaultColor, fillOpacity: 0.7};
+                                        return {fillColor: data.regions[i].defaultColor, color: data.regions[i].borderColor, fillOpacity: 0.7};
                                     }
-                                    return {fillColor: reg.color, color: reg.color, fillOpacity: 0.7};
+                                    return {fillColor: reg.color, color: reg.borderColor, fillOpacity: 0.7};
                                 },
                                 coordsToLatLng: function(point){
                                     if(point[0] > $this._maps[i].wrapLongitude){
@@ -473,8 +553,11 @@
 
                                     layer.on({
                                         click: function(evt){
+                                            if(!reg){
+                                                return;
+                                            }
                                             $this._addFilter(evt, {
-                                                regionValue: feature.properties[$this._maps[i].compareTo],
+                                                regionValue: reg.region,
                                                 seriesIndex: i
                                             });
                                         },
