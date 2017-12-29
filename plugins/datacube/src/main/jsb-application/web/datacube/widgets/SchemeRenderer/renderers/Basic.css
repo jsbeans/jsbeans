@@ -1,0 +1,68 @@
+.groupRender .jsb-panel {
+    width: 100%;
+}
+
+.groupRender.optional > .jsb-panel > .jsb-checkbox{
+    position: absolute;
+    top: 18px;
+}
+
+.groupRender.optional > .jsb-panel > .header h1 {
+    margin-left: 22px;
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem {
+    position: relative;
+    padding-left: 15px;
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem .sortableHandle {
+     display: block;
+     height: calc(100% - 4px);
+     width: 10px;
+     position: absolute;
+     left: 0px;
+     top: 2px;
+     border: 1px solid #d6d4d4;
+     border-radius: 3px;
+     background-color: #f3f3f3;
+     cursor: move;
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem .sortableHandle div {
+    position: absolute;
+    left: 2px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border: 1px solid #a09f9f;
+    border-radius: 4px;
+    background: #cccccc;
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem .sortableHandle div:first-child {
+    top: calc(50% - 10px);
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem .sortableHandle div:last-child {
+    top: calc(50% + 10px);
+}
+
+.groupRender > .jsb-panel > .content > .multipleBtn {
+    cursor: pointer;
+    font-size: 20px;
+    color: #1abc9c;
+    float: right;
+}
+
+.itemRender {
+    margin: 10px 0;
+}
+
+.itemRender .name {
+    width: 150px;
+    display: inline-block;
+    vertical-align: top;
+    line-height: 22px;
+    font-size: 14px;
+}
