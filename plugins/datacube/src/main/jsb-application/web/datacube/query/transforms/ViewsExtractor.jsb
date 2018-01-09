@@ -201,9 +201,9 @@
                         for (var k in obj) {
                             var cont = walk(obj[k]);
                             if(cont) {
-                                if (JSB.isObject(obj[k]) && Object.keys(obj[k])).length == 0) {
+                                if (JSB.isObject(obj[k]) && Object.keys(obj[k]).length == 0) {
                                     delete obj[k];
-                                } else if (JSB.isArray(obj[k]) && obj[k]).length == 0) {
+                                } else if (JSB.isArray(obj[k]) && obj[k].length == 0) {
                                     delete obj[k];
                                 }
                                 contains = true;

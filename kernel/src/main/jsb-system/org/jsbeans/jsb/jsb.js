@@ -1439,61 +1439,89 @@ if(!(function(){return this;}).call(null).JSB){
 		
 		
 		
-		stringify: function(obj, callback, name){
+		stringify: function(obj, callback, name, pretty){
 			// TODO: replace implementation to avoid cyclic references
-			var str = '';
-			
-			if(callback){
-				var res = callback(obj, name);
-				if(res !== undefined){
-					return res;
-				}
+            var offsetStep = '  ';
+            var offset = '\n';
+
+			function stringify(obj, callback, name){
+                var str = '';
+
+                function offsetBegin() {
+                    if (pretty) { offset += offsetStep; str += offset; }
+                }
+                function offsetNext() {
+                    if (pretty) { str += offset; }
+                }
+                function offsetEnd() {
+                    if (pretty) { offset = offset.substring(0, offset.length - offsetStep.length); str += offset; }
+                }
+
+                if(callback){
+                    var res = callback(obj, name);
+                    if(res !== undefined){
+                        return res;
+                    }
+                }
+
+                if(JSB().isPlainObject(obj)){
+                    // collect names and sort
+                    var names = [];
+                    for(var fName in obj){
+                        if(!obj.hasOwnProperty(fName)){
+                            continue;
+                        }
+                        names.push(fName);
+                    }
+                    names.sort();
+                    str += '{';
+                    offsetBegin();
+                    var len = str.length;
+                    for(var i = 0; i < names.length; i++ ){
+                        if(str.length > len){
+                            str += ',';
+                            offsetNext();
+                        }
+                        var fName = names[i];
+                        var fRes = stringify(obj[fName], callback, fName);
+                        if(fRes === null){
+                            continue;
+                        }
+                        str += '"' + fName + '":';
+                        if (pretty) str += ' ';
+                        str += fRes;
+                    }
+//                    offsetNext();
+                    offsetEnd();
+                    str += '}';
+
+                    return str;
+                } else if(JSB().isArray(obj)){
+                    str += '[';
+                    offsetBegin();
+                    var len = str.length;
+                    for(var i = 0; i < obj.length; i++){
+                        if(str.length > len){
+                            str += ',';
+                            offsetNext();
+                        }
+                        var fRes = stringify(obj[i], callback, i);
+                        if(fRes === null){
+                            continue;
+                        }
+                        str += fRes;
+                    }
+                    offsetEnd();
+                    str += ']';
+                    return str;
+                } else if(JSB().isString(obj)){
+                    return '"' + obj + '"';
+                } else {
+                    return '' + obj;
+                }
 			}
-			
-			if(JSB().isPlainObject(obj)){
-				// collect names and sort
-				var names = [];
-				for(var fName in obj){
-					if(!obj.hasOwnProperty(fName)){
-						continue;
-					}
-					names.push(fName);
-				}
-				names.sort();
-				var str = '{';
-				for(var i = 0; i < names.length; i++ ){
-					if(str.length > 1){
-						str += ',';
-					}
-					var fName = names[i];
-					var fRes = this.stringify(obj[fName], callback, fName);
-					if(fRes === null){
-						continue;
-					}
-					str += '"' + fName + '":' + fRes;
-				}
-				str += '}';
-				
-				return str;
-			} else if(JSB().isArray(obj)){
-				var str = '[';
-				for(var i = 0; i < obj.length; i++){
-					if(str.length > 1){
-						str += ',';
-					}
-					var fRes = this.stringify(obj[i], callback, i);
-					if(fRes === null){
-						continue;
-					}
-					str += fRes;
-				}
-				str += ']';
-				return str;
-			} else if(JSB().isString(obj)){
-				return '"' + obj + '"';
-			} else {
-				return '' + obj;
-			}
+
+			return stringify(obj, callback, name);
 		},
 		
 		get: function(name){

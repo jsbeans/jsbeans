@@ -825,7 +825,7 @@
                             isForeignContext ? !includeForeign : !includeCurrent;
                 }
             );
-            var filter = $this.filterFilterByFields(query.$filter, function(filteredField, filteredExpr, path){
+            var filter = $this.filterFilterByFields(query.$filter||{}, function(filteredField, filteredExpr, path){
                 return skipFields.indexOf(filteredField) == -1;
             });
             return filter;
@@ -838,6 +838,9 @@
                     if (e.$select) {
                         subQueries.push(e);
                     }
+//                    if (JSB.isObject(e.$from)) {
+//                        subQueries.push(e.$from);
+//                    }
                 }
                 if (JSB.isObject(e) || JSB.isArray(e)) {
                     for(var i in e) {
@@ -845,9 +848,11 @@
                     }
                 }
                 return subQueries.length > 0 ? subQueries : null;
-            };
+            }
+
+            walk(exp);
+            return subQueries;
         },
-		},
 
         /** Преобразует $filter к единому формату:
         *   - multifilter заменяется на $and: []
