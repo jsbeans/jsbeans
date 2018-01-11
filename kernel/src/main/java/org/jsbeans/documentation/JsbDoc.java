@@ -4,7 +4,6 @@ import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.types.JsonArray;
 import org.jsbeans.types.JsonObject;
 import org.jsbeans.helpers.FileHelper;
-import scala.util.parsing.combinator.testing.Str;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +25,15 @@ public class JsbDoc {
                 JsonObject block = extract(lines[i], i);
 
                 if (block != null) {
-                    // todo: parse string after comment, add it in block and i++
+                    /*
+                    JsonObject target;
+                    do{
+                        i++;
+                        target = parse_target(lines[i]);
+                    } while (target == null);
+
+                    result.add(merge(block, target));
+                    */
                     result.add(block);
                 }
             }
@@ -35,6 +42,8 @@ public class JsbDoc {
                 FileHelper.writeStringToFile(ConfigHelper.getConfigString("kernel.jsb.docPath") + "/" + fileName, result.toString());
             }
         } catch (Throwable ex){
+        } finally {
+            chunk = null;
         }
     }
 
@@ -142,7 +151,7 @@ public class JsbDoc {
         JsonObject result = new JsonObject();
         result.put("tags", tags);
         result.put("line", ((JsonObject) chunk.get(0)).get("number"));
-        result.put("description", description.get("source")); //((String)description.get("source")).replaceAll("\\.", "")
+        result.put("description", ((String)description.get("source")).trim());
         result.put("source", source);
 
         return result;
@@ -316,11 +325,26 @@ public class JsbDoc {
 
         if(m.find()){
             JsonObject data = new JsonObject();
-            data.put("description", m.group(0)); //.replaceAll("\\.", "");
+            data.put("description", m.group(0).trim());
 
             JsonObject res = new JsonObject();
             res.put("data", data);
 
+            return res;
+        }
+
+        return null;
+    }
+
+    private static JsonObject parse_target(String str){
+        str = str.trim();
+        Pattern p = Pattern.compile("\\S");
+        Matcher m = p.matcher(str);
+
+        if(m.find()){
+            JsonObject res = new JsonObject();
+            res.put("targetType", str.indexOf("function") > -1 ? "function" : "variable");
+            res.put("targetName", str.substring(0, str.indexOf(":")));
             return res;
         }
 
@@ -336,6 +360,10 @@ public class JsbDoc {
         JsonObject res = args[0];
 
         for(int i = 1; i < args.length; i++){
+            if(args[i] == null){
+                continue;
+            }
+
             String[] keys = args[i].getProperties().toArray(new String[args[i].getProperties().size()]);
 
             for(int j = 0; j < keys.length; j++){
