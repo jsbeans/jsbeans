@@ -5,6 +5,7 @@
 	$client: {
 	    construct: function(){
 	        this.addClass('itemRender');
+	        this.loadCss('Item.css');
 
 	        if(this._scheme.optional){
 	            this.addClass('optional');
@@ -38,8 +39,18 @@
 	            this.multipleContainer.append(this.multipleBtn);
 	        }
 
-	        if(this._values.values.length > 0){
-	            this.addItem(this._values.values[0], i);
+	        if(this._values && this._values.values.length > 0){
+	            for(var i = 0; i < this._values.values.length; i++){
+	                this.addItem(this._values.values[0], i);
+	            }
+	        }
+
+	        if(!this._values){
+	            this._values = {
+	                values: []
+	            };
+
+	            this.addItem(null, 0);
 	        }
 	    },
 
@@ -49,16 +60,17 @@
 	            this._values.values.push(values);
 	        }
 
-	        var item = this.$('<div></div>');
+	        var item = this.$('<div class="item"></div>');
 
-	        switch(this._scheme.options.editor){
+	        switch(this._scheme.options && this._scheme.options.editor){
                 default:
                     var editor = new PrimitiveEditor({
                         onChange: function(val){
                             values.value = val;
                         }
                     });
-                    item.append(editor);
+                    editor.setData(values.value);
+                    item.append(editor.getElement());
                     break;
 	        }
 
@@ -74,10 +86,6 @@
 	        } else {
 	            this.append(item);
 	        }
-	    },
-
-	    setBinding: function(){
-
 	    }
     }
 }

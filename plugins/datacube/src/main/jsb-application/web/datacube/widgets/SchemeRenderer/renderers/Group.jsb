@@ -5,6 +5,7 @@
 	$client: {
 	    construct: function(){
 	        this.addClass('groupRender');
+	        this.loadCss('Group.css');
 
 	        this.group = new Panel({
 	            title: this._scheme.name

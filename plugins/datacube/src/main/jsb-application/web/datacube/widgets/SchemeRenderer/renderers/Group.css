@@ -54,15 +54,3 @@
     color: #1abc9c;
     float: right;
 }
-
-.itemRender {
-    margin: 10px 0;
-}
-
-.itemRender .name {
-    width: 150px;
-    display: inline-block;
-    vertical-align: top;
-    line-height: 22px;
-    font-size: 14px;
-}

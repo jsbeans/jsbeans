@@ -6,6 +6,14 @@
 	    $constructor: function(opts){
 	        $base(opts);
 	        var scheme = {
+	            sources: {
+	                render: 'sourceBinding',
+	                name: 'Sources',
+	                key: 'sources',
+	                options: {
+	                    binding: true
+	                }
+	            },
 	            users: {
 	                render: 'group',
 	                name: 'Users',
@@ -13,18 +21,18 @@
 	                multiple: true,
 	                optional: true,
 	                items: {
-	                name : {
-	                    render: 'item',
-	                    name: 'Name',
-	                    key: 'name',
-	                    options: {}
-	                },
-	                surname: {
-	                    render: 'item',
-	                    name: 'Surname',
-	                    key: 'surname',
-	                    options: {}
-	                }
+                        name : {
+                            render: 'item',
+                            name: 'Name',
+                            key: 'name',
+                            options: {}
+                        },
+                        surname: {
+                            render: 'item',
+                            name: 'Surname',
+                            key: 'surname',
+                            options: {}
+                        }
 	                }
 	            }
 	        };
@@ -64,11 +72,15 @@
 	        var renders = [
 	            {
 	                name: 'group',
-	                render: 'Scheme.GroupRender'
+	                render: 'Scheme.Render.Group'
                 },
 	            {
 	                name: 'item',
-	                render: 'Scheme.ItemRender'
+	                render: 'Scheme.Render.Item'
+	            },
+	            {
+	                name: 'sourceBinding',
+	                render: "Scheme.Render.SourceBinding"
 	            }
 	        ];
 

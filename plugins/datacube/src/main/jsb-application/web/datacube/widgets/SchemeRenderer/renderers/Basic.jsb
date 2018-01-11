@@ -5,14 +5,13 @@
         $constructor: function(opts){
             $base(opts);
             this.addClass('basicRender');
-            this.loadCss('Basic.css');
             JSB().loadCss('tpl/font-awesome/css/font-awesome.min.css');
 
             this._scheme = opts.scheme;
             this._values = opts.values;
             this._schemeController = opts.schemeController;
 
-	        if(Object.keys(this._values).length === 0){
+	        if(this._values && Object.keys(this._values).length === 0){
 	            this.createValues();
 	        }
 

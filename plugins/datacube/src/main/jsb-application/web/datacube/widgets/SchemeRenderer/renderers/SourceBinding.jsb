@@ -1,9 +1,11 @@
 {
 	$name: 'Scheme.Render.SourceBinding',
 	$parent: 'Scheme.Render.Item',
+	$require: ['JSB.Widgets.PrimitiveEditor'],
 	$client: {
 	    construct: function(){
 	        this.addClass('sourceBindingRender');
+	        this.loadCss('SourceBinding.css');
 	        $base();
 	    },
 
@@ -13,10 +15,11 @@
 	            this._values.values.push(values);
 	        }
 
-	        var item = this.$('<div></div>');
+	        var item = this.$('<div class="item"></div>');
 
-	        switch(this._scheme.options.editor){
+	        switch(this._scheme.options && this._scheme.options.editor){
 	            case 'none':
+	                item.addClass('bindingItem');
 	                break;
                 default:
                     var editor = new PrimitiveEditor({
@@ -24,11 +27,11 @@
                             values.value = val;
                         }
                     });
-                    item.append(editor);
+                    item.append(editor.getElement());
                     break;
 	        }
 
-	        if(this._scheme.options.binding){
+	        if(this._scheme.options && this._scheme.options.binding){
 	            if(editor){
 	                editor.setPlaceholderText('Введите значение или перетащите источник');
 	            }
@@ -37,7 +40,7 @@
                     accept: function(d){
                         if(d && d.length > 0 && d.get(0).draggingItems){
                             for(var i in d.get(0).draggingItems){
-                                var obj = d.get(0).draggingItems[i].obj;    // todo: universal method for treeView
+                                var obj = d.get(0).draggingItems[i].obj;
 
                                 if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
                                     continue;
@@ -90,7 +93,7 @@
 	    },
 
 	    setBinding: function(){
-
+	        debugger;
 	    }
 	}
 }

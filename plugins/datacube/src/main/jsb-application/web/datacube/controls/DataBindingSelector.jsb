@@ -166,6 +166,7 @@
 		},
 		
 		setSource: function(entry){
+debugger;
 			var source = null;
 			if(JSB.isInstanceOf(entry,'DataCube.Model.Slice')){
 				// add slice
