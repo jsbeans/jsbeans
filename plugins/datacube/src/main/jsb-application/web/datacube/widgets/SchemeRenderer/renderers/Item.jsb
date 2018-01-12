@@ -39,17 +39,11 @@
 	            this.multipleContainer.append(this.multipleBtn);
 	        }
 
-	        if(this._values && this._values.values.length > 0){
+	        if(this._values.values.length > 0){
 	            for(var i = 0; i < this._values.values.length; i++){
 	                this.addItem(this._values.values[0], i);
 	            }
-	        }
-
-	        if(!this._values){
-	            this._values = {
-	                values: []
-	            };
-
+	        } else {
 	            this.addItem(null, 0);
 	        }
 	    },

@@ -22,16 +22,17 @@
             throw new Error('This method must be overwritten');
         },
 
+        changeLinkTo: function(){
+            // this function must be overwritten if you'll use linkTo
+        },
+
         createRender: function(name, scheme, values){
             return this._schemeController.createRender(name, scheme, values);
         },
 
         createValues: function(){
-	        this._values = {
-	            checked: this._scheme.optional === 'checked' ? true : undefined,
-	            values: [],
-	            key: this._scheme.key
-	        }
+            this._values.checked = this._scheme.optional === 'checked' ? true : undefined;
+            this._values.values = [];
         },
 
         destroy: function(){

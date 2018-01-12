@@ -27,9 +27,6 @@
             if(this.options.cssClass){
                 this.addClass(this.options.cssClass);
             }
-
-            // options enable
-            this.enable(this.options.enabled);
 		},
 
         options: {
@@ -82,16 +79,6 @@
 			this.replacingMark = this.$('<div id="'+this.getId()+'_rmark"></div>');
 			this.getElement().after(this.replacingMark);
 			this.getElement().detach();
-		},
-
-		enable: function(b){
-            this.options.enabled = b;
-
-            if(b) {
-                this.removeClass('disabled');
-            } else {
-                this.addClass('disabled');
-            }
 		},
 
 		find: function(c){

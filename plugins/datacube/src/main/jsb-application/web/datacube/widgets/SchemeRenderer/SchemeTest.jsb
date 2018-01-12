@@ -1,7 +1,7 @@
 {
 	$name: 'Scheme.Test',
 	$parent: 'JSB.Controls.Control',
-	$require: ['Scheme.Controller'],
+	$require: ['Scheme.Controller', 'JSB.Controls.Button'],
 	$client: {
 	    $constructor: function(opts){
 	        $base(opts);
@@ -9,10 +9,13 @@
 	            sources: {
 	                render: 'sourceBinding',
 	                name: 'Sources',
-	                key: 'sources',
-	                options: {
-	                    binding: true
-	                }
+	                key: 'sources'
+	            },
+	            dataBindings: {
+	                render: 'dataBinding',
+                    name: 'DataBinding',
+	                key: 'dataBindings',
+	                linkTo: 'sources'
 	            },
 	            users: {
 	                render: 'group',
@@ -38,6 +41,15 @@
 	        };
 
 	        var values = {
+	        /*
+	            sources: {
+	                values: [
+	                {
+	                    binding: {}
+	                }
+	                ]
+	            },
+            */
 	            users: {
 	                checked: true,
 	                values: [
@@ -81,6 +93,10 @@
 	            {
 	                name: 'sourceBinding',
 	                render: "Scheme.Render.SourceBinding"
+	            },
+	            {
+	                name: 'dataBinding',
+	                render: "Scheme.Render.DataBinding"
 	            }
 	        ];
 
@@ -91,6 +107,15 @@
             });
 
             this.append(controller);
+
+            var valuesBtn = new Button({
+                caption: 'Получить значения',
+                onclick: function(){
+                    console.log(controller.getValues());
+                    debugger;
+                }
+            });
+            this.append(valuesBtn);
 	    }
 	}
 }

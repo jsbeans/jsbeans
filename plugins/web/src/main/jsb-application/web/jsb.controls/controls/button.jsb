@@ -30,6 +30,11 @@
                 }
             }
 
+            // only icon
+            if(this.options.hasIcon && !this.options.hasCaption){
+                this.icon.addClass('onlyIcon');
+            }
+
             // options tooltip
             if(!this.options.tooltip && JSB().isString(this.options.caption)){
                 this.options.tooltip = this.options.caption;
@@ -44,6 +49,9 @@
                     this.on(i.substr(2), this.options[i]);
                 }
             }
+
+            // options enable
+            this.enable(this.options.enabled);
 	    },
 
         options: {
@@ -55,6 +63,16 @@
 
             tooltip: null
         },
+
+		enable: function(b){
+            this.options.enabled = b;
+
+            if(b) {
+                this.removeClass('disabled');
+            } else {
+                this.addClass('disabled');
+            }
+		},
 
         setCaption: function(caption){
             this.caption.empty();
