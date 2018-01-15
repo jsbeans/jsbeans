@@ -206,9 +206,15 @@
 
 		removeBinding: function(item, itemIndex){
             this._items[itemIndex] = {};
-            item.removeClass('filled');
-            item.empty();
-            this.setEditor(item);
+
+            if(itemIndex > 0){
+                item.remove();
+            } else {
+                item.removeClass('filled');
+                item.empty();
+                this.setEditor(item);
+            }
+
             this.changeBinding(itemIndex);
 		}
 	},
