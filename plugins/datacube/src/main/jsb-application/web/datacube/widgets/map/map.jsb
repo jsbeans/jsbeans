@@ -124,6 +124,33 @@
                                 ]
                             }
                             ]
+                        },
+                        {
+                            name: 'Карта стран мира',
+                            type: 'group',
+                            key: 'worldCountries',
+                            editor: 'none',
+                            items: [
+                            {
+                                name: 'Сопоставление по',
+                                type: 'select',
+                                key: 'compareTo',
+                                items: [
+                                {
+                                    name: 'Название страны',
+                                    type: 'item',
+                                    key: 'ru_name',
+                                    editor: 'none'
+                                },
+                                {
+                                    name: 'Код ISO',
+                                    type: 'item',
+                                    key: 'id',
+                                    editor: 'none'
+                                }
+                                ]
+                            }
+                            ]
                         }
                         ]
                     },
@@ -233,6 +260,28 @@
                         key: 'showValuesPermanent',
                         optional: true,
                         editor: 'none'
+                    },
+                    {
+                        name: 'Показывать регионы без значений',
+                        type: 'item',
+                        key: 'showEmptyRegions',
+                        optional: true,
+                        editor: 'none'
+                    },
+                    {
+                        name: 'Выбранная область',
+                        type: 'group',
+                        key: 'selectRegion',
+                        items: [
+                        {
+                            name: 'Цвет границ регионов',
+                            type: 'item',
+                            key: 'selectBorderColor',
+                            itemType: 'color',
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: 'rgb(0, 0, 0)'
+                        }
+                        ]
                     }
                     ]
                 }
@@ -383,6 +432,7 @@
                     regionsColors[i].defaultColor = regionsContext[i].find('defaultColor').value();
                     regionsColors[i].borderColor = regionsContext[i].find('borderColor').value();
                     regionsColors[i].borderWidth = regionsContext[i].find('borderWidth').value();
+                    regionsColors[i].selectBorderColor = regionsContext[i].find('selectBorderColor').value();
 
                     var jsonMapSelector  = regionsContext[i].find('geojson').value();
                     switch(jsonMapSelector.key()){
@@ -403,6 +453,15 @@
                                 wrapLongitude: -30
                             });
                             newMapHash += 'geojson/russianRegionsMPT.json';
+                            break;
+                        case 'worldCountries':
+                            maps.push({
+                                data: null,
+                                path: 'geojson/worldCountries.json', // 'geojson/countries.json', //'geojson/worldCountries.json',
+                                compareTo: jsonMapSelector.find('compareTo').value().key(),
+                                wrapLongitude: -32
+                            });
+                            newMapHash += 'geojson/worldCountries.json';
                             break;
                     }
 
@@ -432,7 +491,8 @@
                             if(!regions[i]){
                                 regions[i] = {
                                     data: [],
-                                    showValuesPermanent: regionsContext[i].find('showValuesPermanent').used()
+                                    showValuesPermanent: regionsContext[i].find('showValuesPermanent').used(),
+                                    showEmptyRegions: regionsContext[i].find('showEmptyRegions').used()
                                 };
                             }
 
@@ -474,6 +534,7 @@
                             regions[i].defaultColor = regionsColors[i].defaultColor;
                             regions[i].borderColor = regionsColors[i].borderColor;
                             regions[i].borderWidth = regionsColors[i].borderWidth;
+                            regions[i].selectBorderColor = regionsColors[i].selectBorderColor;
                         }
                     }
 
@@ -541,12 +602,16 @@
                                     }
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
                                     if(!reg){
-                                        return {fillColor: data.regions[i].defaultColor, color: data.regions[i].borderColor, weight: data.regions[i].borderWidth, fillOpacity: 0.7};
+                                        if(data.regions[i].showEmptyRegions){
+                                            return {fillColor: data.regions[i].defaultColor, color: data.regions[i].borderColor, weight: data.regions[i].borderWidth, fillOpacity: 0.7};
+                                        } else {
+                                            return {fillColor: 'transparent', color: 'transparent'};
+                                        }
                                     }
                                     return {fillColor: reg.color, color: data.regions[i].borderColor, weight: data.regions[i].borderWidth, fillOpacity: 0.7};
                                 },
                                 coordsToLatLng: function(point){
-                                    if(point[0] > $this._maps[i].wrapLongitude){
+                                    if($this._maps[i].wrapLongitude && (point[0] > $this._maps[i].wrapLongitude)){
                                         point[0] -= 360;
                                     }
                                     return L.GeoJSON.coordsToLatLng(point);
@@ -569,6 +634,9 @@
                                             if(!reg){
                                                 return;
                                             }
+
+                                            evt.target.setStyle({color: data.regions[i].selectBorderColor});
+
                                             $this._addFilter(evt, {
                                                 regionValue: reg.region,
                                                 seriesIndex: i
