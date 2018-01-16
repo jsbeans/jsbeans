@@ -274,6 +274,14 @@
                         key: 'selectRegion',
                         items: [
                         {
+                            name: 'Цвет заливки регионов',
+                            type: 'item',
+                            key: 'selectColor',
+                            itemType: 'color',
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: 'rgb(115, 115, 115)'
+                        },
+                        {
                             name: 'Цвет границ регионов',
                             type: 'item',
                             key: 'selectBorderColor',
@@ -399,9 +407,61 @@
 
             $base();
 
+            // advanced filters
+            var globalFilters = dataSource.getFilters(),
+                regionsContext = this.getContext().find('regions').values();
+
+            if(globalFilters){
+                var bindings = [],
+                    newFilters = {};
+
+                for(var i = 0; i < regionsContext.length; i++){
+                    bindings.push(regionsContext[i].find('region').binding()[0]);
+                }
+
+                for(var i in globalFilters){
+                    var cur = globalFilters[i];
+
+                    for(var j = 0; j < bindings.length; j++){
+                        if(cur.field === bindings[j] && cur.op === '$eq'){
+                            if(!this._curFilters[cur.value]){
+                                this._curFilters[cur.value] = cur.id;
+                                this._selectFeature(cur.value);
+                            }
+
+                            newFilters[cur.value] = true;
+
+                            delete globalFilters[i];
+                        }
+                    }
+                }
+
+                for(var i in this._curFilters){
+                    if(!newFilters[i]){
+                        this._deselectFeature(i);
+                        delete this._curFilters[i];
+                    }
+                }
+
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){
+                    return;
+                } else {
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    dataSource.setFilters(globalFilters);
+                }
+            } else {
+                if(Object.keys(this._curFilters).length > 0){
+                    for(var i in this._curFilters){
+                        this._deselectFeature(i);
+                    }
+                    this._curFilters = {};
+                    return;
+                }
+                this._curFilterHash = null;
+            }
+
             try{
-                var regionsContext = this.getContext().find('regions').values(),
-                    regionsColors = [],
+                var regionsColors = [],
                     maps = [],
                     newMapHash = '';
 
@@ -433,6 +493,7 @@
                     regionsColors[i].borderColor = regionsContext[i].find('borderColor').value();
                     regionsColors[i].borderWidth = regionsContext[i].find('borderWidth').value();
                     regionsColors[i].selectBorderColor = regionsContext[i].find('selectBorderColor').value();
+                    regionsColors[i].selectColor = regionsContext[i].find('selectColor').value();
 
                     var jsonMapSelector  = regionsContext[i].find('geojson').value();
                     switch(jsonMapSelector.key()){
@@ -464,7 +525,6 @@
                             newMapHash += 'geojson/worldCountries.json';
                             break;
                     }
-
                 }
 
                 newMapHash = MD5.md5(newMapHash);
@@ -535,6 +595,7 @@
                             regions[i].borderColor = regionsColors[i].borderColor;
                             regions[i].borderWidth = regionsColors[i].borderWidth;
                             regions[i].selectBorderColor = regionsColors[i].selectBorderColor;
+                            regions[i].selectColor = regionsColors[i].selectColor;
                         }
                     }
 
@@ -595,7 +656,7 @@
                         (function(i, data){
                             var tooltipLayers = [];
 
-                            L.geoJSON($this._maps[i].data, {
+                            $this._maps[i].map = L.geoJSON($this._maps[i].data, {
                                 style: function (feature) {
                                     if(data && data.color){
                                         return {fillColor: data.color, color: data.color, fillOpacity: 0.7};
@@ -619,10 +680,10 @@
                                 onEachFeature: function(feature, layer){
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
                                     if(!reg){
-                                        layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false});
+                                        layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
                                         return;
                                     }
-                                    layer.bindPopup(reg.region + ': ' + reg.value);
+                                    layer.bindPopup(reg.region + ': ' + reg.value, {closeButton: false, autoPan: false});
 
                                     if(data.regions[i].showValuesPermanent){
                                         layer.bindTooltip(String(reg.value), {permanent: true, /*direction: "center",*/ interactive: true, className: 'permanentTooltips', opacity: 0.7});
@@ -635,22 +696,44 @@
                                                 return;
                                             }
 
-                                            evt.target.setStyle({color: data.regions[i].selectBorderColor});
+                                            if(evt.target.datacubeOpts){
+                                                if(evt.target.datacubeOpts.selected){
+                                                    // remove filter
+                                                    $this._removeFilter(evt, {
+                                                        regionValue: reg.region,
+                                                        seriesIndex: i
+                                                    });
+                                                    return;
+                                                }
+                                            } else {
+                                                evt.target.datacubeOpts = {
+                                                    defaultColor: evt.target.options.fillColor,
+                                                    defaultBorderColor: evt.target.options.color
+                                                }
+                                            }
+
+                                            // add filter
+                                            evt.target.datacubeOpts.selected = true;
+
+                                            evt.target.setStyle({color: data.regions[i].selectBorderColor, fillColor: data.regions[i].selectColor});
 
                                             $this._addFilter(evt, {
                                                 regionValue: reg.region,
                                                 seriesIndex: i
                                             });
                                         },
-                                        mouseover: function(){
+                                        mouseover: function(evt){
+                                            evt.originalEvent.stopPropagation();
                                             this.openPopup();
                                         },
-                                        mouseout: function(){
+                                        mouseout: function(evt){
+                                            evt.originalEvent.stopPropagation();
                                             this.closePopup();
                                         }
                                     });
                                 }
-                            }).addTo($this.map);
+                            });
+                            $this._maps[i].map.addTo($this.map);
 
                             for(var j = 0; j < tooltipLayers.length; j++){
                                 tooltipLayers[j].openTooltip();
@@ -664,6 +747,7 @@
             }
         },
 
+        // filters
         _addFilter: function(evt, opts){
             var dataSource = this.getContext().find('dataSource').binding();
             if(!dataSource.source) return;
@@ -690,6 +774,60 @@
             if(!this.hasFilter(fDesc)){
                 this._curFilters[opts.regionValue] = this.addFilter(fDesc);
                 this.refreshAll();
+            }
+        },
+
+        _removeFilter: function(evt, opts){
+            if(!evt.originalEvent.ctrlKey && !evt.originalEvent.shiftKey && Object.keys(this._curFilters).length > 1){
+                for(var i in this._curFilters){
+                    if(i != opts.regionValue){
+                        this._deselectFeature(i);
+                        this.removeFilter(this._curFilters[i]);
+                    }
+                }
+                var temp = this._curFilters[opts.regionValue];
+                this._curFilters = {};
+                this._curFilters[opts.regionValue] = temp;
+                return;
+            }
+
+            evt.target.datacubeOpts.selected = false;
+
+            evt.target.setStyle({color: evt.target.datacubeOpts.defaultBorderColor, fillColor: evt.target.datacubeOpts.defaultColor});
+
+            this.removeFilter(this._curFilters[opts.regionValue]);
+            this._curFilters = {};
+        },
+
+        _deselectFeature: function(value){
+            for(var i = 0; i < this._maps.length; i++){
+                this._maps[i].map.eachLayer(function(layer){
+                    if(value.indexOf(layer.feature.properties[$this._maps[i].compareTo]) > -1){
+                        layer.datacubeOpts.selected = false;
+                        layer.setStyle({color: layer.datacubeOpts.defaultBorderColor, fillColor: layer.datacubeOpts.defaultColor});
+                    }
+                });
+            }
+        },
+
+        _selectFeature: function(value){
+            var regionsContext = this.getContext().find('regions').values();
+
+            for(var i = 0; i < this._maps.length; i++){
+                var selectBorderColor = regionsContext[i].find('selectBorderColor').value(),
+                    selectColor = regionsContext[i].find('selectColor').value();
+
+                this._maps[i].map.eachLayer(function(layer){
+                    if(layer.feature.properties[$this._maps[i].compareTo] == value){
+                        layer.datacubeOpts = {
+                            defaultColor: layer.options.fillColor,
+                            defaultBorderColor: layer.options.color,
+                            selected: true
+                        }
+
+                        layer.setStyle({color: selectBorderColor, fillColor: selectColor});
+                    }
+                });
             }
         },
 

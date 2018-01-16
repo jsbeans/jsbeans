@@ -19,7 +19,7 @@
             },
 
             this.setNumberRange = function (minNumber, maxNumber){
-                if (maxNumber > minNumber) {
+                if (maxNumber >= minNumber) {
                     minNum = minNumber;
                     maxNum = maxNumber;
                 } else {
@@ -35,10 +35,10 @@
 
             function calcHex(num, channelStart_Base16, channelEnd_Base16, func)
             {
-                if (num < minNum) {
+                if (num <= minNum) {
                     num = minNum;
                 }
-                if (num > maxNum) {
+                if (num >= maxNum) {
                     num = maxNum;
                 }
 
@@ -304,7 +304,7 @@
     },
 
     setNumberRange: function (minNumber, maxNumber){
-		if (maxNumber > minNumber) {
+		if (maxNumber >= minNumber) {
 			this.minNum = minNumber;
 			this.maxNum = maxNumber;
 			this.setColors(this.colours);
