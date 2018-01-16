@@ -49,17 +49,20 @@
                 switch(func){
                     case 'quadratic':
                         var numRange = Math.pow(maxNum, 2) - Math.pow(minNum, 2);
+                        numRange = numRange > 0 ? numRange : 1;
                         var cPerUnit = (cEnd_Base10 - cStart_Base10) / numRange;
                         var c_Base10 = Math.round(cPerUnit * (Math.pow(num, 2) - Math.pow(minNum, 2)) + cStart_Base10);
                         break;
                     case 'logarithmic':
                         var numRange = Math.log(maxNum) - Math.log(minNum);
+                        numRange = numRange > 0 ? numRange : 1;
                         var cPerUnit = (cEnd_Base10 - cStart_Base10) / numRange;
                         var c_Base10 = Math.round(cPerUnit * (Math.log(num) - Math.log(minNum)) + cStart_Base10);
                         break;
                     case 'linear':
                     default:
                         var numRange = maxNum - minNum;
+                        numRange = numRange > 0 ? numRange : 1;
                         var cPerUnit = (cEnd_Base10 - cStart_Base10) / numRange;
                         var c_Base10 = Math.round(cPerUnit * (num - minNum) + cStart_Base10);
                         break;

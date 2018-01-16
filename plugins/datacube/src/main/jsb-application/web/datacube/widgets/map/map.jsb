@@ -635,15 +635,19 @@
                 var tileMaps = this.getContext().find('tileMaps').values();
 
                 if(this.map){
+                    this._mapOpts = {
+                        center: this.map.getCenter(),
+                        zoom: this.map.getZoom()
+                    }
                     this.map.remove();
+                } else {
+                    this._mapOpts = {
+                        center: [40.5, -280.5],
+                        zoom: 2
+                    };
                 }
 
-                var mapOpts = {
-                    center: [40.5, -280.5],
-                    zoom: 2
-                };
-
-                this.map = L.map(this.container.get(0), mapOpts);
+                this.map = L.map(this.container.get(0), this._mapOpts);
 
                 // add title layers
                 for(var i = 0; i < tileMaps.length; i++){
@@ -765,6 +769,7 @@
 
             if(!evt.originalEvent.ctrlKey && !evt.originalEvent.shiftKey && Object.keys(this._curFilters).length > 0){
                 for(var i in this._curFilters){
+                    this._deselectFeature(i);
                     this.removeFilter(this._curFilters[i]);
                 }
 
