@@ -1671,7 +1671,8 @@
                                     }
                                 }
                             },
-                            stacking: plotOptionsContext.find('stacking').value().value()
+                            stacking: plotOptionsContext.find('stacking').value().value(),
+                            turboThreshold: 0
                         }
                     },
                     series: series,
