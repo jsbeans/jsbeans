@@ -1,4 +1,4 @@
-/*! jsBeans v2.6.5 | jsbeans.org | (c) 2011-2017 Special Information Systems, LLC */
+/*! jsBeans v2.6.5 | jsbeans.org | (c) 2011-2018 Special Information Systems, LLC */
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	

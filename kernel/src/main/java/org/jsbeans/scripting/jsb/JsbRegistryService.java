@@ -151,7 +151,7 @@ public class JsbRegistryService extends Service {
                 }
 
                 // create documentation
-                if(ConfigHelper.getConfigBoolean("kernel.jsb.createDoc")){
+                if(ConfigHelper.has("kernel.jsb.createDoc") && ConfigHelper.getConfigBoolean("kernel.jsb.createDoc")){
                     int index = jsoFile.lastIndexOf("/") != -1 ? jsoFile.lastIndexOf("/"): jsoFile.lastIndexOf("\\");
                     JsbDoc.parse(jsoBody, jsoFile.substring(index + 1) + ".json");
                 }

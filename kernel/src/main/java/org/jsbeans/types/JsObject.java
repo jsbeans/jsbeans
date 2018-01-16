@@ -55,7 +55,7 @@ public class JsObject implements Serializable {
     public void addToObject(String attrName, JsObject jsObj) {
         this.objType = JsObjectType.JSONOBJECT;
         if (this.dataJsonObject == null) {
-            this.dataJsonObject = new HashMap<String, JsObject>();
+            this.dataJsonObject = new LinkedHashMap<String, JsObject>();
         }
         this.dataJsonObject.put(attrName, jsObj);
     }
