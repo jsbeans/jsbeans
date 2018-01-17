@@ -690,7 +690,7 @@
                                     layer.bindPopup(reg.region + ': ' + reg.value, {closeButton: false, autoPan: false});
 
                                     if(data.regions[i].showValuesPermanent){
-                                        layer.bindTooltip(String(reg.value), {permanent: true, /*direction: "center",*/ interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String(reg.value), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 
@@ -745,6 +745,10 @@
                         })(i, data);
                     }
                 }
+
+                for(var i in $this._curFilters){
+                    this._selectFeature(i);
+                }
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
@@ -793,6 +797,7 @@
                 var temp = this._curFilters[opts.regionValue];
                 this._curFilters = {};
                 this._curFilters[opts.regionValue] = temp;
+                this.refreshAll();
                 return;
             }
 
@@ -801,13 +806,13 @@
             evt.target.setStyle({color: evt.target.datacubeOpts.defaultBorderColor, fillColor: evt.target.datacubeOpts.defaultColor});
 
             this.removeFilter(this._curFilters[opts.regionValue]);
-            this._curFilters = {};
+            this.refreshAll();
         },
 
         _deselectFeature: function(value){
             for(var i = 0; i < this._maps.length; i++){
                 this._maps[i].map.eachLayer(function(layer){
-                    if(value.indexOf(layer.feature.properties[$this._maps[i].compareTo]) > -1){
+                    if(value.indexOf(layer.feature.properties[$this._maps[i].compareTo]) > -1 && layer.datacubeOpts && layer.datacubeOpts.selected){
                         layer.datacubeOpts.selected = false;
                         layer.setStyle({color: layer.datacubeOpts.defaultBorderColor, fillColor: layer.datacubeOpts.defaultColor});
                     }
@@ -823,7 +828,11 @@
                     selectColor = regionsContext[i].find('selectColor').value();
 
                 this._maps[i].map.eachLayer(function(layer){
-                    if(layer.feature.properties[$this._maps[i].compareTo] == value){
+                    if(value.indexOf(layer.feature.properties[$this._maps[i].compareTo]) > -1){
+                        if(layer.datacubeOpts && layer.datacubeOpts.selected){
+                            return;
+                        }
+
                         layer.datacubeOpts = {
                             defaultColor: layer.options.fillColor,
                             defaultBorderColor: layer.options.color,
