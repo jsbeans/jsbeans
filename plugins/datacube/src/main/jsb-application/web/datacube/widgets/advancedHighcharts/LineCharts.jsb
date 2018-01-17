@@ -1327,12 +1327,19 @@
     },
 
     $client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
+        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock', 'DataCube.Export.Export'],
         $constructor: function(opts){
             $base(opts);
             $this.addClass('highchartsWidget');
             $this.container = $this.$('<div class="container"></div>');
             $this.append($this.container);
+
+            this.append(new Export({
+                getData: function(){
+                    return $this.getData();
+                },
+                highcharts: true
+            }));
 
             $this.getElement().resize(function(){
                 JSB.defer(function(){
@@ -1358,6 +1365,12 @@
             onUnselect: null,
             onMouseOver: null,
             onMouseOut: null
+        },
+
+        getData: function(){
+            if(this.chart){
+                return this.chart.getDataRows();
+            }
         },
 
         // refresh after data changes
@@ -1513,6 +1526,10 @@
                     }
 
                     $this._buildChart(data, xAxisData);
+
+                    for(var i in $this._curFilters){
+                        this._selectAllCategory(i);
+                    }
                 } catch(ex){
                     console.log('Load data exception!');
                     console.log(ex);
