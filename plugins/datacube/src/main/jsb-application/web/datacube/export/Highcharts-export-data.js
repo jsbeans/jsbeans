@@ -66,7 +66,7 @@
                      * The item delimiter in the exported data. Use `;` for direct
                      * exporting to Excel.
                      */
-                    itemDelimiter: ',',
+                    itemDelimiter: ';',
                     /**
                      * The line delimiter in the exported data, defaults to a newline.
                      */
@@ -294,6 +294,43 @@
             dataRows = dataRows.concat(rowArr);
 
             return dataRows;
+        };
+
+        Highcharts.Chart.prototype.getCSV = function() {
+            var csv = '',
+                rows = this.getDataRows(),
+                csvOptions = this.options.exporting.csv,
+                // use ';' for direct to Excel
+                itemDelimiter = csvOptions.itemDelimiter,
+                // '\n' isn't working with the js csv data extraction
+                lineDelimiter = csvOptions.lineDelimiter;
+
+            // Transform the rows to CSV
+            each(rows, function(row, i) {
+                var val = '',
+                    j = row.length,
+                    n = (1.1).toLocaleString()[1];
+                while (j--) {
+                    val = row[j];
+                    if (typeof val === 'string') {
+                        val = '"' + val + '"';
+                    }
+                    if (typeof val === 'number') {
+                        if (n === ',') {
+                            val = val.toString().replace('.', ',');
+                        }
+                    }
+                    row[j] = val;
+                }
+                // Add the values
+                csv += row.join(itemDelimiter);
+
+                // Add the line delimiter
+                if (i < rows.length - 1) {
+                    csv += lineDelimiter;
+                }
+            });
+            return csv;
         };
 
         // Series specific

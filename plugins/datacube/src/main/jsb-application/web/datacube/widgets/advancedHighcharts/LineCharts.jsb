@@ -1327,7 +1327,7 @@
     },
 
     $client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock', 'DataCube.Export.Export'],
+        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
         $constructor: function(opts){
             $base(opts);
             $this.addClass('highchartsWidget');
@@ -1335,10 +1335,11 @@
             $this.append($this.container);
 
             this.append(new Export({
-                getData: function(){
-                    return $this.getData();
+                getData: function(format){
+                    return $this.getData(format);
                 },
-                highcharts: true
+                highcharts: true,
+                exportFormats: ['xls', 'csv', 'png']
             }));
 
             $this.getElement().resize(function(){
@@ -1365,12 +1366,6 @@
             onUnselect: null,
             onMouseOver: null,
             onMouseOut: null
-        },
-
-        getData: function(){
-            if(this.chart){
-                return this.chart.getDataRows();
-            }
         },
 
         // refresh after data changes

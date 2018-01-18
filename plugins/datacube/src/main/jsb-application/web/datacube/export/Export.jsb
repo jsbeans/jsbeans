@@ -2,16 +2,15 @@
 	$name: 'DataCube.Export.Export',
 	$parent: 'JSB.Controls.Control',
 	$client: {
-	    $require: [],
+	    $singleton: true,
 	    $constructor: function(opts){
 	        $base(opts);
 
-	        if(opts.highcharts){
-	            this.loadScript('Highcharts-export-data.js');
-	        }
+	        this.loadScript('htmlToCanvas.js');
 
 	        this._downloadAttrSupported = window.document.createElement('a').download !== undefined;
 
+	        /*
 	        this.addClass('exportBtn');
 	        this.loadCss('Export.css');
 
@@ -23,18 +22,20 @@
 	        this.getElement().click(function(){
 	            $this.menu.toggleClass('hidden');
 	        });
-	    },
-
-	    options: {
-	        exportFormats: ['xls'],
-	        getData: null   // must be function from widget
+	        */
 	    },
 
 	    _exportFormats: {
-	        xls: 'Excel'
+	        xls: 'Excel',
+	        csv: 'CSV',
+	        png: 'изображение'
 	    },
 
 	    createMenu: function(){
+	        if(this.options.exportFormats.length === 0){
+	            return;
+	        }
+
 	        for(var i = 0; i < this.options.exportFormats.length; i++){
 	            this.menu.append('<li key="' + this.options.exportFormats[i] + '"> Скачать ' + this._exportFormats[this.options.exportFormats[i]] + '</li>');
 	        }
@@ -45,15 +46,35 @@
 	        });
 	    },
 
-	    exportData: function(format){
+	    exportData: function(format, data, fileName){
 	        switch(format){
 	            case 'xls':
-	                this.downloadXLS();
+	                this.downloadXLS(data, fileName);
 	                break;
+                case 'csv':
+                    this.downloadCSV(data);
+                    break;
+                case 'png':
+                    this.downloadImage(data);
+                break;
 	        }
 	    },
 
-	    downloadXLS: function(){
+	    downloadCSV: function(data, fileName){
+            for(var i = 0; i < data.length; i++){
+                data[i] = data[i].join(';');
+            }
+            data.join('\n');
+
+            this.fileDownload(
+                'data:text/csv,\uFEFF' + encodeURIComponent(csv),
+                'csv',
+                data,
+                fileName
+            );
+	    },
+
+	    downloadXLS: function(data, fileName){
             var uri = 'data:application/vnd.ms-excel;base64,',
 
                 template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" ' +
@@ -71,7 +92,7 @@
                 '<meta name=ProgId content=Excel.Sheet>' +
                 '<meta charset=UTF-8>' +
                 '</head><body>' +
-                this.createTable() +
+                this.createTable(data) +
                 '</body></html>',
 
                 base64 = function(s) {
@@ -82,13 +103,11 @@
                 uri + base64(template),
                 'xls',
                 template,
-                'application/vnd.ms-excel'
+                fileName
             );
 	    },
 
-	    fileDownload: function(href, extension, content){
-	        var name = 'Виджет';
-
+	    fileDownload: function(href, extension, content, name){
             // MS specific. Check this first because of bug with Edge (#76)
             if (window.Blob && window.navigator.msSaveOrOpenBlob) {
                 // Falls to msSaveOrOpenBlob if download attribute is not supported
@@ -108,15 +127,13 @@
                 this.append(a); // #111
                 a.click();
                 a.remove();
-
             } else {
                 throw new Error('Браузер не поддерживает скачивание файлов');
             }
 	    },
 
-	    createTable: function(){
-            var html = '<table><thead>',
-                rows = this.options.getData.call();
+	    createTable: function(rows){
+            var html = '<table><thead>';
 
             rows.forEach(function(row, i){
                 var tag = i ? 'td' : 'th',
@@ -151,6 +168,12 @@
             html += '</tbody></table>';
 
             return html;
+	    },
+
+	    downloadImage: function(widget, fileName){
+	        html2canvas(widget).then(function(canvas){
+	            $this.fileDownload(canvas.toDataURL("image/png"), 'png', canvas.toDataURL("image/png"), fileName);
+	        });
 	    }
 	}
 }

@@ -14,7 +14,7 @@
 		initCallbacks: [],
 		contextFilter: {},
 
-		$require: ['JSB.Crypt.MD5'],
+		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -75,6 +75,24 @@
 						});
 					}
 					return new $this.Selector(foundArr);
+				},
+
+				findBindings: function(){
+				    var foundArr = [];
+
+					for(var i = 0; i < this.selector.length; i++){
+						var obj = this.selector[i];
+						traverse(obj, null, function(item, val, stop){
+							if(item.type == 'widget'){
+								stop();
+							}
+							if(item.binding || item.values && item.values[0].binding){
+								foundArr.push(item);
+							}
+						});
+					}
+
+				    return new $this.Selector(foundArr);
 				},
 				
 				get: function(idx){
@@ -735,8 +753,50 @@
 		    return this._cache;
 		},
 
-		refreshFromCache: function(){
-		    // method must be overridden
+		getBindingsData: function(callback){
+		    var bindings = this.getContext('export').findBindings(),
+		        bindingArray, bindingFields = [];
+
+            for(var i = 0; i < bindings.selector.length; i++){
+                if(bindings.selector[i].binding){
+                    bindingArray = bindings.get(i);
+                } else {
+                    bindingFields.push(bindings.get(i));
+                }
+            }
+
+            bindingArray.fetch({readAll: true, reset: true}, function(){
+                var results = [],
+                    res = [];
+
+                for(var i = 0; i < bindingFields.length; i++){
+                    res.push(bindingFields[i].binding()[0]);
+                }
+                results.push(res);
+
+                while(bindingArray.next()){
+                    res = [];
+
+                    for(var i = 0; i < bindingFields.length; i++){
+                        res.push(bindingFields[i].value());
+                    }
+                    results.push(res);
+                }
+
+                callback.call(this, results);
+            });
+		},
+
+		exportData: function(format){
+            switch(format){
+                case 'xls':
+                case 'csv':
+                    this.getBindingsData(function(data){
+                        Export.exportData(format, data, $this.wrapper.title);
+                    });
+                case 'png':
+                    Export.exportData(format, this.getElement().get(0), this.wrapper.title);
+            }
 		}
 	},
 	
