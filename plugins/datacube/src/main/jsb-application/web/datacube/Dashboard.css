@@ -127,8 +127,25 @@
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText {
 	text-shadow: none;
+    padding-right: 24px;
 }
 
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText > .roundButton {
+    width: 10px;
+    height: 10px;
+}
+
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText > .roundButton > ._dwp_icon {
+    display: none;
+}
+
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText > .roundButton.btnExport {
+    right: 4px;
+}
+
+.dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText > .roundButton.btnFullScreen {
+    right: 18px;
+}
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_clientPane > ._dwp_clientPaneWrapper {
 	padding: 0 2px 2px 0;

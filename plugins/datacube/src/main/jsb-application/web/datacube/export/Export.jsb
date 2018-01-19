@@ -9,41 +9,6 @@
 	        this.loadScript('htmlToCanvas.js');
 
 	        this._downloadAttrSupported = window.document.createElement('a').download !== undefined;
-
-	        /*
-	        this.addClass('exportBtn');
-	        this.loadCss('Export.css');
-
-	        this.menu = this.$('<ul class="hidden"></ul>');
-	        this.append(this.menu);
-
-	        this.createMenu();
-
-	        this.getElement().click(function(){
-	            $this.menu.toggleClass('hidden');
-	        });
-	        */
-	    },
-
-	    _exportFormats: {
-	        xls: 'Excel',
-	        csv: 'CSV',
-	        png: 'изображение'
-	    },
-
-	    createMenu: function(){
-	        if(this.options.exportFormats.length === 0){
-	            return;
-	        }
-
-	        for(var i = 0; i < this.options.exportFormats.length; i++){
-	            this.menu.append('<li key="' + this.options.exportFormats[i] + '"> Скачать ' + this._exportFormats[this.options.exportFormats[i]] + '</li>');
-	        }
-
-	        this.menu.find('li').click(function(evt){
-	            $this.menu.addClass('hidden');
-	            $this.exportData($this.$(evt.target).attr('key'));
-	        });
 	    },
 
 	    exportData: function(format, data, fileName){
@@ -52,24 +17,51 @@
 	                this.downloadXLS(data, fileName);
 	                break;
                 case 'csv':
-                    this.downloadCSV(data);
+                    this.downloadCSV(data, fileName);
                     break;
                 case 'png':
-                    this.downloadImage(data);
+                    this.downloadImage(data, fileName);
                 break;
 	        }
 	    },
 
-	    downloadCSV: function(data, fileName){
-            for(var i = 0; i < data.length; i++){
-                data[i] = data[i].join(';');
-            }
-            data.join('\n');
+	    downloadCSV: function(rows, fileName){
+            var csv = '',
+                // use ';' for direct to Excel
+                itemDelimiter = ';',
+                // '\n' isn't working with the js csv data extraction
+                lineDelimiter = '\n';
+
+            rows.forEach(function(row, i){
+                var val = '',
+                    j = row.length,
+                    n = (1.1).toLocaleString()[1];
+
+                while (j--) {
+                    val = row[j];
+                    if (typeof val === 'string') {
+                        val = '"' + val + '"';
+                    }
+                    if (typeof val === 'number') {
+                        if (n === ',') {
+                            val = val.toString().replace('.', ',');
+                        }
+                    }
+                    row[j] = val;
+                }
+                // Add the values
+                csv += row.join(itemDelimiter);
+
+                // Add the line delimiter
+                if (i < rows.length - 1) {
+                    csv += lineDelimiter;
+                }
+            });
 
             this.fileDownload(
                 'data:text/csv,\uFEFF' + encodeURIComponent(csv),
                 'csv',
-                data,
+                csv,
                 fileName
             );
 	    },

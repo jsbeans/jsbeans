@@ -104,10 +104,11 @@
 			this.append(this.widgetContainer);
 			
 			$this.setTitle($this.getName());
-			
+
 			if(!$this.options.viewMode){
 				$this.updateTabHeader();
 			}
+
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
@@ -126,7 +127,9 @@
 					// update header
 					if(!$this.options.viewMode){
 						$this.updateTabHeader();
-					}
+					} else {
+                     	this.createUniBtns();
+                    }
 					$this.attached = true;
 				}
 			});
@@ -367,8 +370,58 @@
 					.append(editor.getElement())
 					.append(settingsBtn.getElement())
 					.append(closeBtn.getElement());
+
+                this.createUniBtns();
 			}
 			editor.setData(this.getName());
+		},
+
+		createUniBtns: function(){
+		    if(!this.getContainer()){
+		        return;
+		    }
+
+		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText');
+
+            var exportBtn = new Button({
+                cssClass: 'roundButton btnExport btn10',
+                tooltip: 'Экспорт',
+                onClick: function(evt){
+                    $this.exportMenu.toggleClass('hidden');
+                }
+            });
+            tab.append(exportBtn.getElement());
+
+            var fullScreenBtn = new Button({
+                cssClass: 'roundButton btnFullScreen btn10',
+                tooltip: 'На полный экран',
+                onClick: function(evt){
+                    debugger;
+                }
+            });
+            tab.append(fullScreenBtn.getElement());
+
+            this.createExportMenu(exportBtn);
+		},
+
+		createExportMenu: function(exportBtn){
+	        this.exportMenu = this.$('<ul class="exportMenu hidden"></ul>');
+	        exportBtn.append(this.exportMenu);
+
+	        var exportFormats = {
+                xls: 'Excel',
+                csv: 'CSV',
+                png: 'изображение'
+	        }
+
+	        for(var i in exportFormats){
+	            this.exportMenu.append('<li key="' + i + '"> Скачать ' + exportFormats[i] + '</li>');
+	        }
+
+	        this.exportMenu.find('li').click(function(evt){
+	            $this.exportMenu.addClass('hidden');
+	            $this.widget.exportData($this.$(evt.target).attr('key'));
+	        });
 		}
 	}
 }

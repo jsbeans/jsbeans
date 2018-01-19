@@ -1334,14 +1334,6 @@
             $this.container = $this.$('<div class="container"></div>');
             $this.append($this.container);
 
-            this.append(new Export({
-                getData: function(format){
-                    return $this.getData(format);
-                },
-                highcharts: true,
-                exportFormats: ['xls', 'csv', 'png']
-            }));
-
             $this.getElement().resize(function(){
                 JSB.defer(function(){
                     if(!$this.getElement().is(':visible') || !$this.chart){

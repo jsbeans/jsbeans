@@ -96,7 +96,7 @@
 						});
 					}
 
-				    return new $this.Selector(foundArr);
+				    return new $this.Selector(foundArr, this.ctxName);
 				},
 				
 				get: function(idx){
@@ -807,6 +807,7 @@
                     this.getBindingsData(function(data){
                         Export.exportData(format, data, $this.wrapper.title);
                     });
+                    break;
                 case 'png':
                     Export.exportData(format, this.getElement().get(0), this.wrapper.title);
             }
