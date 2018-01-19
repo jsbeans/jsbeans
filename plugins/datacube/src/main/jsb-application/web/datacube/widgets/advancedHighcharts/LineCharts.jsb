@@ -1370,8 +1370,10 @@
             // widget settings editor set style changes
             if(opts && opts.refreshFromCache){
                 var cache = this.getCache();
-                if(!cache) return;
-                this._buildChart(cache.seriesData, cache.xAxisCategories);
+                if(cache){
+                    this._buildChart(cache.seriesData, cache.xAxisCategories);
+                    return;
+                }
             }
 
             var dataSource = this.getContext().find('dataSource');
@@ -1485,7 +1487,7 @@
                     function resolveData(data){
                         for(var i in data){
                             if(data[i].x){
-                                data[i].x = xAxisData.indexOf(data[i].x);
+                                data[i].x = xAxisData.indexOf(data[i].x.toString());
                             }
                         }
                         return data;
