@@ -90,7 +90,7 @@
 							if(item.type == 'widget'){
 								stop();
 							}
-							if(item.binding || item.values && item.values[0].binding){
+							if(item.type != 'widget' && (item.binding || item.values && item.values[0].binding)){
 								foundArr.push(item);
 							}
 						});
@@ -768,13 +768,13 @@
 
 		getBindingsData: function(callback){
 		    var bindings = this.getContext('export').findBindings(),
-		        bindingArray, bindingFields = [];
+		        bindingArray, bindingFields = {};
 
             for(var i = 0; i < bindings.selector.length; i++){
                 if(bindings.selector[i].binding){
                     bindingArray = bindings.get(i);
                 } else {
-                    bindingFields.push(bindings.get(i));
+                    bindingFields[bindings.get(i).binding()] = bindings.get(i);
                 }
             }
 
@@ -782,15 +782,15 @@
                 var results = [],
                     res = [];
 
-                for(var i = 0; i < bindingFields.length; i++){
-                    res.push(bindingFields[i].binding()[0]);
+                for(var i in bindingFields){
+                    res.push(i);
                 }
                 results.push(res);
 
                 while(bindingArray.next()){
                     res = [];
 
-                    for(var i = 0; i < bindingFields.length; i++){
+                    for(var i in bindingFields){
                         res.push(bindingFields[i].value());
                     }
                     results.push(res);

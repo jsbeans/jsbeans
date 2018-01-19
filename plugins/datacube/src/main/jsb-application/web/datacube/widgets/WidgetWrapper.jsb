@@ -381,13 +381,34 @@
 		        return;
 		    }
 
-		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText');
+		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText'),
+		        keys = [{
+                            key: 'xls',
+                            element: 'Скачать Excel'
+                        },{
+                            key: 'csv',
+                            element: 'Скачать CSV'
+                        },{
+                            key: 'png',
+                            element: 'Скачать изображение'
+                        }];
 
             var exportBtn = new Button({
                 cssClass: 'roundButton btnExport btn10',
                 tooltip: 'Экспорт',
                 onClick: function(evt){
-                    $this.exportMenu.toggleClass('hidden');
+                    ToolManager.activate({
+                        id: '_dwp_droplistTool',
+                        cmd: 'show',
+                        data: keys,
+                        target: {
+                            selector: exportBtn.getElement(),
+                            dock: 'bottom'
+                        },
+                        callback: function(key, item, evt){
+                            $this.widget.exportData(key);
+                        }
+                    });
                 }
             });
             tab.append(exportBtn.getElement());
@@ -400,28 +421,6 @@
                 }
             });
             tab.append(fullScreenBtn.getElement());
-
-            this.createExportMenu(exportBtn);
-		},
-
-		createExportMenu: function(exportBtn){
-	        this.exportMenu = this.$('<ul class="exportMenu hidden"></ul>');
-	        exportBtn.append(this.exportMenu);
-
-	        var exportFormats = {
-                xls: 'Excel',
-                csv: 'CSV',
-                png: 'изображение'
-	        }
-
-	        for(var i in exportFormats){
-	            this.exportMenu.append('<li key="' + i + '"> Скачать ' + exportFormats[i] + '</li>');
-	        }
-
-	        this.exportMenu.find('li').click(function(evt){
-	            $this.exportMenu.addClass('hidden');
-	            $this.widget.exportData($this.$(evt.target).attr('key'));
-	        });
 		}
 	}
 }
