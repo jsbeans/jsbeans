@@ -29,6 +29,9 @@
 	            if(!this._values[i]){
 	                this._values[i] = {}
 	            }
+
+	            // todo: this.createRender(i, this._scheme[i], this._values[i]) - for remove key field
+
                 this.append(this.createRender(this._scheme[i].render, this._scheme[i], this._values[i]));
 	        }
 	    },

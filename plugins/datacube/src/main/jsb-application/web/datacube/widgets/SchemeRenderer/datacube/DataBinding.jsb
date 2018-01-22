@@ -17,7 +17,17 @@
                 this._values.values.push(values);
             }
 
-            var item = new Editor();
+            var item = new Editor({
+                onchange: function(){
+                    var val = item.getValue();
+
+                    if(item.isValFromDatalist()){
+                        values.binding = val.substring(0, val.indexOf(':'));
+                    } else {
+                        values.value = val;
+                    }
+                }
+            });
             this._editors.push(item);
 
 	        if(this._scheme.multiple){

@@ -31,7 +31,6 @@
 
         options: {
             cssClass: null,
-            enabled: true
         },
 
         addClass: function(c){

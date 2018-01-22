@@ -37,6 +37,31 @@
                             options: {}
                         }
 	                }
+	            },
+	            select: {
+	                render: 'select',
+	                name: 'Select',
+	                key: select,
+	                items: {
+	                    sel1: {
+	                        name: 'Select_1',
+	                        key: 'sel1',
+	                        items: {
+                                name : {
+                                    render: 'item',
+                                    name: 'Name',
+                                    key: 'name',
+                                    options: {}
+                                },
+                                surname: {
+                                    render: 'item',
+                                    name: 'Surname',
+                                    key: 'surname',
+                                    options: {}
+                                }
+	                        }
+	                    }
+	                }
 	            }
 	        };
 

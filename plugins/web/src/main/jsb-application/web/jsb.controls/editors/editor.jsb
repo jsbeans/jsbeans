@@ -26,6 +26,13 @@
             if(this.options.dataList){
                 this.setDataList(this.options.dataList);
             }
+
+            // options events
+            for(var i in this.options){
+                if(i.substr(0, 2) === 'on'){
+                    this.on(i.substr(2), this.options[i]);
+                }
+            }
 	    },
 
 	    options: {
@@ -36,15 +43,40 @@
 	        dataList: null
 	    },
 
-	    clear: function(){
+	    _dataList: [],
+
+	    clear: function(bRemoveDataList){
 	        this.editor.val('');
-	        this.editor.attr('list', '');
-	        this.dataList.remove();
+	        bRemoveDataList && this.removeDataList();
 	    },
 
 	    enable: function(bool){
             this.options.enable = bool;
             this.editor.attr('disabled', !bool);
+	    },
+
+	    isValFromDatalist: function(){
+	        return this._dataList.indexOf(this.editor.val()) > -1;
+	    },
+
+	    getValue: function(){
+	        return this.editor.val();
+	    },
+
+		on: function(eventName, func){
+		    if(!JSB().isFunction(func)) return;
+
+		    this.options[eventName] = func;
+		    this.editor.getElement().on(eventName, function(evt){
+		        if(!$this.options.enabled) return;
+		        $this.options[eventName].call($this, evt);
+		    });
+		},
+
+	    removeDataList: function(){
+	        this.editor.attr('list', '');
+	        this.dataList.remove();
+	        this._dataList = [];
 	    },
 
 	    setDataList: function(dataList){
@@ -64,6 +96,8 @@
 	        for(var i = 0; i < dataList.length; i++){
 	            this.dataList.append('<option value="' + dataList[i] + '">');
 	        }
+
+	        this._dataList = dataList;
 	    },
 
 	    setPlaceholder: function(placeholder){

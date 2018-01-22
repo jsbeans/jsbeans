@@ -49,7 +49,9 @@
 	            for(var i = 0; i < this._values.values.length; i++){
 	                this.addItem(this._values.values[i], i);
 	            }
-	        }
+	        } else {
+                this.addItem(null, 0);
+            }
 	    },
 
 	    addItem: function(values, itemIndex){
