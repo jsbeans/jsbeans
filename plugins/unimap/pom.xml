@@ -15,32 +15,22 @@
 
     <parent>
         <groupId>org.jsbeans</groupId>
-        <artifactId>jsbeans</artifactId>
+        <artifactId>plugins</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>plugins</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>plugin-unimap</artifactId>
+    <packaging>jar</packaging>
 
     <name>${project.artifactId}</name>
-
-    <modules>
-        <module>web</module>
-        <module>workspace</module>
-	<module>unimap</module>
-        <module>textextractors</module>
-        <module>worker</module>
-        <module>datacube</module>
-
-        <module>empty</module>
-    </modules>
 
     <dependencies>
         <dependency>
             <groupId>org.jsbeans</groupId>
-            <artifactId>kernel</artifactId>
+            <artifactId>plugin-web</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
+
 
 </project>
