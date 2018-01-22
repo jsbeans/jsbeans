@@ -417,7 +417,8 @@
                 cssClass: 'roundButton btnFullScreen btn10',
                 tooltip: 'На полный экран',
                 onClick: function(evt){
-                    debugger;
+                    fullScreenBtn.toggleClass('collapse');
+                    $this.getContainer().toggleClass('fullScreenMod');
                 }
             });
             tab.append(fullScreenBtn.getElement());

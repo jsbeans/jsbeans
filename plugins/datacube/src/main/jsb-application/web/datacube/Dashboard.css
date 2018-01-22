@@ -133,10 +133,16 @@
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText > .roundButton {
     width: 10px;
     height: 10px;
+    background: none;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
 }
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText > .roundButton > ._dwp_icon {
-    display: none;
+    left: 0;
+    top: 0;
+    background-size: 100%;
 }
 
 .dataCubeDashboard ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText > .roundButton.btnExport {
