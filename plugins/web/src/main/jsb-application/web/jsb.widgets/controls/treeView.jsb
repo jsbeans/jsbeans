@@ -345,7 +345,9 @@
 			}
 			var wrappedItem = this.wrapItem(itemObj);
 			var parentElt = this.rootElt;
-			this._applyFilteredToItem(itemObj);
+			if(!itemObj.dummy){
+				this._applyFilteredToItem(itemObj);
+			}
 
 			if(parentKey){
 				var parentObj = this.itemMap[parentKey];
@@ -373,6 +375,7 @@
 				// insert dummy loader
 				var loadingText = itemObj.childrenLoadingText || 'Loading';
 				this.addNode({
+					dummy: true,
 					allowHover: false,
 					allowSelect: false,
 					key: itemObj.key + '_dummy',
@@ -411,6 +414,9 @@
 		deleteNode: function(key, deleteCallback){
 			var self = this;
 			var itemObj = this.itemMap[key];
+			if(!itemObj){
+				throw new Error('No tree element found by key: ' + key);
+			}
 			var pKey = itemObj.parent;
 			
 			if(deleteCallback){
@@ -606,7 +612,9 @@
 			// iterate over all items and apply filter
 			for(var key in this.itemMap){
 				var item = this.itemMap[key];
-				this._applyFilteredToItem(item);
+				if(!item.dummy){
+					this._applyFilteredToItem(item);
+				}
 			}
 		},
 		
