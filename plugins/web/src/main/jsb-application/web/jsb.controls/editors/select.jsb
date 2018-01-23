@@ -71,6 +71,10 @@
 	        }
 	    },
 
+	    setGroupOptions: function(groups, clear){
+            // todo
+	    },
+
 	    setValue: function(val){
 	        this.getElement().val(val);
 	    }
