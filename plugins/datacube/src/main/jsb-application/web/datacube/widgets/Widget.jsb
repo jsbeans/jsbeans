@@ -4,7 +4,7 @@
 	
 	$client: {
 		wrapper: null,
-		context: null,
+		context: {},
 		values: null,
 		sort: null,
 		sourceMap: null,
@@ -14,7 +14,7 @@
 		initCallbacks: [],
 		contextFilter: {},
 
-		$require: ['JSB.Crypt.MD5'],
+		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -47,7 +47,11 @@
 				}
 			}
 
-			this.Selector = function(ref){
+			this.Selector = function(ref, ctxName){
+				if(!ctxName){
+					throw new Error('No selector context specified');
+				}
+				this.ctxName = ctxName;
 				if(ref instanceof $this.Selector){
 					this.selector = JSB.clone(ref.selector);
 				} else {
@@ -74,7 +78,25 @@
 							}
 						});
 					}
-					return new $this.Selector(foundArr);
+					return new $this.Selector(foundArr, this.ctxName);
+				},
+
+				findBindings: function(){
+				    var foundArr = [];
+
+					for(var i = 0; i < this.selector.length; i++){
+						var obj = this.selector[i];
+						traverse(obj, null, function(item, val, stop){
+							if(item.type == 'widget'){
+								stop();
+							}
+							if(item.type != 'widget' && (item.binding || item.values && item.values[0].binding)){
+								foundArr.push(item);
+							}
+						});
+					}
+
+				    return new $this.Selector(foundArr, this.ctxName);
 				},
 				
 				get: function(idx){
@@ -87,7 +109,7 @@
 					if(idx >= this.selector.length){
 						return null;
 					}
-					return new $this.Selector(this.selector[idx]);
+					return new $this.Selector(this.selector[idx], this.ctxName);
 				},
 				
 				length: function(){
@@ -325,6 +347,7 @@
 					} else {
 						item.fetchOpts.contextFilter = null;
 					}
+					item.fetchOpts.context = this.ctxName;
 
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(fail && fail.message == 'Fetch broke'){
@@ -493,12 +516,12 @@
 							for(var j = 0; j < gDesc.items.length; j++){
 								items.push(gDesc.items[j]);
 							}
-							vals.push(new $this.Selector(items));
+							vals.push(new $this.Selector(items, this.ctxName));
 						}
 					} else if(item.type == 'select'){
-						vals.push(new $this.Selector(item.items[item.chosenIdx]));
+						vals.push(new $this.Selector(item.items[item.chosenIdx], this.ctxName));
 					} else if(item.type == 'widget'){
-						vals.push(new $this.Selector(item.values));
+						vals.push(new $this.Selector(item.values, this.ctxName));
 					}
 					return vals;
 				},
@@ -546,7 +569,7 @@
 						return null;
 					} else if(item.type == 'select'){
 					    // return resolveValue(item.items[item.chosenIdx].values[0]);
-						return new $this.Selector(item.items[item.chosenIdx]);
+						return new $this.Selector(item.items[item.chosenIdx], this.ctxName);
 					} else if(item.type == 'group'){
 						if(item.groups.length == 0){
 							return null;
@@ -556,9 +579,9 @@
 						for(var j = 0; j < gDesc.items.length; j++){
 							items.push(gDesc.items[j]);
 						}
-						return new $this.Selector(items)
+						return new $this.Selector(items, this.ctxName)
 					} else if(item.type == 'widget'){
-						return new $this.Selector(item.values);
+						return new $this.Selector(item.values, this.ctxName);
 					}
 				}
 			};
@@ -610,7 +633,7 @@
 			if(this.values instanceof this.Selector){
 				this.values = this.values.unwrap();
 			}
-			this.context = new this.Selector(this.values);
+			this.context = {};
 			if(sourceDesc){
 				this.sourceMap = sourceDesc.sourceMap;
 				this.sources = sourceDesc.sources;
@@ -620,8 +643,16 @@
 			}
 		},
 		
-		getContext: function(){
-			return this.context;
+		getContext: function(ctxName){
+			if(!ctxName){
+				ctxName = 'main';
+			}
+			if(!this.context[ctxName]){
+				var ctxValues = JSB.clone(this.values);
+				this.context[ctxName] = new this.Selector(ctxValues, ctxName);
+			}
+			 
+			return this.context[ctxName];
 		},
 		
 		
@@ -735,8 +766,51 @@
 		    return this._cache;
 		},
 
-		refreshFromCache: function(){
-		    // method must be overridden
+		getBindingsData: function(callback){
+		    var bindings = this.getContext('export').findBindings(),
+		        bindingArray, bindingFields = {};
+
+            for(var i = 0; i < bindings.selector.length; i++){
+                if(bindings.selector[i].binding){
+                    bindingArray = bindings.get(i);
+                } else {
+                    bindingFields[bindings.get(i).binding()] = bindings.get(i);
+                }
+            }
+
+            bindingArray.fetch({readAll: true, reset: true}, function(){
+                var results = [],
+                    res = [];
+
+                for(var i in bindingFields){
+                    res.push(i);
+                }
+                results.push(res);
+
+                while(bindingArray.next()){
+                    res = [];
+
+                    for(var i in bindingFields){
+                        res.push(bindingFields[i].value());
+                    }
+                    results.push(res);
+                }
+
+                callback.call(this, results);
+            });
+		},
+
+		exportData: function(format){
+            switch(format){
+                case 'xls':
+                case 'csv':
+                    this.getBindingsData(function(data){
+                        Export.exportData(format, data, $this.wrapper.title);
+                    });
+                    break;
+                case 'png':
+                    Export.exportData(format, this.getElement().get(0), this.wrapper.title);
+            }
 		}
 	},
 	
@@ -794,24 +868,29 @@
 			var batchSize = opts.batchSize || 50;
 			var source = dashboard.workspace.entry(sourceId);
 			var data = [];
+			var context = 'main';
 			if(opts.reset){
 				this.needBreak = true;
 			}
+			if(opts.context){
+				context = opts.context;
+			}
+			var iteratorId = 'it_' + context + '_' + sourceId;
 			JSB.getLocker().lock('fetch_' + $this.getId());
 			this.needBreak = false;
 			try {
-				if(opts.reset && ($this.iterators[sourceId] || $this.completed[sourceId])){
-					if($this.iterators[sourceId]){
+				if(opts.reset && ($this.iterators[iteratorId] || $this.completed[iteratorId])){
+					if($this.iterators[iteratorId]){
 						try {
-							$this.iterators[sourceId].close();
+							$this.iterators[iteratorId].close();
 						}catch(e){}
-						delete $this.iterators[sourceId];
+						delete $this.iterators[iteratorId];
 					}
-					if($this.completed[sourceId]){
-						delete $this.completed[sourceId];
+					if($this.completed[iteratorId]){
+						delete $this.completed[iteratorId];
 					}
 				}
-				if(!$this.iterators[sourceId] && !$this.completed[sourceId]){
+				if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
 					// figure out data provider
 					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 						var extQuery = {};
@@ -837,8 +916,8 @@
 	                    if(opts.groupBy){
 	                        extQuery.$groupBy = opts.groupBy;
 	                    }
-                    	$this.iterators[sourceId] = source.executeQuery(extQuery, true);
-						$this.completed[sourceId] = false;
+                    	$this.iterators[iteratorId] = source.executeQuery(extQuery, true);
+						$this.completed[iteratorId] = false;
 					} else {
 						// TODO
 					}
@@ -848,23 +927,23 @@
 					if(this.needBreak){
 						throw new Error('Fetch broke');
 					}
-					if($this.completed[sourceId]){
+					if($this.completed[iteratorId]){
 						break;
 					}
 					var el = null;
 					try {
-						el = $this.iterators[sourceId].next();
+						el = $this.iterators[iteratorId].next();
 					}catch(e){
 						el = null;
 					}
 					if(!el){
-						if($this.iterators[sourceId]){
+						if($this.iterators[iteratorId]){
 							try {
-								$this.iterators[sourceId].close();
+								$this.iterators[iteratorId].close();
 							}catch(e){}
-							delete $this.iterators[sourceId];
+							delete $this.iterators[iteratorId];
 						}
-						$this.completed[sourceId] = true;
+						$this.completed[iteratorId] = true;
 						break;
 					}
 					data.push(el);

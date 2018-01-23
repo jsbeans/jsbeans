@@ -1,7 +1,7 @@
 @CHARSET "UTF-8";
 
 ._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > ._dwp_primitiveEditor {
-	padding-right: 30px;
+	padding-right: 52px;
 	display: block;
 }
 
@@ -17,12 +17,40 @@
     top: 2px;
 }
 
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton {
+    background: none;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+}
+
 ._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnSettings {
-	right: 22px;
+	right: 18px;
 }
 
 ._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnDelete {
 	right: 4px;
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnExport {
+    right: 32px;
+    overflow: visible;
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnExport > ._dwp_icon {
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0nMS4wJyBlbmNvZGluZz0naXNvLTg4NTktMSc/Pgo8c3ZnIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgMjYgMjYiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBlbmFibGUtYmFja2dyb3VuZD0ibmV3IDAgMCAyNiAyNiI+CiAgPGc+CiAgICA8cGF0aCBkPSJtMjUsMTdoLTJjLTAuNiwwLTEsMC40LTEsMXYyLjVjMCwwLjMtMC4yLDAuNS0wLjUsMC41aC0xN2MtMC4zLDAtMC41LTAuMi0wLjUtMC41di0yLjVjMC0wLjYtMC40LTEtMS0xaC0yYy0wLjYsMC0xLDAuNC0xLDF2NmMwLDAuNiAwLjQsMSAxLDFoMjRjMC42LDAgMS0wLjQgMS0xdi02YzAtMC42LTAuNC0xLTEtMXoiLz4KICAgIDxwYXRoIGQ9Ik03LjcsMTAuMWMwLjIsMC4yLDAuNCwwLjMsMC43LDAuM2MwLjMsMCwwLjUtMC4xLDAuNy0wLjNsMS0xQzEwLjQsOC44LDExLDksMTEsOS41djYuNmMwLDAuNiwwLjQsMSwxLDFoMmMwLjYsMCwxLTAuNCwxLTEgICBWOS41YzAtMC40LDAuNS0wLjcsMC45LTAuNGwxLDFjMC4yLDAuMiwwLjQsMC4zLDAuNywwLjNjMC4zLDAsMC41LTAuMSwwLjctMC4zbDEuNC0xLjRDMTkuOSw4LjUsMjAsOC4zLDIwLDhzLTAuMS0wLjUtMC4zLTAuNyAgIGwtNi02QzEzLjUsMS4xLDEzLjIsMSwxMywxcy0wLjUsMC4xLTAuNywwLjNsLTYsNkM2LjEsNy41LDYsNy43LDYsOHMwLjEsMC41LDAuMywwLjdMNy43LDEwLjF6Ii8+CiAgPC9nPgo8L3N2Zz4K);
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnFullScreen {
+    right: 46px;
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnFullScreen > ._dwp_icon {
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE5LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJDYXBhXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4Ig0KCSB2aWV3Qm94PSIwIDAgNDg5LjAwMSA0ODkuMDAxIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA0ODkuMDAxIDQ4OS4wMDE7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4NCjxnPg0KCTxnPg0KCQk8cGF0aCBkPSJNMi4yLDE2OC4xNTFsLTIuMS0xNTEuM2MtMC4xLTcuNyw2LjItMTQsMTMuOS0xMy45bDE1MS4zLDIuMmMxMi4xLDAuMiwxOC4xLDE0LjgsOS41LDIzLjRsLTQyLjEsNDIuMWw3MCw3MGwtNjUsNjUNCgkJCWwtNzAtNzBsLTQyLjEsNDIuMUMxNy4xLDE4Ni4yNTEsMi40LDE4MC4yNTEsMi4yLDE2OC4xNTF6Ii8+DQoJCTxwYXRoIGQ9Ik00MjEuMywxMzYuNTUxbDQyLjEsNDIuMWM4LjYsOC42LDIzLjIsMi42LDIzLjQtOS41bDIuMi0xNTEuM2MwLjEtNy43LTYuMi0xNC0xMy45LTEzLjlsLTE1MS4zLDIuMg0KCQkJYy0xMi4xLDAuMi0xOC4xLDE0LjgtOS41LDIzLjRsNDIsNDEuOWwtNzAsNzBsNjUsNjVMNDIxLjMsMTM2LjU1MXoiLz4NCgkJPHBhdGggZD0iTTMxNC4yLDQ2MC40NTFjLTguNiw4LjYtMi42LDIzLjIsOS41LDIzLjRsMTUxLjMsMi4yYzcuNywwLjEsMTQtNi4yLDEzLjktMTMuOWwtMi4yLTE1MS4zYy0wLjItMTIuMS0xNC44LTE4LjEtMjMuNC05LjUNCgkJCWwtNDIuMSw0Mi4xbC03MC03MGwtNjUsNjVsNzAsNzBMMzE0LjIsNDYwLjQ1MXoiLz4NCgkJPHBhdGggZD0iTTE0LDQ4NS4wNTFsMTUxLjMtMi4yYzEyLjEtMC4yLDE4LjEtMTQuOCw5LjUtMjMuNGwtNDIuMS00Mmw3MC03MGwtNjUtNjVsLTcwLDcwbC00Mi4xLTQyLjFjLTguNi04LjYtMjMuMi0yLjYtMjMuNCw5LjUNCgkJCUwwLDQ3MS4xNTFDMCw0NzguODUxLDYuMyw0ODUuMTUxLDE0LDQ4NS4wNTF6Ii8+DQoJPC9nPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPC9zdmc+DQo=);
+}
+
+._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > .roundButton.btnFullScreen.collapse > ._dwp_icon {
+    background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pg0KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDE4LjAuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPg0KPCFET0NUWVBFIHN2ZyBQVUJMSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4NCjxzdmcgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCINCgkgdmlld0JveD0iMCAwIDE0Mi43MjkgMTQyLjcyOSIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMTQyLjcyOSAxNDIuNzI5OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+DQo8Zz4NCgk8cGF0aCBzdHlsZT0iZmlsbDojMUQxRDFCOyIgZD0iTTEyMC41NTgsNDkuMDQ0SDIyLjE3M0M5Ljk0Niw0OS4wNDQsMCw1OC45OSwwLDcxLjIxNnYwLjI5N2MwLDEyLjIyNiw5Ljk0NiwyMi4xNzIsMjIuMTczLDIyLjE3Mg0KCQloOTguMzg1YzEyLjIyNiwwLDIyLjE3Mi05Ljk0NiwyMi4xNzItMjIuMTcydi0wLjI5N0MxNDIuNzI5LDU4Ljk5LDEzMi43ODMsNDkuMDQ0LDEyMC41NTgsNDkuMDQ0eiBNMTI3LjcyOSw3MS41MTMNCgkJYzAsMy45NTUtMy4yMTgsNy4xNzItNy4xNzIsNy4xNzJIMjIuMTczYy0zLjk1NSwwLTcuMTczLTMuMjE3LTcuMTczLTcuMTcydi0wLjI5N2MwLTMuOTU1LDMuMjE4LTcuMTcyLDcuMTczLTcuMTcyaDk4LjM4NQ0KCQljMy45NTQsMCw3LjE3MiwzLjIxNyw3LjE3Miw3LjE3MlY3MS41MTN6Ii8+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8Zz4NCjwvZz4NCjxnPg0KPC9nPg0KPGc+DQo8L2c+DQo8L3N2Zz4NCg==);
 }
 
 .widgetWrapper {
@@ -33,4 +61,14 @@
 .widgetWrapper > .widgetContainer {
 	width: 100%;
 	height: 100%;
+}
+
+._dwp_widgetContainer.fullScreenMod {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 10000 !important;
+    background: lightgrey !important;
 }

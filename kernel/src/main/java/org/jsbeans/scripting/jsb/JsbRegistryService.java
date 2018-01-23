@@ -32,6 +32,7 @@ import org.jsbeans.scripting.JsHub;
 import org.jsbeans.scripting.UpdateStatusMessage;
 import org.jsbeans.services.DependsOn;
 import org.jsbeans.services.Service;
+import org.jsbeans.documentation.JsbDoc;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import scala.concurrent.Await;
@@ -147,6 +148,12 @@ public class JsbRegistryService extends Service {
                 String jsoBody = isServer ? FileHelper.readStringFromResource(jsoFile) : FileHelper.readStringFromFile(jsoFile);
                 if (jsoBody == null || jsoBody.length() == 0) {
                     throw new PlatformException(String.format("Problem occured due to loading JSB descriptor: '%s'", jsoFile));
+                }
+
+                // create documentation
+                if(ConfigHelper.has("kernel.jsb.createDoc") && ConfigHelper.getConfigBoolean("kernel.jsb.createDoc")){
+                    int index = jsoFile.lastIndexOf("/") != -1 ? jsoFile.lastIndexOf("/"): jsoFile.lastIndexOf("\\");
+                    JsbDoc.parse(jsoBody, jsoFile.substring(index + 1) + ".json");
                 }
                 
                 // obtain pathes

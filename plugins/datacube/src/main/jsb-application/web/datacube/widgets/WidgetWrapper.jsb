@@ -104,10 +104,11 @@
 			this.append(this.widgetContainer);
 			
 			$this.setTitle($this.getName());
-			
+
 			if(!$this.options.viewMode){
 				$this.updateTabHeader();
 			}
+
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
@@ -126,7 +127,9 @@
 					// update header
 					if(!$this.options.viewMode){
 						$this.updateTabHeader();
-					}
+					} else {
+                     	this.createUniBtns();
+                    }
 					$this.attached = true;
 				}
 			});
@@ -367,8 +370,58 @@
 					.append(editor.getElement())
 					.append(settingsBtn.getElement())
 					.append(closeBtn.getElement());
+
+                this.createUniBtns();
 			}
 			editor.setData(this.getName());
+		},
+
+		createUniBtns: function(){
+		    if(!this.getContainer()){
+		        return;
+		    }
+
+		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText'),
+		        keys = [{
+                            key: 'xls',
+                            element: 'Скачать Excel'
+                        },{
+                            key: 'csv',
+                            element: 'Скачать CSV'
+                        },{
+                            key: 'png',
+                            element: 'Скачать изображение'
+                        }];
+
+            var exportBtn = new Button({
+                cssClass: 'roundButton btnExport btn10',
+                tooltip: 'Экспорт',
+                onClick: function(evt){
+                    ToolManager.activate({
+                        id: '_dwp_droplistTool',
+                        cmd: 'show',
+                        data: keys,
+                        target: {
+                            selector: exportBtn.getElement(),
+                            dock: 'bottom'
+                        },
+                        callback: function(key, item, evt){
+                            $this.widget.exportData(key);
+                        }
+                    });
+                }
+            });
+            tab.append(exportBtn.getElement());
+
+            var fullScreenBtn = new Button({
+                cssClass: 'roundButton btnFullScreen btn10',
+                tooltip: 'На полный экран',
+                onClick: function(evt){
+                    fullScreenBtn.toggleClass('collapse');
+                    $this.getContainer().toggleClass('fullScreenMod');
+                }
+            });
+            tab.append(fullScreenBtn.getElement());
 		}
 	}
 }
