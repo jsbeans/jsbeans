@@ -17,9 +17,11 @@
                 this.setOptions(this.options.options, true);
             }
 
+            this.setValue(this.options.value);
+
             for(var i in this.options){
                 if(i.substr(0, 2) === 'on'){
-                    this.on(i.substr(2), this.options[i]);
+                    this.on(i, this.options[i]);
                 }
             }
         },
@@ -49,6 +51,15 @@
 	        return this.getElement().val();
 	    },
 
+		on: function(eventName, func){
+		    if(!JSB().isFunction(func)) return;
+
+		    this.options[eventName] = func;
+		    this.getElement().on(eventName.substr(2), function(evt){
+		        $this.options[eventName].call($this, evt);
+		    });
+		},
+
 	    setOptions: function(options, clear){
 	        if(!JSB.isArray(options)){
 	            options = [options];
@@ -60,7 +71,7 @@
 
 	        var el = this.getElement();
 
-	        if(JSb.isObject(options[0])){
+	        if(JSB.isObject(options[0])){
                 for(var i = 0; i < options.length; i++){
                     el.append('<option value="' + options[i].value + '">' + options[i].name + '</option>');
                 }
@@ -76,7 +87,9 @@
 	    },
 
 	    setValue: function(val){
-	        this.getElement().val(val);
+	        if(val){
+	            this.getElement().val(val);
+	        }
 	    }
     }
 }

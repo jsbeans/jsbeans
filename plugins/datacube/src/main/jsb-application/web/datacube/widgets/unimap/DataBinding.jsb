@@ -1,6 +1,6 @@
 {
-	$name: 'Scheme.Render.DataBinding',
-	$parent: 'Scheme.Render.Item',
+	$name: 'Unimap.Render.DataBinding',
+	$parent: 'Unimap.Render.Item',
 	$require: ['JSB.Controls.Editor'],
 	$client: {
 	    _editors: [],

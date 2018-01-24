@@ -1,5 +1,5 @@
 {
-    $name: 'Scheme.ValueSelector',
+    $name: 'Unimap.ValueSelector',
     $client: {
         $constructor: function(values){
             this._values = values;

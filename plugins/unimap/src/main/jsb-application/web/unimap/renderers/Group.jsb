@@ -1,6 +1,6 @@
 {
-	$name: 'Scheme.Render.Group',
-	$parent: 'Scheme.Render.Basic',
+	$name: 'Unimap.Render.Group',
+	$parent: 'Unimap.Render.Basic',
 	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
 	$client: {
 	    construct: function(){
@@ -83,13 +83,13 @@
                 `);
 
                 for(var i in this._scheme.items){
-                    item.append(this.createRender(this._scheme.items[i].render, this._scheme.items[i], values[i]).getElement());
+                    item.append(this.createRender(i, this._scheme.items[i], values[i]).getElement());
                 }
 
                  this.multipleBtn.before(item);
 	        } else {
                 for(var i in this._scheme.items){
-                    this.group.appendContent(this.createRender(this._scheme.items[i].render, this._scheme.items[i], values[i]));
+                    this.group.appendContent(this.createRender(i, this._scheme.items[i], values[i]));
                 }
 	        }
 	    },

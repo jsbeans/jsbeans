@@ -7,7 +7,7 @@
         category: 'Тест'
     },
     $client: {
-        $require: ['Scheme.Test'],
+        $require: ['Unimap.Test'],
 
         $constructor: function(opts){
             $base(opts);

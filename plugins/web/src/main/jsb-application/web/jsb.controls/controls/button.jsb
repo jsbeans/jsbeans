@@ -55,6 +55,8 @@
 	    },
 
         options: {
+            enabled: true,
+
             hasIcon: false,
             iconPosition: 'left',
 

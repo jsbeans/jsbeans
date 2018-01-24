@@ -1,12 +1,12 @@
 {
-	$name: 'Scheme.Controller',
+	$name: 'Unimap.Controller',
 	$parent: 'JSB.Controls.Control',
 	$require: [],
 	$client: {
 	    $constructor: function(opts){
 	        $base(opts);
             this.addClass('scheme');
-            this.loadCss('SchemeController.css');
+            this.loadCss('UnimapController.css');
 
             this._scheme = opts.scheme;
             this._values = opts.values;
@@ -30,9 +30,7 @@
 	                this._values[i] = {}
 	            }
 
-	            // todo: this.createRender(i, this._scheme[i], this._values[i]) - for remove key field
-
-                this.append(this.createRender(this._scheme[i].render, this._scheme[i], this._values[i]));
+                this.append(this.createRender(null, i, this._scheme[i], this._values[i]));
 	        }
 	    },
 
@@ -45,14 +43,16 @@
 	        this._linksMap[key].linkedRender.push(render);
 	    },
 
-        createRender: function(name, scheme, values){
-            var constructor = this.getRenderByName(name);
+        createRender: function(parent, key, scheme, values){
+            var constructor = this.getRenderByName(scheme.render);
             var render = new constructor({
+                key: key,
                 scheme: scheme,
                 values: values,
+                parent: parent,
                 schemeController: this,
                 onChange: function(value){
-                    $this.updateLinks(scheme.key, value);
+                    $this.updateLinks(key, value);
                 }
             });
             this.addRender(render);
@@ -73,6 +73,26 @@
             }, function(){
                 $this.construct();
             });
+	    },
+
+	    destroy: function(){
+	        for(var i = 0; i < this._renders.length; i++){
+	            this._renders[i].destroy();
+	        }
+	        $base();
+	    },
+
+	    findRenderByKey: function(key){
+	        for(var i = 0; i < this._renders.length; i++){
+	            if(this._renders[i].getKey() == key){
+	                return this._renders[i];
+	            }
+	        }
+	    },
+
+	    getValueByKey: function(key){
+	        var render = this.findRenderByKey(key);
+	        return render ? render.getValue() : null;
 	    },
 
 	    getValues: function(){

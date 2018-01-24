@@ -1,11 +1,11 @@
 {
-	$name: 'Scheme.Render.Select',
-	$parent: 'Scheme.Render.Basic',
-	$require: ['JSB.Controls.Select'],
+	$name: 'Unimap.Render.Item',
+	$parent: 'Unimap.Render.Basic',
+	$require: ['JSB.Controls.Checkbox', 'JSB.Controls.Editor', 'JSB.Widgets.ColorEditor'],
 	$client: {
 	    construct: function(){
-	        this.addClass('selectRender');
-	        //this.loadCss('Select.css');
+	        this.addClass('itemRender');
+	        this.loadCss('Item.css');
 
 	        if(this._scheme.optional){
 	            this.addClass('optional');
@@ -40,15 +40,13 @@
 	            this.append(this.multipleContainer);
 	        }
 
-	        this.createOptionsList();
-
 	        if(this._values.values.length > 0){
 	            for(var i = 0; i < this._values.values.length; i++){
-	                this.addItem(this._values.values[i], i);
+	                this.addItem(this._values.values[0], i);
 	            }
 	        } else {
-                this.addItem(null, 0);
-            }
+	            this.addItem(null, 0);
+	        }
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -59,19 +57,25 @@
 
 	        var item = this.$('<div class="item"></div>');
 
-            var select = new Select({
-                options: this._optionsList,
-                onchange: function(){
-                    var val = select.getValue();
-                    values.value = val;
-                    $this.createInnerScheme(item, val, itemIndex);
-                }
-            });
-            item.append(select.getElement());
-
-            if(values.value){
-                this.createInnerScheme(item, values.value, itemIndex);
-            }
+	        switch(this._scheme.editor){
+	            case 'none':
+	                break;
+	            case 'color':
+	                var editor = new ColorEditor();
+	                editor.setData(values.value);
+	                item.append(editor.getElement());
+	                break;
+                default:
+                    var editor = new Editor({
+                        type: this._scheme.editor,
+                        onChange: function(val){
+                            values.value = val;
+                        }
+                    });
+                    editor.setValue(values.value);
+                    item.append(editor.getElement());
+                    break;
+	        }
 
 	        if(this._scheme.multiple){
 	            item.addClass('.multipleItem');
@@ -85,39 +89,6 @@
 	        } else {
 	            this.append(item);
 	        }
-	    },
-
-	    createOptionsList: function(){
-	        var opList = [];
-
-	        for(var i in this._scheme.items){
-	            opList.push({
-	                name: this._scheme.items[i].name,
-	                value: i
-	            });
-	        }
-
-	        this._optionsList = opList;
-	    },
-
-	    createInnerScheme: function(item, value, itemIndex){
-	        var innerScheme = item.find('.innerScheme');
-
-	        if(innerScheme.length == 0){
-	            innerScheme = this.$('<div class="innerScheme"></div>');
-	        }
-
-            if(!this._values[itemIndex].items){
-                this._values[itemIndex].items = {};
-            }
-
-	        for(var i in this._scheme.items[value]){
-	            if(!this._values[itemIndex].items[i]){
-	                this._values[itemIndex].items[i] = {};
-	            }
-
-                this.append(this.createRender(this._scheme.items[value][i].render, this._scheme.items[value][i], this._values[itemIndex].items[i]));
-	        }
 	    }
-	}
+    }
 }

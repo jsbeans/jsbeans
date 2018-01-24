@@ -1,5 +1,5 @@
 {
-	$name: 'Scheme.Render.Basic',
+	$name: 'Unimap.Render.Basic',
 	$parent: 'JSB.Controls.Control',
     $client: {
         $constructor: function(opts){
@@ -7,6 +7,7 @@
             this.addClass('basicRender');
             JSB().loadCss('tpl/font-awesome/css/font-awesome.min.css');
 
+            this._key = opts.key;
             this._scheme = opts.scheme;
             this._values = opts.values;
             this._schemeController = opts.schemeController;
@@ -22,12 +23,19 @@
             throw new Error('This method must be overwritten');
         },
 
-        changeLinkTo: function(){
-            // this function must be overwritten if you'll use linkTo
+        changeLinkTo: function(values){
+            if(JSB.isFunction(this.options.linkToFunc)){
+                this.options.linkToFunc.call(this, values);
+                return true;
+            }
         },
 
-        createRender: function(name, scheme, values){
-            return this._schemeController.createRender(name, scheme, values);
+        changeLinkToWarning: function(){
+            // todo: add standard warning
+        },
+
+        createRender: function(key, scheme, values){
+            return this._schemeController.createRender(this, key, scheme, values);
         },
 
         createValues: function(){
@@ -42,6 +50,22 @@
                 }
             }
             $base();
+        },
+
+        getKey: function(){
+            return this._key;
+        },
+
+        getParent: function(){
+            return this.options.parent;
+        },
+
+        getValueByKey: function(){
+            return this._schemeController.getValueByKey(this._scheme.linkTo);
+        },
+
+        getValue: function(){
+            return this._values;
         }
     }
 }

@@ -1,7 +1,7 @@
 {
-	$name: 'Scheme.Render.SourceBinding',
-	$parent: 'Scheme.Render.Item',
-	$require: ['JSB.Widgets.PrimitiveEditor', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
+	$name: 'Unimap.Render.SourceBinding',
+	$parent: 'Unimap.Render.Item',
+	$require: ['JSB.Widgets.PrimitiveEditor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
 	$client: {
 	    _items: [],
 

@@ -2,6 +2,8 @@
 	$name: 'JSB.Controls.Editor',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+	    _types: [],
+
 	    $constructor: function(opts){
 	        $base(opts);
 
@@ -27,10 +29,12 @@
                 this.setDataList(this.options.dataList);
             }
 
+            this.setValue(this.options.value);
+
             // options events
             for(var i in this.options){
                 if(i.substr(0, 2) === 'on'){
-                    this.on(i.substr(2), this.options[i]);
+                    this.on(i, this.options[i]);
                 }
             }
 	    },
@@ -67,7 +71,7 @@
 		    if(!JSB().isFunction(func)) return;
 
 		    this.options[eventName] = func;
-		    this.editor.getElement().on(eventName, function(evt){
+		    this.editor.on(eventName.substr(2), function(evt){
 		        if(!$this.options.enabled) return;
 		        $this.options[eventName].call($this, evt);
 		    });
@@ -80,6 +84,10 @@
 	    },
 
 	    setDataList: function(dataList){
+	        if(this.options.type !== 'text'){
+	            return;
+	        }
+
 	        if(this.dataList){
 	            this.dataList.empty();
 	        } else {
@@ -100,6 +108,13 @@
 	        this._dataList = dataList;
 	    },
 
+	    setGroupDataList: function(dataList){
+	        if(this.options.type !== 'text'){
+	            return;
+	        }
+	        // todo
+	    },
+
 	    setPlaceholder: function(placeholder){
 	        this.options.placeholder = placeholder;
 	        this.editor.attr('placeholder', placeholder);
@@ -111,7 +126,9 @@
 	    },
 
 	    setValue: function(value){
-	        this.editor.val(value);
+	        if(value){
+	            this.editor.val(value);
+	        }
 	    }
 	}
 }
