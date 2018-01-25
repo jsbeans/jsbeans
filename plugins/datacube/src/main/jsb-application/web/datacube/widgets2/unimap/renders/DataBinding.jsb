@@ -19,13 +19,7 @@
 
             var item = new Editor({
                 onchange: function(){
-                    var val = item.getValue();
-
-                    if(item.isValFromDatalist()){
-                        values.binding = val.substring(0, val.indexOf(':'));
-                    } else {
-                        values.value = val;
-                    }
+                    values.value = item.getValue();
                 }
             });
             this._editors.push(item);

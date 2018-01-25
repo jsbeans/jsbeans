@@ -20,7 +20,10 @@
 	            this.prepend(checkBox);
 	        }
 
-	        this.append('<span class="name">' + this._scheme.name + '</span>');
+	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
+	        this.append(name);
+
+	        this.createDescription(name);
 
 	        if(this._scheme.multiple){
 	            this.multipleContainer = this.$('<div class="multipleContainer"></div>');
@@ -42,7 +45,7 @@
 
 	        if(this._values.values.length > 0){
 	            for(var i = 0; i < this._values.values.length; i++){
-	                this.addItem(this._values.values[0], i);
+	                this.addItem(this._values.values[i], i);
 	            }
 	        } else {
 	            this.addItem(null, 0);
@@ -61,15 +64,19 @@
 	            case 'none':
 	                break;
 	            case 'color':
-	                var editor = new ColorEditor();
+	                var editor = new ColorEditor({
+                        onChange: function(val){
+                            values.value = val;
+                        }
+	                });
 	                editor.setData(values.value);
 	                item.append(editor.getElement());
 	                break;
                 default:
                     var editor = new Editor({
                         type: this._scheme.editor,
-                        onChange: function(val){
-                            values.value = val;
+                        onchange: function(){
+                            values.value = this.getValue();
                         }
                     });
                     editor.setValue(values.value);

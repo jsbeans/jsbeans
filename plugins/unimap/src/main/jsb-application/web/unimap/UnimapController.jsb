@@ -10,9 +10,8 @@
 
             this._scheme = opts.scheme;
             this._values = opts.values;
-            this._rendersDescription = opts.rendersDescription;
 
-            this.createRendersMap();
+            this.createRendersMap(opts.rendersDescription);
 	    },
 
 	    // inner variables
@@ -64,8 +63,8 @@
             return render;
         },
 
-	    createRendersMap: function(){
-            JSB.chain(this._rendersDescription, function(d, c){
+	    createRendersMap: function(rendersDescription){
+            JSB.chain(rendersDescription, function(d, c){
                 JSB.lookup(d.render, function(cls){
                     $this._rendersMap[d.name] = cls;
                     c();
@@ -82,6 +81,10 @@
 	        $base();
 	    },
 
+	    isInnerScheme: function(){
+	        return this.options.isInnerScheme;
+	    },
+
 	    findRenderByKey: function(key){
 	        for(var i = 0; i < this._renders.length; i++){
 	            if(this._renders[i].getKey() == key){
@@ -95,7 +98,14 @@
 	        return render ? render.getValue() : null;
 	    },
 
-	    getValues: function(){
+	    getValues: function(b){
+	        if(b){
+	            return {
+	                validateResult: this.validate(),
+	                values: this._values
+	            }
+	        }
+
 	        return this._values;
 	    },
 
@@ -105,6 +115,19 @@
 	        } else {
 	            throw new Error('Render with name ' + name + ' does not exist');
 	        }
+	    },
+
+	    validate: function(){
+	        var valRes = [];
+
+	        for(var i = 0; i < this._renders.length; i++){
+	            var res = this._renders[i].validate();
+	            if(res){
+	                valRes.push(res);
+	            }
+	        }
+
+	        return valRes;
 	    },
 
 	    updateLinks: function(key, value){

@@ -34,31 +34,13 @@
                 this.elements.toolbar.append(this.elements.buttons.collapseBtn);
 
                 this.elements.buttons.collapseBtn.click(function(){
-                    var $BOX_PANEL = $this.getElement(),
-                        $ICON = $this.$(this).find('i'),
-                        $BOX_CONTENT = $BOX_PANEL.find('.content');
+                    $this.togglePanel();
+                });
 
-                    // fix for some div with hardcoded fix class
-                    if ($BOX_PANEL.attr('style')) {
-                        $BOX_CONTENT.slideToggle(200, function(){
-                            $BOX_PANEL.removeAttr('style');
-                        });
-                    } else {
-                        $BOX_CONTENT.slideToggle(200);
-                        $BOX_PANEL.css('height', 'auto');
-                    }
-
-                    if($ICON.hasClass('fa-chevron-up')){
-                        if(JSB.isFunction($this.options.onCollapse)){
-                            $this.options.onCollapse.call($this);
-                        }
-                    } else {
-                        if(JSB.isFunction($this.options.onExpand)){
-                            $this.options.onExpand.call($this);
-                        }
-                    }
-
-                    $ICON.toggleClass('fa-chevron-up fa-chevron-down');
+                var title = this.elements.header.find('h1');
+                title.addClass('collapsable');
+                title.click(function(){
+                    $this.togglePanel();
                 });
             }
 
@@ -147,6 +129,34 @@
         setContent: function(content){
             this.elements.content.empty();
             this.elements.content.append(content);
+        },
+
+        togglePanel: function(){
+            var $BOX_PANEL = $this.getElement(),
+                $ICON = $this.elements.buttons.collapseBtn,
+                $BOX_CONTENT = $BOX_PANEL.find('.content');
+
+            // fix for some div with hardcoded fix class
+            if ($BOX_PANEL.attr('style')) {
+                $BOX_CONTENT.slideToggle(200, function(){
+                    $BOX_PANEL.removeAttr('style');
+                });
+            } else {
+                $BOX_CONTENT.slideToggle(200);
+                $BOX_PANEL.css('height', 'auto');
+            }
+
+            if($ICON.hasClass('fa-chevron-up')){
+                if(JSB.isFunction($this.options.onCollapse)){
+                    $this.options.onCollapse.call($this);
+                }
+            } else {
+                if(JSB.isFunction($this.options.onExpand)){
+                    $this.options.onExpand.call($this);
+                }
+            }
+
+            $ICON.toggleClass('fa-chevron-up fa-chevron-down');
         }
     }
 }

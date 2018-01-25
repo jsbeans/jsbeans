@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Test',
 	$parent: 'JSB.Controls.Control',
-	$require: ['Unimap.Controller', 'JSB.Controls.Button'],
+	$require: ['Unimap.Controller', 'Datacube.ValueSelector', 'JSB.Controls.Button'],
 	$client: {
 	    $constructor: function(opts){
 	        $base(opts);
@@ -93,13 +93,19 @@
 	        var scheme = {
                  dataSource: {
                      render: 'sourceBinding',
-                     name: 'Источник данных'
+                     name: 'Источник данных',
+                     description: 'Укажите источник данных'
+                 },
+                 innerWidget: {
+                    render: 'innerWidget',
+                    name: 'Встроенный виджет'
                  },
                  regions: {
                      render: 'group',
                      name: 'Регионы',
                      collapsable: true,
                      multiple: true,
+                     description: 'Укажите регионы',
                      items: {
                          item: {
                              render: 'group',
@@ -272,6 +278,10 @@
 	            {
 	                name: 'dataBinding',
 	                render: "Unimap.Render.DataBinding"
+	            },
+	            {
+	                name: 'innerWidget',
+	                render: 'Unimap.Render.EmbeddedWidgetBinding'
 	            }
 	        ];
 
@@ -283,11 +293,33 @@
 
             this.append(controller);
 
+            var rendersDescription = [
+	            {
+	                name: 'group',
+	                render: 'Unimap.ValueSelectors.Group'
+                },
+	            {
+	                name: 'select',
+	                render: 'Unimap.ValueSelectors.Select'
+                },
+            ]
+
             var valuesBtn = new Button({
                 caption: 'Получить значения',
                 onclick: function(){
-                    console.log(controller.getValues());
+                    var values = controller.getValues();
+                    console.log(values);
                     debugger;
+/*
+                    var valueSelector = new ValueSelector({
+                        rendersDescription: rendersDescription,
+                        values: values
+                    });
+
+                    valueSelector.ensureInitialized(function(){
+                        var res = valueSelector.find('regions > item functionType');
+                    });
+*/
                 }
             });
             this.append(valuesBtn);

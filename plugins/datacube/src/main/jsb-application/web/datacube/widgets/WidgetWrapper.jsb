@@ -80,8 +80,7 @@
 		$require: ['JSB.Widgets.Button', 
 		           'JSB.Widgets.PrimitiveEditor',
 		           'JSB.Widgets.ToolManager',
-		           'DataCube.Dialogs.WidgetOptionsTool',
-		           'DataCube.Widgets.WidgetSchemeRenderer'],
+		           'DataCube.Dialogs.WidgetOptionsTool'],
 		
 		owner: null,
 		widget: null,

@@ -299,7 +299,7 @@
             if(!ds || !ds.source || !ds.workspaceId){
                 throw new Error('Invalid datascheme passed');
             }
-            // todo: уточнить правильность решения
+
             return JSB.getInstance(workspaceId).entry(ds.source);
         }
 	}

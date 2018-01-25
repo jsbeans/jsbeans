@@ -1,6 +1,6 @@
 {
 	$name: 'Unimap.Render.Select',
-	$parent: 'Unimap.Render.Basic',
+	$parent: 'Unimap.Render.Item',
 	$require: ['JSB.Controls.Select'],
 	$client: {
 	    _selectors: [],
@@ -9,48 +9,9 @@
 	        this.addClass('selectRender');
 	        //this.loadCss('Select.css');
 
-	        if(this._scheme.optional){
-	            this.addClass('optional');
-
-	            var checkBox = new Checkbox({
-	                checked: this._values.checked,
-	                onChange: function(b){
-	                    $this._values.checked = b;
-	                }
-	            });
-
-	            this.prepend(checkBox);
-	        }
-
-	        this.append('<span class="name">' + this._scheme.name + '</span>');
-
-	        if(this._scheme.multiple){
-	            this.multipleContainer = this.$('<div class="multipleContainer"></div>');
-
-                this.multipleContainer.sortable({
-                    handle: '.multipleItem',
-                    update: function(){
-                        $this.reorderValues();
-                    }
-                });
-
-	            this.multipleBtn = this.$('<i class="multipleBtn fa fa-plus-circle"></i>');
-	            this.multipleBtn.click(function(){
-	                $this.addItem();
-	            });
-	            this.multipleContainer.append(this.multipleBtn);
-	            this.append(this.multipleContainer);
-	        }
-
 	        this.createOptionsList();
 
-	        if(this._values.values.length > 0){
-	            for(var i = 0; i < this._values.values.length; i++){
-	                this.addItem(this._values.values[i], i);
-	            }
-	        } else {
-                this.addItem(null, 0);
-            }
+	        $base();
 	    },
 
 	    addItem: function(values, itemIndex){

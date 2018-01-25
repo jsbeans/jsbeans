@@ -12,6 +12,11 @@
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
 }
 
+.itemRender > .name > i {
+    margin-left: 5px;
+    color: #0035ff82;
+}
+
 .itemRender > .item {
     display: inline-block;
 }

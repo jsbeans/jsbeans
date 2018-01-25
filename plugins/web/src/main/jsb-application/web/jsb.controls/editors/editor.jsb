@@ -72,7 +72,6 @@
 
 		    this.options[eventName] = func;
 		    this.editor.on(eventName.substr(2), function(evt){
-		        if(!$this.options.enabled) return;
 		        $this.options[eventName].call($this, evt);
 		    });
 		},

@@ -8,9 +8,14 @@
 	        this.loadCss('Group.css');
 
 	        this.group = new Panel({
-	            title: this._scheme.name
+	            title: this._scheme.name,
+                collapseBtn: this._scheme.collapsable,
+                collapsed: this._scheme.collapsed
 	        });
 	        this.append(this.group);
+
+	        var name = this.group.find('.header h1');
+	        this.createDescription(name);
 
 	        if(this._scheme.description){
                 var descBtn = this.group.addCustomBtn('descBtn', {

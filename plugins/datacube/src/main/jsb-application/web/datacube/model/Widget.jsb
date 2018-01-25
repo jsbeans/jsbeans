@@ -125,10 +125,6 @@
 			}
 			return this.workspace.entry(ds.source);
 		},
-
-		generateSchemeMap: function(values){
-		    // todo * scheme refactoring
-		},
 		
 		updateSources: function(){
 			this.sources = {};

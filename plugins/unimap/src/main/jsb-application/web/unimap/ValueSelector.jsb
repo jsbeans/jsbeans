@@ -1,29 +1,60 @@
 {
     $name: 'Unimap.ValueSelector',
-    $client: {
-        $constructor: function(values){
-            this._values = values;
-        },
+    $require: ['Unimap.ValueSelectors.Basic'],
 
-        _values: null,
+    _rendersMap: {},
+    _baseSelector: null,
+    _values: null,
 
-        find: function(key){
-            function find(values, key){
-                for(var i in values){
-                    if(i == key){
-                        return new $this.class(values[i]);
-                    }
-                }
+    $constructor: function(opts){
+        this._values = opts.values;
 
-                for(var i in values){
-                    var res = find(values[i].values, key);
-                    if(res){
-                        return res;
-                    }
-                }
-            }
+        this._baseSelector = new Basic({
+            mainSelector: $this
+        });
 
-            return find(this._values, key);
+        this.createRenderMap(opts.rendersDescription);
+    },
+
+    createRenderMap: function(rendersDescription){
+        JSB.chain(rendersDescription, function(d, c){
+            JSB.lookup(d.render, function(cls){
+                $this._rendersMap[d.name] = new cls({
+                    mainSelector: $this
+                });
+                c();
+            });
+        }, function(){
+            $this.setInitialized();
+        });
+    },
+
+    destroy: function(){
+        this._baseSelector.destroy();
+
+        for(var i in this._rendersMap){
+            this._rendersMap[i].destroy();
         }
+        $base();
+    },
+
+    ensureInitialized: function(callback){
+        this.ensureTrigger('_selectorInitialized', callback);
+    },
+
+    find: function(key){
+        return this._baseSelector.getInstance().find(key, this._values);
+    },
+
+    getRenderByName: function(name){
+        if(this._rendersMap[name]){
+            return this._rendersMap[name];
+        } else {
+            return this._baseSelector;
+        }
+    },
+
+    setInitialized: function(){
+        this.setTrigger('_selectorInitialized');
     }
 }

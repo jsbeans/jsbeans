@@ -34,6 +34,10 @@
     display: inline-block;
 }
 
+.jsb-panel > .header > h1.collapsable {
+    cursor: pointer;
+}
+
 .jsb-panel > .header > ul {
     float: right;
     margin: 10px 0 0 0;

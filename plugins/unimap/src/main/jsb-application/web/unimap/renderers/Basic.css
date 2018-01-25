@@ -1,0 +1,19 @@
+.basicRender {
+    overflow: visible;
+}
+
+.basicRender .description {
+    position: absolute;
+    line-height: 20px;
+    max-width: 300px;
+    background: white;
+    box-sizing: border-box;
+    padding: 5px;
+    z-index: 1000;
+    border: 1px solid grey;
+    border-radius: 4px;
+}
+
+.basicRender .description.show {
+    display: block !important;
+}
