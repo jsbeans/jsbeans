@@ -1,12 +1,8 @@
 {
 	$name: 'DataCube.Query.Views.JoinView',
+	$parent: 'DataCube.Query.Views.MultiView',
 
 	$server: {
-		$require: [
-//		    'DataCube.Query.Views.ViewsRegistry',
-		    'DataCube.Query.QueryUtils',
-        ],
-
 		$constructor: function(name, leftView){
 		    $base(name);
 		    this.leftView = leftView;
@@ -16,27 +12,8 @@
 		    this.rightView = rightView;
 		},
 
-		getRightView: function() {
-		    return this.rightView;
-		},
-
-		managedFields: null,
-
-        setField: function(field, desc) {
-		    this.managedFields[field] = desc;
-		},
-
-        listFields: function() {
-            var fields = {};
-            var list = this.leftView.listFields();
-            for(var i in list) {
-                fields[list[i]] = true;
-            }
-            list = this.rightView.listFields();
-            for(var i in list) {
-                fields[list[i]] = true;
-            }
-		    return Object.keys(fields);
+        listViews: function() {
+            return [this.leftView, this.rightView];
 		},
 
 		listJoinFields: function(){
@@ -49,10 +26,6 @@
                 }
             }
 		    return list;
-		},
-
-        getField: function(name) {
-            return this.leftView.getField(name) || this.rightView.getField(name);
 		},
 	}
 }

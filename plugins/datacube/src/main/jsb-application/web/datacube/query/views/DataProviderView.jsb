@@ -1,5 +1,6 @@
 {
 	$name: 'DataCube.Query.Views.DataProviderView',
+	$parent: 'DataCube.Query.Views.View',
 
 	$server: {
 		$require: [

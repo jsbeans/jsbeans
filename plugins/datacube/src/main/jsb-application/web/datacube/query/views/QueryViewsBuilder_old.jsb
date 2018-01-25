@@ -1,27 +1,28 @@
 {
-	$name: 'DataCube.Query.Views.ViewsBuilder',
+	$name: 'DataCube.Query.Views.QueryViewsBuilder_old',
 
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',
 
+            'DataCube.Query.Views.CubeViewsBuilder'
 		    'DataCube.Query.Views.NothingView',
 		    'DataCube.Query.Views.QueryView',
-		    'DataCube.Query.Views.JoinsView',
-		    'DataCube.Query.Views.UnionsView',
 		    'DataCube.Query.Views.SqlView',
-		    'DataCube.Query.Views.DataProviderView',
         ],
 
 		$constructor: function(query, cube, providers){
 		    $this.query = query;
-		    $this.cube = cube;
-		    $this.providers = providers;
-		    $this.singleProvider = providers.length == 1 && providers[0] || null;
+		    $this.cubeViewsBuilder = new CubeViewsBuilder(cube, providers);
 
 		    // для каждого запроса/констекста формируется:
 		    $this.contextSourceViews = {};  // - вьюха источника любого типа
 		    $this.contextViews = {};  // - вьюха текущего запроса/контекста (типа QueryView)
+		},
+
+		destroy: function(){
+		    $this.cubeViewsBuilder.destroy();
+		    $base();
 		},
 
 		build: function() {
@@ -65,7 +66,7 @@
                 // check if query without source or build cube`s views
                 var usedFields = {/**usages*/};
                 QueryUtils.walkQueryFields(query, /**includeSubQueries=*/false,
-                    function(field, context, curQuery)){
+                    function(field, context, curQuery){
                         if (!usedFields[field]) {
                             usedFields[field] = 0;
                         }

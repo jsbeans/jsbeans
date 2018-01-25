@@ -1,5 +1,6 @@
 {
 	$name: 'DataCube.Query.Views.CubeView',
+	$parent: 'DataCube.Query.Views.View',
 
 	$server: {
 		$require: [
@@ -9,12 +10,13 @@
 		    $base(name);
 		},
 
-		setView: function(view) {
-		    return this.view;
+		destroy: function(){
+		    this.view.destroy();
+		    $base();
 		},
 
-        setField: function(field, desc) {
-            throw new Error();
+		setView: function(view) {
+		    return this.view;
 		},
 
         listFields: function() {

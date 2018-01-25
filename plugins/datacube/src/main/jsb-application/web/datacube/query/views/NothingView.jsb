@@ -1,16 +1,10 @@
 {
 	$name: 'DataCube.Query.Views.NothingView',
+	$parent: 'DataCube.Query.Views.View',
 
 	$server: {
-		$require: [
-        ],
-
 		$constructor: function(name){
 		    $base(name);
-		},
-
-        setField: function(field, desc) {
-            throw new Error('Unsupported operation: add field to NothingView');
 		},
 
         listFields: function() {

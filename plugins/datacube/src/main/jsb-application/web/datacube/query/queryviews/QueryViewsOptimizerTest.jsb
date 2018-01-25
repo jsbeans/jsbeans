@@ -1,10 +1,10 @@
 {
-	$name: 'DataCube.Query.Views.ViewsOptimizerTest',
+	$name: 'DataCube.Query.Views.QueryViewsOptimizerTest',
 	$singleton: true,
 
 	$server: {
 	    $require: [
-	        'DataCube.Query.Views.ViewsOptimizer',
+	        'DataCube.Query.Views.QueryViewsOptimizer',
         ],
 
 		$constructor: function(){
@@ -35,7 +35,7 @@
 		},
 
 		startTest: function(inputQuery, expectedQuery, name){
-            var extr = new ViewsOptimizer();
+            var extr = new QueryViewsOptimizer();
             var inputQueryClone = JSB.merge(true,{}, inputQuery);
             var resultQuery = extr.buildViews(inputQuery);
             // Log.debug(JSON.stringify(resultQuery,0,2));
@@ -47,7 +47,7 @@
                             'inputQuery=' + JSB.stringify(inputQuery,null,null,true) + '\n' +
                             'expectedQuery=' + JSB.stringify(expectedQuery,null,null,true) + '\n' +
                             'resultQuery=' + JSB.stringify(resultQuery,null,null,true) + '\n')
-                throw new Error('ViewsOptimizerTest test "' + name + '" failed');
+                throw new Error('QueryViewsOptimizerTest test "' + name + '" failed');
             }
 		},
 
