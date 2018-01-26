@@ -85,6 +85,18 @@
     border-color: #868e96;
 }
 
+.sliceEditorView .titleBlock ._dwp_button.btnUpdate .ajaxloader .ajaxloaderInfo {
+    top: 6%;
+    left: 6%;
+    margin-top: 0;
+}
+
+.sliceEditorView .titleBlock ._dwp_button.btnUpdate .ajaxloader .ajaxloaderInfo .icon {
+    width: 25px;
+    height: 25px;
+    background-size: 100%;
+}
+
 .sliceEditorView .titleBlock ._dwp_button.btnUpdate:hover {
     background: #727b84;
     border-color: #6c757d;
