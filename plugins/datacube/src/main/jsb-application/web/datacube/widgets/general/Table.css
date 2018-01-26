@@ -32,13 +32,13 @@
     background: -o-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
     background: -ms-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
 */
-    background: #f1f1f1;    
+    background: #d0e4f1;    
     font-family: 'arial';
 	font-size: 13px;
     padding: 2px;
-    color: #6b6b6b;
-    text-shadow: 1px 1px #fbfbfb;
-    font-weight: normal;
+    color: #316271;
+    text-shadow: 1px 1px #ebeff3;
+    font-weight: bold;
 	display: table-cell;
 }
 
@@ -134,7 +134,14 @@
 
 
 .tableWidget.hasBorder > table.header > thead > tr > th.col {
-	border-right: 1px solid #d2d2d2;
+	border-radius: 4px;
+	padding-left: 4px;
+	border-right: 1px solid #fff;
+}
+
+
+.tableWidget.hasBorder > table.header > thead > tr > th.col:first-child {
+    
 }
 
 .tableWidget.hasBorder > table.header > thead > tr > th.col:last-child {
@@ -165,6 +172,16 @@
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row {
 	position: relative;
 	display: table-row;
+}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.main {}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.back {}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.hover {}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.back:not(.main) {
+	opacity: 0.6;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter {}
@@ -241,4 +258,22 @@
     color: #6f6f6f;
     margin-left: -55px;
     margin-top: -10px;
+}
+
+.tableWidget > .message {
+	position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border: 1px dotted #792600;
+    background-color: #d0a89ad1;
+    color: #841401;
+    padding: 6px 10px;
+    border-radius: 6px;
+    z-index: 10000;
+    font-size: 11px;
+}
+
+.tableWidget > .message.hidden {
+	display: none;
 }

@@ -18,7 +18,6 @@
 					{{?}}
 					<span class="_dwp_caption"></span>
 				</label>
-				<div class="contents"><div class="shadowPanel"></div></div>
 			`);
 			
 			if(this.options.label){
@@ -88,6 +87,9 @@
 		
 		enableContents: function(b){
 			var cElt = this.find('> .contents');
+			if(cElt.length == 0){
+				return;
+			}
 			if(b){
 				cElt.removeClass('disabled');
 			} else {
@@ -96,6 +98,10 @@
 		},
 		
 		append: function(c){
+			// ensure contents
+			if(this.find('> .contents').length == 0){
+				this.getElement().append('<div class="contents"><div class="shadowPanel"></div></div>');
+			}
 			return this.find('> .contents').append(this.resolveElement(c));
 		}
 	}

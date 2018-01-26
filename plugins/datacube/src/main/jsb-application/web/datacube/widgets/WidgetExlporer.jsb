@@ -84,6 +84,7 @@
 				name: expose.name,
 				description: expose.description,
 				thumb: expose.thumb,
+				icon: expose.icon,
 				jsb: jsb.$name,
 			});
 		},
