@@ -384,13 +384,13 @@
 		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText'),
 		        keys = [{
                             key: 'xls',
-                            element: 'Скачать Excel'
+                            element: 'Excel'
                         },{
                             key: 'csv',
-                            element: 'Скачать CSV'
+                            element: 'CSV'
                         },{
                             key: 'png',
-                            element: 'Скачать изображение'
+                            element: 'Изображение'
                         }];
 
             var exportBtn = new Button({

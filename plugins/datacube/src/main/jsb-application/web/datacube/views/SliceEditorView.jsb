@@ -7,7 +7,8 @@
 	           'JSB.Widgets.PrimitiveEditor', 
 	           'JSB.Widgets.Button', 
 	           'JSB.Widgets.MultiEditor', 
-	           'DataCube.Query.QueryEditor'],
+	           'DataCube.Query.QueryEditor',
+	           'JSB.Widgets.ToolManager'],
 	$client: {
 		ready: false,
 		ignoreHandlers: false,
@@ -59,6 +60,36 @@
                 }
             });
             this.titleBlock.append(this.analyzeBtn.getElement());
+
+            var keys = [{
+                    key: 'xls',
+                    element: 'Excel'
+                },{
+                    key: 'csv',
+                    element: 'CSV'
+                }],
+                exportBtn = new Button({
+                    cssClass: 'btnUpdate',
+                    caption: "Экспорт",
+                    onClick: function(evt){
+                        ToolManager.activate({
+                            id: '_dwp_droplistTool',
+                            cmd: 'show',
+                            data: keys,
+                            target: {
+                                selector: exportBtn.getElement(),
+                                dock: 'bottom'
+                            },
+                            callback: function(key, item, evt){
+                                exportBtn.getElement().loader();
+                                $this.gridView.exportData(key, $this.slice && $this.slice.getName(), function(){
+                                    exportBtn.getElement().loader('hide');
+                                });
+                            }
+                        });
+                    }
+                });
+            this.titleBlock.append(exportBtn.getElement());
 			
 			var hSplitBox = new SplitBox({
 				type: 'horizontal',
