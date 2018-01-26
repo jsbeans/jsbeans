@@ -253,6 +253,11 @@
                              }
                          }
                      }
+                 },
+                 testItem: {
+                    render: 'item',
+                    name: 'Тестовое значение',
+                    defaultValue: 'По-умолчанию'
                  }
              };
 

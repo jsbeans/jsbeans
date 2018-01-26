@@ -99,6 +99,10 @@
 	    },
 
 	    getValues: function(b){
+	        for(var i = 0; i < this._renders.length; i++){
+	            this._renders[i].setDefaultValue();
+	        }
+
 	        if(b){
 	            return {
 	                validateResult: this.validate(),
@@ -122,7 +126,7 @@
 
 	        for(var i = 0; i < this._renders.length; i++){
 	            var res = this._renders[i].validate();
-	            if(res){
+	            if(Object.keys(res).length > 0){
 	                valRes.push(res);
 	            }
 	        }
@@ -132,8 +136,12 @@
 
 	    updateLinks: function(key, value){
 	        if(this._linksMap[key]){
+	            if(!this._linksMap[key].render){
+	                this._linksMap[key].render = this.findRenderByKey(key);
+	            }
+
 	            for(var i = 0; i < this._linksMap[key].linkedRender.length; i++){
-	                this._linksMap[key].linkedRender[i].changeLinkTo(value);
+	                this._linksMap[key].linkedRender[i].changeLinkTo(value, this._linksMap[key].render);
 	            }
 	        }
 	    }

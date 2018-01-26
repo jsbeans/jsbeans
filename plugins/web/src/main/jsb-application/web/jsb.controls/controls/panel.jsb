@@ -110,7 +110,7 @@
             this.elements.buttons[key] = this.$('<li key="' + key + '" class="' + btnOpts.cssClass + '"><i></i></li>');
 
             if(el){
-                this.elements.buttons[key].after(el);
+                el.after(this.elements.buttons[key]);
             } else {
                 this.elements.toolbar.prepend(this.elements.buttons[key]);
             }
@@ -133,7 +133,7 @@
 
         togglePanel: function(){
             var $BOX_PANEL = $this.getElement(),
-                $ICON = $this.elements.buttons.collapseBtn,
+                $ICON = $this.elements.buttons.collapseBtn.find('i'),
                 $BOX_CONTENT = $BOX_PANEL.find('.content');
 
             // fix for some div with hardcoded fix class

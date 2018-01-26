@@ -24,9 +24,9 @@
             throw new Error('This method must be overwritten');
         },
 
-        changeLinkTo: function(values){
+        changeLinkTo: function(values, render){
             if(JSB.isFunction(this.options.linkToFunc)){
-                this.options.linkToFunc.call(this, values);
+                this.options.linkToFunc.call(this, values, render);
                 return true;
             }
         },
@@ -134,8 +134,22 @@
             return this._values;
         },
 
+        setDefaultValue: function(){
+            if(this._scheme.defaultValue && (this._values.values.length === 0 || !this._values.values[0].value)){
+                this._values.values[0].value = this._scheme.defaultValue;
+            }
+        },
+
         validate: function(){
-            // todo
+            var res = {
+                name: this._scheme.name
+            };
+
+            if(this._scheme.require && (this._values.values.length === 0 || !this._values.values[0].value)){
+                res.valueNotExist = true;
+            }
+
+            return res;
         },
 
         validateWarning: function(){

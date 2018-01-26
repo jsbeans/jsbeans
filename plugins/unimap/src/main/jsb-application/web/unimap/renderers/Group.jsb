@@ -17,12 +17,6 @@
 	        var name = this.group.find('.header h1');
 	        this.createDescription(name);
 
-	        if(this._scheme.description){
-                var descBtn = this.group.addCustomBtn('descBtn', {
-                    after: 'collapseBtn'
-                });
-	        }
-
 	        if(this._scheme.optional){
 	            this.addClass('optional');
 
@@ -113,6 +107,8 @@
 	                }
 	            }
 	        }
-	    }
+	    },
+
+	    validate: function(){}
 	}
 }
