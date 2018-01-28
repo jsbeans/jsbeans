@@ -16,9 +16,6 @@
 			        <ins class="check-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
                 </div>
                 <span class="caption"></span>
-                <div class="contents">
-                    <div class="shadowPanel"></div>
-                </div>
 			`);
 
 			if(this.options.label){
@@ -97,6 +94,9 @@
 
 		enableContents: function(b){
 			var cElt = this.find('> .contents');
+			if(cElt.length == 0){
+				return;
+			}
 			if(b){
 				cElt.removeClass('disabled');
 			} else {
@@ -105,6 +105,11 @@
 		},
 
 		append: function(c){
+			debugger;
+			// ensure contents
+			if(this.find('> .contents').length == 0){
+				this.getElement().append('<div class="contents"><div class="shadowPanel"></div></div>');
+			}
 			return this.find('> .contents').append(this.resolveElement(c));
 		}
 	}

@@ -26,7 +26,7 @@
 }
 
 .widgetSchemeRenderer > .header > .caption {
-	display: inline-block;
+	display: inline;
 	vertical-align: middle;
 	color: #3c4e61;
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
@@ -61,6 +61,7 @@
     font-size: 14px;
     margin-left: 5px;
     cursor: help;
+    vertical-align: middle;
 }
 
 .widgetSchemeRenderer > .header > .btnCreate {

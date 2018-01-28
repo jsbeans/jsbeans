@@ -224,7 +224,7 @@
 						if(i > 0){
 							splitter = vSplitters[i-1];
 							if(splitter){
-								var spos = splitter.position().left - (paneElt.width() - nw);
+								var spos = splitter.position().left - (paneElt.outerWidth() - nw);
 								splittersPos[i-1] = spos;
 								var ppos = spos * 100 / elt.width();
 								$this.splitterPositions[i-1] = spos / elt.width();
@@ -236,7 +236,7 @@
 						} else {
 							splitter = vSplitters[i];
 							if(splitter){
-								var spos = splitter.position().left + (paneElt.width() - nw);
+								var spos = splitter.position().left + (paneElt.outerWidth() - nw);
 								splittersPos[i] = spos;
 								var ppos = spos * 100 / elt.width();
 								$this.splitterPositions[i] = spos / elt.width();
@@ -259,7 +259,7 @@
 						if(i > 0){
 							splitter = vSplitters[i-1];
 							if(splitter){
-								var spos = splitter.position().top - (paneElt.height() - nh);
+								var spos = splitter.position().top - (paneElt.outerHeight() - nh);
 								splittersPos[i-1] = spos;
 								var ppos = spos * 100 / elt.height();
 								$this.splitterPositions[i-1] = spos / elt.height();
@@ -271,7 +271,7 @@
 						} else {
 							splitter = vSplitters[i];
 							if(splitter){
-								var spos = splitter.position().top + (paneElt.height() - nh);
+								var spos = splitter.position().top + (paneElt.outerHeight() - nh);
 								splittersPos[i] = spos;
 								var ppos = spos * 100 / elt.height();
 								$this.splitterPositions[i] = spos / elt.height();

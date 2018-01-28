@@ -25,7 +25,7 @@
 .filterSelector > .filterContainer {
 	min-height: 24px;
 	padding-left: 24px;
-	padding-top: 4px;
+	padding-top: 2px;
 }
 
 .filterSelector > .filterContainer .node {

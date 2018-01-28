@@ -43,6 +43,7 @@
 
 .dashboardEditor ._jsb_dashboardContainer > ._jsb_clientContainer > ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText {
 	text-shadow: none;
+	margin-right: 0;
 }
 
 

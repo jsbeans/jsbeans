@@ -72,6 +72,7 @@
 	font-size: small;
 	color: #444;
 	box-sizing: border-box;
+	display: inline-block;
 }
 
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab.disabled {
@@ -84,14 +85,12 @@
 }
 
 ._dwp_tabview._dwp_tabTop > ._dwp_tabPane > li._dwp_tab {
-	float: left;
 	border-radius: 6px 6px 0 0;
 	padding: 3px 8px 3px 6px;
 	top: 1px;
 }
 
 ._dwp_tabview._dwp_tabBottom > ._dwp_tabPane > li._dwp_tab {
-	float: left;
 	top: -1px;
 	border-radius: 0 0 6px 6px;
 	padding: 3px 8px 3px 6px;
