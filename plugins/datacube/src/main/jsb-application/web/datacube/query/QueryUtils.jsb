@@ -66,12 +66,12 @@
                                 break;
                             default:
                                 // $op: [left, right] expression
-                                fieldsCallback($this.extractFields(exps[op], !includeSubQueries));
+                                fieldsCallback($this.extractFields(exps[op], true/**skipSubQuery*/));
                         }
                     } else {
                         // field: {$eq: expr}
                         fieldsCallback([{$field: field, $context: null}]); // left
-                        fieldsCallback($this.extractFields(exps[field], !includeSubQueries)); // right
+                        fieldsCallback($this.extractFields(exps[field], true/**skipSubQuery*/)); // right
                     }
                 }
             }
@@ -109,11 +109,6 @@
 
             }
 
-//            if (includeSubQueries) {
-//                this.walkSubQueries(dcQuery, walkQuery);
-//            } else {
-//                walkQuery(dcQuery);
-//            }
             this.walkSubQueries(dcQuery, walkQuery);
         },
 
@@ -815,6 +810,44 @@
                 unwrapForQuery(query);
             });
 		},
+
+        _extractFilterByContext: function (query, includeCurrent, includeForeign){
+            var skipFields = $this.collectSubQueryJoinFields(
+                query.$filter|| {},
+                function isSkipped(context) {
+                    var isForeignContext = !!context && context != query.$context;
+                    return !includeCurrent && !includeForeign ||
+                            isForeignContext ? !includeForeign : !includeCurrent;
+                }
+            );
+            var filter = $this.filterFilterByFields(query.$filter||{}, function(filteredField, filteredExpr, path){
+                return skipFields.indexOf(filteredField) == -1;
+            });
+            return filter;
+        },
+
+        findSubQueries: function(exp) {
+            var subQueries = [];
+            function walk(e){
+                if (JSB.isObject(e)) {
+                    if (e.$select) {
+                        subQueries.push(e);
+                    }
+//                    if (JSB.isObject(e.$from)) {
+//                        subQueries.push(e.$from);
+//                    }
+                }
+                if (JSB.isObject(e) || JSB.isArray(e)) {
+                    for(var i in e) {
+                        walk(e[i]);
+                    }
+                }
+                return subQueries.length > 0 ? subQueries : null;
+            }
+
+            walk(exp);
+            return subQueries;
+        },
 
         /** Преобразует $filter к единому формату:
         *   - multifilter заменяется на $and: []
