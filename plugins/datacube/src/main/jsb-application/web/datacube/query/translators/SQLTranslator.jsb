@@ -1597,7 +1597,7 @@
         },
 
 		close: function() {
-		    this.destroy();
+		    $base();
 		}
 	}
 }

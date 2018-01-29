@@ -3,6 +3,7 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.Views.QueryViewsBuilder'
         ],
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
@@ -34,6 +35,15 @@
 		    }
 		    this.dcQuery = subQuery;
 		    this.params = params;
+		    // build QueryView
+		    this.queryView = (function(){
+		        var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+		        try {
+                    return builder.build();
+		        } finally {
+		            builder.destroy();
+		        }
+		    })();
 
             // translate query to dataprovider format
 		    var translatedQuery = this.translateQuery();
@@ -226,7 +236,8 @@ debugger;
         },
 
 		close: function() {
-		    throw new Error('Not implemented');
+		    this.queryView.destroy();
+		    this.destroy();
 		}
 	}
 }

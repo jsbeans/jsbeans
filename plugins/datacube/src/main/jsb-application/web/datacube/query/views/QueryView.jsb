@@ -32,6 +32,10 @@
             return this.managedFields[name];
 		},
 
+        lookupField: function(name) {
+            return this.sourceView.getField(name) || this.managedFields[name];
+		},
+
 		getSourceView: function() {
 		    return this.sourceView;
 		},

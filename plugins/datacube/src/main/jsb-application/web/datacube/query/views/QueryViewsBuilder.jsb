@@ -32,6 +32,7 @@
 		    }
 		    // build query views
             $this._buildQueryViews(dcQuery.$context, dcQuery);
+            return $this.contextViews[dcQuery.$context];
 		},
 
         _buildQueryViews: function(name, query) {

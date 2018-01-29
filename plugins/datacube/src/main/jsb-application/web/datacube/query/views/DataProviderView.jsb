@@ -23,7 +23,7 @@
 		},
 
         getField: function(name) {
-            return this.managedFields[name];
+            return JSB.merge({provider: this.provider}, this.managedFields[name]);
 		},
 	}
 }

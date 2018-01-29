@@ -50,7 +50,7 @@
 		},
 
 		close: function() {
-		    this.destroy();
+		    $base();
 		},
 
 		_mapCubeFields: function(value, fieldsMap) {
