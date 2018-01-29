@@ -924,10 +924,7 @@
                     var fromFieldExpression = query.$from.$select[field];
                     var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider);
                 } else {
-                    var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
-                                ? cubeOrDataProvider.getManagedFields()
-                                : cubeOrDataProvider.extractFields();
-                    var fieldType = fields[exp] && fields[exp].type || null;
+                    var fieldType = fields[exp] && $this.getFieldJdbcType(cubeOrDataProvider, exp) || null;
                 }
                 return fieldType;
             }
@@ -979,6 +976,22 @@
                         return type;
                     }
                 }
+            }
+            return null;
+        },
+
+        getFieldJdbcType: function(cubeOrDataProvider, field) {
+            if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
+                var cubeFields = cubeOrDataProvider.getManagedFields();
+                for(var cubeField in fields) if(cubeFields.hasOwnProperty(cubeField)) {
+                    var binding = cubeFields[cubeField].binding;
+                    for (var i in binding) {
+                        return binding[i].nativeType || binding[i].type;
+                    }
+                }
+            } else {
+                var desc = cubeOrDataProvider.extractFields()[field];
+                return desc.nativeType || desc.type;
             }
             return null;
         },
