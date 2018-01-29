@@ -10,9 +10,11 @@
 	        if(this._scheme.optional){
 	            this.addClass('optional');
 
+	            var checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
+
 	            var checkBox = new Checkbox({
-	                checked: this._values.checked,
-	                onChange: function(b){
+	                checked: checked,
+	                onchange: function(b){
 	                    $this._values.checked = b;
 	                }
 	            });

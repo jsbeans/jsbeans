@@ -1,6 +1,5 @@
 {
 	$name: 'DataCube.Export.Export',
-	$parent: 'JSB.Controls.Control',
 	$client: {
 	    $singleton: true,
 	    $constructor: function(opts){
@@ -116,9 +115,10 @@
                 var a = window.document.createElement('a');
                 a.href = href;
                 a.download = name + '.' + extension;
-                this.append(a); // #111
+
+                document.body.appendChild(a);
                 a.click();
-                a.remove();
+                document.body.removeChild(a);
             } else {
                 throw new Error('Браузер не поддерживает скачивание файлов');
             }

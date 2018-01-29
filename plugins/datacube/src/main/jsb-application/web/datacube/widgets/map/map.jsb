@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.LeafletMap',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
     $expose: {
         name: 'Карта',
         description: '',

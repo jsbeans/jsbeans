@@ -169,7 +169,7 @@
 								var wWrapper = this.workspace.entry(wId);
 								if(!wWrapper){
 									bNeedStore = true;
-									wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values);
+									wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values, wDesc.schemeVersion);
 									this.addChildEntry(wWrapper);
 								}
 								

@@ -2,6 +2,15 @@
     margin: 10px 0;
 }
 
+.itemRender > .jsb-checkbox {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.itemRender > .jsb-checkbox + .name {
+    width: initial;
+}
+
 .itemRender > .name {
     width: 150px;
     display: inline-block;
@@ -10,6 +19,8 @@
     font-size: 14px;
     color: #73879C;
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
 .itemRender > .name > i {

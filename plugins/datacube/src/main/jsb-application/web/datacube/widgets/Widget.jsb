@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.Widget',
+	$name: 'DataCube.WidgetsOld.Widget',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {

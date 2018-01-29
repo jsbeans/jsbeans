@@ -31,8 +31,6 @@
                 }
             });
 
-			this.enable(this.options.enabled);
-
 			this.setChecked(this.options.checked, true);
 		},
 
@@ -70,16 +68,6 @@
 			if(this.options.onchange && !dontNotify){
 				this.options.onchange.call(this, b);
 			}
-		},
-
-		enable: function(b){
-			this.options.enabled = b;
-			if(b) {
-				this.removeClass('disabled');
-			} else {
-				this.addClass('disabled');
-			}
-			this.enableContents(!b || this.isChecked());
 		},
 
 		enableContents: function(b){

@@ -50,7 +50,10 @@
                 values: values,
                 parent: parent,
                 schemeController: this,
-                onChange: function(value){
+                onchange: function(value){
+                    if(JSB.isFunction($this.options.onchange)){
+                        $this.options.onchange.call($this, key, value);
+                    }
                     $this.updateLinks(key, value);
                 }
             });

@@ -45,7 +45,7 @@
         	WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.WidgetNode');
         },
 
-		$constructor: function(id, workspace, dashboard, name, wType, values){
+		$constructor: function(id, workspace, dashboard, name, wType, values, schemeVersion){
 			$base(id, workspace);
 			if(dashboard){
 				this.dashboard = dashboard;
@@ -57,6 +57,7 @@
 				this.values = values;
 				this.updateInteroperationMap();
 				this.property('values', values);
+				this.property('schemeVersion', schemeVersion);
 			} else {
 				var bNeedSave = false;
 				if(this.property('dashboard')){
@@ -96,11 +97,12 @@
 			return true;
 		},
 		
-		storeValues: function(name, values){
+		storeValues: function(opts){    //name, values, linkedFields
 			this.getDashboard().load();
-			this.values = values;
-			this.property('values', values);
-			this.setName(name);
+			this.values = opts.values;
+			this.property('values', opts.values);
+			this.property('linkedFields', opts.linkedFields);
+			this.setName(opts.name);
 			
 			this.updateInteroperationMap();
 			
@@ -284,6 +286,5 @@
 				arrayType: recordTypes
 			}
 		}
-
 	}
 }

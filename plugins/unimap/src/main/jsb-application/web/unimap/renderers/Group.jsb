@@ -22,7 +22,7 @@
 
 	            var checkBox = new Checkbox({
 	                checked: this._values.checked,
-	                onChange: function(b){
+	                onchange: function(b){
 	                    $this._values.checked = b;
 	                }
 	            });

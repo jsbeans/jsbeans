@@ -6,6 +6,10 @@
         // todo
     },
 
+    hasBinding: function(){
+        return JSB.isDefined(this._values.values[0].binding);
+    },
+
     next: function(){
         var item = this._values.values[0];
 

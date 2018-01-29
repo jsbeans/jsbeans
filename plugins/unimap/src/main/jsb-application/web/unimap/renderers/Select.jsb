@@ -31,7 +31,7 @@
                     var val = select.getValue();
                     values.value = val;
                     $this.createInnerScheme(item, val, itemIndex);
-                    $this.options.onChange.call($this, $this._values);
+                    $this.options.onchange.call($this, $this._values);
                 }
             });
             item.append(select.getElement());

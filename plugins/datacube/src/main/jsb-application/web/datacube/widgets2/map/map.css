@@ -1,0 +1,9 @@
+.mapWidget .container {
+    width: 100%;
+    height: 100%;
+}
+
+.mapWidget .permanentTooltips {
+    padding: 0px 2px;
+    font-size: 11px;
+}

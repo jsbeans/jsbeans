@@ -2,13 +2,14 @@
 	$name: 'DataCube.WidgetSettingsView',
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
-	    $require: ['DataCube.Widgets.WidgetSchemeRenderer',
+	    $require: ['Unimap.Controller',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button'
         ],
+
 		$constructor: function(opts){
 			$base(opts);
 			
@@ -59,6 +60,29 @@
 	        this.append(this.savedMessage);
 		},
 
+		_renders: [
+            {
+                name: 'group',
+                render: 'Unimap.Render.Group'
+            },
+            {
+                name: 'item',
+                render: 'Unimap.Render.Item'
+            },
+            {
+                name: 'select',
+                render: 'Unimap.Render.Select'
+            },
+            {
+                name: 'sourceBinding',
+                render: "Unimap.Render.SourceBinding"
+            },
+            {
+                name: 'dataBinding',
+                render: "Unimap.Render.DataBinding"
+            }
+		],
+
 		refresh: function(){
 			this.entry = this.node.getEntry();
 
@@ -68,15 +92,19 @@
 
             if(this.widgetSchemeRenderer) this.widgetSchemeRenderer.destroy();
             JSB().deferUntil(function(){
-                $this.widgetSchemeRenderer = new WidgetSchemeRenderer({
+                $this.widgetSchemeRenderer = new Controller({
                     scheme: $this.wrapper.extractWidgetScheme(),
                     values: JSB.clone($this.wrapper.getValues()),
-                    wrapper: $this.wrapper,
-                    onChange: function(){
+                    rendersDescription: $this._renders,
+                    onchange: function(){
+                    // check for binding
+
+                    /*
                         if(this.scheme.binding === 'field') return; // need data update
                         JSB().defer(function(){
                             $this.setChanges();
                         }, 800, "widgetSettingsView_setChanges" + $this.getId());
+                    */
                     }
                 });
                 $this.schemeBlock.append($this.widgetSchemeRenderer.getElement());
@@ -88,8 +116,8 @@
 		},
 
 		updateData: function(){
-		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
-		    this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
+            this.wrapper.updateValues(this.widgetSchemeRenderer.getValues());
+
 		    this.wrapper.getWidget().refresh({
                 isCacheMod: true,
                 needMapUpdate: true
@@ -97,14 +125,18 @@
 		},
 
 		applySettings: function(){
+		/*
 		    this.savedMessage.fadeIn(1600, "linear", function(){
 		        $this.savedMessage.fadeOut(1600, "linear");
 		    });
-		    var title = this.titleEditor.getData().getValue();
+        */
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 
-            this.entry.server().storeValues(title, this.wrapper.values, function(sourceDesc){
-                // $this.wrapper.getWidget().updateValues(JSB.clone($this.wrapper.values), sourceDesc);
+            this.entry.server().storeValues({
+                name: this.titleEditor.getData().getValue(),
+                values: this.wrapper.values.values,
+                linkedFields: this.wrapper.values.linkedFields
+            }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.wrapper.getWidgetEntry().getId(),
                     values: JSB.clone($this.wrapper.values),
@@ -114,8 +146,8 @@
 		},
 
 		setChanges: function(){
-            this.wrapper.values = this.widgetSchemeRenderer.getValues();
-            this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
+		    this.wrapper.updateValues(this.widgetSchemeRenderer.getValues());
+
             this.wrapper.getWidget().ensureInitialized(function(){
 	            try {
 	                $this.wrapper.getWidget().refresh({

@@ -201,7 +201,7 @@
 		        binding: this._items[itemIndex].dataScheme,
 		    }
 
-		    this.options.onChange.call(this, this._values);
+		    this.options.onchange.call(this, this._values);
 		},
 
 		removeBinding: function(item, itemIndex){
