@@ -19,8 +19,9 @@
     padding-left: 26px;
 	display: block;
 	box-sizing: border-box;
-	padding-top: 1px;
-    padding-bottom: 1px;
+	padding-top: 2px;
+    padding-bottom: 3px;
+    font-size: 13px;
     white-space: nowrap;
 }
 
