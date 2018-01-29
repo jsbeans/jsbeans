@@ -383,13 +383,13 @@
 		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText'),
 		        keys = [{
                             key: 'xls',
-                            element: 'Скачать Excel'
+                            element: 'Excel'
                         },{
                             key: 'csv',
-                            element: 'Скачать CSV'
+                            element: 'CSV'
                         },{
                             key: 'png',
-                            element: 'Скачать изображение'
+                            element: 'Изображение'
                         }];
 
             var exportBtn = new Button({
@@ -416,8 +416,7 @@
                 cssClass: 'roundButton btnFullScreen btn10',
                 tooltip: 'На полный экран',
                 onClick: function(evt){
-                    fullScreenBtn.toggleClass('collapse');
-                    $this.getContainer().toggleClass('fullScreenMod');
+                    $this.getContainer().toggleClass('fullScreenMode');
                 }
             });
             tab.append(fullScreenBtn.getElement());

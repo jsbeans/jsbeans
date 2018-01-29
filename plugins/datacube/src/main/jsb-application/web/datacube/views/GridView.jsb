@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.GridView',
 	$parent: 'JSB.Widgets.Widget',
-	$require: ['Handsontable', 'JQuery.UI.Loader'],
+	$require: ['Handsontable', 'JQuery.UI.Loader', 'DataCube.Export.Export'],
 	$client: {
 	    allLoaded: false,
 	    curLoadId: null,
@@ -89,6 +89,17 @@
                                         onclick="{{=$this.callbackAttr(function(evt){ $this.sortButtonClick(evt, { column: i, header: header }); })}}" >
                                     </div>`;
 		    return '<div>' + header + sortButton + '</div>';
+		},
+
+		exportData: function(key, fileName, callback){
+		    this.server().loadExportData(function(res){
+		        callback.call();
+		        if(res.error){
+		            return;
+		        }
+
+                Export.exportData(key, res.result, fileName);
+		    });
 		},
 		
 		// get number of lines
@@ -212,6 +223,7 @@
 
 	$server: {
 	    it: null,
+	    exportQuery: null,
 	    
 	    clearIterator: function(){
 	    	if(this.it) {
@@ -257,7 +269,10 @@
                         break;
                 }
 
+                this.exportObj = obj;
+
                 this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider);
+
                 this.counter = 0;
 
                 return this.loadMore();
@@ -273,15 +288,6 @@
 	    },
 
 	    loadMore: function(){
-	    	function prepareElement(el){
-	    		for(var f in el){
-	    		    if(el[f] instanceof Date){
-	    		        el[f] = el[f].toLocaleString();
-	    		    }
-	    		}
-	    		return el;
-	    	}
-
             try{
                 var res = [],
                     max = this.counter + 20,
@@ -296,7 +302,6 @@
                     }
 
                     this.counter++;
-                    //res.push(prepareElement(el));
                     res.push(el);
                 }
                 return {
@@ -310,6 +315,50 @@
                 return {
                     result: null,
                     allLoaded: true,
+                    error: e
+                }
+            }
+	    },
+
+	    loadExportData: function(){
+	        function createArrEl(el){
+                var e = [];
+
+                for(var i in el){
+                    e.push(el[i]);
+                }
+
+                return e;
+	        }
+
+            try{
+                var it = this.exportObj.cube.executeQuery(this.exportObj.query, this.exportObj.queryParams, this.exportObj.provider);
+
+                var res = [];
+
+                var el = it.next();
+                res.push(Object.keys(el));
+                res.push(createArrEl(el));
+
+                while(true){
+                    var el = it.next();
+
+                    if(!el) {
+                        break;
+                    }
+
+                    res.push(createArrEl(el));
+                }
+
+                return {
+                    result: res,
+                    error: null
+                };
+            } catch(e){
+                JSB().getLogger().error(e);
+
+                return {
+                    result: null,
                     error: e
                 }
             }

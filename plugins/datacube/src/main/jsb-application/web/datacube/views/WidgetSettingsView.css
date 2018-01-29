@@ -6,7 +6,6 @@
     background: -o-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
     background: -ms-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
     background: linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
-    padding: 5px;
 }
 
 .widgetSettingsView * {
@@ -16,6 +15,7 @@
 .widgetSettingsView .titleBlock {
     width: 100%;
     height: 35px;
+    padding: 5px;
     border-bottom: 1px solid lightgray;
 }
 
@@ -40,18 +40,15 @@
 .widgetSettingsView .titleBlock ._dwp_button {
     float: right;
     color: #fff;
-    height: 30px;
     border-radius: 3px;
     padding: 3px 12px;
     font-size: 14px;
     font-weight: 400;
     vertical-align: middle;
-    line-height: 22px;
     margin-left: 5px;
 }
 
 .widgetSettingsView .titleBlock ._dwp_primitiveEditor {
-    margin-top: 2.5px;
     width: 400px;
     max-width: calc(100% - 270px);
 }
@@ -81,24 +78,27 @@
     display: none;
 }
 
+.widgetSettingsView > ._dwp_splitbox {
+	height: calc(100% - 35px);
+}
+
+.widgetSettingsView > ._dwp_splitbox > ._dwp_splitPane {
+	padding: 2px;
+}
+
 .widgetSettingsView .schemeBlock,
 .widgetSettingsView .widgetBlock {
-    height: calc(100% - 35px);
-    display: inline-block;
-    vertical-align: top;
+	width: 100%;
+    height: 100%;
 }
 
 .widgetSettingsView .schemeBlock {
-    width: 50%;
-    padding-right: 15px;
+    padding: 3px;
 }
 
 .widgetSettingsView .widgetBlock {
-    width: 50%;
 	box-sizing: border-box;
-    border: 1px solid lightgray;
-    border-top: none;
-    padding: 2px;
+    padding: 3px;
 }
 
 .widgetSettingsView .savedMessage {

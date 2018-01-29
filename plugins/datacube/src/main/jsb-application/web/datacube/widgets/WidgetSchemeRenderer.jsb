@@ -844,8 +844,7 @@
 					         class="caption"
 					         onchange="{{=this.callbackAttr(function(checked){ $this.values.used = checked; $this.updateUsedVisibility(); if($this.options.onChange) $this.options.onChange.call($this); })}}"
 					         label="{{=$this.scheme.name}}"
-					         checked="{{=$this.values.used}}">
-                        </div>`);
+					         checked="{{=$this.values.used}}"></div>`);
 
 					if(!JSB.isDefined(this.values.used) && this.scheme.optional == 'checked'){
 						JSB.deferUntil(function(){

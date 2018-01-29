@@ -13,6 +13,12 @@
 		ready: false,
 		initCallbacks: [],
 		contextFilter: {},
+		filterLayers: {
+			main: true,
+			back: false,
+			hover: false
+		},
+		rowKeyColumns: [],
 
 		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export'],
 		
@@ -326,6 +332,28 @@
 					}
 
 					JSB.merge(item.fetchOpts, opts);
+					item.fetchOpts.layers = {};
+
+					// construct back filter
+					if($this.filterLayers.back){
+						var backQuery = {};
+						if(Object.keys($this.contextFilter).length > 0){
+							backQuery.$postFilter = $this.contextFilter;
+						}
+						if(opts.select){
+							backQuery.$select = opts.select;
+						}
+						if(opts.groupBy){
+							backQuery.$groupBy = opts.groupBy;
+						}
+						if($this.sort){
+							backQuery.$sort = [$this.sort];
+						}
+						item.fetchOpts.layers.back = backQuery;
+					}
+					
+					// construct main layer
+					var mainQuery = {};
 					if($this.getWrapper()){
 						var filterDesc = null;
 						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
@@ -334,21 +362,37 @@
 							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
 						}
 						if(filterDesc){
-							item.fetchOpts.filter = filterDesc.filter;
-							item.fetchOpts.postFilter = filterDesc.postFilter;
-						} else {
-							item.fetchOpts.filter = null;
-							item.fetchOpts.postFilter = null;
+							if(filterDesc.filter){
+								mainQuery.$cubeFilter = filterDesc.filter;
+							}
+							if(filterDesc.postFilter){
+								mainQuery.$postFilter = filterDesc.postFilter;
+							}
 						}
 					}
-					item.fetchOpts.sort = $this.sort;
 					if(Object.keys($this.contextFilter).length > 0){
-						item.fetchOpts.contextFilter = $this.contextFilter;
-					} else {
-						item.fetchOpts.contextFilter = null;
+						if(mainQuery.$postFilter){
+							mainQuery.$postFilter = {'$and':[mainQuery.$postFilter, $this.contextFilter]};
+						} else {
+							mainQuery.$postFilter = $this.contextFilter;
+						}
 					}
-					item.fetchOpts.context = this.ctxName;
+					if(opts.select){
+						mainQuery.$select = opts.select;
+					}
+					if(opts.groupBy){
+						mainQuery.$groupBy = opts.groupBy;
+					}
+					if($this.sort){
+						mainQuery.$sort = [$this.sort];
+					}
+					item.fetchOpts.layers.main = mainQuery;
+					
+					// TODO: construct hover filter
 
+					
+					item.fetchOpts.context = this.ctxName;
+					item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
 					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
 						if(fail && fail.message == 'Fetch broke'){
 							return;
@@ -480,8 +524,14 @@
 					return item.cursor;
 				},
 				
-				values: function(){
+				values: function(layer){
+					layer = layer || 'main';
 					function resolveValue(itemType, valueDesc){
+						if(valueDesc.binding){
+							if(JSB.isObject(valueDesc.value)){
+								return valueDesc.value[layer];
+							}
+						}
 					    return valueDesc.value;
 					    /*
                         switch(itemType){
@@ -526,9 +576,13 @@
 					return vals;
 				},
 				
-				value: function(){
+				value: function(layer){
+					layer = layer || 'main';
 					function resolveValue(item){
 					    if(item.values[0].binding){
+					    	if(JSB.isObject(item.values[0].value)){
+								return item.values[0].value[layer];
+							}
 					        return item.values[0].value;
 					    }
 
@@ -603,9 +657,14 @@
 			for(var i = 0; i < dataObj.data.length; i++){
 				var cItem = dataObj.data[i];
 				var item = {};
-				for(var fIdx in cItem){
-					var fName = dataObj.dict[parseInt(fIdx)];
-					item[fName] = cItem[fIdx];
+				for(var lIdx in cItem){
+					var lItem = cItem[lIdx];
+					var layer = dataObj.layers[parseInt(lIdx)];
+					for(var fIdx in lItem){
+						var fName = dataObj.dict[parseInt(fIdx)];
+						item[fName] = item[fName] || {};
+						item[fName][layer] = lItem[fIdx];
+					}
 				}
 				data.push(item);
 			}
@@ -799,6 +858,21 @@
                 callback.call(this, results);
             });
 		},
+		
+		setFilterLayer: function(layerOpts){
+			if(JSB.isDefined(layerOpts.main) && !layerOpts.main){
+				throw new Error('Main filter layer cannot be disabled');
+			}
+			JSB.merge(this.filterLayers, layerOpts);
+		},
+		
+		setKeyColumns: function(rowKeyCols){
+			if(JSB.isArray(rowKeyCols)){
+				this.rowKeyColumns = JSB.clone(rowKeyCols);	
+			} else {
+				this.rowKeyColumns = [JSB.clone(rowKeyCols)];
+			}
+		},
 
 		exportData: function(format){
             switch(format){
@@ -815,11 +889,15 @@
 	},
 	
 	$server: {
-		$require: 'DataCube.Widgets.WidgetExplorer',
+		$require: ['DataCube.Widgets.WidgetExplorer', 'JSB.Crypt.MD5'],
 
 		iterators: {},
 		needBreak: false,
 		completed: {},
+		buffers: {},
+		layerDataMap: {},
+		dataMap: {},
+		cursor: {},
 		
 		destroy: function(){
 			if(!this.isDestroyed()){
@@ -834,97 +912,117 @@
 				}
 				this.iterators = {};
 				this.completed = {};
+				this.buffers = {};
+				this.layerDataMap = {};
+				this.dataMap = {};
+				this.cursor = {};
 				$base();
 			}
-		},
-		
-		compressData: function(data){
-			var encoded = {
-				data: [],
-				dict: []
-			};
-			
-			var encMap = {};
-			var cIdx = 0;
-			for(var i = 0; i < data.length; i++){
-				var item = data[i];
-				var cItem = {};
-				for(var fName in item){
-					if(!encMap[fName]){
-						// generate encoded field name
-						var cIdx = encoded.dict.length;
-						encoded.dict.push(fName);
-						encMap[fName] = '' + cIdx;
-					}
-					cItem[encMap[fName]] = item[fName];
-				}
-				encoded.data.push(cItem);
-			}
-			
-			return encoded;
 		},
 		
 		fetch: function(sourceId, dashboard, opts){
 			var batchSize = opts.batchSize || 50;
 			var source = dashboard.workspace.entry(sourceId);
 			var data = [];
-			var context = 'main';
 			if(opts.reset){
 				this.needBreak = true;
 			}
+			
+			var context = 'main';
 			if(opts.context){
 				context = opts.context;
 			}
-			var iteratorId = 'it_' + context + '_' + sourceId;
+
 			JSB.getLocker().lock('fetch_' + $this.getId());
 			this.needBreak = false;
-			try {
-				if(opts.reset && ($this.iterators[iteratorId] || $this.completed[iteratorId])){
-					if($this.iterators[iteratorId]){
-						try {
-							$this.iterators[iteratorId].close();
-						}catch(e){}
-						delete $this.iterators[iteratorId];
+			
+			function clearLayerIterators(layerName){
+				var iteratorId = 'it_' + context + '_' + layerName + '_' + sourceId;
+				if($this.iterators[iteratorId]){
+					try {
+						$this.iterators[iteratorId].close();
+					}catch(e){}
+					delete $this.iterators[iteratorId];
+				}
+				if($this.completed[iteratorId]){
+					delete $this.completed[iteratorId];
+				}
+			}
+			
+			// generate cursor
+			if(opts.reset || !this.cursor[context]){
+				this.cursor[context] = {
+					position: 0,
+					layer: 0,
+					layers: ['main']
+				};
+				
+				if(opts.rowKeyColumns && opts.rowKeyColumns.length > 0){
+					if(opts.layers.back){
+						this.cursor[context].layers.push('back');
 					}
-					if($this.completed[iteratorId]){
-						delete $this.completed[iteratorId];
+					if(opts.layers.hover){
+						this.cursor[context].layers.push('hover');
 					}
 				}
+				$this.dataMap[context] = {}
+				clearLayerIterators('main');
+				clearLayerIterators('back');
+				clearLayerIterators('hover');
+			}
+
+			var contextBuffers = $this.buffers[context];
+			if(!contextBuffers || opts.reset){
+				contextBuffers = $this.buffers[context] = {};
+			}
+			var contextLayerDataMap = $this.layerDataMap[context];
+			if(!contextLayerDataMap || opts.reset){
+				contextLayerDataMap = $this.layerDataMap[context] = {};
+			}
+			
+			function buildId(el){
+				var id = '';
+				if(!opts.rowKeyColumns || opts.rowKeyColumns.length == 0){
+					return JSB.generateUid();
+				}
+				for(var i = 0; i < opts.rowKeyColumns.length; i++){
+					var qColName = opts.rowKeyColumns[i];
+					var colParts = qColName.split(/[\.\/]/);
+					var curScope = el;
+					for(var j = 0; j < colParts.length; j++){
+						curScope = curScope[colParts[j]];
+					}
+					if(JSB.isObject(curScope) || JSB.isArray(curScope) || JSB.isNull(curScope)){
+						curScope = JSON.stringify(curScope);
+					}
+					id += MD5.md5('' + curScope);
+				}
+				return id;
+			}
+			
+			
+			function fillLayerBuffer(layerName){
+				if(!contextBuffers[layerName]){
+					contextBuffers[layerName] = [];
+				}
+				if(!contextLayerDataMap[layerName]){
+					contextLayerDataMap[layerName] = {};
+				}
+				var iteratorId = 'it_' + context + '_' + layerName + '_' + sourceId;
+				
 				if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
 					// figure out data provider
 					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-						var extQuery = {};
-						if(opts.filter){
-							extQuery.$cubeFilter = opts.filter;
-						}
-						if(opts.postFilter){
-							extQuery.$postFilter = opts.postFilter;
-						}
-						if(opts.contextFilter){
-							if(extQuery.$postFilter && Object.keys(extQuery.$postFilter).length > 0){
-								extQuery.$postFilter = {'$and':[extQuery.$postFilter, opts.contextFilter]};
-							} else {
-								extQuery.$postFilter = opts.contextFilter;
-							}
-						}
-						if(opts.sort){
-							extQuery.$sort = [opts.sort];
-						}
-						if(opts.select){
-	                        extQuery.$select = opts.select;
-	                    }
-	                    if(opts.groupBy){
-	                        extQuery.$groupBy = opts.groupBy;
-	                    }
+						var extQuery = opts.layers[layerName];
                     	$this.iterators[iteratorId] = source.executeQuery(extQuery, true);
 						$this.completed[iteratorId] = false;
 					} else {
 						// TODO
 					}
 				}
-			
-				for(var i = 0; i < batchSize || opts.readAll; i++){
-					if(this.needBreak){
+				var i = 0;
+				for(; i < batchSize || opts.readAll; i++){
+					if($this.needBreak){
 						throw new Error('Fetch broke');
 					}
 					if($this.completed[iteratorId]){
@@ -946,13 +1044,138 @@
 						$this.completed[iteratorId] = true;
 						break;
 					}
+					var item = {id: buildId(el), data:el};
+					contextBuffers[layerName].push(item);
+					contextLayerDataMap[layerName][item.id] = el;
+				}
+				
+				return i;
+			}
+			
+			function findLayerRecord(layerName, rId){
+				while(true){
+					if(contextLayerDataMap[layerName] && JSB.isDefined(contextLayerDataMap[layerName][rId])){
+						return contextLayerDataMap[layerName][rId];
+					}
+					if(!fillLayerBuffer(layerName)){
+						return null;
+					}
+				}
+			}
+			
+			function nextData(){
+				var cursor = $this.cursor[context];
+				if(cursor.layer >= cursor.layers.length){
+					return null;
+				}
+				var layerName = cursor.layers[cursor.layer];
+				var item = null;
+
+				while(true){
+					while(!contextBuffers[layerName] || contextBuffers[layerName].length <= cursor.position){
+						fillLayerBuffer(layerName);
+						if(contextBuffers[layerName].length <= cursor.position){
+							// reaches end of buffer
+							cursor.position = 0;
+							cursor.layer++;
+							if(cursor.layer >= cursor.layers.length){
+								return null;
+							}
+							layerName = cursor.layers[cursor.layer]
+							continue;
+						}
+						break;
+					}
+					
+					item = contextBuffers[layerName][cursor.position++];
+					if(!$this.dataMap[context][item.id]){
+						break;
+					}
+				}
+				
+				$this.dataMap[context][item.id] = true;
+				// prepare element
+				var el = {};
+				el[layerName] = {};
+				for(var f in item.data){
+					el[layerName][f] = item.data[f];
+				}
+				
+				// append right layers
+				for(var i = cursor.layer + 1; i < cursor.layers.length; i++){
+					var rightLayer = cursor.layers[i];
+					var rVal = findLayerRecord(rightLayer, item.id);
+					if(!rVal){
+						continue;
+					}
+					// write values
+					el[rightLayer] = {};
+					for(var f in rVal){
+						el[rightLayer][f] = rVal[f];
+					}
+				}
+				
+				return el;
+			}
+			
+			try {
+				for(var i = 0; i < batchSize || opts.readAll; i++){
+					if($this.needBreak){
+						throw new Error('Fetch broke');
+					}
+					var el = nextData();
+					if(!el){
+						break;
+					}
 					data.push(el);
+				}
+				
+			
+				// compress data
+				var encoded = {
+					layers: [],
+					data: [],
+					dict: []
+				};
+				
+				var encMap = {};
+				var lMap = {};
+				var cIdx = 0;
+				for(var i = 0; i < data.length; i++){
+					var item = data[i];
+					var cItem = {};
+					for(var l in item){
+						var lItem = item[l];
+						if(!lMap[l]){
+							var lIdx = encoded.layers.length;
+							encoded.layers.push(l);
+							lMap[l] = '' + lIdx;
+						}
+						var pItem = cItem[lMap[l]] = {};
+						for(var fName in lItem){
+							if(!encMap[fName]){
+								// generate encoded field name
+								var cIdx = encoded.dict.length;
+								encoded.dict.push(fName);
+								encMap[fName] = '' + cIdx;
+							}
+							pItem[encMap[fName]] = lItem[fName];
+						}
+					}
+					encoded.data.push(cItem);
+				}
+				if($this.needBreak){
+					throw new Error('Fetch broke');
 				}
 			} finally {
 				JSB.getLocker().unlock('fetch_' + $this.getId());
 			}
-			
-			return this.compressData(data);
+
+/*			
+			Log.debug(JSON.stringify(data));
+			Log.debug(JSON.stringify(encoded));
+*/			
+			return encoded;
 		}
 	}
 }

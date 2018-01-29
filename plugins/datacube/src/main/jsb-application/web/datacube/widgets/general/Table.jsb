@@ -5,6 +5,7 @@
 		name: 'Таблица',
 		description: '',
 		category: 'Основные',
+		icon: `data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+DQo8c3ZnDQogICB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iDQogICB4bWxuczpjYz0iaHR0cDovL2NyZWF0aXZlY29tbW9ucy5vcmcvbnMjIg0KICAgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIg0KICAgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyINCiAgIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyINCiAgIHhtbG5zOnNvZGlwb2RpPSJodHRwOi8vc29kaXBvZGkuc291cmNlZm9yZ2UubmV0L0RURC9zb2RpcG9kaS0wLmR0ZCINCiAgIHhtbG5zOmlua3NjYXBlPSJodHRwOi8vd3d3Lmlua3NjYXBlLm9yZy9uYW1lc3BhY2VzL2lua3NjYXBlIg0KICAgdmlld0JveD0iMCAwIDIwIDIwIg0KICAgaWQ9InN2ZzIiDQogICB2ZXJzaW9uPSIxLjEiDQogICBpbmtzY2FwZTp2ZXJzaW9uPSIwLjkxIHIxMzcyNSINCiAgIHNvZGlwb2RpOmRvY25hbWU9InRhYmxlX2ljb24uc3ZnIg0KICAgd2lkdGg9IjIwIg0KICAgaGVpZ2h0PSIyMCINCiAgIHN0eWxlPSJjbGlwLXJ1bGU6ZXZlbm9kZDtmaWxsLXJ1bGU6ZXZlbm9kZDtpbWFnZS1yZW5kZXJpbmc6b3B0aW1pemVRdWFsaXR5O3NoYXBlLXJlbmRlcmluZzpnZW9tZXRyaWNQcmVjaXNpb247dGV4dC1yZW5kZXJpbmc6Z2VvbWV0cmljUHJlY2lzaW9uIj4NCiAgPG1ldGFkYXRhDQogICAgIGlkPSJtZXRhZGF0YTM2Ij4NCiAgICA8cmRmOlJERj4NCiAgICAgIDxjYzpXb3JrDQogICAgICAgICByZGY6YWJvdXQ9IiI+DQogICAgICAgIDxkYzpmb3JtYXQ+aW1hZ2Uvc3ZnK3htbDwvZGM6Zm9ybWF0Pg0KICAgICAgICA8ZGM6dHlwZQ0KICAgICAgICAgICByZGY6cmVzb3VyY2U9Imh0dHA6Ly9wdXJsLm9yZy9kYy9kY21pdHlwZS9TdGlsbEltYWdlIiAvPg0KICAgICAgICA8ZGM6dGl0bGU+PC9kYzp0aXRsZT4NCiAgICAgIDwvY2M6V29yaz4NCiAgICA8L3JkZjpSREY+DQogIDwvbWV0YWRhdGE+DQogIDxzb2RpcG9kaTpuYW1lZHZpZXcNCiAgICAgcGFnZWNvbG9yPSIjZmZmZmZmIg0KICAgICBib3JkZXJjb2xvcj0iIzY2NjY2NiINCiAgICAgYm9yZGVyb3BhY2l0eT0iMSINCiAgICAgb2JqZWN0dG9sZXJhbmNlPSIxMCINCiAgICAgZ3JpZHRvbGVyYW5jZT0iMTAiDQogICAgIGd1aWRldG9sZXJhbmNlPSIxMCINCiAgICAgaW5rc2NhcGU6cGFnZW9wYWNpdHk9IjAiDQogICAgIGlua3NjYXBlOnBhZ2VzaGFkb3c9IjIiDQogICAgIGlua3NjYXBlOndpbmRvdy13aWR0aD0iMTkyMCINCiAgICAgaW5rc2NhcGU6d2luZG93LWhlaWdodD0iMTE3OCINCiAgICAgaWQ9Im5hbWVkdmlldzM0Ig0KICAgICBzaG93Z3JpZD0iZmFsc2UiDQogICAgIHNob3dndWlkZXM9InRydWUiDQogICAgIGlua3NjYXBlOmd1aWRlLWJib3g9InRydWUiDQogICAgIGlua3NjYXBlOnpvb209IjYwLjQxNiINCiAgICAgaW5rc2NhcGU6Y3g9IjQuOTIzMTA0OCINCiAgICAgaW5rc2NhcGU6Y3k9IjExLjA5NjYzMiINCiAgICAgaW5rc2NhcGU6d2luZG93LXg9IjE5MTIiDQogICAgIGlua3NjYXBlOndpbmRvdy15PSItOCINCiAgICAgaW5rc2NhcGU6d2luZG93LW1heGltaXplZD0iMSINCiAgICAgaW5rc2NhcGU6Y3VycmVudC1sYXllcj0ic3ZnMiI+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjAsMy4xMzY2NjI4Ig0KICAgICAgIG9yaWVudGF0aW9uPSIxLDAiDQogICAgICAgaWQ9Imd1aWRlNDE2NCIgLz4NCiAgICA8c29kaXBvZGk6Z3VpZGUNCiAgICAgICBwb3NpdGlvbj0iMC45ODMxMzMxMSwtMi42Njg1MDQxIg0KICAgICAgIG9yaWVudGF0aW9uPSIxLDAiDQogICAgICAgaWQ9Imd1aWRlNDE2NiIgLz4NCiAgICA8c29kaXBvZGk6Z3VpZGUNCiAgICAgICBwb3NpdGlvbj0iMTkuMDA3MjQsOC43MDc3NTA0Ig0KICAgICAgIG9yaWVudGF0aW9uPSIxLDAiDQogICAgICAgaWQ9Imd1aWRlNDE2OCIgLz4NCiAgICA8c29kaXBvZGk6Z3VpZGUNCiAgICAgICBwb3NpdGlvbj0iNS4wMTUyMjc4LDE1LjAxMjU4Ig0KICAgICAgIG9yaWVudGF0aW9uPSIwLDEiDQogICAgICAgaWQ9Imd1aWRlNDE4MCIgLz4NCiAgICA8c29kaXBvZGk6Z3VpZGUNCiAgICAgICBwb3NpdGlvbj0iMTMuMjQ4ODg5LDEzLjk5Nzk0MyINCiAgICAgICBvcmllbnRhdGlvbj0iMCwxIg0KICAgICAgIGlkPSJndWlkZTQxODIiIC8+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjEyLjY0MDI4MywxMy4wMTQ4MSINCiAgICAgICBvcmllbnRhdGlvbj0iMCwxIg0KICAgICAgIGlkPSJndWlkZTQxODQiIC8+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjEzLjc2Mzg2MywxMi4wMzE2NzciDQogICAgICAgb3JpZW50YXRpb249IjAsMSINCiAgICAgICBpZD0iZ3VpZGU0MTg2IiAvPg0KICAgIDxzb2RpcG9kaTpndWlkZQ0KICAgICAgIHBvc2l0aW9uPSIxMy4wNjE2MjYsMTEuMDAxNzI4Ig0KICAgICAgIG9yaWVudGF0aW9uPSIwLDEiDQogICAgICAgaWQ9Imd1aWRlNDE4OCIgLz4NCiAgICA8c29kaXBvZGk6Z3VpZGUNCiAgICAgICBwb3NpdGlvbj0iMi45OTU4OTUxLDguMDI3Njc0OCINCiAgICAgICBvcmllbnRhdGlvbj0iMSwwIg0KICAgICAgIGlkPSJndWlkZTQxOTAiIC8+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjcuMDAxNDU2NiwxNS42MjUiDQogICAgICAgb3JpZW50YXRpb249IjEsMCINCiAgICAgICBpZD0iZ3VpZGU0MTkyIiAvPg0KICAgIDxzb2RpcG9kaTpndWlkZQ0KICAgICAgIHBvc2l0aW9uPSIxNi45OTg4MDgsNC4xMDQ4NzI5Ig0KICAgICAgIG9yaWVudGF0aW9uPSIxLDAiDQogICAgICAgaWQ9Imd1aWRlNDE5NCIgLz4NCiAgICA8c29kaXBvZGk6Z3VpZGUNCiAgICAgICBwb3NpdGlvbj0iNS4wMTUyMjc4LDExLjc2ODQwNiINCiAgICAgICBvcmllbnRhdGlvbj0iMSwwIg0KICAgICAgIGlkPSJndWlkZTQxOTYiIC8+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjguNDkxMTI4Miw5LjAwNDIzNzMiDQogICAgICAgb3JpZW50YXRpb249IjAsMSINCiAgICAgICBpZD0iZ3VpZGU0MTk4IiAvPg0KICAgIDxzb2RpcG9kaTpndWlkZQ0KICAgICAgIHBvc2l0aW9uPSI3LjI2NjI4NzEsNi45ODQ5MDQ3Ig0KICAgICAgIG9yaWVudGF0aW9uPSIwLDEiDQogICAgICAgaWQ9Imd1aWRlNDIwMCIgLz4NCiAgICA8c29kaXBvZGk6Z3VpZGUNCiAgICAgICBwb3NpdGlvbj0iOC4xMjY5ODYzLDQuOTk4Njc1OSINCiAgICAgICBvcmllbnRhdGlvbj0iMCwxIg0KICAgICAgIGlkPSJndWlkZTQyMDIiIC8+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjguNTI0MjMyLDIuOTk1ODk1MSINCiAgICAgICBvcmllbnRhdGlvbj0iMCwxIg0KICAgICAgIGlkPSJndWlkZTQyMDQiIC8+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjkuMzY4Mzc5MywxNy4wMTUzNiINCiAgICAgICBvcmllbnRhdGlvbj0iMCwxIg0KICAgICAgIGlkPSJndWlkZTQyMDYiIC8+DQogICAgPHNvZGlwb2RpOmd1aWRlDQogICAgICAgcG9zaXRpb249IjkuNTE3MzQ2NCwxLjAwOTY2NjMiDQogICAgICAgb3JpZW50YXRpb249IjAsMSINCiAgICAgICBpZD0iZ3VpZGU0MjA4IiAvPg0KICA8L3NvZGlwb2RpOm5hbWVkdmlldz4NCiAgPGRlZnMNCiAgICAgaWQ9ImRlZnM0Ij4NCiAgICA8aW5rc2NhcGU6cGF0aC1lZmZlY3QNCiAgICAgICBlZmZlY3Q9ImJlbmRfcGF0aCINCiAgICAgICBpZD0icGF0aC1lZmZlY3Q0MjExIg0KICAgICAgIGlzX3Zpc2libGU9InRydWUiDQogICAgICAgYmVuZHBhdGg9Im0gMy4wMDIxNTM0LDcuMDA3MDI4NyAyLjAyNjUxMjksMCINCiAgICAgICBwcm9wX3NjYWxlPSIxLjE2Ig0KICAgICAgIHNjYWxlX3lfcmVsPSJmYWxzZSINCiAgICAgICB2ZXJ0aWNhbD0iZmFsc2UiIC8+DQogICAgPHN0eWxlDQogICAgICAgdHlwZT0idGV4dC9jc3MiDQogICAgICAgaWQ9InN0eWxlNiI+PCFbQ0RBVEFbDQogICAgLnN0cjAge3N0cm9rZTojNDM0MjQyO3N0cm9rZS13aWR0aDoxMH0NCiAgICAuZmlsMiB7ZmlsbDojNDM0MjQyfQ0KICAgIC5maWwxIHtmaWxsOiNGRkZGRkZ9DQogICAgLmZpbDAge2ZpbGw6dXJsKCNpZDApfQ0KICAgXV0+PC9zdHlsZT4NCiAgICA8bGluZWFyR3JhZGllbnQNCiAgICAgICBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSINCiAgICAgICBpZD0iaWQwIg0KICAgICAgIHgxPSI0NDkuOTk3OTkiDQogICAgICAgeDI9IjUwIg0KICAgICAgIHkxPSIyNTAiDQogICAgICAgeTI9IjI1MCINCiAgICAgICBncmFkaWVudFRyYW5zZm9ybT0ibWF0cml4KDAuMDQ4NzkxNiwwLDAsMC4wNDY0Nzk0MywtMi4xOTE0OTM4LC0xLjYwMDM4MDUpIj4NCiAgICAgIDxzdG9wDQogICAgICAgICBvZmZzZXQ9IjAiDQogICAgICAgICBzdG9wLWNvbG9yPSIjMDA4QkZGIg0KICAgICAgICAgaWQ9InN0b3A5IiAvPg0KICAgICAgPHN0b3ANCiAgICAgICAgIG9mZnNldD0iMSINCiAgICAgICAgIHN0b3AtY29sb3I9IiMwYWYiDQogICAgICAgICBpZD0ic3RvcDExIiAvPg0KICAgIDwvbGluZWFyR3JhZGllbnQ+DQogIDwvZGVmcz4NCiAgPHJlY3QNCiAgICAgc3R5bGU9ImZpbGw6dXJsKCNpZDApO3N0cm9rZTojNDM0MjQyO3N0cm9rZS13aWR0aDowLjQ3NjIxNDg2Ig0KICAgICBpZD0icmVjdDE0Ig0KICAgICB5PSIwLjI1ODc5NjY5Ig0KICAgICB4PSIwLjI0ODA4NjIiDQogICAgIHdpZHRoPSIxOS41MTY2NCINCiAgICAgcnk9IjAuOTI5NTg4NjIiDQogICAgIHJ4PSIwLjk3NTgzMTk5Ig0KICAgICBoZWlnaHQ9IjE5LjUyMTM2Ig0KICAgICBjbGFzcz0iZmlsMCBzdHIwIiAvPg0KICA8cGF0aA0KICAgICBzdHlsZT0iZmlsbDojZmZmZmZmO3N0cm9rZTojNDM0MjQyO3N0cm9rZS13aWR0aDowLjQ3NTQ3NjIxIg0KICAgICBpbmtzY2FwZTpjb25uZWN0b3ItY3VydmF0dXJlPSIwIg0KICAgICBpZD0icGF0aDE2Ig0KICAgICBkPSJtIDEuNzExNDg1NCwzLjIyOTkzNDcgMTYuNTg5ODQxNiwwIGMgMC4yOTI3NjIsMCAwLjQ4NzkzNiwwLjIzMTY2NyAwLjQ4NzkzNiwwLjQ2MzMzNDEgbCAwLDE0LjU5NTAyMzIgYyAwLDAuMjMxNjY4IC0wLjE5NTE3NCwwLjQ2MzMzNSAtMC40ODc5MzYsMC40NjMzMzUgbCAtMTYuNTg5ODQxNiwwIGMgLTAuMjkyNzYxOSwwIC0wLjQ4NzkzNjUsLTAuMTg1MzM0IC0wLjQ4NzkzNjUsLTAuNDYzMzM1IGwgMCwtMTQuNTk1MDIzMiBjIDAsLTAuMjMxNjY3MSAwLjE5NTE3NDYsLTAuNDYzMzM0MSAwLjQ4NzkzNjUsLTAuNDYzMzM0MSB6Ig0KICAgICBjbGFzcz0iZmlsMSBzdHIwIiAvPg0KICA8cGF0aA0KICAgICBzdHlsZT0iZmlsbDojNDM0MjQyIg0KICAgICBkPSJtIDMuMDAyMTUzNCw2LjAwNTUzNDIgMi4wMjY1MTI5LDAgMCwyLjAwMjk4OSAtMi4wMjY1MTI5LDAgeiINCiAgICAgaWQ9InJlY3QxOCIgLz4NCiAgPHJlY3QNCiAgICAgc3R5bGU9ImZpbGw6IzQzNDI0MiINCiAgICAgaWQ9InJlY3QyMCINCiAgICAgeT0iNi4wMTEyMTM4Ig0KICAgICB4PSI3LjAwNTUyMjciDQogICAgIHdpZHRoPSIxMC4wMDUwODkiDQogICAgIGhlaWdodD0iMS45OTAyNTE1Ig0KICAgICBjbGFzcz0iZmlsMiIgLz4NCiAgPHJlY3QNCiAgICAgc3R5bGU9ImZpbGw6IzQzNDI0MiINCiAgICAgaWQ9InJlY3QyMiINCiAgICAgeT0iOS45OTQ0MzkxIg0KICAgICB4PSIzLjAwMjE1MzYiDQogICAgIHdpZHRoPSIyLjAwOTk2MDkiDQogICAgIGhlaWdodD0iMi4wMDY4MDM1Ig0KICAgICBjbGFzcz0iZmlsMiIgLz4NCiAgPHJlY3QNCiAgICAgc3R5bGU9ImZpbGw6IzQzNDI0MiINCiAgICAgaWQ9InJlY3QyNCINCiAgICAgeT0iOS45OTQ0MzgyIg0KICAgICB4PSI3LjAwNTUyMjciDQogICAgIHdpZHRoPSIxMC4wMDUwODkiDQogICAgIGhlaWdodD0iMi4wMDY4MDM1Ig0KICAgICBjbGFzcz0iZmlsMiIgLz4NCiAgPHJlY3QNCiAgICAgc3R5bGU9ImZpbGw6IzQzNDI0MiINCiAgICAgaWQ9InJlY3QyNiINCiAgICAgeT0iMTQuMDI3Mjc5Ig0KICAgICB4PSIzLjAwMjE1MjQiDQogICAgIHdpZHRoPSIyLjAwOTk2MDkiDQogICAgIGhlaWdodD0iMS45ODE5NzU3Ig0KICAgICBjbGFzcz0iZmlsMiIgLz4NCiAgPHJlY3QNCiAgICAgc3R5bGU9ImZpbGw6IzQzNDI0MiINCiAgICAgaWQ9InJlY3QyOCINCiAgICAgeT0iMTQuMDI3Mjc5Ig0KICAgICB4PSI3LjAwNTUyMjciDQogICAgIHdpZHRoPSIxMC4wMDUwODkiDQogICAgIGhlaWdodD0iMS45NzM2OTk3Ig0KICAgICBjbGFzcz0iZmlsMiIgLz4NCjwvc3ZnPg0K`,
 		thumb: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABACAYAAADs39J0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
 		bWFnZVJlYWR5ccllPAAAHE1JREFUeNqkXemTJEd1f1lV3XPuKViMF5DQgSS0QrsSBAaCMA6CIIgw
 		Dkf4m/2v2RF2OMJhvhF8MB8AQRiMZWFu0IK0s6u9Z2bnnunpo6ry+b2XR2VWZfW0cCt6p7vryKx3
@@ -172,6 +173,18 @@
 					multiple: true,
 					key: 'rowFilter',
 					binding: 'field',
+					editor: 'none'
+				},{
+					type: 'item',
+					key: 'preserveFilteredRows',
+					name: 'Не скрывать отфильтрованные строки',
+					optional: true,
+					editor: 'none'
+				},{
+					type: 'item',
+					key: 'hoverFilteredRows',
+					name: 'Обновлять данные при наведении мышкой',
+					optional: true,
 					editor: 'none'
 				},{
 					name: 'Отображать первый столбец в виде дерева',
@@ -446,6 +459,9 @@
 			this.loadCss('Table.css');
 			Numeral.setLocale('ru');
 			
+			this.messageBox = this.$('<div class="message hidden"></div>');
+			this.append(this.messageBox);
+			
 			this.header = this.$('<table class="header" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr></tr></thead></table>');
 			this.append(this.header);
 			
@@ -591,7 +607,7 @@
 								var WidgetCls = $this.colDesc[j].widget.cls;
 								if(WidgetCls){
 									var widget = new WidgetCls();
-									widget.setWrapper($this.getWrapper(),  row[j].value);
+									widget.setWrapper($this.getWrapper(), row[j].value);
 									widget.refresh();
 									if(!$this.widgetMap[key]){
 										$this.widgetMap[key] = {};
@@ -616,6 +632,9 @@
 				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
 				rowsSelData.each(function(d){
 					d3.select(this)
+						.classed('main', !!d.flags.main)
+						.classed('back', !!d.flags.back)
+						.classed('hover', !!d.flags.hover)
 						.classed('rowFilter', d.filter && d.filter.length > 0)
 						.attr('pos', function(d){return d.position;})
 						.on('click',function(d){
@@ -659,16 +678,33 @@
 							cellEl.attr('widget', widget.getId());
 						}
 					} else {
-						var val = d.value;
-						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-							val = Numeral.format(val, $this.colDesc[d.colIdx].format)
+						var val = null;
+						var mainVal = d.value.main;
+						var backVal = d.value.back;
+						var hoverVal = d.value.hover;
+						
+						if(JSB.isDefined(mainVal)){
+							val = mainVal;
+						} else if(JSB.isDefined(backVal)){
+							if(JSB.isNumber(backVal)){
+								val = 0;
+							} else {
+								val = backVal;
+							}
 						}
-						cellEl.text(val);
-						cellEl.attr('title', d.value);
+						
+						var fVal = val;
+						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
+							fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+						}
+						cellEl.text(fVal);
+						cellEl.attr('title', val);
 						
 						if(cellEl.attr('widget')){
 							cellEl.removeAttr('widget');
 						}
+						
+						// destroy previously created widget
 						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
 							var widget = $this.widgetMap[d.rowKey][d.column];
 							widget.destroy();
@@ -716,13 +752,28 @@
 									cellEl.append(widget.getElement());
 									cellEl.attr('widget', widget.getId());
 								} else {
-									var val = d.value;
-									if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-										val = Numeral.format(val, $this.colDesc[d.colIdx].format)
+									var val = null;
+									var mainVal = d.value.main;
+									var backVal = d.value.back;
+									var hoverVal = d.value.hover;
+									
+									if(JSB.isDefined(mainVal)){
+										val = mainVal;
+									} else if(JSB.isDefined(backVal)){
+										if(JSB.isNumber(backVal)){
+											val = 0;
+										} else {
+											val = backVal;
+										}
 									}
 									
-									cellEl.attr('title', d.value);
-									cellEl.text(val);
+									var fVal = val;
+									if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
+										fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+									}
+									
+									cellEl.attr('title', val);
+									cellEl.text(fVal);
 								}
 							});
 					
@@ -753,6 +804,9 @@
 					.enter()
 						.append('tr')
 							.classed('row', true)
+							.classed('main', function(d){return !!d.flags.main;})
+							.classed('back', function(d){return !!d.flags.back;})
+							.classed('hover', function(d){return !!d.flags.hover;})
 							.attr('pos', function(d){return d.position;})
 							.classed('rowFilter', function(d){return d.filter && d.filter.length > 0})
 							.on('click',function(d){
@@ -782,13 +836,28 @@
 												cellEl.append(widget.getElement());
 												cellEl.attr('widget', widget.getId());
 											} else {
-												var val = d.value;
-												if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-													val = Numeral.format(val, $this.colDesc[d.colIdx].format)
+												var val = null;
+												var mainVal = d.value.main;
+												var backVal = d.value.back;
+												var hoverVal = d.value.hover;
+												
+												if(JSB.isDefined(mainVal)){
+													val = mainVal;
+												} else if(JSB.isDefined(backVal)){
+													if(JSB.isNumber(backVal)){
+														val = 0;
+													} else {
+														val = backVal;
+													}
 												}
 												
-												cellEl.text(val);
-												cellEl.attr('title', d.value);
+												var fVal = val;
+												if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
+													fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+												}
+												
+												cellEl.text(fVal);
+												cellEl.attr('title', val);
 											}
 										});
 
@@ -857,26 +926,35 @@
 			function iterateRows(){
 				while(rowsContext.next()){
 					var row = [];
+					var rowFlags = {};
 					// construct key
 					var rowKey = null;
-					var keyVals = rowKeySelector.values();
-					if(keyVals.length > 0){
-						rowKey = '';
-						for(var i = 0; i < keyVals.length; i++){
-							if(!keyVals[i]){
-								continue;
-							}
-							rowKey += MD5.md5('' + keyVals[i]);
-						}	
-					}
+					var keyValsMain = rowKeySelector.values();
+					var keyValsBack = rowKeySelector.values('back');
+					for(var i = 0; i < Math.max(keyValsMain.length, keyValsBack.length); i++){
+						var keyVal = keyValsMain[i];
+						if(!JSB.isDefined(keyVal)){
+							keyVal = keyValsBack[i];
+						}
+						if(!keyVal){
+							continue;
+						}
+						if(!rowKey){
+							rowKey = '';
+						}
+						rowKey += MD5.md5('' + keyVal);
+					}	
 					// construct row filter
 					var rowFilter = [];
-					var rowFilterVals = rowFilterSelector.values();
-					if(rowFilterVals && rowFilterVals.length > 0){
-						for(var i = 0; i < rowFilterVals.length; i++){
-							if(rowFilterBinding[i]){
-								rowFilter.push({field: rowFilterBinding[i], value: rowFilterVals[i]});
+					var rowFilterValsMain = rowFilterSelector.values();
+					var rowFilterValsBack = rowFilterSelector.values('back');
+					for(var i = 0; i < Math.max(rowFilterValsMain.length, rowFilterValsBack.length); i++){
+						if(rowFilterBinding[i]){
+							var val = rowFilterValsMain[i];
+							if(!val){
+								val = rowFilterValsBack[i];
 							}
+							rowFilter.push({field: rowFilterBinding[i], value: val});
 						}
 					}
 					
@@ -888,7 +966,20 @@
 							colIdx: i
 						};
 						if(cols[i].colType == 'textGroup'){
-							rDesc.value = cols[i].textSelector.value();
+							var colSel = cols[i].textSelector;
+							var mainValue = colSel.value();
+							var backValue = colSel.value('back');
+							var hoverValue = colSel.value('hover');
+							if(JSB.isDefined(mainValue)){
+								rowFlags.main = true;
+							}
+							if(JSB.isDefined(backValue)){
+								rowFlags.back = true;
+							}
+							if(JSB.isDefined(hoverValue)){
+								rowFlags.hover = true;
+							}
+							rDesc.value = {main: mainValue, back: backValue, hover: hoverValue};
 						} else if(cols[i].colType == 'widgetGroup'){
 							var vals = JSB.clone($this.colDesc[i].widget.values.unwrap());
 							rDesc.value = vals;
@@ -896,7 +987,7 @@
 						
 						row.push(rDesc);	// push cell
 					}
-					rows.push({row: row, key: rowKey, filter: rowFilter});
+					rows.push({row: row, key: rowKey, filter: rowFilter, flags: rowFlags});
 					if(rows.length >= batchSize){
 						$this.stopPreFetch = false;
 						
@@ -1197,6 +1288,16 @@
 			}
 		},
 		
+		showMessage: function(txt){
+			this.messageBox.empty();
+			this.messageBox.append(txt);
+			this.messageBox.removeClass('hidden');
+		},
+		
+		hideMessage: function(){
+			this.messageBox.addClass('hidden');
+		},
+		
 		refresh: function(opts){
 			if(!this.ready){
 				JSB.deferUntil(function(){
@@ -1212,6 +1313,7 @@
 			}
 			
 			$base();
+			this.hideMessage();
 
 			// update col sizes
 			var colSizes = [];
@@ -1244,6 +1346,23 @@
 					}
 				}
 				return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
+			}
+			
+			// check rowKey
+			var rowKeySelector = this.getContext().find('rowKey');
+			var rowKeyFields = [];
+			if(rowKeySelector.used()){
+				rowKeyFields = rowKeySelector.binding();
+			}
+			for(var i = rowKeyFields.length - 1; i >= 0; i--){
+				if(!rowKeyFields[i]){
+					rowKeyFields.splice(i, 1);
+				}
+			}
+			if(rowKeyFields.length == 0){
+				this.showMessage('<strong>Внимание!</strong><br />Не назначены ключевые поля для идентификации строк таблицы.<br />Пожалуйста выберите в настройках виджета одно или несколько полей, сочетание которых будет определять уникальность каждой строки таблицы.');
+			} else {
+				this.setKeyColumns(rowKeyFields);
 			}
 			
 			for(var i = 0; i < gArr.length; i++){
@@ -1369,7 +1488,12 @@
 			}
 			
 			// update row filters
-			
+			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').used();
+			this.setFilterLayer({back: this.preserveFilteredRows});
+
+			this.hoverFilteredRows = this.getContext().find('hoverFilteredRows').used();
+			this.setFilterLayer({hover: this.hoverFilteredRows});
+
 			// update grid
 			if(this.getContext().find('showGrid').used()){
 				this.addClass('hasBorder');

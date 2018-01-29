@@ -4,6 +4,7 @@
 	$client: {
 	    $require: ['DataCube.Widgets.WidgetSchemeRenderer',
                    'JSB.Controls.ScrollBox',
+                   'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button'
@@ -37,13 +38,19 @@
                 }
             });
             this.titleBlock.append(this.saveBtn.getElement());
+            
+            var splitBox = new SplitBox({
+				type: 'vertical',
+				position: 0.5
+			});
+			this.append(splitBox);
 
 	        this.schemeBlock = new ScrollBox();
-	        this.append(this.schemeBlock);
+	        splitBox.append(this.schemeBlock);
 	        this.schemeBlock.addClass('schemeBlock');
 
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
-	        this.append(this.widgetBlock);
+	        splitBox.append(this.widgetBlock);
 
 	        this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
 	        this.savedMessage.click(function(){
@@ -56,7 +63,7 @@
 			this.entry = this.node.getEntry();
 
             if(this.wrapper) this.wrapper.destroy();
-            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true });
+            this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, designMode: true });
             this.widgetBlock.append(this.wrapper.getElement());
 
             if(this.widgetSchemeRenderer) this.widgetSchemeRenderer.destroy();
