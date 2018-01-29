@@ -6,15 +6,18 @@
     $constructor: function(opts){
         this._mainSelector = opts.mainSelector;
 
-        this._objectPrototype = function(values){
+        this._objectPrototype = function(opts){
             this._selector = $this;
-            this._values = values;
+            this._values = opts.values;
+            this._key = opts.key;
         }
 
         this._objectPrototype.prototype = {
             find: this.find,
             getInstance: this.getInstance,
+            getLinkedFieldsByKey: this.getLinkedFieldsByKey,
             getRenderByName: this.getRenderByName,
+            setValue: this.setValue,
             value: this.value,
             values: this.values
         };
@@ -54,7 +57,7 @@
 
         for(var i in values){
             if(i == curKey[0]){
-                res = this.getRenderByName(values[i].render).getInstance(values[i]);
+                res = this.getRenderByName(values[i].render).getInstance(i, values[i]);
                 break;
             }
         }
@@ -71,7 +74,7 @@
             }
         } else {
             for(var i in values){
-                var res = this.getRenderByName(values[i].render).getInstance(values[i]).find(curKey[0]);
+                var res = this.getRenderByName(values[i].render).getInstance(i, values[i]).find(curKey[0]);
                 if(res){
                     if(key.length > 0){
                         return res.find(key);
@@ -83,12 +86,31 @@
         }
     },
 
-    getInstance: function(values){
-        return new this._objectPrototype(values);
+    getInstance: function(key, values){
+        return new this._objectPrototype({
+            key: key,
+            values: values
+        });
+    },
+
+    getKey: function(){
+        return this._key;
+    },
+
+    getLinkedFieldsByKey: function(key){
+        return this._selector._mainSelector.getLinkedFieldsByKey(key);
     },
 
     getRenderByName: function(name){
         return this._selector._mainSelector.getRenderByName(name);
+    },
+
+    setValue: function(val){
+        this._values.values[0].value = val;
+    },
+
+    setValues: function(val){
+        // todo
     },
 
     value: function(){

@@ -307,6 +307,10 @@
 	                name: 'select',
 	                render: 'Unimap.ValueSelectors.Select'
                 },
+                {
+                    name: 'sourceBinding',
+                    render: 'Datacube.ValueSelectors.SourceSelector'
+                }
             ]
 
             var valuesBtn = new Button({
@@ -315,12 +319,13 @@
                     var values = controller.getValues();
                     console.log(values);
                     debugger;
-/*
+
                     var valueSelector = new ValueSelector({
                         rendersDescription: rendersDescription,
-                        values: values
+                        values: values.values,
+                        linkedFields: values.linkedFields
                     });
-
+/*
                     valueSelector.ensureInitialized(function(){
                         var res = valueSelector.find('regions > item functionType');
                     });

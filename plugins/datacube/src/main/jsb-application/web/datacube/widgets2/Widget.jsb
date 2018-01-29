@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.Widget',
+	$name: 'DataCube.Widgets2.Widget',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
@@ -20,7 +20,7 @@
 		},
 		rowKeyColumns: [],
 
-		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export'],
+		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'Unimap.ValueSelector'],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -33,7 +33,7 @@
 				var nVal = callback.call($this, src, val, function(){
 					sCont.bStop = true;
 				});
-				
+
 				if(sCont.bStop){
 					return;
 				}
@@ -67,172 +67,9 @@
 					}
 				}
 			};
-			
+
 			
 			this.Selector.prototype = {
-				find: function(key){
-					// search for scheme selector via key anchor
-					var foundArr = [];
-					for(var i = 0; i < this.selector.length; i++){
-						var obj = this.selector[i];
-						traverse(obj, null, function(item, val, stop){
-							if(item.type == 'widget'){
-								stop();
-							}
-							if(item.key == key){
-								foundArr.push(item);
-							}
-						});
-					}
-					return new $this.Selector(foundArr, this.ctxName);
-				},
-
-				findBindings: function(){
-				    var foundArr = [];
-
-					for(var i = 0; i < this.selector.length; i++){
-						var obj = this.selector[i];
-						traverse(obj, null, function(item, val, stop){
-							if(item.type == 'widget'){
-								stop();
-							}
-							if(item.type != 'widget' && (item.binding || item.values && item.values[0].binding)){
-								foundArr.push(item);
-							}
-						});
-					}
-
-				    return new $this.Selector(foundArr, this.ctxName);
-				},
-				
-				get: function(idx){
-					if(this.selector.length == 0){
-						return null;
-					}
-					if(!JSB.isDefined(idx)){
-						idx = 0;
-					}
-					if(idx >= this.selector.length){
-						return null;
-					}
-					return new $this.Selector(this.selector[idx], this.ctxName);
-				},
-				
-				length: function(){
-					return this.selector.length;
-				},
-				
-				each: function(callback){
-					for(var i = 0; i < this.length(); i++){
-						callback.call(this.get(i));
-					}
-				},
-				
-				used: function(){
-					if(this.selector.length == 0){
-						return false;
-					}
-					
-					var item = this.selector[0];
-					return item.used;
-				},
-				
-				bound: function(){
-					if(this.selector.length == 0){
-						return false;
-					}
-					
-					var item = this.selector[0];
-					if(!item.used){
-						return false;
-					}
-					if(item.type == 'group' || item.type == 'select'){
-						if(!item.binding){
-							return false;
-						}
-						return true;
-					} else if(item.type == 'item'){
-						var bArr = [];
-						for(var i = 0; i < item.values.length; i++){
-							bArr.push(item.values[i].binding ? true : false);
-						}
-						return bArr;
-					} else if(item.type == 'widget'){
-						if(item.widget && item.widget.jsb){
-							return true;
-						}
-						return false;
-					} else {
-						return false;	
-					}
-					
-				},
-				
-				binding: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					
-					var item = this.selector[0];
-					if(!item.used){
-						return;
-					}
-					if(item.type == 'group' || item.type == 'select'){
-						return item.binding;
-					} else if(item.type == 'item'){
-						var bArr = [];
-						for(var i = 0; i < item.values.length; i++){
-							bArr.push(item.values[i].binding);
-						}
-						return bArr;
-					} else if(item.type == 'widget'){
-						if(item.widget && item.widget.jsb){
-							return item.widget;
-						}
-					}
-				},
-
-				bindingType: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					
-					var item = this.selector[0];
-					if(!item.used){
-						return;
-					}
-					if(item.type == 'group' || item.type == 'select'){
-						return item.bindingType;
-					} else if(item.type == 'item'){
-						var bArr = [];
-						for(var i = 0; i < item.values.length; i++){
-							bArr.push(item.values[i].bindingType);
-						}
-						return bArr;
-					} else if(item.type == 'widget'){
-						if(item.widget && item.widget.jsb){
-							return item.widget;
-						}
-					}
-				},
-
-				name: function(){
-					if(this.selector.length == 0){
-						return null;
-					}
-					
-					var item = this.selector[0];
-					return item.name;
-				},
-
-				key: function(){
-					if(this.selector.length == 0){
-						return null;
-					}
-					
-					var item = this.selector[0];
-					return item.key;
-				},
 
 				reset: function(){
 					if(this.selector.length == 0){
@@ -446,7 +283,7 @@
 						dataEl = item.data;
 						item.cursor++;
 					}
-
+					
 					// fills descendant with values
 					traverse(item, dataEl, function(curItem, val, stop){
 						if(curItem == item){
@@ -640,15 +477,37 @@
 				}
 			};
 		},
-		
-		ensureInitialized: function(callback){
-			this.ensureTrigger('_widgetInitialized', callback);
+
+		addFilter: function(fDesc){
+			if(!fDesc.sourceId){
+				var sourceArr = this.getSourceIds();
+				if(sourceArr && sourceArr.length > 0){
+					fDesc.sourceId = sourceArr[0];
+				}
+			}
+			if(fDesc.sourceId){
+				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
+					throw new Error('Invalid sourceId');
+				}
+				fDesc.source = this.sources[fDesc.sourceId];
+				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
+			}
+			throw new Error('Missing sourceId');
 		},
-		
-		setInitialized: function(){
-			this.setTrigger('_widgetInitialized');
+
+		clearFilters: function(){
+			this.getWrapper().clearFilters(this);
 		},
-		
+
+		createFilterHash: function(filter){
+            var str = '';
+		    for(var i in filter){
+		        str += '' + i;
+		    }
+
+		    return MD5.md5(str);
+		},
+
 		decompressData: function(dataObj){
 			if(!dataObj){
 				return null;
@@ -670,159 +529,22 @@
 			}
 			return data;
 		},
-		
-		setWrapper: function(w, values, sourceDesc){
-			this.wrapper = w;
-			this.updateValues(values, sourceDesc);
-		},
-		
-		getWrapper: function(){
-			return this.wrapper;
-		},
-		
-		getDashboard: function(){
-			return $this.getWrapper().getDashboard();
-		},
-		
-		updateValues: function(values, sourceDesc){
-			if(!values){
-				values = JSB.clone(this.getWrapper().getValues());
-			}
-			this.values = values;
-			if(this.values instanceof this.Selector){
-				this.values = this.values.unwrap();
-			}
-			this.context = {};
-			if(sourceDesc){
-				this.sourceMap = sourceDesc.sourceMap;
-				this.sources = sourceDesc.sources;
-			} else {
-				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
-				this.sources = this.getWrapper().getWidgetEntry().getSources();
-			}
-		},
-		
-		getContext: function(ctxName){
-			if(!ctxName){
-				ctxName = 'main';
-			}
-			if(!this.context[ctxName]){
-				var ctxValues = JSB.clone(this.values);
-				this.context[ctxName] = new this.Selector(ctxValues, ctxName);
-			}
-			 
-			return this.context[ctxName];
-		},
-		
-		
-		refresh: function(opts){
-			// localize filters
-			this.localizeFilters();
-		},
-		
-		refreshAll: function(opts){
-			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
-		},
-		
-		getSourceIds: function(){
-			return Object.keys(this.sourceMap);
-		},
-		
-		localizeFilters: function(){
-			this.sourceFilterMap = {};
-			for(var srcId in this.sources){
-				var src = this.sources[srcId];
-				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
-			}
-		},
-		
-		getLocalFilters: function(){
-			return this.sourceFilterMap;
+
+		ensureInitialized: function(callback){
+			this.ensureTrigger('_widgetInitialized', callback);
 		},
 
-		
-		clearFilters: function(){
-			this.getWrapper().clearFilters(this);
-		},
-		
-		hasFilter: function(fDesc){
-			return this.getWrapper().hasFilter(fDesc);
-		},
-		
-		addFilter: function(fDesc){
-			if(!fDesc.sourceId){
-				var sourceArr = this.getSourceIds();
-				if(sourceArr && sourceArr.length > 0){
-					fDesc.sourceId = sourceArr[0];
-				}
-			}
-			if(fDesc.sourceId){
-				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
-					throw new Error('Invalid sourceId');
-				}
-				fDesc.source = this.sources[fDesc.sourceId];
-				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
-			}
-			throw new Error('Missing sourceId');
-		},
-		
-		removeFilter: function(fItemId){
-			// return this.getWrapper().removeFilter(fItemId, this);
-			return this.getWrapper().removeFilter(fItemId);
-		},
-
-		removeAllFilters: function(){
-            var fm = this.getFilterManager();
-            if(fm){
-                var filters = fm.getFilters();
-                for(var i in filters){
-                    this.removeFilter(i);
-                }
+		exportData: function(format){
+            switch(format){
+                case 'xls':
+                case 'csv':
+                    this.getBindingsData(function(data){
+                        Export.exportData(format, data, $this.wrapper.title);
+                    });
+                    break;
+                case 'png':
+                    Export.exportData(format, this.getElement().get(0), this.wrapper.title);
             }
-		},
-		
-		getFilters: function(){
-			var fm = this.getFilterManager();
-			if(fm){
-				return fm.getFilters();	
-			}
-			return null;
-		}, 
-		
-		getFilterManager: function(){
-			if(this.getWrapper() && this.getWrapper().getFilterManager){
-				return this.getWrapper().getFilterManager();	
-			}
-			return null;
-		},
-		
-		setSort: function(q){
-			this.sort = q;
-		},
-		
-		setContextFilter: function(q){
-			this.contextFilter = q;
-		},
-		
-		getContextFilter: function(){
-			return JSB.clone(this.contextFilter);
-		},
-
-		createFilterHash: function(filter){
-            var str = '';
-		    for(var i in filter){
-		        str += '' + i;
-		    }
-
-		    return MD5.md5(str);
-		},
-
-		storeCache: function(data){
-		    this._cache = data;
-		},
-
-		getCache: function(){
-		    return this._cache;
 		},
 
 		getBindingsData: function(callback){
@@ -858,6 +580,133 @@
                 callback.call(this, results);
             });
 		},
+
+		getCache: function(){
+		    return this._cache;
+		},
+
+		getContext: function(ctxName){
+			if(!ctxName){
+				ctxName = 'main';
+			}
+			if(!this.context[ctxName]){
+				var ctxValues = JSB.clone(this.values);
+				this.context[ctxName] = new this.Selector(ctxValues, ctxName);
+			}
+
+			return this.context[ctxName];
+		},
+
+		getContextFilter: function(){
+			return JSB.clone(this.contextFilter);
+		},
+
+		getDashboard: function(){
+			return $this.getWrapper().getDashboard();
+		},
+
+		getFilterManager: function(){
+			if(this.getWrapper() && this.getWrapper().getFilterManager){
+				return this.getWrapper().getFilterManager();
+			}
+			return null;
+		},
+
+		getFilters: function(){
+			var fm = this.getFilterManager();
+			if(fm){
+				return fm.getFilters();
+			}
+			return null;
+		},
+
+		getLocalFilters: function(){
+			return this.sourceFilterMap;
+		},
+
+		getSourceIds: function(){
+			return Object.keys(this.sourceMap);
+		},
+
+		getWrapper: function(){
+			return this.wrapper;
+		},
+
+		hasFilter: function(fDesc){
+			return this.getWrapper().hasFilter(fDesc);
+		},
+
+		localizeFilters: function(){
+			this.sourceFilterMap = {};
+			for(var srcId in this.sources){
+				var src = this.sources[srcId];
+				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
+			}
+		},
+
+		refresh: function(opts){
+			this.localizeFilters();
+		},
+
+		refreshAll: function(opts){
+			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
+		},
+
+		removeFilter: function(fItemId){
+			// return this.getWrapper().removeFilter(fItemId, this);
+			return this.getWrapper().removeFilter(fItemId);
+		},
+
+		removeAllFilters: function(){
+            var fm = this.getFilterManager();
+            if(fm){
+                var filters = fm.getFilters();
+                for(var i in filters){
+                    this.removeFilter(i);
+                }
+            }
+		},
+
+		setContextFilter: function(q){
+			this.contextFilter = q;
+		},
+
+		setInitialized: function(){
+			this.setTrigger('_widgetInitialized');
+		},
+
+		setSort: function(q){
+			this.sort = q;
+		},
+
+		setWrapper: function(w, values, sourceDesc){
+			this.wrapper = w;
+			this.updateValues(values, sourceDesc);
+		},
+
+		storeCache: function(data){
+		    this._cache = data;
+		},
+
+		updateValues: function(values, sourceDesc){
+			if(!values){
+				values = JSB.clone(this.getWrapper().getValues());
+			}
+			this.values = values;
+			if(this.values instanceof this.Selector){
+				this.values = this.values.unwrap();
+			}
+			this.context = {};
+			if(sourceDesc){
+				this.sourceMap = sourceDesc.sourceMap;
+				this.sources = sourceDesc.sources;
+			} else {
+				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
+				this.sources = this.getWrapper().getWidgetEntry().getSources();
+			}
+		},
+
+// //
 		
 		setFilterLayer: function(layerOpts){
 			if(JSB.isDefined(layerOpts.main) && !layerOpts.main){
@@ -872,19 +721,6 @@
 			} else {
 				this.rowKeyColumns = [JSB.clone(rowKeyCols)];
 			}
-		},
-
-		exportData: function(format){
-            switch(format){
-                case 'xls':
-                case 'csv':
-                    this.getBindingsData(function(data){
-                        Export.exportData(format, data, $this.wrapper.title);
-                    });
-                    break;
-                case 'png':
-                    Export.exportData(format, this.getElement().get(0), this.wrapper.title);
-            }
 		}
 	},
 	

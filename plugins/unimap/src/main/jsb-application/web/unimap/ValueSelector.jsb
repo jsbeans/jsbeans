@@ -8,6 +8,7 @@
 
     $constructor: function(opts){
         this._values = opts.values;
+        this._linkedFields = opts.linkedFields || {};
 
         this._baseSelector = new Basic({
             mainSelector: $this
@@ -44,6 +45,14 @@
 
     find: function(key){
         return this._baseSelector.getInstance().find(key, this._values);
+    },
+
+    getLinkedFieldsByKey: function(key){
+        if(!key){
+            return;
+        }
+
+        return this._linkedFields[key];
     },
 
     getRenderByName: function(name){

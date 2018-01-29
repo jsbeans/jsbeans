@@ -36,10 +36,10 @@
 	    createLink: function(key, render){
 	        if(!this._linksMap[key]){
 	            this._linksMap[key] = {
-	                linkedRender: []
+	                linkedRenders: []
 	            }
 	        }
-	        this._linksMap[key].linkedRender.push(render);
+	        this._linksMap[key].linkedRenders.push(render);
 	    },
 
         createRender: function(parent, key, scheme, values){
@@ -93,6 +93,19 @@
 	        }
 	    },
 
+	    getLinkedFields: function(){
+	        var links = {};
+
+	        for(var i in this._linksMap){
+	            links[i] = [];
+	            for(var j = 0; j < this._linksMap[i].linkedRenders.length; j++){
+	                links[i].push(this._linksMap[i].linkedRenders[j].getKey());
+	            }
+	        }
+
+	        return links;
+	    },
+
 	    getValueByKey: function(key){
 	        var render = this.findRenderByKey(key);
 	        return render ? render.getValue() : null;
@@ -103,14 +116,16 @@
 	            this._renders[i].setDefaultValue();
 	        }
 
+	        var values = {
+	            values: this._values,
+	            linkedFields: this.getLinkedFields()
+	        };
+
 	        if(b){
-	            return {
-	                validateResult: this.validate(),
-	                values: this._values
-	            }
+	            values.validateResult = this.validate();
 	        }
 
-	        return this._values;
+	        return values;
 	    },
 
 	    getRenderByName: function(name){
@@ -140,8 +155,8 @@
 	                this._linksMap[key].render = this.findRenderByKey(key);
 	            }
 
-	            for(var i = 0; i < this._linksMap[key].linkedRender.length; i++){
-	                this._linksMap[key].linkedRender[i].changeLinkTo(value, this._linksMap[key].render);
+	            for(var i = 0; i < this._linksMap[key].linkedRenders.length; i++){
+	                this._linksMap[key].linkedRenders[i].changeLinkTo(value, this._linksMap[key].render);
 	            }
 	        }
 	    }
