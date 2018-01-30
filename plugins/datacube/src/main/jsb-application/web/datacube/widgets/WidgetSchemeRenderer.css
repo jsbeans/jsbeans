@@ -84,8 +84,7 @@
 
 .widgetSchemeRenderer.used > .header > .dataBindingSelector {
 	display: inline-block;
-    height: 24px;
-    padding: 3px 5px 3px 5px;
+    padding: 2px 5px 2px 5px;
 }
 
 .widgetSchemeRenderer.used > .header > .dataBindingSelector.refreshable.filled {
@@ -381,7 +380,7 @@
 
 .widgetSchemeRenderer.collapsable > .header {
     width: 100%;
-    padding-left: 16px;
+    padding-left: 18px;
 }
 
 .widgetSchemeRenderer.collapsable > .body {
@@ -422,5 +421,5 @@
 }
 
 .widgetSchemeRenderer .dataBindingSelector > .refresh {
-    padding: 4px 20px 0px 2px;
+    padding: 2px 20px 0px 2px;
 }

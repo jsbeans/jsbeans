@@ -25,7 +25,7 @@
 	
 	padding: 1px 3px;
 	box-sizing: border-box;
-	font-family: verdana, lucida, sans, arial, sans-serif;
+	font-family: roboto, lucida, sans, arial, sans-serif;
 	background: -webkit-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
 	background: -moz-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
     background: linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
@@ -105,7 +105,7 @@
 	bottom: 0;
 	padding: 0 3px;
 	box-sizing: border-box;
-	font-family: verdana, lucida, sans, arial, sans-serif;
+	font-family: roboto, lucida, sans, arial, sans-serif;
 	cursor: default;
 	text-overflow: ellipsis;
 	overflow: hidden;

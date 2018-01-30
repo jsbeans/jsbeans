@@ -25,7 +25,8 @@
 .filterSelector > .filterContainer {
 	min-height: 24px;
 	padding-left: 24px;
-	padding-top: 2px;
+	padding-top: 4px;
+	padding-bottom: 4px;
 }
 
 .filterSelector > .filterContainer .node {
@@ -36,8 +37,7 @@
 .filterSelector > .filterContainer .node > .separator {
 	display: inline-block;
 	vertical-align: middle;
-	margin: 0 4px;
-	font-size: 10px;
+	margin: 0 2px;
 }
 
 .filterSelector > .filterContainer .node > .separator[type="and"] {
@@ -81,11 +81,20 @@
 	vertical-align: middle;
 	position: relative;
     border-radius: 6px;
-	padding: 1px 4px 2px 4px;
+	padding: 0px 4px 0px 4px;
+    border: 2px dotted #0000;
+    
+    transition: background-color 300ms;
+}
+
+.filterSelector > .filterContainer .filterTag.hoverMode {
+	border: 2px dotted #b56d37;
 }
 
 .filterSelector > .filterContainer .filterTag:hover {
 	background-color: rgba(24, 108, 138, 0.2);
+	
+	transition: background-color 300ms;
 }
 
 .filterSelector > .filterContainer .filterTag > .btnDelete {
@@ -103,10 +112,8 @@
 .filterSelector > .filterContainer .filterTag > .field {
 	vertical-align: middle;
 	display: inline-block;
-	font-weight: bold;
 	
 	color: #3d526f;
-    font-size: 10px;
     
     max-width: 100px;
     white-space: nowrap;
@@ -115,6 +122,7 @@
 }
 
 .filterSelector > .filterContainer .filterTag > .op {
+	font-weight: bold;
 	vertical-align: middle;
 	display: inline-block;
 	margin: 0 2px;
@@ -126,8 +134,6 @@
 	display: inline-block;
 	
 	color: #8e2f00;
-    font-size: 10px;
-    font-weight: bold;
     
 	max-width: 250px;
     white-space: nowrap;
