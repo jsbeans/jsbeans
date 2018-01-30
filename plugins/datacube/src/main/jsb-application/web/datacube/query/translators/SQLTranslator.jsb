@@ -20,7 +20,9 @@
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
-		    $this.cubeFields = $this.cube.getManagedFields();
+		    if ($this.cube) {
+		        $this.cubeFields = $this.cube.getManagedFields();
+            }
 		},
 
 		translateQuery: function() {
