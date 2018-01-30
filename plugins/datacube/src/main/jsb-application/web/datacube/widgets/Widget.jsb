@@ -766,9 +766,8 @@
 			throw new Error('Missing sourceId');
 		},
 		
-		removeFilter: function(fItemId){
-			// return this.getWrapper().removeFilter(fItemId, this);
-			return this.getWrapper().removeFilter(fItemId);
+		removeFilter: function(fItemId, dontPublish){
+			return this.getWrapper().removeFilter(fItemId, dontPublish);
 		},
 
 		removeAllFilters: function(){
