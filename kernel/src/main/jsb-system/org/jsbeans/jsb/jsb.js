@@ -4149,6 +4149,9 @@ JSB({
 		} else {
 			for(var i = 0; i < keyArr.length; i++){
 				var key = keyArr[i];
+				if(!$this.$_ecMap[key]){
+					$this.$_ecMap[key] = {cArr:[]};
+				}
 				$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt, keyArr: keyArr});
 			}
 		}
