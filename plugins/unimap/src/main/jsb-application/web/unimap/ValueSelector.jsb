@@ -14,10 +14,14 @@
             mainSelector: $this
         });
 
-        this.createRenderMap(opts.rendersDescription);
+        if(opts.rendersMap){
+            this.createRendersMapByClasses(opts.rendersMap);
+        } else if(opts.rendersDescription){
+            this.createRendersMap(opts.rendersDescription);
+        }
     },
 
-    createRenderMap: function(rendersDescription){
+    createRendersMap: function(rendersDescription){
         JSB.chain(rendersDescription, function(d, c){
             JSB.lookup(d.render, function(cls){
                 $this._rendersMap[d.name] = new cls({
@@ -28,6 +32,14 @@
         }, function(){
             $this.setInitialized();
         });
+    },
+
+    createRendersMapByClasses: function(rendersMap){
+        for(var i in rendersMap){
+            this._rendersMap[i] = new rendersMap[i]({
+                mainSelector: this
+            });
+        }
     },
 
     destroy: function(){

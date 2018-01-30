@@ -127,7 +127,8 @@
 					desc.wrappers[wId] = {
 						jsb: wWrapper.getWidgetType(),
 						name: wWrapper.getName(),
-						values: wWrapper.getValues()
+						values: wWrapper.getValues(),
+						linkedFields: wWrapper.getLinkedFields()
 					}
 				}
 				this.widgetCount = Object.keys(this.wrappers).length;

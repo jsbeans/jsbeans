@@ -5,6 +5,7 @@
 	widgetEntry: null,
 	name: null,
 	values: null,
+	linkedFields: null,
 	
 	getName: function(){
 		return this.name;
@@ -16,6 +17,10 @@
 	
 	getValues: function(){
 		return this.values;
+	},
+
+	getLinkedFields: function(){
+	    return this.linkedFields;
 	},
 	
 	getDashboard: function(){
@@ -111,7 +116,10 @@
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
-				$this.widget.setWrapper($this);
+				$this.widget.setWrapper($this, {
+				    values: $this.values,
+				    linkedFields: $this.linkedFields
+				});
 				if($this.options.auto){
 					$this.widget.ensureInitialized(function(){
 						$this.widget.refresh({
@@ -240,9 +248,12 @@
 			return scheme;
 		},
 
-		updateValues: function(opts){
-		    this.getWidget().updateValues(JSB.clone(opts));
-		    this.values = opts.values;
+		updateValues: function(values, linkedFields){
+		    this.getWidget().updateValues({
+		        values: JSB.clone(values),
+		        linkedFields: linkedFields
+		    });
+		    this.values = values;
 		},
 		
 		updateTabHeader: function(){

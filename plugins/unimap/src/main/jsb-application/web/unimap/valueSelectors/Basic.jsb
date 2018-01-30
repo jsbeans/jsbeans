@@ -87,10 +87,17 @@
     },
 
     getInstance: function(key, values){
-        return new this._objectPrototype({
-            key: key,
-            values: values
-        });
+        if(this._objectPrototype){
+            return new this._objectPrototype({
+                key: key,
+                values: values
+            });
+        } else {
+            return new this._selector._objectPrototype({
+                key: key,
+                values: values
+            });
+        }
     },
 
     getKey: function(){

@@ -10,7 +10,6 @@
 		sourceMap: null,
 		sources: null,
 		sourceFilterMap: null,
-		ready: false,
 		initCallbacks: [],
 		contextFilter: {},
 		filterLayers: {
@@ -20,7 +19,38 @@
 		},
 		rowKeyColumns: [],
 
+		_valueRenders: [
+            {
+                name: 'group',
+                render: 'Unimap.ValueSelectors.Group'
+            },
+            {
+                name: 'select',
+                render: 'Unimap.ValueSelectors.Select'
+            },
+            {
+                name: 'sourceBinding',
+                render: 'Datacube.ValueSelectors.SourceSelector'
+            }
+		],
+		_rendersMap: {},
+		_ready: false,
+
 		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'Datacube.ValueSelector'],
+
+		$constructor: function(opts){
+		    $base(opts);
+
+            JSB.chain(this._valueRenders, function(d, c){
+                JSB.lookup(d.render, function(cls){
+                    $this._rendersMap[d.name] = cls;
+                    c();
+                });
+            }, function(){
+                $this._ready = true;
+                $this.setInitialized();
+            });
+		},
 
 		addFilter: function(fDesc){
 			if(!fDesc.sourceId){
@@ -268,7 +298,11 @@
 
 			if(!this.context[ctxName]){
 				var ctxValues = JSB.clone(this.values);
-				this.context[ctxName] = new ValueSelector(values);
+				this.context[ctxName] = new ValueSelector({
+				    values: ctxValues,
+				    linkedFields: this.linkedFields,
+				    rendersMap: this._rendersMap
+				});
 			}
 
 			return this.context[ctxName];
@@ -348,24 +382,27 @@
 		},
 
 		setInitialized: function(){
-			this.setTrigger('_widgetInitialized');
+		    if(this._ready){
+		        this.setTrigger('_widgetInitialized');
+		    }
 		},
 
 		setSort: function(q){
 			this.sort = q;
 		},
 
-		setWrapper: function(w, values, sourceDesc){
+		setWrapper: function(w, valuesOpts, sourceDesc){
 			this.wrapper = w;
-			this.updateValues(values, sourceDesc);
+			this.updateValues(valuesOpts, sourceDesc);
 		},
 
 		storeCache: function(data){
 		    this._cache = data;
 		},
 
-		updateValues: function(values, sourceDesc){
-			this.values = values;
+		updateValues: function(opts, sourceDesc){
+			this.values = opts.values;
+			this.linkedFields = opts.linkedFields;
 
 			this.context = {};
 			if(sourceDesc){

@@ -116,7 +116,7 @@
 		},
 
 		updateData: function(){
-            this.wrapper.updateValues(this.widgetSchemeRenderer.getValues());
+            this.wrapper.updateValues(this.widgetSchemeRenderer.getValues(), this.widgetSchemeRenderer.getLinkedFields());
 
 		    this.wrapper.getWidget().refresh({
                 isCacheMod: true,
@@ -130,12 +130,13 @@
 		        $this.savedMessage.fadeOut(1600, "linear");
 		    });
         */
+debugger;
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 
             this.entry.server().storeValues({
                 name: this.titleEditor.getData().getValue(),
-                values: this.wrapper.values.values,
-                linkedFields: this.wrapper.values.linkedFields
+                values: this.wrapper.values,
+                linkedFields: this.widgetSchemeRenderer.getLinkedFields()
             }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.wrapper.getWidgetEntry().getId(),
@@ -146,7 +147,7 @@
 		},
 
 		setChanges: function(){
-		    this.wrapper.updateValues(this.widgetSchemeRenderer.getValues());
+		    this.wrapper.updateValues(this.widgetSchemeRenderer.getValues(), this.widgetSchemeRenderer.getLinkedFields());
 
             this.wrapper.getWidget().ensureInitialized(function(){
 	            try {

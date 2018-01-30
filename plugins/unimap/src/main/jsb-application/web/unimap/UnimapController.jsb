@@ -119,16 +119,7 @@
 	            this._renders[i].setDefaultValue();
 	        }
 
-	        var values = {
-	            values: this._values,
-	            linkedFields: this.getLinkedFields()
-	        };
-
-	        if(b){
-	            values.validateResult = this.validate();
-	        }
-
-	        return values;
+	        return this._values;
 	    },
 
 	    getRenderByName: function(name){
