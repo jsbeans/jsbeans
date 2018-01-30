@@ -106,6 +106,14 @@
 						this.dataProviderFields[pDesc.id] = pDesc.fields;
 						this.dataProviderPositions[pDesc.id] = pDesc.position;
 						this.dataProviderSizes[pDesc.id] = pDesc.size;
+						
+						// actualize dataProviderFields
+						for(var fName in this.dataProviderFields[pDesc.id]){
+							if(this.dataProviderFields[pDesc.id][fName] && !JSB.isObject(this.dataProviderFields[pDesc.id][fName])){
+								this.dataProviderFields[pDesc.id] = provider.extractFields();
+								break;
+							}
+						}
 					}
 					
 					// construct fields
@@ -455,7 +463,8 @@
 
             for(var i in fields){
                 res[i] = {
-                    type: fields[i]
+                    type: fields[i].type,
+                    nativeType: fields[i].nativeType
                 }
             }
 
@@ -565,20 +574,7 @@
 			var dpNewFields = provider.extractFields();
 			var dpFields = this.dataProviderFields[provider.getId()];
 			var bNeedStore = false;
-/*			
-			if(dpFields && Object.keys(dpFields).length > 0){
-				 // perform update existed fields
-				for(var fName in dpNewFields){
-					var fType = dpNewFields[fName];
-					var pfName = this.prepareFieldName(fName);
-					if(dpFields[pfName]){
-						// rename data provider field
-						bNeedStore = true;
-						this.renameDataProviderField(provider, pfName, fName, fType);
-					}
-				}
-			}
-*/			
+			
 			this.dataProviderFields[provider.getId()] = dpNewFields;
 			if(this.removeUnexistedFields(provider)){
 				bNeedStore = true;
@@ -593,16 +589,16 @@
 					if(bDesc.provider != provider){
 						continue;
 					}
-					if(bDesc.type != dpNewFields[bDesc.field]){
-						bDesc.type = dpNewFields[bDesc.field];
+					if(bDesc.type != dpNewFields[bDesc.field].nativeType){
+						bDesc.type = dpNewFields[bDesc.field].nativeType;
 						bNeedStore = true;
 					}
 					if(!providerBindingMap[bDesc.field]){
 						providerBindingMap[bDesc.field] = [];
 					}
 					providerBindingMap[bDesc.field].push({
-						field: fName,
-						type: fDesc.type,
+						field: bDesc.field,
+						type: bDesc.type,
 						link: fDesc.link,
 						order: fDesc.order
 					});
@@ -653,8 +649,8 @@
 					if(!dpFields[bDesc.field]){
 						bindingArr.splice(i, 1);
 					} else {
-					    if(fDesc.type != dpFields[bDesc.field]){
-					        fDesc.type = dpFields[bDesc.field];
+					    if(fDesc.type != dpFields[bDesc.field].type){
+					        fDesc.type = dpFields[bDesc.field].type;
 					    }
 					}
 				}
@@ -697,13 +693,15 @@
 			this.store();
 		},
 		
-		addField: function(pId, pField, pType){
+		addField: function(pId, pField){
 			this.load();
 			var provider = this.getProviderById(pId);
 			var pfName = pField;
+			var fMap = provider.extractFields({comment:true, type:true, nativeType:true});
+			var pType = fMap[pField].nativeType;
+			var cType = fMap[pField].type;
 			if(provider.getOption('useComments')){
-				var fMap = provider.extractFields({comment:true, type:true});
-				if(fMap[pField].comment){
+				if(JSB.isString(fMap[pField].comment) && fMap[pField].comment.length > 0){
 					pfName = fMap[pField].comment;
 				}
 			}
@@ -720,7 +718,7 @@
 			var order = Object.keys(this.fields).length;
 			this.fields[nameCandidate] = {
 				field: nameCandidate,
-				type: pType,
+				type: cType,
 				binding: [],
 				link: false,
 				order: order
@@ -739,9 +737,9 @@
 		},
 
 		linkFields: function(fields){
+			debugger;
 			this.load();
-            var nFields = [],
-                nField;
+            var nFields = [], nField, fType;
 
 		    for(var i = 0; i < fields.length; i++){
 		        var f = this.fields[fields[i].field];
@@ -760,9 +758,12 @@
 		                delete this.fields[fields[i].field];
 		            }
 		        } else {
+		        	if(!fType){
+		        		fType = f.type;
+		        	}
                     nFields.push({
                         field: f.binding[0].field,
-                        type: f.type,
+                        type: f.binding[0].type,
                         provider: f.binding[0].provider
                     });
 		            delete this.fields[fields[i].field];
@@ -774,7 +775,7 @@
                     binding: [],
                     field: nFields[0].field,
                     link: true,
-                    type: nFields[0].type
+                    type: fType
                 };
 		    }
 
@@ -847,7 +848,7 @@
 
                 if(oldField.binding.length > 1){ // key field
                     for(var i = 0; i < oldField.binding.length; i++){
-                        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field, oldField.binding[i].type);
+                        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field);
 
                         nFields.add.push(f);
                     }
