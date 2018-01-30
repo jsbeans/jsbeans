@@ -136,6 +136,7 @@
 		},
 		
 		updateInteroperationMap: function(){
+debugger;
 			var sourceMap = {};
 			
 			function traverseValues(src, callback){
@@ -184,7 +185,6 @@
 					} else {
 						sourceMap[entry.binding.source].push(entry.binding.source);
 					}
-					
 				}
 			});
 			

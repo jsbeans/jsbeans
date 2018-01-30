@@ -34,7 +34,6 @@
             }
 		],
 		_rendersMap: {},
-		_ready: false,
 
 		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'Datacube.ValueSelector'],
 
@@ -47,8 +46,7 @@
                     c();
                 });
             }, function(){
-                $this._ready = true;
-                $this.setInitialized();
+                $this.setTrigger('_rendersMapCreated');
             });
 		},
 
@@ -105,7 +103,7 @@
 		},
 
 		ensureInitialized: function(callback){
-			this.ensureTrigger('_widgetInitialized', callback);
+			this.ensureTrigger(['_widgetInitialized', '_rendersMapCreated'], callback);
 		},
 
 		exportData: function(format){
@@ -132,17 +130,13 @@
             if(!opts){
                 opts = {};
             }
-            // fulfills selector's buffer with server-side data
-            if(this.selector.length == 0){
+
+            var item = opts.selector.binding();
+            if(!item){
                 return false;
             }
 
-            var item = opts.selector.value();
-            if(!item.binding){
-                return false;
-            }
-
-            if(!item.binding.source || item.binding.propagated){
+            if(!item.source || item.propagated){
                 if(item.data){
                     if(opts.reset){
                         item.cursor = 0;
@@ -187,10 +181,10 @@
             var mainQuery = {};
             if($this.getWrapper()){
                 var filterDesc = null;
-                if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
-                    filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source], $this.sources[item.binding.source]);
+                if($this.sourceFilterMap && $this.sourceFilterMap[item.source]){
+                    filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.source], $this.sources[item.source]);
                 } else {
-                    filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
+                    filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.source]);
                 }
                 if(filterDesc){
                     if(filterDesc.filter){
@@ -224,7 +218,7 @@
 
             item.fetchOpts.context = this.ctxName;
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
-            $this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+            $this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
                 if(fail && fail.message == 'Fetch broke'){
                     return;
                 }
@@ -382,9 +376,7 @@
 		},
 
 		setInitialized: function(){
-		    if(this._ready){
-		        this.setTrigger('_widgetInitialized');
-		    }
+            this.setTrigger('_widgetInitialized');
 		},
 
 		setSort: function(q){
@@ -403,7 +395,7 @@
 		updateValues: function(opts, sourceDesc){
 			this.values = opts.values;
 			this.linkedFields = opts.linkedFields;
-
+debugger;
 			this.context = {};
 			if(sourceDesc){
 				this.sourceMap = sourceDesc.sourceMap;

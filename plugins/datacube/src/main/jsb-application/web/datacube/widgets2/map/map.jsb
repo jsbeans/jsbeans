@@ -130,9 +130,14 @@
                                 }
                             },
                             sourceColor: {
-                                 render: 'dataBinding',
                                  name: 'Цвет из источника',
-                                 linkTo: 'dataSource'
+                                 items: {
+                                    color: {
+                                        render: 'dataBinding',
+                                        name: 'Поле с цветом',
+                                        linkTo: 'dataSource'
+                                    }
+                                 }
                             }
                         }
                      },
@@ -270,7 +275,7 @@
 
             // advanced filters
             //var globalFilters = dataSource.getFilters(),
-            var regionsContext = this.getContext().find('regions').getItems();
+            var regionsContext = this.getContext().find('regions').values();
 /*
             if(globalFilters){
                 var bindings = [],
@@ -321,18 +326,17 @@
                 this._curFilterHash = null;
             }
 */
-debugger;
             try{
                 var regionsColors = [],
                     maps = [],
                     newMapHash = '';
 
                 for(var i = 0; i < regionsContext.length; i++){
-                    var colorSelector = regionsContext[i].find('color').value();
-                    switch(colorSelector.key()){
+                    var colorSelector = regionsContext[i].find('fillColor');
+                    switch(colorSelector.value()){
                         case 'simpleColor':
                             regionsColors[i] = {
-                                simpleColor: colorSelector.value().value()
+                                simpleColor: colorSelector.find('color').value()
                             }
                             break;
                         case 'rangeColor':
@@ -340,13 +344,13 @@ debugger;
                                 rangeColor: {
                                     startColor: colorSelector.find('startColor').value(),
                                     endColor: colorSelector.find('endColor').value(),
-                                    functionType: colorSelector.find('functionType').value().key()
+                                    functionType: colorSelector.find('functionType').value()
                                 }
                             }
                             break;
                         case 'sourceColor':
                             regionsColors[i] = {
-                                sourceColor: colorSelector
+                                sourceColor: colorSelector.find('color')
                             }
                             break;
                     }
@@ -357,13 +361,12 @@ debugger;
                     regionsColors[i].selectBorderColor = regionsContext[i].find('selectBorderColor').value();
                     regionsColors[i].selectColor = regionsContext[i].find('selectColor').value();
 
-                    var jsonMapSelector  = regionsContext[i].find('geojson').value();
-                    switch(jsonMapSelector.key()){
+                    switch(regionsContext[i].find('geojsonMap').value()){
                         case 'russianRegions':
                             maps.push({
                                 data: null,
                                 path: 'geojson/russianRegions.json',
-                                compareTo: jsonMapSelector.find('compareTo').value().key(),
+                                compareTo: regionsContext[i].find('compareTo').value(),
                                 wrapLongitude: -30
                             });
                             newMapHash += 'geojson/russianRegions.json';
@@ -372,7 +375,7 @@ debugger;
                             maps.push({
                                 data: null,
                                 path: 'geojson/russianRegionsMPT.json',
-                                compareTo: jsonMapSelector.find('compareTo').value().key(),
+                                compareTo: regionsContext[i].find('compareTo').value(),
                                 wrapLongitude: -30
                             });
                             newMapHash += 'geojson/russianRegionsMPT.json';
@@ -380,8 +383,8 @@ debugger;
                         case 'worldCountries':
                             maps.push({
                                 data: null,
-                                path: 'geojson/worldCountries.json', // 'geojson/countries.json', //'geojson/worldCountries.json',
-                                compareTo: jsonMapSelector.find('compareTo').value().key(),
+                                path: 'geojson/worldCountries.json',
+                                compareTo: regionsContext[i].find('compareTo').value(),
                                 wrapLongitude: -32
                             });
                             newMapHash += 'geojson/worldCountries.json';
@@ -402,13 +405,12 @@ debugger;
             }
 
 debugger;
-return;
 
             this.getElement().loader();
-            dataSource.fetch({readAll: true, reset: true}, function(res){
+            this.fetchBinding({selector: dataSource, readAll: true, reset: true}, function(res){
                 try{
                     var regions = {};
-
+debugger;
                     while(dataSource.next()){
                         for(var i = 0; i < regionsContext.length; i++){
                             var value = regionsContext[i].find('value').value();

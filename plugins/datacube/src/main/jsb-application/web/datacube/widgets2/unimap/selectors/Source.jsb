@@ -3,11 +3,11 @@
     $parent: 'Unimap.ValueSelectors.Basic',
 
     binding: function(){
-        // todo
+        return this._values[0].binding;
     },
 
     hasBinding: function(){
-        return JSB.isDefined(this._values.values[0].binding);
+        return JSB.isDefined(this._values[0].binding);
     },
 
     next: function(){

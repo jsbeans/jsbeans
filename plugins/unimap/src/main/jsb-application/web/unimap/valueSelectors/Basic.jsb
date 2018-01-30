@@ -6,13 +6,14 @@
     $constructor: function(opts){
         this._mainSelector = opts.mainSelector;
 
-        this._objectPrototype = function(opts){
+        this._selectorPrototype = function(opts){
             this._selector = $this;
-            this._values = opts.values;
+            this._render = opts.selector.render;
+            this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
             this._key = opts.key;
         }
 
-        this._objectPrototype.prototype = {
+        this._selectorPrototype.prototype = {
             find: this.find,
             getInstance: this.getInstance,
             getLinkedFieldsByKey: this.getLinkedFieldsByKey,
@@ -26,7 +27,7 @@
 
         for(var i = 0; i < methods.length; i++){
             if(this._excludeMethods.indexOf(methods[i]) < 0){
-                this._objectPrototype.prototype[methods[i]] = this[methods[i]];
+                this._selectorPrototype.prototype[methods[i]] = this[methods[i]];
             }
         }
     },
@@ -37,7 +38,11 @@
         }
 
         if(!values){
-            values = this._values.values;
+            values = this._values;
+        }
+
+        if(JSB.isArray(values)){
+            values = values[0];
         }
 
         key = key.trim();
@@ -86,16 +91,16 @@
         }
     },
 
-    getInstance: function(key, values){
-        if(this._objectPrototype){
-            return new this._objectPrototype({
+    getInstance: function(key, selector){
+        if(this._selectorPrototype){
+            return new this._selectorPrototype({
                 key: key,
-                values: values
+                selector: selector
             });
         } else {
-            return new this._selector._objectPrototype({
+            return new this._selector._selectorPrototype({
                 key: key,
-                values: values
+                selector: selector
             });
         }
     },
@@ -113,7 +118,7 @@
     },
 
     setValue: function(val){
-        this._values.values[0].value = val;
+        this._values[0].value = val;
     },
 
     setValues: function(val){
@@ -121,14 +126,14 @@
     },
 
     value: function(){
-        return this._values.values[0].value;
+        return this._values[0].value;
     },
 
     values: function(){
         var valArr = [];
 
-        for(var i = 0; i < this._values.values.length; i++){
-            valArr.push(this._values.values[i].value);
+        for(var i = 0; i < this._values.length; i++){
+            valArr.push(this._values[i].value);
         }
 
         return valArr;

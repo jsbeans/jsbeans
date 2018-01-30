@@ -56,7 +56,7 @@
     },
 
     find: function(key){
-        return this._baseSelector.getInstance().find(key, this._values);
+        return this._baseSelector.getInstance(null, { values: this._values }).find(key);
     },
 
     getLinkedFieldsByKey: function(key){
