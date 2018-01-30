@@ -9,6 +9,8 @@
 	        this.addClass('dataBindingRender');
 	        this.loadCss('DataBinding.css');
 	        $base();
+
+            this.changeLinkTo(this.getValueByKey(this._scheme.linkTo));
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -18,6 +20,7 @@
             }
 
             var item = new Editor({
+                value: values.value,
                 onchange: function(){
                     values.value = item.getValue();
                 }

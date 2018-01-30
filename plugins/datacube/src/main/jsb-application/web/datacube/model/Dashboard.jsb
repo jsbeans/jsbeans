@@ -128,7 +128,8 @@
 						jsb: wWrapper.getWidgetType(),
 						name: wWrapper.getName(),
 						values: wWrapper.getValues(),
-						linkedFields: wWrapper.getLinkedFields()
+						linkedFields: wWrapper.getLinkedFields(),
+						sourcesIds: wWrapper.getSourcesIds()
 					}
 				}
 				this.widgetCount = Object.keys(this.wrappers).length;

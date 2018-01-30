@@ -130,13 +130,25 @@
 		        $this.savedMessage.fadeOut(1600, "linear");
 		    });
         */
-debugger;
+
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 
+		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),
+		        sourcesIds = [];
+
+            for(var i = 0; i < sources.length; i++){
+                var s = sources[i].getValues();
+
+                for(var j = 0; j < s.values.length; j++){
+                    sourcesIds.push(s.values[j].binding.source);
+                }
+            }
+
             this.entry.server().storeValues({
+                linkedFields: this.widgetSchemeRenderer.getLinkedFields(),
                 name: this.titleEditor.getData().getValue(),
-                values: this.wrapper.values,
-                linkedFields: this.widgetSchemeRenderer.getLinkedFields()
+                sourcesIds: sourcesIds,
+                values: this.wrapper.values
             }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.wrapper.getWidgetEntry().getId(),

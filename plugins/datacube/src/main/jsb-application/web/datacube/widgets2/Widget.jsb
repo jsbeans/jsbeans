@@ -395,7 +395,7 @@
 		updateValues: function(opts, sourceDesc){
 			this.values = opts.values;
 			this.linkedFields = opts.linkedFields;
-debugger;
+
 			this.context = {};
 			if(sourceDesc){
 				this.sourceMap = sourceDesc.sourceMap;

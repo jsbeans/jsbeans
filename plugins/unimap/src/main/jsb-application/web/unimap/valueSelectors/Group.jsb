@@ -12,7 +12,7 @@
     },
 
     value: function(){
-        return this.getInstance(undefined, this._values.values[0].values);
+        return this.getInstance(undefined, this._values[0].values);
     },
 
     values: function(){

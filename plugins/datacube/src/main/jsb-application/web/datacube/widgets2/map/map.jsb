@@ -403,7 +403,6 @@
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
-
 debugger;
 
             this.getElement().loader();

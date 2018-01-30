@@ -130,11 +130,15 @@
             return this.options.parent;
         },
 
+        getRenderName: function(){
+            return this._scheme.render;
+        },
+
         getValueByKey: function(){
             return this._schemeController.getValueByKey(this._scheme.linkTo);
         },
 
-        getValue: function(){
+        getValues: function(){
             return this._values;
         },
 

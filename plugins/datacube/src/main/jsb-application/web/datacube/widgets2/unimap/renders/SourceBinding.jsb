@@ -300,7 +300,7 @@
                 throw new Error('Invalid datascheme passed');
             }
 
-            return JSB.getInstance(workspaceId).entry(ds.source);
+            return JSB.getInstance(ds.workspaceId).entry(ds.source);
         }
 	}
 }

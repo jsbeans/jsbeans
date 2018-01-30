@@ -90,7 +90,27 @@
             }
         }
     },
+/*
+    findRendersByName: function(name, values){
+        if(!name || name.length == 0){
+            return;
+        }
 
+        var renders = [];
+
+        if(!values){
+            values = this._values;
+        }
+
+        if(!JSB.isArray(values)){
+            values = [values];
+        }
+debugger;
+        for(var i = 0; i < values.length; i++){
+
+        }
+    },
+*/
     getInstance: function(key, selector){
         if(this._selectorPrototype){
             return new this._selectorPrototype({

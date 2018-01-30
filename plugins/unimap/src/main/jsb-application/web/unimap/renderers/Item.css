@@ -5,6 +5,7 @@
 .itemRender > .jsb-checkbox {
     display: inline-block;
     margin-right: 5px;
+    vertical-align: middle;
 }
 
 .itemRender > .jsb-checkbox + .name {

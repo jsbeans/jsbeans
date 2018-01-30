@@ -96,6 +96,18 @@
 	        }
 	    },
 
+	    findRendersByRender: function(name){
+	        var renders = [];
+
+	        for(var i = 0; i < this._renders.length; i++){
+	            if(this._renders[i].getRenderName() == name){
+	                renders.push(this._renders[i]);
+	            }
+	        }
+
+	        return renders;
+	    },
+
 	    getLinkedFields: function(){
 	        var links = {};
 
@@ -111,7 +123,7 @@
 
 	    getValueByKey: function(key){
 	        var render = this.findRenderByKey(key);
-	        return render ? render.getValue() : null;
+	        return render ? render.getValues() : null;
 	    },
 
 	    getValues: function(b){
