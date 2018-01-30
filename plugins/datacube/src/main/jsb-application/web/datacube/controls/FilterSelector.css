@@ -60,6 +60,7 @@
     border-left: 2px solid rgb(138, 148, 152);
     border-radius: 6px;
     margin-right: -6px;
+    margin-left: 4px;
 }
 
 .filterSelector > .filterContainer .node > .node:after {
@@ -72,6 +73,7 @@
     border-right: 2px solid rgb(138, 148, 152);
     border-radius: 6px;
     margin-left: -6px;
+	margin-right: 4px;
 }
 
 
