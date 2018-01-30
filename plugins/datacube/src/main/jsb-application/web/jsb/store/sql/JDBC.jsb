@@ -380,6 +380,13 @@
             case 'time':
 				jsonType = 'datetime';
 				break;
+            case 'array':
+				jsonType = 'array';
+				break;
+            case 'object':
+				jsonType = 'object';
+				break;
+            	
             default:
             	throw new Error('Unsupported sql type: ' + sqlType);
 			}
