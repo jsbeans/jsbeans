@@ -32,7 +32,7 @@
 
             this.saveBtn = new Button({
                 cssClass: "btnUpdate",
-                caption: "Обновить данные",
+                caption: "Обновить",
                 onClick: function(){
                     $this.updateData();
                 }

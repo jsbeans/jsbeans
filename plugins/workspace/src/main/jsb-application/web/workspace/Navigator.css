@@ -24,24 +24,24 @@
 
 .workspaceNavigator > ul.wnbContainer > li.tag {
 	padding: 1px 4px;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
     box-sizing: border-box;
     position: relative;
 	border: 1px solid rgba(2, 47, 78, 0);
 	color: #5f3601;
+	transition: background-color 300ms;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag:hover {
 	background-color: rgba(156, 92, 29, 0.3);
-    border-color: rgba(105, 45, 0, 0.5);
     
-    transition: background-color 300ms, border-color 300ms;
+    transition: background-color 300ms;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .renderer {
-	padding-bottom: 2px;
-	max-width: 300px;
+	vertical-align: top;
+	max-width: 400px;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .icon,
@@ -76,15 +76,11 @@
 */
 
 .workspaceNavigator > ul.wnbContainer > li.tag.active {
-	background: -webkit-linear-gradient(top, #EB9072, #EC7249 50%, #E2653C 50%, #D35931);
-    background: -moz-linear-gradient(top, #EB9072, #EC7249 50%, #E2653C 50%, #D35931);
-    background: linear-gradient(top, #EB9072, #EC7249 50%, #E2653C 50%, #D35931);
-    background: -o-linear-gradient(top, #EB9072, #EC7249 50%, #E2653C 50%, #D35931);
-    background: -ms-linear-gradient(top, #EB9072, #EC7249 50%, #E2653C 50%, #D35931);
+	background-color: #d37531;
     color: #fff;
     text-shadow: 1px 1px #7E3C17;
-    border: 1px solid #98604E;
 	cursor: default;
+	transition: background-color 300ms;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag.root > .icon {

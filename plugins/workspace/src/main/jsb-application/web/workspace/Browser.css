@@ -5,7 +5,7 @@
 }
 
 .workspaceBrowser > .jsb-tabview > .tabPane > li {
-    font-size: 18px;
+    font-size: 16px;
 	margin-top: -1px;
     margin-left: -1px;
     padding: 6px 10px 0 14px;
@@ -26,11 +26,20 @@
 
 .workspaceBrowser > .workspaceNavigator {
 	position: absolute;
-    top: 6px;
+    top: 4px;
     width: calc(100% - 248px);
     z-index: 1;
-    height: 28px;
+    height: 32px;
     left: 6px;
+	background: -webkit-linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
+	background: -moz-linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
+    background: linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
+    background: -o-linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
+    background: -ms-linear-gradient(top, #f9f9f9, #fff 40%, #fefefe);
+    
+    border-radius: 6px;
+	box-shadow: inset 0px 0px 1px #636363;
+    padding: 2px;
 }
 
 .workspaceBrowser > .workspaceNavigator > ul.wnbContainer > li.tag {

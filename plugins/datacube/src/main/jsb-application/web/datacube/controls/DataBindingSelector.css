@@ -3,7 +3,6 @@
 .dataBindingSelector {
     display: inline-block;
     padding: 6px 5px 6px 5px;
-    height: 34px;
     font-size: 14px;
     line-height: 1.42857143;
     color: #555;
@@ -111,7 +110,7 @@
 
 .dataBindingSelector > .binding {
 	padding: 0 2px;
-    height: 18px;
+    min-height: 18px;
     display: none;
 }
 
@@ -134,7 +133,7 @@
 
 .dataBindingSelector > .binding > .renderer > .title {
 	padding-left: 20px;
-	display: inline-block;
+	display: inline;
 	vertical-align: middle;
 	max-width: 150px;
 }
@@ -159,4 +158,6 @@
 .dataBindingSelector > .binding > .renderer > .cubeRenderer > .title {
 	font-size: 10px;
     padding-left: 20px;
+    padding-top: 0;
+    padding-bottom: 0;
 }
