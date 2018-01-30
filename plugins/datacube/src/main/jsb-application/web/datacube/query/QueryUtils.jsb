@@ -919,6 +919,10 @@
 		},
 
         extractType: function (exp, query, cubeOrDataProvider) {
+            var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
+                        ? cubeOrDataProvider.getManagedFields()
+                        : cubeOrDataProvider.extractFields();
+
             function extractFieldType(field){
                 if (query.$from) {
                     var fromFieldExpression = query.$from.$select[field];
@@ -928,6 +932,7 @@
                 }
                 return fieldType;
             }
+
             if (JSB.isString(exp)) {
                 var fieldType = extractFieldType(exp);
                 return fieldType;
@@ -983,7 +988,7 @@
         getFieldJdbcType: function(cubeOrDataProvider, field) {
             if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
                 var cubeFields = cubeOrDataProvider.getManagedFields();
-                for(var cubeField in fields) if(cubeFields.hasOwnProperty(cubeField)) {
+                for(var cubeField in cubeFields) if(cubeFields.hasOwnProperty(cubeField)) {
                     var binding = cubeFields[cubeField].binding;
                     for (var i in binding) {
                         return binding[i].nativeType || binding[i].type;
