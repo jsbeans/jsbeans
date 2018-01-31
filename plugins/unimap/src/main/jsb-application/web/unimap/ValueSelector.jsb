@@ -59,11 +59,11 @@
     find: function(key){
         return this._baseSelector.getInstance(null, { values: this._values }).find(key);
     },
-/*
+
     findRendersByName: function(name){
 
     },
-*/
+
     getContext: function(){
         return this._context;
     },

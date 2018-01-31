@@ -22,6 +22,7 @@
             getKey: this.getKey,
             getLinkedFieldsByKey: this.getLinkedFieldsByKey,
             getRenderByName: this.getRenderByName,
+            getRenderName: this.getRenderName,
             setValue: this.setValue,
             value: this.value,
             values: this.values
@@ -103,6 +104,22 @@
         }
     },
 
+    findRendersByName: function(name, arr){
+        if(!arr){
+            arr = [];
+        }
+
+        function findRenders(values){
+            for(var i in this._values){
+                if(this._values[i].render == name){
+                    arr.push(this.getRenderByName(values[i].render).getInstance(i, values[i]));
+                }
+            }
+        }
+
+        return arr;
+    },
+
     getContext: function(){
         return this._selector._mainSelector.getContext();
     },
@@ -131,6 +148,10 @@
 
     getRenderByName: function(name){
         return this._selector._mainSelector.getRenderByName(name);
+    },
+
+    getRenderName: function(){
+        return this._render;
     },
 
     setValue: function(val){
