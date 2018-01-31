@@ -420,42 +420,121 @@
 			if(this.materialization && this.materialization.dataProvider){
 				return [this.materialization.dataProvider];
 			}
-		    function compareProviders(leftProvider, rightProvider){
-		        // by mode
-		        if ((leftProvider.getMode()||'union') != (rightProvider.getMode()||'union')) {
-		            return rightProvider.getMode() == 'join' ? -1 : 1;
+
+		    var ordered = [];
+		    var joins = [];
+		    for(var id in this.dataProviders) {
+                var provider = this.dataProviders[id];
+		        if ((provider.getMode()||'union') == 'union') {
+		            ordered.push(provider);
+		        } else {
+		            joins.push(provider);
 		        }
-		        // by position
-		        for(var f in $this.fields){
-                    var binding = $this.fields[f].binding;
-                    if (binding.length > 1) {
-                        var leftPosition = binding.length;
-                        for(var b = 0; b < binding.length; b++) {
-                            if (binding[b].provider == leftProvider) {
-                                leftPosition = b;
+		    }
+
+            function orderJoins(allOrAny){
+                var cubeFields = $this.getManagedFields();
+                var stop = false;
+                while(!stop) {
+                    stop = true;
+                    for (var p =0; p < joins.length; p++) {
+                        var provider = joins[p];
+                        var allBinded = true;
+                        var anyBinded = false;
+                        //  check all shared fields has binding with ordered
+                        cubeFields:
+                        for(var cubeField in cubeFields) {
+                            var binding = cubeFields[cubeField].binding;
+                            if (binding.length > 1) {
+                                for(var b in binding) {
+                                    if(binding[b].provider == provider) {
+                                        // here cubeField is shared field of provider
+                                        var hasBinding = (function(){
+                                            // find left provider with binding
+                                            for (var o in ordered) {
+                                                var leftProvider = ordered[o];
+                                                for(var b2 in binding) {
+                                                    if(binding[b2].provider == leftProvider) {
+                                                        return true;
+                                                    }
+                                                }
+                                            }
+                                            return false;
+                                        })();
+                                        if (hasBinding) {
+                                            anyBinded = true;
+                                            if (!allOrAny) {
+                                                break cubeFields;
+                                            }
+                                        } else {
+                                            allBinded = false;
+                                            if (allOrAny) {
+                                                break cubeFields;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                        var rightPosition = binding.length;
-                        for(var b = 0; b < binding.length; b++) {
-                            if (binding[b].provider == rightProvider) {
-                                rightPosition = b;
-                            }
-                        }
-                        if (leftPosition != binding.length && rightPosition != binding.length) {
-                            return leftPosition - rightPosition;
+                        if (allOrAny ? allBinded : anyBinded) {
+                            joins.splice(p--, 1);
+                            ordered.push(provider);
+                            stop = false;
                         }
                     }
                 }
-                return 0;
-		    }
+            }
 
-		    var providers = [];
-		    for(var id in this.dataProviders) {
-		        providers.push(this.dataProviders[id]);
-		    }
-		    providers.sort(compareProviders);
-		    return providers;
+            orderJoins(true); // first all shared fields binded
+            orderJoins(false); // then any shared field binded
+
+            if (joins.length > 0) {
+                throw new Error('Some provider`s fields has no JOIN ON binding');
+            }
+		    return ordered;
 		},
+
+//		getOrderedDataProviders: function(){
+//			this.load();
+//			if(this.materialization && this.materialization.dataProvider){
+//				return [this.materialization.dataProvider];
+//			}
+//		    function compareProviders(leftProvider, rightProvider){
+//		        // by mode
+//		        if ((leftProvider.getMode()||'union') != (rightProvider.getMode()||'union')) {
+//		            return rightProvider.getMode() == 'join' ? -1 : 1;
+//		        }
+//		        // by position
+//		        for(var f in $this.fields){
+//                    var binding = $this.fields[f].binding;
+//                    if (binding.length > 1) {
+//                        var leftPosition = binding.length;
+//                        for(var b = 0; b < binding.length; b++) {
+//                            if (binding[b].provider == leftProvider) {
+//                                leftPosition = b;
+//                            }
+//                        }
+//                        var rightPosition = binding.length;
+//                        for(var b = 0; b < binding.length; b++) {
+//                            if (binding[b].provider == rightProvider) {
+//                                rightPosition = b;
+//                            }
+//                        }
+//                        if (leftPosition != binding.length && rightPosition != binding.length) {
+//                            return leftPosition - rightPosition;
+//                        }
+//                    }
+//                }
+//                return 0;
+//		    }
+//
+//		    var providers = [];
+//		    for(var id in this.dataProviders) {
+//		        providers.push(this.dataProviders[id]);
+//		    }
+//		    providers.sort(compareProviders);
+//		    return providers;
+//		},
 
 		createProviderFieldsList: function(provider, fields){
 			this.load();

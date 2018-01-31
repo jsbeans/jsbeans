@@ -990,9 +990,8 @@
             function buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, hasUnions, unionsFields) {
                 var sqlJoins = '';
                 var firstProv;
-                for(var p in providers) if(providers.hasOwnProperty(p)) {
-                    var prov = providers[p];
-                    if (prov.provider.getMode() != 'join') continue;
+                for (var p in $this.providers) if(providers.hasOwnProperty($this.providers[p].id) && $this.providers[p].getMode() == 'join') {
+                    var prov = providers[$this.providers[p].id];
                     firstProv = firstProv || prov;
 
                     if (sqlJoins.length > 0) sqlJoins += ' LEFT JOIN ';
