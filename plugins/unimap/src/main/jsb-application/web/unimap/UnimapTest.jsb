@@ -309,7 +309,7 @@
                 },
                 {
                     name: 'sourceBinding',
-                    render: 'Datacube.ValueSelectors.SourceSelector'
+                    render: 'Unimap.ValueSelectors.SourceSelector'
                 }
             ]
 

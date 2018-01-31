@@ -158,7 +158,7 @@
 			        return;
 			    }
 
-			    $this.getWidget().updateValues(opts.values, opts.sourceDesc);
+			    $this.getWidget().updateValues(opts);
 			    $this.widget.ensureInitialized(function(){
 			    	 $this.getWidget().refresh();
 				});
@@ -248,12 +248,13 @@
 			return scheme;
 		},
 
-		updateValues: function(values, linkedFields){
+		updateValues: function(opts){
 		    this.getWidget().updateValues({
-		        values: JSB.clone(values),
-		        linkedFields: linkedFields
+		        values: JSB.clone(opts.values),
+		        linkedFields: opts.linkedFields,
+		        sourceDesc: opts.sourceDesc
 		    });
-		    this.values = values;
+		    this.values = opts.values;
 		},
 		
 		updateTabHeader: function(){

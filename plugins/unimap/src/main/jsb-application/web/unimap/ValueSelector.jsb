@@ -7,8 +7,9 @@
     _values: null,
 
     $constructor: function(opts){
-        this._values = opts.values;
+        this._values = [opts.values];
         this._linkedFields = opts.linkedFields || {};
+        this._context = opts.context;
 
         this._baseSelector = new Basic({
             mainSelector: $this
@@ -63,6 +64,10 @@
 
     },
 */
+    getContext: function(){
+        return this._context;
+    },
+
     getLinkedFieldsByKey: function(key){
         if(!key){
             return;

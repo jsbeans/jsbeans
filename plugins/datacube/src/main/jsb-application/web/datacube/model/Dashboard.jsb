@@ -141,7 +141,6 @@
 				JSB.getLocker().unlock(mtxName);	
 			}
 			this.workspace.store();
-
 		},
 		
 		load: function(){

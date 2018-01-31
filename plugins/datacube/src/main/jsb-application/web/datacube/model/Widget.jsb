@@ -8,6 +8,7 @@
 	values: null,
 	sourceMap: null,
 	sources: {},
+	linkedFields: {},
 	
 	getName: function(){
 		return this.name;
@@ -83,6 +84,9 @@
 				if(this.property('sourcesIds')){
 				    this.sourcesIds = this.property('sourcesIds');
 				}
+				if(this.property('linkedFields')){
+				    this.linkedFields = this.property('linkedFields');
+				}
 				if(this.property('sourceMap')){
 					this.sourceMap = this.property('sourceMap');
 					this.updateSources();
@@ -92,7 +96,6 @@
 				}
 				
 				if(bNeedSave){
-				    // todo: maybe dashboard store??
 					this.workspace.store();
 				}
 			}
@@ -115,6 +118,7 @@
 			this.getDashboard().load();
 			this.values = opts.values;
 			this.sourcesIds = opts.sourcesIds;
+			this.linkedFields = opts.linkedFields;
 			this.property('values', opts.values);
 			this.property('linkedFields', opts.linkedFields);
 			this.property('sourcesIds', opts.sourcesIds);

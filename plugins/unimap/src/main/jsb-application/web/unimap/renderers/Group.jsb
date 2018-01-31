@@ -20,6 +20,8 @@
 	        if(this._scheme.optional){
 	            this.addClass('optional');
 
+	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
+
 	            var checkBox = new Checkbox({
 	                checked: this._values.checked,
 	                onchange: function(b){

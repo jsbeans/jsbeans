@@ -11,7 +11,7 @@
     },
 
     next: function(){
-        var item = this._values.values[0];
+        var item = this._values[0].binding;
 
         if(!JSB.isDefined(item.cursor)){
             item.cursor = 0;
@@ -36,17 +36,24 @@
 
         // fill values
         if(!this._linkedValues){
-            this._linkedValues = [];
+            this._linkedValues = {};
 
-            var linkedKeys = this.getLinkedFieldsByKey(this.getKey());
+            var linkedKeys = this.getLinkedFieldsByKey(this.getKey()),
+                linkedValues = [];
 
             for(var i = 0; i < linkedKeys.length; i++){
-                this._linkedValues.push(this.find(linkedKeys[i]));
+                linkedValues.push(this._selector._mainSelector.find(linkedKeys[i]));
+            }
+
+            for(var i = 0; i < linkedValues.length; i++){
+                if(linkedValues[i]._values[0].binding){ // todo: check slice id
+                    this._linkedValues[linkedValues[i]._values[0].binding] = linkedValues[i];
+                }
             }
         }
 
-        for(var i = 0; i < this._linkedValues.length; i++){
-            this._linkedValues[i].setValue();   // todo
+        for(var i in this._linkedValues){
+            this._linkedValues[i].setValue(dataEl[i]);
         }
 
         return true;

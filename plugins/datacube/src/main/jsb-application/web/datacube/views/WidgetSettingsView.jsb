@@ -90,7 +90,10 @@
             this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, designMode: true });
             this.widgetBlock.append(this.wrapper.getElement());
 
-            if(this.widgetSchemeRenderer) this.widgetSchemeRenderer.destroy();
+            if(this.widgetSchemeRenderer){
+                this.widgetSchemeRenderer.destroy();
+            };
+
             JSB().deferUntil(function(){
                 $this.widgetSchemeRenderer = new Controller({
                     scheme: $this.wrapper.extractWidgetScheme(),
@@ -152,14 +155,18 @@
             }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.wrapper.getWidgetEntry().getId(),
-                    values: JSB.clone($this.wrapper.values),
-                    sourceDesc: sourceDesc
+                    linkedFields: $this.widgetSchemeRenderer.getLinkedFields(),
+                    sourceDesc: sourceDesc,
+                    values: JSB.clone($this.wrapper.values)
                 });
             });
 		},
 
 		setChanges: function(){
-		    this.wrapper.updateValues(this.widgetSchemeRenderer.getValues(), this.widgetSchemeRenderer.getLinkedFields());
+		    this.wrapper.updateValues({
+		        values: this.widgetSchemeRenderer.getValues(),
+		        linkedFields: this.widgetSchemeRenderer.getLinkedFields()
+		    });
 
             this.wrapper.getWidget().ensureInitialized(function(){
 	            try {

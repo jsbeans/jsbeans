@@ -8,14 +8,18 @@
 
         this._selectorPrototype = function(opts){
             this._selector = $this;
+            this._checked = opts.selector.checked;
+            this._key = opts.key;
             this._render = opts.selector.render;
             this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
-            this._key = opts.key;
         }
 
         this._selectorPrototype.prototype = {
+            checked: this.checked,
             find: this.find,
+            getContext: this.getContext,
             getInstance: this.getInstance,
+            getKey: this.getKey,
             getLinkedFieldsByKey: this.getLinkedFieldsByKey,
             getRenderByName: this.getRenderByName,
             setValue: this.setValue,
@@ -29,6 +33,14 @@
             if(this._excludeMethods.indexOf(methods[i]) < 0){
                 this._selectorPrototype.prototype[methods[i]] = this[methods[i]];
             }
+        }
+    },
+
+    checked: function(){
+        if(JSB.isDefined(this._checked)){
+            return this._checked;
+        } else {
+            return true;
         }
     },
 
@@ -90,27 +102,11 @@
             }
         }
     },
-/*
-    findRendersByName: function(name, values){
-        if(!name || name.length == 0){
-            return;
-        }
 
-        var renders = [];
-
-        if(!values){
-            values = this._values;
-        }
-
-        if(!JSB.isArray(values)){
-            values = [values];
-        }
-debugger;
-        for(var i = 0; i < values.length; i++){
-
-        }
+    getContext: function(){
+        return this._selector._mainSelector.getContext();
     },
-*/
+
     getInstance: function(key, selector){
         if(this._selectorPrototype){
             return new this._selectorPrototype({

@@ -65,6 +65,7 @@
 
 	        for(var i = 0; i < this._selectors.length; i++){
 	            this._selectors[i].setOptions(this._optionsList, true);
+	            this._selectors[i].setValue(this._optionsList[0].value, true);
 	        }
 	    },
 

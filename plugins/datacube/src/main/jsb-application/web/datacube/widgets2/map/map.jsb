@@ -267,7 +267,7 @@
             }
 
             var dataSource = this.getContext().find('dataSource');
-            if(!dataSource.hasBinding()){
+            if(!dataSource || !dataSource.hasBinding()){
                 return;
             }
 
@@ -361,32 +361,33 @@
                     regionsColors[i].selectBorderColor = regionsContext[i].find('selectBorderColor').value();
                     regionsColors[i].selectColor = regionsContext[i].find('selectColor').value();
 
+                    var r = {
+                        compareTo: regionsContext[i].find('compareTo').value()
+                    };
+
                     switch(regionsContext[i].find('geojsonMap').value()){
                         case 'russianRegions':
-                            maps.push({
+                            maps.push(JSB.merge(r, {
                                 data: null,
                                 path: 'geojson/russianRegions.json',
-                                compareTo: regionsContext[i].find('compareTo').value(),
                                 wrapLongitude: -30
-                            });
+                            }));
                             newMapHash += 'geojson/russianRegions.json';
                             break;
                         case 'russianRegionsMPT':
-                            maps.push({
+                            maps.push(JSB.merge(r, {
                                 data: null,
                                 path: 'geojson/russianRegionsMPT.json',
-                                compareTo: regionsContext[i].find('compareTo').value(),
                                 wrapLongitude: -30
-                            });
+                            }));
                             newMapHash += 'geojson/russianRegionsMPT.json';
                             break;
                         case 'worldCountries':
-                            maps.push({
+                            maps.push(JSB.merge(r, {
                                 data: null,
                                 path: 'geojson/worldCountries.json',
-                                compareTo: regionsContext[i].find('compareTo').value(),
                                 wrapLongitude: -32
-                            });
+                            }));
                             newMapHash += 'geojson/worldCountries.json';
                             break;
                     }
@@ -403,13 +404,12 @@
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
-debugger;
 
             this.getElement().loader();
-            this.fetchBinding({selector: dataSource, readAll: true, reset: true}, function(res){
+            this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
                 try{
                     var regions = {};
-debugger;
+
                     while(dataSource.next()){
                         for(var i = 0; i < regionsContext.length; i++){
                             var value = regionsContext[i].find('value').value();
@@ -417,8 +417,8 @@ debugger;
                             if(!regions[i]){
                                 regions[i] = {
                                     data: [],
-                                    showValuesPermanent: regionsContext[i].find('showValuesPermanent').used(),
-                                    showEmptyRegions: regionsContext[i].find('showEmptyRegions').used()
+                                    showValuesPermanent: regionsContext[i].find('showValuesPermanent').checked(),
+                                    showEmptyRegions: regionsContext[i].find('showEmptyRegions').checked()
                                 };
                             }
 
@@ -517,7 +517,29 @@ debugger;
 
                 // add title layers
                 for(var i = 0; i < tileMaps.length; i++){
-                    L.tileLayer(tileMaps[i].find('url').value().value(), {foo: 'bar'}).addTo(this.map);
+                    var url;
+
+                    switch(tileMaps[i].find('serverUrl').value()){
+                        case 'sputnik':
+                            url = 'http://tiles.maps.sputnik.ru/{z}/{x}/{y}.png'
+                            break;
+                        case 'openstreetmap':
+                            url = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                            break;
+                        case 'cartocdn':
+                            url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                            break;
+                        case 'stamen':
+                            url = 'http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png'
+                            break;
+                        case 'custom':
+                            url = tileMaps[i].find('customServer').value();
+                            break;
+                        default:
+                            continue;
+                    }
+
+                    L.tileLayer(url, {foo: 'bar'}).addTo(this.map);
                 }
 
                 // add geojson layers

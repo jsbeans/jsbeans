@@ -22,7 +22,16 @@
             var item = new Editor({
                 value: values.value,
                 onchange: function(){
-                    values.value = item.getValue();
+                    var val = item.getValue();
+                    values.value = val;
+
+                    // todo: add slice id
+
+                    if($this._dataList.indexOf(val) > -1){
+                        values.binding = val;
+                    } else {
+                        values.binding = undefined;
+                    }
                 }
             });
             this._editors.push(item);
@@ -56,6 +65,8 @@
             for(var i = 0; i < this._editors.length; i++){
                 this._editors[i].setDataList(dataList);
             }
+
+            this._dataList = dataList;
 	    }
 	}
 }

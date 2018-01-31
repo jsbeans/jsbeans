@@ -31,6 +31,10 @@
             {
                 name: 'sourceBinding',
                 render: 'Datacube.ValueSelectors.SourceSelector'
+            },
+            {
+                name: 'dataBinding',
+                render: 'Datacube.ValueSelectors.DataBindingSelector'
             }
 		],
 		_rendersMap: {},
@@ -119,7 +123,7 @@
             }
 		},
 
-        fetchBinding: function(opts, callback){
+        fetchBinding: function(selector, opts, callback){
             if(arguments.length == 1 && JSB.isFunction(opts)){
                 callback = opts;
                 opts = {};
@@ -131,7 +135,7 @@
                 opts = {};
             }
 
-            var item = opts.selector.binding();
+            var item = selector.binding();
             if(!item){
                 return false;
             }
@@ -215,10 +219,9 @@
 
             // TODO: construct hover filter
 
-
-            item.fetchOpts.context = this.ctxName;
+            item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
-            $this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
                 if(fail && fail.message == 'Fetch broke'){
                     return;
                 }
@@ -291,9 +294,9 @@
 			}
 
 			if(!this.context[ctxName]){
-				var ctxValues = JSB.clone(this.values);
 				this.context[ctxName] = new ValueSelector({
-				    values: ctxValues,
+				    context: ctxName,
+				    values: JSB.clone(this.values),
 				    linkedFields: this.linkedFields,
 				    rendersMap: this._rendersMap
 				});
@@ -392,14 +395,19 @@
 		    this._cache = data;
 		},
 
-		updateValues: function(opts, sourceDesc){
+		updateValues: function(opts){
 			this.values = opts.values;
-			this.linkedFields = opts.linkedFields;
+
+			if(opts.linkedFields){
+			    this.linkedFields = opts.linkedFields;
+			} else {
+			    this.linkedFields = this.getWrapper().getWidgetEntry().getLinkedFields();
+			}
 
 			this.context = {};
-			if(sourceDesc){
-				this.sourceMap = sourceDesc.sourceMap;
-				this.sources = sourceDesc.sources;
+			if(opts.sourceDesc){
+				this.sourceMap = opts.sourceDesc.sourceMap;
+				this.sources = opts.sourceDesc.sources;
 			} else {
 				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
 				this.sources = this.getWrapper().getWidgetEntry().getSources();
@@ -710,7 +718,7 @@
 /*			
 			Log.debug(JSON.stringify(data));
 			Log.debug(JSON.stringify(encoded));
-*/			
+*/
 			return encoded;
 		}
 	}
