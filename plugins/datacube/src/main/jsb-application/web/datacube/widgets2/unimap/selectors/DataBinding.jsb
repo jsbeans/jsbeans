@@ -2,6 +2,10 @@
     $name: 'Datacube.ValueSelectors.DataBindingSelector',
     $parent: 'Unimap.ValueSelectors.Basic',
 
+    getBindingName: function(){
+        return this._values[0].binding;
+    },
+
     value: function(layer){
         layer = layer || 'main';
 

@@ -16,14 +16,15 @@
 
         this._selectorPrototype.prototype = {
             checked: this.checked,
-            find: this.find,
             getContext: this.getContext,
             getInstance: this.getInstance,
             getKey: this.getKey,
             getLinkedFieldsByKey: this.getLinkedFieldsByKey,
+            getMainSelector: this.getMainSelector,
             getRenderByName: this.getRenderByName,
             getRenderName: this.getRenderName,
             setValue: this.setValue,
+            setValues: this.setValues,
             value: this.value,
             values: this.values
         };
@@ -43,81 +44,6 @@
         } else {
             return true;
         }
-    },
-
-    find: function(key, values){
-        if(!key || key.length == 0){
-            return;
-        }
-
-        if(!values){
-            values = this._values;
-        }
-
-        if(JSB.isArray(values)){
-            values = values[0];
-        }
-
-        key = key.trim();
-
-        var regexp = /\S+(?=\s|$)/,
-            curKey = key.match(regexp),
-            res,
-            strict = false;
-
-        key = key.substring(curKey[0].length).trim();
-
-        if(curKey[0] == '>'){
-            strict = true;
-            curKey = key.match(regexp);
-            key = key.substring(curKey[0].length).trim();
-        }
-
-        for(var i in values){
-            if(i == curKey[0]){
-                res = this.getRenderByName(values[i].render).getInstance(i, values[i]);
-                break;
-            }
-        }
-
-        if(!res && strict){
-            return null;
-        }
-
-        if(res){
-            if(key.length > 0){
-                return res.find(key);
-            } else {
-                return res;
-            }
-        } else {
-            for(var i in values){
-                var res = this.getRenderByName(values[i].render).getInstance(i, values[i]).find(curKey[0]);
-                if(res){
-                    if(key.length > 0){
-                        return res.find(key);
-                    } else {
-                        return res;
-                    }
-                }
-            }
-        }
-    },
-
-    findRendersByName: function(name, arr){
-        if(!arr){
-            arr = [];
-        }
-
-        function findRenders(values){
-            for(var i in this._values){
-                if(this._values[i].render == name){
-                    arr.push(this.getRenderByName(values[i].render).getInstance(i, values[i]));
-                }
-            }
-        }
-
-        return arr;
     },
 
     getContext: function(){
@@ -143,11 +69,15 @@
     },
 
     getLinkedFieldsByKey: function(key){
-        return this._selector._mainSelector.getLinkedFieldsByKey(key);
+        return this.getMainSelector().getLinkedFieldsByKey(key);
+    },
+
+    getMainSelector: function(){
+        return this._selector ? this._selector._mainSelector : this._mainSelector;
     },
 
     getRenderByName: function(name){
-        return this._selector._mainSelector.getRenderByName(name);
+        return this.getMainSelector().getRenderByName(name);
     },
 
     getRenderName: function(){
@@ -162,7 +92,7 @@
         // todo
     },
 
-    value: function(){
+    value: function(val){
         return this._values[0].value;
     },
 

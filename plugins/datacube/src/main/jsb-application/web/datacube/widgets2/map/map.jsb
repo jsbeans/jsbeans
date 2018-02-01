@@ -326,12 +326,13 @@
                 this._curFilterHash = null;
             }
 */
-            try{
+            //try{
                 var regionsColors = [],
                     maps = [],
                     newMapHash = '';
 
                 for(var i = 0; i < regionsContext.length; i++){
+debugger;
                     var colorSelector = regionsContext[i].find('fillColor');
                     switch(colorSelector.value()){
                         case 'simpleColor':
@@ -400,10 +401,12 @@
                     this._isMapsLoaded = false;
                     this.loadMaps();
                 }
+            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
+            */
 
             this.getElement().loader();
             this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){

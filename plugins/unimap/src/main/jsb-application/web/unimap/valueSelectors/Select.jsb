@@ -2,12 +2,36 @@
     $name: 'Unimap.ValueSelectors.Select',
     $parent: 'Unimap.ValueSelectors.Basic',
 
-    find: function(key){
-        for(var i = 0; i < this._values.length; i++){
-            var res = $base(key, this._values[i].items);
+    find: function(key, values){
+        if(!values){
+            values = this._values;
+        }
+
+        for(var i = 0; i < values.length; i++){
+            if(!values[i].items){
+                continue;
+            }
+
+            var res = this.getMainSelector().find(key, values[i].items);
             if(res){
                 return res;
             }
         }
+    },
+
+    findRendersByName: function(name, arr, values){
+        if(!arr){
+            arr = [];
+        }
+
+        if(!values){
+            values = this._values;
+        }
+
+        for(var i = 0; i < values.length; i++){
+            this.getMainSelector().findRendersByName(name, arr, values);
+        }
+
+        return arr;
     }
 }

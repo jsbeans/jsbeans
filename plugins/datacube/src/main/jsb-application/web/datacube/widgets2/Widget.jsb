@@ -251,31 +251,22 @@
         },
 
 		getBindingsData: function(callback){
-		    var bindings = this.getContext('export').findBindings(),
-		        bindingArray, bindingFields = {};
+            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding'),
+                dataBindings = this.getContext('export').findRendersByName('dataBinding');
 
-            for(var i = 0; i < bindings.selector.length; i++){
-                if(bindings.selector[i].binding){
-                    bindingArray = bindings.get(i);
-                } else {
-                    bindingFields[bindings.get(i).binding()] = bindings.get(i);
-                }
-            }
-
-            bindingArray.fetch({readAll: true, reset: true}, function(){
-                var results = [],
+            this.fetchBinding(sourceBindings[0], {readAll: true, reset: true}, function(){
+                var result = [],
                     res = [];
 
-                for(var i in bindingFields){
-                    res.push(i);
+                for(var i = 0; i < dataBindings.length; i++){
+                    res.push(dataBindings[i].getBindingName());
                 }
-                results.push(res);
 
-                while(bindingArray.next()){
+                while(sourceBindings.next()){
                     res = [];
 
-                    for(var i in bindingFields){
-                        res.push(bindingFields[i].value());
+                    for(var i = 0; i < dataBindings.length; i++){
+                        res.push(dataBindings[i].value());
                     }
                     results.push(res);
                 }

@@ -7,7 +7,7 @@
     _values: null,
 
     $constructor: function(opts){
-        this._values = [opts.values];
+        this._values = opts.values;
         this._linkedFields = opts.linkedFields || {};
         this._context = opts.context;
 
@@ -56,12 +56,87 @@
         this.ensureTrigger('_selectorInitialized', callback);
     },
 
-    find: function(key){
-        return this._baseSelector.getInstance(null, { values: this._values }).find(key);
+    find: function(key, values){
+        if(!key || key.length == 0){
+            return;
+        }
+
+        if(!values){
+            values = this._values;
+        }
+
+        key = key.trim();
+
+        var regexp = /\S+(?=\s|$)/,
+            curKey = key.match(regexp),
+            res,
+            strict = false;
+
+        key = key.substring(curKey[0].length).trim();
+
+        if(curKey[0] == '>'){
+            strict = true;
+            curKey = key.match(regexp);
+            key = key.substring(curKey[0].length).trim();
+        }
+
+        for(var i in values){
+            if(i == curKey[0]){
+                res = this.getRenderByName(values[i].render).getInstance(i, values[i]);
+                break;
+            }
+        }
+
+        if(!res && strict){
+            return null;
+        }
+
+        if(res){
+            if(key.length > 0){
+                return res.find(key);
+            } else {
+                return res;
+            }
+        } else {
+            for(var i in values){
+                var r = this.getRenderByName(values[i].render),
+                    res = r.find ? r.find(curKey[0], values[i].values) : undefined;
+
+                if(res){
+                    if(key.length > 0){
+                        return res.find(key);
+                    } else {
+                        return res;
+                    }
+                }
+            }
+        }
     },
 
-    findRendersByName: function(name){
+    findAll: function(key){
+        // todo: find all keys in value group on same level
+    },
 
+    findRendersByName: function(name, arr, values){
+        if(!arr){
+            arr = [];
+        }
+
+        if(!values){
+            values = this._values;
+        }
+
+        for(var i in values){
+            var r = this.getRenderByName(values[i].render);
+
+            if(values[i].render === name){
+                arr.push(r.getInstance(i, values[i]));
+            }
+
+            r.findRendersByName && r.findRendersByName(name, arr, values[i].values);
+        }
+
+        return arr;
     },
 
     getContext: function(){
