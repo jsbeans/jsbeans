@@ -262,16 +262,16 @@
                     res.push(dataBindings[i].getBindingName());
                 }
 
-                while(sourceBindings.next()){
+                while(sourceBindings[0].next()){
                     res = [];
 
                     for(var i = 0; i < dataBindings.length; i++){
                         res.push(dataBindings[i].value());
                     }
-                    results.push(res);
+                    result.push(res);
                 }
 
-                callback.call(this, results);
+                callback.call(this, result);
             });
 		},
 

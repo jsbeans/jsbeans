@@ -332,7 +332,6 @@
                     newMapHash = '';
 
                 for(var i = 0; i < regionsContext.length; i++){
-debugger;
                     var colorSelector = regionsContext[i].find('fillColor');
                     switch(colorSelector.value()){
                         case 'simpleColor':
