@@ -58,7 +58,7 @@
 						fDesc.comment = '';
 					}
 				} else {
-					fields[fName].type = fields[fName].nativeType = this.fields[fName];
+					fDesc.type = fDesc.nativeType = this.fields[fName];
 				}
 				fields[fName] = fDesc;
 
