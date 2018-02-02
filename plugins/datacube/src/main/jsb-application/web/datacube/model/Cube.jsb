@@ -1372,7 +1372,7 @@
 								fDesc.binding.push({
 									provider: materializationDesc.tables[tId].dataProvider,
 									field: pName,
-									type: providerFields[pName]
+									type: providerFields[pName].nativeType
 								});
 								continue;
 							}
