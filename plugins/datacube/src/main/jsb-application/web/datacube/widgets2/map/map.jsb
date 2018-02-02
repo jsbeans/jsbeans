@@ -238,7 +238,7 @@
                 $this.setInitialized();
             });
 
-            $this.getElement().resize(function(){
+            this.getElement().resize(function(){
                 JSB.defer(function(){
                     if(!$this.getElement().is(':visible') || !$this.map){
                         return;
@@ -246,12 +246,16 @@
                     $this.map.invalidateSize();
                 }, 300, 'hcResize' + $this.getId());
             });
+
+            this.ensureDataLoaded(function(){
+                try{
+                    $this.getElement().loader('hide');
+                } catch(e){}
+            });
         },
 
         // inner variables
         _curFilters: {},
-        _isMapsLoaded: false,
-        _isDataLoaded: false,
         _maps: [],
         _mapHash: null,
 
@@ -405,6 +409,7 @@
                 console.log(ex);
             }
 
+            $this.resetTrigger('_dataLoaded');
             this.getElement().loader();
             this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
                 try{
@@ -472,10 +477,7 @@
                     console.log('Load data exception!');
                     console.log(ex);
                 } finally {
-                    if($this._isMapsLoaded){
-                        $this.getElement().loader('hide');
-                    }
-                    $this._isDataLoaded = true;
+                    $this.setTrigger('_dataLoaded');
                 }
             });
         },
@@ -483,7 +485,7 @@
         // refresh after data and/or style changes
         buildChart: function(data){
             JSB.defer(function(){
-                $this.ensureInitialized(function(){
+                $this.ensureDataLoaded(function(){
                     $this.innerBuildChart(data);
                 });
             }, 300, 'buildChart_' + this.getId());
@@ -636,8 +638,8 @@
             }
         },
 
-        ensureInitialized: function(callback){
-            this.ensureTrigger(['_widgetInitialized', '_rendersMapCreated', '_mapLoaded'], callback);
+        ensureDataLoaded: function(callback){
+            this.ensureTrigger(['_mapLoaded', '_dataLoaded'], callback);
         },
 
         // filters
@@ -752,12 +754,8 @@
 
             this.getElement().loader();
             this.ajax('datacube/widgets/map/map.jsb', params, function(result, obj){
-                if($this._isDataLoaded){
-                    $this.getElement().loader('hide');
-                }
-
                 if(result !== 'success'){
-                    $this._isMapsLoaded = true;
+                    $this.setTrigger('_mapLoaded');
                     return;
                 }
 

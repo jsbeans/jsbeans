@@ -42,7 +42,7 @@
                 linkedValues = [];
 
             for(var i = 0; i < linkedKeys.length; i++){
-                linkedValues.push(this._selector._mainSelector.find(linkedKeys[i]));
+                linkedValues.push(this._selectorBean._mainSelector.find(linkedKeys[i]));
             }
 
             for(var i = 0; i < linkedValues.length; i++){

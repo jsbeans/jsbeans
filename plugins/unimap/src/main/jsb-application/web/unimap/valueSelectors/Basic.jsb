@@ -7,11 +7,10 @@
         this._mainSelector = opts.mainSelector;
 
         this._selectorPrototype = function(opts){
-            this._selector = $this;
-            this._checked = opts.selector.checked;
+            this._selectorBean = $this;
             this._key = opts.key;
-            this._render = opts.selector.render;
-            this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
+            this._selectorOpts = opts.selector;
+            this._values = opts.selector.values; //JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
         }
 
         this._selectorPrototype.prototype = {
@@ -39,15 +38,19 @@
     },
 
     checked: function(){
-        if(JSB.isDefined(this._checked)){
-            return this._checked;
+        if(JSB.isDefined(this._selectorOpts.checked)){
+            return this._selectorOpts.checked;
         } else {
             return true;
         }
     },
 
     getContext: function(){
-        return this._selector._mainSelector.getContext();
+        return this._selectorBean._mainSelector.getContext();
+    },
+
+    getDefaultValue: function(){
+        return this._selectorOpts.defaultValue;
     },
 
     getInstance: function(key, selector){
@@ -57,7 +60,7 @@
                 selector: selector
             });
         } else {
-            return new this._selector._selectorPrototype({
+            return new this._selectorBean._selectorPrototype({
                 key: key,
                 selector: selector
             });
@@ -73,7 +76,7 @@
     },
 
     getMainSelector: function(){
-        return this._selector ? this._selector._mainSelector : this._mainSelector;
+        return this._selectorBean ? this._selectorBean._mainSelector : this._mainSelector;
     },
 
     getRenderByName: function(name){
@@ -81,7 +84,7 @@
     },
 
     getRenderName: function(){
-        return this._render;
+        return this._selectorOpts.render;
     },
 
     setValue: function(val){

@@ -127,10 +127,6 @@
 	    },
 
 	    getValues: function(b){
-	        for(var i = 0; i < this._renders.length; i++){
-	            this._renders[i].setDefaultValue();
-	        }
-
 	        return this._values;
 	    },
 
