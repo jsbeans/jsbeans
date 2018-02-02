@@ -5,6 +5,7 @@
 	widgetEntry: null,
 	name: null,
 	values: null,
+	linkedFields: null,
 	
 	getName: function(){
 		return this.name;
@@ -16,6 +17,10 @@
 	
 	getValues: function(){
 		return this.values;
+	},
+
+	getLinkedFields: function(){
+	    return this.linkedFields;
 	},
 	
 	getDashboard: function(){
@@ -111,7 +116,10 @@
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.widget = new WidgetClass();
 				$this.widgetContainer.append($this.widget.getElement());
-				$this.widget.setWrapper($this);
+				$this.widget.setWrapper($this, {
+				    values: $this.values,
+				    linkedFields: $this.linkedFields
+				});
 				if($this.options.auto){
 					$this.widget.ensureInitialized(function(){
 						$this.widget.refresh({
@@ -150,7 +158,7 @@
 			        return;
 			    }
 
-			    $this.getWidget().updateValues(opts.values, opts.sourceDesc);
+			    $this.getWidget().updateValues(opts);
 			    $this.widget.ensureInitialized(function(){
 			    	 $this.getWidget().refresh();
 				});
@@ -207,9 +215,9 @@
 			return this.getOwner().getFilterManager().addFilter(fDesc, sourceIds, widget);
 		},
 		
-		removeFilter: function(fItemId, widget){
+		removeFilter: function(fItemId, dontPublish){
 		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().removeFilter(fItemId, widget);
+			return this.getOwner().getFilterManager().removeFilter(fItemId, dontPublish);
 		},
 		
 		clearFilters: function(widget){
@@ -237,42 +245,16 @@
 				curWidgetJsb = curWidgetJsb.getParent();
 			}
 
-			if(!this.checkSchemeKeys(scheme)){
-			    throw 'Ошибка! Не у всех элементов схемы присутствуют ключи!';
-			}
-
 			return scheme;
 		},
 
-		checkSchemeKeys: function(scheme){
-		    var root = true;
-
-            function checkKeys(scheme){
-                switch(scheme.type){
-                    case 'group':
-                        if(!scheme.key){
-                            if(!root){
-                                return false;
-                            } else {
-                                root = false;
-                            }
-                        }
-
-                        for(var i = 0; i < scheme.items.length; i++){
-                            if(!checkKeys(scheme.items[i])) return false;
-                        }
-                        break;
-                    case 'item':
-                    case 'select':
-                    case 'widget':
-                        if(!scheme.key) return false;
-                        break;
-                }
-
-                return true;
-            }
-
-            return checkKeys(scheme);
+		updateValues: function(opts){
+		    this.getWidget().updateValues({
+		        values: JSB.clone(opts.values),
+		        linkedFields: opts.linkedFields,
+		        sourceDesc: opts.sourceDesc
+		    });
+		    this.values = opts.values;
 		},
 		
 		updateTabHeader: function(){

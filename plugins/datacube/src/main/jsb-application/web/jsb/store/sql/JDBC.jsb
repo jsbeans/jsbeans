@@ -312,7 +312,7 @@
 			'PostgreSQL': {
 				'integer': 'int8',
 				'int': 'int8',
-				'boolean': 'bool',
+				'boolean': 'bit',
 				'nvarchar': 'varchar',
 				'varchar': 'varchar',
 				'string': 'text',
@@ -335,6 +335,63 @@
 			}
 			var sqlType = jsonType.toLowerCase();
 			return vendorTypeMap[sqlType] || sqlType;
+		},
+		
+		toJsonType: function(sqlType){
+			var jsonType = null;
+			switch(sqlType.toLowerCase()){
+			case 'int':
+			case 'int8':
+			case 'int16':
+			case 'int32':
+			case 'integer':
+			case 'numeric':
+			case 'tinyint':
+			case 'smallint':
+			case 'bigint':
+				jsonType = 'integer';
+				break;
+			case 'double':
+			case 'float':
+			case 'real':
+			case 'decimal':
+			case 'double precision':
+			case 'numeric':
+				jsonType = 'double';
+				break;
+			case 'boolean':
+			case 'bit':
+			case 'bool':
+				jsonType = 'boolean';
+				break;
+			case 'varbinary':
+            case 'binary':
+            case 'longvarbinary':
+            case 'longvarchar':
+            case 'char':
+            case 'varchar':
+            case 'nvarchar':
+            case 'text':
+            case 'string':
+				jsonType = 'string';
+				break;
+            case 'timestamp':
+            case 'date':
+            case 'time':
+				jsonType = 'datetime';
+				break;
+            case 'array':
+				jsonType = 'array';
+				break;
+            case 'object':
+				jsonType = 'object';
+				break;
+            	
+            default:
+            	throw new Error('Unsupported sql type: ' + sqlType);
+			}
+			
+			return jsonType;
 		},
 
 

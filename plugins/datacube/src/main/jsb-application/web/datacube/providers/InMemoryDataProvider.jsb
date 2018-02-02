@@ -43,21 +43,25 @@
 		extractFields: function(opts){
 			var fields = {};
 			for(var fName in this.fields){
+				var fDesc = {};
 				if(opts && Object.keys(opts).length > 0){
-					var fDesc = {};
 					if(opts.name){
 						fDesc.name = fName;
 					}
 					if(opts.type){
 						fDesc.type = this.fields[fName];
 					}
+					if(opts.nativeType){
+						fDesc.nativeType = this.fields[fName];
+					}
 					if(opts.comment){
 						fDesc.comment = '';
 					}
-					fields[fName] = fDesc;
 				} else {
-					fields[fName] = this.fields[fName];
+					fDesc.type = fDesc.nativeType = this.fields[fName];
 				}
+				fields[fName] = fDesc;
+
 			}
 			return fields;
 		},

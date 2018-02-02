@@ -2,13 +2,14 @@
 	$name: 'DataCube.WidgetSettingsView',
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
-	    $require: ['DataCube.Widgets.WidgetSchemeRenderer',
+	    $require: ['Unimap.Controller',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Widgets.Button'
         ],
+
 		$constructor: function(opts){
 			$base(opts);
 			
@@ -32,7 +33,7 @@
 
             this.saveBtn = new Button({
                 cssClass: "btnUpdate",
-                caption: "Обновить данные",
+                caption: "Обновить",
                 onClick: function(){
                     $this.updateData();
                 }
@@ -59,6 +60,29 @@
 	        this.append(this.savedMessage);
 		},
 
+		_renders: [
+            {
+                name: 'group',
+                render: 'Unimap.Render.Group'
+            },
+            {
+                name: 'item',
+                render: 'Unimap.Render.Item'
+            },
+            {
+                name: 'select',
+                render: 'Unimap.Render.Select'
+            },
+            {
+                name: 'sourceBinding',
+                render: "Unimap.Render.SourceBinding"
+            },
+            {
+                name: 'dataBinding',
+                render: "Unimap.Render.DataBinding"
+            }
+		],
+
 		refresh: function(){
 			this.entry = this.node.getEntry();
 
@@ -66,17 +90,24 @@
             this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, designMode: true });
             this.widgetBlock.append(this.wrapper.getElement());
 
-            if(this.widgetSchemeRenderer) this.widgetSchemeRenderer.destroy();
+            if(this.widgetSchemeRenderer){
+                this.widgetSchemeRenderer.destroy();
+            };
+
             JSB().deferUntil(function(){
-                $this.widgetSchemeRenderer = new WidgetSchemeRenderer({
+                $this.widgetSchemeRenderer = new Controller({
                     scheme: $this.wrapper.extractWidgetScheme(),
                     values: JSB.clone($this.wrapper.getValues()),
-                    wrapper: $this.wrapper,
-                    onChange: function(){
+                    rendersDescription: $this._renders,
+                    onchange: function(){
+                    // check for binding
+
+                    /*
                         if(this.scheme.binding === 'field') return; // need data update
                         JSB().defer(function(){
                             $this.setChanges();
                         }, 800, "widgetSettingsView_setChanges" + $this.getId());
+                    */
                     }
                 });
                 $this.schemeBlock.append($this.widgetSchemeRenderer.getElement());
@@ -88,8 +119,8 @@
 		},
 
 		updateData: function(){
-		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
-		    this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
+            this.wrapper.updateValues(this.widgetSchemeRenderer.getValues(), this.widgetSchemeRenderer.getLinkedFields());
+
 		    this.wrapper.getWidget().refresh({
                 isCacheMod: true,
                 needMapUpdate: true
@@ -97,25 +128,46 @@
 		},
 
 		applySettings: function(){
+		/*
 		    this.savedMessage.fadeIn(1600, "linear", function(){
 		        $this.savedMessage.fadeOut(1600, "linear");
 		    });
-		    var title = this.titleEditor.getData().getValue();
+        */
+
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 
-            this.entry.server().storeValues(title, this.wrapper.values, function(sourceDesc){
-                // $this.wrapper.getWidget().updateValues(JSB.clone($this.wrapper.values), sourceDesc);
+		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),
+		        sourcesIds = [];
+
+            for(var i = 0; i < sources.length; i++){
+                var s = sources[i].getValues();
+
+                for(var j = 0; j < s.values.length; j++){
+                    sourcesIds.push(s.values[j].binding.source);
+                }
+            }
+
+            this.entry.server().storeValues({
+                linkedFields: this.widgetSchemeRenderer.getLinkedFields(),
+                name: this.titleEditor.getData().getValue(),
+                sourcesIds: sourcesIds,
+                values: this.wrapper.values
+            }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.wrapper.getWidgetEntry().getId(),
-                    values: JSB.clone($this.wrapper.values),
-                    sourceDesc: sourceDesc
+                    linkedFields: $this.widgetSchemeRenderer.getLinkedFields(),
+                    sourceDesc: sourceDesc,
+                    values: JSB.clone($this.wrapper.values)
                 });
             });
 		},
 
 		setChanges: function(){
-            this.wrapper.values = this.widgetSchemeRenderer.getValues();
-            this.wrapper.getWidget().updateValues(JSB.clone(this.wrapper.values));
+		    this.wrapper.updateValues({
+		        values: this.widgetSchemeRenderer.getValues(),
+		        linkedFields: this.widgetSchemeRenderer.getLinkedFields()
+		    });
+
             this.wrapper.getWidget().ensureInitialized(function(){
 	            try {
 	                $this.wrapper.getWidget().refresh({

@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.SourceBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Widgets.PrimitiveEditor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
+	$require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
 	$client: {
 	    _items: [],
 
@@ -178,21 +178,22 @@
 
 		setEditor: function(item){
             switch(this._scheme.options && this._scheme.options.editor){
-                case 'none':
-                    item.addClass('bindingItem');
-                    break;
-                default:
-                    var editor = new PrimitiveEditor({
-                        onChange: function(val){
-                            values.value = val;
+                case 'input':
+                    var editor = new Editor({
+                        onchange: function(){
+                            values.value = this.getValue();
                         }
                     });
                     item.append(editor.getElement());
                     break;
+                default:
+                    item.addClass('bindingItem');
+                    item.text('Перетащите источник');
+                    break;
             }
 
             if(editor){
-                editor.setPlaceholderText('Введите значение или перетащите источник');
+                editor.setPlaceholder('Введите значение или перетащите источник');
             }
 		},
 
@@ -201,7 +202,7 @@
 		        binding: this._items[itemIndex].dataScheme,
 		    }
 
-		    this.options.onChange.call(this, this._values);
+		    this.options.onchange.call(this, this._values);
 		},
 
 		removeBinding: function(item, itemIndex){
@@ -300,7 +301,7 @@
                 throw new Error('Invalid datascheme passed');
             }
 
-            return JSB.getInstance(workspaceId).entry(ds.source);
+            return JSB.getInstance(ds.workspaceId).entry(ds.source);
         }
 	}
 }

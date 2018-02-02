@@ -7,7 +7,7 @@
 
 	    construct: function(){
 	        this.addClass('selectRender');
-	        //this.loadCss('Select.css');
+	        this.loadCss('Select.css');
 
 	        this.createOptionsList();
 
@@ -31,7 +31,7 @@
                     var val = select.getValue();
                     values.value = val;
                     $this.createInnerScheme(item, val, itemIndex);
-                    $this.options.onChange.call($this, $this._values);
+                    $this.options.onchange.call($this, $this._values);
                 }
             });
             item.append(select.getElement());
@@ -65,6 +65,7 @@
 
 	        for(var i = 0; i < this._selectors.length; i++){
 	            this._selectors[i].setOptions(this._optionsList, true);
+	            this._selectors[i].setValue(this._optionsList[0].value, true);
 	        }
 	    },
 

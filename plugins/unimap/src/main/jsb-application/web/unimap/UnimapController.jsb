@@ -36,10 +36,10 @@
 	    createLink: function(key, render){
 	        if(!this._linksMap[key]){
 	            this._linksMap[key] = {
-	                linkedRender: []
+	                linkedRenders: []
 	            }
 	        }
-	        this._linksMap[key].linkedRender.push(render);
+	        this._linksMap[key].linkedRenders.push(render);
 	    },
 
         createRender: function(parent, key, scheme, values){
@@ -50,7 +50,10 @@
                 values: values,
                 parent: parent,
                 schemeController: this,
-                onChange: function(value){
+                onchange: function(value){
+                    if(JSB.isFunction($this.options.onchange)){
+                        $this.options.onchange.call($this, key, value);
+                    }
                     $this.updateLinks(key, value);
                 }
             });
@@ -93,23 +96,37 @@
 	        }
 	    },
 
-	    getValueByKey: function(key){
-	        var render = this.findRenderByKey(key);
-	        return render ? render.getValue() : null;
-	    },
+	    findRendersByRender: function(name){
+	        var renders = [];
 
-	    getValues: function(b){
 	        for(var i = 0; i < this._renders.length; i++){
-	            this._renders[i].setDefaultValue();
-	        }
-
-	        if(b){
-	            return {
-	                validateResult: this.validate(),
-	                values: this._values
+	            if(this._renders[i].getRenderName() == name){
+	                renders.push(this._renders[i]);
 	            }
 	        }
 
+	        return renders;
+	    },
+
+	    getLinkedFields: function(){
+	        var links = {};
+
+	        for(var i in this._linksMap){
+	            links[i] = [];
+	            for(var j = 0; j < this._linksMap[i].linkedRenders.length; j++){
+	                links[i].push(this._linksMap[i].linkedRenders[j].getKey());
+	            }
+	        }
+
+	        return links;
+	    },
+
+	    getValueByKey: function(key){
+	        var render = this.findRenderByKey(key);
+	        return render ? render.getValues() : null;
+	    },
+
+	    getValues: function(b){
 	        return this._values;
 	    },
 
@@ -140,8 +157,8 @@
 	                this._linksMap[key].render = this.findRenderByKey(key);
 	            }
 
-	            for(var i = 0; i < this._linksMap[key].linkedRender.length; i++){
-	                this._linksMap[key].linkedRender[i].changeLinkTo(value, this._linksMap[key].render);
+	            for(var i = 0; i < this._linksMap[key].linkedRenders.length; i++){
+	                this._linksMap[key].linkedRenders[i].changeLinkTo(value, this._linksMap[key].render);
 	            }
 	        }
 	    }

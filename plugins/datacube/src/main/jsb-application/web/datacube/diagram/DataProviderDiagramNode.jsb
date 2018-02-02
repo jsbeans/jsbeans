@@ -297,7 +297,7 @@
                         if(isCheck){
                             function addField(){
                                 loader.removeClass('hidden');
-                                $this.editor.cubeEntry.server().addField($this.provider.getId(), field, $this.fields[field].type, function(desc){
+                                $this.editor.cubeEntry.server().addField($this.provider.getId(), field, function(desc){
                                     loader.addClass('hidden');
                                     if(desc){
                                         $this.editor.cubeNode.addField(desc.field, desc.type, { id: desc.binding[0].provider.getId(), name: desc.binding[0].provider.getName() });
@@ -423,7 +423,7 @@
             }
             fElt.find('.cell.name').attr('title', field);
             fElt.find('.cell.name > .text').text(field);
-            fElt.find('.cell.type > .text').text($this.fields[field].type);
+            fElt.find('.cell.type > .text').text($this.fields[field].nativeType);
 
             if($this.fields[field].keyField){
                 $this.keyFieldList.append(fElt);

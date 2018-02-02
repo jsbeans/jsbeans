@@ -462,6 +462,7 @@
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
 			
+			
 			this.header = this.$('<table class="header" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr></tr></thead></table>');
 			this.append(this.header);
 			
@@ -483,6 +484,29 @@
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.scroll.ensureTrigger('ready', function(){
 					$this.scroll.append('<table class="rows" cellpadding="0" cellspacing="0"><colgroup></colgroup><tbody></tbody></table>');
+
+					$this.rowFilterTool = this.$('<div class="rowFilterTool hidden"><div class="and">И</div><div class="or">ИЛИ</div><div class="not">НЕ</div></div>');
+					$this.scroll.append($this.rowFilterTool);
+					$this.rowFilterTool.on({
+						'mouseover': function(evt){
+							$this.onRowFilterOver(evt);
+						},
+						'mouseout': function(evt){
+							$this.onRowFilterOut(evt);
+						}
+					});
+					
+					$this.rowFilterTool.find('> div.and').click(function(){
+						$this.onFilterClick($this.highlightedRowData, '$and', '$eq');
+					});
+
+					$this.rowFilterTool.find('> div.or').click(function(){
+						$this.onFilterClick($this.highlightedRowData, '$or', '$eq');
+					});
+
+					$this.rowFilterTool.find('> div.not').click(function(){
+						$this.onFilterClick($this.highlightedRowData, '$and', '$ne');
+					});
 
 					$this.header.resize(function(){
 						if(!$this.getElement().is(':visible')){
@@ -637,12 +661,24 @@
 						.classed('hover', !!d.flags.hover)
 						.classed('rowFilter', d.filter && d.filter.length > 0)
 						.attr('pos', function(d){return d.position;})
-						.on('click',function(d){
+						/*.on('click',function(d){
 							if(!d.filter || d.filter.length == 0){
 								return;
 							}
 							$this.onRowClick(d);
-						});
+						})
+						.on('mouseover', function(d){
+							if(!d.filter || d.filter.length == 0){
+								return;
+							}
+							$this.onRowHover(d, $this.$(this));
+						})
+						.on('mouseout', function(d){
+							if(!d.filter || d.filter.length == 0){
+								return;
+							}
+							$this.onRowOut(d, $this.$(this));
+						})*/;
 				});
 				rowsSelData.order();
 
@@ -814,6 +850,18 @@
 									return;
 								}
 								$this.onRowClick(d);
+							})
+							.on('mouseover', function(d){
+								if(!d.filter || d.filter.length == 0){
+									return;
+								}
+								$this.onRowHover(d, $this.$(this));
+							})
+							.on('mouseout', function(d){
+								if(!d.filter || d.filter.length == 0){
+									return;
+								}
+								$this.onRowOut(d, $this.$(this));
 							})
 							.attr('key', function(d){ return d.key;})
 							.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
@@ -1031,6 +1079,24 @@
 		},
 		
 		onRowClick: function(d){
+			// remove all filters with
+			var filters = this.getFilters();
+			var idsToRemove = [];
+			for(var i = 0; i < d.filter.length; i++){
+				var fName = d.filter[i].field;
+				for(var fId in filters){
+					if(filters[fId].field == fName){
+						idsToRemove.push(fId);
+					}
+				}
+			}
+			for(var i = 0; i < idsToRemove.length; i++){
+				this.removeFilter(idsToRemove[i], true);
+			}
+			$this.onFilterClick(d, '$and', '$eq');
+		},
+		
+		onFilterClick: function(d, type, op){
 			var binding = this.getContext().find('rows').binding();
 			if(!binding.source){
 				return;
@@ -1039,8 +1105,8 @@
 			for(var i = 0; i < d.filter.length; i++){
 				var fDesc = {
 					sourceId: binding.source,
-					type: '$and',
-					op: '$eq',
+					type: type,
+					op: op,
 					field: d.filter[i].field,
 					value: d.filter[i].value
 				};
@@ -1052,6 +1118,117 @@
 			if(bNeedRefresh){
 				this.refreshAll();
 			}
+		},
+		
+		onRowFilterOver: function(){
+			$this.rowfilterOver = true;
+			var deferRowKey = 'rowOut' + $this.highlightedRowKey + $this.getId();
+			JSB.cancelDefer(deferRowKey);
+		},
+		
+		onRowFilterOut: function(){
+			$this.rowfilterOver = false;
+			var deferRowKey = 'rowOut' + $this.highlightedRowKey + $this.getId();
+			var rowElt = $this.scroll.find('tr.row[key="'+$this.highlightedRowKey+'"]');
+			JSB.defer(function(){
+				rowElt.removeClass('hover');
+				$this.rowFilterTool.addClass('hidden');
+				$this.highlightedRowKey = null;
+			}, 100, deferRowKey);
+		},
+		
+		onRowOut: function(d, rowElt){
+			var rowKey = rowElt.attr('key');
+			if(rowKey != $this.highlightedRowKey && !$this.rowfilterOver){
+				return;
+			}
+			var deferRowKey = 'rowOut' + rowKey + $this.getId();
+			JSB.defer(function(){
+				rowElt.removeClass('hover');
+				$this.rowFilterTool.addClass('hidden');
+				$this.highlightedRowKey = null;
+			}, 100, deferRowKey);
+		},
+		
+		onRowHover: function(d, rowElt){
+			var rowKey = rowElt.attr('key');
+			if($this.highlightedRowKey){
+				var existedDeferKey = 'rowOut' + $this.highlightedRowKey + $this.getId();
+				JSB.cancelDefer(existedDeferKey);
+			}
+			if(rowKey == $this.highlightedRowKey){
+				return;
+			}
+			if($this.highlightedRowKey){
+				var oldRowElt = $this.scroll.find('tr.row[key="'+$this.highlightedRowKey+'"]');
+				oldRowElt.removeClass('hover');
+			}
+
+			rowElt.addClass('hover');
+			$this.highlightedRowKey = rowKey;
+			$this.highlightedRowData = d;
+			
+			// prepare tool buttons
+			var bRowExisted = !!d.flags.main;
+			
+			// check if filter has already been applied for the fields
+			var sameFieldMap = {};
+			var otherFieldMap = {};
+			for(var i = 0; i < d.filter.length; i++){
+				sameFieldMap[d.filter[i].field] = d.filter[i].value;
+				otherFieldMap[d.filter[i].field] = d.filter[i].value;
+			}
+			var filters = this.getFilters();
+			for(var fId in filters){
+				var fDesc = filters[fId];
+				
+				if(JSB.isDefined(sameFieldMap[fDesc.field]) && sameFieldMap[fDesc.field] == fDesc.value){
+					delete sameFieldMap[fDesc.field];
+				}
+				if(JSB.isDefined(otherFieldMap[fDesc.field]) && otherFieldMap[fDesc.field] != fDesc.value){
+					delete otherFieldMap[fDesc.field];
+				}
+			}
+			var bSameApplied = (Object.keys(sameFieldMap).length == 0);
+			var bOtherApplied = (Object.keys(otherFieldMap).length == 0);
+			
+			var bAnd = bOtherApplied && !bSameApplied && bRowExisted;
+			var bOr = !bRowExisted && !bSameApplied;
+			var bNot = bRowExisted && !bSameApplied;
+			
+			if(!bAnd && !bOr && !bNot){
+				$this.rowFilterTool.addClass('hidden');
+				return;
+			}
+			
+			$this.rowFilterTool.attr('and', bAnd);
+			$this.rowFilterTool.attr('or', bOr);
+			$this.rowFilterTool.attr('not', bNot);
+			
+			var scrollPane = $this.scroll.find('> ._dwp_scrollPane');
+			var offset = scrollPane.css('padding-top');
+			if(offset && offset.length > 0){
+				offset = parseInt(offset);
+				if(JSB.isNaN(offset)){
+					offset = 0;
+				}
+			}
+			var paneRc = scrollPane.get(0).getBoundingClientRect();
+			var rowRc = rowElt.get(0).getBoundingClientRect();
+			var scrollRc = $this.scroll.getElement().get(0).getBoundingClientRect();
+			var pX = rowRc.left - paneRc.left;
+			var pY = rowRc.top - paneRc.top;
+			var vAlign = 'top';
+			
+			if(rowRc.top - scrollRc.top < offset + 20){
+				pY = rowRc.bottom - paneRc.top - 1;
+				vAlign = 'bottom';
+			}
+			
+			$this.rowFilterTool.removeClass('hidden');
+			$this.rowFilterTool.attr('valign', vAlign);
+
+			$this.rowFilterTool.css({left: pX, top: pY});
 		},
 		
 		updateRows: function(){
@@ -1314,6 +1491,8 @@
 			
 			$base();
 			this.hideMessage();
+			$this.rowFilterTool.addClass('hidden');
+			$this.highlightedRowKey = null;
 
 			// update col sizes
 			var colSizes = [];

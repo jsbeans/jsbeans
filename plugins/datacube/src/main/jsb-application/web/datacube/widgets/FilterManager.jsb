@@ -21,10 +21,11 @@
 			this.filterBySource = {};
 			this.filters = {};
 			this.filterArr = [];
+			this.publish('DataCube.filterChanged');
 		},
 		
 		constructFilterId: function(fItem){
-			return MD5.md5('' + fItem.field) + '_' + MD5.md5('' + fItem.value);
+			return MD5.md5('' + fItem.field) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5('' + fItem.value);
 		},
 		
 		addFilterItem: function(sourceId, fDesc){
@@ -52,7 +53,7 @@
 			return true;
 		},
 		
-		removeFilter: function(itemId, isNoPublish){
+		removeFilter: function(itemId, dontPublish){
 			var pfCount = Object.keys($this.filters).length;
 			// remove from sources
 			for(var srcId in $this.filterBySource){
@@ -73,7 +74,7 @@
 				}
 			}
 			
-			if(Object.keys($this.filters) != pfCount && !isNoPublish){
+			if(Object.keys($this.filters) != pfCount && !dontPublish){
 				this.publish('DataCube.filterChanged');
 			}
 		},
@@ -131,8 +132,9 @@
 			// check filter conflicts
             var f;
             for(var i = 0; i < $this.filterArr.length; i++){
-                if($this.filterArr[i].field === fDesc.field && $this.filterArr[i].op === fDesc.op)
+                if($this.filterArr[i].field === fDesc.field && $this.filterArr[i].op === fDesc.op){
                     f = $this.filterArr[i];
+                }
             }
             if(f){
                 switch(f.op){
@@ -153,7 +155,6 @@
                             }
                         }
                         break;
-                    case "$lt":
                     case "$lt":
                     case "$lte":    // <=
                         if(f.type === "$and" && fDesc.type === "$and"){
@@ -176,6 +177,8 @@
                             this.removeFilter(f.id, true);
                         }
                         break;
+                    case "$ne":
+                    	break;
                 }
             }
 			

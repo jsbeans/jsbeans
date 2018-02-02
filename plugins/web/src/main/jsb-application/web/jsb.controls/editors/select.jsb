@@ -86,9 +86,13 @@
             // todo
 	    },
 
-	    setValue: function(val){
+	    setValue: function(val, b){
 	        if(val){
 	            this.getElement().val(val);
+
+	            if(b && JSB.isFunction(this.options.onchange)){
+	                this.options.onchange.call(this, val);
+	            }
 	        }
 	    }
     }

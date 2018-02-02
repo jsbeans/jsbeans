@@ -95,7 +95,7 @@
 
 			this.constructScheme();
 
-			this.options.onChange.call(this, this._values);
+			this.options.onchange.call(this, this._values);
         }
 	}
 }

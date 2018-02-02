@@ -4134,49 +4134,63 @@ JSB({
 		}
 	},
 	
-	ensureTrigger: function(key, callback, valOrCondOpt){
+	ensureTrigger: function(keyArr, callback, valOrCondOpt){
 		if(!$this.$_ecMap){
 			$this.$_ecMap = {};
 		}
-		if(!$this.$_ecMap[key]){
-			$this.$_ecMap[key] = {cArr:[]};
+		if(!JSB.isArray(keyArr)){
+			keyArr = [keyArr];
 		}
 		if(!JSB.isDefined(valOrCondOpt)){
 			valOrCondOpt = true;	// default value expecation
 		}
-		var bMatched = false;
-		if(JSB.isDefined($this.$_ecMap[key].val)){
-			if(JSB.isFunction(valOrCondOpt)){
-				bMatched = valOrCondOpt.call($this, $this.$_ecMap[key].val);
-			} else {
-				bMatched = ($this.$_ecMap[key].val == valOrCondOpt);
-			}
-		}
-		if(bMatched){
+		if($this.matchTrigger(keyArr, valOrCondOpt)){
 			callback.call($this);
 		} else {
-			$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt});
+			for(var i = 0; i < keyArr.length; i++){
+				var key = keyArr[i];
+				if(!$this.$_ecMap[key]){
+					$this.$_ecMap[key] = {cArr:[]};
+				}
+				$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt, keyArr: keyArr});
+			}
 		}
 	},
 	
-	matchTrigger: function(key, valOrCondOpt){
+	matchTrigger: function(keyArr, valOrCondOpt){
 		if(!$this.$_ecMap){
 			$this.$_ecMap = {};
 		}
-		if(!$this.$_ecMap[key]){
-			$this.$_ecMap[key] = {cArr:[]};
+		if(!JSB.isArray(keyArr)){
+			keyArr = [keyArr];
 		}
+		var bMatched = true;
 		if(!JSB.isDefined(valOrCondOpt)){
 			valOrCondOpt = true;	// default value expecation
 		}
-		var bMatched = false;
-		if(JSB.isDefined($this.$_ecMap[key].val)){
-			if(JSB.isFunction(valOrCondOpt)){
-				bMatched = valOrCondOpt.call($this, $this.$_ecMap[key].val);
+		for(var i = 0; i < keyArr.length; i++){
+			var key = keyArr[i];
+			if(!$this.$_ecMap[key]){
+				$this.$_ecMap[key] = {cArr:[]};
+			}
+			if(JSB.isDefined($this.$_ecMap[key].val)){
+				if(JSB.isFunction(valOrCondOpt)){
+					if(!valOrCondOpt.call($this, $this.$_ecMap[key].val)){
+						bMatched = false;
+						break;
+					}
+				} else {
+					if($this.$_ecMap[key].val != valOrCondOpt){
+						bMatched = false;
+						break;
+					}
+				}
 			} else {
-				bMatched = ($this.$_ecMap[key].val == valOrCondOpt);
+				bMatched = false;
+				break;
 			}
 		}
+		
 		return bMatched;
 	},
 	
@@ -4193,6 +4207,7 @@ JSB({
 		$this.$_ecMap[key].val = valOpt;
 		for(var i = $this.$_ecMap[key].cArr.length - 1; i >= 0; i--){
 			var cDesc = $this.$_ecMap[key].cArr[i];
+			
 			var bMatched = false;
 			if(JSB.isFunction(cDesc.cond)){
 				bMatched = cDesc.cond.call($this, $this.$_ecMap[key].val);
@@ -4200,8 +4215,60 @@ JSB({
 				bMatched = ($this.$_ecMap[key].val == cDesc.cond);
 			}
 			if(bMatched){
-				 $this.$_ecMap[key].cArr.splice(i, 1);
-				 cDesc.exec.call($this);
+				// check for other keys
+				for(var j = 0; j < cDesc.keyArr.length; j++){
+					var otherKey = cDesc.keyArr[j];
+					if(otherKey == key){
+						continue;
+					}
+					
+					if(JSB.isFunction(cDesc.cond)){
+						if(!cDesc.cond.call($this, $this.$_ecMap[otherKey].val)){
+							bMatched = false;
+							break;
+						}
+					} else {
+						if($this.$_ecMap[otherKey].val != cDesc.cond){
+							bMatched = false;
+							break;
+						}
+					}
+				}
+				if(bMatched){
+					// remove entries from others
+					for(var j = 0; j < cDesc.keyArr.length; j++){
+						var otherKey = cDesc.keyArr[j];
+						if(otherKey == key){
+							continue;
+						}
+						for(var k = $this.$_ecMap[otherKey].cArr.length - 1; k >= 0; k--){
+							if($this.$_ecMap[otherKey].cArr[k].keyArr == cDesc.keyArr){
+								$this.$_ecMap[otherKey].cArr.splice(k, 1);
+							}
+						}
+					}
+					// remove this
+					$this.$_ecMap[key].cArr.splice(i, 1);
+					cDesc.exec.call($this);
+				}
+			}
+		}
+	},
+	
+	resetTrigger: function(keyArr){
+		if(!$this.$_ecMap){
+			$this.$_ecMap = {};
+		}
+		if(!JSB.isArray(keyArr)){
+			keyArr = [keyArr];
+		}
+		for(var i = 0; i < keyArr.length; i++){
+			var key = keyArr[i];
+			if(!$this.$_ecMap[key]){
+				$this.$_ecMap[key] = {cArr:[]};
+			}
+			if(JSB.isDefined($this.$_ecMap[key].val)){
+				delete $this.$_ecMap[key].val;
 			}
 		}
 	},

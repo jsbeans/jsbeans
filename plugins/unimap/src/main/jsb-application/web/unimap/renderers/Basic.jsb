@@ -106,6 +106,8 @@
         createValues: function(){
             this._values.checked = this._scheme.optional === 'checked' ? true : undefined;
             this._values.render = this._scheme.render;
+            this._values.defaultValue = this._scheme.defaultValue;
+            this._values.valueType = this._scheme.valueType;
             this._values.values = [];
         },
 
@@ -118,6 +120,10 @@
             $base();
         },
 
+        isChecked: function(){
+            // todo
+        },
+
         getKey: function(){
             return this._key;
         },
@@ -126,18 +132,16 @@
             return this.options.parent;
         },
 
+        getRenderName: function(){
+            return this._scheme.render;
+        },
+
         getValueByKey: function(){
             return this._schemeController.getValueByKey(this._scheme.linkTo);
         },
 
-        getValue: function(){
+        getValues: function(){
             return this._values;
-        },
-
-        setDefaultValue: function(){
-            if(this._scheme.defaultValue && (this._values.values.length === 0 || !this._values.values[0].value)){
-                this._values.values[0].value = this._scheme.defaultValue;
-            }
         },
 
         validate: function(){

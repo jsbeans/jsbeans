@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.Widget',
+	$name: 'DataCube.WidgetsOld.Widget',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
@@ -446,7 +446,7 @@
 						dataEl = item.data;
 						item.cursor++;
 					}
-					
+
 					// fills descendant with values
 					traverse(item, dataEl, function(curItem, val, stop){
 						if(curItem == item){
@@ -766,9 +766,8 @@
 			throw new Error('Missing sourceId');
 		},
 		
-		removeFilter: function(fItemId){
-			// return this.getWrapper().removeFilter(fItemId, this);
-			return this.getWrapper().removeFilter(fItemId);
+		removeFilter: function(fItemId, dontPublish){
+			return this.getWrapper().removeFilter(fItemId, dontPublish);
 		},
 
 		removeAllFilters: function(){

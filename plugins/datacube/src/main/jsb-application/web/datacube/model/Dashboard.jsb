@@ -127,7 +127,9 @@
 					desc.wrappers[wId] = {
 						jsb: wWrapper.getWidgetType(),
 						name: wWrapper.getName(),
-						values: wWrapper.getValues()
+						values: wWrapper.getValues(),
+						linkedFields: wWrapper.getLinkedFields(),
+						sourcesIds: wWrapper.getSourcesIds()
 					}
 				}
 				this.widgetCount = Object.keys(this.wrappers).length;
@@ -139,7 +141,6 @@
 				JSB.getLocker().unlock(mtxName);	
 			}
 			this.workspace.store();
-
 		},
 		
 		load: function(){
@@ -169,7 +170,7 @@
 								var wWrapper = this.workspace.entry(wId);
 								if(!wWrapper){
 									bNeedStore = true;
-									wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values);
+									wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values, wDesc.schemeVersion);
 									this.addChildEntry(wWrapper);
 								}
 								

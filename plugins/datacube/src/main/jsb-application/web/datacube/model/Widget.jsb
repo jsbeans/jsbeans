@@ -8,6 +8,7 @@
 	values: null,
 	sourceMap: null,
 	sources: {},
+	linkedFields: {},
 	
 	getName: function(){
 		return this.name;
@@ -19,6 +20,14 @@
 	
 	getWidgetType: function(){
 		return this.wType;
+	},
+
+	getLinkedFields: function(){
+	    return this.linkedFields;
+	},
+
+	getSourcesIds: function(){
+	    return this.sourcesIds;
 	},
 	
 	getValues: function(){
@@ -32,7 +41,6 @@
 	getSources: function(){
 		return this.sources;
 	},
-
 	
 	$client: {},
 	
@@ -45,8 +53,9 @@
         	WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.WidgetNode');
         },
 
-		$constructor: function(id, workspace, dashboard, name, wType, values){
+		$constructor: function(id, workspace, dashboard, name, wType, values, schemeVersion){
 			$base(id, workspace);
+
 			if(dashboard){
 				this.dashboard = dashboard;
 				this.name = name;
@@ -55,8 +64,11 @@
 				this.wType = wType;
 				this.property('wType', wType);
 				this.values = values;
-				this.updateInteroperationMap();
+
+				//this.updateInteroperationMap();
+
 				this.property('values', values);
+				this.property('schemeVersion', schemeVersion);
 			} else {
 				var bNeedSave = false;
 				if(this.property('dashboard')){
@@ -68,6 +80,12 @@
 				}
 				if(this.property('values')){
 					this.values = this.property('values');
+				}
+				if(this.property('sourcesIds')){
+				    this.sourcesIds = this.property('sourcesIds');
+				}
+				if(this.property('linkedFields')){
+				    this.linkedFields = this.property('linkedFields');
 				}
 				if(this.property('sourceMap')){
 					this.sourceMap = this.property('sourceMap');
@@ -96,20 +114,19 @@
 			return true;
 		},
 		
-		storeValues: function(name, values){
+		storeValues: function(opts){    //name, values, linkedFields, sourcesIds
 			this.getDashboard().load();
-			this.values = values;
-			this.property('values', values);
-			this.setName(name);
+			this.values = opts.values;
+			this.sourcesIds = opts.sourcesIds;
+			this.linkedFields = opts.linkedFields;
+			this.property('values', opts.values);
+			this.property('linkedFields', opts.linkedFields);
+			this.property('sourcesIds', opts.sourcesIds);
+			this.setName(opts.name);
 			
-			this.updateInteroperationMap();
-			
-			// update interoperation maps in other widgets of current dashboard
+			// update interoperation maps in all widgets of current dashboard
 			var widgets = this.getDashboard().getWrappers();
 			for(var wId in widgets){
-				if(widgets[wId] == this){
-					continue;
-				}
 				widgets[wId].updateInteroperationMap();
 				widgets[wId].doSync();
 			}
@@ -135,56 +152,22 @@
 		
 		updateInteroperationMap: function(){
 			var sourceMap = {};
-			
-			function traverseValues(src, callback){
-				if(!src || !src.used){
-					return;
-				}
-				var sCont = {bStop : false};
-				callback.call($this, src, function(){
-					sCont.bStop = true;
-				});
-				
-				if(sCont.bStop){
-					return;
-				}
-				if(src.type == 'group'){
-					for(var i = 0; i < src.groups.length; i++){
-						var gDesc = src.groups[i];
-						for(var j = 0; j < gDesc.items.length; j++){
-							traverseValues(gDesc.items[j], callback);
-						}
-					}
-				} else if(src.type == 'select'){
-					var iDesc = src.items[src.chosenIdx];
-					traverseValues(iDesc, callback);
-				} else if(src.type == 'widget'){
-					var wDesc = src.values;
-					traverseValues(wDesc, callback);
-				}
+
+			for(var i = 0; i < this.sourcesIds.length; i++){
+			    var source = this.workspace.entry(this.sourcesIds[i]);
+                sourceMap[this.sourcesIds[i]] = [];
+
+                if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+                    var cube = source.getCube();
+                    cube.load();
+                    var sliceMap = cube.getSlices();
+                    for(var sId in sliceMap){
+                        sourceMap[this.sourcesIds[i]].push(sId);
+                    }
+                } else {
+                    sourceMap[this.sourcesIds[i]].push(this.sourcesIds[i]);
+                }
 			}
-			
-			traverseValues(this.values, function(entry, stop){
-				if(entry.type == 'widget'){
-					stop();
-					return;
-				}
-				if(entry.binding && entry.binding.source){
-					var source = $this.workspace.entry(entry.binding.source);
-					sourceMap[entry.binding.source] = []
-					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-						var cube = source.getCube();
-						cube.load();
-						var sliceMap = cube.getSlices();
-						for(var sId in sliceMap){
-							sourceMap[entry.binding.source].push(sId);
-						}
-					} else {
-						sourceMap[entry.binding.source].push(entry.binding.source);
-					}
-					
-				}
-			});
 			
 			this.sourceMap = sourceMap;
 			this.property('sourceMap', this.sourceMap);
@@ -284,6 +267,5 @@
 				arrayType: recordTypes
 			}
 		}
-
 	}
 }
