@@ -287,6 +287,57 @@
 						}]
 					}]
 				},{
+					name: 'Отображать в строке статуса сводный показатель',
+					type: 'group',
+					optional: true,
+					multiple: true,
+					key: 'summary',
+					items: [{
+						name: 'Операция',
+						type: 'select',
+						key: 'summaryOp',
+						items: [{
+							type: 'item',
+							name: 'Количество',
+							key: 'summaryOpCount',
+							itemValue: 'count',
+							editor: 'none'
+						},{
+							type: 'item',
+							name: 'Сумма',
+							key: 'summaryOpSum',
+							itemValue: 'sum',
+							editor: 'none'
+						},{
+							type: 'item',
+							name: 'Минимум',
+							key: 'summaryOpMin',
+							itemValue: 'min',
+							editor: 'none'
+						},{
+							type: 'item',
+							name: 'Максимум',
+							key: 'summaryOpMax',
+							itemValue: 'max',
+							editor: 'none'
+						},{
+							type: 'item',
+							name: 'Среднее',
+							key: 'summaryOpAvg',
+							itemValue: 'avg',
+							editor: 'none'
+						}]
+					},{
+						type: 'item',
+						name: 'Префикс',
+						key: 'summaryPrefix',
+						itemValue: 'Итого'
+					},{
+						type: 'item',
+						name: 'Суффикс',
+						key: 'summaryPostfix'
+					}]
+				},{
 					name: 'Стиль ячейки',
 					type: 'group',
 		            collapsable: true,
@@ -479,6 +530,10 @@
 			this.scroll.addClass('pane');
 			this.append(this.scroll);
 			
+			this.status = this.$('<table class="status" cellpadding="0" cellspacing="0"><colgroup></colgroup><tfoot><tr></tr></tfoot></table>');
+			this.append(this.status);
+
+			
 			this.append('<div class="noDataMessage">Нет данных</div>');
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
@@ -514,6 +569,13 @@
 						}
 						$this.updateHeaderSize();
 					});
+					
+					$this.status.resize(function(){
+						if(!$this.getElement().is(':visible')){
+							return;
+						}
+						$this.updateStatusSize();
+					});
 
 					$this.scroll.getElement().resize(function(){
 						if(!$this.getElement().is(':visible')){
@@ -529,6 +591,7 @@
 						}
 						$this.paneHeight = $this.scroll.getPane().height();
 						$this.header.width($this.scroll.getPane().width());
+						$this.status.width($this.scroll.getPane().width());
 					});
 /*					
 					if(!$this.scrollHeight){
@@ -549,12 +612,19 @@
 		updateHeaderSize: function(){
 			if($this.header.is(':visible')){
 				$this.scroll.getPane().css('padding-top', $this.header.height());
-//				$this.scroll.getElement().css('height', 'calc(100% - ' + $this.header.height() + 'px)');
 			} else {
 				$this.scroll.getPane().css('padding-top', 0);
-//				$this.scroll.getElement().css('height', '100%');
 			}
 		},
+		
+		updateStatusSize: function(){
+			if($this.status.is(':visible')){
+				$this.scroll.getPane().css('padding-bottom', $this.status.height());
+			} else {
+				$this.scroll.getPane().css('padding-bottom', 0);
+			}
+		},
+
 		
 		getColumnNames: function(){
 			var names = [];
@@ -1131,7 +1201,7 @@
 			var deferRowKey = 'rowOut' + $this.highlightedRowKey + $this.getId();
 			var rowElt = $this.scroll.find('tr.row[key="'+$this.highlightedRowKey+'"]');
 			JSB.defer(function(){
-				rowElt.removeClass('hover');
+				rowElt.removeClass('highlight');
 				$this.rowFilterTool.addClass('hidden');
 				$this.highlightedRowKey = null;
 			}, 100, deferRowKey);
@@ -1144,7 +1214,7 @@
 			}
 			var deferRowKey = 'rowOut' + rowKey + $this.getId();
 			JSB.defer(function(){
-				rowElt.removeClass('hover');
+				rowElt.removeClass('highlight');
 				$this.rowFilterTool.addClass('hidden');
 				$this.highlightedRowKey = null;
 			}, 100, deferRowKey);
@@ -1161,10 +1231,10 @@
 			}
 			if($this.highlightedRowKey){
 				var oldRowElt = $this.scroll.find('tr.row[key="'+$this.highlightedRowKey+'"]');
-				oldRowElt.removeClass('hover');
+				oldRowElt.removeClass('highlight');
 			}
 
-			rowElt.addClass('hover');
+			rowElt.addClass('highlight');
 			$this.highlightedRowKey = rowKey;
 			$this.highlightedRowData = d;
 			
@@ -1260,6 +1330,79 @@
 			colGroupData.order();
 			this.blockFetch = false;
 			this.appendRows(true);
+		},
+		
+		updateStatus: function(){
+			var useStatus = false;
+			for(var j = 0; j < $this.colDesc.length; j++){
+				if($this.colDesc[j].status){
+					useStatus = true;
+					break;
+				}
+			}
+			if(useStatus){
+				this.addClass('hasStatus');
+			} else {
+				this.removeClass('hasStatus');
+				return;
+			}
+			
+			var statusTable = d3.select($this.status.get(0));
+			var colGroup = statusTable.select('colgroup').selectAll('col');
+
+			var dataColGroup = colGroup.data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
+			dataColGroup.enter()
+				.append('col')
+					.attr('key', function(d){ return d.key;})
+					.style('width', function(d){ return '' + d.size + '%'});
+			dataColGroup.exit()
+				.remove();
+			dataColGroup.each(function(d){
+				d3.select(this).style('width', function(d){ return '' + d.size + '%'});
+			});
+			dataColGroup.order();
+
+			var rowsBody = statusTable.select('tfoot').select('tr');
+			var colData = rowsBody.selectAll('td.col').data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
+			
+			function injectStatusEntries(container, statusArr){
+				if(statusArr && statusArr.length > 0){
+					for(var i = 0; i < statusArr.length; i++){
+						var statusDesc = statusArr[i];
+						var sEntry = $this.$('<div class="sEntry"></div>');
+						container.append(sEntry);
+						if(statusDesc.summaryPrefix && statusDesc.summaryPrefix.length > 0){
+							sEntry.append($this.$('<div class="prefix"></div>').text(statusDesc.summaryPrefix));
+						}
+						sEntry.append($this.$('<div class="value"></div>').text(0));
+						if(statusDesc.summaryPostfix && statusDesc.summaryPostfix.length > 0){
+							sEntry.append($this.$('<div class="postfix"></div>').text(statusDesc.summaryPostfix));
+						}
+					}
+				}
+			}
+
+			colData
+				.each(function(d){
+					var elt = $this.$(this);
+					elt.empty();
+					injectStatusEntries(elt, d.status);
+				});
+				
+			colData.enter()
+				.append('td')
+					.classed('col', true)
+					.attr('key', function(d){ return d.key;})
+					.each(function(d){
+						var elt = $this.$(this);
+						injectStatusEntries(elt, d.status);
+					});
+			
+			colData.exit()
+				.remove();
+			
+			colData.order();
+
 		},
 		
 		updateHeader: function(){
@@ -1607,9 +1750,30 @@
 					textSelector: null,
 					format: null,
 					sortFields: null,
+					status: null,
 					contextFilterField: null,
 					contextFilterFixed: false
 				};
+				
+				// check for status
+				var summarySelector = gArr[i].find('summary');
+				if(summarySelector.used()){
+					var summaryElts = summarySelector.values();
+					for(var j = 0; j < summaryElts.length; j++){
+						var summaryOp = summaryElts[j].find('summaryOp').value();
+						if(summaryOp){
+							var statusDesc = {};
+							statusDesc.summaryOp = summaryOp.value();
+							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
+							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
+							if(!desc.status){
+								desc.status = [];
+							}
+							desc.status.push(statusDesc);
+						}
+					}
+				}
+				
 				
 				// check for widget
 				var viewSelector = gArr[i].find('view').value();
@@ -1682,6 +1846,9 @@
 			
 			// update header
 			this.updateHeader();
+
+			// update header
+			this.updateStatus();
 
 			// load widgets
 			if(widgetTypes.length > 0){
