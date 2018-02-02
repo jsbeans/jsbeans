@@ -215,9 +215,9 @@
 			return this.getOwner().getFilterManager().addFilter(fDesc, sourceIds, widget);
 		},
 		
-		removeFilter: function(fItemId, widget){
+		removeFilter: function(fItemId, dontPublish){
 		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().removeFilter(fItemId, widget);
+			return this.getOwner().getFilterManager().removeFilter(fItemId, dontPublish);
 		},
 		
 		clearFilters: function(widget){

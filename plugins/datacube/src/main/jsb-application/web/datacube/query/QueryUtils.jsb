@@ -181,6 +181,35 @@
 		        return allFieldsBinding && allInOtherJoined;
 		    }
 
+		    function checkBindingWithout(excludeId) {
+		        // все общие поля оставшихся join провайдеров должны иметь другие биндинги с оставшимися провайдерами
+
+                var cubeFields = cube.getManagedFields();
+                for (var id in providersFieldsMap) if (id != excludeId && providersFieldsMap.hasOwnProperty(id)) {
+                    if (providersFieldsMap[id].provider.getMode() == 'join') {
+                        for(var cubeField in providersFieldsMap[id].cubeFields) {
+                            var binding = cubeFields[cubeField].binding;
+                            // is shared field
+                            if (binding.length > 1) {
+                                var hasOn = false;
+                                for(var b in binding) {
+                                    // if provider exists
+                                    if (binding[b].provider.id != excludeId
+                                            && binding[b].provider.id != id
+                                            && providersFieldsMap[binding[b].provider.id]) {
+                                        hasOn = true;
+                                    }
+                                }
+                                if (!hasOn) {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+                return true;
+		    }
+
 //            var fields = {};
 //            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 //		        for (var f in providersFieldsMap[id].cubeFields) {
@@ -194,17 +223,20 @@
 //                }
 //            }
 //debugger;
+
             // first remove joins (in LEFT JOIN left is unions)
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 		        if (providersFieldsMap[id].provider.getMode() == 'join'
-		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])) {
+		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])
+		                && checkBindingWithout(id)) {
 		            delete providersFieldsMap[id];
 		        }
 		    }
             // then remove unions - only fields in join
 		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
 		        if ((providersFieldsMap[id].provider.getMode()||'union') == 'union'
-		                && allFieldsBindingAndAllInOther(providersFieldsMap[id], 'join')) {
+		                && allFieldsBindingAndAllInOther(providersFieldsMap[id], 'join')
+		                && checkBindingWithout(id)) {
 		            delete providersFieldsMap[id];
 		        }
 		    }
@@ -715,13 +747,13 @@
                     if (!exp.$select || exp == query) {
                         for (var f in exp) if (exp.hasOwnProperty(f)) {
                             if (f != '$postFilter') {
-                                patchFields(exp[f]);
+                                patchFields(exp[f], query);
                             }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
                     for (var i in exp) {
-                        patchFields(exp[i]);
+                        patchFields(exp[i], query);
                     }
                 }
             }
@@ -919,18 +951,20 @@
 		},
 
         extractType: function (exp, query, cubeOrDataProvider) {
+            var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
+                        ? cubeOrDataProvider.getManagedFields()
+                        : cubeOrDataProvider.extractFields();
+
             function extractFieldType(field){
                 if (query.$from) {
                     var fromFieldExpression = query.$from.$select[field];
                     var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider);
                 } else {
-                    var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
-                                ? cubeOrDataProvider.getManagedFields()
-                                : cubeOrDataProvider.extractFields();
-                    var fieldType = fields[exp] && fields[exp].type || null;
+                    var fieldType = fields[exp] && $this.getFieldJdbcType(cubeOrDataProvider, exp) || null;
                 }
                 return fieldType;
             }
+
             if (JSB.isString(exp)) {
                 var fieldType = extractFieldType(exp);
                 return fieldType;
@@ -979,6 +1013,22 @@
                         return type;
                     }
                 }
+            }
+            return null;
+        },
+
+        getFieldJdbcType: function(cubeOrDataProvider, field) {
+            if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
+                var cubeFields = cubeOrDataProvider.getManagedFields();
+                for(var cubeField in cubeFields) if(cubeFields.hasOwnProperty(cubeField)) {
+                    var binding = cubeFields[cubeField].binding;
+                    for (var i in binding) {
+                        return binding[i].nativeType || binding[i].type;
+                    }
+                }
+            } else {
+                var desc = cubeOrDataProvider.extractFields()[field];
+                return desc.nativeType || desc.type;
             }
             return null;
         },

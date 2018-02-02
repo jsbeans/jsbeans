@@ -106,6 +106,14 @@
 						this.dataProviderFields[pDesc.id] = pDesc.fields;
 						this.dataProviderPositions[pDesc.id] = pDesc.position;
 						this.dataProviderSizes[pDesc.id] = pDesc.size;
+						
+						// actualize dataProviderFields
+						for(var fName in this.dataProviderFields[pDesc.id]){
+							if(this.dataProviderFields[pDesc.id][fName] && !JSB.isObject(this.dataProviderFields[pDesc.id][fName])){
+								this.dataProviderFields[pDesc.id] = provider.extractFields();
+								break;
+							}
+						}
 					}
 					
 					// construct fields
@@ -412,42 +420,121 @@
 			if(this.materialization && this.materialization.dataProvider){
 				return [this.materialization.dataProvider];
 			}
-		    function compareProviders(leftProvider, rightProvider){
-		        // by mode
-		        if ((leftProvider.getMode()||'union') != (rightProvider.getMode()||'union')) {
-		            return rightProvider.getMode() == 'join' ? -1 : 1;
+
+		    var ordered = [];
+		    var joins = [];
+		    for(var id in this.dataProviders) {
+                var provider = this.dataProviders[id];
+		        if ((provider.getMode()||'union') == 'union') {
+		            ordered.push(provider);
+		        } else {
+		            joins.push(provider);
 		        }
-		        // by position
-		        for(var f in $this.fields){
-                    var binding = $this.fields[f].binding;
-                    if (binding.length > 1) {
-                        var leftPosition = binding.length;
-                        for(var b = 0; b < binding.length; b++) {
-                            if (binding[b].provider == leftProvider) {
-                                leftPosition = b;
+		    }
+
+            function orderJoins(allOrAny){
+                var cubeFields = $this.getManagedFields();
+                var stop = false;
+                while(!stop) {
+                    stop = true;
+                    for (var p =0; p < joins.length; p++) {
+                        var provider = joins[p];
+                        var allBinded = true;
+                        var anyBinded = false;
+                        //  check all shared fields has binding with ordered
+                        cubeFields:
+                        for(var cubeField in cubeFields) {
+                            var binding = cubeFields[cubeField].binding;
+                            if (binding.length > 1) {
+                                for(var b in binding) {
+                                    if(binding[b].provider == provider) {
+                                        // here cubeField is shared field of provider
+                                        var hasBinding = (function(){
+                                            // find left provider with binding
+                                            for (var o in ordered) {
+                                                var leftProvider = ordered[o];
+                                                for(var b2 in binding) {
+                                                    if(binding[b2].provider == leftProvider) {
+                                                        return true;
+                                                    }
+                                                }
+                                            }
+                                            return false;
+                                        })();
+                                        if (hasBinding) {
+                                            anyBinded = true;
+                                            if (!allOrAny) {
+                                                break cubeFields;
+                                            }
+                                        } else {
+                                            allBinded = false;
+                                            if (allOrAny) {
+                                                break cubeFields;
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                        var rightPosition = binding.length;
-                        for(var b = 0; b < binding.length; b++) {
-                            if (binding[b].provider == rightProvider) {
-                                rightPosition = b;
-                            }
-                        }
-                        if (leftPosition != binding.length && rightPosition != binding.length) {
-                            return leftPosition - rightPosition;
+                        if (allOrAny ? allBinded : anyBinded) {
+                            joins.splice(p--, 1);
+                            ordered.push(provider);
+                            stop = false;
                         }
                     }
                 }
-                return 0;
-		    }
+            }
 
-		    var providers = [];
-		    for(var id in this.dataProviders) {
-		        providers.push(this.dataProviders[id]);
-		    }
-		    providers.sort(compareProviders);
-		    return providers;
+            orderJoins(true); // first all shared fields binded
+            orderJoins(false); // then any shared field binded
+
+            if (joins.length > 0) {
+                throw new Error('Some provider`s fields has no JOIN ON binding');
+            }
+		    return ordered;
 		},
+
+//		getOrderedDataProviders: function(){
+//			this.load();
+//			if(this.materialization && this.materialization.dataProvider){
+//				return [this.materialization.dataProvider];
+//			}
+//		    function compareProviders(leftProvider, rightProvider){
+//		        // by mode
+//		        if ((leftProvider.getMode()||'union') != (rightProvider.getMode()||'union')) {
+//		            return rightProvider.getMode() == 'join' ? -1 : 1;
+//		        }
+//		        // by position
+//		        for(var f in $this.fields){
+//                    var binding = $this.fields[f].binding;
+//                    if (binding.length > 1) {
+//                        var leftPosition = binding.length;
+//                        for(var b = 0; b < binding.length; b++) {
+//                            if (binding[b].provider == leftProvider) {
+//                                leftPosition = b;
+//                            }
+//                        }
+//                        var rightPosition = binding.length;
+//                        for(var b = 0; b < binding.length; b++) {
+//                            if (binding[b].provider == rightProvider) {
+//                                rightPosition = b;
+//                            }
+//                        }
+//                        if (leftPosition != binding.length && rightPosition != binding.length) {
+//                            return leftPosition - rightPosition;
+//                        }
+//                    }
+//                }
+//                return 0;
+//		    }
+//
+//		    var providers = [];
+//		    for(var id in this.dataProviders) {
+//		        providers.push(this.dataProviders[id]);
+//		    }
+//		    providers.sort(compareProviders);
+//		    return providers;
+//		},
 
 		createProviderFieldsList: function(provider, fields){
 			this.load();
@@ -455,7 +542,8 @@
 
             for(var i in fields){
                 res[i] = {
-                    type: fields[i]
+                    type: fields[i].type,
+                    nativeType: fields[i].nativeType
                 }
             }
 
@@ -565,20 +653,7 @@
 			var dpNewFields = provider.extractFields();
 			var dpFields = this.dataProviderFields[provider.getId()];
 			var bNeedStore = false;
-/*			
-			if(dpFields && Object.keys(dpFields).length > 0){
-				 // perform update existed fields
-				for(var fName in dpNewFields){
-					var fType = dpNewFields[fName];
-					var pfName = this.prepareFieldName(fName);
-					if(dpFields[pfName]){
-						// rename data provider field
-						bNeedStore = true;
-						this.renameDataProviderField(provider, pfName, fName, fType);
-					}
-				}
-			}
-*/			
+			
 			this.dataProviderFields[provider.getId()] = dpNewFields;
 			if(this.removeUnexistedFields(provider)){
 				bNeedStore = true;
@@ -593,16 +668,16 @@
 					if(bDesc.provider != provider){
 						continue;
 					}
-					if(bDesc.type != dpNewFields[bDesc.field]){
-						bDesc.type = dpNewFields[bDesc.field];
+					if(bDesc.type != dpNewFields[bDesc.field].nativeType){
+						bDesc.type = dpNewFields[bDesc.field].nativeType;
 						bNeedStore = true;
 					}
 					if(!providerBindingMap[bDesc.field]){
 						providerBindingMap[bDesc.field] = [];
 					}
 					providerBindingMap[bDesc.field].push({
-						field: fName,
-						type: fDesc.type,
+						field: bDesc.field,
+						type: bDesc.type,
 						link: fDesc.link,
 						order: fDesc.order
 					});
@@ -653,8 +728,8 @@
 					if(!dpFields[bDesc.field]){
 						bindingArr.splice(i, 1);
 					} else {
-					    if(fDesc.type != dpFields[bDesc.field]){
-					        fDesc.type = dpFields[bDesc.field];
+					    if(fDesc.type != dpFields[bDesc.field].type){
+					        fDesc.type = dpFields[bDesc.field].type;
 					    }
 					}
 				}
@@ -697,13 +772,15 @@
 			this.store();
 		},
 		
-		addField: function(pId, pField, pType){
+		addField: function(pId, pField){
 			this.load();
 			var provider = this.getProviderById(pId);
 			var pfName = pField;
+			var fMap = provider.extractFields({comment:true, type:true, nativeType:true});
+			var pType = fMap[pField].nativeType;
+			var cType = fMap[pField].type;
 			if(provider.getOption('useComments')){
-				var fMap = provider.extractFields({comment:true, type:true});
-				if(fMap[pField].comment){
+				if(JSB.isString(fMap[pField].comment) && fMap[pField].comment.length > 0){
 					pfName = fMap[pField].comment;
 				}
 			}
@@ -720,7 +797,7 @@
 			var order = Object.keys(this.fields).length;
 			this.fields[nameCandidate] = {
 				field: nameCandidate,
-				type: pType,
+				type: cType,
 				binding: [],
 				link: false,
 				order: order
@@ -739,9 +816,9 @@
 		},
 
 		linkFields: function(fields){
+			debugger;
 			this.load();
-            var nFields = [],
-                nField;
+            var nFields = [], nField, fType;
 
 		    for(var i = 0; i < fields.length; i++){
 		        var f = this.fields[fields[i].field];
@@ -760,9 +837,12 @@
 		                delete this.fields[fields[i].field];
 		            }
 		        } else {
+		        	if(!fType){
+		        		fType = f.type;
+		        	}
                     nFields.push({
                         field: f.binding[0].field,
-                        type: f.type,
+                        type: f.binding[0].type,
                         provider: f.binding[0].provider
                     });
 		            delete this.fields[fields[i].field];
@@ -774,7 +854,7 @@
                     binding: [],
                     field: nFields[0].field,
                     link: true,
-                    type: nFields[0].type
+                    type: fType
                 };
 		    }
 
@@ -847,7 +927,7 @@
 
                 if(oldField.binding.length > 1){ // key field
                     for(var i = 0; i < oldField.binding.length; i++){
-                        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field, oldField.binding[i].type);
+                        var f = this.addField(oldField.binding[i].provider.getId(), oldField.binding[i].field);
 
                         nFields.add.push(f);
                     }

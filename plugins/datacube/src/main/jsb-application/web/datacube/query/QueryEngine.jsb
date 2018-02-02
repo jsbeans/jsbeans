@@ -96,7 +96,7 @@
             if (dataProvider) {
                 providerIterators.push(new DataProviderIterator(dataProvider, this));
             } else {
-                var dataProviders = this.cube.getOrderedDataProviders();
+//                var dataProviders = this.cube.getOrderedDataProviders();
                 var groups = this.groupProviders(dcQuery, this.sqlStoreDataProviderKey);
                 for(var i in groups) {
                     var providers = groups[i];
@@ -185,6 +185,8 @@
 		        3) объединить однотипные провайдеры в группы
 		    */
 
+            var orderedProviders = this.cube.getOrderedDataProviders();
+
 		    // collect used providers by name and all used cube fields
 		    var providers = {}; // id: {provider, cubeFields}
 		    QueryUtils.walkCubeFields(
@@ -207,12 +209,20 @@
             QueryUtils.removeRedundantBindingProviders(providers, this.cube);
 
 		    var groupsMap = {/**key:[provider]*/}; //
-		    for (var id in providers) if (providers.hasOwnProperty(id)) {
-		        var prov = providers[id];
-		        var key = getProviderGroupKey(prov.provider);
-                groupsMap[key] = groupsMap[key] || [];
-                groupsMap[key].push(prov.provider);
-		    }
+//		    for (var id in providers) if (providers.hasOwnProperty(id)) {
+//		        var prov = providers[id];
+//		        var key = getProviderGroupKey(prov.provider);
+//                groupsMap[key] = groupsMap[key] || [];
+//                groupsMap[key].push(prov.provider);
+//		    }
+            for(var i in orderedProviders) {
+                var provider = orderedProviders[i];
+                if (providers.hasOwnProperty(provider.id)) {
+                    var key = getProviderGroupKey(provider);
+                    groupsMap[key] = groupsMap[key] || [];
+                    groupsMap[key].push(provider);
+                }
+            }
 		    var groups = []; // [[]]
 		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
 		        groups.push(groupsMap[k]);

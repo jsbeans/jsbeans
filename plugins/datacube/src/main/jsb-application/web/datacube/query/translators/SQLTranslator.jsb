@@ -20,6 +20,9 @@
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
+		    if ($this.cube) {
+		        $this.cubeFields = $this.cube.getManagedFields();
+            }
 		},
 
 		translateQuery: function() {
@@ -75,7 +78,7 @@
 		        this.dcQuery, /**includeSubQueries=*/true,
 		        function verifyField(field, context, fieldQuery) {
                     // is cube field
-                    if ($this.cube && $this.cube.getManagedFields()[field]) {
+                    if ($this.cube && $this.cubeFields[field]) {
                         return;
                     }
                     // is provider field
@@ -261,7 +264,7 @@
                     var e = query.$select[filteredField];
                     if(QueryUtils.isAggregatedExpression(e)) {
                         // if cube field has same name
-                        if($this.cube && $this.cube.getManagedFields()[filteredField]) {
+                        if($this.cube && $this.cubeFields[filteredField]) {
                             return false;
                         } else {
                             return true;
@@ -616,7 +619,7 @@
                 }
                 var field = exp;
                 if (this.cube) {
-                    var managedFields = this.cube.getManagedFields();
+                    var managedFields = this.cubeFields;
                     if (managedFields[field]) {
                         return field;
                     }
@@ -666,7 +669,7 @@
 
         _translateCubeField: function(field, context){
             if (this.cube) {
-            	var managedFields = this.cube.getManagedFields();
+            	var managedFields = this.cubeFields;
                 if (!managedFields[field]) {
                     return null;
                 }
@@ -805,7 +808,7 @@
                 return sql;
             }
             function addJoinOnFields(allFields, providers){
-                var managedFields = $this.cube.getManagedFields();
+                var managedFields = $this.cubeFields;
                 for(var cubeField in managedFields){
                     var binding = managedFields[cubeField].binding;
                     if (binding.length > 1) {
@@ -833,7 +836,7 @@
             }
             function forEachCubeFieldBinding(allFields, callback){
                 for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
-                    var binding = $this.cube.getManagedFields()[cubeField].binding;
+                    var binding = $this.cubeFields[cubeField].binding;
                     for (var i in binding) {
                         if(callback(cubeField, binding[i])) {
                             break;
@@ -843,7 +846,7 @@
 
             }
             function setIsJoinedFields(allFields) {
-                var managedFields = $this.cube.getManagedFields();
+                var managedFields = $this.cubeFields;
                 for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
                     var isJoined = true;
                     var managedField = managedFields[cubeField];
@@ -868,7 +871,7 @@
                 for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
                     var isNull = !isProviderHasCubeField(prov.providerFields, cubeField);
                     var visited = false;
-                    var binding = $this.cube.getManagedFields()[cubeField].binding;
+                    var binding = $this.cubeFields[cubeField].binding;
                     for (var i in binding) {
                         if (binding[i].provider == prov.provider) {
                             visitField(cubeField, isNull, binding[i]);
@@ -935,7 +938,7 @@
 
                                 if (fieldsSql.length > 0) fieldsSql += ', ';
                                 if (isNull) {
-                                    var fieldType = $this.cube.getManagedFields()[cubeField].type;
+                                    var fieldType = QueryUtils.getFieldJdbcType($this.cube || $this.providers[0], cubeField);
                                     fieldsSql += 'CAST(NULL AS ' + JDBC.translateType(fieldType, $this.vendor) + ')';
                                 } else {
                                     fieldsSql += $this._quotedName(binding.field);
@@ -971,7 +974,7 @@
             }
             function extractJoinOnCubeFields(provider) {
                 var fields = {};
-                var managedFields = $this.cube.getManagedFields();
+                var managedFields = $this.cubeFields;
                 for(var f in managedFields){
                     var binding = managedFields[f].binding;
                     if (binding.length > 1) {
@@ -987,9 +990,8 @@
             function buildJOINsSqlAndFieldsMap(allFields, providers, unionsAlias, hasUnions, unionsFields) {
                 var sqlJoins = '';
                 var firstProv;
-                for(var p in providers) if(providers.hasOwnProperty(p)) {
-                    var prov = providers[p];
-                    if (prov.provider.getMode() != 'join') continue;
+                for (var p in $this.providers) if(providers.hasOwnProperty($this.providers[p].id) && $this.providers[p].getMode() == 'join') {
+                    var prov = providers[$this.providers[p].id];
                     firstProv = firstProv || prov;
 
                     if (sqlJoins.length > 0) sqlJoins += ' LEFT JOIN ';
@@ -1111,9 +1113,9 @@
 //
 //                    if (fieldsSql.length > 0) fieldsSql += ', ';
 //                    if (isNull) {
-//                        fieldsSql += 'CAST(NULL AS ' + JDBC.translateType( $this.cube.getManagedFields()[cubeField].type, $this.vendor) + ')';
+//                        fieldsSql += 'CAST(NULL AS ' + JDBC.translateType( $this.cubeFields[cubeField].type, $this.vendor) + ')';
 //                    } else {
-//                        var binding = $this.cube.getManagedFields()[cubeField].binding;
+//                        var binding = $this.cubeFields[cubeField].binding;
 //                        for (var i in binding) {
 //                            if (binding[i].provider == prov.provider) {
 //                                fieldsSql += $this._quotedName(binding[i].field);
@@ -1131,7 +1133,7 @@
 //
 //            function extractJoinOnCubeFields(provider) {
 //                var fields = {};
-//                var managedFields = $this.cube.getManagedFields();
+//                var managedFields = $this.cubeFields;
 //                for(var f in managedFields){
 //                    var binding = managedFields[f].binding;
 //                    if (binding.length > 1) {
@@ -1197,7 +1199,7 @@
 //
 //            if (Object.keys(providers).length > 1) {
 //                // and add joinOn (join keys) fields to allFields and providers[].providerFields
-//                var managedFields = $this.cube.getManagedFields();
+//                var managedFields = $this.cubeFields;
 //                for(var cubeField in managedFields){
 //                    var binding = managedFields[cubeField].binding;
 //                    if (binding.length > 1) {
@@ -1220,7 +1222,7 @@
 //
 //            if (singleProv) {
 //                for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
-//                    var binding = $this.cube.getManagedFields()[cubeField].binding;
+//                    var binding = $this.cubeFields[cubeField].binding;
 //                    for (var i in binding) {
 //                        if (binding[i].provider == singleProv.provider) {
 //                            fieldsSql += $this._quotedName(binding[i].field);
@@ -1239,7 +1241,7 @@
 //                    ' AS ' + this._quotedName(query.$context);
 //            } else {
 //                // set isJoined for allFields
-//                var managedFields = this.cube.getManagedFields();
+//                var managedFields = this.cubeFields;
 //                for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
 //                    var isJoined = true;
 //                    var managedField = managedFields[cubeField];
@@ -1304,7 +1306,7 @@
 //
 //                // print SELECT (mapped fields) FROM (view)
 //                var fieldsSql = '';
-//                var managedFields = $this.cube.getManagedFields();
+//                var managedFields = $this.cubeFields;
 //                for(var cubeField in allFields) if(allFields.hasOwnProperty(cubeField)) {
 //                    if (fieldsSql.length > 0) fieldsSql += ', ';
 //                    // is joined field find provider or use unions
@@ -1375,7 +1377,7 @@
 //        _translateJoins: function(query) {
 //            function countLinkedProviders(provider) {
 //                var linked = {};
-//                var managedFields = $this.cube.getManagedFields();
+//                var managedFields = $this.cubeFields;
 //                for (var f in managedFields){
 //                    var binding = managedFields[f].binding;
 //                    for (var p = 0; p < binding.length; p++) {
@@ -1394,7 +1396,7 @@
 //
 //            function translateJoin(leftProviders, rightProvider) {
 //                var on = '';
-//                var managedFields = $this.cube.getManagedFields();
+//                var managedFields = $this.cubeFields;
 //                for(var f in managedFields){
 //                    var binding = managedFields[f].binding;
 //                    for(var r = 0; r < binding.length; r++) {

@@ -71,12 +71,15 @@
 			var desc = this.getTableDescriptor();
 			var fields = {};
 			for(var colName in desc.columns){
-				var type = desc.columns[colName].datatypeName;
-				var fDesc = type;
+				var nativeType = desc.columns[colName].datatypeName;
+				var type = JDBC.toJsonType(nativeType);
+				var fDesc = {};
 				if(opts && Object.keys(opts).length > 0){
-					fDesc = {};
 					if(opts.type){
 						fDesc.type = type;
+					}
+					if(opts.nativeType){
+						fDesc.nativeType = nativeType;
 					}
 					if(opts.comment){
 						fDesc.comment = desc.columns[colName].comment;
@@ -84,6 +87,9 @@
 					if(opts.name){
 						fDesc.name = desc.columns[colName].name;
 					}
+				} else {
+					fDesc.type = type;
+					fDesc.nativeType = nativeType;
 				}
 				fields[colName] = fDesc;
 			}
