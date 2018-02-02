@@ -29,7 +29,11 @@
         }
 
         for(var i = 0; i < values.length; i++){
-            this.getMainSelector().findRendersByName(name, arr, values);
+            if(!values[i].items){
+                continue;
+            }
+
+            this.getMainSelector().findRendersByName(name, arr, values[i].items);
         }
 
         return arr;

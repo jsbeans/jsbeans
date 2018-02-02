@@ -274,15 +274,15 @@
             $base();
 
             // advanced filters
-            //var globalFilters = dataSource.getFilters(),
-            var regionsContext = this.getContext().find('regions').values();
-/*
+            var globalFilters = this.getSourceFilters(dataSource),
+                regionsContext = this.getContext().find('regions').values();
+
             if(globalFilters){
                 var bindings = [],
                     newFilters = {};
 
                 for(var i = 0; i < regionsContext.length; i++){
-                    bindings.push(regionsContext[i].find('region').binding()[0]);
+                    bindings.push(regionsContext[i].find('region').getBindingName());
                 }
 
                 for(var i in globalFilters){
@@ -325,8 +325,8 @@
                 }
                 this._curFilterHash = null;
             }
-*/
-            //try{
+
+            try{
                 var regionsColors = [],
                     maps = [],
                     newMapHash = '';
@@ -400,12 +400,10 @@
                     this._isMapsLoaded = false;
                     this.loadMaps();
                 }
-            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
-            */
 
             this.getElement().loader();
             this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
@@ -493,7 +491,7 @@
 
         innerBuildChart: function(data){
             if(!this._isMapsLoaded){
-                JSB.defer(function(){
+                JSB.defer(function(){   // todo: add ensure trigger
                     $this.innerBuildChart(data);
                 }, 500, 'mapLoading_' + this.getId());
                 return;
@@ -648,10 +646,11 @@
         // filters
         _addFilter: function(evt, opts){
             var dataSource = this.getContext().find('dataSource').binding();
-            if(!dataSource.source) return;
 
-            var field = this.getContext().find("regions").values()[opts.seriesIndex].find('region').binding()[0];
-            if(!field[0]) return;
+            var field = this.getContext().find("regions").values()[opts.seriesIndex].find('region').getBindingName();
+            if(!field){
+                return;
+            }
 
             var fDesc = {
                 sourceId: dataSource.source,

@@ -123,6 +123,7 @@
             }
 		},
 
+		// old selector.fetch
         fetchBinding: function(selector, opts, callback){
             if(arguments.length == 1 && JSB.isFunction(opts)){
                 callback = opts;
@@ -261,6 +262,7 @@
                 for(var i = 0; i < dataBindings.length; i++){
                     res.push(dataBindings[i].getBindingName());
                 }
+                result.push(res);
 
                 while(sourceBindings[0].next()){
                     res = [];
@@ -327,6 +329,19 @@
 			return Object.keys(this.sourceMap);
 		},
 
+		// old selector.getFilters
+		getSourceFilters: function(selector){
+		    if(selector.getRenderName() !== 'sourceBinding'){
+		        return;
+		    }
+
+		    var source = selector.binding().source;
+
+            if(this.sourceFilterMap && this.sourceFilterMap[source]){
+                return JSB().clone($this.sourceFilterMap[source]);
+            }
+		},
+
 		getWrapper: function(){
 			return this.wrapper;
 		},
@@ -373,6 +388,21 @@
             this.setTrigger('_widgetInitialized');
 		},
 
+		setFilterLayer: function(layerOpts){
+			if(JSB.isDefined(layerOpts.main) && !layerOpts.main){
+				throw new Error('Main filter layer cannot be disabled');
+			}
+			JSB.merge(this.filterLayers, layerOpts);
+		},
+
+		setKeyColumns: function(rowKeyCols){
+			if(JSB.isArray(rowKeyCols)){
+				this.rowKeyColumns = JSB.clone(rowKeyCols);
+			} else {
+				this.rowKeyColumns = [JSB.clone(rowKeyCols)];
+			}
+		},
+
 		setSort: function(q){
 			this.sort = q;
 		},
@@ -402,23 +432,6 @@
 			} else {
 				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
 				this.sources = this.getWrapper().getWidgetEntry().getSources();
-			}
-		},
-
-// //
-		
-		setFilterLayer: function(layerOpts){
-			if(JSB.isDefined(layerOpts.main) && !layerOpts.main){
-				throw new Error('Main filter layer cannot be disabled');
-			}
-			JSB.merge(this.filterLayers, layerOpts);
-		},
-		
-		setKeyColumns: function(rowKeyCols){
-			if(JSB.isArray(rowKeyCols)){
-				this.rowKeyColumns = JSB.clone(rowKeyCols);	
-			} else {
-				this.rowKeyColumns = [JSB.clone(rowKeyCols)];
 			}
 		}
 	},
