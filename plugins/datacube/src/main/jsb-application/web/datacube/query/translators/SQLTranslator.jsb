@@ -1480,8 +1480,6 @@
 
                 var sqlOp = null;
                 switch(op){
-                    case '$not':
-                            return 'NOT ' + $this.translateMultiExpressions(operands[0]) + ' ';
                     case '$eq':
                     case '$ne':
                         if (operands[1] === null || operands[1].$const === null)
@@ -1538,6 +1536,9 @@
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
+                            case '$not':
+                            return 'NOT (' + translateMultiExpressions(exps[op]) + ')';
+                                break;
                             case '$or':
                                 sql +=  '(' + translateAndOrExpressions(exps[op], 'OR') + ')';
                                 break;
