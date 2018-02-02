@@ -366,8 +366,8 @@
 			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
 		},
 
-		removeFilter: function(fItemId){
-			return this.getWrapper().removeFilter(fItemId);
+		removeFilter: function(fItemId, dontPublish){
+			return this.getWrapper().removeFilter(fItemId, dontPublish);
 		},
 
 		removeAllFilters: function(){

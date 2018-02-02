@@ -397,7 +397,7 @@
                 if(newMapHash !== this._mapHash){
                     this._mapHash = newMapHash;
                     this._maps = maps;
-                    this._isMapsLoaded = false;
+                    this.resetTrigger('_mapLoaded');
                     this.loadMaps();
                 }
             } catch(ex){
@@ -490,13 +490,6 @@
         },
 
         innerBuildChart: function(data){
-            if(!this._isMapsLoaded){
-                JSB.defer(function(){   // todo: add ensure trigger
-                    $this.innerBuildChart(data);
-                }, 500, 'mapLoading_' + this.getId());
-                return;
-            }
-
             try {
                 var tileMaps = this.getContext().find('tileMaps').values();
 
@@ -643,6 +636,10 @@
             }
         },
 
+        ensureInitialized: function(callback){
+            this.ensureTrigger(['_widgetInitialized', '_rendersMapCreated', '_mapLoaded'], callback);
+        },
+
         // filters
         _addFilter: function(evt, opts){
             var dataSource = this.getContext().find('dataSource').binding();
@@ -770,7 +767,7 @@
                     $this._maps[i].data = obj[i].data;
                 }
 
-                $this._isMapsLoaded = true;
+                $this.setTrigger('_mapLoaded');
             });
         },
 
