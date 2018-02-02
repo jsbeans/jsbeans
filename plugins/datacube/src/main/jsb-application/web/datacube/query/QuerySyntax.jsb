@@ -149,9 +149,9 @@
 		            '$sort': '$sort',
 		            '$limit': '$limit',
 		            '$finalize': '$finalize',
-		            '$sql': '$sql'
+//		            '$sql': '$sql'
 		        },
-		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$sort', '$finalize', '$sql','$limit']
+		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$sort', '$finalize'/*, '$sql'*/,'$limit']
 		    });
 		
 		    new this.ComplexObject({
@@ -1054,11 +1054,11 @@
 		        disabled:true
 		    });
 		    
-		    new this.EConstString({
-		        name: '$sql',
-		        desc: 'Использовать нативный SQL запрос',
-		        editable: true
-		    });
+//		    new this.EConstString({
+//		        name: '$sql',
+//		        desc: 'Использовать нативный SQL запрос',
+//		        editable: true
+//		    });
 		
 		},
 		
