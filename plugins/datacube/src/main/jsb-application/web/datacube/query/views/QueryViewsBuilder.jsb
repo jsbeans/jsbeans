@@ -5,7 +5,7 @@
 		$require: [
 		    'DataCube.Query.QueryUtils',
 
-            'DataCube.Query.Views.CubeViewsBuilder'
+            'DataCube.Query.Views.CubeViewsBuilder',
 		    'DataCube.Query.Views.NothingView',
 		    'DataCube.Query.Views.QueryView',
 		    'DataCube.Query.Views.SqlView',
@@ -27,13 +27,37 @@
 
 		build: function() {
 		    // build pre-defined $views
-		    for(var name in dcQuery.$views) {
-		        $this._buildQueryViews(name, dcQuery.$views[name]);
+		    for(var name in $this.query.$views) {
+		        $this._buildQueryViews(name, $this.query.$views[name]);
 		    }
 		    // build query views
-            $this._buildQueryViews(dcQuery.$context, dcQuery);
-            return $this.contextViews[dcQuery.$context];
+            $this._buildQueryViews($this.query.$context, $this.query);
+
+            $this._setIsolatedViews();
+            return $this.contextViews[$this.query.$context];
 		},
+
+		getContextQueryViews: function(){
+		    return $this.contextViews;
+		},
+
+		_setIsolatedViews: function(){
+		    var notIsolatedContexts = {};
+            for(var context in $this.contextViews) if ($this.contextViews.hasOwnProperty(context)) {
+                var queryView = $this.contextViews[context];
+                var linkedFields = queryView.listLinkedFields();
+                for (var f in linkedFields) {
+                    var linkedViews = queryView.getFieldLinkedViews(linkedFields[f]);
+                    for(var linkedContext in linkedViews) if (linkedViews.hasOwnProperty(linkedContext)) {
+                        notIsolatedContexts[linkedContext] = true;
+                    }
+                }
+            }
+            for(var context in notIsolatedContexts) if (notIsolatedContexts.hasOwnProperty(context)) {
+                var queryView = $this.contextViews[context];
+                queryView.setIsolated(false);
+            }
+        },
 
         _buildQueryViews: function(name, query) {
             // from leaf to root
@@ -89,12 +113,30 @@
 		    var view = new QueryView(name, query, sourceView);
 		    for(var alias in query.$select) {
                 view.setField(alias, {
+                    field: alias,
                     type: QueryUtils.extractType(
                             query.$select[alias], query,
                             $this.cube || $this.singleProvider),
                     expr: query.$select[alias],
                 });
             }
+            // collect linked fields in other contexts
+            QueryUtils.walkQueryFields(query, /**includeSubQueries=*/false,
+                function(field, context, curQuery){
+                    // if current query field
+                    if (context == query.$context){
+                        // if use from other context
+                        if (curQuery.$context != context) {
+                            var viewField = view.getField(field);
+                            if (!viewField) throw new Error('Internal error: unknown foreign field ' + field);
+                            var linkedView = $this.contextViews[curQuery.$context];
+                            if (!linkedView) throw new Error('Internal error: unknown linked view ' + curQuery.$context);
+                            view.linkField(field, linkedView);
+                        }
+                    }
+                }
+            );
+
             return view;
 		},
 	}

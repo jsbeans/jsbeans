@@ -631,11 +631,11 @@
             return false;
         },
 
-        _translateField: function(field, context, forceFieldNotAlias) {
+        _translateField: function(field, context, notAlias) {
             var query = this._getQueryByContext(context);
             var cubeField = this.asCubeFieldExpression(query.$select[field]);
             // is allow use aliases
-            if (!forceFieldNotAlias) {
+            if (!notAlias) {
                 // is alias and not cube field as-is expression return quoted alias
                 var isAlias = !!query.$select[field];
                 if (isAlias && !cubeField) {
@@ -651,7 +651,7 @@
             var nameSql = this._translateCubeField(cubeField || field, context);
             // is not cube field and is alias print as is
             if (!nameSql) {
-                if (forceFieldNotAlias) {
+                if (notAlias) {
                     var query = this._getQueryByContext(context);
                     if (!!query.$select[field]) {
                         nameSql = this._quotedName(field);

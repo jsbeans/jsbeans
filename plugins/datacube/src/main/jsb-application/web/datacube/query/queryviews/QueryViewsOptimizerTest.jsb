@@ -8,6 +8,7 @@
         ],
 
 		$constructor: function(){
+		    return; // comment for test
 		    var debug = Config.get('kernel.jshub.openDebugger');
 		    var repeat = true;
 		    for(;repeat;){

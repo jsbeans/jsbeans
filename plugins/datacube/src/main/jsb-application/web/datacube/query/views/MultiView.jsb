@@ -12,7 +12,7 @@
 		},
 
 		destroy: function(){
-            var views = this.listViews();
+            var views = $this.listViews();
             for(var i in views) {
                 views[i].destroy();
             }
@@ -25,7 +25,7 @@
 
         listFields: function() {
             var fields = {};
-            var views = this.listViews();
+            var views = $this.listViews();
             for(var i in views) {
                 var list = views[i].listFields();
                 for(var j in list) {
@@ -36,7 +36,7 @@
 		},
 
         getField: function(name) {
-            var views = this.listViews();
+            var views = $this.listViews();
             for(var i in views) {
                 var desc = views[i].getField(name);
                 if (desc) {
@@ -44,6 +44,14 @@
                 }
             }
             return null;
+		},
+
+		visitInternalViews: function(visitor/**function visitor(view)*/) {
+            $base(visitor);
+            var views = $this.listViews();
+            for(var i in views) {
+                visitor.call(views[i], views[i]);
+            }
 		},
 	}
 }

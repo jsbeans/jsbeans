@@ -9,35 +9,72 @@
 
 		$constructor: function(name, query, sourceView){
 		    $base(name);
-		    this.query = query;
-		    this.sourceView = sourceView;
+		    $this.query = query;
+		    $this.sourceView = sourceView;
 		},
 
 		destroy: function(){
-            this.sourceView.destroy();
+            $this.sourceView.destroy();
 		    $base();
 		},
 
+        isolated: true,
 		managedFields: {},
+		linkedFieldViews: {/**field:{name:view}*/},
+
+        setIsolated: function(isolated) {
+            $this.isolated = isolated;
+		},
 
         setField: function(field, desc) {
-            this.managedFields[field] = desc;
+            $this.managedFields[field] = desc;
 		},
 
         listFields: function() {
-		    return Object.keys(this.managedFields);
+		    return Object.keys($this.managedFields);
 		},
 
-        getField: function(name) {
-            return this.managedFields[name];
+        listLinkedFields: function() {
+		    return Object.keys($this.linkedFieldViews);
 		},
 
-        lookupField: function(name) {
-            return this.sourceView.getField(name) || this.managedFields[name];
+		isIsolated: function(){
+		    return $this.isolated;
+		},
+
+        getField: function(field) {
+            return JSB.merge({
+                ownerView: $this,
+                context: $this.getContext(),
+            }, $this.managedFields[field]);
+		},
+
+        getFieldLinkedViews: function(field) {
+            return $this.linkedFieldViews[field];
+		},
+
+		linkField: function(field, linkedView) {
+		    $this.linkedFieldViews[field] = $this.linkedFieldViews[field] || {};
+		    $this.linkedFieldViews[field][linkedView.name] = linkedView;
+		},
+
+        lookupField: function(name, notAlias) {
+            // notAlias=false : alias, field
+            // notAlias=true  : field, alias
+            return notAlias && $this.sourceView.getField(name) || $this.managedFields[name] || $this.sourceView.getField(name);
 		},
 
 		getSourceView: function() {
-		    return this.sourceView;
+		    return $this.sourceView;
+		},
+
+		getQuery: function() {
+		    return $this.query;
+		},
+
+		visitInternalViews: function(visitor/**function visitor(view)*/) {
+            $base(visitor);
+            visitor.call($this.sourceView, $this.sourceView);
 		},
 	}
 }

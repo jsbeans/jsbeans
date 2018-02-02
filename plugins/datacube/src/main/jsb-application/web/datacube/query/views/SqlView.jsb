@@ -9,7 +9,7 @@
 
 		$constructor: function(name, sql){
 		    $base(name);
-		    this.sql = sql;
+		    $this.sql = sql;
 		},
 
         setField: function(field, desc) {
@@ -21,6 +21,10 @@
 
         getField: function(name) {
             return null;
+		},
+
+        getSql: function() {
+            return $this.sql;
 		},
 	}
 }

@@ -36,12 +36,13 @@
 		    this.dcQuery = subQuery;
 		    this.params = params;
 		    // build QueryView
-		    this.queryView = (function(){
-		        var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+		    (function(){
 		        try {
-                    return builder.build();
+		            var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+                    $this.queryView = builder.build();
+                    $this.contextQueryViews = builder.getContextQueryViews();
 		        } finally {
-		            builder.destroy();
+		            builder && builder.destroy();
 		        }
 		    })();
 
@@ -236,7 +237,7 @@ debugger;
         },
 
 		close: function() {
-		    this.queryView.destroy();
+		    this.queryView && this.queryView.destroy();
 		    this.destroy();
 		}
 	}

@@ -11,7 +11,6 @@
         ],
 
 		$constructor: function(cube, providers){
-		    $this.query = query;
 		    $this.providers = providers;
 		    $this.cube = cube;
 		    $this.directProvider = !cube ? providers[0] : null;
@@ -89,7 +88,7 @@
                 var binding = managedFields[field].binding;
                 for(var b in binding) if (binding[b].provider == dataProvider){
 		            view.setField(field, {
-		                type: managedFields[field].type,
+		                type: managedFields[field].type, // TODO nativeType
 		                field: field,
 		                providerField: $this.directProvider == dataProvider ? field : binding[b].field,
 		            });

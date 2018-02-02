@@ -5,20 +5,28 @@
 	$server: {
 		$constructor: function(name, leftView){
 		    $base(name);
-		    this.leftView = leftView;
+		    $this.leftView = leftView;
 		},
 
 		setRightView: function(rightView) {
-		    this.rightView = rightView;
+		    $this.rightView = rightView;
+		},
+
+		getRightView: function() {
+		    return $this.rightView;
+		},
+
+		getLeftView: function() {
+		    return $this.leftView;
 		},
 
         listViews: function() {
-            return [this.leftView, this.rightView];
+            return [$this.leftView, $this.rightView];
 		},
 
 		listJoinFields: function(){
-            var leftFields = this.leftView.listFields();
-            var rightFields = this.rightView.listFields();
+            var leftFields = $this.leftView.listFields();
+            var rightFields = $this.rightView.listFields();
 		    var list = [];
             for (var r in rightFields) {
                 if (leftFields.indexOf(rightFields[r]) != -1) {

@@ -11,20 +11,25 @@
 		},
 
 		destroy: function(){
-		    this.view.destroy();
+		    $this.view.destroy();
 		    $base();
 		},
 
 		setView: function(view) {
-		    return this.view;
+		    return $this.view;
 		},
 
         listFields: function() {
-		    return this.view.listFields();
+		    return $this.view.listFields();
 		},
 
         getField: function(name) {
-		    return this.view.getField(name);
+		    return $this.view.getField(name);
+		},
+
+		visitInternalViews: function(visitor/**function visitor(view)*/) {
+            $base(visitor);
+            visitor.call($this.view, $this.view);
 		},
 	}
 }

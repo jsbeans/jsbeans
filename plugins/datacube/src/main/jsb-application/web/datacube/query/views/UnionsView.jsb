@@ -14,11 +14,23 @@
 		views: [],
 
         listViews: function() {
-            return this.views;
+            return $this.views;
 		},
 
 		addView: function(view) {
-		    this.views.push(view);
+		    $this.views.push(view);
+		},
+
+        getField: function(name) {
+            var field = $base(name);
+            if (field) {
+                return JSB.merge({}, field, { context: getContext() });
+            }
+            return null;
+		},
+
+		getContext: function(){
+		    return 'unions_'+$this.name;
 		},
 	}
 }

@@ -3,7 +3,7 @@
 
 	$server: {
 		$constructor: function(name){
-		    this.name = name;
+		    $this.name = name;
 		},
 
         setField: function(field, desc) {
@@ -16,6 +16,14 @@
 
         getField: function(name) {
             return null;
+		},
+
+		getContext: function(){
+		    return $this.name;
+		},
+
+		visitInternalViews: function(visitor/**function visitor(view)*/) {
+		    visitor.call($this, $this);
 		},
 	}
 }
