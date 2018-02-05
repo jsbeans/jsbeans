@@ -11,20 +11,24 @@
         ],
 
 		$bootstrap: function(){
-			TranslatorRegistry.register(
-			    JSB.get('DataCube.Query.Translators.LockiTranslator'),
-			    'DataCube.Providers.InMemoryDataProvider');
-			TranslatorRegistry.register(
-			    JSB.get('DataCube.Query.Translators.LockiTranslator'),
-			    'DataCube.Providers.JsonFileDataProvider');
+            var translators = Config.get('datacube.translators');
+            for(var providerType in translators) if(translators.hasOwnProperty(providerType)) {
+                var translatorJsb = JSB.get(translators[providerType]);
+                if (!translatorJsb) throw new Error('Configuration error: Unknown translator ' + translators[providerType] + ' for provider ' + providerType);
+                TranslatorRegistry.register(translatorJsb, providerType);
+            }
 
-            if (/**old=true*/true) {
+            // default bindings: workaround for old config
+            // TODO remove
+            if (!translators) {
+                TranslatorRegistry.register(
+                    JSB.get('DataCube.Query.Translators.LockiTranslator'),
+                    'DataCube.Providers.InMemoryDataProvider');
+                TranslatorRegistry.register(
+                    JSB.get('DataCube.Query.Translators.LockiTranslator'),
+                    'DataCube.Providers.JsonFileDataProvider');
                 TranslatorRegistry.register(
                     JSB.get('DataCube.Query.Translators.SQLTranslator'),
-                    'DataCube.Providers.SqlTableDataProvider');
-            } else {
-                TranslatorRegistry.register(
-                    JSB.get('DataCube.Query.Translators.SQLViewsTranslator'),
                     'DataCube.Providers.SqlTableDataProvider');
             }
 		},
