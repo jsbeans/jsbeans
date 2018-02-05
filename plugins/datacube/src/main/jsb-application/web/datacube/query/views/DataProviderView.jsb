@@ -23,11 +23,11 @@
 		},
 
         getField: function(name) {
-            return JSB.merge({
+            return $this.managedFields[name] ? JSB.merge({
                 provider: $this.provider,
                 ownerView: $this,
                 context: $this.getContext(),
-            }, $this.managedFields[name]);
+            }, $this.managedFields[name]) : null;
 		},
 
         getProvider: function() {

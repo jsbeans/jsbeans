@@ -11,12 +11,16 @@
 		},
 
 		destroy: function(){
-		    $this.view.destroy();
+		    $this.view && $this.view.destroy();
 		    $base();
 		},
 
-		setView: function(view) {
+		getView: function() {
 		    return $this.view;
+		},
+
+		setView: function(view) {
+		    $this.view = view;
 		},
 
         listFields: function() {

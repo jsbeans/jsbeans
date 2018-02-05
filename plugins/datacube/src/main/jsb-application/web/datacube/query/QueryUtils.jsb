@@ -977,6 +977,9 @@
                     }
                 }
             }
+            if (exp == null) {
+                return exp;
+            }
             if (JSB.isObject(exp)) {
                 if (exp.$toString) return 'string';
                 if (exp.$toInt) return 'int';

@@ -4,14 +4,8 @@
 
 	$server: {
 		$require: [
-		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Providers.InMemoryDataProvider'
         ],
-
-		$bootstrap: function(){
-			TranslatorRegistry.register(this, 'DataCube.Providers.InMemoryDataProvider');
-			TranslatorRegistry.register(this, 'DataCube.Providers.JsonFileDataProvider');
-		},
 
 		$constructor: function(provider, cubeOrQueryEngine){
 		    $base(provider, cubeOrQueryEngine);

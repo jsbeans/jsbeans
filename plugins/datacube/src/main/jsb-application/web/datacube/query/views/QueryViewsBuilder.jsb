@@ -13,6 +13,9 @@
 
 		$constructor: function(query, cube, providers){
 		    $this.query = query;
+		    $this.providers = providers;
+		    $this.cube = cube;
+		    $this.directProvider = !cube ? providers[0] : null;
 		    $this.cubeViewsBuilder = new CubeViewsBuilder(cube, providers);
 
 		    // для каждого запроса/констекста формируется:
@@ -102,7 +105,7 @@
                     sourceView = new NothingView(name);
                 } else {
                     // is Cube/DataProvider source
-                    sourceView = $this.cubeViewsBuilder.build();
+                    sourceView = $this.cubeViewsBuilder.build(name);
                 }
             }
 
@@ -114,9 +117,13 @@
 		    for(var alias in query.$select) {
                 view.setField(alias, {
                     field: alias,
-                    type: QueryUtils.extractType(
+                    nativeType: QueryUtils.extractType(
                             query.$select[alias], query,
-                            $this.cube || $this.singleProvider),
+                            $this.cube || $this.directProvider),
+                    type: // TODO replace with cube types
+                        QueryUtils.extractType(
+                            query.$select[alias], query,
+                            $this.cube || $this.directProvider),
                     expr: query.$select[alias],
                 });
             }
@@ -127,6 +134,7 @@
                     if (context == query.$context){
                         // if use from other context
                         if (curQuery.$context != context) {
+debugger;
                             var viewField = view.getField(field);
                             if (!viewField) throw new Error('Internal error: unknown foreign field ' + field);
                             var linkedView = $this.contextViews[curQuery.$context];

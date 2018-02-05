@@ -9,7 +9,7 @@
 		    'DataCube.Query.Iterators.FinalizeIterator',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QuerySyntax',
-		    'DataCube.Query.QueryUtils'
+		    'DataCube.Query.QueryUtils',
         ],
 
 		$constructor: function(cube){

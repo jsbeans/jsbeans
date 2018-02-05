@@ -24,13 +24,13 @@
         getField: function(name) {
             var field = $base(name);
             if (field) {
-                return JSB.merge({}, field, { context: getContext() });
+                return JSB.merge({}, field, { context: $this.getContext(), provider: null });
             }
             return null;
 		},
 
 		getContext: function(){
-		    return 'unions_'+$this.name;
+		    return $this.name;
 		},
 	}
 }

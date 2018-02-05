@@ -6,10 +6,10 @@
 		vendor: 'PostgreSQL',
 		
 		$require: [
-		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
-		    'DataCube.Query.QuerySyntax',
+		    'DataCube.Query.QuerySyntax',,
+            'JSB.Store.Sql.JDBC',
 
 		    'DataCube.Query.Views.QueryView',
 		    'DataCube.Query.Views.CubeView',
@@ -19,10 +19,6 @@
 		    'DataCube.Query.Views.SqlView',
 		    'DataCube.Query.Views.NothingView',
         ],
-
-		$bootstrap: function(){
-//			TranslatorRegistry.register($this, 'DataCube.Providers.SqlTableDataProvider');
-		},
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
@@ -50,8 +46,7 @@
             return queryView;
         },
 
-        _declareViewField: function(viewField) {
-            debugger;
+        _declareViewField: function(viewField, query) {
             var sql;
             if (viewField.provider) {
                 sql = $this._printTableName(viewField.provider.getTableFullName()) +
@@ -65,20 +60,23 @@
         },
 
 		_translateViewField: function(viewField) {
-            debugger;
-            if (contextField.field && contextField.context) {
-                return $this._quotedName(contextField.context) +
-                    '.' + $this._quotedName(contextField.field);
+            if (viewField.provider) {
+                if (viewField.context) {
+                    return $this._printTableName(viewField.context) +
+                        '.' + $this._quotedName(viewField.providerField);
+                } else {
+                    return $this._printTableName(viewField.provider.getTableFullName()) +
+                        '.' + $this._quotedName(viewField.providerField);
+                }
+            } else if (viewField.field && viewField.context) {
+                return $this._quotedName(viewField.context) +
+                    '.' + $this._quotedName(viewField.field);
 
-            } else if (contextField.provider) {
-                return $this._printTableName(contextField.provider.getTableFullName()) +
-                    '.' + $this._quotedName(contextField.providerField);
             }
             throw new Error('Internal error: Unknown field descriptor type');
 		},
 
         _translateField: function(field, context, notAlias) {
-            debugger;
             var queryView = $this._findQueryView(context);
             var contextField = queryView.lookupField(field, notAlias);
 
@@ -100,17 +98,20 @@
             if(view instanceof QueryView) {
                 sql = $this._translateQueryView(view);
             } else if(view instanceof CubeView) {
-                sql = $this._translateAnyView(view);
+                sql = $this._translateAnyView(view.getView());
             } else if(view instanceof UnionsView) {
-                sql =  $this._translateUnionsView(view);
+                sql = $this._translateUnionsView(view);
             } else if(view instanceof JoinView) {
-                sql =  $this._translateJoinView(view);
+                sql = $this._translateJoinView(view);
             } else if(view instanceof DataProviderView) {
                 sql = $this._printTableName(view.getProvider().getTableFullName());
+                sql += ' AS ' + $this._quotedName(view.getContext());
             } else if(view instanceof SqlView) {
                 sql = view.getSql();
             } else if(view instanceof NothingView) {
                 sql = '';
+            } else {
+                throw new Error('Internal error: unknown view type ' + view.getJsb ? view.getJsb.$name : typeof view);
             }
             return sql;
         },
@@ -138,31 +139,29 @@
 
         _translateSelectColumns: function(view){
             var sqlColumns = '';
-            var fields = query.listFields();
+            var fields = view.listFields();
             for (var i in fields) {
                 if (sqlColumns.length > 0) sqlColumns += ', ';
                 var field = fields[i];
-                sqlColumns += $this._declareViewField(query.getField(field));
+                sqlColumns += $this._declareViewField(view.getField(field), view.getQuery());
             }
             if (sqlColumns.length == 0) sqlColumns += 'NULL';
             return sqlColumns;
         },
 
         _translateUnionsView: function(unionsView) {
-            var unionsFields = view.listFields();
+            var unionsFields = unionsView.listFields();
             var views = unionsView.listViews();
             var sqlUnions = ''
             for(var v in views) {
                 var view = views[v];
-
-
                 var fieldsSql = '';
                 for (var f in unionsFields) {
                     var field = unionsFields[f];
                     var viewField = view.getField(field);
-                    if (viewSql.length > 0) viewSql += ', ';
+                    if (fieldsSql.length > 0) fieldsSql += ', ';
                     if (!viewField) {
-                        var fieldType = viewField.type;
+                        var fieldType = $this.cubeFields[field].nativeType || $this.cubeFields[field].type;
                         fieldsSql += 'NULL::' + JDBC.translateType(fieldType, $this.vendor);
                         fieldsSql += ' AS ' + $this._quotedName(field);
                     } else {
@@ -177,7 +176,8 @@
                 if (sqlUnions.length > 0) sqlUnions  += ' UNION ALL ';
                 sqlUnions += viewSql;
             }
-
+            sqlUnions += ' AS ' + $this._quotedName(unionsView.getContext());
+            return sqlUnions;
         },
 
         _translateJoinView: function(view) {
@@ -203,7 +203,7 @@
             if(count == 0) {
                 throw new Error('Join without binding: ' + view.getLeftView().name + ', ' + view.getRightView().name);
             }
-
+            return sql;
         },
 	},
 }

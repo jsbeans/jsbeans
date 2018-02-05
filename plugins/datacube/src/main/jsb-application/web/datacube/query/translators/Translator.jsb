@@ -3,7 +3,8 @@
 
 	$server: {
 		$require: [
-		    'DataCube.Query.Views.QueryViewsBuilder'
+		    'DataCube.Query.Views.QueryViewsBuilder',
+		    'DataCube.Query.QueryUtils',
         ],
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
@@ -35,16 +36,20 @@
 		    }
 		    this.dcQuery = subQuery;
 		    this.params = params;
+
+            this._collectContextQueries();
+            this._verifyFields();
+
 		    // build QueryView
-//		    (function(){
-//		        try {
-//		            var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
-//                    $this.queryView = builder.build();
-//                    $this.contextQueryViews = builder.getContextQueryViews();
-//		        } finally {
-//		            builder && builder.destroy();
-//		        }
-//		    })();
+		    (function(){
+		        try {
+		            var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+                    $this.queryView = builder.build();
+                    $this.contextQueryViews = builder.getContextQueryViews();
+		        } finally {
+		            builder && builder.destroy();
+		        }
+		    })();
 
             // translate query to dataprovider format
 		    var translatedQuery = this.translateQuery();
@@ -157,6 +162,41 @@ debugger;
 		translateResult: function(result) {
 		    // implement
 		    return result;
+		},
+
+        _collectContextQueries: function(){
+            var idx = 0;
+            this.contextQueries = {};
+            QueryUtils.walkSubQueries(this.dcQuery, function(query){
+                if (!query.$context) query.$context = 'context_' + idx++;
+                $this._registerContextQuery(query);
+            });
+        },
+
+		_verifyFields: function(){
+            QueryUtils.walkQueryFields(
+		        this.dcQuery, /**includeSubQueries=*/true,
+		        function verifyField(field, context, fieldQuery) {
+                    // is cube field
+                    if ($this.cube && $this.cubeFields[field]) {
+                        return;
+                    }
+                    // is provider field
+                    if ($this.providers[0].extractFields()[field]) {
+                        return;
+                    }
+                    // is alias
+                    var query = fieldQuery || $this.dcQuery;
+                    if(query.$select && query.$select[field]) {
+                        return;
+                    }
+                    if(query.$sql || query.$from) {
+                        // ignore for subquery or embedded sql
+                        return;
+                    }
+                    throw new Error('Поле не определено: ' + field);
+		        }
+		    );
 		},
 
         _getCubeFieldProviders: function(field, onlySelf) {

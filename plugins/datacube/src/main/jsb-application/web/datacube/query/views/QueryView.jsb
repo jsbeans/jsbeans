@@ -43,10 +43,10 @@
 		},
 
         getField: function(field) {
-            return JSB.merge({
+            return $this.managedFields[field] ? JSB.merge({
                 ownerView: $this,
                 context: $this.getContext(),
-            }, $this.managedFields[field]);
+            }, $this.managedFields[field]) : null;
 		},
 
         getFieldLinkedViews: function(field) {
@@ -61,7 +61,7 @@
         lookupField: function(name, notAlias) {
             // notAlias=false : alias, field
             // notAlias=true  : field, alias
-            return notAlias && $this.sourceView.getField(name) || $this.managedFields[name] || $this.sourceView.getField(name);
+            return notAlias && $this.sourceView.getField(name) || $this.getField(name) || $this.sourceView.getField(name);
 		},
 
 		getSourceView: function() {

@@ -20,7 +20,7 @@
 		    $base();
 		},
 
-		build: function() {
+		build: function(name) {
 		    var view = $this.cube
                     ? $this._buildCubeView(name)
                     : $this._buildDataProviderView(name, $this.directProvider);
@@ -32,7 +32,7 @@
 
             var unionsCount = 0;
             var joinsCount = 0;
-            for(var p in $this.providers[p]){
+            for(var p in $this.providers){
                 if (($this.providers[p].getMode()||'union') == 'union') {
                     unionsCount++;
                 } else {
@@ -45,13 +45,14 @@
                 return cubeView;
             }
 
+            var leftView;
             // build unions view
             if (unionsCount > 1) {
-                leftView = new UnionsView(name);
+                leftView = new UnionsView("unions_"+name);
             }
-            for(var p in $this.providers[p]) {
+            for(var p in $this.providers) {
                 if (($this.providers[p].getMode()||'union') == 'union') {
-                    var providerView = $this._buildDataProviderView(name, $this.providers[p]);
+                    var providerView = $this._buildDataProviderView("union_"+p+'_'+name, $this.providers[p]);
                     if (leftView) {
                         leftView.addView(providerView);
                     } else {
@@ -61,9 +62,9 @@
             }
 
             // build join views (note: providers already ordered)
-            for(var p in $this.providers[p]){
+            for(var p in $this.providers){
                 if (($this.providers[p].getMode()||'union') == 'join') {
-                    var providerView = $this._buildDataProviderView(name, $this.providers[p]);
+                    var providerView = $this._buildDataProviderView("join_"+p+'_'+name, $this.providers[p]);
 
                     if (!leftView) {
                         leftView = providerView;
@@ -81,14 +82,16 @@
 
 		_buildDataProviderView: function(name, dataProvider) {
 		    var view = new DataProviderView(name, dataProvider);
+		    var cubeFields = $this.cube.getManagedFields();
 		    var managedFields = $this.directProvider == dataProvider
 		            ? dataProvider.extractFields()
-		            : $this.cube.getManagedFields();
+		            : cubeFields;
             for(var field in managedFields) {
                 var binding = managedFields[field].binding;
                 for(var b in binding) if (binding[b].provider == dataProvider){
 		            view.setField(field, {
-		                type: managedFields[field].type, // TODO nativeType
+		                type: cubeFields[field].type,
+		                nativeType: managedFields[field].nativeType || managedFields[field].type,
 		                field: field,
 		                providerField: $this.directProvider == dataProvider ? field : binding[b].field,
 		            });

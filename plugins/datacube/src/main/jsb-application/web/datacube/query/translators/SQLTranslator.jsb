@@ -7,16 +7,11 @@
 		
 		$require: [
 		    'DataCube.Query.QueryParser',
-		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
 		    'JSB.Store.Sql.JDBC'
         ],
-
-		$bootstrap: function(){
-			TranslatorRegistry.register(this, 'DataCube.Providers.SqlTableDataProvider');
-		},
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
@@ -26,7 +21,6 @@
 		},
 
 		translateQuery: function() {
-		    this._collectContextQueries();
 //		    this._prepareWithViews();
 		    this._verifyFields();
 		    var sql = '';
@@ -54,7 +48,6 @@
         },
 
 		analyzeQuery: function(translatedQuery){
-		    this._verifyFields();
 		    var json = {
 		        translatedQuery: translatedQuery,
 		        preparedQuery: this.dcQuery,
@@ -71,32 +64,6 @@
 		        close: function(){
 		        }
 		    };
-		},
-
-		_verifyFields: function(){
-            QueryUtils.walkQueryFields(
-		        this.dcQuery, /**includeSubQueries=*/true,
-		        function verifyField(field, context, fieldQuery) {
-                    // is cube field
-                    if ($this.cube && $this.cubeFields[field]) {
-                        return;
-                    }
-                    // is provider field
-                    if ($this.providers[0].extractFields()[field]) {
-                        return;
-                    }
-                    // is alias
-                    var query = fieldQuery || $this.dcQuery;
-                    if(query.$select && query.$select[field]) {
-                        return;
-                    }
-                    if(query.$sql || query.$from) {
-                        // ignore for subquery or embedded sql
-                        return;
-                    }
-                    throw new Error('Поле не определено: ' + field);
-		        }
-		    );
 		},
 
 		translateQueryExpression: function(query) {
@@ -142,15 +109,6 @@
 
         _registerContextQuery: function(query){
             this.contextQueries[query.$context] = query;
-        },
-
-        _collectContextQueries: function(){
-            var idx = 0;
-            this.contextQueries = {};
-            QueryUtils.walkSubQueries(this.dcQuery, function(query){
-                if (!query.$context) query.$context = 'context_' + idx++;
-                $this._registerContextQuery(query);
-            });
         },
 
         _extractViewKey: function (query, global){
@@ -637,15 +595,15 @@
         _translateField: function(field, context, notAlias) {
             var query = this._getQueryByContext(context);
             var cubeField = this.asCubeFieldExpression(query.$select[field]);
-            // is allow use aliases
-            if (!notAlias) {
-                // is alias and not cube field as-is expression return quoted alias
-                var isAlias = !!query.$select[field];
-                if (isAlias && !cubeField) {
-                    // print alias
-                    return this._quotedName(field);
-                }
-            }
+//            // is allow use aliases
+//            if (!notAlias) {
+//                // is alias and not cube field as-is expression return quoted alias
+//                var isAlias = !!query.$select[field];
+//                if (isAlias && !cubeField) {
+//                    // print alias
+//                    return this._quotedName(field);
+//                }
+//            }
             if (!this.contextFieldsMap[context]){
                 // print alias
                 return this._quotedName(field);
