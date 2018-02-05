@@ -11,7 +11,12 @@
             this._scheme = opts.scheme;
             this._values = opts.values;
 
-            this.createRendersMap(opts.rendersDescription);
+            if(opts.rendersMap){
+                this._rendersMap = opts.rendersMap;
+                this.construct();
+            } else {
+                this.createRendersMap(opts.rendersDescription);
+            }
 	    },
 
 	    // inner variables
@@ -42,13 +47,14 @@
 	        this._linksMap[key].linkedRenders.push(render);
 	    },
 
-        createRender: function(parent, key, scheme, values){
+        createRender: function(parent, key, scheme, values, opts){
             var constructor = this.getRenderByName(scheme.render);
             var render = new constructor({
                 key: key,
                 scheme: scheme,
                 values: values,
                 parent: parent,
+                options: opts,
                 schemeController: this,
                 onchange: function(value){
                     if(JSB.isFunction($this.options.onchange)){
@@ -121,6 +127,18 @@
 	        return links;
 	    },
 
+	    getRenderByName: function(name){
+	        if(this._rendersMap[name]){
+	            return this._rendersMap[name];
+	        } else {
+	            throw new Error('Render with name ' + name + ' does not exist');
+	        }
+	    },
+
+	    getRenderMap: function(){
+	        return this._rendersMap;
+	    },
+
 	    getValueByKey: function(key){
 	        var render = this.findRenderByKey(key);
 	        return render ? render.getValues() : null;
@@ -128,14 +146,6 @@
 
 	    getValues: function(b){
 	        return this._values;
-	    },
-
-	    getRenderByName: function(name){
-	        if(this._rendersMap[name]){
-	            return this._rendersMap[name];
-	        } else {
-	            throw new Error('Render with name ' + name + ' does not exist');
-	        }
 	    },
 
 	    validate: function(){

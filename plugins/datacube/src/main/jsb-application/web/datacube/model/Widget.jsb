@@ -151,6 +151,10 @@
 		},
 		
 		updateInteroperationMap: function(){
+		    if(!this.sourcesIds){
+		        return;
+		    }
+
 			var sourceMap = {};
 
 			for(var i = 0; i < this.sourcesIds.length; i++){

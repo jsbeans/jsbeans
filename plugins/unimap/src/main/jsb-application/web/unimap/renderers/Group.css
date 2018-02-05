@@ -18,7 +18,17 @@
 
 .groupRender > .jsb-panel > .content > .multipleItem {
     position: relative;
-    padding-left: 15px;
+    padding: 0 20px 0 15px;
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem > .dltBtn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 0;
+    background: none;
+    color: darkred;
+    line-height: 0.5;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem .sortableHandle {

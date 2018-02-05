@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.Group',
 	$parent: 'Unimap.Render.Basic',
-	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
 	$client: {
 	    construct: function(){
 	        this.addClass('groupRender');
@@ -87,12 +87,24 @@
                     item.append(this.createRender(i, this._scheme.items[i], values[i]).getElement());
                 }
 
-                 this.multipleBtn.before(item);
+                item.append(new Button({
+                    cssClass: 'dltBtn fa fa-close',
+                    hasCaption: false,
+                    onclick: function(){
+                        $this.removeItem(itemIndex);
+                    }
+                }).getElement());
+
+                this.multipleBtn.before(item);
 	        } else {
                 for(var i in this._scheme.items){
                     this.group.appendContent(this.createRender(i, this._scheme.items[i], values[i]));
                 }
 	        }
+	    },
+
+	    removeItem: function(){
+	        // todo
 	    },
 
 	    reorderValues: function(){

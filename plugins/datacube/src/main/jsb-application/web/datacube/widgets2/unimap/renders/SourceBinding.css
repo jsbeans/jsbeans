@@ -28,6 +28,7 @@
     color: #949494;
 }
 
+.sourceBindingRender > .item.bindingItem.acceptDraggable,
 .sourceBindingRender > .item.acceptDraggable > .jsb-editor > input {
 	background: rgba(156, 92, 29, 0.3);
     border-color: rgba(105, 45, 0, 0.5);

@@ -12,18 +12,18 @@
         dataSource: {
             render: 'sourceBinding',
             name: 'Источник данных',
-            description: 'Укажите источник данных'
+            //description: 'Укажите источник данных'
         },
         regions: {
          render: 'group',
          name: 'Регионы',
          collapsable: true,
          multiple: true,
-         description: 'Укажите регионы',
+         //description: 'Укажите регионы',
          items: {
              item: {
                  render: 'group',
-                 name: 'Серия',
+                 name: 'Группа регионов',
                  items: {
                      region: {
                          render: 'dataBinding',
@@ -40,17 +40,71 @@
                          name: 'GeoJson-карта',
                          items: {
                              russianRegions: {
-                                 name: 'Карта регионов России'
+                                 name: 'Карта регионов России',
+                                 items: {
+                                    compareTo: {
+                                         render: 'select',
+                                         name: 'Сопоставление по',
+                                         items: {
+                                             NAME_1: {
+                                                 name: 'Имя региона'
+                                             },
+                                             KONST_NUM: {
+                                                 name: 'Номер по конституции'
+                                             },
+                                             OKTMO: {
+                                                 name: 'Код OKTMO'
+                                             },
+                                             ISO: {
+                                                 name: 'Код ISO'
+                                             }
+                                         }
+                                    }
+                                 }
                              },
                              russianRegionsMPT: {
-                                 name: 'Карта регионов России MPT'
+                                 name: 'Карта регионов России MPT',
+                                 items: {
+                                    compareTo: {
+                                         render: 'select',
+                                         name: 'Сопоставление по',
+                                         items: {
+                                             NAME_1: {
+                                                 name: 'Имя региона'
+                                             },
+                                             KONST_NUM: {
+                                                 name: 'Номер по конституции'
+                                             },
+                                             OKTMO: {
+                                                 name: 'Код OKTMO'
+                                             },
+                                             ISO: {
+                                                 name: 'Код ISO'
+                                             }
+                                         }
+                                    }
+                                 }
                              },
                              worldCountries: {
-                                name: 'Карта мира'
+                                name: 'Карта мира',
+                                 items: {
+                                    compareTo: {
+                                         render: 'select',
+                                         name: 'Сопоставление по',
+                                         items: {
+                                             ru_name: {
+                                                 name: 'Название страны'
+                                             },
+                                             id: {
+                                                 name: 'Код ISO'
+                                             }
+                                         }
+                                    }
+                                 }
                              }
                          }
                      },
-                     compareTo: {
+                     /*compareTo: {
                          render: 'select',
                          name: 'Сопоставление по',
                          linkTo: 'geojsonMap',
@@ -84,7 +138,7 @@
                                  }
                              }
                          }
-                     },
+                     },*/
                      fillColor: {
                         render: 'select',
                         name: 'Цвет заливки',
@@ -186,6 +240,64 @@
                  }
              }
          }
+        },
+        markers: {
+            render: 'group',
+            name: 'Маркеры',
+            collapsable: true,
+            multiple: true,
+            items: {
+                item: {
+                    render: 'group',
+                    name: 'Группа маркеров',
+                    items: {
+                        region: {
+                            render: 'dataBinding',
+                            name: 'Координаты',
+                            linkTo: 'dataSource'
+                        },
+                        type: {
+                            render: 'select',
+                            name: 'Тип маркера',
+                            items: {
+                                defaultMarker: {
+                                    name: 'По-умолчанию'
+                                },
+                                widget: {
+                                    name: 'Виджет',
+                                    items: {
+                                        widgetBinding: {
+                                            render: 'embeddedWidget',
+                                            name: 'Тип виджета'
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        /*
+                        markerSettings: {
+                            render: 'select',
+                            name: 'Настройки маркера',
+                            linkTo: 'type',
+                            itemsGroups: {
+                                defaultMarker: {
+                                    forFields: ['defaultMarker'],
+                                    items: {
+
+                                    }
+                                },
+                                widget: {
+                                    forFields: ['widget'],
+                                    items: {
+
+                                    }
+                                }
+                            }
+                        }
+                        */
+                    }
+                }
+            }
         },
         tileMaps: {
          render: 'group',

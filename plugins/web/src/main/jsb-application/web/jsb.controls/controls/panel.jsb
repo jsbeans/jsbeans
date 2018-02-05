@@ -45,7 +45,7 @@
             }
 
             if(this.options.settingsBtn){
-                this.elements.buttons.settingsBtn = this.$('<li key="settingsBtn" class="settings-link"><i></i></li>');
+                this.elements.buttons.settingsBtn = this.$('<li key="settingsBtn" class="settings-link"><i class="fa fa-wrench"></i></li>');
                 this.elements.toolbar.append(this.elements.buttons.settingsBtn);
 
                 if(JSb.isFunction(this.options.onSettingsBtnClick)){
@@ -56,7 +56,7 @@
             }
 
             if(this.options.closeBtn){
-                this.elements.buttons.closeBtn = this.$('<li key="closeBtn" class="close-link"><i></i></li>');
+                this.elements.buttons.closeBtn = this.$('<li key="closeBtn" class="close-link"><i class="fa fa-close"></i></li>');
                 this.elements.toolbar.append(this.elements.buttons.closeBtn);
 
                 if(JSB.isFunction(this.options.onCloseBtnClick)){
