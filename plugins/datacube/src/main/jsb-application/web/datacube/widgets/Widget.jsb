@@ -333,62 +333,37 @@
 
 					JSB.merge(item.fetchOpts, opts);
 					item.fetchOpts.layers = {};
-
+					
 					// construct back filter
 					if($this.filterLayers.back){
-						var backQuery = {};
-						if(Object.keys($this.contextFilter).length > 0){
-							backQuery.$postFilter = $this.contextFilter;
-						}
+						item.fetchOpts.layers.back = $this.getLayerQuery('back', item.binding.source);
 						if(opts.select){
-							backQuery.$select = opts.select;
+							item.fetchOpts.layers.back.$select = opts.select;
 						}
 						if(opts.groupBy){
-							backQuery.$groupBy = opts.groupBy;
+							item.fetchOpts.layers.back.$groupBy = opts.groupBy;
 						}
-						if($this.sort){
-							backQuery.$sort = [$this.sort];
-						}
-						item.fetchOpts.layers.back = backQuery;
 					}
 					
 					// construct main layer
-					var mainQuery = {};
-					if($this.getWrapper()){
-						var filterDesc = null;
-						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
-							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source], $this.sources[item.binding.source]);
-						} else {
-							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
-						}
-						if(filterDesc){
-							if(filterDesc.filter){
-								mainQuery.$cubeFilter = filterDesc.filter;
-							}
-							if(filterDesc.postFilter){
-								mainQuery.$postFilter = filterDesc.postFilter;
-							}
-						}
-					}
-					if(Object.keys($this.contextFilter).length > 0){
-						if(mainQuery.$postFilter){
-							mainQuery.$postFilter = {'$and':[mainQuery.$postFilter, $this.contextFilter]};
-						} else {
-							mainQuery.$postFilter = $this.contextFilter;
-						}
-					}
+					item.fetchOpts.layers.main = $this.getLayerQuery('main', item.binding.source);
 					if(opts.select){
-						mainQuery.$select = opts.select;
+						item.fetchOpts.layers.main.$select = opts.select;
 					}
 					if(opts.groupBy){
-						mainQuery.$groupBy = opts.groupBy;
+						item.fetchOpts.layers.main.$groupBy = opts.groupBy;
 					}
-					if($this.sort){
-						mainQuery.$sort = [$this.sort];
-					}
-					item.fetchOpts.layers.main = mainQuery;
 					
-					// TODO: construct hover filter
+					// construct hover layer
+/*					if($this.filterLayers.hover){
+						item.fetchOpts.layers.hover = $this.getLayerQuery('hover', item.binding.source);
+						if(opts.select){
+							item.fetchOpts.layers.hover.$select = opts.select;
+						}
+						if(opts.groupBy){
+							item.fetchOpts.layers.hover.$groupBy = opts.groupBy;
+						}
+					}*/
 
 					
 					item.fetchOpts.context = this.ctxName;
@@ -875,15 +850,61 @@
 
 		exportData: function(format){
             switch(format){
-                case 'xls':
-                case 'csv':
-                    this.getBindingsData(function(data){
-                        Export.exportData(format, data, $this.wrapper.title);
-                    });
-                    break;
-                case 'png':
-                    Export.exportData(format, this.getElement().get(0), this.wrapper.title);
+            case 'xls':
+            case 'csv':
+                this.getBindingsData(function(data){
+                    Export.exportData(format, data, $this.wrapper.title);
+                });
+                break;
+            case 'png':
+                Export.exportData(format, this.getElement().get(0), this.wrapper.title);
+                break;
+            default:
+            	throw new Error('Unsupported export format: ' + format);
             }
+		},
+		
+		getLayerQuery: function(layerName, sourceId){
+			var query = {};
+			if(layerName == 'back'){
+				if(Object.keys($this.contextFilter).length > 0){
+					query.$postFilter = $this.contextFilter;
+				}
+				if($this.sort){
+					query.$sort = [$this.sort];
+				}
+			} else if(layerName == 'main' || layerName == 'hover'){
+				if($this.getWrapper()){
+					var filterDesc = null;
+					if($this.sourceFilterMap && $this.sourceFilterMap[sourceId]){
+						filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[sourceId], $this.sources[sourceId]);
+					} else {
+						filterDesc = $this.getWrapper().constructFilterBySource($this.sources[sourceId]);
+					}
+					if(filterDesc){
+						if(filterDesc.filter){
+							query.$cubeFilter = filterDesc.filter;
+						}
+						if(filterDesc.postFilter){
+							query.$postFilter = filterDesc.postFilter;
+						}
+					}
+				}
+				if(Object.keys($this.contextFilter).length > 0){
+					if(query.$postFilter){
+						query.$postFilter = {'$and':[query.$postFilter, $this.contextFilter]};
+					} else {
+						query.$postFilter = $this.contextFilter;
+					}
+				}
+				if($this.sort){
+					query.$sort = [$this.sort];
+				}
+			} else {
+				throw new Error('Layer ' + layerName + ' is not supported');
+			}
+			
+			return query;
 		}
 	},
 	

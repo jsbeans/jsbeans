@@ -4283,6 +4283,24 @@ JSB({
 		}
 	},
 	
+	resetTrigger: function(keyArr){
+		if(!$this.$_ecMap){
+			$this.$_ecMap = {};
+		}
+		if(!JSB.isArray(keyArr)){
+			keyArr = [keyArr];
+		}
+		for(var i = 0; i < keyArr.length; i++){
+			var key = keyArr[i];
+			if(!$this.$_ecMap[key]){
+				$this.$_ecMap[key] = {cArr:[]};
+			}
+			if(JSB.isDefined($this.$_ecMap[key].val)){
+				delete $this.$_ecMap[key].val;
+			}
+		}
+	},
+	
 	$client:{
 		$bootstrap: function(){
 			// use 'this' to access members
