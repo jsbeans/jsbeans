@@ -11,15 +11,13 @@
     $scheme: {
         dataSource: {
             render: 'sourceBinding',
-            name: 'Источник данных',
-            //description: 'Укажите источник данных'
+            name: 'Источник данных'
         },
         regions: {
          render: 'group',
          name: 'Регионы',
          collapsable: true,
          multiple: true,
-         //description: 'Укажите регионы',
          items: {
              item: {
                  render: 'group',
@@ -443,6 +441,7 @@
             }
 
             try{
+                // parsing regions data
                 var regionsColors = [],
                     maps = [],
                     newMapHash = '';
@@ -516,6 +515,9 @@
                     this.resetTrigger('_mapLoaded');
                     this.loadMaps();
                 }
+
+                // parsing markers data
+                var markersContext = this.getContext().find('markers').values();
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);

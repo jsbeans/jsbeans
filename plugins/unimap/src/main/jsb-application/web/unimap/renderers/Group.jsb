@@ -103,8 +103,22 @@
 	        }
 	    },
 
-	    removeItem: function(){
-	        // todo
+	    removeItem: function(itemIndex){
+debugger;
+	        var items = this.group.getElement().find('.multipleItem');
+	        for(var i = 0; i < items.length; i++){
+	            var idx = Number(this.$(items[i]).attr('idx'));
+
+	            if(idx === itemIndex){
+	                items[i].remove();
+	                this._values.values.splice(idx, 1);
+	                continue;
+	            }
+
+	            if(idx > itemIndex){
+	                this.$(items[i]).attr('idx', idx - 1);
+	            }
+	        }
 	    },
 
 	    reorderValues: function(){
