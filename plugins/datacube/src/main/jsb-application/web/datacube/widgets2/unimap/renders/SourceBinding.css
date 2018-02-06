@@ -78,10 +78,14 @@
 }
 
 .sourceBindingRender > .item.filled,
- .sourceBindingRender > .item.bindingItem.ui-droppable.filled {
+.sourceBindingRender > .item.bindingItem.ui-droppable.filled {
     border: 2px dashed rgba(2, 47, 78, 0.2);
     padding: 5px 7px;
     background: none;
+}
+
+.sourceBindingRender > .item.bindingItem.ui-droppable.filled {
+    width: initial;
 }
 
 .sourceBindingRender > .item.filled .sliceRenderer > .title {

@@ -33,7 +33,7 @@
 	    clear: function(){
 	        var el = this.getElement();
 	        el.empty();
-	        el.append('<option">Выбрите значение</option>');
+	        //el.append('<option>Выбрите значение</option>');
 	    },
 
 	    enable: function(bool){

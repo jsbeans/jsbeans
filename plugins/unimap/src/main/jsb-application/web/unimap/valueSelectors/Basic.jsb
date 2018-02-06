@@ -10,7 +10,7 @@
             this._selectorBean = $this;
             this._key = opts.key;
             this._selectorOpts = opts.selector;
-            this._values = opts.selector.values; //JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
+            this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
         }
 
         this._selectorPrototype.prototype = {

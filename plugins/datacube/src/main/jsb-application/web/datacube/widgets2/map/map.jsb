@@ -102,41 +102,6 @@
                              }
                          }
                      },
-                     /*compareTo: {
-                         render: 'select',
-                         name: 'Сопоставление по',
-                         linkTo: 'geojsonMap',
-                         itemsGroups: {
-                             russianRegions: {
-                                 forFields: ['russianRegions', 'russianRegionsMPT'],
-                                 items: {
-                                     NAME_1: {
-                                         name: 'Имя региона'
-                                     },
-                                     KONST_NUM: {
-                                         name: 'Номер по конституции'
-                                     },
-                                     OKTMO: {
-                                         name: 'Код OKTMO'
-                                     },
-                                     ISO: {
-                                         name: 'Код ISO'
-                                     }
-                                 }
-                             },
-                             worldCountries: {
-                                 forFields: ['worldCountries'],
-                                 items: {
-                                     ru_name: {
-                                         name: 'Название страны'
-                                     },
-                                     id: {
-                                         name: 'Код ISO'
-                                     }
-                                 }
-                             }
-                         }
-                     },*/
                      fillColor: {
                         render: 'select',
                         name: 'Цвет заливки',
@@ -249,7 +214,7 @@
                     render: 'group',
                     name: 'Группа маркеров',
                     items: {
-                        region: {
+                        coordinates: {
                             render: 'dataBinding',
                             name: 'Координаты',
                             linkTo: 'dataSource'
@@ -264,6 +229,12 @@
                                 widget: {
                                     name: 'Виджет',
                                     items: {
+                                        valueSkipping: {
+                                            render: item,
+                                            name: 'Проброс значений',
+                                            optional: 'checked',
+                                            editor: 'none'
+                                        },
                                         widgetBinding: {
                                             render: 'embeddedWidget',
                                             name: 'Тип виджета'
@@ -271,28 +242,7 @@
                                     }
                                 }
                             }
-                        },
-                        /*
-                        markerSettings: {
-                            render: 'select',
-                            name: 'Настройки маркера',
-                            linkTo: 'type',
-                            itemsGroups: {
-                                defaultMarker: {
-                                    forFields: ['defaultMarker'],
-                                    items: {
-
-                                    }
-                                },
-                                widget: {
-                                    forFields: ['widget'],
-                                    items: {
-
-                                    }
-                                }
-                            }
                         }
-                        */
                     }
                 }
             }
@@ -440,7 +390,7 @@
                 this._curFilterHash = null;
             }
 
-            try{
+            //try{
                 // parsing regions data
                 var regionsColors = [],
                     maps = [],
@@ -518,16 +468,20 @@
 
                 // parsing markers data
                 var markersContext = this.getContext().find('markers').values();
+            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
+            */
 
             $this.resetTrigger('_dataLoaded');
             this.getElement().loader();
             this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
                 try{
-                    var regions = {};
+                    // load regions
+                    var regions = [],
+                        markers = [];
 
                     while(dataSource.next()){
                         for(var i = 0; i < regionsContext.length; i++){
@@ -561,6 +515,16 @@
                             if(regionsColors[i].sourceColor){
                                 regions[i][regions[i].data.length].color = regionsColors[i].sourceColor.value();
                             }
+                        }
+
+                        for(var i = 0; i < markersContext.length; i++){
+                            if(!markers[i]){
+                                markers[i] = {
+                                    data: []
+                                }
+                            }
+
+                            
                         }
                     }
 
@@ -606,7 +570,7 @@
         },
 
         innerBuildChart: function(data){
-            try {
+            //try {
                 var tileMaps = this.getContext().find('tileMaps').values();
 
                 if(this.map){
@@ -746,10 +710,12 @@
                 for(var i in $this._curFilters){
                     this._selectFeature(i);
                 }
+            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
+            */
         },
 
         ensureDataLoaded: function(callback){
@@ -849,7 +815,7 @@
 
         loadMaps: function(){
             if(this._maps.length === 0){
-                this._isMapsLoaded = true;
+                this.setTrigger('_mapLoaded');
                 return;
             }
 
