@@ -14,7 +14,11 @@
         return JSB.isDefined(this._values[0].binding);
     },
 
-    next: function(){
+    next: function(opts){
+        if(!opts){
+            opts = {};
+        }
+
         var item = this._values[0].binding;
 
         if(!JSB.isDefined(item.cursor)){
@@ -58,6 +62,12 @@
 
         for(var i in this._linkedValues){
             this._linkedValues[i].setValue(dataEl[i]);
+        }
+
+        if(opts.valueSkippingBindings){
+            for(var i = 0; i < opts.valueSkippingBindings.length; i++){
+                opts.valueSkippingBindings[i].setValue(dataEl[p[ts.valueSkippingBindings.getBindingName()]]);
+            }
         }
 
         return true;

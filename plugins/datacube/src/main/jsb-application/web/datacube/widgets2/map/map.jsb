@@ -219,7 +219,7 @@
                             name: 'Координаты',
                             linkTo: 'dataSource'
                         },
-                        type: {
+                        markerType: {
                             render: 'select',
                             name: 'Тип маркера',
                             items: {
@@ -229,12 +229,6 @@
                                 widget: {
                                     name: 'Виджет',
                                     items: {
-                                        valueSkipping: {
-                                            render: item,
-                                            name: 'Проброс значений',
-                                            optional: 'checked',
-                                            editor: 'none'
-                                        },
                                         widgetBinding: {
                                             render: 'embeddedWidget',
                                             name: 'Тип виджета'
@@ -467,7 +461,32 @@
                 }
 
                 // parsing markers data
-                var markersContext = this.getContext().find('markers').values();
+                var markersContext = this.getContext().find('markers').values(),
+                    markersDesc = [],
+                    valueSkippingBindings = [];
+
+                for(var i = 0; i < markersContext.length; i++){
+                    markersDesc[i] = {};
+
+                    var markerType = markersContext[i].find('markerType').value();
+                    markersDesc[i].markerType = markerType;
+
+                    switch(markerType){
+                        case 'widget':
+                            var wb = markersContext[i].find('widgetBinding');
+
+                            if(vb.isValueSkipping()){
+                                valueSkippingBindings = valueSkippingBindings.concat(wb.findRendersByName('dataBinding'));
+                                markersDesc[i].valueSkipping = true;
+                                markersDesc[i].widgetBinding = wb;
+                                markersDesc[i].jsb = wb.getWidgetName();
+                            }
+                            break;
+                        case 'defaultMarker':
+
+                            break;
+                    }
+                }
             /*
             } catch(ex){
                 console.log('Parse scheme exception!');
@@ -480,10 +499,9 @@
             this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
                 try{
                     // load regions
-                    var regions = [],
-                        markers = [];
+                    var regions = [];
 
-                    while(dataSource.next()){
+                    while(dataSource.next({ embeddedBindings: valueSkippingBindings })){
                         for(var i = 0; i < regionsContext.length; i++){
                             var value = regionsContext[i].find('value').value();
 
@@ -517,14 +535,14 @@
                             }
                         }
 
-                        for(var i = 0; i < markersContext.length; i++){
-                            if(!markers[i]){
-                                markers[i] = {
-                                    data: []
-                                }
+                        for(var i = 0; i < markersDesc.length; i++){
+                            switch(markersDesc.markerType){
+                                case 'widget':
+                                    if(markersDesc[i].valueSkipping){
+                                        markersDesc[i].values = JSB.clone(markersDesc[i].widgetBinding.values());
+                                    }
+                                    break;
                             }
-
-                            
                         }
                     }
 

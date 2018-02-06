@@ -31,6 +31,14 @@
                 }
             });
 
+            this.find('> .caption').click(function(evt){
+                $this.setChecked(!$this.find('> .check-elem').hasClass('checked'));
+
+                if($this.options.onclick){
+                    $this.options.onclick.call($this, evt);
+                }
+            });
+
 			this.setChecked(this.options.checked, true);
 		},
 

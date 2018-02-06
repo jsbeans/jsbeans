@@ -28,6 +28,18 @@
 
 	        this.createDescription(name);
 
+	        this._values.valueSkipping = JSB.isDefined(this._values.valueSkipping) ? this._values.valueSkipping : true;
+
+	        var valueSkipping = this.$('<div class="valueSkipping"></div>');
+	        valueSkipping.append(new Checkbox({
+	            checked: this._values.valueSkipping,
+	            onchange: function(b){
+	                this._values.valueSkipping = b;
+	            }
+	        }).getElement());
+	        valueSkipping.append('<span>Проброс значений</span>');
+	        this.append(valueSkipping);
+
 	        if(this._values.values.length > 0){
 	            this.addItem(this._values.values[0]);
 	        } else {
