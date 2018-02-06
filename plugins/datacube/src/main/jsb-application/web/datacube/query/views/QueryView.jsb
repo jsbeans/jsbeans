@@ -20,11 +20,16 @@
 
         isolated: true,
 		managedFields: {},
+		subViews: {/**context:view*/},
 		linkedFieldViews: {/**field:{name:view}*/},
 
         setIsolated: function(isolated) {
             $this.isolated = isolated;
 		},
+
+		addSubView: function(subView) {
+            $this.subViews[subView.getContext()] = subView;
+        },
 
         setField: function(field, desc) {
             $this.managedFields[field] = desc;
@@ -61,7 +66,11 @@
         lookupField: function(name, notAlias) {
             // notAlias=false : alias, field
             // notAlias=true  : field, alias
-            return notAlias && $this.sourceView.getField(name) || $this.getField(name) || $this.sourceView.getField(name);
+            var field = notAlias && $this.sourceView.getField(name) || $this.getField(name) || $this.sourceView.getField(name);
+            return field ? JSB.merge(field, {
+                    ownerView: $this,
+                    context: $this.getContext(),
+                }) : null;
 		},
 
 		getSourceView: function() {
@@ -73,8 +82,13 @@
 		},
 
 		visitInternalViews: function(visitor/**function visitor(view)*/) {
+            $this.sourceView.visitInternalViews(visitor);
+            for(var v in $this.subViews) {
+                if ($this.sourceView != $this.subViews[v]) {
+                    $this.subViews[v].visitInternalViews(visitor);
+                }
+            }
             $base(visitor);
-            visitor.call($this.sourceView, $this.sourceView);
 		},
 	}
 }

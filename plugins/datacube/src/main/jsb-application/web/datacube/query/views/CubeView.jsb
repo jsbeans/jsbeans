@@ -31,9 +31,13 @@
 		    return $this.view.getField(name);
 		},
 
+//		getContext: function(){
+//		    return $this.view.getContext();
+//		},
+
 		visitInternalViews: function(visitor/**function visitor(view)*/) {
             $base(visitor);
-            visitor.call($this.view, $this.view);
+            $this.view && $this.view.visitInternalViews(visitor);
 		},
 	}
 }

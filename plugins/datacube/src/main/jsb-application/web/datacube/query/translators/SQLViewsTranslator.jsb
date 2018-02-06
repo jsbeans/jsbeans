@@ -26,8 +26,10 @@
 
 
 		translateQueryExpression: function(query) {
+		    $this.buildViews();
             var queryView = $this._findQueryView(query.$context);
             var sql = $this._translateAnyView(queryView);
+            //return '/*VT{*/' + sql + '/*}VT*/';
             return sql;
 		},
 
@@ -60,6 +62,7 @@
         },
 
 		_translateViewField: function(viewField) {
+debugger;
             if (viewField.provider) {
                 if (viewField.context) {
                     return $this._printTableName(viewField.context) +
@@ -117,7 +120,9 @@
         },
 
         _translateQueryView: function(view) {
-            var from  = $this._translateAnyView(view.getSourceView());
+            var from  = view.getSourceView() instanceof QueryView
+                    ? '('+$this._translateAnyView(view.getSourceView())+') AS ' + view.getContext()
+                    : $this._translateAnyView(view.getSourceView());
             var columns = $this._translateSelectColumns(view);
 
             var query = view.getQuery();

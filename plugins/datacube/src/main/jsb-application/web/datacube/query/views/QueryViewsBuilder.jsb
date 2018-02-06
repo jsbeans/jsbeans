@@ -31,10 +31,10 @@
 		build: function() {
 		    // build pre-defined $views
 		    for(var name in $this.query.$views) {
-		        $this._buildQueryViews(name, $this.query.$views[name]);
+		        $this._buildQueryViews($this.query.$views[name]);
 		    }
 		    // build query views
-            $this._buildQueryViews($this.query.$context, $this.query);
+            $this._buildQueryViews($this.query);
 
             $this._setIsolatedViews();
             return $this.contextViews[$this.query.$context];
@@ -62,29 +62,31 @@
             }
         },
 
-        _buildQueryViews: function(name, query) {
+        _buildQueryViews: function(query) {
             // from leaf to root
             QueryUtils.walkSubQueries(query, function(subQuery, isFromQuery, isValueQuery){
-                $this._buildContextView(name, subQuery);
+                $this._buildContextView(subQuery);
             });
 		},
 
-		_buildContextView: function(name, query) {
-		    var sourceView = $this.contextSourceViews[query.$context] = $this._buildContextSourceViews(name, query);
-		    var resultView = $this.contextViews[query.$context] = $this._buildContextViews(name, query, sourceView);
+		_buildContextView: function(query) {
+		    var sourceView = $this.contextSourceViews[query.$context] = $this._buildContextSourceViews(query);
+		    var resultView = $this.contextViews[query.$context] = $this._buildContextViews(query, sourceView);
 		    if (!sourceView || !resultView) throw new Error('Internal error: result or source view for query is not defined');
 		},
 
-		_buildContextSourceViews: function(name, query) {
+		_buildContextSourceViews: function(query) {
             var sourceView = null;
             if (query.$sql) {
                 // is sql source
-                sourceView = new SqlView(name, query.$sql);
+                sourceView = new SqlView(query.$context, query.$sql);
             } else if(query.$from) {
                 // is $from QueryView (query on query)
-                var fromContext = JSB.isString(query.$from) ? query.$from : query.$from.$context;
+                var fromContext = JSB.isString(query.$from)
+                        ? $this.query.$views[query.$from]
+                        : query.$from.$context;
                 if (!$this.contextViews[fromContext]) {
-                    throw new Error('Children $from view is undefined for context ' + fromContext);
+                    throw new Error('$from view is undefined in ' + query.$context);
                 }
                 sourceView = $this.contextViews[fromContext];
             } else {
@@ -102,18 +104,18 @@
 
                 if (Object.keys(usedFields).length == 0) {
                     // is NothingView
-                    sourceView = new NothingView(name);
+                    sourceView = new NothingView(query.$context);
                 } else {
                     // is Cube/DataProvider source
-                    sourceView = $this.cubeViewsBuilder.build(name);
+                    sourceView = $this.cubeViewsBuilder.build(query.$context);
                 }
             }
 
             return sourceView;
 		},
 
-		_buildContextViews: function(name, query, sourceView) {
-		    var view = new QueryView(name, query, sourceView);
+		_buildContextViews: function(query, sourceView) {
+		    var view = new QueryView(query.$context, query, sourceView);
 		    for(var alias in query.$select) {
                 view.setField(alias, {
                     field: alias,
@@ -144,6 +146,14 @@ debugger;
                     }
                 }
             );
+            //collect subquery Views
+            QueryUtils.walkSubQueries(query, function(subQuery, isFromQuery, isValueQuery){
+                if (subQuery != query) {
+                    var subView = $this.contextViews[subQuery.$context];
+                    if (!subView) throw new Error('Internal error: unknown view context ' + subQuery.$context);
+                    view.addSubView(subView);
+                }
+            });
 
             return view;
 		},

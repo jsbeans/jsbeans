@@ -50,7 +50,7 @@
             $base(visitor);
             var views = $this.listViews();
             for(var i in views) {
-                visitor.call(views[i], views[i]);
+                views[i].visitInternalViews(visitor);
             }
 		},
 	}
