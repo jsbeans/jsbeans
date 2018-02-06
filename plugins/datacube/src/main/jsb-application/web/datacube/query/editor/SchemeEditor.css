@@ -58,10 +58,6 @@
 	display: none;
 }
 
-.schemeEditor.queryEditor > .roundButton.btnCreate {
-    display: inline-block;
-}
-
 .schemeEditor > .container {
 	position: relative;
 }
