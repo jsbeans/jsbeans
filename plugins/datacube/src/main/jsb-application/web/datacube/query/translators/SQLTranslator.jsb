@@ -612,11 +612,11 @@
             var nameSql = this._translateCubeField(cubeField || field, context);
             // is not cube field and is alias print as is
             if (!nameSql) {
-                if (notAlias) {
+//                if (notAlias) {
                     var query = this._getQueryByContext(context);
                     if (!!query.$select[field]) {
                         nameSql = this._quotedName(field);
-                    }
+//                    }
                 }
             }
             if (!nameSql) {

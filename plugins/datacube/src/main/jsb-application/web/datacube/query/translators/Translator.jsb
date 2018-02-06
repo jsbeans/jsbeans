@@ -40,17 +40,6 @@
             this._collectContextQueries();
             this._verifyFields();
 
-		    // build QueryView
-		    (function(){
-		        try {
-		            var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
-                    $this.queryView = builder.build();
-                    $this.contextQueryViews = builder.getContextQueryViews();
-		        } finally {
-		            builder && builder.destroy();
-		        }
-		    })();
-
             // translate query to dataprovider format
 		    var translatedQuery = this.translateQuery();
 
@@ -146,6 +135,19 @@ debugger;
                 // TODO ???? need $postFilter?
                 // skip $finalize
             };
+        },
+
+        buildViews: function(){
+		    // build QueryView
+		    if (!$this.queryView) {
+                try {
+                    var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+                    $this.queryView = builder.build();
+                    $this.contextQueryViews = builder.getContextQueryViews();
+                } finally {
+                    builder && builder.destroy();
+                }
+            }
         },
 
 		translateQuery: function(dcQuery, params){
