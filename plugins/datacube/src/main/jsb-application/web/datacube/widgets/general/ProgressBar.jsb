@@ -91,122 +91,84 @@
 		3OfW/58AAwC/IQ6u+44lDwAAAABJRU5ErkJggg==`
 	},
 	$scheme: {
-		type: 'group',
-		items: [{
-			type: 'group',
-			name: 'Данные',
-			binding: 'record',
-			key: 'record',
-			items: [{
-				name: 'Серии',
-				type: 'group',
-				multiple: true,
-				key: 'series',
-				items: [{
-					type: 'select',
-					name: 'Тип',
-					key: 'type',
-					items:[{
-						name: 'Линейный',
-						type: 'item',
-						key: 'Line',
-						itemValue: 'Line',
-						editor: 'none'
-					},{
-						name: 'Круговой',
-						type: 'item',
-						key: 'Circle',
-						itemValue: 'Circle',
-						editor: 'none'
-					},{
-						name: 'Дуговой',
-						type: 'item',
-						key: 'SemiCircle',
-						itemValue: 'SemiCircle',
-						editor: 'none'
-					}]
-				},{
-					type: 'item',
-					name: 'Минимум',
-					itemValue: 0,
-					binding: 'field',
-					key: 'min'
-				},{
-					type: 'item',
-					name: 'Максимум',
-					itemValue: 100,
-					binding: 'field',
-					key: 'max'
-				},{
-					type: 'item',
-					name: 'Значение',
-					itemValue: 50,
-					binding: 'field',
-					key: 'val'
-				},{
-					type: 'item',
-					key: 'textFormat',
-					name: 'Формат значения',
-					optional: true,
-					itemValue: '0,0.[00]'
-				},{
-					type: 'item',
-					name: 'Цвет столбца',
-                    editor: 'JSB.Widgets.ColorEditor',
-					itemValue: '#555',
-					key: 'colColor'
-				},{
-					type: 'item',
-					name: 'Толщина столбца',
-					itemValue: 4,
-					key: 'colWidth'
-				},{
-					type: 'item',
-					name: 'Цвет дорожки',
-                    editor: 'JSB.Widgets.ColorEditor',
-					itemValue: '#eee',
-					key: 'trailColor'
-				},{
-					type: 'item',
-					name: 'Толщина дорожки',
-					itemValue: 2,
-					key: 'trailWidth'
-				},{
-					name: 'CSS стиль',
-					type: 'item',
-					optional: true,
-					itemValue: `/* Заполните объект CSS значениями */
-{
-	
-}`,
-					key: 'css',
-					editor: 'JSB.Widgets.MultiEditor',
-					options: {
-						valueType: 'org.jsbeans.types.Css'
-					}
-					
-				},{
-					name: 'CSS стиль текста',
-					type: 'item',
-					optional: true,
-					itemValue: `/* Заполните объект CSS значениями */
-{
-	font-family: 'arial';
-}`,
-					key: 'textCss',
-					editor: 'JSB.Widgets.MultiEditor',
-					options: {
-						valueType: 'org.jsbeans.types.Css'
-					}
-					
-				}]
-			}]
-		}]
+        dataSource: {
+            render: 'sourceBinding',
+            name: 'Источник данных'
+        },
+	    series: {
+	        render: 'group',
+	        name: 'Серии',
+	        multiple: true,
+	        items: {
+	            type: {
+	                render: 'select',
+	                name: 'Тип',
+	                items: {
+	                    line: {
+	                        name: 'Линейный'
+	                    },
+	                    circle: {
+	                        name: 'Круговой'
+	                    },
+	                    semiCircle: {
+	                        name: 'Дуговой'
+	                    }
+	                }
+	            },
+	            min: {
+	                render: 'dataBinding',
+	                name: 'Минимум',
+	                linkTo: 'dataSource',
+	                editor: 'input',
+	                defaultValue: 0
+	            },
+	            max: {
+	                render: 'dataBinding',
+	                name: 'Максимум',
+	                linkTo: 'dataSource',
+	                editor: 'input',
+	                defaultValue: 100
+	            },
+	            val: {
+	                render: 'dataBinding',
+	                name: 'Значение',
+	                linkTo: 'dataSource',
+	                editor: 'input',
+	                defaultValue: 50
+	            },
+	            valueFormat: {
+	                render: 'item',
+	                name: 'Формат значения',
+	                optional: true,
+	                defaultValue: '0,0.[00]'
+	            },
+	            colColor: {
+                    render: 'item',
+                    name: 'Цвет',
+                    editor: 'color',
+                    defaultValue: '#555'
+	            },
+	            colWidth: {
+	                render: 'item',
+	                name: 'Толщина столбца',
+	                defaultValue: 4
+	            },
+	            trailColor: {
+	                render: 'item',
+	                name: 'Цвет дорожки',
+	                editor: 'color',
+	                defaultValue: '#eee'
+	            },
+	            trailWidth: {
+	                render: 'item',
+	                name: 'Толщина дорожки',
+	                defaultValue: 2
+	            }
+	        }
+	    }
 	},
-	
 	$client: {
 		$require: 'JSB.Numeral',
-		ready: false,
 		widgets: [],
 		
 		$bootstrap: function(){
@@ -224,25 +186,17 @@
 			Numeral.setLocale('ru');
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
-				$this.ready = true;
 				$this.setInitialized();
 			});
 
 		},
 		
 		refresh: function(opts){
-			if(!this.ready){
-				JSB.deferUntil(function(){
-					$this.refresh();
-				}, function(){
-					return $this.ready;
-				});
-				return;
-			}
-			
-			if(!this.getContext().find('series').used()){
-				return;
-			}
+		    var dataSource = this.getContext().find('dataSource');
+
+            if(!dataSource || !dataSource.hasBinding()){
+                return;
+            }
 			
 			$base();
 			
@@ -262,7 +216,7 @@
 			for(var i = 0; i < gArr.length; i++){
 				var serieDesc = {
 					serieIdx: i,
-					type: gArr[i].find('type').value().value(),
+					type: gArr[i].find('type').value(),
 					minSelector: gArr[i].find('min'),
 					maxSelector: gArr[i].find('max'),
 					valSelector: gArr[i].find('val'),
@@ -284,13 +238,12 @@
 				}
 				series.push(serieDesc);
 			}
-			
-			var recordContext = this.getContext().find('record');
-			if(recordContext.data()){
+
+			if(dataSource.data()){
 				$this.draw(series);
 			} else {
-				recordContext.fetch({batchSize: 1}, function(){
-					recordContext.next();
+				this.fetchBinding(dataSource, {batchSize: 1}, function(){
+					dataSource.next();
 					$this.draw(series);
 				});
 			}

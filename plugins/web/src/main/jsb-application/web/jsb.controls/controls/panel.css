@@ -50,6 +50,7 @@
     cursor: pointer;
     position: relative;
     display: block;
+    margin-left: 5px;
 }
 
 .jsb-panel > .header > ul > li > i {

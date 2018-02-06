@@ -80,6 +80,10 @@
             {
                 name: 'dataBinding',
                 render: "Unimap.Render.DataBinding"
+            },
+            {
+                name: 'embeddedWidget',
+                render: "Unimap.Render.EmbeddedWidgetBinding"
             }
 		],
 

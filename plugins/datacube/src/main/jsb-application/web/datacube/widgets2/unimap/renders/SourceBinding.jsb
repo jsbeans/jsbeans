@@ -86,9 +86,19 @@
 	        }
 	    },
 
+	    getDataSchemes: function(){
+	        var dataSchemes = [];
+
+	        for(var i = 0; i < this._values.values.length; i++){
+	            dataSchemes.push(this._values.values[i].binding);
+	        }
+
+	        return dataSchemes;
+	    },
+
 	    setBinding: function(entry, itemIndex){
 			var source = null;
-			if(JSB.isInstanceOf(entry,'DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(entry, 'DataCube.Model.Slice')){
 				source = entry;
 			} else {
 				var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);

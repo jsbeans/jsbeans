@@ -21,6 +21,7 @@
 
             switch(this._scheme.editor){
                 case 'input':
+                default:
                     var item = new Editor({
                         cssClass: 'editor',
                         value: values.value,
@@ -38,6 +39,7 @@
                         }
                     });
                     break;
+                /*
                 case 'select':
                 default:
                     var item = new Select({
@@ -56,6 +58,7 @@
                             }
                         }
                     });
+                */
             }
 
             this._editors.push(item);
@@ -85,20 +88,21 @@
 	                dataList.push(j); // todo: source name
 	            }
 	        }
+	        this._dataList = dataList;
 
             for(var i = 0; i < this._editors.length; i++){
                 switch(this._scheme.editor){
                     case 'input':
+                    default:
                         this._editors[i].setDataList(dataList);
                         break;
-
+                    /*
                     case 'select':
                     default:
                         this._editors[i].setOptions(dataList, true);
+                    */
                 }
             }
-
-            this._dataList = dataList;
 	    }
 	}
 }

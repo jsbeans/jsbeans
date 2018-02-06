@@ -1,6 +1,7 @@
 {
 	$name: 'Unimap.Render.Basic',
 	$parent: 'JSB.Controls.Control',
+	$require: ['Unimap.Controller'],
     $client: {
         $constructor: function(opts){
             $base(opts);
@@ -17,10 +18,10 @@
 	            this.createValues();
 	        }
 
-            this.construct();
+            this.construct(opts.options ? opts.options : {});
         },
 
-        construct: function(){
+        construct: function(opts){
             throw new Error('This method must be overwritten');
         },
 
@@ -95,12 +96,16 @@
             name.append(descriptionIcon);
         },
 
-        createInnerScheme: function(innerScheme){
-            // todo
+        createInnerScheme: function(scheme, values){
+            return new Controller({
+                scheme: scheme,
+                values: values,
+                rendersMap: this._schemeController.getRenderMap(),
+            });
         },
 
-        createRender: function(key, scheme, values){
-            return this._schemeController.createRender(this, key, scheme, values);
+        createRender: function(key, scheme, values, opts){
+            return this._schemeController.createRender(this, key, scheme, values, opts);
         },
 
         createValues: function(){
@@ -112,11 +117,6 @@
         },
 
         destroy: function(){
-            for(var i = 0; i < this._renders.length; i++){
-                if(this._renders[i]){
-                    this._renders[i].destroy();
-                }
-            }
             $base();
         },
 
@@ -134,6 +134,10 @@
 
         getRenderName: function(){
             return this._scheme.render;
+        },
+
+        getSchemeController: function(){
+            return this._schemeController;
         },
 
         getValueByKey: function(){

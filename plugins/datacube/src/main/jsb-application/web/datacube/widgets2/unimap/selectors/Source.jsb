@@ -6,6 +6,10 @@
         return this._values[0].binding;
     },
 
+    data: function(){
+        return this._values[0].binding.data;
+    },
+
     hasBinding: function(){
         return JSB.isDefined(this._values[0].binding);
     },
