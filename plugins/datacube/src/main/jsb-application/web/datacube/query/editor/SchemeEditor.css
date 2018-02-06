@@ -8,9 +8,6 @@
 }
 
 /* substrate */
-
-
-
 .schemeEditor > .container > .entry > .substrate,
 .schemeEditor > .container > .entry > .value > .substrate  {
 	position: absolute;
@@ -45,8 +42,6 @@
 	cursor: pointer;
 }
 
-
-
 /* btnCreate */
 .schemeEditor > .roundButton {}
 
@@ -63,6 +58,9 @@
 	display: none;
 }
 
+.schemeEditor.queryEditor > .roundButton.btnCreate {
+    display: inline-block;
+}
 
 .schemeEditor > .container {
 	position: relative;
