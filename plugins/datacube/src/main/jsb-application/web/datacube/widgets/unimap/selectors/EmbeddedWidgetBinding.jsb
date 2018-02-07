@@ -13,7 +13,7 @@
     getFullValues: function(){
         return {
             values: this._values[0].value,
-            linkedValues: this._values[0].linkedValues
+            linkedFields: this._values[0].linkedFields
         }
     },
 

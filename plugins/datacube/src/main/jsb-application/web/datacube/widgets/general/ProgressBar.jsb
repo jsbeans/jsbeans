@@ -191,7 +191,6 @@
 		},
 		
 		refresh: function(opts){
-debugger;
 		    var dataSource = this.getContext().find('dataSource');
 
             if(!dataSource || !dataSource.hasBinding()){
@@ -242,6 +241,7 @@ debugger;
 			}
 
             this.fetchBinding(dataSource, {batchSize: 1}, function(){
+debugger;
                 dataSource.next();
                 $this.draw(series);
             });
@@ -261,6 +261,7 @@ debugger;
 				.append('div')
 					.classed('serie', true)
 					.each(function(d){
+debugger;
 						var opts = {
 							color: d.colColor || '#3a3a3a',
 							strokeWidth: d.colWidth || 4,

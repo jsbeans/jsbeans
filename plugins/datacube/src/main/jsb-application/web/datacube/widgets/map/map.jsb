@@ -237,6 +237,11 @@
                                     }
                                 }
                             }
+                        },
+                        markerSize: {
+                            render: 'item',
+                            name: 'Размер маркера'
+                            // todo
                         }
                     }
                 }

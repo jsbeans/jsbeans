@@ -123,6 +123,8 @@
                 $this._innerController = $this.createInnerScheme(wCls.jsb.$scheme, $this._values.values[0].value);
                 $this.append($this._innerController);
 
+                $this._values.values[0].linkedFields = $this._innerController.getLinkedFields();
+
                 var sb = $this._innerController.findRendersByRender('sourceBinding');
 
                 if(sb.length > 0 && !sb[0].getValues().binding){
