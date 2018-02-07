@@ -104,13 +104,13 @@
 	                render: 'select',
 	                name: 'Тип',
 	                items: {
-	                    line: {
+	                    Line: {
 	                        name: 'Линейный'
 	                    },
-	                    circle: {
+	                    Circle: {
 	                        name: 'Круговой'
 	                    },
-	                    semiCircle: {
+	                    SemiCircle: {
 	                        name: 'Дуговой'
 	                    }
 	                }
@@ -188,10 +188,10 @@
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.setInitialized();
 			});
-
 		},
 		
 		refresh: function(opts){
+debugger;
 		    var dataSource = this.getContext().find('dataSource');
 
             if(!dataSource || !dataSource.hasBinding()){
@@ -227,6 +227,7 @@
 					css: '',
 					textCss: ''
 				};
+				/*
 				if(gArr[i].find('css').used()){
 					serieDesc.css = prepareCss(gArr[i].find('css').value());
 				}
@@ -236,17 +237,14 @@
 				if(gArr[i].find('textFormat').used()){
 					serieDesc.format = gArr[i].find('textFormat').value();
 				}
+				*/
 				series.push(serieDesc);
 			}
 
-			if(dataSource.data()){
-				$this.draw(series);
-			} else {
-				this.fetchBinding(dataSource, {batchSize: 1}, function(){
-					dataSource.next();
-					$this.draw(series);
-				});
-			}
+            this.fetchBinding(dataSource, {batchSize: 1}, function(){
+                dataSource.next();
+                $this.draw(series);
+            });
 		},
 		
 		draw: function(series){

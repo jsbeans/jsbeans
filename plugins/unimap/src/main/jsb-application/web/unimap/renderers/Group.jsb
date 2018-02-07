@@ -51,7 +51,9 @@
 	                this.addItem(this._values.values[i], i);
 	            }
 	        } else {
-                this.addItem(null, 0);
+	            if(!this._scheme.multiple){
+                    this.addItem(null, 0);
+                }
             }
 	    },
 

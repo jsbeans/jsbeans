@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.WidgetsOld.Widget',
+	$name: 'DataCube.Widgets.Widget',
 	$parent: 'JSB.Widgets.Widget',
 	
 	$client: {
@@ -10,7 +10,6 @@
 		sourceMap: null,
 		sources: null,
 		sourceFilterMap: null,
-		ready: false,
 		initCallbacks: [],
 		contextFilter: {},
 		filterLayers: {
@@ -20,635 +19,75 @@
 		},
 		rowKeyColumns: [],
 
-		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export'],
-		
-		$constructor: function(opts){
-			$base(opts);
+		_valueRenders: [
+            {
+                name: 'group',
+                render: 'Unimap.ValueSelectors.Group'
+            },
+            {
+                name: 'select',
+                render: 'Unimap.ValueSelectors.Select'
+            },
+            {
+                name: 'sourceBinding',
+                render: 'Datacube.ValueSelectors.SourceSelector'
+            },
+            {
+                name: 'dataBinding',
+                render: 'Datacube.ValueSelectors.DataBindingSelector'
+            },
+            {
+                name: 'embeddedWidget',
+                render: 'Datacube.ValueSelectors.EmbeddedWidgetBinding'
+            }
+		],
+		_rendersMap: {},
 
-			function traverse(src, val, callback){
-				if(!src.used){
-					return;
-				}
-				var sCont = {bStop : false};
-				var nVal = callback.call($this, src, val, function(){
-					sCont.bStop = true;
-				});
-				
-				if(sCont.bStop){
-					return;
-				}
-				if(src.type == 'group'){
-					for(var i = 0; i < src.groups.length; i++){
-						var gDesc = src.groups[i];
-						for(var j = 0; j < gDesc.items.length; j++){
-							traverse(gDesc.items[j], nVal, callback);
-						}
-					}
-				} else if(src.type == 'select'){
-					var iDesc = src.items[src.chosenIdx];
-					traverse(iDesc, nVal, callback);
-				} else if(src.type == 'widget'){
-					var wDesc = src.values;
-					traverse(wDesc, nVal, callback);
+		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'Datacube.ValueSelector'],
+
+		$constructor: function(opts){
+		    $base(opts);
+
+            JSB.chain(this._valueRenders, function(d, c){
+                JSB.lookup(d.render, function(cls){
+                    $this._rendersMap[d.name] = cls;
+                    c();
+                });
+            }, function(){
+                $this.setTrigger('_rendersMapCreated');
+            });
+		},
+
+		addFilter: function(fDesc){
+			if(!fDesc.sourceId){
+				var sourceArr = this.getSourceIds();
+				if(sourceArr && sourceArr.length > 0){
+					fDesc.sourceId = sourceArr[0];
 				}
 			}
-
-			this.Selector = function(ref, ctxName){
-				if(!ctxName){
-					throw new Error('No selector context specified');
+			if(fDesc.sourceId){
+				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
+					throw new Error('Invalid sourceId');
 				}
-				this.ctxName = ctxName;
-				if(ref instanceof $this.Selector){
-					this.selector = JSB.clone(ref.selector);
-				} else {
-					this.selector = ref;
-					if(!JSB.isArray(this.selector)){
-						this.selector = [this.selector];
-					}
-				}
-			};
-			
-			
-			this.Selector.prototype = {
-				find: function(key){
-					// search for scheme selector via key anchor
-					var foundArr = [];
-					for(var i = 0; i < this.selector.length; i++){
-						var obj = this.selector[i];
-						traverse(obj, null, function(item, val, stop){
-							if(item.type == 'widget'){
-								stop();
-							}
-							if(item.key == key){
-								foundArr.push(item);
-							}
-						});
-					}
-					return new $this.Selector(foundArr, this.ctxName);
-				},
-
-				findBindings: function(){
-				    var foundArr = [];
-
-					for(var i = 0; i < this.selector.length; i++){
-						var obj = this.selector[i];
-						traverse(obj, null, function(item, val, stop){
-							if(item.type == 'widget'){
-								stop();
-							}
-							if(item.type != 'widget' && (item.binding || item.values && item.values[0].binding)){
-								foundArr.push(item);
-							}
-						});
-					}
-
-				    return new $this.Selector(foundArr, this.ctxName);
-				},
-				
-				get: function(idx){
-					if(this.selector.length == 0){
-						return null;
-					}
-					if(!JSB.isDefined(idx)){
-						idx = 0;
-					}
-					if(idx >= this.selector.length){
-						return null;
-					}
-					return new $this.Selector(this.selector[idx], this.ctxName);
-				},
-				
-				length: function(){
-					return this.selector.length;
-				},
-				
-				each: function(callback){
-					for(var i = 0; i < this.length(); i++){
-						callback.call(this.get(i));
-					}
-				},
-				
-				used: function(){
-					if(this.selector.length == 0){
-						return false;
-					}
-					
-					var item = this.selector[0];
-					return item.used;
-				},
-				
-				bound: function(){
-					if(this.selector.length == 0){
-						return false;
-					}
-					
-					var item = this.selector[0];
-					if(!item.used){
-						return false;
-					}
-					if(item.type == 'group' || item.type == 'select'){
-						if(!item.binding){
-							return false;
-						}
-						return true;
-					} else if(item.type == 'item'){
-						var bArr = [];
-						for(var i = 0; i < item.values.length; i++){
-							bArr.push(item.values[i].binding ? true : false);
-						}
-						return bArr;
-					} else if(item.type == 'widget'){
-						if(item.widget && item.widget.jsb){
-							return true;
-						}
-						return false;
-					} else {
-						return false;	
-					}
-					
-				},
-				
-				binding: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					
-					var item = this.selector[0];
-					if(!item.used){
-						return;
-					}
-					if(item.type == 'group' || item.type == 'select'){
-						return item.binding;
-					} else if(item.type == 'item'){
-						var bArr = [];
-						for(var i = 0; i < item.values.length; i++){
-							bArr.push(item.values[i].binding);
-						}
-						return bArr;
-					} else if(item.type == 'widget'){
-						if(item.widget && item.widget.jsb){
-							return item.widget;
-						}
-					}
-				},
-
-				bindingType: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					
-					var item = this.selector[0];
-					if(!item.used){
-						return;
-					}
-					if(item.type == 'group' || item.type == 'select'){
-						return item.bindingType;
-					} else if(item.type == 'item'){
-						var bArr = [];
-						for(var i = 0; i < item.values.length; i++){
-							bArr.push(item.values[i].bindingType);
-						}
-						return bArr;
-					} else if(item.type == 'widget'){
-						if(item.widget && item.widget.jsb){
-							return item.widget;
-						}
-					}
-				},
-
-				name: function(){
-					if(this.selector.length == 0){
-						return null;
-					}
-					
-					var item = this.selector[0];
-					return item.name;
-				},
-
-				key: function(){
-					if(this.selector.length == 0){
-						return null;
-					}
-					
-					var item = this.selector[0];
-					return item.key;
-				},
-
-				reset: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					
-					var item = this.selector[0];
-					if(!item.fetchOpts){
-						item.fetchOpts = {};
-					}
-					item.fetchOpts.reset = true;
-					if(item.data){
-						delete item.data;
-					}
-				},
-				
-				isReset: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					
-					var item = this.selector[0];
-					if(item.fetchOpts && item.fetchOpts.reset){
-						return true;
-					}
-					return false;
-				},
-				
-				getFilters: function(){
-					if(this.selector.length == 0){
-						return null;
-					}
-					
-					var item = this.selector[0];
-					if(!item.binding || !item.binding.source){
-						return null;
-					}
-					if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
-						return JSB().clone($this.sourceFilterMap[item.binding.source]);
-					}
-				},
-				
-				setFilters: function(filters){
-					if(this.selector.length == 0){
-						throw new Error('Wrong selector');
-					}
-					
-					var item = this.selector[0];
-					if(!item.binding || !item.binding.source){
-						throw new Error('Missing source binding in selector');
-					}
-					if(!$this.sourceFilterMap){
-						$this.sourceFilterMap = {};
-					}
-					$this.sourceFilterMap[item.binding.source] = filters;
-				},
-				
-				fetch: function(opts, callback){
-					if(arguments.length == 1 && JSB.isFunction(opts)){
-						callback = opts;
-						opts = {};
-					}
-					if(JSB.isFunction(opts)){
-						opts = opts.call($this);
-					}
-					if(!opts){
-						opts = {};
-					}
-					// fulfills selector's buffer with server-side data
-					if(this.selector.length == 0){
-						return false;
-					}
-					
-					var item = this.selector[0];
-					if(!item.binding){
-						return false;
-					}
-					
-					if(!item.binding.source || item.binding.propagated){
-						if(item.data){
-							if(opts.reset){
-								item.cursor = 0;
-							}
-							if(callback){
-								callback.call($this, item.data);
-							}
-							return true;
-						} else {
-							return false;
-						}
-					}
-					
-					if(!item.fetchOpts){
-						item.fetchOpts = {
-							reset: true
-						};
-					}
-
-					JSB.merge(item.fetchOpts, opts);
-					item.fetchOpts.layers = {};
-
-					// construct back filter
-					if($this.filterLayers.back){
-						var backQuery = {};
-						if(Object.keys($this.contextFilter).length > 0){
-							backQuery.$postFilter = $this.contextFilter;
-						}
-						if(opts.select){
-							backQuery.$select = opts.select;
-						}
-						if(opts.groupBy){
-							backQuery.$groupBy = opts.groupBy;
-						}
-						if($this.sort){
-							backQuery.$sort = [$this.sort];
-						}
-						item.fetchOpts.layers.back = backQuery;
-					}
-					
-					// construct main layer
-					var mainQuery = {};
-					if($this.getWrapper()){
-						var filterDesc = null;
-						if($this.sourceFilterMap && $this.sourceFilterMap[item.binding.source]){
-							filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.binding.source], $this.sources[item.binding.source]);
-						} else {
-							filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.binding.source]);
-						}
-						if(filterDesc){
-							if(filterDesc.filter){
-								mainQuery.$cubeFilter = filterDesc.filter;
-							}
-							if(filterDesc.postFilter){
-								mainQuery.$postFilter = filterDesc.postFilter;
-							}
-						}
-					}
-					if(Object.keys($this.contextFilter).length > 0){
-						if(mainQuery.$postFilter){
-							mainQuery.$postFilter = {'$and':[mainQuery.$postFilter, $this.contextFilter]};
-						} else {
-							mainQuery.$postFilter = $this.contextFilter;
-						}
-					}
-					if(opts.select){
-						mainQuery.$select = opts.select;
-					}
-					if(opts.groupBy){
-						mainQuery.$groupBy = opts.groupBy;
-					}
-					if($this.sort){
-						mainQuery.$sort = [$this.sort];
-					}
-					item.fetchOpts.layers.main = mainQuery;
-					
-					// TODO: construct hover filter
-
-					
-					item.fetchOpts.context = this.ctxName;
-					item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
-					$this.server().fetch(item.binding.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
-						if(fail && fail.message == 'Fetch broke'){
-							return;
-						}
-						if(item.fetchOpts.reset){
-							item.cursor = 0;
-							if(item.data){
-								delete item.data;
-							}
-						}
-						item.fetchOpts.reset = false;
-						if(data){
-							data = $this.decompressData(data);
-							if(!item.data){
-								item.data = data;
-							} else {
-								item.data = item.data.concat(data);
-							}
-						}
-						if(callback){
-							if(fail){
-								JSB.getLogger().error(fail);
-							}
-							callback.call($this, data, fail);
-						}
-					});
-					return true; 
-				},
-				
-				next: function(){
-					if(this.selector.length == 0){
-						return false;
-					}
-					var item = this.selector[0];
-					if(!JSB.isDefined(item.cursor)){
-						item.cursor = 0;
-					}
-					if(!item.data || (item.cursor > 0 && !JSB.isArray(item.data))){
-						return false;
-					}
-					
-					var dataEl = null;
-					
-					if(JSB.isArray(item.data)){
-						if(item.cursor >= item.data.length){
-							return false;
-						}
-						
-						dataEl = item.data[item.cursor++];
-					} else {
-						dataEl = item.data;
-						item.cursor++;
-					}
-
-					// fills descendant with values
-					traverse(item, dataEl, function(curItem, val, stop){
-						if(curItem == item){
-							return val;
-						}
-						function drillDownValue(val, path){
-							var parts = path.split(/[\.\/]/);
-							var curVal = val;
-							for(var i = 0; i < parts.length; i++){
-							    if(JSB.isArray(curVal)){
-							        var newVal = [];
-							        for(var j = 0; j < curVal.length; j++){
-							            if(JSB.isDefined(curVal[j][parts[i]])){
-							                newVal.push(curVal[j][parts[i]]);
-							            }
-							        }
-							        curVal = newVal;
-							    } else {
-								    curVal = curVal[parts[i]];
-								}
-								if(!JSB.isDefined(curVal)){
-									break;
-								}
-							}
-							return curVal;
-						}
-						if(curItem.binding){
-							if(JSB.isString(curItem.binding)){
-								curItem.data = drillDownValue(val, curItem.binding);
-							} else {
-								curItem.data = val;
-							}
-							return curItem.data;
-						} else if(curItem.values && curItem.values.length > 0){
-							for(var i = 0; i < curItem.values.length; i++){
-								var valueDesc = curItem.values[i];
-								if(valueDesc.binding && JSB.isString(valueDesc.binding)){
-									valueDesc.value = drillDownValue(val, valueDesc.binding);
-								}
-							}
-						}
-						
-						return val;
-					});
-					
-					return true;
-				},
-				
-				data: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					var item = this.selector[0];
-					if(item.values){
-						if(item.values.length > 0){
-							return item.values[0].value;
-						}
-					} else if(item.data){
-						return item.data;
-					}
-				},
-				
-				unwrap: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					return this.selector[0];
-				},
-				
-				position: function(){
-					if(this.selector.length == 0){
-						return;
-					}
-					var item = this.selector[0];
-					return item.cursor;
-				},
-				
-				values: function(layer){
-					layer = layer || 'main';
-					function resolveValue(itemType, valueDesc){
-						if(valueDesc.binding){
-							if(JSB.isObject(valueDesc.value)){
-								return valueDesc.value[layer];
-							}
-						}
-					    return valueDesc.value;
-					    /*
-                        switch(itemType){
-                            case 'number':
-                                return Number(valueDesc.value);
-                            case 'string':
-                                if(valueDesc.value){
-                                    return valueDesc.value;
-                                } else {
-                                    return;
-                                }
-                            default:
-                                return valueDesc.value;
-                        }
-                        */
-					}
-					if(this.selector.length == 0){
-						return null;
-					}
-					var item = this.selector[0];
-					var vals = [];
-					if(item.type == 'item'){
-						if(item.values && item.values.length > 0){
-							for(var i = 0; i < item.values.length; i++){
-								vals.push(resolveValue(item.itemType, item.values[i]));
-							}
-						}
-					} else if(item.type == 'group'){
-						for(var i = 0; i < item.groups.length; i++){
-							var gDesc = item.groups[i];
-							var items = [];
-							for(var j = 0; j < gDesc.items.length; j++){
-								items.push(gDesc.items[j]);
-							}
-							vals.push(new $this.Selector(items, this.ctxName));
-						}
-					} else if(item.type == 'select'){
-						vals.push(new $this.Selector(item.items[item.chosenIdx], this.ctxName));
-					} else if(item.type == 'widget'){
-						vals.push(new $this.Selector(item.values, this.ctxName));
-					}
-					return vals;
-				},
-				
-				value: function(layer){
-					layer = layer || 'main';
-					function resolveValue(item){
-					    if(item.values[0].binding){
-					    	if(JSB.isObject(item.values[0].value)){
-								return item.values[0].value[layer];
-							}
-					        return item.values[0].value;
-					    }
-
-                        switch(item.itemType){
-                            case 'number':
-                                if(item.values[0].value !== null){
-                                    return Number(item.values[0].value);
-                                } else {
-                                    return item.defaultValue !== undefined ? item.defaultValue : undefined;
-                                }
-                            case 'string':
-                                if(item.values[0].value){
-                                    return item.values[0].value;
-                                } else {
-                                    return item.defaultValue !== undefined ? item.defaultValue : undefined;
-                                }
-                            case 'color':
-                                if(item.values[0].value !== null){
-                                    return item.values[0].value;
-                                } else {
-                                    return item.defaultValue !== undefined ? item.defaultValue : undefined;
-                                }
-                            default:
-                                return item.values[0].value;
-                        }
-					}
-					if(this.selector.length == 0){
-						return null;
-					}
-					var item = this.selector[0];
-					if(!item.used){
-						return null;
-					}
-					if(item.type == 'item'){
-						if(item.values && item.values.length > 0){
-							return resolveValue(item);
-						}
-						return null;
-					} else if(item.type == 'select'){
-					    // return resolveValue(item.items[item.chosenIdx].values[0]);
-						return new $this.Selector(item.items[item.chosenIdx], this.ctxName);
-					} else if(item.type == 'group'){
-						if(item.groups.length == 0){
-							return null;
-						}
-						var gDesc = item.groups[0];
-						var items = [];
-						for(var j = 0; j < gDesc.items.length; j++){
-							items.push(gDesc.items[j]);
-						}
-						return new $this.Selector(items, this.ctxName)
-					} else if(item.type == 'widget'){
-						return new $this.Selector(item.values, this.ctxName);
-					}
-				}
-			};
+				fDesc.source = this.sources[fDesc.sourceId];
+				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
+			}
+			throw new Error('Missing sourceId');
 		},
-		
-		ensureInitialized: function(callback){
-			this.ensureTrigger('_widgetInitialized', callback);
+
+		clearFilters: function(){
+			this.getWrapper().clearFilters(this);
 		},
-		
-		setInitialized: function(){
-			this.setTrigger('_widgetInitialized');
+
+		createFilterHash: function(filter){
+            var str = '';
+		    for(var i in filter){
+		        str += '' + i;
+		    }
+
+		    return MD5.md5(str);
 		},
-		
+
 		decompressData: function(dataObj){
 			if(!dataObj){
 				return null;
@@ -670,207 +109,9 @@
 			}
 			return data;
 		},
-		
-		setWrapper: function(w, values, sourceDesc){
-			this.wrapper = w;
-			this.updateValues(values, sourceDesc);
-		},
-		
-		getWrapper: function(){
-			return this.wrapper;
-		},
-		
-		getDashboard: function(){
-			return $this.getWrapper().getDashboard();
-		},
-		
-		updateValues: function(values, sourceDesc){
-			if(!values){
-				values = JSB.clone(this.getWrapper().getValues());
-			}
-			this.values = values;
-			if(this.values instanceof this.Selector){
-				this.values = this.values.unwrap();
-			}
-			this.context = {};
-			if(sourceDesc){
-				this.sourceMap = sourceDesc.sourceMap;
-				this.sources = sourceDesc.sources;
-			} else {
-				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
-				this.sources = this.getWrapper().getWidgetEntry().getSources();
-			}
-		},
-		
-		getContext: function(ctxName){
-			if(!ctxName){
-				ctxName = 'main';
-			}
-			if(!this.context[ctxName]){
-				var ctxValues = JSB.clone(this.values);
-				this.context[ctxName] = new this.Selector(ctxValues, ctxName);
-			}
-			 
-			return this.context[ctxName];
-		},
-		
-		
-		refresh: function(opts){
-			// localize filters
-			this.localizeFilters();
-		},
-		
-		refreshAll: function(opts){
-			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
-		},
-		
-		getSourceIds: function(){
-			return Object.keys(this.sourceMap);
-		},
-		
-		localizeFilters: function(){
-			this.sourceFilterMap = {};
-			for(var srcId in this.sources){
-				var src = this.sources[srcId];
-				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
-			}
-		},
-		
-		getLocalFilters: function(){
-			return this.sourceFilterMap;
-		},
 
-		
-		clearFilters: function(){
-			this.getWrapper().clearFilters(this);
-		},
-		
-		hasFilter: function(fDesc){
-			return this.getWrapper().hasFilter(fDesc);
-		},
-		
-		addFilter: function(fDesc){
-			if(!fDesc.sourceId){
-				var sourceArr = this.getSourceIds();
-				if(sourceArr && sourceArr.length > 0){
-					fDesc.sourceId = sourceArr[0];
-				}
-			}
-			if(fDesc.sourceId){
-				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
-					throw new Error('Invalid sourceId');
-				}
-				fDesc.source = this.sources[fDesc.sourceId];
-				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
-			}
-			throw new Error('Missing sourceId');
-		},
-		
-		removeFilter: function(fItemId, dontPublish){
-			return this.getWrapper().removeFilter(fItemId, dontPublish);
-		},
-
-		removeAllFilters: function(){
-            var fm = this.getFilterManager();
-            if(fm){
-                var filters = fm.getFilters();
-                for(var i in filters){
-                    this.removeFilter(i);
-                }
-            }
-		},
-		
-		getFilters: function(){
-			var fm = this.getFilterManager();
-			if(fm){
-				return fm.getFilters();	
-			}
-			return null;
-		}, 
-		
-		getFilterManager: function(){
-			if(this.getWrapper() && this.getWrapper().getFilterManager){
-				return this.getWrapper().getFilterManager();	
-			}
-			return null;
-		},
-		
-		setSort: function(q){
-			this.sort = q;
-		},
-		
-		setContextFilter: function(q){
-			this.contextFilter = q;
-		},
-		
-		getContextFilter: function(){
-			return JSB.clone(this.contextFilter);
-		},
-
-		createFilterHash: function(filter){
-            var str = '';
-		    for(var i in filter){
-		        str += '' + i;
-		    }
-
-		    return MD5.md5(str);
-		},
-
-		storeCache: function(data){
-		    this._cache = data;
-		},
-
-		getCache: function(){
-		    return this._cache;
-		},
-
-		getBindingsData: function(callback){
-		    var bindings = this.getContext('export').findBindings(),
-		        bindingArray, bindingFields = {};
-
-            for(var i = 0; i < bindings.selector.length; i++){
-                if(bindings.selector[i].binding){
-                    bindingArray = bindings.get(i);
-                } else {
-                    bindingFields[bindings.get(i).binding()] = bindings.get(i);
-                }
-            }
-
-            bindingArray.fetch({readAll: true, reset: true}, function(){
-                var results = [],
-                    res = [];
-
-                for(var i in bindingFields){
-                    res.push(i);
-                }
-                results.push(res);
-
-                while(bindingArray.next()){
-                    res = [];
-
-                    for(var i in bindingFields){
-                        res.push(bindingFields[i].value());
-                    }
-                    results.push(res);
-                }
-
-                callback.call(this, results);
-            });
-		},
-		
-		setFilterLayer: function(layerOpts){
-			if(JSB.isDefined(layerOpts.main) && !layerOpts.main){
-				throw new Error('Main filter layer cannot be disabled');
-			}
-			JSB.merge(this.filterLayers, layerOpts);
-		},
-		
-		setKeyColumns: function(rowKeyCols){
-			if(JSB.isArray(rowKeyCols)){
-				this.rowKeyColumns = JSB.clone(rowKeyCols);	
-			} else {
-				this.rowKeyColumns = [JSB.clone(rowKeyCols)];
-			}
+		ensureInitialized: function(callback){
+			this.ensureTrigger(['_widgetInitialized', '_rendersMapCreated'], callback);
 		},
 
 		exportData: function(format){
@@ -884,6 +125,318 @@
                 case 'png':
                     Export.exportData(format, this.getElement().get(0), this.wrapper.title);
             }
+		},
+
+		// old selector.fetch
+        fetchBinding: function(selector, opts, callback){
+            if(arguments.length == 1 && JSB.isFunction(opts)){
+                callback = opts;
+                opts = {};
+            }
+            if(JSB.isFunction(opts)){
+                opts = opts.call($this);
+            }
+            if(!opts){
+                opts = {};
+            }
+
+            var item = selector.binding();
+            if(!item){
+                return false;
+            }
+
+            if(!item.source || item.propagated){
+                if(item.data){
+                    if(opts.reset){
+                        item.cursor = 0;
+                    }
+                    if(callback){
+                        callback.call($this, item.data);
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            if(!item.fetchOpts){
+                item.fetchOpts = {
+                    reset: true
+                };
+            }
+
+            JSB.merge(item.fetchOpts, opts);
+            item.fetchOpts.layers = {};
+
+            // construct back filter
+            if($this.filterLayers.back){
+                var backQuery = {};
+                if(Object.keys($this.contextFilter).length > 0){
+                    backQuery.$postFilter = $this.contextFilter;
+                }
+                if(opts.select){
+                    backQuery.$select = opts.select;
+                }
+                if(opts.groupBy){
+                    backQuery.$groupBy = opts.groupBy;
+                }
+                if($this.sort){
+                    backQuery.$sort = [$this.sort];
+                }
+                item.fetchOpts.layers.back = backQuery;
+            }
+
+            // construct main layer
+            var mainQuery = {};
+            if($this.getWrapper()){
+                var filterDesc = null;
+                if($this.sourceFilterMap && $this.sourceFilterMap[item.source]){
+                    filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[item.source], $this.sources[item.source]);
+                } else {
+                    filterDesc = $this.getWrapper().constructFilterBySource($this.sources[item.source]);
+                }
+                if(filterDesc){
+                    if(filterDesc.filter){
+                        mainQuery.$cubeFilter = filterDesc.filter;
+                    }
+                    if(filterDesc.postFilter){
+                        mainQuery.$postFilter = filterDesc.postFilter;
+                    }
+                }
+            }
+            if(Object.keys($this.contextFilter).length > 0){
+                if(mainQuery.$postFilter){
+                    mainQuery.$postFilter = {'$and':[mainQuery.$postFilter, $this.contextFilter]};
+                } else {
+                    mainQuery.$postFilter = $this.contextFilter;
+                }
+            }
+            if(opts.select){
+                mainQuery.$select = opts.select;
+            }
+            if(opts.groupBy){
+                mainQuery.$groupBy = opts.groupBy;
+            }
+            if($this.sort){
+                mainQuery.$sort = [$this.sort];
+            }
+            item.fetchOpts.layers.main = mainQuery;
+
+            // TODO: construct hover filter
+
+            item.fetchOpts.context = selector.getContext();
+            item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
+            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+                if(fail && fail.message == 'Fetch broke'){
+                    return;
+                }
+                if(item.fetchOpts.reset){
+                    item.cursor = 0;
+                    if(item.data){
+                        delete item.data;
+                    }
+                }
+                item.fetchOpts.reset = false;
+                if(data){
+                    data = $this.decompressData(data);
+                    if(!item.data){
+                        item.data = data;
+                    } else {
+                        item.data = item.data.concat(data);
+                    }
+                }
+                if(callback){
+                    if(fail){
+                        JSB.getLogger().error(fail);
+                    }
+                    callback.call($this, data, fail);
+                }
+            });
+            return true;
+        },
+
+		getBindingsData: function(callback){
+            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding'),
+                dataBindings = this.getContext('export').findRendersByName('dataBinding');
+
+            this.fetchBinding(sourceBindings[0], {readAll: true, reset: true}, function(){
+                var result = [],
+                    res = [];
+
+                for(var i = 0; i < dataBindings.length; i++){
+                    res.push(dataBindings[i].getBindingName());
+                }
+                result.push(res);
+
+                while(sourceBindings[0].next()){
+                    res = [];
+
+                    for(var i = 0; i < dataBindings.length; i++){
+                        res.push(dataBindings[i].value());
+                    }
+                    result.push(res);
+                }
+
+                callback.call(this, result);
+            });
+		},
+
+		getCache: function(){
+		    return this._cache;
+		},
+
+		getContext: function(ctxName){
+			if(!ctxName){
+				ctxName = 'main';
+			}
+
+			if(!this.context[ctxName]){
+				this.context[ctxName] = new ValueSelector({
+				    context: ctxName,
+				    values: JSB.clone(this.values),
+				    linkedFields: this.linkedFields,
+				    rendersMap: this._rendersMap
+				});
+			}
+
+			return this.context[ctxName];
+		},
+
+		getContextFilter: function(){
+			return JSB.clone(this.contextFilter);
+		},
+
+		getDashboard: function(){
+			return $this.getWrapper().getDashboard();
+		},
+
+		getFilterManager: function(){
+			if(this.getWrapper() && this.getWrapper().getFilterManager){
+				return this.getWrapper().getFilterManager();
+			}
+			return null;
+		},
+
+		getFilters: function(){
+			var fm = this.getFilterManager();
+			if(fm){
+				return fm.getFilters();
+			}
+			return null;
+		},
+
+		getLocalFilters: function(){
+			return this.sourceFilterMap;
+		},
+
+		getSourceIds: function(){
+			return Object.keys(this.sourceMap);
+		},
+
+		// old selector.getFilters
+		getSourceFilters: function(selector){
+		    if(selector.getRenderName() !== 'sourceBinding'){
+		        return;
+		    }
+
+		    var source = selector.binding().source;
+
+            if(this.sourceFilterMap && this.sourceFilterMap[source]){
+                return JSB().clone($this.sourceFilterMap[source]);
+            }
+		},
+
+		getWrapper: function(){
+			return this.wrapper;
+		},
+
+		hasFilter: function(fDesc){
+			return this.getWrapper().hasFilter(fDesc);
+		},
+
+		localizeFilters: function(){
+			this.sourceFilterMap = {};
+			for(var srcId in this.sources){
+				var src = this.sources[srcId];
+				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
+			}
+		},
+
+		refresh: function(opts){
+			this.localizeFilters();
+		},
+
+		refreshAll: function(opts){
+			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
+		},
+
+		removeFilter: function(fItemId, dontPublish){
+			return this.getWrapper().removeFilter(fItemId, dontPublish);
+		},
+
+		removeAllFilters: function(){
+            var fm = this.getFilterManager();
+            if(fm){
+                var filters = fm.getFilters();
+                for(var i in filters){
+                    this.removeFilter(i);
+                }
+            }
+		},
+
+		setContextFilter: function(q){
+			this.contextFilter = q;
+		},
+
+		setInitialized: function(){
+            this.setTrigger('_widgetInitialized');
+		},
+
+		setFilterLayer: function(layerOpts){
+			if(JSB.isDefined(layerOpts.main) && !layerOpts.main){
+				throw new Error('Main filter layer cannot be disabled');
+			}
+			JSB.merge(this.filterLayers, layerOpts);
+		},
+
+		setKeyColumns: function(rowKeyCols){
+			if(JSB.isArray(rowKeyCols)){
+				this.rowKeyColumns = JSB.clone(rowKeyCols);
+			} else {
+				this.rowKeyColumns = [JSB.clone(rowKeyCols)];
+			}
+		},
+
+		setSort: function(q){
+			this.sort = q;
+		},
+
+		setWrapper: function(w, valuesOpts, sourceDesc){
+			this.wrapper = w;
+			this.updateValues(valuesOpts, sourceDesc);
+		},
+
+		storeCache: function(data){
+		    this._cache = data;
+		},
+
+		updateValues: function(opts){
+			this.values = opts.values;
+
+			if(opts.linkedFields){
+			    this.linkedFields = opts.linkedFields;
+			} else {
+			    this.linkedFields = this.getWrapper().getWidgetEntry().getLinkedFields();
+			}
+
+			this.context = {};
+			if(opts.sourceDesc){
+				this.sourceMap = opts.sourceDesc.sourceMap;
+				this.sources = opts.sourceDesc.sources;
+			} else {
+				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
+				this.sources = this.getWrapper().getWidgetEntry().getSources();
+			}
 		}
 	},
 	
@@ -1173,7 +726,7 @@
 /*			
 			Log.debug(JSON.stringify(data));
 			Log.debug(JSON.stringify(encoded));
-*/			
+*/
 			return encoded;
 		}
 	}

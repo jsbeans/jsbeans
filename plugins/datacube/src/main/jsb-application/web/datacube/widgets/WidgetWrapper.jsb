@@ -84,8 +84,7 @@
 	$client: {
 		$require: ['JSB.Widgets.Button', 
 		           'JSB.Widgets.PrimitiveEditor',
-		           'JSB.Widgets.ToolManager',
-		           'DataCube.Dialogs.WidgetOptionsTool'],
+		           'JSB.Widgets.ToolManager'],
 		
 		owner: null,
 		widget: null,
