@@ -186,7 +186,7 @@
 		            '$distinct',
 		            '$last','$first', '$sum', '$count','$min', '$max', '$avg',
 		            '$array', '$flatArray', '$expandArray', '$concatArray',
-		            '$gsum', '$gcount', '$gmin', '$gmax',
+		            '$gsum', '$gcount', '$gmin', '$gmax', '$gavg',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
 		            '$macros'
@@ -562,6 +562,14 @@
 		        name: '$gmax',
 		        category: 'Функции агрегации',
 		        desc: 'Вернуть максимальное значение в таблице (максимальное среди всех групп)',
+		        aggregate: true,
+		        global: true,
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$gavg',
+		        category: 'Функции агрегации',
+		        desc: 'Вернуть среднее значение в таблице',
 		        aggregate: true,
 		        global: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
@@ -1078,6 +1086,7 @@
 		    $gcount: {},
 		    $gmin: {},
 		    $gmax: {},
+		    $gavg: {},
 		    $grmaxsum: {},
 		    $grmaxcount: {},
 		    $grmaxavg: {},

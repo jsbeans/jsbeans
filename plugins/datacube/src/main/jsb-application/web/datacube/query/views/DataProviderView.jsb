@@ -24,8 +24,7 @@
 
         getField: function(name) {
             return $this.managedFields[name] ? JSB.merge({
-                provider: $this.provider,
-                ownerView: $this,
+//                provider: $this.provider,
                 context: $this.getContext(),
             }, $this.managedFields[name]) : null;
 		},

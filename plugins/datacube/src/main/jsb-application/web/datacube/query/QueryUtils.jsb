@@ -477,23 +477,31 @@
             //Log.debug('\nembededFilter: ' + JSON.stringify(subQuery.$filter));
         },
 
+        isQueryFromCube: function(query) {
+            if (!query.$from) {
+                return true;
+            }
+            return false;
+        },
+
         /** Возвращает true, если поле принадлежит кубу/провайдеру и используется в запросе без модификаций
         */
         isOriginalCubeField: function (field, dcQuery, cubeOrDataProvider) {
+            if (!$this.isQueryFromCube(dcQuery)) {
+                return false;
+            }
             // return true if cube field selected as is
             var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
-//            if (fields[field] && (!dcQuery.$select[field] || dcQuery.$select[field] == field || dcQuery.$select[field].$field == field)) {
-            if (fields[field] || (
-                    dcQuery.$select[field] && (
-                        dcQuery.$select[field] == field || dcQuery.$select[field].$field == field
-                    )
-                )) {
-                //Log.debug('\nisOriginalCubeField: ' + field + '=true');
+            if (fields[field]) {
                 return true;
             }
-            //Log.debug('\nisOriginalCubeField: ' + field + '=false');
+            if (dcQuery.$select[field] && (
+                    dcQuery.$select[field] == field
+                    || dcQuery.$select[field].$field == field)) {
+                return true;
+            }
             return false;
         },
 
@@ -760,10 +768,34 @@
         },
 
         /** Разворачивает $gr* агрегаторы в натуральные подзапросы */
-		unwrapGrOperators: function(dcQuery) {
+		unwrapGOperators: function(dcQuery) {
 		    function unwrapForQuery(query) {
                 function createSubQuery(op, exp) {
                     var innerOp;
+                    switch(op){
+                        case '$gavg':
+                        case '$gmin':
+                        case '$gmax':
+                        case '$gsum':
+                        case '$gcount':
+                            switch(op){
+                                case '$gavg': innerOp = 'avg'; break
+                                case '$gmin': innerOp = 'min'; break
+                                case '$gmax': innerOp = 'max'; break
+                                case '$gsum': innerOp = 'sum'; break
+                                case '$gcount': innerOp = 'count'; break
+                            }
+                            return {
+                                $select: (function(){
+                                    var sel = {};
+                                    sel[innerOp] = {};
+                                    sel[innerOp]['$'+innerOp] = exp;
+                                    return sel;
+                                })(),
+                                $filter: query.$filter && JSB.clone(query.$filter) || undefined,
+                                $from: query.$from || undefined
+                            };
+                    }
                     switch(op){
                         case '$grmaxcount': innerOp = 'count'; break;
                         case '$grmaxsum': innerOp = 'sum'; break;
@@ -814,7 +846,9 @@
                         if (exp.$select) return; // skip subquery
 
                         var key = Object.keys(exp)[0];
-                        if (key.startsWith('$grmax') || key.startsWith('$grmin')) {
+                        if (key.startsWith('$grmax') || key.startsWith('$grmin')
+                                || key == '$gmax' || key == '$gmin'
+                                || key == '$gcount' || key == '$gsum' || key == '$gavg') {
                             setFunc(createSubQuery(key, exp[key]));
                         }
                         for (var f in exp) if(exp.hasOwnProperty(f)) {
@@ -837,6 +871,30 @@
                     });
                 }
             } // unwrapForQuery
+
+            this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
+                unwrapForQuery(query);
+            });
+		},
+
+		unwrapPostFilters: function(dcQuery) {
+		    function unwrapForQuery(query) {
+		        if (query.$postFilter) {
+		            var postFilter = query.$postFilter;
+		            var subQuery = JSB.merge({}, query);
+		            delete subQuery.$postFilter;
+		            var fields = Object.keys(query);
+		            for(var f in fields) {
+		                delete query[fields[f]];
+		            }
+		            query.$select = {};
+		            for(var alias in subQuery.$select) if (subQuery.$select.hasOwnProperty(alias)) {
+		                query.$select[alias] = alias;
+		            }
+		            query.$filter = postFilter;
+		            query.$from = subQuery;
+		        }
+		    }
 
             this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
                 unwrapForQuery(query);
@@ -1034,6 +1092,17 @@
                 return desc.nativeType || desc.type;
             }
             return null;
+        },
+
+        defineContextQueries: function(dcQuery){
+            var idx = 0;
+            var contextQueries = {};
+            $this.walkSubQueries(dcQuery, function(query){
+                if (!query.$context) query.$context = 'context_' + idx++;
+                if (contextQueries[query.$context]) throw new Error('Duplicate query context: ' + query.$context);
+                contextQueries[query.$context] = query;
+            });
+            return contextQueries;
         },
 
 	}

@@ -34,7 +34,8 @@
 
 		    // unwrap macros and $grmax* to complex expressions
 		    QuerySyntax.unwrapMacros(dcQuery);
-		    QueryUtils.unwrapGrOperators(dcQuery);
+		    QueryUtils.unwrapGOperators(dcQuery);
+		    QueryUtils.unwrapPostFilters(dcQuery);
 
 //		    // fill all cube fields (or linked with dataProvider) for default $select={}
 //		    QueryUtils.generateDefaultSelect(dcQuery, dataProvider || this.cube);
@@ -50,6 +51,9 @@
 
             // move top fields that used in other
             QueryUtils.upperGeneralFields(dcQuery);
+
+            // ensure queries has defined $context
+            QueryUtils.defineContextQueries(dcQuery);
 
             return dcQuery;
 		},

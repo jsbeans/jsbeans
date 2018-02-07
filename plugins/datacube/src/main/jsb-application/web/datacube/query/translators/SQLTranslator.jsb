@@ -106,11 +106,6 @@
             //return JSB.generateUid();
             return '' + (this.lastId = (this.lastId||0) + 1);
         },
-
-        _registerContextQuery: function(query){
-            this.contextQueries[query.$context] = query;
-        },
-
         _extractViewKey: function (query, global){
             var key = {
                 $groupBy: query.$groupBy,
@@ -183,13 +178,6 @@
                 sqlWith += '\n\t' + this._quotedName(view.name) + ' AS (' + view.sql + ')'
             }
             return sqlWith.length > 0 ? 'WITH' + sqlWith + '\n' : '';
-        },
-
-        _getQueryByContext: function(context) {
-            if (!context) throw new Error('Undefined context');
-            var query = this.contextQueries[context];
-            if (!query) throw new Error('Unknown query context ' + context);
-            return query;
         },
 
         _prepareEmbeddedSQL: function(sql, dcQuery){
@@ -1559,6 +1547,6 @@
 
 		close: function() {
 		    $base();
-		}
+		},
 	}
 }

@@ -22,11 +22,12 @@
 		},
 
         getField: function(name) {
-            var field = $base(name);
-            if (field) {
-                return JSB.merge({}, field, { context: $this.getContext(), provider: null });
+            var desc = $base(name);
+            if (desc) {
+                desc.fieldContext = desc.context;
+                desc.context = $this.getContext();
             }
-            return null;
+            return desc;
 		},
 
 		getContext: function(){

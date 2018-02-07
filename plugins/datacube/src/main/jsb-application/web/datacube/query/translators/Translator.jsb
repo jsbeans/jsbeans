@@ -167,13 +167,20 @@ debugger;
 		},
 
         _collectContextQueries: function(){
-            var idx = 0;
-            this.contextQueries = {};
-            QueryUtils.walkSubQueries(this.dcQuery, function(query){
-                if (!query.$context) query.$context = 'context_' + idx++;
-                $this._registerContextQuery(query);
-            });
+            this.contextQueries = QueryUtils.defineContextQueries(this.dcQuery);
         },
+
+        _registerContextQuery: function(query){
+            this.contextQueries[query.$context] = query;
+        },
+
+        _getQueryByContext: function(context) {
+            if (!context) throw new Error('Undefined context');
+            var query = this.contextQueries[context];
+            if (!query) throw new Error('Unknown query context ' + context);
+            return query;
+        },
+
 
 		_verifyFields: function(){
             QueryUtils.walkQueryFields(
@@ -280,7 +287,10 @@ debugger;
 
 		close: function() {
 		    this.queryView && this.queryView.destroy();
+		    for (var v in $this.contextQueryViews) {
+		        this.contextQueryViews[v] && this.contextQueryViews[v].destroy();
+		    }
 		    this.destroy();
-		}
+		},
 	}
 }

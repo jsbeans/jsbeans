@@ -136,7 +136,6 @@
                     if (context == query.$context){
                         // if use from other context
                         if (curQuery.$context != context) {
-debugger;
                             var viewField = view.getField(field);
                             if (!viewField) throw new Error('Internal error: unknown foreign field ' + field);
                             var linkedView = $this.contextViews[curQuery.$context];

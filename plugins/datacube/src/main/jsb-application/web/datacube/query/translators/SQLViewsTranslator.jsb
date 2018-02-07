@@ -29,6 +29,14 @@
 		    $this.buildViews();
             var queryView = $this._findQueryView(query.$context);
             var sql = $this._translateAnyView(queryView);
+		    if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
+		        var wrappedQuery = JSB.merge({}, query, {
+		            $context: 'wrapped_' + query.$context
+		        });
+		        this._registerContextQuery(wrappedQuery);
+		        sql = 'SELECT * FROM (' + sql + ') AS ' + this._quotedName(wrappedQuery.$context) +
+		              ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
+		    }
             //return '/*VT{*/' + sql + '/*}VT*/';
             return sql;
 		},
@@ -43,7 +51,7 @@
                 }
             });
             if (!queryView) {
-                throw new Error('Internal error: Cannot find View for query ' + query.$context);
+                throw new Error('Internal error: Cannot find View for query ' + context);
             }
             return queryView;
         },
@@ -62,19 +70,20 @@
         },
 
 		_translateViewField: function(viewField) {
-debugger;
-            if (viewField.provider) {
-                if (viewField.context) {
-                    return $this._printTableName(viewField.context) +
-                        '.' + $this._quotedName(viewField.providerField);
-                } else {
-                    return $this._printTableName(viewField.provider.getTableFullName()) +
-                        '.' + $this._quotedName(viewField.providerField);
-                }
+            if (viewField.providerField && viewField.context) {
+                return $this._printTableName(viewField.context) +
+                    '.' + $this._quotedName(viewField.providerField);
+
+            } else if (viewField.providerField  && viewField.provider) {
+                return $this._printTableName(viewField.provider.getTableFullName()) +
+                    '.' + $this._quotedName(viewField.providerField);
+
             } else if (viewField.field && viewField.context) {
                 return $this._quotedName(viewField.context) +
                     '.' + $this._quotedName(viewField.field);
 
+            } else if (viewField.field) {
+                return $this._quotedName(viewField.field);
             }
             throw new Error('Internal error: Unknown field descriptor type');
 		},
@@ -120,9 +129,7 @@ debugger;
         },
 
         _translateQueryView: function(view) {
-            var from  = view.getSourceView() instanceof QueryView
-                    ? '('+$this._translateAnyView(view.getSourceView())+') AS ' + view.getContext()
-                    : $this._translateAnyView(view.getSourceView());
+            var from  = $this._translateSourceView(view.getSourceView(), view.getContext());
             var columns = $this._translateSelectColumns(view);
 
             var query = view.getQuery();
@@ -140,6 +147,13 @@ debugger;
             having = having ? ' HAVING ' + having : ' ';
             order = order ? ' ORDER BY ' + order : ' ';
             return 'SELECT ' + columns + from + where + group + having + order + offset + limit;
+        },
+
+        _translateSourceView: function(sourceView, context) {
+            var sql  = sourceView instanceof QueryView
+                    ? '(' + $this._translateAnyView(sourceView) + ') AS ' + context
+                    : $this._translateAnyView(sourceView);
+            return sql;
         },
 
         _translateSelectColumns: function(view){
@@ -210,5 +224,9 @@ debugger;
             }
             return sql;
         },
+
+		close: function() {
+		    $base();
+		},
 	},
 }
