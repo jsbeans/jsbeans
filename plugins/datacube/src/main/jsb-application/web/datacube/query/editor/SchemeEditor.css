@@ -8,9 +8,6 @@
 }
 
 /* substrate */
-
-
-
 .schemeEditor > .container > .entry > .substrate,
 .schemeEditor > .container > .entry > .value > .substrate  {
 	position: absolute;
@@ -45,8 +42,6 @@
 	cursor: pointer;
 }
 
-
-
 /* btnCreate */
 .schemeEditor > .roundButton {}
 
@@ -62,7 +57,6 @@
 .schemeEditor[sname = "$sortDefinition"] > .btnCreate {
 	display: none;
 }
-
 
 .schemeEditor > .container {
 	position: relative;
