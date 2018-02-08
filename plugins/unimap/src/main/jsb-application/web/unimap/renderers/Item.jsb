@@ -16,6 +16,8 @@
 	                checked: this._values.checked,
 	                onchange: function(b){
 	                    $this._values.checked = b;
+
+	                    $this.options.onchange.call($this, $this._values);
 	                }
 	            });
 
@@ -71,6 +73,8 @@
 	                var editor = new ColorEditor({
                         onChange: function(val){
                             values.value = val;
+
+                            $this.options.onchange.call($this, $this._values);
                         }
 	                });
 	                editor.setData(values.value);
@@ -81,6 +85,8 @@
                         type: this._scheme.editor,
                         onchange: function(){
                             values.value = this.getValue();
+
+                            $this.options.onchange.call($this, $this._values);
                         }
                     });
                     editor.setValue(values.value);

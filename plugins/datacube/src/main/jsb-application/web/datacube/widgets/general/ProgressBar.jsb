@@ -192,11 +192,6 @@
 		
 		refresh: function(opts){
 		    var dataSource = this.getContext().find('dataSource');
-
-if(!dataSource.hasBinding){
-    debugger;
-}
-
             if(!dataSource || !dataSource.hasBinding()){
                 return;
             }

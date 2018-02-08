@@ -170,7 +170,8 @@
                      },
                      borderWidth: {
                         render: 'item',
-                        name: 'Толщина границы'
+                        name: 'Толщина границы',
+                        valueType: 'number'
                      },
                      showValuesPermanent: {
                         render: 'item',
@@ -240,11 +241,13 @@
                         },
                         markerWidth: {
                             render: 'item',
-                            name: 'Длина маркера'
+                            name: 'Длина маркера',
+                            valueType: 'number'
                         },
                         markerHeight: {
                             render: 'item',
-                            name: 'Высота маркера'
+                            name: 'Высота маркера',
+                            valueType: 'number'
                         }
                     }
                 }
@@ -328,12 +331,6 @@
             }
 
             var dataSource = this.getContext().find('dataSource');
-
-if(!dataSource.hasBinding){
-    console.log('map');
-    debugger;
-}
-
             if(!dataSource || !dataSource.hasBinding()){
                 return;
             }

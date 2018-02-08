@@ -19,43 +19,10 @@
 		},
 		rowKeyColumns: [],
 
-		_valueRenders: [
-            {
-                name: 'group',
-                render: 'Unimap.ValueSelectors.Group'
-            },
-            {
-                name: 'select',
-                render: 'Unimap.ValueSelectors.Select'
-            },
-            {
-                name: 'sourceBinding',
-                render: 'Datacube.ValueSelectors.SourceSelector'
-            },
-            {
-                name: 'dataBinding',
-                render: 'Datacube.ValueSelectors.DataBindingSelector'
-            },
-            {
-                name: 'embeddedWidget',
-                render: 'Datacube.ValueSelectors.EmbeddedWidgetBinding'
-            }
-		],
-		_rendersMap: {},
-
-		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'Datacube.ValueSelector'],
+		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'Unimap.ValueSelector', 'Datacube.Unimap.Bootstrap'],
 
 		$constructor: function(opts){
 		    $base(opts);
-
-            JSB.chain(this._valueRenders, function(d, c){
-                JSB.lookup(d.render, function(cls){
-                    $this._rendersMap[d.name] = cls;
-                    c();
-                });
-            }, function(){
-                $this.setTrigger('_rendersMapCreated');
-            });
 		},
 
 		addFilter: function(fDesc){
@@ -111,7 +78,7 @@
 		},
 
 		ensureInitialized: function(callback){
-			this.ensureTrigger(['_widgetInitialized', '_rendersMapCreated'], callback);
+			this.ensureTrigger('_widgetInitialized', callback);
 		},
 
 		exportData: function(format){
@@ -299,7 +266,7 @@
 				    context: ctxName,
 				    values: JSB.clone(this.values),
 				    linkedFields: this.linkedFields,
-				    rendersMap: this._rendersMap
+				    bootstrap: 'Datacube.Unimap.Bootstrap'
 				});
 			}
 

@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Controller',
 	$parent: 'JSB.Controls.Control',
-	$require: [],
+	$require: ['Unimap.Bootstrap'],
 	$client: {
 	    $constructor: function(opts){
 	        $base(opts);
@@ -13,10 +13,11 @@
 
             if(opts.rendersMap){
                 this._rendersMap = opts.rendersMap;
-                this.construct();
             } else {
-                this.createRendersMap(opts.rendersDescription);
+                this._rendersMap = JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getRendersMap();
             }
+
+            this.construct();
 	    },
 
 	    // inner variables
@@ -71,17 +72,6 @@
 
             return render;
         },
-
-	    createRendersMap: function(rendersDescription){
-            JSB.chain(rendersDescription, function(d, c){
-                JSB.lookup(d.render, function(cls){
-                    $this._rendersMap[d.name] = cls;
-                    c();
-                });
-            }, function(){
-                $this.construct();
-            });
-	    },
 
 	    destroy: function(){
 	        for(var i = 0; i < this._renders.length; i++){

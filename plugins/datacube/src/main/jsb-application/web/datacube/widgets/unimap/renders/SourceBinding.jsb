@@ -217,7 +217,7 @@
 
 		setEditor: function(item){
             switch(this._scheme.options && this._scheme.options.editor){
-                case 'input':
+                case 'input':       // maybe remove?
                     var editor = new Editor({
                         onchange: function(){
                             values.value = this.getValue();

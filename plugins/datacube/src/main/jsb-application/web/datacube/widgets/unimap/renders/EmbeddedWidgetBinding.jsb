@@ -92,7 +92,7 @@
                     var d = ui.draggable;
                     $this._item.removeClass('acceptDraggable');
                     for(var i in d.get(0).draggingItems){
-                        $this.setValue({name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb});
+                        $this.setValue({name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb}, true);
                         $this._values.values[0] = {
                             binding: {name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb},
                             value: {}
@@ -152,7 +152,7 @@
             this.childSourceBinding = null;
         },
 
-        setValue: function(wDesc){
+        setValue: function(wDesc, event){
             if(this.render){
                 this.render.destroy();
             }
@@ -175,7 +175,9 @@
 
 			this.constructScheme(wDesc.jsb);
 
-			this.options.onchange.call(this, this._values);
+			if(event){
+			    this.options.onchange.call(this, this._values);
+			}
         }
 	}
 }

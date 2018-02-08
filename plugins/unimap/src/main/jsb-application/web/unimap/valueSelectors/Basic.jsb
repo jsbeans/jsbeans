@@ -102,9 +102,37 @@
         // todo
     },
 
-    value: function(val){
+    value: function(){
         if(!this._values){
             return;
+        }
+
+        if(this._selectorOpts && this._selectorOpts.valueType){
+            var value;
+
+            switch(this._selectorOpts.valueType){
+                case 'number':
+                    value = Number(this._values[0].value);
+
+                    if(isNan(value)){
+                        value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                    }
+                    break;
+                case 'string':
+                default:
+                    value = this._values[0].value;
+
+                    if(!JSB.isDefined(value)){
+                        value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                        break;
+                    }
+
+                    if(typeof value === 'string' && value.length === 0){
+                        value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : '';
+                    }
+            }
+
+            return value;
         }
 
         return this._values[0].value;
@@ -118,7 +146,35 @@
         var valArr = [];
 
         for(var i = 0; i < this._values.length; i++){
-            valArr.push(this._values[i].value);
+            if(this._selectorOpts && this._selectorOpts.valueType){
+                var value;
+
+                switch(this._selectorOpts.valueType){
+                    case 'number':
+                        value = Number(this._values[i].value);
+
+                        if(isNan(value)){
+                            value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                        }
+                        break;
+                    case 'string':
+                    default:
+                        value = this._values[i].value;
+
+                        if(!JSB.isDefined(value)){
+                            value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                            break;
+                        }
+
+                        if(typeof value === 'string' && value.length === 0){
+                            value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : '';
+                        }
+                }
+
+                valArr.push(value);
+            } else {
+                valArr.push(this._values[i].value);
+            }
         }
 
         return valArr;

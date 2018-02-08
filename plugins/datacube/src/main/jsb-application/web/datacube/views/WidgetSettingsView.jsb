@@ -3,11 +3,13 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['Unimap.Controller',
+	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
-                   'JSB.Widgets.Button'
+                   'JSB.Widgets.Button',
+                   'DataCube.SaveMessage'
         ],
 
 		$constructor: function(opts){
@@ -53,39 +55,8 @@
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
 	        splitBox.append(this.widgetBlock);
 
-	        this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
-	        this.savedMessage.click(function(){
-	            $this.savedMessage.css('display', 'none');
-	        });
-	        this.append(this.savedMessage);
+	        // todo: add save msg
 		},
-
-		_renders: [
-            {
-                name: 'group',
-                render: 'Unimap.Render.Group'
-            },
-            {
-                name: 'item',
-                render: 'Unimap.Render.Item'
-            },
-            {
-                name: 'select',
-                render: 'Unimap.Render.Select'
-            },
-            {
-                name: 'sourceBinding',
-                render: "Unimap.Render.SourceBinding"
-            },
-            {
-                name: 'dataBinding',
-                render: "Unimap.Render.DataBinding"
-            },
-            {
-                name: 'embeddedWidget',
-                render: "Unimap.Render.EmbeddedWidgetBinding"
-            }
-		],
 
 		refresh: function(){
 			this.entry = this.node.getEntry();
@@ -102,16 +73,15 @@
                 $this.widgetSchemeRenderer = new Controller({
                     scheme: $this.wrapper.extractWidgetScheme(),
                     values: JSB.clone($this.wrapper.getValues()),
-                    rendersDescription: $this._renders,
-                    onchange: function(){
-                    // check for binding
+                    bootstrap: 'Datacube.Unimap.Bootstrap',
+                    onchange: function(values){
+                        if(values.render === 'dataBinding'){
+                            return;
+                        }
 
-                    /*
-                        if(this.scheme.binding === 'field') return; // need data update
                         JSB().defer(function(){
                             $this.setChanges();
                         }, 800, "widgetSettingsView_setChanges" + $this.getId());
-                    */
                     }
                 });
                 $this.schemeBlock.append($this.widgetSchemeRenderer.getElement());
@@ -132,10 +102,6 @@
 		},
 
 		applySettings: function(){
-		    this.savedMessage.fadeIn(1600, "linear", function(){
-		        $this.savedMessage.fadeOut(1600, "linear");
-		    });
-
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 
 		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),

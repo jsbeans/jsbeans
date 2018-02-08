@@ -1,6 +1,6 @@
 {
     $name: 'Unimap.ValueSelector',
-    $require: ['Unimap.ValueSelectors.Basic'],
+    $require: ['Unimap.ValueSelectors.Basic', 'Unimap.Bootstrap'],
 
     _rendersMap: {},
     _baseSelector: null,
@@ -15,24 +15,7 @@
             mainSelector: $this
         });
 
-        if(opts.rendersMap){
-            this.createRendersMapByClasses(opts.rendersMap);
-        } else if(opts.rendersDescription){
-            this.createRendersMap(opts.rendersDescription);
-        }
-    },
-
-    createRendersMap: function(rendersDescription){
-        JSB.chain(rendersDescription, function(d, c){
-            JSB.lookup(d.render, function(cls){
-                $this._rendersMap[d.name] = new cls({
-                    mainSelector: $this
-                });
-                c();
-            });
-        }, function(){
-            $this.setInitialized();
-        });
+        this.createRendersMapByClasses(JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getValueSelectorsMap());
     },
 
     createRendersMapByClasses: function(rendersMap){
@@ -50,10 +33,6 @@
             this._rendersMap[i].destroy();
         }
         $base();
-    },
-
-    ensureInitialized: function(callback){
-        this.ensureTrigger('_selectorInitialized', callback);
     },
 
     find: function(key, values){
@@ -163,9 +142,5 @@
         } else {
             return this._baseSelector;
         }
-    },
-
-    setInitialized: function(){
-        this.setTrigger('_selectorInitialized');
     }
 }

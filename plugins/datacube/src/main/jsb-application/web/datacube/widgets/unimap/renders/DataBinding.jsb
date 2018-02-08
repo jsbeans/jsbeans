@@ -35,6 +35,8 @@
                             } else {
                                 values.binding = undefined;
                             }
+
+                            $this.options.onchange.call($this, $this._values);
                         }
                     });
                     break;
@@ -54,6 +56,8 @@
                             } else {
                                 values.binding = undefined;
                             }
+
+                            $this.options.onchange.call($this, $this._values);
                         }
                     });
             }

@@ -31,6 +31,7 @@
                     var val = select.getValue();
                     values.value = val;
                     $this.createInnerScheme(item, val, itemIndex);
+
                     $this.options.onchange.call($this, $this._values);
                 }
             });
