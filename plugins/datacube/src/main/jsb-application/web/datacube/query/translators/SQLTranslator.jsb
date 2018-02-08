@@ -330,7 +330,10 @@
                     if (i > 0) sql += ' ' + op + ' ';
                     var arg = $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
                     if (wrapper) {
-                        sql += wrapper(arg, i, QueryUtils.extractType(args[i], dcQuery, $this.cube || $this.providers[0]));
+                        var type = QueryUtils.extractType(args[i], dcQuery, $this.cube || $this.providers[0], function(ctx){
+                            return $this.contextQueries[ctx];
+                        });
+                        sql += wrapper(arg, i, type);
                     } else {
                         sql += arg;
                     }

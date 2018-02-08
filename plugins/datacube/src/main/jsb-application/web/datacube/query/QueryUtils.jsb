@@ -1017,7 +1017,7 @@
             walkQueryFilter(dcQuery, '$postFilter');
 		},
 
-        extractType: function (exp, query, cubeOrDataProvider) {
+        extractType: function (exp, query, cubeOrDataProvider, queryByContext) {
             var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
@@ -1025,7 +1025,7 @@
             function extractFieldType(field){
                 if (query.$from) {
                     var fromFieldExpression = query.$from.$select[field];
-                    var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider);
+                    var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider, queryByContext);
                 } else {
                     var fieldType = fields[exp] && $this.getFieldJdbcType(cubeOrDataProvider, exp) || null;
                 }
@@ -1038,7 +1038,7 @@
             }
             if (JSB.isArray(exp)) {
                 for(var i in exp) {
-                    var type = $this.extractType(exp[i], query, cubeOrDataProvider);
+                    var type = $this.extractType(exp[i], query, cubeOrDataProvider, queryByContext);
                     if (type) {
                         return type;
                     }
@@ -1071,14 +1071,14 @@
                         var fieldType = extractFieldType(exp.$field);
                         return fieldType;
                     } else {
-                        var outerQuery = $this._getQueryByContext(query.$context);
-                        if (outerQuery) throw new Error('Unknown query context ' + query.$context);
-                        var fieldType = $this.extractType(outerQuery.$select[exp.$field], outerQuery, cubeOrDataProvider);
+                        var outerQuery = queryByContext(query.$context);
+                        if (!outerQuery) throw new Error('Unknown query context ' + query.$context);
+                        var fieldType = $this.extractType(outerQuery.$select[exp.$field], outerQuery, cubeOrDataProvider, queryByContext);
                         return fieldType;
                     }
                 }
                 for(var op in exp) {
-                    var type = $this.extractType(exp[op], query, cubeOrDataProvider);
+                    var type = $this.extractType(exp[op], query, cubeOrDataProvider, queryByContext);
                     if (type) {
                         return type;
                     }

@@ -17,6 +17,7 @@
 		    $this.cube = cube;
 		    $this.directProvider = !cube ? providers[0] : null;
 		    $this.cubeViewsBuilder = new CubeViewsBuilder(cube, providers);
+            $this.contextQueries = QueryUtils.defineContextQueries(query);
 
 		    // для каждого запроса/констекста формируется:
 		    $this.contextSourceViews = {};  // - вьюха источника любого типа
@@ -121,11 +122,15 @@
                     field: alias,
                     nativeType: QueryUtils.extractType(
                             query.$select[alias], query,
-                            $this.cube || $this.directProvider),
+                            $this.cube || $this.directProvider, function(ctx){
+                                return $this.contextQueries[ctx];
+                            }),
                     type: // TODO replace with cube types
                         QueryUtils.extractType(
                             query.$select[alias], query,
-                            $this.cube || $this.directProvider),
+                            $this.cube || $this.directProvider, function(ctx){
+                                return $this.contextQueries[ctx];
+                            }),
                     expr: query.$select[alias],
                 });
             }
