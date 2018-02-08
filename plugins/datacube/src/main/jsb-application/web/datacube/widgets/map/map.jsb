@@ -238,10 +238,13 @@
                                 }
                             }
                         },
-                        markerSize: {
+                        markerWidth: {
                             render: 'item',
-                            name: 'Размер маркера'
-                            // todo
+                            name: 'Длина маркера'
+                        },
+                        markerHeight: {
+                            render: 'item',
+                            name: 'Высота маркера'
                         }
                     }
                 }
@@ -306,12 +309,6 @@
                     $this.map.invalidateSize();
                 }, 300, 'hcResize' + $this.getId());
             });
-
-            this.ensureDataLoaded(function(){
-                try{
-                    $this.getElement().loader('hide');
-                } catch(e){}
-            });
         },
 
         // inner variables
@@ -331,6 +328,12 @@
             }
 
             var dataSource = this.getContext().find('dataSource');
+
+if(!dataSource.hasBinding){
+    console.log('map');
+    debugger;
+}
+
             if(!dataSource || !dataSource.hasBinding()){
                 return;
             }
@@ -489,6 +492,9 @@
                                 markersDesc[i].values = [];
                                 markersDesc[i].coordinatesBinding = markersContext[i].find('coordinates');
                                 markersDesc[i].coordinates = [];
+
+                                markersDesc[i].markerWidth = markersContext[i].find('markerWidth').value();
+                                markersDesc[i].markerHeight = markersContext[i].find('markerHeight').value();
                             }
                             break;
                         case 'defaultMarker':
@@ -590,6 +596,12 @@
                 }
                 */
                 $this.setTrigger('_dataLoaded');
+            });
+
+            this.ensureDataLoaded(function(){
+                try{
+                    $this.getElement().loader('hide');
+                } catch(e){}
             });
         },
 
@@ -752,8 +764,8 @@
                                 JSB.lookup(data.markersDesc[i].jsb, function(cls){
                                     for(var j = 0; j < data.markersDesc[i].values.length; j++){
                                         var widget = new cls(),
-                                            marker = L.divIcon({ html: widget.getElement().get(0) });
-
+                                            marker = L.divIcon({ html: widget.getElement().get(0), iconSize: [Number(data.markersDesc[i].markerWidth), Number(data.markersDesc[i].markerHeight)] });
+// todo: remove Number after add value types
                                         L.marker(L.latLng(data.markersDesc[i].coordinates[j][0], data.markersDesc[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
 
                                         widget.setWrapper($this.getWrapper(), data.markersDesc[i].values[j]);

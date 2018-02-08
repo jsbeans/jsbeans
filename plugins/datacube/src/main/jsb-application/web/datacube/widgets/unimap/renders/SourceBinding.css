@@ -1,5 +1,6 @@
 .sourceBindingRender > .item {
     height: 34px;
+    position: relative;
 }
 
 .sourceBindingRender > .item > .disableBlock {

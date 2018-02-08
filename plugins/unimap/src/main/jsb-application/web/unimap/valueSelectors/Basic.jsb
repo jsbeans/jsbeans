@@ -10,7 +10,10 @@
             this._selectorBean = $this;
             this._key = opts.key;
             this._selectorOpts = opts.selector;
-            this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
+
+            if(opts.selector && opts.selector.values){
+                this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
+            }
         }
 
         this._selectorPrototype.prototype = {
@@ -38,6 +41,10 @@
     },
 
     checked: function(){
+        if(!this._selectorOpts){
+            return undefined;
+        }
+
         if(JSB.isDefined(this._selectorOpts.checked)){
             return this._selectorOpts.checked;
         } else {
@@ -50,7 +57,7 @@
     },
 
     getDefaultValue: function(){
-        return this._selectorOpts.defaultValue;
+        return this._selectorOpts ? this._selectorOpts.defaultValue : undefined;
     },
 
     getInstance: function(key, selector){
@@ -84,7 +91,7 @@
     },
 
     getRenderName: function(){
-        return this._selectorOpts.render;
+        return this._selectorOpts ? this._selectorOpts.render : undefined;
     },
 
     setValue: function(val){
@@ -96,10 +103,18 @@
     },
 
     value: function(val){
+        if(!this._values){
+            return;
+        }
+
         return this._values[0].value;
     },
 
     values: function(){
+        if(!this._values){
+            return;
+        }
+
         var valArr = [];
 
         for(var i = 0; i < this._values.length; i++){

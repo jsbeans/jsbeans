@@ -88,13 +88,14 @@
 	    },
 
 	    disable: function(){
-debugger;
 	        if(this._disabled){
 	            return;
 	        }
 
-	        for(var i = 0; i < this._items; i++){
-	            this._items.append('<div class="disableBlock"></div>');
+	        if(this._scheme.multiple){
+	            this.multipleContainer.find('.multipleItem').append('<div class="disableBlock"></div>');
+	        } else {
+	            this.find('> .item').append('<div class="disableBlock"></div>');
 	        }
 
 	        this._disabled = true;
@@ -105,9 +106,11 @@ debugger;
                 return;
             }
 
-            for(var i = 0; i < this._items; i++){
-                this._items.find('.disableBlock').remove;
-            }
+	        if(this._scheme.multiple){
+	            this.multipleContainer.find('.multipleItem > .disableBlock').remove();
+	        } else {
+	            this.find('> .item > .disableBlock').remove();
+	        }
 
             this._disabled = false;
 	    },

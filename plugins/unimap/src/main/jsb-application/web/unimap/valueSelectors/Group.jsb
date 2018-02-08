@@ -3,7 +3,9 @@
     $parent: 'Unimap.ValueSelectors.Basic',
 
     find: function(key, values){
+        var main = false;
         if(!values){
+            main = true;
             values = this._values;
         }
 
@@ -12,6 +14,10 @@
             if(res){
                 return res;
             }
+        }
+
+        if(main){
+            return this.getRenderByName().getInstance();
         }
     },
 
@@ -32,10 +38,18 @@
     },
 
     value: function(){
+        if(!this._values){
+            return;
+        }
+
         return this.getRenderByName(this.getRenderName()).getInstance(undefined, { values: this._values[0] });
     },
 
     values: function(){
+        if(!this._values){
+            return;
+        }
+
         var itemsArr = [];
 
         for(var i = 0; i < this._values.length; i++){

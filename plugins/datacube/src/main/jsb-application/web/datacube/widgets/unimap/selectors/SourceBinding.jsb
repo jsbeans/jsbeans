@@ -10,6 +10,10 @@
         return this._values[0].binding.data;
     },
 
+    isEmbeddedBinding: function(){
+        return this._values[0].binding.embeddedBinding;
+    },
+
     hasBinding: function(){
         return JSB.isDefined(this._values[0].binding);
     },
@@ -39,7 +43,7 @@
             // set data for embedded widgets
             if(opts.embeddedBindings){
                 for(var i = 0; i < opts.embeddedBindings.length; i++){
-                    opts.embeddedBindings[i].setBindingData(item.data[item.cursor]);
+                    opts.embeddedBindings[i].setBindingData(item.data[item.cursor], true);
                 }
             }
 
@@ -78,7 +82,8 @@
         return true;
     },
 
-    setBindingData: function(data){
+    setBindingData: function(data, embeddedBinding){
         this._values[0].binding.data = [data];
+        this._values[0].binding.embeddedBinding = embeddedBinding;
     }
 }

@@ -61,7 +61,9 @@
             return;
         }
 
+        var main = false;
         if(!values){
+            main = true;
             values = this._values;
         }
 
@@ -110,6 +112,10 @@
                     }
                 }
             }
+        }
+
+        if(main){
+            return this.getRenderByName().getInstance();
         }
     },
 

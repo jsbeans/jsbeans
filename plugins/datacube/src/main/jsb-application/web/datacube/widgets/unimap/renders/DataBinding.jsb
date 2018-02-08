@@ -10,7 +10,7 @@
 	        this.loadCss('DataBinding.css');
 	        $base();
 
-            this.changeLinkTo(this.getValueByKey(this._scheme.linkTo));
+            this.changeLinkTo(this.getValueByKey(this._scheme.linkTo), true);
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -21,7 +21,6 @@
 
             switch(this._scheme.editor){
                 case 'input':
-                default:
                     var item = new Editor({
                         cssClass: 'editor',
                         value: values.value,
@@ -39,7 +38,6 @@
                         }
                     });
                     break;
-                /*
                 case 'select':
                 default:
                     var item = new Select({
@@ -58,7 +56,6 @@
                             }
                         }
                     });
-                */
             }
 
             this._editors.push(item);
@@ -77,7 +74,7 @@
 	        }
 	    },
 
-	    changeLinkTo: function(values){
+	    changeLinkTo: function(values, isConstruct){
 	        var dataList = [];
 	        for(var i = 0; i < values.values.length; i++){
 	            if(!values.values[i].binding){
@@ -93,14 +90,25 @@
             for(var i = 0; i < this._editors.length; i++){
                 switch(this._scheme.editor){
                     case 'input':
-                    default:
                         this._editors[i].setDataList(dataList);
                         break;
-                    /*
                     case 'select':
                     default:
+                        var val = this._editors[i].getValue();
                         this._editors[i].setOptions(dataList, true);
-                    */
+
+                        if(this._editors[i].hasOption(val)){
+                            this._editors[i].setValue(val);
+                        }
+                        /*
+                        if(isConstruct){
+                            this._editors[i].setValue(val, true);
+                        } else {
+                            if(this._editors[i].hasOption(val)){
+                                this._editors[i].setValue(val);
+                            }
+                        }
+                        */
                 }
             }
 	    }

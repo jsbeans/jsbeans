@@ -132,11 +132,9 @@
 		},
 
 		applySettings: function(){
-		/*
 		    this.savedMessage.fadeIn(1600, "linear", function(){
 		        $this.savedMessage.fadeOut(1600, "linear");
 		    });
-        */
 
 		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
 

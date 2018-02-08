@@ -17,12 +17,6 @@
 	                checked: this._values.checked,
 	                onchange: function(b){
 	                    $this._values.checked = b;
-
-	                    if(b){
-	                        $this.childSourceBinding && $this.childSourceBinding.disable();
-	                    } else {
-	                        $this.childSourceBinding && $this.childSourceBinding.enable();
-	                    }
 	                }
 	            });
 
@@ -40,7 +34,13 @@
 	        valueSkipping.append(new Checkbox({
 	            checked: this._values.valueSkipping,
 	            onchange: function(b){
-	                this._values.valueSkipping = b;
+	                $this._values.valueSkipping = b;
+
+                    if(b){
+                        $this.childSourceBinding && $this.childSourceBinding.disable();
+                    } else {
+                        $this.childSourceBinding && $this.childSourceBinding.enable();
+                    }
 	            }
 	        }).getElement());
 	        valueSkipping.append('<span>Проброс значений</span>');

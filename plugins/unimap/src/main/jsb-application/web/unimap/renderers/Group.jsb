@@ -86,6 +86,10 @@
                 `);
 
                 for(var i in this._scheme.items){
+                    if(!values[i]){
+                        values[i] = {};
+                    }
+
                     item.append(this.createRender(i, this._scheme.items[i], values[i]).getElement());
                 }
 
@@ -100,6 +104,10 @@
                 this.multipleBtn.before(item);
 	        } else {
                 for(var i in this._scheme.items){
+                    if(!values[i]){
+                        values[i] = {};
+                    }
+
                     this.group.appendContent(this.createRender(i, this._scheme.items[i], values[i]));
                 }
 	        }

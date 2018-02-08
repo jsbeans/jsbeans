@@ -2,6 +2,8 @@
 	$name: 'JSB.Controls.Select',
 	$parent: 'JSB.Controls.Control',
     $client: {
+        _optionsList: null,
+
         $constructor: function(opts){
             if(!opts.element) opts.element = '<select></select>';
             $base(opts);
@@ -51,6 +53,28 @@
 	        return this.getElement().val();
 	    },
 
+	    hasOption: function(option){
+	        if(!this._optionsList){
+	            return;
+	        }
+
+	        if(JSB.isObject(this._optionsList[0])){
+	            for(var i = 0; i < this._optionsList.length; i++){
+	                if(this._optionsList[i].value === option){
+	                    return true;
+	                }
+	            }
+	        } else {
+	            for(var i = 0; i < this._optionsList.length; i++){
+	                if(this._optionsList[i] === option){
+	                    return true;
+	                }
+	            }
+	        }
+
+	        return false;
+	    },
+
 		on: function(eventName, func){
 		    if(!JSB().isFunction(func)) return;
 
@@ -80,6 +104,8 @@
     	            el.append('<option value="' + options[i] + '"">' + options[i] + '</option>');
     	        }
 	        }
+
+	        this._optionsList = options;
 	    },
 
 	    setGroupOptions: function(groups, clear){

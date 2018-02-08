@@ -22,10 +22,18 @@
     },
 
     value: function(){
+        if(!this._values){
+            return;
+        }
+
         return this.values();
     },
 
     values: function(){
+        if(!this._values){
+            return;
+        }
+
         return this._values[0].value;
     }
 }

@@ -7,3 +7,8 @@
     padding: 0px 2px;
     font-size: 11px;
 }
+
+.mapWidget .leaflet-div-icon {
+    background: none;
+    border: none;
+}

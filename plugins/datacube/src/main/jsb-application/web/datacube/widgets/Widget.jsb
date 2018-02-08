@@ -129,6 +129,10 @@
 
 		// old selector.fetch
         fetchBinding: function(selector, opts, callback){
+            if(selector.isEmbeddedBinding()){
+                callback.call(this);
+                return;
+            }
             if(arguments.length == 1 && JSB.isFunction(opts)){
                 callback = opts;
                 opts = {};

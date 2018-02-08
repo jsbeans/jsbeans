@@ -7,6 +7,10 @@
     },
 
     value: function(layer){
+        if(!this._values){
+            return;
+        }
+
         if(typeof this._values[0].value === 'object'){
             layer = layer || 'main';
             return this._values[0].value[layer];
@@ -15,6 +19,10 @@
     },
 
     values: function(layer){
+        if(!this._values){
+            return;
+        }
+
         var valArr = [];
 
         if(typeof this._values[0].value === 'object'){
