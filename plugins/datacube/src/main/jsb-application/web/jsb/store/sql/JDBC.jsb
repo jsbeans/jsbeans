@@ -386,6 +386,9 @@
             case 'object':
 				jsonType = 'object';
 				break;
+            case 'other':
+				jsonType = 'string';
+				break;
             	
             default:
             	throw new Error('Unsupported sql type: ' + sqlType);
