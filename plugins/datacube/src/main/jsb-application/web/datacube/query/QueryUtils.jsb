@@ -879,20 +879,29 @@
 
 		unwrapPostFilters: function(dcQuery) {
 		    function unwrapForQuery(query) {
-		        if (query.$postFilter) {
-		            var postFilter = query.$postFilter;
-		            var subQuery = JSB.merge({}, query);
-		            delete subQuery.$postFilter;
-		            var fields = Object.keys(query);
-		            for(var f in fields) {
-		                delete query[fields[f]];
+		        if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
+    		        var queryFields = ['$context', '$select', '$filter', '$groupBy', '$from', '$distinct', '$sort', '$sql'];
+    		        var postFilter = query.$postFilter;
+                    delete query.$postFilter;
+		            var subQuery = {};
+		            // move query fields to subQuery
+		            for (var i in queryFields) {
+		                var field = queryFields[i];
+		                if (query.hasOwnProperty(field)) {
+		                    subQuery[field] = query[field];
+		                    delete query[field];
+		                }
+
 		            }
+		            // build $select
 		            query.$select = {};
-		            for(var alias in subQuery.$select) if (subQuery.$select.hasOwnProperty(alias)) {
-		                query.$select[alias] = alias;
-		            }
-		            query.$filter = postFilter;
-		            query.$from = subQuery;
+                    for(var alias in subQuery.$select) if (subQuery.$select.hasOwnProperty(alias)) {
+                        query.$select[alias] = alias;
+                    }
+
+                    // build post filter query
+                    query.$filter = postFilter;
+                    query.$from = subQuery;
 		        }
 		    }
 
@@ -1097,6 +1106,14 @@
         defineContextQueries: function(dcQuery){
             var idx = 0;
             var contextQueries = {};
+
+            for (var name in dcQuery.$views){
+                var query = dcQuery.$views[name];
+                if (!query.$context) query.$context = 'context_' + idx++;
+                if (contextQueries[query.$context]) throw new Error('Duplicate view query context: ' + query.$context);
+                contextQueries[query.$context] = query;
+            }
+
             $this.walkSubQueries(dcQuery, function(query){
                 if (!query.$context) query.$context = 'context_' + idx++;
                 if (contextQueries[query.$context]) throw new Error('Duplicate query context: ' + query.$context);

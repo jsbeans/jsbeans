@@ -18,38 +18,86 @@
 		    'DataCube.Query.Views.DataProviderView',
 		    'DataCube.Query.Views.SqlView',
 		    'DataCube.Query.Views.NothingView',
+
+		    'DataCube.Query.Views.QueryViewsOptimizer',
         ],
+
+        withContextViews: {},
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
+		    $this.config = {
+		        printIsolatedQueriesInWith: true,
+		    }
 		},
 
+		translateQuery: function() {
+//		    if (!$this.dcQuery.$views) {
+//                var optimizer = new QueryViewsOptimizer();
+//                try {
+//                    $this.dcQuery = optimizer.buildViews($this.dcQuery);
+//                    if ($this.dcQuery.$views) {
+//                        Log.debug('QueryEngine.preparedQuery.optimized: \n' + JSON.stringify($this.dcQuery, 0, 2));
+//                    }
+//                } finally {
+//                    optimizer.destroy();
+//                }
+//            }
+            return $base();
+		},
 
 		translateQueryExpression: function(query) {
 		    $this.buildViews();
             var queryView = $this._findQueryView(query.$context);
             var sql = $this._translateAnyView(queryView);
-		    if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
-		        var wrappedQuery = JSB.merge({}, query, {
-		            $context: 'wrapped_' + query.$context
-		        });
-		        this._registerContextQuery(wrappedQuery);
-		        sql = 'SELECT * FROM (' + sql + ') AS ' + this._quotedName(wrappedQuery.$context) +
-		              ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
-		    }
+//		    if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
+//		        var wrappedQuery = JSB.merge({}, query, {
+//		            $context: 'wrapped_' + query.$context
+//		        });
+//		        this._registerContextQuery(wrappedQuery);
+//		        sql = 'SELECT * FROM (' + sql + ') AS ' + this._quotedName(wrappedQuery.$context) +
+//		              ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
+//		    }
             //return '/*VT{*/' + sql + '/*}VT*/';
             return sql;
 		},
 
-        _findQueryView: function(context){
-            var queryView = null;
-            $this.queryView.visitInternalViews(function (view){
-                if (view instanceof QueryView) {
-                    if (context == view.getQuery().$context) {
-                        queryView = view;
+        _translateWith: function(){
+            var sql = '';
+            var views = $this._orderedIsolatedViews();
+            for(var i in views) {
+                var view = views[i];
+                if (view != $this.queryView && view instanceof QueryView) {
+                    if (view.isIsolated()) {
+                        if (sql.length != 0) sql += ',\n';
+                        sql += '(';
+                        sql += $this._translateAnyView(view);
+                        sql += ') AS ';
+                        sql += $this._quotedName(view.getContext());
+                        if ($this.withContextViews[view.getContext()]) {
+                            throw new Error('Internal error: duplicate context ' + view.getContext());
+                        }
+                        $this.withContextViews[view.getContext()] = view.getContext();
                     }
                 }
-            });
+            }
+            if (sql.length > 0) {
+                sql = 'WITH\n' + sql;
+                sql += '\n';
+            }
+            return sql ;
+        },
+
+        _findQueryView: function(context){
+//            var queryView = null;
+//            $this.queryView.visitInternalViews(function (view){
+//                if (view instanceof QueryView) {
+//                    if (context == view.getQuery().$context) {
+//                        queryView = view;
+//                    }
+//                }
+//            });
+            var queryView = $this.contextQueryViews[context];
             if (!queryView) {
                 throw new Error('Internal error: Cannot find View for query ' + context);
             }
@@ -92,6 +140,7 @@
             var queryView = $this._findQueryView(context);
             var contextField = queryView.lookupField(field, notAlias);
 
+
             if (!contextField) {
                 // unknown field: print as-is
                 return $this._quotedName(field);
@@ -129,6 +178,9 @@
         },
 
         _translateQueryView: function(view) {
+            if ($this.withContextViews[view.getContext()]) {
+                return $this._quotedName($this.withContextViews[view.getContext()]);
+            }
             var from  = $this._translateSourceView(view.getSourceView(), view.getContext());
             var columns = $this._translateSelectColumns(view);
 
@@ -223,6 +275,27 @@
                 throw new Error('Join without binding: ' + view.getLeftView().name + ', ' + view.getRightView().name);
             }
             return sql;
+        },
+
+        _orderedIsolatedViews: function(){
+            var views = [];
+            for (var name in $this.dcQuery.$views) {
+                var view = $this._findQueryView($this.dcQuery.$views[name].$context);
+                if (!view.isIsolated()) {
+                    throw new Error('Query ' + view.getContext() + ' is not isolated: use fields of other contexts');
+                }
+                views.push(view);
+            }
+
+//            if ($this.config.printIsolatedQueriesInWith){
+//                $this.walkSubQueries($this.dcQuery, function(query){
+//                    var view = $this._findQueryView(query.$context);
+//                    if (view.isIsolated() && views.indexOf(view) == -1) {
+//                        views.push(view);
+//                    }
+//                });
+//            }
+            return views;
         },
 
 		close: function() {
