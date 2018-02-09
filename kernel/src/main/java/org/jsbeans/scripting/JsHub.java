@@ -224,7 +224,7 @@ public class JsHub extends Service {
     	// clear beans
     	String script = "var sessionScope = JSB().getSessionInstancesScope(); var beanIdsArr = Object.keys(sessionScope); for(var bidx = 0; bidx < beanIdsArr.length; bidx++){ var bInst = sessionScope[beanIdsArr[bidx]]; if(bInst && bInst.destroy){ try{ bInst.destroy();} catch(e){ JSB.getLogger().error(e);} } }";
     	try {
-	    	Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(scopePath);
+	    	Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(scopePath, false);
 	    	Context cx = contextFactory.enterContext();
 	        cx.setOptimizationLevel(jsOptimizationLevel);
 	        cx.setLanguageVersion(jsLanguageVersion);
@@ -278,6 +278,7 @@ public class JsHub extends Service {
             }
             final ExecuteScriptMessage execMsg = new ExecuteScriptMessage(subToken, (Function) msg.getCallback(), new Object[]{});
             execMsg.setScopePath(msg.getScopePath());
+            execMsg.setPreserveScope(false);
             execMsg.setUser(msg.getUser());
             execMsg.setUserToken(msg.getUserToken());
             execMsg.setClientRequestId(msg.getClientRequestId());
@@ -427,6 +428,7 @@ public class JsHub extends Service {
                     } else {
                         ExecuteScriptMessage execMsg = new ExecuteScriptMessage(subToken, (Function) msg.getCallback(), new Object[]{respMsg});
                         execMsg.setScopePath(msg.getScopePath());
+                        execMsg.setPreserveScope(false);
                         execMsg.setUser(msg.getUser());
                         execMsg.setUserToken(msg.getUserToken());
                         execMsg.setClientRequestId(msg.getClientRequestId());
@@ -576,7 +578,7 @@ public class JsHub extends Service {
         
         ActorRef self = this.getSelf();
         ActorRef sender = this.getSender();
-        Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(msg.getScopePath());
+        Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(msg.getScopePath(), msg.isScopePreserved());
         this.threadPool.execute(new Runnable() {
 			@Override
 			public void run() {

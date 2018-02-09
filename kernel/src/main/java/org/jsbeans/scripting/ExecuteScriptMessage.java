@@ -23,6 +23,7 @@ public class ExecuteScriptMessage implements Message {
     private boolean async = false;
     private String clientAddr = "";
     private String scopePath = "";
+    private boolean preserveScope = true;
     private Function scriptable = null;
     private String userToken = null;
     private String token = null;
@@ -47,6 +48,14 @@ public class ExecuteScriptMessage implements Message {
         this.token = token;
         this.args = args;
     }
+    
+    public void setPreserveScope(boolean b){
+		this.preserveScope = b;
+	}
+	
+	public boolean isScopePreserved(){
+		return this.preserveScope;
+	}
 
     public String getUserToken() {
         return this.userToken;
