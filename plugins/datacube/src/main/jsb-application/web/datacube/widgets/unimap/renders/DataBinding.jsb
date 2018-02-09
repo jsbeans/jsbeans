@@ -10,7 +10,7 @@
 	        this.loadCss('DataBinding.css');
 	        $base();
 
-            this.changeLinkTo(this.getValueByKey(this._scheme.linkTo), true);
+            this.changeLinkTo(this.getValueByKey(this._scheme.linkTo));
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -78,7 +78,7 @@
 	        }
 	    },
 
-	    changeLinkTo: function(values, isConstruct){
+	    changeLinkTo: function(values){
 	        var dataList = [];
 	        for(var i = 0; i < values.values.length; i++){
 	            if(!values.values[i].binding){
@@ -101,18 +101,13 @@
                         var val = this._editors[i].getValue();
                         this._editors[i].setOptions(dataList, true);
 
-                        if(this._editors[i].hasOption(val)){
+                        if(val && this._editors[i].hasOption(val)){
                             this._editors[i].setValue(val);
                         }
-                        /*
-                        if(isConstruct){
-                            this._editors[i].setValue(val, true);
-                        } else {
-                            if(this._editors[i].hasOption(val)){
-                                this._editors[i].setValue(val);
-                            }
+
+                        if(!val){
+                            this._editors[i].setValue(dataList[0], true);
                         }
-                        */
                 }
             }
 	    }

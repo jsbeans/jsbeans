@@ -156,13 +156,31 @@
 	            trailColor: {
 	                render: 'item',
 	                name: 'Цвет дорожки',
-	                editor: 'color',
+	                editor: 'JSB.Widgets.ColorEditor',
 	                defaultValue: '#eee'
 	            },
 	            trailWidth: {
 	                render: 'item',
 	                name: 'Толщина дорожки',
 	                defaultValue: 2
+	            },
+	            css: {
+	                render: 'item',
+	                name: 'CSS стиль',
+	                optional: true,
+	                editor: 'JSB.Widgets.MultiEditor',
+	                editorOpts: {
+	                    valueType: 'org.jsbeans.types.Css'
+	                }
+	            },
+	            textCss: {
+	                render: 'item',
+	                name: 'CSS стиль текста',
+	                optional: true,
+	                editor: 'JSB.Widgets.MultiEditor',
+	                editorOpts: {
+	                    valueType: 'org.jsbeans.types.Css'
+	                }
 	            }
 	        }
 	    }
@@ -192,7 +210,7 @@
 		
 		refresh: function(opts){
 		    var dataSource = this.getContext().find('dataSource');
-            if(!dataSource || !dataSource.hasBinding()){
+            if(!dataSource.hasBinding || !dataSource.hasBinding()){
                 return;
             }
 			
@@ -225,13 +243,14 @@
 					css: '',
 					textCss: ''
 				};
-				/*
-				if(gArr[i].find('css').used()){
+
+				if(gArr[i].find('css').checked()){
 					serieDesc.css = prepareCss(gArr[i].find('css').value());
 				}
-				if(gArr[i].find('textCss').used()){
+				if(gArr[i].find('textCss').checked()){
 					serieDesc.textCss = prepareCss(gArr[i].find('textCss').value());
 				}
+				/*
 				if(gArr[i].find('textFormat').used()){
 					serieDesc.format = gArr[i].find('textFormat').value();
 				}

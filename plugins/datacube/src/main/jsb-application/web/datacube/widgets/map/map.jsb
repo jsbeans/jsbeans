@@ -112,7 +112,7 @@
                                     color: {
                                         render: 'item',
                                         name: 'Цвет',
-                                        editor: 'color'
+                                        editor: 'JSB.Widgets.ColorEditor'
                                     }
                                 }
                             },
@@ -122,12 +122,12 @@
                                     startColor: {
                                         render: 'item',
                                         name: 'Начальный цвет',
-                                        editor: 'color'
+                                        editor: 'JSB.Widgets.ColorEditor'
                                     },
                                     endColor: {
                                         render: 'item',
                                         name: 'Конечный цвет',
-                                        editor: 'color'
+                                        editor: 'JSB.Widgets.ColorEditor'
                                     },
                                     functionType: {
                                         render: 'select',
@@ -161,12 +161,12 @@
                      defaultColor: {
                         render: 'item',
                         name: 'Цвет заливки регионов без данных',
-                        editor: 'color'
+                        editor: 'JSB.Widgets.ColorEditor'
                      },
                      borderColor: {
                         render: 'item',
                         name: 'Цвет границ регионов',
-                        editor: 'color'
+                        editor: 'JSB.Widgets.ColorEditor'
                      },
                      borderWidth: {
                         render: 'item',
@@ -192,12 +192,12 @@
                             selectColor: {
                                 render: 'item',
                                 name: 'Цвет заливки регионов',
-                                editor: 'color'
+                                editor: 'JSB.Widgets.ColorEditor'
                             },
                             selectBorderColor: {
                                 render: 'item',
                                 name: 'Цвет границ регионов',
-                                editor: 'color'
+                                editor: 'JSB.Widgets.ColorEditor'
                             }
                          }
                      }
@@ -285,7 +285,18 @@
                  }
              }
          }
+        },
+        /*
+        wmsMaps: {
+            render: 'group',
+            name: 'Tile-карты',
+            items: {
+                serverUrl: {
+
+                }
+            }
         }
+        */
     },
     $client: {
         $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5'],
@@ -331,7 +342,7 @@
             }
 
             var dataSource = this.getContext().find('dataSource');
-            if(!dataSource || !dataSource.hasBinding()){
+            if(!dataSource.hasBinding || !dataSource.hasBinding()){
                 return;
             }
 
@@ -485,14 +496,18 @@
                                 embeddedBindings = embeddedBindings.concat(wb.findRendersByName('sourceBinding'));
                                 markersDesc[i].valueSkipping = true;
                                 markersDesc[i].widgetBinding = wb;
-                                markersDesc[i].jsb = wb.getWidgetName();
                                 markersDesc[i].values = [];
-                                markersDesc[i].coordinatesBinding = markersContext[i].find('coordinates');
-                                markersDesc[i].coordinates = [];
-
-                                markersDesc[i].markerWidth = markersContext[i].find('markerWidth').value();
-                                markersDesc[i].markerHeight = markersContext[i].find('markerHeight').value();
+                            } else {
+                                markersDesc[i].values = wb.getFullValues();
                             }
+
+                            markersDesc[i].jsb = wb.getWidgetName();
+
+                            markersDesc[i].coordinatesBinding = markersContext[i].find('coordinates');
+                            markersDesc[i].coordinates = [];
+
+                            markersDesc[i].markerWidth = markersContext[i].find('markerWidth').value();
+                            markersDesc[i].markerHeight = markersContext[i].find('markerHeight').value();
                             break;
                         case 'defaultMarker':
 
@@ -613,8 +628,6 @@
 
         innerBuildChart: function(data){
             //try {
-                var tileMaps = this.getContext().find('tileMaps').values();
-
                 if(this.map){
                     this._mapOpts = {
                         center: this.map.getCenter(),
@@ -627,10 +640,10 @@
                         zoom: 2
                     };
                 }
-
                 this.map = L.map(this.container.get(0), this._mapOpts);
 
                 // add tile layers
+                var tileMaps = this.getContext().find('tileMaps').values();
                 for(var i = 0; i < tileMaps.length; i++){
                     var url;
 
@@ -656,6 +669,8 @@
 
                     L.tileLayer(url, {foo: 'bar'}).addTo(this.map);
                 }
+
+                // add wms layers
 
                 // add geojson layers
                 for(var i = 0; i < this._maps.length; i++){
@@ -753,22 +768,30 @@
                     this._selectFeature(i);
                 }
 
-                // add markers
+                // add markers layers
                 for(var i = 0; i < data.markersDesc.length; i++){
                     switch(data.markersDesc[i].markerType){
                         case 'widget':
                             (function(i){
                                 JSB.lookup(data.markersDesc[i].jsb, function(cls){
-                                    for(var j = 0; j < data.markersDesc[i].values.length; j++){
-                                        var widget = new cls(),
-                                            marker = L.divIcon({ html: widget.getElement().get(0), iconSize: [Number(data.markersDesc[i].markerWidth), Number(data.markersDesc[i].markerHeight)] });
-// todo: remove Number after add value types
-                                        L.marker(L.latLng(data.markersDesc[i].coordinates[j][0], data.markersDesc[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
+                                    for(var j = 0; j < data.markersDesc[i].coordinates.length; j++){
+                                        var widget = new cls();
 
-                                        widget.setWrapper($this.getWrapper(), data.markersDesc[i].values[j]);
-                                        widget.ensureInitialized(function(){
-                                            widget.refresh();
-                                        });
+                                        (function(widget){
+                                            var marker = L.divIcon({ html: widget.getElement().get(0), iconSize: [data.markersDesc[i].markerWidth, data.markersDesc[i].markerHeight] });
+
+                                            L.marker(L.latLng(data.markersDesc[i].coordinates[j][0], data.markersDesc[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
+
+                                            if(data.markersDesc[i].valueSkipping){
+                                                widget.setWrapper($this.getWrapper(), data.markersDesc[i].values[j]);
+                                            } else {
+                                                widget.setWrapper($this.getWrapper(), data.markersDesc[i].values);
+                                            }
+
+                                            widget.ensureInitialized(function(){
+                                                widget.refresh();
+                                            });
+                                        })(widget);
                                     }
                                 });
                             })(i);

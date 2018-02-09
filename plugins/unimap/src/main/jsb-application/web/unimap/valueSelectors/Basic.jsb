@@ -114,7 +114,7 @@
                 case 'number':
                     value = Number(this._values[0].value);
 
-                    if(isNan(value)){
+                    if(isNaN(value)){
                         value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
                     }
                     break;
@@ -153,7 +153,7 @@
                     case 'number':
                         value = Number(this._values[i].value);
 
-                        if(isNan(value)){
+                        if(isNaN(value)){
                             value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
                         }
                         break;

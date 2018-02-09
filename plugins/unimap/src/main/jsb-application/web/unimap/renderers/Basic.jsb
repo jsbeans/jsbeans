@@ -18,6 +18,8 @@
 	            this.createValues();
 	        }
 
+	        this.extendValues();
+
             this.construct(opts.options ? opts.options : {});
         },
 
@@ -114,10 +116,20 @@
             this._values.defaultValue = this._scheme.defaultValue;
             this._values.valueType = this._scheme.valueType;
             this._values.values = [];
+
+            if(this._scheme.value){
+                this._values.values[0].value = this._scheme.value;
+            }
         },
 
         destroy: function(){
             $base();
+        },
+
+        extendValues: function(){
+            // if add new properties to values
+            // example
+            // this._values.valueType = this._scheme.valueType;
         },
 
         isChecked: function(){

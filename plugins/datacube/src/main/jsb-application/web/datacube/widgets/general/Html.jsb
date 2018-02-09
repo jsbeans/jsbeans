@@ -101,54 +101,11 @@
 		RfG/S+/sfqPaKzy8Xf8vwAAYSy93SFkRDQAAAABJRU5ErkJggg==`
 	},
 	$scheme: {
-		type: 'group',
-		items: [{
-			type: 'group',
-			name: 'Записи',
-			binding: 'record',
-			key: 'record',
-			items: [{
-				name: 'Аргументы',
-				type: 'group',
-				multiple: 'auto',
-				key: 'args',
-				items: [{
-					type: 'item',
-					name: 'Ключ',
-					key: 'key',
-					itemValue: '$field'
-				}, {
-					type: 'item',
-					name: 'Значение',
-					key: 'value',
-					binding: 'field'
-				}]
-			},{
-				name: 'Шаблон',
-				type: 'item',
-				key: 'template',
-				itemValue: `<ul style="padding-left:20px; list-style-type: disc;">
-{{for(var f in it) { }}
-	<li>
-		<strong style="font-style:italic;">{{=f}}</strong>:
-		<span>{{=it[f]}}</span>
-	</li>
-{{ } }}
-</ul>`,
-				editor: 'JSB.Widgets.MultiEditor',
-				options: {
-					valueType: 'org.jsbeans.types.Html'
-				}
-			}]
-		},{
-			name: 'Использовать iframe',
-			type: 'item',
-			key: 'useIframe',
-			optional: true,
-			editor: 'none'
-		}]
+	    record: {
+            render: 'sourceBinding',
+            name: 'Записи'
+	    }
 	},
-	
 	$client: {
 		ready: false,
 		
