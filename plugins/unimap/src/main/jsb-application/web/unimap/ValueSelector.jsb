@@ -133,7 +133,7 @@
             return;
         }
 
-        return this._linkedFields[key];
+        return this._linkedFields[key] ? this._linkedFields[key] : [];
     },
 
     getRenderByName: function(name){

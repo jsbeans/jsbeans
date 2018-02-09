@@ -104,6 +104,44 @@
 	    record: {
             render: 'sourceBinding',
             name: 'Записи'
+	    },
+	    args: {
+	        render: 'group',
+	        name: 'Аргументы',
+	        multiple: true,
+	        items: {
+	            key: {
+                    render: 'item',
+                    name: 'Ключ'
+	            },
+                value: {
+                    render: 'dataBinding',
+                    name: 'Ключ',
+                    linkTo: 'record'
+                }
+	        }
+	    },
+	    template: {
+            render: 'item',
+            name: 'Шаблон',
+            editor: 'JSB.Widgets.MultiEditor',
+            editorOpts: {
+                valueType: 'org.jsbeans.types.Html'
+            },
+            value: `<ul style="padding-left:20px; list-style-type: disc;">
+                   {{for(var f in it) { }}
+                   	<li>
+                   		<strong style="font-style:italic;">{{=f}}</strong>:
+                   		<span>{{=it[f]}}</span>
+                   	</li>
+                   {{ } }}
+                   </ul>`
+	    },
+	    useIframe: {
+	        render: 'item',
+	        name: 'Использовать iframe',
+            optional: true,
+            editor: 'none'
 	    }
 	},
 	$client: {
@@ -260,32 +298,33 @@
                 var cache = this.getCache();
                 if(!cache) return;
 
-                if(this.getContext().find('useIframe').used()){
+                if(this.getContext().find('useIframe').checked()){
                     this.renderIframe(cache);
                 } else {
                     this.renderSimple(cache);
                 }
 			} else {
-                if(recordContext.data()){
-                    $this.draw(opts ? opts.isCacheMod : false);
-                } else {
-                    recordContext.fetch({batchSize: 1}, function(){
+			    if(recordContext.hasBinding && recordContext.hasBinding()){
+                    this.fetchBinding(recordContext, {batchSize: 1}, function(){
                         recordContext.next();
                         $this.draw(opts ? opts.isCacheMod : false);
                     });
-                }
+			    } else {
+			        this.draw(opts ? opts.isCacheMod : false, true);
+			    }
 			}
 		},
 		
-		draw: function(isCacheMod){
-			var args = this.getContext().find('args').values();
-			var template = this.getContext().find('template').value();
-			var data = {};
-			for(var i = 0; i < args.length; i++){
-				var key = args[i].get(0).value();
-				var value = args[i].get(1).value();
-				data[key] = value;
-			}
+		draw: function(isCacheMod, ignoreData){
+		    var data = {};
+
+		    if(!ignoreData){
+                var args = this.getContext().find('args').values();
+                var template = this.getContext().find('template').value();
+                for(var i = 0; i < args.length; i++){
+                    data[args[i].find('key').value()] = args[i].find('value').value();
+                }
+		    }
 			
 			try {
 				var templateProc = this.doT.template(template);
@@ -295,7 +334,7 @@
 				    this.storeCache(html);
 				}
 				
-				if(this.getContext().find('useIframe').used()){
+				if(this.getContext().find('useIframe').checked()){
 					this.renderIframe(html);
 				} else {
 					this.renderSimple(html);

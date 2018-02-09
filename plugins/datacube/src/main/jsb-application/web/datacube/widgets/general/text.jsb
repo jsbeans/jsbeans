@@ -89,93 +89,46 @@
     		AQYAfuYBOy79e7sAAAAASUVORK5CYII=`
     	},
     $scheme: {
-        type: 'group',
-        items: [
-        {
-            type: 'group',
+        source: {
+            render: 'sourceBinding',
             name: 'Источник',
-            binding: 'record',
-            key: 'source',
-            items: [
-            {
-                type: 'item',
-                name: 'Текст',
-                key: 'text',
-                binding: 'field',
-                itemValue: '$field',
+        },
+        text: {
+            render: 'dataBinding',
+            name: 'Текст',
+            linkTo: 'source'
+        },
+        annotations: {
+            render: 'dataBinding',
+            name: 'Разметка',
+            linkTo: 'source'
+        },
+        hideWithoutAnnotations: {
+            render: 'item',
+            name: 'Скрывать абзацы без выделений',
+            optional: true,
+            editor: 'none'
+        },
+        cssText: {
+            render: 'item',
+            name: 'CSS стиль текста',
+            optional: true,
+            editor: 'JSB.Widgets.MultiEditor',
+            editorOpts: {
+                valueType: 'org.jsbeans.types.Css'
             },
-            {
-                type: 'item',
-                name: 'Разметка',
-                key: 'annotations',
-                binding: 'field',
-                itemValue: '$field',
+            value: `/* Заполните объект CSS значениями */`
+        },
+        cssMark: {
+            render: 'item',
+            name: 'CSS стиль выделений',
+            optional: true,
+            editor: 'JSB.Widgets.MultiEditor',
+            editorOpts: {
+                valueType: 'org.jsbeans.types.Css'
             },
-            /*
-            {
-                type: 'group',
-                name: 'Разметка',
-                key: 'annots',
-                binding: 'array',
-                items: [
-                {
-                    type: 'item',
-                    name: 'Id фрагмента',
-                    binding: 'field',
-                    itemValue: '$field',
-                },
-                {
-                    type: 'item',
-                    name: 'Id документа',
-                    binding: 'field',
-                    itemValue: '$field',
-                },
-                {
-                    type: 'item',
-                    name: 'Начальный индекс',
-                    binding: 'field',
-                    itemValue: '$field',
-                },
-                {
-                    type: 'item',
-                    name: 'Конечный индекс',
-                    binding: 'field',
-                    itemValue: '$field',
-                }
-                ]
-            },
-            */
-            {
-                name: 'Скрывать абзацы без выделений',
-                type: 'item',
-                key: 'hideWithoutAnnotations',
-                optional: true,
-                editor: 'none'
-            },
-            {
-                name: 'CSS стиль текста',
-                type: 'item',
-                optional: true,
-                itemValue: `/* Заполните объект CSS значениями */`,
-                key: 'cssText',
-                editor: 'JSB.Widgets.MultiEditor',
-                options: {
-                    valueType: 'org.jsbeans.types.Css'
-                }
-            },
-            {
-                name: 'CSS стиль выделений',
-                type: 'item',
-                optional: true,
-                itemValue: `/* Заполните объект CSS значениями */`,
-                key: 'cssMark',
-                editor: 'JSB.Widgets.MultiEditor',
-                options: {
-                    valueType: 'org.jsbeans.types.Css'
-                }
-            }
-            ]
-        }]
+            value: `/* Заполните объект CSS значениями */`
+        }
     },
 	$client: {
 		highlights: [],
@@ -189,8 +142,10 @@
 		},
 
 		refresh: function(opts){
-		    var source = this.getContext().find('source');
-            if(!source.bound()) return;
+		    var dataSource = this.getContext().find('source');
+            if(!dataSource.hasBinding || !dataSource.hasBinding()){
+                return;
+            }
             
 			$base();
 
@@ -201,23 +156,17 @@
                 return;
             }
 
-            if(source.data()){
+            this.fetchBinding(dataSource, {batchSize: 1}, function(){
+                source.next();
                 $this.update();
-            } else {
-                source.fetch({batchSize: 1}, function(){
-                    source.next();
-                    $this.update();
-                });
-            }
+            });
         },
 
         update: function(){
-            var sourceValue = this.getContext().find('source').value();
-
-            this.text = sourceValue.get(0).value();
+            this.text = this.getContext().find('text').value();
             this.text = this.text.replace(/_x000D_/g , ' ');
 
-            var annot = sourceValue.get(1).value();
+            var annot = this.getContext().find('annotations').value();
             if(!JSB().isArray(annot)) annot = [annot];
 
             if(annot.length > 0){
@@ -262,7 +211,7 @@
             this.redraw();
 
             var cssSelector = this.getContext().find('cssText');
-            if(cssSelector.used()){
+            if(cssSelector.checked()){
                 this.getElement().attr("style", this.prepareCss(cssSelector.value()));
             }
 
@@ -306,7 +255,7 @@
 
 			var pArr = html.split('\n');
 
-			if(this.getContext().find('source').value().get(2).used()){
+			if(this.getContext().find('hideWithoutAnnotations').checked()){
                 var collStr = '';
                 for(var i = 0; i < pArr.length; i++){
                     var pTxt = pArr[i];
@@ -345,17 +294,8 @@
                 }
 			}
 
-			// markup click
-			/*
-			this.find('span.highlight').click(function(evt){
-				var hElt = self.$(evt.currentTarget);
-				var hid = hElt.attr('hid');
-				self.activateHighlight(hid);
-			});
-			*/
-
             var cssSelector = this.getContext().find('cssMark');
-            if(cssSelector.used()){
+            if(cssSelector.checked()){
                 this.find('span.highlight').attr("style", this.prepareCss(cssSelector.value()));
             }
 		},

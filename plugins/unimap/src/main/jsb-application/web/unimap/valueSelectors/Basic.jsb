@@ -167,7 +167,7 @@
                         }
 
                         if(typeof value === 'string' && value.length === 0){
-                            value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : '';
+                            value = this._selectorOpts.defaultValue;
                         }
                 }
 

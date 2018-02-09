@@ -118,7 +118,9 @@
             this._values.values = [];
 
             if(this._scheme.value){
-                this._values.values[0].value = this._scheme.value;
+                this._values.values[0] = {
+                    value: this._scheme.value
+                }
             }
         },
 
