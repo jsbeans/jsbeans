@@ -225,7 +225,11 @@
 		},
 		
 		getFilterManager: function(){
-			return this.getOwner().getFilterManager();
+			var owner = this.getOwner();
+			if(owner){
+				return owner.getFilterManager();
+			}
+			return null;
 		},
 		
 		extractWidgetScheme: function(curWidgetJsb){

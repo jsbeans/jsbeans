@@ -4,7 +4,8 @@
 
 /* header */
 
-.tableWidget > table.header {
+.tableWidget > table.header,
+.tableWidget > table.status {
 	width: 100%;
 	table-layout: fixed;
 	display: none;
@@ -25,13 +26,6 @@
 
 .tableWidget > table.header > thead > tr > th.col {
 	position: relative;
-/*	
-	background: -webkit-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -moz-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
-    background: linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -o-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
-    background: -ms-linear-gradient(top, #ffffff 0%, #ececec 30%, #E9E9E9 50%, #DFDFDF 100%);
-*/
     background: #d0e4f1;    
     font-family: 'arial';
 	font-size: 13px;
@@ -149,7 +143,69 @@
 	border-right: none;
 }
 
+/* status */
 
+.tableWidget.hasStatus > table.status {
+	display: table;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+}
+
+.tableWidget > table.status > tfoot {}
+
+.tableWidget > table.status > tfoot > tr {}
+
+.tableWidget > table.status > tfoot > tr > td.col {
+	position: relative;
+	background: #ced7dc;
+    font-family: 'arial';
+	font-size: 13px;
+    padding: 2px;
+    color: #0b3644;
+    text-shadow: 1px 1px #dfe5ea;
+    
+	display: table-cell;
+}
+
+.tableWidget.hasBorder > table.status > tfoot > tr > td.col {
+	border-right: 1px solid #fff;
+}
+
+.tableWidget > table.status > tfoot > tr > td.col:first-child {
+	border-radius: 4px 0 0 4px;
+}
+
+.tableWidget > table.status > tfoot > tr > td.col:last-child {
+	border-radius: 0 4px 4px 0;
+}
+
+.tableWidget.hasBorder > table.status > tfoot > tr > td.col:last-child {
+	border-right: none;
+}
+
+.tableWidget > table.status > tfoot > tr > td.col > .sEntry {
+	display: block;
+	position: relative;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 18px;
+}
+
+.tableWidget > table.status > tfoot > tr > td.col > .sEntry > div {
+	display: inline-block;
+	vertical-align: middle;
+	margin: 0 2px;
+}
+
+.tableWidget > table.status > tfoot > tr > td.col > .sEntry > div.value {
+	font-weight: bold;
+}
+
+
+/* body */
 
 .tableWidget > .pane {}
 
@@ -196,7 +252,7 @@
 	/*transition: background-color 200ms;*/
 }
 
-.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.hover > td.col {
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight > td.col {
 	background-color: #eba172;
 /*	background: -webkit-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
 	background: -moz-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
@@ -211,7 +267,7 @@
 	/*transition: background-color 300ms;*/
 }
 
-.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.hover > td.col[type="text"] {
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight > td.col[type="text"] {
 	color: #fff;
     text-shadow: 1px 1px 1px #000;
     
@@ -244,6 +300,10 @@
 
 .tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col:last-child {
 	border-right: none;
+}
+
+.tableWidget.hasBorder > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row:last-child > td.col {
+	border-bottom: none;
 }
 
 /* no data message */

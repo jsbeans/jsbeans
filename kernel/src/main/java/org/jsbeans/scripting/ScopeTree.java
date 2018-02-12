@@ -68,7 +68,7 @@ public class ScopeTree {
         }
     }
 
-    public Scriptable touch(String scopePath) {
+    public Scriptable touch(String scopePath, boolean preserveSession) {
         if (scopePath == null || scopePath.length() == 0) {
             return this.getRoot().scope();
         }
@@ -83,7 +83,7 @@ public class ScopeTree {
                 curNode.put(key, newScope);
             }
 
-            curNode = curNode.get(key);
+            curNode = curNode.get(key, preserveSession);
         }
 
         Context.exit();

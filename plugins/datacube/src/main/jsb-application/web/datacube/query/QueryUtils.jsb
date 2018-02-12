@@ -477,23 +477,31 @@
             //Log.debug('\nembededFilter: ' + JSON.stringify(subQuery.$filter));
         },
 
+        isQueryFromCube: function(query) {
+            if (!query.$from) {
+                return true;
+            }
+            return false;
+        },
+
         /** Возвращает true, если поле принадлежит кубу/провайдеру и используется в запросе без модификаций
         */
         isOriginalCubeField: function (field, dcQuery, cubeOrDataProvider) {
+            if (!$this.isQueryFromCube(dcQuery)) {
+                return false;
+            }
             // return true if cube field selected as is
             var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
-//            if (fields[field] && (!dcQuery.$select[field] || dcQuery.$select[field] == field || dcQuery.$select[field].$field == field)) {
-            if (fields[field] || (
-                    dcQuery.$select[field] && (
-                        dcQuery.$select[field] == field || dcQuery.$select[field].$field == field
-                    )
-                )) {
-                //Log.debug('\nisOriginalCubeField: ' + field + '=true');
+            if (fields[field]) {
                 return true;
             }
-            //Log.debug('\nisOriginalCubeField: ' + field + '=false');
+            if (dcQuery.$select[field] && (
+                    dcQuery.$select[field] == field
+                    || dcQuery.$select[field].$field == field)) {
+                return true;
+            }
             return false;
         },
 
@@ -760,10 +768,34 @@
         },
 
         /** Разворачивает $gr* агрегаторы в натуральные подзапросы */
-		unwrapGrOperators: function(dcQuery) {
+		unwrapGOperators: function(dcQuery) {
 		    function unwrapForQuery(query) {
                 function createSubQuery(op, exp) {
                     var innerOp;
+                    switch(op){
+                        case '$gavg':
+                        case '$gmin':
+                        case '$gmax':
+                        case '$gsum':
+                        case '$gcount':
+                            switch(op){
+                                case '$gavg': innerOp = 'avg'; break
+                                case '$gmin': innerOp = 'min'; break
+                                case '$gmax': innerOp = 'max'; break
+                                case '$gsum': innerOp = 'sum'; break
+                                case '$gcount': innerOp = 'count'; break
+                            }
+                            return {
+                                $select: (function(){
+                                    var sel = {};
+                                    sel[innerOp] = {};
+                                    sel[innerOp]['$'+innerOp] = exp;
+                                    return sel;
+                                })(),
+                                $filter: query.$filter && JSB.clone(query.$filter) || undefined,
+                                $from: query.$from || undefined
+                            };
+                    }
                     switch(op){
                         case '$grmaxcount': innerOp = 'count'; break;
                         case '$grmaxsum': innerOp = 'sum'; break;
@@ -814,7 +846,9 @@
                         if (exp.$select) return; // skip subquery
 
                         var key = Object.keys(exp)[0];
-                        if (key.startsWith('$grmax') || key.startsWith('$grmin')) {
+                        if (key.startsWith('$grmax') || key.startsWith('$grmin')
+                                || key == '$gmax' || key == '$gmin'
+                                || key == '$gcount' || key == '$gsum' || key == '$gavg') {
                             setFunc(createSubQuery(key, exp[key]));
                         }
                         for (var f in exp) if(exp.hasOwnProperty(f)) {
@@ -837,6 +871,39 @@
                     });
                 }
             } // unwrapForQuery
+
+            this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
+                unwrapForQuery(query);
+            });
+		},
+
+		unwrapPostFilters: function(dcQuery) {
+		    function unwrapForQuery(query) {
+		        if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
+    		        var queryFields = ['$context', '$select', '$filter', '$groupBy', '$from', '$distinct', '$sort', '$sql'];
+    		        var postFilter = query.$postFilter;
+                    delete query.$postFilter;
+		            var subQuery = {};
+		            // move query fields to subQuery
+		            for (var i in queryFields) {
+		                var field = queryFields[i];
+		                if (query.hasOwnProperty(field)) {
+		                    subQuery[field] = query[field];
+		                    delete query[field];
+		                }
+
+		            }
+		            // build $select
+		            query.$select = {};
+                    for(var alias in subQuery.$select) if (subQuery.$select.hasOwnProperty(alias)) {
+                        query.$select[alias] = alias;
+                    }
+
+                    // build post filter query
+                    query.$filter = postFilter;
+                    query.$from = subQuery;
+		        }
+		    }
 
             this.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery){
                 unwrapForQuery(query);
@@ -950,7 +1017,7 @@
             walkQueryFilter(dcQuery, '$postFilter');
 		},
 
-        extractType: function (exp, query, cubeOrDataProvider) {
+        extractType: function (exp, query, cubeOrDataProvider, queryByContext) {
             var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
                         ? cubeOrDataProvider.getManagedFields()
                         : cubeOrDataProvider.extractFields();
@@ -958,7 +1025,7 @@
             function extractFieldType(field){
                 if (query.$from) {
                     var fromFieldExpression = query.$from.$select[field];
-                    var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider);
+                    var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider, queryByContext);
                 } else {
                     var fieldType = fields[exp] && $this.getFieldJdbcType(cubeOrDataProvider, exp) || null;
                 }
@@ -971,11 +1038,14 @@
             }
             if (JSB.isArray(exp)) {
                 for(var i in exp) {
-                    var type = $this.extractType(exp[i], query, cubeOrDataProvider);
+                    var type = $this.extractType(exp[i], query, cubeOrDataProvider, queryByContext);
                     if (type) {
                         return type;
                     }
                 }
+            }
+            if (exp == null) {
+                return exp;
             }
             if (JSB.isObject(exp)) {
                 if (exp.$toString) return 'string';
@@ -1001,14 +1071,14 @@
                         var fieldType = extractFieldType(exp.$field);
                         return fieldType;
                     } else {
-                        var outerQuery = $this._getQueryByContext(query.$context);
-                        if (outerQuery) throw new Error('Unknown query context ' + query.$context);
-                        var fieldType = $this.extractType(outerQuery.$select[exp.$field], outerQuery, cubeOrDataProvider);
+                        var outerQuery = queryByContext(query.$context);
+                        if (!outerQuery) throw new Error('Unknown query context ' + query.$context);
+                        var fieldType = $this.extractType(outerQuery.$select[exp.$field], outerQuery, cubeOrDataProvider, queryByContext);
                         return fieldType;
                     }
                 }
                 for(var op in exp) {
-                    var type = $this.extractType(exp[op], query, cubeOrDataProvider);
+                    var type = $this.extractType(exp[op], query, cubeOrDataProvider, queryByContext);
                     if (type) {
                         return type;
                     }
@@ -1031,6 +1101,25 @@
                 return desc.nativeType || desc.type;
             }
             return null;
+        },
+
+        defineContextQueries: function(dcQuery){
+            var idx = 0;
+            var contextQueries = {};
+
+            for (var name in dcQuery.$views){
+                var query = dcQuery.$views[name];
+                if (!query.$context) query.$context = 'context_' + idx++;
+                if (contextQueries[query.$context]) throw new Error('Duplicate view query context: ' + query.$context);
+                contextQueries[query.$context] = query;
+            }
+
+            $this.walkSubQueries(dcQuery, function(query){
+                if (!query.$context) query.$context = 'context_' + idx++;
+                if (contextQueries[query.$context]) throw new Error('Duplicate query context: ' + query.$context);
+                contextQueries[query.$context] = query;
+            });
+            return contextQueries;
         },
 
 	}

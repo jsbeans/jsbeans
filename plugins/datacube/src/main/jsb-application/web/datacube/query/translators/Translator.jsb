@@ -3,6 +3,8 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.Views.QueryViewsBuilder',
+		    'DataCube.Query.QueryUtils',
         ],
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
@@ -34,6 +36,9 @@
 		    }
 		    this.dcQuery = subQuery;
 		    this.params = params;
+
+            this._collectContextQueries();
+            this._verifyFields();
 
             // translate query to dataprovider format
 		    var translatedQuery = this.translateQuery();
@@ -132,6 +137,19 @@ debugger;
             };
         },
 
+        buildViews: function(){
+		    // build QueryView
+		    if (!$this.queryView) {
+                try {
+                    var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+                    $this.queryView = builder.build();
+                    $this.contextQueryViews = builder.getContextQueryViews();
+                } finally {
+                    builder && builder.destroy();
+                }
+            }
+        },
+
 		translateQuery: function(dcQuery, params){
 		    throw new 'Not implemented';
 		},
@@ -146,6 +164,48 @@ debugger;
 		translateResult: function(result) {
 		    // implement
 		    return result;
+		},
+
+        _collectContextQueries: function(){
+            this.contextQueries = QueryUtils.defineContextQueries(this.dcQuery);
+        },
+
+        _registerContextQuery: function(query){
+            this.contextQueries[query.$context] = query;
+        },
+
+        _getQueryByContext: function(context) {
+            if (!context) throw new Error('Undefined context');
+            var query = this.contextQueries[context];
+            if (!query) throw new Error('Unknown query context ' + context);
+            return query;
+        },
+
+
+		_verifyFields: function(){
+            QueryUtils.walkQueryFields(
+		        this.dcQuery, /**includeSubQueries=*/true,
+		        function verifyField(field, context, fieldQuery) {
+                    // is cube field
+                    if ($this.cube && $this.cubeFields[field]) {
+                        return;
+                    }
+                    // is provider field
+                    if ($this.providers[0].extractFields()[field]) {
+                        return;
+                    }
+                    // is alias
+                    var query = fieldQuery || $this.dcQuery;
+                    if(query.$select && query.$select[field]) {
+                        return;
+                    }
+                    if(query.$sql || query.$from) {
+                        // ignore for subquery or embedded sql
+                        return;
+                    }
+                    throw new Error('Поле не определено: ' + field);
+		        }
+		    );
 		},
 
         _getCubeFieldProviders: function(field, onlySelf) {
@@ -226,7 +286,11 @@ debugger;
         },
 
 		close: function() {
+		    this.queryView && this.queryView.destroy();
+		    for (var v in $this.contextQueryViews) {
+		        this.contextQueryViews[v] && this.contextQueryViews[v].destroy();
+		    }
 		    this.destroy();
-		}
+		},
 	}
 }
