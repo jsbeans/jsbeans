@@ -47,13 +47,14 @@
 	$server: {
 		$require: ['DataCube.Providers.DataProviderRepository',
 		           'DataCube.Query.QueryEngine',
-		           'JSB.Workspace.WorkspaceController'],
+		           'JSB.Workspace.WorkspaceController',
+		           'Datacube.ValueConverter'],
 		
         $bootstrap: function(){
         	WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.WidgetNode');
         },
 
-		$constructor: function(id, workspace, dashboard, name, wType, values, schemeVersion){
+		$constructor: function(id, workspace, dashboard, name, wType, values){
 			$base(id, workspace);
 
 			if(dashboard){
@@ -68,25 +69,38 @@
 				//this.updateInteroperationMap();
 
 				this.property('values', values);
-				this.property('schemeVersion', schemeVersion);
 			} else {
 				var bNeedSave = false;
 				if(this.property('dashboard')){
 					this.dashboard = this.workspace.entry(this.property('dashboard'));
 				}
+
 				this.name = this.title();
+
 				if(this.property('wType')){
 					this.wType = this.property('wType');
 				}
+
 				if(this.property('values')){
 					this.values = this.property('values');
 				}
-				if(this.property('sourcesIds')){
-				    this.sourcesIds = this.property('sourcesIds');
-				}
+
 				if(this.property('linkedFields')){
 				    this.linkedFields = this.property('linkedFields');
 				}
+
+				if(this.property('schemeVersion')){
+				    this.schemeVersion = this.property('schemeVersion');
+				} else {
+				    var convertVal = ValueConverter.convert(this.wType, this.values);
+				    this.values = convertVal.values;
+				    this.linkedFields = convertVal.linkedFields;
+				}
+
+				if(this.property('sourcesIds')){
+				    this.sourcesIds = this.property('sourcesIds');
+				}
+
 				if(this.property('sourceMap')){
 					this.sourceMap = this.property('sourceMap');
 					this.updateSources();
@@ -122,6 +136,7 @@
 			this.property('values', opts.values);
 			this.property('linkedFields', opts.linkedFields);
 			this.property('sourcesIds', opts.sourcesIds);
+			this.property('schemeVersion', 1.0);
 			this.setName(opts.name);
 			
 			// update interoperation maps in all widgets of current dashboard
