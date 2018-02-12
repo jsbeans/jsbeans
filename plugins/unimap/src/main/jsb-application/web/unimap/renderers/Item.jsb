@@ -62,6 +62,10 @@
 	        if(!values){
 	            values = {};
 	            this._values.values.push(values);
+
+	            if(!itemIndex){
+	                itemIndex = this._values.values.length - 1;
+	            }
 	        }
 
 	        var item = this.$('<div class="item"></div>');
@@ -70,31 +74,6 @@
                 switch(this._scheme.editor){
                     case 'none':
                         break;
-                    /*
-                    case 'color':
-                        var editor = new ColorEditor({
-                            onChange: function(val){
-                                values.value = val;
-
-                                $this.options.onchange.call($this, $this._values);
-                            }
-                        });
-                        editor.setData(values.value);
-                        item.append(editor.getElement());
-                        break;
-                    case 'multi':
-                        var editor = new MultiEditor({
-                            valueType: this._scheme.editorOpts ? this._scheme.editorOpts.type ? this._scheme.editorOpts.type : undefined,
-                            onChange: function(val){
-                                values.value = val;
-
-                                $this.options.onchange.call($this, $this._values);
-                            }
-                        });
-                        editor.setData(values.value);
-                        item.append(editor.getElement());
-                        break;
-                    */
                     default:
                         var onChangeFunc = function(val){
                             values.value = val;
@@ -122,11 +101,8 @@
             }
 
 	        if(this._scheme.multiple){
-	            item.addClass('.multipleItem');
+	            item.addClass('multipleItem');
 
-	            if(!itemIndex){
-	                itemIndex = this.multipleContainer.find('.multipleItem').length;
-	            }
 	            item.attr('idx', itemIndex);
 
 	            this.multipleBtn.before(item);

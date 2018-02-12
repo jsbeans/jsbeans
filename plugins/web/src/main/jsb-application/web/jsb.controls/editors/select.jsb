@@ -50,7 +50,7 @@
 	                value: this.getElement().val()
 	            }
 	        }
-	        return this.getElement().val();
+	        return this.getElement().val() || this.options.value;
 	    },
 
 	    hasOption: function(option){

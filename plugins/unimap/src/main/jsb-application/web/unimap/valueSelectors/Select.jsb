@@ -2,8 +2,10 @@
     $name: 'Unimap.ValueSelectors.Select',
     $parent: 'Unimap.ValueSelectors.Basic',
 
-    find: function(key, values){
-        var main = false;
+    find: function(key, values, isFindAll){
+        var main = false,
+            resArr = [];
+
         if(!values){
             main = true;
             values = this._values;
@@ -16,13 +18,31 @@
 
             var res = this.getMainSelector().find(key, values[i].items);
             if(res){
-                return res;
+                if(isFindAll){
+                    resArr.push(res);
+                } else {
+                    return res;
+                }
             }
         }
 
-        if(main){
+        if(main && !isFindAll){
             return this.getRenderByName().getInstance();
         }
+
+        if(resArr.length !== 0){
+            return resArr;
+        }
+    },
+
+    findAll: function(){
+        var res = this.find(key, values, true);
+
+        if(!JSB.isDefined(res)){
+            return [];
+        }
+
+        return res;
     },
 
     findRendersByName: function(name, arr, values){

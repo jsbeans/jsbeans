@@ -8,21 +8,27 @@
 	    construct: function(){
 	        this.addClass('dataBindingRender');
 	        this.loadCss('DataBinding.css');
-	        $base();
 
-            this.changeLinkTo(this.getValueByKey(this._scheme.linkTo));
+	        this.createDataList(this.getValueByKey(this._scheme.linkTo));
+
+	        $base();
 	    },
 
 	    addItem: function(values, itemIndex){
             if(!values){
                 values = {};
                 this._values.values.push(values);
+
+	            if(!itemIndex){
+	                itemIndex = this._values.values.length;
+	            }
             }
 
             switch(this._scheme.editor){
                 case 'input':
                     var item = new Editor({
                         cssClass: 'editor',
+                        dataList: this._dataList,
                         value: values.value,
                         onchange: function(){
                             var val = item.getValue();
@@ -32,6 +38,7 @@
 
                             if($this._dataList.indexOf(val) > -1){
                                 values.binding = val;
+                                values.bindingType = $this._bindingsInfo[val].type;
                             } else {
                                 values.binding = undefined;
                             }
@@ -44,6 +51,7 @@
                 default:
                     var item = new Select({
                         cssClass: 'editor',
+                        options: this._dataList,
                         value: values.value,
                         onchange: function(){
                             var val = item.getValue();
@@ -53,6 +61,7 @@
 
                             if($this._dataList.indexOf(val) > -1){
                                 values.binding = val;
+                                values.bindingType = $this._bindingsInfo[val].type;
                             } else {
                                 values.binding = undefined;
                             }
@@ -60,36 +69,27 @@
                             $this.options.onchange.call($this, $this._values);
                         }
                     });
+
+                    if(!values.value){
+                        item.setValue(this._dataList[0], true);
+                    }
             }
 
             this._editors.push(item);
 
 	        if(this._scheme.multiple){
-	            item.addClass('.multipleItem');
+	            item.addClass('multipleItem');
 
-	            if(!itemIndex){
-	                itemIndex = this.multipleContainer.find('.multipleItem').length;
-	            }
 	            item.attr('idx', itemIndex);
 
-	            this.multipleBtn.before(item);
+	            this.multipleBtn.before(item.getElement());
 	        } else {
 	            this.append(item);
 	        }
 	    },
 
 	    changeLinkTo: function(values){
-	        var dataList = [];
-	        for(var i = 0; i < values.values.length; i++){
-	            if(!values.values[i].binding){
-	                continue;
-	            }
-
-	            for(var j in values.values[i].binding.arrayType.record){
-	                dataList.push(j); // todo: source name
-	            }
-	        }
-	        this._dataList = dataList;
+	        var dataList = this.createDataList(values);
 
             for(var i = 0; i < this._editors.length; i++){
                 switch(this._scheme.editor){
@@ -110,6 +110,26 @@
                         }
                 }
             }
+	    },
+
+	    createDataList: function(values){
+	        var dataList = [],
+	            bindingsInfo = {};
+
+	        for(var i = 0; i < values.values.length; i++){
+	            if(!values.values[i].binding){
+	                continue;
+	            }
+
+	            for(var j in values.values[i].binding.arrayType.record){
+	                dataList.push(j); // todo: source name
+	                bindingsInfo[j] = values.values[i].binding.arrayType.record[j];
+	            }
+	        }
+	        this._dataList = dataList;
+	        this._bindingsInfo = bindingsInfo;
+
+	        return dataList;
 	    }
 	}
 }

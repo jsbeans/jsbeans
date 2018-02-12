@@ -35,7 +35,7 @@
         $base();
     },
 
-    find: function(key, values){
+    find: function(key, values, isFindAll){
         if(!key || key.length == 0){
             return;
         }
@@ -74,18 +74,18 @@
 
         if(res){
             if(key.length > 0){
-                return res.find(key);
+                return res.find(key, undefined, isFindAll);
             } else {
                 return res;
             }
         } else {
             for(var i in values){
                 var r = this.getRenderByName(values[i].render),
-                    res = r.find ? r.find(curKey[0], values[i].values) : undefined;
+                    res = r.find ? r.find(curKey[0], values[i].values, isFindAll) : undefined;
 
                 if(res){
                     if(key.length > 0){
-                        return res.find(key);
+                        return res.find(key, undefined, isFindAll);
                     } else {
                         return res;
                     }
@@ -93,13 +93,19 @@
             }
         }
 
-        if(main){
+        if(main && !isFindAll){
             return this.getRenderByName().getInstance();
         }
     },
 
-    findAll: function(key){
-        // todo: find all keys in value group on same level
+    findAll: function(key, values){
+        var res = this.find(key, values, true);
+
+        if(!JSB.isDefined(res)){
+            return [];
+        }
+
+        return res;
     },
 
     findRendersByName: function(name, arr, values){

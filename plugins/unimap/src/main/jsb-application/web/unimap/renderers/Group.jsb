@@ -66,16 +66,16 @@
 	            }
 
 	            this._values.values.push(values);
+
+	            if(!itemIndex){
+	                itemIndex = this._values.values.length - 1;
+	            }
 	        }
 
 	        if(this._scheme.multiple){
 	            var item = this.$('<div class="multipleItem"></div>');
 
-	            if(itemIndex){
-	                item.attr('idx', itemIndex);
-	            } else {
-	                item.attr('idx', this.group.getElement().find('.multipleItem').length);
-	            }
+	            item.attr('idx', itemIndex);
 
 	            item.append(`#dot
                     <div class="sortableHandle">

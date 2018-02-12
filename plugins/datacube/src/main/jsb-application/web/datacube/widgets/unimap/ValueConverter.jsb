@@ -185,7 +185,7 @@
                 return this.convertText(oldSelector);
 
             default:
-                return values;
+                return {};
         }
     },
 
@@ -257,21 +257,21 @@
                 min: {
                     render: 'dataBinding',
                     values: [{
-                        value: oldSeries[i].find('min').value()
+                        value: oldSeries[i].find('min').value(),
                         binding: oldSeries[i].find('min').binding()[0]
                     }]
                 },
                 max: {
                     render: 'dataBinding',
                     values: [{
-                        value: oldSeries[i].find('max').value()
+                        value: oldSeries[i].find('max').value(),
                         binding: oldSeries[i].find('max').binding()[0]
                     }]
                 },
                 val: {
                     render: 'dataBinding',
                     values: [{
-                        value: oldSeries[i].find('val').value()
+                        value: oldSeries[i].find('val').value(),
                         binding: oldSeries[i].find('val').binding()[0]
                     }]
                 },

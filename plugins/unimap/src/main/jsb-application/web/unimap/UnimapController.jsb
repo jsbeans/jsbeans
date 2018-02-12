@@ -110,7 +110,11 @@
 	        for(var i in this._linksMap){
 	            links[i] = [];
 	            for(var j = 0; j < this._linksMap[i].linkedRenders.length; j++){
-	                links[i].push(this._linksMap[i].linkedRenders[j].getKey());
+	                var key = this._linksMap[i].linkedRenders[j].getKey();
+
+	                if(links[i].indexOf(key) < 0){
+	                    links[i].push(key);
+	                }
 	            }
 	        }
 

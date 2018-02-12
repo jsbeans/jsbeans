@@ -137,348 +137,320 @@
 		2HQfguy2bp97RnGMKxpfeP217f8TYADeMEj5cXfIoQAAAABJRU5ErkJggg==`
 	},
 	$scheme: {
-		type: 'group',
-		items: [{
-			type: 'item',
-			optional: 'checked',
-			key: 'showHeader',
-			name: 'Показывать заголовки столбцов',
-			editor: 'none'
-		},{
-			type: 'item',
-			optional: 'checked',
-			key: 'showGrid',
-			name: 'Показывать сетку',
-			editor: 'none'
-		},{
-			type: 'group',
-			name: 'Источник',
-			binding: 'array',
-			key: 'rows',
-			items: [{
-				name: 'Строки',
-				type: 'group',
-				key: 'rowSettings',
-				collapsable: true,
-				items:[{
-					name: 'Поля идентификации строк',
-					type: 'item',
-					multiple: true,
-					key: 'rowKey',
-					binding: 'field',
-					editor: 'none'
-				},{
-					name: 'Фильтрующие поля',
-					type: 'item',
-					multiple: true,
-					key: 'rowFilter',
-					binding: 'field',
-					editor: 'none'
-				},{
-					type: 'item',
-					key: 'preserveFilteredRows',
-					name: 'Не скрывать отфильтрованные строки',
+	    showHeader: {
+	        render: 'item',
+	        name: 'Показывать заголовки столбцов',
+	        optional: 'checked',
+	        editor: 'none'
+	    },
+	    showGrid: {
+            render: 'item',
+            name: 'Показывать сетку',
+	        optional: 'checked',
+	        editor: 'none'
+	    },
+	    rows: {
+	        render: 'sourceBinding',
+	        name: 'Источник'
+	    },
+	    rowSettings: {
+	        render: 'group',
+	        name: 'Строки',
+	        collapsable: true,
+	        items: {
+	            rowKey: {
+	                render: 'dataBinding',
+	                name: 'Поля идентификации строк',
+	                linkTo: 'rows',
+	                multiple: true
+	            },
+	            rowFilter: {
+	                render: 'dataBinding',
+	                name: 'Фильтрующие поля',
+	                linkTo: 'rows',
+	                multiple: true
+	            },
+	            preserveFilteredRows: {
+	                render: 'item',
+	                name: 'Не скрывать отфильтрованные строки',
 					optional: true,
 					editor: 'none'
-				},{
-					type: 'item',
-					key: 'hoverFilteredRows',
-					name: 'Обновлять данные при наведении мышкой',
+	            },
+	            hoverFilteredRows: {
+	                render: 'item',
+	                name: 'Обновлять данные при наведении',
 					optional: true,
 					editor: 'none'
-				},{
-					name: 'Отображать первый столбец в виде дерева',
-					type: 'group',
-					optional: true,
-					key: 'useTree',
-					items:[{
-						name: 'Поля идентификации родительских строк',
-						type: 'item',
-						multiple: true,
-						key: 'parentRowKey',
-						binding: 'field',
-						editor: 'none'
-					}]
-				}]
-			},{
-				name: 'Столбцы',
-				type: 'group',
-				multiple: 'auto',
-				key: 'columns',
-				collapsable: true,
-				items: [{
-					name: 'Название',
-					key: 'title',
-					type: 'item',
-					itemValue: '$field'
-				},{
-					name: 'Отображение ячейки',
-					type: 'select',
-					key: 'view',
-					items:[{
-						name: 'Текст',
-						type: 'group',
-						key: 'textGroup',
-						items:[{
-							type: 'item',
-							name: 'Значение',
-							key: 'text',
-							binding: 'field'
-						},{
-							type: 'item',
-							key: 'textSort',
-							name: 'Использовать сортировку',
-							optional: 'checked',
-							editor: 'none'
-						},{
-							type: 'group',
-							key: 'contextFilter',
-							name: 'Использовать контексный фильтр',
-							optional: true,
-							items: [{
-								type: 'item',
-								key: 'contextFilterFixed',
-								name: 'Всегда показывать фильтр',
-								optional: true,
-								editor: 'none'
-							}]
-						},{
-							type: 'item',
-							key: 'textFormat',
-							name: 'Форматировать числа',
-							optional: true,
-							itemValue: '0,0.[00]'
-						}]
-					},{
-						name: 'Встроенный виджет',
-						type: 'group',
-						key: 'widgetGroup',
-						items: [{
-							name: 'Виджет',
-							key: 'widget',
-							type: 'widget',
-							collapsable: true
-						},{
-							type: 'item',
-							key: 'widgetSort',
-							name: 'Использовать сортировку',
-							optional: true,
-							multiple: true,
-							binding: 'field',
-							editor: 'none'
-						},{
-							type: 'group',
-							key: 'widgetContextFilter',
-							name: 'Использовать контексный фильтр',
-							optional: true,
-							items: [{
-								type: 'item',
-								key: 'widgetContextFilterField',
-								name: 'Фильтровать по полю',
-								binding: 'field',
-								editor: 'none'
-							},{
-								type: 'item',
-								key: 'widgetСontextFilterFixed',
-								name: 'Всегда показывать фильтр',
-								optional: true,
-								editor: 'none'
-							}]
-						}]
-					}]
-				},{
-					name: 'Отображать в строке статуса сводный показатель',
-					type: 'group',
-					optional: true,
-					multiple: true,
-					key: 'summary',
-					items: [{
-						name: 'Операция',
-						type: 'select',
-						key: 'summaryOp',
-						items: [{
-							type: 'item',
-							name: 'Количество',
-							key: 'summaryOpCount',
-							itemValue: 'count',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Сумма',
-							key: 'summaryOpSum',
-							itemValue: 'sum',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Минимум',
-							key: 'summaryOpMin',
-							itemValue: 'min',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Максимум',
-							key: 'summaryOpMax',
-							itemValue: 'max',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Среднее',
-							key: 'summaryOpAvg',
-							itemValue: 'avg',
-							editor: 'none'
-						}]
-					},{
-						type: 'item',
-						name: 'Префикс',
-						key: 'summaryPrefix',
-						itemValue: 'Итого'
-					},{
-						type: 'item',
-						name: 'Суффикс',
-						key: 'summaryPostfix'
-					}]
-				},{
-					name: 'Стиль ячейки',
-					type: 'group',
+	            },
+	            useTree: {
+	                render: 'select',
+	                name: 'Отображать первый столбец в виде дерева',
+	                items: {
+	                    no: {
+	                        name: 'Нет'
+	                    },
+	                    yes: {
+	                        name: 'Да',
+	                        items: {
+	                            parentRowKey: {
+	                                render: 'dataBinding',
+	                                name: 'Поля идентификации родительских строк',
+	                                linkTo: 'rows'
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    },
+	    columns: {
+	        render: 'group',
+	        name: 'Столбцы',
+	        collapsable: true,
+	        multiple: true,
+	        items: {
+	            title: {
+                    render: 'dataBinding',
+                    name: 'Название',
+                    linkTo: 'rows',
+                    editor: 'input'
+	            },
+	            view: {
+	                render: 'select',
+	                name: 'Отображение ячейки',
+	                items: {
+	                    textGroup: {
+	                        name: 'Текст',
+	                        items: {
+	                            text: {
+	                                render: 'dataBinding',
+	                                name: 'Значение',
+	                                linkTo: 'rows'
+	                            },
+	                            textSort: {
+	                                render: 'item',
+	                                name: 'Использовать сортировку',
+                                    optional: 'checked',
+                                    editor: 'none'
+	                            },
+	                            contextFilter: {
+                                    render: 'select',
+                                    name: 'Использовать контексный фильтр',
+                                    items: {
+                                        no: {
+                                            name: 'Нет'
+                                        },
+                                        yes: {
+                                            name: 'Да',
+                                            items: {
+                                                contextFilterFixed: {
+                                                    render: 'item',
+                                                    name: 'Всегда показывать фильтр',
+                                                    optional: true,
+                                                    editor: 'none'
+                                                }
+                                            }
+                                        }
+                                    }
+	                            },
+	                            textFormat: {
+	                                render: 'item',
+	                                name: 'Форматировать числа',
+	                                optional: true,
+	                                value: '0,0.[00]'
+	                            }
+	                        }
+	                    },
+	                    widgetGroup: {
+	                        name: 'Встроенный виджет',
+	                        items: {
+	                            widget: {
+	                                render: 'embeddedWidget',
+	                                name: 'Виджет'
+	                            },
+	                            widgetSort: {
+	                                render: 'dataBinding',
+	                                name: 'Использовать сортировку',
+	                                linkTo: 'rows',
+                                    optional: true,
+                                    multiple: true
+	                            },
+	                            widgetContextFilter: {
+                                    render: 'select',
+                                    name: 'Использовать контексный фильтр',
+                                    items: {
+                                        no: {
+                                            name: 'Нет'
+                                        },
+                                        yes: {
+                                            name: 'Да',
+                                            items: {
+                                                widgetContextFilterField: {
+                                                    render: 'dataBinding',
+                                                    name: 'Фильтровать по полю',
+                                                    linkTo: 'rows'
+                                                },
+                                                widgetСontextFilterFixed: {
+                                                    render: 'item',
+                                                    name: 'Всегда показывать фильтр',
+                                                    optional: true,
+                                                    editor: 'none'
+                                                }
+                                            }
+                                        }
+                                    }
+	                            }
+	                        }
+	                    }
+	                }
+	            },
+                summary: {
+                    render: 'group',
+                    name: 'Отображать в строке статуса сводный показатель',
+                    optional: true,
+                    multiple: true,
+                    items: {
+                        summaryOp: {
+                            render: 'select',
+                            name: 'Операция',
+                            items: {
+                                summaryOpCount: {
+                                    name: 'Количество'
+                                },
+                                summaryOpSum: {
+                                    name: 'Сумма'
+                                },
+                                summaryOpMin: {
+                                    name: 'Минимум'
+                                },
+                                summaryOpMax: {
+                                    name: 'Максимум'
+                                },
+                                summaryOpAvg: {
+                                    name: 'Среднее'
+                                }
+                            }
+                        },
+                        summaryPrefix: {
+                            render: 'item',
+                            name: 'Префикс',
+                            value: 'Итого'
+                        },
+                        summaryPostfix: {
+                            render: 'item',
+                            name: 'Суффикс'
+                        }
+                    }
+                },
+                cellAlign: {
+                    render: 'group',
+                    name: 'Стиль ячейки',
 		            collapsable: true,
 		            collapsed: true,
-					key: 'cellAlign',
-					items:[{
-						name: 'Горизонтальное выравнивание',
-						type: 'select',
-						key: 'alignHorz',
-						items: [{
-							type: 'item',
-							name: 'По левому краю',
-							key: 'left',
-							itemValue: 'left',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Посередине',
-							key: 'center',
-							itemValue: 'center',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'По правому краю',
-							key: 'right',
-							itemValue: 'right',
-							editor: 'none'
-						}]
-					},{
-						name: 'Вертикальное выравнивание',
-						type: 'select',
-						key: 'alignVert',
-						items: [{
-							type: 'item',
-							name: 'Сверху',
-							key: 'top',
-							itemValue: 'top',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Посередине',
-							key: 'middle',
-							itemValue: 'middle',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Снизу',
-							key: 'bottom',
-							itemValue: 'bottom',
-							editor: 'none'
-						}]
-					},{
-						name: 'CSS стиль ячейки',
-						type: 'item',
-						optional: true,
-						itemValue: `/* Заполните объект CSS значениями */
-{
-	font-family: 'arial';
-}`,
-						key: 'css',
-						editor: 'JSB.Widgets.MultiEditor',
-						options: {
-							valueType: 'org.jsbeans.types.Css'
-						}
-					}]
-					
-				},{
-					name: 'Стиль заголовка',
-					type: 'group',
+		            items: {
+		                alignHorz: {
+                            render: 'select',
+                            name: 'Горизонтальное выравнивание',
+                            items: {
+                                left: {
+                                    name: 'По левому краю'
+                                },
+                                center: {
+                                    name: 'По центру'
+                                },
+                                right: {
+                                    name: 'По правому краю'
+                                }
+                            }
+		                },
+		                alignVert: {
+                            render: 'select',
+                            name: 'Вертикальное выравнивание',
+                            items: {
+                                top: {
+                                    name: 'По верхнему краю'
+                                },
+                                middle: {
+                                    name: 'По центру'
+                                },
+                                bottom: {
+                                    name: 'По нижнему краю'
+                                }
+                            }
+		                },
+		                css: {
+		                    render: 'item',
+		                    name: 'CSS стиль ячейки',
+		                    optional: true,
+		                    editor: 'JSB.Widgets.MultiEditor',
+		                    editorOpts: {
+		                        valueType: 'org.jsbeans.types.Css'
+		                    },
+		                    value: `/* Заполните объект CSS значениями */
+                                   {
+                                   	font-family: 'arial';
+                                   }`
+		                }
+		            }
+                },
+                headerAlign: {
+                    render: 'group',
+                    name: 'Стиль заголовка',
 		            collapsable: true,
 		            collapsed: true,
-					key: 'headerAlign',
-					items:[{
-						name: 'Горизонтальное выравнивание',
-						type: 'select',
-						key: 'hAlignHorz',
-						items: [{
-							type: 'item',
-							name: 'По левому краю',
-							key: 'left',
-							itemValue: 'left',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Посередине',
-							key: 'center',
-							itemValue: 'center',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'По правому краю',
-							key: 'right',
-							itemValue: 'right',
-							editor: 'none'
-						}]
-					},{
-						name: 'Вертикальное выравнивание',
-						type: 'select',
-						key: 'hAlignVert',
-						items: [{
-							type: 'item',
-							name: 'Сверху',
-							key: 'top',
-							itemValue: 'top',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Посередине',
-							key: 'middle',
-							itemValue: 'middle',
-							editor: 'none'
-						},{
-							type: 'item',
-							name: 'Снизу',
-							key: 'bottom',
-							itemValue: 'bottom',
-							editor: 'none'
-						}]
-					},{
-						name: 'CSS стиль заголовка',
-						type: 'item',
-						optional: true,
-						itemValue: `/* Заполните объект CSS значениями */
-{
-	font-family: 'arial';
-}`,
-						key: 'hCss',
-						editor: 'JSB.Widgets.MultiEditor',
-						options: {
-							valueType: 'org.jsbeans.types.Css'
-						}
-					}]
-					
-				},{
-					name: 'Ширина столбца',
-					type: 'item',
-					itemValue: 'auto',
-					key: 'colWidth'
-				}]
-			}]
-		}]
+		            items: {
+		                hAlignHorz: {
+                            render: 'select',
+                            name: 'Горизонтальное выравнивание',
+                            items: {
+                                left: {
+                                    name: 'По левому краю'
+                                },
+                                center: {
+                                    name: 'По центру'
+                                },
+                                right: {
+                                    name: 'По правому краю'
+                                }
+                            }
+		                },
+		                hAlignVert: {
+                            render: 'select',
+                            name: 'Вертикальное выравнивание',
+                            items: {
+                                top: {
+                                    name: 'По верхнему краю'
+                                },
+                                middle: {
+                                    name: 'По центру'
+                                },
+                                bottom: {
+                                    name: 'По нижнему краю'
+                                }
+                            }
+		                },
+		                hCss: {
+		                    render: 'item',
+		                    name: 'CSS стиль заголовка',
+		                    optional: true,
+		                    editor: 'JSB.Widgets.MultiEditor',
+		                    editorOpts: {
+		                        valueType: 'org.jsbeans.types.Css'
+		                    },
+		                    value: `/* Заполните объект CSS значениями */
+                                   {
+                                   	font-family: 'arial';
+                                   }`
+		                }
+		            }
+                },
+                colWidth: {
+                    render: 'item',
+                    name: 'Ширина столбца',
+                    value: 'auto'
+                }
+	        }
+	    }
 	},
 	
 	$client: {
@@ -624,7 +596,6 @@
 				$this.scroll.getPane().css('padding-bottom', 0);
 			}
 		},
-
 		
 		getColumnNames: function(){
 			var names = [];
@@ -1015,13 +986,13 @@
 			var rowFilterBinding = rowFilterSelector.binding();
 			var gArr = this.getContext().find('columns').values();
 			for(var i = 0; i < gArr.length; i++){
-				var valueSelector = gArr[i].get(1).value();
-				var colType = valueSelector.key();
+				//var valueSelector = gArr[i].find('view');
+
 				cols.push({
 					colName: $this.colDesc[i].title,
 					colKey: $this.colDesc[i].key,
-					colType: colType,
-					valueSelector: valueSelector,
+					colType: gArr[i].find('view').value(),
+					//valueSelector: valueSelector,
 					textSelector: $this.colDesc[i].textSelector
 				});
 			}
@@ -1030,7 +1001,7 @@
 					return;
 				}
 				$this.preFetching = true;
-				var fRes = rowsContext.fetch({batchSize: preFetchSize}, function(data){
+				var fRes = $this.fetchBinding(rowsContext, {batchSize: preFetchSize}, function(data){
 					$this.preFetching = false;
 					if(!data || data.length == 0){
 						return;
@@ -1118,7 +1089,8 @@
 				if(rowsContext.isReset()){
 					$this.setDeferredLoader();
 				}
-				rowsContext.fetch({batchSize: batchSize - rows.length},function(data, fail){
+
+				$this.fetchBinding(rowsContext, {batchSize: batchSize - rows.length},function(data, fail){
 					$this.cancelDeferredLoader();
 					if(data && data.length){
 						iterateRows();
@@ -1406,8 +1378,8 @@
 		},
 		
 		updateHeader: function(){
-			if(this.getContext().find('showHeader').used()){
-				if(this.getContext().find('columns').used()){
+			if(this.getContext().find('showHeader').checked()){
+				if(this.getContext().find('columns').checked()){
 					this.addClass('hasHeader');
 					var headerTable = d3.select($this.header.get(0));
 					var colGroup = headerTable.select('colgroup').selectAll('col');
@@ -1627,11 +1599,12 @@
 				});
 				return;
 			}
-			
-			if(!this.getContext().find('columns').used()){
-				return;
-			}
-			
+
+            var dataSource = this.getContext().find('rows');
+            if(!dataSource.hasBinding || !dataSource.hasBinding()){
+                return;
+            }
+
 			$base();
 			this.hideMessage();
 			$this.rowFilterTool.addClass('hidden');
@@ -1669,13 +1642,11 @@
 				}
 				return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
 			}
-			
+
 			// check rowKey
 			var rowKeySelector = this.getContext().find('rowKey');
-			var rowKeyFields = [];
-			if(rowKeySelector.used()){
-				rowKeyFields = rowKeySelector.binding();
-			}
+			var rowKeyFields = rowKeySelector.bindings();
+
 			for(var i = rowKeyFields.length - 1; i >= 0; i--){
 				if(!rowKeyFields[i]){
 					rowKeyFields.splice(i, 1);
@@ -1697,38 +1668,38 @@
 				// fill styles
 				var alignHorz = 'left';
 				var alignHorzSelector = gArr[i].find('alignHorz');
-				if(alignHorzSelector.used()){
-					alignHorz = alignHorzSelector.value().value();
+				if(alignHorzSelector.checked()){
+					alignHorz = alignHorzSelector.value();
 				}
 				
 				var alignVert = 'top';
 				var alignVertSelector = gArr[i].find('alignVert');
-				if(alignVertSelector.used()){
-					alignVert = alignVertSelector.value().value();
+				if(alignVertSelector.checked()){
+					alignVert = alignVertSelector.value();
 				}
 				
 				var cssStyle = '';
 				var cssSelector = gArr[i].find('css');
-				if(cssSelector.used()){
+				if(cssSelector.checked()){
 					cssStyle = prepareCss(cssSelector.value());
 				}
 
 				// fill header styles
 				var hAlignHorz = 'left';
 				var hAlignHorzSelector = gArr[i].find('hAlignHorz');
-				if(hAlignHorzSelector.used()){
-					hAlignHorz = hAlignHorzSelector.value().value();
+				if(hAlignHorzSelector.checked()){
+					hAlignHorz = hAlignHorzSelector.value();
 				}
 				
 				var hAlignVert = 'top';
 				var hAlignVertSelector = gArr[i].find('hAlignVert');
-				if(hAlignVertSelector.used()){
-					hAlignVert = hAlignVertSelector.value().value();
+				if(hAlignVertSelector.checked()){
+					hAlignVert = hAlignVertSelector.value();
 				}
 				
 				var hCssStyle = '';
 				var hCssSelector = gArr[i].find('hCss');
-				if(hCssSelector.used()){
+				if(hCssSelector.checked()){
 					hCssStyle = prepareCss(hCssSelector.value());
 				}
 
@@ -1757,7 +1728,7 @@
 				
 				// check for status
 				var summarySelector = gArr[i].find('summary');
-				if(summarySelector.used()){
+				if(summarySelector.checked()){
 					var summaryElts = summarySelector.values();
 					for(var j = 0; j < summaryElts.length; j++){
 						var summaryOp = summaryElts[j].find('summaryOp').value();
@@ -1776,8 +1747,8 @@
 				
 				
 				// check for widget
-				var viewSelector = gArr[i].find('view').value();
-				if(viewSelector.key() == 'widgetGroup'){
+				var viewSelector = gArr[i].find('view');
+				if(viewSelector.value() == 'widgetGroup'){
 					// embedded widget
 					var widgetSelector = viewSelector.find('widget');
 					var wType = widgetSelector.unwrap().widget.jsb;
@@ -1789,18 +1760,18 @@
 						values: widgetSelector.value()
 					};
 					var sortSelector = viewSelector.find('widgetSort');
-					if(sortSelector.used()){
+					if(sortSelector.checked()){
 						desc.sortFields = sortSelector.binding();
 					}
 					var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
-					if(widgetContextFilterSelector.used()){
-						if(widgetContextFilterSelector.find('widgetСontextFilterFixed').used()){
+					if(widgetContextFilterSelector.checked()){
+						if(widgetContextFilterSelector.find('widgetСontextFilterFixed').checked()){
 							desc.contextFilterFixed = true;
 						}
 						var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
-						if(widgetContextFilterFieldSelector.used()){
-							desc.contextFilterField = widgetContextFilterFieldSelector.binding()[0];
-							desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType()[0];
+						if(widgetContextFilterFieldSelector.checked()){
+							desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+							desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
 						}
 					}
 
@@ -1809,19 +1780,19 @@
 					var textSelector = viewSelector.find('text');
 					desc.textSelector = textSelector;
 					var sortSelector = viewSelector.find('textSort');
-					if(sortSelector.used()){
+					if(sortSelector.checked()){
 						desc.sortFields = textSelector.binding();
 					}
 					var contextFilterSelector = viewSelector.find('contextFilter');
-					if(contextFilterSelector.used()){
-						if(contextFilterSelector.find('contextFilterFixed').used()){
+					if(contextFilterSelector.checked()){
+						if(contextFilterSelector.find('contextFilterFixed').checked()){
 							desc.contextFilterFixed = true;
 						}
-						desc.contextFilterField = textSelector.binding()[0];
-						desc.contextFilterFieldType = textSelector.bindingType()[0];
+						desc.contextFilterField = textSelector.binding();
+						desc.contextFilterFieldType = textSelector.bindingType();
 					}
 					var formatSelector = viewSelector.find('textFormat');
-					if(formatSelector.used()){
+					if(formatSelector.checked()){
 						desc.format = formatSelector.value();
 					}
 				}
@@ -1831,14 +1802,14 @@
 			}
 			
 			// update row filters
-			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').used();
+			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();
 			this.setFilterLayer({back: this.preserveFilteredRows});
 
-			this.hoverFilteredRows = this.getContext().find('hoverFilteredRows').used();
+			this.hoverFilteredRows = this.getContext().find('hoverFilteredRows').checked();
 			this.setFilterLayer({hover: this.hoverFilteredRows});
 
 			// update grid
-			if(this.getContext().find('showGrid').used()){
+			if(this.getContext().find('showGrid').checked()){
 				this.addClass('hasBorder');
 			} else {
 				this.removeClass('hasBorder');

@@ -69,6 +69,7 @@
 				//this.updateInteroperationMap();
 
 				this.property('values', values);
+				this.property('schemeVersion', 1.0);
 			} else {
 				var bNeedSave = false;
 				if(this.property('dashboard')){

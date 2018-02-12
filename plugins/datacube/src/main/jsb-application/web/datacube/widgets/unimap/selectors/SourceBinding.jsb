@@ -14,6 +14,12 @@
         return this._values[0].binding.embeddedBinding;
     },
 
+    isReset: function(){
+        var item = this._values[0].binding;
+
+        return item.fetchOpts && item.fetchOpts.reset;
+    },
+
     hasBinding: function(){
         return JSB.isDefined(this._values[0].binding);
     },
@@ -61,25 +67,51 @@
                 linkedValues = [];
 
             for(var i = 0; i < linkedKeys.length; i++){
-                var selector = this._selectorBean._mainSelector.find(linkedKeys[i]);
+                var selector = this._selectorBean._mainSelector.findAll(linkedKeys[i]);
 
-                if(selector && selector.getRenderName() === 'dataBinding'){
-                    linkedValues.push(selector);
+                for(var j = 0; j < selector.length; j++){
+                    if(selector[j].getRenderName() === 'dataBinding'){
+                        linkedValues.push(selector[j]);
+                    }
                 }
             }
 
             for(var i = 0; i < linkedValues.length; i++){
-                if(linkedValues[i]._values[0].binding){ // todo: check slice id
-                    this._linkedValues[linkedValues[i]._values[0].binding] = linkedValues[i];
+                if(linkedValues[i]._values.length > 0 && linkedValues[i]._values[0].binding){ // todo: check slice id
+                    if(!this._linkedValues[linkedValues[i]._values[0].binding]){
+                        this._linkedValues[linkedValues[i]._values[0].binding] = [];
+                    }
+
+                    this._linkedValues[linkedValues[i]._values[0].binding].push(linkedValues[i]);
                 }
             }
         }
 
         for(var i in this._linkedValues){
-            this._linkedValues[i].setValue(dataEl[i]);
+            for(var j = 0; j < this._linkedValues[i].length; j++){
+                this._linkedValues[i][j].setValue(dataEl[i]);
+            }
         }
 
         return true;
+    },
+
+    reset: function(){
+        var item = this._values[0].binding;
+
+        if(!item.fetchOpts){
+            item.fetchOpts = {};
+        }
+
+        item.fetchOpts.reset = true;
+
+        if(item.data){
+            delete item.data;
+        }
+
+        if(item.cursor){
+            delete item.cursor;
+        }
     },
 
     setBindingData: function(data, embeddedBinding){
