@@ -25,6 +25,10 @@
     margin-right: 5px;
 }
 
+.itemRender.noEditor > .name {
+
+}
+
 .itemRender > .name > i {
     margin-left: 5px;
     color: #0035ff82;

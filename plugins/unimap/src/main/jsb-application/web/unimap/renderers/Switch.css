@@ -1,0 +1,30 @@
+.switchRender {
+    margin: 10px 0;
+}
+
+.switchRender > .jsb-switch > label {
+    width: 30px;
+    height: 15px;
+}
+
+.switchRender > .jsb-switch > label:after {
+    width: 15px;
+    height: 15px;
+}
+
+.switchRender > .jsb-switch > input:checked + label:after {
+    margin-left: 15px;
+}
+
+.switchRender > .name {
+    display: inline-block;
+    line-height: 22px;
+    font-size: 15px;
+    color: #73879C;
+    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+    margin: 0 5px;
+}
+
+.switchRender > .schemeEl {
+    margin-left: 10px;
+}

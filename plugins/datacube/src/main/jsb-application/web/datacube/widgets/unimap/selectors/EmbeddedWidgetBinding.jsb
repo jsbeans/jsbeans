@@ -17,8 +17,12 @@
         }
     },
 
-    getWidgetName: function(){
+    getWidgetBean: function(){
         return this._values[0].binding.jsb;
+    },
+
+    getWidgetName: function(){
+        return this._values[0].binding.name;
     },
 
     value: function(){

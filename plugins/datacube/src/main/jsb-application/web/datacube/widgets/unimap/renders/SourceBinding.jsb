@@ -88,6 +88,7 @@
 	    },
 
 	    disable: function(){
+debugger;
 	        if(this._disabled){
 	            return;
 	        }
@@ -160,7 +161,7 @@
 		    this._items[itemIndex] = {
 		        dataScheme: ds
 		    };
-
+debugger;
 			function setupSource(source){
 			    $this._items[itemIndex].source = source;
 

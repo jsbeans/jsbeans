@@ -311,6 +311,7 @@
 		},
 
         refresh: function(opts){
+return;
             if(opts && this == opts.initiator) {
                 return;
             }

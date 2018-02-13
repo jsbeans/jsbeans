@@ -1363,6 +1363,7 @@
 
         // refresh after data changes
         refresh: function(opts){
+return;
             // if filter source is current widget
             if(opts && this == opts.initiator){
                 return;

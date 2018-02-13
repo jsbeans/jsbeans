@@ -183,22 +183,14 @@
 					editor: 'none'
 	            },
 	            useTree: {
-	                render: 'select',
+	                render: 'switch',
 	                name: 'Отображать первый столбец в виде дерева',
 	                items: {
-	                    no: {
-	                        name: 'Нет'
-	                    },
-	                    yes: {
-	                        name: 'Да',
-	                        items: {
-	                            parentRowKey: {
-	                                render: 'dataBinding',
-	                                name: 'Поля идентификации родительских строк',
-	                                linkTo: 'rows'
-	                            }
-	                        }
-	                    }
+                        parentRowKey: {
+                            render: 'dataBinding',
+                            name: 'Поля идентификации родительских строк',
+                            linkTo: 'rows'
+                        }
 	                }
 	            }
 	        }
@@ -234,22 +226,14 @@
                                     editor: 'none'
 	                            },
 	                            contextFilter: {
-                                    render: 'select',
+                                    render: 'switch',
                                     name: 'Использовать контексный фильтр',
                                     items: {
-                                        no: {
-                                            name: 'Нет'
-                                        },
-                                        yes: {
-                                            name: 'Да',
-                                            items: {
-                                                contextFilterFixed: {
-                                                    render: 'item',
-                                                    name: 'Всегда показывать фильтр',
-                                                    optional: true,
-                                                    editor: 'none'
-                                                }
-                                            }
+                                        contextFilterFixed: {
+                                            render: 'item',
+                                            name: 'Всегда показывать фильтр',
+                                            optional: true,
+                                            editor: 'none'
                                         }
                                     }
 	                            },
@@ -273,30 +257,22 @@
 	                                name: 'Использовать сортировку',
 	                                linkTo: 'rows',
                                     optional: true,
-                                    multiple: true
+                                    editor: 'none'
 	                            },
 	                            widgetContextFilter: {
                                     render: 'select',
                                     name: 'Использовать контексный фильтр',
                                     items: {
-                                        no: {
-                                            name: 'Нет'
+                                        widgetContextFilterField: {
+                                            render: 'dataBinding',
+                                            name: 'Фильтровать по полю',
+                                            linkTo: 'rows'
                                         },
-                                        yes: {
-                                            name: 'Да',
-                                            items: {
-                                                widgetContextFilterField: {
-                                                    render: 'dataBinding',
-                                                    name: 'Фильтровать по полю',
-                                                    linkTo: 'rows'
-                                                },
-                                                widgetСontextFilterFixed: {
-                                                    render: 'item',
-                                                    name: 'Всегда показывать фильтр',
-                                                    optional: true,
-                                                    editor: 'none'
-                                                }
-                                            }
+                                        widgetСontextFilterFixed: {
+                                            render: 'item',
+                                            name: 'Всегда показывать фильтр',
+                                            optional: true,
+                                            editor: 'none'
                                         }
                                     }
 	                            }
@@ -305,40 +281,45 @@
 	                }
 	            },
                 summary: {
-                    render: 'group',
+                    render: 'switch',
                     name: 'Отображать в строке статуса сводный показатель',
-                    optional: true,
-                    multiple: true,
                     items: {
-                        summaryOp: {
-                            render: 'select',
-                            name: 'Операция',
+                        summaryOpts: {
+                            render: 'group',
+                            name: 'Показатели',
+                            multiple: true,
                             items: {
-                                summaryOpCount: {
-                                    name: 'Количество'
+                                summaryOp: {
+                                    render: 'select',
+                                    name: 'Операция',
+                                    items: {
+                                        summaryOpCount: {
+                                            name: 'Количество'
+                                        },
+                                        summaryOpSum: {
+                                            name: 'Сумма'
+                                        },
+                                        summaryOpMin: {
+                                            name: 'Минимум'
+                                        },
+                                        summaryOpMax: {
+                                            name: 'Максимум'
+                                        },
+                                        summaryOpAvg: {
+                                            name: 'Среднее'
+                                        }
+                                    }
                                 },
-                                summaryOpSum: {
-                                    name: 'Сумма'
+                                summaryPrefix: {
+                                    render: 'item',
+                                    name: 'Префикс',
+                                    value: 'Итого'
                                 },
-                                summaryOpMin: {
-                                    name: 'Минимум'
-                                },
-                                summaryOpMax: {
-                                    name: 'Максимум'
-                                },
-                                summaryOpAvg: {
-                                    name: 'Среднее'
+                                summaryPostfix: {
+                                    render: 'item',
+                                    name: 'Суффикс'
                                 }
                             }
-                        },
-                        summaryPrefix: {
-                            render: 'item',
-                            name: 'Префикс',
-                            value: 'Итого'
-                        },
-                        summaryPostfix: {
-                            render: 'item',
-                            name: 'Суффикс'
                         }
                     }
                 },
@@ -452,7 +433,6 @@
 	        }
 	    }
 	},
-	
 	$client: {
 		$require: ['JSB.Widgets.ScrollBox', 
 		           'JSB.Crypt.MD5',
@@ -474,6 +454,7 @@
 		stopPreFetch: false,
 		scrollHeight: 0,
 		paneHeight: 0,
+		embeddedBindings: [],
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -1013,7 +994,7 @@
 				});
 			}
 			function iterateRows(){
-				while(rowsContext.next()){
+				while(rowsContext.next({embeddedBindings: $this.embeddedBindings})){
 					var row = [];
 					var rowFlags = {};
 					// construct key
@@ -1070,8 +1051,7 @@
 							}
 							rDesc.value = {main: mainValue, back: backValue, hover: hoverValue};
 						} else if(cols[i].colType == 'widgetGroup'){
-							var vals = JSB.clone($this.colDesc[i].widget.values.unwrap());
-							rDesc.value = vals;
+							rDesc.value = JSB.clone($this.colDesc[i].widget.widgetSelector.getFullValues());
 						}
 						
 						row.push(rDesc);	// push cell
@@ -1086,6 +1066,7 @@
 						return;
 					}
 				}
+
 				if(rowsContext.isReset()){
 					$this.setDeferredLoader();
 				}
@@ -1631,6 +1612,7 @@
 				colSzPrc = (100.0 - fixedSize) / (gArr.length - fixedCount);
 			}
 			this.colDesc = [];
+			this.embeddedBindings = [];
 			var widgetTypes = [];
 			
 			function prepareCss(cssText){
@@ -1729,7 +1711,7 @@
 				// check for status
 				var summarySelector = gArr[i].find('summary');
 				if(summarySelector.checked()){
-					var summaryElts = summarySelector.values();
+					var summaryElts = summarySelector.find('summaryOpts').values();
 					for(var j = 0; j < summaryElts.length; j++){
 						var summaryOp = summaryElts[j].find('summaryOp').value();
 						if(summaryOp){
@@ -1750,15 +1732,21 @@
 				var viewSelector = gArr[i].find('view');
 				if(viewSelector.value() == 'widgetGroup'){
 					// embedded widget
-					var widgetSelector = viewSelector.find('widget');
-					var wType = widgetSelector.unwrap().widget.jsb;
-					var wName = widgetSelector.unwrap().widget.name;
+					var widgetSelector = viewSelector.find('widget'),
+					    wType = widgetSelector.getWidgetBean();
+
 					widgetTypes.push(wType);
 					desc.widget = {
 						jsb: wType,
-						name: wName,
-						values: widgetSelector.value()
+						isValueSkipping: widgetSelector.isValueSkipping(),
+						name: widgetSelector.getWidgetName(),
+						widgetSelector: widgetSelector
 					};
+
+					if(widgetSelector.isValueSkipping()){
+					    this.embeddedBindings = this.embeddedBindings.concat(widgetSelector.findRendersByName('sourceBinding'));
+					}
+
 					var sortSelector = viewSelector.find('widgetSort');
 					if(sortSelector.checked()){
 						desc.sortFields = sortSelector.binding();
@@ -1774,7 +1762,6 @@
 							desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
 						}
 					}
-
 				} else {
 					// simple text
 					var textSelector = viewSelector.find('text');
@@ -1798,7 +1785,6 @@
 				}
 				
 				this.colDesc.push(desc);
-
 			}
 			
 			// update row filters

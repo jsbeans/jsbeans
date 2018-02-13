@@ -501,7 +501,7 @@
                                 markersDesc[i].values = wb.getFullValues();
                             }
 
-                            markersDesc[i].jsb = wb.getWidgetName();
+                            markersDesc[i].jsb = wb.getWidgetBean();
 
                             markersDesc[i].coordinatesBinding = markersContext[i].find('coordinates');
                             markersDesc[i].coordinates = [];

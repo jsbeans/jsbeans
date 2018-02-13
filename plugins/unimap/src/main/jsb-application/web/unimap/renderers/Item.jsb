@@ -73,7 +73,8 @@
 	        if(this._scheme.editor){
                 switch(this._scheme.editor){
                     case 'none':
-                        break;
+                        this.addClass('noEditor');
+                        return;
                     default:
                         var onChangeFunc = function(val){
                             values.value = val;

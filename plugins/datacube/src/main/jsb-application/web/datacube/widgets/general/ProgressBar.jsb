@@ -145,7 +145,7 @@
 	            colColor: {
                     render: 'item',
                     name: 'Цвет',
-                    editor: 'color',
+                    editor: 'JSB.Widgets.ColorEditor',
                     defaultValue: '#555'
 	            },
 	            colWidth: {

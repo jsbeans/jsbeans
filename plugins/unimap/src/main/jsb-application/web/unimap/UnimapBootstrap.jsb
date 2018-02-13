@@ -17,6 +17,10 @@
         {
             name: 'select',
             render: 'Unimap.Render.Select'
+        },
+        {
+            name: 'switch',
+            render: 'Unimap.Render.Switch'
         }
     ],
 
@@ -27,6 +31,10 @@
         },
         {
             name: 'select',
+            render: 'Unimap.ValueSelectors.Select'
+        },
+        {
+            name: 'switch',
             render: 'Unimap.ValueSelectors.Select'
         }
     ],

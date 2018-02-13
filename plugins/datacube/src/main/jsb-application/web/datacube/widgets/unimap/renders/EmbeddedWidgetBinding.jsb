@@ -110,8 +110,7 @@
         },
 
         changeLinkTo: function(values){
-
-            debugger;
+            //debugger;
         },
 
         constructScheme: function(jsb){

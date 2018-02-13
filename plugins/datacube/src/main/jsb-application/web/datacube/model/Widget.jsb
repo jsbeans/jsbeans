@@ -95,7 +95,11 @@
 				} else {
 				    var convertVal = ValueConverter.convert(this.wType, this.values);
 				    this.values = convertVal.values;
+				    this.property('values', this.values);
 				    this.linkedFields = convertVal.linkedFields;
+				    this.property('linkedFields', this.linkedFields);
+				    this.property('schemeVersion', 1.0);
+				    bNeedSave = true;
 				}
 
 				if(this.property('sourcesIds')){

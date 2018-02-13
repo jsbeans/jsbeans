@@ -211,6 +211,7 @@
         },
 
         refresh: function(opts){
+return;
             if(opts && this == opts.initiator) return;
 
             var source = this.getContext().find('source');

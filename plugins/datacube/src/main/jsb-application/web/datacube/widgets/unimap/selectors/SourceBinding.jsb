@@ -45,7 +45,6 @@
             if(item.cursor >= item.data.length){
                 return false;
             }
-
             // set data for embedded widgets
             if(opts.embeddedBindings){
                 for(var i = 0; i < opts.embeddedBindings.length; i++){

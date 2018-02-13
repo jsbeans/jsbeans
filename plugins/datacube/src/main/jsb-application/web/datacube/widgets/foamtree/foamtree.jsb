@@ -523,6 +523,7 @@
         },
 
         refresh: function(opts){
+return;
         	$base(opts);
         	if(opts && opts.initiator == this) return;
 
