@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Views.QueryViewsOptimizer',
+	$name: 'DataCube.Query.Views.QueryViewsExtractor',
 
 	$server: {
 	    $require: [

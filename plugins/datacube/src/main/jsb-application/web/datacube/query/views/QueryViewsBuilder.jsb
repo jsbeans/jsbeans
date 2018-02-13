@@ -30,14 +30,9 @@
 		},
 
 		build: function() {
-		    // build pre-defined $views
-		    for(var name in $this.query.$views) {
-		        $this._buildQueryViews($this.query.$views[name]);
-		    }
 		    // build query views
             $this._buildQueryViews($this.query);
 
-            $this._setIsolatedViews();
             return $this.contextViews[$this.query.$context];
 		},
 
@@ -45,32 +40,30 @@
 		    return $this.contextViews;
 		},
 
-		_setIsolatedViews: function(){
-		    var notIsolatedContexts = {};
-            for(var context in $this.contextViews) if ($this.contextViews.hasOwnProperty(context)) {
-                var queryView = $this.contextViews[context];
-                var linkedFields = queryView.listLinkedFields();
-                for (var f in linkedFields) {
-                    var linkedViews = queryView.getFieldLinkedViews(linkedFields[f]);
-                    for(var linkedContext in linkedViews) if (linkedViews.hasOwnProperty(linkedContext)) {
-                        notIsolatedContexts[linkedContext] = true;
-                    }
-                }
-            }
-            for(var context in notIsolatedContexts) if (notIsolatedContexts.hasOwnProperty(context)) {
-                var queryView = $this.contextViews[context];
-                queryView.setIsolated(false);
-            }
-        },
+//		_setIsolatedViews: function(){
+//		    var notIsolatedContexts = {};
+//            for(var context in $this.contextViews) if ($this.contextViews.hasOwnProperty(context)) {
+//                var queryView = $this.contextViews[context];
+//                queryView.hasLinkedFields
+////                queryView.walkLinkedFields(function(linkedField, linkedContext){
+////                    if (!notIsolatedContexts[linkedContext]) {
+////                        notIsolatedContexts[linkedContext] = true;
+////                    }
+////                });
+//            }
+//            for(var context in notIsolatedContexts) if (notIsolatedContexts.hasOwnProperty(context)) {
+//                var queryView = $this.contextViews[context];
+//                queryView.setIsolated(false);
+//            }
+//        },
 
         _buildQueryViews: function(query) {
-            // from leaf to root
-            QueryUtils.walkSubQueries(query, function(subQuery, isFromQuery, isValueQuery){
-                $this._buildContextView(subQuery);
+            QueryUtils.walkAllSubQueries(query, function(subQuery, isFromQuery, isValueQuery, isViewQuery){
+                $this._buildContextView(subQuery, isValueQuery, isViewQuery);
             });
 		},
 
-		_buildContextView: function(query) {
+		_buildContextView: function(query, isValueQuery, isViewQuery) {
 		    var sourceView = $this.contextSourceViews[query.$context] = $this._buildContextSourceViews(query);
 		    var resultView = $this.contextViews[query.$context] = $this._buildContextViews(query, sourceView);
 		    if (!sourceView || !resultView) throw new Error('Internal error: result or source view for query is not defined');
@@ -84,7 +77,7 @@
             } else if(query.$from) {
                 // is $from QueryView (query on query)
                 var fromContext = JSB.isString(query.$from)
-                        ? $this.query.$views[query.$from]
+                        ? query.$from
                         : query.$from.$context;
                 if (!$this.contextViews[fromContext]) {
                     throw new Error('$from view is undefined in ' + query.$context);
@@ -134,22 +127,15 @@
                     expr: query.$select[alias],
                 });
             }
+
             // collect linked fields in other contexts
-            QueryUtils.walkQueryFields(query, /**includeSubQueries=*/false,
+            QueryUtils.walkQueryForeignFields(query,
                 function(field, context, curQuery){
-                    // if current query field
-                    if (context == query.$context){
-                        // if use from other context
-                        if (curQuery.$context != context) {
-                            var viewField = view.getField(field);
-                            if (!viewField) throw new Error('Internal error: unknown foreign field ' + field);
-                            var linkedView = $this.contextViews[curQuery.$context];
-                            if (!linkedView) throw new Error('Internal error: unknown linked view ' + curQuery.$context);
-                            view.linkField(field, linkedView);
-                        }
-                    }
+                    // на текущий момент вьюха внешнего поля не создана
+                    view.linkForeignField(field, context);
                 }
             );
+
             //collect subquery Views
             QueryUtils.walkSubQueries(query, function(subQuery, isFromQuery, isValueQuery){
                 if (subQuery != query) {

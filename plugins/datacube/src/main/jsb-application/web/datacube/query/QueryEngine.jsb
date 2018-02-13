@@ -3,6 +3,7 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.Transforms.QueryTransformer',
 		    'DataCube.Query.Iterators.DataProviderIterator',
 		    'DataCube.Query.Iterators.LeftJoinIterator',
 		    'DataCube.Query.Iterators.UnionIterator',
@@ -19,42 +20,19 @@
 
 		query: function(dcQuery, params, dataProvider){
 			this.cube.load();
+			dcQuery.$id = dcQuery.$id || JSB.generateUid();
+
+		    QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Original DataCube Query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params));
 		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
-		    Log.debug('QueryEngine.preparedQuery: \n' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params) );
+		    QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Prepared DataCube Query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params));
+
 		    var it = this.produceIterator(dcQuery, params||{}, dataProvider);
 		    return it;
 		},
 
 		prepareQuery: function(dcQuery, dataProvider) {
-		    // clone query
 		    dcQuery = JSB.merge(true, {}, dcQuery);
-
-		    // patch links to aliases if alias is cube field
-		    QueryUtils.patchSimpleFieldAliases(dcQuery, dataProvider || this.cube);
-
-		    // unwrap macros and $grmax* to complex expressions
-		    QuerySyntax.unwrapMacros(dcQuery);
-		    QueryUtils.unwrapGOperators(dcQuery);
-		    QueryUtils.unwrapPostFilters(dcQuery);
-
-//		    // fill all cube fields (or linked with dataProvider) for default $select={}
-//		    QueryUtils.generateDefaultSelect(dcQuery, dataProvider || this.cube);
-
-            // embed $globalFilter to $filter/$postFilter of root and sub queries
-            QueryUtils.propagateGlobalFilter(dcQuery, dataProvider || this.cube);
-
-            // standardize $filter
-            QueryUtils.unwrapFilters(dcQuery, true);
-
-//            // generate $groupBy if not defined
-//            QueryUtils.generateDefaultGroupBy(dcQuery);
-
-            // move top fields that used in other
-            QueryUtils.upperGeneralFields(dcQuery);
-
-            // ensure queries has defined $context
-            QueryUtils.defineContextQueries(dcQuery);
-
+		    dcQuery = QueryTransformer.transform(dcQuery, dataProvider || this.cube);
             return dcQuery;
 		},
 
