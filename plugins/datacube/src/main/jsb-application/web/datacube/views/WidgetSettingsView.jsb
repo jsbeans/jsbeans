@@ -111,7 +111,9 @@
                 var s = sources[i].getValues();
 
                 for(var j = 0; j < s.values.length; j++){
-                    sourcesIds.push(s.values[j].binding.source);
+                    if(s.values[j].binding){
+                        sourcesIds.push(s.values[j].binding.source);
+                    }
                 }
             }
 

@@ -238,10 +238,15 @@
                                     }
 	                            },
 	                            textFormat: {
-	                                render: 'item',
-	                                name: 'Форматировать числа',
-	                                optional: true,
-	                                value: '0,0.[00]'
+                                    render: 'switch',
+                                    name: 'Форматировать числа',
+	                                items: {
+	                                    format: {
+                                            render: 'item',
+                                            name: 'Формат',
+                                            value: '0,0.[00]'
+	                                    }
+	                                }
 	                            }
 	                        }
 	                    },
@@ -253,14 +258,20 @@
 	                                name: 'Виджет'
 	                            },
 	                            widgetSort: {
-	                                render: 'dataBinding',
-	                                name: 'Использовать сортировку',
-	                                linkTo: 'rows',
-                                    optional: true,
-                                    editor: 'none'
+                                    render: 'switch',
+                                    name: 'Использовать сортировку',
+	                                items: {
+	                                    widgetSortFields: {
+                                            render: 'dataBinding',
+                                            name: 'Поля сортировки',
+                                            linkTo: 'rows',
+                                            optional: true,
+                                            multiple: true
+	                                    }
+	                                }
 	                            },
 	                            widgetContextFilter: {
-                                    render: 'select',
+                                    render: 'switch',
                                     name: 'Использовать контексный фильтр',
                                     items: {
                                         widgetContextFilterField: {
@@ -361,16 +372,22 @@
 		                },
 		                css: {
 		                    render: 'item',
-		                    name: 'CSS стиль ячейки',
-		                    optional: true,
-		                    editor: 'JSB.Widgets.MultiEditor',
-		                    editorOpts: {
-		                        valueType: 'org.jsbeans.types.Css'
-		                    },
-		                    value: `/* Заполните объект CSS значениями */
-                                   {
-                                   	font-family: 'arial';
-                                   }`
+		                    name: 'Использовать CSS-стиль ячейки',
+		                    items: {
+		                        cssValue: {
+		                            render: 'item',
+                                    name: 'CSS-стиль',
+                                    editor: 'JSB.Widgets.MultiEditor',
+                                    editorOpts: {
+                                        valueType: 'org.jsbeans.types.Css'
+                                    },
+                                    value: `/* Заполните объект CSS значениями */
+{
+    font-family: 'arial';
+}`
+		                        }
+		                    }
+
 		                }
 		            }
                 },
@@ -411,17 +428,22 @@
                             }
 		                },
 		                hCss: {
-		                    render: 'item',
-		                    name: 'CSS стиль заголовка',
-		                    optional: true,
-		                    editor: 'JSB.Widgets.MultiEditor',
-		                    editorOpts: {
-		                        valueType: 'org.jsbeans.types.Css'
-		                    },
-		                    value: `/* Заполните объект CSS значениями */
-                                   {
-                                   	font-family: 'arial';
-                                   }`
+		                    render: 'switch',
+		                    name: 'Использовать CSS-стиль заголовка',
+		                    items: {
+		                        hCssValue: {
+		                            render: 'item',
+                                    name: 'CSS-стиль',
+                                    editor: 'JSB.Widgets.MultiEditor',
+                                    editorOpts: {
+                                        valueType: 'org.jsbeans.types.Css'
+                                    },
+                                    value: `/* Заполните объект CSS значениями */
+{
+    font-family: 'arial';
+}`
+		                        }
+		                    }
 		                }
 		            }
                 },
@@ -1663,7 +1685,7 @@
 				var cssStyle = '';
 				var cssSelector = gArr[i].find('css');
 				if(cssSelector.checked()){
-					cssStyle = prepareCss(cssSelector.value());
+					cssStyle = prepareCss(cssSelector.find('cssValue').value());
 				}
 
 				// fill header styles
@@ -1682,7 +1704,7 @@
 				var hCssStyle = '';
 				var hCssSelector = gArr[i].find('hCss');
 				if(hCssSelector.checked()){
-					hCssStyle = prepareCss(hCssSelector.value());
+					hCssStyle = prepareCss(hCssSelector.find('hCssValue').value());
 				}
 
 				var desc = {
@@ -1749,7 +1771,7 @@
 
 					var sortSelector = viewSelector.find('widgetSort');
 					if(sortSelector.checked()){
-						desc.sortFields = sortSelector.binding();
+						desc.sortFields = sortSelector.find('widgetSortFields').binding();
 					}
 					var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
 					if(widgetContextFilterSelector.checked()){
@@ -1780,7 +1802,7 @@
 					}
 					var formatSelector = viewSelector.find('textFormat');
 					if(formatSelector.checked()){
-						desc.format = formatSelector.value();
+						desc.format = formatSelector.find('format').value();
 					}
 				}
 				

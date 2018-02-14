@@ -161,7 +161,7 @@ debugger;
 		    this._items[itemIndex] = {
 		        dataScheme: ds
 		    };
-debugger;
+
 			function setupSource(source){
 			    $this._items[itemIndex].source = source;
 
@@ -207,7 +207,11 @@ debugger;
 					callback.call($this);
 				}
 			} else {
-				this.server().getDataSchemeSource(ds, function(source){
+				this.server().getDataSchemeSource(ds, function(source, fail){
+				    if(fail){
+				        return;
+				    }
+
 					setupSource(source);
 					if(callback){
 						callback.call($this);
@@ -218,7 +222,7 @@ debugger;
 
 		setEditor: function(item){
             switch(this._scheme.options && this._scheme.options.editor){
-                case 'input':       // maybe remove?
+                case 'input':
                     var editor = new Editor({
                         onchange: function(){
                             values.value = this.getValue();
@@ -261,6 +265,8 @@ debugger;
 	},
 
 	$server: {
+	    $require: ['JSB.Workspace.WorkspaceController'],
+
 	    combineDataScheme: function(source){
 			var iterator = null;
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
@@ -332,7 +338,7 @@ debugger;
 				type: 'array',
 				source: source.getLocalId(),
 				arrayType: recordTypes,
-				workspaceId: source.workspace.getId()
+				workspaceId: source.workspace.getLocalId()
 			}
 	    },
 
@@ -341,7 +347,7 @@ debugger;
                 throw new Error('Invalid datascheme passed');
             }
 
-            return JSB.getInstance(ds.workspaceId).entry(ds.source);
+            return WorkspaceController.ensureManager('datacube').workspace(ds.workspaceId).entry(ds.source);
         }
 	}
 }

@@ -5,10 +5,6 @@
         $require: ['JSB.Workspace.WorkspaceController'],
 
         $constructor: function(){
-            var wIt = WorkspaceController.ensureManager('datacube').workspaceIds();
-
-            this._workId = wIt.next();
-
             function traverse(src, val, callback){
                 if(!src.used){
                     return;
@@ -193,6 +189,12 @@
         },
 
         convert: function(widgetName, values){
+            if(!this._workId){
+                var wIt = WorkspaceController.ensureManager('datacube').workspaceIds();
+
+                this._workId = wIt.next();
+            }
+
             try{
                 var oldSelector = new this.Selector(values);
 
@@ -209,11 +211,18 @@
                         return this.convertText(oldSelector);
 
                     default:
-                        return {};
+                        return {
+                            values: values,
+                            linkedFields: {}
+                        };
                 }
             } catch(ex){
                 JSB.getLogger().error(ex);
-                return {};
+
+                return {
+                    values: values,
+                    linkedFields: {}
+                };
             }
         },
 
@@ -233,6 +242,7 @@
                     value: {
                         render: 'dataBinding',
                         values: [{
+                            value: oldArgs[i].find('value').value() || this._bindingCheck(oldArgs[i].find('value').binding()),
                             binding: this._bindingCheck(oldArgs[i].find('value').binding())
                         }]
                     }
@@ -288,21 +298,21 @@
                     min: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldSeries[i].find('min').value(),
+                            value: oldSeries[i].find('min').value() || this._bindingCheck(oldSeries[i].find('min').binding()),
                             binding: this._bindingCheck(oldSeries[i].find('min').binding())
                         }]
                     },
                     max: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldSeries[i].find('max').value(),
+                            value: oldSeries[i].find('max').value() || this._bindingCheck(oldSeries[i].find('max').binding()),
                             binding: this._bindingCheck(oldSeries[i].find('max').binding())
                         }]
                     },
                     val: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldSeries[i].find('val').value(),
+                            value: oldSeries[i].find('val').value() || this._bindingCheck(oldSeries[i].find('val').binding()),
                             binding: this._bindingCheck(oldSeries[i].find('val').binding())
                         }]
                     },
@@ -393,79 +403,104 @@
 
                     if(viewSel.key() === 'widgetGroup'){
                         var widgetSelector = viewSel.find('widget'),
-                            wType = widgetSelector.unwrap().widget.jsb;
+                            wType = widgetSelector.unwrap().widget.jsb,
+                            widgetSortValues = [],
+                            widgetSortSel = widgetSelector.find('widgetSort').binding();
+
+                        if(!JSB.isArray(widgetSortSel)){
+                            widgetSortSel = [widgetSortSel];
+                        }
+
+                        for(var j = 0; j < widgetSortSel.length; j++){
+                            widgetSortValues.push({
+                                value: widgetSortSel[j],
+                                binding: widgetSortSel[j]
+                            });
+                        }
+
                         view = [{
-                            widgetGroup: {
-                                values: [{
-                                    widget: {
-                                        render: 'embeddedWidget',
-                                        values: [{
-                                            binding: {
-                                                name: widgetSelector.unwrap().widget.name,
-                                                jsb: wType
-                                            },
-                                            value: this.convert(wType, widgetSelector.value())
-                                        }]
-                                    },
-                                    widgetSort: {
-                                        render: 'item',
-                                        checked: oldColumns[i].find('widgetSort').used(),
-                                        values: []
-                                    },
-                                    widgetContextFilter: {
-                                        render: 'switch',
-                                        checked: oldColumns[i].find('widgetContextFilter').used(),
-                                        values: [{
-                                            widgetContextFilterField: {
-                                                render: 'dataBinding',
-                                                values: [{
-                                                    value: oldColumns[i].find('widgetContextFilterField').value(),
-                                                    binding: this._bindingCheck(oldColumns[i].find('widgetContextFilterField').binding())
-                                                }]
-                                            },
-                                            widgetСontextFilterFixed: {
-                                                render: 'item',
-                                                checked: oldColumns[i].find('widgetСontextFilterFixed').used(),
-                                                values: []
-                                            }
-                                        }]
-                                    }
-                                }]
+                            value: 'widgetGroup',
+                            items: {
+                                widget: {
+                                    render: 'embeddedWidget',
+                                    values: [{
+                                        binding: {
+                                            name: widgetSelector.unwrap().widget.name,
+                                            jsb: wType
+                                        },
+                                        value: this.convert(wType, widgetSelector.value())
+                                    }]
+                                },
+                                widgetSort: {
+                                    render: 'switch',
+                                    checked: oldColumns[i].find('widgetSort').used(),
+                                    values: [{
+                                        widgetSortFields: {
+                                            render: 'dataBinding',
+                                            values: widgetSortValues
+                                        }
+                                    }]
+                                },
+                                widgetContextFilter: {
+                                    render: 'switch',
+                                    checked: oldColumns[i].find('widgetContextFilter').used(),
+                                    values: [{
+                                        widgetContextFilterField: {
+                                            render: 'dataBinding',
+                                            values: [{
+                                                value: oldColumns[i].find('widgetContextFilterField').value() || this._bindingCheck(oldColumns[i].find('widgetContextFilterField').binding()),
+                                                binding: this._bindingCheck(oldColumns[i].find('widgetContextFilterField').binding())
+                                            }]
+                                        },
+                                        widgetСontextFilterFixed: {
+                                            render: 'item',
+                                            checked: oldColumns[i].find('widgetСontextFilterFixed').used(),
+                                            values: []
+                                        }
+                                    }]
+                                }
                             }
                         }]
                     } else {
                         view = [{
-                            textGroup: {
-                                values: [{
-                                    text: {
-                                        render: 'dataBinding',
-                                        values: [{
-                                            value: oldColumns[i].find('text').value(),
-                                            binding: this._bindingCheck(oldColumns[i].find('text').binding())
-                                        }]
-                                    },
-                                    textSort: {
-                                        render: 'item',
-                                        checked: oldColumns[i].find('textSort').used(),
-                                        values: []
-                                    },
-                                    contextFilter: {
-                                        render: 'switch',
-                                        checked: oldColumns[i].find('contextFilter').used(),
-                                        values: [{
-                                            contextFilterFixed: {
-                                                render: 'item',
-                                                checked: oldColumns[i].find('contextFilterFixed').used(),
-                                                values: []
-                                            }
-                                        }]
-                                    },
-                                    textFormat: {
-                                        render: 'item',
-                                        checked: oldColumns[i].find('textFormat').used(),
-                                        value: oldColumns[i].find('textFormat').value() || '0,0.[00]'
-                                    }
-                                }]
+                            value: 'textGroup',
+                            items: {
+                                text: {
+                                    render: 'dataBinding',
+                                    values: [{
+                                        value: oldColumns[i].find('text').value() || this._bindingCheck(oldColumns[i].find('text').binding()),
+                                        binding: this._bindingCheck(oldColumns[i].find('text').binding())
+                                    }]
+                                },
+                                textSort: {
+                                    render: 'item',
+                                    checked: oldColumns[i].find('textSort').used(),
+                                    values: []
+                                },
+                                contextFilter: {
+                                    render: 'switch',
+                                    checked: oldColumns[i].find('contextFilter').used(),
+                                    values: [{
+                                        contextFilterFixed: {
+                                            render: 'item',
+                                            checked: oldColumns[i].find('contextFilterFixed').used(),
+                                            values: []
+                                        }
+                                    }]
+                                },
+                                textFormat: {
+                                    render: 'switch',
+                                    checked: oldColumns[i].find('textFormat').used(),
+                                    values: [{
+                                        format: {
+                                            render: 'item',
+                                            values: [{
+                                                value: oldColumns[i].find('textFormat').value() || '0,0.[00]'
+                                            }]
+                                        }
+                                    }]
+
+                                }
                             }
                         }]
                     }
@@ -506,7 +541,7 @@
                         title: {
                             render: 'dataBinding',
                             values: [{
-                                value: oldColumns[i].find('title').value(),
+                                value: oldColumns[i].find('title').value() || oldColumns[i].find('title').binding(),
                                 binding: oldColumns[i].find('title').binding()
                             }]
                         },
@@ -540,10 +575,15 @@
                                     }]
                                 },
                                 css: {
-                                    render: 'item',
+                                    render: 'switch',
                                     checked: oldColumns[i].find('css').used(),
                                     values: [{
-                                        value: oldColumns[i].find('css').value()
+                                        cssValue: {
+                                            render: 'item',
+                                            values: [{
+                                                value: oldColumns[i].find('css').value()
+                                            }]
+                                        }
                                     }]
                                 }
                             }]
@@ -564,10 +604,15 @@
                                     }]
                                 },
                                 hCss: {
-                                    render: 'item',
+                                    render: 'switch',
                                     checked: oldColumns[i].find('hCss').used(),
                                     values: [{
-                                        value: oldColumns[i].find('hCss').value()
+                                        hCssValue: {
+                                            render: 'item',
+                                            values: [{
+                                                value: oldColumns[i].find('hCss').value()
+                                            }]
+                                        }
                                     }]
                                 }
                             }]
@@ -613,14 +658,14 @@
                             rowKey: {
                                 render: 'dataBinding',
                                 values: [{
-                                    value: oldVal.find('rowKey').value(),
+                                    value: oldVal.find('rowKey').value() || this._bindingCheck(oldVal.find('rowKey').binding()),
                                     binding: this._bindingCheck(oldVal.find('rowKey').binding())
                                 }]
                             },
                             rowFilter: {
                                 render: 'dataBinding',
                                 values: [{
-                                    value: oldVal.find('rowFilter').value(),
+                                    value: oldVal.find('rowFilter').value() || this._bindingCheck(oldVal.find('rowFilter').binding()),
                                     binding: this._bindingCheck(oldVal.find('rowFilter').binding())
                                 }]
                             },
@@ -641,7 +686,7 @@
                                     parentRowKey: {
                                         render: 'dataBinding',
                                         values: [{
-                                            value: oldVal.find('parentRowKey').value(),
+                                            value: oldVal.find('parentRowKey').value() || this._bindingCheck(oldVal.find('parentRowKey').binding()),
                                             binding: this._bindingCheck(oldVal.find('parentRowKey').binding())
                                         }]
                                     }
@@ -655,7 +700,9 @@
                     }
                 },
 
-                linkedFields: {}
+                linkedFields: {
+                    rows: ["rowKey", "rowFilter", "title", "text"]
+                }
             }
         },
 
@@ -674,12 +721,14 @@
                     text: {
                         render: 'dataBinding',
                         values: [{
+                            value: oldVal.find('text').value() || this._bindingCheck(oldVal.find('text').binding()),
                             binding: this._bindingCheck(oldVal.find('text').binding())
                         }]
                     },
                     annotations: {
                         render: 'dataBinding',
                         values: [{
+                            value: oldVal.find('annotations').value() || this._bindingCheck(oldVal.find('annotations').binding()),
                             binding: this._bindingCheck(oldVal.find('annotations').binding())
                         }]
                     },

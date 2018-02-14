@@ -20,13 +20,16 @@
 	    setStatus: function(status){
 	        switch(status){
 	            case 'saving':
-
+                    this.removeClass('error saved');
+                    this.addClass('saving');
 	                break;
                 case 'saved':
-
+                    this.removeClass('saving error');
+                    this.addClass('saved');
                     break;
                 case 'error':
-
+                    this.removeClass('saving saved');
+                    this.addClass('error');
                     break;
 	        }
 	    }

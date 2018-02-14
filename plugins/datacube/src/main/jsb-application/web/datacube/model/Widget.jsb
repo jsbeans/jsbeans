@@ -82,16 +82,16 @@
 					this.wType = this.property('wType');
 				}
 
-				if(this.property('values')){
-					this.values = this.property('values');
-				}
-
-				if(this.property('linkedFields')){
-				    this.linkedFields = this.property('linkedFields');
-				}
+                if(this.property('values')){
+                    this.values = this.property('values');
+                }
 
 				if(this.property('schemeVersion')){
 				    this.schemeVersion = this.property('schemeVersion');
+
+                    if(this.property('linkedFields')){
+                        this.linkedFields = this.property('linkedFields');
+                    }
 				} else {
 				    var convertVal = ValueConverter.convert(this.wType, this.values);
 				    this.values = convertVal.values;

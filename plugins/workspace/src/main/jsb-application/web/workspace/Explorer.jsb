@@ -323,7 +323,7 @@
 			this.server().setCurrentWorkspace(w, function(){
 				$this.currentWorkspace = w;
 				$this.publish('Workspace.changeWorkspace', w);
-				
+
 				// upload all node type beans
 				var nodeTypes = [];
 				for(var eType in $this.currentWorkspace.workspaceManager.exlorerNodeTypes){
