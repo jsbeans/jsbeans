@@ -31,7 +31,10 @@
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.widget = new WidgetClass();
 				$this.append($this.widget);
-				$this.widget.setWrapper($this);
+				$this.widget.setWrapper($this, {
+                    values: $this.getValues(),
+                    linkedFields: $this.getWidgetEntry().getLinkedFields()
+                });
 				$this.widget.ensureInitialized(function(){
 					$this.subscribe('DataCube.filterChanged', function(sender, msg, params){
 						if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){

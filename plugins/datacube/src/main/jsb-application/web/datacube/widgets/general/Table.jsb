@@ -371,7 +371,7 @@
                             }
 		                },
 		                css: {
-		                    render: 'item',
+		                    render: 'switch',
 		                    name: 'Использовать CSS-стиль ячейки',
 		                    items: {
 		                        cssValue: {

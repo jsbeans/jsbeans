@@ -35,7 +35,7 @@
         },
         {
             name: 'switch',
-            render: 'Unimap.ValueSelectors.Select'
+            render: 'Unimap.ValueSelectors.Switch'
         }
     ],
 

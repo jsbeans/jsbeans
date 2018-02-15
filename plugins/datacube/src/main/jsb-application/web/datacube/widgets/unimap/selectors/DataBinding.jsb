@@ -32,6 +32,10 @@
         return this._values[0].binding;
     },
 
+    hasBinding: function(){
+        return JSB.isDefined(this._values[0].binding);
+    },
+
     value: function(layer){
         if(!this._values || this._values.length === 0){
             return;

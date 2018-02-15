@@ -2940,7 +2940,7 @@ if(!(function(){return this;}).call(null).JSB){
 
 						} catch(e){
 							res = e;
-							console.log(e);
+							JSB.getLogger().error(e);
 						}
 						if(res !== undefined){
 							locker.lock('_jsb_fork_' + h);

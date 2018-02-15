@@ -14,6 +14,10 @@
         {
             name: 'embeddedWidget',
             render: "Unimap.Render.EmbeddedWidgetBinding"
+        },
+        {
+            name: 'completeWidget',
+            render: 'Unimap.Render.CompleteWidgetBinding'
         }
     ],
 

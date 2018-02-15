@@ -19,6 +19,7 @@
 .groupRender > .jsb-panel > .content > .multipleItem {
     position: relative;
     padding: 0 20px 0 15px;
+    border-bottom: 1px solid lightgray;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem > .dltBtn {
@@ -68,4 +69,5 @@
     font-size: 20px;
     color: #1abc9c;
     float: right;
+    margin-top: 5px;
 }

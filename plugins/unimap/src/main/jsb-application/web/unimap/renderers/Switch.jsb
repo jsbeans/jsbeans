@@ -35,8 +35,11 @@
 
 	    createScheme: function(){
 	        var values = this._values.values[0];
+
 	        if(!values){
 	            values = {};
+
+	            this._values.values.push(values);
 
 	            for(var i in this._scheme.items){
 	                values[i] = {};
