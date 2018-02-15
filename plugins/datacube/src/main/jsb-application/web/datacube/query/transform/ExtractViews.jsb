@@ -4,7 +4,7 @@
 
 	$server: {
 		$require: [
-		    'DataCube.Query.Views.QueryViewsExtractor'
+		    'DataCube.Query.Views.PatternViewsExtractor'
         ],
 
 		transform: function(dcQuery, cubeOrDataProvider){

@@ -28,36 +28,49 @@
         *    - подзапросы в выражениях условий, сортировки, группировки (все, кроме $from и $select)
         *    - подзапросы в $select
         */
-        _walkQueries: function (query, includeViews, callback/**callback(q, isFromQuery, isValueQuery, isViewQuery)*/) {
-            function collect(q, key, isView) {
+        _walkQueries: function (query, includeViews, callback/**callback(q, isFromQuery, isValueQuery, isViewQuery, parents)*/) {
+
+            function collect(q, key, isView, path) {
+                function findView(name) {
+                    if (q.$views && q.$views[name]) return q.$views[name];
+                    for (var p in path) {
+                        if (path[p].$views && path[p].$views[name]) return path[p].$views[name];
+                    }
+                    if (query.$views && query.$views[name]) return query.$views[name];
+                }
+
                 if (JSB.isPlainObject(q)) {
                     // from
                     if (q.$from) {
                         if (typeof q.$from === 'string' && includeViews) {
-                            collect(q.$views[q.$from], '$from', true);
+                            collect(findView(q.$from), '$from', true, []);
                         } else if (JSB.isPlainObject(q.$from)) {
-                            collect(q.$from, '$from');
+                            collect(q.$from, '$from', true, []);
                         }
+                    }
+
+                    if (q.$select) {
+                        path = path.slice().concat([q]);
                     }
                     // inner values
                     for (var f in q) if (f != '$from' && f != '$select' && q.hasOwnProperty(f)) {
-                        collect(q[f], f);
+                        collect(q[f], f, false, path);
                     }
                     // select
                     if (q.$select) {
-                        collect(q.$select, '$select');
+                        collect(q.$select, '$select', false, path);
                     }
                     // self query
                     if (q.$select) {
-                        callback(q, key == '$from', key != '$from' && q != query, isView);
+                        callback(q, key == '$from', key != '$from' && q != query, isView, path);
                     }
                 } else if (JSB.isArray(q)) {
                     for (var i in q) {
-                        collect(q[i], i);
+                        collect(q[i], i, false, path);
                     }
                 }
             }
-            collect(query);
+            collect(query, null, false, []);
         },
 
         walkQueryForeignFields: function(dcQuery, callback /*(field, context, query)*/){
@@ -413,6 +426,115 @@
 
             var filtered = filteredMultiFilter(filter, isAccepted, ['$and']);
 //Log.debug('\nfilterFilterByFields: \n' + JSON.stringify(filter) + '\n' + JSON.stringify(filtered));
+            return filtered;
+        },
+
+        /** true - запрос и его подзапросы не используют поля запросов выше текущего
+        */
+        checkQueryIsIsolated: function(dcQuery){
+            var allowedContexts = {};
+            $this.walkAllSubQueries(dcQuery, function(subQuery, isFromQuery, isValueQuery){
+                allowedContexts[subQuery.$context] = subQuery;
+            });
+
+            var isIsolated = true;
+            $this.walkAllSubQueries(dcQuery, function(query){
+                $this.walkQueryForeignFields(query, function(field, context, curQuery){
+                    if (!allowedContexts[context]) {
+                        isIsolated = false;
+                    }
+                });
+            });
+            return isIsolated;
+        },
+
+        extractIsolatedQueryFilter: function(dcQuery) {
+            function checkIsolated(expr){
+                var isIsolated = true;
+                var contexts = {};
+                $this.walkSubQueries(expr, function(subQuery, isFromQuery, isValueQuery){
+                    contexts[subQuery.$context] = subQuery;
+                });
+                if (Object.keys(contexts).length > 0) {
+                    for(var ctx in contexts) if (contexts.hasOwnProperty(ctx)) {
+                        var q = contexts[ctx];
+                        $this.walkQueryForeignFields(q,
+                            function(field, context, curQuery){
+                                isIsolated = false;
+                            }
+                        );
+                    }
+                } else {
+                    var fields = $this.extractAllFields(expr, dcQuery.$context);
+                    for(var f in fields) {
+                        if (f.context != dcQuery.$context) {
+                            isIsolated = false;
+                            break;
+                        }
+                    }
+                }
+                return isIsolated;
+            }
+
+            function filteredAndOr(array, path) {
+                if (!JSB.isArray(array)) {
+                    throw new Error('Unsupported expression type for operator $and/$or');
+                }
+
+                var resultArray = [];
+                for (var i in array) {
+                    var fil = filteredMultiFilter(array[i], path);
+                    if (fil) {
+                        resultArray.push(fil);
+                    }
+                }
+                return resultArray.length > 0 ? resultArray : null;
+            }
+
+            function filteredBinaryCondition(op, args, path) {
+                for (var i in args) {
+                    if (!checkIsolated(args[i])) {
+                        return null;
+                    }
+                }
+                return args;
+            }
+
+            function filteredMultiFilter(exps, path) {
+                if (!JSB.isPlainObject(exps)) {
+                    throw new Error('Unsupported expression type ' + exps);
+                }
+
+                var resultExps = {};
+                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                    if (field.startsWith('$')) {
+                        var op = field;
+                        switch(op) {
+                            case '$or':
+                            case '$and':
+                                resultExps[op] = filteredAndOr(exps[op], path.concat([op]));
+                                if (!resultExps[op]) delete resultExps[op];
+                                break;
+                            default:
+                                // $op: [left, right] expression
+                                resultExps[op] = filteredBinaryCondition(op, exps[op], path.concat([op]));
+                                if (!resultExps[op]) delete resultExps[op];
+                        }
+                    } else {
+                        // field: {$eq: expr}
+                        var opp = Object.keys(exps[field])[0];
+                        var rightExpr = exps[field][opp];
+
+
+                        if (isIsolated) {
+                            resultExps[field] = exps[field];
+                        }
+                    }
+                }
+                return Object.keys(resultExps).length > 0 ? resultExps : null;
+            }
+
+            var filtered = filteredMultiFilter(dcQuery.$filter, ['$and']);
             return filtered;
         },
 
@@ -847,16 +969,13 @@
                                 case '$gsum': innerOp = 'sum'; break
                                 case '$gcount': innerOp = 'count'; break
                             }
-                            return {
-                                $select: (function(){
-                                    var sel = {};
-                                    sel[innerOp] = {};
-                                    sel[innerOp]['$'+innerOp] = exp;
-                                    return sel;
-                                })(),
-                                $filter: query.$filter && JSB.clone(query.$filter) || undefined,
-                                $from: query.$from || undefined
-                            };
+                            var subQuery = {};
+                            subQuery.$select = {};
+                            subQuery.$select[innerOp] = {};
+                            subQuery.$select[innerOp]['$'+innerOp] = exp;
+                            subQuery.$filter = query.$filter && JSB.clone(query.$filter);
+                            subQuery.$from = query.$from;
+                            return subQuery;
                     }
                     switch(op){
                         case '$grmaxcount': innerOp = 'count'; break;
@@ -885,21 +1004,20 @@
                             }
                             return sel;
                         })(),
-                        $from: {
-                            $select: (function(){
-                                var sel = {};
-                                sel[innerOp] = {};
-                                if (innerOp == 'value') {
-                                    sel[innerOp] = exp;
-                                } else {
-                                    sel[innerOp]['$'+innerOp] = exp;
-                                }
-                                return sel;
-                            })(),
-                            $groupBy: query.$groupBy && JSB.clone(query.$groupBy) || undefined,
-                            $filter: query.$filter && JSB.clone(query.$filter) || undefined,
-                            $from: query.$from || undefined
-                        }
+                        $from: (function(){
+                            var subQuery = {};
+                            subQuery.$select = {};
+                            subQuery.$select[innerOp] = {};
+                            if (innerOp == 'value') {
+                                subQuery.$select[innerOp] = exp;
+                            } else {
+                                subQuery.$select[innerOp]['$'+innerOp] = exp;
+                            }
+                            subQuery.$groupBy = query.$groupBy && JSB.clone(query.$groupBy);
+                            subQuery.$filter = query.$filter && JSB.clone(query.$filter);
+                            subQuery.$from = query.$from;
+                            return subQuery;
+                        })()
                     };
                 }
 
@@ -990,6 +1108,9 @@
         findSubQueries: function(exp) {
             var subQueries = [];
             function walk(e){
+                if (JSB.isNull(e)) {
+                    return;
+                }
                 if (JSB.isObject(e)) {
                     if (e.$select) {
                         subQueries.push(e);
@@ -998,7 +1119,11 @@
 //                        subQueries.push(e.$from);
 //                    }
                 }
-                if (JSB.isObject(e) || JSB.isArray(e)) {
+                if (JSB.isObject(e)) {
+                    for(var i in e) if (e.hasOwnProperty(i)) {
+                        walk(e[i]);
+                    }
+                } else if (JSB.isArray(e)) {
                     for(var i in e) {
                         walk(e[i]);
                     }
@@ -1170,7 +1295,9 @@
             var contextQueries = {};
             $this.walkAllSubQueries(dcQuery, function(query){
                 if (!query.$context) query.$context = 'context_' + idx++;
-                if (contextQueries[query.$context]) throw new Error('Duplicate query context: ' + query.$context);
+                if (contextQueries[query.$context] && contextQueries[query.$context] != query) {
+                    throw new Error('Duplicate query context: ' + query.$context);
+                }
                 contextQueries[query.$context] = query;
 
                 if (query.$views) {
@@ -1184,6 +1311,8 @@
                     }
                 }
             });
+
+            // clear field contexts (remove self context from fields)
             return contextQueries;
         },
 

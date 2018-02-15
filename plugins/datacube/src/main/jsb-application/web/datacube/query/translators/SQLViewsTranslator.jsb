@@ -25,7 +25,7 @@
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    $this.config = {
-		        printIsolatedQueriesInWith: true,
+		        printIsolatedQueriesInWith: false, // TODO
 		    }
 		},
 
