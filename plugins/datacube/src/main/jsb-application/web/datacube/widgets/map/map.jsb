@@ -224,9 +224,11 @@
                             render: 'select',
                             name: 'Тип маркера',
                             items: {
+                            /*
                                 defaultMarker: {
                                     name: 'По-умолчанию'
                                 },
+                            */
                                 widget: {
                                     name: 'Виджет',
                                     items: {

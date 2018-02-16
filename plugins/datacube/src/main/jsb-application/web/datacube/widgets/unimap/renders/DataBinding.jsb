@@ -69,10 +69,11 @@
                             $this.options.onchange.call($this, $this._values);
                         }
                     });
-
+                    /*
                     if(!values.value){
                         item.setValue(this._dataList[0], true);
                     }
+                    */
             }
 
             this._editors.push(item);
@@ -104,10 +105,11 @@
                         if(val && this._editors[i].hasOption(val)){
                             this._editors[i].setValue(val);
                         }
-
+                        /*
                         if(!val){
                             this._editors[i].setValue(dataList[0], true);
                         }
+                        */
                 }
             }
 	    },

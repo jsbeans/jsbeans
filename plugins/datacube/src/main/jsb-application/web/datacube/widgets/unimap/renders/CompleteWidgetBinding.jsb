@@ -75,6 +75,10 @@
             });
 
             this.append(this._item);
+
+            if(values.value){
+                this.setValue(values.value);
+            }
 	    },
 
 	    setValue: function(val){

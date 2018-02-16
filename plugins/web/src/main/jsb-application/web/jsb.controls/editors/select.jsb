@@ -29,13 +29,17 @@
         },
 
 	    options: {
-	        multiple: false
+	        multiple: false,
+	        emptyStartValue: true
 	    },
 
 	    clear: function(){
 	        var el = this.getElement();
 	        el.empty();
-	        //el.append('<option>Выбрите значение</option>');
+
+	        if(this.options.emptyStartValue){
+	            el.append('<option value="null"></option>');
+	        }
 	    },
 
 	    enable: function(bool){
