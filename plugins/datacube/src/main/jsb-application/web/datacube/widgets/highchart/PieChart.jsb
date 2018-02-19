@@ -125,6 +125,8 @@
 		ZXvxDZx35lNhOgOWPpQ7pZwJ5U6jV0fnnHIngZBxA4RtlJZxu4ubJaO0hOcrDDo8Og/WFTQ+/pSj
 		32D87wCdIs7XaNuRKgAAAABJRU5ErkJggg==`
 	},
+	$scheme: {},
+	/*
 	$scheme: {
         type: 'group',
         items: [
@@ -303,6 +305,7 @@
         }
         ]
     },
+    */
 	$client: {
 	    $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 

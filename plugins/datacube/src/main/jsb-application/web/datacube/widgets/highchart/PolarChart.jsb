@@ -144,6 +144,8 @@
 		Op3OgVb17lDWp0gOrIR7Rw6esjrbwJhPydw59G/e5d9M+/nvAwBHTAz8DNyofQAAAABJRU5ErkJg
 		gg==`
 	},
+    $scheme: {},
+    /*
     $scheme: {
         type: 'group',
         items: [
@@ -232,6 +234,7 @@
             }]
         }]
     },
+    */
 	$client: {
 	    $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 		$constructor: function(opts){

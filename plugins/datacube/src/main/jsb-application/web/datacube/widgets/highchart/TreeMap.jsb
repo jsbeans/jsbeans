@@ -73,6 +73,8 @@
 		S1jRNL1jY2BgQBoVGSCfsMFtGI14Ei2RIE6hAEEVSmh8cTgLMADfHw/zyK4h3wAAAABJRU5ErkJg
 		gg==`
 	},
+	$scheme: {},
+	/*
     $scheme: {
         type: 'group',
         items: [
@@ -180,6 +182,7 @@
             ]
         }]
     },
+    */
 	$client: {
 		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
 		
