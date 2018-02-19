@@ -1,5 +1,5 @@
 .switchRender {
-    margin: 10px 0;
+    margin: 6px 0;
 }
 
 .switchRender > .jsb-switch > label {
@@ -26,5 +26,7 @@
 }
 
 .switchRender > .schemeEl {
-    margin-left: 10px;
+	padding: 6px 0 0 10px;
+    border-left: 6px solid #b5d6bc;
+    border-radius: 0 0 0 10px;
 }

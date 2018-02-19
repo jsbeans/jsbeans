@@ -129,7 +129,7 @@
 	        var scheme = this._scheme.items || findItems(this._linkToValue),
 	            innerScheme = this.find('.innerScheme');
 
-	        if(!scheme[value].items){
+	        if(!scheme[value] || !scheme[value].items){
 	            innerScheme.remove();
 	            return;
 	        }

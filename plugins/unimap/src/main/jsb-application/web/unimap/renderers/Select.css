@@ -3,5 +3,7 @@
 }
 
 .selectRender > .innerScheme {
-    margin: 10px 0 0 10px;
+	padding: 6px 0 0 10px;
+    border-left: 6px solid #d1d9e0;
+    border-radius: 0 0 0 10px;
 }
