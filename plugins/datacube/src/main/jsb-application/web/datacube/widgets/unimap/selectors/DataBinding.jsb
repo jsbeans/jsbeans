@@ -55,7 +55,7 @@
 
         var valArr = [];
 
-        if(typeof this._values[0].value === 'object'){
+        if(this._values[0].value !== null && typeof this._values[0].value === 'object'){
             layer = layer || 'main';
 
             for(var i = 0; i < this._values.length; i++){

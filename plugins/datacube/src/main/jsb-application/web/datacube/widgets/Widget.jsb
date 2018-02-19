@@ -19,7 +19,7 @@
 		},
 		rowKeyColumns: [],
 
-		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'Unimap.ValueSelector', 'Datacube.Unimap.Bootstrap'],
+		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'JQuery.UI.Loader', 'Unimap.ValueSelector', 'Datacube.Unimap.Bootstrap'],
 
 		$constructor: function(opts){
 		    $base(opts);

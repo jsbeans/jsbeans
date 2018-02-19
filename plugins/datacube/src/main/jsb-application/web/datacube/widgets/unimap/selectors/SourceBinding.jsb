@@ -95,6 +95,14 @@
         return true;
     },
 
+    position: function(){
+        if(!JSB.isDefined(this._values[0])){
+            return;
+        }
+        
+        return this._values[0].cursor;
+    },
+
     reset: function(){
         var item = this._values[0].binding;
 
