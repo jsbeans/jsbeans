@@ -18,14 +18,9 @@
 		    $base();
 		},
 
-        isolated: true,
 		managedFields: {},
 		subViews: {/**context:view*/},
-		linkedFieldViews: {/**field:{name:view}*/},
-
-        setIsolated: function(isolated) {
-            $this.isolated = isolated;
-		},
+		linkedForeignFields: {},
 
 		addSubView: function(subView) {
             $this.subViews[subView.getContext()] = subView;
@@ -39,29 +34,54 @@
 		    return Object.keys($this.managedFields);
 		},
 
-        listLinkedFields: function() {
-		    return Object.keys($this.linkedFieldViews);
+        isIsolated: function(){
+            // true - если все вложенные запросы не используют поля из запросов выше текущего
+		    var contexts = {};
+		    $this.visitInternalViews(function(view){
+		        if (view.getJsb().$name == $this.getJsb().$name) {
+                    contexts[view.getContext()] = view;
+                }
+		    });
+
+		    var isolated = true;
+		    for (var context in contexts) {
+                contexts[context].walkLinkedFields(function(linkedField, linkedContext){
+                    isolated = !!contexts[linkedContext] && isolated;
+                });
+                if (!isolated) break;
+		    }
+            return isolated;
 		},
 
-		isIsolated: function(){
-		    return $this.isolated;
+		hasLinkedFields: function(){
+		    return Object.keys($this.linkedForeignFields).length > 0;
+		},
+
+        walkLinkedFields: function(callback /**(field, context)*/) {
+		    for(var i in $this.linkedForeignFields) if($this.linkedForeignFields.hasOwnProperty(i)) {
+		        var field = $this.linkedForeignFields[i];
+		        callback(field.field, field.context);
+		    }
 		},
 
         getField: function(field) {
             var desc = $this.managedFields[field];
-//            if (desc) {
-//                desc.context = desc.context || $this.getContext();
-//            }
             return desc;
 		},
 
-        getFieldLinkedViews: function(field) {
-            return $this.linkedFieldViews[field];
-		},
+//        getFieldLinkedViews: function(field) {
+//            return $this.linkedForeignFields[field];
+//		},
 
-		linkField: function(field, linkedView) {
-		    $this.linkedFieldViews[field] = $this.linkedFieldViews[field] || {};
-		    $this.linkedFieldViews[field][linkedView.name] = linkedView;
+		linkForeignField: function(foreignField, foreignContext) {
+             if (foreignContext == $this.query.$context) {
+                throw new Error('Internal error: invalid foreign context');
+		    }
+		    var id = foreignContext +  '.' + foreignField;
+		    $this.linkedForeignFields[id] = {
+		        $field: foreignField,
+		        $context: foreignContext
+		    };
 		},
 
         lookupField: function(name, notAlias) {

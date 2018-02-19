@@ -82,15 +82,14 @@
 
 		_buildDataProviderView: function(name, dataProvider) {
 		    var view = new DataProviderView(name, dataProvider);
-		    var cubeFields = $this.cube.getManagedFields();
 		    var managedFields = $this.directProvider == dataProvider
 		            ? dataProvider.extractFields()
-		            : cubeFields;
+		            : $this.cube.getManagedFields();
             for(var field in managedFields) {
                 var binding = managedFields[field].binding;
                 for(var b in binding) if (binding[b].provider == dataProvider){
 		            view.setField(field, {
-		                type: cubeFields[field].type,
+		                type: managedFields[field].type,
 		                nativeType: managedFields[field].nativeType || managedFields[field].type,
 		                field: field,
 		                providerField: $this.directProvider == dataProvider ? field : binding[b].field,

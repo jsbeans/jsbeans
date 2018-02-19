@@ -1,10 +1,10 @@
 {
-	$name: 'DataCube.Query.Views.QueryViewsOptimizerTest',
+	$name: 'DataCube.Query.Views.PatternViewsExtractorTest',
 	$singleton: true,
 
 	$server: {
 	    $require: [
-	        'DataCube.Query.Views.QueryViewsOptimizer',
+	        'DataCube.Query.Views.PatternViewsExtractor',
         ],
 
 		$constructor: function(){
@@ -36,7 +36,7 @@
 		},
 
 		startTest: function(inputQuery, expectedQuery, name){
-            var extr = new QueryViewsOptimizer();
+            var extr = new PatternViewsExtractor();
             var inputQueryClone = JSB.merge(true,{}, inputQuery);
             var resultQuery = extr.buildViews(inputQuery);
             // Log.debug(JSON.stringify(resultQuery,0,2));
@@ -48,7 +48,7 @@
                             'inputQuery=' + JSB.stringify(inputQuery,null,null,true) + '\n' +
                             'expectedQuery=' + JSB.stringify(expectedQuery,null,null,true) + '\n' +
                             'resultQuery=' + JSB.stringify(resultQuery,null,null,true) + '\n')
-                throw new Error('QueryViewsOptimizerTest test "' + name + '" failed');
+                throw new Error('PatternViewsExtractorTest test "' + name + '" failed');
             }
 		},
 
