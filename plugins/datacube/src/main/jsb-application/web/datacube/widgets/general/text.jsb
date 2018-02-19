@@ -110,24 +110,34 @@
             editor: 'none'
         },
         cssText: {
-            render: 'item',
-            name: 'CSS стиль текста',
-            optional: true,
-            editor: 'JSB.Widgets.MultiEditor',
-            editorOpts: {
-                valueType: 'org.jsbeans.types.Css'
-            },
-            value: `/* Заполните объект CSS значениями */`
+            render: 'switch',
+            name: 'Использовать CSS стиль текста',
+            items: {
+                cssStyle: {
+                    render: 'item',
+                    name: 'CSS стиль',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    editorOpts: {
+                        valueType: 'org.jsbeans.types.Css'
+                    },
+                    value: `/* Заполните объект CSS значениями */`
+                }
+            }
         },
         cssMark: {
-            render: 'item',
-            name: 'CSS стиль выделений',
-            optional: true,
-            editor: 'JSB.Widgets.MultiEditor',
-            editorOpts: {
-                valueType: 'org.jsbeans.types.Css'
-            },
-            value: `/* Заполните объект CSS значениями */`
+            render: 'switch',
+            name: 'Использовать CSS стиль выделений',
+            items: {
+                cssStyle: {
+                    render: 'item',
+                    name: 'CSS стиль',
+                    editor: 'JSB.Widgets.MultiEditor',
+                    editorOpts: {
+                        valueType: 'org.jsbeans.types.Css'
+                    },
+                    value: `/* Заполните объект CSS значениями */`
+                }
+            }
         }
     },
 	$client: {
@@ -212,7 +222,7 @@
 
             var cssSelector = this.getContext().find('cssText');
             if(cssSelector.checked()){
-                this.getElement().attr("style", this.prepareCss(cssSelector.value()));
+                this.getElement().attr("style", this.prepareCss(cssSelector.find('cssStyle').value()));
             }
 
             $this.getElement().loader('hide');
@@ -296,7 +306,7 @@
 
             var cssSelector = this.getContext().find('cssMark');
             if(cssSelector.checked()){
-                this.find('span.highlight').attr("style", this.prepareCss(cssSelector.value()));
+                this.find('span.highlight').attr("style", this.prepareCss(cssSelector.find('cssStyle').value()));
             }
 		},
 

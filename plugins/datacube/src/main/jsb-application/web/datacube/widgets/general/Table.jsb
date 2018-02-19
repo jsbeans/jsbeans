@@ -265,7 +265,6 @@
                                             render: 'dataBinding',
                                             name: 'Поля сортировки',
                                             linkTo: 'rows',
-                                            optional: true,
                                             multiple: true
 	                                    }
 	                                }

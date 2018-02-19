@@ -88,7 +88,6 @@
 	    },
 
 	    disable: function(){
-debugger;
 	        if(this._disabled){
 	            return;
 	        }
