@@ -202,10 +202,8 @@
 	        multiple: true,
 	        items: {
 	            title: {
-                    render: 'dataBinding',
-                    name: 'Название',
-                    linkTo: 'rows',
-                    editor: 'input'
+                    render: 'item',
+                    name: 'Название'
 	            },
 	            view: {
 	                render: 'select',
@@ -1660,7 +1658,7 @@
 			} else {
 				this.setKeyColumns(rowKeyFields);
 			}
-			
+			debugger;
 			for(var i = 0; i < gArr.length; i++){
 				var colTitle = gArr[i].find('title').value();
 				var colSize = colSizes[i];
