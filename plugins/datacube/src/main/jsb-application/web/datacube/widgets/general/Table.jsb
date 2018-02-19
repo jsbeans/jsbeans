@@ -202,10 +202,8 @@
 	        multiple: true,
 	        items: {
 	            title: {
-                    render: 'dataBinding',
-                    name: 'Название',
-                    linkTo: 'rows',
-                    editor: 'input'
+                    render: 'item',
+                    name: 'Название'
 	            },
 	            view: {
 	                render: 'select',
@@ -985,7 +983,7 @@
 			var rowsContext = this.getContext().find('rows');
 			var rowKeySelector = this.getContext().find('rowKey');
 			var rowFilterSelector = this.getContext().find('rowFilter');
-			var rowFilterBinding = rowFilterSelector.binding();
+			var rowFilterBinding = rowFilterSelector.bindings();
 			var gArr = this.getContext().find('columns').values();
 			for(var i = 0; i < gArr.length; i++){
 				//var valueSelector = gArr[i].find('view');
@@ -1660,7 +1658,7 @@
 			} else {
 				this.setKeyColumns(rowKeyFields);
 			}
-			
+			debugger;
 			for(var i = 0; i < gArr.length; i++){
 				var colTitle = gArr[i].find('title').value();
 				var colSize = colSizes[i];

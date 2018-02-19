@@ -1,5 +1,6 @@
 .basicRender {
     overflow: visible;
+    margin: 6px 0;
 }
 
 .basicRender .description {

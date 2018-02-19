@@ -31,7 +31,7 @@
                         dataList: this._dataList,
                         value: values.value,
                         onchange: function(){
-                            var val = item.getValue();
+                            var val = editor.getValue();
                             values.value = val;
 
                             // todo: add slice id
@@ -54,7 +54,7 @@
                         options: this._dataList,
                         value: values.value,
                         onchange: function(){
-                            var val = item.getValue();
+                            var val = editor.getValue();
                             values.value = val;
 
                             // todo: add slice id
