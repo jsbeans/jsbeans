@@ -146,14 +146,15 @@
 		            '$from':'$from',
 		            '$distinct': '$distinctAll',
 		            '$postFilter': '$postFilter',
+		            '$cubeFilter': '$filter',
 		            '$sort': '$sort',
 		            '$limit': '$limit',
 		            '$finalize': '$finalize',
 		            '$sql': '$sql',
 		        },
-		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$sort', '$finalize', '$sql','$limit']
+		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
 		    });
-		
+
 		    new this.ComplexObject({
 		        name: '$select',
 		        desc: 'Выражения для формирования выходных полей (значений в столбцах)',
@@ -167,7 +168,7 @@
 		    new this.Group({
 		    	name: '$from',
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
-		        values: ['$query'],
+		        values: ['$query', '$viewName'],
 		    });
 		
 		    new this.Group({
@@ -677,6 +678,33 @@
 		        },
 		        optional: ['#outputFieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
 		    });
+
+
+//		    new this.ComplexObject({
+//		        name: '$cubeFilter',
+//		        displayName: 'Глобальный фильтр куба',
+//		        desc: 'Фильтрация строк куба (глобальный фильтр строк куба)',
+//		        customKey: '#fieldName',
+//		        values: {
+//		            '#fieldName': '$valueCondition',
+//
+//		            '$or': '$orCubeFilter',
+//		            '$and': '$andCubeFilter',
+//		            '$not': '$cubeFilter',
+//
+//		            '$eq': '$eqExpr',
+//		            '$ne': '$neExpr',
+//		            '$gt': '$gtExpr',
+//		            '$gte': '$gteExpr',
+//		            '$lt': '$ltExpr',
+//		            '$lte': '$lteExpr',
+//		            '$like': '$likeExpr',
+//		            '$ilike': '$ilikeExpr',
+//		            '$in': '$inExpr',
+//		            '$nin': '$ninExpr',
+//		        },
+//		        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
+//		    });
 		
 		    // valueCondition
 		    new this.Group({
@@ -718,7 +746,21 @@
 		        maxOperands: -1,
 		        values: ['$postFilter'],
 		    });
-		
+
+//		    new this.EArray({
+//		        name: '$orCubeFilter',
+//		        minOperands: 1,
+//		        maxOperands: -1,
+//		        values: ['$cubeFilter'],
+//		    });
+//
+//		    new this.EArray({
+//		        name: '$andCubeFilter',
+//		        minOperands: 1,
+//		        maxOperands: -1,
+//		        values: ['$cubeFilter'],
+//		    });
+
 		    new this.SingleObject({
 		        name: '$eq',
 		        category: 'Операторы сравнения',
@@ -1020,6 +1062,18 @@
 		    
 		    new this.EConstString({
 		        name: '$contextName'
+		    });
+
+
+		    new this.SingleObject({
+		        name: '$viewName',
+		        desc: 'Имя среза источника',
+		        values: ['$viewConstName']
+		    });
+
+		    new this.EConstString({
+		        name: '$viewConstName',
+		        editable: true
 		    });
 		
 		    new this.EConstNumber({
