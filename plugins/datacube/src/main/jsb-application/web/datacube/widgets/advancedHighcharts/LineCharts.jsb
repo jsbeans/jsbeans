@@ -1379,7 +1379,7 @@ return;
             }
 
             var dataSource = this.getContext().find('dataSource');
-            if(!dataSource.bound()){
+            if(!dataSource.hasBinding()){
                 return;
             }
 
@@ -1435,7 +1435,7 @@ return;
                 useCompositeSeries = false;
 
             for(var i = 0; i < seriesContext.length; i++){
-                if(seriesContext[i].find('name').bound()){
+                if(seriesContext[i].find('name').hasBinding()){
                     useCompositeSeries = true;
                     break;
                 }
