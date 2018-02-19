@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.PolarChart',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Полярная диаграмма',
 		description: '',

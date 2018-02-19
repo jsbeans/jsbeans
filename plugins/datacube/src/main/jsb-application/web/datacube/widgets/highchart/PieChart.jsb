@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.PieChart',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Круговая диаграмма',
 		description: '',

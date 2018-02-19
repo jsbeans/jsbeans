@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.LineCharts',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
     $expose: {
         name: 'Линейная диаграмма',
         description: '',

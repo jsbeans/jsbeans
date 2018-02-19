@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.GraphWidget',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
     $expose: {
         name: 'Граф',
         description: '',

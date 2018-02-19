@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.BubbleChart',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Пузыри',
 		description: '',

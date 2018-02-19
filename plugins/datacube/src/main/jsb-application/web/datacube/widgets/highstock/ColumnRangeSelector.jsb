@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.ColumnRangeSelector',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Временной диапазон',
 		description: '',

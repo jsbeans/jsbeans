@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.ScatterChart',
-	$parent: 'DataCube.Widgets.Widget',
+	//$parent: 'DataCube.Widgets.Widget',
 	$expose: {
 		name: 'Разброс',
 		description: '',
