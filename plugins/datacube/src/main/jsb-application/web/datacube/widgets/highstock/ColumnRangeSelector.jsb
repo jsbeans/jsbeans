@@ -333,7 +333,7 @@ return;
             }
 
             var source = this.getContext().find('source');
-            if(!source.bound()) return;
+            if(!source.hasBinding()) return;
 
             var fixedColumns = this.getContext().find('fixedColumns');
 // filters section

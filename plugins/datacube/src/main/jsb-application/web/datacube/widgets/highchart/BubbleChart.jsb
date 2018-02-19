@@ -245,7 +245,7 @@ return;
             if(opts && this == opts.initiator) return;
 
             var source = this.getContext().find('source');
-            if(!source.bound()) return;
+            if(!source.hasBinding()) return;
             
 			$base();
 

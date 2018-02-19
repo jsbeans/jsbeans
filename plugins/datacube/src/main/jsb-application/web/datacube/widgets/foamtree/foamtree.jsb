@@ -92,7 +92,7 @@
             this.foamtreeContainer = this.$('<div class="foamtreeWidget" id="' + this.foamtreeId + '"></div>');
             this.append(this.foamtreeContainer);
 
-            JSB().loadScript(['datacube/tpl/carrotsearch/foamtree.js'],
+            JSB().loadScript(['tpl/carrotsearch/foamtree.js'],
                 function(){
                     $this.isScriptLoaded = true;
                     $this.setInitialized();
@@ -106,7 +106,7 @@
         	    return;
         	}
 
-            if(this.getContext().find('source').bound()){
+            if(this.getContext().find('source').hasBinding()){
                 this.getElement().loader();
 
                 if(opts && opts.refreshFromCache){
