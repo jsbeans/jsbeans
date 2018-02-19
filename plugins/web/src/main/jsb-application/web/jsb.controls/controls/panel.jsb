@@ -22,6 +22,13 @@
             if(this.options.hasToolbar){
                 this.elements.toolbar = this.$('<ul></ul>');
                 this.elements.header.append(this.elements.toolbar);
+                this.elements.header.addClass('hasToolbar');
+            }
+            
+            if(this.options.toolbarPosition == 'right'){
+            	this.elements.header.addClass('toolbar-right');
+            } else if(this.options.toolbarPosition == 'left') {
+            	this.elements.header.addClass('toolbar-left');
             }
 
             if(this.options.collapseBtn){
@@ -84,6 +91,7 @@
             collapsed: false,
             title: null,
             hasToolbar: true,
+            toolbarPosition: 'right',
             collapseBtn: true,
             settingsBtn: false,
             closeBtn: false,

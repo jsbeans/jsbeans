@@ -1738,7 +1738,7 @@
 						var summaryOp = summaryElts[j].find('summaryOp').value();
 						if(summaryOp){
 							var statusDesc = {};
-							statusDesc.summaryOp = summaryOp.value();
+							statusDesc.summaryOp = summaryOp;
 							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
 							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
 							if(!desc.status){

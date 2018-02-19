@@ -8,6 +8,7 @@
 	        this.loadCss('Group.css');
 
 	        this.group = new Panel({
+	        	toolbarPosition: 'left',
 	            title: this._scheme.name,
                 collapseBtn: this._scheme.collapsable,
                 collapsed: this._scheme.collapsed

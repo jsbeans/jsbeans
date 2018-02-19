@@ -16,7 +16,6 @@
 }
 
 .itemRender > .name {
-    width: 200px;
     display: inline-block;
     line-height: 22px;
     font-size: 15px;

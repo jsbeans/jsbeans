@@ -22,9 +22,6 @@
 }
 
 .jsb-panel > .header {
-    border-bottom: 2px solid #E6E9ED;
-    padding: 1px 5px 6px;
-    margin-bottom: 10px;
 }
 
 .jsb-panel > .header > h1 {
@@ -40,10 +37,15 @@
 
 .jsb-panel > .header > ul {
     float: right;
-    margin: 10px 0 0 0;
+    margin: 8px 4px 0 4px;
     padding-left: 0;
     list-style: none;
 }
+
+.jsb-panel > .header.toolbar-left > ul {
+	float: left;
+}
+
 
 .jsb-panel > .header > ul > li {
     float: left;
@@ -53,6 +55,7 @@
     margin-left: 5px;
 }
 
+
 .jsb-panel > .header > ul > li > i {
     display: inline-block;
     font: normal normal normal 14px/1 FontAwesome;
@@ -60,4 +63,8 @@
     text-rendering: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+.jsb-panel > .content {
+	border-top: 2px solid #E6E9ED;
 }
