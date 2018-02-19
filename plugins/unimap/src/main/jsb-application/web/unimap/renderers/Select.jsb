@@ -25,6 +25,7 @@
 	        var item = this.$('<div class="item"></div>');
 
             var select = new Select({
+                emptyStartValue: false,
                 options: this._optionsList,
                 value: values.value,
                 onchange: function(){

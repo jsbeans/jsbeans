@@ -165,21 +165,31 @@
 	                defaultValue: 2
 	            },
 	            css: {
-	                render: 'item',
-	                name: 'CSS стиль',
-	                optional: true,
-	                editor: 'JSB.Widgets.MultiEditor',
-	                editorOpts: {
-	                    valueType: 'org.jsbeans.types.Css'
+	                render: 'switch',
+	                name: 'Использовать CSS стиль',
+	                items: {
+	                    cssStyle: {
+                            render: 'item',
+                            name: 'CSS стиль',
+                            editor: 'JSB.Widgets.MultiEditor',
+                            editorOpts: {
+                                valueType: 'org.jsbeans.types.Css'
+                            }
+	                    }
 	                }
 	            },
 	            textCss: {
-	                render: 'item',
-	                name: 'CSS стиль текста',
-	                optional: true,
-	                editor: 'JSB.Widgets.MultiEditor',
-	                editorOpts: {
-	                    valueType: 'org.jsbeans.types.Css'
+	                render: 'switch',
+	                name: 'Использовать CSS стиль текста',
+	                items: {
+	                    cssStyle: {
+	                        render: 'item',
+	                        name: 'CSS стиль',
+                            editor: 'JSB.Widgets.MultiEditor',
+                            editorOpts: {
+                                valueType: 'org.jsbeans.types.Css'
+                            }
+	                    }
 	                }
 	            }
 	        }
@@ -213,7 +223,7 @@
             if(!dataSource.hasBinding || !dataSource.hasBinding()){
                 return;
             }
-			
+
 			$base();
 			
 			// construct series descriptors
@@ -245,10 +255,10 @@
 				};
 
 				if(gArr[i].find('css').checked()){
-					serieDesc.css = prepareCss(gArr[i].find('css').value());
+					serieDesc.css = prepareCss(gArr[i].find('css cssStyle').value());
 				}
 				if(gArr[i].find('textCss').checked()){
-					serieDesc.textCss = prepareCss(gArr[i].find('textCss').value());
+					serieDesc.textCss = prepareCss(gArr[i].find('textCss cssStyle').value());
 				}
 				/*
 				if(gArr[i].find('textFormat').used()){

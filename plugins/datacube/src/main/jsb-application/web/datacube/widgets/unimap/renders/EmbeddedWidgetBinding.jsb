@@ -92,11 +92,11 @@
                     var d = ui.draggable;
                     $this._item.removeClass('acceptDraggable');
                     for(var i in d.get(0).draggingItems){
-                        $this.setValue({name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb}, true);
                         $this._values.values[0] = {
                             binding: {name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb},
                             value: {}
                         }
+                        $this.setValue({name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb}, true);
                         break;
                     }
                 }
@@ -149,6 +149,10 @@
             this._item.removeClass('filled');
             this._innerController.destroy();
             this.childSourceBinding = null;
+
+            $this._values.values[0] = {
+                value: {}
+            };
         },
 
         setValue: function(wDesc, event){

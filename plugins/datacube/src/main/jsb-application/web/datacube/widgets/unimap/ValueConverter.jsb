@@ -356,14 +356,20 @@
                         render: 'item',
                         checked: oldSeries[i].find('css').used(),
                         values: [{
-                            value: oldSeries[i].find('css').value()
+                            cssStyle: {
+                                render: 'item',
+                                value: oldSeries[i].find('css').value()
+                            }
                         }]
                     },
                     textCss: {
                         render: 'item',
                         checked: oldSeries[i].find('textCss').used(),
                         values: [{
-                            value: oldSeries[i].find('textCss').value()
+                            cssStyle: {
+                                render: 'item',
+                                value: oldSeries[i].find('textCss').value()
+                            }
                         }]
                     }
                 })
@@ -740,14 +746,20 @@
                         render: 'item',
                         checked: oldVal.find('cssText').used(),
                         values: [{
-                            value: oldVal.find('cssText').value()
+                            cssStyle: {
+                                render: 'item',
+                                value: oldVal.find('cssText').value()
+                            }
                         }]
                     },
                     cssMark: {
                         render: 'item',
                         checked: oldVal.find('cssMark').used(),
                         values: [{
-                            value: oldVal.find('cssMark').value()
+                            cssStyle: {
+                                render: 'item',
+                                value: oldVal.find('cssMark').value()
+                            }
                         }]
                     }
                 },

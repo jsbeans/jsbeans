@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Editor', 'JSB.Controls.Select'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Editor', 'JSB.Controls.Select'],
 	$client: {
 	    _editors: [],
 
@@ -20,13 +20,13 @@
                 this._values.values.push(values);
 
 	            if(!itemIndex){
-	                itemIndex = this._values.values.length;
+	                itemIndex = this._values.values.length - 1;
 	            }
             }
 
             switch(this._scheme.editor){
                 case 'input':
-                    var item = new Editor({
+                    var editor = new Editor({
                         cssClass: 'editor',
                         dataList: this._dataList,
                         value: values.value,
@@ -49,7 +49,7 @@
                     break;
                 case 'select':
                 default:
-                    var item = new Select({
+                    var editor = new Select({
                         cssClass: 'editor',
                         options: this._dataList,
                         value: values.value,
@@ -76,16 +76,31 @@
                     */
             }
 
-            this._editors.push(item);
+            this._editors.push(editor);
 
 	        if(this._scheme.multiple){
-	            item.addClass('multipleItem');
+	            var item = this.$('<div class="multipleItem" idx="' + itemIndex + '"></div>');
 
-	            item.attr('idx', itemIndex);
+	            item.append(editor.getElement());
 
-	            this.multipleBtn.before(item.getElement());
+	            var removeBtn = new Button({
+                    hasIcon: true,
+                    hasCaption: false,
+                    cssClass: 'btnDelete',
+                    tooltip: 'Удалить',
+                    onclick: function(evt){
+                        evt.stopPropagation();
+                        $this._values.values.splice(itemIndex, 1);
+                        item.remove();
+                        editor.destroy();
+                        removeBtn.destroy();
+                    }
+	            });
+	            item.append(removeBtn.getElement());
+
+	            this.multipleBtn.before(item);
 	        } else {
-	            this.append(item);
+	            this.append(editor);
 	        }
 	    },
 
