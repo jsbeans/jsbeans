@@ -48,13 +48,19 @@
 	    },
 
 	    getValue: function(withName){
+	        var value = this.getElement().val();
+
+	        if(value === 'null'){
+	            value = null;
+	        }
+
 	        if(withName){
 	            return {
 	                name: this.getElement().find('option:selected').text(),
-	                value: this.getElement().val()
+	                value: value
 	            }
 	        }
-	        return this.getElement().val() || this.options.value;
+	        return value;
 	    },
 
 	    hasOption: function(option){

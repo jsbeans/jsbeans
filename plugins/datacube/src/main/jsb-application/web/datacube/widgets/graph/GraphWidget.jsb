@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Widgets.GraphWidget',
-	//$parent: 'DataCube.Widgets.Widget',
+	$parent: 'DataCube.Widgets.Widget',
     $expose: {
         name: 'Граф',
         description: '',
@@ -64,6 +64,8 @@
                                       v3xAYpIt/uXMJYuzc9jpkmDHzxb/8hkSk2zxL2fWIZydwxxHx3b8bPEvnyExyRb/8gGJSbb4lzOb
                                       i5ydw06bd3b87PAvSP8HfEezzimbMNEAAAAASUVORK5CYII=`
     },
+    $scheme: {},
+    /*
     $scheme: {
         type: 'group',
         items: [{
@@ -278,14 +280,6 @@
                             key: 'distance',
                             itemValue: '30',
                         },
-                        /*
-                        {
-                            type: 'item',
-                            name: 'strength',
-                            key: 'strength',
-                            itemValue: '',
-                        },
-                        */
                         {
                             type: 'item',
                             name: 'iterations',
@@ -300,6 +294,7 @@
         }
         ]
     },
+    */
 	$client: {
         $require: ['JQuery.UI.Loader', 'JSB.Widgets.Diagram', 'JSB.Widgets.CheckBox'],
 

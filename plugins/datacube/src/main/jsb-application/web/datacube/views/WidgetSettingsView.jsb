@@ -56,6 +56,11 @@
 	        splitBox.append(this.widgetBlock);
 
 	        // todo: add save msg
+            this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
+            this.savedMessage.click(function(){
+                $this.savedMessage.css('display', 'none');
+            });
+            this.append(this.savedMessage);
 		},
 
 		refresh: function(){
@@ -119,6 +124,10 @@
                     }
                 }
             }
+
+            $this.savedMessage.fadeIn(1600, "linear", function(){
+                $this.savedMessage.fadeOut(1600, "linear");
+            });
 
             this.entry.server().storeValues({
                 linkedFields: this.widgetSchemeRenderer.getLinkedFields(),

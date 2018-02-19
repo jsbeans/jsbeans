@@ -26,26 +26,50 @@
 
             switch(this._scheme.editor){
                 case 'input':
-                    var editor = new Editor({
+                    var manualEditor = new Editor({
                         cssClass: 'editor',
-                        dataList: this._dataList,
-                        value: values.value,
+                        value: values.binding ? undefined : values.value,
+                        onchange: function(){
+                            values.value = manualEditor.getValue();
+
+                            $this.options.onchange.call($this, $this._values);
+                        }
+                    });
+
+                    var editor = new Select({
+                        cssClass: 'editor',
+                        options: this._dataList,
+                        value: values.binding ? values.value : undefined,
                         onchange: function(){
                             var val = editor.getValue();
-                            values.value = val;
 
-                            // todo: add slice id
+                            if(val !== null){
+                                manualEditor.addClass('hidden');
 
-                            if($this._dataList.indexOf(val) > -1){
+                                values.value = val;
+
                                 values.binding = val;
                                 values.bindingType = $this._bindingsInfo[val].type;
                             } else {
-                                values.binding = undefined;
+                                manualEditor.removeClass('hidden');
+
+                                values.value = manualEditor.getValue();
+                                values.binding = null;
+                                values.bindingType = null;
                             }
 
                             $this.options.onchange.call($this, $this._values);
                         }
                     });
+                    this._editors.push(editor);
+
+                    var editorEl = this.$('<div class="twoEditors"></div>');
+                    editorEl.append(manualEditor.getElement());
+                    editorEl.append(editor.getElement());
+
+                    if(values.binding){
+                        manualEditor.addClass('hidden');
+                    }
                     break;
                 case 'select':
                 default:
@@ -69,19 +93,15 @@
                             $this.options.onchange.call($this, $this._values);
                         }
                     });
-                    /*
-                    if(!values.value){
-                        item.setValue(this._dataList[0], true);
-                    }
-                    */
-            }
+                    this._editors.push(editor);
 
-            this._editors.push(editor);
+                    var editorEl = editor.getElement();
+            }
 
 	        if(this._scheme.multiple){
 	            var item = this.$('<div class="multipleItem" idx="' + itemIndex + '"></div>');
 
-	            item.append(editor.getElement());
+	            item.append(editorEl);
 
 	            var removeBtn = new Button({
                     hasIcon: true,
@@ -100,7 +120,7 @@
 
 	            this.multipleBtn.before(item);
 	        } else {
-	            this.append(editor);
+	            this.append(editorEl);
 	        }
 	    },
 
@@ -108,23 +128,11 @@
 	        var dataList = this.createDataList(values);
 
             for(var i = 0; i < this._editors.length; i++){
-                switch(this._scheme.editor){
-                    case 'input':
-                        this._editors[i].setDataList(dataList);
-                        break;
-                    case 'select':
-                    default:
-                        var val = this._editors[i].getValue();
-                        this._editors[i].setOptions(dataList, true);
+                var val = this._editors[i].getValue();
+                this._editors[i].setOptions(dataList, true);
 
-                        if(val && this._editors[i].hasOption(val)){
-                            this._editors[i].setValue(val);
-                        }
-                        /*
-                        if(!val){
-                            this._editors[i].setValue(dataList[0], true);
-                        }
-                        */
+                if(val && this._editors[i].hasOption(val)){
+                    this._editors[i].setValue(val);
                 }
             }
 	    },

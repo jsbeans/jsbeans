@@ -106,14 +106,17 @@
         	    return;
         	}
 
-            if(this.getContext().find('source').hasBinding()){
-                this.getElement().loader();
+        	var source = this.getContext().find('source');
+            if(!source.hasBinding || !source.hasBinding()){
+                return;
+            }
 
-                if(opts && opts.refreshFromCache){
-                    this.updateFoamtree(this.getCache());
-                } else {
-                    this.getData(opts ? opts.isCacheMod : false);
-                }
+            this.getElement().loader();
+
+            if(opts && opts.refreshFromCache){
+                this.updateFoamtree(this.getCache());
+            } else {
+                this.getData(opts ? opts.isCacheMod : false);
             }
         },
 
