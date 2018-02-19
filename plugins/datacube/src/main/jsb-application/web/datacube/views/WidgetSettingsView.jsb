@@ -93,7 +93,10 @@
 		},
 
 		updateData: function(){
-            this.wrapper.updateValues(this.widgetSchemeRenderer.getValues(), this.widgetSchemeRenderer.getLinkedFields());
+            this.wrapper.updateValues({
+                values: this.widgetSchemeRenderer.getValues(),
+                linkedFields: this.widgetSchemeRenderer.getLinkedFields()
+            });
 
 		    this.wrapper.getWidget().refresh({
                 isCacheMod: true,
