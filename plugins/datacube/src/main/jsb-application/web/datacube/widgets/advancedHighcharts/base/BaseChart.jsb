@@ -1,105 +1,17 @@
 {
     $name: 'DataCube.Widgets.BaseHighchart',
-    //$parent: 'DataCube.Widgets.Widget',
+    $parent: 'DataCube.Widgets.Widget',
     $scheme: {
 	    source: {
 	        render: 'sourceBinding',
 	        name: 'Источник'
 	    },
 
-        series: {
-	        render: 'group',
-	        name: 'Серии',
-            collapsable: true,
-            multiple: true,
-            items: {
-                seriesItem: {
-                    render: 'group',
-                    name: 'Серия',
-                    collapsable: true,
-                    items: {
-                        allowPointSelect: {
-                            render: 'item',
-                            name: 'Разрешить события',
-                            optional: true,
-                            editor: 'none'
-                        },
-                        color: {
-                            render: 'item',
-                            name: 'Цвет',
-                            editor: 'JSB.Widgets.ColorEditor'
-                        },
-                        stack: {
-                            render: 'item',
-                            name: 'Имя стэка',
-                            valueType: 'string'
-                        },
-                        step: { // todo: check none
-                            render: 'select',
-                            name: 'Шаговая диаграмма',
-                            items: {
-                                none: {
-                                    name: 'Нет'
-                                },
-                                left: {
-                                    name: 'Левый'
-                                },
-                                center: {
-                                    name: 'Центр'
-                                },
-                                right: {
-                                    name: 'Правый'
-                                }
-                            }
-                        },
-                        tooltip: {
-                            render: 'group',
-                            name: 'Подпись',
-                            collapsable: true,
-                            items: {
-                                valueDecimals: {
-                                    render: 'item',
-                                    name: 'Число знаков после запятой',
-                                    valueType: 'number'
-                                },
-                                valuePrefix: {
-                                    render: 'item',
-                                    name: 'Префикс значения',
-                                    valueType: 'string'
-                                },
-                                valueSuffix: {
-                                    render: 'item',
-                                    name: 'Суффикс значения',
-                                    valueType: 'string'
-                                }
-                            }
-                        },
-                        visible: {
-                            render: 'item',
-                            name: 'Показывать по-умолчанию',
-                            optional: 'checked',
-                            editor: 'none'
-                        }
-                    }
-                }
-            }
-        },
+	    series: {},
 
-        xAxis: {
-	        render: 'group',
-	        name: 'Ось Х',
-            collapsable: true,
-            items: {
-                labels: {
-                    render: 'group',
-                    name: 'Подписи',
-                    collapsable: true,
-                    items: {
+        xAxis: {},
 
-                    }
-                }
-            }
-        },
+        yAxis: {},
 
 	    header: {
 	        render: 'group',
@@ -162,7 +74,7 @@
                     editor: 'JSB.Widgets.ColorEditor',
                     defaultValue: '#333333'
                 },
-                fontSize: { // todo: add px to value
+                fontSize: {
                     render: 'item',
                     name: 'Размер шрифта',
                     valueType: 'number',
@@ -299,7 +211,7 @@
                             editor: 'JSB.Widgets.ColorEditor',
                             defaultValue: '#333333'
                         },
-                        fontSize: {     // todo: add px
+                        fontSize: {
                             render: 'item',
                             name: 'Размер шрифта',
                             valueType: 'number',
@@ -451,29 +363,7 @@
             }
 	    },
 
-	    plotOptions: {
-	        render: 'group',
-	        name: 'Опции точек',
-            collapsable: true,
-            collapsed: true,
-            items: {
-                stacking: {
-                    render: 'select',
-                    name: 'Тип стека',
-                    items: {
-                        none: {
-                            name: 'Нет' // todo: check none
-                        },
-                        normal: {
-                            name: 'Нормальный'
-                        },
-                        percent: {
-                            name: 'Процентный'
-                        }
-                    }
-                }
-            }
-	    },
+        plotOptions: {},
 
 	    credits: {
 	        render: 'group',
@@ -505,7 +395,7 @@
                     editor: 'JSB.Widgets.ColorEditor',
                     defaultValue: '#999999'
                 },
-                fontSize: { // todo: add px
+                fontSize: {
                     render: 'item',
                     name: 'Размер шрифта',
                     valueType: 'number',
@@ -557,6 +447,8 @@
 	    }
     },
     $client: {
+        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
+
         $constructor: function(opts){
             $base(opts);
 
@@ -585,16 +477,131 @@
             onMouseOut: null
         },
 
+        refresh: function(opts){
+            // if filter source is current widget
+            if(opts && this == opts.initiator){
+                return;
+            }
+
+            // widget settings editor set style changes
+            if(opts && opts.refreshFromCache){
+                var cache = this.getCache();
+                if(cache){
+                    this.buildChart(cache);
+                    return;
+                }
+            }
+
+            var dataSource = this.getContext().find('source');
+            if(!dataSource.hasBinding()){
+                return;
+            }
+
+            $base();
+
+            return dataSource;
+        },
+
+        // refresh after data and/or style changes
+        buildChart: function(data){
+            JSB.defer(function(){
+                $this._buildChart(data);
+            }, 300, '_buildChart_' + this.getId());
+        },
+
         _buildChart: function(){
             var chartOpts = {};
 
             try{
+                var creditsContext = this.getContext().find('credits'),
+                    legendContext = this.getContext().find('legend'),
+                    titleContext = this.getContext().find('header'),
+                    tooltipContext = this.getContext().find('mainTooltip'),
 
+                    legendItemStyle = legendContext.find('itemStyle');
+
+                chartOpts = {
+                    credits: {
+                        enabled: creditsContext.find('enabled').checked(),
+                        text: creditsContext.find('text').value(),
+                        href: creditsContext.find('href').value(),
+                        style: {
+                           color: creditsContext.find('fontColor').value(),
+                           fontSize: creditsContext.find('fontSize').value() + 'px'
+                        },
+                        position: {
+                            align: creditsContext.find('align').value(),
+                            verticalAlign: creditsContext.find('verticalAlign').value(),
+                            x: creditsContext.find('x').value(),
+                            y: creditsContext.find('y').value()
+                        }
+                    },
+
+                    legend: {
+                        enabled: legendContext.find('enabled').checked(),
+                        layout: legendContext.find('layout').value(),
+                        align: legendContext.find('align').value(),
+                        verticalAlign: legendContext.find('verticalAlign').value(),
+                        backgroundColor: legendContext.find('backgroundColor').value(),
+                        borderColor: legendContext.find('borderColor').value(),
+                        borderRadius: legendContext.find('borderRadius').value(),
+                        borderWidth: legendContext.find('borderWidth').value(),
+                        floating: legendContext.find('floating').checked(),
+                        itemDistance: legendContext.find('itemDistance').value(),
+                        itemWidth: legendContext.find('itemWidth').value(),
+                        itemMarginTop: legendContext.find('itemMarginTop').value(),
+                        itemMarginBottom: legendContext.find('itemMarginBottom').value(),
+                        itemStyle: {
+                            color: legendItemStyle.find('color').value(),
+                            fontSize: legendItemStyle.find('fontSize').value() + 'px',
+                            fontWeight: legendItemStyle.find('fontWeight').value()
+                        },
+                        labelFormat: legendContext.find('labelFormat').value(),
+                        reversed: legendContext.find('reversed').checked(),
+                        shadow: legendContext.find('shadow').checked(),
+                        width: legendContext.find('width').value(),
+                        x: legendContext.find('x').value(),
+                        y: legendContext.find('y').value()
+                    },
+
+                    title: {
+                        text: titleContext.find('text').value(),
+                        align: titleContext.find('align').value(),
+                        verticalAlign: titleContext.find('verticalAlign').value(),
+                        floating: titleContext.find('floating').checked(),
+                        margin: titleContext.find('margin').value(),
+                        color: titleContext.find('fontColor').value(),
+                        fontSize: titleContext.find('fontSize').value() + 'px',
+                        x: titleContext.find('x').value(),
+                        y: titleContext.find('y').value()
+                    },
+
+                    tooltip: {
+                        enabled: tooltipContext.find('enabled').checked(),
+                        backgroundColor: tooltipContext.find('backgroundColor').value(),
+                        borderColor: tooltipContext.find('borderColor').value(),
+                        borderRadius: tooltipContext.find('borderRadius').value(),
+                        borderWidth: tooltipContext.find('borderWidth').value(),
+                        useHTML: tooltipContext.find('useHTML').checked(),
+                        headerFormat: tooltipContext.find('headerFormat').value(),
+                        pointFormat: tooltipContext.find('pointFormat').value(),
+                        footerFormat: tooltipContext.find('footerFormat').value(),
+                        padding: tooltipContext.find('padding').value(),
+                        shadow: tooltipContext.find('shadow').checked(),
+                        valueDecimals: tooltipContext.find('valueDecimals').value(),
+                        valuePrefix: tooltipContext.find('valuePrefix').value(),
+                        valueSuffix: tooltipContext.find('valueSuffix').value()
+                    },
+                }
             } catch(e){
-
+                console.log(e);
             } finally {
                 return chartOpts;
             }
+        },
+
+        isNone: function(val){
+            return val === 'none' ? undefined : val;
         }
     }
 }

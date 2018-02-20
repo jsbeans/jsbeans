@@ -70,7 +70,7 @@
 				        bootstrap: 'Datacube.Unimap.Bootstrap'
 				    });
 
-				    var defaultValues = this.valueSelector.createDefaultValues(JSB.get(wType).$scheme);
+				    var defaultValues = this.valueSelector.createDefaultValues(this.extractWidgetScheme());
 
 				    this.values = defaultValues.values;
 				    this.linkedFields = defaultValues.linkedFields;
@@ -309,6 +309,29 @@
 				source: source.getLocalId(),
 				arrayType: recordTypes
 			}
+		},
+
+		extractWidgetScheme: function(){
+			var scheme = {},
+			    curWidgetJsb = JSB.get(this.wType),
+			    schemesArray = [];
+
+			while(curWidgetJsb){
+				if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
+					break;
+				}
+				var wScheme = curWidgetJsb.getDescriptor().$scheme;
+				if(wScheme && Object.keys(wScheme).length > 0){
+				    schemesArray.push(wScheme);
+				}
+				curWidgetJsb = curWidgetJsb.getParent();
+			}
+
+			for(var i = schemesArray.length - 1; i > -1; i--){
+			    JSB.merge(true, scheme, schemesArray[i]);
+			}
+
+			return scheme;
 		}
 	}
 }

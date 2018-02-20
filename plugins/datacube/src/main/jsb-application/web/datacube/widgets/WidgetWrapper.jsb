@@ -235,19 +235,26 @@
 		},
 		
 		extractWidgetScheme: function(curWidgetJsb){
-			var scheme = {};
+			var scheme = {},
+			    schemesArray = [];
+
 			if(!curWidgetJsb){
 				curWidgetJsb = this.widget.getJsb();
 			}
+
 			while(curWidgetJsb){
 				if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
 					break;
 				}
 				var wScheme = curWidgetJsb.getDescriptor().$scheme;
 				if( wScheme && Object.keys(wScheme).length > 0){
-					JSB.merge(true, scheme, wScheme);
+				    schemesArray.push(wScheme);
 				}
 				curWidgetJsb = curWidgetJsb.getParent();
+			}
+
+			for(var i = schemesArray.length - 1; i > -1; i--){
+			    JSB.merge(true, scheme, schemesArray[i]);
 			}
 
 			return scheme;
