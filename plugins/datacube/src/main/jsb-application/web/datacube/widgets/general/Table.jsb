@@ -1352,13 +1352,16 @@
 							if(statusDesc.summaryPrefix && statusDesc.summaryPrefix.length > 0){
 								sEntry.append($this.$('<div class="prefix"></div>').text(statusDesc.summaryPrefix));
 							}
-							sEntry.append($this.$('<div class="value"></div>'));
+							sEntry.append($this.$('<div class="value loading"></div>'));
 							if(statusDesc.summaryPostfix && statusDesc.summaryPostfix.length > 0){
 								sEntry.append($this.$('<div class="postfix"></div>').text(statusDesc.summaryPostfix));
 							}
 							
+							sEntry.find('> .value').addClass
 							$this.executeSummaryOp(statusDesc, function(val){
-								sEntry.find('> .value').text(val);
+								var elt = sEntry.find('> .value');
+								elt.text(val);
+								elt.removeClass('loading');
 							});
 						})(statusDesc);
 					}
@@ -1390,7 +1393,49 @@
 		
 		executeSummaryOp: function(statusDesc, callback){
 			// construct status query
-			callback.call(this, 0);
+			if(!statusDesc.summaryFieldSelector){
+				callback.call(this, 0);
+				return;
+			}
+			var sourceSelector = statusDesc.summaryFieldSelector.getLinkToSelector();
+			var fieldName = statusDesc.summaryFieldSelector.binding();
+			if(!fieldName){
+				callback.call(this, 0);
+				return;
+			}
+
+			var source = sourceSelector.binding().source;
+			var mainQuery = this.getLayerQuery('main', source);
+			var valQ = {};
+			switch(statusDesc.summaryOp){
+			case 'summaryOpCount':
+				valQ['$count'] = fieldName;
+				break;
+			case 'summaryOpSum':
+				valQ['$sum'] = fieldName;
+				break;
+			case 'summaryOpMin':
+				valQ['$min'] = fieldName;
+				break;
+			case 'summaryOpMax':
+				valQ['$max'] = fieldName;
+				break;
+			case 'summaryOpAvg':
+				valQ['$avg'] = fieldName;
+				break;
+			default:
+				callback.call(this, 0);
+				return;
+			}
+			var wrapQuery = {$select:{'val':valQ}};
+			this.server().executeQuery(source, $this.getWrapper().getDashboard(), {extQuery: mainQuery, wrapQuery: wrapQuery}, function(res){
+				if(res && res.length > 0 && JSB.isDefined(res[0].val)){
+					callback.call(this, res[0].val);
+				} else {
+					callback.call(this, 0);
+				}
+			})
+			
 		},
 		
 		updateHeader: function(){

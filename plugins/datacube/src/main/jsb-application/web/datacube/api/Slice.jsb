@@ -70,7 +70,7 @@
 			}
 			
 			// read
-			var it = slice.executeQuery(params.query);
+			var it = slice.executeQuery({extQuery: params.query});
 			if(!it){
 				throw new Error('Failed to execute query: ' + JSON.stringify(params.query));
 			}

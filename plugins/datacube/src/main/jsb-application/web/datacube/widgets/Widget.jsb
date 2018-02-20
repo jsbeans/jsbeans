@@ -552,7 +552,7 @@
 					// figure out data provider
 					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 						var extQuery = opts.layers[layerName];
-                    	$this.iterators[iteratorId] = source.executeQuery(extQuery, true);
+                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, useCache: true});
 						$this.completed[iteratorId] = false;
 					} else {
 						// TODO
@@ -714,6 +714,47 @@
 			Log.debug(JSON.stringify(encoded));
 */
 			return encoded;
+		},
+		
+		executeQuery: function(sourceId, dashboard, opts){
+			var extQuery = (opts && opts.extQuery) || {};
+			var wrapQuery = (opts && opts.wrapQuery) || {};
+			var batchSize = opts.batchSize || 50;
+			var source = dashboard.workspace.entry(sourceId);
+			var data = [];
+			if(opts.reset){
+				this.needBreak = true;
+			}
+			
+			JSB.getLocker().lock('executeQuery_' + $this.getId());
+			this.needBreak = false;
+			var it = null;
+			try {
+				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+	            	it = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: true});
+				} else {
+					// TODO
+				}
+				while(it){
+					var el = null;
+					try {
+						el = it.next();
+					}catch(e){
+						el = null;
+					}
+					if(!el){
+						break;
+					}
+					data.push(el);
+				}
+			} finally {
+				if(it){
+					it.close();
+				}
+				JSB.getLocker().unlock('executeQuery_' + $this.getId());
+			}
+			
+			return data;
 		}
 	}
 }

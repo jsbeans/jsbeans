@@ -86,9 +86,11 @@
 			this.doSync();
 		},
 		
-		executeQuery: function(extQuery, useCache){
+		executeQuery: function(opts){
 			$this.getCube().load();
 			var params = {};
+			var extQuery = (opts && opts.extQuery) || {};
+			var useCache = (opts && opts.useCache) || false;
 			var preparedQuery = JSB.clone(this.query);
             if(!preparedQuery || Object.keys(preparedQuery).length == 0){
             	preparedQuery = { $select: {}};
@@ -139,7 +141,11 @@
             	}
 
             }
-//            JSB.getLogger().debug('Slice.executeQuery: ' + JSON.stringify(preparedQuery, null, 4));
+            if(opts && opts.wrapQuery){
+            	var q = JSB.clone(opts.wrapQuery);
+            	q.$from = preparedQuery;
+            	preparedQuery = q;
+            }
             if(useCache && this.cacheEnabled){
 				if(!this.queryCache){
 					this.queryCache = new QueryCache(this.cube);
