@@ -442,13 +442,37 @@ if(!(function(){return this;}).call(null).JSB){
 			if(!this.isString(cfg.$name)){
 				throw new Error("Class name required to create managed object");
 			}
+			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
 			var logger = this.getLogger();
 			
-			// copy all system fields into this
+			// copy all parent system fields into this
+			if(parent){
+				for(var f in parent){
+					if(f && f.length > 1 && f[0] == '$' && f[1] != '_'){
+						var bFound = false;
+						for(var i = 0; i < _kfs.length; i++){
+							if(_kfs[i] == f){
+								bFound = true;
+								break;
+							}
+						}
+						if(bFound){
+							continue;
+						}
+						this[f] = parent[f];
+					}
+				}
+			}
+			
+			// copy all current system fields into this
 			for(var f in cfg){
 				if(f && f.length > 0 && f[0] == '$'){
-					this[f] = cfg[f];
+					if(JSB.isDefined(this[f])){
+						JSB.merge(true, this[f], cfg[f]);
+					} else {
+						this[f] = cfg[f];
+					}
 				}
 			}
 			
@@ -609,10 +633,9 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				
 				// clear JSB keyword fields
-				var kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require'];
-				for(var i = 0; i < kfs.length; i++ ){
-					if(body[kfs[i]]){
-						delete body[kfs[i]];
+				for(var i = 0; i < _kfs.length; i++ ){
+					if(body[_kfs[i]]){
+						delete body[_kfs[i]];
 					}
 				}
 /*				
