@@ -242,8 +242,8 @@
                     value: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldArgs[i].find('value').value() || this._bindingCheck(oldArgs[i].find('value').binding()[0]),
-                            binding: this._bindingCheck(oldArgs[i].find('value').binding()[0])
+                            value: oldArgs[i].find('value').value() || this._bindingCheck(oldArgs[i].find('value').binding()),
+                            binding: this._bindingCheck(oldArgs[i].find('value').binding())
                         }]
                     }
                 })
@@ -298,22 +298,22 @@
                     min: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldSeries[i].find('min').value() || this._bindingCheck(oldSeries[i].find('min').binding()[0]),
-                            binding: this._bindingCheck(oldSeries[i].find('min').binding()[0])
+                            value: oldSeries[i].find('min').value() || this._bindingCheck(oldSeries[i].find('min').binding()),
+                            binding: this._bindingCheck(oldSeries[i].find('min').binding())
                         }]
                     },
                     max: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldSeries[i].find('max').value() || this._bindingCheck(oldSeries[i].find('max').binding()[0]),
-                            binding: this._bindingCheck(oldSeries[i].find('max').binding()[0])
+                            value: oldSeries[i].find('max').value() || this._bindingCheck(oldSeries[i].find('max').binding()),
+                            binding: this._bindingCheck(oldSeries[i].find('max').binding())
                         }]
                     },
                     val: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldSeries[i].find('val').value() || this._bindingCheck(oldSeries[i].find('val').binding()[0]),
-                            binding: this._bindingCheck(oldSeries[i].find('val').binding()[0])
+                            value: oldSeries[i].find('val').value() || this._bindingCheck(oldSeries[i].find('val').binding()),
+                            binding: this._bindingCheck(oldSeries[i].find('val').binding())
                         }]
                     },
                     valueFormat: {
@@ -454,8 +454,8 @@
                                         widgetContextFilterField: {
                                             render: 'dataBinding',
                                             values: [{
-                                                value: oldColumns[i].find('widgetContextFilterField').value() || this._bindingCheck(oldColumns[i].find('widgetContextFilterField').binding()[0]),
-                                                binding: this._bindingCheck(oldColumns[i].find('widgetContextFilterField').binding()[0])
+                                                value: oldColumns[i].find('widgetContextFilterField').value() || this._bindingCheck(oldColumns[i].find('widgetContextFilterField').binding()),
+                                                binding: this._bindingCheck(oldColumns[i].find('widgetContextFilterField').binding())
                                             }]
                                         },
                                         widgetСontextFilterFixed: {
@@ -474,8 +474,8 @@
                                 text: {
                                     render: 'dataBinding',
                                     values: [{
-                                        value: oldColumns[i].find('text').value() || this._bindingCheck(oldColumns[i].find('text').binding()[0]),
-                                        binding: this._bindingCheck(oldColumns[i].find('text').binding()[0])
+                                        value: oldColumns[i].find('text').value() || this._bindingCheck(oldColumns[i].find('text').binding()),
+                                        binding: this._bindingCheck(oldColumns[i].find('text').binding())
                                     }]
                                 },
                                 textSort: {
@@ -547,7 +547,7 @@
                         title: {
                             render: 'item',
                             values: [{
-                                value: oldColumns[i].find('title').value() || oldColumns[i].find('title').binding()[0]
+                                value: oldColumns[i].find('title').value() || this._bindingCheck(oldColumns[i].find('title').binding())
                             }]
                         },
                         view: {
@@ -663,15 +663,15 @@
                             rowKey: {
                                 render: 'dataBinding',
                                 values: [{
-                                    value: oldVal.find('rowKey').value() || this._bindingCheck(oldVal.find('rowKey').binding()[0]),
-                                    binding: this._bindingCheck(oldVal.find('rowKey').binding()[0])
+                                    value: oldVal.find('rowKey').value() || this._bindingCheck(oldVal.find('rowKey').binding()),
+                                    binding: this._bindingCheck(oldVal.find('rowKey').binding())
                                 }]
                             },
                             rowFilter: {
                                 render: 'dataBinding',
                                 values: [{
-                                    value: oldVal.find('rowFilter').value() || this._bindingCheck(oldVal.find('rowFilter').binding()[0]),
-                                    binding: this._bindingCheck(oldVal.find('rowFilter').binding()[0])
+                                    value: oldVal.find('rowFilter').value() || this._bindingCheck(oldVal.find('rowFilter').binding()),
+                                    binding: this._bindingCheck(oldVal.find('rowFilter').binding())
                                 }]
                             },
                             preserveFilteredRows: {
@@ -691,8 +691,8 @@
                                     parentRowKey: {
                                         render: 'dataBinding',
                                         values: [{
-                                            value: oldVal.find('parentRowKey').value() || this._bindingCheck(oldVal.find('parentRowKey').binding()[0]),
-                                            binding: this._bindingCheck(oldVal.find('parentRowKey').binding()[0])
+                                            value: oldVal.find('parentRowKey').value() || this._bindingCheck(oldVal.find('parentRowKey').binding()),
+                                            binding: this._bindingCheck(oldVal.find('parentRowKey').binding())
                                         }]
                                     }
                                 }]
@@ -726,15 +726,15 @@
                     text: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldVal.find('text').value() || this._bindingCheck(oldVal.find('text').binding()[0]),
-                            binding: this._bindingCheck(oldVal.find('text').binding()[0])
+                            value: oldVal.find('text').value() || this._bindingCheck(oldVal.find('text').binding()),
+                            binding: this._bindingCheck(oldVal.find('text').binding())
                         }]
                     },
                     annotations: {
                         render: 'dataBinding',
                         values: [{
-                            value: oldVal.find('annotations').value() || this._bindingCheck(oldVal.find('annotations').binding()[0]),
-                            binding: this._bindingCheck(oldVal.find('annotations').binding()[0])
+                            value: oldVal.find('annotations').value() || this._bindingCheck(oldVal.find('annotations').binding()),
+                            binding: this._bindingCheck(oldVal.find('annotations').binding())
                         }]
                     },
                     hideWithoutAnnotations: {
