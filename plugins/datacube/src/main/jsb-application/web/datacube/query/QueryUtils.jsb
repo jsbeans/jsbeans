@@ -693,16 +693,26 @@
         * 1) если поле является join (сравнивается по eq с любым полем другого запроса), то пропускаем
         */
         propagateGlobalFilter: function(dcQuery, cubeOrDataProvider) {
+            var cubeFilter = {$and:[]};
+            this.walkAllSubQueries(dcQuery, function(subQuery){
+                if (subQuery.$cubeFilter && Object.keys(subQuery.$cubeFilter).length > 0){
+                    if(cubeFilter.$and.indexOf(subQuery.$cubeFilter) == -1) {
+                        cubeFilter.$and.push(subQuery.$cubeFilter);
+                    }
+                    delete subQuery.$cubeFilter;
+                }
+            });
+
             var embeddedQueries = [];
             // if global filter defined then embed it to all queries/sub queries
-            if (dcQuery.$cubeFilter && Object.keys(dcQuery.$cubeFilter).length > 0) {
+            if (cubeFilter.$and.length > 0) {
                 // recursive find all $select
                 this.walkAllSubQueries(dcQuery, function(subQuery){
                     if (!subQuery.$from && embeddedQueries.indexOf(subQuery) == -1) {
                         $this.embedFilterToSubQuery(
                             cubeOrDataProvider,
                             subQuery,
-                            dcQuery.$cubeFilter,
+                            cubeFilter.$and.length == 1 ? cubeFilter.$and[0] : cubeFilter,
                             function(field){
     //                            return $this.isOriginalCubeField(field, dcQuery, cubeOrDataProvider);
                                 return true;
@@ -711,7 +721,6 @@
                         embeddedQueries.push(subQuery);
                     }
                 });
-                delete dcQuery.$cubeFilter;
             }
         },
 
