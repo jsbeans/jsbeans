@@ -14,11 +14,11 @@
             }
         },
 
-        walkAllSubQueries: function (dcQuery, callback/**callback(q, isFromQuery, isValueQuery, isViewQuery)*/) {
+        walkAllSubQueries: function (dcQuery, callback) {
             $this._walkQueries(dcQuery, true, callback);
         },
 
-        walkSubQueries: function (dcQuery, callback/**callback(q, isFromQuery, isValueQuery)*/) {
+        walkSubQueries: function (dcQuery, callback) {
             $this._walkQueries(dcQuery, false, callback);
         },
 
@@ -693,11 +693,12 @@
         * 1) если поле является join (сравнивается по eq с любым полем другого запроса), то пропускаем
         */
         propagateGlobalFilter: function(dcQuery, cubeOrDataProvider) {
+            var embeddedQueries = [];
             // if global filter defined then embed it to all queries/sub queries
             if (dcQuery.$cubeFilter && Object.keys(dcQuery.$cubeFilter).length > 0) {
                 // recursive find all $select
                 this.walkAllSubQueries(dcQuery, function(subQuery){
-                    if (!subQuery.$from) {
+                    if (!subQuery.$from && embeddedQueries.indexOf(subQuery) == -1) {
                         $this.embedFilterToSubQuery(
                             cubeOrDataProvider,
                             subQuery,
@@ -707,6 +708,7 @@
                                 return true;
                             }
                         );
+                        embeddedQueries.push(subQuery);
                     }
                 });
                 delete dcQuery.$cubeFilter;
@@ -1211,7 +1213,12 @@
 
             function extractFieldType(field){
                 if (query.$from) {
-                    var fromFieldExpression = query.$from.$select[field];
+                    if(typeof query.$from == 'string') {
+                        var select = queryByContext(query.$from).$select;
+                    } else {
+                        var select = query.$from.$select;
+                    }
+                    var fromFieldExpression = select[field];
                     var fieldType = $this.extractType(fromFieldExpression, query.$from, cubeOrDataProvider, queryByContext);
                 } else {
                     var fieldType = fields[exp] && $this.getFieldJdbcType(cubeOrDataProvider, exp) || null;
@@ -1293,23 +1300,23 @@
         defineContextQueries: function(dcQuery){
             var idx = 0;
             var contextQueries = {};
-            $this.walkAllSubQueries(dcQuery, function(query){
+            $this.walkAllSubQueries(dcQuery, function(query,isFromQuery, isValueQuery, isViewQuery){
                 if (!query.$context) query.$context = 'context_' + idx++;
                 if (contextQueries[query.$context] && contextQueries[query.$context] != query) {
                     throw new Error('Duplicate query context: ' + query.$context);
                 }
                 contextQueries[query.$context] = query;
 
-                if (query.$views) {
-                    // normalize $views names to self $context
-                    var names = Object.keys(query.$views);
-                    for(var n in names) {
-                        var name = names[n];
-                        var view = query.$views[name];
-                        delete query.$views[name];
-                        query.$views[view.$context] = view;
-                    }
-                }
+//                if (query.$views) {
+//                    // normalize $views names to self $context
+//                    var names = Object.keys(query.$views);
+//                    for(var n in names) {
+//                        var name = names[n];
+//                        var view = query.$views[name];
+//                        delete query.$views[name];
+//                        query.$views[view.$context] = view;
+//                    }
+//                }
             });
 
             // clear field contexts (remove self context from fields)

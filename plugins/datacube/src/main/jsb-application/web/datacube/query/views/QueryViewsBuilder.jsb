@@ -85,16 +85,26 @@
                 sourceView = $this.contextViews[fromContext];
             } else {
                 // check if query without source or build cube
-
                 var usedFields = {/**usages*/};
-                QueryUtils.walkQueryFields(query, /**includeSubQueries=*/false,
-                    function(field, context, curQuery){
-                        if (!usedFields[field]) {
-                            usedFields[field] = 0;
+                if($this.directProvider) {
+                    QueryUtils.walkDataProviderFields(query, /**includeSubQueries=*/false, $this.directProvider,
+                        function(field, context, query){
+                            if (!usedFields[field]) {
+                                usedFields[field] = 0;
+                            }
+                            usedFields[field]++;
                         }
-                        usedFields[field]++;
-                    }
-                );
+                    );
+                } else {
+                    QueryUtils.walkCubeFields(query, /**includeSubQueries=*/false, $this.cube,
+                        function(field, context, query, binding){
+                            if (!usedFields[field]) {
+                                usedFields[field] = 0;
+                            }
+                            usedFields[field]++;
+                        }
+                    );
+                }
 
                 if (Object.keys(usedFields).length == 0) {
                     // is NothingView

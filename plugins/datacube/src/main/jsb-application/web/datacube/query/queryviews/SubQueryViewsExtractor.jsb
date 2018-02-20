@@ -7,8 +7,9 @@
 		    'JSB.Crypt.MD5'
         ],
 
-        /**
-            Выносит во $views одинаковые изолированные подзапросы
+        /** Выносит во $views:
+            1) Одинаковые изолированные подзапросы, где различается только $select
+            2) Одинаковые $from выносятся целиком
         */
         buildViews: function (dcQuery) {
             if (dcQuery.$views) throw 'Internal error: Views already defined';
@@ -20,11 +21,21 @@ debugger;
                 dcQuery.$views[view.name] = JSB.merge({$select: view.fields}, view.query);
                 for(var q in view.linkedQueries) {
                     var query = view.linkedQueries[q];
-                    query.$select = $this._buildSelectFromView(query, view);
-                    query.$filter = $this._buildFilterFromView(query, view);
-                    if (!query.$filter) delete query.$filter;
-                    delete query.$groupBy;
-                    query.$from = view.name;
+
+                    if (view.linkedFromQueries.indexOf(query) == -1) {
+                        query.$select = $this._buildSelectFromView(query, view);
+                        query.$filter = $this._buildFilterFromView(query, view);
+                        if (!query.$filter) delete query.$filter;
+                        delete query.$groupBy;
+                        query.$from = view.name;
+                    } else {
+                        // replace self query with name
+                        QueryUtils.walkAllSubQueries(dcQuery, function(subQuery){
+                            if (subQuery.$from && subQuery.$from.$context == query.$context) {
+                                subQuery.$from = view.name;
+                            }
+                        });
+                    }
                 }
             });
             return dcQuery;
@@ -33,20 +44,23 @@ debugger;
         walkViews: function(dcQuery, viewCallback) {
 debugger;
             var views = {}, viewsUseCount = {}, viewKeysOrder = [];
-            $this._walkAllViews(dcQuery, function(viewKey, viewQuery, viewFields, query){
+            $this._walkAllViews(dcQuery, function(viewKey, viewQuery, viewFields, query, isFromQuery){
                 viewsUseCount[viewKey] = (viewsUseCount[viewKey]||0) + 1
                 if(!views[viewKey]) {
                     var view = views[viewKey] = {
                         key: viewKey,
-                        name: 'view'+(viewKeysOrder.length+1),
+                        name: query.$context || 'view'+(viewKeysOrder.length+1),
                         fields:  viewFields,
                         query: viewQuery,
                         linkedQueries: [query],
+                        linkedFromQueries: isFromQuery ? [query] : []
                     };
+                    view.query.$context  = query.$context || view.name;
                     viewKeysOrder.push(viewKey);
                 } else {
                     var view = views[viewKey];
                     view.linkedQueries.push(query);
+                    isFromQuery && view.linkedFromQueries.push(query);
                     view.fields = $this._mergeFields(view.fields, viewFields);
                 }
             });
@@ -55,23 +69,23 @@ debugger;
                 var key = viewKeysOrder[i];
                 var view = views[key];
                 var count = viewsUseCount[key];
-                if (view.query.$from) {
-                    $this._generateViewFromSelect(view);
-                }
-                view.query.$context  = view.name;
+//                if (view.query.$from) {
+//                    $this._generateViewFromSelect(view);
+//                }
                 viewCallback(view, count);
             }
         },
-
         _walkAllViews: function (dcQuery, localViewCallback) {
 debugger;
-            QueryUtils.walkSubQueries(dcQuery, function(query, isFromQuery, isValueQuery, path){
+
+            QueryUtils.walkAllSubQueries(dcQuery, function(query, isFromQuery, isValueQuery, isViewQuery, path){
                 if (query.$sql) {
                     return; // skip embedded SQL query
                 }
                 if (!query.$filter && !query.$groupBy && !query.$from && !query.$sort && !query.$distinct) {
                     return; // skip simple cube
                 }
+
                 // skip not isolated subqueries
                 var isIsolated = QueryUtils.checkQueryIsIsolated(query);
                 if (!isIsolated) {
@@ -80,9 +94,13 @@ debugger;
 
                 var viewQuery = $this._extractViewQuery(query);
                 var viewKey = $this._extractKey(viewQuery);
-                var viewFields = $this._extractViewFields(query, viewKey, viewQuery);
+                if (isFromQuery) {
+                    var viewFields = JSB.merge(true, {}, query.$select);
+                } else {
+                    var viewFields = $this._extractViewFields(query, viewKey, viewQuery);
+                }
 
-                localViewCallback(viewKey, viewQuery, viewFields, query);
+                localViewCallback(viewKey, viewQuery, viewFields, query, isFromQuery);
             });
         },
 
@@ -126,22 +144,22 @@ debugger;
 //            return JSB.merge({},viewFields1, viewFields2);
         },
 
-        _generateViewFromSelect: function (view) {
-            // collect $select from linkedQueries
-            var select = view.query.$from.$select = {};
-            for (var i in view.linkedQueries) {
-                var query = view.linkedQueries[i];
-                if (!query.$from || !query.$from.$select) throw new Error('View`s ' + view.name + ' linked query does not contain $from.$select');
-                for (var alias in query.$from.$select) {
-                    if (select[alias]) {
-                        if (!JSB.isEqual(select[alias], query.$from.$select[alias])) {
-                            throw new Error('Subquery contains duplicate aliases in $from.$select');
-                        }
-                    }
-                    select[alias] = query.$from.$select[alias];
-                }
-            }
-        },
+//        _generateViewFromSelect: function (view) {
+//            // collect $select from linkedQueries
+//            var select = view.query.$from.$select = {};
+//            for (var i in view.linkedQueries) {
+//                var query = view.linkedQueries[i];
+//                if (!query.$from || !query.$from.$select) throw new Error('View`s ' + view.name + ' linked query does not contain $from.$select');
+//                for (var alias in query.$from.$select) {
+//                    if (select[alias]) {
+//                        if (!JSB.isEqual(select[alias], query.$from.$select[alias])) {
+//                            throw new Error('Subquery contains duplicate aliases in $from.$select');
+//                        }
+//                    }
+//                    select[alias] = query.$from.$select[alias];
+//                }
+//            }
+//        },
 
         _extractViewFields: function(query, viewKey, viewQuery) {
             var viewFields = {};
