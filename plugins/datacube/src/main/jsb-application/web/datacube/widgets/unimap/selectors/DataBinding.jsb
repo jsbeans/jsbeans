@@ -33,7 +33,7 @@
     },
 
     hasBinding: function(){
-        return JSB.isDefined(this._values[0].binding);
+        return this._values[0] && JSB.isDefined(this._values[0].binding);
     },
 
     value: function(layer){

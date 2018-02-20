@@ -403,7 +403,7 @@
                 this._curFilterHash = null;
             }
 
-            //try{
+            try{
                 // parsing regions data
                 var regionsColors = [],
                     maps = [],
@@ -516,17 +516,15 @@
                             break;
                     }
                 }
-            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
-            */
 
             $this.resetTrigger('_dataLoaded');
             this.getElement().loader();
             this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
-                //try{
+                try{
                     // load regions
                     var regions = [];
 
@@ -601,14 +599,13 @@
                         regions: regions,
                         markersDesc: markersDesc
                     });
-                /*
                 } catch(ex){
                     console.log('Load data exception!');
                     console.log(ex);
                 } finally {
                     $this.setTrigger('_dataLoaded');
                 }
-                */
+
                 $this.setTrigger('_dataLoaded');
             });
 
@@ -629,7 +626,7 @@
         },
 
         innerBuildChart: function(data){
-            //try {
+            try {
                 if(this.map){
                     this._mapOpts = {
                         center: this.map.getCenter(),
@@ -800,12 +797,10 @@
                             break;
                     }
                 }
-            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
-            */
         },
 
         ensureDataLoaded: function(callback){

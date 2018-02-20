@@ -119,6 +119,9 @@
 				    values: $this.values,
 				    linkedFields: $this.linkedFields
 				});
+
+				$this.setWidgetInitialized();
+
 				if($this.options.auto){
 					$this.widget.ensureInitialized(function(){
 						$this.widget.refresh({
@@ -167,7 +170,6 @@
 			    this.publish('Workspace.Entry.open', $this.widgetEntry);
 			}
 		},
-		
 		
 		setOwner: function(owner){
 			this.owner = owner;
@@ -405,6 +407,14 @@
                 }
             });
             tab.append(fullScreenBtn.getElement());
+		},
+
+		ensureWidgetInitialized: function(callback){
+		    this.ensureTrigger('_widgetInitialized', callback);
+		},
+
+		setWidgetInitialized: function(){
+		    this.setTrigger('_widgetInitialized');
 		}
 	}
 }

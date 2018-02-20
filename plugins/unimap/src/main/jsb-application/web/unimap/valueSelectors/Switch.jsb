@@ -2,6 +2,22 @@
     $name: 'Unimap.ValueSelectors.Switch',
     $parent: 'Unimap.ValueSelectors.Basic',
 
+    createDefaultValues: function(key, scheme, values){
+        $base(key, scheme, values);
+
+        if(values.checked){
+            values.values[0] = {
+                items: {}
+            }
+
+            for(var i in scheme.items){
+                values.values[0].items[i] = {};
+
+                this.getMainSelector().getRenderByName(scheme.items[i].render).createDefaultValues(i, scheme.items[i], values.values[0].items[i]);
+            }
+        }
+    },
+
     find: function(key, values, isFindAll){
         var main = false,
             resArr = [];

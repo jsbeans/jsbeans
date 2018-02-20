@@ -18,6 +18,21 @@
         this.createRendersMapByClasses(JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getValueSelectorsMap());
     },
 
+    createDefaultValues: function(scheme){
+        for(var i in scheme){
+            if(!this._values[i]){
+                this._values[i] = {}
+            }
+
+            this.getRenderByName(scheme[i].render).createDefaultValues(i, scheme[i], this._values[i]);
+        }
+
+        return {
+            values: this._values,
+            linkedFields: this._linkedFields
+        };
+    },
+
     createRendersMapByClasses: function(rendersMap){
         for(var i in rendersMap){
             this._rendersMap[i] = new rendersMap[i]({

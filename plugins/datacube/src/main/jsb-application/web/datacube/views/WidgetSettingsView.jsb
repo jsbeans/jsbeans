@@ -66,18 +66,21 @@
 		refresh: function(){
 			this.entry = this.node.getEntry();
 
-            if(this.wrapper) this.wrapper.destroy();
+            if(this.wrapper) {
+                this.wrapper.destroy();
+            }
+
             this.wrapper = new WidgetWrapper(this.entry, null, { isCacheMod: true, designMode: true });
             this.widgetBlock.append(this.wrapper.getElement());
 
             if(this.widgetSchemeRenderer){
                 this.widgetSchemeRenderer.destroy();
-            };
+            }
 
-            JSB().deferUntil(function(){
+            this.wrapper.ensureWidgetInitialized(function(){
                 $this.widgetSchemeRenderer = new Controller({
                     scheme: $this.wrapper.extractWidgetScheme(),
-                    values: JSB.clone($this.wrapper.getValues()),
+                    values: JSB.clone($this.entry.getValues()),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(values){
                         if(values.render === 'dataBinding'){
@@ -90,8 +93,6 @@
                     }
                 });
                 $this.schemeBlock.append($this.widgetSchemeRenderer.getElement());
-            }, function(){
-                return $this.wrapper.getWidget() !== null;
             });
 
             this.titleEditor.setData(this.entry.name);

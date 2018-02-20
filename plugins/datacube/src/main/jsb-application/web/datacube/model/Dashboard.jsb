@@ -85,7 +85,7 @@
 		createWidgetWrapper: function(wType, wName){
 			this.load();
 			var wwId = JSB.generateUid();
-			var wWrapper = new Widget(wwId, this.workspace, this, wName, wType, {});
+			var wWrapper = new Widget(wwId, this.workspace, this, wName, wType);
 			this.wrappers[wwId] = wWrapper;
 			this.widgetCount = Object.keys(this.wrappers).length;
 			this.addChildEntry(wWrapper);

@@ -22,6 +22,7 @@
             getInstance: this.getInstance,
             getKey: this.getKey,
             getLinkedFieldsByKey: this.getLinkedFieldsByKey,
+            getLinkToSelector: this.getLinkToSelector,
             getMainSelector: this.getMainSelector,
             getRenderByName: this.getRenderByName,
             getRenderName: this.getRenderName,
@@ -49,6 +50,30 @@
             return this._selectorOpts.checked;
         } else {
             return true;
+        }
+    },
+
+    createDefaultValues: function(key, scheme, values){
+        values.checked = scheme.optional === 'checked' ? true : undefined;
+        values.render = scheme.render;
+        values.defaultValue = scheme.defaultValue;
+        values.valueType = scheme.valueType;
+        values.values = [];
+
+        if(scheme.value){
+            values.values[0] = {
+                value: scheme.value
+            }
+        }
+
+        if(scheme.linkTo){
+            var mainSelector = this.getMainSelector();
+
+            if(!mainSelector._linkedFields[scheme.linkTo]){
+                mainSelector._linkedFields[scheme.linkTo] = [];
+            }
+
+            mainSelector._linkedFields[scheme.linkTo].push(key);
         }
     },
 
@@ -80,6 +105,12 @@
 
     getLinkedFieldsByKey: function(key){
         return this.getMainSelector().getLinkedFieldsByKey(key);
+    },
+
+    getLinkToSelector: function(){
+        if(this._selectorOpts.linkTo){
+            return this.getMainSelector().find(this._selectorOpts.linkTo);
+        }
     },
 
     getMainSelector: function(){

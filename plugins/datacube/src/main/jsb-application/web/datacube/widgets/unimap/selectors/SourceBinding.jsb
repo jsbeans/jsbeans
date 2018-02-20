@@ -21,7 +21,7 @@
     },
 
     hasBinding: function(){
-        return JSB.isDefined(this._values[0].binding);
+        return this._values[0] && JSB.isDefined(this._values[0].binding);
     },
 
     next: function(opts){
@@ -99,7 +99,7 @@
         if(!JSB.isDefined(this._values[0])){
             return;
         }
-        
+
         return this._values[0].cursor;
     },
 

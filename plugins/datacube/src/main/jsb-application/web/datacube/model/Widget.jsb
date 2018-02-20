@@ -42,13 +42,12 @@
 		return this.sources;
 	},
 	
-	$client: {},
-	
 	$server: {
 		$require: ['DataCube.Providers.DataProviderRepository',
 		           'DataCube.Query.QueryEngine',
 		           'JSB.Workspace.WorkspaceController',
-		           'Datacube.ValueConverter'],
+		           'Datacube.ValueConverter',
+		           'Unimap.ValueSelector'],
 		
         $bootstrap: function(){
         	WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.WidgetNode');
@@ -64,11 +63,23 @@
 				this.title(this.name);
 				this.wType = wType;
 				this.property('wType', wType);
-				this.values = values;
+
+				if(!values){
+				    this.valueSelector = new ValueSelector({
+				        values: {},
+				        bootstrap: 'Datacube.Unimap.Bootstrap'
+				    });
+
+				    var defaultValues = this.valueSelector.createDefaultValues(JSB.get(wType).$scheme);
+
+				    this.values = defaultValues.values;
+				    this.linkedFields = defaultValues.linkedFields;
+				}
 
 				//this.updateInteroperationMap();
 
-				this.property('values', values);
+				this.property('values', this.values);
+				this.property('linkedFields', this.linkedFields);
 				this.property('schemeVersion', 1.0);
 			} else {
 				var bNeedSave = false;
@@ -118,6 +129,14 @@
 					this.workspace.store();
 				}
 			}
+		},
+
+		destroy: function(){
+		    if(this.valueSelector){
+		        this.valueSelector.destroy();
+		    }
+
+		    $base();
 		},
 
 		setName: function(name){

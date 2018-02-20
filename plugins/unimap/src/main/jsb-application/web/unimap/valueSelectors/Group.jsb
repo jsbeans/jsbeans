@@ -2,6 +2,23 @@
     $name: 'Unimap.ValueSelectors.Group',
     $parent: 'Unimap.ValueSelectors.Basic',
 
+    createDefaultValues: function(key, scheme, values){
+        $base(key, scheme, values);
+
+        if(scheme.multiple){
+            return;
+        }
+
+        var val = {};
+        values.values.push(val);
+
+        for(var i in scheme.items){
+            val[i] = {};
+
+            this.getMainSelector().getRenderByName(scheme.items[i].render).createDefaultValues(i, scheme.items[i], val[i]);
+        }
+    },
+
     find: function(key, values, isFindAll){
         var main = false,
             resArr = [];
