@@ -119,7 +119,9 @@
             }
 
             JSB.lookup(jsb, function(wCls){
-                $this._innerController = $this.createInnerScheme(wCls.jsb.$scheme, $this._values.values[0].value);
+                $this._innerController = $this.createInnerScheme(wCls.jsb.$scheme, $this._values.values[0].value, function(){
+                    $this._values.values[0].linkedFields = $this._innerController.getLinkedFields();
+                });
                 $this.append($this._innerController);
 
                 $this._values.values[0].linkedFields = $this._innerController.getLinkedFields();

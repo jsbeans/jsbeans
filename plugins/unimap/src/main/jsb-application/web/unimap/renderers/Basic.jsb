@@ -98,10 +98,11 @@
             name.append(descriptionIcon);
         },
 
-        createInnerScheme: function(scheme, values){
+        createInnerScheme: function(scheme, values, onchange){
             return new Controller({
                 scheme: scheme,
                 values: values,
+                onchange: onchange,
                 rendersMap: this._schemeController.getRenderMap(),
             });
         },
