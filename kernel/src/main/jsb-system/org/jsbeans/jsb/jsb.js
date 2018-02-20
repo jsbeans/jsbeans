@@ -445,7 +445,7 @@ if(!(function(){return this;}).call(null).JSB){
 			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
 			var logger = this.getLogger();
-			
+/*			
 			// copy all parent system fields into this
 			if(parent){
 				for(var f in parent){
@@ -464,15 +464,16 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				}
 			}
-			
+*/			
 			// copy all current system fields into this
 			for(var f in cfg){
 				if(f && f.length > 0 && f[0] == '$'){
-					if(JSB.isDefined(this[f])){
+					this[f] = cfg[f];
+/*					if(JSB.isDefined(this[f])){
 						JSB.merge(true, this[f], cfg[f]);
 					} else {
 						this[f] = cfg[f];
-					}
+					}*/
 				}
 			}
 			
