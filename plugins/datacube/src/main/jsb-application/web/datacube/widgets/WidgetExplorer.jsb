@@ -68,7 +68,7 @@
 		$constructor: function(){
 			$base();
 			JSB.onLoad(function(){
-				if(this.isSubclassOf('DataCube.Widgets.Widget') && this.$name != 'DataCube.Widgets.Widget'){
+				if(this.isSubclassOf('DataCube.Widgets.Widget') && JSB.isDefined(this.$expose)){
 					$this.register(this);
 				}
 			});

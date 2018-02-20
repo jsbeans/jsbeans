@@ -49,6 +49,10 @@
 	    },
 
         createRender: function(parent, key, scheme, values, opts){
+            if(!scheme.render){
+                return;
+            }
+
             var constructor = this.getRenderByName(scheme.render);
             var render = new constructor({
                 key: key,

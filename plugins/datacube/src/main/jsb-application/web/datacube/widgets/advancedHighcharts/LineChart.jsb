@@ -1,6 +1,6 @@
 {
-	$name: 'DataCube.Widgets.LineCharts',
-	//$parent: 'DataCube.Widgets.BaseHighchart',
+	$name: 'DataCube.Widgets.LineChart',
+	$parent: 'DataCube.Widgets.AxisHighchart',
     $expose: {
         name: 'Линейная диаграмма',
         description: '',
@@ -44,15 +44,75 @@
                                     name: 'Column'
                                 }
                             }
+                        },
+                        allowPointSelect: {
+                            render: 'item',
+                            name: 'Разрешить события',
+                            optional: true,
+                            editor: 'none'
+                        },
+                        color: {
+                            render: 'item',
+                            name: 'Цвет',
+                            editor: 'JSB.Widgets.ColorEditor'
+                        },
+                        stack: {
+                            render: 'item',
+                            name: 'Имя стэка',
+                            valueType: 'string'
+                        },
+                        step: {
+                            render: 'select',
+                            name: 'Шаговая диаграмма',
+                            items: {
+                                none: {
+                                    name: 'Нет'
+                                },
+                                left: {
+                                    name: 'Левый'
+                                },
+                                center: {
+                                    name: 'Центр'
+                                },
+                                right: {
+                                    name: 'Правый'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            render: 'group',
+                            name: 'Подпись',
+                            collapsable: true,
+                            items: {
+                                valueDecimals: {
+                                    render: 'item',
+                                    name: 'Число знаков после запятой',
+                                    valueType: 'number'
+                                },
+                                valuePrefix: {
+                                    render: 'item',
+                                    name: 'Префикс значения',
+                                    valueType: 'string'
+                                },
+                                valueSuffix: {
+                                    render: 'item',
+                                    name: 'Суффикс значения',
+                                    valueType: 'string'
+                                }
+                            }
+                        },
+                        visible: {
+                            render: 'item',
+                            name: 'Показывать по-умолчанию',
+                            optional: 'checked',
+                            editor: 'none'
                         }
                     }
                 }
             }
         },
+
         xAxis: {
-	        render: 'group',
-	        name: 'Серии',
-            collapsable: true,
             items: {
                 categories: {
                     render: 'dataBinding',
@@ -60,70 +120,48 @@
                     linkTo: 'source'
                 }
             }
-        }
-    },
-    $client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
-        $constructor: function(opts){
-            $base(opts);
-            $this.addClass('highchartsWidget');
-            $this.container = $this.$('<div class="container"></div>');
-            $this.append($this.container);
-
-            $this.getElement().resize(function(){
-                JSB.defer(function(){
-                    if(!$this.getElement().is(':visible') || !$this.chart){
-                        return;
-                    }
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height());
-                }, 500, 'hcResize' + $this.getId());
-            });
-
-            $this.setInitialized();
         },
 
+	    plotOptions: {
+	        render: 'group',
+	        name: 'Опции точек',
+            collapsable: true,
+            collapsed: true,
+            items: {
+                stacking: {
+                    render: 'select',
+                    name: 'Тип стека',
+                    items: {
+                        none: {
+                            name: 'Нет'
+                        },
+                        normal: {
+                            name: 'Нормальный'
+                        },
+                        percent: {
+                            name: 'Процентный'
+                        }
+                    }
+                }
+            }
+	    }
+    },
+    $client: {
         // inner variables
         _curFilters: {},
         _deselectCategoriesCount: 0,
         _curFilterHash: null,
 
-        // events
-        options: {
-            onClick: null,
-            onSelect: null,
-            onUnselect: null,
-            onMouseOver: null,
-            onMouseOut: null
-        },
-
-        // refresh after data changes
         refresh: function(opts){
-return;
-            // if filter source is current widget
-            if(opts && this == opts.initiator){
+            var dataSource = $base(opts);
+            if(!dataSource){
                 return;
             }
-
-            // widget settings editor set style changes
-            if(opts && opts.refreshFromCache){
-                var cache = this.getCache();
-                if(cache){
-                    this._buildChart(cache.seriesData, cache.xAxisCategories);
-                    return;
-                }
-            }
-
-            var dataSource = this.getContext().find('dataSource');
-            if(!dataSource.hasBinding()){
-                return;
-            }
-
-            $base();
 
             // filters section
-            var globalFilters = dataSource.getFilters();
+            var globalFilters = this.getSourceFilters(dataSource);
             if(globalFilters){
-                var binding = this.getContext().find("xAxis").get(0).value().binding()[0],
+                var binding = this.getContext().find("xAxis categories").binding(),
                     newFilters = {};
 
                 for(var i in globalFilters){
@@ -166,7 +204,7 @@ return;
             }
 
             var seriesContext = this.getContext().find('series').values(),
-                xAxisCategories = this.getContext().find('xAxis').find('categories'),
+                xAxisCategories = this.getContext().find('xAxis categories'),
                 useCompositeSeries = false;
 
             for(var i = 0; i < seriesContext.length; i++){
@@ -177,7 +215,7 @@ return;
             }
 
             this.getElement().loader();
-            dataSource.fetch({readAll: true, reset: true}, function(){
+            this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
                 try{
                     var seriesData = [],
                         xAxisData = [];
@@ -246,12 +284,15 @@ return;
 
                     if(opts && opts.isCacheMod){
                         $this.storeCache({
-                            seriesData: data,
-                            xAxisCategories: xAxisData
+                            data: data,
+                            xAxisData: xAxisData
                         });
                     }
 
-                    $this._buildChart(data, xAxisData);
+                    $this.buildChart({
+                        data: data,
+                        xAxisData: xAxisData
+                    });
 
                     for(var i in $this._curFilters){
                         this._selectAllCategory(i);
@@ -265,25 +306,14 @@ return;
             });
         },
 
-        // refresh after data and/or style changes
-        _buildChart: function(data, xAxisCategories){
-            JSB.defer(function(){
-                $this.ensureInitialized(function(){
-                    $this.innerBuildChart(data, xAxisCategories);
-                });
-            }, 300, '_buildChart_' + this.getId());
-        },
+        _buildChart: function(data){
+            var baseChartOpts = $base(),
+                seriesData = data.data,
+                xAxisCategories = data.xAxisData;
 
-        innerBuildChart: function(seriesData, xAxisCategories){
             try{
-                var creditsContext = this.getContext().find('credits').value(),
-                    legendContext = this.getContext().find('legend').value(),
-                    plotOptionsContext = this.getContext().find('plotOptions').value(),
+                var plotOptionsContext = this.getContext().find('plotOptions'),
                     seriesContext = this.getContext().find('series').values(),
-                    titleContext = this.getContext().find('header').value(),
-                    tooltipContext = this.getContext().find('mainTooltip').value(),
-                    xAxisContext = this.getContext().find('xAxis').value(),
-                    yAxisContext = this.getContext().find('yAxis').value(),
                     series = [];
 
                 // series
@@ -291,11 +321,11 @@ return;
                     series[j] = {
                         name: seriesData[j].name,
                         data: seriesData[j].data,
-                        type: seriesContext[seriesData[j].index].find('type').value().value(),
-                        allowPointSelect: seriesContext[seriesData[j].index].find('allowPointSelect').used(),
+                        type: seriesContext[seriesData[j].index].find('type').value(),
+                        allowPointSelect: seriesContext[seriesData[j].index].find('allowPointSelect').checked(),
                         color: seriesContext[seriesData[j].index].find('color').value(),
                         stack: seriesContext[seriesData[j].index].find('stack').value(),
-                        step: seriesContext[seriesData[j].index].find('step').value().value(),
+                        step: this.isNone(seriesContext[seriesData[j].index].find('step').value()),
                         tooltip: {
                             valueDecimals: seriesContext[seriesData[j].index].find('valueDecimals').value(),
                             valuePrefix: seriesContext[seriesData[j].index].find('valuePrefix').value(),
@@ -303,52 +333,11 @@ return;
                         },
                         // yAxis: $this.isNull(seriesContext[seriesData[j].index].get(4).value(), true),
                         //dashStyle: seriesContext[seriesData[j].index].get(5).value().name(),
-                        visible: seriesContext[seriesData[j].index].find('visible').used()
+                        visible: seriesContext[seriesData[j].index].find('visible').checked()
                     }
                 }
 
                 var chartOpts = {
-                    credits: {
-                        enabled: creditsContext.find('enabled').used(),
-                        text: creditsContext.find('text').value(),
-                        href: creditsContext.find('href').value(),
-                        style: {
-                           color: creditsContext.find('fontColor').value(),
-                           fontSize: creditsContext.find('fontSize').value()
-                        },
-                        position: {
-                            align: creditsContext.find('align').value().value(),
-                            verticalAlign: creditsContext.find('verticalAlign').value().value(),
-                            x: creditsContext.find('x').value(),
-                            y: creditsContext.find('y').value()
-                        }
-                    },
-                    legend: {
-                        enabled: legendContext.find('enabled').used(),
-                        layout: legendContext.find('layout').value().value(),
-                        align: legendContext.find('align').value().value(),
-                        verticalAlign: legendContext.find('verticalAlign').value().value(),
-                        backgroundColor: legendContext.find('backgroundColor').value(),
-                        borderColor: legendContext.find('borderColor').value(),
-                        borderRadius: legendContext.find('borderRadius').value(),
-                        borderWidth: legendContext.find('borderWidth').value(),
-                        floating: legendContext.find('floating').used(),
-                        itemDistance: legendContext.find('itemDistance').value(),
-                        itemWidth: legendContext.find('itemWidth').value(),
-                        itemMarginTop: legendContext.find('itemMarginTop').value(),
-                        itemMarginBottom: legendContext.find('itemMarginBottom').value(),
-                        itemStyle: {
-                            color: legendContext.find('itemStyle').find('color').value(),
-                            fontSize: legendContext.find('itemStyle').find('fontSize').value(),
-                            fontWeight: legendContext.find('itemStyle').find('fontWeight').value()
-                        },
-                        labelFormat: legendContext.find('labelFormat').value(),
-                        reversed: legendContext.find('reversed').used(),
-                        shadow: legendContext.find('shadow').used(),
-                        width: legendContext.find('width').value(),
-                        x: legendContext.find('x').value(),
-                        y: legendContext.find('y').value()
-                    },
                     plotOptions: {
                         series: {
                             point: {
@@ -414,106 +403,24 @@ return;
                                     }
                                 }
                             },
-                            stacking: plotOptionsContext.find('stacking').value().value(),
+                            stacking: this.isNone(plotOptionsContext.find('stacking').value()),
                             turboThreshold: 0
                         }
                     },
+
                     series: series,
-                    title: {
-                        text: titleContext.find('text').value(),
-                        align: titleContext.find('align').value().value(),
-                        verticalAlign: titleContext.find('verticalAlign').value().value(),
-                        floating: titleContext.find('floating').used(),
-                        margin: titleContext.find('margin').value(),
-                        color: titleContext.find('fontColor').value(),
-                        fontSize: titleContext.find('fontSize').value(),
-                        x: titleContext.find('x').value(),
-                        y: titleContext.find('y').value()
-                    },
-                    tooltip: {
-                        enabled: tooltipContext.find('enabled').used(),
-                        backgroundColor: tooltipContext.find('backgroundColor').value(),
-                        borderColor: tooltipContext.find('borderColor').value(),
-                        borderRadius: tooltipContext.find('borderRadius').value(),
-                        borderWidth: tooltipContext.find('borderWidth').value(),
-                        useHTML: tooltipContext.find('useHTML').used(),
-                        headerFormat: tooltipContext.find('headerFormat').value(),
-                        pointFormat: tooltipContext.find('pointFormat').value(),
-                        footerFormat: tooltipContext.find('footerFormat').value(),
-                        padding: tooltipContext.find('padding').value(),
-                        shadow: tooltipContext.find('shadow').used(),
-                        valueDecimals: tooltipContext.find('valueDecimals').value(),
-                        valuePrefix: tooltipContext.find('valuePrefix').value(),
-                        valueSuffix: tooltipContext.find('valueSuffix').value()
-                    },
+
                     xAxis: {
-                        categories: xAxisCategories,
-                        labels: {
-                            enabled: xAxisContext.find('labels').find('enabled').used(),
-                            rotation: xAxisContext.find('labels').find('rotation').value(),
-                            step: xAxisContext.find('labels').find('step').value(),
-                            color: xAxisContext.find('labels').find('fontColor').value(),
-                            fontSize: xAxisContext.find('labels').find('fontSize').value()
-                        },
-                        title: {
-                            text: xAxisContext.find('title').find('text').value(),
-                            align: xAxisContext.find('title').find('align').value().value(),
-                            rotation: xAxisContext.find('title').find('rotation').value(),
-                            offset: xAxisContext.find('title').find('offset').value(),
-                            style: {
-                                color: xAxisContext.find('title').find('color').value(),
-                            },
-                            x: xAxisContext.find('title').find('x').value(),
-                            y: xAxisContext.find('title').find('y').value()
-                        },
-                        alternateGridColor: xAxisContext.find('alternateGridColor').value(),
-                        crosshair: xAxisContext.find('crosshair').used(),
-                        lineColor: xAxisContext.find('lineColor').value(),
-                        offset: xAxisContext.find('offset').value(),
-                        opposite: xAxisContext.find('opposite').used(),
-                        reversed: xAxisContext.find('reversed').used(),
-                        tickColor: xAxisContext.find('tickColor').value(),
-                        tickInterval: xAxisContext.find('tickInterval').value(),
-                        type: xAxisContext.find('type').value().value()
-                    },
-                    yAxis: {
-                        labels: {
-                            enabled: yAxisContext.find('labels').find('enabled').used(),
-                            rotation: yAxisContext.find('labels').find('rotation').value(),
-                            step: yAxisContext.find('labels').find('step').value(),
-                            color: yAxisContext.find('labels').find('fontColor').value(),
-                            fontSize: yAxisContext.find('labels').find('fontSize').value()
-                        },
-                        title: {
-                            text: yAxisContext.find('title').find('text').value(),
-                            align: yAxisContext.find('title').find('align').value().value(),
-                            rotation: yAxisContext.find('title').find('rotation').value(),
-                            offset: yAxisContext.find('title').find('offset').value(),
-                            style: {
-                                color: yAxisContext.find('title').find('color').value(),
-                            },
-                            x: yAxisContext.find('title').find('x').value(),
-                            y: yAxisContext.find('title').find('y').value()
-                        },
-                        alternateGridColor: yAxisContext.find('alternateGridColor').value(),
-                        crosshair: yAxisContext.find('crosshair').used(),
-                        lineColor: yAxisContext.find('lineColor').value(),
-                        offset: yAxisContext.find('offset').value(),
-                        opposite: yAxisContext.find('opposite').used(),
-                        reversed: yAxisContext.find('reversed').used(),
-                        tickColor: yAxisContext.find('tickColor').value(),
-                        tickInterval: yAxisContext.find('tickInterval').value(),
-                        type: yAxisContext.find('type').value().value(),
-                        gridLineColor: yAxisContext.find('gridLineColor').value(),
-                        gridLineDashStyle: yAxisContext.find('gridLineDashStyle').value().value(),
-                        gridLineWidth: yAxisContext.find('gridLineWidth').value()
+                        categories: xAxisCategories
                     }
                 }
 
+                JSB.merge(true, baseChartOpts, chartOpts);
+
                 if(this.chart){
-                    this.chart.update(chartOpts);
+                    this.chart.update(baseChartOpts);
                 } else {
-                    this.chart = Highcharts.chart(this.container.get(0), chartOpts);
+                    this.chart = Highcharts.chart(this.container.get(0), baseChartOpts);
                 }
             } catch(ex){
                 console.log('Build chart exception!');
@@ -523,10 +430,15 @@ return;
 
         _addNewFilter: function(evt){
             var context = this.getContext().find('dataSource').binding();
-            if(!context.source) return;
+            if(!context.source) {
+                return;
+            }
 
-            var field = this.getContext().find("xAxis").get(0).value().binding()[0];
-            if(!field[0]) return;
+            var field = this.getContext().find("xAxis categories").binding();
+            if(!field) {
+                return;
+            }
+
             var fDesc = {
                 sourceId: context.source,
                 type: '$or',
