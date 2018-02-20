@@ -6,7 +6,12 @@
 		$require: [
 		    'DataCube.Query.QueryUtils',
 	        'DataCube.Query.Views.PatternViewsExtractor',
+	        'DataCube.Query.Transforms.QueryTransformer'
         ],
+        
+        $bootstrap: function(){
+        	QueryTransformer.register(this);
+        },
 
 		transform: function(dcQuery, cubeOrDataProvider){
             if (dcQuery.$views) {

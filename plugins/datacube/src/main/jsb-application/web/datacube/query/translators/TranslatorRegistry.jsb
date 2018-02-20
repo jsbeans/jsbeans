@@ -3,10 +3,15 @@
 	$singleton: true,
 
 	$server: {
-		$require: [
-        ],
+		$require: ['JSB.System.Config'],
 
         _dataProviderTranslator: {},
+        
+        $constructor: function(){
+        	$base();
+        	
+        	this.translatorsCfg = Config.get('datacube.query.translators');
+        },
 
 		register: function(translatorJsb, dataProviderName){
 			if(translatorJsb instanceof JSB){
@@ -16,8 +21,17 @@
 			} else if(!JSB.isString(translatorJsb)){
 				throw new Error('Invalid translator type');
 			}
-			Log.debug('Registered translator ' + translatorJsb + ' for ' + dataProviderName);
-		    this._dataProviderTranslator[dataProviderName] = translatorJsb;
+			if(dataProviderName){
+				this._dataProviderTranslator[dataProviderName] = translatorJsb;
+				JSB.getLogger().debug('Registered translator ' + translatorJsb + ' for ' + dataProviderName);
+			} else {
+				for(var dpName in this.translatorsCfg){
+					if(translatorJsb == this.translatorsCfg[dpName]){
+						this._dataProviderTranslator[dpName] = translatorJsb;
+						JSB.getLogger().debug('Registered translator ' + translatorJsb + ' for ' + dpName);
+					}
+				}
+			}
 		},
 
 		newTranslator: function(providerOrProviders, cube){

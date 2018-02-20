@@ -6,12 +6,17 @@
 		vendor: 'PostgreSQL',
 		
 		$require: [
+		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Query.QueryParser',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
 		    'DataCube.Query.QuerySyntax',
 		    'JSB.Store.Sql.JDBC'
         ],
+        
+        $bootstrap: function(){
+        	TranslatorRegistry.register(this);
+        },
 
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
