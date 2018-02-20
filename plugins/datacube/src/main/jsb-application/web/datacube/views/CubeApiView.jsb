@@ -193,7 +193,7 @@
 			this.textView.setData(obj);
 		},
 		
-		fillSettings: function(fields){
+		fillSettings: function(fields, slices){
 			var entry = this.node.getEntry();
 			this.requestOpts = {
 				query: {$select:{}, $groupBy:[], $filter:{}, $sort:[]},
@@ -211,6 +211,7 @@
 			// fill constructor
 			var queryEditor = this.find('.queryEditor').jsb();
 			queryEditor.setOption('cubeFields', fields);
+			queryEditor.setOption('cubeSlices', slices);
 			queryEditor.set(this.requestOpts.query);
 			
 			// fill odds
@@ -239,7 +240,10 @@
 			
 			var entry = this.node.getEntry();
 			entry.server().getOutputFields(function(fields){
-				$this.fillSettings(fields);	
+				entry.server().getSlices(function(slices){
+					$this.fillSettings(fields, slices);	
+				});
+					
 			});
 			
 		}

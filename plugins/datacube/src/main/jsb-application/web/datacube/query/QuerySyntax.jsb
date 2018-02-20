@@ -1064,18 +1064,11 @@
 		        name: '$contextName'
 		    });
 
-
-		    new this.SingleObject({
-		        name: '$viewName',
-		        desc: 'Имя среза источника',
-		        values: ['$viewConstName']
-		    });
-
 		    new this.EConstString({
-		        name: '$viewConstName',
-		        editable: true
+		        name: '$viewName',
+		        desc: 'Имя среза источника'
 		    });
-		
+
 		    new this.EConstNumber({
 		    	displayName: 'Число',
 		    	desc: 'Константное число',

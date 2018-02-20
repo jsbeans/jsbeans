@@ -6,7 +6,8 @@
 	           'JSB.Widgets.PrimitiveEditor', 
 	           'DataCube.Query.SchemeMenuTool',
 	           'DataCube.Query.SchemePopupTool',
-	           'JSB.Widgets.ToolManager'],
+	           'JSB.Widgets.ToolManager',
+	           'JSB.Widgets.RendererRepository'],
 	
 	$client: {
 		options: {
@@ -352,6 +353,15 @@
 			return $this.chooseBestCubeField();
 		},
 		
+		getSliceForName: function(sliceName){
+			for(var sId in this.options.cubeSlices){
+				if(this.options.cubeSlices[sId].getName() == sliceName){
+					return this.options.cubeSlices[sId];
+				}
+			}
+			return null;
+		},
+		
 		chooseBestValue: function(){
 			return null;
 		},
@@ -574,6 +584,8 @@
 								$field: value,
 								$context: context
 							};
+						} else if(schemeName == '$viewName') {
+							
 						} else {
 							value = $this.constructEmptyValue(schemeName);
 						}
@@ -671,6 +683,7 @@
 				} else if(existedObj.scheme == '$fieldExpr'){
 					existedObj.context = $this.value[entryKey].$context;
 					existedObj.value = $this.value[entryKey].$field;
+				} else if(existedObj.scheme == '$viewName') {
 				}
 			}
 			
@@ -720,6 +733,8 @@
 						var v = {};
 						v[value] = 1;
 						value = v;
+					} else if(schemeName == '$viewName') {
+						
 					} else {
 						var oldValue = $this.value[entryKey];
 						var subValues = [];
@@ -958,6 +973,7 @@
 			var catMap = {};
 			var bHasFields = false;
 			var bHasColumns = false;
+			var bHasSlices = false;
 			for(var item in itemMap){
 				var category = 'Разное';
 				var valObj = null;
@@ -976,6 +992,13 @@
 					category = 'Столбцы среза';
 					valObj = item;
 					bHasColumns = true;
+				} else if(item == '$viewName') {
+					if(bHasSlices){
+						continue;
+					}
+					category = 'Срезы куба';
+					valObj = item;
+					bHasSlices = true;
 				} else {
 					if(item && item[0] == '#'){
 						// custom field
@@ -1035,6 +1058,7 @@
 				cmd: 'show',
 				data: {
 					cubeFields: $this.options.cubeFields,
+					cubeSlices: $this.options.cubeSlices,
 					selectedObj: existedObj,
 					editor: $this,
 					items: itemMap,
@@ -1458,6 +1482,12 @@
 			} else if($this.scheme.name == '$sortTypeDesc') {
 				$this.container.append($this.$('<div class="value fixed">По убыванию</div>'));
 				return true;
+			} else if($this.scheme.name == '$viewName') {
+				var slice = $this.getSliceForName($this.value);
+				if(slice){
+					$this.container.append(RendererRepository.createRendererFor(slice).getElement());
+					return true;
+				}
 			}
 			return false;
 		},
@@ -1508,7 +1538,7 @@
 					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
-						schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql'];
+						schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql', '$cubeFilter'];
 						
 						var ctxName = $this.value['$context'];
 						if(!JSB.isDefined(ctxName)){

@@ -155,7 +155,7 @@
             return this.cube.executeQuery(preparedQuery, params);
 		},
 		
-		getInputFields: function(){
+		getCubeFields: function(){
 			$this.getCube().load();
 			var fields = $this.getCube().getManagedFields();
 			var fMap = {};
@@ -164,6 +164,11 @@
 			}
 			
 			return fMap;
+		},
+		
+		getCubeSlices: function(){
+			$this.getCube().load();
+			return $this.getCube().getSlices();
 		},
 		
 		invalidate: function(){

@@ -150,14 +150,19 @@
 			if(!JSB.isInstanceOf(this.slice, 'DataCube.Model.Slice')){
 				return;
 			}
-			this.slice.server().getInputFields(function(fields){
+			this.slice.server().getCubeFields(function(fields){
 				$this.query = JSB.clone($this.slice.getQuery());
 				$this.queryEditor.setOption('slice', $this.slice);
 				$this.queryEditor.setOption('cubeFields', fields);
 				
-				$this.updateQuery();
-				$this.updateTextQuery();
-				$this.updateGrid();
+				$this.slice.server().getCubeSlices(function(slices){
+					$this.queryEditor.setOption('cubeSlices', slices);
+					
+					$this.updateQuery();
+					$this.updateTextQuery();
+					$this.updateGrid();
+				});
+				
 			});
 		},
 		

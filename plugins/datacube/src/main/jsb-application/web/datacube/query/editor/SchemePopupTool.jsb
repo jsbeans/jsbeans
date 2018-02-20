@@ -1,7 +1,12 @@
 {
 	$name: 'DataCube.Query.SchemePopupTool',
 	$parent: 'JSB.Widgets.Tool',
-	$require: ['JSB.Widgets.ToolManager', 'JSB.Widgets.Button', 'JSB.Widgets.ListBox', 'JSB.Widgets.PrimitiveEditor'],
+	$require: [
+	           'JSB.Widgets.ToolManager', 
+	           'JSB.Widgets.Button', 
+	           'JSB.Widgets.ListBox', 
+	           'JSB.Widgets.PrimitiveEditor', 
+	           'JSB.Widgets.RendererRepository'],
 	$client: {
 		
 		cubeFieldsCat: 'Поля куба',
@@ -260,6 +265,32 @@
 						}
 					}
 
+				} else if(item == '$viewName') {
+					var editor = $this.data.data.editor;
+					var slices = editor.options.cubeSlices;
+					var sArr = Object.keys(slices);
+					sArr.sort(function(a, b){
+						return slices[a].getName().localeCompare(slices[b].getName());
+					});
+					
+					for(var j = 0; j < sArr.length; j++){
+						var sId = sArr[j];
+						var slice = slices[sId];
+						if(slice == editor.options.slice){
+							continue;
+						}
+						var sliceName = slice.getName();
+						var listItem = $this.itemsListBox.addItem({
+							key: sId,
+							value: sliceName,
+							scheme: item,
+							desc: null,
+							element: RendererRepository.createRendererFor(slice).getElement()
+						});
+						if(selected && selected.scheme == item && selected.value == sliceName){
+							chosenListItem = listItem;
+						}
+					}
 				} else {
 					var listItem = $this.itemsListBox.addItem({
 						value: item.item,
