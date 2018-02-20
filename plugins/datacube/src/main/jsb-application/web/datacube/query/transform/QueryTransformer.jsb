@@ -3,12 +3,29 @@
 	$singleton: true,
 
 	$server: {
-		$require: [
-        ],
+		$require: ['JSB.System.Config'],
 
         transformerBeans: [],
         transformers: [],
-
+        
+        $constructor: function(){
+        	$base();
+        	
+        	this.transformersCfg = Config.get('datacube.query.transformers');
+        },
+        
+        register: function(transformerJsb){
+        	if(!transformerJsb instanceof JSB){
+			    throw new Error('Invalid transformer type');
+			}
+        	for(var i = 0; i < this.transformersCfg.length; i++){
+        		if(this.transformersCfg[i] == transformerJsb.$name){
+        			$this.transformerBeans[i] = transformerJsb;
+        			JSB.getLogger().debug('Registered transformer ' + transformerJsb.$name + ' with order: ' + i);
+        		}
+        	}
+        },
+/*
 		push: function(transformerJsb){
 			if(!transformerJsb instanceof JSB){
 			    throw new Error('Invalid transformer type');
@@ -17,7 +34,7 @@
 
 			$this.transformerBeans.push(transformerJsb);
 		},
-
+*/
 		transform: function(dcQuery, cubeOrDataProvider){
 		    $this.initialize();
 		    for(var i in $this.transformers) {
@@ -29,8 +46,11 @@
 
 		initialize: function(){
 		    if ($this.transformers.length == 0) {
-		        for(var i = 0; i< $this.transformerBeans.length; i++) {
+		        for(var i = 0; i < $this.transformerBeans.length; i++) {
 		            var transformerJsb = $this.transformerBeans[i];
+		            if(!transformerJsb){
+		            	throw new Error('Missing transformer: ' + $this.transformersCfg[i]);
+		            }
 		            var transformer = new (transformerJsb.getClass())();
                     $this.transformers.push(transformer);
 		        }

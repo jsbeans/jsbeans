@@ -294,7 +294,7 @@
                     items: {
                         summaryOpts: {
                             render: 'group',
-                            name: 'Показатели',
+                            name: 'Сводные показатели',
                             multiple: true,
                             items: {
                                 summaryOp: {
@@ -317,6 +317,11 @@
                                             name: 'Среднее'
                                         }
                                     }
+                                },
+                                summaryField: {
+                                	render: 'dataBinding',
+                                    name: 'Поле',
+                                    linkTo: 'rows'
                                 },
                                 summaryPrefix: {
                                     render: 'item',
@@ -1341,15 +1346,21 @@
 				if(statusArr && statusArr.length > 0){
 					for(var i = 0; i < statusArr.length; i++){
 						var statusDesc = statusArr[i];
-						var sEntry = $this.$('<div class="sEntry"></div>');
-						container.append(sEntry);
-						if(statusDesc.summaryPrefix && statusDesc.summaryPrefix.length > 0){
-							sEntry.append($this.$('<div class="prefix"></div>').text(statusDesc.summaryPrefix));
-						}
-						sEntry.append($this.$('<div class="value"></div>').text(0));
-						if(statusDesc.summaryPostfix && statusDesc.summaryPostfix.length > 0){
-							sEntry.append($this.$('<div class="postfix"></div>').text(statusDesc.summaryPostfix));
-						}
+						(function(statusDesc){
+							var sEntry = $this.$('<div class="sEntry"></div>');
+							container.append(sEntry);
+							if(statusDesc.summaryPrefix && statusDesc.summaryPrefix.length > 0){
+								sEntry.append($this.$('<div class="prefix"></div>').text(statusDesc.summaryPrefix));
+							}
+							sEntry.append($this.$('<div class="value"></div>'));
+							if(statusDesc.summaryPostfix && statusDesc.summaryPostfix.length > 0){
+								sEntry.append($this.$('<div class="postfix"></div>').text(statusDesc.summaryPostfix));
+							}
+							
+							$this.executeSummaryOp(statusDesc, function(val){
+								sEntry.find('> .value').text(val);
+							});
+						})(statusDesc);
 					}
 				}
 			}
@@ -1375,6 +1386,11 @@
 			
 			colData.order();
 
+		},
+		
+		executeSummaryOp: function(statusDesc, callback){
+			// construct status query
+			callback.call(this, 0);
 		},
 		
 		updateHeader: function(){
@@ -1735,6 +1751,7 @@
 						if(summaryOp){
 							var statusDesc = {};
 							statusDesc.summaryOp = summaryOp;
+							statusDesc.summaryFieldSelector = summaryElts[j].find('summaryField');
 							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
 							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
 							if(!desc.status){

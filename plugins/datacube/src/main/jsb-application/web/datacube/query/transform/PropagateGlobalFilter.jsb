@@ -5,7 +5,12 @@
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',
+		    'DataCube.Query.Transforms.QueryTransformer'
         ],
+        
+        $bootstrap: function(){
+        	QueryTransformer.register(this);
+        },
 
 		transform: function(dcQuery, cubeOrDataProvider){
             // embed $globalFilter to $filter/$postFilter of root and sub queries
