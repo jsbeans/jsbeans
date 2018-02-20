@@ -522,7 +522,7 @@
 					}
 					
 					var colName = null;
-					var value = null;
+					var value = undefined;
 					var schemeName = null;
 					var context = null;
 					var askRename = false;
@@ -541,59 +541,65 @@
 						} else {
 							throw new Error('Unexpected key: ' + chosenObj.key);
 						}
-					} else {
-						colName = chosenObj.key.value;
-						
-						if($this.scheme.name == '$query' && colName == '$groupBy'){
-							bGroupByChanged = true;
+					} else if(JSB.isObject(chosenObj.key)) {
+						if(chosenObj.key.scheme == '$viewName' && $this.scheme.name == '$query'){
+							colName = '$from';
+							schemeName = chosenObj.key.scheme;
+							value = chosenObj.key.value;
+						} else  {
+							colName = chosenObj.key.value;
+							
+							if($this.scheme.name == '$query' && colName == '$groupBy'){
+								bGroupByChanged = true;
+							}
 						}
-					}
+					} 
 					
 					// detect value
-					if(chosenObj.value){
-						// resolve via value scheme
-						schemeName = chosenObj.value.scheme;
-						value = chosenObj.value.value;
-						context = chosenObj.value.context;
-						if(schemeName == '#fieldName' || schemeName == '$fieldName') {
-							if($this.scheme.name == '$select'){
-								// check for field is not existed in groupBy section
-								if($this.parent.value.$groupBy && $this.parent.value.$groupBy.length > 0){
-									var bGroupExisted = false;
-									for(var i = 0; i < $this.parent.value.$groupBy.length; i++){
-										var groupByField = $this.parent.value.$groupBy[i];
-										if(groupByField == value){
-											bGroupExisted = true;
-											break;
+					if(!JSB.isDefined(value)){
+						if(chosenObj.value){
+							// resolve via value scheme
+							schemeName = chosenObj.value.scheme;
+							value = chosenObj.value.value;
+							context = chosenObj.value.context;
+							if(schemeName == '#fieldName' || schemeName == '$fieldName') {
+								if($this.scheme.name == '$select'){
+									// check for field is not existed in groupBy section
+									if($this.parent.value.$groupBy && $this.parent.value.$groupBy.length > 0){
+										var bGroupExisted = false;
+										for(var i = 0; i < $this.parent.value.$groupBy.length; i++){
+											var groupByField = $this.parent.value.$groupBy[i];
+											if(groupByField == value){
+												bGroupExisted = true;
+												break;
+											}
 										}
-									}
-									if(!bGroupExisted){
-										// setup default aggregate function for field
-										var aggFunc = $this.getDefaultAggregateForCubeField(value);
-										if(aggFunc){
-											var val = {};
-											val[aggFunc] = value;
-											value = val;
-											schemeName = aggFunc;
+										if(!bGroupExisted){
+											// setup default aggregate function for field
+											var aggFunc = $this.getDefaultAggregateForCubeField(value);
+											if(aggFunc){
+												var val = {};
+												val[aggFunc] = value;
+												value = val;
+												schemeName = aggFunc;
+											}
 										}
 									}
 								}
+							} else if(schemeName == '$fieldExpr') {
+								value = {
+									$field: value,
+									$context: context
+								};
+							} else {
+								value = $this.constructEmptyValue(schemeName);
 							}
-						} else if(schemeName == '$fieldExpr') {
-							value = {
-								$field: value,
-								$context: context
-							};
-						} else if(schemeName == '$viewName') {
-							
-						} else {
+						} else if(chosenObj) {
+							// detect via key scheme
+							schemeName = $this.combineAcceptedSchemes(chosenObj.key.scheme)[0];
+							context = chosenObj.key.context;
 							value = $this.constructEmptyValue(schemeName);
 						}
-					} else {
-						// detect via key scheme
-						schemeName = $this.combineAcceptedSchemes(chosenObj.key.scheme)[0];
-						context = chosenObj.key.context;
-						value = $this.constructEmptyValue(schemeName);
 					}
 					
 					
@@ -992,12 +998,12 @@
 					category = 'Столбцы среза';
 					valObj = item;
 					bHasColumns = true;
-				} else if(item == '$viewName') {
+				} else if(item == '$viewName' || item == '$from') {
 					if(bHasSlices){
 						continue;
 					}
 					category = 'Срезы куба';
-					valObj = item;
+					valObj = '$viewName';
 					bHasSlices = true;
 				} else {
 					if(item && item[0] == '#'){
