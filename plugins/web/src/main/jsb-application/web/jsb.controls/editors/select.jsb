@@ -19,7 +19,9 @@
                 this.setOptions(this.options.options, true);
             }
 
-            this.setValue(this.options.value);
+            if(this.options.value){
+                this.setValue(this.options.value);
+            }
 
             for(var i in this.options){
                 if(i.substr(0, 2) === 'on'){
@@ -37,8 +39,10 @@
 	        var el = this.getElement();
 	        el.empty();
 
+	        this._optionsList = null;
+
 	        if(this.options.emptyStartValue){
-	            el.append('<option value="null"></option>');
+	            el.append('<option value="null" hidden></option>');
 	        }
 	    },
 

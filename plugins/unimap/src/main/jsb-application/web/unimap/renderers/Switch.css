@@ -16,6 +16,12 @@
     margin-left: 15px;
 }
 
+.switchRender > .jsb-switch > .caption {
+    font-size: 15px;
+    color: #73879C;
+    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+}
+
 .switchRender > .name {
     display: inline-block;
     line-height: 22px;

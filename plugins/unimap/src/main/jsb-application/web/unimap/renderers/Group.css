@@ -19,7 +19,7 @@
 .groupRender > .jsb-panel > .content > .multipleItem {
     position: relative;
     padding: 0 16px;
-    border-bottom: 1px solid lightgray;
+    border-bottom: 2px solid lightgray;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem > .dltBtn {

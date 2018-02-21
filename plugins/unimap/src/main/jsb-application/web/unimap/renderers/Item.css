@@ -14,13 +14,17 @@
     width: 174px;
 }
 
+.itemRender > .jsb-checkbox > .caption,
 .itemRender > .name {
     min-width: 150px;
-    display: inline-block;
-    line-height: 22px;
     font-size: 15px;
     color: #73879C;
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+}
+
+.itemRender > .name {
+    display: inline-block;
+    line-height: 22px;
     margin-right: 5px;
 }
 

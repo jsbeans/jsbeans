@@ -11,6 +11,7 @@
 
 	        var switchEl = new Switch({
 	            checked: this._values.checked,
+	            label: this._scheme.name,
 	            onchange: function(b){
 	                $this._values.checked = b;
 
@@ -23,10 +24,7 @@
 	        });
 	        this.append(switchEl);
 
-	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
-	        this.append(name);
-
-	        this.createDescription(name);
+	        this.createDescription(switchEl);
 
 	        if(this._values.checked){
 	            this.createScheme();

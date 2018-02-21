@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Editor', 'JSB.Controls.Select'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.ComboEditor', 'JSB.Controls.Select'],
 	$client: {
 	    _editors: [],
 
@@ -26,34 +26,23 @@
 
             switch(this._scheme.editor){
                 case 'input':
-                    var manualEditor = new Editor({
-                        cssClass: 'editor',
-                        value: values.binding ? undefined : values.value,
-                        onchange: function(){
-                            values.value = manualEditor.getValue();
+                    var label = this.$('<label ' + (values.binding ? '' : 'class="hidden"') + '></label>');
 
-                            $this.options.onchange.call($this, $this._values);
-                        }
-                    });
-
-                    var editor = new Select({
+                    var editor = new ComboEditor({
                         cssClass: 'editor',
                         options: this._dataList,
-                        value: values.binding ? values.value : undefined,
-                        onchange: function(){
-                            var val = editor.getValue();
+                        value: values.value,
+                        onchange: function(val){
+                            values.value = val.value;
 
-                            if(val !== null){
-                                manualEditor.addClass('hidden');
+                            if(val.fromSelect){ // binding
+                                label.removeClass('hidden');
 
-                                values.value = val;
+                                values.binding = val.value;
+                                values.bindingType = $this._bindingsInfo[val.value].type;
+                            } else {    // not binding
+                                label.addClass('hidden');
 
-                                values.binding = val;
-                                values.bindingType = $this._bindingsInfo[val].type;
-                            } else {
-                                manualEditor.removeClass('hidden');
-
-                                values.value = manualEditor.getValue();
                                 values.binding = null;
                                 values.bindingType = null;
                             }
@@ -61,15 +50,10 @@
                             $this.options.onchange.call($this, $this._values);
                         }
                     });
+
+                    editor.prepend(label);
+
                     this._editors.push(editor);
-
-                    var editorEl = this.$('<div class="twoEditors"></div>');
-                    editorEl.append(manualEditor.getElement());
-                    editorEl.append(editor.getElement());
-
-                    if(values.binding){
-                        manualEditor.addClass('hidden');
-                    }
                     break;
                 case 'select':
                 default:
@@ -94,14 +78,12 @@
                         }
                     });
                     this._editors.push(editor);
-
-                    var editorEl = editor.getElement();
             }
 
 	        if(this._scheme.multiple){
 	            var item = this.$('<div class="multipleItem" idx="' + itemIndex + '"></div>');
 
-	            item.append(editorEl);
+	            item.append(editor);
 
 	            var removeBtn = new Button({
                     hasIcon: true,
@@ -118,9 +100,9 @@
 	            });
 	            item.append(removeBtn.getElement());
 
-	            this.multipleBtn.before(item);
+	            this.multipleBtn.before(item.getElement());
 	        } else {
-	            this.append(editorEl);
+	            this.append(editor);
 	        }
 	    },
 

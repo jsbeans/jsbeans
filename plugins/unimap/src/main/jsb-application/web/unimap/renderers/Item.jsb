@@ -14,6 +14,7 @@
 
 	            var checkBox = new Checkbox({
 	                checked: this._values.checked,
+	                label: this._scheme.name,
 	                onchange: function(b){
 	                    $this._values.checked = b;
 
@@ -22,12 +23,14 @@
 	            });
 
 	            this.prepend(checkBox);
+
+	            this.createDescription(name);
+	        } else {
+                var name = this.$('<span class="name">' + this._scheme.name + '</span>');
+                this.append(name);
+
+                this.createDescription(name);
 	        }
-
-	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
-	        this.append(name);
-
-	        this.createDescription(name);
 
 	        if(this._scheme.multiple){
 	            this.multipleContainer = this.$('<div class="multipleContainer"></div>');

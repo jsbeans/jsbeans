@@ -21,6 +21,7 @@
     width: 20px;
     height: 10px;
     border-radius: 10px;
+    display: inline-block;
 }
 
 .jsb-switch > input + label:after,
@@ -57,4 +58,13 @@
 
 .jsb-switch > input:checked + label:after {
     margin-left: 12px;
+}
+
+.jsb-switch > input + label,
+.jsb-switch > .caption {
+    vertical-align: middle;
+}
+
+.jsb-switch > .caption {
+    cursor: pointer;
 }

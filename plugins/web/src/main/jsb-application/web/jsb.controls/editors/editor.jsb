@@ -29,9 +29,11 @@
                 this.setDataList(this.options.dataList);
             }
 
-            this.setValue(this.options.value);
+            if(this.options.value){
+                this.setValue(this.options.value);
+            }
 
-            // options events
+            // options events   // todo: not work
             for(var i in this.options){
                 if(i.substr(0, 2) === 'on'){
                     this.on(i, this.options[i]);

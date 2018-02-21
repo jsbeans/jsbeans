@@ -1,0 +1,22 @@
+.jsb-comboEditor {
+    position: relative;
+    height: 34px;
+    display: inline-block;
+}
+
+.jsb-comboEditor > select {
+    position: absolute;
+    width: 160px;
+    height: 34px;
+    left: 0;
+    top: 0;
+    outline:none;
+}
+
+.jsb-comboEditor > input {
+    position: absolute;
+    width: 140px;
+    left: 0;
+    top: 0;
+    height: 34px;
+}
