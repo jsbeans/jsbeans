@@ -32,7 +32,9 @@
 
 	    options: {
 	        multiple: false,
-	        emptyStartValue: true
+	        emptyStartValue: true,
+	        selectValueOption: false,
+	        selectValueOptionText: 'Выберите значение'
 	    },
 
 	    clear: function(){
@@ -43,6 +45,10 @@
 
 	        if(this.options.emptyStartValue){
 	            el.append('<option value="null" hidden></option>');
+	        }
+
+	        if(this.options.selectValueOption){
+	            el.append('<option value="null">' + this.options.selectValueOptionText + '</option>');
 	        }
 	    },
 

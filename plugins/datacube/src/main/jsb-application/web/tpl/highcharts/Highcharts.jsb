@@ -1,13 +1,12 @@
 {
-	$name:'JSB.Tpl.Highstock',
+	$name:'JSB.Tpl.Highcharts',
 	$client:{
 		$singleton: true,
 		$constructor: function(){
 			$base();
 			(function(){
-				`#include 'highstock.js'`;
+				`#include 'highcharts.js'`;
 				`#include 'highcharts-more.js'`;
-				`#include 'plugins/grouped-categories.js'`;
 				`#include 'modules/no-data-to-display.js'`;
 
 				$this.loadCss('css/customHighcharts.css');

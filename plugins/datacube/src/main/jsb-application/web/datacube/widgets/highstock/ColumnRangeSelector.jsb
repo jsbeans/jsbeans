@@ -278,7 +278,7 @@
     },
     */
 	$client: {
-		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
+		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highcharts'],
 		_currentFilters: {
 		    min: null,
 		    minId: null,

@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.ComboEditor', 'JSB.Controls.Select'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Widgets.ComboBox'],
 	$client: {
 	    _editors: [],
 
@@ -26,32 +26,31 @@
 
             switch(this._scheme.editor){
                 case 'input':
-                    var label = this.$('<label ' + (values.binding ? '' : 'class="hidden"') + '></label>');
-
-                    var editor = new ComboEditor({
-                        cssClass: 'editor',
-                        options: this._dataList,
+                    var editor = new ComboBox({
+                        dropDown: false,
+                        items: this._dataList,
                         value: values.value,
-                        onchange: function(val){
-                            values.value = val.value;
+                        onChange: function(key, obj){
+                            values.value = key;
 
-                            if(val.fromSelect){ // binding
-                                label.removeClass('hidden');
+                            values.binding = key;
+                            values.bindingType = $this._bindingsInfo[key].type;
 
-                                values.binding = val.value;
-                                values.bindingType = $this._bindingsInfo[val.value].type;
-                            } else {    // not binding
-                                label.addClass('hidden');
+                            editor.addClass('hasBinding');
+                        },
+                        onEditorChange: function(val){
+                            values.value = val;
 
-                                values.binding = null;
-                                values.bindingType = null;
-                            }
+                            values.binding = undefined;
+                            values.bindingType = undefined;
 
-                            $this.options.onchange.call($this, $this._values);
+                            editor.removeClass('hasBinding');
                         }
                     });
 
-                    editor.prepend(label);
+                    if(values.binding){
+                        editor.addClass('hasBinding');
+                    }
 
                     this._editors.push(editor);
                     break;
@@ -60,10 +59,11 @@
                     var editor = new Select({
                         cssClass: 'editor',
                         options: this._dataList,
+                        selectValueOption: true,
                         value: values.value,
                         onchange: function(){
                             var val = editor.getValue();
-                            values.value = val;
+                            values.value = val !== null ? val : undefined;
 
                             // todo: add slice id
 
@@ -72,6 +72,7 @@
                                 values.bindingType = $this._bindingsInfo[val].type;
                             } else {
                                 values.binding = undefined;
+                                values.bindingType = undefined;
                             }
 
                             $this.options.onchange.call($this, $this._values);
@@ -110,11 +111,18 @@
 	        var dataList = this.createDataList(values);
 
             for(var i = 0; i < this._editors.length; i++){
-                var val = this._editors[i].getValue();
-                this._editors[i].setOptions(dataList, true);
+                switch(this._scheme.editor){
+                    case 'input':
+                        this._editors[i].setItems(dataList);
+                        break;
+                    case 'select':
+                    default:
+                        var val = this._editors[i].getValue();
+                        this._editors[i].setOptions(dataList, true);
 
-                if(val && this._editors[i].hasOption(val)){
-                    this._editors[i].setValue(val);
+                        if(val && this._editors[i].hasOption(val)){
+                            this._editors[i].setValue(val);
+                        }
                 }
             }
 	    },

@@ -26,11 +26,6 @@
 	padding: 1px 3px;
 	box-sizing: border-box;
 	font-family: roboto, lucida, sans, arial, sans-serif;
-	background: -webkit-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-	background: -moz-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-    background: linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-	background: -o-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-	background: -ms-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
 	outline-color: rgba(0, 0, 0, 0);
 	
 	-webkit-touch-callout: initial;
@@ -51,11 +46,6 @@
 	border-radius: 4px;
 	resize: none;
 	outline-color: rgba(0,0,0,0);
-	background: -webkit-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-	background: -moz-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-	background: linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-	background: -o-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
-	background: -ms-linear-gradient(top, #f5f5f5, #fff 50%, #fcfcfc);
 	
 	-webkit-touch-callout: initial;
 	-webkit-user-select: text;

@@ -207,7 +207,7 @@
     },
     */
 	$client: {
-	    $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
+	    $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highcharts'],
         $constructor: function(opts){
             var self = this;
             $base(opts);

@@ -115,7 +115,10 @@
 	        }
 
 	        if(clear){
-	            this.clear();
+                this._optionsList = null;
+
+                this.select.empty();
+                this.select.append('<option value="null" hidden></option>');
 	        }
 
 	        if(JSB.isObject(options[0])){
@@ -138,8 +141,6 @@
             };
 
             this.editor.val(val);
-debugger;
-            this.editor.attr('value', val);
 
             if(this.hasOption(val)){
                 this.select.val(val);
