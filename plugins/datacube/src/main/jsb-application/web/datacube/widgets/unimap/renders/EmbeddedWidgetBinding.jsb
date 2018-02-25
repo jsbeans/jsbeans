@@ -26,6 +26,7 @@
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);
 
+	        this.createRequireDesc(name);
 	        this.createDescription(name);
 
 	        this._values.valueSkipping = JSB.isDefined(this._values.valueSkipping) ? this._values.valueSkipping : true;
@@ -181,7 +182,7 @@
 			this.constructScheme(wDesc.jsb);
 
 			if(event){
-			    this.options.onchange.call(this, this._values);
+			    this.onchange();
 			}
         }
 	}

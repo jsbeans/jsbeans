@@ -34,7 +34,14 @@
 
 .itemRender > .name > i {
     margin-left: 5px;
+}
+
+.itemRender > .name > i.desc {
     color: #0035ff82;
+}
+
+.itemRender > .name > i.warn {
+    color: #fab005;
 }
 
 .itemRender > .item {

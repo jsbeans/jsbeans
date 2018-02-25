@@ -40,7 +40,7 @@
                     }
                 });
 
-	            this.multipleBtn = this.$('<i class="multipleBtn fa fa-plus-circle"></i>');
+	            this.multipleBtn = this.$('<i class="multipleBtn fas fa-plus-circle"></i>');
 	            this.multipleBtn.click(function(){
 	                $this.addItem();
 	            });
@@ -95,7 +95,7 @@
                 }
 
                 item.append(new Button({
-                    cssClass: 'dltBtn fa fa-close',
+                    cssClass: 'dltBtn fas fa-times',
                     hasCaption: false,
                     onclick: function(){
                         $this.removeItem(itemIndex);
@@ -145,8 +145,6 @@
 	                }
 	            }
 	        }
-	    },
-
-	    validate: function(){}
+	    }
 	}
 }

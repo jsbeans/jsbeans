@@ -11,6 +11,7 @@
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
 	        this.append(name);
 
+	        this.createRequireDesc(name);
 	        this.createDescription(name);
 
 	        if(this._values.values.length > 0){
@@ -105,10 +106,7 @@
                          cssClass: 'deleteButton',
                          tooltip: 'Удалить',
                          onclick: function(evt){
-                             if($this.options.onchange){
-                                 $this.options.onchange.call($this, $this._values);
-                             }
-
+                             $this.onchange();
                              $this.setValue(null);
                          }
                     });
@@ -125,10 +123,7 @@
             };
 
 	        this.setValue(val);
-
-            if(this.options.onchange){
-                this.options.onchange.call(this, this._values);
-            }
+	        this.onchange();
 	    }
 	}
 }

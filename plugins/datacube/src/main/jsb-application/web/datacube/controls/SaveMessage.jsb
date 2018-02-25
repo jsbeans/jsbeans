@@ -22,14 +22,20 @@
 	            case 'saving':
                     this.removeClass('error saved');
                     this.addClass('saving');
+
+                    this.caption.text('Сохранение...');
 	                break;
                 case 'saved':
                     this.removeClass('saving error');
                     this.addClass('saved');
+
+                    this.caption.text('Сохранено!');
                     break;
                 case 'error':
                     this.removeClass('saving saved');
                     this.addClass('error');
+
+                    this.caption.text('Ошибка!');
                     break;
 	        }
 	    }

@@ -42,7 +42,7 @@
                                 values.bindingType = undefined;
                             }
 
-                            $this.options.onchange.call($this, $this._values);
+                            $this.onchange();
                         }
                     });
 
@@ -65,7 +65,7 @@
                                 values.bindingType = undefined;
                             }
 
-                            $this.options.onchange.call($this, $this._values);
+                            $this.onchange();
                         }
                     });
                     this._editors.push(editor);

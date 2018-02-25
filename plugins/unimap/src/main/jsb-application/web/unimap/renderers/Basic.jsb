@@ -46,56 +46,7 @@
             var description = this.$('<div class="description hidden">' + this._scheme.description + '</div>');
             name.append(description);
 
-            var descriptionIcon = this.$('<i class="fa fa-question-circle" aria-hidden="true"></i>');
-
-            descriptionIcon.hover(function() { description.removeClass( "hidden" ); },
-                                  function() { description.addClass( "hidden" ); });
-
-            descriptionIcon.mousemove(function(evt){
-                                if(description.hasClass('show')) return;
-
-                                var descWidth = description.outerWidth(),
-                                    descHeight = description.outerHeight(),
-                                    bodyWidth = $this.$(window).width(),
-                                    bodyHeight = $this.$(window).height(),
-                                    top = evt.pageY,
-                                    left = evt.pageX;
-
-                                if(top + descHeight + 20 > bodyHeight){
-                                    top = bodyHeight - descHeight - 20;
-                                }
-
-                                if(left + descWidth + 20 > bodyWidth){
-                                    left = bodyWidth - descWidth - 20;
-                                }
-
-                                description.offset({top: top + 15, left: left + 15 });
-                           });
-
-            descriptionIcon.click(function(evt){
-                               evt.stopPropagation();
-
-                               description.toggleClass('show');
-
-                               var descWidth = description.outerWidth(),
-                                   descHeight = description.outerHeight(),
-                                   bodyWidth = $this.$(window).width(),
-                                   bodyHeight = $this.$(window).height(),
-                                   top = evt.pageY,
-                                   left = evt.pageX;
-
-                               if(top + descHeight + 20 > bodyHeight){
-                                   top = bodyHeight - descHeight - 20;
-                               }
-
-                               if(left + descWidth + 20 > bodyWidth){
-                                   left = bodyWidth - descWidth - 20;
-                               }
-
-                               description.offset({top: top + 15, left: left + 15 });
-                           });
-
-            name.append(descriptionIcon);
+            name.append(this.createMsgIcon(description, 'desc fas fa-question-circle'));
         },
 
         createInnerScheme: function(scheme, values, onchange){
@@ -107,8 +58,76 @@
             });
         },
 
+        createMsgIcon: function(msg, cssClass){
+            var icon = this.$('<i class="' + cssClass + '" aria-hidden="true"></i>');
+
+            icon.hover(function() { msg.removeClass( "hidden" ); },
+                       function() { msg.addClass( "hidden" ); });
+
+            icon.mousemove(function(evt){
+                if(msg.hasClass('show')) return;
+
+                var descWidth = msg.outerWidth(),
+                    descHeight = msg.outerHeight(),
+                    bodyWidth = $this.$(window).width(),
+                    bodyHeight = $this.$(window).height(),
+                    top = evt.pageY,
+                    left = evt.pageX;
+
+                if(top + descHeight + 20 > bodyHeight){
+                    top = bodyHeight - descHeight - 20;
+                }
+
+                if(left + descWidth + 20 > bodyWidth){
+                    left = bodyWidth - descWidth - 20;
+                }
+
+                msg.offset({top: top + 15, left: left + 15 });
+            });
+
+            icon.click(function(evt){
+               evt.stopPropagation();
+
+               msg.toggleClass('show');
+
+               var descWidth = msg.outerWidth(),
+                   descHeight = msg.outerHeight(),
+                   bodyWidth = $this.$(window).width(),
+                   bodyHeight = $this.$(window).height(),
+                   top = evt.pageY,
+                   left = evt.pageX;
+
+               if(top + descHeight + 20 > bodyHeight){
+                   top = bodyHeight - descHeight - 20;
+               }
+
+               if(left + descWidth + 20 > bodyWidth){
+                   left = bodyWidth - descWidth - 20;
+               }
+
+               msg.offset({top: top + 15, left: left + 15 });
+            });
+
+            return icon;
+        },
+
         createRender: function(key, scheme, values, opts){
             return this._schemeController.createRender(this, key, scheme, values, opts);
+        },
+
+        createRequireDesc: function(name){
+            if(!name || !this._scheme.require){
+                return;
+            }
+
+            var warning = this.$('<div class="warning hidden">Это поле обязательно для заполнения!</div>');
+            name.append(warning);
+
+            var hidden = this._scheme.require && (this._values.values.length === 0 || !this._values.values[0].value) ? '' : ' hidden';
+
+            this._warningIcon = this.createMsgIcon(warning, 'warn fas fa-exclamation-triangle' + hidden);
+
+            name.append(this._warningIcon);
         },
 
         createValues: function(){
@@ -160,6 +179,21 @@
             return this._values;
         },
 
+        onchange: function(){
+            // check require
+            if(this._warningIcon){
+                if(this._scheme.require && (this._values.values.length === 0 || !this._values.values[0].value)){
+                    this._warningIcon.removeClass('hidden');
+                } else {
+                    this._warningIcon.addClass('hidden');
+                }
+            }
+
+            if(JSB.isFunction(this.options.onchange)){
+                this.options.onchange.call(this, this._values);
+            }
+        },
+
         validate: function(){
             var res = {
                 name: this._scheme.name
@@ -169,11 +203,9 @@
                 res.valueNotExist = true;
             }
 
-            return res;
-        },
-
-        validateWarning: function(){
-            // todo
+            if(Object.keys(res).length > 1){
+                return res;
+            }
         }
     }
 }

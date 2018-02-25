@@ -24,11 +24,13 @@
 
 	            this.prepend(checkBox);
 
-	            this.createDescription(name);
+	            this.createRequireDesc(checkBox);
+	            this.createDescription(checkBox);
 	        } else {
                 var name = this.$('<span class="name">' + this._scheme.name + '</span>');
                 this.append(name);
 
+                this.createRequireDesc(name);
                 this.createDescription(name);
 	        }
 
@@ -42,7 +44,7 @@
                     }
                 });
 
-	            this.multipleBtn = this.$('<i class="multipleBtn fa fa-plus-circle"></i>');
+	            this.multipleBtn = this.$('<i class="multipleBtn fas fa-plus-circle"></i>');
 	            this.multipleBtn.click(function(){
 	                $this.addItem();
 	            });
@@ -82,7 +84,7 @@
                         var onChangeFunc = function(val){
                             values.value = val;
 
-                            $this.options.onchange.call($this, $this._values);
+                            $this.onchange();
                         },
                         opts = this._scheme.editorOpts ? JSB.merge(this._scheme.editorOpts, { value: values.value, onChange: onChangeFunc }) : { value: values.value, onChange: onChangeFunc };
 
@@ -98,7 +100,7 @@
                     onchange: function(){
                         values.value = this.getValue();
 
-                        $this.options.onchange.call($this, $this._values);
+                        $this.onchange();
                     }
                 });
                 item.append(editor.getElement());

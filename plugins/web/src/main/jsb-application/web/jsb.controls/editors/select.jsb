@@ -8,7 +8,7 @@
             $base(opts);
 
             this.loadCss('select.css');
-            this.loadCss('../fonts/fa/font-awesome.min.css');
+            this.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-select');
 
             this.currentVal = this.$('<div class="curVal"></div>');
@@ -18,7 +18,7 @@
             this.append(this.dropDownBtn);
 
             if(this.options.clearBtn){
-                this.clearBtn = this.$('<i class="clearBtn fa fa-close hidden"></i>');
+                this.clearBtn = this.$('<i class="clearBtn fas fa-times hidden"></i>');
                 this.append(this.clearBtn);
 
                 this.clearBtn.click(function(){

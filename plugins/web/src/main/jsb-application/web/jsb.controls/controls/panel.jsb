@@ -6,7 +6,7 @@
             $base(opts);
 
             this.loadCss('panel.css');
-            this.loadCss('../fonts/fa/font-awesome.min.css');
+            this.loadCss('../fonts/fa/fontawesome-all.min.css');
             this.addClass('jsb-panel');
 
             this.elements.header = this.$('<div class="header"></div>');
@@ -32,9 +32,9 @@
             }
 
             if(this.options.collapseBtn){
-                var cl = 'fa fa-chevron-up';
+                var cl = 'fas fa-chevron-up';
                 if(this.options.collapsed){
-                    cl = 'fa fa-chevron-down'
+                    cl = 'fas fa-chevron-down'
                     this.elements.content.css('display', 'none');
                 }
                 this.elements.buttons.collapseBtn = this.$('<li key="collapseBtn" class="collapse-link"><i class="' + cl + '"></i></li>');
@@ -52,7 +52,7 @@
             }
 
             if(this.options.settingsBtn){
-                this.elements.buttons.settingsBtn = this.$('<li key="settingsBtn" class="settings-link"><i class="fa fa-wrench"></i></li>');
+                this.elements.buttons.settingsBtn = this.$('<li key="settingsBtn" class="settings-link"><i class="fas fa-cog"></i></li>');
                 this.elements.toolbar.append(this.elements.buttons.settingsBtn);
 
                 if(JSb.isFunction(this.options.onSettingsBtnClick)){
@@ -63,7 +63,7 @@
             }
 
             if(this.options.closeBtn){
-                this.elements.buttons.closeBtn = this.$('<li key="closeBtn" class="close-link"><i class="fa fa-close"></i></li>');
+                this.elements.buttons.closeBtn = this.$('<li key="closeBtn" class="close-link"><i class="fas fa-times"></i></li>');
                 this.elements.toolbar.append(this.elements.buttons.closeBtn);
 
                 if(JSB.isFunction(this.options.onCloseBtnClick)){
