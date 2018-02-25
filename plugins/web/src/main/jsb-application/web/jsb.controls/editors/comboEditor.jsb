@@ -2,149 +2,213 @@
 	$name: 'JSB.Controls.ComboEditor',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+	    _optionsList: {},
 	    _value: {
-	        value: null,
-	        fromSelect: false
+	        key: null,
+	        value: null
 	    },
+	    _valueChanged: false,
 
 	    $constructor: function(opts){
 	        $base(opts);
 
             this.loadCss('comboEditor.css');
+            this.loadCss('../fonts/fa/font-awesome.min.css');
             this.addClass('jsb-comboEditor');
 
-            this.select = this.$('<select tabIndex="-1"></select>');
-            this.append(this.select);
+            this.currentVal = this.$('<div class="curVal"></div>');
+            this.append(this.currentVal);
 
-	        this.editor = this.$('<input type="text" />');
-	        this.append(this.editor);
+            this.dropDownBtn = this.$('<i class="dropDownBtn"></i>');
+            this.append(this.dropDownBtn);
 
-            this.select.change(function(){
-                var val = $this.select.val();
-                if(val === 'null'){
-                    val = null;
-                }
+            if(this.options.clearBtn){
+                this.clearBtn = this.$('<i class="clearBtn fa fa-close hidden"></i>');
+                this.append(this.clearBtn);
 
-                $this._value = {
-                    value: val,
-                    fromSelect: true
-                };
+                this.clearBtn.click(function(){
+                    $this.setValue();
+                });
+            }
 
-                $this.editor.val(val);
-
-	            JSB.defer(function(){
-                    if(JSB.isFunction($this.options.onchange)){
-                        $this.options.onchange.call($this, $this._value);
-                    }
-	            }, 500, 'comdoEditor.change_' + $this.getId());
-            });
-
-	        this.editor.change(function(){
-                $this._value = {
-                    value: $this.editor.val(),
-                    fromSelect: false
-                };
-
-	            JSB.defer(function(){
-                    if(JSB.isFunction($this.options.onchange)){
-                        $this.options.onchange.call($this, $this._value);
-                    }
-	            }, 500, 'comdoEditor.change_' + $this.getId());
-	        });
+            this.dropDown = this.$('<ul class="dropDown hidden"></ul>');
+            this.append(this.dropDown);
 
             if(this.options.options){
                 this.setOptions(this.options.options, true);
             }
 
 	        if(this.options.value){
-	            this.setValue(this.options.value);
+	            this.setValue(this.options.value, this.options.valueKey, true);
 	        }
+
+	        this.currentVal.click(function(){
+	            if(!$this.editor){
+	                $this.createEditor();
+	            }
+	        });
+
+            this.dropDownBtn.click(function(evt){
+                evt.stopPropagation();
+
+                if($this.dropDown.hasClass('hidden')){
+                    $this.$(document).on('click.comboEditor_closeDD', function(evt){
+                        if(!$this.dropDown.is(evt.target) && $this.dropDown.has(evt.target).length === 0){
+                            $this.dropDown.addClass('hidden');
+                            $this.$(document).off('click.comboEditor_closeDD');
+                        }
+                    });
+                }
+
+                $this.dropDown.toggleClass('hidden');
+            });
 	    },
 
 	    options: {
-	        emptyStartValue: true
+	        clearBtn: false
 	    },
 
 	    clear: function(){
 	        this._value = {
-                value: null,
-                fromSelect: false
+	            key: null,
+                value: null
             };
 
-            this._optionsList = null;
-
-            this.select.empty();
-            this.select.append('<option value="null" hidden></option>');
-
-            this.editor.val(null);
+            this._optionsList = {};
+            this.currentVal.empty();
 	    },
 
-	    getValue: function(isFull){
-	        if(isFull){
-	            return this._value;
-	        } else {
-	            return this._value.value;
+	    createEditor: function(){
+	        this.editor = this.$('<input />');
+	        this.currentVal.append(this.editor);
+
+	        if(!this._value.key){
+	            this.editor.val(this._value.value);
 	        }
+
+	        this.editor.keyup(function(evt){
+	            // enter: 13 key code
+	            if(evt.keyCode === 13){
+	                $this.setValue($this.editor.val());
+                    $this._valueChanged = false;
+                    $this.editor.remove();
+                    $this.editor = null;
+	            } else {
+	                var val = $this.editor.val();
+
+	                if(val !== $this._value.value){
+	                    $this._valueChanged = true;
+	                }
+	            }
+	        });
+
+	        this.editor.focusout(function(){
+                if($this._valueChanged){
+                    $this.setValue($this.editor.val());
+                }
+                $this._valueChanged = false;
+	            $this.editor.remove();
+	            $this.editor = null;
+	        });
+
+	        this.editor.focus();
 	    },
 
-	    hasOption: function(option){
-	        if(!this._optionsList){
-	            return;
-	        }
+	    getValue: function(){
+            return this._value;
+	    },
 
-	        if(JSB.isObject(this._optionsList[0])){
-	            for(var i = 0; i < this._optionsList.length; i++){
-	                if(this._optionsList[i].value === option){
-	                    return true;
-	                }
-	            }
-	        } else {
-	            for(var i = 0; i < this._optionsList.length; i++){
-	                if(this._optionsList[i] === option){
-	                    return true;
-	                }
-	            }
-	        }
-
-	        return false;
+	    hasOption: function(key){
+	        return Object.keys(this._optionsList).indexOf(key) > -1;
 	    },
 
 	    setOptions: function(options, clear){
-	        if(!JSB.isArray(options)){
-	            options = [options];
-	        }
-
 	        if(clear){
-                this._optionsList = null;
-
-                this.select.empty();
-                this.select.append('<option value="null" hidden></option>');
+                this._optionsList = {};
+                this.dropDown.empty();
 	        }
 
-	        if(JSB.isObject(options[0])){
-                for(var i = 0; i < options.length; i++){
-                    this.select.append('<option value="' + options[i].value + '">' + options[i].name + '</option>');
-                }
+	        if(JSB.isObject(options)){
+	            for(var i in options){
+	                var el = this.$('<li key="' + i + '"></li>');
+	                el.append(options[i]);
+
+                    (function(key, val){
+                        el.click(function(){
+                            $this.dropDown.addClass('hidden');
+                            $this.$(document).off('click.comboEditor_closeDD');
+                            $this.setValue(val, key);
+                        });
+                    })(i, options[i])
+
+                    this._optionsList[key] = el;
+	                this.dropDown.append(el);
+	            }
 	        } else {
-    	        for(var i = 0; i < options.length; i++){
-    	            this.select.append('<option value="' + options[i] + '"">' + options[i] + '</option>');
-    	        }
-	        }
+                if(!JSB.isArray(options)){
+                    options = [options];
+                }
 
-	        this._optionsList = options;
+                for(var i = 0; i < options.length; i++){
+                    var el, val, key;
+
+                    if(JSB.isObject(options[i])){
+                        el = this.$('<li key="' + options[i].key + '"></li>');
+                        el.append(options[i].value);
+                        key = options[i].key;
+                        val = options[i].value;
+                    } else {
+                        el = this.$('<li key="' + options[i] + '"">' + options[i] + '</li>');
+                        key = options[i];
+                        val = options[i];
+                    }
+
+                    (function(key, val){
+                        el.click(function(){
+                            $this.dropDown.addClass('hidden');
+                            $this.$(document).off('click.comboEditor_closeDD');
+                            $this.setValue(val, key);
+                        });
+                    })(key, val)
+
+                    this._optionsList[key] = el;
+                    this.dropDown.append(el);
+                }
+	        }
 	    },
 
-	    setValue: function(val, fromSelect){
+	    setValue: function(val, key, hEvt){
 	        this._value = {
-                value: val,
-                fromSelect: fromSelect
+                key: key,
+                value: val
             };
 
-            this.editor.val(val);
+            this.currentVal.empty();
+	        this.dropDown.find('li').removeClass('selected');
 
-            if(this.hasOption(val)){
-                this.select.val(val);
-            }
+	        if(JSB.isDefined(key)){  // select
+	            this.currentVal.append(this._optionsList[key].html());
+	            this._optionsList[key].addClass('selected');
+	        } else {
+                if(JSB.isDefined(val)){    // edit
+                    this.currentVal.append('<div class="simpleValue">' + val + '</div>');
+                }
+	        }
+
+	        if(this.clearBtn){
+                if(JSB.isDefined(val) || JSB.isDefined(key)){
+                    this.clearBtn.removeClass('hidden');
+                } else {
+                    this.clearBtn.addClass('hidden');
+                }
+	        }
+
+	        if(!hEvt && JSB.isFunction(this.options.onchange)){
+	            this.options.onchange.call(this, {
+	                key: key,
+	                value: val
+	            });
+	        }
 	    }
 	}
 }

@@ -20,18 +20,16 @@
 	            this._values.values.push(values);
 	        }
 
-	        values.value = values.value ? values.value : this._optionsList && this._optionsList.length > 0 ? this._optionsList[0].value : undefined;
+	        values.value = values.value ? values.value : this._optionsList && this._optionsList.length > 0 ? this._optionsList[0].key : undefined;
 
 	        var item = this.$('<div class="item"></div>');
 
             var select = new Select({
-                emptyStartValue: false,
                 options: this._optionsList,
                 value: values.value,
-                onchange: function(){
-                    var val = select.getValue();
-                    values.value = val;
-                    $this.createInnerScheme(item, val, itemIndex);
+                onchange: function(val){
+                    values.value = val.key;
+                    $this.createInnerScheme(item, val.key, itemIndex);
 
                     $this.options.onchange.call($this, $this._values);
                 }
@@ -89,8 +87,8 @@
                         if(this._scheme.itemsGroups[j].forFields.indexOf(linkedOpts[i]) > -1){
                             for(var k in this._scheme.itemsGroups[j].items){
                                 opList.push({
-                                    name: this._scheme.itemsGroups[j].items[k].name,
-                                    value: k
+                                    key: k,
+                                    value: this._scheme.itemsGroups[j].items[k].name
                                 });
                             }
                         }
@@ -99,8 +97,8 @@
 	        } else {
                 for(var i in this._scheme.items){
                     opList.push({
-                        name: this._scheme.items[i].name,
-                        value: i
+                        key: i,
+                        value: this._scheme.items[i].name
                     });
                 }
 	        }

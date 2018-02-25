@@ -42,7 +42,7 @@
 }
 
 .itemRender > .multipleContainer > .multipleItem,
-.itemRender > .item > .jsb-editor > input {
+.itemRender > .item > .jsb-editor {
     width: 200px;
     height: 34px;
     padding: 6px 12px;

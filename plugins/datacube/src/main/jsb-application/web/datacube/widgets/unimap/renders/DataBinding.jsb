@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Widgets.ComboBox'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', /*'JSB.Widgets.ComboBox'*/ 'JSB.Controls.ComboEditor'],
 	$client: {
 	    _editors: [],
 
@@ -26,50 +26,40 @@
 
             switch(this._scheme.editor){
                 case 'input':
-                    var editor = new ComboBox({
-                        dropDown: false,
-                        items: this._dataList,
+                    var editor = new ComboEditor({
+                        clearBtn: true,
+                        options: this._dataList,
                         value: values.value,
-                        onChange: function(key, obj){
-                            values.value = key;
+                        valueKey: JSB.isDefined(values.binding) ? values.binding : undefined,
+                        onchange: function(val){
+                            if(JSB.isDefined(val.key)){
+                                values.value = val.key;
+                                values.binding = val.key;
+                                values.bindingType = $this._bindingsInfo[val.key].type;
+                            } else {
+                                values.value = val.value;
+                                values.binding = undefined;
+                                values.bindingType = undefined;
+                            }
 
-                            values.binding = key;
-                            values.bindingType = $this._bindingsInfo[key].type;
-
-                            editor.addClass('hasBinding');
-                        },
-                        onEditorChange: function(val){
-                            values.value = val;
-
-                            values.binding = undefined;
-                            values.bindingType = undefined;
-
-                            editor.removeClass('hasBinding');
+                            $this.options.onchange.call($this, $this._values);
                         }
                     });
-
-                    if(values.binding){
-                        editor.addClass('hasBinding');
-                    }
 
                     this._editors.push(editor);
                     break;
                 case 'select':
                 default:
                     var editor = new Select({
-                        cssClass: 'editor',
+                        clearBtn: true,
                         options: this._dataList,
-                        selectValueOption: true,
                         value: values.value,
-                        onchange: function(){
-                            var val = editor.getValue();
-                            values.value = val !== null ? val : undefined;
+                        onchange: function(val){
+                            values.value = val.key;
 
-                            // todo: add slice id
-
-                            if($this._dataList.indexOf(val) > -1){
-                                values.binding = val;
-                                values.bindingType = $this._bindingsInfo[val].type;
+                            if(JSB.isDefined(val.key)){
+                                values.binding = val.key;
+                                values.bindingType = $this._bindingsInfo[val.key].type;
                             } else {
                                 values.binding = undefined;
                                 values.bindingType = undefined;
@@ -111,19 +101,7 @@
 	        var dataList = this.createDataList(values);
 
             for(var i = 0; i < this._editors.length; i++){
-                switch(this._scheme.editor){
-                    case 'input':
-                        this._editors[i].setItems(dataList);
-                        break;
-                    case 'select':
-                    default:
-                        var val = this._editors[i].getValue();
-                        this._editors[i].setOptions(dataList, true);
-
-                        if(val && this._editors[i].hasOption(val)){
-                            this._editors[i].setValue(val);
-                        }
-                }
+                this._editors[i].setOptions(dataList, true);
             }
 	    },
 
@@ -137,7 +115,11 @@
 	            }
 
 	            for(var j in values.values[i].binding.arrayType.record){
-	                dataList.push(j); // todo: source name
+	                dataList.push({
+	                    key: j,
+	                    value: this.$('<div class="sliceRender">' + j + '</div>')
+	                });
+
 	                bindingsInfo[j] = values.values[i].binding.arrayType.record[j];
 	            }
 	        }

@@ -136,10 +136,6 @@
             // this._values.valueType = this._scheme.valueType;
         },
 
-        isChecked: function(){
-            // todo
-        },
-
         getKey: function(){
             return this._key;
         },

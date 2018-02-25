@@ -5,140 +5,156 @@
         _optionsList: null,
 
         $constructor: function(opts){
-            if(!opts.element) opts.element = '<select></select>';
             $base(opts);
 
             this.loadCss('select.css');
+            this.loadCss('../fonts/fa/font-awesome.min.css');
             this.addClass('jsb-select');
 
-            if(this.options.multiple){
-                this.getElement().attr('multiple', 'multiple');
+            this.currentVal = this.$('<div class="curVal"></div>');
+            this.append(this.currentVal);
+
+            this.dropDownBtn = this.$('<i class="dropDownBtn"></i>');
+            this.append(this.dropDownBtn);
+
+            if(this.options.clearBtn){
+                this.clearBtn = this.$('<i class="clearBtn fa fa-close hidden"></i>');
+                this.append(this.clearBtn);
+
+                this.clearBtn.click(function(){
+                    $this.setValue();
+                });
             }
+
+            this.dropDown = this.$('<ul class="dropDown hidden"></ul>');
+            this.append(this.dropDown);
 
             if(this.options.options){
                 this.setOptions(this.options.options, true);
             }
 
             if(this.options.value){
-                this.setValue(this.options.value);
+                this.setValue(this.options.value, true);
             }
 
-            for(var i in this.options){
-                if(i.substr(0, 2) === 'on'){
-                    this.on(i, this.options[i]);
+            function ddToggle(evt){
+                evt.stopPropagation();
+
+                if($this.dropDown.hasClass('hidden')){
+                    $this.$(document).on('click.comboEditor_closeDD', function(evt){
+                        if(!$this.dropDown.is(evt.target) && $this.dropDown.has(evt.target).length === 0){
+                            $this.dropDown.addClass('hidden');
+                            $this.$(document).off('click.comboEditor_closeDD');
+                        }
+                    });
                 }
+
+                $this.dropDown.toggleClass('hidden');
             }
+
+            this.dropDownBtn.click(ddToggle);
+            this.currentVal.click(ddToggle);
         },
 
 	    options: {
-	        multiple: false,
-	        emptyStartValue: true,
-	        selectValueOption: false,
-	        selectValueOptionText: 'Выберите значение'
+	        clearBtn: false
 	    },
 
 	    clear: function(){
-	        var el = this.getElement();
-	        el.empty();
+	        this._value = {
+	            key: null,
+                value: null
+            };
 
-	        this._optionsList = null;
-
-	        if(this.options.emptyStartValue){
-	            el.append('<option value="null" hidden></option>');
-	        }
-
-	        if(this.options.selectValueOption){
-	            el.append('<option value="null">' + this.options.selectValueOptionText + '</option>');
-	        }
+            this._optionsList = {};
+            this.currentVal.empty();
 	    },
 
-	    enable: function(bool){
-            this.options.enable = bool;
-            this.getElement().attr('disabled', !bool);
+	    getValue: function(){
+	        return this._value;
 	    },
 
-	    getValue: function(withName){
-	        var value = this.getElement().val();
-
-	        if(value === 'null'){
-	            value = null;
-	        }
-
-	        if(withName){
-	            return {
-	                name: this.getElement().find('option:selected').text(),
-	                value: value
-	            }
-	        }
-	        return value;
+	    hasOption: function(key){
+	        return Object.keys(this._optionsList).indexOf(key) > -1;
 	    },
-
-	    hasOption: function(option){
-	        if(!this._optionsList){
-	            return;
-	        }
-
-	        if(JSB.isObject(this._optionsList[0])){
-	            for(var i = 0; i < this._optionsList.length; i++){
-	                if(this._optionsList[i].value === option){
-	                    return true;
-	                }
-	            }
-	        } else {
-	            for(var i = 0; i < this._optionsList.length; i++){
-	                if(this._optionsList[i] === option){
-	                    return true;
-	                }
-	            }
-	        }
-
-	        return false;
-	    },
-
-		on: function(eventName, func){
-		    if(!JSB().isFunction(func)) return;
-
-		    this.options[eventName] = func;
-		    this.getElement().on(eventName.substr(2), function(evt){
-		        $this.options[eventName].call($this, evt);
-		    });
-		},
 
 	    setOptions: function(options, clear){
-	        if(!JSB.isArray(options)){
-	            options = [options];
-	        }
-
 	        if(clear){
-	            this.clear();
+                this._optionsList = {};
+                this.dropDown.empty();
 	        }
 
-	        var el = this.getElement();
+	        if(JSB.isObject(options)){
+	            for(var i in options){
+	                var el = this.$('<li key="' + i + '"></li>');
+	                el.append(options[i]);
 
-	        if(JSB.isObject(options[0])){
-                for(var i = 0; i < options.length; i++){
-                    el.append('<option value="' + options[i].value + '">' + options[i].name + '</option>');
-                }
-	        } else {
-    	        for(var i = 0; i < options.length; i++){
-    	            el.append('<option value="' + options[i] + '"">' + options[i] + '</option>');
-    	        }
-	        }
+                    (function(key, val){
+                        el.click(function(){
+                            $this.dropDown.addClass('hidden');
+                            $this.$(document).off('click.comboEditor_closeDD');
+                            $this.setValue(val, key);
+                        });
+                    })(i)
 
-	        this._optionsList = options;
-	    },
-
-	    setGroupOptions: function(groups, clear){
-            // todo
-	    },
-
-	    setValue: function(val, b){
-	        if(val){
-	            this.getElement().val(val);
-
-	            if(b && JSB.isFunction(this.options.onchange)){
-	                this.options.onchange.call(this, val);
+                    this._optionsList[key] = el;
+	                this.dropDown.append(el);
 	            }
+	        } else {
+                if(!JSB.isArray(options)){
+                    options = [options];
+                }
+
+                for(var i = 0; i < options.length; i++){
+                    var el, key;
+
+                    if(JSB.isObject(options[i])){
+                        el = this.$('<li key="' + options[i].key + '"></li>');
+                        el.append(options[i].value);
+                        key = options[i].key;
+                    } else {
+                        el = this.$('<li key="' + options[i] + '"">' + options[i] + '</li>');
+                        key = options[i];
+                    }
+
+                    (function(key){
+                        el.click(function(){
+                            $this.dropDown.addClass('hidden');
+                            $this.$(document).off('click.comboEditor_closeDD');
+                            $this.setValue(key);
+                        });
+                    })(key)
+
+                    this._optionsList[key] = el;
+                    this.dropDown.append(el);
+                }
+	        }
+	    },
+
+	    setValue: function(key, hEvt){
+	        this._value = {
+                key: key,
+                value: this._optionsList[key]
+            };
+
+            this.currentVal.empty();
+	        this.dropDown.find('li').removeClass('selected');
+
+	        if(JSB.isDefined(key)){  // select
+	            this.currentVal.append(this._optionsList[key].html());
+	            this._optionsList[key].addClass('selected');
+	        }
+
+	        if(this.clearBtn){
+                if(JSB.isDefined(key)){
+                    this.clearBtn.removeClass('hidden');
+                } else {
+                    this.clearBtn.addClass('hidden');
+                }
+	        }
+
+	        if(!hEvt && JSB.isFunction(this.options.onchange)){
+	            this.options.onchange.call(this, this._value);
 	        }
 	    }
     }

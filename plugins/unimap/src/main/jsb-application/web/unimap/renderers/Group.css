@@ -1,5 +1,6 @@
-.groupRender .jsb-panel {
+.groupRender > .jsb-panel {
     width: 100%;
+    overflow: visible;
 }
 
 .groupRender.optional > .jsb-panel > .jsb-checkbox{
