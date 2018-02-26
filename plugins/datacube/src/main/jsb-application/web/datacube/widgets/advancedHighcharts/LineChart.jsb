@@ -9,6 +9,20 @@
         thumb: 'data:image/png;base64,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'
     },
     $scheme: {
+        chart: {
+	        render: 'group',
+	        name: 'Основное',
+            collapsable: true,
+            items: {
+                polar: {
+                    render: 'item',
+                    name: 'Полярная',
+                    optional: true,
+                    editor: 'none'
+                }
+            }
+        },
+
         series: {
 	        render: 'group',
 	        name: 'Серии',
@@ -23,12 +37,14 @@
                         name: {
                             render: 'dataBinding',
                             name: 'Имя серии или значения',
-                            linkTo: 'source'
+                            linkTo: 'source',
+                            editor: 'input'
                         },
                         data: {
                             render: 'dataBinding',
                             name: 'Данные',
-                            linkTo: 'source'
+                            linkTo: 'source',
+                            require: true
                         },
                         type: {
                             render: 'select',
@@ -42,6 +58,9 @@
                                 },
                                 column: {
                                     name: 'Column'
+                                },
+                                spline: {
+                                    name: 'Spline'
                                 }
                             }
                         },
@@ -122,29 +141,30 @@
             }
         },
 
-	    plotOptions: {
-	        render: 'group',
-	        name: 'Опции точек',
-            collapsable: true,
-            collapsed: true,
+        plotOptions: {
             items: {
-                stacking: {
-                    render: 'select',
-                    name: 'Тип стека',
+                column: {
+                    render: 'group',
+                    name: 'Тип "Колонки"',
+                    collapsable: true,
+                    collapsed: true,
                     items: {
-                        none: {
-                            name: 'Нет'
+                        groupPadding: {
+                            render: 'item',
+                            name: 'Внутренний отступ группы',
+                            valueType: 'number',
+                            defaultValue: 0.2
                         },
-                        normal: {
-                            name: 'Нормальный'
-                        },
-                        percent: {
-                            name: 'Процентный'
+                        pointPadding: {
+                            render: 'item',
+                            name: 'Внутренний отступ точки',
+                            valueType: 'number',
+                            defaultValue: 0.1
                         }
                     }
                 }
             }
-	    }
+        }
     },
     $client: {
         // inner variables
@@ -298,7 +318,7 @@
                         this._selectAllCategory(i);
                     }
                 } catch(ex){
-                    console.log('Load data exception!');
+                    console.log('LineChart load data exception');
                     console.log(ex);
                 } finally {
                     $this.getElement().loader('hide');
@@ -312,7 +332,7 @@
                 xAxisCategories = data.xAxisData;
 
             try{
-                var plotOptionsContext = this.getContext().find('plotOptions'),
+                var columnPlotOptionsContext = this.getContext().find('plotOptions column'),
                     seriesContext = this.getContext().find('series').values(),
                     series = [];
 
@@ -324,6 +344,7 @@
                         type: seriesContext[seriesData[j].index].find('type').value(),
                         allowPointSelect: seriesContext[seriesData[j].index].find('allowPointSelect').checked(),
                         color: seriesContext[seriesData[j].index].find('color').value(),
+                        cursor: seriesContext[seriesData[j].index].find('allowPointSelect').checked() ? 'pointer' : undefined,
                         stack: seriesContext[seriesData[j].index].find('stack').value(),
                         step: this.isNone(seriesContext[seriesData[j].index].find('step').value()),
                         tooltip: {
@@ -331,13 +352,14 @@
                             valuePrefix: seriesContext[seriesData[j].index].find('valuePrefix').value(),
                             valueSuffix: seriesContext[seriesData[j].index].find('valueSuffix').value()
                         },
-                        // yAxis: $this.isNull(seriesContext[seriesData[j].index].get(4).value(), true),
-                        //dashStyle: seriesContext[seriesData[j].index].get(5).value().name(),
                         visible: seriesContext[seriesData[j].index].find('visible').checked()
                     }
                 }
 
                 var chartOpts = {
+                    chart: {
+                        polar: this.getContext().find('chart polar').checked()
+                    },
                     plotOptions: {
                         series: {
                             point: {
@@ -403,8 +425,11 @@
                                     }
                                 }
                             },
-                            stacking: this.isNone(plotOptionsContext.find('stacking').value()),
                             turboThreshold: 0
+                        },
+                        column: {
+                            groupPadding: columnPlotOptionsContext.find('groupPadding').value(),
+                            pointPadding: columnPlotOptionsContext.find('pointPadding').value()
                         }
                     },
 
@@ -423,7 +448,7 @@
                     this.chart = Highcharts.chart(this.container.get(0), baseChartOpts);
                 }
             } catch(ex){
-                console.log('Build chart exception!');
+                console.log('LineChart build chart exception');
                 console.log(ex);
             }
         },

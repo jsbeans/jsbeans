@@ -146,7 +146,7 @@
                     value = Number(this._values[0].value);
 
                     if(isNaN(value)){
-                        value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                        value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
                     }
                     break;
                 case 'string':
@@ -154,12 +154,12 @@
                     value = this._values[0].value;
 
                     if(!JSB.isDefined(value)){
-                        value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                        value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
                         break;
                     }
 
                     if(typeof value === 'string' && value.length === 0){
-                        value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : '';
+                        value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : '';
                     }
             }
 
@@ -185,7 +185,7 @@
                         value = Number(this._values[i].value);
 
                         if(isNaN(value)){
-                            value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                            value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
                         }
                         break;
                     case 'string':
@@ -193,7 +193,7 @@
                         value = this._values[i].value;
 
                         if(!JSB.isDefined(value)){
-                            value = this._selectorOpts.defaultValue ? this._selectorOpts.defaultValue : undefined;
+                            value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
                             break;
                         }
 

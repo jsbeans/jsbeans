@@ -151,7 +151,7 @@
 
 	        for(var i = 0; i < this._renders.length; i++){
 	            var res = this._renders[i].validate();
-	            if(Object.keys(res).length > 0){
+	            if(res){
 	                valRes.push(res);
 	            }
 	        }

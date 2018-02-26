@@ -139,17 +139,6 @@
                     optional: true,
                     editor: 'none'
                 },
-                tickColor: {
-                    render: 'item',
-                    name: 'Цвет отметок',
-                    editor: 'JSB.Widgets.ColorEditor',
-                    defaultValue: '#ccd6eb'
-                },
-                tickInterval: {
-                    render: 'item',
-                    name: 'Интервал отметок',
-                    valueType: 'number'
-                },
                 type: {
                     render: 'select',
                     name: 'Тип',
@@ -161,6 +150,29 @@
                             name: 'Логарифмическая'
                         }
                     }
+                },
+                min: {
+                    render: 'dataBinding',
+                    name: 'Минимум',
+                    linkTo: 'source',
+                    editor: 'input'
+                },
+                max: {
+                    render: 'dataBinding',
+                    name: 'Максимум',
+                    linkTo: 'source',
+                    editor: 'input'
+                },
+                tickInterval: {
+                    render: 'item',
+                    name: 'Интервал отметок',
+                    valueType: 'number'
+                },
+                tickColor: {
+                    render: 'item',
+                    name: 'Цвет отметок',
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#ccd6eb'
                 }
             }
         },
@@ -302,17 +314,6 @@
                     optional: true,
                     editor: 'none'
                 },
-                tickColor: {
-                    render: 'item',
-                    name: 'Цвет отметок',
-                    editor: 'JSB.Widgets.ColorEditor',
-                    defaultValue: '#ccd6eb'
-                },
-                tickInterval: {
-                    render: 'item',
-                    name: 'Интервал отметок',
-                    valueType: 'number'
-                },
                 type: {
                     render: 'select',
                     name: 'Тип',
@@ -375,6 +376,29 @@
                     name: 'Толщина линии сетки',
                     valueType: 'number',
                     defaultValue: 1
+                },
+                min: {
+                    render: 'dataBinding',
+                    name: 'Минимум',
+                    linkTo: 'source',
+                    editor: 'input'
+                },
+                max: {
+                    render: 'dataBinding',
+                    name: 'Максимум',
+                    linkTo: 'source',
+                    editor: 'input'
+                },
+                tickInterval: {
+                    render: 'item',
+                    name: 'Интервал отметок',
+                    valueType: 'number'
+                },
+                tickColor: {
+                    render: 'item',
+                    name: 'Цвет отметок',
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#ccd6eb'
                 }
             }
         },
@@ -420,7 +444,9 @@
                         reversed: xAxisContext.find('reversed').checked(),
                         tickColor: xAxisContext.find('tickColor').value(),
                         tickInterval: xAxisContext.find('tickInterval').value(),
-                        type: xAxisContext.find('type').value()
+                        type: xAxisContext.find('type').value(),
+                        min: xAxisContext.find('min').value(),
+                        max: xAxisContext.find('max').value()
                     },
 
                     yAxis: {
@@ -453,12 +479,15 @@
                         type: yAxisContext.find('type').value(),
                         gridLineColor: yAxisContext.find('gridLineColor').value(),
                         gridLineDashStyle: yAxisContext.find('gridLineDashStyle').value(),
-                        gridLineWidth: yAxisContext.find('gridLineWidth').value()
+                        gridLineWidth: yAxisContext.find('gridLineWidth').value(),
+                        min: yAxisContext.find('min').value(),
+                        max: yAxisContext.find('max').value()
                     }
                 };
 
                 JSB.merge(true, baseChartOpts, chartOpts);
             } catch(e){
+                console.log('AxisChart build chart exception');
                 console.log(e);
             } finally{
                 return baseChartOpts;

@@ -7,6 +7,8 @@
 	        name: 'Источник'
 	    },
 
+	    chart: {},
+
 	    series: {},
 
         xAxis: {},
@@ -21,7 +23,9 @@
             items: {
                 text: {
                     render: 'item',
-                    name: 'Текст'
+                    name: 'Текст',
+                    valueType: 'string',
+                    defaultValue: ''
                 },
                 align: {
                     render: 'select',
@@ -363,7 +367,37 @@
             }
 	    },
 
-        plotOptions: {},
+        plotOptions: {
+	        render: 'group',
+	        name: 'Опции точек',
+            collapsable: true,
+            collapsed: true,
+            items: {
+                series: {
+                    render: 'group',
+                    name: 'Общие',
+                    collapsable: true,
+                    collapsed: true,
+                    items: {
+                        stacking: {
+                            render: 'select',
+                            name: 'Тип стека',
+                            items: {
+                                none: {
+                                    name: 'Нет'
+                                },
+                                normal: {
+                                    name: 'Нормальный'
+                                },
+                                percent: {
+                                    name: 'Процентный'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
 
 	    credits: {
 	        render: 'group',
@@ -434,20 +468,20 @@
                 x: {
                     render: 'item',
                     name: 'X',
-                    itemType: 'number',
+                    valueType: 'number',
                     defaultValue: -10
                 },
                 y: {
                     render: 'item',
                     name: 'Y',
-                    itemType: 'number',
+                    valueType: 'number',
                     defaultValue: -5
                 }
             }
 	    }
     },
     $client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
+        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highcharts'],
 
         $constructor: function(opts){
             $base(opts);
@@ -515,6 +549,7 @@
             try{
                 var creditsContext = this.getContext().find('credits'),
                     legendContext = this.getContext().find('legend'),
+                    plotOptionsContext = this.getContext().find('plotOptions series'),
                     titleContext = this.getContext().find('header'),
                     tooltipContext = this.getContext().find('mainTooltip'),
 
@@ -564,10 +599,16 @@
                         y: legendContext.find('y').value()
                     },
 
+                    plotOptions: {
+                        series: {
+                            stacking: this.isNone(plotOptionsContext.find('stacking').value())
+                        }
+                    },
+
                     title: {
                         text: titleContext.find('text').value(),
                         align: titleContext.find('align').value(),
-                        verticalAlign: titleContext.find('verticalAlign').value(),
+                        verticalAlign: this.isNone(titleContext.find('verticalAlign').value()),
                         floating: titleContext.find('floating').checked(),
                         margin: titleContext.find('margin').value(),
                         color: titleContext.find('fontColor').value(),
@@ -594,6 +635,7 @@
                     },
                 }
             } catch(e){
+                console.log('BaseChart build chart exception');
                 console.log(e);
             } finally {
                 return chartOpts;

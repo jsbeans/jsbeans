@@ -48,9 +48,14 @@
 			});
 			this.append(splitBox);
 
-	        this.schemeBlock = new ScrollBox();
-	        splitBox.append(this.schemeBlock);
-	        this.schemeBlock.addClass('schemeBlock');
+			var schemeBlock = this.$('<div class="schemeBlock"></div>');
+			splitBox.append(schemeBlock);
+
+	        this.schemeScroll = new ScrollBox();
+	        schemeBlock.append(this.schemeScroll.getElement());
+
+	        this.warningBlock = this.$('<div class="warningBlock hidden"></div>');
+	        schemeBlock.append(this.warningBlock);
 
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
 	        splitBox.append(this.widgetBlock);
@@ -83,7 +88,8 @@
                     values: JSB.clone($this.entry.getValues()),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(values){
-                        if(values.render === 'dataBinding'){
+debugger;
+                        if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
                             return;
                         }
 
@@ -92,7 +98,7 @@
                         }, 800, "widgetSettingsView_setChanges" + $this.getId());
                     }
                 });
-                $this.schemeBlock.append($this.widgetSchemeRenderer.getElement());
+                $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
             });
 
             this.titleEditor.setData(this.entry.name);
@@ -126,6 +132,8 @@
                 }
             }
 
+            this.updateValidation();
+
             $this.savedMessage.fadeIn(1600, "linear", function(){
                 $this.savedMessage.fadeOut(1600, "linear");
             });
@@ -146,20 +154,45 @@
 		},
 
 		setChanges: function(){
+		    if(!this.warningBlock.hasClass('hidden')){
+		        this.updateValidation();
+		    }
+
 		    this.wrapper.updateValues({
 		        values: this.widgetSchemeRenderer.getValues(),
 		        linkedFields: this.widgetSchemeRenderer.getLinkedFields()
 		    });
 
             this.wrapper.getWidget().ensureInitialized(function(){
-	            try {
-	                $this.wrapper.getWidget().refresh({
-	                    refreshFromCache: true
-	                });
-	            } catch(ex){
-	                //console.log(ex);
-	            }
+                $this.wrapper.getWidget().refresh({
+                    refreshFromCache: true
+                });
         	});
+		},
+
+		updateValidation: function(){
+		    this.warningBlock.empty();
+
+            var validate = this.widgetSchemeRenderer.validate();
+            if(validate.length > 0){
+                this.warningBlock.removeClass('hidden');
+
+                for(var i = 0; i < validate.length; i++){
+                    this.warningBlock.append('<p>Поле <b>' + validate[i].name + '</b> обязательно к заполнению!</p>');
+                }
+
+                var warningBlockHeight = this.warningBlock.outerHeight();
+
+                if(warningBlockHeight > 200){
+                    this.warningBlock.outerHeight(200);
+                    this.schemeScroll.getElement().outerHeight('calc(100% - 200px)');
+                } else {
+                    this.schemeScroll.getElement().outerHeight('calc(100% - ' + warningBlockHeight + 'px)');
+                }
+            } else {
+                this.warningBlock.addClass('hidden');
+                this.schemeScroll.getElement().outerHeight('100%');
+            }
 		}
 	},
 	

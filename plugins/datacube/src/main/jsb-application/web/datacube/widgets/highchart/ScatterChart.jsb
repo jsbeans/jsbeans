@@ -273,7 +273,7 @@
     },
     */
 	$client: {
-		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highstock'],
+		$require: ['JQuery.UI.Loader', 'JSB.Tpl.Highcharts'],
 		
 		$constructor: function(opts){
 			$base(opts);

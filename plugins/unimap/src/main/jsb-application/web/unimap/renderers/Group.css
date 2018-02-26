@@ -1,5 +1,6 @@
-.groupRender .jsb-panel {
+.groupRender > .jsb-panel {
     width: 100%;
+    overflow: visible;
 }
 
 .groupRender.optional > .jsb-panel > .jsb-checkbox{
@@ -30,6 +31,7 @@
     background: none;
     color: darkred;
     line-height: 0.5;
+    font-weight: 900;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem .sortableHandle {

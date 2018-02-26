@@ -3,19 +3,24 @@
 	$parent: 'JSB.Controls.Control',
 	$client: {
 	    _types: [],
+	    _value: null,
 
 	    $constructor: function(opts){
+	        if(!opts.element) {
+	            opts.element = '<input />';
+	        }
 	        $base(opts);
 
             this.loadCss('editor.css');
             this.addClass('jsb-editor');
 
+            this.editor = this.getElement();
+
             if(this.options.type !== 'text' || this.options.type !== 'password' || this.options.type !== 'color' || this.options.type !== 'search'){
                 this.options.type = 'text';
             }
 
-            this.editor = this.$('<input type="' + this.options.type + '"/>');
-            this.append(this.editor);
+            this.editor.attr('type', this.options.type);
 
             if(this.options.readonly){
                 this.editor.attr('readonly', true);
@@ -33,11 +38,16 @@
                 this.setValue(this.options.value);
             }
 
-            // options events   // todo: not work
-            for(var i in this.options){
-                if(i.substr(0, 2) === 'on'){
-                    this.on(i, this.options[i]);
-                }
+            if(JSB.isFunction(this.options.onchange)){
+                this.editor.keyup(function(){
+                    var val = $this.$(this).val();
+
+                    if(val !==  $this._value){
+                        $this.options.onchange.call($this, val);
+                    }
+
+                    $this._value = val;
+                });
             }
 	    },
 
@@ -46,7 +56,10 @@
 	        type: 'text',    // password, color, search
 	        placeholder: null,
 
-	        dataList: null
+	        dataList: null,
+
+	        // events
+	        onchange: null
 	    },
 
 	    _dataList: [],
@@ -68,15 +81,6 @@
 	    getValue: function(){
 	        return this.editor.val();
 	    },
-
-		on: function(eventName, func){
-		    if(!JSB().isFunction(func)) return;
-
-		    this.options[eventName] = func;
-		    this.editor.on(eventName.substr(2), function(evt){
-		        $this.options[eventName].call($this, evt);
-		    });
-		},
 
 	    removeDataList: function(){
 	        this.editor.attr('list', '');
@@ -127,8 +131,9 @@
 	    },
 
 	    setValue: function(value){
-	        if(value){
+	        if(JSB.isDefined(value)){
 	            this.editor.val(value);
+	            this._value = value;
 	        }
 	    }
 	}

@@ -119,3 +119,18 @@
     cursor: default;
     z-index: 10000;
 }
+
+.widgetSettingsView .schemeBlock > .warningBlock {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #fff9db;
+    font-size: 14px;
+}
+
+.widgetSettingsView .schemeBlock > .warningBlock > p {
+
+}
+
+.widgetSettingsView .schemeBlock > .warningBlock > p > b {
+
+}
