@@ -87,8 +87,7 @@
                     scheme: $this.wrapper.extractWidgetScheme(),
                     values: JSB.clone($this.entry.getValues()),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
-                    onchange: function(values){
-debugger;
+                    onchange: function(key, values){
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
                             return;
                         }

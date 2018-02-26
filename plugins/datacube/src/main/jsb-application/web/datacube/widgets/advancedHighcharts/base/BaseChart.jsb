@@ -539,7 +539,13 @@
         // refresh after data and/or style changes
         buildChart: function(data){
             JSB.defer(function(){
-                $this._buildChart(data);
+                var chartOpts = $this._buildChart(data);
+
+                if($this.chart){
+                    $this.chart.update(chartOpts);
+                } else {
+                    $this.chart = (function(){return this}).call(null).Highcharts.chart($this.container.get(0), chartOpts);
+                }
             }, 300, '_buildChart_' + this.getId());
         },
 
@@ -601,7 +607,28 @@
 
                     plotOptions: {
                         series: {
-                            stacking: this.isNone(plotOptionsContext.find('stacking').value())
+                            stacking: this.isNone(plotOptionsContext.find('stacking').value()),
+                            point: {
+                                events: {
+                                    click: function(evt) {
+                                        $this._clickEvt = evt;
+
+                                        if(JSB().isFunction($this.options.onClick)){
+                                            $this.options.onClick.call(this, evt);
+                                        }
+                                    },
+                                    mouseOut: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOut)){
+                                            $this.options.mouseOut.call(this, evt);
+                                        }
+                                    },
+                                    mouseOver: function(evt) {
+                                        if(JSB().isFunction($this.options.mouseOver)){
+                                            $this.options.mouseOver.call(this, evt);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     },
 

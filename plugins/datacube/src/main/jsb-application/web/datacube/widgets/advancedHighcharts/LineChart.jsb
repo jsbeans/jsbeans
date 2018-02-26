@@ -43,8 +43,7 @@
                         data: {
                             render: 'dataBinding',
                             name: 'Данные',
-                            linkTo: 'source',
-                            require: true
+                            linkTo: 'source'
                         },
                         type: {
                             render: 'select',
@@ -338,7 +337,7 @@
 
                 // series
                 for(var j = 0; j < seriesData.length; j++){
-                    series[j] = {
+                    series.push({
                         name: seriesData[j].name,
                         data: seriesData[j].data,
                         type: seriesContext[seriesData[j].index].find('type').value(),
@@ -353,7 +352,7 @@
                             valueSuffix: seriesContext[seriesData[j].index].find('valueSuffix').value()
                         },
                         visible: seriesContext[seriesData[j].index].find('visible').checked()
-                    }
+                    });
                 }
 
                 var chartOpts = {
@@ -364,13 +363,6 @@
                         series: {
                             point: {
                                 events: {
-                                    click: function(evt) {
-                                        $this._clickEvt = evt;
-
-                                        if(JSB().isFunction($this.options.onClick)){
-                                            $this.options.onClick.call(this, evt);
-                                        }
-                                    },
                                     select: function(evt) {
                                         var flag = false;
 
@@ -412,16 +404,6 @@
                                         } else {
                                             $this._deselectCategoriesCount--;
                                         }
-                                    },
-                                    mouseOut: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOut)){
-                                            $this.options.mouseOut.call(this, evt);
-                                        }
-                                    },
-                                    mouseOver: function(evt) {
-                                        if(JSB().isFunction($this.options.mouseOver)){
-                                            $this.options.mouseOver.call(this, evt);
-                                        }
                                     }
                                 }
                             },
@@ -441,20 +423,16 @@
                 }
 
                 JSB.merge(true, baseChartOpts, chartOpts);
-
-                if(this.chart){
-                    this.chart.update(baseChartOpts);
-                } else {
-                    this.chart = Highcharts.chart(this.container.get(0), baseChartOpts);
-                }
             } catch(ex){
                 console.log('LineChart build chart exception');
                 console.log(ex);
+            } finally {
+                return baseChartOpts;
             }
         },
 
         _addNewFilter: function(evt){
-            var context = this.getContext().find('dataSource').binding();
+            var context = this.getContext().find('source').binding();
             if(!context.source) {
                 return;
             }
@@ -469,7 +447,7 @@
                 type: '$or',
                 op: '$eq',
                 field: field,
-                value: evt.target.category.name
+                value: evt.target.category
             };
 
             if(!evt.accumulate && Object.keys(this._curFilters).length > 0){

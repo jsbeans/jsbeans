@@ -35,7 +35,10 @@
 	                this._values[i] = {}
 	            }
 
-                this.append(this.createRender(null, i, this._scheme[i], this._values[i]));
+	            var render = this.createRender(null, i, this._scheme[i], this._values[i]);
+	            if(render){
+	                this.append(render);
+	            }
 	        }
 	    },
 
