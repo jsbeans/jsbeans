@@ -88,6 +88,7 @@
                     values: JSB.clone($this.entry.getValues()),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(values){
+debugger;
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
                             return;
                         }

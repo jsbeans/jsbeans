@@ -46,19 +46,26 @@
 .dataBindingRender > .jsb-comboEditor .curVal .sliceRender {
     height: 100%;
     padding: 5px 0 5px 15px;
+    position: relative;
 }
 
 .dataBindingRender > .jsb-select .curVal .sliceRender {
     height: 100%;
-    padding-left: 15px;
+    padding-left: 16px;
+    position: relative;
 }
 
 .dataBindingRender > .jsb-comboEditor .sliceRender:before,
 .dataBindingRender > .jsb-select .sliceRender:before {
     content: "\25CF";
     position: absolute;
-    left: 0;
-    top: -2px;
+    left: 0px;
+    top: -8px;
     font-size: 23px;
     color: green;
+}
+
+.dataBindingRender > .jsb-comboEditor li .sliceRender:before,
+.dataBindingRender > .jsb-select li .sliceRender:before {
+    top: -3px;
 }

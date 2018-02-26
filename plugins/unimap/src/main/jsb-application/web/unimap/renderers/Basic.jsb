@@ -7,7 +7,6 @@
             $base(opts);
             this.addClass('basicRender');
             this.loadCss('Basic.css');
-            JSB().loadCss('tpl/font-awesome/css/font-awesome.min.css');
 
             this._key = opts.key;
             this._scheme = opts.scheme;

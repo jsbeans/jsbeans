@@ -43,7 +43,8 @@
                         data: {
                             render: 'dataBinding',
                             name: 'Данные',
-                            linkTo: 'source'
+                            linkTo: 'source',
+                            require: true
                         },
                         type: {
                             render: 'select',

@@ -121,6 +121,7 @@
 }
 
 .widgetSettingsView .schemeBlock > .warningBlock {
+    margin-top: 10px;
     padding: 10px;
     background-color: #fff9db;
     font-size: 14px;
