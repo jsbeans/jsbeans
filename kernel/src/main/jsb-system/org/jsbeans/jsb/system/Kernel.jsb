@@ -6,7 +6,6 @@
 		
 		$constructor: function(){
 			JSB().setLocker(this);
-//			JSB().setThreadLocal(this.tls);
 
 			var Exception = JSB().getGlobe().Exception = function(message,data) {
             	this.message = message;
@@ -16,35 +15,11 @@
 
             Exception.prototype = Error.prototype;
             
-            function _checkServerScripts(){
-            	// check server-side required scripts are loaded before keep loading other JSB
-            	if(!this.Template || !this.Template.doT){
-            		return false;
-            	}
-            	
-            	return true;
-            }
-            
-            JSB().deferUntil(function(){
-            	// proceed to load other objects
+            JSB.getRepository().ensureSystemLoaded(function(){
             	Kernel.tell('JsbRegistryService', 'LoadAdditionalObjectsMessage', {});
-            }, function(){
-            	return _checkServerScripts.call(null);
             });
 		},
-/*
-		tls: {
-			get: function(key){
-				return Bridge.getThreadLocal(key);
-			},
-			put: function(key, val){
-				Bridge.putThreadLocal(key, val);
-			},
-			clear: function(key){
-				Bridge.removeThreadLocal(key);
-			}
-		},
-*/		
+		
 		scope: function(scope, callback){
 			if(!scope){
 				return [];
@@ -80,6 +55,7 @@
 			var msgBody = null;
 			var timeout = null;
 			var node = null;
+			var async = false;
 			if(JSB().isPlainObject(svcName)){
 				var aDesc = svcName;
 				svcName = aDesc.service;
@@ -88,6 +64,7 @@
 				msgBody = aDesc.messageBody || {};
 				timeout = aDesc.timeout;
 				node = aDesc.node;
+				async = aDesc.async || false;
 			} else {
 				if(JSB().isFunction(arg1)){
 					callback = arg1;
@@ -115,13 +92,13 @@
 				serviceName: svcName,
 				messageType: msgType,
 				messageBody: msgBody,
-				async: callback ? true: false,
+				async: callback ? true: async,
 				timeout: timeout,
 				node: node,
 				callback: callback
 			});
 		},
-		
+/*		
 		rpc: function(widget, proc, params){
 			if(Widgets[widget] == null || Widgets[widget] == undefined ){
 				throw "RPC failed: Unable to locate widget: '" + widget + "'";
@@ -134,7 +111,8 @@
 			}
 			return Widgets[widget][proc].call(Widgets[widget], params);
 		},
-		
+*/
+/*		
 		updateWidgetState: function(widgetPath, imgArr){
 			scope(Widgets, function(name, s){ 
 				if(s['basePath'] == undefined) {
@@ -149,7 +127,7 @@
 				} 
 			});
 		},
-		
+*/		
 		restart: function(){
 			return this.ask('RestartService', 'RestartMessage', {});
 		},
@@ -254,7 +232,7 @@
 		hostName: function() {
 		    return ''+Packages.java.net.InetAddress.getLocalHost().getHostName();
 		},
-		
+/*		
 		fork: function(proc, param){
 			var self = this;
 			var count = 1;
@@ -339,5 +317,6 @@
 				}
 			}
 		}
+*/		
 	}
 }

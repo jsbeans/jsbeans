@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Widgets.LineCharts',
+	$name: 'DataCube.Widgets.PieCharts',
 	$parent: 'DataCube.Widgets.BaseHighchart',
 	//$expose: {},
 	$scheme: {

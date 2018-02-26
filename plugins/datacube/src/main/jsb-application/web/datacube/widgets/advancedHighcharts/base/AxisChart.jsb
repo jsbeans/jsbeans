@@ -433,7 +433,7 @@
                         },
                         title: {
                             text: yAxisTitle.find('text').value(),
-                            align: yAxisTitle.find('align').value().value(),
+                            align: yAxisTitle.find('align').value(),
                             rotation: yAxisTitle.find('rotation').value(),
                             offset: yAxisTitle.find('offset').value(),
                             style: {

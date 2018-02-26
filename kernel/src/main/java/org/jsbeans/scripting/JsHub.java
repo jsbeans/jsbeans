@@ -673,7 +673,7 @@ public class JsHub extends Service {
 
                     String messageStr = "";
                     Throwable ex = e.getCause();
-                    if (ex.getCause() instanceof EcmaError) {
+                    if (ex != null && (ex.getCause() instanceof EcmaError)) {
                         messageStr = ex.getLocalizedMessage();
                     } else {
                         messageStr = e.getMessage();

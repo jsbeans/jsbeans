@@ -49,11 +49,13 @@ import java.util.regex.Pattern;
 
 @DependsOn(JsHub.class)
 public class JsbRegistryService extends Service {
+/*	
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
     private static final long sessionExpire = ConfigHelper.getConfigInt("kernel.jshub.sessionExpireTimeout");
+*/    
 
 //    private Map<String, SessionEntry> sessionMap = Collections.synchronizedMap(new LinkedHashMap<String, SessionEntry>(16, 0.75F, true));
-    private Map<String, SessionEntry> sessionMap = new LinkedHashMap<String, SessionEntry>(16, 0.75F, true);
+//    private Map<String, SessionEntry> sessionMap = new LinkedHashMap<String, SessionEntry>(16, 0.75F, true);
 
     @Override
     protected void onInit() throws PlatformException {
@@ -62,8 +64,8 @@ public class JsbRegistryService extends Service {
         // load server-side JSS from resources
         String sysPath = ConfigHelper.getConfigString("kernel.jsb.lookupSystemPath");
         this.registerBeans(sysPath, true);
-        this.loadBeans();
-
+        this.loadBeans(1);
+/*
         // Run garbage collection timer to avoid old sessions 
         Core.getActorSystem().scheduler().schedule(
                 Duration.Zero(),
@@ -72,6 +74,7 @@ public class JsbRegistryService extends Service {
                 Message.TICK,
                 Core.getActorSystem().dispatcher(),
                 getSelf());
+*/                
     }
 
     @Override
@@ -82,9 +85,9 @@ public class JsbRegistryService extends Service {
             this.handleRpc((RpcMessage) msg);
         } else if (msg instanceof LoadAdditionalObjectsMessage) {
             this.handleLoadAdditionalObjects((LoadAdditionalObjectsMessage) msg);
-        } else if (msg instanceof String && msg.equals(Message.TICK)) {
+        } /*else if (msg instanceof String && msg.equals(Message.TICK)) {
             this.updateSessionMap();
-        } else {
+        } */ else {
             unhandled(msg);
         }
     }
@@ -96,14 +99,14 @@ public class JsbRegistryService extends Service {
         for (String path : ConfigHelper.getJssFolders()) {
             this.registerBeans(path, false);
         }
-        this.loadBeans();
+        this.loadBeans(2);
         this.completeInitialization();
     }
     
-    private void loadBeans() throws PlatformException {
+    private void loadBeans(int stage) throws PlatformException {
         // load indexed beans
         try {
-        	String codeToExecute = "JSB.getRepository().load();";
+        	String codeToExecute = String.format("JSB.getRepository().load(%d);", stage);
             ExecuteScriptMessage scriptMsg = new ExecuteScriptMessage(codeToExecute, false);
             if (ConfigHelper.getConfigBoolean("kernel.security.enabled")) {
                 scriptMsg.setUser(ConfigHelper.getConfigString("kernel.security.admin.user"));
@@ -274,50 +277,6 @@ public class JsbRegistryService extends Service {
                 });
     }
 
-/*    
-    private void handleUpdateRpc(UpdateRpcMessage msg) {
-        String sessionId = msg.getSessionId();
-        String entryId = msg.getEntryId();
-        if (!this.sessionMap.containsKey(sessionId)) {
-            getLog().error(String.format("Unable to locate rpc map for session: '%s'", sessionId));
-            return;
-        }
-        SessionEntry se = this.sessionMap.get(sessionId);
-        se.update();
-        if (!se.containsRpc(entryId)) {
-            getLog().error(String.format("Unable to locate rpc entry: '%s' for session: '%s'", entryId, sessionId));
-            return;
-        }
-        RpcEntry entry = se.getRpc(entryId);
-        if (msg.getStatus().status == ExecutionStatus.SUCCESS) {
-            entry.setResult(msg.getStatus().result);
-        } else {
-            entry.setError(msg.getStatus().error);
-        }
-        
-        if(msg.needInvokeClient()){
-        	try {
-	        	// check whether widget and proc field are filled
-	            JsObject rpcEntryResp = new JsObject(JsObjectType.JSONOBJECT);
-	            rpcEntryResp.addToObject("id", entryId);
-	            rpcEntryResp.addToObject("error", msg.getStatus().error);
-	            rpcEntryResp.addToObject("result", msg.getStatus().result);
-	            rpcEntryResp.addToObject("success", msg.getStatus().status == ExecutionStatus.SUCCESS);
-	            rpcEntryResp.addToObject("completed", true);
-	        	
-		        String script = String.format("JSB().getProvider().rpc('handleRpcResponse', [[%s]], null, '%s');", rpcEntryResp.toJS(), sessionId);
-		        ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
-		        execMsg.setScopePath(sessionId);
-		        ActorHelper.getActorSelection(JsHub.class).tell(execMsg, ActorRef.noSender());
-        	} catch(UnsupportedEncodingException e){
-        		throw new PlatformException(e);
-        	}
-        	if(entry.isCompleted()){
-        		se.removeRpc(entryId);
-            }
-        }
-    }
-*/
     
     private void handleRpc(RpcMessage msg) {
         try {
@@ -460,7 +419,7 @@ public class JsbRegistryService extends Service {
             this.getSender().tell(new RpcMessage(e), this.getSelf());
         }
     }
-
+/*
     private void updateSessionMap() {
         long curTime = System.currentTimeMillis();
         List<String> sessionsToRemove = null;
@@ -484,6 +443,6 @@ public class JsbRegistryService extends Service {
             }
         }
     }
-
+*/
 
 }
