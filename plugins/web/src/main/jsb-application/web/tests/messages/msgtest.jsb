@@ -1,5 +1,6 @@
 {
 	$name: 'JSB.Tests.MsgTest',
+	$fixedId: true,
 	
 	$constructor: function(){
 		$base();
@@ -22,6 +23,22 @@
 			$jsb.getLogger().info('Message from: ' + sender.getJsb().$name + '(' + sender.getId() + '): ' + msg);
 			
 			return 'ok';
+		});
+		
+		this.subscribe('test5', {cluster:true}, function(sender, msg, params){
+			$jsb.getLogger().info('Message from: ' + sender.getJsb().$name + '(' + sender.getId() + '): ' + msg);
+			
+			return 'ok';
+		});
+
+		this.subscribe('test6', {session:true, cluster:true}, function(sender, msg, params){
+			$jsb.getLogger().info('Message from: ' + sender.getJsb().$name + '(' + sender.getId() + '): ' + msg);
+			
+			if(JSB.isClient()){
+				return 'ok from client';
+			} else {
+				return 'ok from ' + Cluster.getNodeAddress();
+			}
 		});
 
 	}

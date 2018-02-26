@@ -13,6 +13,8 @@ package org.jsbeans.cluster;
 import akka.actor.Address;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent.CurrentClusterState;
+import akka.cluster.Member;
+
 import org.jsbeans.Core;
 
 public class ClusterHelper {
@@ -29,6 +31,12 @@ public class ClusterHelper {
     }
 
     public static CurrentClusterState state() {
-        return Cluster.get(Core.getActorSystem()).state();
+        CurrentClusterState st = Cluster.get(Core.getActorSystem()).state();
+    	
+        return st;
+        
+        
     }
+    
+    
 }

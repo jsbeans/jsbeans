@@ -1,4 +1,5 @@
-/*! jsBeans v2.6.5 | jsbeans.org | (c) 2011-2018 Special Information Systems, LLC */
+/*! jsBeans v2.6.6 | jsbeans.org | (c) 2011-2018 Special Information Systems, LLC */
+
 if(!(function(){return this;}).call(null).JSB){
 (function(){
 	
@@ -79,6 +80,7 @@ if(!(function(){return this;}).call(null).JSB){
 		groups: {},
 		waiters: {},
 		provider: null,
+		clusterProvider: null,
 		repository: null,
 		messageBus: null,
 		objectsToLoad: [],
@@ -201,6 +203,7 @@ if(!(function(){return this;}).call(null).JSB){
 				'JSB.AjaxProvider': true,
 				'JSB.Repository': true,
 				'JSB.Profiler': true,
+				'JSB.Future': true,
 				'JSB.Base64': true,
 				'JSB.MessageBus': true
 			};
@@ -241,7 +244,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 			var tl = this.getThreadLocal();
 			if(tl){
-				var tc = tl.get('_jsoRegisterCallback');
+				var tc = tl.get('_jsbRegisterCallback');
 				if(tc){
 					tc.call(obj);
 				}
@@ -1023,7 +1026,7 @@ if(!(function(){return this;}).call(null).JSB){
 							if(scope[procName] || blackProcs[procName]){
 								continue;
 							}
-							scope[procName] = eval('(function(){JSB().proxyRpcCall.call(this.__instance, this.__node, "'+procName+'", arguments);})');
+							scope[procName] = eval('(function(){JSB().proxyRpcCall.call(this.__instance, this.__node, "'+procName+'", arguments, this.__opts);})');
 						}
 					}
 					
@@ -1075,7 +1078,7 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 		
-		proxyRpcCall: function(node, name, argsO){
+		proxyRpcCall: function(node, name, argsO, opts){
 			var callback = null;
 			var args = [];
 			for(var i in argsO){
@@ -1089,7 +1092,9 @@ if(!(function(){return this;}).call(null).JSB){
 					args.splice(i, 1);
 				}
 			}
-			this.rpc(name, args, callback, node);
+			opts = opts || {};
+			JSB.merge(opts, {node: node});
+			this.rpc(name, args, callback, opts);
 		},
 
 		getDescriptor: function(){
@@ -1287,6 +1292,10 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 			}
 			return false;
+		},
+		
+		isFuture: function(obj){
+			return this.isInstanceOf(obj, 'JSB.Future');
 		},
 		
 		isBean: function(obj, skipCheckPlain){
@@ -1926,6 +1935,10 @@ if(!(function(){return this;}).call(null).JSB){
 			});
 		},
 		
+		createFuture: function(opts){
+			return new (this.getClass('JSB.Future'))(opts);
+		},
+		
 		classTree: function(qName){
 			var curGlobe = JSB().getGlobe();
 			var path = qName.split('.');
@@ -2507,11 +2520,15 @@ if(!(function(){return this;}).call(null).JSB){
 			this.onLoadCallbacks.push(callback);
 		},
 		
-
-		getClass: function(){
-			return this._cls;
+		getClass: function(jsb){
+			if(!jsb){
+				jsb = this;
+			} else if(JSB.isString(jsb)){
+				jsb = JSB.get(jsb);
+			}
+			return jsb._cls;
 		},
-		
+
 		setProvider: function(p){
 			if(!p){
 				return;
@@ -2528,6 +2545,23 @@ if(!(function(){return this;}).call(null).JSB){
 		
 		getProvider: function(){
 			return this.provider;
+		},
+		
+		setClusterProvider: function(cp){
+			if(!JSB.isServer()){
+				throw new Error('Failed to set cluster provider in client side');
+			}
+			if(!cp){
+				return;
+			}
+			this.clusterProvider = cp;
+		},
+		
+		getClusterProvider: function(){
+			if(!JSB.isServer()){
+				throw new Error('Failed to use cluster provider in client side');
+			}
+			return this.clusterProvider;
 		},
 		
 		setRepository: function(repo){
@@ -3176,6 +3210,20 @@ if(!(function(){return this;}).call(null).JSB){
 					};
 					return {};
 				}
+				if(rType === '[object Error]'){
+					dict[JSB.generateUid()] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'Error',
+							__data: {
+								message: res.message,
+								fileName: res.fileName,
+								lineNumber: res.lineNumber
+							}
+						}
+					};
+					return {};
+				}
 				if(rType === "[object Array]"){
 					// parse array
 					var nobj = [];
@@ -3229,7 +3277,7 @@ if(!(function(){return this;}).call(null).JSB){
 			return {__dt:dt, __di:dictVals};
 		},
 		
-		injectComplexObjectInRpcResult: function(res, callback){
+		injectComplexObjectInRpcResult: function(res, callback, opts){
 			var self = this;
 			if(!res || !JSB.isArray(res.__di)){
 				// didn't use subst before
@@ -3254,7 +3302,7 @@ if(!(function(){return this;}).call(null).JSB){
 							if(callback){
 								callback(fObj);
 							}
-						});
+						}, opts);
 					} else if(res.__type && res.__type == 'ArrayBuffer'){
 						if(callback){
 							callback(JSB().Base64.decode(res.__data));
@@ -3299,6 +3347,10 @@ if(!(function(){return this;}).call(null).JSB){
 						if(callback){
 							callback(new Date(res.__data));
 						} 
+					} else if(res.__type && res.__type == 'Error'){
+						if(callback){
+							callback(new Error(res.__data.message, res.__data.fileName, res.__data.lineNumber));
+						} 
 					} else {
 						throw new Error('Unknown ComplexObject type');
 					}
@@ -3309,11 +3361,18 @@ if(!(function(){return this;}).call(null).JSB){
 						for(var k = 0; k < cDescPathArr.length; k++){
 							// inject by path
 							var cDescPath = cDescPathArr[k];
-							var curObj = obj;
-							for(var j = 0; j < cDescPath.length - 1; j++){
-								curObj = curObj[cDescPath[j]];
+							if(cDescPath.length == 0){
+								if(callback){
+									callback(iObj);
+									return;
+								}
+							} else {
+								var curObj = obj;
+								for(var j = 0; j < cDescPath.length - 1; j++){
+									curObj = curObj[cDescPath[j]];
+								}
+								curObj[cDescPath[cDescPath.length - 1]] = iObj;
 							}
-							curObj[cDescPath[cDescPath.length - 1]] = iObj;
 						}
 					}
 					if(callback){
@@ -3385,7 +3444,7 @@ if(!(function(){return this;}).call(null).JSB){
 						var bNeedSync = false;
 						var jso = JSB().get(jsoName);
 						if(!jso){
-							return null;
+							throw new Error('Unable to find bean: "' + jsoName + '". It probably not registered yet');
 						}
 						if(jso.isSingleton()){
 							serverInstance = JSB().getInstance(jsoName);
@@ -3413,19 +3472,19 @@ if(!(function(){return this;}).call(null).JSB){
 							// create server-side instance with client-side id
 							
 							if(jso.getKeywordOption('$fixedId')){
-								JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
+								JSB().getThreadLocal().put('_jsbRegisterCallback', function(){
 									// use this to access current object
 									this.id = instanceId;
 									updateBindMaps(instanceId, instanceId);
 								});
 								serverInstance = new f();
-								JSB().getThreadLocal().clear('_jsoRegisterCallback');
+								JSB().getThreadLocal().clear('_jsbRegisterCallback');
 							} else {
-								JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
+								JSB().getThreadLocal().put('_jsbRegisterCallback', function(){
 									updateBindMaps(instanceId, this.id);
 								});
 								serverInstance = new f();
-								JSB().getThreadLocal().clear('_jsoRegisterCallback');
+								JSB().getThreadLocal().clear('_jsbRegisterCallback');
 							}
 							bNeedSync = true;
 						} else {
@@ -3446,9 +3505,71 @@ if(!(function(){return this;}).call(null).JSB){
 			return serverInstance;
 
 		},
-		
-		constructInstanceFromRemote: function(jsoName, id, callback, dontSync){
+
+		constructServerInstanceFromServerId: function(jsbName, instanceId){
+			if(JSB().isClient()){
+				return;
+			}
+			var locker = null;
+			serverInstance = JSB().getInstance(instanceId);
+			
+			if(JSB().isNull(serverInstance)){
+				try {
+					locker = JSB().getLocker();
+					locker.lock('rpcServerLock');
+					serverInstance = JSB().getInstance(instanceId);
+			
+					if(JSB().isNull(serverInstance)){
+						var bNeedSync = false;
+						var jsb = JSB().get(jsbName);
+						if(!jsb){
+							throw new Error('Unable to find bean: "' + jsbName + '". It probably not registered yet');
+						}
+						if(jsb.isSingleton()){
+							serverInstance = JSB().getInstance(jsbName);
+						} else {
+							serverInstance = JSB().getInstance(instanceId);
+						}
+						
+						if(JSB().isNull(serverInstance)){
+/*							
+							// check for rpc instance creation permission
+							if(jsb.getKeywordOption('$disableRpcInstance')){
+								JSB().getLogger().warn('Unable to create new instance from RPC call for jsb: "' + jsbName + '('+instanceId+')" due option "disableRpcInstance" set')
+								return null;
+							}
+*/							
+							var f = jsb.getClass();
+							// create server-side instance with client-side id
+							
+							JSB().getThreadLocal().put('_jsbRegisterCallback', function(){
+								// use this to access current object
+								this.id = instanceId;
+							});
+							serverInstance = new f();
+							JSB().getThreadLocal().clear('_jsbRegisterCallback');
+							bNeedSync = true;
+						}
+						
+						if(bNeedSync){
+							serverInstance.doSync();
+						}
+					}
+				} finally {
+					if(locker){
+						locker.unlock('rpcServerLock');
+					}
+				}
+			}
+			
+			return serverInstance;
+
+		},
+
+		constructInstanceFromRemote: function(jsoName, id, callback, opts){
 			var self = this;
+			var dontSync = (opts && opts.dontSync) || false;
+			var serverRemote = (opts && opts.serverRemote) || false;
 			if(this.isClient()){
 				this.lookup(jsoName, function(cls){
 					var obj = null;
@@ -3465,7 +3586,7 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 					
 					if(!obj){
-						JSB().getThreadLocal().put('_jsoRegisterCallback', function(){
+						JSB().getThreadLocal().put('_jsbRegisterCallback', function(){
 							// use this to access current object
 							if(cls.jsb.getKeywordOption('$fixedId')){
 								this.id = id;
@@ -3473,7 +3594,7 @@ if(!(function(){return this;}).call(null).JSB){
 							this.$_bindKey = id;
 						});
 						obj = new cls();
-						JSB().getThreadLocal().clear('_jsoRegisterCallback');
+						JSB().getThreadLocal().clear('_jsbRegisterCallback');
 						obj.doSync();
 					}
 					if(dontSync){
@@ -3485,7 +3606,13 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 				});
 			} else {
-				var obj = this.constructServerInstanceFromClientId(jsoName, id);
+				var obj = null;
+				if(serverRemote){
+					obj = this.constructServerInstanceFromServerId(jsoName, id);
+				} else {
+					obj = this.constructServerInstanceFromClientId(jsoName, id);	
+				}
+				
 				if(callback){ callback(obj); }
 			}
 		},
@@ -3623,6 +3750,14 @@ if(!(function(){return this;}).call(null).JSB){
 	}
 })();
 
+
+
+
+/********************************************************************************
+ * JSB System beans
+ ********************************************************************************/
+
+
 JSB({
 	$name: 'JSB.Object',
 	$parent: null,
@@ -3731,15 +3866,24 @@ JSB({
 		return $jsb.getMessageBus().publish(this, msg, params, arg1, arg2);
 	},
 	
-	lock: function(){
+	lock: function(lName){
 		if($jsb.getLocker()){
-			$jsb.getLocker().lock(this.getId());
+			var mtxName = this.getId();
+			if(lName){
+				mtxName += lName;
+			}
+			$jsb.getLocker().lock(mtxName);
 		}
 	},
 	
-	unlock: function(){
+	unlock: function(lName){
 		if($jsb.getLocker()){
-			$jsb.getLocker().unlock(this.getId());
+			var mtxName = this.getId();
+			if(lName){
+				mtxName += lName;
+			}
+
+			$jsb.getLocker().unlock(mtxName);
 		}
 	},
 	
@@ -4079,7 +4223,7 @@ JSB({
 						syncBeans[obj.getId()] = obj;
 					}
 					callback.call($this);
-				}, true);
+				}, {dontSync: true});
 				return true;
 			}
 
@@ -4513,34 +4657,16 @@ JSB({
 		},
 		
 		// on client side
-		rpc: function(procName, arg1, arg2, arg3, arg4){
-			var params = null;
-			var callback = null;
-			var sync = false;
+		rpc: function(procName, params, callback, opts){
 			var self = this;
-			var disableInjectJsb = false;
-			if(JSB().isFunction(arg1)){
-				callback = arg1;
-				sync = arg2;
-				disableInjectJsb = arg3;
-			} else {
-				params = arg1;
-				if(JSB().isFunction(arg2)){
-					callback = arg2;
-					sync = arg3;
-					disableInjectJsb = arg4;
-				} else {
-					sync = arg2;
-					disableInjectJsb = arg3;
-				}
-			}
-			var tJso = this.getJsb();
-			var callCtx = this.jsb.saveCallingContext();
+			var sync = (opts && opts.sync) || false;
+			var tJsb = this.getJsb();
+			var callCtx = tJsb.saveCallingContext();
 			if(!this.$_bindKey){
 				this.$_bindKey = this.id;
 			}
 			JSB().getProvider().enqueueRpc({
-				jsb: tJso.$name,
+				jsb: tJsb.$name,
 				instance: this.$_bindKey,
 				proc: procName,
 				params: JSB().substComplexObjectInRpcResult(params),
@@ -4548,21 +4674,13 @@ JSB({
 			}, function(res){
 				var inst = this;
 				var args = arguments;
-/*				if(disableInjectJsb){
-					args[0] = res;
+				JSB().injectComplexObjectInRpcResult(res, function(r){
+					args[0] = r;
 					if(callback){
-						self.jsb.putCallingContext(callCtx);
+						tJsb.putCallingContext(callCtx);
 						callback.apply(inst, args);	
 					}
-				} else {*/
-					JSB().injectComplexObjectInRpcResult(res, function(r){
-						args[0] = r;
-						if(callback){
-							self.jsb.putCallingContext(callCtx);
-							callback.apply(inst, args);	
-						}
-					});
-/*				}*/
+				});
 			} );
 		},
 
@@ -4611,10 +4729,11 @@ JSB({
 			return new f();
 		},
 		
-		server: function(node){
+		server: function(node, opts){
 			var f = function(){
 				this.__instance = $this;
-				this.__node = node;
+				this.__node = node || null;
+				this.__opts = opts;
 			};
 			f.prototype = this.jsb.$_serverProcs;
 			return new f();
@@ -4691,35 +4810,78 @@ JSB({
 		},
 		
 		// on server side
-		rpc: function(procName, arg1, arg2, arg3){
-			var params = null;
-			var callback = null;
-			var session = null;
-			if(JSB().isFunction(arg1)){
-				callback = arg1;
-				session = arg2;
-			} else {
-				params = JSB().substComplexObjectInRpcResult(arg1);
-				callback = arg2;
-				session = arg3;
-			}
+		rpc: function(procName, params, callback, opts){
 			var self = this;
-			var callCtx = this.jsb.saveCallingContext();
-			var wrapCallback = (callback ? function(res){
-				var inst = this;
-				var args = arguments;
-				JSB().injectComplexObjectInRpcResult(res, function(r){
-					args[0] = r;
-					self.jsb.putCallingContext(callCtx);
-					callback.apply(inst, args);
-				});
-			} : null);
+			var node = opts && opts.node;
+			var session = opts && opts.session;
+			if(JSB.isDefined(node) && (!node || node == JSB.getClusterProvider().getNodeAddress())){
+				// execute on locale node (self-call)
+				try {
+					var res = this[procName].apply(this, params);
+					if(callback){
+						callback.call(this, res);
+					}
+				} catch(e){
+					if(callback){
+						callback.call(this, undefined, e);
+					} else {
+						JSB.getLogger().error(e);
+					}
+				}
+				return;
+			}
+			var tJsb = this.getJsb();
+			var callCtx = tJsb.saveCallingContext();
+			var session = session || JSB().getCurrentSession();
 			
-			JSB().getProvider().enqueueRpc({
+			var execCmd = {
 				instance: this,
 				proc: procName,
-				params: params
-			}, wrapCallback, session );
+				params: JSB().substComplexObjectInRpcResult(params),
+				session: session
+			};
+			
+			if(JSB.isDefined(node)){
+				// execute on remote node
+				execCmd.callback = (callback ? function(res, fail){
+					var inst = this;
+					var args = arguments;
+					if(fail){
+						JSB().injectComplexObjectInRpcResult(fail, function(r){
+							args[1] = r;
+							tJsb.putCallingContext(callCtx);
+							callback.apply(inst, args);
+						}, {serverRemote: true});
+					} else {
+						JSB().injectComplexObjectInRpcResult(res, function(r){
+							args[0] = r;
+							tJsb.putCallingContext(callCtx);
+							callback.apply(inst, args);
+						}, {serverRemote: true});
+					}
+				} : null);
+				JSB.getClusterProvider().sendRpc(node, execCmd);
+			} else {
+				// execute on client
+				execCmd.callback = (callback ? function(res, fail){
+					var inst = this;
+					var args = arguments;
+					if(fail){
+						JSB().injectComplexObjectInRpcResult(fail, function(r){
+							args[1] = r;
+							tJsb.putCallingContext(callCtx);
+							callback.apply(inst, args);
+						}, {serverRemote: false});
+					} else {
+						JSB().injectComplexObjectInRpcResult(res, function(r){
+							args[0] = r;
+							tJsb.putCallingContext(callCtx);
+							callback.apply(inst, args);
+						}, {serverRemote: false});
+					}
+				} : null);
+				JSB.getProvider().enqueueRpc(execCmd);
+			}
 		}
 	}
 });
@@ -4734,6 +4896,14 @@ JSB({
 	
 	$constructor: function(){
 		JSB().setRepository(this);
+	},
+	
+	ensureLoaded: function(callback){
+		this.ensureTrigger('loaded', callback, function(val){return val >= 2;});
+	},
+	
+	ensureSystemLoaded: function(callback){
+		this.ensureTrigger('loaded', callback, function(val){return val >= 1;});
 	},
 	
 	registerPath: function(beanCfg){
@@ -4796,7 +4966,7 @@ JSB({
 		this.registerPath(beanCfg);
 	},
 	
-	load: function(){
+	load: function(stage){
 		var locker = JSB().getLocker();
 		var loadArr = Object.keys(this.loadList);
 		for(var i = 0; i < loadArr.length; i++){
@@ -4810,6 +4980,7 @@ JSB({
 			delete this.loadList[name];
 			if(locker)locker.unlock('_jsb_repo');
 		}
+		this.setTrigger('loaded', stage);
 	},
 	
 	get: function(name){
@@ -4837,6 +5008,7 @@ JSB({
 	callIdx: {},
 	
 	$constructor: function(){
+		$base();
 		JSB().setMessageBus(this);
 	},
 		
@@ -4856,6 +5028,7 @@ JSB({
 		if(opts){
 			$jsb.merge(msgObj, opts);
 		}
+/*		
 		if(!msgObj.session){
 			msgObj.session = false;
 			msgObj.local = true;
@@ -4863,6 +5036,7 @@ JSB({
 			msgObj.session = true;
 			msgObj.local = false;
 		}
+*/		
 		
 		return msgObj;
 	},
@@ -4903,18 +5077,28 @@ JSB({
 		
 		$this.unlock();
 		
-		if(msgObj.session && !msgObj.remote){
+		if(msgObj.session && !msgObj.sessionRemote){
 			// subscribe remote
 			if($this.remote()._subscribe){
-				msgObj.remote = true;
-				$this.remote()._subscribe(w, msgObj);
+				$this.remote()._subscribe(w, JSB.merge({}, msgObj, {sessionRemote: true}));
 			}
+		}
+		
+		if(JSB.isServer()){
+			if(msgObj.cluster && !msgObj.clusterRemote){
+				// subscribe remote
+				$this._subscribeRemoteNodes(w, msgObj);
+			}
+			
 		}
 	},
 	
 	_unsubscribe: function(w, msgObj){
 		var msg = msgObj.message;
 		var objId = w.getSession() + '/' + w.getId();
+		
+		var remoteSessionLst = [];
+		var remoteClusterLst = [];
 		
 		this.lock();
 		
@@ -4923,6 +5107,20 @@ JSB({
 			for(var i = 0; i < $this.msgIdx[msg][objId].length; i++){
 				var callId = $this.msgIdx[msg][objId][i].callId;
 				if(callId && $this.callIdx[callId]){
+					var msgDesc = $this.callIdx[callId];
+					var w = msgDesc.target;
+					if(msgDesc.c){
+						delete msgDesc.c;
+					}
+					if(msgDesc.target){
+						delete msgDesc.target;
+					}
+					if(msgDesc.session && !msgDesc.sessionRemote){
+						remoteSessionLst.push({w: w, msgObj:msgDesc});
+					}
+					if(msgDesc.cluster && !msgDesc.clusterRemote){
+						remoteClusterLst.push({w: w, msgObj:msgDesc});
+					}
 					delete $this.callIdx[callId];
 				}
 			}
@@ -4941,6 +5139,20 @@ JSB({
 		}
 		
 		this.unlock();
+		
+		// remove from remote lists
+		for(var i = 0; i < remoteSessionLst.length; i++){
+			var msgDesc = remoteSessionLst[i];
+			if($this.remote()._unsubscribe){
+				$this.remote()._unsubscribe(msgDesc.w, JSB.merge({}, msgDesc.msgObj, {sessionRemote: true}));
+			}
+		}
+		if(remoteClusterLst.length > 0 && JSB.isServer()){
+			for(var i = 0; i < remoteClusterLst.length; i++){
+				var msgDesc = remoteClusterLst[i];
+				$this._unsubscribeRemoteNodes(msgDesc.w, msgDesc.msgObj);
+			}
+		}
 	},
 	
 	subscribe: function(w, msgObj, arg1, arg2){
@@ -4950,6 +5162,7 @@ JSB({
 			callback = arg2;
 		} else {
 			callback = arg1;
+			opts = arg2;
 		}
 		if(!callback && opts && opts.onMessage && $jsb.isFunction(opts.onMessage)){
 			callback = opts.onMessage;
@@ -4986,18 +5199,32 @@ JSB({
 		var ret = undefined;
 		var subDesc = this.callIdx[callId];
 		if(subDesc){
-			if(subDesc.c){
-				try {
-					ret = ret || subDesc.c.call(subDesc.target, w, msg, params, subDesc);
-				} catch(e){
-					$jsb.getLogger().error(e);
+			if(subDesc.sessionRemote){
+				// translate to client
+				ret = JSB.createFuture();
+				$this.remote().dispatch(callId, w, msg, params, function(res, fail){
+					ret.fire(res, fail);
+				});
+			} else if(subDesc.clusterRemote){
+				// translate to cluster
+				ret = JSB.createFuture();
+				$this.server(subDesc.clusterRemote, {session:w.getSession()}).dispatch(callId, w, msg, params, function(res, fail){
+					ret.fire(res, fail);
+				});
+			} else {
+				if(subDesc.c){
+					try {
+						ret = ret || subDesc.c.call(subDesc.target, w, msg, params, subDesc);
+					} catch(e){
+						$jsb.getLogger().error(e);
+					}
 				}
-			}
-			if(subDesc.target.onMessage){
-				try {
-					ret = ret || subDesc.target.onMessage.call(subDesc.target, w, msg, params, subDesc);
-				}catch(e){
-					$jsb.getLogger().error(e);
+				if(subDesc.target.onMessage){
+					try {
+						ret = ret || subDesc.target.onMessage.call(subDesc.target, w, msg, params, subDesc);
+					}catch(e){
+						$jsb.getLogger().error(e);
+					}
 				}
 			}
 		}
@@ -5032,7 +5259,10 @@ JSB({
 				}
 				for(var i = 0; i < subsArr.length; i++){
 					var subDesc = subsArr[i];
-					if(msgObj.local && subDesc.remote){
+					if(subDesc.sessionRemote && !msgObj.session){
+						continue;
+					}
+					if(subDesc.clusterRemote && !msgObj.cluster){
 						continue;
 					}
 					if(opts && opts.target && opts.target != subDesc.target){
@@ -5045,14 +5275,31 @@ JSB({
 		if(opts && opts.sort && $jsb.isFunction(opts.sort)){
 			subQueue.sort(opts.sort);
 		}
+		
 		var localIds = [];
-		var remoteIds = [];
-		for(var i = 0; i < subQueue.length; i++){
-			var subDesc = subQueue[i];
-			if(subDesc.remote){
-				remoteIds.push(subDesc.callId);
-			} else {
-				localIds.push(subDesc.callId);
+		var sessionRemoteIds = [];
+		var clusterRemoteIds = [];
+		if(JSB.isServer()){
+			for(var i = 0; i < subQueue.length; i++){
+				var subDesc = subQueue[i];
+				if(subDesc.clusterRemote){
+					clusterRemoteIds.push(subDesc.callId);
+				} else if(subDesc.sessionRemote){
+					sessionRemoteIds.push(subDesc.callId);
+				} else {
+					localIds.push(subDesc.callId);
+				}
+			}
+		} else {
+			for(var i = 0; i < subQueue.length; i++){
+				var subDesc = subQueue[i];
+				if(subDesc.sessionRemote){
+					sessionRemoteIds.push(subDesc.callId);
+				} else if(subDesc.clusterRemote){
+					clusterRemoteIds.push(subDesc.callId);
+				} else  {
+					localIds.push(subDesc.callId);
+				}
 			}
 		}
 		
@@ -5065,8 +5312,19 @@ JSB({
 			}
 		}
 		
-		var cs = {bStopFlag: false};
+		var cs = {bStopFlag: false, sessionComplete: 0, clusterComplete: 0};
 		
+		function checkComplete(){
+			if(cs.bStopFlag || (cs.sessionComplete == sessionRemoteIds.length && cs.clusterComplete == clusterRemoteIds.length)){
+				if(callback){
+					callback.call(w, response);
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		// dispatch local
 		for(var i = 0; i < localIds.length && !cs.bStopFlag; i++){
 			var subDesc = $this.callIdx[localIds[i]];
 			if(opts && opts.onDispatch && $jsb.isFunction(opts.onDispatch)){
@@ -5083,52 +5341,123 @@ JSB({
 			}
 		}
 		
-		if(remoteIds.length > 0){
-			var cb = {complete: 0};
-			for(var i = 0; i < remoteIds.length && !cs.bStopFlag; i++){
+		if(checkComplete()){
+			return response;
+		}
+		
+		// dispatch session remote
+		if(sessionRemoteIds.length > 0){
+			for(var i = 0; i < sessionRemoteIds.length && !cs.bStopFlag; i++){
 				(function(i){
-					if($this.remote().dispatch){
-						var subDesc = $this.callIdx[remoteIds[i]];
-						if(opts && opts.onDispatch && $jsb.isFunction(opts.onDispatch)){
-							if(opts.onDispatch.call(w, subDesc.target)){
-								cb.complete++;
-								if(cb.complete == remoteIds.length || cs.bStopFlag){
-									// complete
-									if(callback){
-										callback.call(w, response);
-									}
-								}
-								return;	// skip
+					var subDesc = $this.callIdx[sessionRemoteIds[i]];
+					if(opts && opts.onDispatch && $jsb.isFunction(opts.onDispatch)){
+						if(opts.onDispatch.call(w, subDesc.target)){
+							cs.sessionComplete++;
+							checkComplete();
+							return;	// skip
+						}
+					}
+					$this.remote().dispatch(sessionRemoteIds[i], w, msg, params, function(ret){
+						storeDispatchResult(ret, subDesc);
+						cs.sessionComplete++;
+						if(opts && opts.onRespond && $jsb.isFunction(opts.onRespond)){
+							if(opts.onRespond.call(w, subDesc.target, ret)){
+								cs.bStopFlag = true;
 							}
 						}
-						$this.remote().dispatch(remoteIds[i], w, msg, params, function(ret){
-							storeDispatchResult(ret, subDesc);
-							cb.complete++;
-							if(opts && opts.onRespond && $jsb.isFunction(opts.onRespond)){
-								if(opts.onRespond.call(w, subDesc.target, ret)){
-									cs.bStopFlag = true;
-								}
-							}
-							if(cb.complete == remoteIds.length || cs.bStopFlag){
-								// complete
-								if(callback){
-									callback.call(w, response);
-								}
-							}
-						});
-					}
+						checkComplete();
+					});
 				})(i);
 			}
 		}
 		
-		if(remoteIds.length == 0){
-			if(callback){
-				callback.call(w, response);
+		// dispatch cluster remote
+		if(clusterRemoteIds.length > 0){
+			for(var i = 0; i < clusterRemoteIds.length && !cs.bStopFlag; i++){
+				(function(i){
+					var subDesc = $this.callIdx[clusterRemoteIds[i]];
+					if(opts && opts.onDispatch && $jsb.isFunction(opts.onDispatch)){
+						if(opts.onDispatch.call(w, subDesc.target)){
+							cs.clusterComplete++;
+							checkComplete();
+							return;	// skip
+						}
+					}
+					$this.server(subDesc.clusterRemote, {session:w.getSession()}).dispatch(clusterRemoteIds[i], w, msg, params, function(ret){
+						storeDispatchResult(ret, subDesc);
+						cs.clusterComplete++;
+						if(opts && opts.onRespond && $jsb.isFunction(opts.onRespond)){
+							if(opts.onRespond.call(w, subDesc.target, ret)){
+								cs.bStopFlag = true;
+							}
+						}
+						checkComplete();
+					});
+				})(i);
 			}
-			return response;
-		} else if(cs.bStopFlag){
-			if(callback){
-				callback.call(w, response);
+		}
+	},
+	
+	$server: {
+		cluster: null,
+		
+		$constructor: function(){
+			$base();
+			JSB().setMessageBus(this);
+			JSB.getRepository().ensureLoaded(function(sender){
+				$this.cluster = JSB.getClusterProvider();
+				if($this.cluster.isActive()){
+					$this._collectClusterSubscriptionsFromNodes();
+				}
+			});
+		},
+		
+		_collectClusterSubscriptionsFromNodes: function(){
+			var otherMembers = $this.cluster.getMembers(true);
+			for(var addr in otherMembers){
+				$this.server(addr)._invokeClusterSubscriptions(this.cluster.getNodeAddress());
+			}
+		},
+		
+		_invokeClusterSubscriptions: function(addr){
+			var remoteClusterLst = [];
+			// combine
+			for(var callId in $this.callIdx){
+				var msgDesc = $this.callIdx[callId];
+				if(msgDesc.cluster && !msgDesc.clusterRemote){
+					var w = msgDesc.target;
+					var cpMsgDesc = JSB.clone(msgDesc);
+					if(cpMsgDesc.c){
+						delete cpMsgDesc.c;
+					}
+					if(cpMsgDesc.target){
+						delete cpMsgDesc.target;
+					}
+					cpMsgDesc.clusterRemote = this.cluster.getNodeAddress();
+					this.server(addr, {session: w.getSession()})._subscribe(w, cpMsgDesc);
+				}
+			}
+		},
+		
+		_subscribeRemoteNodes: function(w, msgObj){
+			if(!this.cluster.isActive()){
+				return;
+			}
+			var otherMembers = this.cluster.getMembers(true);
+			var nMsgObj = JSB.merge({}, msgObj, {clusterRemote: this.cluster.getNodeAddress()});
+			for(var mAddr in otherMembers){
+				this.server(mAddr, {session: w.getSession()})._subscribe(w, nMsgObj);
+			}
+		},
+		
+		_unsubscribeRemoteNodes: function(w, msgObj){
+			if(!this.cluster.isActive()){
+				return;
+			}
+			var otherMembers = this.cluster.getMembers(true);
+			var nMsgObj = JSB.merge({}, msgObj, {clusterRemote: this.cluster.getNodeAddress()});
+			for(var mAddr in otherMembers){
+				this.server(mAddr, {session: w.getSession()})._unsubscribe(w, nMsgObj);
 			}
 		}
 	}
@@ -5673,6 +6002,7 @@ JSB({
 			}
 		},
 		
+		// on clinet side
 		enqueueRpc: function(cmd, callback){
 			var id = JSB().generateUid();
 			this.queueToSend[id] = {
@@ -5853,17 +6183,24 @@ JSB({
 									function doCall(p){
 										JSB.defer(function(){
 											var result = null;
-											if(JSB().isArray(p)){
-												result = cInst[proc].apply(cInst, p);
-											} else {
-												result = cInst[proc].call(cInst, p);
+											var fail = null;
+											try {
+												if(JSB().isArray(p)){
+													result = cInst[proc].apply(cInst, p);
+												} else {
+													result = cInst[proc].call(cInst, p);
+												}
+											} catch(e){
+												result = null;
+												fail = e;
 											}
 											if(respond){
 												self.rpc('submitServerClientCallResult', {
 													id: id,
 													clientId: cId,
-													result: result
-												}, true);
+													result: result,
+													fail: fail
+												}, null, {sync:true});
 											}
 										}, 0);
 									}
@@ -5885,7 +6222,7 @@ JSB({
 							_doTrack();
 						}, self.serverClientCallTrackInterval, '_jsb_scct_' + $this.getId());
 					}
-				}, true, true);
+				}, {sync: true});
 			}
 			
 			if(self.serverClientCallTrackInterval){
@@ -5937,28 +6274,45 @@ JSB({
 					result: null,
 					error: null,
 				};
-				if(fail){
-					respPacket.error = fail;
-					respPacket.success = false;
+				if(JSB.isFuture(ret)){
+					var self = this;
+					ret.await(function(ret, fail){
+						if(fail){
+							respPacket.error = fail;
+							respPacket.success = false;
+						} else {
+							respPacket.result = ret;
+							respPacket.success = true;
+						}
+						self.rpc('handleRpcResponse', [[respPacket]]);
+					});
 				} else {
-					respPacket.result = ret;
-					respPacket.success = true;
+					if(fail){
+						respPacket.error = fail;
+						respPacket.success = false;
+					} else {
+						respPacket.result = ret;
+						respPacket.success = true;
+					}
+					this.rpc('handleRpcResponse', [[respPacket]]);
 				}
-				this.rpc('handleRpcResponse', [[respPacket]], null, $jsb.getCurrentSession());
 			} else {
+				if(JSB.isFuture(ret)){
+					throw new Error("Synchronous RPC don't support futures");
+				}
 				return $jsb.substComplexObjectInRpcResult(ret);
 			}
 		},
 
 
-		executeClientRpc: function(jsoName, instanceId, procName, params){
-			var serverInstance = JSB().constructServerInstanceFromClientId(jsoName, instanceId);
+		executeClientRpc: function(jsbName, instanceId, procName, params){
+			var serverInstance = JSB().constructServerInstanceFromClientId(jsbName, instanceId);
 			if(!serverInstance){
-				throw new Error('Unable to find Bean server instance: ' + jsoName + '(' + instanceId + ')');
+				throw new Error('Unable to find Bean server instance: ' + jsbName + '(' + instanceId + ')');
 			}
 			
 			if(!serverInstance[procName]){
-				throw new Error('Failed to call method "' + procName + '" in bean "' + jsoName + '". Method not exists');
+				throw new Error('Failed to call method "' + procName + '" in bean "' + jsbName + '". Method not exists');
 			}
 			
 			if(JSB().isArray(params)){
@@ -5966,6 +6320,26 @@ JSB({
 			}
 			return serverInstance[procName].call(serverInstance, params);
 
+		},
+		
+		executeServerRpc: function(jsbName, instanceId, procName, params){
+			var serverInstance = JSB().constructServerInstanceFromServerId(jsbName, instanceId);
+			if(!serverInstance){
+				throw new Error('Unable to find Bean server instance: ' + jsbName + '(' + instanceId + ')');
+			}
+			
+			if(!serverInstance[procName]){
+				throw new Error('Failed to call method "' + procName + '" in bean "' + jsbName + '". Method not exists');
+			}
+			var np = {};
+			$jsb.injectComplexObjectInRpcResult(params, function(r){
+				np.res = r;
+			},{serverRemote: true});
+			params = np.res;
+			if(JSB().isArray(params)){
+				return serverInstance[procName].apply(serverInstance, params);
+			}
+			return serverInstance[procName].call(serverInstance, params);
 		},
 		
 		enableRpcCleanup: function(b){
@@ -6014,18 +6388,19 @@ JSB({
 			}
 		},
 		
-		enqueueRpc: function(cmd, callback, session){
+		// on server side
+		enqueueRpc: function(cmd){
 			// cmd.instance
 			// cmd.proc
 			// cmd.params
 			var entry = {
-				id: JSB().generateUid(),
+				id: JSB.generateUid(),
 				timestamp: Date.now(),
 				instance: cmd.instance,
 				proc: cmd.proc,
 				params: cmd.params,
-				callback: callback,
-				session: session,
+				callback: cmd.callback,
+				session: cmd.session,
 				next: null
 			};
 			
@@ -6104,12 +6479,79 @@ JSB({
 			}
 			if(entry.callback){
 				JSB().defer(function(){
-					entry.callback.call(entry.instance, obj.result, obj.clientId);
+					entry.callback.call(entry.instance, obj.result, obj.fail, obj.clientId);
 				}, 0);
 			}
 		}
 			
 	}
+});
+
+JSB({
+	$name: 'JSB.Future',
+	
+	waiters: {},
+	value: null,
+	fail: null,
+	fired: false,
+	
+	$constructor: function(opts){
+		$base();
+		
+		this.timeout = 300000;	// 5 min by default
+		if(opts && JSB.isNumber(opts.timeout)){
+			this.timeout = opts.timeout;
+		}
+	},
+
+	await: function(callback, opts){
+		if(!callback){
+			return;
+		}
+		if(this.fired){
+			callback(this.value, this.fail);
+			return;
+		}
+		var wId = JSB.generateUid();
+		var timeout = (opts && opts.timeout) || this.timeout;
+		this.waiters[wId] = {
+			id: wId,
+			callback: callback,
+			opts: opts
+		};
+		JSB.defer(function(){
+			if(!JSB.isDefined($this.waiters[wId])){
+				return;
+			}
+			var wDesc = $this.waiters[wId];
+			delete $this.waiters[wId];
+			wDesc.callback(undefined, new Error('Future timeout expire (' + (timeout / 1000).toFixed(2) + ' sec.)'));
+			if(Object.keys($this.waiters).length == 0){
+				$this.destroy();
+			}
+		}, timeout, 'JSB.Future.wait.' + wId);
+	},
+	
+	
+	fire: function(val, fail){
+		this.value = val;
+		this.fail = fail;
+		this.fired = true;
+		
+		// stop all defers
+		for(var wId in this.waiters){
+			JSB.cancelDefer('JSB.Future.wait.' + wId);
+		}
+		
+		// run callbacks
+		for(var wId in this.waiters){
+			this.waiters[wId].callback(val, fail);
+		}
+		
+		this.waiters = {};
+		this.destroy();
+	}
+	
 });
 
 JSB({

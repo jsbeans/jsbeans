@@ -105,7 +105,7 @@
 				return;
 			}
 			
-			this.rpc('getResourceList', function(imgList){
+			this.rpc('getResourceList', [], function(imgList){
 				for(var i in imgList){
 					var img = new Image();
 					img.src = imgList[i];

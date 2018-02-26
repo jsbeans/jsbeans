@@ -1,29 +1,34 @@
 {
 	$name:'JSB.Widgets.EditorRegistry',
+	$singleton: true,
 	
+	editors: {},
+
 	register: function(typeId, jso){
-		if( JSB().isNull( this.editors ) ){
-			this.editors = {};
-		}
 		var typeIdArr = [];
 		if(JSB().isArray(typeId)){
 			typeIdArr = typeId;
 		} else {
-			typeIdArr[typeIdArr.length] = typeId;
+			typeIdArr.push(typeId);
 		}
-		for(var j in typeIdArr){
-			var t = typeIdArr[j];
-			if(JSB().isNull(this.editors[t])){
-				this.editors[t] = [];
-			}
-			var arr = this.editors[t];
-			for(var i in arr){
-				if(arr[i] && arr[i] instanceof JSB && arr[i].name == jso.$name){
-					// already registered, skip
-					return;
+		JSB.getLocker().lock('EditorRegistry.register');
+		try {
+			for(var j = 0; j < typeIdArr.length; j++){
+				var t = typeIdArr[j];
+				if(!this.editors[t]){
+					this.editors[t] = [];
 				}
+				var arr = this.editors[t];
+				for(var i = 0; i < arr.length; i++){
+					if(arr[i] && arr[i] instanceof JSB && arr[i].name == jso.$name){
+						// already registered, skip
+						return;
+					}
+				}
+				arr.push(jso);
 			}
-			arr[arr.length] = jso;
+		} finally {
+			JSB.getLocker().unlock('EditorRegistry.register');
 		}
 	},
 	
@@ -35,8 +40,6 @@
 	},
 	
 	$client: {
-		$singleton: true,
-		
 		lookup: function(typeId, callback){
 			var self = this;
 			var jso = this.get(typeId);
@@ -59,8 +62,8 @@
 	},
 	
 	$server: {
-		$singleton: true,
 		$constructor: function(){
+			$base();
 		},
 		
 		lookup: function(typeId, callback){
