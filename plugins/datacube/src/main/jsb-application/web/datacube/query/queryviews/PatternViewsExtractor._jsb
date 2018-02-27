@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Views.PatternViewsExtractor',
-	$parent: 'DataCube.Query.Views.SubQueryViewsExtractor',
+	$parent: 'DataCube.Query.Views.SameNestedQueryExtractor',
 
 	$server: {
 	    $require: [

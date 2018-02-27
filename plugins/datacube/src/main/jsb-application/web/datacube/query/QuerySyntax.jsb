@@ -146,11 +146,11 @@
 		            '$from':'$from',
 		            '$distinct': '$distinctAll',
 		            '$postFilter': '$postFilter',
-		            '$cubeFilter': '$filter',
+		            '$cubeFilter': '$cubeFilter',
 		            '$sort': '$sort',
 		            '$limit': '$limit',
 		            '$finalize': '$finalize',
-		            '$sql': '$sql',
+		            '$sql': '$sqlQuery',
 		        },
 		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
 		    });
@@ -167,13 +167,14 @@
 		
 		    new this.Group({
 		    	name: '$from',
+		        displayName: 'Источник запроса',
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
 		    });
 		
 		    new this.Group({
 		    	name: '$valueDefinition',
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param', '$sql'],
 		    });
 		
 		    new this.Group({
@@ -185,7 +186,7 @@
 		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString', '$toTimestamp',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
 		            '$distinct',
-		            '$last','$first', '$sum', '$count','$min', '$max', '$avg',
+		            '$any', '$last','$first', '$sum', '$count','$min', '$max', '$avg',
 		            '$array', '$flatArray', '$expandArray', '$concatArray',
 		            '$gsum', '$gcount', '$gmin', '$gmax', '$gavg',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
@@ -331,14 +332,13 @@
 
 		    new this.SingleObject({
 		        name: '$concat',
-		        displayName: 'concat',
+		        displayName: 'Склеить строки',
 		        category: 'Функции',
-		        desc: 'Соединение строк в одну',
+		        desc: 'Упорядоченное соединение строк в одну',
 		        values: ['$concatValues'],
 		    });
             new this.SingleObject({
                 name: '$concatArray',
-                displayName: 'concatArray',
                 category: 'Функции',
                 desc: 'Формирование массива из заданных значений',
                 values: ['$concatValues'],
@@ -368,6 +368,8 @@
 
 		    new this.SingleObject({
 		        name: '$coalesce',
+//		        displayName: 'Первое не пустое значение',
+		        category: 'Условные выражения',
 		        desc: 'Возвращает первое не NULL значение, перебирая заданные выражения по очереди',
 		        values: ['$coalesceValues'],
 		    });
@@ -380,6 +382,8 @@
 
 		    new this.SingleObject({
 		        name: '$if',
+		        category: 'Условные выражения',
+//		        displayName: 'Выражение "Если-то-иначе"',
 		        desc: 'Условное выражение выбора значения по условию',
 		        values: ['$ifExpr']
 		    });
@@ -396,37 +400,37 @@
 		
 		    new this.SingleObject({
 		        name: '$toInt',
-		        category: 'Конвертация типов',
+		        category: 'Преобразование типов',
 		        desc: 'Преобразование к целому числу',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$toDouble',
-		        category: 'Конвертация типов',
+		        category: 'Преобразование типов',
 		        desc: 'Преобразование к числу с плавающей точкой',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$toBoolean',
-		        category: 'Конвертация типов',
+		        category: 'Преобразование типов',
 		        desc: 'Преобразование к логическому типу (boolean)',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$toDate',
-		        category: 'Конвертация типов',
+		        category: 'Преобразование типов',
 		        desc: 'Преобразование к дате',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$toTimestamp',
-		        category: 'Конвертация типов',
+		        category: 'Преобразование типов',
 		        desc: 'Преобразование к timestamp',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$toString',
-		        category: 'Конвертация типов',
+		        category: 'Преобразование типов',
 		        desc: 'Преобразование к строке',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
@@ -464,18 +468,26 @@
 		         category: 'Функции',
 		         desc: 'Удалить пробельные символы в начале и в конце строки',
 		         values: ['$field', '$const', '$expression', '$query', '$param'],
-		     });
+		    });
+
+		    new this.SingleObject({
+		        name: '$any',
+		        category: 'Функции агрегации',
+		        desc: 'Вернуть любое значение в группе',
+		        aggregate: true,
+		        values: ['$field', '$const', '$expression', '$query', '$param'],
+		    });
 		    new this.SingleObject({
 		        name: '$first',
 		        category: 'Функции агрегации',
-		        desc: 'Вернуть первое значение в группе',
+		        desc: 'Вернуть первое значение в группе (если не важен порядок, используйте $any)',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$last',
 		        category: 'Функции агрегации',
-		        desc: 'Вернуть последнее значение в группе',
+		        desc: 'Вернуть последнее значение в группе (если не важен порядок, используйте $any)',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
@@ -537,7 +549,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$gsum',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Сумма всех элементов таблицы (сумма всех групп)',
 		        aggregate: true,
 		        global: true,
@@ -545,7 +557,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$gcount',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Число всех элементов таблицы (сумма размеров всех групп)',
 		        aggregate: true,
 		        global: true,
@@ -553,7 +565,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$gmin',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть минимальное значение в таблице (минимальное среди всех групп)',
 		        aggregate: true,
 		        global: true,
@@ -561,7 +573,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$gmax',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть максимальное значение в таблице (максимальное среди всех групп)',
 		        aggregate: true,
 		        global: true,
@@ -569,7 +581,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$gavg',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть среднее значение в таблице',
 		        aggregate: true,
 		        global: true,
@@ -577,7 +589,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$grmaxsum',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть значение с максимальной суммой элементов в группе (найти группу с максимальной суммой)',
 		        aggregate: true,
 		        global: true,
@@ -585,7 +597,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$grmaxcount',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть значение с числом элементов самой крупной группы (найти группу с максимальным числом элементов)',
 		        aggregate: true,
 		        global: true,
@@ -593,7 +605,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$grmaxavg',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть значение с максимальным средним в группе (найти группу с максимальным арифметическим средним)',
 		        aggregate: true,
 		        global: true,
@@ -601,7 +613,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$grmax',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть максимальное значение группы (найти группу с максимальным значением агрегированного выражения)',
 		        aggregate: true,
 		        global: true,
@@ -609,7 +621,7 @@
 		    });
 		    new this.SingleObject({
 		        name: '$grmin',
-		        category: 'Функции агрегации',
+		        category: 'Функции глобальной агрегации',
 		        desc: 'Вернуть минимальное значение группы (найти группу с минимальным значением агрегированного выражения)',
 		        aggregate: true,
 		        global: true,
@@ -619,8 +631,9 @@
 		
 		    new this.EArray({
 		        name: '$groupBy',
+		        category: 'Выражения запроса',
 		        displayName: 'Группировка',
-		        desc: 'Выражения для группировки элементов',
+		        desc: 'Группировка строк по значениям или выражениям',
 		        minOperands: 0,
 		        maxOperands: -1,
 		        values: ['$field', '$expression'],
@@ -628,8 +641,9 @@
 		
 		    new this.ComplexObject({
 		        name: '$filter',
-		        displayName: 'Фильтрация полей',
-		        desc: 'Фильтрация строк таблицы по условию (условия накладываются на поля куба)',
+		        category: 'Выражения запроса',
+		        displayName: 'Фильтрация полей источника',
+		        desc: 'Фильтрация строк таблицы источника по условию (по умолчанию, если не задан источник, условия накладываются на поля куба)',
 		        customKey: '#fieldName',
 		        values: {
 		            '#fieldName': '$valueCondition',
@@ -655,8 +669,9 @@
 		
 		    new this.ComplexObject({
 		        name: '$postFilter',
-		        displayName: 'Фильтрация столбцов',
-		        desc: 'Фильтрация результатов запроса по условию (условия накладываются на выходные поля запроса)',
+		        category: 'Выражения запроса',
+		        displayName: 'Фильтрация результата',
+		        desc: 'Фильтрация результатов запроса по условию (условия накладываются на выходные столбцы результата запроса)',
 		        customKey: '#outputFieldName',
 		        values: {
 		            '#outputFieldName': '$valueCondition',
@@ -680,32 +695,33 @@
 		    });
 
 
-//		    new this.ComplexObject({
-//		        name: '$cubeFilter',
-//		        displayName: 'Глобальный фильтр куба',
-//		        desc: 'Фильтрация строк куба (глобальный фильтр строк куба)',
-//		        customKey: '#fieldName',
-//		        values: {
-//		            '#fieldName': '$valueCondition',
-//
-//		            '$or': '$orCubeFilter',
-//		            '$and': '$andCubeFilter',
-//		            '$not': '$cubeFilter',
-//
-//		            '$eq': '$eqExpr',
-//		            '$ne': '$neExpr',
-//		            '$gt': '$gtExpr',
-//		            '$gte': '$gteExpr',
-//		            '$lt': '$ltExpr',
-//		            '$lte': '$lteExpr',
-//		            '$like': '$likeExpr',
-//		            '$ilike': '$ilikeExpr',
-//		            '$in': '$inExpr',
-//		            '$nin': '$ninExpr',
-//		        },
-//		        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
-//		    });
-		
+		    new this.ComplexObject({
+		        name: '$cubeFilter',
+		        category: 'Выражения запроса',
+		        displayName: 'Глобальная фильтрация',
+		        desc: 'Дополнительная фильтрация строк куба для всех подзапросов в данном и вложенных срезах',
+		        customKey: '#fieldName',
+		        values: {
+		            '#fieldName': '$valueCondition',
+
+		            '$or': '$orCubeFilter',
+		            '$and': '$andCubeFilter',
+		            '$not': '$cubeFilter',
+
+		            '$eq': '$eqExpr',
+		            '$ne': '$neExpr',
+		            '$gt': '$gtExpr',
+		            '$gte': '$gteExpr',
+		            '$lt': '$ltExpr',
+		            '$lte': '$lteExpr',
+		            '$like': '$likeExpr',
+		            '$ilike': '$ilikeExpr',
+		            '$in': '$inExpr',
+		            '$nin': '$ninExpr',
+		        },
+		        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
+		    });
+
 		    // valueCondition
 		    new this.Group({
 		        name: '$valueCondition',
@@ -747,19 +763,19 @@
 		        values: ['$postFilter'],
 		    });
 
-//		    new this.EArray({
-//		        name: '$orCubeFilter',
-//		        minOperands: 1,
-//		        maxOperands: -1,
-//		        values: ['$cubeFilter'],
-//		    });
-//
-//		    new this.EArray({
-//		        name: '$andCubeFilter',
-//		        minOperands: 1,
-//		        maxOperands: -1,
-//		        values: ['$cubeFilter'],
-//		    });
+		    new this.EArray({
+		        name: '$orCubeFilter',
+		        minOperands: 1,
+		        maxOperands: -1,
+		        values: ['$cubeFilter'],
+		    });
+
+		    new this.EArray({
+		        name: '$andCubeFilter',
+		        minOperands: 1,
+		        maxOperands: -1,
+		        values: ['$cubeFilter'],
+		    });
 
 		    new this.SingleObject({
 		        name: '$eq',
@@ -913,8 +929,9 @@
 		
 		    new this.EArray({
 		        name: '$sort',
+		        category: 'Выражения запроса',
 		        displayName: 'Сортировка',
-		        desc: 'Сортировка элементов',
+		        desc: 'Сортировка элементов (строк)',
 		        minOperands: 1,
 		        maxOperands: -1,
 		        values: ['$sortDefinition'],
@@ -974,14 +991,18 @@
 
 		    new this.EConstNumber({
 		        name: '$limit',
-		        desc: 'Ограничение количества строк результата',
+		        category: 'Выражения запроса',
+		        displayName: 'Ограничить число элементов',
+		        desc: 'Ограничение количества элементов (строк) результата запроса',
 		        value: 10,
 		        editable: true
 		    });
 		
 		    new this.Group({
 		        name: '$finalize',
-		        desc: 'Финальные преобразования выходных элементов',
+		        category: 'Выражения запроса',
+		        displayName: 'Финальные преобразования',
+		        desc: 'Финальные преобразования выходных элементов (строк)',
 		        values: ['$finalizeFunction', '$finalizeFields']
 		    });
 		    
@@ -1017,6 +1038,8 @@
 		
 		    new this.EConstBoolean({
 		        name: '$distinctAll',
+		        category: 'Выражения запроса',
+		        displayName: 'Исключить повторы',
 		        desc: 'Исключить повторяющиеся элементы (строки)',
 		        value: true,
 		    });
@@ -1110,16 +1133,25 @@
 		    });
 		    
 		    new this.EConstString({
-		        name: '$sql',
-		        desc: 'Использовать нативный SQL запрос',
+		        name: '$sqlQuery',
+		    	displayName: 'Встроенный SQL запрос',
+		        desc: 'Заменить текущий запрос SQL выражением/запросом',
 		        editable: true
 		    });
+
+		    new this.EConstString({
+		        name: '$sql',
+		        desc: 'Подставить SQL выражение/запрос',
+		        editable: true
+		    });
+
 		
 		},
 		
 		macros: {},
 		
 		schemaAggregateOperators: {
+		    $any: {},
 		    $first: {},
 		    $last: {},
 		    $sum: {},

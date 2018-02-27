@@ -31,7 +31,7 @@
 		    var sql = '';
 //		    sql += this._translateWith();
 		    sql += this.translateQueryExpression(this.dcQuery);
-		    QueryUtils.logDebug('\n[qid='+this.dcQuery.$id+'] Translated SQL Query: \n' + JSON.stringify(dcQuery, 0, 2));
+		    QueryUtils.logDebug('\n[qid='+this.dcQuery.$id+'] Translated SQL Query: \n' + JSON.stringify(this.dcQuery, 0, 2));
             return sql;
         },
 
@@ -479,6 +479,8 @@
             switch(op) {
                 case '$distinct':
                     return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                case '$any':
+                    return 'MIN(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
                 case '$first':
                     return '(ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + '))[1]';
 //                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';

@@ -496,7 +496,7 @@
 			if(fType){
 				fType = fType.toLowerCase();
 				if(fType == 'string' || fType == 'varchar' || fType == 'nvarchar' || fType == 'text'){
-					return '$first';
+					return '$any';
 				} else if(fType == 'decimal' || fType == 'integer'|| fType == 'float'|| fType == 'double'){
 					return '$sum';
 				}
@@ -1002,7 +1002,7 @@
 					if(bHasSlices){
 						continue;
 					}
-					category = 'Срезы куба';
+					category = 'Источник запроса';
 					valObj = '$viewName';
 					bHasSlices = true;
 				} else {

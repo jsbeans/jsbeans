@@ -6,6 +6,8 @@
 		vendor: 'PostgreSQL',
 		
 		$require: [
+		    'JSB.System.Config',
+
 		    'DataCube.Query.Translators.TranslatorRegistry',
 		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.QueryUtils',
@@ -30,7 +32,7 @@
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    $this.config = {
-		        printIsolatedQueriesInWith: false, // TODO
+		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'), // TODO
 		    }
 		},
 
@@ -85,12 +87,17 @@
         },
 
         _declareViewField: function(viewField, query) {
+//if (viewField.field.indexOf('comment') != -1) debugger;
+//if (viewField.field.indexOf('id') != -1) debugger;
             var sql;
             if (viewField.provider) {
                 sql = $this._printTableName(viewField.provider.getTableFullName()) +
                     '.' + $this._quotedName(viewField.providerField);
-            } else if(viewField.expr) {
+            } else if (viewField.expr) {
                 sql = $this._translateExpression(viewField.expr, query, true)
+            } else if (viewField.context && viewField.field) {
+                sql = $this._quotedName(viewField.context) +
+                    '.' + $this._quotedName(viewField.providerField || viewField.field);
             }
             if(!sql) throw new Error('Internal error: Unknown field');
             sql += ' AS ' + $this._quotedName(viewField.field);
@@ -98,7 +105,11 @@
         },
 
 		_translateViewField: function(viewField) {
-            if (viewField.providerField && viewField.context) {
+            if (viewField.alias && viewField.context) {
+                return $this._printTableName(viewField.context) +
+                    '.' + $this._quotedName(viewField.alias);
+
+            } else if (viewField.providerField && viewField.context) {
                 return $this._printTableName(viewField.context) +
                     '.' + $this._quotedName(viewField.providerField);
 
@@ -218,7 +229,11 @@
                     if (fieldsSql.length > 0) fieldsSql += ', ';
                     if (!viewField) {
                         var fieldType = $this.cubeFields[field].nativeType || $this.cubeFields[field].type;
-                        fieldsSql += 'NULL::' + JDBC.translateType(fieldType, $this.vendor);
+                        var jdbcType = JDBC.translateType(fieldType, $this.vendor);
+                        if (/^bit$/i.test(jdbcType)) {
+                            jdbcType = 'BOOLEAN';
+                        }
+                        fieldsSql += 'NULL::' + jdbcType;
                         fieldsSql += ' AS ' + $this._quotedName(field);
                     } else {
                         fieldsSql += $this._declareViewField(viewField);
@@ -232,7 +247,7 @@
                 if (sqlUnions.length > 0) sqlUnions  += ' UNION ALL ';
                 sqlUnions += viewSql;
             }
-            sqlUnions += ' AS ' + $this._quotedName(unionsView.getContext());
+            sqlUnions = '(' + sqlUnions + ') AS ' + $this._quotedName(unionsView.getContext());
             return sqlUnions;
         },
 

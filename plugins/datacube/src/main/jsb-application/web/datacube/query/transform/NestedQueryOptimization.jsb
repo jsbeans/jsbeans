@@ -1,11 +1,11 @@
 {
-	$name: 'DataCube.Query.Transforms.SubQueryViewsOptimization',
+	$name: 'DataCube.Query.Transforms.NestedQueryOptimization',
 	$parent: 'DataCube.Query.Transforms.Transformer',
 
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',
-	        'DataCube.Query.Views.SubQueryViewsExtractor',
+	        'DataCube.Query.Views.SameNestedQueryExtractor',
 	        'DataCube.Query.Transforms.QueryTransformer'
         ],
         
@@ -14,15 +14,15 @@
         },
 
 		transform: function(dcQuery, cubeOrDataProvider){
-            if (dcQuery.$views) {
-                QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] $views defined - SubQueryViewsOptimization skipped');
-                return dcQuery;
-            }
+//            if (dcQuery.$views) {
+//                QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] $views defined - NestedQueryOptimization skipped');
+//                return dcQuery;
+//            }
 
-            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before SubQueryViewsOptimization: ' + JSON.stringify(dcQuery, 0, 2));
+            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before NestedQueryOptimization: ' + JSON.stringify(dcQuery, 0, 2));
 
 		    try {
-		        var extractor = new SubQueryViewsExtractor();
+		        var extractor = new SameNestedQueryExtractor();
                 var resultQuery = extractor.buildViews(dcQuery);
                 return resultQuery;
 		    } finally {
