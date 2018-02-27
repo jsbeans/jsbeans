@@ -14,7 +14,7 @@
 
 		transform: function(dcQuery, cubeOrDataProvider){
 		    if (cubeOrDataProvider.getJsb().$name != 'DataCube.Model.Cube') {
-		        return;
+		        return dcQuery;
 		    }
 		    var slicesById = cubeOrDataProvider.getSlices();
 		    var slicesByName = {};

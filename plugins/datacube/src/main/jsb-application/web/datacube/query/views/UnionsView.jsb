@@ -26,6 +26,7 @@
             if (desc) {
                 desc.fieldContext = desc.context;
                 desc.context = $this.getContext();
+                desc.alias = name;
             }
             return desc;
 		},

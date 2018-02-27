@@ -29,6 +29,14 @@
         *    - подзапросы в $select
         */
         _walkQueries: function (query, includeViews, callback/**callback(q, isFromQuery, isValueQuery, isViewQuery, parents)*/) {
+//            var oldCallback = callback;
+//            if (query.$id) debugger;
+//            $this.logDebug('[qid='+query.$id+'] Walk sub-queries start');
+//            callback = function(q, isFromQuery, isValueQuery, isViewQuery, parents){
+//                $this.logDebug('[qid='+query.$id+'] Sub-query: '+q.$context+' (isInFrom='+isFromQuery+', isValue='+isValueQuery+', isView='+isViewQuery+')');
+//                return oldCallback.apply(this, arguments);
+//            }
+
 
             function collect(q, key, isView, path) {
                 function findView(name) {
@@ -53,7 +61,7 @@
                         path = path.slice().concat([q]);
                     }
                     // inner values
-                    for (var f in q) if (f != '$from' && f != '$select' && q.hasOwnProperty(f)) {
+                    for (var f in q) if (f != '$from' && f != '$select' && f != '$views' && q.hasOwnProperty(f)) {
                         collect(q[f], f, false, path);
                     }
                     // select
@@ -71,6 +79,7 @@
                 }
             }
             collect(query, null, false, []);
+//            $this.logDebug('[qid='+query.$id+'] Walk sub-queries complete');
         },
 
         walkQueryForeignFields: function(dcQuery, callback /*(field, context, query)*/){
@@ -92,7 +101,7 @@
                 };
             }
 
-            $this.walkSubQueries(dcQuery, function(query) {
+            $this._walkQueries(dcQuery, includeSubQueries, function(query) {
                 $this.walkCurrentQueryFields(query, callback);
             });
         },
@@ -1293,12 +1302,12 @@
         getFieldJdbcType: function(cubeOrDataProvider, field) {
             if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
                 var cubeFields = cubeOrDataProvider.getManagedFields();
-                for(var cubeField in cubeFields) if(cubeFields.hasOwnProperty(cubeField)) {
-                    var binding = cubeFields[cubeField].binding;
-                    for (var i in binding) {
-                        return binding[i].nativeType || binding[i].type;
-                    }
+//                for(var cubeField in cubeFields) if(cubeFields.hasOwnProperty(cubeField)) {
+                var binding = cubeFields[field].binding;
+                for (var i in binding) {
+                    return binding[i].nativeType || binding[i].type;
                 }
+//                }
             } else {
                 var desc = cubeOrDataProvider.extractFields()[field];
                 return desc.nativeType || desc.type;
