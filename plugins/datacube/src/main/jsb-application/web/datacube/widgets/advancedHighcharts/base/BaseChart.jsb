@@ -617,6 +617,16 @@
                                             $this.options.onClick.call(this, evt);
                                         }
                                     },
+                                    select: function(){
+                                        if(JSB().isFunction($this.options.onSelect)){
+                                            $this.options.onSelect.call(this, evt);
+                                        }
+                                    },
+                                    unselect: function(evt){
+                                        if(JSB().isFunction($this.options.onUnselect)){
+                                            $this.options.onUnselect.call(this, evt);
+                                        }
+                                    },
                                     mouseOut: function(evt) {
                                         if(JSB().isFunction($this.options.mouseOut)){
                                             $this.options.mouseOut.call(this, evt);

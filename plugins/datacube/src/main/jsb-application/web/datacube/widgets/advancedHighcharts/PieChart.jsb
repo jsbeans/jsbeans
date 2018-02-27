@@ -99,9 +99,8 @@
         }
     },
     $client: {
-	    _series: {},
+	    _bindings: [],
 	    _curFilters: {},
-	    _removedFiltersCnt: 0,
 	    _curFilterHash: null,
 
         refresh: function(opts){
@@ -113,39 +112,43 @@
             // filters section
             var globalFilters = this.getSourceFilters(dataSource),
                 seriesContext = this.getContext().find('series').values();
-//debugger;
-            if(globalFilters){
-                var binding = [],
-                    newFilters = {};
 
-                for(var i = 0; i < seriesContext.length; i++){
-                    binding.push(seriesContext[i].find('partNames').binding());
-                }
+            if(globalFilters){
+                var newFilters = {},
+                    curFilters = {};
 
                 for(var i in globalFilters){
+                    if(this._curFilters[i]){
+                        curFilters[i] = globalFilters[i];
+                        delete globalFilters[i];
+                        continue;
+                    }
+
                     var cur = globalFilters[i];
 
-                    if(binding.indexOf(cur.field) > -1  && cur.op === '$eq'){
-                        if(!this._curFilters[cur.value]){
-                            this._curFilters[cur.value] = cur.id;
-                            this.chart.series[0].data[this._series[cur.value]].select(true, true);
-                        }
-
-                        newFilters[cur.value] = true;
+                    if(this._bindings.indexOf(cur.field) > -1  && cur.op === '$eq'){
+                        curFilters[i] = cur;
+                        newFilters[i] = cur;
 
                         delete globalFilters[i];
                     }
                 }
 
+                this._select(newFilters, true, true);
+
+                var oldFilters = {};
+
                 for(var i in this._curFilters){
-                    if(!newFilters[i]){
-                        this._removedFiltersCnt++;
-                        this.chart.series[0].data[this._series[i]].select(false, true);
-                        delete this._curFilters[i];
+                    if(!globalFilters[i]){
+                        oldFilters[i] = this._curFilters[i];
                     }
                 }
 
-                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                this._select(oldFilters, false, true);
+
+                this._curFilters = curFilters;
+
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
@@ -153,10 +156,7 @@
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
-                    this._removedFiltersCnt = Object.keys(this._curFilters).length;
-                    for(var i in this._curFilters){
-                        this.chart.series[0].data[this._series[i]].select(false, true);
-                    }
+                    this._select(this._curFilters, false, true);
                     this._curFilters = {};
                     return;
                 }
@@ -164,13 +164,18 @@
             }
 
             var series = [];
+            this._bindings = [];
 
             for(var i = 0; i < seriesContext.length; i++){
+                var partNames = seriesContext[i].find('partNames');
+
                 series.push({
                     partNames: seriesContext[i].find('partNames'),
                     partData: seriesContext[i].find('partData'),
                     data: []
                 });
+
+                this._bindings.push(partNames.binding());
             }
 
             this.getElement().loader();
@@ -179,7 +184,9 @@
                     while(dataSource.next()){
                         for(var i = 0; i < series.length; i++){
                             series[i].data.push({
-                                binding: series[i].partNames.binding(),
+                                datacube: {
+                                    binding: series[i].partNames.binding()
+                                },
                                 name: series[i].partNames.value(),
                                 y: series[i].partData.value()
                             });
@@ -192,16 +199,7 @@
 
                     $this.buildChart(series);
 
-                    for(var i in $this._curFilters){
-                        for(var j = 0; j < $this.chart.series.length; j++){
-                            for(var k = 0; k < $this.chart.series[j].points.length; k++){
-                                if(i === $this.chart.series[j].points[k].name){
-                                    $this.chart.series[j].points[k].select(true, true);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    $this._select($this._curFilters, true, true);
                 } catch (ex){
                     console.log('PieChart load data exception');
                     console.log(ex);
@@ -221,6 +219,9 @@
 
                 for(var i = 0; i < seriesContext.length; i++){
                     series.push({
+                        datacube: {
+                            binding: seriesContext[i].find('partNames').binding()
+                        },
                         data: data[i].data,
                         size: seriesContext[i].find('size').value(),
                         innerSize: seriesContext[i].find('innerSize').value(),
@@ -251,42 +252,11 @@
                         series: {
                             point: {
                                 events: {
-                                    select: function(evt) {
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onSelect)){
-                                            flag = $this.options.onSelect.call(this, evt);
-                                        }
-
-                                        if(!flag && $this._clickEvt){
-                                            $this._addNewFilter(evt);
-                                            $this._clickEvt = null;
-                                        }
-                                    },
-                                    unselect: function(evt) {
-                                        $this._clickEvt = null;
-                                        var flag = false;
-
-                                        if(JSB().isFunction($this.options.onUnselect)){
-                                            flag = $this.options.onUnselect.call(this, evt);
-                                        }
-
-                                        if(!flag && $this._removedFiltersCnt === 0){
-                                            if(Object.keys($this._curFilters).length > 0){
-                                                if(evt.accumulate){
-                                                    $this.removeFilter($this._curFilters[evt.target.options.sortValue]);
-                                                    delete $this._curFilters[evt.target.options.sortValue];
-                                                    $this.refreshAll();
-                                                } else {
-                                                    for(var i in $this._curFilters){
-                                                        $this.removeFilter($this._curFilters[i]);
-                                                    }
-                                                    $this._curFilters = {};
-                                                    $this.refreshAll();
-                                                }
-                                            }
+                                    click: function(evt){
+                                        if(evt.point.selected){
+                                            $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
                                         } else {
-                                            $this._removedFiltersCnt--;
+                                            $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
                                         }
                                     }
                                 }
@@ -306,7 +276,7 @@
             }
         },
 
-        _addNewFilter: function(evt){
+        _addFilter: function(point, accumulate){
             var context = this.getContext().find('source').binding();
             if(!context.source) {
                 return;
@@ -316,30 +286,50 @@
             	sourceId: context.source,
             	type: '$or',
             	op: '$eq',
-            	field: evt.target.options.binding,
-            	value: evt.target.options.name
+            	field: point.datacube.binding,
+            	value: point.name
             };
 
-            if(!evt.accumulate && Object.keys(this._curFilters).length > 0){
-                this._removedFiltersCnt = Object.keys(this._curFilters).length;
-
+            if(!accumulate && Object.keys(this._curFilters).length > 0){
                 for(var i in this._curFilters){
-                    this.removeFilter(this._curFilters[i]);
+                    this.removeFilter(i);
                 }
 
                 this._curFilters = {};
             }
 
-            this._curFilters[evt.target.options.sortValue] = this.addFilter(fDesc);
+            var fId = this.addFilter(fDesc);
+
+            this._curFilters[fId] = fDesc;
+            point.datacube.filterId = fId;
+
             this.refreshAll();
         },
 
-        _select: function(val, b1, b2){
-            for(var j = 0; j < this.chart.series.length; j++){
-                for(var k = 0; k < this.chart.series[j].points.length; k++){
-                    if(val === this.chart.series[j].points[k].name){
-                        this.chart.series[j].points[k].select(b1, b2);
-                        break;
+        _removeFilter: function(point, accumulate){
+            if(accumulate){
+                this.removeFilter(point.datacube.filterId);
+                delete this._curFilters[point.datacube.filterId];
+                this.refreshAll();
+            } else {
+                for(var i in this._curFilters){
+                    this.removeFilter(i);
+                }
+                this._curFilters = {};
+                this.refreshAll();
+            }
+        },
+
+        _select: function(filters, b1, b2){
+            for(var i in filters){
+                for(var j = 0; j < this.chart.series.length; j++){
+                    if(this.chart.series[j].options.datacube.binding === filters[i].field){
+                        for(var k = 0; k < this.chart.series[j].points.length; k++){
+                            if(filters[i].value === this.chart.series[j].points[k].name){
+                                this.chart.series[j].points[k].select(b1, b2);
+                                break;
+                            }
+                        }
                     }
                 }
             }
