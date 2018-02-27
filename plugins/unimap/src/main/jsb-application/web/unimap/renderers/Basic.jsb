@@ -48,6 +48,23 @@
             name.append(this.createMsgIcon(description, 'desc fas fa-question-circle'));
         },
 
+        createErrorDesc: function(name){
+            if(!name){
+                return;
+            }
+
+            var error = this.$('<div class="error hidden"></div>');
+            name.append(error);
+
+            var icon = this.createMsgIcon(error, 'error fas fa-exclamation-triangle hidden');
+            name.append(icon);
+
+            this._errorDesc ={
+                desc: error,
+                icon: icon
+            }
+        },
+
         createInnerScheme: function(scheme, values, onchange){
             return new Controller({
                 scheme: scheme,
@@ -178,6 +195,14 @@
             return this._values;
         },
 
+        hideError: function(msg){
+            if(!this._errorDesc){
+                throw new Error('Error description is not defined');
+            }
+
+            this._errorDesc.icon.addClass('hidden');
+        },
+
         onchange: function(){
             // check require
             if(this._warningIcon){
@@ -191,6 +216,15 @@
             if(JSB.isFunction(this.options.onchange)){
                 this.options.onchange.call(this, this._values);
             }
+        },
+
+        showError: function(msg){
+            if(!this._errorDesc){
+                throw new Error('Error description is not defined');
+            }
+
+            this._errorDesc.desc.html(msg);
+            this._errorDesc.icon.removeClass('hidden');
         },
 
         validate: function(){

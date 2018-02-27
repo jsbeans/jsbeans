@@ -26,6 +26,10 @@
     background-color: #fff9db;
 }
 
+.basicRender .error {
+
+}
+
 .basicRender .description.show,
 .basicRender .warning.show {
     display: block !important;

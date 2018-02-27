@@ -143,6 +143,18 @@
                                                 name: 'Квадратичная'
                                             }
                                         }
+                                    },
+                                    stepGradation: {
+                                        render: 'switch',
+                                        name: 'Ступенчатая градация',
+                                        items: {
+                                            stepCount: {
+                                                render: 'item',
+                                                name: 'Число частей',
+                                                valueType: 'number',
+                                                defaultValue: 2
+                                            }
+                                        }
                                     }
                                 }
                             },
@@ -166,12 +178,15 @@
                      borderColor: {
                         render: 'item',
                         name: 'Цвет границ регионов',
-                        editor: 'JSB.Widgets.ColorEditor'
+                        editor: 'JSB.Widgets.ColorEditor',
+                        valueType: 'string',
+                        defaultValue: 'transparent'
                      },
                      borderWidth: {
                         render: 'item',
                         name: 'Толщина границы',
-                        valueType: 'number'
+                        valueType: 'number',
+                        defaultValue: 2
                      },
                      showValuesPermanent: {
                         render: 'item',
@@ -224,11 +239,9 @@
                             render: 'select',
                             name: 'Тип маркера',
                             items: {
-                            /*
                                 defaultMarker: {
                                     name: 'По-умолчанию'
                                 },
-                            */
                                 widget: {
                                     name: 'Виджет',
                                     items: {
@@ -236,20 +249,89 @@
                                             render: 'embeddedWidget',
                                             name: 'Тип виджета',
                                             linkTo: 'dataSource'
+                                        },
+                                        markerWidth: {
+                                            render: 'item',
+                                            name: 'Длина маркера',
+                                            valueType: 'number'
+                                        },
+                                        markerHeight: {
+                                            render: 'item',
+                                            name: 'Высота маркера',
+                                            valueType: 'number'
+                                        }
+                                    }
+                                },
+                                /*
+                                heatCircles: {
+                                    name: 'Тепловые круги',
+                                    items: {
+                                        colorValues: {
+
+                                        },
+                                        fillColor: {
+                                            render: 'select',
+                                            name: 'Цвет заливки',
+                                            items: {
+                                                simpleColor: {
+                                                    name: 'Единый цвет',
+                                                    items: {
+                                                        color: {
+                                                            render: 'item',
+                                                            name: 'Цвет',
+                                                            editor: 'JSB.Widgets.ColorEditor'
+                                                        }
+                                                    }
+                                                },
+                                                rangeColor: {
+                                                    name: 'Диапазон цветов',
+                                                    items: {
+                                                        startColor: {
+                                                            render: 'item',
+                                                            name: 'Начальный цвет',
+                                                            editor: 'JSB.Widgets.ColorEditor'
+                                                        },
+                                                        endColor: {
+                                                            render: 'item',
+                                                            name: 'Конечный цвет',
+                                                            editor: 'JSB.Widgets.ColorEditor'
+                                                        },
+                                                        functionType: {
+                                                            render: 'select',
+                                                            name: 'Функция вычисления цвета',
+                                                            items: {
+                                                                linear: {
+                                                                    name: 'Линейная'
+                                                                },
+                                                                logarithmic: {
+                                                                    name: 'Логарифмическая'
+                                                                },
+                                                                quadratic: {
+                                                                    name: 'Квадратичная'
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                sourceColor: {
+                                                     name: 'Цвет из источника',
+                                                     items: {
+                                                        color: {
+                                                            render: 'dataBinding',
+                                                            name: 'Поле с цветом',
+                                                            linkTo: 'dataSource'
+                                                        }
+                                                     }
+                                                }
+                                            }
+                                        },
+                                        sizeValues: {
+
                                         }
                                     }
                                 }
+                                */
                             }
-                        },
-                        markerWidth: {
-                            render: 'item',
-                            name: 'Длина маркера',
-                            valueType: 'number'
-                        },
-                        markerHeight: {
-                            render: 'item',
-                            name: 'Высота маркера',
-                            valueType: 'number'
                         }
                     }
                 }
@@ -263,6 +345,9 @@
                  render: 'select',
                  name: 'Сервер карт',
                  items: {
+                     avicomp: {
+                         name: 'OGCServer'
+                     },
                      sputnik: {
                          name: 'Спутник.ру'
                      },
@@ -287,18 +372,7 @@
                  }
              }
          }
-        },
-        /*
-        wmsMaps: {
-            render: 'group',
-            name: 'Tile-карты',
-            items: {
-                serverUrl: {
-
-                }
-            }
         }
-        */
     },
     $client: {
         $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5'],
@@ -422,7 +496,8 @@
                                 rangeColor: {
                                     startColor: colorSelector.find('startColor').value(),
                                     endColor: colorSelector.find('endColor').value(),
-                                    functionType: colorSelector.find('functionType').value()
+                                    functionType: colorSelector.find('functionType').value(),
+                                    stepGradation: colorSelector.find('stepGradation').checked() ? colorSelector.find('stepCount').value() : undefined
                                 }
                             }
                             break;
@@ -447,24 +522,21 @@
                         case 'russianRegions':
                             maps.push(JSB.merge(r, {
                                 data: null,
-                                path: 'geojson/russianRegions.json',
-                                wrapLongitude: -30
+                                path: 'geojson/russianRegions.json'
                             }));
                             newMapHash += 'geojson/russianRegions.json';
                             break;
                         case 'russianRegionsMPT':
                             maps.push(JSB.merge(r, {
                                 data: null,
-                                path: 'geojson/russianRegionsMPT.json',
-                                wrapLongitude: -30
+                                path: 'geojson/russianRegionsMPT.json'
                             }));
                             newMapHash += 'geojson/russianRegionsMPT.json';
                             break;
                         case 'worldCountries':
                             maps.push(JSB.merge(r, {
                                 data: null,
-                                path: 'geojson/worldCountries.json',
-                                wrapLongitude: -32
+                                path: 'geojson/worldCountries.json'
                             }));
                             newMapHash += 'geojson/worldCountries.json';
                             break;
@@ -490,6 +562,9 @@
                     var markerType = markersContext[i].find('markerType').value();
                     markersDesc[i].markerType = markerType;
 
+                    markersDesc[i].coordinatesBinding = markersContext[i].find('coordinates');
+                    markersDesc[i].coordinates = [];
+
                     switch(markerType){
                         case 'widget':
                             var wb = markersContext[i].find('widgetBinding');
@@ -505,14 +580,8 @@
 
                             markersDesc[i].jsb = wb.getWidgetBean();
 
-                            markersDesc[i].coordinatesBinding = markersContext[i].find('coordinates');
-                            markersDesc[i].coordinates = [];
-
                             markersDesc[i].markerWidth = markersContext[i].find('markerWidth').value();
                             markersDesc[i].markerHeight = markersContext[i].find('markerHeight').value();
-                            break;
-                        case 'defaultMarker':
-
                             break;
                     }
                 }
@@ -563,13 +632,13 @@
                         }
 
                         for(var i = 0; i < markersDesc.length; i++){
+                            markersDesc[i].coordinates.push(markersDesc[i].coordinatesBinding.value());
+
                             switch(markersDesc[i].markerType){
                                 case 'widget':
                                     if(markersDesc[i].valueSkipping){
                                         markersDesc[i].values.push(JSB.clone(markersDesc[i].widgetBinding.getFullValues()));
                                     }
-
-                                    markersDesc[i].coordinates.push(markersDesc[i].coordinatesBinding.value());
                                     break;
                             }
                         }
@@ -578,13 +647,15 @@
                     for(var i = 0; i < regionsColors.length; i++){
                         if(regionsColors[i].rangeColor){
                             var rainbow = new Rainbow({
+                                colorFunction: regionsColors[i].rangeColor.functionType,
                                 minNum: regions[i].minValue,
                                 maxNum: regions[i].maxValue,
-                                spectrum: [regionsColors[i].rangeColor.startColor, regionsColors[i].rangeColor.endColor]
+                                spectrum: [regionsColors[i].rangeColor.startColor, regionsColors[i].rangeColor.endColor],
+                                stepColors: regionsColors[i].rangeColor.stepGradation
                             });
 
                             for(var j = 0; j < regions[i].data.length; j++){
-                                regions[i].data[j].color = '#' + rainbow.colourAt(regions[i].data[j].value, regionsColors[i].rangeColor.functionType);
+                                regions[i].data[j].color = '#' + rainbow.colorAt(regions[i].data[j].value);
                             }
 
                             regions[i].defaultColor = regionsColors[i].defaultColor;
@@ -620,12 +691,12 @@
         buildChart: function(data){
             JSB.defer(function(){
                 $this.ensureDataLoaded(function(){
-                    $this.innerBuildChart(data);
+                    $this._buildChart(data);
                 });
             }, 300, 'buildChart_' + this.getId());
         },
 
-        innerBuildChart: function(data){
+        _buildChart: function(data){
             try {
                 if(this.map){
                     this._mapOpts = {
@@ -635,16 +706,18 @@
                     this.map.remove();
                 } else {
                     this._mapOpts = {
-                        center: [40.5, -280.5],
+                        center: [40.5, 40.5],
                         zoom: 2
                     };
                 }
                 this.map = L.map(this.container.get(0), this._mapOpts);
 
-                // add tile layers
+                // add tile and wms layers
                 var tileMaps = this.getContext().find('tileMaps').values();
                 for(var i = 0; i < tileMaps.length; i++){
-                    var url;
+                    var url,
+                        isWMS = false,
+                        wmsOptions = {};
 
                     switch(tileMaps[i].find('serverUrl').value()){
                         case 'sputnik':
@@ -662,14 +735,20 @@
                         case 'custom':
                             url = tileMaps[i].find('customServer').value();
                             break;
+                        case 'avicomp':
+                            url = 'http://172.16.32.3/public/wms-proxy/?';
+                            isWMS = true;
+                            break;
                         default:
                             continue;
                     }
 
-                    L.tileLayer(url, {foo: 'bar'}).addTo(this.map);
+                    if(isWMS){
+                        L.tileLayer.wms(url, wmsOptions).addTo(this.map);
+                    } else {
+                        L.tileLayer(url, {foo: 'bar'}).addTo(this.map);
+                    }
                 }
-
-                // add wms layers
 
                 // add geojson layers
                 for(var i = 0; i < this._maps.length; i++){
@@ -682,6 +761,7 @@
                                     if(data && data.color){
                                         return {fillColor: data.color, color: data.color, fillOpacity: 0.7};
                                     }
+
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
                                     if(!reg){
                                         if(data.regions[i].showEmptyRegions){
@@ -770,6 +850,11 @@
                 // add markers layers
                 for(var i = 0; i < data.markersDesc.length; i++){
                     switch(data.markersDesc[i].markerType){
+                        case 'defaultMarker':
+                            for(var j = 0; j < data.markersDesc[i].coordinates.length; j++){
+                                L.marker(L.latLng(data.markersDesc[i].coordinates[j][0], data.markersDesc[i].coordinates[j][1])).addTo($this.map);
+                            }
+                            break;
                         case 'widget':
                             (function(i){
                                 JSB.lookup(data.markersDesc[i].jsb, function(cls){

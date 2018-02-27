@@ -41,15 +41,32 @@
                 evt.stopPropagation();
 
                 if($this.dropDown.hasClass('hidden')){
+                    $this.dropDown.removeClass('hidden');
+
+                    var top = $this.getElement().offset().top,
+                        elementHeight = $this.getElement().height(),
+                        ddHeight = $this.dropDown.outerHeight(),
+                        bodyHeight = $this.$(window).height();
+
+                    if(bodyHeight <= top + elementHeight + ddHeight){
+                        $this.dropDown.css('top', 'initial');
+                        $this.dropDown.css('bottom', elementHeight);
+                    } else {
+                        $this.dropDown.css('top', elementHeight);
+                        $this.dropDown.css('bottom', 'initial');
+                    }
+
                     $this.$(document).on('click.comboEditor_closeDD', function(evt){
                         if(!$this.dropDown.is(evt.target) && $this.dropDown.has(evt.target).length === 0){
                             $this.dropDown.addClass('hidden');
                             $this.$(document).off('click.comboEditor_closeDD');
                         }
                     });
+
+                    return;
                 }
 
-                $this.dropDown.toggleClass('hidden');
+                $this.dropDown.addClass('hidden');
             }
 
             this.dropDownBtn.click(ddToggle);

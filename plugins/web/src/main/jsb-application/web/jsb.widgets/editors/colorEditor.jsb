@@ -152,6 +152,10 @@
 			this.addClass('colorEditor');
 			this.loadCss('colorEditor.css');
 
+			if(this.options.value){
+			    this._color = this.options.value;
+			}
+
 			switch(this.options.mode){
 			    case 'spectrum':
 			        JSB().loadCss('tpl/spectrum/spectrum.css');
@@ -163,10 +167,6 @@
                     $this._initHexagon();
                     break;
 			}
-
-            if(this.options.color){
-                $this.setData($this.options.color);
-            }
 		},
 
 		options: {

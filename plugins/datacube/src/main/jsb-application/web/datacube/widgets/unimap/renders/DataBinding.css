@@ -60,9 +60,16 @@
     content: "\25CF";
     position: absolute;
     left: 0px;
-    top: -8px;
     font-size: 23px;
     color: green;
+}
+
+.dataBindingRender > .jsb-comboEditor .sliceRender:before {
+    top: -3px;
+}
+
+.dataBindingRender > .jsb-select .sliceRender:before {
+    top: -8px;
 }
 
 .dataBindingRender > .jsb-comboEditor li .sliceRender:before,

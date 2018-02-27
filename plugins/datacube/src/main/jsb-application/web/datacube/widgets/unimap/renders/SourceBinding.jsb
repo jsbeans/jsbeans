@@ -145,12 +145,10 @@
 
 			item.addClass('refreshing');
 			this.server().combineDataScheme(source, function(dataScheme, fail){
-				if(fail){
-					item.removeClass('refreshing');
-				} else {
+			    item.removeClass('refreshing');
+				if(!fail){
 					$this.setDataScheme(dataScheme, source, itemIndex, function(){
 					    $this.changeBinding(itemIndex);
-						item.removeClass('refreshing');
 					});
 				}
 			});
@@ -162,6 +160,10 @@
 		    };
 
 			function setupSource(source){
+			    if(!source){
+			        return; // todo: error
+			    }
+
 			    $this._items[itemIndex].source = source;
 
 				var item;

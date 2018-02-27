@@ -7,6 +7,7 @@
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
     overflow: visible;
+    padding-right: 20px;
 }
 
 .jsb-select > i.dropDownBtn {
@@ -48,10 +49,14 @@
     width: 100%;
     height: 100%;
     cursor: pointer;
-    padding: 6px 20px 6px 6px;
+    padding: 6px;
     font-size: 14px;
     line-height: 1.42857143;
     color: #555;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
+    overflow: hidden;
 }
 
 .jsb-select > .dropDown {

@@ -5,6 +5,10 @@
     minNum: 0,
     maxNum: 100,
     colours: ['ff0000', 'ffff00', '00ff00', '0000ff'],
+    colorMap: [],
+
+    colorFunction: null,
+    stepColors: false,
 
     $constructor: function(opts){
         this.ColourGradient = function(){
@@ -27,13 +31,13 @@
                 }
             },
 
-            this.colourAt = function (number, func){
-                return calcHex(number, startColour.substring(0,2), endColour.substring(0,2), func)
-                    + calcHex(number, startColour.substring(2,4), endColour.substring(2,4), func)
-                    + calcHex(number, startColour.substring(4,6), endColour.substring(4,6), func);
+            this.colourAt = function (number){
+                return calcHex(number, startColour.substring(0,2), endColour.substring(0,2))
+                    + calcHex(number, startColour.substring(2,4), endColour.substring(2,4))
+                    + calcHex(number, startColour.substring(4,6), endColour.substring(4,6));
             }
 
-            function calcHex(num, channelStart_Base16, channelEnd_Base16, func)
+            function calcHex(num, channelStart_Base16, channelEnd_Base16)
             {
                 if (num <= minNum) {
                     num = minNum;
@@ -46,7 +50,7 @@
                 var cStart_Base10 = parseInt(channelStart_Base16, 16);
                 var cEnd_Base10 = parseInt(channelEnd_Base16, 16);
 
-                switch(func){
+                switch(this.colorFunction){
                     case 'quadratic':
                         var numRange = Math.pow(maxNum, 2) - Math.pow(minNum, 2);
                         numRange = numRange > 0 ? numRange : 1;
@@ -257,11 +261,67 @@
         }
 
         if(opts.spectrum && JSB.isArray(opts.spectrum)){
-            this.setSpectrumByArray(opts.spectrum);
+            this.setColors(opts.spectrum);
         } else {
             this.setColors(this.colours);
         }
+
+        if(opts.colorFunction){
+            this.colorFunction = opts.colorFunction;
+        }
+
+        if(opts.stepColors){
+            this.createColorMap(opts.stepColors);
+            this.stepColors = true;
+        }
     },
+
+	colorAt: function (number){
+        if (isNaN(number)) {
+            throw new TypeError(number + ' is not a number');
+        }
+
+        if(this.stepColors){
+            for(var i = 0; i < this.colorMap.length; i++){
+                if(this.colorMap[i].min <= number && this.colorMap[i].max >= number){
+                    return this.colorMap[i].color;
+                }
+            }
+        } else {
+            if (this.gradients.length === 1) {
+                return this.gradients[0].colourAt(number);
+            } else {
+                var segment = (this.maxNum - this.minNum)/(this.gradients.length);
+                var index = Math.min(Math.floor((Math.max(number, this.minNum) - this.minNum)/segment), this.gradients.length - 1);
+                return this.gradients[index].colourAt(number);
+            }
+        }
+    },
+
+    createColorMap: function(count){
+        var increment = (this.maxNum - this.minNum) / count;
+
+        this.colorMap = [];
+
+        for(var i = 0; i < count; i++){
+            this.colorMap.push({
+                min: i * increment,
+                max: (i + 1) * increment,
+                color: this.colorAt(((i + 1) * increment - i * increment) / 2)
+            });
+        }
+    },
+
+    setNumberRange: function (minNumber, maxNumber){
+		if (maxNumber >= minNumber) {
+			this.minNum = minNumber;
+			this.maxNum = maxNumber;
+			this.setColors(this.colours);
+		} else {
+			throw new RangeError('maxNumber (' + maxNumber + ') is not greater than minNumber (' + minNumber + ')');
+		}
+		return this;
+	},
 
     setColors: function(spectrum){
         if (spectrum.length < 2) {
@@ -287,33 +347,5 @@
     setSpectrum: function(){
         this.setColors(arguments);
         return this;
-    },
-
-    setSpectrumByArray: function (array){
-		this.setColors(array);
-		return this;
-	},
-
-	colourAt: function (number, func){
-        if (isNaN(number)) {
-            throw new TypeError(number + ' is not a number');
-        } else if (this.gradients.length === 1) {
-            return this.gradients[0].colourAt(number, func);
-        } else {
-            var segment = (this.maxNum - this.minNum)/(this.gradients.length);
-            var index = Math.min(Math.floor((Math.max(number, this.minNum) - this.minNum)/segment), this.gradients.length - 1);
-            return this.gradients[index].colourAt(number, func);
-        }
-    },
-
-    setNumberRange: function (minNumber, maxNumber){
-		if (maxNumber >= minNumber) {
-			this.minNum = minNumber;
-			this.maxNum = maxNumber;
-			this.setColors(this.colours);
-		} else {
-			throw new RangeError('maxNumber (' + maxNumber + ') is not greater than minNumber (' + minNumber + ')');
-		}
-		return this;
-	}
+    }
 }
