@@ -1,9 +1,10 @@
 {
 	$name: 'DataCube.Widgets.Widget',
 	$parent: 'JSB.Widgets.Widget',
-	
+
 	$client: {
 		wrapper: null,
+		widgetEntry: null,
 		context: {},
 		values: null,
 		sort: null,
@@ -20,6 +21,20 @@
 		rowKeyColumns: [],
 
 		$require: ['JSB.Crypt.MD5', 'DataCube.Export.Export', 'JQuery.UI.Loader', 'Unimap.ValueSelector', 'Datacube.Unimap.Bootstrap'],
+
+		$constructor: function(opts){
+		    $base();
+
+		    if(opts){   // not embedded widget
+                this.widgetEntry = opts.widgetEntry;
+                this.wrapper = opts.widgetWrapper;
+
+                this.updateValues({
+                    values: this.widgetEntry.getValues(),
+                    linkedFields: this.widgetEntry.getLinkedFields()
+                });
+		    }
+		},
 
 		addFilter: function(fDesc){
 			if(!fDesc.sourceId){
@@ -250,7 +265,7 @@
 		},
 
 		getDashboard: function(){
-			return $this.getWrapper().getDashboard();
+			return this.getWrapper().getDashboard();
 		},
 
 		getFilterManager: function(){
@@ -399,6 +414,7 @@
 
 		setWrapper: function(w, valuesOpts, sourceDesc){
 			this.wrapper = w;
+			this.widgetEntry = w.getWidgetEntry();
 			this.updateValues(valuesOpts, sourceDesc);
 		},
 
@@ -408,20 +424,15 @@
 
 		updateValues: function(opts){
 			this.values = opts.values;
-
-			if(opts.linkedFields){
-			    this.linkedFields = opts.linkedFields;
-			} else {
-			    this.linkedFields = this.getWrapper().getWidgetEntry().getLinkedFields();
-			}
+			this.linkedFields = opts.linkedFields;
 
 			this.context = {};
 			if(opts.sourceDesc){
 				this.sourceMap = opts.sourceDesc.sourceMap;
 				this.sources = opts.sourceDesc.sources;
 			} else {
-				this.sourceMap = this.getWrapper().getWidgetEntry().getSourceMap();
-				this.sources = this.getWrapper().getWidgetEntry().getSources();
+				this.sourceMap = this.widgetEntry.getSourceMap();
+				this.sources = this.widgetEntry.getSources();
 			}
 		}
 	},

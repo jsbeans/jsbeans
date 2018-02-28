@@ -41,7 +41,30 @@
 	getSources: function(){
 		return this.sources;
 	},
-	
+
+    extractWidgetScheme: function(){
+        var scheme = {},
+            curWidgetJsb = JSB.get(this.wType),
+            schemesArray = [];
+
+        while(curWidgetJsb){
+            if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
+                break;
+            }
+            var wScheme = curWidgetJsb.getDescriptor().$scheme;
+            if(wScheme && Object.keys(wScheme).length > 0){
+                schemesArray.push(wScheme);
+            }
+            curWidgetJsb = curWidgetJsb.getParent();
+        }
+
+        for(var i = schemesArray.length - 1; i > -1; i--){
+            JSB.merge(true, scheme, schemesArray[i]);
+        }
+
+        return scheme;
+    },
+
 	$server: {
 		$require: ['DataCube.Providers.DataProviderRepository',
 		           'DataCube.Query.QueryEngine',
@@ -140,16 +163,11 @@
 		},
 
 		setName: function(name){
+		    this.getDashboard().load();
 			this.name = name;
 			this.title(this.name);
-		},
-		
-		rename: function(name){
-			this.getDashboard().load();
-			this.setName(name);
 			this.getDashboard().store();
 			this.doSync();
-			return true;
 		},
 		
 		storeValues: function(opts){    //name, values, linkedFields, sourcesIds
@@ -161,7 +179,11 @@
 			this.property('linkedFields', opts.linkedFields);
 			this.property('sourcesIds', opts.sourcesIds);
 			this.property('schemeVersion', 1.0);
-			this.setName(opts.name);
+
+			this.name = opts.name;
+			this.title(this.name);
+
+			//this.setName(opts.name);
 			
 			// update interoperation maps in all widgets of current dashboard
 			var widgets = this.getDashboard().getWrappers();
@@ -309,29 +331,6 @@
 				source: source.getLocalId(),
 				arrayType: recordTypes
 			}
-		},
-
-		extractWidgetScheme: function(){
-			var scheme = {},
-			    curWidgetJsb = JSB.get(this.wType),
-			    schemesArray = [];
-
-			while(curWidgetJsb){
-				if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
-					break;
-				}
-				var wScheme = curWidgetJsb.getDescriptor().$scheme;
-				if(wScheme && Object.keys(wScheme).length > 0){
-				    schemesArray.push(wScheme);
-				}
-				curWidgetJsb = curWidgetJsb.getParent();
-			}
-
-			for(var i = schemesArray.length - 1; i > -1; i--){
-			    JSB.merge(true, scheme, schemesArray[i]);
-			}
-
-			return scheme;
 		}
 	}
 }

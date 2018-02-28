@@ -29,23 +29,6 @@
 	        this.createRequireDesc(name);
 	        this.createDescription(name);
 
-	        this._values.valueSkipping = JSB.isDefined(this._values.valueSkipping) ? this._values.valueSkipping : true;
-
-	        this.append(new Checkbox({
-	            checked: this._values.valueSkipping,
-	            cssClass: 'valueSkipping',
-	            label: 'Проброс значений',
-	            onchange: function(b){
-	                $this._values.valueSkipping = b;
-
-                    if(b){
-                        $this.childSourceBinding && $this.childSourceBinding.disable();
-                    } else {
-                        $this.childSourceBinding && $this.childSourceBinding.enable();
-                    }
-	            }
-	        }));
-
 	        if(this._values.values.length > 0){
 	            this.addItem(this._values.values[0]);
 	        } else {
@@ -103,6 +86,23 @@
             });
 
             this.append(this._item);
+
+	        this._values.valueSkipping = JSB.isDefined(this._values.valueSkipping) ? this._values.valueSkipping : true;
+
+	        this.append(new Checkbox({
+	            checked: this._values.valueSkipping,
+	            cssClass: 'valueSkipping',
+	            label: 'Проброс значений',
+	            onchange: function(b){
+	                $this._values.valueSkipping = b;
+
+                    if(b){
+                        $this.childSourceBinding && $this.childSourceBinding.disable();
+                    } else {
+                        $this.childSourceBinding && $this.childSourceBinding.enable();
+                    }
+	            }
+	        }));
 
             if(values.binding){
                 this.setValue(values.binding);

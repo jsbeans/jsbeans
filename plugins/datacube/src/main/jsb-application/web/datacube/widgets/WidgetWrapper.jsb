@@ -3,24 +3,9 @@
 	$parent: 'JSB.Widgets.Widget',
 
 	widgetEntry: null,
-	name: null,
-	values: null,
-	linkedFields: null,
-	
-	getName: function(){
-		return this.name;
-	},
 	
 	getWidgetType: function(){
 		return this.widgetEntry.getWidgetType();
-	},
-	
-	getValues: function(){
-		return this.values;
-	},
-
-	getLinkedFields: function(){
-	    return this.linkedFields;
 	},
 	
 	getDashboard: function(){
@@ -99,34 +84,29 @@
 			$base(opts);
 			this.widgetEntry = widgetEntry;
 			this.owner = owner;
-			this.name = this.widgetEntry.getName();
-			this.values = this.widgetEntry.getValues();
 			this.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
 			this.widgetContainer = this.$('<div class="widgetContainer"></div>');
 			this.append(this.widgetContainer);
 			
-			$this.setTitle($this.getName());
+			this.setTitle(this.getWidgetEntry().getName());
 
-			if(!$this.options.viewMode){
-				$this.updateTabHeader();
+			if(!this.options.viewMode){
+				this.updateTabHeader();
 			}
 
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
-				$this.widget = new WidgetClass();
-				$this.widgetContainer.append($this.widget.getElement());
-				$this.widget.setWrapper($this, {
-				    values: $this.values,
-				    linkedFields: $this.linkedFields
+				$this.widget = new WidgetClass({
+				    widgetEntry: $this.widgetEntry,
+				    widgetWrapper: $this
 				});
+				$this.widgetContainer.append($this.widget.getElement());
 
 				$this.setWidgetInitialized();
 
 				if($this.options.auto){
 					$this.widget.ensureInitialized(function(){
-						$this.widget.refresh({
-						    isCacheMod: $this.options.isCacheMod || false
-						});
+						$this.widget.refresh();
 					});
 				}
 			});
@@ -182,7 +162,6 @@
 		destroy: function(){
 			if($this.widget){
 				$this.widget.destroy();
-				$this.widget = null;
 			}
 			$base();
 		},
@@ -234,41 +213,6 @@
 			return null;
 		},
 		
-		extractWidgetScheme: function(curWidgetJsb){
-			var scheme = {},
-			    schemesArray = [];
-
-			if(!curWidgetJsb){
-				curWidgetJsb = this.widget.getJsb();
-			}
-
-			while(curWidgetJsb){
-				if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
-					break;
-				}
-				var wScheme = curWidgetJsb.getDescriptor().$scheme;
-				if( wScheme && Object.keys(wScheme).length > 0){
-				    schemesArray.push(wScheme);
-				}
-				curWidgetJsb = curWidgetJsb.getParent();
-			}
-
-			for(var i = schemesArray.length - 1; i > -1; i--){
-			    JSB.merge(true, scheme, schemesArray[i]);
-			}
-
-			return scheme;
-		},
-
-		updateValues: function(opts){
-		    this.getWidget().updateValues({
-		        values: JSB.clone(opts.values),
-		        linkedFields: opts.linkedFields,
-		        sourceDesc: opts.sourceDesc
-		    });
-		    this.values = opts.values;
-		},
-		
 		updateTabHeader: function(){
 			if(!this.getContainer() || this.getContainer().hasClass('_jsb_dashboardFloatingContainer')){
 				return;
@@ -298,12 +242,12 @@
 						return /^[\-_\.\s\wа-я]+$/i.test(t);
 					},
 					onChange: function(val){
-						$this.getWidgetEntry().server().rename(val, function(res){
-							if(res){
-								$this.name = val;
-							} else {
-								editor.setData($this.name);
-							}
+					    var oldName = $this.getWidgetEntry().getName();
+
+						$this.getWidgetEntry().server().setName(val, function(res, fail){
+						    if(fail){
+						        editor.setData(oldName);
+						    }
 						});
 					}
 				});
@@ -323,7 +267,7 @@
 						var elt = $this.$(evt.currentTarget);
 						ToolManager.showMessage({
 							icon: 'removeDialogIcon',
-							text: 'Вы уверены что хотите удалить виджет "'+$this.getName()+'" ?',
+							text: 'Вы уверены что хотите удалить виджет "' + $this.getWidgetEntry().getName() + '" ?',
 							buttons: [{text: 'Удалить', value: true},
 							          {text: 'Нет', value: false}],
 							target: {
@@ -366,7 +310,7 @@
 
                 this.createUniBtns();
 			}
-			editor.setData(this.getName());
+			editor.setData(this.getWidgetEntry().getName());
 		},
 
 		createUniBtns: function(){

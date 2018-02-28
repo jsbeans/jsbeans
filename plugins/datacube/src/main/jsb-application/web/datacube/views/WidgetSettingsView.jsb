@@ -37,7 +37,7 @@
                 cssClass: "btnUpdate",
                 caption: "Обновить",
                 onClick: function(){
-                    $this.updateData();
+                    $this.setChanges(true);
                 }
             });
             this.titleBlock.append(this.saveBtn.getElement());
@@ -84,7 +84,7 @@
 
             this.wrapper.ensureWidgetInitialized(function(){
                 $this.widgetSchemeRenderer = new Controller({
-                    scheme: $this.wrapper.extractWidgetScheme(),
+                    scheme: $this.entry.extractWidgetScheme(),
                     values: JSB.clone($this.entry.getValues()),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(key, values){
@@ -103,20 +103,9 @@
             this.titleEditor.setData(this.entry.name);
 		},
 
-		updateData: function(){
-            this.wrapper.updateValues({
-                values: this.widgetSchemeRenderer.getValues(),
-                linkedFields: this.widgetSchemeRenderer.getLinkedFields()
-            });
-
-		    this.wrapper.getWidget().refresh({
-                isCacheMod: true,
-                needMapUpdate: true
-            });
-		},
-
 		applySettings: function(){
-		    this.wrapper.values = this.widgetSchemeRenderer.getValues();
+		    var values = this.widgetSchemeRenderer.getValues(),
+		        linkedFields = this.widgetSchemeRenderer.getLinkedFields();
 
 		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),
 		        sourcesIds = [];
@@ -138,33 +127,35 @@
             });
 
             this.entry.server().storeValues({
-                linkedFields: this.widgetSchemeRenderer.getLinkedFields(),
+                linkedFields: linkedFields,
                 name: this.titleEditor.getData().getValue(),
                 sourcesIds: sourcesIds,
-                values: this.wrapper.values
+                values: values
             }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
-                    entryId: $this.wrapper.getWidgetEntry().getId(),
-                    linkedFields: $this.widgetSchemeRenderer.getLinkedFields(),
+                    entryId: $this.entry.getId(),
+                    linkedFields: linkedFields,
                     sourceDesc: sourceDesc,
-                    values: $this.wrapper.values
+                    values: values
                 });
             });
 		},
 
-		setChanges: function(){
+		setChanges: function(isUpdateData){
 		    if(!this.warningBlock.hasClass('hidden')){
 		        this.updateValidation();
 		    }
 
-		    this.wrapper.updateValues({
-		        values: this.widgetSchemeRenderer.getValues(),
-		        linkedFields: this.widgetSchemeRenderer.getLinkedFields()
+		    this.wrapper.getWidget().updateValues({
+                values: this.widgetSchemeRenderer.getValues(),
+                linkedFields: this.widgetSchemeRenderer.getLinkedFields()
 		    });
 
             this.wrapper.getWidget().ensureInitialized(function(){
                 $this.wrapper.getWidget().refresh({
-                    refreshFromCache: true
+                    isCacheMod: isUpdateData,
+                    needMapUpdate: isUpdateData,
+                    refreshFromCache: !isUpdateData
                 });
         	});
 		},
