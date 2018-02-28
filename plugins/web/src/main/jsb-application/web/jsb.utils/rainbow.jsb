@@ -284,7 +284,10 @@
         if(this.stepColors){
             for(var i = 0; i < this.colorMap.length; i++){
                 if(this.colorMap[i].min <= number && this.colorMap[i].max >= number){
-                    return this.colorMap[i].color;
+                    return {
+                        color: this.colorMap[i].color,
+                        group: i
+                    }
                 }
             }
         } else {
@@ -310,6 +313,10 @@
                 color: this.colorAt(((i + 1) * increment - i * increment) / 2)
             });
         }
+    },
+
+    getColorMap: function(){
+        return this.colorMap;
     },
 
     setNumberRange: function (minNumber, maxNumber){
