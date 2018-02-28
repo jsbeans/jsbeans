@@ -61,8 +61,8 @@
 				self.refresh();
 				self.updateVisibleArea();
 				if(!JSB().isNull(self.scroll)){
-					if(self.scrollPane.width() > self.getElement().width() 
-						|| self.scrollPane.height() > self.getElement().height()){
+					if(self.scrollPane.outerWidth() > self.getElement().width() 
+						|| self.scrollPane.outerHeight() > self.getElement().height()){
 						self.scroll._execEvent('scrollStart');
 						JSB().defer(function(){
 							self.scroll._execEvent('scrollEnd');
@@ -83,7 +83,7 @@
 						}
 					} else {
 						// scroll down
-						if($this.scroll.y + $this.scrollPane.height() > $this.getElement().height()){
+						if($this.scroll.y + $this.scrollPane.outerHeight() > $this.getElement().height()){
 							evt.stopPropagation();
 							evt.preventDefault();
 						}
@@ -188,7 +188,7 @@
 		addWheelDelta: function(delta){
 			var self = this;
 			var boundaryPenetrationAllowed = 0;
-			if(this.scrollPane.height() < this.getElement().height()){
+			if(this.scrollPane.outerHeight() < this.getElement().height()){
 				return;
 			}
 			
@@ -206,8 +206,8 @@
 			// check for bounds
 			if(self.scrollDelta > 0 && this.scrollPos + self.scrollDelta > boundaryPenetrationAllowed){
 				self.scrollDelta = boundaryPenetrationAllowed - this.scrollPos;
-			} else if(self.scrollDelta < 0 && this.scrollPos + self.scrollDelta + this.scrollPane.height() - this.getElement().height() < -boundaryPenetrationAllowed){
-				self.scrollDelta = this.getElement().height() - boundaryPenetrationAllowed - this.scrollPane.height() - this.scrollPos;
+			} else if(self.scrollDelta < 0 && this.scrollPos + self.scrollDelta + this.scrollPane.outerHeight() - this.getElement().height() < -boundaryPenetrationAllowed){
+				self.scrollDelta = this.getElement().height() - boundaryPenetrationAllowed - this.scrollPane.outerHeight() - this.scrollPos;
 			}
 			
 			if($this.updateScrollInterval == null && !$this.isScrolling) {
@@ -495,11 +495,11 @@
 			if(!this.scrollPane || !this.getElement()){
 				return;
 			}
-			if(this.scrollPane.height() + y < this.getElement().height()){
-				y = this.getElement().height() - this.scrollPane.height(); 
+			if(this.scrollPane.outerHeight() + y < this.getElement().height()){
+				y = this.getElement().height() - this.scrollPane.outerHeight(); 
 			}
-			if(this.scrollPane.width() + x < this.getElement().width()){
-				x = this.getElement().width() - this.scrollPane.width(); 
+			if(this.scrollPane.outerWidth() + x < this.getElement().width()){
+				x = this.getElement().width() - this.scrollPane.outerWidth(); 
 			}
 			if(x > 0){
 				x = 0;

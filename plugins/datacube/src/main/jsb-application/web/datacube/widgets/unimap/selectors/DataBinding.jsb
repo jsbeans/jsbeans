@@ -18,10 +18,13 @@
         return this._values[0].bindingType;
     },
 
-    bindings: function(){
+    bindings: function(validOnly){
         var bindings = [];
 
         for(var i = 0; i < this._values.length; i++){
+        	if(validOnly && !this._values[i].binding){
+        		continue;
+        	}
             bindings.push(this._values[i].binding);
         }
 

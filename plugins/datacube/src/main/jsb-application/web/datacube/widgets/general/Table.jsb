@@ -701,7 +701,12 @@
 				var rowsSel = tbody.selectAll('tr.row');
 				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
 				rowsSelData.each(function(d){
+					if($this.highlightedRowKey == d.key){
+						$this.highlightedRowKey = null;
+						$this.rowFilterTool.addClass('hidden');
+					}
 					d3.select(this)
+						.classed('highlight', false)
 						.classed('main', !!d.flags.main)
 						.classed('back', !!d.flags.back)
 						.classed('hover', !!d.flags.hover)
@@ -1653,10 +1658,8 @@
 		
 		refresh: function(opts){
 			if(!this.ready){
-				JSB.deferUntil(function(){
+				this.ensureInitialized(function(){
 					$this.refresh();
-				}, function(){
-					return $this.ready;
 				});
 				return;
 			}
@@ -1830,7 +1833,7 @@
 
                         var sortSelector = viewSelector.find('widgetSort');
                         if(sortSelector.checked()){
-                            desc.sortFields = sortSelector.find('widgetSortFields').binding();
+                            desc.sortFields = sortSelector.find('widgetSortFields').bindings(true);
                         }
                         var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
                         if(widgetContextFilterSelector.checked()){
@@ -1850,7 +1853,7 @@
 					desc.textSelector = textSelector;
 					var sortSelector = viewSelector.find('textSort');
 					if(sortSelector.checked()){
-						desc.sortFields = textSelector.binding();
+						desc.sortFields = textSelector.bindings(true);
 					}
 					var contextFilterSelector = viewSelector.find('contextFilter');
 					if(contextFilterSelector.checked()){
