@@ -195,8 +195,8 @@
                         dataObject: {
                             groups: data
                         },
-                        layout: $this.getContext().find('layout').value().name(),
-                        stacking: $this.getContext().find('stacking').value().name(),
+                        layout: $this.getContext().find('layout').value(),
+                        stacking: $this.getContext().find('stacking').value(),
                         onGroupSelectionChanged: function(event){
                             if(event.groups.length){
                                 var context = $this.getContext().find('source').binding();
