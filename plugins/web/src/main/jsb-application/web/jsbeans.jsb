@@ -37,11 +37,11 @@
 			code += 'JSB().setServerVersion("' + Config.get('build.version') + '");';
 			
 			// insert setup server code
-			var setupProcStr = setupServerPath.toString().trim();
+			var setupProcStr = '(' + setupServerPath.toString().trim() + ')();';
 			if(!Config.get('web.debug')){
 				setupProcStr = '' + JsMinifier.minify(setupProcStr, false);
 			}
-			code += '(' + setupProcStr + ')();';
+			code += setupProcStr;
 			
 			// insert dom controller
 			code += Web.getJsbCode('JSB.Widgets.DomController');
