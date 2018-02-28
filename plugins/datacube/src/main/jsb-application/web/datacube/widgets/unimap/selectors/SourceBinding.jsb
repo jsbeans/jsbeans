@@ -96,11 +96,11 @@
     },
 
     position: function(){
-        if(!JSB.isDefined(this._values[0])){
+        if(!JSB.isDefined(this._values[0]) || !JSB.isDefined(this._values[0].binding)){
             return;
         }
 
-        return this._values[0].cursor;
+        return this._values[0].binding.cursor;
     },
 
     reset: function(){
