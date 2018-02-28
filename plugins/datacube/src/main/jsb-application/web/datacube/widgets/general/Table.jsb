@@ -1815,33 +1815,35 @@
 					var widgetSelector = viewSelector.find('widget'),
 					    wType = widgetSelector.getWidgetBean();
 
-                    if(wType){
-                        widgetTypes.push(wType);
-                        desc.widget = {
-                            jsb: wType,
-                            isValueSkipping: widgetSelector.isValueSkipping(),
-                            name: widgetSelector.getWidgetName(),
-                            widgetSelector: widgetSelector
-                        };
+                    if(!wType){
+                        continue;
+                    }
 
-                        if(widgetSelector.isValueSkipping()){
-                            this.embeddedBindings = this.embeddedBindings.concat(widgetSelector.findRendersByName('sourceBinding'));
-                        }
+                    widgetTypes.push(wType);
+                    desc.widget = {
+                        jsb: wType,
+                        isValueSkipping: widgetSelector.isValueSkipping(),
+                        name: widgetSelector.getWidgetName(),
+                        widgetSelector: widgetSelector
+                    };
 
-                        var sortSelector = viewSelector.find('widgetSort');
-                        if(sortSelector.checked()){
-                            desc.sortFields = sortSelector.find('widgetSortFields').binding();
+                    if(widgetSelector.isValueSkipping()){
+                        this.embeddedBindings = this.embeddedBindings.concat(widgetSelector.findRendersByName('sourceBinding'));
+                    }
+
+                    var sortSelector = viewSelector.find('widgetSort');
+                    if(sortSelector.checked()){
+                        desc.sortFields = sortSelector.find('widgetSortFields').binding();
+                    }
+                    var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
+                    if(widgetContextFilterSelector.checked()){
+                        if(widgetContextFilterSelector.find('widgetСontextFilterFixed').checked()){
+                            desc.contextFilterFixed = true;
                         }
-                        var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
-                        if(widgetContextFilterSelector.checked()){
-                            if(widgetContextFilterSelector.find('widgetСontextFilterFixed').checked()){
-                                desc.contextFilterFixed = true;
-                            }
-                            var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
-                            if(widgetContextFilterFieldSelector.checked()){
-                                desc.contextFilterField = widgetContextFilterFieldSelector.binding();
-                                desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
-                            }
+                        var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
+                        if(widgetContextFilterFieldSelector.checked()){
+                            desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+                            desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
                         }
                     }
 				} else {
@@ -1852,11 +1854,10 @@
 					if(sortSelector.checked()){
 						desc.sortFields = textSelector.binding();
 					}
+
 					var contextFilterSelector = viewSelector.find('contextFilter');
 					if(contextFilterSelector.checked()){
-						if(contextFilterSelector.find('contextFilterFixed').checked()){
-							desc.contextFilterFixed = true;
-						}
+						desc.contextFilterFixed = contextFilterSelector.find('contextFilterFixed').checked();
 						desc.contextFilterField = textSelector.binding();
 						desc.contextFilterFieldType = textSelector.bindingType();
 					}

@@ -153,6 +153,30 @@
                                                 name: 'Число частей',
                                                 valueType: 'number',
                                                 defaultValue: 2
+                                            },
+                                            legend: {
+                                                render: 'switch',
+                                                name: 'Легенда',
+                                                items: {
+                                                    position: {
+                                                        render: 'select',
+                                                        name: 'Расположение',
+                                                        items: {
+                                                            bottomright: {
+                                                                name: 'Верхний правый угол'
+                                                            },
+                                                            bottomleft: {
+                                                                name: 'Верхний левый угол'
+                                                            },
+                                                            topright: {
+                                                                name: 'Нижний правый угол'
+                                                            },
+                                                            topleft: {
+                                                                name: 'Нижний левый угол'
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                         }
                                     }
@@ -405,6 +429,8 @@
         _curFilters: {},
         _maps: [],
         _mapHash: null,
+        _legendsList: [],
+        _styles: null,
 
         refresh: function(opts){
             // if filter source is current widget
@@ -414,6 +440,7 @@
 
             // widget settings editor set style changes
             if(opts && opts.refreshFromCache){
+                this._styles = null;
                 return;
             }
 
@@ -426,7 +453,8 @@
 
             // advanced filters
             var globalFilters = this.getSourceFilters(dataSource),
-                regionsContext = this.getContext().find('regions').values();
+                regionsContext = this.getContext().find('regions').values(),
+                markersContext = this.getContext().find('markers').values();;
 
             if(globalFilters){
                 var bindings = [],
@@ -478,139 +506,203 @@
             }
 
             try{
-                // parsing regions data
-                var regionsColors = [],
-                    maps = [],
-                    newMapHash = '';
-
-                for(var i = 0; i < regionsContext.length; i++){
-                    var colorSelector = regionsContext[i].find('fillColor');
-                    switch(colorSelector.value()){
-                        case 'simpleColor':
-                            regionsColors[i] = {
-                                simpleColor: colorSelector.find('color').value()
-                            }
-                            break;
-                        case 'rangeColor':
-                            regionsColors[i] = {
-                                rangeColor: {
-                                    startColor: colorSelector.find('startColor').value(),
-                                    endColor: colorSelector.find('endColor').value(),
-                                    functionType: colorSelector.find('functionType').value(),
-                                    stepGradation: colorSelector.find('stepGradation').checked() ? colorSelector.find('stepCount').value() : undefined
-                                }
-                            }
-                            break;
-                        case 'sourceColor':
-                            regionsColors[i] = {
-                                sourceColor: colorSelector.find('color')
-                            }
-                            break;
-                    }
-
-                    regionsColors[i].defaultColor = regionsContext[i].find('defaultColor').value();
-                    regionsColors[i].borderColor = regionsContext[i].find('borderColor').value();
-                    regionsColors[i].borderWidth = regionsContext[i].find('borderWidth').value();
-                    regionsColors[i].selectBorderColor = regionsContext[i].find('selectBorderColor').value();
-                    regionsColors[i].selectColor = regionsContext[i].find('selectColor').value();
-
-                    var r = {
-                        compareTo: regionsContext[i].find('compareTo').value()
+                if(!this._styles){
+                    this._styles = {
+                        regions: [],
+                        markers: [],
+                        embeddedBindings: [],
+                        tiles: []
                     };
 
-                    switch(regionsContext[i].find('geojsonMap').value()){
-                        case 'russianRegions':
-                            maps.push(JSB.merge(r, {
-                                data: null,
-                                path: 'geojson/russianRegions.json'
-                            }));
-                            newMapHash += 'geojson/russianRegions.json';
-                            break;
-                        case 'russianRegionsMPT':
-                            maps.push(JSB.merge(r, {
-                                data: null,
-                                path: 'geojson/russianRegionsMPT.json'
-                            }));
-                            newMapHash += 'geojson/russianRegionsMPT.json';
-                            break;
-                        case 'worldCountries':
-                            maps.push(JSB.merge(r, {
-                                data: null,
-                                path: 'geojson/worldCountries.json'
-                            }));
-                            newMapHash += 'geojson/worldCountries.json';
-                            break;
+                    // parsing regions data
+                    /*********/
+                    var maps = [],
+                        newMapHash = '';
+
+                    for(var i = 0; i < regionsContext.length; i++){
+                        var colorSelector = regionsContext[i].find('fillColor');
+
+                        switch(colorSelector.value()){
+                            case 'simpleColor':
+                                this._styles.regions[i] = {
+                                    simpleColor: colorSelector.find('color').value()
+                                }
+                                break;
+                            case 'rangeColor':
+                                this._styles.regions[i] = {
+                                    rangeColor: {
+                                        startColor: colorSelector.find('startColor').value(),
+                                        endColor: colorSelector.find('endColor').value(),
+                                        functionType: colorSelector.find('functionType').value(),
+                                        stepGradation: colorSelector.find('stepGradation').checked() ? colorSelector.find('stepCount').value() : undefined
+                                    }   // todo: not work find('stepCount')
+                                }
+
+                                if(colorSelector.find('stepGradation legend').checked()){
+                                    this._styles.regions[i].legend = {
+                                        position: colorSelector.find('stepGradation legend position').value()
+                                    }
+                                }
+                                break;
+                            case 'sourceColor':
+                                this._styles.regions[i] = {
+                                    sourceColor: colorSelector.find('color')
+                                }
+                                break;
+                        }
+
+                        this._styles.regions[i].defaultColor = regionsContext[i].find('defaultColor').value();
+                        this._styles.regions[i].borderColor = regionsContext[i].find('borderColor').value();
+                        this._styles.regions[i].borderWidth = regionsContext[i].find('borderWidth').value();
+                        this._styles.regions[i].selectBorderColor = regionsContext[i].find('selectBorderColor').value();
+                        this._styles.regions[i].selectColor = regionsContext[i].find('selectColor').value();
+                        this._styles.regions[i].showValuesPermanent = regionsContext[i].find('showValuesPermanent').checked();
+                        this._styles.regions[i].showEmptyRegions = regionsContext[i].find('showEmptyRegions').checked();
+
+                        var r = {
+                            compareTo: regionsContext[i].find('compareTo').value()
+                        };
+
+                        switch(regionsContext[i].find('geojsonMap').value()){
+                            case 'russianRegions':
+                                maps.push(JSB.merge(r, {
+                                    data: null,
+                                    path: 'geojson/russianRegions.json'
+                                }));
+                                newMapHash += 'geojson/russianRegions.json';
+                                break;
+                            case 'russianRegionsMPT':
+                                maps.push(JSB.merge(r, {
+                                    data: null,
+                                    path: 'geojson/russianRegionsMPT.json'
+                                }));
+                                newMapHash += 'geojson/russianRegionsMPT.json';
+                                break;
+                            case 'worldCountries':
+                                maps.push(JSB.merge(r, {
+                                    data: null,
+                                    path: 'geojson/worldCountries.json'
+                                }));
+                                newMapHash += 'geojson/worldCountries.json';
+                                break;
+                        }
                     }
-                }
 
-                newMapHash = MD5.md5(newMapHash);
-                if(newMapHash !== this._mapHash){
-                    this._mapHash = newMapHash;
-                    this._maps = maps;
-                    this.resetTrigger('_mapLoaded');
-                    this.loadMaps();
-                }
-
-                // parsing markers data
-                var markersContext = this.getContext().find('markers').values(),
-                    markersDesc = [],
-                    embeddedBindings = [];
-
-                for(var i = 0; i < markersContext.length; i++){
-                    markersDesc[i] = {};
-
-                    var markerType = markersContext[i].find('markerType').value();
-                    markersDesc[i].markerType = markerType;
-
-                    markersDesc[i].coordinatesBinding = markersContext[i].find('coordinates');
-                    markersDesc[i].coordinates = [];
-
-                    switch(markerType){
-                        case 'widget':
-                            var wb = markersContext[i].find('widgetBinding');
-
-                            if(wb.isValueSkipping()){
-                                embeddedBindings = embeddedBindings.concat(wb.findRendersByName('sourceBinding'));
-                                markersDesc[i].valueSkipping = true;
-                                markersDesc[i].widgetBinding = wb;
-                                markersDesc[i].values = [];
-                            } else {
-                                markersDesc[i].values = wb.getFullValues();
-                            }
-
-                            markersDesc[i].jsb = wb.getWidgetBean();
-
-                            markersDesc[i].markerWidth = markersContext[i].find('markerWidth').value();
-                            markersDesc[i].markerHeight = markersContext[i].find('markerHeight').value();
-                            break;
+                    newMapHash = MD5.md5(newMapHash);
+                    if(newMapHash !== this._mapHash){
+                        this._mapHash = newMapHash;
+                        this._maps = maps;
+                        this.resetTrigger('_mapLoaded');
+                        this.loadMaps();
                     }
+                    /*********/
+
+                    // parsing markers data
+                    /*********/
+                    for(var i = 0; i < markersContext.length; i++){
+                        this._styles.markers[i] = {};
+
+                        var markerType = markersContext[i].find('markerType').value();
+                        this._styles.markers[i].markerType = markerType;
+
+                        this._styles.markers[i].coordinatesBinding = markersContext[i].find('coordinates');
+
+                        switch(markerType){
+                            case 'widget':
+                                var wb = markersContext[i].find('widgetBinding');
+
+                                if(wb.isValueSkipping()){
+                                    this._styles.embeddedBindings = embeddedBindings.concat(wb.findRendersByName('sourceBinding'));
+                                    this._styles.markers[i].valueSkipping = true;
+                                    this._styles.markers[i].widgetBinding = wb;
+                                    this._styles.markers[i].values = [];
+                                } else {
+                                    this._styles.markers[i].values = wb.getFullValues();
+                                }
+
+                                this._styles.markers[i].jsb = wb.getWidgetBean();
+
+                                this._styles.markers[i].markerWidth = markersContext[i].find('markerWidth').value();
+                                this._styles.markers[i].markerHeight = markersContext[i].find('markerHeight').value();
+                                break;
+                        }
+                    }
+                    /*********/
+
+                    // parsing tiles
+                    /*********/
+                    var tileMaps = this.getContext().find('tileMaps').values();
+                    for(var i = 0; i < tileMaps.length; i++){
+                        var url,
+                            isWMS = false,
+                            wmsOptions = {};
+
+                        switch(tileMaps[i].find('serverUrl').value()){
+                            case 'sputnik':
+                                url = 'http://tiles.maps.sputnik.ru/{z}/{x}/{y}.png'
+                                break;
+                            case 'openstreetmap':
+                                url = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                                break;
+                            case 'cartocdn':
+                                url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                                break;
+                            case 'stamen':
+                                url = 'http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png'
+                                break;
+                            case 'custom':
+                                url = tileMaps[i].find('customServer').value();
+                                break;
+                            case 'avicomp':
+                                url = 'http://172.16.32.3/public/wms-proxy/?';
+                                //url = 'http://172.16.32.3:8000/?';
+                                isWMS = true;
+                                break;
+                            default:
+                                continue;
+                        }
+
+                        this._styles.tiles[i] = {
+                            url: url,
+                            isWMS: isWMS
+                        }
+                    }
+                    /*********/
                 }
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
 
-            $this.resetTrigger('_dataLoaded');
+            this.resetTrigger('_dataLoaded');
             this.getElement().loader();
             this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
                 try{
-                    // load regions
-                    var regions = [];
+                    var regions = [],
+                        markers = [],
+                        bindings = [];
 
-                    while(dataSource.next({ embeddedBindings: embeddedBindings })){
+                    while(dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
+                        // load regions
+                        /*********/
                         for(var i = 0; i < regionsContext.length; i++){
-                            var value = regionsContext[i].find('value').value();
+                            if(!bindings[i]){
+                                bindings[i] = {
+                                    region: regionsContext[i].find('region'),
+                                    value: regionsContext[i].find('value')
+                                }
+                            }
 
                             if(!regions[i]){
                                 regions[i] = {
-                                    data: [],
-                                    showValuesPermanent: regionsContext[i].find('showValuesPermanent').checked(),
-                                    showEmptyRegions: regionsContext[i].find('showEmptyRegions').checked()
+                                    data: []
                                 };
                             }
 
+                            var value = bindings[i].value.value();
+
                             regions[i].data.push({
-                                region: regionsContext[i].find('region').value(),
+                                region: bindings[i].region.value(),
                                 value: value
                             });
 
@@ -622,53 +714,68 @@
                                 regions[i].minValue = value;
                             }
 
-                            if(regionsColors[i].simpleColor){
-                                regions[i].color = regionsColors[i].simpleColor;
+                            if($this._styles.regions[i].simpleColor){
+                                regions[i].color = $this._styles.regions[i].simpleColor;
                             }
 
-                            if(regionsColors[i].sourceColor){
-                                regions[i][regions[i].data.length].color = regionsColors[i].sourceColor.value();
+                            if($this._styles.regions[i].sourceColor){
+                                regions[i][regions[i].data.length].color = $this._styles.regions[i].sourceColor.value();
                             }
                         }
+                        /*********/
 
-                        for(var i = 0; i < markersDesc.length; i++){
-                            markersDesc[i].coordinates.push(markersDesc[i].coordinatesBinding.value());
+                        // load markers
+                        /*********/
+                        for(var i = 0; i < markersContext.length; i++){
+                            if(!markers[i]){
+                                markers[i] = {
+                                    coordinates: [],
+                                    values: []
+                                }
+                            }
 
-                            switch(markersDesc[i].markerType){
+                            markers[i].coordinates.push($this._styles.markers[i].coordinatesBinding.value());
+
+                            switch($this._styles.markers[i].markerType){
                                 case 'widget':
-                                    if(markersDesc[i].valueSkipping){
-                                        markersDesc[i].values.push(JSB.clone(markersDesc[i].widgetBinding.getFullValues()));
+                                    if($this._styles.markers[i].valueSkipping){
+                                        markers[i].values.push(JSB.clone($this._styles.markers[i].widgetBinding.getFullValues()));
                                     }
                                     break;
                             }
                         }
+                        /*********/
                     }
 
-                    for(var i = 0; i < regionsColors.length; i++){
-                        if(regionsColors[i].rangeColor){
+                    for(var i = 0; i < $this._styles.regions.length; i++){
+                        if($this._styles.regions[i].rangeColor){
                             var rainbow = new Rainbow({
-                                colorFunction: regionsColors[i].rangeColor.functionType,
+                                colorFunction: $this._styles.regions[i].rangeColor.functionType,
                                 minNum: regions[i].minValue,
                                 maxNum: regions[i].maxValue,
-                                spectrum: [regionsColors[i].rangeColor.startColor, regionsColors[i].rangeColor.endColor],
-                                stepColors: regionsColors[i].rangeColor.stepGradation
+                                spectrum: [$this._styles.regions[i].rangeColor.startColor, $this._styles.regions[i].rangeColor.endColor],
+                                stepColors: $this._styles.regions[i].rangeColor.stepGradation
                             });
 
-                            for(var j = 0; j < regions[i].data.length; j++){
-                                regions[i].data[j].color = '#' + rainbow.colorAt(regions[i].data[j].value);
-                            }
+                            if($this._styles.regions[i].rangeColor.stepGradation){
+                                for(var j = 0; j < regions[i].data.length; j++){
+                                    var col = rainbow.colorAt(regions[i].data[j].value);
+                                    regions[i].data[j].color = '#' + col.color;
+                                    regions[i].data[j].group = col.group;
+                                }
 
-                            regions[i].defaultColor = regionsColors[i].defaultColor;
-                            regions[i].borderColor = regionsColors[i].borderColor;
-                            regions[i].borderWidth = regionsColors[i].borderWidth;
-                            regions[i].selectBorderColor = regionsColors[i].selectBorderColor;
-                            regions[i].selectColor = regionsColors[i].selectColor;
+                                regions[i].colorMap = rainbow.getColorMap();
+                            } else {
+                                for(var j = 0; j < regions[i].data.length; j++){
+                                    regions[i].data[j].color = '#' + rainbow.colorAt(regions[i].data[j].value);
+                                }
+                            }
                         }
                     }
 
                     $this.buildChart({
                         regions: regions,
-                        markersDesc: markersDesc
+                        markers: markers
                     });
                 } catch(ex){
                     console.log('Load data exception!');
@@ -697,62 +804,35 @@
         },
 
         _buildChart: function(data){
-            try {
+            //try {
+                var mapOpts = {};
                 if(this.map){
-                    this._mapOpts = {
+                    mapOpts = {
                         center: this.map.getCenter(),
                         zoom: this.map.getZoom()
                     }
                     this.map.remove();
                 } else {
-                    this._mapOpts = {
+                    mapOpts = {
                         center: [40.5, 40.5],
                         zoom: 2
                     };
                 }
-                this.map = L.map(this.container.get(0), this._mapOpts);
+                this.map = L.map(this.container.get(0), mapOpts);
 
                 // add tile and wms layers
-                var tileMaps = this.getContext().find('tileMaps').values();
-                for(var i = 0; i < tileMaps.length; i++){
-                    var url,
-                        isWMS = false,
-                        wmsOptions = {};
-
-                    switch(tileMaps[i].find('serverUrl').value()){
-                        case 'sputnik':
-                            url = 'http://tiles.maps.sputnik.ru/{z}/{x}/{y}.png'
-                            break;
-                        case 'openstreetmap':
-                            url = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                            break;
-                        case 'cartocdn':
-                            url = 'http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                            break;
-                        case 'stamen':
-                            url = 'http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}.png'
-                            break;
-                        case 'custom':
-                            url = tileMaps[i].find('customServer').value();
-                            break;
-                        case 'avicomp':
-                            url = 'http://172.16.32.3/public/wms-proxy/?';
-                            isWMS = true;
-                            break;
-                        default:
-                            continue;
-                    }
-
-                    if(isWMS){
-                        L.tileLayer.wms(url, wmsOptions).addTo(this.map);
+                for(var i = 0; i < this._styles.tiles.length; i++){
+                    if(this._styles.tiles[i].isWMS){
+                        L.tileLayer.wms(this._styles.tiles[i].url).addTo(this.map);
                     } else {
-                        L.tileLayer(url, {foo: 'bar'}).addTo(this.map);
+                        L.tileLayer(this._styles.tiles[i].url, {foo: 'bar'}).addTo(this.map);
                     }
                 }
 
                 // add geojson layers
                 for(var i = 0; i < this._maps.length; i++){
                     if(this._maps[i].data){
+                        // create maps
                         (function(i, data){
                             var tooltipLayers = [];
 
@@ -764,13 +844,13 @@
 
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
                                     if(!reg){
-                                        if(data.regions[i].showEmptyRegions){
-                                            return {fillColor: data.regions[i].defaultColor, color: data.regions[i].borderColor, weight: data.regions[i].borderWidth, fillOpacity: 0.7};
+                                        if($this._styles.regions[i].showEmptyRegions){
+                                            return {fillColor: $this._styles.regions[i].defaultColor, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
                                         } else {
                                             return {fillColor: 'transparent', color: 'transparent'};
                                         }
                                     }
-                                    return {fillColor: reg.color, color: data.regions[i].borderColor, weight: data.regions[i].borderWidth, fillOpacity: 0.7};
+                                    return {fillColor: reg.color, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
                                 },
                                 coordsToLatLng: function(point){
                                     if($this._maps[i].wrapLongitude && (point[0] > $this._maps[i].wrapLongitude)){
@@ -816,7 +896,7 @@
                                             // add filter
                                             evt.target.datacubeOpts.selected = true;
 
-                                            evt.target.setStyle({color: data.regions[i].selectBorderColor, fillColor: data.regions[i].selectColor});
+                                            evt.target.setStyle({color: $this._styles.regions[i].selectBorderColor, fillColor: $this._styles.regions[i].selectColor});
 
                                             $this._addFilter(evt, {
                                                 regionValue: reg.region,
@@ -840,6 +920,31 @@
                                 tooltipLayers[j].openTooltip();
                             }
                         })(i, data);
+
+                        // create legends
+                        if(this._styles.regions[i].legend){
+                            (function(i){
+                                var pos = $this._styles.regions[i].legend.position,
+                                    legend = L.control({position: pos});
+
+                                legend.onAdd = function (map) {
+                                    var div = $this.$('<div class="legend ' + pos + '"></div>'),
+                                        list = $this.$('<ul></ul>');
+                                        regions = data.regions[i].colorMap;
+
+                                    div.append('<span>' + regions[0].min + '</span>');
+                                    div.append(list);
+
+                                    for (var j = 0; j < regions.length; j++) {
+                                        list.append('<li><i style="background: #' + regions[j].color + ';"></i>' + regions[j].max + '</li>');
+                                    }
+
+                                    return div.get(0);
+                                };
+
+                                legend.addTo($this.map);
+                            })(i);
+                        }
                     }
                 }
 
@@ -848,28 +953,28 @@
                 }
 
                 // add markers layers
-                for(var i = 0; i < data.markersDesc.length; i++){
-                    switch(data.markersDesc[i].markerType){
+                for(var i = 0; i < data.markers.length; i++){
+                    switch(this._styles.markers[i].markerType){
                         case 'defaultMarker':
-                            for(var j = 0; j < data.markersDesc[i].coordinates.length; j++){
-                                L.marker(L.latLng(data.markersDesc[i].coordinates[j][0], data.markersDesc[i].coordinates[j][1])).addTo($this.map);
+                            for(var j = 0; j < data.markers[i].coordinates.length; j++){
+                                L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1])).addTo($this.map);
                             }
                             break;
                         case 'widget':
                             (function(i){
-                                JSB.lookup(data.markersDesc[i].jsb, function(cls){
-                                    for(var j = 0; j < data.markersDesc[i].coordinates.length; j++){
+                                JSB.lookup(data.markers[i].jsb, function(cls){
+                                    for(var j = 0; j < data.markers[i].coordinates.length; j++){
                                         var widget = new cls();
 
                                         (function(widget){
-                                            var marker = L.divIcon({ html: widget.getElement().get(0), iconSize: [data.markersDesc[i].markerWidth, data.markersDesc[i].markerHeight] });
+                                            var marker = L.divIcon({ html: widget.getElement().get(0), iconSize: [$this._styles.markers[i].markerWidth, $this._styles.markers[i].markerHeight] });
 
-                                            L.marker(L.latLng(data.markersDesc[i].coordinates[j][0], data.markersDesc[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
+                                            L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
 
-                                            if(data.markersDesc[i].valueSkipping){
-                                                widget.setWrapper($this.getWrapper(), data.markersDesc[i].values[j]);
+                                            if($this._styles.markers[i].valueSkipping){
+                                                widget.setWrapper($this.getWrapper(), data.markers[i].values[j]);
                                             } else {
-                                                widget.setWrapper($this.getWrapper(), data.markersDesc[i].values);
+                                                widget.setWrapper($this.getWrapper(), data.markers[i].values);
                                             }
 
                                             widget.ensureInitialized(function(){
@@ -882,10 +987,12 @@
                             break;
                     }
                 }
+            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
+            */
         },
 
         ensureDataLoaded: function(callback){

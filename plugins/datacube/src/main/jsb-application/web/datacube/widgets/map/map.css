@@ -12,3 +12,34 @@
     background: none;
     border: none;
 }
+
+.mapWidget .legend {
+
+}
+
+.mapWidget .legend > span {
+
+}
+
+.mapWidget .legend > ul {
+
+}
+
+.mapWidget .legend > ul > li {
+
+}
+
+/*
+bottomright
+bottomleft
+topright
+topleft
+*/
+
+.mapWidget .legend > ul > li > i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
