@@ -1,12 +1,21 @@
 {
 	$name: 'JSB.ClientBootstrap',
-	$require: ['JSB.Web'],
 	$http: true,
 	$singleton: true,
 	
 	$server: {
+		$require: ['JSB.Web',
+		           'JSB.System.Config',
+		           'java:org.jsbeans.web.JsMinifier'],
+		
+		cachedContent: null,
 		
 		get: function() {
+			if(this.cachedContent){
+				return this.cachedContent;
+			}
+			
+			
 			function setupServerPath(){
 				var arrScripts = document.getElementsByTagName('script');
 				for(var i in arrScripts){
@@ -28,10 +37,16 @@
 			code += 'JSB().setServerVersion("' + Config.get('build.version') + '");';
 			
 			// insert setup server code
-			code += '(' + setupServerPath.toString() + ')();';
+			var setupProcStr = '(' + setupServerPath.toString().trim() + ')();';
+			if(!Config.get('web.debug')){
+				setupProcStr = '' + JsMinifier.minify(setupProcStr, false);
+			}
+			code += setupProcStr;
 			
 			// insert dom controller
 			code += Web.getJsbCode('JSB.Widgets.DomController');
+			
+			this.cachedContent = code;
 			
 			return code;
 		}
