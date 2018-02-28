@@ -18,10 +18,18 @@
     },
 
     getWidgetBean: function(){
+        if(!this._values[0].binding){
+            return;
+        }
+
         return this._values[0].binding.jsb;
     },
 
     getWidgetName: function(){
+        if(!this._values[0].binding){
+            return;
+        }
+
         return this._values[0].binding.name;
     },
 

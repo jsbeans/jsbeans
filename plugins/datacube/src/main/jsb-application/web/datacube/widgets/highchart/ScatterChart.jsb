@@ -1,6 +1,7 @@
 {
 	$name: 'DataCube.Widgets.ScatterChart',
-	//$parent: 'DataCube.Widgets.Widget',
+	$parent: 'DataCube.Widgets.Widget',
+	/*
 	$expose: {
 		name: 'Разброс',
 		description: '',
@@ -99,6 +100,7 @@
 		PLvRXgwBSg2jsFgsPz+/bt30vTI3mUywM0iUHxQURJ46dymsJ9RNpPxEBD2nfwowALDTYSm2KjL/
 		AAAAAElFTkSuQmCC`
 	},
+	*/
 	$scheme: {},
 	/*
 	$scheme: {

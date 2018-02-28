@@ -147,7 +147,7 @@
                     entryId: $this.wrapper.getWidgetEntry().getId(),
                     linkedFields: $this.widgetSchemeRenderer.getLinkedFields(),
                     sourceDesc: sourceDesc,
-                    values: JSB.clone($this.wrapper.values)
+                    values: $this.wrapper.values
                 });
             });
 		},

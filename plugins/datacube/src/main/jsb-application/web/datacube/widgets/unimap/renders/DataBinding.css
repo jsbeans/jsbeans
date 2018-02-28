@@ -24,6 +24,10 @@
      margin: 5px 5px 5px 0;
 }
 
+.dataBindingRender.itemRender > .multipleContainer > .multipleItem > * {
+    vertical-align: middle;
+}
+
 .dataBindingRender.itemRender > .multipleContainer > .multipleItem > .btnDelete {
     background: none;
     padding: 0;

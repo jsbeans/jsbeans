@@ -1,6 +1,7 @@
 {
 	$name: 'DataCube.Widgets.GraphWidget',
-	//$parent: 'DataCube.Widgets.Widget',
+	$parent: 'DataCube.Widgets.Widget',
+	/*
     $expose: {
         name: 'Граф',
         description: '',
@@ -64,6 +65,7 @@
                                       v3xAYpIt/uXMJYuzc9jpkmDHzxb/8hkSk2zxL2fWIZydwxxHx3b8bPEvnyExyRb/8gGJSbb4lzOb
                                       i5ydw06bd3b87PAvSP8HfEezzimbMNEAAAAASUVORK5CYII=`
     },
+    */
     $scheme: {},
     /*
     $scheme: {

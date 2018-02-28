@@ -31,9 +31,10 @@
 
 	        this._values.valueSkipping = JSB.isDefined(this._values.valueSkipping) ? this._values.valueSkipping : true;
 
-	        var valueSkipping = this.$('<div class="valueSkipping"></div>');
-	        valueSkipping.append(new Checkbox({
+	        this.append(new Checkbox({
 	            checked: this._values.valueSkipping,
+	            cssClass: 'valueSkipping',
+	            label: 'Проброс значений',
 	            onchange: function(b){
 	                $this._values.valueSkipping = b;
 
@@ -43,9 +44,7 @@
                         $this.childSourceBinding && $this.childSourceBinding.enable();
                     }
 	            }
-	        }).getElement());
-	        valueSkipping.append('<span>Проброс значений</span>');
-	        this.append(valueSkipping);
+	        }));
 
 	        if(this._values.values.length > 0){
 	            this.addItem(this._values.values[0]);

@@ -74,7 +74,7 @@
 	        if(this._scheme.multiple){
 	            var item = this.$('<div class="multipleItem" idx="' + itemIndex + '"></div>');
 
-	            item.append(editor);
+	            item.append(editor.getElement());
 
 	            var removeBtn = new Button({
                     hasIcon: true,
@@ -91,7 +91,7 @@
 	            });
 	            item.append(removeBtn.getElement());
 
-	            this.multipleBtn.before(item.getElement());
+	            this.multipleBtn.before(item);
 	        } else {
 	            this.append(editor);
 	        }

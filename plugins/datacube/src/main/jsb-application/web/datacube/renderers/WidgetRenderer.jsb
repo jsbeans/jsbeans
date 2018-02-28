@@ -21,8 +21,10 @@
 			
 			JSB.lookup(entry.getWidgetType(), function(wCls){
 				var expose = wCls.jsb.getDescriptor().$expose;
-				var icon = expose.icon || expose.thumb;
-				$this.icon.css('background-image', 'url(' + icon + ')');
+				if(expose){
+                    var icon = expose.icon || expose.thumb;
+                    $this.icon.css('background-image', 'url(' + icon + ')');
+                }
 			});
 		}
 	},

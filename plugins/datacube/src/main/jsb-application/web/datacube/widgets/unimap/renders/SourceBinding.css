@@ -45,12 +45,12 @@
 }
 
 .sourceBindingRender > .item.refreshing {
-    background-image: url(/jsb.widgets/images/loading.gif);
-    background-color: lightgray;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: 12%;
-    pointer-events: none;
+    background-image: url(/jsb.widgets/images/loading.gif) !important;
+    background-color: lightgray !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: 12% !important;
+    pointer-events: none !important;
 }
 
 .sourceBindingRender > .item > .renderer {

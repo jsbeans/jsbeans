@@ -278,7 +278,7 @@
 			var seriesSel = d3.select(this.getElement().get(0)).selectAll('div.serie');
 			
 			var seriesSelData = seriesSel.data(series);
-			
+
 			// remove old
 			seriesSelData.exit()
 				.remove();

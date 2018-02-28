@@ -1815,33 +1815,35 @@
 					var widgetSelector = viewSelector.find('widget'),
 					    wType = widgetSelector.getWidgetBean();
 
-					widgetTypes.push(wType);
-					desc.widget = {
-						jsb: wType,
-						isValueSkipping: widgetSelector.isValueSkipping(),
-						name: widgetSelector.getWidgetName(),
-						widgetSelector: widgetSelector
-					};
+                    if(wType){
+                        widgetTypes.push(wType);
+                        desc.widget = {
+                            jsb: wType,
+                            isValueSkipping: widgetSelector.isValueSkipping(),
+                            name: widgetSelector.getWidgetName(),
+                            widgetSelector: widgetSelector
+                        };
 
-					if(widgetSelector.isValueSkipping()){
-					    this.embeddedBindings = this.embeddedBindings.concat(widgetSelector.findRendersByName('sourceBinding'));
-					}
+                        if(widgetSelector.isValueSkipping()){
+                            this.embeddedBindings = this.embeddedBindings.concat(widgetSelector.findRendersByName('sourceBinding'));
+                        }
 
-					var sortSelector = viewSelector.find('widgetSort');
-					if(sortSelector.checked()){
-						desc.sortFields = sortSelector.find('widgetSortFields').binding();
-					}
-					var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
-					if(widgetContextFilterSelector.checked()){
-						if(widgetContextFilterSelector.find('widgetСontextFilterFixed').checked()){
-							desc.contextFilterFixed = true;
-						}
-						var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
-						if(widgetContextFilterFieldSelector.checked()){
-							desc.contextFilterField = widgetContextFilterFieldSelector.binding();
-							desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
-						}
-					}
+                        var sortSelector = viewSelector.find('widgetSort');
+                        if(sortSelector.checked()){
+                            desc.sortFields = sortSelector.find('widgetSortFields').binding();
+                        }
+                        var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
+                        if(widgetContextFilterSelector.checked()){
+                            if(widgetContextFilterSelector.find('widgetСontextFilterFixed').checked()){
+                                desc.contextFilterFixed = true;
+                            }
+                            var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
+                            if(widgetContextFilterFieldSelector.checked()){
+                                desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+                                desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
+                            }
+                        }
+                    }
 				} else {
 					// simple text
 					var textSelector = viewSelector.find('text');

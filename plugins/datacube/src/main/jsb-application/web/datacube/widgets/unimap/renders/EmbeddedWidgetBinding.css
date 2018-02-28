@@ -54,8 +54,6 @@
     margin: 5px 0;
 }
 
-.embeddedWidgetBindingRender > .valueSkipping > span {
+.embeddedWidgetBindingRender > .valueSkipping > .caption {
     font-size: 15px;
-    margin-left: 5px;
-    vertical-align: middle;
 }
