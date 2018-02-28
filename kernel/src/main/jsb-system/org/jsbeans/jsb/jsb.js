@@ -448,35 +448,11 @@ if(!(function(){return this;}).call(null).JSB){
 			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
 			var logger = this.getLogger();
-/*			
-			// copy all parent system fields into this
-			if(parent){
-				for(var f in parent){
-					if(f && f.length > 1 && f[0] == '$' && f[1] != '_'){
-						var bFound = false;
-						for(var i = 0; i < _kfs.length; i++){
-							if(_kfs[i] == f){
-								bFound = true;
-								break;
-							}
-						}
-						if(bFound){
-							continue;
-						}
-						this[f] = parent[f];
-					}
-				}
-			}
-*/			
+			
 			// copy all current system fields into this
 			for(var f in cfg){
 				if(f && f.length > 0 && f[0] == '$'){
 					this[f] = cfg[f];
-/*					if(JSB.isDefined(this[f])){
-						JSB.merge(true, this[f], cfg[f]);
-					} else {
-						this[f] = cfg[f];
-					}*/
 				}
 			}
 			
@@ -3715,6 +3691,7 @@ if(!(function(){return this;}).call(null).JSB){
 				delete this.tlsMap[key];
 			}
 		});
+		
 	} else {
 		JSB().addLibraryScope('Window', {
 			setTimeout: function(proc, timeout){

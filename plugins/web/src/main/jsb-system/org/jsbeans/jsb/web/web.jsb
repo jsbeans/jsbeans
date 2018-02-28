@@ -38,12 +38,18 @@
 		}
 	},
 	$server: {
-		$require: ['JSB.System.Kernel','JSB.System.Log'],
+		$require: ['JSB.System.Kernel',
+		           'JSB.System.Log',
+		           'JSB.System.Config',
+		           'java:org.jsbeans.helpers.FileHelper',
+		           'java:org.jsbeans.web.JsMinifier',
+		           'java:org.jsbeans.web.JsbServlet',
+		           'java:org.jsbeans.web.WebCache'],
 
 		$constructor: function(){
 			JSB().onLoad(function(){
 				// remove jso from the web cache
-				Packages.org.jsbeans.web.WebCache.remove(this.$name);
+				WebCache.remove(this.$name);
 			});
 		},
 
@@ -57,12 +63,12 @@
 			if(!name){
 				// return bootstrap code
 				var jsoPath = Config.get("kernel.jsb.jsbEngineResource");
-				jsbData = Packages.org.jsbeans.helpers.FileHelper.readStringFromResource(jsoPath);
+				jsbData = FileHelper.readStringFromResource(jsoPath);
 				if(!Config.get('web.debug')){
-					jsbData = '' + Packages.org.jsbeans.web.JsMinifier.minify(jsbData, false);
+					jsbData = '' + JsMinifier.minify(jsbData, false);
 				}
 			} else {
-				jsbData = 'JSB(' + Packages.org.jsbeans.web.JsbServlet.getJsbCode(name, Kernel.session(), Kernel.clientAddr(), Kernel.user(), Kernel.clientRequestId(), Kernel.userToken()) + ');';
+				jsbData = 'JSB(' + JsbServlet.getJsbCode(name, Kernel.session(), Kernel.clientAddr(), Kernel.user(), Kernel.clientRequestId(), Kernel.userToken()) + ');';
 			}
 			return jsbData;
 		},
