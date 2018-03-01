@@ -6926,7 +6926,12 @@ var Icon = Class.extend({
 
 	_setIconStyles: function (img, name) {
 		var options = this.options;
-		var sizeOption = options[name + 'Size'];
+		var sizeOption = options[name + 'Size'],
+		    styleOption = options[name + 'Style'];
+
+		if(typeof styleOption === 'string'){
+		    img.style.cssText = styleOption;
+		}
 
 		if (typeof sizeOption === 'number') {
 			sizeOption = [sizeOption, sizeOption];
@@ -10222,10 +10227,12 @@ var DivIcon = Icon.extend({
 		var div = (oldIcon && oldIcon.tagName === 'DIV') ? oldIcon : document.createElement('div'),
 		    options = this.options;
 
-        if(typeof options.html === 'string'){
-            div.innerHTML = options.html !== false ? options.html : '';
-        } else {
-            div.appendChild(options.html);
+        if(options.html){
+            if(typeof options.html === 'string'){
+                div.innerHTML = options.html !== false ? options.html : '';
+            } else {
+                div.appendChild(options.html);
+            }
         }
 
 		if (options.bgPos) {

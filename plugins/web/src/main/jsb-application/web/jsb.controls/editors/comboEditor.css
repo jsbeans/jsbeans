@@ -85,8 +85,9 @@
     min-height: 4px;
     z-index: 10;
     background: white;
-    background: white;
     border: 1px solid lightgrey;
+    max-height: 150px;
+    overflow-y: auto;
 }
 
 .jsb-comboEditor > .dropDown:empty {
