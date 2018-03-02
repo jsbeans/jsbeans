@@ -32,7 +32,7 @@
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    $this.config = {
-		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'), // TODO
+		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'),
 		    }
 		},
 
