@@ -27,7 +27,11 @@
             values = this._values[0];
         }
 
-        var res = this.getMainSelector().find(key, values[0]);
+        var res;
+
+        if(values){
+            var res = this.getMainSelector().find(key, values[0]);
+        }
 
         if(res){
             return res;

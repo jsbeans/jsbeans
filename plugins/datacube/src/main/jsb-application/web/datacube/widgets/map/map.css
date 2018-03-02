@@ -55,3 +55,12 @@ topleft
     position: absolute;
     bottom: -8px;
 }
+
+.mapWidget .heatCircles span {
+    display: inline-block;
+    height: 100%;
+    padding: 15% 0;
+    color: black;
+    font-weight: 500;
+    text-shadow: 0 0 1px #FFFFFF, 0 0 1px #FFFFEF, 0 0 1px #FFFFFF, 0 0 1px #FFFFFF, 0 0 8px #FFFFFF;
+}

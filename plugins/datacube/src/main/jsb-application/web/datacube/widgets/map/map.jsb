@@ -424,12 +424,37 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        markerValue: {
+                                            render: 'switch',
+                                            name: 'Отображать значение на маркере',
+                                            items: {
+                                                value: {
+                                                    render: 'dataBinding',
+                                                    name: 'Значение на маркере',
+                                                    linkTo: 'dataSource'
+                                                }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                }
+            }
+        },
+        settings: {
+            render: 'group',
+            name: 'Общие настройки',
+            collapsable: true,
+            collapsed: true,
+            items: {
+                formatter: {
+                    render: 'item',
+                    name: 'Форматирование значений',
+                    valueType: 'string',
+                    defaultValue: '0,0.[00]'
                 }
             }
         },
@@ -471,7 +496,7 @@
         }
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5'],
+        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5', 'JSB.Numeral'],
 
         $constructor: function(opts){
             $base(opts);
@@ -486,6 +511,8 @@
             JSB.loadScript('tpl/leaflet/leaflet-src.js', function(){    // tpl/leaflet/leaflet.js
                 $this.setInitialized();
             });
+
+            Numeral.setLocale('ru');
 
             this.getElement().resize(function(){
                 JSB.defer(function(){
@@ -512,19 +539,26 @@
 
             // widget settings editor set style changes
             if(opts && opts.refreshFromCache){
-                this._styles = null;
                 return;
             }
 
-            var dataSource = this.getContext().find('dataSource');
-            if(!dataSource.hasBinding || !dataSource.hasBinding()){
+            if(opts && !opts.refreshFromCache){
+                this._styles = null;
+                this._dataSource = null;
+            }
+
+            if(!this._dataSource){
+                this._dataSource = this.getContext().find('dataSource');
+            }
+
+            if(!this._dataSource.hasBinding || !this._dataSource.hasBinding()){
                 return;
             }
 
             $base();
 
             // advanced filters
-            var globalFilters = this.getSourceFilters(dataSource),
+            var globalFilters = this.getSourceFilters(this._dataSource),
                 regionsContext = this.getContext().find('regions').values(),
                 markersContext = this.getContext().find('markers').values();;
 
@@ -564,7 +598,7 @@
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    dataSource.setFilters(globalFilters);
+                    this._dataSource.setFilters(globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -577,7 +611,7 @@
                 this._curFilterHash = null;
             }
 
-            try{
+            //try{
                 if(!this._styles){
                     this._styles = {
                         regions: [],
@@ -585,6 +619,13 @@
                         embeddedBindings: [],
                         tiles: []
                     };
+
+                    // parsing settings
+                    /*********/
+                    this._styles.settings = {
+                        formatter: this.getContext().find('settings formatter').value()
+                    }
+                    /*********/
 
                     // parsing regions data
                     /*********/
@@ -601,16 +642,18 @@
                                 }
                                 break;
                             case 'rangeColor':
+                                var isStepGrad = colorSelector.find('stepGradation').checked();
+
                                 this._styles.regions[i] = {
                                     rangeColor: {
                                         startColor: colorSelector.find('startColor').value(),
                                         endColor: colorSelector.find('endColor').value(),
                                         functionType: colorSelector.find('functionType').value(),
-                                        stepGradation: colorSelector.find('stepGradation').checked() ? colorSelector.find('stepCount').value() : undefined
+                                        stepGradation: isStepGrad ? colorSelector.find('stepCount').value() : undefined
                                     }
                                 }
 
-                                if(colorSelector.find('stepGradation legend').checked()){
+                                if(isStepGrad && colorSelector.find('stepGradation legend').checked()){
                                     this._styles.regions[i].legend = {
                                         position: colorSelector.find('stepGradation legend position').value()
                                     }
@@ -705,15 +748,17 @@
                                         this._styles.markers[i].simpleColor = colorSelector.find('color').value();
                                         break;
                                     case 'rangeColor':
+                                        var isStepGrad = colorSelector.find('stepGradation').checked();
+
                                         this._styles.markers[i].rangeColor = {
                                                 colorValues: colorSelector.find('colorValues'),
                                                 startColor: colorSelector.find('startColor').value(),
                                                 endColor: colorSelector.find('endColor').value(),
                                                 functionType: colorSelector.find('functionType').value(),
-                                                stepGradation: colorSelector.find('stepGradation').checked() ? colorSelector.find('stepCount').value() : undefined
+                                                stepGradation: isStepGrad ? colorSelector.find('stepCount').value() : undefined
                                             }
 
-                                        if(colorSelector.find('stepGradation legend').checked()){
+                                        if(isStepGrad && colorSelector.find('stepGradation legend').checked()){
                                             this._styles.markers[i].legend = {
                                                 position: colorSelector.find('stepGradation legend position').value()
                                             }
@@ -730,6 +775,10 @@
                                     this._styles.markers[i].maxRadius = markersContext[i].find('sizeValues maxRadius').value();
                                 } else {
                                     this._styles.markers[i].fixedSize = markersContext[i].find('sizeValues fixedSize').value();
+                                }
+
+                                if(markersContext[i].find('markerValue').checked()){
+                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value')
                                 }
                                 break;
                         }
@@ -776,20 +825,22 @@
                     }
                     /*********/
                 }
+            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
+            */
 
             this.resetTrigger('_dataLoaded');
             this.getElement().loader();
-            this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
                 //try{
                     var regions = [],
                         markers = [],
                         bindings = [];
 
-                    while(dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
+                    while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
                         // load regions
                         /*********/
                         for(var i = 0; i < regionsContext.length; i++){
@@ -841,6 +892,14 @@
                             }
 
                             markers[i].coordinates.push($this._styles.markers[i].coordinatesBinding.value());
+
+                            if($this._styles.markers[i].markerValueBinding){
+                                if(!markers[i].markerValues){
+                                    markers[i].markerValues = [];
+                                }
+
+                                markers[i].markerValues.push($this._styles.markers[i].markerValueBinding.value());
+                            }
 
                             switch($this._styles.markers[i].markerType){
                                 case 'widget':
@@ -902,6 +961,8 @@
                         /*********/
                     }
 
+                    // processing regions
+                    /*********/
                     for(var i = 0; i < $this._styles.regions.length; i++){
                         if($this._styles.regions[i].rangeColor){
                             var rainbow = new Rainbow({
@@ -927,7 +988,10 @@
                             }
                         }
                     }
+                    /*********/
 
+                    // processing markers
+                    /*********/
                     for(var i = 0; i < $this._styles.markers.length; i++){
                         if($this._styles.markers[i].markerType === 'heatCircles'){
                             if($this._styles.markers[i].rangeColor){
@@ -955,7 +1019,6 @@
                             }
 
                             if($this._styles.markers[i].sizeValuesBinding){
-                                // minSizeValue  maxSizeValue
                                 var maxSize = markers[i].maxSizeValue - markers[i].minSizeValue,
                                     maxPx = $this._styles.markers[i].maxRadius - $this._styles.markers[i].minRadius;
 
@@ -965,6 +1028,7 @@
                             }
                         }
                     }
+                    /*********/
 
                     $this.buildChart({
                         regions: regions,
@@ -1026,6 +1090,7 @@
                 }
 
                 // add geojson layers
+                /*********/
                 for(var i = 0; i < this._maps.length; i++){
                     if(this._maps[i].data){
                         // create maps
@@ -1060,10 +1125,10 @@
                                         layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
                                         return;
                                     }
-                                    layer.bindPopup(reg.region + ': ' + reg.value, {closeButton: false, autoPan: false});
+                                    layer.bindPopup(reg.region + ': ' + Numeral.format(reg.value, $this._styles.settings.formatter), {closeButton: false, autoPan: false});
 
                                     if(data.regions[i].showValuesPermanent){
-                                        layer.bindTooltip(String(reg.value), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String(Numeral.format(reg.value, $this._styles.settings.formatter)), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 
@@ -1119,35 +1184,11 @@
 
                         // create legends
                         if(this._styles.regions[i].legend){
-                            var div, list;
-
-                            (function(i){
-                                var pos = $this._styles.regions[i].legend.position,
-                                    legend = L.control({position: pos});
-
-                                legend.onAdd = function (map) {
-                                    var regions = data.regions[i].colorMap;
-
-                                    div = $this.$('<div class="legend ' + pos + '"></div>');
-                                    list = $this.$('<ul></ul>');
-
-                                    div.append('<span>' + regions[0].min + '</span>');
-                                    div.append(list);
-
-                                    for (var j = 0; j < regions.length; j++) {
-                                        list.append('<li><i style="background: #' + regions[j].color + ';"></i><span>' + regions[j].max + '</span></li>');
-                                    }
-
-                                    return div.get(0);
-                                };
-
-                                legend.addTo($this.map);
-
-                                list.width(div.find('li:last-child span').width() + 25);
-                            })(i);
+                            this._createLegend(this._styles.regions[i].legend.position, data.regions[i].colorMap);
                         }
                     }
                 }
+                /*********/
 
                 // select regions which were selected before refresh
                 for(var i in $this._curFilters){
@@ -1155,6 +1196,7 @@
                 }
 
                 // add markers layers
+                /*********/
                 for(var i = 0; i < data.markers.length; i++){
                     switch(this._styles.markers[i].markerType){
                         case 'defaultMarker':
@@ -1191,23 +1233,33 @@
                             var color = $this._styles.markers[i].simpleColor || data.markers[i].color;
 
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                var marker;
+                                var marker = null,
+                                    html = null;
 
                                 if(!color){
                                     color = data.markers[i].colorValues[j].color;
                                 }
 
+                                if(data.markers[i].markerValues){
+                                    html = '<span>' + Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) + '</span>';
+                                }
+
                                 if($this._styles.markers[i].fixedSize){
-                                    marker = L.divIcon({ iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
+                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
                                 } else {
-                                    marker = L.divIcon({ iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].sizeValues[j].size, $this._styles.markers[i].sizeValues[j].size] });
+                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
                                 }
 
                                 L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
                             }
+
+                            if(this._styles.markers[i].legend){
+                                this._createLegend(this._styles.markers[i].legend.position, data.markers[i].colorMap);
+                            }
                             break;
                     }
                 }
+                /*********/
             /*
             } catch(ex){
                 console.log('Build chart exception!');
@@ -1222,15 +1274,13 @@
 
         // filters
         _addFilter: function(evt, opts){
-            var dataSource = this.getContext().find('dataSource').binding();
-
             var field = this.getContext().find("regions").values()[opts.seriesIndex].find('region').getBindingName();
             if(!field){
                 return;
             }
 
             var fDesc = {
-                sourceId: dataSource.source,
+                sourceId: this._dataSource.source,
                 type: '$or',
                 op: '$eq',
                 field: field,
@@ -1348,6 +1398,29 @@
         },
 
         // utils
+        _createLegend: function(position, colorMap){
+            var div, list,
+                legend = L.control({position: position});
+
+            legend.onAdd = function(map) {
+                div = $this.$('<div class="legend ' + position + '"></div>');
+                list = $this.$('<ul></ul>');
+
+                div.append('<span>' + colorMap[0].min + '</span>');
+                div.append(list);
+
+                for (var j = 0; j < colorMap.length; j++) {
+                    list.append('<li><i style="background: #' + colorMap[j].color + ';"></i><span>' + colorMap[j].max + '</span></li>');
+                }
+
+                return div.get(0);
+            };
+
+            legend.addTo(this.map);
+
+            list.width(div.find('li:last-child span').width() + 25);
+        },
+
         findRegion: function(region, array){
             if(!region){
                 return;
