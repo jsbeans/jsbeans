@@ -13,7 +13,7 @@
 		$require: ['JSB.Workspace.FileArtifactsStore', 
 		           'JSB.Workspace.WorkspaceController'],
 
-	    WORKSPACES_DIRECTORY: 'workspaces', // ontoed_home/scopeId/workspaces
+	    WORKSPACES_DIRECTORY: 'workspaces',
 
 		$constructor: function(options){
 	        this.File = Packages.java.io.File;

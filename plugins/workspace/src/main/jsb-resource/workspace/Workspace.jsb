@@ -30,12 +30,7 @@
 			this.id = workspaceManager.workspaceInstanceId(localId);
             this.workspaceManager = workspaceManager;
             $base();
-/*
-            if (this.workspaceManager.options.entryJsb) {
-                this.Entry = this.workspaceManager.options.entryJsb;
-                Log.debug('ontoed.workspace.Workspace: replace default entry type ' + this.Entry.name);
-            }
-*/            
+            
             this.load();
             
             this.wName = this.property('wName');
