@@ -286,13 +286,9 @@
                                         }
                                     }
                                 },
-                                /*
                                 heatCircles: {
                                     name: 'Тепловые круги',
                                     items: {
-                                        colorValues: {
-
-                                        },
                                         fillColor: {
                                             render: 'select',
                                             name: 'Цвет заливки',
@@ -310,6 +306,11 @@
                                                 rangeColor: {
                                                     name: 'Диапазон цветов',
                                                     items: {
+                                                        colorValues: {
+                                                            render: 'dataBinding',
+                                                            name: 'Значения',
+                                                            linkTo: 'dataSource'
+                                                        },
                                                         startColor: {
                                                             render: 'item',
                                                             name: 'Начальный цвет',
@@ -334,6 +335,42 @@
                                                                     name: 'Квадратичная'
                                                                 }
                                                             }
+                                                        },
+                                                        stepGradation: {
+                                                            render: 'switch',
+                                                            name: 'Ступенчатая градация',
+                                                            items: {
+                                                                stepCount: {
+                                                                    render: 'item',
+                                                                    name: 'Число частей',
+                                                                    valueType: 'number',
+                                                                    defaultValue: 2
+                                                                },
+                                                                legend: {
+                                                                    render: 'switch',
+                                                                    name: 'Легенда',
+                                                                    items: {
+                                                                        position: {
+                                                                            render: 'select',
+                                                                            name: 'Расположение',
+                                                                            items: {
+                                                                                bottomright: {
+                                                                                    name: 'Верхний правый угол'
+                                                                                },
+                                                                                bottomleft: {
+                                                                                    name: 'Верхний левый угол'
+                                                                                },
+                                                                                topright: {
+                                                                                    name: 'Нижний правый угол'
+                                                                                },
+                                                                                topleft: {
+                                                                                    name: 'Нижний левый угол'
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 },
@@ -350,14 +387,74 @@
                                             }
                                         },
                                         sizeValues: {
-
+                                            render: 'select',
+                                            name: 'Размер маркеров',
+                                            items: {
+                                                fixed: {
+                                                    name: 'Фиксированный',
+                                                    items: {
+                                                        fixedSize: {
+                                                            render: 'item',
+                                                            name: 'Радиус',
+                                                            valueType: 'number',
+                                                            defaultValue: 2
+                                                        }
+                                                    }
+                                                },
+                                                byValue: {
+                                                    name: 'На базе значения',
+                                                    items: {
+                                                        sizeValuesBinding: {
+                                                            render: 'dataBinding',
+                                                            name: 'Значение размерной градации',
+                                                            linkTo: 'dataSource'
+                                                        },
+                                                        minRadius: {
+                                                            render: 'item',
+                                                            name: 'Минимальный радиус',
+                                                            valueType: 'number',
+                                                            defaultValue: 2
+                                                        },
+                                                        maxRadius: {
+                                                            render: 'item',
+                                                            name: 'Максимальный радиус',
+                                                            valueType: 'number',
+                                                            defaultValue: 10
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        markerValue: {
+                                            render: 'switch',
+                                            name: 'Отображать значение на маркере',
+                                            items: {
+                                                value: {
+                                                    render: 'dataBinding',
+                                                    name: 'Значение на маркере',
+                                                    linkTo: 'dataSource'
+                                                }
+                                            }
                                         }
                                     }
                                 }
-                                */
                             }
                         }
                     }
+                }
+            }
+        },
+        settings: {
+            render: 'group',
+            name: 'Общие настройки',
+            collapsable: true,
+            collapsed: true,
+            items: {
+                formatter: {
+                    render: 'item',
+                    name: 'Форматирование значений',
+                    valueType: 'string',
+                    defaultValue: '0,0.[00]'
                 }
             }
         },
@@ -399,7 +496,7 @@
         }
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5'],
+        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5', 'JSB.Numeral'],
 
         $constructor: function(opts){
             $base(opts);
@@ -414,6 +511,8 @@
             JSB.loadScript('tpl/leaflet/leaflet-src.js', function(){    // tpl/leaflet/leaflet.js
                 $this.setInitialized();
             });
+
+            Numeral.setLocale('ru');
 
             this.getElement().resize(function(){
                 JSB.defer(function(){
@@ -440,19 +539,26 @@
 
             // widget settings editor set style changes
             if(opts && opts.refreshFromCache){
-                this._styles = null;
                 return;
             }
 
-            var dataSource = this.getContext().find('dataSource');
-            if(!dataSource.hasBinding || !dataSource.hasBinding()){
+            if(opts && !opts.refreshFromCache){
+                this._styles = null;
+                this._dataSource = null;
+            }
+
+            if(!this._dataSource){
+                this._dataSource = this.getContext().find('dataSource');
+            }
+
+            if(!this._dataSource.hasBinding || !this._dataSource.hasBinding()){
                 return;
             }
 
             $base();
 
             // advanced filters
-            var globalFilters = this.getSourceFilters(dataSource),
+            var globalFilters = this.getSourceFilters(this._dataSource),
                 regionsContext = this.getContext().find('regions').values(),
                 markersContext = this.getContext().find('markers').values();;
 
@@ -492,7 +598,7 @@
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    dataSource.setFilters(globalFilters);
+                    this._dataSource.setFilters(globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -505,7 +611,7 @@
                 this._curFilterHash = null;
             }
 
-            try{
+            //try{
                 if(!this._styles){
                     this._styles = {
                         regions: [],
@@ -513,6 +619,13 @@
                         embeddedBindings: [],
                         tiles: []
                     };
+
+                    // parsing settings
+                    /*********/
+                    this._styles.settings = {
+                        formatter: this.getContext().find('settings formatter').value()
+                    }
+                    /*********/
 
                     // parsing regions data
                     /*********/
@@ -529,16 +642,18 @@
                                 }
                                 break;
                             case 'rangeColor':
+                                var isStepGrad = colorSelector.find('stepGradation').checked();
+
                                 this._styles.regions[i] = {
                                     rangeColor: {
                                         startColor: colorSelector.find('startColor').value(),
                                         endColor: colorSelector.find('endColor').value(),
                                         functionType: colorSelector.find('functionType').value(),
-                                        stepGradation: colorSelector.find('stepGradation').checked() ? colorSelector.find('stepCount').value() : undefined
-                                    }   // todo: not work find('stepCount')
+                                        stepGradation: isStepGrad ? colorSelector.find('stepCount').value() : undefined
+                                    }
                                 }
 
-                                if(colorSelector.find('stepGradation legend').checked()){
+                                if(isStepGrad && colorSelector.find('stepGradation legend').checked()){
                                     this._styles.regions[i].legend = {
                                         position: colorSelector.find('stepGradation legend position').value()
                                     }
@@ -625,6 +740,47 @@
                                 this._styles.markers[i].markerWidth = markersContext[i].find('markerWidth').value();
                                 this._styles.markers[i].markerHeight = markersContext[i].find('markerHeight').value();
                                 break;
+                            case 'heatCircles':
+                                var colorSelector = markersContext[i].find('fillColor');
+
+                                switch(colorSelector.value()){
+                                    case 'simpleColor':
+                                        this._styles.markers[i].simpleColor = colorSelector.find('color').value();
+                                        break;
+                                    case 'rangeColor':
+                                        var isStepGrad = colorSelector.find('stepGradation').checked();
+
+                                        this._styles.markers[i].rangeColor = {
+                                                colorValues: colorSelector.find('colorValues'),
+                                                startColor: colorSelector.find('startColor').value(),
+                                                endColor: colorSelector.find('endColor').value(),
+                                                functionType: colorSelector.find('functionType').value(),
+                                                stepGradation: isStepGrad ? colorSelector.find('stepCount').value() : undefined
+                                            }
+
+                                        if(isStepGrad && colorSelector.find('stepGradation legend').checked()){
+                                            this._styles.markers[i].legend = {
+                                                position: colorSelector.find('stepGradation legend position').value()
+                                            }
+                                        }
+                                        break;
+                                    case 'sourceColor':
+                                        this._styles.markers[i].sourceColor = colorSelector.find('color');
+                                        break;
+                                }
+
+                                if(markersContext[i].find('sizeValues').value() === 'byValue'){
+                                    this._styles.markers[i].sizeValuesBinding = markersContext[i].find('sizeValues sizeValuesBinding');
+                                    this._styles.markers[i].minRadius = markersContext[i].find('sizeValues minRadius').value();
+                                    this._styles.markers[i].maxRadius = markersContext[i].find('sizeValues maxRadius').value();
+                                } else {
+                                    this._styles.markers[i].fixedSize = markersContext[i].find('sizeValues fixedSize').value();
+                                }
+
+                                if(markersContext[i].find('markerValue').checked()){
+                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value')
+                                }
+                                break;
                         }
                     }
                     /*********/
@@ -669,20 +825,22 @@
                     }
                     /*********/
                 }
+            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
+            */
 
             this.resetTrigger('_dataLoaded');
             this.getElement().loader();
-            this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
-                try{
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
+                //try{
                     var regions = [],
                         markers = [],
                         bindings = [];
 
-                    while(dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
+                    while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
                         // load regions
                         /*********/
                         for(var i = 0; i < regionsContext.length; i++){
@@ -719,7 +877,7 @@
                             }
 
                             if($this._styles.regions[i].sourceColor){
-                                regions[i][regions[i].data.length].color = $this._styles.regions[i].sourceColor.value();
+                                regions[i].color = $this._styles.regions[i].sourceColor.value();
                             }
                         }
                         /*********/
@@ -729,17 +887,73 @@
                         for(var i = 0; i < markersContext.length; i++){
                             if(!markers[i]){
                                 markers[i] = {
-                                    coordinates: [],
-                                    values: []
+                                    coordinates: []
                                 }
                             }
 
                             markers[i].coordinates.push($this._styles.markers[i].coordinatesBinding.value());
 
+                            if($this._styles.markers[i].markerValueBinding){
+                                if(!markers[i].markerValues){
+                                    markers[i].markerValues = [];
+                                }
+
+                                markers[i].markerValues.push($this._styles.markers[i].markerValueBinding.value());
+                            }
+
                             switch($this._styles.markers[i].markerType){
                                 case 'widget':
+                                    if(!markers[i].values){
+                                        markers[i].values = [];
+                                    }
+
                                     if($this._styles.markers[i].valueSkipping){
                                         markers[i].values.push(JSB.clone($this._styles.markers[i].widgetBinding.getFullValues()));
+                                    }
+                                    break;
+                                case 'heatCircles':
+                                    if($this._styles.markers[i].rangeColor){
+                                        if(!markers[i].colorValues){
+                                            markers[i].colorValues = [];
+                                        }
+
+                                        var value = $this._styles.markers[i].rangeColor.colorValues.value();
+
+                                        if(!markers[i].maxColorValue || markers[i].maxColorValue < value){
+                                            markers[i].maxColorValue = value;
+                                        }
+
+                                        if(!markers[i].minColorValue || markers[i].minColorValue > value){
+                                            markers[i].minColorValue = value;
+                                        }
+
+                                        markers[i].colorValues.push({
+                                            value: value
+                                        });
+                                    }
+
+                                    if($this._styles.markers[i].sourceColor){
+                                        markers[i].color = $this._styles.markers[i].sourceColor.value();
+                                    }
+
+                                    if($this._styles.markers[i].sizeValuesBinding){
+                                        if(!markers[i].sizeValues){
+                                            markers[i].sizeValues = [];
+                                        }
+
+                                        var value = $this._styles.markers[i].sizeValuesBinding.value();
+
+                                        if(!markers[i].maxSizeValue || markers[i].maxSizeValue < value){
+                                            markers[i].maxSizeValue = value;
+                                        }
+
+                                        if(!markers[i].minSizeValue || markers[i].minSizeValue > value){
+                                            markers[i].minSizeValue = value;
+                                        }
+
+                                        markers[i].sizeValues.push({
+                                            value: value
+                                        });
                                     }
                                     break;
                             }
@@ -747,6 +961,8 @@
                         /*********/
                     }
 
+                    // processing regions
+                    /*********/
                     for(var i = 0; i < $this._styles.regions.length; i++){
                         if($this._styles.regions[i].rangeColor){
                             var rainbow = new Rainbow({
@@ -772,18 +988,60 @@
                             }
                         }
                     }
+                    /*********/
+
+                    // processing markers
+                    /*********/
+                    for(var i = 0; i < $this._styles.markers.length; i++){
+                        if($this._styles.markers[i].markerType === 'heatCircles'){
+                            if($this._styles.markers[i].rangeColor){
+                                var rainbow = new Rainbow({
+                                    colorFunction: $this._styles.markers[i].rangeColor.functionType,
+                                    minNum: markers[i].minColorValue,
+                                    maxNum: markers[i].maxColorValue,
+                                    spectrum: [$this._styles.markers[i].rangeColor.startColor, $this._styles.markers[i].rangeColor.endColor],
+                                    stepColors: $this._styles.markers[i].rangeColor.stepGradation
+                                });
+
+                                if($this._styles.markers[i].rangeColor.stepGradation){
+                                    for(var j = 0; j < markers[i].colorValues.length; j++){
+                                        var col = rainbow.colorAt(markers[i].colorValues[j].value);
+                                        markers[i].colorValues[j].color = '#' + col.color;
+                                        markers[i].colorValues[j].group = col.group;
+                                    }
+
+                                    markers[i].colorMap = rainbow.getColorMap();
+                                } else {
+                                    for(var j = 0; j < markers[i].colorValues.length; j++){
+                                        markers[i].colorValues[j].color = '#' + rainbow.colorAt(markers[i].colorValues[j].value);
+                                    }
+                                }
+                            }
+
+                            if($this._styles.markers[i].sizeValuesBinding){
+                                var maxSize = markers[i].maxSizeValue - markers[i].minSizeValue,
+                                    maxPx = $this._styles.markers[i].maxRadius - $this._styles.markers[i].minRadius;
+
+                                for(var j = 0; j < markers[i].sizeValues.length; j++){
+                                    markers[i].sizeValues[j].size = (markers[i].sizeValues[j].value - markers[i].minSizeValue) / markers[i].maxSizeValue * maxPx + $this._styles.markers[i].minRadius;
+                                }
+                            }
+                        }
+                    }
+                    /*********/
 
                     $this.buildChart({
                         regions: regions,
                         markers: markers
                     });
+                /*
                 } catch(ex){
                     console.log('Load data exception!');
                     console.log(ex);
                 } finally {
                     $this.setTrigger('_dataLoaded');
                 }
-
+                */
                 $this.setTrigger('_dataLoaded');
             });
 
@@ -821,15 +1079,18 @@
                 this.map = L.map(this.container.get(0), mapOpts);
 
                 // add tile and wms layers
-                for(var i = 0; i < this._styles.tiles.length; i++){
-                    if(this._styles.tiles[i].isWMS){
-                        L.tileLayer.wms(this._styles.tiles[i].url).addTo(this.map);
-                    } else {
-                        L.tileLayer(this._styles.tiles[i].url, {foo: 'bar'}).addTo(this.map);
+                if(this._styles.tiles){
+                    for(var i = 0; i < this._styles.tiles.length; i++){
+                        if(this._styles.tiles[i].isWMS){
+                            L.tileLayer.wms(this._styles.tiles[i].url).addTo(this.map);
+                        } else {
+                            L.tileLayer(this._styles.tiles[i].url, {foo: 'bar'}).addTo(this.map);
+                        }
                     }
                 }
 
                 // add geojson layers
+                /*********/
                 for(var i = 0; i < this._maps.length; i++){
                     if(this._maps[i].data){
                         // create maps
@@ -864,10 +1125,10 @@
                                         layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
                                         return;
                                     }
-                                    layer.bindPopup(reg.region + ': ' + reg.value, {closeButton: false, autoPan: false});
+                                    layer.bindPopup(reg.region + ': ' + Numeral.format(reg.value, $this._styles.settings.formatter), {closeButton: false, autoPan: false});
 
                                     if(data.regions[i].showValuesPermanent){
-                                        layer.bindTooltip(String(reg.value), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String(Numeral.format(reg.value, $this._styles.settings.formatter)), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 
@@ -923,36 +1184,19 @@
 
                         // create legends
                         if(this._styles.regions[i].legend){
-                            (function(i){
-                                var pos = $this._styles.regions[i].legend.position,
-                                    legend = L.control({position: pos});
-
-                                legend.onAdd = function (map) {
-                                    var div = $this.$('<div class="legend ' + pos + '"></div>'),
-                                        list = $this.$('<ul></ul>');
-                                        regions = data.regions[i].colorMap;
-
-                                    div.append('<span>' + regions[0].min + '</span>');
-                                    div.append(list);
-
-                                    for (var j = 0; j < regions.length; j++) {
-                                        list.append('<li><i style="background: #' + regions[j].color + ';"></i>' + regions[j].max + '</li>');
-                                    }
-
-                                    return div.get(0);
-                                };
-
-                                legend.addTo($this.map);
-                            })(i);
+                            this._createLegend(this._styles.regions[i].legend.position, data.regions[i].colorMap);
                         }
                     }
                 }
+                /*********/
 
+                // select regions which were selected before refresh
                 for(var i in $this._curFilters){
                     this._selectFeature(i);
                 }
 
                 // add markers layers
+                /*********/
                 for(var i = 0; i < data.markers.length; i++){
                     switch(this._styles.markers[i].markerType){
                         case 'defaultMarker':
@@ -985,8 +1229,37 @@
                                 });
                             })(i);
                             break;
+                        case 'heatCircles':
+                            var color = $this._styles.markers[i].simpleColor || data.markers[i].color;
+
+                            for(var j = 0; j < data.markers[i].coordinates.length; j++){
+                                var marker = null,
+                                    html = null;
+
+                                if(!color){
+                                    color = data.markers[i].colorValues[j].color;
+                                }
+
+                                if(data.markers[i].markerValues){
+                                    html = '<span>' + Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) + '</span>';
+                                }
+
+                                if($this._styles.markers[i].fixedSize){
+                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
+                                } else {
+                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
+                                }
+
+                                L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
+                            }
+
+                            if(this._styles.markers[i].legend){
+                                this._createLegend(this._styles.markers[i].legend.position, data.markers[i].colorMap);
+                            }
+                            break;
                     }
                 }
+                /*********/
             /*
             } catch(ex){
                 console.log('Build chart exception!');
@@ -1001,15 +1274,13 @@
 
         // filters
         _addFilter: function(evt, opts){
-            var dataSource = this.getContext().find('dataSource').binding();
-
             var field = this.getContext().find("regions").values()[opts.seriesIndex].find('region').getBindingName();
             if(!field){
                 return;
             }
 
             var fDesc = {
-                sourceId: dataSource.source,
+                sourceId: this._dataSource.source,
                 type: '$or',
                 op: '$eq',
                 field: field,
@@ -1127,6 +1398,29 @@
         },
 
         // utils
+        _createLegend: function(position, colorMap){
+            var div, list,
+                legend = L.control({position: position});
+
+            legend.onAdd = function(map) {
+                div = $this.$('<div class="legend ' + position + '"></div>');
+                list = $this.$('<ul></ul>');
+
+                div.append('<span>' + colorMap[0].min + '</span>');
+                div.append(list);
+
+                for (var j = 0; j < colorMap.length; j++) {
+                    list.append('<li><i style="background: #' + colorMap[j].color + ';"></i><span>' + colorMap[j].max + '</span></li>');
+                }
+
+                return div.get(0);
+            };
+
+            legend.addTo(this.map);
+
+            list.width(div.find('li:last-child span').width() + 25);
+        },
+
         findRegion: function(region, array){
             if(!region){
                 return;

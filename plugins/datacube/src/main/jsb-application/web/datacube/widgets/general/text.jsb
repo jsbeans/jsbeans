@@ -167,7 +167,7 @@
             }
 
             this.fetchBinding(dataSource, {batchSize: 1}, function(){
-                source.next();
+                dataSource.next();
                 $this.update();
             });
         },
