@@ -87,10 +87,13 @@
         lookupField: function(name, notAlias) {
             var desc = $this.sourceView.getField(name);
             if (desc && !desc.context) {
+                desc = JSB.clone(desc);
                 desc.context = $this.getContext();
             }
             if (!desc && !notAlias) {
-                desc = $this.getField(name);
+                if (desc) {
+                    desc = JSB.clone(desc);
+                }
             }
             return desc;
 		},
