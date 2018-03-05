@@ -86,7 +86,7 @@
 
                             $this.onchange();
                         },
-                        opts = this._scheme.editorOpts ? JSB.merge(this._scheme.editorOpts, { value: values.value, onChange: onChangeFunc }) : { value: values.value, onChange: onChangeFunc };
+                        opts = this._scheme.editorOpts ? JSB.merge(this._scheme.editorOpts, { value: values.value, onChange: onChangeFunc, onchange: onChangeFunc }) : { value: values.value, onChange: onChangeFunc, onchange: onChangeFunc };
 
                         JSB.lookup(this._scheme.editor, function(cls){
                             var editor = new cls(opts);
