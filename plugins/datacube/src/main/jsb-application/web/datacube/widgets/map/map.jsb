@@ -241,7 +241,7 @@
                                 name: 'Информационная легенда'
                             },
                             onObject: {
-                                name: 'На объекте'
+                                name: 'На регионе'
                             }
                         }
                      }
@@ -270,15 +270,19 @@
                             items: {
                                 defaultMarker: {
                                     name: 'По-умолчанию',
-                                    /*
                                     items: {
                                         markerValue: {
                                             render: 'switch',
                                             name: 'Значение маркера',
                                             items: {
+                                                name: {
+                                                    render: 'dataBinding',
+                                                    name: 'Имя',
+                                                    linkTo: 'dataSource'
+                                                },
                                                 value: {
                                                     render: 'dataBinding',
-                                                    name: 'Значение на маркере',
+                                                    name: 'Значение',
                                                     linkTo: 'dataSource'
                                                 },
                                                 valueDisplayType: {
@@ -296,7 +300,6 @@
                                             }
                                         }
                                     }
-                                    */
                                 },
                                 widget: {
                                     name: 'Виджет',
@@ -450,14 +453,18 @@
                                                 }
                                             }
                                         },
-                                        /*
                                         markerValue: {
                                             render: 'switch',
                                             name: 'Значение маркера',
                                             items: {
+                                                name: {
+                                                    render: 'dataBinding',
+                                                    name: 'Имя',
+                                                    linkTo: 'dataSource'
+                                                },
                                                 value: {
                                                     render: 'dataBinding',
-                                                    name: 'Значение на маркере',
+                                                    name: 'Значение',
                                                     linkTo: 'dataSource'
                                                 },
                                                 valueDisplayType: {
@@ -474,7 +481,6 @@
                                                 }
                                             }
                                         }
-                                        */
                                     }
                                 }
                             }
@@ -501,7 +507,9 @@
                     items: {
                         header: {
                             render: 'item',
-                            name: 'Заголовок'
+                            name: 'Заголовок',
+                            valueType: 'string',
+                            defaultValue: 'Информационная легенда'
                         },
                         position: {
                             render: 'item',
@@ -512,7 +520,9 @@
                                     [ { key: 'topleft', name: 'Верхний левый угол' }, { key: 'topright', name: 'Верхний правый угол'}],
                                     [ { key: 'bottomleft', name: 'Нижний левый угол' }, { key: 'bottomright', name: 'Нижний правый угол' }]
                                 ]
-                            }
+                            },
+                            valueType: 'string',
+                            defaultValue: 'topright'
                         }
                     }
                 }
@@ -671,7 +681,7 @@
                 this._curFilterHash = null;
             }
 
-            //try{
+            try{
                 if(!this._styles){
                     this._styles = {
                         regions: [],
@@ -790,6 +800,13 @@
                         this._styles.markers[i].coordinatesBinding = markersContext[i].find('coordinates');
 
                         switch(markerType){
+                            case 'defaultMarker':
+                                if(markersContext[i].find('markerValue').checked()){
+                                    this._styles.markers[i].markerNameBinding = markersContext[i].find('markerValue name');
+                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value');
+                                    this._styles.markers[i].valueDisplayType = markersContext[i].find('markerValue valueDisplayType').value();
+                                }
+                                break;
                             case 'widget':
                                 var wb = markersContext[i].find('widgetBinding');
 
@@ -845,7 +862,9 @@
                                 }
 
                                 if(markersContext[i].find('markerValue').checked()){
-                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value')
+                                    this._styles.markers[i].markerNameBinding = markersContext[i].find('markerValue name');
+                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value');
+                                    this._styles.markers[i].valueDisplayType = markersContext[i].find('markerValue valueDisplayType').value();
                                 }
                                 break;
                         }
@@ -892,17 +911,15 @@
                     }
                     /*********/
                 }
-            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
-            */
 
             this.resetTrigger('_dataLoaded');
             this.getElement().loader();
             this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
-                //try{
+                try{
                     var regions = [],
                         markers = [],
                         bindings = [];
@@ -966,6 +983,14 @@
                                 }
 
                                 markers[i].markerValues.push($this._styles.markers[i].markerValueBinding.value());
+                            }
+
+                            if($this._styles.markers[i].markerNameBinding){
+                                if(!markers[i].markerNames){
+                                    markers[i].markerNames = [];
+                                }
+
+                                markers[i].markerNames.push($this._styles.markers[i].markerNameBinding.value());
                             }
 
                             switch($this._styles.markers[i].markerType){
@@ -1101,15 +1126,12 @@
                         regions: regions,
                         markers: markers
                     });
-                /*
                 } catch(ex){
                     console.log('Load data exception!');
                     console.log(ex);
                 } finally {
                     $this.setTrigger('_dataLoaded');
                 }
-                */
-                $this.setTrigger('_dataLoaded');
             });
 
             this.ensureDataLoaded(function(){
@@ -1129,7 +1151,7 @@
         },
 
         _buildChart: function(data){
-            //try {
+            try {
                 var mapOpts = {};
                 if(this.map){
                     mapOpts = {
@@ -1145,6 +1167,11 @@
                 }
                 this.map = L.map(this.container.get(0), mapOpts);
 
+                // remove old controls
+                if(this._infoControl){
+                    this._infoControl = undefined;
+                }
+
                 // add tile and wms layers
                 if(this._styles.tiles){
                     for(var i = 0; i < this._styles.tiles.length; i++){
@@ -1157,8 +1184,8 @@
                 }
 
                 function regionStyle(i, reg){
-                    if(data && data.color){
-                        return {fillColor: data.color, color: data.color, fillOpacity: 0.7};
+                    if(data && data.regions[i].color){
+                        return {fillColor: data.regions[i].color, color: $this._styles.regions[i].borderColor, fillOpacity: 0.7};
                     }
 
                     if(!reg){
@@ -1179,29 +1206,8 @@
                         (function(i, data){
                             var tooltipLayers = [];
 
-                            if($this._styles.regions[i].valueDisplayType === 'legend' && !$this._infoControl){
-                                var infoControl = L.control({ position: $this._styles.settings.infoControl.position });
-
-                                infoControl.onAdd = function(){
-                                    var legend = $this.$('<div class="infoControl"><h4>' + $this._styles.settings.infoControl.header + '</h4></div>');
-
-                                    this._name = $this.$('<p class="name"></p>');
-                                    legend.append(this._name);
-
-                                    this._value = $this.$('<p class="value"></p>');
-                                    legend.append(this._value);
-
-                                    return legend.get(0);
-                                };
-
-                                infoControl.update = function(name, value){
-                                    this._name.text(name ? name : '');
-                                    this._value.text(value ? value : '');
-                                };
-
-                                infoControl.addTo($this.map);
-
-                                $this._infoControl = infoControl;
+                            if($this._styles.regions[i].valueDisplayType === 'legend'){
+                                $this._createInfoControl();
                             }
 
                             $this._maps[i].map = L.geoJSON($this._maps[i].data, {
@@ -1243,7 +1249,7 @@
                                         });
                                     }
 
-                                    if(data.regions[i].showValuesPermanent){
+                                    if($this._styles.regions[i].showValuesPermanent){
                                         layer.bindTooltip(String(Numeral.format(reg.value, $this._styles.settings.formatter)), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
@@ -1310,7 +1316,39 @@
                     switch(this._styles.markers[i].markerType){
                         case 'defaultMarker':
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1])).addTo($this.map);
+                                var marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1])).addTo($this.map);
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
+                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : ''), {closeButton: false, autoPan: false});
+
+                                    marker.on({
+                                        mouseover: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.openPopup();
+                                        },
+                                        mouseout: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.closePopup();
+                                        }
+                                    });
+                                }
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
+                                    (function(name, value){
+                                        marker.on({
+                                            mouseover: function(evt){
+                                                $this._infoControl.update(name, value);
+                                            },
+                                            mouseout: function(evt){
+                                                $this._infoControl.update();
+                                            }
+                                        });
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : '');
+                                }
+                            }
+
+                            if(this._styles.markers[i].valueDisplayType === 'legend'){
+                                this._createInfoControl();
                             }
                             break;
                         case 'widget':
@@ -1342,39 +1380,70 @@
                             var color = $this._styles.markers[i].simpleColor || data.markers[i].color;
 
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                var marker = null,
-                                    html = null;
+                                var marker = undefined,
+                                    icon = undefined,
+                                    html = undefined;
 
                                 if(!color){
                                     color = data.markers[i].colorValues[j].color;
                                 }
 
-                                if(data.markers[i].markerValues){
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
                                     html = '<span>' + Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) + '</span>';
                                 }
 
                                 if($this._styles.markers[i].fixedSize){
-                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
+                                    icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
                                 } else {
-                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
+                                    icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
                                 }
 
-                                L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
+                                marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon}).addTo($this.map);
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
+                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : ''), {closeButton: false, autoPan: false});
+
+                                    marker.on({
+                                        mouseover: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.openPopup();
+                                        },
+                                        mouseout: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.closePopup();
+                                        }
+                                    });
+                                }
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
+                                    (function(name, value){
+                                        marker.on({
+                                            mouseover: function(evt){
+                                                $this._infoControl.update(name, value);
+                                            },
+                                            mouseout: function(evt){
+                                                $this._infoControl.update();
+                                            }
+                                        });
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : '');
+                                }
                             }
 
                             if(this._styles.markers[i].legend){
                                 this._createLegend(this._styles.markers[i].legend.position, data.markers[i].colorMap);
                             }
+
+                            if(this._styles.markers[i].valueDisplayType === 'legend'){
+                                this._createInfoControl();
+                            }
                             break;
                     }
                 }
                 /*********/
-            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
-            */
         },
 
         ensureDataLoaded: function(callback){
@@ -1528,6 +1597,33 @@
             legend.addTo(this.map);
 
             list.width(div.find('li:last-child span').width() + 25);
+        },
+
+        _createInfoControl: function(){
+            if(this._infoControl){
+                return;
+            }
+
+            this._infoControl = L.control({ position: this._styles.settings.infoControl.position });
+
+            this._infoControl.onAdd = function(){
+                var legend = $this.$('<div class="infoControl"><h4>' + $this._styles.settings.infoControl.header + '</h4></div>');
+
+                this._name = $this.$('<p class="name"></p>');
+                legend.append(this._name);
+
+                this._value = $this.$('<p class="value"></p>');
+                legend.append(this._value);
+
+                return legend.get(0);
+            };
+
+            this._infoControl.update = function(name, value){
+                this._name.text(name ? name : '');
+                this._value.text(value ? value : '');
+            };
+
+            this._infoControl.addTo(this.map);
         },
 
         findRegion: function(region, array){
