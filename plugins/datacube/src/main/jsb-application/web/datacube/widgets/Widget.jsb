@@ -412,6 +412,20 @@
 			this.sort = q;
 		},
 
+		setSourceFilters: function(selector, filters){
+		    if(selector.getRenderName() !== 'sourceBinding'){
+		        return;
+		    }
+
+		    var source = selector.binding().source;
+
+            if(!this.sourceFilterMap){
+                this.sourceFilterMap = {};
+            }
+
+            this.sourceFilterMap[source] = filters;
+		},
+
 		setWrapper: function(w, valuesOpts, sourceDesc){
 			this.wrapper = w;
 			this.widgetEntry = w.getWidgetEntry();

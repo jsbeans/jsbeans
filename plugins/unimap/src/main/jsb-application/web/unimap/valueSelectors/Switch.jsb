@@ -29,7 +29,7 @@
 
         var res;
 
-        if(values){
+        if(values && values[0]){
             var res = this.getMainSelector().find(key, values[0]);
         }
 
@@ -47,7 +47,7 @@
     },
 
     findAll: function(){
-        var res = this.find(key, values[0], true);
+        var res = this.find(key, null, true);
 
         if(!JSB.isDefined(res)){
             return [];

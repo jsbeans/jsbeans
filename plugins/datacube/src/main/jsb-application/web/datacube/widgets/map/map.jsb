@@ -612,17 +612,17 @@
                 return;
             }
 
-            if(opts && !opts.refreshFromCache){
+            if(opts && opts.updateStyles){
                 this._styles = null;
                 this._dataSource = null;
             }
 
             if(!this._dataSource){
                 this._dataSource = this.getContext().find('dataSource');
-            }
 
-            if(!this._dataSource.hasBinding || !this._dataSource.hasBinding()){
-                return;
+                if(!this._dataSource.hasBinding()){
+                    return;
+                }
             }
 
             $base();
@@ -1184,10 +1184,6 @@
                 }
 
                 function regionStyle(i, reg){
-                    if(data && data.regions[i].color){
-                        return {fillColor: data.regions[i].color, color: $this._styles.regions[i].borderColor, fillOpacity: 0.7};
-                    }
-
                     if(!reg){
                         if($this._styles.regions[i].showEmptyRegions){
                             return {fillColor: $this._styles.regions[i].defaultColor, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
@@ -1195,6 +1191,11 @@
                             return {fillColor: 'transparent', color: 'transparent'};
                         }
                     }
+
+                    if(data && data.regions[i].color){
+                        return {fillColor: data.regions[i].color, color: $this._styles.regions[i].borderColor, fillOpacity: 0.7};
+                    }
+
                     return {fillColor: reg.color, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
                 }
 

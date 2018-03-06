@@ -81,12 +81,6 @@
                                 }
                             }
                         },
-                        allowPointSelect: {
-                            render: 'item',
-                            name: 'Разрешить события',
-                            optional: true,
-                            editor: 'none'
-                        },
                         visible: {
                             render: 'item',
                             name: 'Показывать по-умолчанию',
@@ -99,105 +93,56 @@
         }
     },
     $client: {
-	    _bindings: [],
-	    _curFilters: {},
-	    _curFilterHash: null,
-
         refresh: function(opts){
-            var dataSource = $base(opts);
-            if(!dataSource){
+            if(!$base(opts)){
                 return;
             }
 
-            // filters section
-            var globalFilters = this.getSourceFilters(dataSource),
-                seriesContext = this.getContext().find('series').values();
+            if(!this._schemeOpts){
+                var seriesContext = this.getContext().find('series').values();
 
-            if(globalFilters){
-                var newFilters = {},
-                    curFilters = {};
+                this._schemeOpts = {
+                    bindings: [],
+                    series: []
+                };
 
-                for(var i in globalFilters){
-                    if(this._curFilters[i]){
-                        curFilters[i] = globalFilters[i];
-                        delete globalFilters[i];
-                        continue;
-                    }
+                for(var i = 0; i < seriesContext.length; i++){
+                    var partNames = seriesContext[i].find('partNames');
 
-                    var cur = globalFilters[i];
+                    this._schemeOpts.series.push({
+                        partNames: seriesContext[i].find('partNames'),
+                        partData: seriesContext[i].find('partData'),
+                        data: []
+                    });
 
-                    if(this._bindings.indexOf(cur.field) > -1  && cur.op === '$eq'){
-                        curFilters[i] = cur;
-                        newFilters[i] = cur;
-
-                        delete globalFilters[i];
-                    }
+                    this._schemeOpts.bindings.push(partNames.binding());
                 }
-
-                this._select(newFilters, true, true);
-
-                var oldFilters = {};
-
-                for(var i in this._curFilters){
-                    if(!globalFilters[i]){
-                        oldFilters[i] = this._curFilters[i];
-                    }
-                }
-
-                this._select(oldFilters, false, true);
-
-                this._curFilters = curFilters;
-
-                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){
-                    return;
-                } else {
-                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    source.setFilters(globalFilters);
-                }
-            } else {
-                if(Object.keys(this._curFilters).length > 0){
-                    this._select(this._curFilters, false, true);
-                    this._curFilters = {};
-                    return;
-                }
-                this._curFilterHash = null;
             }
 
-            var series = [];
-            this._bindings = [];
-
-            for(var i = 0; i < seriesContext.length; i++){
-                var partNames = seriesContext[i].find('partNames');
-
-                series.push({
-                    partNames: seriesContext[i].find('partNames'),
-                    partData: seriesContext[i].find('partData'),
-                    data: []
-                });
-
-                this._bindings.push(partNames.binding());
+            if(!this._resolveFilters(this._schemeOpts.bindings)){
+                return;
             }
 
             this.getElement().loader();
-            this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
                 try {
-                    while(dataSource.next()){
-                        for(var i = 0; i < series.length; i++){
-                            series[i].data.push({
+                    while($this._dataSource.next()){
+                        for(var i = 0; i < $this._schemeOpts.series.length; i++){
+                            $this._schemeOpts.series[i].data.push({
                                 datacube: {
-                                    binding: series[i].partNames.binding()
+                                    binding: $this._schemeOpts.series[i].partNames.binding()
                                 },
-                                name: series[i].partNames.value(),
-                                y: series[i].partData.value()
+                                name: $this._schemeOpts.series[i].partNames.value(),
+                                y: $this._schemeOpts.series[i].partData.value()
                             });
                         }
                     }
 
                     if(opts && opts.isCacheMod){
-                        $this.storeCache(series);
+                        $this.storeCache($this._schemeOpts.series);
                     }
 
-                    $this.buildChart(series);
+                    $this.buildChart($this._schemeOpts.series);
 
                     $this._select($this._curFilters, true, true);
                 } catch (ex){
@@ -210,64 +155,77 @@
         },
 
         _buildChart: function(data){
-            var baseChartOpts = $base();
+            var baseChartOpts;
 
             try {
-                var seriesContext = this.getContext().find('series').values()
-                    plotOptionsContext = this.getContext().find('plotOptions pie'),
-                    series = [];
+                function includeData(chartOpts, data){
+                    chartOpts = JSB.clone(chartOpts);
 
-                for(var i = 0; i < seriesContext.length; i++){
-                    series.push({
-                        datacube: {
-                            binding: seriesContext[i].find('partNames').binding()
-                        },
-                        data: data[i].data,
-                        size: seriesContext[i].find('size').value(),
-                        innerSize: seriesContext[i].find('innerSize').value(),
-                        dataLabels: {
-                            color: seriesContext[i].find('dataLabels color').value(),
-                            distance: seriesContext[i].find('dataLabels distance').value()
-                        },
-                        tooltip: {
-                            valueDecimals: seriesContext[i].find('tooltip valueDecimals').value(),
-                            valuePrefix: seriesContext[i].find('tooltip valuePrefix').value(),
-                            valueSuffix: seriesContext[i].find('tooltip valueSuffix').value()
-                        },
-                        cursor: seriesContext[i].find('allowPointSelect').checked() ? 'pointer' : undefined,
-                        allowPointSelect: seriesContext[i].find('allowPointSelect').checked(),
-                        visible: seriesContext[i].find('visible').checked()
-                    });
+                    var seriesContext = $this.getContext().find('series').values();
+
+                    for(var i = 0; i < seriesContext.length; i++){
+                        var series = {
+                            datacube: {
+                                binding: seriesContext[i].find('partNames').binding()
+                            },
+                            data: data[i].data,
+                            size: seriesContext[i].find('size').value(),
+                            innerSize: seriesContext[i].find('innerSize').value(),
+                            dataLabels: {
+                                color: seriesContext[i].find('dataLabels color').value(),
+                                distance: seriesContext[i].find('dataLabels distance').value()
+                            },
+                            tooltip: {
+                                valueDecimals: seriesContext[i].find('tooltip valueDecimals').value(),
+                                valuePrefix: seriesContext[i].find('tooltip valuePrefix').value(),
+                                valueSuffix: seriesContext[i].find('tooltip valueSuffix').value()
+                            },
+                            visible: seriesContext[i].find('visible').checked()
+                        };
+
+                        JSB.merge(true, chartOpts.series[i], series);
+                    }
+
+                    return chartOpts;
                 }
 
-                var chartOpts = {
-                    chart: {
-                        type: 'pie'
-                    },
+                if(this._styles){
+                    baseChartOpts = includeData(this._styles, data);
+                } else {
+                    baseChartOpts = $base();
+                    var plotOptionsContext = this.getContext().find('plotOptions pie');
 
-                    plotOptions: {
-                        pie: {
-                            showInLegend: this.getContext().find('legend enabled').checked()
+                    var chartOpts = {
+                        chart: {
+                            type: 'pie'
                         },
-                        series: {
-                            point: {
-                                events: {
-                                    click: function(evt){
-                                        if(evt.point.selected){
-                                            $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                        } else {
-                                            $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+
+                        plotOptions: {
+                            pie: {
+                                showInLegend: this.getContext().find('legend enabled').checked()
+                            },
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function(evt){
+                                            if(evt.point.selected){
+                                                $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                            } else {
+                                                $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    },
+                    }
 
-                    series: series
+                    JSB.merge(true, baseChartOpts, chartOpts);
+
+                    this._styles = baseChartOpts;
+
+                    baseChartOpts = includeData(baseChartOpts, data);
                 }
-
-                JSB.merge(true, baseChartOpts, chartOpts);
             } catch(ex){
                 console.log('PieChart build chart exception');
                 console.log(ex);
@@ -298,19 +256,21 @@
                 this._curFilters = {};
             }
 
-            var fId = this.addFilter(fDesc);
-
-            this._curFilters[fId] = fDesc;
-            point.datacube.filterId = fId;
+            this._curFilters[this.addFilter(fDesc)] = fDesc;
 
             this.refreshAll();
         },
 
         _removeFilter: function(point, accumulate){
             if(accumulate){
-                this.removeFilter(point.datacube.filterId);
-                delete this._curFilters[point.datacube.filterId];
-                this.refreshAll();
+                for(var i in this._curFilters){
+                    if(this._curFilters[i].field === point.options.datacube.binding && this._curFilters[i].value === point.name){
+                        this.removeFilter(i);
+                        delete this._curFilters[i];
+                        this.refreshAll();
+                        break;
+                    }
+                }
             } else {
                 for(var i in this._curFilters){
                     this.removeFilter(i);

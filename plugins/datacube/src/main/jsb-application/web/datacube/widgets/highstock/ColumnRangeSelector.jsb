@@ -290,30 +290,6 @@
 		},
 		_filterChanged: false,
 		_widgetExtremes: {},
-	    
-		$constructor: function(opts){
-			$base(opts);
-			this.getElement().addClass('highchartsWidget');
-			$this.init();
-		},
-
-		init: function(){
-		    this.containerId = JSB().generateUid();
-            this.container = this.$('<div class="container" id="' + this.containerId + '"></div>');
-            this.append(this.container);
-
-            this.getElement().resize(function(){
-                JSB.defer(function(){
-                    if(!$this.getElement().is(':visible') || !$this.chart){
-                        return;
-                    }
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height(), false);
-                }, 500, 'hcResize' + $this.getId());
-            });
-
-            this.setInitialized();
-            $this.isInit = true;
-		},
 
         refresh: function(opts){
 return;

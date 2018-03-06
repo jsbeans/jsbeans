@@ -142,7 +142,9 @@
 
 			    $this.getWidget().updateValues(JSB.clone(opts));
 			    $this.widget.ensureInitialized(function(){
-			    	 $this.getWidget().refresh({});
+			    	 $this.getWidget().refresh({
+			    	    updateStyles: true
+			    	 });
 				});
 			});
 

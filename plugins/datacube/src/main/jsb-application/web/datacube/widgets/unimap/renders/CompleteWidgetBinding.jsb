@@ -22,13 +22,6 @@
 	    },
 
 	    addItem: function(values){
-	        if(!values){
-	            values = {
-	                value: {}
-	            };
-	            this._values.values.push(values);
-	        }
-
 	        this._item = this.$('<div class="item"></div>');
 
             this._item.droppable({
@@ -77,9 +70,16 @@
 
             this.append(this._item);
 
-            if(values.value){
+            if(values){
                 this.setValue(values.value);
             }
+
+	        if(!values){
+	            values = {
+	                value: {}
+	            };
+	            this._values.values.push(values);
+	        }
 	    },
 
 	    setValue: function(val){
