@@ -10,9 +10,54 @@
 		fileUploadCallbackRegistry: {},
 		explorerNodeRegistry: {},
 		browserViewRegistry: {},
+		workspaceDescriptors: {},
+		workspacesById: {},
+		workspacesByType: {},
+		
 		
 		$constructor: function(){
 			$base();
+			
+			// load configuration
+			var wTypes = Config.get('workspace.workspaceTypes');
+			for(var wType in wTypes){
+				this.workspaceDescriptors[wType] = wTypes[wType];
+			}
+			
+			// scan all workspaces
+			this._scanWorkspaces();
+			
+			// enumerate system workspaces
+			for(var wType in this.workspaceDescriptors){
+				if(this.workspaceDescriptors[wType].system){
+					if(!this.workspacesByType[wType]){
+						this.createWorkspace(wType);
+					}
+				}
+			}
+			
+			// create system workspaces
+			
+			this.systemWorkspace = this.ensureWorkspace('system', 'system');
+		},
+		
+		_scanWorkspaces: function(){
+			for(var wType in this.workspaceDescriptors){
+				var wCfg = this.workspaceDescriptors[wType];
+				var entryStoreCfg = wCfg.entryStore;
+				if(!entryStoreCfg || !entryStoreCfg.jsb){
+					throw new Error('Invalid entry store configuration in workspace type: ' + wType);
+				}
+				var jsb = JSB.get(entryStoreCfg.jsb);
+				if(!jsb){
+					throw new Error('Unable to create entry store due to missing bean: ' + entryStoreCfg.jsb);
+				}
+				var entryStore = new (jsb.getClass())(entryStoreCfg);
+			}
+		},
+		
+		createWorkspace: function(wType){
+			
 		},
 		
 		ensureManager: function(wmKey){

@@ -22,6 +22,7 @@ import org.jsbeans.helpers.ReflectionHelper;
 import org.jsbeans.messages.Message;
 import org.jsbeans.plugin.PluginActivationException;
 import org.jsbeans.plugin.PluginActivator;
+import org.jsbeans.plugin.DependsOn;
 import org.jsbeans.services.ServiceManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -52,8 +54,8 @@ public class Core {
     }
 
     private static final Logger log = LoggerFactory.getLogger(Core.class);
-    private static final Collection<Class<? extends PluginActivator>> pluginTypes =
-            ReflectionHelper.scanSubclasses(PluginActivator.class);
+    private static final Collection<Class<? extends PluginActivator>> pluginTypes = ReflectionHelper.scanSubclasses(PluginActivator.class);
+    private static final List<Class<? extends PluginActivator>> orderedPluginTypes = new ArrayList<>(pluginTypes.size());
 
     private static final List<PluginActivator> plugins = new ArrayList<>(pluginTypes.size());
 
@@ -63,6 +65,7 @@ public class Core {
     public static synchronized void start() {
         log.info("System core started at " + new Date());
 
+        Core.resolvePluginDependencies();
         Core.configureLogger();
         Core.loadBaseConfiguration();
         Core.collectAndConfigurePlugins();
@@ -104,6 +107,34 @@ public class Core {
 
     public static ActorSystem getActorSystem() {
         return actorSystem;
+    }
+    
+    private static void resolvePluginDependencies() {
+    	orderedPluginTypes.addAll(pluginTypes);
+    	orderedPluginTypes.sort(new Comparator<Class<? extends PluginActivator>>() {
+			@Override
+			public int compare(Class<? extends PluginActivator> o1, Class<? extends PluginActivator> o2) {
+				DependsOn depO1Annot = o1.getAnnotation(DependsOn.class);
+				if (depO1Annot != null){
+					for (Class<? extends PluginActivator> depClass : depO1Annot.value()){
+						if (depClass.equals(o2) || this.compare(depClass, o2) == 1) {
+		                    return 1;
+		                }
+					}
+				}
+				
+				DependsOn depO2Annot = o2.getAnnotation(DependsOn.class);
+				if (depO2Annot != null){
+					for (Class<? extends PluginActivator> depClass : depO2Annot.value()){
+						if (depClass.equals(o1) || this.compare(o1, depClass) == -1) {
+		                    return -1;
+		                }
+					}
+				}
+				
+				return 0;
+			}
+		});
     }
 
     private static void loadBaseConfiguration() {
@@ -152,7 +183,7 @@ public class Core {
 
 
     private static void collectAndConfigurePlugins() {
-        for (Class<? extends PluginActivator> type : pluginTypes) {
+        for (Class<? extends PluginActivator> type : orderedPluginTypes) {
             try {
                 // create plugin instance
                 PluginActivator plugin = type.newInstance();

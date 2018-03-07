@@ -8,27 +8,15 @@
  * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
  */
 
-package org.jsbeans.web;
+package org.jsbeans.plugin;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.jsbeans.helpers.ConfigHelper;
-import org.jsbeans.plugin.DependsOn;
-import org.jsbeans.plugin.KernelPluginActivator;
-import org.jsbeans.plugin.PluginActivator;
-
-@DependsOn({KernelPluginActivator.class})
-public class WebPluginActivator implements PluginActivator {
-
-    @Override
-    public void init() {
-        String folder = ConfigHelper.getConfigString("web.folder");
-        if (folder == null) {
-            folder = "web";
-        }
-        String ff = ConfigHelper.getPluginHomeFolder(this) + "/" + folder;
-
-        ConfigHelper.addJssFolder(ff);
-        ConfigHelper.addWebFolder(ff);
-    }
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface DependsOn {
+    public Class<? extends PluginActivator>[] value();
 }

@@ -1,8 +1,12 @@
 package org.jsbeans.unimap;
 
 import org.jsbeans.helpers.ConfigHelper;
+import org.jsbeans.plugin.DependsOn;
+import org.jsbeans.plugin.KernelPluginActivator;
 import org.jsbeans.plugin.PluginActivator;
+import org.jsbeans.web.WebPluginActivator;
 
+@DependsOn({KernelPluginActivator.class, WebPluginActivator.class})
 public class UnimapPluginActivator implements PluginActivator {
     public void init() {
         String folder = ConfigHelper.getConfigString("unimap.folder");

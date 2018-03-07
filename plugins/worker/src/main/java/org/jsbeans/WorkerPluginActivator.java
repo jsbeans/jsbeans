@@ -1,7 +1,9 @@
 package org.jsbeans;
 
 import org.jsbeans.helpers.ConfigHelper;
+import org.jsbeans.plugin.DependsOn;
 import org.jsbeans.plugin.PluginActivator;
+import org.jsbeans.plugin.KernelPluginActivator;
 import org.jsbeans.sharedresource.LockRequest;
 import org.jsbeans.sharedresource.SharedResourceManager;
 import org.jsbeans.sharedresource.SharedResourceManagerFactory;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@DependsOn({KernelPluginActivator.class})
 public class WorkerPluginActivator implements PluginActivator {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

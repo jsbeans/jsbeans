@@ -11,8 +11,11 @@
 package org.jsbeans.textextractors;
 
 import org.jsbeans.helpers.ConfigHelper;
+import org.jsbeans.plugin.DependsOn;
+import org.jsbeans.plugin.KernelPluginActivator;
 import org.jsbeans.plugin.PluginActivator;
 
+@DependsOn({KernelPluginActivator.class})
 public class TextextractorsPluginActivator implements PluginActivator {
 
     @Override
