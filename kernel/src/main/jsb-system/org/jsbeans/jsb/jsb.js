@@ -5380,7 +5380,7 @@ JSB({
 		$constructor: function(){
 			$base();
 			JSB().setMessageBus(this);
-			JSB.getRepository().ensureLoaded(function(sender){
+			JSB.getRepository().ensureLoaded(function(){
 				$this.cluster = JSB.getClusterProvider();
 				if($this.cluster.isActive()){
 					$this._collectClusterSubscriptionsFromNodes();

@@ -350,12 +350,12 @@
 		    return '' + (Paths.get(path).getParent() || Paths.get('.')).toString();
 		},
 		
-		getCurrentDirectory: function() {
-		    return '' + this._resolvePath('' + System.getProperty('user.dir')).toString() + this.separator;
+		getCurrentDirectory: function(omitSeparator) {
+		    return '' + this._resolvePath('' + System.getProperty('user.dir')).toString() + (omitSeparator ? '' : this.separator);
 		},
 		
-		getUserDirectory: function() {
-		    return '' + this._resolvePath('' + System.getProperty('user.home')).toString() + this.separator;
+		getUserDirectory: function(omitSeparator) {
+		    return '' + this._resolvePath('' + System.getProperty('user.home')).toString() + (omitSeparator ? '' : this.separator);
 		}
 
 

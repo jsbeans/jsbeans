@@ -13,10 +13,24 @@
 		workspaceDescriptors: {},
 		workspacesById: {},
 		workspacesByType: {},
+		configVariables: {},
 		
 		
 		$constructor: function(){
 			$base();
+			
+			JSB.getRepository().ensureLoaded(function(){
+				$this._init();
+				$this.setTrigger('ready');
+			});
+			
+		},
+		
+		_init: function(){
+			// setup initial config variables
+			this.configVariables = {
+				'USER_DIR': FileSystem.getUserDirectory(true)
+			}
 			
 			// load configuration
 			var wTypes = Config.get('workspace.workspaceTypes');
@@ -36,9 +50,33 @@
 				}
 			}
 			
-			// create system workspaces
 			
-			this.systemWorkspace = this.ensureWorkspace('system', 'system');
+		},
+		
+		_resolveConfigVariables: function(obj, vars){
+			vars = vars || this.configVariables;
+			if(JSB.isObject(obj)){
+				var nObj = {};
+				for(var f in obj){
+					nObj[f] = this._resolveConfigVariables(obj[f], vars);
+				}
+				return nObj;
+			} else if(JSB.isArray(obj)){
+				var nObj = [];
+				for(var i = 0; i < obj.length; i++){
+					nObj.push(this._resolveConfigVariables(obj[i], vars));
+				}
+				return nObj;
+			} else if(JSB.isString(obj)){
+				return obj.replace(/\%([^\%]+)\%/gi, function(o, v){
+					if(vars[v]){
+						return vars[v];
+					}
+					return o;
+				});
+			} else {
+				return obj;
+			}
 		},
 		
 		_scanWorkspaces: function(){
@@ -52,7 +90,17 @@
 				if(!jsb){
 					throw new Error('Unable to create entry store due to missing bean: ' + entryStoreCfg.jsb);
 				}
-				var entryStore = new (jsb.getClass())(entryStoreCfg);
+				var resolvedCfg = this._resolveConfigVariables(entryStoreCfg);
+				var entryStore = new (jsb.getClass())(resolvedCfg, wType);
+				var idIter = entryStore.getWorkspaceIds();
+				while(true){
+					var idVal = idIter.next();
+					if(!idVal){
+						break;
+					}
+					
+				}
+				
 			}
 		},
 		
