@@ -159,7 +159,7 @@
                 }
             }
 
-            if(!this._resolveFilters(this._schemeOpts.xAxisCategories.binding())){
+            if(!this._resolvePointFilters(this._schemeOpts.xAxisCategories.binding())){
                 return;
             }
 
@@ -245,8 +245,6 @@
                         data: data,
                         xAxisData: xAxisData
                     });
-
-                    $this._select($this._curFilters, true, true);
                 } catch(ex){
                     console.log('LineChart load data exception');
                     console.log(ex);
@@ -303,23 +301,42 @@
 
                     var chartOpts = {
                         plotOptions: {
-                            series: {
-                                point: {
-                                    events: {
-                                        click: function(evt){
-                                            if(evt.point.selected){
-                                                $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                            } else {
-                                                $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                            }
-                                        }
-                                    }
-                                },
-                                turboThreshold: 0
-                            },
                             column: {
                                 groupPadding: columnPlotOptionsContext.find('groupPadding').value(),
                                 pointPadding: columnPlotOptionsContext.find('pointPadding').value()
+                            },
+                            series: {
+                                point: {
+                                    events: {
+                                        click: function(evt) {
+                                            evt.preventDefault();
+
+                                            if(evt.point.series.options.datacube.filtration){
+                                                if(evt.point.selected){
+                                                    $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                                } else {
+                                                    $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                                }
+                                            }
+
+                                            if(evt.point.series.options.datacube.drilldown){
+                                                $this.addDrilldownElement({
+                                                    /*
+                                                    filterOpts: {
+                                                        binding: evt.point.options.datacube.binding,
+                                                        value: evt.point.category
+                                                    },
+                                                    */
+                                                    widget: evt.point.series.options.datacube.drilldown.widget
+                                                });
+                                            }
+
+                                            if(JSB().isFunction($this.options.onClick)){
+                                                $this.options.onClick.call(this, evt);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

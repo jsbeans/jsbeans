@@ -119,7 +119,7 @@
                 }
             }
 
-            if(!this._resolveFilters(this._schemeOpts.bindings)){
+            if(!this._resolvePointFilters(this._schemeOpts.bindings)){
                 return;
             }
 
@@ -143,8 +143,6 @@
                     }
 
                     $this.buildChart($this._schemeOpts.series);
-
-                    $this._select($this._curFilters, true, true);
                 } catch (ex){
                     console.log('PieChart load data exception');
                     console.log(ex);
@@ -207,11 +205,31 @@
                             series: {
                                 point: {
                                     events: {
-                                        click: function(evt){
-                                            if(evt.point.selected){
-                                                $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                            } else {
-                                                $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                        click: function(evt) {
+                                            evt.preventDefault();
+
+                                            if(evt.point.series.options.datacube.filtration){
+                                                if(evt.point.selected){
+                                                    $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                                } else {
+                                                    $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                                }
+                                            }
+
+                                            if(evt.point.series.options.datacube.drilldown){
+                                                $this.addDrilldownElement({
+                                                    /*
+                                                    filterOpts: {
+                                                        binding: evt.point.options.datacube.binding,
+                                                        value:
+                                                    },
+                                                    */
+                                                    widget: evt.point.series.options.datacube.drilldown.widget
+                                                });
+                                            }
+
+                                            if(JSB().isFunction($this.options.onClick)){
+                                                $this.options.onClick.call(this, evt);
                                             }
                                         }
                                     }
@@ -249,6 +267,8 @@
             };
 
             if(!accumulate && Object.keys(this._curFilters).length > 0){
+                this._select(this._curFilters, false, true);
+
                 for(var i in this._curFilters){
                     this.removeFilter(i);
                 }
@@ -257,7 +277,7 @@
             }
 
             this._curFilters[this.addFilter(fDesc)] = fDesc;
-
+            this._select(this._curFilters, true, true);
             this.refreshAll();
         },
 
@@ -265,6 +285,9 @@
             if(accumulate){
                 for(var i in this._curFilters){
                     if(this._curFilters[i].field === point.options.datacube.binding && this._curFilters[i].value === point.name){
+                        var filter = {};
+                        filter[i] = this._curFilters[i];
+                        this._select(filter, false, true);
                         this.removeFilter(i);
                         delete this._curFilters[i];
                         this.refreshAll();
@@ -272,6 +295,8 @@
                     }
                 }
             } else {
+                this._select(this._curFilters, false, true);
+
                 for(var i in this._curFilters){
                     this.removeFilter(i);
                 }

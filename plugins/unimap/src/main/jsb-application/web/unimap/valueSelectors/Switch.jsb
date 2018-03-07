@@ -29,7 +29,7 @@
 
         var res;
 
-        if(values && values[0]){
+        if(values){
             var res = this.getMainSelector().find(key, values[0]);
         }
 

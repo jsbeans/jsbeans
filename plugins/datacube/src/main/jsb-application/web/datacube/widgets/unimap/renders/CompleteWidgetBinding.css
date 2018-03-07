@@ -29,6 +29,12 @@
     width: initial;
 }
 
+.completeWidgetBindingRender > .item.acceptDraggable,
+.completeWidgetBindingRender > .item.acceptDraggable.filled {
+	background: rgba(156, 92, 29, 0.3);
+    border-color: rgba(105, 45, 0, 0.5);
+}
+
 .completeWidgetBindingRender > .item > .deleteButton {
     background: none;
     padding: 0;

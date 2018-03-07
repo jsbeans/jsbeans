@@ -31,7 +31,6 @@
                                     optional: 'checked',
                                     editor: 'none'
                                 },
-                                /*
                                 drilldown: {
                                     render: 'switch',
                                     name: 'Drilldown',
@@ -42,7 +41,6 @@
                                         }
                                     }
                                 }
-                                */
                             }
                         },
                     }
@@ -520,7 +518,7 @@
 	    }
     },
     $client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highcharts'],
+        $require: ['JSB.Tpl.Highcharts'],
 
 	    _curFilters: {},
 	    _curFilterHash: null,
@@ -589,7 +587,6 @@
             return true;
         },
 
-        // refresh after data and/or style changes
         buildChart: function(data){
             JSB.defer(function(){
                 var chartOpts = $this._buildChart(data);
@@ -599,6 +596,8 @@
                 } else {
                     $this.chart = (function(){return this}).call(null).Highcharts.chart($this.container.get(0), chartOpts);
                 }
+
+                $this._select($this._curFilters, true, true);
             }, 300, '_buildChart_' + this.getId());
         },
 
@@ -622,18 +621,17 @@
                         datacube = undefined;
 
                     if(allowPointSelect){
-                        //var isDrilldown = seriesContext[i].find('allowPointSelect drilldown').checked();
+                        var isDrilldown = seriesContext[i].find('allowPointSelect drilldown').checked();
 
                         datacube = {
-                            filtration: seriesContext[i].find('allowPointSelect filtration').value()
+                            filtration: seriesContext[i].find('allowPointSelect filtration').checked()
                         }
-                        /*
+
                         if(isDrilldown){
                             datacube.drilldown = {
-                                widget: seriesContext[seriesData[j].index].find('allowPointSelect drilldown widget').value()
+                                widget: seriesContext[i].find('allowPointSelect drilldown widget').value()
                             }
                         }
-                        */
                     }
 
                     series.push({
@@ -693,8 +691,6 @@
                             point: {
                                 events: {
                                     click: function(evt) {
-                                        $this._clickEvt = evt;
-
                                         if(JSB().isFunction($this.options.onClick)){
                                             $this.options.onClick.call(this, evt);
                                         }
@@ -721,7 +717,8 @@
                                     }
                                 }
                             }
-                        }
+                        },
+                        turboThreshold: 0
                     },
 
                     series: series,
@@ -767,7 +764,7 @@
             return val === 'none' ? undefined : val;
         },
 
-        _resolveFilters: function(bindings){
+        _resolvePointFilters: function(bindings){
             if(!JSB.isArray(bindings)){
                 bindings = [bindings];
             }
@@ -794,21 +791,23 @@
                     }
                 }
 
-                this._select(newFilters, true, true);
+                if(this.chart){ // drilldown widgets may have filters, but not construct yet
+                    this._select(newFilters, true, true);
 
-                var oldFilters = {};
+                    var oldFilters = {};
 
-                for(var i in this._curFilters){
-                    if(!globalFilters[i]){
-                        oldFilters[i] = this._curFilters[i];
+                    for(var i in this._curFilters){
+                        if(!globalFilters[i]){
+                            oldFilters[i] = this._curFilters[i];
+                        }
                     }
-                }
 
-                this._select(oldFilters, false, true);
+                    this._select(oldFilters, false, true);
+                }
 
                 this._curFilters = curFilters;
 
-                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){ // update data not require
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash && this.chart){ // update data not require
                     return false;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
@@ -827,7 +826,7 @@
         },
 
         _select: function(filters, b1, b2){
-            throw new Error('Method must be overwritten');
+            //throw new Error('Method "_select" must be overwritten');
         }
     }
 }

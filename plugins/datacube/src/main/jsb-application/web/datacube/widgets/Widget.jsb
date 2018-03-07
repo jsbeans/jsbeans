@@ -25,9 +25,12 @@
 		$constructor: function(opts){
 		    $base();
 
+		    this.addClass('datacubeWidget');
+
 		    if(opts){   // not embedded widget
                 this.widgetEntry = opts.widgetEntry;
                 this.wrapper = opts.widgetWrapper;
+                this.filterManager = opts.filterManager;
 
                 this.updateValues({
                     values: this.widgetEntry.getValues(),
@@ -36,25 +39,36 @@
 		    }
 		},
 
+		addDrilldownElement: function(opts){
+		    this.wrapper.addDrilldownElement(opts);
+		},
+
 		addFilter: function(fDesc){
+		    if(!this.filterManager){ return; }
+
 			if(!fDesc.sourceId){
 				var sourceArr = this.getSourceIds();
 				if(sourceArr && sourceArr.length > 0){
 					fDesc.sourceId = sourceArr[0];
 				}
 			}
+
 			if(fDesc.sourceId){
 				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
 					throw new Error('Invalid sourceId');
 				}
 				fDesc.source = this.sources[fDesc.sourceId];
-				return this.getWrapper().addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
+
+				return this.filterManager.addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
 			}
+
 			throw new Error('Missing sourceId');
 		},
 
 		clearFilters: function(){
-			this.getWrapper().clearFilters(this);
+		    if(!this.filterManager){ return; }
+
+			this.filterManager.clearFilters(this);
 		},
 
 		createFilterHash: function(filter){
@@ -269,10 +283,7 @@
 		},
 
 		getFilterManager: function(){
-			if(this.getWrapper() && this.getWrapper().getFilterManager){
-				return this.getWrapper().getFilterManager();
-			}
-			return null;
+			return this.filterManager;
 		},
 
 		getFilters: function(){
@@ -296,9 +307,13 @@
 				if($this.getWrapper()){
 					var filterDesc = null;
 					if($this.sourceFilterMap && $this.sourceFilterMap[sourceId]){
-						filterDesc = $this.getWrapper().constructFilterByLocal($this.sourceFilterMap[sourceId], $this.sources[sourceId]);
+					    if($this.filterManager){
+						    filterDesc = $this.filterManager.constructFilterByLocal($this.sourceFilterMap[sourceId], $this.sources[sourceId]);
+                        }
 					} else {
-						filterDesc = $this.getWrapper().constructFilterBySource($this.sources[sourceId]);
+					    if($this.filterManager){
+						    filterDesc = $this.filterManager.constructFilterBySource($this.sources[sourceId]);
+                        }
 					}
 					if(filterDesc){
 						if(filterDesc.filter){
@@ -352,14 +367,16 @@
 		},
 
 		hasFilter: function(fDesc){
-			return this.getWrapper().hasFilter(fDesc);
+		    if(!this.filterManager){ return; }
+			return this.filterManager.hasFilter(fDesc);
 		},
 
 		localizeFilters: function(){
+		    if(!this.filterManager){ return; }
 			this.sourceFilterMap = {};
 			for(var srcId in this.sources){
 				var src = this.sources[srcId];
-				this.sourceFilterMap[srcId] = $this.getWrapper().localizeFilter(src);
+				this.sourceFilterMap[srcId] = this.filterManager.localizeFilter(src);
 			}
 		},
 
@@ -372,7 +389,8 @@
 		},
 
 		removeFilter: function(fItemId, dontPublish){
-			return this.getWrapper().removeFilter(fItemId, dontPublish);
+		    if(!this.filterManager){ return; }
+			return this.filterManager.removeFilter(fItemId, dontPublish);
 		},
 
 		removeAllFilters: function(){
@@ -398,6 +416,10 @@
 				throw new Error('Main filter layer cannot be disabled');
 			}
 			JSB.merge(this.filterLayers, layerOpts);
+		},
+
+		setFilterManager: function(filterManager){
+		    this.filterManager = filterManager;
 		},
 
 		setKeyColumns: function(rowKeyCols){
