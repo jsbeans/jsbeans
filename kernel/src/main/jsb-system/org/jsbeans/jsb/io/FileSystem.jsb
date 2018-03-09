@@ -179,7 +179,7 @@
 		list: function(path, opts) {
 		    var nioPath = this._resolvePath(path);
 		    
-		    opts = $jsb.merge({files: true, directories: true, links: true, recursive: false}, opts);
+		    opts = $jsb.merge({files: true, directories: true, links: true, recursive: false, filter: null}, opts);
 
 		    if (!Files.isDirectory(nioPath)) {
 		        throw new Error('Expected directory: ' + path);
@@ -187,19 +187,41 @@
 
 		    var files = [];
 		    var dirStream = null;
+		    var filter = opts.filter;
+		    if(filter){
+			    if(JSB.isString(filter)){
+			    	filter = new RegExp('^' + filter.replace(/\./g, '\\.').replace(/\*/g, '.*?') + '$', 'i');
+			    } else if(JSB.isRegExp(filter)){
+			    	
+			    } else if(JSB.isFunction(filter)){
+			    	
+			    } else {
+			    	throw new Error('Invalid filter format');
+			    }
+		    }
 		    try {
 		    	dirStream = Files.newDirectoryStream(nioPath);
 			    var dirIterator = dirStream.iterator();
 			    while (dirIterator.hasNext()) {
 			    	var file = String(dirIterator.next().getFileName());
-			    	if(opts.files && opts.directories && opts.links){
+			    	if(opts.files && opts.directories && opts.links && !opts.filter){
 			    		files.push(file);
 			    	} else {
 				    	var filePath = this.join(nioPath.toString(), file);
 				    	if((opts.files && this.isFile(filePath))
 				    		||(opts.directories && this.isDirectory(filePath))
 				    		||(opts.links && this.isLink(filePath))){
-				    		files.push(file);
+				    		var bAdd = true;
+				    		if(filter){
+				    			if(JSB.isFunction(filter)){
+				    				bAdd = filter.call(this, filePath);
+				    			} else if(JSB.isRegExp(filter)){
+				    				bAdd = filter.test(filePath);
+				    			}
+				    		}
+				    		if(bAdd){
+				    			files.push(file);
+				    		}
 				    	} 
 			    	}
 			        if(opts.recursive){
@@ -286,9 +308,14 @@
 		    return Files.readSymbolicLink(this._resolvePath(path)).toString();
 		},
 		
-		createDirectory: function(path){
-		    if(!this.exists(path))
-			    Files.createDirectory(Paths.get(path));
+		createDirectory: function(path, bForce){
+		    if(!this.exists(path)){
+		    	if(bForce){
+		    		Files.createDirectories(Paths.get(path));
+		    	} else {
+		    		Files.createDirectory(Paths.get(path));
+		    	}
+		    }
 		},
 		
 		remove: function(path) {

@@ -1245,6 +1245,10 @@ if(!(function(){return this;}).call(null).JSB){
 			return Object.prototype.toString.call(obj) === "[object Object]";
 		},
 		
+		isRegExp: function(obj){
+			return Object.prototype.toString.call(obj) === "[object RegExp]";
+		},
+		
 		isNull: function(obj){
 			return obj == null || obj == undefined;
 		},

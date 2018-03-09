@@ -1,5 +1,6 @@
 {
 	$name: 'JSB.Workspace.Workspace',
+	$parent: 'JSB.Workspace.Entry',
 	$require: ['JSB.Workspace.Entry'],
 	
 	$fixedId: true,
@@ -7,51 +8,46 @@
 		updateCheckInterval: 0
 	},
 	
-	wName: null,
-	localId: null,
-	workspaceManager: null,
-	
-	getName: function(){
-		return this.wName;
-	},
-	
-	getLocalId: function(){
-		return this.localId;
-	},
-
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
 		$disableRpcInstance: true,
 		
-	    MAIN_ARTIFACT: 'workspace.json',
-
-		$constructor: function(localId, workspaceManager){
-			this.localId = localId;
-			this.id = workspaceManager.workspaceInstanceId(localId);
-            this.workspaceManager = workspaceManager;
-            $base();
+		config: null,
+		
+		$constructor: function(id, cfg){
+            $base(id, null);
             
-            this.load();
+            this.config = cfg;
             
-            this.wName = this.property('wName');
-			if(!this.wName || this.wName.length == 0){
-				this.wName = 'Мои проекты';
-				this.property('wName', this.wName);
-				this.store();
+            // create entry store
+            var entryStoreCfg = this.config.entryStore;
+            if(!entryStoreCfg || !entryStoreCfg.jsb){
+				throw new Error('Invalid entry store configuration for workspace id: ' + id);
 			}
+			var entryStoreJSB = JSB.get(entryStoreCfg.jsb);
+			if(!entryStoreJSB){
+				throw new Error('Unable to create entry store due to missing bean: ' + entryStoreCfg.jsb);
+			}
+			this._entryStore = new (entryStoreJSB.getClass())(entryStoreCfg);
+			
+			// create artifact store
+            var artifactStoreCfg = this.config.artifactStore;
+            if(!artifactStoreCfg || !artifactStoreCfg.jsb){
+				throw new Error('Invalid artifact store configuration for workspace id: ' + id);
+			}
+			var artifactStoreJSB = JSB.get(artifactStoreCfg.jsb);
+			if(!artifactStoreJSB){
+				throw new Error('Unable to create entry store due to missing bean: ' + artifactStoreCfg.jsb);
+			}
+			this._artifactStore = new (artifactStoreJSB.getClass())(artifactStoreCfg);
 		},
 		
-		setName: function(name){
-			if(this.wName == name){
-				return;
-			}
-			this.wName = name;
-			this.property('wName', this.wName);
-			this.store();
-		},
-
-
 		load: function(){
+			this.loadEntry();
+			
+			// scan workspace entries
+			var ids = this._entryStore.getEntryIds();
+/*			
 		    var self = this;
 		    this._locked('body', function(){
 		        if (self.existsArtifact(self.MAIN_ARTIFACT)) {
@@ -61,6 +57,7 @@
 		        }
 		        self.bodyChanged();
 		    });
+*/		    
 		},
 
 		update: function(){
@@ -72,16 +69,7 @@
 		},
 
 		store: function(){
-		    if (!this.body) {
-		        throw new Error('Uninitialized workspace: ' + this.id);
-		    }
-		    var self = this;
-		    this._locked('body', function(){
-		        if (self.existsArtifact(self.MAIN_ARTIFACT)) {
-		            self.backupArtifact(self.MAIN_ARTIFACT);
-		        }
-                self.writeArtifactAsJson(self.MAIN_ARTIFACT, self.body);
-		    });
+			this.storeEntry();
 		},
 
 		clean: function(){
@@ -254,28 +242,6 @@
 		    }
 		},
 
-		property: function(path, value) {
-		    if (typeof value === 'undefined') {
-		        return this._getProperty(path);
-		    } else {
-		        this._setProperty(path, value);
-		    }
-		},
-
-        getEntryProperty: function (entry, path) {
-            var self = this;
-            return this._locked(entry.id, function(){
-                return self._getProperty(self.entryPropertyPath(entry, path));
-            });
-        },
-
-        setEntryProperty: function (entry, path, value, remove) {
-            var self = this;
-            this._locked(entry.id, function(){
-                self._setProperty(self.entryPropertyPath(entry, path), value, remove);
-            });
-        },
-
         entriesPath: function(path){
             if (typeof path === 'undefined') {
                 return 'entries';
@@ -308,45 +274,6 @@
             };
         },
 
-        _getProperty: function (path) {
-            this.checkInitialized();
-            var obj = this.body;
-            if (obj == null) return null;
-            path = this._splitPath(path);
-            for (var i = 0; i < path.length; i++) {
-                if(typeof obj[path[i]] === 'object' || i === path.length - 1) {
-                    obj = obj[path[i]];
-                } else {
-                    return;
-                }
-            }
-            return obj;
-        },
-
-        _setProperty: function (path, value, remove) {
-            this.checkInitialized();
-            var obj = this.body;
-            path = this._splitPath(path);
-            for (var i = 0; i < path.length-1; i++) {
-                if(typeof obj[path[i]] === 'object') {
-                    obj = obj[path[i]];
-                } else {
-                    obj = obj[path[i]] = {};
-                }
-            }
-            var oldValue = obj[path[path.length-1]];
-            if (remove) {
-                delete obj[path[path.length-1]];
-                this.bodyChanged();
-            } else if (oldValue !== value) {
-                obj[path[path.length-1]] = value;
-                this.bodyChanged();
-            }
-        },
-
-		_splitPath: function(path){
-		    return path && path.split(/\.|\//);
-		},
 
 		_locked: function(id, func) {
             var locker = JSB().getLocker();

@@ -6,26 +6,34 @@
 		updateCheckInterval: 0
 	},
 	
-	localId: null,
-	workspace: null,
-	name: null,
-	children: {},
-	parent: null,
-	
-	getLocalId: function(){
-		return this.localId;
+	_workspace: null,
+	_eDoc: {
+		_id: null,
+		_name: '',
+		_parent: null,
+		_children: {},
+		_owner: null,
+		_jsb: '',
 	},
 	
 	getName: function(){
-		return this.name;
+		return this._eDoc._name;
 	},
 	
 	getParentId: function(){
-		return this.parent;
+		return this._eDoc._parent;
+	},
+	
+	getChildrenIds: function(){
+		return Object.keys(this._eDoc._children);
 	},
 	
 	getWorkspace: function(){
-		return this.workspace;
+		return this._workspace;
+	},
+	
+	getOwner: function(){
+		return this._eDoc._owner;
 	},
 	
 	$client: {
@@ -35,13 +43,22 @@
 	},
 
 	$server: {
+		$require: ['JSB.System.Kernel'],
 		$disableRpcInstance: true,
 		
+		_entryStore: null,
+		_artifactStore: null,
+		_stored: false,
+
+		
 		$constructor: function(id, workspace){
-		    this.localId = id;
-			this.id = workspace.entryInstanceId(id);
+			this.id = id;
+            this._workspace = workspace;
 			$base();
-            this.workspace = workspace;
+			this._eDoc._id = id;
+			this._eDoc._jsb = this.getJsb().$name;
+			this._eDoc._owner = Kernel.user() || Config.get('kernel.security.admin.user');
+/*			
             if(!this.property('id')) this.property('id', this.localId);
             if(!this.property('fullId')) this.property('fullId', this.id);
             if(!this.property('eType')) this.property('eType', this.getJsb().$name);
@@ -53,6 +70,24 @@
             	this.parent = this.property('parent');
             }
             this.name = this.title();
+*/            
+		},
+		
+		getEntryDoc: function(){
+			return this._eDoc;
+		},
+		
+		loadEntry: function(){
+			this._eDoc = this._entryStore.read(this.getId());
+			this._stored = true;
+		},
+		
+		storeEntry: function(){
+			if(this._stored){
+				return;
+			}
+			this._entryStore.write(this);
+			this._stored = true;
 		},
 
 		remove: function(){
@@ -74,10 +109,38 @@
 		},
 
 		property: function(path, value) {
-		    if (!$jsb.isDefined(value)) {
-		        return this.workspace.getEntryProperty(this, path);
+			if(!path || !JSB.isString(path) || path.length == 0){
+				throw new Error('Invalid property path: ' + JSON.stringify(path));
+			}
+			var parts = path.split(/\.|\/|\\/);
+		    if (!JSB.isDefined(value)) {
+		    	var curDoc = this._eDoc;
+		    	for(var i = 0; i < parts.length; i++){
+		    		curDoc = curDoc[parts[i]];
+		    		if(!JSB.isDefined(curDoc)){
+		    			return;
+		    		}
+		    	}
+		        return curDoc;
 		    } else {
-		        this.workspace.setEntryProperty(this, path, value);
+		    	var curDoc = this._eDoc;
+		    	var mtxName = 'JSB.Workspace.Entry.property.' + this.getId();
+		    	JSB.getLocker().lock(mtxName);
+		    	try {
+			    	for(var i = 0; i < parts.length - 1; i++){
+			    		if(!curDoc[parts[i]]){
+			    			curDoc[parts[i]] = {};
+			    		} else if(!JSB.isObject(curDoc[parts[i]])){
+			    			throw new Error('Invalid property path: ' + path);
+			    		}
+			    		
+			    		curDoc = curDoc[parts[i]];
+			    	}
+			    	curDoc[parts[parts.length - 1]] = value;
+			    	this._stored = false;
+		    	} finally {
+		    		JSB.getLocker().unlock(mtxName);
+		    	}
 		    }
 		},
 
@@ -98,16 +161,12 @@
 			}
 		    return this.property('category', cat);
 		},
-
-		title: function(title){
-			if(title){
-				this.name = title;
+		
+		setName: function(title){
+			if(this.getName() == title){
+				return;
 			}
-		    return this.property('title', title);
-		},
-
-		description: function(description){
-		    return this.property('description', description);
+			this.property('_name', title);
 		},
 		
 		removeChildEntry: function(eid){

@@ -13,6 +13,7 @@
 		workspaceDescriptors: {},
 		workspacesById: {},
 		workspacesByType: {},
+		workspacesByUser: {},
 		configVariables: {},
 		
 		
@@ -37,15 +38,20 @@
 			for(var wType in wTypes){
 				this.workspaceDescriptors[wType] = wTypes[wType];
 			}
-			
+
+			debugger;
+
 			// scan all workspaces
 			this._scanWorkspaces();
 			
 			// enumerate system workspaces
 			for(var wType in this.workspaceDescriptors){
 				if(this.workspaceDescriptors[wType].system){
-					if(!this.workspacesByType[wType]){
-						this.createWorkspace(wType);
+					var wId = this.workspaceDescriptors[wType].workspaceId;
+					if(this.workspacesById[wId]){
+						this.loadWorkspace(wId);
+					} else {
+						this.createWorkspace(wType, wId);
 					}
 				}
 			}
@@ -91,21 +97,66 @@
 					throw new Error('Unable to create entry store due to missing bean: ' + entryStoreCfg.jsb);
 				}
 				var resolvedCfg = this._resolveConfigVariables(entryStoreCfg);
-				var entryStore = new (jsb.getClass())(resolvedCfg, wType);
-				var idIter = entryStore.getWorkspaceIds();
+				var entryStore = new (jsb.getClass())(resolvedCfg);
+				var wsIter = entryStore.getWorkspaces();
 				while(true){
-					var idVal = idIter.next();
-					if(!idVal){
+					var wsDesc = wsIter.next();
+					if(!wsDesc){
 						break;
 					}
-					
+					var wDesc = JSB.merge({
+						wType: wType,
+						wInst: null
+					}, wsDesc);
+					this.workspacesById[wDesc.wId] = wDesc;
+					this.workspacesByType[wType] = this.workspacesByType[wType] || {};
+					this.workspacesByType[wType][wDesc.wId] = wDesc;
+					this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
+					this.workspacesByUser[wDesc.wOwner][wDesc.wId] = wDesc;
 				}
 				
+				entryStore.destroy();
 			}
 		},
 		
-		createWorkspace: function(wType){
-			
+		loadWorkspace: function(wId){
+			var wDesc = this.workspacesById[wId];
+			if(!wDesc){
+				throw new Error('Missing workspace with id: ' + wId);
+			}
+			if(wDesc.wInst){
+				return wDesc.wInst;
+			}
+			var wCfg = this.workspaceDescriptors[wDesc.wType];
+			var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
+			var wCls = JSB.get('JSB.Workspace.Workspace').getClass();
+			var wInst = new wCls(wId, resolvedConf);
+			wInst.load();
+			wDesc.wInst = wInst;
+			return wInst;
+		},
+		
+		createWorkspace: function(wType, wId){
+			var wCfg = this.workspaceDescriptors[wType];
+			var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
+			var wCls = JSB.get('JSB.Workspace.Workspace').getClass();
+			var wInst = new wCls(wId, resolvedConf);
+			if(resolvedConf.defaultName){
+				wInst.setName(resolvedConf.defaultName);
+			}
+			var wDesc = {
+				wId: wId,
+				wType: wType,
+				wInst: wInst,
+				wOwner: wInst.getOwner()
+			};
+			this.workspacesById[wId] = wDesc;
+			this.workspacesByType[wType] = this.workspacesByType[wType] || {}
+			this.workspacesByType[wType][wId] = wDesc;
+			this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
+			this.workspacesByUser[wDesc.wOwner][wId] = wDesc;
+			wInst.store();
+			return wInst;
 		},
 		
 		ensureManager: function(wmKey){
