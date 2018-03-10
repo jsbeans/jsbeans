@@ -38,21 +38,14 @@
 			for(var wType in wTypes){
 				this.workspaceDescriptors[wType] = wTypes[wType];
 			}
-
-			debugger;
-
+			
 			// scan all workspaces
 			this._scanWorkspaces();
 			
-			// enumerate system workspaces
+			// create system workspaces
 			for(var wType in this.workspaceDescriptors){
 				if(this.workspaceDescriptors[wType].system){
-					var wId = this.workspaceDescriptors[wType].workspaceId;
-					if(this.workspacesById[wId]){
-						this.loadWorkspace(wId);
-					} else {
-						this.createWorkspace(wType, wId);
-					}
+					this.createWorkspace(wType);
 				}
 			}
 			
@@ -119,10 +112,60 @@
 			}
 		},
 		
+		createWorkspace: function(wType, opts){
+			if(!wType){
+				throw new Error('Failed to create workspace due to missing it\'s workspace type argument');
+			}
+			var wCfg = this.workspaceDescriptors[wType];
+			if(!wCfg){
+				throw new Error('Failed to create workspace of unknown type: ' + wType);
+			}
+			var wId = null;
+			if(wCfg.system){
+				// check if system workspace has already existed
+				if(this.workspacesByType[wType] && Object.keys(this.workspacesByType[wType]).length > 0){
+					wId = Object.keys(this.workspacesByType[wType])[0];
+					return this.loadWorkspace(wId);
+				}
+			}
+			wId = (opts && opts.id) || wCfg.workspaceId || JSB.generateUid();
+			var wDesc = {
+				wId: wId,
+				wType: wType
+			};
+			
+			var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
+			var wCls = JSB.get('JSB.Workspace.Workspace').getClass();
+			var wInst = new wCls(wId, resolvedConf, wDesc);
+			wDesc.wInst = wInst;
+			wDesc.wOwner = wInst.getOwner();
+			wInst.property('_wt', wType);
+
+			// store indices
+			this.workspacesById[wId] = wDesc;
+			this.workspacesByType[wType] = this.workspacesByType[wType] || {}
+			this.workspacesByType[wType][wId] = wDesc;
+			this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
+			this.workspacesByUser[wDesc.wOwner][wId] = wDesc;
+			
+			// enhance workspace with attributes in opts
+			var name = (opts && opts.name) || wCfg.defaultName;
+			if(name){
+				wInst.setName(name);
+			}
+
+			
+			wInst.store();
+			return wInst;
+		},
+		
 		loadWorkspace: function(wId){
+			if(!wId){
+				throw new Error('Missing workspace id argument while loading workspace');
+			}
 			var wDesc = this.workspacesById[wId];
 			if(!wDesc){
-				throw new Error('Missing workspace with id: ' + wId);
+				throw new Error('Load workspace failed. Missing workspace with id: ' + wId);
 			}
 			if(wDesc.wInst){
 				return wDesc.wInst;
@@ -130,35 +173,60 @@
 			var wCfg = this.workspaceDescriptors[wDesc.wType];
 			var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
 			var wCls = JSB.get('JSB.Workspace.Workspace').getClass();
-			var wInst = new wCls(wId, resolvedConf);
-			wInst.load();
+			var wInst = new wCls(wId, resolvedConf, wDesc);
 			wDesc.wInst = wInst;
+			wDesc.wOwner = wInst.getOwner();
+			
 			return wInst;
 		},
 		
-		createWorkspace: function(wType, wId){
-			var wCfg = this.workspaceDescriptors[wType];
-			var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
-			var wCls = JSB.get('JSB.Workspace.Workspace').getClass();
-			var wInst = new wCls(wId, resolvedConf);
-			if(resolvedConf.defaultName){
-				wInst.setName(resolvedConf.defaultName);
+		getWorkspacesInfo: function(user){
+			var infoArr = [];
+			var wMap = null;
+			if(Kernel.isAdmin()){
+				if(user){
+					wMap = this.workspacesByUser[user];
+				} else {
+					wMap = this.workspacesById;
+				}
+			} else {
+				user = Kernel.user();
+				wMap = this.workspacesByUser[user];
 			}
-			var wDesc = {
-				wId: wId,
-				wType: wType,
-				wInst: wInst,
-				wOwner: wInst.getOwner()
-			};
-			this.workspacesById[wId] = wDesc;
-			this.workspacesByType[wType] = this.workspacesByType[wType] || {}
-			this.workspacesByType[wType][wId] = wDesc;
-			this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
-			this.workspacesByUser[wDesc.wOwner][wId] = wDesc;
-			wInst.store();
-			return wInst;
+			if(wMap && Object.keys(wMap).length > 0){
+				for(wId in wMap){
+					infoArr.push({
+						wId: wId,
+						wType: wMap[wId].wType,
+						wOwner: wMap[wId].wOwner
+					});
+				} 
+			}
+			
+			return infoArr;
 		},
 		
+		getWorkspaceInfo: function(wId){
+			var wDesc = this.workspacesById[wId];
+			if(!wDesc){
+				throw new Error('Missing workspace with id: ' + wId);
+			}
+			if(Kernel.isAdmin() || wDesc.wOwner == Kernel.user()){
+				return {
+					wId: wId,
+					wType: wDesc.wType,
+					wOwner: wDesc.wOwner
+				};
+			}
+			throw new Error('Workspace restricted for user: ' + Kernel.user());
+		},
+		
+		getWorkspace: function(wId){
+			var wDesc = this.getWorkspaceInfo(wId);
+			return this.loadWorkspace(wDesc.wId);
+		},
+		
+/*		
 		ensureManager: function(wmKey){
 			if(!wmKey){
 				throw new Error('No wmKey specified');
@@ -187,7 +255,7 @@
 			}
 			return this.managers[wmKey];
 		},
-		
+*/		
 		registerExplorerNode: function(wmKeys, entryType, priority, nodeType){
 			var locker = JSB.getLocker();
 			locker.lock('registerExplorerNode_' + this.getId());

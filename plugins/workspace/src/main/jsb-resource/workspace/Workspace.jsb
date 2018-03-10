@@ -13,11 +13,13 @@
 		$disableRpcInstance: true,
 		
 		config: null,
+		wDesc: null,
+		_entries: {},
+		_changedEntries: {},
 		
-		$constructor: function(id, cfg){
-            $base(id, null);
-            
+		$constructor: function(id, cfg, wDesc){
             this.config = cfg;
+            this.wDesc = wDesc;
             
             // create entry store
             var entryStoreCfg = this.config.entryStore;
@@ -40,26 +42,101 @@
 				throw new Error('Unable to create entry store due to missing bean: ' + artifactStoreCfg.jsb);
 			}
 			this._artifactStore = new (artifactStoreJSB.getClass())(artifactStoreCfg);
+			
+            $base(id, this);
+
 		},
 		
-		load: function(){
-			this.loadEntry();
-			
-			// scan workspace entries
-			var ids = this._entryStore.getEntryIds();
-/*			
-		    var self = this;
-		    this._locked('body', function(){
-		        if (self.existsArtifact(self.MAIN_ARTIFACT)) {
-		            self.body = self.readArtifactAsJson(self.MAIN_ARTIFACT);
-		        } else {
-		            self.body = self._emptyBody();
-		        }
-		        self.bodyChanged();
-		    });
-*/		    
+		getWorkspaceType: function(){
+			return this.property('_wt');
 		},
-
+		
+		loadEntry: function(){
+			$base();
+			
+			// fill entry indices
+			var jsbArr = this.property('_jsbs');
+			var eIdx = this.property('_entries');
+			
+			for(var eId in eIdx){
+				var seDesc = eIdx[eId];
+				var eDesc = {
+					eId: eId,
+					eType: jsbArr[seDesc._j],
+					eName: seDesc._n,
+					eOpts: seDesc._e || null,
+					aOpts: seDesc._a || null
+				};
+				this._entries[eId] = eDesc;
+			}
+		},
+		
+		_markEntryStored: function(entry, bStored){
+			if(entry == this){
+				return;
+			}
+			if(!bStored){
+				this._changedEntries[entry.getId()] = true;
+			} else {
+				if(this._changedEntries[entry.getId()]){
+					delete this._changedEntries[entry.getId()];
+				}
+				
+				// check storeOpts changed
+				var eDesc = this._ensureEntryDesc(entry);
+				if(!JSB.isEqual(entry._entryStoreOpts, eDesc.eOpts)){
+					eDesc.eOpts = entry._entryStoreOpts;
+					this._markStored(false);
+				}
+				if(!JSB.isEqual(entry._artifactStoreOpts, eDesc.aOpts)){
+					eDesc.aOpts = entry._artifactStoreOpts;
+					this._markStored(false);
+				}
+			}
+		},
+		
+		_changeEntryName: function(entry){
+			if(entry == this){
+				return;
+			}
+			var eDesc = this._ensureEntryDesc(entry);
+			eDesc.eName = entry.getName();
+			this._markStored(false);
+		},
+		
+		_ensureEntryDesc: function(entry){
+			var eDesc = this._entries[entry.getId()];
+			if(!eDesc){
+				eDesc = this._entries[entry.getId()] = {
+					eId: entry.getId(),
+					eType: entry.getJsb().$name,
+					eName: entry.getName(),
+					eInst: null,
+					eOpts: entry._entryStoreOpts,
+					aOpts: entry._artifactStoreOpts
+				};
+				entry._markStored(false);
+				this._markStored(false);
+			}
+			eDesc.eInst = entry;
+			return eDesc;
+		},
+		
+		attachEntry: function(entry){
+			if(entry == this){
+				return;	// not need attach workspace to itself 
+			}
+			entry._entryStore = this._entryStore;
+			entry._artifactStore = this._artifactStore;
+			
+			var eDesc = this._ensureEntryDesc(entry);
+			
+			entry._entryStoreOpts = eDesc.eOpts;
+			entry._artifactStoreOpts = eDesc.aOpts;
+		},
+		
+		
+/*		
 		update: function(){
             var entries = this.entries();
             var entry;
@@ -67,10 +144,46 @@
                 entry.update();
             }
 		},
-
+*/
 		store: function(){
-			this.storeEntry();
+			// store changed entries
+			if(Object.keys(this._changedEntries).length > 0){
+				var changedEntries = JSB.clone(this._changedEntries);
+				for(var eId in changedEntries){
+					this.entry(eId).storeEntry();
+				}
+			}
+			
+			if(!this._stored){
+				// serialize entry indices
+				var eIdx = {};
+				var jsbDict = {};
+				var jsbArr = [];
+				for(var eId in this._entries){
+					var jsbIdx = jsbDict[this._entries[eId].eType];
+					if(!JSB.isDefined(jsbIdx)){
+						jsbIdx = jsbDict[this._entries[eId].eType] = jsbArr.length;
+						jsbArr.push(this._entries[eId].eType);
+					}
+					eIdx[eId] = {
+						_j: jsbIdx,
+						_n: this._entries[eId].eName
+					}
+					if(this._entries[eId].eOpts){
+						eIdx[eId]._e = this._entries[eId].eOpts;
+					}
+					if(this._entries[eId].aOpts){
+						eIdx[eId]._a = this._entries[eId].aOpts;
+					}
+				}
+				this.property('_jsbs', jsbArr);
+				this.property('_entries', eIdx);
+				
+				// store entry file
+				this.storeEntry();
+			}
 		},
+		
 
 		clean: function(){
 		    var self = this;
@@ -152,34 +265,13 @@
 			return false;
 		},
 
-		entry: function(id, eType){
-		    var insId = this.entryInstanceId(id);
-		    var entry = JSB().getInstance(insId);
-		    if (!entry) {
-		        var self = this;
-		        entry = this._locked(insId, function(){
-                    var entry = JSB().getInstance(insId);
-                    if (!entry) {
-                    	if(!eType){
-                    		eType = $this._getProperty($this.entriesPath(id) + '.eType');
-                    	}
-                    	if($jsb.isString(eType)){
-                    		eJsb = $jsb.get(eType);
-                    		if(!eJsb){
-                    			throw new Error('Failed to find entry type: ' + eType);
-                    		}
-                    		eType = eJsb.getClass();
-                    	} else if(eType instanceof JSB){
-                    		eType = eType.getClass();
-                    	} else if(!eType) {
-                    		return null;
-                    	}
-                        entry = new eType(id, self);
-                    }
-                    return entry;
-		        });
-		    }
-		    return entry;
+		entry: function(id){
+			var eDesc = this._entries[id];
+			if(eDesc.eInst){
+				return eDesc.eInst;
+			}
+			
+			debugger;
 		},
 
 		entryByValue: function(path, value) {

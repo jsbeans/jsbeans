@@ -168,7 +168,7 @@
 		user: function(){
 			var user = Bridge.getCurrentUser();
 			if(!user){
-				return null;
+				return Config.get('kernel.security.admin.user');
 			}
 			return '' + user;
 		},

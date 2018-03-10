@@ -43,17 +43,26 @@
 			}
 		},
 		
-		read: function(eDesc){
-			var eFileName = FileSystem.join(this.options.workspaceDirectory, id + '.json');
-			var dataStr = FileSystem.read(eFileName);
-			var data = JSON.parse(dataStr);
-			return data;
+		read: function(entry){
+			var ext = this.options.entryExt || 'entry';
+			var eDir = null;
+			if(entry.getWorkspace() == entry){
+				ext = this.options.workspaceExt || 'ws';
+				eDir = FileSystem.join(this.options.baseDirectory, entry.getOwner(), entry.getId());
+			} else {
+				eDir = FileSystem.join(this.options.baseDirectory, entry.getWorkspace().getOwner(), entry.getWorkspace().getId());
+			}
+			var eFileName = FileSystem.join(eDir, entry.getId() + '.' + ext);
+			if(FileSystem.exists(eFileName)){
+				var dataStr = FileSystem.read(eFileName);
+				return JSON.parse(dataStr);
+			}
 		},
 		
 		write: function(entry){
 			var ext = this.options.entryExt || 'entry';
 			var eDir = null;
-			if(!entry.getWorkspace()){
+			if(entry.getWorkspace() == entry){
 				ext = this.options.workspaceExt || 'ws';
 				eDir = FileSystem.join(this.options.baseDirectory, entry.getOwner(), entry.getId());
 			} else {
@@ -71,13 +80,8 @@
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
-		},
-		
-		getEntries: function(){
-			var ext = this.options.entryExt || 'entry';
-			var entryFiles = FileSystem.list(this.options.workspaceDirectory, {directories: false, links: false, filter: '*.' + ext});
-			debugger;
 		}
+		
 
 	}
 }

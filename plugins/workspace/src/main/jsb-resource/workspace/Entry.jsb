@@ -49,6 +49,8 @@
 		_entryStore: null,
 		_artifactStore: null,
 		_stored: false,
+		_entryStoreOpts: null,
+		_artifactStoreOpts: null,
 
 		
 		$constructor: function(id, workspace){
@@ -57,20 +59,17 @@
 			$base();
 			this._eDoc._id = id;
 			this._eDoc._jsb = this.getJsb().$name;
-			this._eDoc._owner = Kernel.user() || Config.get('kernel.security.admin.user');
-/*			
-            if(!this.property('id')) this.property('id', this.localId);
-            if(!this.property('fullId')) this.property('fullId', this.id);
-            if(!this.property('eType')) this.property('eType', this.getJsb().$name);
-            
-            if(this.property('children')){
-            	this.children = this.property('children');
-            }
-            if(this.property('parent')){
-            	this.parent = this.property('parent');
-            }
-            this.name = this.title();
-*/            
+			this._eDoc._owner = Kernel.user();
+			if(!this._workspace){
+				throw new Error('Failed to create entry: "' + this.getJsb().$name + '" due to missing workspace argument');
+			}
+			this._workspace.attachEntry(this);
+			this.loadEntry();
+		},
+		
+		_markStored: function(bStored){
+			this._stored = bStored;
+			this._workspace._markEntryStored(this, bStored);
 		},
 		
 		getEntryDoc: function(){
@@ -78,8 +77,11 @@
 		},
 		
 		loadEntry: function(){
-			this._eDoc = this._entryStore.read(this.getId());
-			this._stored = true;
+			var doc = this._entryStore.read(this);
+			if(doc){
+				this._eDoc = doc;	
+				this._markStored(true);
+			}
 		},
 		
 		storeEntry: function(){
@@ -87,13 +89,13 @@
 				return;
 			}
 			this._entryStore.write(this);
-			this._stored = true;
+			this._markStored(true);
 		},
 
 		remove: function(){
 			// dissociate from parent
 			if(this.parent){
-				this.workspace.entry(this.parent).removeChildEntry(this);
+				this.getWorkspace().entry(this.parent).removeChildEntry(this);
 			}
 			// remove children
 			if(this.children){
@@ -104,7 +106,7 @@
 				}
 			}
 			
-		    this.workspace.setEntryProperty(this, '', null, true);
+		    this.getWorkspace().setEntryProperty(this, '', null, true);
 			this.destroy();
 		},
 
@@ -137,7 +139,7 @@
 			    		curDoc = curDoc[parts[i]];
 			    	}
 			    	curDoc[parts[parts.length - 1]] = value;
-			    	this._stored = false;
+			    	this._markStored(false);
 		    	} finally {
 		    		JSB.getLocker().unlock(mtxName);
 		    	}
@@ -167,6 +169,7 @@
 				return;
 			}
 			this.property('_name', title);
+			this.getWorkspace()._changeEntryName(this);
 		},
 		
 		removeChildEntry: function(eid){
