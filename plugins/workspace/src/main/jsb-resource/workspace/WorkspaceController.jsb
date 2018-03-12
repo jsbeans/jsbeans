@@ -129,6 +129,9 @@
 				}
 			}
 			wId = (opts && opts.id) || wCfg.workspaceId || JSB.generateUid();
+			if(this.workspacesById[wId]){
+				return this.loadWorkspace(wId);
+			}
 			var wDesc = {
 				wId: wId,
 				wType: wType

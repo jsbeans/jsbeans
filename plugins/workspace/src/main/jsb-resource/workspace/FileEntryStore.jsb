@@ -43,6 +43,19 @@
 			}
 		},
 		
+		reserve: function(entry){
+			if(entry.getWorkspace() == entry){
+				return;
+			}
+			if(this.options.pageDirectoryName && (!JSB.isDefined(entry._entryStoreOpts) || JSB.isNull(entry._entryStoreOpts))){
+				if(this.options.pageSize){
+					entry._entryStoreOpts = parseInt(entry.getWorkspace().entries().count() / this.options.pageSize);
+				} else {
+					entry._entryStoreOpts = 0;
+				}
+			}
+		},
+		
 		read: function(entry){
 			var ext = this.options.entryExt || 'entry';
 			var eDir = null;
@@ -51,11 +64,20 @@
 				eDir = FileSystem.join(this.options.baseDirectory, entry.getOwner(), entry.getId());
 			} else {
 				eDir = FileSystem.join(this.options.baseDirectory, entry.getWorkspace().getOwner(), entry.getWorkspace().getId());
+				if(this.options.pageDirectoryName && JSB.isNumber(entry._entryStoreOpts)){
+					eDir = FileSystem.join(eDir, this.options.pageDirectoryName + entry._entryStoreOpts);
+				}
 			}
 			var eFileName = FileSystem.join(eDir, entry.getId() + '.' + ext);
-			if(FileSystem.exists(eFileName)){
-				var dataStr = FileSystem.read(eFileName);
-				return JSON.parse(dataStr);
+			var mtxName = 'JSB.Workspace.FileEntryStore.' + entry.getId();
+			JSB.getLocker().lock(mtxName);
+			try {
+				if(FileSystem.exists(eFileName)){
+					var dataStr = FileSystem.read(eFileName);
+					return JSON.parse(dataStr);
+				}
+			} finally {
+				JSB.getLocker().unlock(mtxName);
 			}
 		},
 		
@@ -67,6 +89,9 @@
 				eDir = FileSystem.join(this.options.baseDirectory, entry.getOwner(), entry.getId());
 			} else {
 				eDir = FileSystem.join(this.options.baseDirectory, entry.getWorkspace().getOwner(), entry.getWorkspace().getId());
+				if(this.options.pageDirectoryName && JSB.isNumber(entry._entryStoreOpts)){
+					eDir = FileSystem.join(eDir, this.options.pageDirectoryName + entry._entryStoreOpts);
+				}
 			}
 			var eFileName = FileSystem.join(eDir, entry.getId() + '.' + ext);
 			var mtxName = 'JSB.Workspace.FileEntryStore.' + entry.getId();

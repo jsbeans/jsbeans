@@ -64,8 +64,8 @@
 					eId: eId,
 					eType: jsbArr[seDesc._j],
 					eName: seDesc._n,
-					eOpts: seDesc._e || null,
-					aOpts: seDesc._a || null
+					eOpts: JSB.isDefined(seDesc._e) ? seDesc._e : null,
+					aOpts: JSB.isDefined(seDesc._a) ? seDesc._a : null
 				};
 				this._entries[eId] = eDesc;
 			}
@@ -75,11 +75,16 @@
 			if(entry == this){
 				return;
 			}
+			var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + this.getId();
 			if(!bStored){
+				JSB.getLocker().lock(chMtxName);
 				this._changedEntries[entry.getId()] = true;
+				JSB.getLocker().unlock(chMtxName);
 			} else {
 				if(this._changedEntries[entry.getId()]){
+					JSB.getLocker().lock(chMtxName);
 					delete this._changedEntries[entry.getId()];
+					JSB.getLocker().unlock(chMtxName);
 				}
 				
 				// check storeOpts changed
@@ -107,16 +112,26 @@
 		_ensureEntryDesc: function(entry){
 			var eDesc = this._entries[entry.getId()];
 			if(!eDesc){
-				eDesc = this._entries[entry.getId()] = {
-					eId: entry.getId(),
-					eType: entry.getJsb().$name,
-					eName: entry.getName(),
-					eInst: null,
-					eOpts: entry._entryStoreOpts,
-					aOpts: entry._artifactStoreOpts
-				};
-				entry._markStored(false);
-				this._markStored(false);
+				var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
+				JSB.getLocker().lock(eMtxName);
+				try {
+					eDesc = this._entries[entry.getId()];
+					if(!eDesc){
+						entry._entryStore.reserve(entry);
+						eDesc = this._entries[entry.getId()] = {
+							eId: entry.getId(),
+							eType: entry.getJsb().$name,
+							eName: entry.getName(),
+							eInst: null,
+							eOpts: entry._entryStoreOpts,
+							aOpts: entry._artifactStoreOpts
+						};
+						entry._markStored(false);
+						this._markStored(false);
+					}
+				} finally {
+					JSB.getLocker().unlock(eMtxName);
+				}
 			}
 			eDesc.eInst = entry;
 			return eDesc;
@@ -146,41 +161,55 @@
 		},
 */
 		store: function(){
-			// store changed entries
-			if(Object.keys(this._changedEntries).length > 0){
-				var changedEntries = JSB.clone(this._changedEntries);
-				for(var eId in changedEntries){
-					this.entry(eId).storeEntry();
-				}
-			}
-			
-			if(!this._stored){
-				// serialize entry indices
-				var eIdx = {};
-				var jsbDict = {};
-				var jsbArr = [];
-				for(var eId in this._entries){
-					var jsbIdx = jsbDict[this._entries[eId].eType];
-					if(!JSB.isDefined(jsbIdx)){
-						jsbIdx = jsbDict[this._entries[eId].eType] = jsbArr.length;
-						jsbArr.push(this._entries[eId].eType);
-					}
-					eIdx[eId] = {
-						_j: jsbIdx,
-						_n: this._entries[eId].eName
-					}
-					if(this._entries[eId].eOpts){
-						eIdx[eId]._e = this._entries[eId].eOpts;
-					}
-					if(this._entries[eId].aOpts){
-						eIdx[eId]._a = this._entries[eId].aOpts;
+			var mtxName = 'JSB.Workspace.Workspace.store.' + this.getId();
+			JSB.getLocker().lock(mtxName);
+			try {
+				// store changed entries
+				if(Object.keys(this._changedEntries).length > 0){
+					var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + this.getId();
+					
+					JSB.getLocker().lock(chMtxName);
+					var changedEntries = JSB.clone(this._changedEntries);
+					JSB.getLocker().unlock(chMtxName);
+					
+					for(var eId in changedEntries){
+						this.entry(eId).storeEntry();
 					}
 				}
-				this.property('_jsbs', jsbArr);
-				this.property('_entries', eIdx);
 				
-				// store entry file
-				this.storeEntry();
+				if(!this._stored){
+					// serialize entry indices
+					var eIdx = {};
+					var jsbDict = {};
+					var jsbArr = [];
+					var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
+					JSB.getLocker().lock(eMtxName);
+					for(var eId in this._entries){
+						var jsbIdx = jsbDict[this._entries[eId].eType];
+						if(!JSB.isDefined(jsbIdx)){
+							jsbIdx = jsbDict[this._entries[eId].eType] = jsbArr.length;
+							jsbArr.push(this._entries[eId].eType);
+						}
+						eIdx[eId] = {
+							_j: jsbIdx,
+							_n: this._entries[eId].eName
+						}
+						if(!JSB.isNull(this._entries[eId].eOpts)){
+							eIdx[eId]._e = this._entries[eId].eOpts;
+						}
+						if(!JSB.isNull(this._entries[eId].aOpts)){
+							eIdx[eId]._a = this._entries[eId].aOpts;
+						}
+					}
+					JSB.getLocker().unlock(eMtxName);
+					this.property('_jsbs', jsbArr);
+					this.property('_entries', eIdx);
+					
+					// store entry file
+					this.storeEntry();
+				}
+			} finally {
+				JSB.getLocker().unlock(mtxName);
 			}
 		},
 		
@@ -207,54 +236,30 @@
 		    this.destroy();
 		},
 
-		entryIds: function(){
-		    var self = this;
-		    this.checkInitialized();
-
-		    return this._locked('body', function(){
-		        var localIds = Object.keys(self.body.entries);
-		        //JSB.getLogger().info('count: ' + localIds.length + '; entries: ' + JSON.stringify(localIds));
-		        var i = 0;
-		        return {
-		            next: function() {
-		            	//JSB.getLogger().info('pos: ' + i + '; entry: ' + localIds[i]);
-		                while(i < localIds.length && (!localIds[i] || !self.body.entries[localIds[i]] || Object.keys(self.body.entries[localIds[i]]).length == 0 || !self.body.entries[localIds[i]].eType)) {
-		                    i++;
-		                }
-
-		                if (i < localIds.length) {
-		                    return localIds[i++];
-		                }
-		            }
-		        };
-		    });
-		},
-
 		entries: function(){
-		    var localIds = this.entryIds();
-		    var self = this;
+		    var ids = Object.keys(this._entries);
+		    var cursor = 0;
             return {
                 next: function() {
-                    var localId = localIds.next();
-                    if (typeof localId !== 'undefined') {
-                        return self.entry(localId);
-                    }
+                	if(cursor >= ids.length){
+                		return;
+                	}
+                	var curId = ids[cursor++];
+                	if(curId){
+                		return $this.entry(curId);
+                	}
                 },
-                nextFiltered: function(filter){
-                    var next = this.next();
-                    do {
-                        if (typeof next !== 'undefined') {
-                            if (filter.call(this, next)){
-                                return next;
-                            }
-                        }
-                    } while(next = this.next());
+                hasNext: function(){
+                	return ids && ids.length > 0 && cursor < ids.length;
+                },
+                count: function(){
+                	return ids && ids.length || 0;
                 }
             };
 		},
 		
 		existsEntry: function(id){
-			return !!this.entry(id);
+			return !!this._entries[id];
 		},
 		
 		removeEntry: function(id){
@@ -267,28 +272,27 @@
 
 		entry: function(id){
 			var eDesc = this._entries[id];
+			if(!eDesc){
+				throw new Error('Failed to find workspace entry with id: ' + id);
+			}
 			if(eDesc.eInst){
 				return eDesc.eInst;
 			}
+			var eJsb = JSB.get(eDesc.eType);
+			if(!eJsb){
+				throw new Error('Failed to create workspace entry with id: "' + id + '" due to missing it\'s bean: ' + eDesc.eType);
+			}
+			var eInst = new (eJsb.getClass())(id, this);
+			eDesc.eInst = eInst;
 			
-			debugger;
+			return eInst;
 		},
 
-		entryByValue: function(path, value) {
-		    function filter(entry) {
-                if (entry.property(path) == value) {
-                    return true;
-                }
-		    }
-            for (var entry, it = this.entries(); entry = it.nextFiltered(filter);){
-                if (entry) return entry;
-		    }
-		},
-
+/*
 		entryInstanceId: function(id) {
 		    return this.id + '-' + id;
 		},
-
+*/
 		artifactPath: function(path){
 		    var path = this.workspaceManager.artifactsStore.subPath(this.localId, path);
 		    return this.workspaceManager.artifactPath(path);
@@ -333,7 +337,7 @@
 		        // TODO: backup all artifacts
 		    }
 		},
-
+/*
         entriesPath: function(path){
             if (typeof path === 'undefined') {
                 return 'entries';
@@ -365,7 +369,7 @@
                 entries: {},
             };
         },
-
+*/
 
 		_locked: function(id, func) {
             var locker = JSB().getLocker();

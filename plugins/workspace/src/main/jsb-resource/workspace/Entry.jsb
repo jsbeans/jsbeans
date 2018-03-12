@@ -79,8 +79,8 @@
 		loadEntry: function(){
 			var doc = this._entryStore.read(this);
 			if(doc){
-				this._eDoc = doc;	
-				this._markStored(true);
+				this._eDoc = doc;
+				this._stored = true;
 			}
 		},
 		
