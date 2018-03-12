@@ -93,6 +93,8 @@
         }
     },
     $client: {
+        _filterPropName: 'name',
+
         refresh: function(opts){
             if(!$base(opts)){
                 return;
@@ -201,39 +203,6 @@
                         plotOptions: {
                             pie: {
                                 showInLegend: this.getContext().find('legend enabled').checked()
-                            },
-                            series: {
-                                point: {
-                                    events: {
-                                        click: function(evt) {
-                                            evt.preventDefault();
-
-                                            if(evt.point.series.options.datacube.filtration){
-                                                if(evt.point.selected){
-                                                    $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                                } else {
-                                                    $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                                }
-                                            }
-
-                                            if(evt.point.series.options.datacube.drilldown){
-                                                $this.addDrilldownElement({
-                                                    /*
-                                                    filterOpts: {
-                                                        binding: evt.point.options.datacube.binding,
-                                                        value:
-                                                    },
-                                                    */
-                                                    widget: evt.point.series.options.datacube.drilldown.widget
-                                                });
-                                            }
-
-                                            if(JSB().isFunction($this.options.onClick)){
-                                                $this.options.onClick.call(this, evt);
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
@@ -249,74 +218,6 @@
                 console.log(ex);
             } finally {
                 return baseChartOpts;
-            }
-        },
-
-        _addFilter: function(point, accumulate){
-            var context = this.getContext().find('source').binding();
-            if(!context.source) {
-                return;
-            }
-
-            var fDesc = {
-            	sourceId: context.source,
-            	type: '$or',
-            	op: '$eq',
-            	field: point.datacube.binding,
-            	value: point.name
-            };
-
-            if(!accumulate && Object.keys(this._curFilters).length > 0){
-                this._select(this._curFilters, false, true);
-
-                for(var i in this._curFilters){
-                    this.removeFilter(i);
-                }
-
-                this._curFilters = {};
-            }
-
-            this._curFilters[this.addFilter(fDesc)] = fDesc;
-            this._select(this._curFilters, true, true);
-            this.refreshAll();
-        },
-
-        _removeFilter: function(point, accumulate){
-            if(accumulate){
-                for(var i in this._curFilters){
-                    if(this._curFilters[i].field === point.options.datacube.binding && this._curFilters[i].value === point.name){
-                        var filter = {};
-                        filter[i] = this._curFilters[i];
-                        this._select(filter, false, true);
-                        this.removeFilter(i);
-                        delete this._curFilters[i];
-                        this.refreshAll();
-                        break;
-                    }
-                }
-            } else {
-                this._select(this._curFilters, false, true);
-
-                for(var i in this._curFilters){
-                    this.removeFilter(i);
-                }
-                this._curFilters = {};
-                this.refreshAll();
-            }
-        },
-
-        _select: function(filters, b1, b2){
-            for(var i in filters){
-                for(var j = 0; j < this.chart.series.length; j++){
-                    if(this.chart.series[j].options.datacube.binding === filters[i].field){
-                        for(var k = 0; k < this.chart.series[j].points.length; k++){
-                            if(filters[i].value === this.chart.series[j].points[k].name){
-                                this.chart.series[j].points[k].select(b1, b2);
-                                break;
-                            }
-                        }
-                    }
-                }
             }
         }
     }

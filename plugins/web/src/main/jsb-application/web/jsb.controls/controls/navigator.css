@@ -5,8 +5,14 @@
     padding: 2px;
 }
 
-.jsb-navigator > .navigatorPane {
+.jsb-navigator > .leftScroll,
+.jsb-navigator > .rightScroll {
 
+}
+
+.jsb-navigator > .navigatorPane {
+    white-space: nowrap;
+    position: absolute;
 }
 
 .jsb-navigator > .navigatorPane li {
@@ -38,5 +44,5 @@
     background-color: #d37531;
     color: #fff;
     text-shadow: 1px 1px #7E3C17;
-    cursor: default;
+    cursor: initial;
 }

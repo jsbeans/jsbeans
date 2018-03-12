@@ -136,8 +136,8 @@
 				if(!opts || opts.dashboard != $this.getDashboard()){
 					return;
 				}
-				$this.mainWidget.ensureInitialized(function(){
-			    	 $this.getWidget().refresh(opts);
+				$this.currentWidget.ensureInitialized(function(){
+			    	 $this.currentWidget.refresh(opts);
 				});
 			});
 
@@ -199,6 +199,9 @@
                     $this.append(widget);
 
                     widget.ensureInitialized(function(){
+                        if(opts.filterOpts){
+                            widget.setContextFilter(opts.filterOpts);
+                        }
                         widget.refresh();
                     });
 

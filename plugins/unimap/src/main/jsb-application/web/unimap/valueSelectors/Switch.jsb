@@ -24,7 +24,9 @@
 
         if(!values){
             main = true;
-            values = this._values[0];
+            if(JSB.isDefined(this._values[0])){
+                values = this._values[0];
+            }
         }
 
         var res;

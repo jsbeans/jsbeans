@@ -1143,11 +1143,9 @@
 
         // refresh after data and/or style changes
         buildChart: function(data){
-            JSB.defer(function(){
-                $this.ensureDataLoaded(function(){
-                    $this._buildChart(data);
-                });
-            }, 300, 'buildChart_' + this.getId());
+            this.ensureDataLoaded(function(){
+                $this._buildChart(data);
+            });
         },
 
         _buildChart: function(data){

@@ -2,6 +2,8 @@
 	$name: 'JSB.Controls.Navigator',
 	$parent: 'JSB.Controls.Control',
 	$client: {
+	    _clickX: null,
+
 	    $constructor: function(opts){
 	        $base(opts);
 
@@ -10,18 +12,43 @@
 
 			this._leftScroll = this.$('<div class="leftScroll hidden"></div>');
 			this.append(this._leftScroll);
+			this._leftScroll.click(function(){
+
+			});
 
 			this._navigatorPane = this.$('<ul class="navigatorPane"></ul>');
 			this.append(this._navigatorPane);
 
 			this._rightScroll = this.$('<div class="rightScroll hidden"></div>');
 			this.append(this._rightScroll);
+			this._rightScroll.click(function(){
 
+			});
+
+			this._navigatorPane.mousedown(function(e){
+			    if($this._navigatorPane.width() > $this.getElement().width()){
+                    $this._clickX = e.pageX;
+                    //document.body.style.cursor = 'move';
+
+                    $this._navigatorPane.on('mousemove.navigator', function(e){
+                        var pos = $this._navigatorPane.position().left - $this._clickX + e.pageX;
+                        pos = pos > 0 ? 0 : pos < $this._navigatorPane.width() - $this.getElement().width() ? $this.getElement().width() - $this._navigatorPane.width() : pos;
+                        $this._navigatorPane.css({left: pos});
+                    });
+
+                    $this.$(document).on('mouseup.navigator', function(e){
+                        e.stopPropagation();
+                        $this._navigatorPane.off('mousemove.navigator');
+                        $this.$(document).off('mouseup.navigator');
+                        //document.body.style.cursor = 'default';
+                    });
+			    }
+			});
 			/*
-			this._rightScroll.hover(function(){
+			this._changeButtonVisibility();
 
-			}, function(){
-
+			this.getElement().resize(function(){
+			    $this._changeButtonVisibility();
 			});
 			*/
         },
@@ -69,7 +96,7 @@
                 }
             }
 
-            this._elements.splice(index, this._elements.length);
+            this._elements.splice(index + 1, this._elements.length);
 
             this.$(elements[index]).nextAll().remove();
         },
@@ -80,6 +107,22 @@
 
         removeElement: function(key){
             // todo
+        },
+
+        _changeButtonVisibility: function(){
+            var left = this._navigatorPane.position().left;
+
+            if(left === '0'){
+                this._leftScroll.addClass('hidden');
+            } else {
+                this._leftScroll.removeClass('hidden');
+            }
+
+            if(this.getElement().width() - this._navigatorPane.width() === left){
+                this._rightScroll.addClass('hidden');
+            } else {
+                this._rightScroll.removeClass('hidden');
+            }
         }
     }
 }
