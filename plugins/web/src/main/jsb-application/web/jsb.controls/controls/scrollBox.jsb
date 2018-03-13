@@ -9,7 +9,7 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			this.addClass('scrollBox');
+			this.addClass('jsb-scrollBox');
 			this.loadCss('scrollBox.css');
 
             if(!this.options.xAxisScroll){

@@ -9,7 +9,44 @@
 
 	    chart: {},
 
-	    series: {},
+	    series: {
+	        render: 'group',
+	        name: 'Серии',
+            collapsable: true,
+            multiple: true,
+            items: {
+                seriesItem: {
+                    render: 'group',
+                    name: 'Серия',
+                    collapsable: true,
+                    items: {
+                        allowPointSelect: {
+                            render: 'switch',
+                            name: 'Разрешить события',
+                            optional: 'checked',
+                            items: {
+                                filtration: {
+                                    render: 'item',
+                                    name: 'Фильтрация',
+                                    optional: 'checked',
+                                    editor: 'none'
+                                },
+                                drilldown: {
+                                    render: 'switch',
+                                    name: 'Drilldown',
+                                    items: {
+                                        widget: {
+                                            render: 'completeWidget',
+                                            name: 'Виджет'
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+	    },
 
         xAxis: {},
 
@@ -481,7 +518,11 @@
 	    }
     },
     $client: {
-        $require: ['JQuery.UI.Loader', 'JSB.Tpl.Highcharts'],
+        $require: ['JSB.Tpl.Highcharts'],
+
+	    _curFilters: {},
+	    _curFilterHash: null,
+	    _filterPropName: null,
 
         $constructor: function(opts){
             $base(opts);
@@ -514,7 +555,7 @@
         refresh: function(opts){
             // if filter source is current widget
             if(opts && this == opts.initiator){
-                return;
+                return false;
             }
 
             // widget settings editor set style changes
@@ -522,31 +563,42 @@
                 var cache = this.getCache();
                 if(cache){
                     this.buildChart(cache);
-                    return;
+                    return false;
                 }
             }
 
-            var dataSource = this.getContext().find('source');
-            if(!dataSource.hasBinding()){
-                return;
+            if(opts && opts.updateStyles){
+                this._styles = null;
+                this._dataSource = null;
+                this._schemeOpts = null;
+            }
+
+            if(!this._dataSource){
+                var dataSource = this.getContext().find('source');
+
+                if(!dataSource.hasBinding()){
+                    return false;
+                }
+
+                this._dataSource = dataSource;
             }
 
             $base();
 
-            return dataSource;
+            return true;
         },
 
-        // refresh after data and/or style changes
         buildChart: function(data){
-            JSB.defer(function(){
-                var chartOpts = $this._buildChart(data);
+            var chartOpts = this._buildChart(data);
 
-                if($this.chart){
-                    $this.chart.update(chartOpts);
-                } else {
-                    $this.chart = (function(){return this}).call(null).Highcharts.chart($this.container.get(0), chartOpts);
-                }
-            }, 300, '_buildChart_' + this.getId());
+            if(this.chart){
+                this.chart.update(chartOpts);
+            } else {
+                this.chart = (function(){return this}).call(null).Highcharts.chart(this.container.get(0), chartOpts);
+            }
+
+            this._select(this._curFilters, true, true);
+            this._resolvePointContextFilters();
         },
 
         _buildChart: function(){
@@ -556,10 +608,38 @@
                 var creditsContext = this.getContext().find('credits'),
                     legendContext = this.getContext().find('legend'),
                     plotOptionsContext = this.getContext().find('plotOptions series'),
+                    seriesContext = this.getContext().find('series').values(),
                     titleContext = this.getContext().find('header'),
                     tooltipContext = this.getContext().find('mainTooltip'),
 
-                    legendItemStyle = legendContext.find('itemStyle');
+                    legendItemStyle = legendContext.find('itemStyle'),
+
+                    series = [];
+
+                for(var i = 0; i < seriesContext.length; i++){
+                    var allowPointSelect = seriesContext[i].find('allowPointSelect').checked(),
+                        datacube = undefined;
+
+                    if(allowPointSelect){
+                        var isDrilldown = seriesContext[i].find('allowPointSelect drilldown').checked();
+
+                        datacube = {
+                            filtration: seriesContext[i].find('allowPointSelect filtration').checked()
+                        }
+
+                        if(isDrilldown){
+                            datacube.drilldown = {
+                                widget: seriesContext[i].find('allowPointSelect drilldown widget').value()
+                            }
+                        }
+                    }
+
+                    series.push({
+                        allowPointSelect: allowPointSelect,
+                        cursor: allowPointSelect ? 'pointer' : undefined,
+                        datacube: datacube
+                    });
+                }
 
                 chartOpts = {
                     credits: {
@@ -611,7 +691,33 @@
                             point: {
                                 events: {
                                     click: function(evt) {
-                                        $this._clickEvt = evt;
+                                        evt.preventDefault();
+
+                                        if(evt.point.series.options.datacube.filtration){
+                                            if(evt.point.selected){
+                                                $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                            } else {
+                                                $this._addPointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                            }
+                                        }
+
+                                        if(evt.point.series.options.datacube.drilldown){
+                                            var filterOpts;
+
+                                            if(!evt.point.series.options.datacube.filtration){
+                                                filterOpts = {};
+                                                filterOpts[evt.point.options.datacube.binding] = {
+                                                    $eq: {
+                                                        $const: evt.point[$this._filterPropName]
+                                                    }
+                                                }
+                                            }
+
+                                            $this.addDrilldownElement({
+                                                filterOpts: filterOpts,
+                                                widget: evt.point.series.options.datacube.drilldown.widget
+                                            });
+                                        }
 
                                         if(JSB().isFunction($this.options.onClick)){
                                             $this.options.onClick.call(this, evt);
@@ -639,8 +745,11 @@
                                     }
                                 }
                             }
-                        }
+                        },
+                        turboThreshold: 0
                     },
+
+                    series: series,
 
                     title: {
                         text: titleContext.find('text').value(),
@@ -681,6 +790,182 @@
 
         isNone: function(val){
             return val === 'none' ? undefined : val;
+        },
+
+        _resolvePointContextFilters: function(){
+            var contextFilters = this.getContextFilter(),
+                filters = {};
+
+            for(var i in contextFilters){
+                filters[i] = {
+                    field: i,
+                    value: contextFilters[i].$eq.$const
+                }
+            }
+
+            this._select(filters, true, true);
+        },
+
+        _resolvePointFilters: function(bindings){
+            if(!JSB.isArray(bindings)){
+                bindings = [bindings];
+            }
+
+            var globalFilters = this.getSourceFilters(this._dataSource);
+            if(globalFilters){
+                var newFilters = {},
+                    curFilters = {};
+
+                for(var i in globalFilters){
+                    if(this._curFilters[i]){
+                        curFilters[i] = globalFilters[i];
+                        delete globalFilters[i];
+                        continue;
+                    }
+
+                    var cur = globalFilters[i];
+
+                    if(bindings.indexOf(cur.field) > -1 && cur.op === '$eq'){
+                        curFilters[i] = cur;
+                        newFilters[i] = cur;
+
+                        delete globalFilters[i];
+                    }
+                }
+
+                var oldFilters = {};
+
+                for(var i in this._curFilters){
+                    if(!globalFilters[i]){
+                        oldFilters[i] = this._curFilters[i];
+                    }
+                }
+
+                this._curFilters = curFilters;
+
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash && this.chart){ // update data not require
+                    if(this.chart){ // drilldown widgets may have filters, but not construct yet
+                        this._select(newFilters, true, true);
+                        this._select(oldFilters, false, true);
+                    }
+
+                    return false;
+                } else {
+                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
+                    this.setSourceFilters(this._dataSource, globalFilters);
+                }
+            } else {
+                if(Object.keys(this._curFilters).length > 0){
+                    this._select(this._curFilters, false, true);
+                    this._curFilters = {};
+                    return false;
+                }
+                this._curFilterHash = null;
+            }
+
+            return true;
+        },
+
+        _addPointFilter: function(point, accumulate){
+            var context = this.getContext().find('source').binding();
+            if(!context.source) {
+                return;
+            }
+
+            var fDesc = {
+            	sourceId: context.source,
+            	type: '$or',
+            	op: '$eq',
+            	field: point.datacube.binding,
+            	value: point[this._filterPropName]
+            };
+
+            if(!accumulate && Object.keys(this._curFilters).length > 0){
+                this._select(this._curFilters, false, true);
+
+                for(var i in this._curFilters){
+                    this.removeFilter(i);
+                }
+
+                this._curFilters = {};
+            }
+
+            this._curFilters[this.addFilter(fDesc)] = fDesc;
+            this._select(this._curFilters, true, true);
+            this.refreshAll();
+        },
+
+        _removePointFilter: function(point, accumulate){
+            var contextFilters = this.getContextFilter();
+
+            if(accumulate){
+                // remove context filter
+                for(var i in contextFilters){
+                    if(i === point.options.datacube.binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
+                        var filter = {};
+                        filter[i] = {
+                            field: i,
+                            value: contextFilters[i].$eq.$const
+                        }
+                        this._select(filter, false, true);
+                        delete contextFilters[i];
+                        this.setContextFilter(contextFilters);
+                        break;
+                    }
+                }
+
+                // remove global filter
+                for(var i in this._curFilters){
+                    if(this._curFilters[i].field === point.options.datacube.binding && this._curFilters[i].value === point[this._filterPropName]){
+                        var filter = {};
+                        filter[i] = this._curFilters[i];
+                        this._select(filter, false, true);
+                        this.removeFilter(i);
+                        delete this._curFilters[i];
+                        this.refreshAll();
+                        break;
+                    }
+                }
+            } else {
+                // remove context filters
+                for(var i in contextFilters){
+                    var filter = {};
+                    filter[i] = {
+                        field: i,
+                        value: contextFilters[i].$eq.$const
+                    }
+
+                    this._select(filter, false, true);
+                }
+                this.setContextFilter({});
+
+                // remove global filters
+                if(Object.keys(this._curFilters).length > 0){
+                    this._select(this._curFilters, false, true);
+
+                    for(var i in this._curFilters){
+                        this.removeFilter(i);
+                    }
+                    this._curFilters = {};
+
+                    this.refreshAll();
+                }
+            }
+        },
+
+        _select: function(filters, b1, b2){
+            for(var i in filters){
+                for(var j = 0; j < this.chart.series.length; j++){
+                    if(this.chart.series[j].options.datacube.binding === filters[i].field){
+                        for(var k = 0; k < this.chart.series[j].points.length; k++){
+                            if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
+                                this.chart.series[j].points[k].select(b1, b2);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

@@ -154,7 +154,8 @@
             this.wrapper.getWidget().ensureInitialized(function(){
                 $this.wrapper.getWidget().refresh({
                     isCacheMod: isUpdateData,
-                    refreshFromCache: !isUpdateData
+                    refreshFromCache: !isUpdateData,
+                    updateStyles: true
                 });
         	});
 		},

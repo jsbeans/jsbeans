@@ -13,7 +13,8 @@
     border: none;
 }
 
-.mapWidget .leaflet-control.legend {
+.mapWidget .leaflet-control.legend,
+.mapWidget .leaflet-control.infoControl {
     padding: 15px 8px;
     font: 14px/16px Arial, Helvetica, sans-serif;
     background: rgba(255,255,255,0.8);
@@ -54,6 +55,19 @@ topleft
 .mapWidget .legend > ul > li > span {
     position: absolute;
     bottom: -8px;
+}
+
+.mapWidget .infoControl {}
+
+.mapWidget .infoControl > h4 {
+    margin: 0 0 5px;
+    color: #777;
+    text-align: right;
+}
+
+.mapWidget .infoControl > .name {
+    font-weight: 600;
+    margin-bottom: 5px;
 }
 
 .mapWidget .heatCircles span {

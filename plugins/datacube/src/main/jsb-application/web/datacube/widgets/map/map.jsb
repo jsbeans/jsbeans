@@ -159,21 +159,14 @@
                                                 name: 'Легенда',
                                                 items: {
                                                     position: {
-                                                        render: 'select',
+                                                        render: 'item',
                                                         name: 'Расположение',
-                                                        items: {
-                                                            bottomright: {
-                                                                name: 'Верхний правый угол'
-                                                            },
-                                                            bottomleft: {
-                                                                name: 'Верхний левый угол'
-                                                            },
-                                                            topright: {
-                                                                name: 'Нижний правый угол'
-                                                            },
-                                                            topleft: {
-                                                                name: 'Нижний левый угол'
-                                                            }
+                                                        editor: 'JSB.Controls.Positioner',
+                                                        editorOpts: {
+                                                            positions: [
+                                                                [ { key: 'topleft', name: 'Верхний левый угол' }, { key: 'topright', name: 'Верхний правый угол'}],
+                                                                [ { key: 'bottomleft', name: 'Нижний левый угол' }, { key: 'bottomright', name: 'Нижний правый угол' }]
+                                                            ]
                                                         }
                                                     }
                                                 }
@@ -226,7 +219,7 @@
                      },
                      selectedRegion: {
                          render: 'group',
-                         name: 'Выделенные регион',
+                         name: 'Выделенные регионы',
                          items: {
                             selectColor: {
                                 render: 'item',
@@ -239,6 +232,18 @@
                                 editor: 'JSB.Widgets.ColorEditor'
                             }
                          }
+                     },
+                     valueDisplayType: {
+                        render: 'select',
+                        name: 'Способ отображения значений',
+                        items: {
+                            legend: {
+                                name: 'Информационная легенда'
+                            },
+                            onObject: {
+                                name: 'На регионе'
+                            }
+                        }
                      }
                  }
              }
@@ -264,7 +269,37 @@
                             name: 'Тип маркера',
                             items: {
                                 defaultMarker: {
-                                    name: 'По-умолчанию'
+                                    name: 'По-умолчанию',
+                                    items: {
+                                        markerValue: {
+                                            render: 'switch',
+                                            name: 'Значение маркера',
+                                            items: {
+                                                name: {
+                                                    render: 'dataBinding',
+                                                    name: 'Имя',
+                                                    linkTo: 'dataSource'
+                                                },
+                                                value: {
+                                                    render: 'dataBinding',
+                                                    name: 'Значение',
+                                                    linkTo: 'dataSource'
+                                                },
+                                                valueDisplayType: {
+                                                    render: 'select',
+                                                    name: 'Способ отображения значений',
+                                                    items: {
+                                                        legend: {
+                                                            name: 'Информационная легенда'
+                                                        },
+                                                        onObject: {
+                                                            name: 'На объекте'
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 },
                                 widget: {
                                     name: 'Виджет',
@@ -351,21 +386,14 @@
                                                                     name: 'Легенда',
                                                                     items: {
                                                                         position: {
-                                                                            render: 'select',
+                                                                            render: 'item',
                                                                             name: 'Расположение',
-                                                                            items: {
-                                                                                bottomright: {
-                                                                                    name: 'Верхний правый угол'
-                                                                                },
-                                                                                bottomleft: {
-                                                                                    name: 'Верхний левый угол'
-                                                                                },
-                                                                                topright: {
-                                                                                    name: 'Нижний правый угол'
-                                                                                },
-                                                                                topleft: {
-                                                                                    name: 'Нижний левый угол'
-                                                                                }
+                                                                            editor: 'JSB.Controls.Positioner',
+                                                                            editorOpts: {
+                                                                                positions: [
+                                                                                    [ { key: 'topleft', name: 'Верхний левый угол' }, { key: 'topright', name: 'Верхний правый угол'}],
+                                                                                    [ { key: 'bottomleft', name: 'Нижний левый угол' }, { key: 'bottomright', name: 'Нижний правый угол' }]
+                                                                                ]
                                                                             }
                                                                         }
                                                                     }
@@ -427,12 +455,29 @@
                                         },
                                         markerValue: {
                                             render: 'switch',
-                                            name: 'Отображать значение на маркере',
+                                            name: 'Значение маркера',
                                             items: {
+                                                name: {
+                                                    render: 'dataBinding',
+                                                    name: 'Имя',
+                                                    linkTo: 'dataSource'
+                                                },
                                                 value: {
                                                     render: 'dataBinding',
-                                                    name: 'Значение на маркере',
+                                                    name: 'Значение',
                                                     linkTo: 'dataSource'
+                                                },
+                                                valueDisplayType: {
+                                                    render: 'select',
+                                                    name: 'Способ отображения значений',
+                                                    items: {
+                                                        legend: {
+                                                            name: 'Информационная легенда'
+                                                        },
+                                                        onObject: {
+                                                            name: 'На объекте'
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -455,6 +500,31 @@
                     name: 'Форматирование значений',
                     valueType: 'string',
                     defaultValue: '0,0.[00]'
+                },
+                infoControl: {
+                    render: 'group',
+                    name: 'Настройки информационной легенды',
+                    items: {
+                        header: {
+                            render: 'item',
+                            name: 'Заголовок',
+                            valueType: 'string',
+                            defaultValue: 'Информационная легенда'
+                        },
+                        position: {
+                            render: 'item',
+                            name: 'Расположение',
+                            editor: 'JSB.Controls.Positioner',
+                            editorOpts: {
+                                positions: [
+                                    [ { key: 'topleft', name: 'Верхний левый угол' }, { key: 'topright', name: 'Верхний правый угол'}],
+                                    [ { key: 'bottomleft', name: 'Нижний левый угол' }, { key: 'bottomright', name: 'Нижний правый угол' }]
+                                ]
+                            },
+                            valueType: 'string',
+                            defaultValue: 'topright'
+                        }
+                    }
                 }
             }
         },
@@ -542,17 +612,17 @@
                 return;
             }
 
-            if(opts && !opts.refreshFromCache){
+            if(opts && opts.updateStyles){
                 this._styles = null;
                 this._dataSource = null;
             }
 
             if(!this._dataSource){
                 this._dataSource = this.getContext().find('dataSource');
-            }
 
-            if(!this._dataSource.hasBinding || !this._dataSource.hasBinding()){
-                return;
+                if(!this._dataSource.hasBinding()){
+                    return;
+                }
             }
 
             $base();
@@ -611,7 +681,7 @@
                 this._curFilterHash = null;
             }
 
-            //try{
+            try{
                 if(!this._styles){
                     this._styles = {
                         regions: [],
@@ -622,8 +692,14 @@
 
                     // parsing settings
                     /*********/
+                    var settingsContext = this.getContext().find('settings');
+
                     this._styles.settings = {
-                        formatter: this.getContext().find('settings formatter').value()
+                        formatter: settingsContext.find('formatter').value(),
+                        infoControl: {
+                            header: settingsContext.find('infoControl header').value(),
+                            position: settingsContext.find('infoControl position').value()
+                        }
                     }
                     /*********/
 
@@ -673,6 +749,7 @@
                         this._styles.regions[i].selectColor = regionsContext[i].find('selectColor').value();
                         this._styles.regions[i].showValuesPermanent = regionsContext[i].find('showValuesPermanent').checked();
                         this._styles.regions[i].showEmptyRegions = regionsContext[i].find('showEmptyRegions').checked();
+                        this._styles.regions[i].valueDisplayType = regionsContext[i].find('valueDisplayType').value();
 
                         var r = {
                             compareTo: regionsContext[i].find('compareTo').value()
@@ -723,6 +800,13 @@
                         this._styles.markers[i].coordinatesBinding = markersContext[i].find('coordinates');
 
                         switch(markerType){
+                            case 'defaultMarker':
+                                if(markersContext[i].find('markerValue').checked()){
+                                    this._styles.markers[i].markerNameBinding = markersContext[i].find('markerValue name');
+                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value');
+                                    this._styles.markers[i].valueDisplayType = markersContext[i].find('markerValue valueDisplayType').value();
+                                }
+                                break;
                             case 'widget':
                                 var wb = markersContext[i].find('widgetBinding');
 
@@ -778,7 +862,9 @@
                                 }
 
                                 if(markersContext[i].find('markerValue').checked()){
-                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value')
+                                    this._styles.markers[i].markerNameBinding = markersContext[i].find('markerValue name');
+                                    this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value');
+                                    this._styles.markers[i].valueDisplayType = markersContext[i].find('markerValue valueDisplayType').value();
                                 }
                                 break;
                         }
@@ -825,17 +911,15 @@
                     }
                     /*********/
                 }
-            /*
             } catch(ex){
                 console.log('Parse scheme exception!');
                 console.log(ex);
             }
-            */
 
             this.resetTrigger('_dataLoaded');
             this.getElement().loader();
             this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
-                //try{
+                try{
                     var regions = [],
                         markers = [],
                         bindings = [];
@@ -899,6 +983,14 @@
                                 }
 
                                 markers[i].markerValues.push($this._styles.markers[i].markerValueBinding.value());
+                            }
+
+                            if($this._styles.markers[i].markerNameBinding){
+                                if(!markers[i].markerNames){
+                                    markers[i].markerNames = [];
+                                }
+
+                                markers[i].markerNames.push($this._styles.markers[i].markerNameBinding.value());
                             }
 
                             switch($this._styles.markers[i].markerType){
@@ -1034,15 +1126,12 @@
                         regions: regions,
                         markers: markers
                     });
-                /*
                 } catch(ex){
                     console.log('Load data exception!');
                     console.log(ex);
                 } finally {
                     $this.setTrigger('_dataLoaded');
                 }
-                */
-                $this.setTrigger('_dataLoaded');
             });
 
             this.ensureDataLoaded(function(){
@@ -1054,15 +1143,13 @@
 
         // refresh after data and/or style changes
         buildChart: function(data){
-            JSB.defer(function(){
-                $this.ensureDataLoaded(function(){
-                    $this._buildChart(data);
-                });
-            }, 300, 'buildChart_' + this.getId());
+            this.ensureDataLoaded(function(){
+                $this._buildChart(data);
+            });
         },
 
         _buildChart: function(data){
-            //try {
+            try {
                 var mapOpts = {};
                 if(this.map){
                     mapOpts = {
@@ -1078,6 +1165,11 @@
                 }
                 this.map = L.map(this.container.get(0), mapOpts);
 
+                // remove old controls
+                if(this._infoControl){
+                    this._infoControl = undefined;
+                }
+
                 // add tile and wms layers
                 if(this._styles.tiles){
                     for(var i = 0; i < this._styles.tiles.length; i++){
@@ -1089,6 +1181,22 @@
                     }
                 }
 
+                function regionStyle(i, reg){
+                    if(!reg){
+                        if($this._styles.regions[i].showEmptyRegions){
+                            return {fillColor: $this._styles.regions[i].defaultColor, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
+                        } else {
+                            return {fillColor: 'transparent', color: 'transparent'};
+                        }
+                    }
+
+                    if(data && data.regions[i].color){
+                        return {fillColor: data.regions[i].color, color: $this._styles.regions[i].borderColor, fillOpacity: 0.7};
+                    }
+
+                    return {fillColor: reg.color, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
+                }
+
                 // add geojson layers
                 /*********/
                 for(var i = 0; i < this._maps.length; i++){
@@ -1097,37 +1205,50 @@
                         (function(i, data){
                             var tooltipLayers = [];
 
-                            $this._maps[i].map = L.geoJSON($this._maps[i].data, {
-                                style: function (feature) {
-                                    if(data && data.color){
-                                        return {fillColor: data.color, color: data.color, fillOpacity: 0.7};
-                                    }
+                            if($this._styles.regions[i].valueDisplayType === 'legend'){
+                                $this._createInfoControl();
+                            }
 
-                                    var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
-                                    if(!reg){
-                                        if($this._styles.regions[i].showEmptyRegions){
-                                            return {fillColor: $this._styles.regions[i].defaultColor, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
-                                        } else {
-                                            return {fillColor: 'transparent', color: 'transparent'};
-                                        }
-                                    }
-                                    return {fillColor: reg.color, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
-                                },
-                                coordsToLatLng: function(point){
-                                    if($this._maps[i].wrapLongitude && (point[0] > $this._maps[i].wrapLongitude)){
-                                        point[0] -= 360;
-                                    }
-                                    return L.GeoJSON.coordsToLatLng(point);
-                                },
+                            $this._maps[i].map = L.geoJSON($this._maps[i].data, {
                                 onEachFeature: function(feature, layer){
                                     var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
-                                    if(!reg){
-                                        layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
-                                        return;
-                                    }
-                                    layer.bindPopup(reg.region + ': ' + Numeral.format(reg.value, $this._styles.settings.formatter), {closeButton: false, autoPan: false});
 
-                                    if(data.regions[i].showValuesPermanent){
+                                    layer.setStyle(regionStyle(i, reg));
+
+                                    // set values properties
+                                    /*********/
+                                    if($this._styles.regions[i].valueDisplayType === 'legend'){
+                                        layer.on({
+                                            mouseover: function(evt){
+                                                if(reg){
+                                                    $this._infoControl.update(reg.region, reg.value);
+                                                }
+                                            },
+                                            mouseout: function(evt){
+                                                $this._infoControl.update();
+                                            }
+                                        });
+                                    } else {
+                                        if(!reg){
+                                            layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
+                                            return;
+                                        }
+
+                                        layer.bindPopup(reg.region + ': ' + Numeral.format(reg.value, $this._styles.settings.formatter), {closeButton: false, autoPan: false});
+
+                                        layer.on({
+                                            mouseover: function(evt){
+                                                evt.originalEvent.stopPropagation();
+                                                this.openPopup();
+                                            },
+                                            mouseout: function(evt){
+                                                evt.originalEvent.stopPropagation();
+                                                this.closePopup();
+                                            }
+                                        });
+                                    }
+
+                                    if($this._styles.regions[i].showValuesPermanent){
                                         layer.bindTooltip(String(Numeral.format(reg.value, $this._styles.settings.formatter)), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
@@ -1163,16 +1284,9 @@
                                                 regionValue: reg.region,
                                                 seriesIndex: i
                                             });
-                                        },
-                                        mouseover: function(evt){
-                                            evt.originalEvent.stopPropagation();
-                                            this.openPopup();
-                                        },
-                                        mouseout: function(evt){
-                                            evt.originalEvent.stopPropagation();
-                                            this.closePopup();
                                         }
                                     });
+                                    /*********/
                                 }
                             });
                             $this._maps[i].map.addTo($this.map);
@@ -1201,7 +1315,39 @@
                     switch(this._styles.markers[i].markerType){
                         case 'defaultMarker':
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1])).addTo($this.map);
+                                var marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1])).addTo($this.map);
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
+                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : ''), {closeButton: false, autoPan: false});
+
+                                    marker.on({
+                                        mouseover: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.openPopup();
+                                        },
+                                        mouseout: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.closePopup();
+                                        }
+                                    });
+                                }
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
+                                    (function(name, value){
+                                        marker.on({
+                                            mouseover: function(evt){
+                                                $this._infoControl.update(name, value);
+                                            },
+                                            mouseout: function(evt){
+                                                $this._infoControl.update();
+                                            }
+                                        });
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : '');
+                                }
+                            }
+
+                            if(this._styles.markers[i].valueDisplayType === 'legend'){
+                                this._createInfoControl();
                             }
                             break;
                         case 'widget':
@@ -1233,39 +1379,70 @@
                             var color = $this._styles.markers[i].simpleColor || data.markers[i].color;
 
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                var marker = null,
-                                    html = null;
+                                var marker = undefined,
+                                    icon = undefined,
+                                    html = undefined;
 
                                 if(!color){
                                     color = data.markers[i].colorValues[j].color;
                                 }
 
-                                if(data.markers[i].markerValues){
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
                                     html = '<span>' + Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) + '</span>';
                                 }
 
                                 if($this._styles.markers[i].fixedSize){
-                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
+                                    icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
                                 } else {
-                                    marker = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
+                                    icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
                                 }
 
-                                L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
+                                marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon}).addTo($this.map);
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
+                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : ''), {closeButton: false, autoPan: false});
+
+                                    marker.on({
+                                        mouseover: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.openPopup();
+                                        },
+                                        mouseout: function(evt){
+                                            evt.originalEvent.stopPropagation();
+                                            this.closePopup();
+                                        }
+                                    });
+                                }
+
+                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
+                                    (function(name, value){
+                                        marker.on({
+                                            mouseover: function(evt){
+                                                $this._infoControl.update(name, value);
+                                            },
+                                            mouseout: function(evt){
+                                                $this._infoControl.update();
+                                            }
+                                        });
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : '');
+                                }
                             }
 
                             if(this._styles.markers[i].legend){
                                 this._createLegend(this._styles.markers[i].legend.position, data.markers[i].colorMap);
                             }
+
+                            if(this._styles.markers[i].valueDisplayType === 'legend'){
+                                this._createInfoControl();
+                            }
                             break;
                     }
                 }
                 /*********/
-            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
-            */
         },
 
         ensureDataLoaded: function(callback){
@@ -1419,6 +1596,33 @@
             legend.addTo(this.map);
 
             list.width(div.find('li:last-child span').width() + 25);
+        },
+
+        _createInfoControl: function(){
+            if(this._infoControl){
+                return;
+            }
+
+            this._infoControl = L.control({ position: this._styles.settings.infoControl.position });
+
+            this._infoControl.onAdd = function(){
+                var legend = $this.$('<div class="infoControl"><h4>' + $this._styles.settings.infoControl.header + '</h4></div>');
+
+                this._name = $this.$('<p class="name"></p>');
+                legend.append(this._name);
+
+                this._value = $this.$('<p class="value"></p>');
+                legend.append(this._value);
+
+                return legend.get(0);
+            };
+
+            this._infoControl.update = function(name, value){
+                this._name.text(name ? name : '');
+                this._value.text(value ? value : '');
+            };
+
+            this._infoControl.addTo(this.map);
         },
 
         findRegion: function(region, array){
