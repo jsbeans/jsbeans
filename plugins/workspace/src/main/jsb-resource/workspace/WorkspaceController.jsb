@@ -91,24 +91,29 @@
 				}
 				var resolvedCfg = this._resolveConfigVariables(entryStoreCfg);
 				var entryStore = new (jsb.getClass())(resolvedCfg);
-				var wsIter = entryStore.getWorkspaces();
-				while(true){
-					var wsDesc = wsIter.next();
-					if(!wsDesc){
-						break;
+				
+				var mtx = 'JSB.Workspace.WorkspaceController.indices';
+				JSB.getLocker().lock(mtx);
+				try {
+					var wsIter = entryStore.getWorkspaces();
+					while(wsIter.hasNext()){
+						var wsDesc = wsIter.next();
+						var wDesc = JSB.merge({
+							wType: wType,
+							wInst: null
+						}, wsDesc);
+						this.workspacesById[wDesc.wId] = wDesc;
+						this.workspacesByType[wType] = this.workspacesByType[wType] || {};
+						this.workspacesByType[wType][wDesc.wId] = wDesc;
+						this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
+						this.workspacesByUser[wDesc.wOwner][wDesc.wId] = wDesc;
 					}
-					var wDesc = JSB.merge({
-						wType: wType,
-						wInst: null
-					}, wsDesc);
-					this.workspacesById[wDesc.wId] = wDesc;
-					this.workspacesByType[wType] = this.workspacesByType[wType] || {};
-					this.workspacesByType[wType][wDesc.wId] = wDesc;
-					this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
-					this.workspacesByUser[wDesc.wOwner][wDesc.wId] = wDesc;
+				} finally {
+					entryStore.destroy();
+					JSB.getLocker().unlock(mtx);
 				}
 				
-				entryStore.destroy();
+				
 			}
 		},
 		
@@ -129,37 +134,78 @@
 				}
 			}
 			wId = (opts && opts.id) || wCfg.workspaceId || JSB.generateUid();
-			if(this.workspacesById[wId]){
-				return this.loadWorkspace(wId);
+			
+			var mtx = 'JSB.Workspace.WorkspaceController.indices';
+			JSB.getLocker().lock(mtx);
+			
+			try {
+				if(this.workspacesById[wId]){
+					return this.loadWorkspace(wId);
+				}
+				var wDesc = {
+					wId: wId,
+					wType: wType
+				};
+				
+				var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
+				var wCls = JSB.get('JSB.Workspace.Workspace').getClass();
+				var wInst = new wCls(wId, resolvedConf, wDesc);
+				wDesc.wInst = wInst;
+				wDesc.wOwner = wInst.getOwner();
+				wInst.property('_wt', wType);
+	
+				// store indices
+				this.workspacesById[wId] = wDesc;
+				this.workspacesByType[wType] = this.workspacesByType[wType] || {}
+				this.workspacesByType[wType][wId] = wDesc;
+				this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
+				this.workspacesByUser[wDesc.wOwner][wId] = wDesc;
+				
+				// enhance workspace with attributes in opts
+				var name = (opts && opts.name) || wCfg.defaultName;
+				if(name){
+					wInst.setName(name);
+				}
+	
+				wInst.store();
+				return wInst;
+			} finally {
+				JSB.getLocker().unlock(mtx);
 			}
-			var wDesc = {
-				wId: wId,
-				wType: wType
-			};
-			
-			var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
-			var wCls = JSB.get('JSB.Workspace.Workspace').getClass();
-			var wInst = new wCls(wId, resolvedConf, wDesc);
-			wDesc.wInst = wInst;
-			wDesc.wOwner = wInst.getOwner();
-			wInst.property('_wt', wType);
-
-			// store indices
-			this.workspacesById[wId] = wDesc;
-			this.workspacesByType[wType] = this.workspacesByType[wType] || {}
-			this.workspacesByType[wType][wId] = wDesc;
-			this.workspacesByUser[wDesc.wOwner] = this.workspacesByUser[wDesc.wOwner] || {};
-			this.workspacesByUser[wDesc.wOwner][wId] = wDesc;
-			
-			// enhance workspace with attributes in opts
-			var name = (opts && opts.name) || wCfg.defaultName;
-			if(name){
-				wInst.setName(name);
+		},
+		
+		removeWorkspace: function(wId){
+			if(!wId){
+				throw new Error('No workspace id passed in WorkspaceController.removeWorkspace');
 			}
-
-			
-			wInst.store();
-			return wInst;
+			if(!JSB.isString(wId) && JSB.isInstanceOf(wId, 'JSB.Workspace.Workspace')){
+				wId = wId.getId();
+			}
+			var mtx = 'JSB.Workspace.WorkspaceController.indices';
+			JSB.getLocker().lock(mtx);
+			try {
+				var wDesc = this.workspacesById[wId];
+				if(!wDesc){
+					return;
+				}
+				
+				if(!wDesc.wInst){
+					wDesc.wInst = this.loadWorkspace(wId);
+				}
+				
+				delete this.workspacesById[wId];
+				if(this.workspacesByType[wDesc.wType] && this.workspacesByType[wDesc.wType][wId]){
+					delete this.workspacesByType[wDesc.wType][wId];
+				}
+				if(this.workspacesByUser[wDesc.wOwner] && this.workspacesByUser[wDesc.wOwner][wId]){
+					delete this.workspacesByUser[wDesc.wOwner][wId];
+				}
+			} finally {
+				JSB.getLocker().unlock(mtx);
+			}
+			if(!wDesc.wInst.isDestroyed()){
+				wDesc.wInst.remove();
+			}
 		},
 		
 		loadWorkspace: function(wId){

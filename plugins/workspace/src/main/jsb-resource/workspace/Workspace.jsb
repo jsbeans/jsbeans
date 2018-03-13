@@ -77,9 +77,11 @@
 			}
 			var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + this.getId();
 			if(!bStored){
-				JSB.getLocker().lock(chMtxName);
-				this._changedEntries[entry.getId()] = true;
-				JSB.getLocker().unlock(chMtxName);
+				if(this._entries[entry.getId()]){
+					JSB.getLocker().lock(chMtxName);
+					this._changedEntries[entry.getId()] = true;
+					JSB.getLocker().unlock(chMtxName);
+				}
 			} else {
 				if(this._changedEntries[entry.getId()]){
 					JSB.getLocker().lock(chMtxName);
@@ -117,6 +119,7 @@
 				try {
 					eDesc = this._entries[entry.getId()];
 					if(!eDesc){
+						// its a just created entry
 						entry._entryStore.reserve(entry);
 						eDesc = this._entries[entry.getId()] = {
 							eId: entry.getId(),
@@ -126,8 +129,10 @@
 							eOpts: entry._entryStoreOpts,
 							aOpts: entry._artifactStoreOpts
 						};
+						this.addChildEntry(entry);
 						entry._markStored(false);
 						this._markStored(false);
+						
 					}
 				} finally {
 					JSB.getLocker().unlock(eMtxName);
@@ -137,7 +142,7 @@
 			return eDesc;
 		},
 		
-		attachEntry: function(entry){
+		_attachEntry: function(entry){
 			if(entry == this){
 				return;	// not need attach workspace to itself 
 			}
@@ -150,16 +155,30 @@
 			entry._artifactStoreOpts = eDesc.aOpts;
 		},
 		
-		
-/*		
-		update: function(){
-            var entries = this.entries();
-            var entry;
-            while (entry = entries.next()) {
-                entry.update();
-            }
+		_detachEntry: function(entry){
+			if(entry == this){
+				return;	// not need detach workspace from itself 
+			}
+			if(!this._entries[entry.getId()]){
+				return;
+			}
+			this.removeChildEntry(entry);
+			
+			var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
+			JSB.getLocker().lock(eMtxName);
+			delete this._entries[entry.getId()];
+			JSB.getLocker().unlock(eMtxName);
+			
+			if(this._changedEntries[entry.getId()]){
+				var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + this.getId();
+				JSB.getLocker().lock(chMtxName);
+				delete this._changedEntries[entry.getId()];
+				JSB.getLocker().unlock(chMtxName);
+			}
+			
+			this._markStored(false);
 		},
-*/
+		
 		store: function(){
 			var mtxName = 'JSB.Workspace.Workspace.store.' + this.getId();
 			JSB.getLocker().lock(mtxName);
@@ -258,6 +277,14 @@
             };
 		},
 		
+		getEntries: function(){
+			var eMap = {};
+			for(var eId in this._entries){
+				eMap[eId] = this.entry(eId);
+			}
+			return eMap;
+		},
+		
 		existsEntry: function(id){
 			return !!this._entries[id];
 		},
@@ -271,6 +298,9 @@
 		},
 
 		entry: function(id){
+			if(this.getId() == id){
+				return this;
+			}
 			var eDesc = this._entries[id];
 			if(!eDesc){
 				throw new Error('Failed to find workspace entry with id: ' + id);
@@ -288,100 +318,19 @@
 			return eInst;
 		},
 
-/*
-		entryInstanceId: function(id) {
-		    return this.id + '-' + id;
+		remove: function(){
+			// remove artifacts
+			var aMap = this.getArtifacts();
+			for(var aName in aMap){
+				this.removeArtifact(aName);
+			}
+			
+			// remove entry
+			this._entryStore.remove(this);
+			
+			WorkspaceController.removeWorkspace(this.getId());
 		},
-*/
-		artifactPath: function(path){
-		    var path = this.workspaceManager.artifactsStore.subPath(this.localId, path);
-		    return this.workspaceManager.artifactPath(path);
-		},
-
-		existsArtifact: function(name) {
-		    return this.workspaceManager.artifactsStore.exists(this.artifactPath(name));
-        },
-
-		readArtifactAsText: function(name) {
-		    return this.workspaceManager.artifactsStore.readAsText(this.artifactPath(name));
-		},
-
-		readArtifactAsBinary: function(name) {
-		    return this.workspaceManager.artifactsStore.readAsBinary(this.artifactPath(name));
-		},
-
-		readArtifactAsJson: function(name) {
-		    return this.workspaceManager.artifactsStore.readAsJson(this.artifactPath(name));
-		},
-
-		writeArtifactAsText: function(name, text) {
-		    this.workspaceManager.artifactsStore.writeAsText(this.artifactPath(name), text);
-		},
-
-		writeArtifactAsJson: function(name, json) {
-		    this.workspaceManager.artifactsStore.writeAsJson(this.artifactPath(name), json);
-		},
-
-		writeArtifactAsBinary: function(name, bytes) {
-		    this.workspaceManager.artifactsStore.writeAsBinary(this.artifactPath(name), bytes);
-		},
-
-		removeArtifact: function(name) {
-		    return this.workspaceManager.artifactsStore.remove(this.artifactPath(name));
-		},
-
-		backupArtifact: function(name){
-		    if (name) {
-		        // TODO: backup artifact
-		    } else {
-		        // TODO: backup all artifacts
-		    }
-		},
-/*
-        entriesPath: function(path){
-            if (typeof path === 'undefined') {
-                return 'entries';
-            } else {
-                return 'entries.' + path;
-            }
-        },
-
-        entryPropertyPath: function(entry, path){
-            if (path) {
-                return this.entriesPath(entry.localId) + '.' + path;
-            } else {
-                return this.entriesPath(entry.localId);
-            }
-        },
-
-		bodyChanged: function() {
-		    // TODO
-		},
-
-		checkInitialized: function(){
-		    if (!this.body) throw new Error('Workspace is not initialized: ' + this.id);
-		},
-
-        _emptyBody: function(){
-            return {
-                id: this.localId,
-                fullId: this.id,
-                entries: {},
-            };
-        },
-*/
-
-		_locked: function(id, func) {
-            var locker = JSB().getLocker();
-            var mtxName = 'Workspace:' + this.id + ':' + id;
-            try {
-                locker.lock(mtxName);
-                return func.call(this);
-            } finally {
-                locker.unlock(mtxName);
-            }
-		},
-		
+/*		
 		removeCategory: function(category){
 			// remove projects from this category
             for (var entry, it = this.entries(); entry = it.next();) {
@@ -498,7 +447,7 @@
 			
 			return true;
 		},
-		
+		*/
 		uploadFile: function(fileDesc){
 			var category = fileDesc.category;
 			var fileName = fileDesc.name;
