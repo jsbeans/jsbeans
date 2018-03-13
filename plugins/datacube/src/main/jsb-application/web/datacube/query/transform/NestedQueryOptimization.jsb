@@ -6,6 +6,7 @@
 		$require: [
 		    'DataCube.Query.QueryUtils',
 	        'DataCube.Query.Views.SameNestedQueryExtractor',
+	        'DataCube.Query.Views.FromViewsExtractor',
 	        'DataCube.Query.Transforms.QueryTransformer'
         ],
         
@@ -22,11 +23,14 @@
             QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before NestedQueryOptimization: ' + JSON.stringify(dcQuery, 0, 2));
 
 		    try {
-		        var extractor = new SameNestedQueryExtractor();
-                var resultQuery = extractor.buildViews(dcQuery);
+		        var fromExtractor = new FromViewsExtractor();
+		        var resultQuery = fromExtractor.buildViews(dcQuery);
+//		        var nestedExtractor = new SameNestedQueryExtractor();
+//                resultQuery = extractor.buildViews(nestedExtractor);
                 return resultQuery;
 		    } finally {
-		        extractor  && extractor.destroy();
+		        fromExtractor  && fromExtractor.destroy();
+//		        nestedExtractor  && nestedExtractor.destroy();
 		    }
 		},
 	}

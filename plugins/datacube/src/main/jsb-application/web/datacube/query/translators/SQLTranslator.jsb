@@ -120,60 +120,60 @@
             return JSON.stringify(key);
         },
 
-        _prepareWithViews: function(){
-            function forEach$g (callback){
-                for (var alias in $this.dcQuery.$select) {
-                    var exp = $this.dcQuery.$select[alias];
-                    if (typeof exp === 'object' && QuerySyntax.getSchema()[Object.keys(exp)[0]].global) {
-                        callback(alias, exp);
-                    }
-                }
-            }
-
-            var withViews = {};
-            // extract views for $g* expression
-            QueryUtils.walkSubQueries(this.dcQuery, function(query){
-                forEach$g(function(alias, exp){
-                    var viewKey = $this._extractViewKey(query, true);
-                    var view = withViews[viewKey] = withViews[viewKey] || {
-                        viewKey: viewKey,
-                        fields: {},
-                        global: true,
-                        name: 'global_view_' + Object.keys(withViews).length
-                    };
-                    var field = 'global_' + alias;//JSON.stringify(expr);
-                    if (view.fields[field]) {
-                        throw new Error('Result field alias ' + alias + ' has some expressions');
-                    }
-                    view.fields[field] = query.$select[alias];
-                });
-            });
-            for (var id in withViews) {
-                var view = withViews[id];
-                var from = this._translateFrom(this.dcQuery);
-
-                var columns = '';
-                for (var field in view.fields) {
-                    if (columns.length != 0) columns += ', ';
-                    columns += this._translateExpression(view.fields[field], this.dcQuery, true) + ' AS ' + this._quotedName(field);
-                }
-
-                if (view.global) {
-                    view.sql = 'SELECT ' + columns;
-                } else {
-                    var where = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, true));
-                    var group = this._translateGroup(this.dcQuery);
-                    var having = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, false));
-                    where = where ? ' WHERE ' + where : ' ';
-                    group = group ? ' GROUP BY ' + group : ' ';
-                    having = having ? ' HAVING ' + having : ' ';
-                    from = from ? ' FROM ' + from : ' ';
-
-                    view.sql = 'SELECT ' + columns + from + where + group + having;
-                }
-            }
-            this.withViews = withViews;
-        },
+//        _prepareWithViews: function(){
+//            function forEach$g (callback){
+//                for (var alias in $this.dcQuery.$select) {
+//                    var exp = $this.dcQuery.$select[alias];
+//                    if (typeof exp === 'object' && QuerySyntax.getSchema()[Object.keys(exp)[0]].global) {
+//                        callback(alias, exp);
+//                    }
+//                }
+//            }
+//
+//            var withViews = {};
+//            // extract views for $g* expression
+//            QueryUtils.walkSubQueries(this.dcQuery, function(query){
+//                forEach$g(function(alias, exp){
+//                    var viewKey = $this._extractViewKey(query, true);
+//                    var view = withViews[viewKey] = withViews[viewKey] || {
+//                        viewKey: viewKey,
+//                        fields: {},
+//                        global: true,
+//                        name: 'global_view_' + Object.keys(withViews).length
+//                    };
+//                    var field = 'global_' + alias;//JSON.stringify(expr);
+//                    if (view.fields[field]) {
+//                        throw new Error('Result field alias ' + alias + ' has some expressions');
+//                    }
+//                    view.fields[field] = query.$select[alias];
+//                });
+//            });
+//            for (var id in withViews) {
+//                var view = withViews[id];
+//                var from = this._translateFrom(this.dcQuery);
+//
+//                var columns = '';
+//                for (var field in view.fields) {
+//                    if (columns.length != 0) columns += ', ';
+//                    columns += this._translateExpression(view.fields[field], this.dcQuery, true) + ' AS ' + this._quotedName(field);
+//                }
+//
+//                if (view.global) {
+//                    view.sql = 'SELECT ' + columns;
+//                } else {
+//                    var where = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, true));
+//                    var group = this._translateGroup(this.dcQuery);
+//                    var having = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, false));
+//                    where = where ? ' WHERE ' + where : ' ';
+//                    group = group ? ' GROUP BY ' + group : ' ';
+//                    having = having ? ' HAVING ' + having : ' ';
+//                    from = from ? ' FROM ' + from : ' ';
+//
+//                    view.sql = 'SELECT ' + columns + from + where + group + having;
+//                }
+//            }
+//            this.withViews = withViews;
+//        },
 
         _translateWith: function(){
             var sqlWith = '';
@@ -251,13 +251,13 @@
             for (var alias in select) if (select.hasOwnProperty(alias)) {
                 if (i++ > 0) sqlColumns += ', '
                 // in SELECT expression force use table fields
-                sqlColumns += this._translateExpression(select[alias], query, true) + ' AS ' + this._quotedName(alias);
+                sqlColumns += this._translateExpression(select[alias], query) + ' AS ' + this._quotedName(alias);
             }
             if (i == 0) sqlColumns += 'NULL';
             return sqlColumns;
         },
 
-        _translateExpression: function(exp, dcQuery, useFieldNotAlias) {
+        _translateExpression: function(exp, dcQuery, useAlias) {
 
             function translateGlobalAggregate(subExp, func){
                 var viewKey = $this._extractViewKey(dcQuery, true);
@@ -274,7 +274,7 @@
                     });
                     $this._registerContextQuery(subQuery);
                     var from   = $this._translateFrom(subQuery);
-                    var column = $this._translateExpression(subExp === 1 ? '*' : subExp, subQuery, useFieldNotAlias);
+                    var column = $this._translateExpression(subExp === 1 ? '*' : subExp, subQuery, useAlias);
                     var subAlias = 'val_'+$this._generateUid();
                     var where = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, true));
                     var having = $this._translateWhere(subQuery, $this._extractWhereOrHavingFilter(subQuery, false));
@@ -301,7 +301,7 @@
                 var sql = '';
                 for (var i in args) {
                     if (i > 0) sql += ' ' + op + ' ';
-                    var arg = $this._translateExpression(args[i], dcQuery, useFieldNotAlias);
+                    var arg = $this._translateExpression(args[i], dcQuery, useAlias);
                     if (wrapper) {
                         var type = QueryUtils.extractType(args[i], dcQuery, $this.cube || $this.providers[0], function(ctx){
                             return $this.contextQueries[ctx];
@@ -319,10 +319,10 @@
                 if (args.length != 2) throw new Error('Operator $divz must have two arguments');
 
                 var sql = 'case when ';
-                sql += $this._translateExpression(args[1], dcQuery, useFieldNotAlias);
+                sql += $this._translateExpression(args[1], dcQuery, useAlias);
                 sql += " = 0 then NULL else ";
-                sql += $this._translateExpression(args[0], dcQuery, useFieldNotAlias) +
-                        '/' + $this._translateExpression(args[1], dcQuery, useFieldNotAlias);
+                sql += $this._translateExpression(args[0], dcQuery, useAlias) +
+                        '/' + $this._translateExpression(args[1], dcQuery, useAlias);
                 sql += ' end';
                 return sql;
             }
@@ -331,9 +331,9 @@
                 var sql = 'case when ';
                 sql += $this._translateWhere(dcQuery, $cond);
                 sql += " then ";
-                sql += $this._translateExpression($then, dcQuery, useFieldNotAlias);
+                sql += $this._translateExpression($then, dcQuery, useAlias);
                 sql += " else ";
-                sql += $this._translateExpression($else, dcQuery, useFieldNotAlias);
+                sql += $this._translateExpression($else, dcQuery, useAlias);
                 sql += ' end';
                 return sql;
             }
@@ -353,7 +353,7 @@
                     return exp;
                 } else {
                     // is field
-                    return this._translateField(exp, dcQuery.$context, useFieldNotAlias);
+                    return this._translateField(exp, dcQuery.$context, useAlias);
                 }
             }
 
@@ -361,7 +361,7 @@
                 var sql = '';
                 for (var i in exp) {
                     if (i > 0) sql += ', ';
-                    sql += $this._translateExpression(exp[i], dcQuery, useFieldNotAlias);
+                    sql += $this._translateExpression(exp[i], dcQuery, useAlias);
                 }
                 sql += '';
                 return sql;
@@ -407,7 +407,7 @@
                             // if context is not defined then use current
                             exp.$context || dcQuery.$context,
                             // if foreign context force use table field not alias
-                            useFieldNotAlias || (exp.$context || dcQuery.$context) != dcQuery.$context
+                            useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context
                     );
             }
 
@@ -441,70 +441,70 @@
                     return '(' + translateCaseExpression(exp[op].$cond, exp[op].$then, exp[op].$else) + ')';
 
                 case '$greatest':
-                    return 'GREATEST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'GREATEST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$least':
-                    return 'LEAST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'LEAST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
 
                 case '$splitString':
-                    return 'string_to_array(' + this._translateExpression(exp[op].$field, dcQuery, useFieldNotAlias) + ", '" + exp[op].$separator + "'" + ')';
+                    return 'string_to_array(' + this._translateExpression(exp[op].$field, dcQuery, useAlias) + ", '" + exp[op].$separator + "'" + ')';
                 case '$substring':
-                    return 'substring(' + this._translateExpression(exp[op].$field, dcQuery, useFieldNotAlias) + " for " + exp[op].$length + ')';
+                    return 'substring(' + this._translateExpression(exp[op].$field, dcQuery, useAlias) + " for " + exp[op].$length + ')';
                 case '$trim':
-                    return 'TRIM(both from ' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'TRIM(both from ' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
 
                 case '$toInt':
-                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as int)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useAlias)) + ' ) as int)';
                 case '$toDouble':
-                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as double precision)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useAlias)) + ' ) as double precision)';
                 case '$toBoolean':
-                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as boolean)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useAlias)) + ' ) as boolean)';
                 case '$toString':
-                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ' ) as varchar)';
+                    return 'CAST((' + this._translateExpression(exp[op], dcQuery, useAlias) + ' ) as varchar)';
                 case '$toDate':
-                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as date)';
+                    return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useAlias)) + ' ) as date)';
                 case '$toTimestamp':
-                    return 'to_timestamp(CAST((' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ' ) as double precision))';
+                    return 'to_timestamp(CAST((' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ' ) as double precision))';
                 case '$dateYear':
-                    return 'extract(isoyear from ' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ')';
+                    return 'extract(isoyear from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
                 case '$dateMonth':
-                    return 'extract(month from ' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ')';
+                    return 'extract(month from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
                 case '$dateTotalSeconds':
-                    return 'extract(epoch from ' + (this._translateExpression(exp[op], dcQuery, useFieldNotAlias)) + ')';
+                    return 'extract(epoch from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
 
                 case '$dateIntervalOrder':
-                    return 'CAST((extract(epoch from ' + (this._translateExpression(exp.$dateIntervalOrder.$field, dcQuery, useFieldNotAlias)) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
+                    return 'CAST((extract(epoch from ' + (this._translateExpression(exp.$dateIntervalOrder.$field, dcQuery, useAlias)) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
             }
 
             // aggregate operators
             switch(op) {
                 case '$distinct':
-                    return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$any':
-                    return 'MIN(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'MIN(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$first':
-                    return '(ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + '))[1]';
-//                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return '(ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useAlias) + '))[1]';
+//                    return 'FIRST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$last':
-                    var lastVal = this._translateExpression(exp[op], dcQuery, useFieldNotAlias);
+                    var lastVal = this._translateExpression(exp[op], dcQuery, useAlias);
                     return '(ARRAY_AGG(' + lastVal + '))[ARRAY_LENGTH(ARRAY_AGG(' + lastVal + '),1)]';
-//                    return 'LAST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+//                    return 'LAST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$count':
                     return exp.$count == 1
                             ? 'COUNT(*)'
-                            : 'COUNT(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                            : 'COUNT(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$sum':
-                    return 'SUM(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'SUM(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$max':
-                    return 'MAX(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'MAX(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$min':
-                    return 'MIN(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'MIN(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$avg':
-                    return 'AVG(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'AVG(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$array':
                 case '$flatArray':
-                    return 'ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'ARRAY_AGG(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$expandArray':
-                    return 'UNNEST(' + this._translateExpression(exp[op], dcQuery, useFieldNotAlias) + ')';
+                    return 'UNNEST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
             }
 
             // global sub query operators
@@ -555,7 +555,7 @@
             return false;
         },
 
-        _translateField: function(field, context, notAlias) {
+        _translateField: function(field, context, useAlias) {
             var query = this._getQueryByContext(context);
             var cubeField = this.asCubeFieldExpression(query.$select[field]);
 //            // is allow use aliases
@@ -1179,11 +1179,11 @@
                     var val = sort[i];
                     if (val.$expr && val.$type) {
                     var key = val.$type < 0 ? ' DESC' : ' ASC';
-                        sql += $this._translateExpression(val.$expr, query) + key;
+                        sql += $this._translateExpression(val.$expr, query, true) + key;
                     } else {
                         var field = Object.keys(val)[0];
                         var key = val[field] < 0 ? ' DESC' : ' ASC';
-                        sql += $this._translateExpression({$field:field}, query) + key;
+                        sql += $this._translateExpression({$field:field}, query, true) + key;
                     }
                 }
             }

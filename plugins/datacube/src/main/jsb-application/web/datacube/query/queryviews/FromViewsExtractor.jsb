@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Views.SameNestedQueryExtractor',
+	$name: 'DataCube.Query.Views.FromViewsExtractor',
 
 	$server: {
 	    $require: [
@@ -12,7 +12,7 @@
             2) Одинаковые $from выносятся целиком
         */
         buildViews: function (dcQuery) {
-debugger;
+//debugger;
             var views = {};
             $this.walkViews(dcQuery, function(view, count){
                 if (!view.fixed && count < 1 ) return;
@@ -42,30 +42,33 @@ debugger;
         },
 
         walkViews: function(dcQuery, viewCallback) {
-debugger;
+//debugger;
             var views = {}, viewsUseCount = {}, viewKeysOrder = [];
-            $this._walkAllViews(dcQuery, function(viewKey, viewQuery, viewFields, query, isFromQuery){
+            $this._walkAllViews(dcQuery, function(viewKey, viewQuery, viewFields, linkedQuery, isFromQuery){
+                if (!isFromQuery ) throw new Error('Internal error: failed view query type');
                 if(!views[viewKey]) {
                     var view = views[viewKey] = {
                         key: viewKey,
-                        name: query.$context || 'view'+(viewKeysOrder.length+1),
+                        name: linkedQuery.$context || 'view'+(viewKeysOrder.length+1),
                         fixed : isFromQuery,
                         fields:  viewFields,
                         query: viewQuery,
-                        linkedQueries: [query],
-                        linkedFromQueries: isFromQuery ? [query] : []
+                        linkedQueries: [linkedQuery],
+                        linkedFromQueries: [linkedQuery],
                     };
-                    view.query.$context  = query.$context || view.name;
+                    view.query.$context  = linkedQuery.$context || view.name;
                     viewKeysOrder.push(viewKey);
                     viewsUseCount[viewKey] = 1;
                 } else {
                     var view = views[viewKey];
-                    if (view.linkedQueries.indexOf(query) == -1) {
-                        view.linkedQueries.push(query);
-                        isFromQuery && view.linkedFromQueries.push(query);
-                        view.fields = $this._mergeFields(view.fields, viewFields);
-                        viewsUseCount[viewKey] = viewsUseCount[viewKey] + 1;
+                    if (view.linkedQueries.indexOf(linkedQuery) == -1) {
+                        view.linkedQueries.push(linkedQuery);
                     }
+                    if (view.linkedFromQueries.indexOf(linkedQuery) == -1) {
+                        view.linkedFromQueries.push(linkedQuery);
+                    }
+                    view.fields = $this._mergeFields(view.fields, viewFields);
+                    viewsUseCount[viewKey] = viewsUseCount[viewKey] + 1;
                 }
             });
 
@@ -79,20 +82,19 @@ debugger;
                 viewCallback(view, count);
             }
         },
-        _walkAllViews: function (dcQuery, localViewCallback) {
-debugger;
-//            var collected = [];
-            QueryUtils.walkAllSubQueries(dcQuery, function(query, isFromQuery, isValueQuery, isViewQuery, path){
-//                if (collected.indexOf(query) != -1) {
-//                    return; // skip visited queries from $views
-//                }
-//                collected.push(query);
 
+        _walkAllViews: function (dcQuery, localViewCallback) {
+//debugger;
+            QueryUtils.walkAllSubQueries(dcQuery, function(query, isFromQuery, isValueQuery, isViewQuery, path){
                 if (query.$sql) {
                     return; // skip embedded SQL query
                 }
                 if (!isFromQuery && !query.$filter && !query.$groupBy /*&& !query.$from*/ && !query.$sort && !query.$distinct) {
                     return; // skip simple cube
+                }
+
+                if (!isFromQuery) {
+                    return; // extract only $from queries
                 }
 
                 // skip not isolated subqueries
