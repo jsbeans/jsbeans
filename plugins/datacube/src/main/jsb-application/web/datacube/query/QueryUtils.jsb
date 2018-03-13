@@ -29,16 +29,18 @@
         *    - подзапросы в $select
         */
         _walkQueries: function (query, includeViews, callback/**callback(q, isFromQuery, isValueQuery, isViewQuery, parents)*/) {
-//            var oldCallback = callback;
-//            if (query.$id) debugger;
-//            $this.logDebug('[qid='+query.$id+'] Walk sub-queries start');
-//            callback = function(q, isFromQuery, isValueQuery, isViewQuery, parents){
-//                $this.logDebug('[qid='+query.$id+'] Sub-query: '+q.$context+' (isInFrom='+isFromQuery+', isValue='+isValueQuery+', isView='+isViewQuery+')');
-//                return oldCallback.apply(this, arguments);
-//            }
+            var trace = false;
+            if(trace) {
+                var oldCallback = callback;
+                $this.logDebug('[qid='+query.$id+'] Walk sub-queries start');
+                callback = function(q, isFromQuery, isValueQuery, isViewQuery, parents){
+                    $this.logDebug('[qid='+query.$id+'] Sub-query: '+q.$context+' (isInFrom='+isFromQuery+', isValue='+isValueQuery+', isView='+isViewQuery+')');
+                    return oldCallback.apply(this, arguments);
+                }
+            }
 
 
-            function collect(q, key, isView, path) {
+            function collect(q, key, isView, path, queryParentFrom) {
                 function findView(name) {
                     if (q.$views && q.$views[name]) return q.$views[name];
                     for (var p in path) {
@@ -51,9 +53,9 @@
                     // from
                     if (q.$from) {
                         if (typeof q.$from === 'string' && includeViews) {
-                            collect(findView(q.$from), '$from', true, []);
+                            collect(findView(q.$from), '$from', true, [], q);
                         } else if (JSB.isPlainObject(q.$from)) {
-                            collect(q.$from, '$from', true, []);
+                            collect(q.$from, '$from', true, [], q);
                         }
                     }
 
@@ -70,7 +72,7 @@
                     }
                     // self query
                     if (q.$select) {
-                        callback(q, key == '$from', key != '$from' && q != query, isView, path);
+                        callback(q, key == '$from' ? queryParentFrom : null, key != '$from' && q != query, isView, path);
                     }
                 } else if (JSB.isArray(q)) {
                     for (var i in q) {
@@ -79,7 +81,7 @@
                 }
             }
             collect(query, null, false, []);
-//            $this.logDebug('[qid='+query.$id+'] Walk sub-queries complete');
+            trace && $this.logDebug('[qid='+query.$id+'] Walk sub-queries complete');
         },
 
         walkQueryForeignFields: function(dcQuery, callback /*(field, context, query)*/){
