@@ -20,19 +20,18 @@
 
     find: function(key, values, isFindAll){
         var main = false,
-            resArr = [];
-
-        if(!values){
-            main = true;
-            if(JSB.isDefined(this._values[0])){
-                values = this._values[0];
-            }
-        }
-
-        var res;
+            resArr = [],
+            res;
 
         if(values){
-            var res = this.getMainSelector().find(key, values[0]);
+            if(values[0]){
+                res = this.getMainSelector().find(key, values[0]);
+            }
+        } else {
+            main = true;
+            if(this._values && this._values[0]){
+                res = this.getMainSelector().find(key, this._values[0]);
+            }
         }
 
         if(res){

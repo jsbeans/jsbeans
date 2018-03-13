@@ -20,6 +20,36 @@
                     name: 'Серия',
                     collapsable: true,
                     items: {
+                        name: {},
+                        data: {},
+                        tooltip: {
+                            render: 'group',
+                            name: 'Подпись',
+                            collapsable: true,
+                            items: {
+                                valueDecimals: {
+                                    render: 'item',
+                                    name: 'Число знаков после запятой',
+                                    valueType: 'number'
+                                },
+                                valuePrefix: {
+                                    render: 'item',
+                                    name: 'Префикс значения',
+                                    valueType: 'string'
+                                },
+                                valueSuffix: {
+                                    render: 'item',
+                                    name: 'Суффикс значения',
+                                    valueType: 'string'
+                                }
+                            }
+                        },
+                        visible: {
+                            render: 'item',
+                            name: 'Показывать по-умолчанию',
+                            optional: 'checked',
+                            editor: 'none'
+                        },
                         allowPointSelect: {
                             render: 'switch',
                             name: 'Разрешить события',
@@ -33,7 +63,7 @@
                                 },
                                 drilldown: {
                                     render: 'switch',
-                                    name: 'Drilldown',
+                                    name: 'Вложенный виджет',
                                     items: {
                                         widget: {
                                             render: 'completeWidget',
@@ -522,6 +552,8 @@
 
 	    _curFilters: {},
 	    _curFilterHash: null,
+
+	    _chartType: 'chart',
 	    _filterPropName: null,
 
         $constructor: function(opts){
@@ -539,8 +571,6 @@
                     $this.chart.setSize($this.getElement().width(), $this.getElement().height());
                 }, 500, 'hcResize_' + $this.getId());
             });
-
-            $this.setInitialized();
         },
 
         // events
@@ -594,7 +624,7 @@
             if(this.chart){
                 this.chart.update(chartOpts);
             } else {
-                this.chart = (function(){return this}).call(null).Highcharts.chart(this.container.get(0), chartOpts);
+                this.chart = (function(){return this}).call(null).Highcharts[this._chartType](this.container.get(0), chartOpts);
             }
 
             this._select(this._curFilters, true, true);
@@ -618,6 +648,7 @@
 
                 for(var i = 0; i < seriesContext.length; i++){
                     var allowPointSelect = seriesContext[i].find('allowPointSelect').checked(),
+                        tooltip = seriesContext[i].find('tooltip'),
                         datacube = undefined;
 
                     if(allowPointSelect){
@@ -637,7 +668,13 @@
                     series.push({
                         allowPointSelect: allowPointSelect,
                         cursor: allowPointSelect ? 'pointer' : undefined,
-                        datacube: datacube
+                        datacube: datacube,
+                        tooltip: {
+                            valueDecimals: tooltip.find('valueDecimals').value(),
+                            valuePrefix: tooltip.find('valuePrefix').value(),
+                            valueSuffix: tooltip.find('valueSuffix').value()
+                        },
+                        visible: seriesContext[i].find('visible').checked()
                     });
                 }
 

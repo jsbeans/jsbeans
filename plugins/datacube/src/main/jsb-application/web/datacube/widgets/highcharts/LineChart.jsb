@@ -69,34 +69,6 @@
                                     name: 'Правый'
                                 }
                             }
-                        },
-                        tooltip: {
-                            render: 'group',
-                            name: 'Подпись',
-                            collapsable: true,
-                            items: {
-                                valueDecimals: {
-                                    render: 'item',
-                                    name: 'Число знаков после запятой',
-                                    valueType: 'number'
-                                },
-                                valuePrefix: {
-                                    render: 'item',
-                                    name: 'Префикс значения',
-                                    valueType: 'string'
-                                },
-                                valueSuffix: {
-                                    render: 'item',
-                                    name: 'Суффикс значения',
-                                    valueType: 'string'
-                                }
-                            }
-                        },
-                        visible: {
-                            render: 'item',
-                            name: 'Показывать по-умолчанию',
-                            optional: 'checked',
-                            editor: 'none'
                         }
                     }
                 }
@@ -140,6 +112,11 @@
     },
     $client: {
         _filterPropName: 'category',
+
+        $constructor: function(opts){
+            $base(opts);
+            $this.setInitialized();
+        },
 
         refresh: function(opts){
             if(!$base(opts)){
@@ -276,13 +253,7 @@
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesContext[seriesData[j].index].find('color').value(),
                             stack: seriesContext[seriesData[j].index].find('stack').value(),
-                            step: $this.isNone(seriesContext[seriesData[j].index].find('step').value()),
-                            tooltip: {
-                                valueDecimals: seriesContext[seriesData[j].index].find('valueDecimals').value(),
-                                valuePrefix: seriesContext[seriesData[j].index].find('valuePrefix').value(),
-                                valueSuffix: seriesContext[seriesData[j].index].find('valueSuffix').value()
-                            },
-                            visible: seriesContext[seriesData[j].index].find('visible').checked()
+                            step: $this.isNone(seriesContext[seriesData[j].index].find('step').value())
                         };
 
                         chartOpts.series[seriesData[j].index] = JSB.clone(chartOptsSeries[seriesData[j].index]);
