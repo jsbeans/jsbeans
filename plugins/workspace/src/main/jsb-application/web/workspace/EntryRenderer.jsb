@@ -27,7 +27,7 @@
 				this.append(this.$('<div class="title"></div>').text(entry.getName()));
 			}
 			
-			this.subscribe('Workspace.Entry.updated', function(sender){
+			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
 				if(sender == entry){
 					$this.update();
 				}

@@ -24,7 +24,7 @@
 			});
 			$this.toolbox.append(createSliceBtn.getElement());
 			
-			this.subscribe('Workspace.Entry.updated', function(sender){
+			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
 				if(sender != $this.descriptor.entry){
 					return;
 				}
@@ -51,7 +51,7 @@
                         name: slice.getName(),
                         type: 'entry'
                     }, $this.treeNode.key, false, {collapsed:true});
-					$this.explorer.publish('Workspace.nodeOpen', node);
+					$this.explorer.publish('JSB.Workspace.nodeOpen', node);
 				});
 			});
 		},

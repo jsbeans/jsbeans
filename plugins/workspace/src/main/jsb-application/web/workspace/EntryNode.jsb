@@ -28,7 +28,7 @@
 						}
 						$this.server().rename($this.descriptor.entry, val, function(){
 							$this.descriptor.name = val;
-							$this.publish('Workspace.renameEntry', {
+							$this.publish('JSB.Workspace.renameEntry', {
 								node: $this,
 								entry: $this.getEntry(),
 								name: val
@@ -63,10 +63,19 @@
 						tooltip: 'Открыть',
 						onClick: function(evt){
 							evt.stopPropagation();
-							$this.explorer.publish('Workspace.nodeOpen', $this);
+							$this.explorer.publish('JSB.Workspace.nodeOpen', $this);
 						}
 					});
 					$this.toolbox.append(openBtn.getElement());
+				}
+			});
+			
+			this.subscribe('JSB.Workspace.Entry.updated', function(sender, msg, syncInfo){
+				if($this.getEntry() != sender || $this.isDestroyed()){
+					return;
+				}
+				if(syncInfo.isChanged('_childCount')){
+					$this.explorer.synchronizeNodeChildren($this.treeNode.key);
 				}
 			});
 		},
@@ -91,8 +100,8 @@
 	
 	$server: {
 		rename: function(entry, newName){
-			entry.title(newName);
-			entry.workspace.store();
+			entry.setName(newName);
+			entry.getWorkspace().store();
 			entry.doSync();
 		}
 	}

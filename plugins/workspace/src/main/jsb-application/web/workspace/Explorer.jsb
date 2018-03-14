@@ -2,8 +2,7 @@
 	$name: 'JSB.Workspace.Explorer',
 	$parent: 'JSB.Widgets.Widget',
 	
-	$require: ['JSB.Workspace.WorkspaceController', 
-	           'JSB.Widgets.RendererRepository',
+	$require: ['JSB.Widgets.RendererRepository',
 	           'JSB.Workspace.FolderNode',
 	           'JSB.Workspace.UploadNode',
 	           'JSB.Widgets.ToolBar', 
@@ -20,13 +19,13 @@
 	},
 	
 	currentWorkspace: null,
-	manager: null,
-	wmKey: null,
 	wTreeMap: {},
 	mCollapseKeys: {},
 	mExpandKeys: {},
 	
 	$client: {
+		_isReady: false, 
+		
 		$constructor: function(opts){
 			$base(opts);
 			
@@ -42,7 +41,7 @@
 				tooltip: 'Создать новую папку',
 				element: '<div class="icon"></div>',
 				click: function(){
-					$this.createNewFolder();
+					$this.createNewEntry('JSB.Workspace.FolderEntry', {}, 'Новая папка');
 				}
 			});
 			
@@ -192,10 +191,10 @@
 					$this.updateToolbar();
 				},
 				onNodeSelected: function(key, bSelected, evt){
-					$this.publish('Workspace.Explorer.nodeSelected', {node: $this.tree.get(key).obj, selected: bSelected});
+					$this.publish('JSB.Workspace.Explorer.nodeSelected', {node: $this.tree.get(key).obj, selected: bSelected});
 				},
 				onNodeHighlighted: function(key, bHighlighted, evt){
-					$this.publish('Workspace.Explorer.nodeHighlighted', {node: $this.tree.get(key).obj, selected: bHighlighted});
+					$this.publish('JSB.Workspace.Explorer.nodeHighlighted', {node: $this.tree.get(key).obj, selected: bHighlighted});
 				}
 
 			});
@@ -213,13 +212,8 @@
 				}, 100, 'explorerToolbarResize' + $this.getId());
 			});
 
-			if(this.options.wmKey){
-				this.bindManager(this.options.wmKey);
-			}
-			
-			this.publish('Workspace.Explorer.initialized');
-
-			this.subscribe('Workspace.Entry.remove', {session: true}, function(sender, msg, entry){
+/*
+			this.subscribe('JSB.Workspace.Entry.removeChild', {session: true}, function(sender, msg, entry){
 			    if(entry.workspace !== $this.currentWorkspace) return;
 
 			    var nodeDesc = $this.wTreeMap[entry.localId];
@@ -237,7 +231,7 @@
 			    }
 			});
 
-            this.subscribe('Workspace.Entry.add', {session: true}, function(sender, msg, entry){
+            this.subscribe('JSB.Workspace.Entry.addChild', {session: true}, function(sender, msg, entry){
                 if(entry.workspace !== $this.currentWorkspace) return;
 
                 var parentKey = $this.wTreeMap[entry.parent] ? $this.wTreeMap[entry.parent].key : null;
@@ -251,8 +245,8 @@
                     }, parentKey, false, {collapsed:true});
                 }
             });
-
-			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
+*/
+			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
 			    if(node.workspace !== $this.currentWorkspace) return;
 
 			    var nodeKey = $this.wTreeMap[node.descriptor.entry.localId] ? $this.wTreeMap[node.descriptor.entry.localId].key : null;
@@ -281,53 +275,71 @@
 			    $this.tree.selectItem(nodeKey);
 			});
 
-			this.subscribe('Workspace.Entry.open', function(sender, msg, entry){
+			this.subscribe('JSB.Workspace.Entry.open', function(sender, msg, entry){
 			    var nodeKey = $this.wTreeMap[entry.localId] ? $this.wTreeMap[entry.localId].key : null;
 			    if(nodeKey){
-			        $this.publish('Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
+			        $this.publish('JSB.Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
 			    }
 			});
+			
+			this.subscribe('JSB.Workspace.Entry.updated', function(sender, msg, syncInfo){
+				if(sender == $this.currentWorkspace && $this._isReady){
+					if(syncInfo.isChanged('_name')){
+						$this.updateTab();
+					}
+					if(syncInfo.isChanged('_childCount')){
+						$this.synchronizeNodeChildren();
+					}
+						
+				}
+				
+			});
+			
+			
+			this.publish('JSB.Workspace.Explorer.initialized');
+
+			this.refreshWorkspaces();
 		},
 		
 		refreshWorkspaces: function(){
-			if(!this.wmKey){
-				return;
-			}
 			$this.server().getWorkspaces(function(wMap){
 				if(Object.keys(wMap).length == 0){
 					throw 'Error: No default workspace existed';
 				}
-				var lastId = Web.getCookie('Workspace.'+$this.wmKey+'.currentWorkspace');
+				var lastId = Web.getCookie('Workspace.currentWorkspace');
 				if(!wMap[lastId]){
-					lastId = Object.keys(wMap)[0];
+					// choose the first user workspace
+					var bFound = false;
+					for(var wId in wMap){
+						if(wMap[wId].wType == 'user'){
+							bFound = true;
+							lastId = wId;
+							break;
+						}
+					}
+					if(!bFound){
+						throw new Error('Failed to find user workspace');
+					}
 				}
-				$this.setCurrentWorkspace(wMap[lastId]);
+				$this.setCurrentWorkspaceId(lastId);
 			});
 			
 		},
 		
-		bindManager: function(wmKey, callback){
-			this.server().bindManager(wmKey, function(mgr){
-				$this.manager = mgr;
-				$this.wmKey = wmKey;
-				$this.refreshWorkspaces();
-				if(callback){
-					callback.call($this);
-				}
-			});
-		},
-		
-		setCurrentWorkspace: function(w, callback){
-			this.currentWorkspace = w;
-			Web.setCookie('Workspace.'+$this.wmKey+'.currentWorkspace', w.getLocalId(), {expires: 30*24*3600});
-			this.server().setCurrentWorkspace(w, function(){
+		setCurrentWorkspaceId: function(wId, callback){
+			Web.setCookie('Workspace.currentWorkspace', wId, {expires: 30*24*3600});
+			this._isReady = false;
+			this.server().setCurrentWorkspaceId(wId, function(wInfo){
+				var w = wInfo.workspace;
+				var explorerNodeTypes = wInfo.explorerNodeTypes;
 				$this.currentWorkspace = w;
-				$this.publish('Workspace.changeWorkspace', w);
+				$this.explorerNodeTypes = explorerNodeTypes;
+				$this.publish('JSB.Workspace.changeWorkspace', w);
 
 				// upload all node type beans
 				var nodeTypes = [];
-				for(var eType in $this.currentWorkspace.workspaceManager.exlorerNodeTypes){
-					var nType = $this.currentWorkspace.workspaceManager.exlorerNodeTypes[eType];
+				for(var eType in explorerNodeTypes){
+					var nType = explorerNodeTypes[eType];
 					nodeTypes.push(nType);
 				}
 				
@@ -370,13 +382,18 @@
 						if($this.currentWorkspace.getName() == val.trim()){
 							return;
 						}
-						$this.currentWorkspace.rename(val.trim(), function(res){
+						$this.renameWorkspace(val.trim());
+/*						
+						$this.currentWorkspace.server().setName(val.trim(), function(){
+							
 							if(!res){
 								editor.setData($this.currentWorkspace.getName());
 								editor.setMark(true);
 								editor.beginEdit();	
 							}
+							
 						});
+*/						
 					}
 				});
 				var renameBtn = new Button({
@@ -402,6 +419,12 @@
 					.append(menuBtn.getElement());
 			}
 			editor.setData(this.currentWorkspace.getName());
+		},
+		
+		renameWorkspace: function(newName){
+			this.server().renameWorkspace(newName, function(){
+				$this.currentWorkspace.getEntryDoc()._name = newName;
+			});
 		},
 
 		showWorkspaceMenu: function(){
@@ -627,9 +650,6 @@
 				var node = sel[i].obj;
 				if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					var entry = node.getEntry();
-					if(entry.getParentId()){
-						continue;
-					}
 				}
 				newSel.push(sel[i]);
 			}
@@ -661,10 +681,9 @@
 		refresh: function(){
 		    this._isReady = false;
 			this.tree.getElement().loader();
-			this.server().loadWorkspaceTree(function(wtree){
+			this.server().loadNodes(function(nTree){
 				$this.tree.getElement().loader('hide');
-				$this.wtree = wtree;				
-				$this.redrawTree();
+				$this.redrawTree(nTree);
 				$this._isReady = true;
 			});
 		},
@@ -688,68 +707,28 @@
 		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
 		    var key = JSB().generateUid();
 			var node = null;
-			
-			if(itemDesc.type == 'node'){
-				node = new FolderNode({
-					descriptor: itemDesc,
-					allowOpen: true,
-					allowEdit: true,
-					onChangeName: function(oldName, newName, evt){
-						var node = this;
-						var path = $this.constructPathFromKey(parent);
-						if(path.length > 0){
-							path += '/';
-						}
-						var oldPath = path + oldName;
-						var newPath = path + newName;
-						$this.server().renameCategory(oldPath, newPath, function(res){
-							if(res){
-								// all is ok
-								node.setName(newName);
-								$this.sort();
-								$this.publish('Workspace.renameCategory', {
-									node: node,
-									oldPath: oldPath,
-									newPath: newPath
-								});
-							} else {
-								node.editor.setData(oldName);
-								node.editor.beginEdit();
-								node.editor.setMark(true);
-							}
-						})
-						
-					}
-				});
-				
-				$this.installDropContainer(node);
-				$this.installUploadContainer(node);
-			} else if(itemDesc.type == 'entry') {
-				if(this.wTreeMap[itemDesc.entry.localId]){
-					return this.wTreeMap[itemDesc.entry.localId].node;
-				}
-				var nodeSlice = this.currentWorkspace.workspaceManager.exlorerNodeTypes;
-				var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
-				if(!nodeType || !JSB.get(nodeType)){
-					return null;
-				}
-				var nodeCls = JSB.get(nodeType).getClass();
-				node = new nodeCls({
-					descriptor: itemDesc,
-					allowOpen: true,
-					allowEdit: true
-				});
-				this.wTreeMap[itemDesc.entry.localId] = {
-                    id: itemDesc.entry.localId,
-                    key: key,
-                    parent: itemDesc.entry.parent,
-                    parentKey: parent,
-                    node: node
-                };
-
-			} else {
-				throw new Error('not implemented');
+			if(this.wTreeMap[itemDesc.entry.getId()]){
+				return this.wTreeMap[itemDesc.entry.getId()].node;
 			}
+			var nodeSlice = this.explorerNodeTypes;
+			var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
+			if(!nodeType || !JSB.get(nodeType)){
+				return null;
+			}
+			var nodeCls = JSB.get(nodeType).getClass();
+			node = new nodeCls({
+				descriptor: itemDesc,
+				allowOpen: true,
+				allowEdit: true
+			});
+			this.wTreeMap[itemDesc.entry.getId()] = {
+                id: itemDesc.entry.getId(),
+                key: key,
+                parent: itemDesc.entry.getParentId(),
+                parentKey: parent,
+                node: node
+            };
+
 			
 			node.explorer = this;
 			node.workspace = this.currentWorkspace;
@@ -764,17 +743,19 @@
 					return;
 				}
 				$this._isReady = false;
-				$this.server().loadEntryChildren(itemDesc.entry, function(chArr){
+				$this.server().loadNodes(itemDesc.entry, function(nTree){
+					var chArr = Object.keys(nTree);
 					chArr.sort(function(a, b){
-						return a.name.localeCompare(b.name);
+						return nTree[a].name.localeCompare(nTree[b].name);
 					});
 					var parentKey = treeNode.key;
 					for(var i = 0; i < chArr.length; i++){
-						var chDesc = chArr[i];
+						var eId = chArr[i];
+						var chDesc = nTree[eId];
 						$this.addTreeItem(chDesc, parentKey);
 					}
 					$this._isReady = true;
-					treeNode.obj.setTrigger('Workspace.Explorer.nodeChildrenLoaded');
+					treeNode.obj.setTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded');
 				});
 			}
 			function onNodeCollapse(treeNode, isManual){
@@ -815,7 +796,7 @@
 			
 			if(node.options.allowOpen){
 				node.getElement().dblclick(function(){
-					$this.publish('Workspace.nodeOpen', node);
+					$this.publish('JSB.Workspace.nodeOpen', node);
 				});
 			}
 			
@@ -892,8 +873,13 @@
 			});
 			
 			if(itemDesc.children && Object.keys(itemDesc.children).length > 0){
-				for(var id in itemDesc.children){
-					var desc = itemDesc.children[id];
+				var chArr = Object.keys(itemDesc.children);
+				chArr.sort(function(a, b){
+					return itemDesc.children[a].name.localeCompare(itemDesc.children[b].name);
+				});
+				for(var i = 0; i < chArr.length; i++){
+					var eId = chArr[i];
+					var desc = itemDesc.children[eId];
 					$this.addTreeItem(desc, key);
 				}
 			}
@@ -905,7 +891,7 @@
 			var key = node.treeNode.key;
 			$this.tree.expandNode(key);
 			if($this.tree.isDynamicChildren(key)){
-				node.ensureTrigger('Workspace.Explorer.nodeChildrenLoaded', function(){
+				node.ensureTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded', function(){
 					callback.call($this);
 				});
 			} else {
@@ -966,7 +952,7 @@
 				if(res){
 					for(var i in sourceNodes){
 						$this.tree.moveNode(sourceNodes[i].treeNode.key, targetNode ? targetNode.treeNode.key:null);
-						$this.publish('Workspace.moveEntry', sourceNodes[i]);
+						$this.publish('JSB.Workspace.moveEntry', sourceNodes[i]);
 					}
 				}
 			});
@@ -979,21 +965,14 @@
 			}
 			for(var i in sel){
 				var node = sel[i].obj;
-				if(JSB().isInstanceOf(node, 'JSB.Workspace.FolderNode')){
-					batch.push({
-						type: 'node',
-						path: node ? this.constructPathFromKey(node.treeNode.key) : '',
-						key: sel[i].key
-					});
-				} else if(JSB().isInstanceOf(node, 'JSB.Workspace.UploadNode')){
+				if(JSB().isInstanceOf(node, 'JSB.Workspace.UploadNode')){
 					if(node.getElement().is('.error')){
 						$this.tree.deleteNode(sel[i].key);
 					}
-				} else if(JSB().isInstanceOf(node, 'JSB.Workspace.ExplorerNode') && node.descriptor && node.descriptor.entry){
+				} else if(JSB().isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					batch.push({
-						type: 'entry',
-						entry: node.descriptor.entry,
-						id: node.descriptor.entry.getLocalId(),
+						entry: node.getEntry(),
+						id: node.getEntry().getId(),
 						key: sel[i].key
 					});
 				}
@@ -1002,19 +981,56 @@
 				for(var i = 0; i < removed.length; i++){
 					$this.tree.deleteNode(removed[i], function(itemObj){
 						var node = itemObj.obj;
-						if(JSB().isInstanceOf(node, 'JSB.Workspace.ExplorerNode') && node.descriptor && node.descriptor.entry){
-							node.descriptor.entry.destroy();
-							$this.publish("Workspace.deleteNode");
+						if(JSB().isInstanceOf(node, 'JSB.Workspace.EntryNode')){
+							node.getEntry().destroy();
+							$this.publish("JSB.Workspace.deleteNode");
 						}
 					});
 				}
 			});
 		},
 		
-		redrawTree: function(){
+		synchronizeNodeChildren: function(pKey){
+			var pEntry = this.currentWorkspace;
+			var treeNode = null;
+			if(pKey){
+				treeNode = this.tree.get(pKey).obj;
+				pEntry = treeNode.getEntry();
+			}
+			
+			// collect current tree children
+			var treeChildren = {};
+			var chArr = this.tree.getChildNodes(pKey);
+			for(var i = 0; i < chArr.length; i++){
+				var e = this.tree.get(chArr[i]).obj.getEntry();
+				treeChildren[e.getId()] = chArr[i];
+			}
+			
+			// load actual children
+			this.server().loadNodes(pEntry, function(nTree){
+				// remove missing
+				for(var eId in treeChildren){
+					if(!nTree[eId]){
+						$this.tree.deleteNode(treeChildren[eId]);
+					}
+				}
+				
+				// add new
+				for(var eId in nTree){
+					if(!treeChildren[eId]){
+						$this.addTreeItem(nTree[eId], pKey);
+					}
+				}
+				
+			})
+			
+		},
+
+		
+		redrawTree: function(nTree){
 			this.tree.clear();
-			for(var id in this.wtree){
-				var desc = this.wtree[id];
+			for(var eId in nTree){
+				var desc = nTree[eId];
 				this.addTreeItem(desc, null, false, {collapsed:true});
 			}
 			
@@ -1033,10 +1049,11 @@
 				return a.obj.getName().localeCompare(b.obj.getName());
 			});
 		},
-
-		createNewFolder: function(){
+		
+		createNewEntry: function(eType, opts, prefixName){
 			// resolve parent
 			var item = this.tree.getSelected();
+			var parentEntry = null;
 			var parentKey = null;
 			if(item == null){
 				// choose root
@@ -1047,6 +1064,7 @@
 				var curItem = item;
 				while(curItem){
 					if(JSB().isInstanceOf(curItem.obj, 'JSB.Workspace.FolderNode')){
+						parentEntry = curItem.obj.getEntry();
 						parentKey = curItem.key;
 						break;
 					} else {
@@ -1059,78 +1077,31 @@
 				}
 			}
 			
-			// choose folder name
-			this.server().loadWorkspaceFolders(function(categories){
-				var catMap = {};
-				for(var i in categories){
-					catMap[categories[i]] = true;
+			$this.server().createNewEntry(eType, opts, prefixName, parentEntry, function(desc){
+				if(!desc){
+					// internal error: folder already exists
+					return;
 				}
-
-				var curPath = $this.constructPathFromKey(parentKey);
-				if(curPath.length > 0){
-					curPath += '/';
+				var node = $this.addTreeItem(desc, parentKey);
+				if(!node){
+					return;
 				}
-				
-				var lastNum = 1;
-				var path = null;
-				while(true){
-					// construct current folder path
-					var testName = 'Новая папка';
-					if(lastNum > 1){
-						testName += ' ' + lastNum;
+				JSB().deferUntil(function(){
+					if(node.options.allowOpen){
+						$this.publish('JSB.Workspace.nodeOpen', node);
 					}
-					path = curPath + testName;
-					if(!catMap[path]){
-						break;
+					if(node.renderer && node.renderer.editor){
+						node.renderer.editor.beginEdit();	
 					}
-					lastNum++;
-				}
-				
-				// create new folder
-				$this.server().addCategory(path, function(desc){
-					if(!desc){
-						// internal error: folder already exists
-						return;
-					}
-					var node = $this.addTreeItem(desc, parentKey);
-					if(!node){
-						return;
-					}
-					JSB().deferUntil(function(){
-						node.editor.beginEdit();
-					}, function(){
-						return node.getElement().width() > 0 && node.getElement().height() > 0;
-					});
 					
-					$this.sort();
+				}, function(){
+					return node.getElement().width() > 0 && node.getElement().height() > 0 && node.renderer;
 				});
+				
+				$this.sort();
 			});
-		},
-		
-		createNewEntry: function(eType, opts, prefixName){
-			// resolve parent
-			var item = this.tree.getSelected();
-			var parentKey = null;
-			if(item == null){
-				// choose root
-			} else {
-				if(JSB().isArray(item)){
-					item = item[0];
-				}
-				var curItem = item;
-				while(curItem){
-					if(JSB().isInstanceOf(curItem.obj, 'JSB.Workspace.FolderNode')){
-						parentKey = curItem.key;
-						break;
-					} else {
-						if(curItem.parent){
-							curItem = this.tree.get(curItem.parent);
-						} else {
-							curItem = null;
-						}
-					}
-				}
-			}
+
+/*			
 			this.server().loadEntryNames(function(names){
 				var nameMap = {};
 				for(var i = 0; i < names.length; i++){
@@ -1158,7 +1129,7 @@
 					}
 					JSB().deferUntil(function(){
 						if(node.options.allowOpen){
-							$this.publish('Workspace.nodeOpen', node);
+							$this.publish('JSB.Workspace.nodeOpen', node);
 						}
 						if(node.renderer && node.renderer.editor){
 							node.renderer.editor.beginEdit();	
@@ -1170,11 +1141,14 @@
 					
 					$this.sort();
 				});
-			});
+			});*/
 		}
 	},
 	
 	$server: {
+		$require: ['JSB.Workspace.WorkspaceController',
+		           'JSB.System.Kernel'],
+		
 		$constructor: function(){
 			$base();
 			this.subscribe('JSB.Workspace.workspaceUpdated', function(sender, msg, params){
@@ -1184,32 +1158,37 @@
 			});
 		},
 		
-		bindManager: function(wmKey){
-			this.manager = WorkspaceController.ensureManager(wmKey);
-			this.wmKey = wmKey;
-			return this.manager;
-		},
-		
 		getWorkspaces: function(){
-			var workspaces = {};
-		    for (var workspace, itWss = $this.manager.workspaces(); workspace = itWss.next();){
-		        workspace.load();
-				workspaces[workspace.localId] = workspace;
+			var userWType = 'user';
+			var wArr = WorkspaceController.getWorkspacesInfo(Kernel.user());
+			var bFound = false;
+			for(var i = 0; i < wArr.length; i++){
+				if(wArr[i].wType == userWType){
+					bFound = true;
+					break;
+				}
 			}
-
-			return workspaces;
+			if(!bFound){
+				var ws = WorkspaceController.createWorkspace(userWType);
+				wArr = WorkspaceController.getWorkspacesInfo(Kernel.user());
+			}
+			var wMap = {};
+			for(var i = 0; i < wArr.length; i++){
+				wMap[wArr[i].wId] = wArr[i];
+			}
+			return wMap;
 		},
 		
-		setCurrentWorkspace: function(w){
-			if(!w){
+		setCurrentWorkspaceId: function(wId){
+			if(!wId){
 				return;
 			}
-			$this.currentWorkspace = w;
-		},
-		
-		loadWorkspaceFolders: function(){
-			var categories = this.currentWorkspace.property('categories');
-			return categories;
+			$this.currentWorkspace = WorkspaceController.getWorkspace(wId);
+			$this.explorerNodeTypes = WorkspaceController.constructExplorerNodeTypeSlice($this.currentWorkspace.getWorkspaceType());
+			return {
+				workspace: $this.currentWorkspace, 
+				explorerNodeTypes: $this.explorerNodeTypes
+			};
 		},
 		
 		loadEntryNames: function(){
@@ -1228,9 +1207,14 @@
 		removeWorkspace: function(w){
 			return $this.manager.removeWorkspace(w);
 		},
-		
+/*		
 		renameCategory: function(oldCategory, newCategory){
 			return this.currentWorkspace.renameCategory(oldCategory, newCategory);
+		},
+*/		
+		renameWorkspace: function(newName){
+			this.currentWorkspace.setName(newName);
+			this.currentWorkspace.store();
 		},
 		
 		moveItems: function(target, sources){
@@ -1262,98 +1246,59 @@
 			return removed;
 		},
 		
-		addCategory: function(category){
-			return this.currentWorkspace.addCategory(category);
-		},
-		
-		addEntry: function(eType, opts, name, path){
-			var eJsb = $jsb.get(eType);
+		createNewEntry: function(eType, opts, name, parent){
+			var eJsb = JSB.get(eType);
 			if(!eJsb){
 				throw new Error('Unable to file entry type: ' + eType);
 			}
 			var eCls = eJsb.getClass();
 			var entry = new eCls($jsb.generateUid(), this.currentWorkspace, opts);
-			entry.title(name);
-			entry.category(path);
+			
+			if(!parent){
+				parent = this.currentWorkspace;
+			}
+			var children = parent.getChildren();
+			var testName = null;
+			for(var suffix = 1; ; suffix++ ){
+				testName = name + ' ' + suffix;
+				var bFound = false;
+				for(var chId in children){
+					if(children[chId].getName() == testName){
+						bFound = true;
+						break;
+					}
+				}
+				if(!bFound){
+					break;
+				}
+			}
+			
+			entry.setName(testName);
+			parent.addChildEntry(entry);
 			this.currentWorkspace.store();
+			this.currentWorkspace.doSync();
 			return {
-				type: 'entry',
 				entry: entry,
-				name: name
+				name: testName
 			};
 		},
 		
-		loadEntryChildren: function(entry){
-			var children = entry.getChildren();
-			var chArr = [];
+		loadNodes: function(pEntry, opts){
+			pEntry = pEntry || this.currentWorkspace;
+			var children = pEntry.getChildren();
+			var nTree = {};
 			for(var chId in children){
 				var chEntry = children[chId];
-				
-				chArr.push({
-					type: 'entry',
+				nTree[chId] = {
 					children: {},
 					name: chEntry.getName(),
 					entry: chEntry,
-					hasEntryChildren: chEntry.children && Object.keys(chEntry.children).length > 0
-				});
+					hasEntryChildren: chEntry.children().count() > 0
+				}
 			}
 			
-			return chArr;
-		},
+			return nTree;
+		}
 		
-		loadWorkspaceTree: function(){			
-			var tree = {};
-			var w = this.currentWorkspace;
-			
-			function touch(cat){
-				var curTree = tree;
-				cat = cat || ''; 
-				cat = cat.trim();
-				if(cat.length > 0){
-					var parts = cat.split('/');
-					for(var i = 0; i < parts.length; i++ ){
-						var part = parts[i];
-						if(!curTree[part]){
-							curTree[part] = {
-								type: 'node',
-								children: {},
-								name: part
-							};
-						}
-						if(!curTree[part].children){
-							curTree[part].children = {};
-						}
-						curTree = curTree[part].children;
-					}
-				}
-				
-				return curTree;
-			}
-			
-			// collect categories
-			var categories = w.property('categories');
-			for(var i in categories){
-				var cat = categories[i];
-				touch(cat);
-			}
-			
-			for (var entry, it = w.entries(); entry = it.next();) {
-				if(entry.getParent()){
-					continue;
-				}
-				var treeNode = touch(entry.category());
-				if(!treeNode[entry.getLocalId()]){
-					treeNode[entry.getLocalId()] = {};
-				}
-				treeNode[entry.getLocalId()].type = 'entry';
-				treeNode[entry.getLocalId()].entry = entry;
-				treeNode[entry.getLocalId()].name = entry.getName();
-				if(entry.children && Object.keys(entry.children).length > 0){
-					treeNode[entry.getLocalId()].hasEntryChildren = true;
-				}
-				
-			}
-			return tree;
-		},
 	}
 }

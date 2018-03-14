@@ -30,7 +30,7 @@
 				FileSystem.createDirectory(eDir, true);
 
 				// write file
-				var artifactType = entry.getEntryDoc()._artifacts[name];
+				var artifactType = entry._artifacts[name];
 				if(!artifactType){
 					throw new Error('Internal error: missing "'+name+'" in _artifacts descriptor of entry: ' + entry.getId());
 				}
@@ -60,7 +60,7 @@
 					throw new Error('Internal error: Missing artifact file "'+eFileName+'" defined in entry: ' + entry.getId());
 				}
 				
-				var artifactType = entry.getEntryDoc()._artifacts[name];
+				var artifactType = entry._artifacts[name];
 				if(!artifactType){
 					throw new Error('Internal error: missing "'+name+'" in _artifacts descriptor of entry: ' + entry.getId());
 				}
@@ -90,7 +90,7 @@
 				if(FileSystem.exists(eFileName)){
 					FileSystem.remove(eFileName);
 				}
-				if(Object.keys(entry.getEntryDoc()._artifacts).length == 0){
+				if(Object.keys(entry._artifacts).length == 0){
 					if(FileSystem.exists(eDir)){
 						FileSystem.remove(eDir);
 					}

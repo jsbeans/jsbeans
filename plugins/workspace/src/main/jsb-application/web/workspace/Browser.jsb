@@ -44,14 +44,14 @@
 				this.bindManager(this.options.wmKey);
 			}
 
-			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
+			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
 				if(sender.wmKey != $this.wmKey){
 					return;
 				}
 				$this.setCurrentNode(node);
 			});
 			
-			this.subscribe('Workspace.changeWorkspace', function(sender, msg, w){
+			this.subscribe('JSB.Workspace.changeWorkspace', function(sender, msg, w){
 				if(sender.wmKey != $this.wmKey){
 					return;
 				}

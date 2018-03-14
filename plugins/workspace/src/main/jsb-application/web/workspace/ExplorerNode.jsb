@@ -29,7 +29,7 @@
 			$this.toolbox = $this.$('<div class="toolbox hidden"></div>');
 			$this.append($this.toolbox);
 			
-			$this.subscribe('Workspace.Explorer.nodeSelected', function(sender, msg, params){
+			$this.subscribe('JSB.Workspace.Explorer.nodeSelected', function(sender, msg, params){
 				if(params.node != $this){
 					return;
 				}
@@ -37,7 +37,7 @@
 				$this.updateState();
 			});
 			
-			$this.subscribe('Workspace.Explorer.nodeHighlighted', function(sender, msg, params){
+			$this.subscribe('JSB.Workspace.Explorer.nodeHighlighted', function(sender, msg, params){
 				if(params.node != $this){
 					return;
 				}

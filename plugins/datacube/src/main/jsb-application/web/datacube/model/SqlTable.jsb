@@ -8,7 +8,7 @@
 		$require: ['JSB.Workspace.WorkspaceController'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SqlTableNode');
+			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.SqlTableNode');
 		},
 
 		$constructor: function(id, workspace, opts){

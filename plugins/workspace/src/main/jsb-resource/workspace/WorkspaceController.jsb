@@ -275,49 +275,19 @@
 			return this.loadWorkspace(wDesc.wId);
 		},
 		
-/*		
-		ensureManager: function(wmKey){
-			if(!wmKey){
-				throw new Error('No wmKey specified');
-			}
-			if(!this.managers[wmKey]){
-				var dir = FileSystem.getUserDirectory();
-				var fld = wmKey;
-				if(Config.has('workspace.managers.' + wmKey)){
-					var cfgEntry = Config.get('workspace.managers.' + wmKey);
-					dir = cfgEntry.baseDirectory || dir;
-					fld = cfgEntry.folderName || fld
-				}
-				
-				var WorkspaceManager = $jsb.get('JSB.Workspace.WorkspaceManager').getClass();
-				if(!WorkspaceManager){
-					throw new Error('Unable to find JSB.Workspace.WorkspaceManager');
-				}
-				var wm = new WorkspaceManager({
-					id: 'wm-' + wmKey,
-					wmKey: wmKey,
-					artifactsStore: {
-						home: FileSystem.join(dir, fld)
-					}
-				});
-				this.managers[wmKey] = wm;
-			}
-			return this.managers[wmKey];
-		},
-*/		
-		registerExplorerNode: function(wmKeys, entryType, priority, nodeType){
+		registerExplorerNode: function(wTypes, entryType, priority, nodeType){
 			var locker = JSB.getLocker();
 			locker.lock('registerExplorerNode_' + this.getId());
 			try {
-				if(!$jsb.isArray(wmKeys)){
-					wmKeys = [wmKeys||null];
+				if(!JSB.isArray(wTypes)){
+					wTypes = [wTypes||null];
 				}
-				for(var i = 0; i < wmKeys.length; i++){
-					var wmKey = wmKeys[i];
-					if(!this.explorerNodeRegistry[wmKey]){
-						this.explorerNodeRegistry[wmKey] = {};
+				for(var i = 0; i < wTypes.length; i++){
+					var wType = wTypes[i];
+					if(!this.explorerNodeRegistry[wType]){
+						this.explorerNodeRegistry[wType] = {};
 					}
-					var regEntry = this.explorerNodeRegistry[wmKey];
+					var regEntry = this.explorerNodeRegistry[wType];
 					if(entryType instanceof JSB){
 						entryType = entryType.$name;
 					}
@@ -331,11 +301,11 @@
 			}
 		},
 		
-		queryExplorerNodeType: function(wmKey, entryType){
+		queryExplorerNodeType: function(wType, entryType){
 			if(!entryType){
 				throw new Error('Expected entryType');
 			}
-			if($jsb.isBean(entryType)){
+			if(JSB.isBean(entryType)){
 				entryType = entryType.getJsb().$name;
 			} else if(entryType instanceof JSB){
 				entryType = entryType.$name;
@@ -343,15 +313,15 @@
 				entryType = entryType.jsb.$name;
 			}
 			var regEntryArr = [];
-			var wmKeys = [null];
-			if(wmKey){
-				wmKeys.push(wmKey);
+			var wTypes = [null];
+			if(wType){
+				wTypes.push(wType);
 			}
-			for(var j = 0; j < wmKeys.length; j++){
-				wmKey = wmKeys[j];
-				if(this.explorerNodeRegistry[wmKey] && this.explorerNodeRegistry[wmKey][entryType]){
-					for(var i = 0; i < this.explorerNodeRegistry[wmKey][entryType].length; i++){
-						regEntryArr.push(this.explorerNodeRegistry[wmKey][entryType][i]);
+			for(var j = 0; j < wTypes.length; j++){
+				wType = wTypes[j];
+				if(this.explorerNodeRegistry[wType] && this.explorerNodeRegistry[wType][entryType]){
+					for(var i = 0; i < this.explorerNodeRegistry[wType][entryType].length; i++){
+						regEntryArr.push(this.explorerNodeRegistry[wType][entryType][i]);
 					}
 				}
 			}
@@ -364,22 +334,22 @@
 			return null;
 		},
 		
-		constructExplorerNodeTypeSlice: function(wmKey){
+		constructExplorerNodeTypeSlice: function(wType){
 			var slice = {};
-			var wmKeys = [null];
-			if(wmKey){
-				wmKeys.push(wmKey);
+			var wTypes = [null];
+			if(wType){
+				wTypes.push(wType);
 			}
-			for(var j = 0; j < wmKeys.length; j++){
-				wmKey = wmKeys[j];
-				if(!this.explorerNodeRegistry[wmKey]){
+			for(var j = 0; j < wTypes.length; j++){
+				wType = wTypes[j];
+				if(!this.explorerNodeRegistry[wType]){
 					continue;
 				}
-				for(var eType in this.explorerNodeRegistry[wmKey]){
+				for(var eType in this.explorerNodeRegistry[wType]){
 					if(!slice[eType]){
 						slice[eType] = [];
 					}
-					var rArr = this.explorerNodeRegistry[wmKey][eType];
+					var rArr = this.explorerNodeRegistry[wType][eType];
 					for(var i = 0; i < rArr.length; i++){
 						slice[eType].push(rArr[i]);
 					}
@@ -399,19 +369,19 @@
 			return rSlice;
 		},
 		
-		registerFileUploadCallback: function(wmKeys, entryType, priority, callback){
+		registerFileUploadCallback: function(wTypes, entryType, priority, callback){
 			var locker = JSB.getLocker();
 			locker.lock('registerFileUploadCallback_' + this.getId());
 			try {
-				if(!$jsb.isArray(wmKeys)){
-					wmKeys = [wmKeys||null];
+				if(!JSB.isArray(wTypes)){
+					wTypes = [wTypes||null];
 				}
-				for(var i = 0; i < wmKeys.length; i++){
-					var wmKey = wmKeys[i];
-					if(!this.fileUploadCallbackRegistry[wmKey]){
-						this.fileUploadCallbackRegistry[wmKey] = {};
+				for(var i = 0; i < wTypes.length; i++){
+					var wType = wTypes[i];
+					if(!this.fileUploadCallbackRegistry[wType]){
+						this.fileUploadCallbackRegistry[wType] = {};
 					}
-					var regEntry = this.fileUploadCallbackRegistry[wmKey];
+					var regEntry = this.fileUploadCallbackRegistry[wType];
 					if(entryType instanceof JSB){
 						entryType = entryType.$name;
 					}
@@ -425,16 +395,16 @@
 			}
 		},
 		
-		queryFileUploadEntryType: function(wmKey, fileName, fileData){
+		queryFileUploadEntryType: function(wType, fileName, fileData){
 			var regEntryArr = [];
-			var wmKeys = [null];
-			if(wmKey){
-				wmKeys.push(wmKey);
+			var wTypes = [null];
+			if(wType){
+				wTypes.push(wType);
 			}
-			for(var j = 0; j < wmKeys.length; j++){
-				if(this.fileUploadCallbackRegistry[wmKeys[j]]){
-					for(var eType in this.fileUploadCallbackRegistry[wmKeys[j]]){
-						var regEntryLst = this.fileUploadCallbackRegistry[wmKeys[j]][eType];
+			for(var j = 0; j < wTypes.length; j++){
+				if(this.fileUploadCallbackRegistry[wTypes[j]]){
+					for(var eType in this.fileUploadCallbackRegistry[wTypes[j]]){
+						var regEntryLst = this.fileUploadCallbackRegistry[wTypes[j]][eType];
 						for(var i = 0; i < regEntryLst.length; i++){
 							var regEntry = regEntryLst[i];
 							regEntryArr.push($jsb.merge({entryType: eType}, regEntry));
@@ -454,13 +424,12 @@
 			return null;
 		},
 		
-		registerBrowserView: function(viewType, viewOpts){
+		registerBrowserView: function(wTypes, viewType, viewOpts){
 			var locker = JSB.getLocker();
 			locker.lock('registerBrowserView_' + this.getId());
 			try {
-				var wmKeys = viewOpts.wmKey;
-				if(!JSB.isArray(wmKeys)){
-					wmKeys = [wmKeys||null];
+				if(!JSB.isArray(wTypes)){
+					wTypes = [wTypes||null];
 				}
 				if(viewType instanceof JSB){
 					viewType = viewType.$name;
@@ -477,17 +446,17 @@
 					acceptNodes = [acceptNodes];
 				}
 				
-				for(var j = 0; j < wmKeys.length; j++){
-					var wmKey = wmKeys[j];
-					if(!this.browserViewRegistry[wmKey]){
-						this.browserViewRegistry[wmKey] = {};
+				for(var j = 0; j < wTypes.length; j++){
+					var wType = wTypes[j];
+					if(!this.browserViewRegistry[wType]){
+						this.browserViewRegistry[wType] = {};
 					}
 					for(var n = 0; n < acceptNodes.length; n++){
 						var aNode = acceptNodes[n];
-						if(!this.browserViewRegistry[wmKey][aNode]){
-							this.browserViewRegistry[wmKey][aNode] = [];
+						if(!this.browserViewRegistry[wType][aNode]){
+							this.browserViewRegistry[wType][aNode] = [];
 						}
-						this.browserViewRegistry[wmKey][aNode].push({
+						this.browserViewRegistry[wType][aNode].push({
 							viewType: viewType,
 							priority: viewOpts.priority || 0,
 							caption: viewOpts.caption,
@@ -500,7 +469,7 @@
 			}
 		},
 		
-		queryBrowserViews: function(wmKey, nodeJsb){
+		queryBrowserViews: function(wType, nodeJsb){
 			var viewArr = [];
 			if(JSB.isNull(nodeJsb)){
 				// do nothing
@@ -511,18 +480,18 @@
 			} else if(!(nodeJsb instanceof JSB)){
 				throw new Error('Invalid nodeJsb');
 			}
-			var wmKeys = [null];
-			if(wmKey){
-				wmKeys.push(wmKey);
+			var wTypes = [null];
+			if(wType){
+				wTypes.push(wType);
 			}
-			for(var j = 0; j < wmKeys.length; j++){
-				var wmKey = wmKeys[j];
-				if(!this.browserViewRegistry[wmKey]){
+			for(var j = 0; j < wTypes.length; j++){
+				var wType = wTypes[j];
+				if(!this.browserViewRegistry[wType]){
 					continue;
 				}
-				for(var nType in this.browserViewRegistry[wmKey]){
+				for(var nType in this.browserViewRegistry[wType]){
 					if((nodeJsb && nodeJsb.isSubclassOf(nType)) || (JSB.isNull(nodeJsb) && (JSB.isNull(nType) || nType == 'null'))){
-						viewArr = viewArr.concat(this.browserViewRegistry[wmKey][nType]);
+						viewArr = viewArr.concat(this.browserViewRegistry[wType][nType]);
 					}
 				}
 			}

@@ -18,7 +18,7 @@
 	$server: {
 		$require: 'JSB.Workspace.WorkspaceController',
 		$bootstrap: function(){
-			WorkspaceController.registerBrowserView(this, {
+			WorkspaceController.registerBrowserView(null, this, {
 				priority: 0,
 				acceptNode: [null, 'JSB.Workspace.FolderNode'],
 				caption: 'Файлы'

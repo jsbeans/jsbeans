@@ -25,7 +25,7 @@
 		loaded: false,
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.DashboardNode');
+			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.DashboardNode');
 		},
 
 		$constructor: function(id, workspace, opts){

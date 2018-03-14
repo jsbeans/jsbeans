@@ -1,12 +1,13 @@
 {
 	$name: 'JSB.Workspace.Workspace',
 	$parent: 'JSB.Workspace.Entry',
-	$require: ['JSB.Workspace.Entry'],
 	
 	$fixedId: true,
 	$sync: {
 		updateCheckInterval: 0
 	},
+	
+	_entryCount: 0,
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
@@ -44,7 +45,6 @@
 			this._artifactStore = new (artifactStoreJSB.getClass())(artifactStoreCfg);
 			
             $base(id, this);
-
 		},
 		
 		getWorkspaceType: function(){
@@ -55,19 +55,26 @@
 			$base();
 			
 			// fill entry indices
-			var jsbArr = this.property('_jsbs');
-			var eIdx = this.property('_entries');
+			var jsbArr = this.getEntryDoc()._jsbs;
+			var eIdx = this.getEntryDoc()._entries;
 			
-			for(var eId in eIdx){
-				var seDesc = eIdx[eId];
-				var eDesc = {
-					eId: eId,
-					eType: jsbArr[seDesc._j],
-					eName: seDesc._n,
-					eOpts: JSB.isDefined(seDesc._e) ? seDesc._e : null,
-					aOpts: JSB.isDefined(seDesc._a) ? seDesc._a : null
-				};
-				this._entries[eId] = eDesc;
+			var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
+			JSB.getLocker().lock(eMtxName);
+			try {
+				for(var eId in eIdx){
+					var seDesc = eIdx[eId];
+					var eDesc = {
+						eId: eId,
+						eType: jsbArr[seDesc._j],
+						eName: seDesc._n,
+						eOpts: JSB.isDefined(seDesc._e) ? seDesc._e : null,
+						aOpts: JSB.isDefined(seDesc._a) ? seDesc._a : null
+					};
+					this._entries[eId] = eDesc;
+				}
+				this._entryCount = Object.keys(this._entries).length;
+			} finally {
+				JSB.getLocker().unlock(eMtxName);
 			}
 		},
 		
@@ -132,7 +139,8 @@
 						this.addChildEntry(entry);
 						entry._markStored(false);
 						this._markStored(false);
-						
+					
+						this._entryCount = Object.keys(this._entries).length;
 					}
 				} finally {
 					JSB.getLocker().unlock(eMtxName);
@@ -173,6 +181,7 @@
 				var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + this.getId();
 				JSB.getLocker().lock(chMtxName);
 				delete this._changedEntries[entry.getId()];
+				this._entryCount = Object.keys(this._entries).length;
 				JSB.getLocker().unlock(chMtxName);
 			}
 			
@@ -221,8 +230,8 @@
 						}
 					}
 					JSB.getLocker().unlock(eMtxName);
-					this.property('_jsbs', jsbArr);
-					this.property('_entries', eIdx);
+					this.getEntryDoc()._jsbs = jsbArr;
+					this.getEntryDoc()._entries = eIdx;
 					
 					// store entry file
 					this.storeEntry();
@@ -232,29 +241,6 @@
 			}
 		},
 		
-
-		clean: function(){
-		    var self = this;
-            var entries = this.entries();
-            var entry;
-            while (entry = entries.next()) {
-                entry.remove();
-            }
-
-		    this._locked('body', function(){
-                self.backupArtifact();
-                if (self.existsArtifact()) {
-                    self.removeArtifact();
-                }
-                self.body = self._emptyBody();
-            });
-		},
-
-		remove: function(){
-		    this.clean();
-		    this.destroy();
-		},
-
 		entries: function(){
 		    var ids = Object.keys(this._entries);
 		    var cursor = 0;
@@ -449,10 +435,11 @@
 		},
 		*/
 		uploadFile: function(fileDesc){
+			debugger;
 			var category = fileDesc.category;
 			var fileName = fileDesc.name;
 			var fileData = fileDesc.content;
-			var entryType = WorkspaceController.queryFileUploadEntryType(this.workspaceManager.wmKey, fileName, fileData);
+			var entryType = WorkspaceController.queryFileUploadEntryType(this.getWorkspaceType(), fileName, fileData);
 			var entryJsb = $jsb.get(entryType);
 			if(!entryJsb){
 				throw new Error('Unable to find entry bean: ' + entryType);

@@ -27,7 +27,7 @@
 		           'JSB.Crypt.MD5'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.CubeNode');
+			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.CubeNode');
 		},
 		
 		loaded: false,

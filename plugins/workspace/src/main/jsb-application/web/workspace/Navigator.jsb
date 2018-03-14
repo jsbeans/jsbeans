@@ -22,22 +22,22 @@
 			this.wnbContainer = this.$('<ul class="wnbContainer"></ul>');
 			this.append(this.wnbContainer);
 			
-			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
+			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
 				if(!$jsb.isInstanceOf(sender, 'JSB.Workspace.Explorer') || sender.wmKey != $this.wmKey){
 					return;
 				}
 				$this.setCurrentNode(node);
 			});
 
-            this.subscribe('Workspace.deleteNode', function(sender){
-                if(!$jsb.isInstanceOf(sender, 'JSB.Workspace.Explorer') || sender.wmKey != $this.wmKey){
+            this.subscribe('JSB.Workspace.deleteNode', function(sender){
+                if(!$jsb.isInstanceOf(sender, 'JSB.Workspace.Explorer')){
                     return;
                 }
                 $this.setCurrentNode(null);
-                $this.publish('Workspace.nodeOpen', null);
+                $this.publish('JSB.Workspace.nodeOpen', null);
             });
 			
-			this.subscribe(['Workspace.renameCategory', 'Workspace.renameEntry', 'Workspace.moveEntry'], function(sender, msg, params){
+			this.subscribe(['JSB.Workspace.renameEntry', 'JSB.Workspace.moveEntry'], function(sender, msg, params){
 				$this.refresh();
 			});
 			
@@ -72,7 +72,7 @@
 			} else {
 				rootElt.click(function(){
 					$this.setCurrentNode(null);
-					$this.publish('Workspace.nodeOpen', null);
+					$this.publish('JSB.Workspace.nodeOpen', null);
 				});
 				// generate path
 				var explorer = this.currentNode.explorer;
@@ -106,7 +106,7 @@
 						if(i > 0){
 							nodeElt.click(function(){
 								$this.setCurrentNode(curNode);
-								$this.publish('Workspace.nodeOpen', curNode);
+								$this.publish('JSB.Workspace.nodeOpen', curNode);
 							});
 						}
 /*						

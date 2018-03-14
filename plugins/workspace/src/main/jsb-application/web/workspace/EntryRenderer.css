@@ -21,7 +21,7 @@
 	box-sizing: border-box;
 	padding-top: 2px;
     padding-bottom: 3px;
-    font-size: 13px;
+    font-size: 14px;
     white-space: nowrap;
 }
 
@@ -35,9 +35,9 @@
 	padding: 0;
 	cursor: inherit;
 	vertical-align: top;
-	height: 18px;
 }
 
 .entryRenderer > ._dwp_primitiveEditor > input {
-	height: 18px !important;
+	font-size: 11px;
+    padding-left: 2px;
 }

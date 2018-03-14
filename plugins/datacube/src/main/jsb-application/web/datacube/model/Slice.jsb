@@ -29,7 +29,7 @@
 		$require: ['JSB.Workspace.WorkspaceController', 'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SliceNode');
+			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.SliceNode');
 		},
 		
 		$constructor: function(id, workspace, cube, name){

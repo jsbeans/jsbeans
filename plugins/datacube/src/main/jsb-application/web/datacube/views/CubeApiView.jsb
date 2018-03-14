@@ -253,8 +253,7 @@
 	$server: {
 		$require: 'JSB.Workspace.WorkspaceController',
 		$bootstrap: function(){
-			WorkspaceController.registerBrowserView(this, {
-				wmKey: 'datacube',
+			WorkspaceController.registerBrowserView(null, this, {
 				priority: 0,
 				acceptNode: ['DataCube.CubeNode'],
 				caption: 'API',

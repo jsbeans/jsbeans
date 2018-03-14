@@ -115,7 +115,7 @@
 				}, 300, 'cubeResize_' + $this.getId());
 			});
 			
-			this.subscribe('Workspace.renameEntry', function(sender, msg, desc){
+			this.subscribe('JSB.Workspace.renameEntry', function(sender, msg, desc){
 				var entry = desc.entry;
 				if($this.entry != entry){
 					return;

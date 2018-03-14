@@ -11,6 +11,7 @@
 .workspaceExplorerNode.entryNode > .entryRenderer {
 	display: block;
 	max-width: 100%;
+	padding: 1px 0;
 }
 
 .workspaceExplorerNode.entryNode > .btnEdit {

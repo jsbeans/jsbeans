@@ -155,7 +155,7 @@
 			});
 
 			if(opts && opts.showSettings){
-			    this.publish('Workspace.Entry.open', $this.widgetEntry);
+			    this.publish('JSB.Workspace.Entry.open', $this.widgetEntry);
 			}
 		},
 
@@ -349,7 +349,7 @@
 					cssClass: 'roundButton btnSettings btn10',
 					tooltip: 'Настроить',
 					onClick: function(evt){
-					    $this.publish('Workspace.Entry.open', $this.widgetEntry);
+					    $this.publish('JSB.Workspace.Entry.open', $this.widgetEntry);
 					}
 				});
 

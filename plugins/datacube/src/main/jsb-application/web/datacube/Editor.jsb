@@ -69,17 +69,13 @@
 				widgets: {
 					workspaceExplorer: {
 						jsb: 'JSB.Workspace.Explorer',
-						title: 'Навигатор',
-						options: {
-							wmKey: 'datacube'
-						}
+						title: 'Проекты',
+						options: {}
 					},
 					workspaceBrowser: {
 						jsb: 'JSB.Workspace.Browser',
 						title: 'Навигатор',
-						options: {
-							wmKey: 'datacube'
-						}
+						options: {}
 					},
 					widgetExplorer: {
 						jsb: 'DataCube.Widgets.WidgetExplorer',
@@ -94,7 +90,7 @@
 			
 			$this.publish('DataCube.Editor.initialized');
 			
-			this.subscribe('Workspace.Explorer.initialized', function(explorer){
+			this.subscribe('JSB.Workspace.Explorer.initialized', function(explorer){
 				// inject toolbar buttons
 				explorer.toolbar.insertItem({
 					key: 'createSqlSource',
@@ -134,7 +130,7 @@
 				}, 'createSeparator');
 			});
 			
-			this.subscribe('Workspace.nodeOpen', function(sender, msg, node){
+			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
 				var leftSplit = $this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb();
 				if(JSB.isInstanceOf(node, 'DataCube.DashboardNode') || JSB.isInstanceOf(node, 'DataCube.WidgetNode')){
 					leftSplit.showPane(1, true);

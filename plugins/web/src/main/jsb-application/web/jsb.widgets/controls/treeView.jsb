@@ -295,9 +295,13 @@
 		},
 		
 		getChildNodes: function(key){
-			// get parent node
 			var keyArr = [];
-			var liArr = this.rootElt.find('li[key="'+key+'"] > ul._dwp_childContainer > li');
+			var liArr = null;
+			if(!key){
+				liArr = this.rootElt.find('> li');
+			} else {
+				liArr = this.rootElt.find('li[key="'+key+'"] > ul._dwp_childContainer > li');
+			}
 			for(var i = 0; i < liArr.length; i++ ){
 				var curLi = this.$(liArr.get(i));
 				keyArr.push(curLi.attr('key'));

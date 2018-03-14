@@ -4812,17 +4812,16 @@ JSB({
 			}
 			var tJsb = this.getJsb();
 			var callCtx = tJsb.saveCallingContext();
-			var session = session || JSB().getCurrentSession();
 			
 			var execCmd = {
 				instance: this,
 				proc: procName,
-				params: JSB().substComplexObjectInRpcResult(params),
-				session: session
+				params: JSB().substComplexObjectInRpcResult(params)
 			};
 			
 			if(JSB.isDefined(node)){
 				// execute on remote node
+				execCmd.session = session || JSB().getCurrentSession();
 				execCmd.callback = (callback ? function(res, fail){
 					var inst = this;
 					var args = arguments;
@@ -4843,6 +4842,7 @@ JSB({
 				JSB.getClusterProvider().sendRpc(node, execCmd);
 			} else {
 				// execute on client
+				execCmd.session = session;
 				execCmd.callback = (callback ? function(res, fail){
 					var inst = this;
 					var args = arguments;

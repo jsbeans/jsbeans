@@ -59,7 +59,7 @@
 	width: 100%;
 	position: relative;
     box-sizing: border-box;
-    padding: 1px 2px;
+    padding: 1px 2px 1px 0;
 }
 .workspaceExplorer > ._dwp_treeview ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_nodeIcon {
 	display: none;

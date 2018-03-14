@@ -17,7 +17,7 @@
 		
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.SqlSourceNode');
+			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.SqlSourceNode');
 		},
 
 		$constructor: function(id, workspace){

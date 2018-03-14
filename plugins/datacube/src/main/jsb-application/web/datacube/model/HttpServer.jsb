@@ -9,7 +9,7 @@
 		
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.HttpServerNode');
+			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.HttpServerNode');
 		},
 
 		$constructor: function(id, workspace){

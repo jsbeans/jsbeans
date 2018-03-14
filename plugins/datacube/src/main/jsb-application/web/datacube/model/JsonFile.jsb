@@ -13,13 +13,13 @@
 		           'JSB.IO.Decoder'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerFileUploadCallback('datacube', this, 0.5, function(name, data){
+			WorkspaceController.registerFileUploadCallback(null, this, 0.5, function(name, data){
 				if(/\.json$/i.test(name)){
 					return true;
 				}
 				return false;
 			});
-			WorkspaceController.registerExplorerNode('datacube', this, 0.5, 'DataCube.JsonFileNode');
+			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.JsonFileNode');
 		},
 		
 		$constructor: function(id, workspace, opts){
