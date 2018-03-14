@@ -60,7 +60,7 @@
         walkLinkedFields: function(callback /**(field, context)*/) {
 		    for(var i in $this.linkedForeignFields) if($this.linkedForeignFields.hasOwnProperty(i)) {
 		        var field = $this.linkedForeignFields[i];
-		        callback(field.field, field.context);
+		        callback(field.$field, field.$context);
 		    }
 		},
 
@@ -84,13 +84,18 @@
 		    };
 		},
 
-        lookupField: function(name, notAlias) {
-            var desc = $this.sourceView.getField(name);
-            if (desc && !desc.context) {
-                desc.context = $this.getContext();
+        lookupField: function(name, useAlias) {
+            if (useAlias) {
+                var desc = $this.getField(name);
             }
-            if (!desc && !notAlias) {
-                desc = $this.getField(name);
+            if (!desc) {
+                var desc = $this.sourceView.getField(name);
+            }
+            if (desc) {
+                desc = JSB.clone(desc);
+                if (!desc.context && !useAlias) {
+                    desc.context = $this.getContext();
+                }
             }
             return desc;
 		},

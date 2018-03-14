@@ -154,8 +154,8 @@
             this.wrapper.getWidget().ensureInitialized(function(){
                 $this.wrapper.getWidget().refresh({
                     isCacheMod: isUpdateData,
-                    needMapUpdate: isUpdateData,
-                    refreshFromCache: !isUpdateData
+                    refreshFromCache: !isUpdateData,
+                    updateStyles: true
                 });
         	});
 		},

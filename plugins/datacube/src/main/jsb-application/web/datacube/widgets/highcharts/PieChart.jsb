@@ -20,12 +20,12 @@
                     name: 'Серия',
                     collapsable: true,
                     items: {
-                        partNames: {
+                        name: {
                             render: 'dataBinding',
                             name: 'Имена частей',
                             linkTo: 'source'
                         },
-                        partData: {
+                        data: {
                             render: 'dataBinding',
                             name: 'Размеры частей',
                             linkTo: 'source'
@@ -58,40 +58,6 @@
                                     defaultValue: 30
                                 }
                             }
-                        },
-                        tooltip: {
-                            render: 'group',
-                            name: 'Подпись',
-                            collapsable: true,
-                            items: {
-                                valueDecimals: {
-                                    render: 'item',
-                                    name: 'Число знаков после запятой',
-                                    valueType: 'number'
-                                },
-                                valuePrefix: {
-                                    render: 'item',
-                                    name: 'Префикс значения',
-                                    valueType: 'string'
-                                },
-                                valueSuffix: {
-                                    render: 'item',
-                                    name: 'Суффикс значения',
-                                    valueType: 'string'
-                                }
-                            }
-                        },
-                        allowPointSelect: {
-                            render: 'item',
-                            name: 'Разрешить события',
-                            optional: true,
-                            editor: 'none'
-                        },
-                        visible: {
-                            render: 'item',
-                            name: 'Показывать по-умолчанию',
-                            optional: 'checked',
-                            editor: 'none'
                         }
                     }
                 }
@@ -99,107 +65,63 @@
         }
     },
     $client: {
-	    _bindings: [],
-	    _curFilters: {},
-	    _curFilterHash: null,
+        _filterPropName: 'name',
+
+        $constructor: function(opts){
+            $base(opts);
+            $this.setInitialized();
+        },
 
         refresh: function(opts){
-            var dataSource = $base(opts);
-            if(!dataSource){
+            if(!$base(opts)){
                 return;
             }
 
-            // filters section
-            var globalFilters = this.getSourceFilters(dataSource),
-                seriesContext = this.getContext().find('series').values();
+            if(!this._schemeOpts){
+                var seriesContext = this.getContext().find('series').values();
 
-            if(globalFilters){
-                var newFilters = {},
-                    curFilters = {};
+                this._schemeOpts = {
+                    bindings: [],
+                    series: []
+                };
 
-                for(var i in globalFilters){
-                    if(this._curFilters[i]){
-                        curFilters[i] = globalFilters[i];
-                        delete globalFilters[i];
-                        continue;
-                    }
+                for(var i = 0; i < seriesContext.length; i++){
+                    var name = seriesContext[i].find('name');
 
-                    var cur = globalFilters[i];
+                    this._schemeOpts.series.push({
+                        name: seriesContext[i].find('name'),
+                        data: seriesContext[i].find('data'),
+                        data: []
+                    });
 
-                    if(this._bindings.indexOf(cur.field) > -1  && cur.op === '$eq'){
-                        curFilters[i] = cur;
-                        newFilters[i] = cur;
-
-                        delete globalFilters[i];
-                    }
+                    this._schemeOpts.bindings.push(name.binding());
                 }
-
-                this._select(newFilters, true, true);
-
-                var oldFilters = {};
-
-                for(var i in this._curFilters){
-                    if(!globalFilters[i]){
-                        oldFilters[i] = this._curFilters[i];
-                    }
-                }
-
-                this._select(oldFilters, false, true);
-
-                this._curFilters = curFilters;
-
-                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){
-                    return;
-                } else {
-                    this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    source.setFilters(globalFilters);
-                }
-            } else {
-                if(Object.keys(this._curFilters).length > 0){
-                    this._select(this._curFilters, false, true);
-                    this._curFilters = {};
-                    return;
-                }
-                this._curFilterHash = null;
             }
 
-            var series = [];
-            this._bindings = [];
-
-            for(var i = 0; i < seriesContext.length; i++){
-                var partNames = seriesContext[i].find('partNames');
-
-                series.push({
-                    partNames: seriesContext[i].find('partNames'),
-                    partData: seriesContext[i].find('partData'),
-                    data: []
-                });
-
-                this._bindings.push(partNames.binding());
+            if(!this._resolvePointFilters(this._schemeOpts.bindings)){
+                return;
             }
 
             this.getElement().loader();
-            this.fetchBinding(dataSource, { readAll: true, reset: true }, function(res){
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
                 try {
-                    while(dataSource.next()){
-                        for(var i = 0; i < series.length; i++){
-                            series[i].data.push({
+                    while($this._dataSource.next()){
+                        for(var i = 0; i < $this._schemeOpts.series.length; i++){
+                            $this._schemeOpts.series[i].data.push({
                                 datacube: {
-                                    binding: series[i].partNames.binding()
+                                    binding: $this._schemeOpts.series[i].name.binding()
                                 },
-                                name: series[i].partNames.value(),
-                                y: series[i].partData.value()
+                                name: $this._schemeOpts.series[i].name.value(),
+                                y: $this._schemeOpts.series[i].data.value()
                             });
                         }
                     }
 
                     if(opts && opts.isCacheMod){
-                        $this.storeCache(series);
+                        $this.storeCache($this._schemeOpts.series);
                     }
 
-                    $this.buildChart(series);
-
-                    $this._select($this._curFilters, true, true);
+                    $this.buildChart($this._schemeOpts.series);
                 } catch (ex){
                     console.log('PieChart load data exception');
                     console.log(ex);
@@ -210,128 +132,63 @@
         },
 
         _buildChart: function(data){
-            var baseChartOpts = $base();
+            var baseChartOpts;
 
             try {
-                var seriesContext = this.getContext().find('series').values()
-                    plotOptionsContext = this.getContext().find('plotOptions pie'),
-                    series = [];
+                function includeData(chartOpts, data){
+                    chartOpts = JSB.clone(chartOpts);
 
-                for(var i = 0; i < seriesContext.length; i++){
-                    series.push({
-                        datacube: {
-                            binding: seriesContext[i].find('partNames').binding()
-                        },
-                        data: data[i].data,
-                        size: seriesContext[i].find('size').value(),
-                        innerSize: seriesContext[i].find('innerSize').value(),
-                        dataLabels: {
-                            color: seriesContext[i].find('dataLabels color').value(),
-                            distance: seriesContext[i].find('dataLabels distance').value()
-                        },
-                        tooltip: {
-                            valueDecimals: seriesContext[i].find('tooltip valueDecimals').value(),
-                            valuePrefix: seriesContext[i].find('tooltip valuePrefix').value(),
-                            valueSuffix: seriesContext[i].find('tooltip valueSuffix').value()
-                        },
-                        cursor: seriesContext[i].find('allowPointSelect').checked() ? 'pointer' : undefined,
-                        allowPointSelect: seriesContext[i].find('allowPointSelect').checked(),
-                        visible: seriesContext[i].find('visible').checked()
-                    });
+                    var seriesContext = $this.getContext().find('series').values();
+
+                    for(var i = 0; i < seriesContext.length; i++){
+                        var series = {
+                            datacube: {
+                                binding: seriesContext[i].find('name').binding()
+                            },
+                            data: data[i].data,
+                            size: seriesContext[i].find('size').value(),
+                            innerSize: seriesContext[i].find('innerSize').value(),
+                            dataLabels: {
+                                color: seriesContext[i].find('dataLabels color').value(),
+                                distance: seriesContext[i].find('dataLabels distance').value()
+                            }
+                        };
+
+                        JSB.merge(true, chartOpts.series[i], series);
+                    }
+
+                    return chartOpts;
                 }
 
-                var chartOpts = {
-                    chart: {
-                        type: 'pie'
-                    },
+                if(this._styles){
+                    baseChartOpts = includeData(this._styles, data);
+                } else {
+                    baseChartOpts = $base();
+                    var plotOptionsContext = this.getContext().find('plotOptions pie');
 
-                    plotOptions: {
-                        pie: {
-                            showInLegend: this.getContext().find('legend enabled').checked()
+                    var chartOpts = {
+                        chart: {
+                            type: 'pie'
                         },
-                        series: {
-                            point: {
-                                events: {
-                                    click: function(evt){
-                                        if(evt.point.selected){
-                                            $this._removeFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                        } else {
-                                            $this._addFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                        }
-                                    }
-                                }
+
+                        plotOptions: {
+                            pie: {
+                                showInLegend: this.getContext().find('legend enabled').checked()
                             }
                         }
-                    },
+                    }
 
-                    series: series
+                    JSB.merge(true, baseChartOpts, chartOpts);
+
+                    this._styles = baseChartOpts;
+
+                    baseChartOpts = includeData(baseChartOpts, data);
                 }
-
-                JSB.merge(true, baseChartOpts, chartOpts);
             } catch(ex){
                 console.log('PieChart build chart exception');
                 console.log(ex);
             } finally {
                 return baseChartOpts;
-            }
-        },
-
-        _addFilter: function(point, accumulate){
-            var context = this.getContext().find('source').binding();
-            if(!context.source) {
-                return;
-            }
-
-            var fDesc = {
-            	sourceId: context.source,
-            	type: '$or',
-            	op: '$eq',
-            	field: point.datacube.binding,
-            	value: point.name
-            };
-
-            if(!accumulate && Object.keys(this._curFilters).length > 0){
-                for(var i in this._curFilters){
-                    this.removeFilter(i);
-                }
-
-                this._curFilters = {};
-            }
-
-            var fId = this.addFilter(fDesc);
-
-            this._curFilters[fId] = fDesc;
-            point.datacube.filterId = fId;
-
-            this.refreshAll();
-        },
-
-        _removeFilter: function(point, accumulate){
-            if(accumulate){
-                this.removeFilter(point.datacube.filterId);
-                delete this._curFilters[point.datacube.filterId];
-                this.refreshAll();
-            } else {
-                for(var i in this._curFilters){
-                    this.removeFilter(i);
-                }
-                this._curFilters = {};
-                this.refreshAll();
-            }
-        },
-
-        _select: function(filters, b1, b2){
-            for(var i in filters){
-                for(var j = 0; j < this.chart.series.length; j++){
-                    if(this.chart.series[j].options.datacube.binding === filters[i].field){
-                        for(var k = 0; k < this.chart.series[j].points.length; k++){
-                            if(filters[i].value === this.chart.series[j].points[k].name){
-                                this.chart.series[j].points[k].select(b1, b2);
-                                break;
-                            }
-                        }
-                    }
-                }
             }
         }
     }

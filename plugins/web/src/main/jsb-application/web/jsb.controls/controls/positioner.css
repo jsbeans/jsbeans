@@ -1,4 +1,4 @@
-.jsb-select {
+.jsb-positioner {
     display: inline-block;
     position: relative;
     width: 200px;
@@ -10,7 +10,7 @@
     padding-right: 20px;
 }
 
-.jsb-select > i.dropDownBtn {
+.jsb-positioner > i.dropDownBtn {
     position: absolute;
     top: 0;
     right: 0;
@@ -19,7 +19,7 @@
     padding: 17px 5px;
 }
 
-.jsb-select > i.dropDownBtn:after {
+.jsb-positioner > i.dropDownBtn:after {
     content: "";
     width: 0;
     height: 0;
@@ -28,24 +28,7 @@
     border-color: black transparent;
 }
 
-.jsb-select > i.clearBtn {
-    display: none;
-    position: absolute;
-    right: 24px;
-    top: 14px;
-    padding: 0;
-    background: none;
-    color: darkred;
-    line-height: 0.5;
-    cursor: pointer;
-}
-
-.jsb-select > .curVal:hover ~ i.clearBtn,
-.jsb-select > i.clearBtn:hover {
-    display: inline-block;
-}
-
-.jsb-select > .curVal {
+.jsb-positioner > .curVal {
     width: 100%;
     height: 100%;
     cursor: pointer;
@@ -59,7 +42,7 @@
     overflow: hidden;
 }
 
-.jsb-select > .dropDown {
+.jsb-positioner > .dropDown {
     position: absolute;
     width: 100%;
     left: 0;
@@ -69,28 +52,43 @@
     z-index: 10;
     background: white;
     border: 1px solid lightgrey;
-    max-height: 150px;
-    overflow-y: auto;
 }
 
-.jsb-select > .dropDown:empty {
+.jsb-positioner > .dropDown:empty {
     background: royalblue;
 }
 
-.jsb-select > .dropDown > li {
-    position: relative;
-    list-style: none;
-    cursor: pointer;
-    padding: 5px;
-    border: 1px solid transparent;
+.jsb-positioner > .dropDown > .string {
+    height: 30px;
 }
 
-.jsb-select > .dropDown > li:hover {
+.jsb-positioner > .dropDown > .string:not(:last-child) {
+    border-bottom: 1px solid lightgrey;
+}
+
+.jsb-positioner > .dropDown > .string > div {
+    height: 100%;
+    display: inline-block;
+}
+
+.jsb-positioner > .dropDown > .string > div:not(:last-child) {
+    border-right: 1px solid lightgrey;
+}
+
+.jsb-positioner > .dropDown > .string > div:not(.empty) {
+    cursor: pointer;
+}
+
+.jsb-positioner > .dropDown > .string > div.empty {
+    background: darkgrey;
+}
+
+.jsb-positioner > .dropDown > .string > div:hover {
     background: rgba(220, 220, 220, 0.45);
     border: 1px solid rgb(158, 158, 158);
 }
 
-.jsb-select > .dropDown > li.selected {
+.jsb-positioner > .dropDown > .string > div.selected {
     background: rgb(220, 220, 220);
     border: 1px solid rgb(158, 158, 158);
 }

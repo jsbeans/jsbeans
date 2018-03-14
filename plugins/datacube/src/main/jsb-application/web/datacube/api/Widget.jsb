@@ -30,6 +30,7 @@
 			this.values = this.widgetEntry.getValues();
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.widget = new WidgetClass({
+				    filterManager: WidgetController.getFilterManager(),
 				    widgetEntry: $this.widgetEntry,
 				    widgetWrapper: $this
 				});
@@ -80,7 +81,7 @@
 		getWidget: function(){
 			return $this.widget;
 		},
-		
+		/*
 		localizeFilter: function(src){
 			return WidgetController.getFilterManager().localizeFilter(src);
 		},
@@ -112,6 +113,7 @@
 		getFilterManager: function(){
 			return WidgetController.getFilterManager();
 		}
+		*/
 	},
 	
 	$server: {

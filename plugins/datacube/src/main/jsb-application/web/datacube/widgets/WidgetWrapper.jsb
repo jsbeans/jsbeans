@@ -67,14 +67,18 @@
 	},
 	
 	$client: {
-		$require: ['JSB.Widgets.Button', 
+		$require: ['JQuery.UI.Loader',
+		           'JSB.Widgets.Button',
 		           'JSB.Widgets.PrimitiveEditor',
-		           'JSB.Widgets.ToolManager'],
-		
-		owner: null,
-		widget: null,
-		settingsVisible: false,
+		           'JSB.Widgets.ToolManager',
+		           'JSB.Controls.Navigator'],
+
 		attached: false,
+		childWidgets: [],
+		currentWidget: null,
+		mainWidget: null,
+		owner: null,
+		settingsVisible: false,
 		
 		options: {
 			auto: true
@@ -84,10 +88,9 @@
 			$base(opts);
 			this.widgetEntry = widgetEntry;
 			this.owner = owner;
+
 			this.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
-			this.widgetContainer = this.$('<div class="widgetContainer"></div>');
-			this.append(this.widgetContainer);
 			
 			this.setTitle(this.getWidgetEntry().getName());
 
@@ -96,19 +99,22 @@
 			}
 
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
-				$this.widget = new WidgetClass({
+				$this.mainWidget = new WidgetClass({
+				    filterManager: owner ? owner.getFilterManager() : null,
 				    widgetEntry: $this.widgetEntry,
 				    widgetWrapper: $this
 				});
-				$this.widgetContainer.append($this.widget.getElement());
+				$this.append($this.mainWidget);
 
 				$this.setWidgetInitialized();
 
 				if($this.options.auto){
-					$this.widget.ensureInitialized(function(){
-						$this.widget.refresh();
+					$this.mainWidget.ensureInitialized(function(){
+						$this.mainWidget.refresh();
 					});
 				}
+
+				$this.currentWidget = $this.mainWidget;
 			});
 
 			this.subscribe('JSB.Widgets.WidgetContainer.widgetAttached', function(sender, msg, w){
@@ -117,7 +123,7 @@
 					if(!$this.options.viewMode){
 						$this.updateTabHeader();
 					} else {
-                     	this.createUniBtns();
+                     	$this.createButtons();
                     }
 					$this.attached = true;
 				}
@@ -130,8 +136,8 @@
 				if(!opts || opts.dashboard != $this.getDashboard()){
 					return;
 				}
-				$this.widget.ensureInitialized(function(){
-			    	 $this.getWidget().refresh(opts);
+				$this.currentWidget.ensureInitialized(function(){
+			    	 $this.currentWidget.refresh(opts);
 				});
 			});
 
@@ -141,8 +147,10 @@
 			    }
 
 			    $this.getWidget().updateValues(JSB.clone(opts));
-			    $this.widget.ensureInitialized(function(){
-			    	 $this.getWidget().refresh();
+			    $this.mainWidget.ensureInitialized(function(){
+			    	 $this.getWidget().refresh({
+			    	    updateStyles: true
+			    	 });
 				});
 			});
 
@@ -150,69 +158,154 @@
 			    this.publish('Workspace.Entry.open', $this.widgetEntry);
 			}
 		},
-		
-		setOwner: function(owner){
-			this.owner = owner;
+
+		addDrilldownElement: function(opts){
+		    if(!this._drilldownPanel){
+		        this._drilldownPanel = new Navigator({
+		            onclick: function(key, index){
+		                $this.changeDrilldown(index);
+		            }
+		        });
+		        this.prepend(this._drilldownPanel);
+
+		        this._drilldownPanel.addElement({
+		            key: 'root',
+		            element: this.getWidgetEntry().getName()
+		        });
+		    } else {
+		        this._drilldownPanel.removeClass('hidden');
+		    }
+
+            this._drilldownPanel.addElement({
+                key: opts.widget.widgetWid,
+                element: opts.widget.name
+            });
+
+            this.currentWidget.addClass('hidden');
+
+            this.getElement().loader();
+            this.server().getWidgetEntry(opts.widget.widgetWsid, opts.widget.widgetWid, function(entry, fail){
+                if(fail){
+                    $this.getElement().loader('hide');
+                    return;
+                }
+
+                JSB.lookup(entry.wType, function(WidgetClass){
+                    var widget = new WidgetClass({
+                        filterManager: $this.owner ? $this.owner.getFilterManager() : null,
+                        widgetEntry: entry,
+                        widgetWrapper: $this
+                    });
+                    $this.append(widget);
+
+                    widget.ensureInitialized(function(){
+                        if(opts.filterOpts){
+                            widget.setContextFilter(opts.filterOpts);
+                        }
+                        widget.refresh();
+                    });
+
+                    $this.currentWidget = widget;
+
+                    $this.childWidgets.push(widget);
+
+                    $this.getElement().loader('hide');
+                });
+            });
 		},
-		
+
+		changeDrilldown: function(index){
+            for(var i = index; i < this.childWidgets.length; i++){
+                this.childWidgets[i].destroy();
+            }
+
+		    if(index === 0){
+		        this._drilldownPanel.addClass('hidden');
+
+		        this.currentWidget = this.mainWidget;
+		    } else {
+		        this.currentWidget = this.childWidgets[index - 1];
+		    }
+
+		    this.currentWidget.removeClass('hidden');
+		    this.currentWidget.refresh();
+		},
+
+		createButtons: function(){
+		    if(!this.getContainer()){
+		        return;
+		    }
+
+		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText'),
+		        keys = [{
+                            key: 'xls',
+                            element: 'Excel'
+                        },{
+                            key: 'csv',
+                            element: 'CSV'
+                        },{
+                            key: 'png',
+                            element: 'Изображение'
+                        }];
+
+            var exportBtn = new Button({
+                cssClass: 'roundButton btnExport btn10',
+                tooltip: 'Экспорт',
+                onClick: function(evt){
+                    ToolManager.activate({
+                        id: '_dwp_droplistTool',
+                        cmd: 'show',
+                        data: keys,
+                        target: {
+                            selector: exportBtn.getElement(),
+                            dock: 'bottom'
+                        },
+                        callback: function(key, item, evt){
+                            $this.mainWidget.exportData(key);
+                        }
+                    });
+                }
+            });
+            tab.append(exportBtn.getElement());
+
+            var fullScreenBtn = new Button({
+                cssClass: 'roundButton btnFullScreen btn10',
+                tooltip: 'На полный экран',
+                onClick: function(evt){
+                    $this.getContainer().toggleClass('fullScreenMode');
+                }
+            });
+            tab.append(fullScreenBtn.getElement());
+		},
+
+		destroy: function(){
+			if($this.mainWidget){
+				$this.mainWidget.destroy();
+			}
+
+            for(var i = 0; i < this.childWidgets.length; i++){
+                this.childWidgets[i].destroy();
+            }
+
+			$base();
+		},
+
+		ensureWidgetInitialized: function(callback){
+		    this.ensureTrigger('_widgetInitialized', callback);
+		},
+
 		getOwner: function(){
 			return this.owner;
 		},
 		
-		destroy: function(){
-			if($this.widget){
-				$this.widget.destroy();
-			}
-			$base();
-		},
-		
 		getWidget: function(){
-			return this.widget;
-		},
-		
-		localizeFilter: function(src){
-		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().localizeFilter(src);
-		},
-		
-		constructFilterBySource: function(src){
-		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().constructFilterBySource(src);
+			return this.mainWidget;
 		},
 
-		constructFilterByLocal: function(filters, src){
-		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().constructFilterByLocal(filters, src);
+		setWidgetInitialized: function(){
+		    this.setTrigger('_widgetInitialized');
 		},
 
-		hasFilter: function(fDesc){
-		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().hasFilter(fDesc);
-		},
-		
-		addFilter: function(fDesc, sourceIds, widget){
-		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().addFilter(fDesc, sourceIds, widget);
-		},
-		
-		removeFilter: function(fItemId, dontPublish){
-		    if(!this.getOwner()) return;
-			return this.getOwner().getFilterManager().removeFilter(fItemId, dontPublish);
-		},
-		
-		clearFilters: function(widget){
-		    if(!this.getOwner()) return;
-			this.getOwner().getFilterManager().clearFilters(widget);
-		},
-		
-		getFilterManager: function(){
-			var owner = this.getOwner();
-			if(owner){
-				return owner.getFilterManager();
-			}
-			return null;
-		},
-		
 		updateTabHeader: function(){
 			if(!this.getContainer() || this.getContainer().hasClass('_jsb_dashboardFloatingContainer')){
 				return;
@@ -308,64 +401,32 @@
 					.append(settingsBtn.getElement())
 					.append(closeBtn.getElement());
 
-                this.createUniBtns();
+                this.createButtons();
 			}
 			editor.setData(this.getWidgetEntry().getName());
-		},
+		}
+	},
 
-		createUniBtns: function(){
-		    if(!this.getContainer()){
-		        return;
-		    }
+	$server: {
+		$require: ['JSB.Workspace.WorkspaceController'],
 
-		    var tab = $this.getContainer().getTab($this.getId()).tab.find('._dwp_tabText'),
-		        keys = [{
-                            key: 'xls',
-                            element: 'Excel'
-                        },{
-                            key: 'csv',
-                            element: 'CSV'
-                        },{
-                            key: 'png',
-                            element: 'Изображение'
-                        }];
+		getWidgetEntry: function(wsId, wId){
+			var wm = WorkspaceController.ensureManager('datacube');
+			if(!wm){
+				throw new Error('Internal error: missing WorkspaceManager for datacube');
+			}
 
-            var exportBtn = new Button({
-                cssClass: 'roundButton btnExport btn10',
-                tooltip: 'Экспорт',
-                onClick: function(evt){
-                    ToolManager.activate({
-                        id: '_dwp_droplistTool',
-                        cmd: 'show',
-                        data: keys,
-                        target: {
-                            selector: exportBtn.getElement(),
-                            dock: 'bottom'
-                        },
-                        callback: function(key, item, evt){
-                            $this.widget.exportData(key);
-                        }
-                    });
-                }
-            });
-            tab.append(exportBtn.getElement());
+			var w = wm.workspace(wsId);
+			if(!w){
+				throw new Error('Unable to find workspace with id: ' + wsId);
+			}
 
-            var fullScreenBtn = new Button({
-                cssClass: 'roundButton btnFullScreen btn10',
-                tooltip: 'На полный экран',
-                onClick: function(evt){
-                    $this.getContainer().toggleClass('fullScreenMode');
-                }
-            });
-            tab.append(fullScreenBtn.getElement());
-		},
+			var widgetEntry = w.entry(wId);
+			if(!widgetEntry || !JSB.isInstanceOf(widgetEntry, 'DataCube.Model.Widget')){
+				throw new Error('Unable to find widget with id: ' + wId);
+			}
 
-		ensureWidgetInitialized: function(callback){
-		    this.ensureTrigger('_widgetInitialized', callback);
-		},
-
-		setWidgetInitialized: function(){
-		    this.setTrigger('_widgetInitialized');
+			return widgetEntry;
 		}
 	}
 }

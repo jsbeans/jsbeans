@@ -20,14 +20,19 @@
 
     find: function(key, values, isFindAll){
         var main = false,
-            resArr = [];
+            resArr = [],
+            res;
 
-        if(!values){
+        if(values){
+            if(values[0]){
+                res = this.getMainSelector().find(key, values[0]);
+            }
+        } else {
             main = true;
-            values = this._values[0];
+            if(this._values && this._values[0]){
+                res = this.getMainSelector().find(key, this._values[0]);
+            }
         }
-
-        var res = this.getMainSelector().find(key, values);
 
         if(res){
             return res;
@@ -43,7 +48,7 @@
     },
 
     findAll: function(){
-        var res = this.find(key, values, true);
+        var res = this.find(key, null, true);
 
         if(!JSB.isDefined(res)){
             return [];

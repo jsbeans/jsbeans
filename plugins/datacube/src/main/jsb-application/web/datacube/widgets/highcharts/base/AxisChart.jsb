@@ -7,6 +7,7 @@
 	        name: 'Ось Х',
             collapsable: true,
             items: {
+                categories: {},
                 labels: {
                     render: 'group',
                     name: 'Подписи',
@@ -151,13 +152,13 @@
                         }
                     }
                 },
-                min: {
+                minX: {
                     render: 'dataBinding',
                     name: 'Минимум',
                     linkTo: 'source',
                     editor: 'input'
                 },
-                max: {
+                maxX: {
                     render: 'dataBinding',
                     name: 'Максимум',
                     linkTo: 'source',
@@ -377,13 +378,13 @@
                     valueType: 'number',
                     defaultValue: 1
                 },
-                min: {
+                minY: {
                     render: 'dataBinding',
                     name: 'Минимум',
                     linkTo: 'source',
                     editor: 'input'
                 },
-                max: {
+                maxY: {
                     render: 'dataBinding',
                     name: 'Максимум',
                     linkTo: 'source',
@@ -445,8 +446,8 @@
                         tickColor: xAxisContext.find('tickColor').value(),
                         tickInterval: xAxisContext.find('tickInterval').value(),
                         type: xAxisContext.find('type').value(),
-                        min: xAxisContext.find('min').value(),
-                        max: xAxisContext.find('max').value()
+                        minX: xAxisContext.find('minX').value(),
+                        maxX: xAxisContext.find('maxX').value()
                     },
 
                     yAxis: {
@@ -480,8 +481,8 @@
                         gridLineColor: yAxisContext.find('gridLineColor').value(),
                         gridLineDashStyle: yAxisContext.find('gridLineDashStyle').value(),
                         gridLineWidth: yAxisContext.find('gridLineWidth').value(),
-                        min: yAxisContext.find('min').value(),
-                        max: yAxisContext.find('max').value()
+                        minY: yAxisContext.find('minY').value(),
+                        maxY: yAxisContext.find('maxY').value()
                     }
                 };
 

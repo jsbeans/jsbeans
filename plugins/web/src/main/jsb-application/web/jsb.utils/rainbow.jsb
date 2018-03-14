@@ -306,11 +306,11 @@
 
         this.colorMap = [];
 
-        for(var i = 0; i < count; i++){
+        for(var j = 0; j < count; j++){
             this.colorMap.push({
-                min: i * increment,
-                max: (i + 1) * increment,
-                color: this.colorAt(((i + 1) * increment - i * increment) / 2)
+                min: j * increment + this.minNum,
+                max: (j + 1) * increment + this.minNum,
+                color: this.colorAt(j * increment + this.minNum)
             });
         }
     },

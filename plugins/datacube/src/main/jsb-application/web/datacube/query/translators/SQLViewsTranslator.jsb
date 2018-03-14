@@ -32,7 +32,7 @@
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    $this.config = {
-		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'), // TODO
+		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'),
 		    }
 		},
 
@@ -88,13 +88,12 @@
 
         _declareViewField: function(viewField, query) {
 //if (viewField.field.indexOf('comment') != -1) debugger;
-//if (viewField.field.indexOf('id') != -1) debugger;
             var sql;
             if (viewField.provider) {
                 sql = $this._printTableName(viewField.provider.getTableFullName()) +
                     '.' + $this._quotedName(viewField.providerField);
             } else if (viewField.expr) {
-                sql = $this._translateExpression(viewField.expr, query, true)
+                sql = $this._translateExpression(viewField.expr, query)
             } else if (viewField.context && viewField.field) {
                 sql = $this._quotedName(viewField.context) +
                     '.' + $this._quotedName(viewField.providerField || viewField.field);
@@ -102,6 +101,22 @@
             if(!sql) throw new Error('Internal error: Unknown field');
             sql += ' AS ' + $this._quotedName(viewField.field);
             return sql;
+        },
+
+        _translateField: function(field, context, useAlias) {
+//if (field.indexOf("Среднесписочная численность без совместителей и работников несписочного состава, всего") != -1) debugger;
+//Log.debug((function(){
+//              try{"".aa()}catch(e){return e.stack.indexOf('_translateOrder') != -1;}
+//          })() + '\t' + useAlias + '\t' + context + '.' + field);
+
+            var queryView = $this._findQueryView(context);
+            var contextField = queryView.lookupField(field, useAlias);
+
+            if (!contextField) {
+                // unknown field: print as-is
+                return $this._quotedName(field);
+            }
+            return $this._translateViewField(contextField);
         },
 
 		_translateViewField: function(viewField) {
@@ -126,18 +141,6 @@
             }
             throw new Error('Internal error: Unknown field descriptor type');
 		},
-
-        _translateField: function(field, context, notAlias) {
-            var queryView = $this._findQueryView(context);
-            var contextField = queryView.lookupField(field, notAlias);
-
-
-            if (!contextField) {
-                // unknown field: print as-is
-                return $this._quotedName(field);
-            }
-            return $this._translateViewField(contextField);
-        },
 
         _translateFrom: function(query) {
             var sourceView = $this._findQueryView(query.$context).getSourceView();
