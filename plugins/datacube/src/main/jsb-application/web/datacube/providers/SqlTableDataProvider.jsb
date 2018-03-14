@@ -82,7 +82,18 @@
 						fDesc.nativeType = nativeType;
 					}
 					if(opts.comment){
-						fDesc.comment = desc.columns[colName].comment;
+					    var comment = desc.columns[colName].comment,
+					        jsonComment;
+
+					    try{
+					        jsonComment = JSON.parse(comment);
+					    } catch(e){}
+
+					    if(jsonComment){
+					        fDesc.comment = jsonComment;
+					    } else {
+					        fDesc.comment = comment;
+					    }
 					}
 					if(opts.name){
 						fDesc.name = desc.columns[colName].name;

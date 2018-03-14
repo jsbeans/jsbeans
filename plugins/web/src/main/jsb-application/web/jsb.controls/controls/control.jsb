@@ -188,6 +188,10 @@
 		screenToLocal: function(x, y){
 			var pt = this.getRelativePosition();
 			return {x: x - pt.left, y: y - pt.top};
+		},
+
+		toggleClass: function(c){
+            return this.getElement().toggleClass(c);
 		}
 	}
 }

@@ -56,3 +56,20 @@
 	border-top: 1px solid #988e5f;
 	border-radius: 0 0 6px 6px;
 }
+
+.dataProviderDiagramNode[provider="DataCube.Providers.SqlTableDataProvider"] > .status > .toolbar > .commentsList {
+    width: 110px;
+    height: 16px;
+    background: white;
+    opacity: 1;
+}
+
+.dataProviderDiagramNode[provider="DataCube.Providers.SqlTableDataProvider"] > .status > .toolbar > .commentsList > .curVal {
+    line-height: 1.1;
+    padding: 0;
+}
+
+.dataProviderDiagramNode[provider="DataCube.Providers.SqlTableDataProvider"] > .status > .toolbar > .commentsList > .dropDownBtn {
+    height: 100%;
+    padding: 10px 5px;
+}

@@ -21,6 +21,7 @@
 	    },
 
 	    // inner variables
+	    _commonFieldsMap: {},
 	    _renders: [],
 	    _rendersMap: {},
 	    _linksMap: {},
@@ -74,7 +75,11 @@
             this.addRender(render);
 
             if(scheme.linkTo){
-                this.createLink(scheme.linkTo, render);
+                if(scheme.localLinkTo){
+                    // todo: linkTo in item (group, for example)
+                } else {
+                    this.createLink(scheme.linkTo, render);
+                }
             }
 
             return render;
@@ -145,7 +150,7 @@
 	        return render ? render.getValues() : null;
 	    },
 
-	    getValues: function(b){
+	    getValues: function(){
 	        return this._values;
 	    },
 

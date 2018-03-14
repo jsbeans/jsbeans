@@ -2,7 +2,7 @@
 	$name: 'JSB.Controls.Select',
 	$parent: 'JSB.Controls.Control',
     $client: {
-        _optionsList: null,
+        _optionsList: {},
 
         $constructor: function(opts){
             $base(opts);
