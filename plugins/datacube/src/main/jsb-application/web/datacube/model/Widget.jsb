@@ -8,7 +8,6 @@
 	values: null,
 	sourceMap: null,
 	sources: {},
-	linkedFields: {},
 	
 	getName: function(){
 		return this.name;
@@ -20,10 +19,6 @@
 	
 	getWidgetType: function(){
 		return this.wType;
-	},
-
-	getLinkedFields: function(){
-	    return this.linkedFields;
 	},
 
 	getSourcesIds: function(){
@@ -69,7 +64,6 @@
 		$require: ['DataCube.Providers.DataProviderRepository',
 		           'DataCube.Query.QueryEngine',
 		           'JSB.Workspace.WorkspaceController',
-		           'Datacube.ValueConverter',
 		           'Unimap.ValueSelector'],
 		
         $bootstrap: function(){
@@ -89,20 +83,15 @@
 
 				if(!values){
 				    this.valueSelector = new ValueSelector({
-				        values: {},
 				        bootstrap: 'Datacube.Unimap.Bootstrap'
 				    });
 
-				    var defaultValues = this.valueSelector.createDefaultValues(this.extractWidgetScheme());
-
-				    this.values = defaultValues.values;
-				    this.linkedFields = defaultValues.linkedFields;
+				    this.values = this.valueSelector.createDefaultValues(this.extractWidgetScheme());
 				}
 
 				//this.updateInteroperationMap();
 
 				this.property('values', this.values);
-				this.property('linkedFields', this.linkedFields);
 				this.property('schemeVersion', 1.0);
 			} else {
 				var bNeedSave = false;
@@ -119,22 +108,6 @@
                 if(this.property('values')){
                     this.values = this.property('values');
                 }
-
-				if(this.property('schemeVersion')){
-				    this.schemeVersion = this.property('schemeVersion');
-
-                    if(this.property('linkedFields')){
-                        this.linkedFields = this.property('linkedFields');
-                    }
-				} else {
-				    var convertVal = ValueConverter.convert(this.wType, this.values);
-				    this.values = convertVal.values;
-				    this.property('values', this.values);
-				    this.linkedFields = convertVal.linkedFields;
-				    this.property('linkedFields', this.linkedFields);
-				    this.property('schemeVersion', 1.0);
-				    bNeedSave = true;
-				}
 
 				if(this.property('sourcesIds')){
 				    this.sourcesIds = this.property('sourcesIds');
@@ -174,9 +147,7 @@
 			this.getDashboard().load();
 			this.values = opts.values;
 			this.sourcesIds = opts.sourcesIds;
-			this.linkedFields = opts.linkedFields;
 			this.property('values', opts.values);
-			this.property('linkedFields', opts.linkedFields);
 			this.property('sourcesIds', opts.sourcesIds);
 			this.property('schemeVersion', 1.0);
 

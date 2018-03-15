@@ -20,12 +20,12 @@
                     name: 'Серия',
                     collapsable: true,
                     items: {
-                        partNames: {
+                        name: {
                             render: 'dataBinding',
                             name: 'Имена частей',
                             linkTo: 'source'
                         },
-                        partData: {
+                        data: {
                             render: 'dataBinding',
                             name: 'Размеры частей',
                             linkTo: 'source'
@@ -58,34 +58,6 @@
                                     defaultValue: 30
                                 }
                             }
-                        },
-                        tooltip: {
-                            render: 'group',
-                            name: 'Подпись',
-                            collapsable: true,
-                            items: {
-                                valueDecimals: {
-                                    render: 'item',
-                                    name: 'Число знаков после запятой',
-                                    valueType: 'number'
-                                },
-                                valuePrefix: {
-                                    render: 'item',
-                                    name: 'Префикс значения',
-                                    valueType: 'string'
-                                },
-                                valueSuffix: {
-                                    render: 'item',
-                                    name: 'Суффикс значения',
-                                    valueType: 'string'
-                                }
-                            }
-                        },
-                        visible: {
-                            render: 'item',
-                            name: 'Показывать по-умолчанию',
-                            optional: 'checked',
-                            editor: 'none'
                         }
                     }
                 }
@@ -94,6 +66,11 @@
     },
     $client: {
         _filterPropName: 'name',
+
+        $constructor: function(opts){
+            $base(opts);
+            $this.setInitialized();
+        },
 
         refresh: function(opts){
             if(!$base(opts)){
@@ -109,15 +86,15 @@
                 };
 
                 for(var i = 0; i < seriesContext.length; i++){
-                    var partNames = seriesContext[i].find('partNames');
+                    var name = seriesContext[i].find('name');
 
                     this._schemeOpts.series.push({
-                        partNames: seriesContext[i].find('partNames'),
-                        partData: seriesContext[i].find('partData'),
+                        nameSelector: seriesContext[i].find('name'),
+                        dataSelector: seriesContext[i].find('data'),
                         data: []
                     });
 
-                    this._schemeOpts.bindings.push(partNames.binding());
+                    this._schemeOpts.bindings.push(name.binding());
                 }
             }
 
@@ -132,10 +109,10 @@
                         for(var i = 0; i < $this._schemeOpts.series.length; i++){
                             $this._schemeOpts.series[i].data.push({
                                 datacube: {
-                                    binding: $this._schemeOpts.series[i].partNames.binding()
+                                    binding: $this._schemeOpts.series[i].nameSelector.binding()
                                 },
-                                name: $this._schemeOpts.series[i].partNames.value(),
-                                y: $this._schemeOpts.series[i].partData.value()
+                                name: $this._schemeOpts.series[i].nameSelector.value(),
+                                y: $this._schemeOpts.series[i].dataSelector.value()
                             });
                         }
                     }
@@ -166,7 +143,7 @@
                     for(var i = 0; i < seriesContext.length; i++){
                         var series = {
                             datacube: {
-                                binding: seriesContext[i].find('partNames').binding()
+                                binding: seriesContext[i].find('name').binding()
                             },
                             data: data[i].data,
                             size: seriesContext[i].find('size').value(),
@@ -174,13 +151,7 @@
                             dataLabels: {
                                 color: seriesContext[i].find('dataLabels color').value(),
                                 distance: seriesContext[i].find('dataLabels distance').value()
-                            },
-                            tooltip: {
-                                valueDecimals: seriesContext[i].find('tooltip valueDecimals').value(),
-                                valuePrefix: seriesContext[i].find('tooltip valuePrefix').value(),
-                                valueSuffix: seriesContext[i].find('tooltip valueSuffix').value()
-                            },
-                            visible: seriesContext[i].find('visible').checked()
+                            }
                         };
 
                         JSB.merge(true, chartOpts.series[i], series);

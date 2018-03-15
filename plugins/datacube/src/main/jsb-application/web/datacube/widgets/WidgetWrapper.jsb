@@ -228,6 +228,7 @@
 		    }
 
 		    this.currentWidget.removeClass('hidden');
+		    this.currentWidget.refresh();
 		},
 
 		createButtons: function(){

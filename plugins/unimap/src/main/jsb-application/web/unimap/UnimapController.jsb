@@ -9,7 +9,7 @@
             this.loadCss('UnimapController.css');
 
             this._scheme = opts.scheme;
-            this._values = opts.values;
+            this._values = opts.values.values;
 
             if(opts.rendersMap){
                 this._rendersMap = opts.rendersMap;
@@ -21,6 +21,7 @@
 	    },
 
 	    // inner variables
+	    _commonFieldsMap: {},
 	    _renders: [],
 	    _rendersMap: {},
 	    _linksMap: {},
@@ -74,7 +75,11 @@
             this.addRender(render);
 
             if(scheme.linkTo){
-                this.createLink(scheme.linkTo, render);
+                if(scheme.localLinkTo){
+                    // todo: linkTo in item (group, for example)
+                } else {
+                    this.createLink(scheme.linkTo, render);
+                }
             }
 
             return render;
@@ -145,8 +150,11 @@
 	        return render ? render.getValues() : null;
 	    },
 
-	    getValues: function(b){
-	        return this._values;
+	    getValues: function(){
+	        return {
+	            linkedFields: this.getLinkedFields(),
+	            values: this._values
+	        }
 	    },
 
 	    validate: function(){

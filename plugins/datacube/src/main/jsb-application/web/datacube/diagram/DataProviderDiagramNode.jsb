@@ -8,6 +8,7 @@
 	           'JSB.Widgets.PrimitiveEditor',
 	           'JSB.Controls.ScrollBox',
 	           'JSB.Controls.Switch',
+	           'JSB.Controls.Select',
 	           'JSB.Widgets.ToolManager'],
 	
 	$client: {
@@ -119,9 +120,21 @@
                     <div class="toolbar">
                         <div class="selectAll" title="Выделить все"></div>
                         <div class="deselectAll" title="Снять выделение со всех"></div>
-                        <div class="useComments" title="Использовать содержимое комментариев для формирования названий полей куба"></div>
+                        <div class="useComments hidden" title="Использовать содержимое комментариев для формирования названий полей куба"></div>
                     </div>
                 </div>`);
+
+            this.commentsList = new Select({
+                cssClass: 'commentsList hidden',
+                onchange: function(val){
+                    $this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {commentField: val.key}, function(){
+                        $this.provider.options.commentField = val.key;
+                        $this.refreshScheme(true);
+                    });
+                }
+            });
+            this.status.find('.toolbar').append(this.commentsList.getElement());
+
 			this.append(this.caption);
 			this.append(this.body);
 			this.append(this.status);
@@ -199,18 +212,6 @@
 			});
 			
 			var useCommentsElt = this.status.find('.useComments');
-			useCommentsElt.click(function(evt){
-				useCommentsElt.toggleClass('selected');
-				if(useCommentsElt.hasClass('selected')){
-					$this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:true}, function(){});
-				} else {
-					$this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:false}, function(){});
-				}
-			});
-			
-			if(opts.provider.getOption('useComments')){
-				useCommentsElt.addClass('selected');
-			}
 			
 			this.getElement().resize(function(){
 			    if($this.editor.cubeEntry){
@@ -222,7 +223,7 @@
 			    }
 			});
 		},
-		
+
 		loadScheme: function(callback){
 			$this.find('.body > .loading').removeClass('hidden');
 			$this.find('.body > .failed').addClass('hidden');
@@ -239,7 +240,7 @@
 			});
 		},
 		
-		refreshScheme: function(){
+		refreshScheme: function(noCubeUpdate){
 			$this.find('.body > .loading').removeClass('hidden');
 			$this.find('.body > .failed').addClass('hidden');
 			this.editor.cubeEntry.server().refreshDataProviderFields($this.provider.getId(), function(desc, fail){
@@ -254,7 +255,9 @@
 					$this.binding = desc.binding;
 					$this.refresh();
 					// $this.updateNodeLinks();
-					$this.editor.cubeNode.refreshFields();
+					if(!noCubeUpdate){
+					    $this.editor.cubeNode.refreshFields();
+					}
                     $this.removeButton.enable($this.keyFieldList.find('.field').length == 0);
 				}
 			});
@@ -270,16 +273,91 @@
 			this.fieldList.clear();
 			this.keyFieldList.empty();
 
-			var fieldNames = Object.keys(this.fields);
-			fieldNames.sort(function(a, b){
-				return a.localeCompare(b);
-			});
+			var isUseComments = this.provider.getOption('useComments');
 
-			for(var i = 0; i < fieldNames.length; i++){
-				this.createField(fieldNames[i], true);
+			if(isUseComments){
+			    var aliases = [];
+
+			    for(var i in this.fields.fields){
+			        aliases.push({
+			            name: i,
+			            alias: this.fields.fields[i].alias
+			        });
+			    }
+
+                aliases.sort(function(a, b){
+                    return a.alias.localeCompare(b.alias);
+                });
+
+                for(var i = 0; i < aliases.length; i++){
+                    this.createField(aliases[i].name, true);
+                }
+			} else {
+                var fieldNames = Object.keys(this.fields.fields);
+                fieldNames.sort(function(a, b){
+                    return a.localeCompare(b);
+                });
+
+                for(var i = 0; i < fieldNames.length; i++){
+                    this.createField(fieldNames[i], true);
+                }
 			}
 
 			this.removeButton.enable(this.keyFieldList.find('.field').length == 0);
+
+			if(this.fields.commentsType){
+			    var useCommentsElt = this.status.find('.useComments');
+
+			    useCommentsElt.removeClass('hidden');
+
+                if(isUseComments){
+                    useCommentsElt.addClass('selected');
+                }
+
+			    switch(this.fields.commentsType){
+			        case 'string':
+			            useCommentsElt.off('click.useCommentsElt');
+                        useCommentsElt.on('click.useCommentsElt', function(evt){
+                            useCommentsElt.toggleClass('selected');
+
+                            if(useCommentsElt.hasClass('selected')){
+                                $this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:true}, function(){});
+                            } else {
+                                $this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:false}, function(){});
+                            }
+                        });
+			            break;
+                    case 'json':
+                        this.commentsList.setOptions(this.fields.commentsList, true);
+
+                        if(isUseComments){
+                            this.commentsList.removeClass('hidden');
+                            this.commentsList.setValue(this.provider.getOption('commentField'), true);
+                        } else {
+                            this.commentsList.setValue(this.fields.commentsList[0], true);
+                        }
+
+                        useCommentsElt.off('click.useCommentsElt');
+                        useCommentsElt.on('click.useCommentsElt', function(evt){
+                            useCommentsElt.toggleClass('selected');
+                            $this.commentsList.toggleClass('hidden');
+
+                            if(useCommentsElt.hasClass('selected')){
+                                $this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:true, commentField: $this.commentsList.getValue().key}, function(){
+                                    $this.provider.options.useComments = true;
+                                    $this.provider.options.commentField = $this.commentsList.getValue().key;
+                                    $this.refreshScheme(true);
+                                });
+                            } else {
+                                $this.editor.cubeEntry.server().changeProviderOptions($this.provider.getId(), {useComments:false}, function(){
+                                    $this.provider.options.useComments = false;
+                                    $this.refreshScheme(true);
+                                });
+                            }
+                        });
+                        break;
+			    }
+			}
 
 			this.updateResizable();
 		},
@@ -288,11 +366,11 @@
             var fElt = $this.$('<div class="field"></div>');
             fElt.attr('key', field);
 
-            if(!$this.fields[field].keyField){
+            if(!$this.fields.fields[field].keyField){
                 var loader = this.$('<div class="loader hidden"></div>')
 
                 var checkbox = new CheckBox({
-                    checked: $this.fields[field].cubeField,
+                    checked: $this.fields.fields[field].cubeField,
                     onChange: function(isCheck){
                         if(isCheck){
                             function addField(){
@@ -303,7 +381,7 @@
                                         $this.editor.cubeNode.addField(desc.field, desc.type, { id: desc.binding[0].provider.getId(), name: desc.binding[0].provider.getName() });
                                         $this.editor.cubeNode.reorderFields(desc.binding[0].provider.getId());
                                         $this.editor.cubeNode.updateInterface();
-                                        $this.fields[field].cubeField = desc.field;
+                                        $this.fields.fields[field].cubeField = desc.field;
                                     }
                                 });
                             }
@@ -351,10 +429,10 @@
                         } else {
                             function removeField(){
                                 loader.removeClass('hidden');
-                                $this.editor.cubeEntry.server().removeFields($this.fields[field].cubeField, function(res, fail){
+                                $this.editor.cubeEntry.server().removeFields($this.fields.fields[field].cubeField, function(res, fail){
                                     loader.addClass('hidden');
                                     if(res){
-                                        $this.editor.cubeNode.afterFieldRemove($this.fields[field].cubeField);
+                                        $this.editor.cubeNode.afterFieldRemove($this.fields.fields[field].cubeField);
                                     } else {
                                         checkbox.setChecked(false, true);
                                     }
@@ -418,14 +496,14 @@
                     <div class="text"></div>
                 </div>
             `);
-            if($this.fields[field].keyField){
+            if($this.fields.fields[field].keyField){
                 fElt.append(`#dot <div class="connector right"></div>`);
             }
-            fElt.find('.cell.name').attr('title', field);
-            fElt.find('.cell.name > .text').text(field);
-            fElt.find('.cell.type > .text').text($this.fields[field].nativeType);
+            fElt.find('.cell.name').attr('title', $this.fields.fields[field].alias ? $this.fields.fields[field].alias : field);
+            fElt.find('.cell.name > .text').text($this.fields.fields[field].alias ? $this.fields.fields[field].alias : field);
+            fElt.find('.cell.type > .text').text($this.fields.fields[field].nativeType);
 
-            if($this.fields[field].keyField){
+            if($this.fields.fields[field].keyField){
                 $this.keyFieldList.append(fElt);
 
                 // create right connector
@@ -473,7 +551,7 @@
 		},
 
 		toggleKeyField: function(field, isKey){
-		    $this.fields[field].keyField = isKey;
+		    $this.fields.fields[field].keyField = isKey;
 
 		    if(isKey){
                 var e = $this.keyFieldList.find('.field[key="' + field + '"]');
@@ -528,10 +606,10 @@
 		},
 
 		updateNodeLinks: function(){
-		    for(var i in this.fields){
-		        if(this.fields[i].keyField){
+		    for(var i in this.fields.fields){
+		        if(this.fields.fields[i].keyField){
                     var link = this.diagram.createLink('bind');
-                    link.setSource(this.editor.cubeNode.leftFieldConnectors[this.fields[i].cubeField]);
+                    link.setSource(this.editor.cubeNode.leftFieldConnectors[this.fields.fields[i].cubeField]);
                     link.setTarget(this.rightFieldConnectors[i]);
 		        }
 		    }

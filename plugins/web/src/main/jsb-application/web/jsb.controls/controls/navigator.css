@@ -7,12 +7,63 @@
 
 .jsb-navigator > .leftScroll,
 .jsb-navigator > .rightScroll {
+    position: absolute;
+    height: 100%;
+    width: 30px;
+    top: 0;
+    padding: 8px;
+    background: lightgrey;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.6;
+}
 
+.jsb-navigator > .leftScroll:hover,
+.jsb-navigator > .rightScroll:hover {
+    opacity: 0.8;
+}
+
+.jsb-navigator > .leftScroll {
+    left: 0;
+}
+
+.jsb-navigator > .rightScroll {
+    right: 0;
+}
+
+.jsb-navigator > .leftScroll:after,
+.jsb-navigator > .rightScroll:after {
+    position: absolute;
+}
+
+.jsb-navigator > .leftScroll:after {
+    content: "";
+	width: 0;
+	height: 0;
+	border-top: 8px solid transparent;
+	border-right: 16px solid #555;
+	border-bottom: 8px solid transparent;
+}
+
+.jsb-navigator > .rightScroll:after {
+    content: "";
+	width: 0;
+	height: 0;
+    border-top: 8px solid transparent;
+    border-left: 16px solid #555;
+    border-bottom: 8px solid transparent;
 }
 
 .jsb-navigator > .navigatorPane {
     white-space: nowrap;
     position: absolute;
+    transition: left 0.8s;
+    left: 0;
+    min-width: 100%;
+}
+
+.jsb-navigator > .navigatorPane.moving {
+    transition: none;
 }
 
 .jsb-navigator > .navigatorPane li {

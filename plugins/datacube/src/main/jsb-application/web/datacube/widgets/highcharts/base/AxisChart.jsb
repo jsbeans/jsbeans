@@ -7,6 +7,7 @@
 	        name: 'Ось Х',
             collapsable: true,
             items: {
+                categories: {},
                 labels: {
                     render: 'group',
                     name: 'Подписи',

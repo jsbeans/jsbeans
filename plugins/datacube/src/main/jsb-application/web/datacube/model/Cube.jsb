@@ -106,11 +106,11 @@
 						this.dataProviderFields[pDesc.id] = pDesc.fields;
 						this.dataProviderPositions[pDesc.id] = pDesc.position;
 						this.dataProviderSizes[pDesc.id] = pDesc.size;
-						
+
 						// actualize dataProviderFields
 						for(var fName in this.dataProviderFields[pDesc.id]){
 							if(this.dataProviderFields[pDesc.id][fName] && !JSB.isObject(this.dataProviderFields[pDesc.id][fName])){
-								this.dataProviderFields[pDesc.id] = provider.extractFields();
+								this.dataProviderFields[pDesc.id] = provider.extractFields({comment:true, type:true, nativeType:true});
 								break;
 							}
 						}
@@ -273,10 +273,25 @@
 				size: this.nodeSize,
 				defaultFields: this.defaultFields
 			};
-			
+
 			// prepare providers
 			for(var pId in this.dataProviders){
-				var provider = this.dataProviders[pId];
+			    var provider = this.dataProviders[pId],
+			        providerFields = {};
+
+                // prepare providers' fields
+                /*
+                for(var i in this.dataProviderFields[pId]){
+                    providerFields[i] = {
+                        nativeType: this.dataProviderFields[pId][i].nativeType,
+                        type: this.dataProviderFields[pId][i].type
+                    }
+
+                    if(this.dataProviderFields[pId][i].alias){
+                        providerFields[i][alias] = this.dataProviderFields[pId][i].alias;
+                    }
+                }
+                */
 				var pDesc = {
 					id: pId,
 					jsb: provider.getJsb().$name,
@@ -538,12 +553,27 @@
 
 		createProviderFieldsList: function(provider, fields){
 			this.load();
-            var res = {};
+            var res = {
+                fields: {}
+            };
+
+            var isUseComments = provider.getOption('useComments'),
+                alias = provider.getOption('commentField');
 
             for(var i in fields){
-                res[i] = {
+                res.fields[i] = {
                     type: fields[i].type,
-                    nativeType: fields[i].nativeType
+                    nativeType: fields[i].nativeType,
+                    alias: isUseComments ? (alias ? fields[i].comment[alias] : fields[i].comment) : undefined
+                }
+            }
+
+            if(fields[i].comment){
+                if(JSB.isObject(fields[i].comment)){
+                    res.commentsType = 'json';
+                    res.commentsList = Object.keys(fields[i].comment);
+                } else {
+                    res.commentsType = 'string';
                 }
             }
 
@@ -551,10 +581,10 @@
                 for(var j = 0; j < this.fields[i].binding.length; j++){
                     if(provider.getId() == this.fields[i].binding[j].provider.getId()){
                         if(this.fields[i].binding.length > 1){
-                            res[this.fields[i].binding[j].field].keyField = true;
+                            res.fields[this.fields[i].binding[j].field].keyField = true;
                         }
 
-                        res[this.fields[i].binding[j].field].cubeField = i;
+                        res.fields[this.fields[i].binding[j].field].cubeField = i;
                     }
                 }
             }
@@ -598,7 +628,7 @@
 			if(this.dataProviderFields[provider.getId()]){
 				return this.createProviderFieldsList(provider, this.dataProviderFields[provider.getId()]);
 			}
-			var dpFields = provider.extractFields();
+			var dpFields = provider.extractFields({comment:true, type:true, nativeType:true});
 			this.dataProviderFields[provider.getId()] = dpFields;
 			this.store();
 			this.doSync();
@@ -650,7 +680,7 @@
 		refreshDataProviderFields: function(pId){
 			this.load();
 			var provider = this.getProviderById(pId);
-			var dpNewFields = provider.extractFields();
+			var dpNewFields = provider.extractFields({comment:true, type:true, nativeType:true});
 			var dpFields = this.dataProviderFields[provider.getId()];
 			var bNeedStore = false;
 			
@@ -779,10 +809,19 @@
 			var fMap = provider.extractFields({comment:true, type:true, nativeType:true});
 			var pType = fMap[pField].nativeType;
 			var cType = fMap[pField].type;
+
 			if(provider.getOption('useComments')){
-				if(JSB.isString(fMap[pField].comment) && fMap[pField].comment.length > 0){
-					pfName = fMap[pField].comment;
-				}
+			    var alias = provider.getOption('commentField');
+
+			    if(alias){
+			        if(JSB.isString(fMap[pField].comment[alias]) && fMap[pField].comment[alias].length > 0){
+			            pfName = fMap[pField].comment[alias];
+			        }
+			    } else {
+                    if(JSB.isString(fMap[pField].comment) && fMap[pField].comment.length > 0){
+                        pfName = fMap[pField].comment;
+                    }
+			    }
 			}
 			var nameCandidate = this.prepareFieldName(pfName);
 			if(this.fields[nameCandidate]){
