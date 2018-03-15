@@ -104,8 +104,7 @@
 		},
 
 		applySettings: function(){
-		    var values = this.widgetSchemeRenderer.getValues(),
-		        linkedFields = this.widgetSchemeRenderer.getLinkedFields();
+		    var values = this.widgetSchemeRenderer.getValues();
 
 		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),
 		        sourcesIds = [];
@@ -127,14 +126,12 @@
             });
 
             this.entry.server().storeValues({
-                linkedFields: linkedFields,
                 name: this.titleEditor.getData().getValue(),
                 sourcesIds: sourcesIds,
                 values: values
             }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.entry.getId(),
-                    linkedFields: linkedFields,
                     sourceDesc: sourceDesc,
                     values: values
                 });
@@ -146,10 +143,7 @@
 		        this.updateValidation();
 		    }
 
-		    this.wrapper.getWidget().updateValues({
-                values: this.widgetSchemeRenderer.getValues(),
-                linkedFields: this.widgetSchemeRenderer.getLinkedFields()
-		    });
+		    this.wrapper.getWidget().updateValues({values: this.widgetSchemeRenderer.getValues()});
 
             this.wrapper.getWidget().ensureInitialized(function(){
                 $this.wrapper.getWidget().refresh({

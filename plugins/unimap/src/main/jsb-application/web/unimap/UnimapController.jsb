@@ -9,7 +9,7 @@
             this.loadCss('UnimapController.css');
 
             this._scheme = opts.scheme;
-            this._values = opts.values;
+            this._values = opts.values.values;
 
             if(opts.rendersMap){
                 this._rendersMap = opts.rendersMap;
@@ -151,7 +151,10 @@
 	    },
 
 	    getValues: function(){
-	        return this._values;
+	        return {
+	            linkedFields: this.getLinkedFields(),
+	            values: this._values
+	        }
 	    },
 
 	    validate: function(){

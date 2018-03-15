@@ -89,8 +89,8 @@
                     var name = seriesContext[i].find('name');
 
                     this._schemeOpts.series.push({
-                        name: seriesContext[i].find('name'),
-                        data: seriesContext[i].find('data'),
+                        nameSelector: seriesContext[i].find('name'),
+                        dataSelector: seriesContext[i].find('data'),
                         data: []
                     });
 
@@ -109,10 +109,10 @@
                         for(var i = 0; i < $this._schemeOpts.series.length; i++){
                             $this._schemeOpts.series[i].data.push({
                                 datacube: {
-                                    binding: $this._schemeOpts.series[i].name.binding()
+                                    binding: $this._schemeOpts.series[i].nameSelector.binding()
                                 },
-                                name: $this._schemeOpts.series[i].name.value(),
-                                y: $this._schemeOpts.series[i].data.value()
+                                name: $this._schemeOpts.series[i].nameSelector.value(),
+                                y: $this._schemeOpts.series[i].dataSelector.value()
                             });
                         }
                     }

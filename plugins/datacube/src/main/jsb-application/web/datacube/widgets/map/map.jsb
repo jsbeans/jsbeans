@@ -1362,9 +1362,9 @@
                                             L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
 
                                             if($this._styles.markers[i].valueSkipping){
-                                                widget.setWrapper($this.getWrapper(), data.markers[i].values[j]);
+                                                widget.setWrapper($this.getWrapper(), {values: data.markers[i].values[j]});
                                             } else {
-                                                widget.setWrapper($this.getWrapper(), data.markers[i].values);
+                                                widget.setWrapper($this.getWrapper(), {values: data.markers[i].values});
                                             }
 
                                             widget.ensureInitialized(function(){
