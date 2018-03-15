@@ -311,7 +311,7 @@
 		},
 		
 		removeSlice: function(slice, sliceNode){
-			this.cubeEntry.server().removeSlice(slice.getLocalId(), function(){
+			this.cubeEntry.server().removeSlice(slice.getId(), function(){
 				sliceNode.destroy();
 			});
 		}

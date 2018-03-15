@@ -218,24 +218,6 @@
 			    if(node.workspace !== $this.currentWorkspace) return;
 
 			    var nodeKey = $this.wTreeMap[node.descriptor.entry.getId()] ? $this.wTreeMap[node.descriptor.entry.getId()].key : null;
-/*
-			    var parentKeys = {};
-			    function findParent(id){
-			        if(!id) return;
-			        var parKey = $this.wTreeMap[id].parentKey;
-			        if(parKey){
-			            parentKeys[parKey] = true;
-			            findParent($this.wTreeMap[id].parent);
-			        }
-			    }
-			    findParent(node.descriptor.entry.localId);
-
-			    for(var i in $this.tree.itemMap){
-			        if(!$this.mExpandKeys[i] && nodeKey !== i && !parentKeys[i]){
-			            $this.tree.collapseNode(i);
-			        }
-			    }
-*/
 			    if(!nodeKey) return;
 			    if(node.getEntry().getChildCount() > 0){
 			        $this.tree.expandNode(nodeKey);
@@ -244,7 +226,7 @@
 			});
 
 			this.subscribe('JSB.Workspace.Entry.open', function(sender, msg, entry){
-			    var nodeKey = $this.wTreeMap[entry.localId] ? $this.wTreeMap[entry.localId].key : null;
+			    var nodeKey = $this.wTreeMap[entry.getId()] ? $this.wTreeMap[entry.getId()].key : null;
 			    if(nodeKey){
 			        $this.publish('JSB.Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
 			    }
@@ -515,6 +497,12 @@
 							if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 								continue;
 							}
+							// temporary check
+							if(JSB.isInstanceOf(obj, 'DataCube.SliceNode') 
+								|| JSB.isInstanceOf(obj, 'DataCube.SqlTableNode') 
+								|| JSB.isInstanceOf(obj, 'DataCube.WidgetNode')) {
+								continue;
+							}
 /*							
 							if(JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
 								if(obj.getEntry().getParentId()){
@@ -715,7 +703,9 @@
 					return;
 				}
 				$this._isReady = false;
+				JSB.getLogger().debug('loadNodes: 1');
 				$this.server().loadNodes(itemDesc.entry, function(nTree){
+					JSB.getLogger().debug('loadNodes: 2');
 					var chArr = Object.keys(nTree);
 					chArr.sort(function(a, b){
 						return nTree[a].name.localeCompare(nTree[b].name);
@@ -726,6 +716,8 @@
 						var chDesc = nTree[eId];
 						$this.addTreeItem(chDesc, parentKey, false, {collapsed:true});
 					}
+					JSB.getLogger().debug('loadNodes: 3');
+
 					$this._isReady = true;
 					treeNode.obj.setTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded');
 				});
@@ -1292,8 +1284,10 @@
 		},
 		
 		loadNodes: function(pEntry, opts){
+			JSB.getLogger().debug('loadNodes: 1');
 			pEntry = pEntry || this.currentWorkspace;
 			var children = pEntry.getChildren();
+			JSB.getLogger().debug('loadNodes: 2');
 			var nTree = {};
 			for(var chId in children){
 				var chEntry = children[chId];
@@ -1304,7 +1298,7 @@
 					hasEntryChildren: chEntry.children().count() > 0
 				}
 			}
-			
+			JSB.getLogger().debug('loadNodes: 3');
 			return nTree;
 		}
 		

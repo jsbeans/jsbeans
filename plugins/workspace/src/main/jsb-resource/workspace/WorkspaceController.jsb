@@ -275,6 +275,25 @@
 			return this.loadWorkspace(wDesc.wId);
 		},
 		
+		workspaceIds: function(user){
+			var wArr = this.getWorkspacesInfo(user);
+			var cursor = 0;
+			return {
+				next: function(){
+					if(cursor < wArr.length){
+						return wArr[cursor++].wId;
+					}
+				},
+				hasNext: function(){
+					return cursor < wArr.length;
+				},
+				count: function(){
+					return wArr.length;
+				}
+			}
+			
+		},
+		
 		registerExplorerNode: function(wTypes, entryType, priority, nodeType){
 			var locker = JSB.getLocker();
 			locker.lock('registerExplorerNode_' + this.getId());

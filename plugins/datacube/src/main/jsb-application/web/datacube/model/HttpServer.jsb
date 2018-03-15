@@ -25,7 +25,7 @@
 		updateSettings: function(settings){
 			this.settings = settings;
 			this.property('settings', this.settings);
-			this.workspace.store();
+			this.getWorkspace().store();
 		}
 		
 	}

@@ -77,13 +77,17 @@
 			return eDir;
 		},
 		
+		fixFileName: function(fn){
+			return fn.replace(/\|/g,'_');
+		},
+		
 		read: function(entry){
 			var ext = this.options.entryExt || 'entry';
 			var eDir = this.getEntryDir(entry);
 			if(entry.getWorkspace() == entry){
 				ext = this.options.workspaceExt || 'ws';
 			}
-			var eFileName = FileSystem.join(eDir, entry.getId() + '.' + ext);
+			var eFileName = FileSystem.join(eDir, this.fixFileName(entry.getId()) + '.' + ext);
 			var mtxName = 'JSB.Workspace.FileEntryStore.' + entry.getId();
 			JSB.getLocker().lock(mtxName);
 			try {
@@ -102,7 +106,7 @@
 			if(entry.getWorkspace() == entry){
 				ext = this.options.workspaceExt || 'ws';
 			}
-			var eFileName = FileSystem.join(eDir, entry.getId() + '.' + ext);
+			var eFileName = FileSystem.join(eDir, this.fixFileName(entry.getId()) + '.' + ext);
 			var mtxName = 'JSB.Workspace.FileEntryStore.' + entry.getId();
 			JSB.getLocker().lock(mtxName);
 			try {
@@ -122,7 +126,7 @@
 			if(entry.getWorkspace() == entry){
 				ext = this.options.workspaceExt || 'ws';
 			}
-			var eFileName = FileSystem.join(eDir, entry.getId() + '.' + ext);
+			var eFileName = FileSystem.join(eDir, this.fixFileName(entry.getId()) + '.' + ext);
 			var mtxName = 'JSB.Workspace.FileEntryStore.' + entry.getId();
 			JSB.getLocker().lock(mtxName);
 			try {

@@ -48,7 +48,7 @@
 
 
 		getStore: function(){
-			var sourceEntry = this.entry.workspace.entry(this.entry.parent);
+			var sourceEntry = this.entry.getWorkspace().entry(this.entry.getParentId());
 			return sourceEntry.getStore();
 		},
 		

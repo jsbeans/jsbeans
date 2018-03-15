@@ -195,7 +195,7 @@
 		},
 		
 		localizeFilter: function(source){
-			var sourceId = source.getLocalId();
+			var sourceId = source.getId();
 			var filters = this.filterBySource[sourceId];
 			if(!filters || Object.keys(filters).length == 0){
 				return null;
@@ -211,7 +211,7 @@
 			if(!filters || Object.keys(filters).length == 0){
 				return null;
 			}
-			var sourceId = source.getLocalId();
+			var sourceId = source.getId();
 			
 			// combine by fields
 			var ffMap = {};

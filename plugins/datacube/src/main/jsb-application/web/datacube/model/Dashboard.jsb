@@ -39,8 +39,8 @@
 		},
 		
 		destroy: function(){
-			if(this.workspace.existsArtifact(this.getLocalId() + '.dashboard')){
-				this.workspace.removeArtifact(this.getLocalId() + '.dashboard');
+			if(this.existsArtifact('.dashboard')){
+				this.removeArtifact('.dashboard');
 			}
 			$base();
 		},
@@ -85,7 +85,7 @@
 		createWidgetWrapper: function(wType, wName){
 			this.load();
 			var wwId = JSB.generateUid();
-			var wWrapper = new Widget(wwId, this.workspace, this, wName, wType);
+			var wWrapper = new Widget(wwId, this.getWorkspace(), this, wName, wType);
 			this.wrappers[wwId] = wWrapper;
 			this.widgetCount = Object.keys(this.wrappers).length;
 			this.addChildEntry(wWrapper);
@@ -135,11 +135,11 @@
 				this.lastUpdated = Date.now();
 				this.property('widgets', this.widgetCount);
 				this.property('lastUpdated', this.lastUpdated);
-				this.workspace.writeArtifactAsJson(this.getLocalId() + '.dashboard', desc);
+				this.storeArtifact('.dashboard', desc);
 			} finally {
 				JSB.getLocker().unlock(mtxName);	
 			}
-			this.workspace.store();
+			this.getWorkspace().store();
 		},
 		
 		load: function(){
@@ -151,12 +151,12 @@
 				bLocked = true;
 			}
 			if(!this.loaded){
-				if(this.workspace.existsArtifact(this.getLocalId() + '.dashboard')){
+				if(this.existsArtifact('.dashboard')){
 					var mtxName = 'load_' + this.getId();
 					JSB.getLocker().lock(mtxName);
 					try {
 						// read layout
-						var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.dashboard');
+						var snapshot = this.loadArtifact('.dashboard');
 						this.layout = snapshot.layout;
 
 						// read wrappers
@@ -166,10 +166,10 @@
 							var wDesc = snapshot.wrappers[wId];
 							
 							if(!this.wrappers[wId]){
-								var wWrapper = this.workspace.entry(wId);
+								var wWrapper = this.getWorkspace().entry(wId);
 								if(!wWrapper){
 									bNeedStore = true;
-									wWrapper = new Widget(wId, this.workspace, this, wDesc.name, wDesc.jsb, wDesc.values);
+									wWrapper = new Widget(wId, this.getWorkspace(), this, wDesc.name, wDesc.jsb, wDesc.values);
 									this.addChildEntry(wWrapper);
 								}
 								
@@ -238,13 +238,13 @@
 				var srcMap = wWrapper.getSourceMap();
 				for(var srcId in srcMap){
 					if(!sources[srcId]){
-						sources[srcId] = this.workspace.entry(srcId);
+						sources[srcId] = this.getWorkspace().entry(srcId);
 					}
 					var srcArr = srcMap[srcId];
 					for(var i = 0; i < srcArr.length; i++){
 						var srcArrId = srcArr[i];
 						if(!sources[srcArrId]){
-							sources[srcArrId] = this.workspace.entry(srcArrId);
+							sources[srcArrId] = this.getWorkspace().entry(srcArrId);
 						}
 					}
 				}

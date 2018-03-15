@@ -137,11 +137,7 @@
 				throw new Error('Missing parameter: "did" (dashboard Id)');
 			}
 			
-			var wm = WorkspaceController.ensureManager('datacube');
-			if(!wm){
-				throw new Error('Internal error: missing WorkspaceManager for datacube');
-			}
-			var w = wm.workspace(params.wsid);
+			var w = WorkspaceController.getWorkspace(params.wsid);
 			if(!w){
 				throw new Error('Unable to find workspace with id: ' + params.wsid);
 			}

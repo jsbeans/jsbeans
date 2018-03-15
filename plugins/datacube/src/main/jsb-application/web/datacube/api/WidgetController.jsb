@@ -109,7 +109,6 @@
 			
 			code += Web.getJsbCode('JSB.Workspace.Entry') + ';';
 			code += Web.getJsbCode('JSB.Workspace.Workspace') + ';';
-			code += Web.getJsbCode('JSB.Workspace.WorkspaceManager') + ';';
 			
 			code += Web.getJsbCode('DataCube.Model.Dashboard') + ';';
 			code += Web.getJsbCode('DataCube.Model.Widget') + ';';

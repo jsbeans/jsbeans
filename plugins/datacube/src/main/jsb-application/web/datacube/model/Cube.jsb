@@ -60,8 +60,8 @@
 		},
 		
 		destroy: function(){
-			if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
-				this.workspace.removeArtifact(this.getLocalId() + '.cube');
+			if(this.existsArtifact('.cube')){
+				this.removeArtifact('.cube');
 			}
 			$base();
 		},
@@ -76,8 +76,8 @@
 			if(!this.loaded){
 			    this.queryEngine = new QueryEngine(this);
 
-				if(this.workspace.existsArtifact(this.getLocalId() + '.cube')){
-					var snapshot = this.workspace.readArtifactAsJson(this.getLocalId() + '.cube');
+				if(this.existsArtifact('.cube')){
+					var snapshot = this.loadArtifact('.cube');
 					
 					this.nodePosition = snapshot.position;
 					this.nodeSize = snapshot.size;
@@ -87,11 +87,11 @@
 					for(var i = 0; i < snapshot.providers.length; i++){
 						var pDesc = snapshot.providers[i];
 						var pEntry = null;
-						if(!this.workspace.existsEntry(pDesc.entry)){
+						if(!this.getWorkspace().existsEntry(pDesc.entry)){
 							JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
 							continue;
 						} else {
-							pEntry = this.workspace.entry(pDesc.entry);
+							pEntry = this.getWorkspace().entry(pDesc.entry);
 						}
 						var pJsb = JSB.get(pDesc.jsb);
 						if(!pJsb){
@@ -155,7 +155,7 @@
 								if(!snapshot.materialization.tables[tId].provider.entry){
 									throw new Error('Missing materialized source for cube: ' + $this.getName());
 								}
-								var dataProviderEntry = this.workspace.entry(snapshot.materialization.tables[tId].provider.entry);
+								var dataProviderEntry = this.getWorkspace().entry(snapshot.materialization.tables[tId].provider.entry);
 
 								var pJsb = JSB.get(snapshot.materialization.tables[tId].provider.jsb);
 								if(!pJsb){
@@ -204,7 +204,7 @@
 					// construct slices
 					for(var i = 0; i < snapshot.slices.length; i++){
 						var sDesc = snapshot.slices[i];
-						var slice = this.workspace.entry(sDesc.id);
+						var slice = this.getWorkspace().entry(sDesc.id);
 						if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
 							continue;
 						}
@@ -296,7 +296,7 @@
 				var pDesc = {
 					id: pId,
 					jsb: provider.getJsb().$name,
-					entry: this.dataProviderEntries[pId].getLocalId(),
+					entry: this.dataProviderEntries[pId].getId(),
 					fields: this.dataProviderFields[pId],
 					options: provider.getOptions(),
 					position: this.dataProviderPositions[pId],
@@ -339,7 +339,7 @@
 						provider: {
 							id: this.materialization.tables[tId].dataProvider.getId(),
 							jsb: this.materialization.tables[tId].dataProvider.getJsb().$name,
-							entry: this.materialization.tables[tId].dataProviderEntry.getLocalId(),
+							entry: this.materialization.tables[tId].dataProviderEntry.getId(),
 							options: this.materialization.tables[tId].dataProvider.getOptions()
 						},
 						indexes: this.materialization.tables[tId].indexes || {}
@@ -375,7 +375,7 @@
 				snapshot.slices.push(sDesc);
 			}
 			
-			this.workspace.writeArtifactAsJson(this.getLocalId() + '.cube', snapshot);
+			this.storeArtifact('.cube', snapshot);
 			
 			this.fieldCount = Object.keys(this.fields).length;
 			this.sourceCount = Object.keys(this.dataProviders).length;
@@ -384,7 +384,7 @@
 			this.property('sources', this.sourceCount);
 			this.property('fields', this.fieldCount);
 			this.property('slices', this.sliceCount);
-			this.workspace.store();
+			this.getWorkspace().store();
 			
 			JSB.getLocker().unlock(mtxName);
 		},
@@ -409,7 +409,7 @@
 				throw new Error('Unable to find provider bean: ' + providerDesc.pType);
 			}
 			var ProviderCls = providerJsb.getClass();
-			var pId = this.getLocalId() + '|dp_' + JSB.generateUid();
+			var pId = this.getId() + '|dp_' + JSB.generateUid();
 			var provider = new ProviderCls(pId, providerEntry, this, providerDesc);
 			this.dataProviders[pId] = provider;
 			this.dataProviderEntries[pId] = providerEntry;
@@ -1011,7 +1011,7 @@
 				}
 			}
 			var sId = JSB.generateUid();
-			var slice = new Slice(sId, this.workspace, this, sName);
+			var slice = new Slice(sId, this.getWorkspace(), this, sName);
 
 			// add default fields or selected fields
 			if(selectedFields && Object.keys(selectedFields).length > 0){
@@ -1226,7 +1226,7 @@
 					var tIdx = 1;
 					for(var tId in materializationDesc.tables){
 						var fields = tableFieldMap[tId];
-						var suggestedName = 'cube_' + $this.getLocalId() + '_' + (materializationDesc.tables[tId].mode == 'union' ? ('u' + tIdx) : ('j' + tIdx) );
+						var suggestedName = 'cube_' + $this.getId() + '_' + (materializationDesc.tables[tId].mode == 'union' ? ('u' + tIdx) : ('j' + tIdx) );
 						tIdx++;
 /*						if(materializationDesc.tables[tId].mode != 'union'){
 							tIdx++;	
@@ -1396,7 +1396,7 @@
 							throw new Error('Unable to find provider bean: ' + providerDesc.pType);
 						}
 						var ProviderCls = providerJsb.getClass();
-						var pId = $this.getLocalId() + '|dp_' + JSB.generateUid();
+						var pId = $this.getId() + '|dp_' + JSB.generateUid();
 						materializationDesc.tables[tId].dataProvider = new ProviderCls(pId, source, $this, JSB.merge({},providerDesc,{mode:materializationDesc.tables[tId].mode}));
 						materializationDesc.tables[tId].dataProviderEntry = source;
 						var providerFields = materializationDesc.tables[tId].dataProvider.extractFields();
@@ -1550,7 +1550,7 @@
 								fStr += f;
 								indexDesc[f] = true;
 							}
-							var idxName = 'idx_' +  MD5.md5($this.getLocalId() + '_' + fStr);
+							var idxName = 'idx_' +  MD5.md5($this.getId() + '_' + fStr);
 							indexMap[idxName] = indexDesc;
 						} else if(fObj == '$filter') {
 							// parse filter
@@ -1569,7 +1569,7 @@
 								fStr += f;
 								indexDesc[f] = true;
 							}
-							var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + fStr);
+							var idxName = 'idx_' + MD5.md5($this.getId() + '_' + fStr);
 							indexMap[idxName] = indexDesc;
 						} else if(obj[fObj] && JSB.isObject(obj[fObj]) && Object.keys(obj[fObj]).length > 0){
 							var sMap = parseObject(obj[fObj]);
@@ -1610,7 +1610,7 @@
 					if(!matFields[f].binding || matFields[f].binding.length < 2){
 						continue;
 					}
-					var idxName = 'idx_' + MD5.md5($this.getLocalId() + '_' + f);
+					var idxName = 'idx_' + MD5.md5($this.getId() + '_' + f);
 					var indexDesc = {};
 					indexDesc[f] = true;
 					cubeIdxMap[idxName] = indexDesc;
@@ -1648,7 +1648,7 @@
 								}
 							}
 						}
-						var tableIdxName = 'idx_' +  MD5.md5($this.getLocalId() + '_' + tableIdxStr);
+						var tableIdxName = 'idx_' +  MD5.md5($this.getId() + '_' + tableIdxStr);
 						if(Object.keys(tableIdxDesc).length == 0){
 							continue;
 						}

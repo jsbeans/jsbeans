@@ -6,7 +6,7 @@
 		$constructor: function(entry, opts){
 			var self = this;
 			opts = opts || {};
-			opts.editable = false;
+			//opts.editable = false;
 			$base(entry, opts);
 			this.addClass('sliceRenderer');
 			this.loadCss('SliceRenderer.css');
@@ -27,7 +27,7 @@
 		},
 		
 		getCube: function(entry){
-			return entry.workspace.entry(entry.parent);
+			return entry.getWorkspace().entry(entry.getParentId());
 		}
 	}
 }

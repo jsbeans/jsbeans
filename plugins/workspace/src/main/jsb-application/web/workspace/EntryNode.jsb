@@ -51,7 +51,10 @@
 						tooltip: 'Изменить название',
 						onClick: function(evt){
 							evt.stopPropagation();
-							self.renderer.beginEdit();
+							JSB.defer(function(){
+								self.renderer.beginEdit();	
+							}, 10);
+							
 						}
 					});
 					$this.toolbox.append(editBtn.getElement());

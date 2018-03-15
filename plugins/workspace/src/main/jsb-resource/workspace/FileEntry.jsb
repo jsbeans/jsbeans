@@ -20,14 +20,14 @@
 				}
 				if(opts.fileData){
 					// store artifact
-					this.workspace.writeArtifactAsBinary(this.getLocalId() + '.data', opts.fileData);
+					this.storeArtifact('.data', opts.fileData);
 				}
 			}
 		},
 
 		destroy: function(){
-			if(this.workspace.existsArtifact(this.getLocalId() + '.data')){
-				this.workspace.removeArtifact(this.getLocalId() + '.data');
+			if(this.existsArtifact('.data')){
+				this.removeArtifact('.data');
 			}
 			$base();
 		},

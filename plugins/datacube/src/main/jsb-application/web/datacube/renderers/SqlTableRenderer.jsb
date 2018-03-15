@@ -16,7 +16,7 @@
 					$this.addClass('view');
 				}
 				
-				if(opts.showSource && e.parent){
+				if(opts.showSource && e.getParentId()){
 					$this.addClass('showSource');
 					$this.server().getSource(e, function(sourceEntry){
 						$this.append('<div class="leftParen">(</div>');
@@ -36,7 +36,7 @@
 		},
 		
 		getSource: function(entry){
-			return entry.workspace.entry(entry.parent);
+			return entry.getWorkspace().entry(entry.getParentId());
 		}
 	}
 }

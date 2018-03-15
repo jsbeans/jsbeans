@@ -3,13 +3,8 @@
 	$parent: 'JSB.Workspace.Entry',
 	
 	cube: null,
-	name: null,
 	query: {},
 	queryParams: {},
-	
-	getName: function(){
-		return this.name;
-	},
 	
 	getQuery: function(){
 		return this.query;
@@ -36,15 +31,13 @@
 			$base(id, workspace);
 			if(cube && name){
 				this.cube = cube;
-				this.name = name;
-				this.property('cube', this.cube.getLocalId());
-				this.title(this.name);
+				this.property('cube', this.cube.getId());
+				this.setName(name);
 				this.property('query', this.query);
 			} else {
 				if(this.property('cube')){
-					this.cube = this.workspace.entry(this.property('cube'));
+					this.cube = this.getWorkspace().entry(this.property('cube'));
 				}
-				this.name = this.title();
 				if(this.property('query')){
 					this.query = this.property('query');
 				}
@@ -53,11 +46,7 @@
 		},
 		
 		setName: function(name){
-		    if(this.name === name){
-		        return;
-		    }
-			this.name = name;
-			this.title(this.name);
+			$base(name);
 			$this.publish('DataCube.Model.Slice.renameSlice', { name: name }, {session: true});
 			this.doSync();
 		},
@@ -77,9 +66,8 @@
 		
 		updateSettings: function(desc){
 			$this.getCube().load();
-			this.name = desc.name;
 			this.query = desc.query;
-			this.title(this.name);
+			this.setName(desc.name);
 			this.property('query', this.query);
 			this.invalidate();
 			this.cube.store();

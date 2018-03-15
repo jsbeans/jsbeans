@@ -56,8 +56,8 @@
 		fillSettings: function(){
 			var entry = this.node.getEntry();
 			$this.ignoreHandlers = true;
-			var wid = entry.workspace.getLocalId();
-			var eid = entry.getLocalId();
+			var wid = entry.getWorkspace().getId();
+			var eid = entry.getId();
 			
 			// fill id
 			this.find('.workspaceId > .editor').jsb().setData(wid);

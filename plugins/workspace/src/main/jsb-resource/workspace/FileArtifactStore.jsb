@@ -7,6 +7,10 @@
 			this.options = opts;
 		},
 		
+		fixFileName: function(fn){
+			return fn.replace(/\|/g,'_');
+		},
+		
 		getArtifactDir: function(entry){
 			var eStore = entry.getEntryStore();
 			var eDir = null;
@@ -16,7 +20,7 @@
 				//TODO:
 				throw new Error('not implemented');
 			}
-			eDir = FileSystem.join(eDir, entry.getId());
+			eDir = FileSystem.join(eDir, this.fixFileName(entry.getId()));
 			return eDir;
 		},
 		

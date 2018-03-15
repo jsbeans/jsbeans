@@ -17,7 +17,7 @@
 			if(opts){
 				this.descriptor = opts;
 				this.property('descriptor', this.descriptor);
-				this.title(this.descriptor.schema + '.' + this.descriptor.name);
+				this.setName(this.descriptor.schema + '.' + this.descriptor.name);
 				$this.publish('DataCube.Model.SqlTable.updated');
 			} else {
 				this.descriptor = this.property('descriptor');
@@ -34,7 +34,7 @@
 		updateDescriptor: function(desc){
 			this.descriptor = desc;
 			this.property('descriptor', this.descriptor);
-			this.title(this.descriptor.schema + '.' + this.descriptor.name);
+			this.setName(this.descriptor.schema + '.' + this.descriptor.name);
 			this.doSync();
 			$this.publish('DataCube.Model.SqlTable.updated');
 		},

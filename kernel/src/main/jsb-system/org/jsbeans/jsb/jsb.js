@@ -5953,6 +5953,7 @@ JSB({
 					try {
 						newKey = decodeURIComponent(key);
 					}catch(e){
+						debugger;
 						newKey = key;
 					}
 					if(newKey != key){
@@ -5965,7 +5966,9 @@ JSB({
 					} else if(typeof(obj[key]) === 'string'){
 						try {
 							obj[key] = decodeURIComponent(obj[key]);
-						}catch(e){}
+						}catch(e){
+							debugger;
+						}
 					}
 				}
 			} else if(typeof(obj) === 'array') {
@@ -5975,7 +5978,9 @@ JSB({
 					} else if(typeof(obj[i]) === 'string'){
 						try {
 							obj[i] = decodeURIComponent(obj[i]);
-						}catch(e){}
+						}catch(e){
+							debugger;
+						}
 					}
 					
 				}

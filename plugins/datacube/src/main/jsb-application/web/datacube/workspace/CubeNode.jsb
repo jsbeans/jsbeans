@@ -43,13 +43,12 @@
 		},
 		
 		createSlice: function(){
-			$this.explorer.expandNode($this, function(){
+			$this.explorer.expandNode($this.treeNode.key, function(){
 				$this.getEntry().server().addSlice(function(slice){
 					var node = $this.explorer.addTreeItem({
                         entry: slice,
                         hasEntryChildren: 0,
-                        name: slice.getName(),
-                        type: 'entry'
+                        name: slice.getName()
                     }, $this.treeNode.key, false, {collapsed:true});
 					$this.explorer.publish('JSB.Workspace.nodeOpen', node);
 				});

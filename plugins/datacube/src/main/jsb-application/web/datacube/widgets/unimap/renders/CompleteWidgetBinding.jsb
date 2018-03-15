@@ -117,8 +117,8 @@
 
 	    setValueFromEntry: function(entry){
 	        var val = {
-                widgetWsid: entry.workspace.getLocalId(),
-                widgetWid: entry.getLocalId(),
+                widgetWsid: entry.getWorkspace().getId(),
+                widgetWid: entry.getId(),
                 name: entry.name
             };
 

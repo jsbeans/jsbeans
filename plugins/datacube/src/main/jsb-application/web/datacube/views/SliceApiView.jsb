@@ -178,8 +178,8 @@
 		updateRequest: function(){
 			// construct slice request
 			var entry = this.node.getEntry();
-			var wid = entry.workspace.getLocalId();
-			var eid = entry.getLocalId();
+			var wid = entry.getWorkspace().getId();
+			var eid = entry.getId();
 			
 			var query = {};
 			if(this.isCube){
@@ -238,8 +238,8 @@
 				limit: 10
 			};
 			$this.ignoreHandlers = true;
-			var wid = entry.workspace.getLocalId();
-			var eid = entry.getLocalId();
+			var wid = entry.getWorkspace().getId();
+			var eid = entry.getId();
 			
 			// fill id
 			this.find('.workspaceId > .editor').jsb().setData(wid);

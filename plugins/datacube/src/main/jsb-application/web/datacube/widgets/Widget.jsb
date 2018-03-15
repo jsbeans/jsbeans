@@ -504,7 +504,7 @@
 
 		fetch: function(sourceId, dashboard, opts){
 			var batchSize = opts.batchSize || 50;
-			var source = dashboard.workspace.entry(sourceId);
+			var source = dashboard.getWorkspace().entry(sourceId);
 			var data = [];
 			if(opts.reset){
 				this.needBreak = true;
@@ -764,7 +764,7 @@
 			var extQuery = (opts && opts.extQuery) || {};
 			var wrapQuery = (opts && opts.wrapQuery) || {};
 			var batchSize = opts.batchSize || 50;
-			var source = dashboard.workspace.entry(sourceId);
+			var source = dashboard.getWorkspace().entry(sourceId);
 			var data = [];
 			if(opts.reset){
 				this.needBreak = true;

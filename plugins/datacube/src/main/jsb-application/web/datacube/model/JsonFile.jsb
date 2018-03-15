@@ -26,7 +26,7 @@
 			$base(id, workspace);
 			if(opts){
 				if(opts.fileName){
-					this.title(opts.fileName);
+					this.setName(opts.fileName);
 				}
 				if(opts.fileData){
 					// try to parse JSON
@@ -68,7 +68,7 @@
 					}
 					this.property('records', this.records);
 					// store artifact
-					this.workspace.writeArtifactAsJson(this.getLocalId() + '.data', json);
+					this.storeArtifact('.data', json);
 				}
 			} else {
 				this.records = this.property('records');
@@ -76,7 +76,7 @@
 		},
 		
 		read: function(){
-			return this.workspace.readArtifactAsJson(this.getLocalId() + '.data');
+			return this.loadArtifact('.data');
 		}
 
 	}

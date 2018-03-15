@@ -149,7 +149,7 @@
 							for(var i = 0; i < lEntry.widgets.length; i++){
 								var wClientId = lEntry.widgets[i];
 								if(wClientId && $this.wrappers[wClientId]){
-									var wServerId = $this.wrappers[wClientId].getWidgetEntry().getLocalId();
+									var wServerId = $this.wrappers[wClientId].getWidgetEntry().getId();
 									nWidgets.push(wServerId);
 								}
 							}

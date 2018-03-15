@@ -375,7 +375,7 @@
 							}],
 							callback: function(bDel){
 								if(bDel){
-									$this.getDashboard().server().removeWidgetWrapper($this.getWidgetEntry().getLocalId(), function(res, fail){
+									$this.getDashboard().server().removeWidgetWrapper($this.getWidgetEntry().getId(), function(res, fail){
 										if(res){
 											// remove from dashboard container
 											var container = $this.getContainer();
@@ -411,12 +411,7 @@
 		$require: ['JSB.Workspace.WorkspaceController'],
 
 		getWidgetEntry: function(wsId, wId){
-			var wm = WorkspaceController.ensureManager('datacube');
-			if(!wm){
-				throw new Error('Internal error: missing WorkspaceManager for datacube');
-			}
-
-			var w = wm.workspace(wsId);
+			var w = WorkspaceController.getWorkspace(wsId);
 			if(!w){
 				throw new Error('Unable to find workspace with id: ' + wsId);
 			}

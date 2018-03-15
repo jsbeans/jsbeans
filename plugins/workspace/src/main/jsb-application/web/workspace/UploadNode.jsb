@@ -84,7 +84,7 @@
 				var reader = new FileReader();
 				reader.onload = function(){
 					self.options.workspace.server().uploadFile({
-						category: self.options.node ? self.options.w.constructPathFromKey(self.options.node.treeNode.key) : '',
+						parent: self.options.node ? self.options.node.getEntry().getId() : null,
 						name: self.options.file.name,
 						content: reader.result
 					}, function(ontoDesc){

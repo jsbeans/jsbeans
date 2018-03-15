@@ -32,7 +32,7 @@
                     $this.savedMessage.fadeIn(1600, "linear", function(){
                         $this.savedMessage.fadeOut(1600, "linear");
                     });
-                    $this.slice.cube.server().updateSliceSettings($this.slice.getLocalId(), {
+                    $this.slice.cube.server().updateSliceSettings($this.slice.getId(), {
                         name: $this.titleEditor.getData().getValue(),
                         query: $this.query,
                         queryParams: {}

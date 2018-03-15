@@ -100,7 +100,7 @@
                 $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
             });
 
-            this.titleEditor.setData(this.entry.name);
+            this.titleEditor.setData(this.entry.getName());
 		},
 
 		applySettings: function(){

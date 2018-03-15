@@ -337,9 +337,9 @@
 
 			return {
 				type: 'array',
-				source: source.getLocalId(),
+				source: source.getId(),
 				arrayType: recordTypes,
-				workspaceId: source.workspace.getLocalId()
+				workspaceId: source.getWorkspace().getId()
 			}
 	    },
 
@@ -348,7 +348,7 @@
                 throw new Error('Invalid datascheme passed');
             }
 
-            return WorkspaceController.ensureManager('datacube').workspace(ds.workspaceId).entry(ds.source);
+            return WorkspaceController.getWorkspace(ds.workspaceId).entry(ds.source);
         }
 	}
 }

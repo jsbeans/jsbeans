@@ -190,7 +190,7 @@
 
         convert: function(widgetName, values){
             if(!this._workId){
-                var wIt = WorkspaceController.ensureManager('datacube').workspaceIds();
+                var wIt = WorkspaceController.workspaceIds();
 
                 this._workId = wIt.next();
             }

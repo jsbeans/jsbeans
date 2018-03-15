@@ -32,13 +32,13 @@
 		
 		updateSettings: function(settings){
 			this.settings = JSB.merge({
-				name: $this.getLocalId(),
+				name: $this.getId(),
 				type: 'JSB.Store.Sql.SQLStore',
 				url: '',
 				properties: {}
 			}, settings);
 			this.property('settings', this.settings);
-			this.workspace.store();
+			this.getWorkspace().store();
 			this.publish('DataCube.Model.SqlSource.updateSettings');
 		},
 		
@@ -75,7 +75,7 @@
 				var sDesc = schema[sName];
 				for(var tName in sDesc.tables){
 					var tDesc = sDesc.tables[tName];
-					var tId = this.getLocalId() + '|' + sName + '|' + tName;
+					var tId = this.getId() + '|' + sName + '|' + tName;
 					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
 					if(existedTables[tId]){
 						// already exists
@@ -83,7 +83,7 @@
 						delete existedTables[tId];
 						continue;
 					}
-					var tEntry = new SqlTable(tId, this.workspace, tDesc);
+					var tEntry = new SqlTable(tId, this.getWorkspace(), tDesc);
 					this.addChildEntry(tEntry);
 				}
 			}
@@ -116,7 +116,7 @@
 			}
 			this.details = details;
 			this.property('details', this.details);
-			this.workspace.store();
+			this.getWorkspace().store();
 			this.doSync();
 			
 			return details;

@@ -3,15 +3,10 @@
 	$parent: 'JSB.Workspace.Entry',
 	
 	dashboard: null,
-	name: null,
 	wType: null,
 	values: null,
 	sourceMap: null,
 	sources: {},
-	
-	getName: function(){
-		return this.name;
-	},
 	
 	getDashboard: function(){
 		return this.dashboard;
@@ -75,9 +70,8 @@
 
 			if(dashboard){
 				this.dashboard = dashboard;
-				this.name = name;
-				this.property('dashboard', this.dashboard.getLocalId());
-				this.title(this.name);
+				this.property('dashboard', this.dashboard.getId());
+				this.setName(name);
 				this.wType = wType;
 				this.property('wType', wType);
 
@@ -96,10 +90,8 @@
 			} else {
 				var bNeedSave = false;
 				if(this.property('dashboard')){
-					this.dashboard = this.workspace.entry(this.property('dashboard'));
+					this.dashboard = this.getWorkspace().entry(this.property('dashboard'));
 				}
-
-				this.name = this.title();
 
 				if(this.property('wType')){
 					this.wType = this.property('wType');
@@ -122,7 +114,7 @@
 				}
 				
 				if(bNeedSave){
-					this.workspace.store();
+					this.getWorkspace().store();
 				}
 			}
 		},
@@ -137,8 +129,7 @@
 
 		setName: function(name){
 		    this.getDashboard().load();
-			this.name = name;
-			this.title(this.name);
+			$base(name);
 			this.getDashboard().store();
 			this.doSync();
 		},
@@ -151,8 +142,7 @@
 			this.property('sourcesIds', opts.sourcesIds);
 			this.property('schemeVersion', 1.0);
 
-			this.name = opts.name;
-			this.title(this.name);
+			this.setName(opts.name);
 
 			//this.setName(opts.name);
 			
@@ -172,13 +162,13 @@
 			if(!ds || !ds.source){
 				throw new Error('Invalid datascheme passed');
 			}
-			return this.workspace.entry(ds.source);
+			return this.getWorkspace().entry(ds.source);
 		},
 		
 		updateSources: function(){
 			this.sources = {};
 			for(var sId in this.sourceMap){
-				this.sources[sId] = this.workspace.entry(sId);
+				this.sources[sId] = this.getWorkspace().entry(sId);
 			}
 		},
 		
@@ -190,7 +180,7 @@
 			var sourceMap = {};
 
 			for(var i = 0; i < this.sourcesIds.length; i++){
-			    var source = this.workspace.entry(this.sourcesIds[i]);
+			    var source = this.getWorkspace().entry(this.sourcesIds[i]);
                 sourceMap[this.sourcesIds[i]] = [];
 
                 if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
@@ -299,7 +289,7 @@
 			iterator.close();
 			return {
 				type: 'array',
-				source: source.getLocalId(),
+				source: source.getId(),
 				arrayType: recordTypes
 			}
 		}

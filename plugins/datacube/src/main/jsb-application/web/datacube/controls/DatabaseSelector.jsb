@@ -133,7 +133,7 @@
 				if(!JSB.isInstanceOf(entry, 'DataCube.Model.DatabaseSource')){
 					continue;
 				}
-				dbs[entry.getLocalId()] = entry;
+				dbs[entry.getId()] = entry;
 			}
 			return dbs;
 		}
