@@ -154,7 +154,7 @@
 				$this.query = JSB.clone($this.slice.getQuery());
 				$this.queryEditor.setOption('slice', $this.slice);
 				$this.queryEditor.setOption('cubeFields', fields);
-				
+
 				$this.slice.server().getCubeSlices(function(slices){
 					$this.queryEditor.setOption('cubeSlices', slices);
 					

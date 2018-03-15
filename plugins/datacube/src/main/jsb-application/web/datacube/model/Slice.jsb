@@ -159,8 +159,12 @@
 			$this.getCube().load();
 			var fields = $this.getCube().getManagedFields();
 			var fMap = {};
+
 			for(var fName in fields){
-				fMap[fName] = fields[fName].type;
+				fMap[fName] = {
+				    comment: fields[fName].comment,
+				    type: fields[fName].type
+				}
 			}
 			
 			return fMap;

@@ -124,6 +124,7 @@
 							type: fDesc.type,
 							link: fDesc.link,
 							order: fDesc.order,
+							comment: fDesc.comment,
 							binding: []
 						};
 						for(var j = 0; j < fDesc.binding.length; j++){
@@ -311,6 +312,7 @@
 					type: this.fields[fName].type,
 					link: this.fields[fName].link,
 					order: this.fields[fName].order,
+					comment: this.fields[fName].comment,
 					binding: []
 				};
 				for(var i = 0; i < this.fields[fName].binding.length; i++){
@@ -835,6 +837,7 @@
 			}
 			var order = Object.keys(this.fields).length;
 			this.fields[nameCandidate] = {
+			    comment: fMap[pField].comment,
 				field: nameCandidate,
 				type: cType,
 				binding: [],

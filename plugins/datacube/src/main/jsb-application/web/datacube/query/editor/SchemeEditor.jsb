@@ -492,7 +492,7 @@
 		},
 		
 		getDefaultAggregateForCubeField: function(cubeField){
-			var fType = $this.options.cubeFields[cubeField];
+			var fType = $this.options.cubeFields[cubeField].type;
 			if(fType){
 				fType = fType.toLowerCase();
 				if(fType == 'string' || fType == 'varchar' || fType == 'nvarchar' || fType == 'text'){
