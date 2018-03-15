@@ -703,9 +703,7 @@
 					return;
 				}
 				$this._isReady = false;
-				JSB.getLogger().debug('loadNodes: 1');
 				$this.server().loadNodes(itemDesc.entry, function(nTree){
-					JSB.getLogger().debug('loadNodes: 2');
 					var chArr = Object.keys(nTree);
 					chArr.sort(function(a, b){
 						return nTree[a].name.localeCompare(nTree[b].name);
@@ -716,7 +714,6 @@
 						var chDesc = nTree[eId];
 						$this.addTreeItem(chDesc, parentKey, false, {collapsed:true});
 					}
-					JSB.getLogger().debug('loadNodes: 3');
 
 					$this._isReady = true;
 					treeNode.obj.setTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded');
@@ -1284,10 +1281,8 @@
 		},
 		
 		loadNodes: function(pEntry, opts){
-			JSB.getLogger().debug('loadNodes: 1');
 			pEntry = pEntry || this.currentWorkspace;
 			var children = pEntry.getChildren();
-			JSB.getLogger().debug('loadNodes: 2');
 			var nTree = {};
 			for(var chId in children){
 				var chEntry = children[chId];
@@ -1298,7 +1293,6 @@
 					hasEntryChildren: chEntry.children().count() > 0
 				}
 			}
-			JSB.getLogger().debug('loadNodes: 3');
 			return nTree;
 		}
 		
