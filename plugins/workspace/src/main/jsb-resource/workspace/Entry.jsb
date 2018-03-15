@@ -26,7 +26,24 @@
 		return this._workspace || this;
 	},
 	
+	getChildCount: function(){
+		return this._childCount;
+	},
+	
+	getArtifactCount: function(){
+		return this._artifactCount;
+	},
+	
+	getEntryProps: function(){
+		return this._props;
+	},
+	
 	$client: {
+		destroy: function(){
+			$this.publish('JSB.Workspace.Entry.destroyed');
+			$base();
+		},
+		
 		onAfterSync: function(syncInfo){
 			$this.publish('JSB.Workspace.Entry.updated', syncInfo);
 		}
@@ -68,9 +85,6 @@
 			return this._eDoc;
 		},
 		
-		getEntryProps: function(){
-			return this._props;
-		},
 		
 		_markStored: function(bStored){
 			this._stored = bStored;
@@ -291,9 +305,8 @@
 			
 			if(p){
 				p.removeChildEntry(entry);
-			} else {
-				entry.getWorkspace().removeChildEntry(entry);
 			}
+			entry.getWorkspace().removeChildEntry(entry);
 			
 			var mtx = 'JSB.Workspace.Entry.children.' + this.getId();
 			JSB.getLocker().lock(mtx);

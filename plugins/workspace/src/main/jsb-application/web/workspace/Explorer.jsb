@@ -200,8 +200,10 @@
 			});
 			this.append(this.tree);
 			
-			// file upload
+			// replace container
 			this.installDropContainer(null);
+			
+			// file upload
 			this.installUploadContainer(null);
 
 			$this.toolbar.getElement().resize(function(){
@@ -212,45 +214,11 @@
 				}, 100, 'explorerToolbarResize' + $this.getId());
 			});
 
-/*
-			this.subscribe('JSB.Workspace.Entry.removeChild', {session: true}, function(sender, msg, entry){
-			    if(entry.workspace !== $this.currentWorkspace) return;
-
-			    var nodeDesc = $this.wTreeMap[entry.localId];
-			    if(nodeDesc){
-			        $this.removeTreeItem(nodeDesc.key);
-			        delete $this.wTreeMap[entry.localId];
-			    }
-
-			    var parentDesc = $this.wTreeMap[entry.parent];
-			    if(parentDesc){
-			        var parentChilds = $this.tree.getChildNodes(parentDesc.key);
-			        if(parentChilds.length === 1 && parentChilds[0].indexOf('_dummy') > -1){
-			            $this.tree.deleteNode(parentChilds[0]);
-			        }
-			    }
-			});
-
-            this.subscribe('JSB.Workspace.Entry.addChild', {session: true}, function(sender, msg, entry){
-                if(entry.workspace !== $this.currentWorkspace) return;
-
-                var parentKey = $this.wTreeMap[entry.parent] ? $this.wTreeMap[entry.parent].key : null;
-
-                if(!parentKey || !$this.tree.isDynamicChildren(parentKey)){
-                    $this.addTreeItem({
-                        entry: entry,
-                        hasEntryChildren: Object.keys(entry.children).length,
-                        name: entry.name,
-                        type: 'entry'
-                    }, parentKey, false, {collapsed:true});
-                }
-            });
-*/
 			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
 			    if(node.workspace !== $this.currentWorkspace) return;
 
-			    var nodeKey = $this.wTreeMap[node.descriptor.entry.localId] ? $this.wTreeMap[node.descriptor.entry.localId].key : null;
-
+			    var nodeKey = $this.wTreeMap[node.descriptor.entry.getId()] ? $this.wTreeMap[node.descriptor.entry.getId()].key : null;
+/*
 			    var parentKeys = {};
 			    function findParent(id){
 			        if(!id) return;
@@ -267,9 +235,9 @@
 			            $this.tree.collapseNode(i);
 			        }
 			    }
-
+*/
 			    if(!nodeKey) return;
-			    if(Object.keys(node.descriptor.entry.children).length > 0){
+			    if(node.getEntry().getChildCount() > 0){
 			        $this.tree.expandNode(nodeKey);
 			    }
 			    $this.tree.selectItem(nodeKey);
@@ -547,11 +515,13 @@
 							if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 								continue;
 							}
+/*							
 							if(JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
 								if(obj.getEntry().getParentId()){
 									continue;	// node has a fixed parent - skipping
 								}
 							}
+*/							
 							nodes.push(obj);
 						}
 						// check for dragging items
@@ -707,9 +677,11 @@
 		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
 		    var key = JSB().generateUid();
 			var node = null;
-			if(this.wTreeMap[itemDesc.entry.getId()]){
+/*			
+			if(this.wTreeMap[itemDesc.entry.getId()] && !bReplace){
 				return this.wTreeMap[itemDesc.entry.getId()].node;
 			}
+*/			
 			var nodeSlice = this.explorerNodeTypes;
 			var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
 			if(!nodeType || !JSB.get(nodeType)){
@@ -752,7 +724,7 @@
 					for(var i = 0; i < chArr.length; i++){
 						var eId = chArr[i];
 						var chDesc = nTree[eId];
-						$this.addTreeItem(chDesc, parentKey);
+						$this.addTreeItem(chDesc, parentKey, false, {collapsed:true});
 					}
 					$this._isReady = true;
 					treeNode.obj.setTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded');
@@ -777,8 +749,7 @@
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
 					onCollapse: onNodeCollapse,
-					cssClass: itemDesc.type,
-					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
+					collapsed: treeNodeOpts && treeNodeOpts.collapsed
 				}, parent);
 			} else {
 				curTreeNode = $this.tree.addNode({
@@ -788,11 +759,15 @@
 					childrenLoadingText: 'Загрузка',
 					onExpand: onNodeExpand,
 					onCollapse: onNodeCollapse,
-					cssClass: itemDesc.type,
-					collapsed: (itemDesc.type == 'entry') || (treeNodeOpts && treeNodeOpts.collapsed)
+					collapsed: treeNodeOpts && treeNodeOpts.collapsed
 				}, parent);
 			}
 			node.treeNode = curTreeNode;
+			
+			if(JSB.isInstanceOf(node, 'JSB.Workspace.FolderNode')){
+				this.installDropContainer(node);
+				this.installUploadContainer(node);
+			}
 			
 			if(node.options.allowOpen){
 				node.getElement().dblclick(function(){
@@ -887,13 +862,17 @@
 			return node;
 		},
 		
-		expandNode: function(node, callback){
-			var key = node.treeNode.key;
-			$this.tree.expandNode(key);
-			if($this.tree.isDynamicChildren(key)){
-				node.ensureTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded', function(){
+		expandNode: function(key, callback){
+			if(key){
+				$this.tree.expandNode(key);
+				if($this.tree.isDynamicChildren(key)){
+					var node = $this.tree.get(key).obj;
+					node.ensureTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded', function(){
+						callback.call($this);
+					});
+				} else {
 					callback.call($this);
-				});
+				}
 			} else {
 				callback.call($this);
 			}
@@ -927,33 +906,15 @@
 		},
 		
 		doMove: function(targetNode, sourceNodes){
-			function prepareNode(node){
-				if(!node || JSB().isInstanceOf(node, 'JSB.Workspace.FolderNode')){
-					return {
-						type: 'node',
-						path: node ? $this.constructPathFromKey(node.treeNode.key) : '',
-						name: node ? node.getName() : ''
-					}
-				} else if(node.descriptor.type == 'entry' && node.descriptor.entry ) return {
-						type: node.descriptor.type,
-						entry: node.descriptor.entry,
-						id: node.descriptor.id,
-						path: $this.constructPathFromKey(node.treeNode.parent)
-					}
-				return null;
-			}
-			var targetObj = prepareNode(targetNode);
-			var sourceArr = [];
-			for(var i in sourceNodes){
-				sourceArr.push(prepareNode(sourceNodes[i]));
+			var targetId = targetNode ? targetNode.getEntry().getId() : null;
+			var sourceIds = [];
+			for(var i = 0; i < sourceNodes.length; i++){
+				sourceIds.push(sourceNodes[i].getEntry().getId());
 			}
 			
-			this.server().moveItems(targetObj, sourceArr, function(res){
-				if(res){
-					for(var i in sourceNodes){
-						$this.tree.moveNode(sourceNodes[i].treeNode.key, targetNode ? targetNode.treeNode.key:null);
-						$this.publish('JSB.Workspace.moveEntry', sourceNodes[i]);
-					}
+			this.server().moveItems(targetId, sourceIds, function(res){
+				if(targetNode){
+					$this.tree.expandNode(targetNode.treeNode.key);
 				}
 			});
 		},
@@ -971,7 +932,6 @@
 					}
 				} else if(JSB().isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					batch.push({
-						entry: node.getEntry(),
 						id: node.getEntry().getId(),
 						key: sel[i].key
 					});
@@ -979,35 +939,50 @@
 			}
 			this.server().removeItems(batch, function(removed){
 				for(var i = 0; i < removed.length; i++){
-					$this.tree.deleteNode(removed[i], function(itemObj){
-						var node = itemObj.obj;
-						if(JSB().isInstanceOf(node, 'JSB.Workspace.EntryNode')){
-							node.getEntry().destroy();
-							$this.publish("JSB.Workspace.deleteNode");
-						}
-					});
+					if($this.tree.get(removed[i])){
+						$this.tree.deleteNode(removed[i]);
+					}
 				}
 			});
 		},
 		
 		synchronizeNodeChildren: function(pKey){
+			if(this.ignoreSync){
+				return;
+			}
 			var pEntry = this.currentWorkspace;
 			var treeNode = null;
 			if(pKey){
 				treeNode = this.tree.get(pKey).obj;
 				pEntry = treeNode.getEntry();
+				
+				if(this.tree.isDynamicChildren(pKey) && pEntry.getChildCount() > 0){
+					return;
+				}
+				
+				if((!this.tree.isDynamicChildren(pKey) && this.tree.getChildNodes(pKey).length == 0 && pEntry.getChildCount() > 0) || 
+					(this.tree.isDynamicChildren(pKey) && pEntry.getChildCount() == 0)){
+					// change dynamic node type
+					this.addTreeItem({
+						entry: pEntry,
+						name: pEntry.getName(),
+						hasEntryChildren: pEntry.getChildCount() > 0
+					}, pKey, true, {collapsed:true});
+					return;
+				}
 			}
 			
-			// collect current tree children
-			var treeChildren = {};
-			var chArr = this.tree.getChildNodes(pKey);
-			for(var i = 0; i < chArr.length; i++){
-				var e = this.tree.get(chArr[i]).obj.getEntry();
-				treeChildren[e.getId()] = chArr[i];
-			}
 			
 			// load actual children
 			this.server().loadNodes(pEntry, function(nTree){
+				// collect current tree children
+				var treeChildren = {};
+				var chArr = $this.tree.getChildNodes(pKey);
+				for(var i = 0; i < chArr.length; i++){
+					var e = $this.tree.get(chArr[i]).obj.getEntry();
+					treeChildren[e.getId()] = chArr[i];
+				}
+
 				// remove missing
 				for(var eId in treeChildren){
 					if(!nTree[eId]){
@@ -1016,10 +991,15 @@
 				}
 				
 				// add new
+				var bNew = false;
 				for(var eId in nTree){
 					if(!treeChildren[eId]){
-						$this.addTreeItem(nTree[eId], pKey);
+						$this.addTreeItem(nTree[eId], pKey, false, {collapsed:true});
+						bNew = true;
 					}
+				}
+				if(bNew){
+					$this.sort();
 				}
 				
 			})
@@ -1076,29 +1056,36 @@
 					}
 				}
 			}
-			
-			$this.server().createNewEntry(eType, opts, prefixName, parentEntry, function(desc){
-				if(!desc){
-					// internal error: folder already exists
-					return;
-				}
-				var node = $this.addTreeItem(desc, parentKey);
-				if(!node){
-					return;
-				}
-				JSB().deferUntil(function(){
-					if(node.options.allowOpen){
-						$this.publish('JSB.Workspace.nodeOpen', node);
+			$this.ignoreSync = true;
+			$this.expandNode(parentKey, function(){
+				$this.server().createNewEntry(eType, opts, prefixName, parentEntry, function(desc){
+					if(!desc){
+						// internal error: folder already exists
+						$this.ignoreSync = false;
+						return;
 					}
-					if(node.renderer && node.renderer.editor){
-						node.renderer.editor.beginEdit();	
+					var node = $this.addTreeItem(desc, parentKey);
+					if(parentKey){
+						$this.tree.expandNode(parentKey);
 					}
-					
-				}, function(){
-					return node.getElement().width() > 0 && node.getElement().height() > 0 && node.renderer;
+					$this.sort();
+					$this.ignoreSync = false;
+					if(!node){
+						return;
+					}
+					JSB().deferUntil(function(){
+						$this.tree.scrollTo(node.treeNode.key);
+						if(node.options.allowOpen){
+							$this.publish('JSB.Workspace.nodeOpen', node);
+						}
+						if(node.renderer && node.renderer.editor){
+							node.renderer.editor.beginEdit();	
+						}
+						
+					}, function(){
+						return node.getElement().width() > 0 && node.getElement().height() > 0 && node.renderer;
+					});
 				});
-				
-				$this.sort();
 			});
 
 /*			
@@ -1217,27 +1204,48 @@
 			this.currentWorkspace.store();
 		},
 		
-		moveItems: function(target, sources){
-			return this.currentWorkspace.moveItems(target, sources);
+		moveItems: function(tId, sources){
+			var bNeedStore = false;
+			for(var i = 0; i < sources.length; i++){
+				var sId = sources[i];
+				if(sId == tId){
+					continue;
+				}
+				
+				// check for cycle
+				var curEntry = tId ? this.currentWorkspace.entry(tId) : this.currentWorkspace;
+				var bCycle = false;
+				while(curEntry && curEntry.getParentId()){
+					if(curEntry.getParentId() == sId){
+						bCycle = true;
+						break;
+					}
+					curEntry = this.currentWorkspace.entry(curEntry.getParentId());
+				}
+				
+				if(bCycle){
+					continue;
+				}
+				
+				var target = tId ? this.currentWorkspace.entry(tId) : this.currentWorkspace;
+				target.addChildEntry(this.currentWorkspace.entry(sId));
+				bNeedStore = true;
+			}
+			if(bNeedStore){
+				this.currentWorkspace.store();
+			}
 		},
 		
 		removeItems: function(items){
 			var removed = [];
 			// remove entries
-			for(var i in items){
-				if(items[i].type == 'entry' && items[i].entry){
-					if(this.currentWorkspace.removeEntry(items[i].entry.getLocalId())){
-						removed.push(items[i].key);
-					}
-				}
-			}
-			
-			// remove categories
-			for(var i in items){
-				if(items[i].type == 'node'){
-					if(this.currentWorkspace.removeCategory(items[i].path)){
-						removed.push(items[i].key);
-					}
+			for(var i = 0; i < items.length; i++){
+				var entry = this.currentWorkspace.entry(items[i].id);
+				try {
+					entry.remove();
+					removed.push(items[i].key);
+				} catch(e){
+					//TODO:
 				}
 			}
 			

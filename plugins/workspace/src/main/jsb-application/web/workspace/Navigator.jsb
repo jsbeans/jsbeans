@@ -29,12 +29,11 @@
 				$this.setCurrentNode(node);
 			});
 
-            this.subscribe('JSB.Workspace.deleteNode', function(sender){
-                if(!$jsb.isInstanceOf(sender, 'JSB.Workspace.Explorer')){
-                    return;
-                }
-                $this.setCurrentNode(null);
-                $this.publish('JSB.Workspace.nodeOpen', null);
+            this.subscribe('JSB.Workspace.Entry.destroyed', function(sender){
+            	if($this.currentNode && $this.currentNode.getEntry() == sender){
+                    $this.setCurrentNode(null);
+                    $this.publish('JSB.Workspace.nodeOpen', null);
+            	}
             });
 			
 			this.subscribe(['JSB.Workspace.renameEntry', 'JSB.Workspace.moveEntry'], function(sender, msg, params){

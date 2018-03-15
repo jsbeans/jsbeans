@@ -78,6 +78,27 @@
 					$this.explorer.synchronizeNodeChildren($this.treeNode.key);
 				}
 			});
+			
+			this.subscribe('JSB.Workspace.Entry.destroyed', function(sender){
+				if(sender != $this.getEntry()){
+					return;
+				}
+				if($this.isDestroyed()){
+					return;
+				}
+				
+				// remove from tree
+				if(this.treeNode.tree.get(this.treeNode.key)){
+					this.treeNode.tree.deleteNode(this.treeNode.key);
+				}
+				
+				// destroy self
+				$this.destroy();
+			});
+		},
+		
+		getName: function(){
+			return this.descriptor.name || this.descriptor.entry.getName();
 		},
 		
 		getEntry: function(){

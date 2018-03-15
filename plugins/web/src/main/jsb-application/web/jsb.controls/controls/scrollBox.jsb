@@ -110,7 +110,7 @@
 		},
 
 		scrollToElement: function(target, vAlign, hAlign){
-            target = this.find(target).get(0).getBoundingClientRect();
+            var targetRc = this.find(target).get(0).getBoundingClientRect();
             var sbRc = this.getElement().get(0).getBoundingClientRect();
 
             if(!vAlign){
@@ -156,10 +156,10 @@
          */
         setScrollPosition: function(x, y){
             if(x)
-                this.getElement().setLeft(x);
+                this.getElement().scrollLeft(x);
 
             if(y)
-                this.getElement().setTop(y);
+                this.getElement().scrollTop(y);
         },
 
         updateVisibleArea: function(){

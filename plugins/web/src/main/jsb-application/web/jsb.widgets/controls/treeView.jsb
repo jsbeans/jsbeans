@@ -69,6 +69,7 @@
 			if(itemObj.obj){
 				this.controls[itemObj.obj.getId()] = itemObj.obj;
 			}
+			itemObj.tree = this;
 			
 			return itemObj;
 		},
@@ -409,6 +410,18 @@
 			    this.itemMap[itemObj.key] = itemObj;
 			}
 			
+			if(itemObj.dynamicChildren && itemObj.key){
+				// insert dummy loader
+				var loadingText = itemObj.childrenLoadingText || 'Loading';
+				this.addNode({
+					dummy: true,
+					allowHover: false,
+					allowSelect: false,
+					key: itemObj.key + '_dummy',
+					element: '<div class="_dwp_dummyChild"><div class="icon"></div><div class="text">'+loadingText+'</div></div>'
+				}, itemObj.key);
+			}
+			
 			this.deleteNode(oldKey);
 			this._applyFilteredToItem(itemObj);
 			
@@ -540,7 +553,19 @@
 			wrapper.toggleClass('collapsed');
 		},
 		
+		isCollapsed: function(key){
+			var wrapper = this.get(key).wrapper;
+			return wrapper.hasClass('collapsed');
+		},
+		
+		isExpanded: function(key){
+			return !this.isCollapsed(key);
+		},
+		
 		expandNode: function(key){
+			if(this.isExpanded(key)){
+				return;
+			}
 			var itemObj = this.get(key);
 			var wrapper = itemObj.wrapper;
 			wrapper.removeClass('collapsed');
@@ -550,6 +575,9 @@
 		},
 
 		collapseNode: function(key){
+			if(this.isCollapsed(key)){
+				return;
+			}
 			var itemObj = this.get(key);
 			var wrapper = itemObj.wrapper;
 			wrapper.addClass('collapsed');
