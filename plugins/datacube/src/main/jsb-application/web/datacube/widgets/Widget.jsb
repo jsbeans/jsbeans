@@ -33,8 +33,7 @@
                 this.filterManager = opts.filterManager;
 
                 this.updateValues({
-                    values: this.widgetEntry.getValues(),
-                    linkedFields: this.widgetEntry.getLinkedFields()
+                    values: this.widgetEntry.getValues()
                 });
 		    }
 		},
@@ -266,7 +265,6 @@
 				this.context[ctxName] = new ValueSelector({
 				    context: ctxName,
 				    values: JSB.clone(this.values),
-				    linkedFields: this.linkedFields,
 				    bootstrap: 'Datacube.Unimap.Bootstrap'
 				});
 			}
@@ -460,7 +458,6 @@
 
 		updateValues: function(opts){
 			this.values = opts.values;
-			this.linkedFields = opts.linkedFields;
 
 			this.context = {};
 			if(opts.sourceDesc){

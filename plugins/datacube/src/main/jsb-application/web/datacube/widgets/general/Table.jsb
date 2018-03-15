@@ -677,7 +677,7 @@
 								var WidgetCls = $this.colDesc[j].widget.cls;
 								if(WidgetCls){
 									var widget = new WidgetCls();
-									widget.setWrapper($this.getWrapper(), row[j].value);
+									widget.setWrapper($this.getWrapper(), {values: row[j].value});
 									widget.refresh();
 									if(!$this.widgetMap[key]){
 										$this.widgetMap[key] = {};
@@ -1080,7 +1080,11 @@
 							}
 							rDesc.value = {main: mainValue, back: backValue, hover: hoverValue};
 						} else if(cols[i].colType == 'widgetGroup'){
-							rDesc.value = JSB.clone($this.colDesc[i].widget.widgetSelector.getFullValues());
+						    if($this.colDesc[i].widget){
+						        rDesc.value = JSB.clone($this.colDesc[i].widget.widgetSelector.getFullValues());
+						    } else {
+						        rDesc.value = {};
+						    }
 						}
 						
 						row.push(rDesc);	// push cell

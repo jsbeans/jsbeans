@@ -1323,23 +1323,23 @@
             $this.walkAllSubQueries(dcQuery, function(query,isFromQuery, isValueQuery, isViewQuery){
                 if (!query.$context) query.$context = 'context_' + idx++;
                 if (contextQueries[query.$context] && contextQueries[query.$context] != query) {
-                    throw new Error('Duplicate query context: ' + query.$context);
+                    // remove if context has no links
+                    var hasLinks = false;
+                    $this.walkQueryFields(query, false, function(field, context, q){
+                        if (query != q) {
+                            hasLinks = true;
+                        }
+                    });
+                    if (!hasLinks) {
+                        query.$context = 'context_' + idx++;
+                    } else {
+                        throw new Error('Duplicate query context: ' + query.$context);
+                    }
                 }
                 contextQueries[query.$context] = query;
-
-//                if (query.$views) {
-//                    // normalize $views names to self $context
-//                    var names = Object.keys(query.$views);
-//                    for(var n in names) {
-//                        var name = names[n];
-//                        var view = query.$views[name];
-//                        delete query.$views[name];
-//                        query.$views[view.$context] = view;
-//                    }
-//                }
             });
 
-            // clear field contexts (remove self context from fields)
+            // TODO clear field contexts (remove self context from fields)
             return contextQueries;
         },
 

@@ -96,7 +96,9 @@
 							return true;
 						}
 						var strLc = str.toLowerCase();
-						if((item.value && item.value.toLowerCase().indexOf(strLc) >= 0)||(item.desc && item.desc.toLowerCase().indexOf(strLc) >= 0)){
+						if((item.value && item.value.toLowerCase().indexOf(strLc) >= 0)||
+						   (item.desc && item.desc.toLowerCase().indexOf(strLc) >= 0)||
+						   (item.comment && item.comment.toLowerCase().indexOf(strLc) >= 0)){
 							return true;
 						}
 						return false;
@@ -122,7 +124,6 @@
 		
 		update: function(){
 			$this.categoriesElt.empty();
-			
 			
 			var items = $this.data.data.items;
 			var selected = $this.data.data.selectedObj;
@@ -219,14 +220,32 @@
 					});
 					for(var j = 0; j < fArr.length; j++){
 						var fName = fArr[j];
-						var fType = fields[fName];
+						var fType = fields[fName].type;
+						var fTitle,
+						    comment;
+
+						if(JSB.isString(fields[fName].comment)){
+						    fTitle = fields[fName].comment;
+						    comment = fields[fName].comment;
+						} else if(JSB.isObject(fields[fName].comment)){
+						    fTitle = '';
+						    comment = '';
+
+						    for(var k in fields[fName].comment){
+						        fTitle += k + ': ' + fields[fName].comment[k] + '\n';
+						        comment += fields[fName].comment[k] + '';
+						    }
+						}
+						fTitle = fTitle ? (fName + '\n' + fTitle) : fName;
+
 						var listItem = $this.itemsListBox.addItem({
+						    comment: comment,
 							key: fName,
 							value: fName,
 							scheme: item,
 							desc: null,
 							element: `#dot
-								<div class="field" title="{{=fName}}">
+								<div class="field" title="{{=fTitle}}">
 									<div class="icon"></div>
 									<div class="name">{{=fName}}</div>
 									<div class="type">{{=fType.toLowerCase()}}</div>

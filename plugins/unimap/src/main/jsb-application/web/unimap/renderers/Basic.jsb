@@ -68,7 +68,7 @@
         createInnerScheme: function(scheme, values, onchange){
             return new Controller({
                 scheme: scheme,
-                values: values,
+                values: {values: values},
                 onchange: onchange,
                 rendersMap: this._schemeController.getRenderMap(),
             });

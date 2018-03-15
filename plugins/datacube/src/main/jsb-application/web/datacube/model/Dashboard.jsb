@@ -128,7 +128,6 @@
 						jsb: wWrapper.getWidgetType(),
 						name: wWrapper.getName(),
 						values: wWrapper.getValues(),
-						linkedFields: wWrapper.getLinkedFields(),
 						sourcesIds: wWrapper.getSourcesIds()
 					}
 				}
