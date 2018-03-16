@@ -3,7 +3,17 @@
 }
 
 .selectRender > .innerScheme {
-	padding: 6px 0 0 10px;
-    border-left: 6px solid #d1d9e0;
-    border-radius: 0 0 0 10px;
+	padding: 0px 0 0 10px;
+    border-left: 6px solid #e6e9ed;
+    border-radius: 10px 0 0 10px;
+    border-top: 2px solid #e6e9ed;
+	border-bottom: 2px solid #e6e9ed;
+    margin-top: 4px;
+}
+
+.itemRender > .multipleContainer > .multipleItem > .jsb-select,
+.itemRender > .item > .jsb-select,
+.itemRender > .jsb-select {
+    border-radius: 3px;
+	vertical-align: middle;
 }

@@ -10,7 +10,6 @@
 	_name: null,
 	_parent: null,
 	_owner: null,
-	_props: {},
 	_childCount: 0,
 	_artifactCount: 0,
 	
@@ -54,6 +53,7 @@
 		$disableRpcInstance: true,
 		
 		_eDoc: {},
+		_props: {},
 		
 		_entryStore: null,
 		_artifactStore: null,

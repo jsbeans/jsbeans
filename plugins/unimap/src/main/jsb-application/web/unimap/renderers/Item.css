@@ -48,13 +48,11 @@
     display: inline-block;
 }
 
-.itemRender > .multipleContainer > .multipleItem,
+.itemRender > .multipleContainer > .multipleItem > .jsb-editor,
 .itemRender > .item > .jsb-editor {
     width: 200px;
-    height: 34px;
-    padding: 6px 12px;
+    padding: 0 4px;
     font-size: 14px;
-    line-height: 1.42857143;
     color: #555;
     background-color: #fff;
     background-image: none;
@@ -62,6 +60,7 @@
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
     margin-right: 5px;
+	border-radius: 3px;
 }
 
 .itemRender > .item > .colorEditor > .sp-replacer {

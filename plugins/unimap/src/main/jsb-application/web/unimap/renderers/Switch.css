@@ -32,7 +32,8 @@
 }
 
 .switchRender > .schemeEl {
-	padding: 6px 0 0 10px;
-    border-left: 6px solid #b5d6bc;
+	padding: 2px 0 0 10px;
+    border-left: 6px solid #83ca8b;
     border-radius: 0 0 0 10px;
+    margin-top: -2px;
 }

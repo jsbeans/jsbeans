@@ -3,25 +3,26 @@
 }
 
 .dataBindingRender > .multipleContainer > .multipleBtn {
-    display: block;
-    margin-top: 5px;
+    display: inline-block;
+	vertical-align: middle;
 }
 
 .dataBindingRender.itemRender > .multipleContainer > .multipleItem {
-     width: initial;
-     height: initial;
-     padding: initial;
-     font-size: initial;
-     line-height: initial;
-     color: initial;
-     background-color: initial;
-     background-image: initial;
-     border: initial;
-     -webkit-box-shadow: initial;
-     box-shadow: initial;
-     margin-right: initial;
-     display: inline-block;
-     margin: 5px 5px 5px 0;
+	width: initial;
+	height: initial;
+	padding: initial;
+	font-size: initial;
+	line-height: initial;
+	color: initial;
+	background-color: initial;
+	background-image: initial;
+	border: initial;
+	-webkit-box-shadow: initial;
+	box-shadow: initial;
+	margin-right: initial;
+	display: inline-block;
+	margin: 4px 5px 4px 0;
+    vertical-align: middle;
 }
 
 .dataBindingRender.itemRender > .multipleContainer > .multipleItem > * {
@@ -35,7 +36,6 @@
     height: 20px;
     margin-left: 5px;
     vertical-align: middle;
-    top: -2px;
 }
 
 .dataBindingRender.itemRender > .multipleContainer > .multipleItem > .btnDelete > .icon {
