@@ -52,7 +52,10 @@
                     values[i] = {};
                 }
 
-                this.schemeEl.append(this.createRender(i, this._scheme.items[i], values[i]).getElement());
+                var render = this.createRender(i, this._scheme.items[i], values[i]);
+                if(render){
+                    this.schemeEl.append(render.getElement());
+                }
             }
 	    },
 

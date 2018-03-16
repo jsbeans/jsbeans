@@ -91,7 +91,10 @@
                         values[i] = {};
                     }
 
-                    item.append(this.createRender(i, this._scheme.items[i], values[i]).getElement());
+                    var render = this.createRender(i, this._scheme.items[i], values[i])
+                    if(render){
+                        item.append(render.getElement());
+                    }
                 }
 
                 item.append(new Button({
@@ -109,7 +112,10 @@
                         values[i] = {};
                     }
 
-                    this.group.appendContent(this.createRender(i, this._scheme.items[i], values[i]));
+                    var render = this.createRender(i, this._scheme.items[i], values[i])
+                    if(render){
+                        this.group.appendContent(render);
+                    }
                 }
 	        }
 	    },

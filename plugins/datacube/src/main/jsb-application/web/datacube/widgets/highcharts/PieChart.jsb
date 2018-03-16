@@ -90,8 +90,7 @@
 
                     this._schemeOpts.series.push({
                         nameSelector: seriesContext[i].find('name'),
-                        dataSelector: seriesContext[i].find('data'),
-                        data: []
+                        dataSelector: seriesContext[i].find('data')
                     });
 
                     this._schemeOpts.bindings.push(name.binding());
@@ -105,6 +104,8 @@
             this.getElement().loader();
             this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
                 try {
+                    $this._schemeOpts.series[i].data = [];
+
                     while($this._dataSource.next()){
                         for(var i = 0; i < $this._schemeOpts.series.length; i++){
                             $this._schemeOpts.series[i].data.push({

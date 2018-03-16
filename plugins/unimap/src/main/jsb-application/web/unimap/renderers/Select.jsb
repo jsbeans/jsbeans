@@ -149,7 +149,10 @@
 	                this._values.values[itemIndex].items[i] = {};
 	            }
 
-                innerScheme.append(this.createRender(i, scheme[value].items[i], this._values.values[itemIndex].items[i]).getElement());
+	            var render = this.createRender(i, scheme[value].items[i], this._values.values[itemIndex].items[i]);
+	            if(render){
+	                innerScheme.append(render.getElement());
+	            }
 	        }
 	    }
 	}

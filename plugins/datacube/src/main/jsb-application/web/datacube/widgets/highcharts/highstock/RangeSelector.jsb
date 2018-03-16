@@ -254,6 +254,15 @@
                             }
                         }
                         */
+                        /*
+                        xAxis: {
+                            events: {
+                                afterSetExtremes: function(evt){
+                                    debugger;
+                                }
+                            }
+                        }
+                        */
                     }
 
                     JSB.merge(true, baseChartOpts, chartOpts);

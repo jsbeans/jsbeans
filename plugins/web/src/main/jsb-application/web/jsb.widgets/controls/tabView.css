@@ -18,11 +18,7 @@
 	left: 0;
 	right: 0;
 	top: 0;
-	background: -webkit-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: -moz-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: -o-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
-	background: -ms-linear-gradient(top, #F3F3F3 0%, #D5D5D5 15%, #E4E4E4 85%, #D1D1D1 100%);
+	background: #E4E4E4;
 	border-bottom: 1px solid #BEBEBE;
 	padding: 3px 6px 0 6px;
 }
@@ -32,11 +28,7 @@
 	right: 0;
 	bottom: 0;
 	border-top: 1px solid #BEBEBE;
-	background: -webkit-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: -moz-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: -o-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: -ms-linear-gradient(top, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
+	background: #E6E1E1;
 	padding: 0 6px 3px 6px;
 }
 
@@ -45,11 +37,7 @@
 	top: 0;
 	bottom: 0;
     border-right: 1px solid #BEBEBE;
-	background: -webkit-linear-gradient(left, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: -moz-linear-gradient(left, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: linear-gradient(left, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: -o-linear-gradient(left, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
-	background: -ms-linear-gradient(left, #CAC1C1 0%, #EEEEEE 15%, #E6E1E1 85%, #F0EDED 100%);
+	background: #E6E1E1;
 	padding: 6px 0 6px 3px;
 }
 
@@ -61,11 +49,7 @@
 	min-width: 25px;
 	min-height: 25px;
 	border: 1px solid #ccc;
-	background: -webkit-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
-	background: -moz-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
-	background: linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
-	background: -o-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
-	background: -ms-linear-gradient(top, #fff, #EEE 20%, #E2E2E2);
+	background: #E2E2E2;
 	cursor: pointer;
 	position: relative;
 
