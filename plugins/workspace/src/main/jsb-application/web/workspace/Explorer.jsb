@@ -215,7 +215,7 @@
 			});
 
 			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
-			    if(node.workspace !== $this.currentWorkspace) return;
+			    if(node.workspace !== $this.currentWorkspace) {return};
 
 			    var nodeKey = $this.wTreeMap[node.descriptor.entry.getId()] ? $this.wTreeMap[node.descriptor.entry.getId()].key : null;
 			    if(!nodeKey) return;
@@ -226,10 +226,7 @@
 			});
 
 			this.subscribe('JSB.Workspace.Entry.open', function(sender, msg, entry){
-			    var nodeKey = $this.wTreeMap[entry.getId()] ? $this.wTreeMap[entry.getId()].key : null;
-			    if(nodeKey){
-			        $this.publish('JSB.Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
-			    }
+			    $this.openNodeByEntry(entry);
 			});
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender, msg, syncInfo){
@@ -240,11 +237,8 @@
 					if(syncInfo.isChanged('_childCount')){
 						$this.synchronizeNodeChildren();
 					}
-						
 				}
-				
 			});
-			
 			
 			this.publish('JSB.Workspace.Explorer.initialized');
 
@@ -990,11 +984,8 @@
 				if(bNew){
 					$this.sort();
 				}
-				
-			})
-			
+			});
 		},
-
 		
 		redrawTree: function(nTree){
 			this.tree.clear();
@@ -1118,6 +1109,39 @@
 					$this.sort();
 				});
 			});*/
+		},
+
+		openNodeByEntry: function(entry){
+		    function getNodeKeyByEntryId(entryId){
+    		    for(var i in $this.tree.itemMap){
+    		        if(!$this.tree.itemMap[i].dummy && $this.tree.itemMap[i].obj.descriptor.entry.getId() === entryId){
+    		            return $this.tree.itemMap[i].key;
+    		        }
+    		    }
+		    }
+
+		    var nodeKey = getNodeKeyByEntryId(entry.getId());
+		    if(nodeKey){
+		        this.tree.selectItem(nodeKey);
+
+		        this.publish('JSB.Workspace.nodeOpen', this.tree.get(nodeKey).obj);
+		    } else {
+		        var parentKey = getNodeKeyByEntryId(entry.getParentId());
+
+		        if(parentKey){
+		            this.expandNode(parentKey, function(){
+		                var nodeKey = getNodeKeyByEntryId(entry.getId());
+
+		                if(nodeKey){
+		                    $this.tree.selectItem(nodeKey);
+
+		                    $this.publish('JSB.Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
+		                }
+		            });
+		        } else {
+		            // todo
+		        }
+		    }
 		}
 	},
 	

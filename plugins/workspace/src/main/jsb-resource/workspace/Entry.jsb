@@ -278,12 +278,11 @@
 			
 			entry._markStored(false);
 			this._markStored(false);
-			
-            this.publish('JSB.Workspace.Entry.removeChild', entry, {session: true});
+
 			return entry;
 		},
 		
-		addChildEntry: function(entry){
+		addChildEntry: function(entry, opts){
 			if(JSB.isString(entry)){
 				entry = this.getWorkspace().entry(entry);
 			}
@@ -316,8 +315,6 @@
 			JSB.getLocker().unlock(mtx);
 			entry._markStored(false);
 			this._markStored(false);
-			
-			this.publish('JSB.Workspace.Entry.addChild', entry, {session: true});
 			
 			return entry;
 		},
@@ -452,7 +449,6 @@
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
-		},
-
+		}
 	}
 }
