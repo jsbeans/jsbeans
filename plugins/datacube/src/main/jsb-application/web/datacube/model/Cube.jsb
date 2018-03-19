@@ -1097,7 +1097,10 @@
 			var fields = $this.getManagedFields();
 			var fMap = {};
 			for(var fName in fields){
-				fMap[fName] = fields[fName].type;
+				fMap[fName] = {
+					type: fields[fName].type,
+					comment: fields[fName].comment
+				};
 			}
 			
 			return fMap;

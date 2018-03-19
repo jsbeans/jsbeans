@@ -21,6 +21,7 @@
 		handle: null,
 		hoverEntries: {},
 		hoverValues: {},
+		sourceFields: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -157,7 +158,7 @@
 								}
 							}
 						}
-						if($this.scheme.name == '$filter' || $this.scheme.name == '$postFilter'){
+						if($this.scheme.name == '$filter' || $this.scheme.name == '$postFilter' || $this.scheme.name == '$cubeFilter'){
 							allowReplace = true;
 						}
 					}
@@ -339,8 +340,47 @@
 			return colMap;
 		},
 		
+		getSourceFields: function(callback){
+			var curEditor = this;
+			while(curEditor && curEditor.scheme){
+				if(curEditor.scheme.name == '$query'){
+					var fromVal = curEditor.value['$from'];
+					if(JSB.isString(fromVal)){
+						var slice = curEditor.getSliceForName(fromVal);
+						if(slice){
+							slice.server().getOutputFields(callback);
+							return;
+						}
+					}
+				}
+				curEditor = curEditor.parent;
+			}
+			this.getCubeFields(callback);
+		},
+		
+		getCubeFields: function(callback){
+			if($this.options.cubeFields){
+				callback.call(this, $this.options.cubeFields);
+				return;
+			}
+			if($this.options.cube){
+				$this.options.cube.server().getOutputFields(callback);
+				return;
+			}
+			
+		},
+		
+		getCubeSlices: function(callback){
+			if($this.options.cube){
+				$this.options.cube.server().getSlices(callback);
+				return;
+			}
+			callback.call(this, $this.options.cubeSlices);
+		},
+		
 		chooseBestCubeField: function(){
-			return Object.keys($this.options.cubeFields)[0];
+			var sourceFields = /*this.getSourceFields() ||*/ $this.options.cubeFields;
+			return Object.keys(sourceFields)[0];
 		},
 		
 		chooseBestColumn: function(){
@@ -405,7 +445,7 @@
 					var optMap = {};
 					if(schemeDesc.optional && schemeDesc.optional.length > 0){
 						for(var i = 0; i < schemeDesc.optional.length; i++){
-							if((schemeDesc.name == '$filter' && schemeDesc.optional[i] == '#fieldName')
+							if(((schemeDesc.name == '$filter' || schemeDesc.name == '$cubeFilter') && schemeDesc.optional[i] == '#fieldName')
 								||(schemeDesc.name == '$postFilter' && schemeDesc.optional[i] == '#outputFieldName')){
 								continue;	// use field name always
 							}
@@ -421,7 +461,7 @@
 						var fName = vName;
 						
 						if(schemeDesc.customKey && schemeDesc.customKey == vName){
-							if(schemeDesc.name == '$filter' && vName == '#fieldName'){
+							if((schemeDesc.name == '$filter' || schemeDesc.name == '$cubeFilter') && vName == '#fieldName'){
 								fName = $this.chooseBestCubeField();
 							} else if(schemeDesc.name == '$sortField' && vName == '#anyFieldName'){
 								fName = $this.chooseBestColumn();
@@ -653,7 +693,7 @@
 		},
 		
 		doReplace: function(targetElt, entryType, entryKey){
-			if(entryType == 'entry' && $this.scheme.name != '$filter' && $this.scheme.name != '$postFilter'){
+			if(entryType == 'entry' && $this.scheme.name != '$filter' && $this.scheme.name != '$cubeFilter' && $this.scheme.name != '$postFilter'){
 				return;
 			}
 			var acceptedSchemes = null;
@@ -939,13 +979,24 @@
 			$this.notifyChanged();
 		},
 		
+		hasAscendantScheme: function(schemeName){
+			var curEditor = this;
+			while(curEditor){
+				if(curEditor.scheme.name == schemeName){
+					return true;
+				}
+				curEditor = curEditor.parent;
+			}
+			return false;
+		},
+		
 		combineCategoryMap: function(schemes){
 			var itemMap = {};
 			var chosenObjectKey = null;
 			var chooseType = 'key';
 			if(JSB.isArray(schemes)){
 				for(var i = 0; i < schemes.length; i++){
-					itemMap[schemes[i]] = true;
+					itemMap[schemes[i]] = schemes[i];
 				}
 				chooseType = 'value';
 			} else if(JSB.isObject(schemes)){
@@ -954,11 +1005,15 @@
 					// pass first
 					chosenObjectKey = Object.keys(schemes)[0];
 					for(var i = 0; i < schemes[chosenObjectKey].length; i++){
-						itemMap[schemes[chosenObjectKey][i]] = true;
+						itemMap[schemes[chosenObjectKey][i]] = schemes[chosenObjectKey][i];
 					}
 				} else {
 					for(sName in schemes){
-						itemMap[sName] = true;
+						if($this.scheme.name == '$query'){
+							itemMap[sName] = schemes[sName][0];
+						} else {
+							itemMap[sName] = sName;
+						}
 					}
 				}
 			} else {
@@ -988,7 +1043,7 @@
 					if(bHasFields){
 						continue;
 					}
-					category = 'Поля куба';
+					category = this.hasAscendantScheme('$cubeFilter') ? 'Поля куба': 'Поля источника';
 					valObj = item;
 					bHasFields = true;
 				} else if(item == '#outputFieldName' || item == '$fieldExpr' || item == '$sortField') {
@@ -1013,7 +1068,7 @@
 							continue;
 						}
 						valObj = {item: item, desc: $this.scheme.valueDesc && $this.scheme.valueDesc[item]};
-						var itemDesc = QuerySyntax.getSchema()[item];
+						var itemDesc = QuerySyntax.getSchema()[itemMap[item]];
 						if(itemDesc){
 							if(itemDesc.disabled){
 								continue;
@@ -1063,8 +1118,8 @@
 				id: 'schemePopupTool',
 				cmd: 'show',
 				data: {
-					cubeFields: $this.options.cubeFields,
-					cubeSlices: $this.options.cubeSlices,
+/*					cubeFields: $this.options.cubeFields,
+					cubeSlices: $this.options.cubeSlices,*/
 					selectedObj: existedObj,
 					editor: $this,
 					items: itemMap,
@@ -1310,7 +1365,7 @@
 				}
 	
 				// check if it's filter field
-				if($this.scheme.name == '$filter'){
+				if($this.scheme.name == '$filter' || $this.scheme.name == '$cubeFilter'){
 					keyElt.addClass('filterField');
 				}
 				
@@ -1491,7 +1546,7 @@
 			} else if($this.scheme.name == '$viewName') {
 				var slice = $this.getSliceForName($this.value);
 				if(slice){
-					$this.container.append(RendererRepository.createRendererFor(slice).getElement());
+					$this.container.append(RendererRepository.createRendererFor(slice, {showCube: true}).getElement());
 					return true;
 				}
 			}
@@ -1544,8 +1599,9 @@
 					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
-						schemeValues = ['$select', '$groupBy', '$from', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql', '$cubeFilter'];
+						schemeValues = ['$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql', '$cubeFilter'];
 						
+						// perform $context
 						var ctxName = $this.value['$context'];
 						if(!JSB.isDefined(ctxName)){
 							if(!$this.parent){
