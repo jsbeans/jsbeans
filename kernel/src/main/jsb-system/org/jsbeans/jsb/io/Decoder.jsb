@@ -18,6 +18,7 @@
 		mark: 0,
 	
 		$constructor: function(charset, capacity){
+			$base();
 			this.decoder = Charset.forName(charset).newDecoder();
 			this.capacity = capacity || 8192;
 		    this.inputBuffer = ByteBuffer.allocate(this.capacity);
@@ -36,6 +37,7 @@
 			this.inputBuffer = null;
 			this.outputBuffer = null;
 			this.decoder = null;
+			$base();
 		},
 		
 		_decode: function(remaining){

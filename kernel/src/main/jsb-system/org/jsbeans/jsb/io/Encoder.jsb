@@ -16,6 +16,7 @@
 		stream: null,
 		
 		$constructor: function(charset, capacity){
+			$base();
 			this.encoder = Charset.forName(charset).newEncoder();
 			this.capacity = capacity || 8192;
 			this.encoded = new ArrayBuffer(this.capacity);
@@ -30,6 +31,7 @@
 			this.encoded = null;
 			this.outputBuffer = null;
 			this.stream = null;
+			$base();
 		},
 		
 		setStream: function(stream){
