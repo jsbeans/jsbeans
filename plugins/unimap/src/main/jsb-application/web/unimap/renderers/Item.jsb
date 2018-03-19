@@ -3,6 +3,8 @@
 	$parent: 'Unimap.Render.Basic',
 	$require: ['JSB.Controls.Checkbox', 'JSB.Controls.Editor'],
 	$client: {
+	    _editors: [],
+
 	    construct: function(){
 	        this.addClass('itemRender');
 	        this.loadCss('Item.css');
@@ -12,7 +14,7 @@
 
 	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 
-	            var checkBox = new Checkbox({
+	            this.checkBox = new Checkbox({
 	                checked: this._values.checked,
 	                label: this._scheme.name,
 	                onchange: function(b){
@@ -22,10 +24,10 @@
 	                }
 	            });
 
-	            this.prepend(checkBox);
+	            this.prepend(this.checkBox);
 
-	            this.createRequireDesc(checkBox);
-	            this.createDescription(checkBox);
+	            this.createRequireDesc(this.checkBox);
+	            this.createDescription(this.checkBox);
 	        } else {
                 var name = this.$('<span class="name">' + this._scheme.name + '</span>');
                 this.append(name);
@@ -86,11 +88,13 @@
 
                             $this.onchange();
                         },
-                        opts = this._scheme.editorOpts ? JSB.merge(this._scheme.editorOpts, { value: values.value, onChange: onChangeFunc, onchange: onChangeFunc }) : { value: values.value, onChange: onChangeFunc, onchange: onChangeFunc };
+                        opts = this._scheme.editorOpts ? JSB.merge(this._scheme.editorOpts, { autofocus: false, value: values.value, onChange: onChangeFunc, onchange: onChangeFunc }) : { value: values.value, onChange: onChangeFunc, onchange: onChangeFunc };
 
                         JSB.lookup(this._scheme.editor, function(cls){
                             var editor = new cls(opts);
                             item.append(editor.getElement());
+
+                            $this._editors.push(editor);
                         });
                 }
             } else {
@@ -104,6 +108,8 @@
                     }
                 });
                 item.append(editor.getElement());
+
+                $this._editors.push(editor);
             }
 
 	        if(this._scheme.multiple){
@@ -115,6 +121,16 @@
 	        } else {
 	            this.append(item);
 	        }
+	    },
+
+	    destroy: function(){
+	        this.checkBox.destroy();
+
+	        for(var i = 0; i < this._editors.length; i++){
+	            this._editors[i].destroy();
+	        }
+
+	        $base();
 	    }
     }
 }

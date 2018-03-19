@@ -127,6 +127,14 @@
 	        this._bindingsInfo = bindingsInfo;
 
 	        return dataList;
+	    },
+
+	    destroy: function(){
+	        for(var i = 0; i < this._editors.length; i++){
+	            this._editors[i].destroy();
+	        }
+
+	        $base();
 	    }
 	}
 }

@@ -71,5 +71,7 @@
 
 .dataProviderDiagramNode[provider="DataCube.Providers.SqlTableDataProvider"] > .status > .toolbar > .commentsList > .dropDownBtn {
     height: 100%;
-    padding: 10px 5px;
+    padding: 9px 5px;
+    top: 0;
+    right: 0;
 }

@@ -32,6 +32,7 @@
     color: darkred;
     line-height: 0.5;
     font-weight: 900;
+    cursor: pointer;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem .sortableHandle {

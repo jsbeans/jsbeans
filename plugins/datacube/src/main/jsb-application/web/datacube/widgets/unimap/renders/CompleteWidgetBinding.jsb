@@ -82,6 +82,14 @@
 	        }
 	    },
 
+	    destroy: function(){
+	        if(this._removeButton){
+	            this._removeButton.destroy();
+	        }
+
+	        $base();
+	    },
+
 	    setValue: function(val){
             this._values.values[0] = {
                 value: val

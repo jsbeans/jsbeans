@@ -154,6 +154,14 @@
 	                innerScheme.append(render.getElement());
 	            }
 	        }
+	    },
+
+	    destroy: function(){
+	        for(var i = 0; i < this._selectors.length; i++){
+	            this._selectors[i].destroy();
+	        }
+
+	        $base();
 	    }
 	}
 }

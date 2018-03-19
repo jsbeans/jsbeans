@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.Group',
 	$parent: 'Unimap.Render.Basic',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
+	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
 	$client: {
 	    construct: function(){
 	        this.addClass('groupRender');
@@ -23,13 +23,13 @@
 
 	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 
-	            var checkBox = new Checkbox({
+	            this.checkBox = new Checkbox({
 	                checked: this._values.checked,
 	                onchange: function(b){
 	                    $this._values.checked = b;
 	                }
 	            });
-	            this.group.prepend(checkBox);
+	            this.group.prepend(this.checkBox);
 	        }
 
 	        if(this._scheme.multiple){
@@ -97,13 +97,11 @@
                     }
                 }
 
-                item.append(new Button({
-                    cssClass: 'dltBtn fas fa-times',
-                    hasCaption: false,
-                    onclick: function(){
-                        $this.removeItem(itemIndex);
-                    }
-                }).getElement());
+                var dltBtn = this.$('<i class="dltBtn fas fa-times"></i>');
+                dltBtn.click(function(){
+                    $this.removeItem(itemIndex);
+                });
+                item.append(dltBtn);
 
                 this.multipleBtn.before(item);
 	        } else {
@@ -118,6 +116,13 @@
                     }
                 }
 	        }
+	    },
+
+	    destroy: function(){
+	        this.group.destroy();
+	        this.checkBox.destroy();
+
+	        $base();
 	    },
 
 	    removeItem: function(itemIndex){

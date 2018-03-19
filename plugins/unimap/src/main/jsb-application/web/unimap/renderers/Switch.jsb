@@ -9,7 +9,7 @@
 
 	        this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 
-	        var switchEl = new Switch({
+	        this.switchEl = new Switch({
 	            checked: this._values.checked,
 	            label: this._scheme.name,
 	            onchange: function(b){
@@ -22,9 +22,9 @@
 	                }
 	            }
 	        });
-	        this.append(switchEl);
+	        this.append(this.switchEl);
 
-	        this.createDescription(switchEl);
+	        this.createDescription(this.switchEl);
 
 	        if(this._values.checked){
 	            this.createScheme();
@@ -57,6 +57,12 @@
                     this.schemeEl.append(render.getElement());
                 }
             }
+	    },
+
+	    destroy: function(){
+	        this.switchEl.destroy();
+
+	        $base();
 	    },
 
 	    removeScheme: function(){

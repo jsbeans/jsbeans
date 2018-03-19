@@ -2,6 +2,8 @@
 	$name: 'Unimap.Render.EmbeddedWidgetBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
+	    _beans: [],
+
 	    $require: ['JSB.Controls.Button', 'JSB.Controls.Checkbox', 'DataCube.Renderers.EmbededWidgetRenderer'],
 
 	    construct: function(){
@@ -21,6 +23,8 @@
 	            });
 
 	            this.prepend(checkBox);
+
+	            this._beans.push(checkBox);
 	        }
 
 	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
@@ -89,7 +93,7 @@
 
 	        this._values.valueSkipping = JSB.isDefined(this._values.valueSkipping) ? this._values.valueSkipping : true;
 
-	        this.append(new Checkbox({
+	        var checkBox = new Checkbox({
 	            checked: this._values.valueSkipping,
 	            cssClass: 'valueSkipping',
 	            label: 'Проброс значений',
@@ -102,7 +106,10 @@
                         $this.childSourceBinding && $this.childSourceBinding.enable();
                     }
 	            }
-	        }));
+	        });
+	        this.append(checkBox);
+
+	        this._beans.push(checkBox);
 
             if(values.binding){
                 this.setValue(values.binding);
@@ -145,6 +152,26 @@
             });
         },
 
+        destroy: function(){
+            for(var i = 0; i < this._beans.length; i++){
+                this._beans[i].destroy();
+            }
+
+            if(this.render){
+                this.render.destroy();
+            }
+
+            if(this.deleteBtn){
+                this.deleteBtn.destroy();
+            }
+
+            if(this._innerController){
+                this._innerController.destroy();
+            }
+
+            $base();
+        },
+
         removeBinding: function(){
             this.render.destroy();
             this.deleteBtn.destroy();
@@ -160,6 +187,10 @@
         setValue: function(wDesc, event){
             if(this.render){
                 this.render.destroy();
+            }
+
+            if(this.deleteBtn){
+                this.deleteBtn.destroy();
             }
 
 			this.render = new EmbededWidgetRenderer(wDesc, {});

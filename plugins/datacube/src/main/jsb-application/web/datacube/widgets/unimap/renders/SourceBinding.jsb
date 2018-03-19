@@ -3,6 +3,7 @@
 	$parent: 'Unimap.Render.Item',
 	$require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
 	$client: {
+	    _beans: [],
 	    _disabled: false,
 	    _items: [],
 
@@ -85,6 +86,14 @@
 	        } else {
 	            this.append(item);
 	        }
+	    },
+
+	    destroy: function(){
+	        for(var i = 0; i < this._beans.length; i++){
+	            this._beans[i].destroy();
+	        }
+
+	        $base();
 	    },
 
 	    disable: function(){
@@ -187,6 +196,8 @@
                 });
                 item.append(refreshButton.getElement());
 
+                $this._beans.push(refreshButton);
+
                 var removeButton = new Button({
                     hasIcon: true,
                     hasCaption: false,
@@ -198,6 +209,8 @@
                     }
                 });
                 item.append(removeButton.getElement());
+
+                $this._beans.push(removeButton);
 
 				item.addClass('filled');
 			}
@@ -230,6 +243,8 @@
                         }
                     });
                     item.append(editor.getElement());
+
+                    $this._beans.push(editor);
                     break;
                 default:
                     item.addClass('bindingItem');

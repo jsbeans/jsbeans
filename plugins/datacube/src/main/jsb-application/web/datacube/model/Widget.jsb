@@ -76,11 +76,13 @@
 				this.property('wType', wType);
 
 				if(!values){
-				    this.valueSelector = new ValueSelector({
+				    var valueSelector = new ValueSelector({
 				        bootstrap: 'Datacube.Unimap.Bootstrap'
 				    });
 
-				    this.values = this.valueSelector.createDefaultValues(this.extractWidgetScheme());
+				    this.values = valueSelector.createDefaultValues(this.extractWidgetScheme());
+
+				    valueSelector.destroy();
 				}
 
 				//this.updateInteroperationMap();
@@ -117,14 +119,6 @@
 					this.getWorkspace().store();
 				}
 			}
-		},
-
-		destroy: function(){
-		    if(this.valueSelector){
-		        this.valueSelector.destroy();
-		    }
-
-		    $base();
 		},
 
 		setName: function(name){
