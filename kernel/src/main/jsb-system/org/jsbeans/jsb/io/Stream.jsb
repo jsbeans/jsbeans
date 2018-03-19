@@ -45,6 +45,8 @@
 			} else if(obj instanceof OutputStream){
 				this.output = obj;
 				this.closed = false;
+			} else {
+				throw new Error('Internal error: failed to setStream in JSB.IO.Stream._setStream');
 			}
 		},
 		

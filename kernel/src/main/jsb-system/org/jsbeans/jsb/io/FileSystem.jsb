@@ -140,7 +140,6 @@
 		    } else if (read || write || append) {
 		    	return new TextStream(read ? Files.newInputStream(nioPath, nioOptions) : Files.newOutputStream(nioPath, nioOptions), options);
 		    } else if (update) {
-		        // FIXME botic: check for invalid options before returning a stream? See issue #270
 		        throw new Error("Update not implemented yet");
 		    }
 
