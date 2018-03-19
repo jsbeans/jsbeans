@@ -15,10 +15,14 @@
 	padding-left: 26px;
 }
 
+.sliceRenderer > .leftParen {
+	margin-left: 2px;
+}
+
 .sliceRenderer > .leftParen,
 .sliceRenderer > .rightParen,
 .sliceRenderer > .cubeRenderer {
 	display: inline-block;
-	vertical-align: top;
+	vertical-align: middle;
 }
 

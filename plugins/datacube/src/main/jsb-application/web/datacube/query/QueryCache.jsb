@@ -1,15 +1,18 @@
 {
 	$name: 'DataCube.Query.QueryCache',
+	$fixedId: true,
 	
 	$server: {
-		$require: ['DataCube.Query.QueryCacheController', 'JSB.Crypt.MD5'],
+		$require: ['DataCube.Query.QueryCacheController', 
+		           'JSB.Crypt.MD5'],
 		
 		cube: null,
 		batchSize: 10,
 		closeIteratorTimeout: 60000,
 		cacheMap: {},
 		
-		$constructor: function(cube){
+		$constructor: function(id, cube){
+			this.id = id;
 			$base();
 			this.cube = cube;
 			if(Config.has('datacube.queryCache.batchSize')){

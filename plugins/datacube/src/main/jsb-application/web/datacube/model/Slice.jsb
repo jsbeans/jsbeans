@@ -21,7 +21,8 @@
 	$client: {},
 	
 	$server: {
-		$require: ['JSB.Workspace.WorkspaceController', 'DataCube.Query.QueryCache'],
+		$require: ['JSB.Workspace.WorkspaceController', 
+		           'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.SliceNode');
@@ -136,7 +137,12 @@
             }
             if(useCache && this.cacheEnabled){
 				if(!this.queryCache){
-					this.queryCache = new QueryCache(this.cube);
+					var mtx = this.getId() + '_queryCache';
+					JSB.getLocker().lock(mtx);
+					if(!this.queryCache){
+						this.queryCache = new QueryCache(this.getId() + '_queryCache', this.cube);
+					}
+					JSB.getLocker().unlock(mtx);
 				}
 				return this.queryCache.executeQuery(preparedQuery, params);
             }
@@ -145,22 +151,26 @@
 		
 		getCubeFields: function(){
 			$this.getCube().load();
-			var fields = $this.getCube().getManagedFields();
-			var fMap = {};
-
-			for(var fName in fields){
-				fMap[fName] = {
-				    comment: fields[fName].comment,
-				    type: fields[fName].type
-				}
-			}
-			
-			return fMap;
+			return $this.getCube().getOutputFields();
 		},
 		
 		getCubeSlices: function(){
 			$this.getCube().load();
 			return $this.getCube().getSlices();
+		},
+		
+		getOutputFields: function(){
+			var fMap = {};
+			if(this.query && this.query.$select && Object.keys(this.query.$select).length > 0){
+				for(var fName in this.query.$select){
+					fMap[fName] = {
+						type: null,	// TODO: need to resolve
+						comment: null
+					}
+				}
+			}
+			
+			return fMap;
 		},
 		
 		invalidate: function(){

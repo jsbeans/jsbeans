@@ -210,6 +210,7 @@
 			
 			// fill constructor
 			var queryEditor = this.find('.queryEditor').jsb();
+			queryEditor.setOption('cube', entry);
 			queryEditor.setOption('cubeFields', fields);
 			queryEditor.setOption('cubeSlices', slices);
 			queryEditor.set(this.requestOpts.query);

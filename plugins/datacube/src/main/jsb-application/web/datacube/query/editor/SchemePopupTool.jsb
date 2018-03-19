@@ -9,7 +9,7 @@
 	           'JSB.Widgets.RendererRepository'],
 	$client: {
 		
-		cubeFieldsCat: 'Поля куба',
+		cubeFieldsCat: 'Поля источника',
 		sliceFieldsCat: 'Столбцы среза',
 		
 		$bootstrap: function(){
@@ -202,7 +202,6 @@
 		},
 		
 		fillItems: function(items){
-			$this.ignoreHandlers = true;
 			var selected = $this.data.data.selectedObj;
 			$this.itemsListBox.clear();
 			$this.itemsListBox.setFilter(null);
@@ -211,51 +210,58 @@
 			for(var i = 0; i < items.length; i++){
 				var item = items[i];
 				if(item == '#fieldName' || item == '$fieldName'){
+					
 					var editor = $this.data.data.editor;
-					var slice = editor.options.slice;
-					var fields = editor.options.cubeFields;
-					var fArr = Object.keys(fields);
-					fArr.sort(function(a, b){
-						return a.localeCompare(b);
-					});
-					for(var j = 0; j < fArr.length; j++){
-						var fName = fArr[j];
-						var fType = fields[fName].type;
-						var fTitle,
-						    comment;
-
-						if(JSB.isString(fields[fName].comment)){
-						    fTitle = fields[fName].comment;
-						    comment = fields[fName].comment;
-						} else if(JSB.isObject(fields[fName].comment)){
-						    fTitle = '';
-						    comment = '';
-
-						    for(var k in fields[fName].comment){
-						        fTitle += k + ': ' + fields[fName].comment[k] + '\n';
-						        comment += fields[fName].comment[k] + '';
-						    }
-						}
-						fTitle = fTitle ? (fName + '\n' + fTitle) : fName;
-
-						var listItem = $this.itemsListBox.addItem({
-						    comment: comment,
-							key: fName,
-							value: fName,
-							scheme: item,
-							desc: null,
-							element: `#dot
-								<div class="field" title="{{=fTitle}}">
-									<div class="icon"></div>
-									<div class="name">{{=fName}}</div>
-									<div class="type">{{=fType.toLowerCase()}}</div>
-								</div>
-							`
-						});
-						if(selected && selected.scheme == item && selected.value == fName){
-							chosenListItem = listItem;
-						}
+					function getSourceFields(callback){
+						return editor.hasAscendantScheme('$cubeFilter') ? editor.getCubeFields(callback) : editor.getSourceFields(callback);
 					}
+					getSourceFields(function(fields){
+						$this.ignoreHandlers = true;
+						var fArr = Object.keys(fields);
+						fArr.sort(function(a, b){
+							return a.localeCompare(b);
+						});
+						for(var j = 0; j < fArr.length; j++){
+							var fName = fArr[j];
+							var fType = fields[fName].type || '';
+							var fTitle = '', comment = '';
+	
+							if(JSB.isString(fields[fName].comment)){
+							    fTitle = fields[fName].comment;
+							    comment = fields[fName].comment;
+							} else if(JSB.isObject(fields[fName].comment)){
+							    fTitle = '';
+							    comment = '';
+	
+							    for(var k in fields[fName].comment){
+							        fTitle += k + ': ' + fields[fName].comment[k] + '\n';
+							        comment += fields[fName].comment[k] + '';
+							    }
+							}
+							fTitle = fTitle.length > 0 ? (fName + '\n' + fTitle) : fName;
+	
+							var listItem = $this.itemsListBox.addItem({
+							    comment: comment,
+								key: fName,
+								value: fName,
+								scheme: item,
+								desc: null,
+								element: `#dot
+									<div class="field" title="{{=fTitle}}">
+										<div class="icon"></div>
+										<div class="name">{{=fName}}</div>
+										<div class="type">{{=fType.toLowerCase()}}</div>
+									</div>
+								`
+							});
+							if(selected && selected.scheme == item && selected.value == fName){
+//								chosenListItem = listItem;
+								$this.itemsListBox.selectItem(listItem.key);
+								$this.itemsListBox.scrollTo(listItem.key);
+							}
+						}
+						$this.ignoreHandlers = false;
+					});
 				} else if(item == '#outputFieldName' || item == '$fieldExpr' || item == '$sortField') {
 					var editor = $this.data.data.editor;
 					var colMap = editor.combineColumns();
@@ -286,30 +292,35 @@
 
 				} else if(item == '$viewName') {
 					var editor = $this.data.data.editor;
-					var slices = editor.options.cubeSlices;
-					var sArr = Object.keys(slices);
-					sArr.sort(function(a, b){
-						return slices[a].getName().localeCompare(slices[b].getName());
-					});
-					
-					for(var j = 0; j < sArr.length; j++){
-						var sId = sArr[j];
-						var slice = slices[sId];
-						if(slice == editor.options.slice){
-							continue;
-						}
-						var sliceName = slice.getName();
-						var listItem = $this.itemsListBox.addItem({
-							key: sId,
-							value: sliceName,
-							scheme: item,
-							desc: null,
-							element: RendererRepository.createRendererFor(slice).getElement()
+					editor.getCubeSlices(function(slices){
+						$this.ignoreHandlers = true;
+						var sArr = Object.keys(slices);
+						sArr.sort(function(a, b){
+							return slices[a].getName().localeCompare(slices[b].getName());
 						});
-						if(selected && selected.scheme == item && selected.value == sliceName){
-							chosenListItem = listItem;
+						
+						for(var j = 0; j < sArr.length; j++){
+							var sId = sArr[j];
+							var slice = slices[sId];
+							if(slice == editor.options.slice){
+								continue;
+							}
+							var sliceName = slice.getName();
+							var listItem = $this.itemsListBox.addItem({
+								key: sId,
+								value: sliceName,
+								scheme: item,
+								desc: null,
+								element: RendererRepository.createRendererFor(slice).getElement()
+							});
+							if(selected && selected.scheme == item && selected.value == sliceName){
+//								chosenListItem = listItem;
+								$this.itemsListBox.selectItem(listItem.key);
+								$this.itemsListBox.scrollTo(listItem.key);
+							}
 						}
-					}
+						$this.ignoreHandlers = false;
+					});
 				} else {
 					var listItem = $this.itemsListBox.addItem({
 						value: item.item,
@@ -318,7 +329,7 @@
 						desc: item.desc,
 						element: `#dot
 							<div class="item" scheme="{{=item.item}}">
-								<div class="title">{{=item.title?item.title:item.item}}</div>
+								<div class="title">{{=item.item + (item.title ? ' - ' + item.title : '')}}</div>
 								<div class="desc">{{=item.desc}}</div>
 							</div>
 						`
@@ -329,6 +340,9 @@
 
 				}
 			}
+			
+			$this.ignoreHandlers = true;
+			
 			if(chosenListItem){
 				$this.itemsListBox.selectItem(chosenListItem.key);
 				$this.itemsListBox.scrollTo(chosenListItem.key);

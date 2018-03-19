@@ -62,11 +62,12 @@
     height: 16px;
     background: white;
     opacity: 1;
+	border-radius: 3px;
 }
 
 .dataProviderDiagramNode[provider="DataCube.Providers.SqlTableDataProvider"] > .status > .toolbar > .commentsList > .curVal {
-    line-height: 1.1;
-    padding: 0;
+	padding: 0 2px;
+    font-size: 12px;
 }
 
 .dataProviderDiagramNode[provider="DataCube.Providers.SqlTableDataProvider"] > .status > .toolbar > .commentsList > .dropDownBtn {
