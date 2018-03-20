@@ -300,6 +300,7 @@
 						var min = parseFloat(d.minSelector.value() || 0);
 						var max = parseFloat(d.maxSelector.value() || 0);
 						var val = parseFloat(d.valSelector.value() || 0);
+
 						var progress = 0;
 						if(max - min > 0 && val > 0){
 							progress = (val - min) / (max - min);

@@ -31,11 +31,14 @@
                                 area: {
                                     name: 'Area'
                                 },
-                                line: {
-                                    name: 'Line'
+                                bar: {
+                                    name: 'Bar'
                                 },
                                 column: {
                                     name: 'Column'
+                                },
+                                line: {
+                                    name: 'Line'
                                 },
                                 spline: {
                                     name: 'Spline'

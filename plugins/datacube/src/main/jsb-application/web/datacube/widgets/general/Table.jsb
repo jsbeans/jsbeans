@@ -671,13 +671,14 @@
 						if($this.colDesc[j].widget){
 							var colName = $this.colDesc[j].title;
 							if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
-								$this.widgetMap[key][colName].setWrapper($this.getWrapper(), row[j].value);
+								//$this.widgetMap[key][colName].setWrapper($this.getWrapper(), { values: row[j].value });
+								$this.widgetMap[key][colName].updateValues({ values: row[j].value });
 								$this.widgetMap[key][colName].refresh();
 							} else {
 								var WidgetCls = $this.colDesc[j].widget.cls;
 								if(WidgetCls){
 									var widget = new WidgetCls();
-									widget.setWrapper($this.getWrapper(), {values: row[j].value});
+									widget.setWrapper($this.getWrapper(), { values: row[j].value });
 									widget.refresh();
 									if(!$this.widgetMap[key]){
 										$this.widgetMap[key] = {};
