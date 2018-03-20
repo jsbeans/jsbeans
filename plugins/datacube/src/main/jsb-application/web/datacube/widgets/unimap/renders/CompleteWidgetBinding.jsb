@@ -96,7 +96,7 @@
             }
 
 	        if(!val){
-	            this._item.text('Перетащите готовый виджет');
+	            this._item.text('');
 	            this._item.removeClass('filled');
 
 	            if(this._removeButton){
@@ -127,7 +127,7 @@
 	        var val = {
                 widgetWsid: entry.getWorkspace().getId(),
                 widgetWid: entry.getId(),
-                name: entry.name
+                name: entry.getName()
             };
 
 	        this.setValue(val);
