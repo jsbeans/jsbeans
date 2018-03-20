@@ -227,24 +227,25 @@
         },
 
 		getBindingsData: function(callback){
-            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding'),
-                dataBindings = this.getContext('export').findRendersByName('dataBinding');
+            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding');
 
-            this.fetchBinding(sourceBindings[0], {readAll: true, reset: true}, function(){
+            this.fetchBinding(sourceBindings[0], {readAll: true, reset: true}, function(data){
                 var result = [],
+                    res;
+
+                result.push(Object.keys(data[0]));
+
+                for(var i = 0; i < data.length; i++){
                     res = [];
 
-                for(var i = 0; i < dataBindings.length; i++){
-                    res.push(dataBindings[i].getBindingName());
-                }
-                result.push(res);
-
-                while(sourceBindings[0].next()){
-                    res = [];
-
-                    for(var i = 0; i < dataBindings.length; i++){
-                        res.push(dataBindings[i].value());
+                    for(var j in data[i]){
+                        if(JSB.isObject(data[i][j])){
+                            res.push(data[i][j].main);
+                        } else {
+                            res.push(data[i][j]);
+                        }
                     }
+
                     result.push(res);
                 }
 

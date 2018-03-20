@@ -63,7 +63,7 @@
 	margin-top: -8px;
 }
 
-.sourceBindingRender > .item > .renderer > .title {
+.sourceBindingRender > .item > .renderer .title {
 	padding-left: 20px;
 	display: inline-block;
 	vertical-align: middle;

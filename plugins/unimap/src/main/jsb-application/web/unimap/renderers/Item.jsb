@@ -124,7 +124,7 @@
 	    },
 
 	    destroy: function(){
-	        this.checkBox.destroy();
+	        this.checkBox && this.checkBox.destroy();
 
 	        for(var i = 0; i < this._editors.length; i++){
 	            this._editors[i].destroy();

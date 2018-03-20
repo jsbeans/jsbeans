@@ -6,8 +6,20 @@
         return this._selectorOpts.valueSkipping;
     },
 
-    findRendersByName: function(name){
-        return this.getMainSelector().findRendersByName(name, null, this._values[0].value);
+    findRendersByName: function(name, arr, values){
+        if(!arr){
+            arr = [];
+        }
+
+        if(!values){
+            values = this._values;
+        }
+
+        if(values && values[0]){
+            this.getMainSelector().findRendersByName(name, arr, values[0].value);
+        }
+
+        return arr;
     },
 
     getFullValues: function(){

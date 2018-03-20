@@ -119,8 +119,8 @@
 	    },
 
 	    destroy: function(){
-	        this.group.destroy();
-	        this.checkBox.destroy();
+	        this.group && this.group.destroy();
+	        this.checkBox && this.checkBox.destroy();
 
 	        $base();
 	    },
