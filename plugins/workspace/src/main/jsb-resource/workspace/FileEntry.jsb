@@ -16,7 +16,7 @@
 			$base(id, workspace);
 			if(opts){
 				if(opts.fileName){
-					this.title(opts.fileName);
+					this.setName(opts.fileName);
 				}
 				if(opts.fileData){
 					// store artifact

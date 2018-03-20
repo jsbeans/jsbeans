@@ -318,27 +318,34 @@
 		},
 		
 		uploadFile: function(fileDesc){
-			debugger;
-			var category = fileDesc.category;
-			var fileName = fileDesc.name;
-			var fileData = fileDesc.content;
-			var entryType = WorkspaceController.queryFileUploadEntryType(this.getWorkspaceType(), fileName, fileData);
-			var entryJsb = $jsb.get(entryType);
-			if(!entryJsb){
-				throw new Error('Unable to find entry bean: ' + entryType);
+			try {
+				var pId = fileDesc.parent;
+				var fileName = fileDesc.name;
+				var fileData = fileDesc.content;
+				var entryType = WorkspaceController.queryFileUploadEntryType(this.getWorkspaceType(), fileName, fileData);
+				var entryJsb = JSB.get(entryType);
+				if(!entryJsb){
+					throw new Error('Unable to find entry bean: ' + entryType);
+				}
+				var EntryCls = entryJsb.getClass();
+				var entry = new EntryCls(JSB.generateUid(), this, {
+					fileName: fileName,
+					fileData: fileData
+				});
+				if(pId){
+					this.entry(pId).addChildEntry(entry);
+				}
+				this.store();
+				return {
+					entry: entry,
+					name: entry.getName()
+				};
+			} catch(e){
+				debugger;
+				return {
+					error: e.message
+				};
 			}
-			var EntryCls = entryJsb.getClass();
-			var entry = new EntryCls($jsb.generateUid(), this, {
-				fileName: fileName,
-				fileData: fileData
-			});
-			entry.category(category);
-			this.store();
-			return {
-				type: 'entry',
-				entry: entry,
-				name: entry.getName()
-			};
 		}
 	}
 }

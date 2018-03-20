@@ -14,49 +14,41 @@
 			
 			this.title = this.$('<span class="title"></span>').text(this.options.file.name);
 			this.append(this.title);
-
+		},
+		
+		getName: function(){
+			return this.options.file.name;
+		},
+		
+		execute: function(){
+			var self = this;
+			
 			// check for folder
 			var isDir = false;
 			if(this.options.item){
 				var item = this.options.item;
 				if(item.isDirectory){
 					isDir = true;
-					JSB().deferUntil(function(){
-						// change is node to directory
-						var path = self.options.w.constructPathFromKey(self.treeNode.key);
-						self.options.w.server().addCategory(path, function(desc){
-							if(!desc){
-								// internal error: folder already exists
-								return;
-							}
-							var node = self.options.w.addTreeItem(desc, self.treeNode.key, true);
-							self.options.w.sort();
-							
-							// proceed directory files
-							var dirReader = item.createReader();
-							dirReader.readEntries(function(entries) {
-								for (var i = 0; i < entries.length; i++) {
-									var chItem = entries[i];
-									(function(item){
-										if(item.isFile){
-											item.file(function(file){
-												var uploadNode = new $class({
-													file: file, 
-													node: node, 
-													item: item, 
-													tree: self.options.tree,
-													w: self.options.w,
-													workspace: self.options.workspace
-												});
-												var curTreeNode = self.options.tree.addNode({
-													key: JSB().generateUid(),
-													element: uploadNode,
-												}, node ? node.treeNode.key : null);
-												uploadNode.treeNode = curTreeNode;
-											});
-										} else if(item.isDirectory){
+					// change is node to directory
+					self.options.w.pushIgnoreSync();
+					self.options.w.server().createNewEntry('JSB.Workspace.FolderEntry', {}, $this.getName(), $this.options.node ? $this.options.node.getEntry() : null, function(desc){
+						if(!desc){
+							// internal error: folder already exists
+							return;
+						}
+						var node = $this.options.w.addTreeItem(desc, $this.treeNode.key, true);
+						$this.options.w.sort();
+						
+						// proceed directory files
+						var dirReader = item.createReader();
+						dirReader.readEntries(function(entries) {
+							for (var i = 0; i < entries.length; i++) {
+								var chItem = entries[i];
+								(function(item){
+									if(item.isFile){
+										item.file(function(file){
 											var uploadNode = new $class({
-												file: item, 
+												file: file, 
 												node: node, 
 												item: item, 
 												tree: self.options.tree,
@@ -64,18 +56,34 @@
 												workspace: self.options.workspace
 											});
 											var curTreeNode = self.options.tree.addNode({
-												key: JSB().generateUid(),
+												key: JSB.generateUid(),
 												element: uploadNode,
 											}, node ? node.treeNode.key : null);
 											uploadNode.treeNode = curTreeNode;
-										}
-									})(chItem);
-								}
-							});
+											uploadNode.execute();
+										});
+									} else if(item.isDirectory){
+										var uploadNode = new $class({
+											file: item, 
+											node: node, 
+											item: item, 
+											tree: self.options.tree,
+											w: self.options.w,
+											workspace: self.options.workspace
+										});
+										var curTreeNode = self.options.tree.addNode({
+											key: JSB().generateUid(),
+											element: uploadNode,
+										}, node ? node.treeNode.key : null);
+										uploadNode.treeNode = curTreeNode;
+										uploadNode.execute();
+									}
+								})(chItem);
+							}
 						});
-					}, function(){
-						return self.treeNode.key;
+						self.options.w.popIgnoreSync();
 					});
+					
 				}
 			}
 			
@@ -83,31 +91,24 @@
 			if(!isDir){
 				var reader = new FileReader();
 				reader.onload = function(){
+					self.options.w.pushIgnoreSync();
 					self.options.workspace.server().uploadFile({
 						parent: self.options.node ? self.options.node.getEntry().getId() : null,
 						name: self.options.file.name,
 						content: reader.result
-					}, function(ontoDesc){
-						JSB().deferUntil(function(){
-							if(ontoDesc.type == 'error'){
-								self.addClass('error');
-								self.getElement().attr('title', ontoDesc.error.message + ' ' + ontoDesc.error.fileName + '(' + ontoDesc.error.lineNumber + ')');
-							} else {
-								self.options.w.addTreeItem(ontoDesc, self.treeNode.key, true);
-//								self.options.w.sort();
-							}
-						}, function(){
-							return self.treeNode.key;
-						});
+					}, function(nDesc){
+						if(nDesc.error){
+							self.addClass('error');
+							self.getElement().attr('title', nDesc.error.message + ' ' + nDesc.error.fileName + '(' + nDesc.error.lineNumber + ')');
+						} else {
+							self.options.w.addTreeItem(nDesc, self.treeNode.key, true);
+						}
+						self.options.w.popIgnoreSync();
 					});
 				}
 				reader.readAsArrayBuffer(this.options.file);
 			}
-			
-		},
-		
-		getName: function(){
-			return this.options.file.name;
+
 		}
 		
 	}

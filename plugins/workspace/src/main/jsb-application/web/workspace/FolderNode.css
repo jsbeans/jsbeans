@@ -3,3 +3,17 @@
 .workspaceExplorerNode.folderNode {
 	
 }
+
+.workspaceExplorerNode.folderNode > .renderer > .childCount {
+	display: inline-block;
+	vertical-align: middle;
+	font-size: 10px;
+    margin-left: 4px;
+    color: #555;
+}
+
+.workspaceExplorerNode.folderNode > .renderer > .childCount.empty {
+	display: none;
+}
+
+.workspaceExplorerNode.folderNode > .renderer > .childCount > span {}

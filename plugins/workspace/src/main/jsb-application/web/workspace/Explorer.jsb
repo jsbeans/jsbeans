@@ -24,7 +24,8 @@
 	mExpandKeys: {},
 	
 	$client: {
-		_isReady: false, 
+		_isReady: false,
+		ignoreSync: 0,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -60,8 +61,10 @@
 				}
 			});
 			uploadItem.wrapper.find('input[type="file"]').change(function(){
+				var self = this;
 				var item = $this.tree.getSelected();
 				var parentNode = null;
+				var parentKey = null;
 				if(item == null){
 					// choose root
 				} else {
@@ -70,29 +73,41 @@
 					}
 					if(JSB().isInstanceOf(item.obj, 'JSB.Workspace.FolderNode')){
 						parentNode = item.obj;
+						parentKey = parentNode.treeNode.key;
 					} else {
 						// move up to nearest parent
 						parentNode = $this.tree.get(item.parent).obj;
+						parentKey = parentNode.treeNode.key;
 					}
 				}
 				
+				var files = [];
 				for(var i = 0; i < this.files.length; i++ ){
-					var file = this.files[i];
-					// upload file
-					var uploadNode = new UploadNode({
-						file: file, 
-						node: parentNode, 
-						item: null, 
-						tree: $this.tree,
-						w: $this,
-						workspace: $this.currentWorkspace
-					});
-					var curTreeNode = $this.tree.addNode({
-						key: JSB().generateUid(),
-						element: uploadNode,
-					}, parentNode ? parentNode.treeNode.key : null);
-					uploadNode.treeNode = curTreeNode;
+					files.push(this.files[i]);
 				}
+				
+				$this.expandNode(parentKey, function(){
+					for(var i = 0; i < files.length; i++ ){
+						var file = files[i];
+						// upload file
+						var uploadNode = new UploadNode({
+							file: file, 
+							node: parentNode, 
+							item: null, 
+							tree: $this.tree,
+							w: $this,
+							workspace: $this.currentWorkspace
+						});
+						var curTreeNode = $this.tree.addNode({
+							key: JSB().generateUid(),
+							element: uploadNode,
+						}, parentKey);
+						uploadNode.treeNode = curTreeNode;
+						uploadNode.execute();
+					}
+					
+				});
+				
 			});
 			
 			var downloadItem = this.toolbar.addItem({
@@ -243,6 +258,21 @@
 			this.publish('JSB.Workspace.Explorer.initialized');
 
 			this.refreshWorkspaces();
+		},
+		
+		pushIgnoreSync: function(){
+			this.ignoreSync++;
+		},
+		
+		popIgnoreSync: function(){
+			this.ignoreSync--;
+			if(this.ignoreSync < 0){
+				this.ignoreSync = 0;
+			}
+		},
+		
+		isIgnoreSync: function(){
+			return this.ignoreSync > 0;
 		},
 		
 		refreshWorkspaces: function(){
@@ -567,23 +597,34 @@
 						return false;
 					}
 					
+					var parentKey = node ? node.treeNode.key : null;
+					var files = [];
+					var items = [];
 					for(var i = 0; i < dt.files.length; i++ ){
-						var file = dt.files[i];
-						// upload file
-						var uploadNode = new UploadNode({
-							file: file, 
-							node: node, 
-							item: dt.items ? dt.items[i].webkitGetAsEntry() : null, 
-							tree: $this.tree,
-							w: $this,
-							workspace: $this.currentWorkspace
-						});
-						var curTreeNode = $this.tree.addNode({
-							key: JSB().generateUid(),
-							element: uploadNode,
-						}, node ? node.treeNode.key : null);
-						uploadNode.treeNode = curTreeNode;
+						files.push(dt.files[i]);
+						items.push(dt.items[i]);
 					}
+					$this.expandNode(parentKey, function(){
+						for(var i = 0; i < files.length; i++ ){
+							var file = files[i];
+							// upload file
+							var uploadNode = new UploadNode({
+								file: file, 
+								node: node, 
+								item: dt.items ? items[i].webkitGetAsEntry() : null, 
+								tree: $this.tree,
+								w: $this,
+								workspace: $this.currentWorkspace
+							});
+							var curTreeNode = $this.tree.addNode({
+								key: JSB.generateUid(),
+								element: uploadNode,
+							}, parentKey);
+							uploadNode.treeNode = curTreeNode;
+							uploadNode.execute();
+						}
+						
+					});
 					
 					return false;
 				}
@@ -930,7 +971,7 @@
 		},
 		
 		synchronizeNodeChildren: function(pKey){
-			if(this.ignoreSync){
+			if(this.isIgnoreSync()){
 				return;
 			}
 			var pEntry = this.currentWorkspace;
@@ -962,8 +1003,11 @@
 				var treeChildren = {};
 				var chArr = $this.tree.getChildNodes(pKey);
 				for(var i = 0; i < chArr.length; i++){
-					var e = $this.tree.get(chArr[i]).obj.getEntry();
-					treeChildren[e.getId()] = chArr[i];
+					var node = $this.tree.get(chArr[i]).obj;
+					if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
+						var e = node.getEntry();
+						treeChildren[e.getId()] = chArr[i];
+					}
 				}
 
 				// remove missing
@@ -1036,12 +1080,12 @@
 					}
 				}
 			}
-			$this.ignoreSync = true;
+			$this.pushIgnoreSync();
 			$this.expandNode(parentKey, function(){
 				$this.server().createNewEntry(eType, opts, prefixName, parentEntry, function(desc){
 					if(!desc){
 						// internal error: folder already exists
-						$this.ignoreSync = false;
+						$this.popIgnoreSync();
 						return;
 					}
 					var node = $this.addTreeItem(desc, parentKey);
@@ -1049,7 +1093,7 @@
 						$this.tree.expandNode(parentKey);
 					}
 					$this.sort();
-					$this.ignoreSync = false;
+					$this.popIgnoreSync();
 					if(!node){
 						return;
 					}
@@ -1281,7 +1325,11 @@
 			var children = parent.getChildren();
 			var testName = null;
 			for(var suffix = 1; ; suffix++ ){
-				testName = name + ' ' + suffix;
+				if(suffix == 1){
+					testName = name;
+				} else {
+					testName = name + ' ' + suffix;
+				}
 				var bFound = false;
 				for(var chId in children){
 					if(children[chId].getName() == testName){

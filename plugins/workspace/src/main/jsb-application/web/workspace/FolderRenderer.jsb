@@ -8,6 +8,7 @@
 			this.addClass('fileRenderer');
 			this.loadCss('FileRenderer.css');
 		}
+		
 	},
 	
 	$server: {
