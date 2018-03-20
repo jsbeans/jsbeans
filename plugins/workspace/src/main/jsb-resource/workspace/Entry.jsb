@@ -138,7 +138,6 @@
 			if(this._stored){
 				return;
 			}
-
 			var doc = this.getEntryDoc();
 			
 			// common attrs

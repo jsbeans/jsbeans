@@ -140,7 +140,7 @@
 					var mtx = this.getId() + '_queryCache';
 					JSB.getLocker().lock(mtx);
 					if(!this.queryCache){
-						this.queryCache = new QueryCache(this.getId() + '_queryCache', this.cube);
+						this.queryCache = new QueryCache(this.cube);
 					}
 					JSB.getLocker().unlock(mtx);
 				}

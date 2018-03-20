@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.QueryEngine',
-
+	$session: false,
 	$server: {
 		$require: [
 		    'DataCube.Query.Transforms.QueryTransformer',

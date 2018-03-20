@@ -1,5 +1,6 @@
 {
 	$name: 'JSB.Workspace.FileArtifactStore',
+	$session: false,
 	$server: {
 		$require: 'JSB.IO.FileSystem',
 

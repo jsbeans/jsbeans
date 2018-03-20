@@ -1,7 +1,7 @@
 ({
 	$name: 'JSB.Store.Sql.SQLStore',
 	$parent: 'JSB.Store.DataStore',
-
+	$session: false,
 	$server: {
 		$require: [
 		    'JSB.Store.Sql.JDBC',

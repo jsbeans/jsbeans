@@ -1,5 +1,6 @@
 {
 	$name: 'JSB.Workspace.FileEntryStore',
+	$session: false,
 	$server: {
 		$require: 'JSB.IO.FileSystem',
 

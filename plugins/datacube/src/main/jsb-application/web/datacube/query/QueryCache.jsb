@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.QueryCache',
-	$fixedId: true,
+	$session: false,
 	
 	$server: {
 		$require: ['DataCube.Query.QueryCacheController', 
@@ -11,8 +11,7 @@
 		closeIteratorTimeout: 60000,
 		cacheMap: {},
 		
-		$constructor: function(id, cube){
-			this.id = id;
+		$constructor: function(cube){
 			$base();
 			this.cube = cube;
 			if(Config.has('datacube.queryCache.batchSize')){

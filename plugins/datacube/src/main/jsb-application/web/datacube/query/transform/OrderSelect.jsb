@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Query.Transforms.OrderSelect',
 	$parent: 'DataCube.Query.Transforms.Transformer',
-
+	$session: false,
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',
