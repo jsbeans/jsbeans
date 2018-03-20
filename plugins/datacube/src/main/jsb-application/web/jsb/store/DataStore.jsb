@@ -1,6 +1,6 @@
 ({
 	$name: 'JSB.Store.DataStore',
-
+	$session: false,
 	$server: {
 		$require: [
 		],

@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Query.Transforms.NestedQueryOptimization',
 	$parent: 'DataCube.Query.Transforms.Transformer',
-
+	$session: false,
 	$server: {
 		$require: [
 	        'DataCube.Query.Transforms.QueryTransformer',
