@@ -668,7 +668,7 @@
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
-                    this._dataSource.setFilters(globalFilters);
+                    this.setSourceFilters(this._dataSource, globalFilters);
                 }
             } else {
                 if(Object.keys(this._curFilters).length > 0){
@@ -1587,7 +1587,7 @@
                 div.append(list);
 
                 for (var j = 0; j < colorMap.length; j++) {
-                    list.append('<li><i style="background: #' + colorMap[j].color + ';"></i><span>' + colorMap[j].max + '</span></li>');
+                    list.append('<li><i style="background: #' + colorMap[j].color + ';"></i><span>' + Numeral.format(colorMap[j].max, '0 0') + '</span></li>');
                 }
 
                 return div.get(0);
@@ -1595,7 +1595,7 @@
 
             legend.addTo(this.map);
 
-            list.width(div.find('li:last-child span').width() + 25);
+            list.width(list.find('li:last-child span').width() + 25);
         },
 
         _createInfoControl: function(){
