@@ -104,6 +104,18 @@
 	        }
 	    },
 
+	    findRendersByKey: function(key){
+	        var renders = [];
+
+	        for(var i = 0; i < this._renders.length; i++){
+	            if(this._renders[i].getKey() == key){
+	                renders.push(this._renders[i]);
+	            }
+	        }
+
+	        return renders;
+	    },
+
 	    findRendersByRender: function(name){
 	        var renders = [];
 

@@ -23,7 +23,8 @@
                         name: {
                             render: 'dataBinding',
                             name: 'Имена частей',
-                            linkTo: 'source'
+                            linkTo: 'source',
+                            editor: 'input'
                         },
                         data: {
                             render: 'dataBinding',
@@ -62,6 +63,23 @@
                     }
                 }
             }
+        },
+        settings: {
+	        render: 'group',
+	        name: 'Общие настройки',
+            collapsable: true,
+            collapsed: true,
+            items: {
+                unionSeries: {
+                    render: 'item',
+                    name: 'Объединить все серии',
+                    optional: true,
+                    editor: 'none'
+                }
+            }
+        },
+        plotOptions: {
+	        render: null
         }
     },
     $client: {
@@ -104,13 +122,17 @@
             this.getElement().loader();
             this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
                 try {
-                    $this._schemeOpts.series[i].data = [];
+                    var data = [];
 
                     while($this._dataSource.next()){
                         for(var i = 0; i < $this._schemeOpts.series.length; i++){
-                            $this._schemeOpts.series[i].data.push({
+                            if(!data[i]){
+                                data[i] = [];
+                            }
+
+                            data[i].push({
                                 datacube: {
-                                    binding: $this._schemeOpts.series[i].nameSelector.binding()
+                                    binding: $this._schemeOpts.series[i].nameSelector.binding() || $this._schemeOpts.series[i].dataSelector.binding()
                                 },
                                 name: $this._schemeOpts.series[i].nameSelector.value(),
                                 y: $this._schemeOpts.series[i].dataSelector.value()
@@ -119,10 +141,10 @@
                     }
 
                     if(opts && opts.isCacheMod){
-                        $this.storeCache($this._schemeOpts.series);
+                        $this.storeCache(data);
                     }
 
-                    $this.buildChart($this._schemeOpts.series);
+                    $this.buildChart(data);
                 } catch (ex){
                     console.log('PieChart load data exception');
                     console.log(ex);
@@ -133,7 +155,8 @@
         },
 
         _buildChart: function(data){
-            var baseChartOpts;
+            var baseChartOpts,
+                unionSeries = this.getContext().find('settings unionSeries').checked();
 
             try {
                 function includeData(chartOpts, data){
@@ -141,21 +164,49 @@
 
                     var seriesContext = $this.getContext().find('series').values();
 
-                    for(var i = 0; i < seriesContext.length; i++){
+                    if(unionSeries){
+                        var newData = [],
+                            bindings = [],
+                            series0 = JSB.clone(chartOpts.series[0]);
+
+                        for(var i = 0; i < data.length; i++){
+                            newData = newData.concat(data[i]);
+                            bindings.push(seriesContext[i].find('data').binding());
+                        }
+
                         var series = {
                             datacube: {
-                                binding: seriesContext[i].find('name').binding()
+                                bindings: bindings
                             },
-                            data: data[i].data,
-                            size: seriesContext[i].find('size').value(),
-                            innerSize: seriesContext[i].find('innerSize').value(),
+                            data: newData,
+                            size: seriesContext[0].find('size').value(),
+                            innerSize: seriesContext[0].find('innerSize').value(),
                             dataLabels: {
-                                color: seriesContext[i].find('dataLabels color').value(),
-                                distance: seriesContext[i].find('dataLabels distance').value()
+                                color: seriesContext[0].find('dataLabels color').value(),
+                                distance: seriesContext[0].find('dataLabels distance').value()
                             }
                         };
 
-                        JSB.merge(true, chartOpts.series[i], series);
+                        JSB.merge(true, series0, series);
+
+                        chartOpts.series = [series0];
+                    } else {
+                        for(var i = 0; i < seriesContext.length; i++){
+                            var series = {
+                                datacube: {
+                                    binding: seriesContext[i].find('name').binding() || seriesContext[i].find('data').binding()
+                                },
+                                data: data[i],
+                                size: seriesContext[i].find('size').value(),
+                                innerSize: seriesContext[i].find('innerSize').value(),
+                                dataLabels: {
+                                    color: seriesContext[i].find('dataLabels color').value(),
+                                    distance: seriesContext[i].find('dataLabels distance').value()
+                                }
+                            };
+
+                            JSB.merge(true, chartOpts.series[i], series);
+                        }
                     }
 
                     return chartOpts;

@@ -18,6 +18,10 @@
         {
             name: 'completeWidget',
             render: 'Unimap.Render.CompleteWidgetBinding'
+        },
+        {
+            name: 'autocompleteGroup',
+            render: 'Unimap.Render.AutocompleteGroup'
         }
     ],
 
@@ -33,6 +37,10 @@
         {
             name: 'embeddedWidget',
             render: 'Datacube.ValueSelectors.EmbeddedWidgetBinding'
+        },
+        {
+            name: 'autocompleteGroup',
+            render: 'Unimap.ValueSelectors.Group'
         }
     ],
 }

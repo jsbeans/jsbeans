@@ -135,6 +135,16 @@
 	        }
 
 	        $base();
+	    },
+
+	    setValues: function(values){
+	        for(var i = 0; i < values.length; i++){
+	            if(!this._values.values[i]){
+	                this.addItem(values[i]);
+	            } else {
+	                this._editors[i].setValue(values[i]);
+	            }
+	        }
 	    }
 	}
 }

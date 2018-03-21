@@ -61,8 +61,17 @@
 }
 
 .dataBindingRender > .jsb-comboEditor .curVal .sliceRender {
-    height: 100%;
-    padding: 5px 0 5px 15px;
+    width: 100%;
+    cursor: pointer;
+    padding: 1px 4px;
+    font-size: 14px;
+    color: #555;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
+    overflow: hidden;
+    vertical-align: middle;
+    padding-left: 16px;
     position: relative;
 }
 
@@ -82,7 +91,7 @@
 }
 
 .dataBindingRender > .jsb-comboEditor .sliceRender:before {
-    top: -3px;
+    top: -7px;
 }
 
 .dataBindingRender > .jsb-select .sliceRender:before {

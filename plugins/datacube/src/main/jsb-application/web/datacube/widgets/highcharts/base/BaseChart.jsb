@@ -993,7 +993,7 @@
         _select: function(filters, b1, b2){
             for(var i in filters){
                 for(var j = 0; j < this.chart.series.length; j++){
-                    if(this.chart.series[j].options.datacube.binding === filters[i].field){
+                    if(this.chart.series[j].options.datacube.binding === filters[i].field || this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
                             if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
                                 this.chart.series[j].points[k].select(b1, b2);

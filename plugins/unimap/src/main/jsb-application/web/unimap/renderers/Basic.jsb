@@ -171,6 +171,14 @@
             // this._values.valueType = this._scheme.valueType;
         },
 
+        findRenderByKey: function(key){
+            return this._schemeController.findRenderByKey(key);
+        },
+
+        findRendersByKey: function(key){
+            return this._schemeController.findRendersByKey(key);
+        },
+
         getKey: function(){
             return this._key;
         },

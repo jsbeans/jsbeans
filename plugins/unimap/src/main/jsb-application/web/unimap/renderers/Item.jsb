@@ -131,6 +131,18 @@
 	        }
 
 	        $base();
+	    },
+
+	    setValues: function(values){
+	        for(var i = 0; i < values.length; i++){
+	            if(!this._values.values[i]){
+	                this.addItem(values[i]);
+	            } else {
+	                // todo: multiple
+	                this._editors[i].setValue ? this._editors[i].setValue(values[i]) : this._editors[i].setData(values[i]);
+	                this._values.values[i].value = values[i];
+	            }
+	        }
 	    }
     }
 }

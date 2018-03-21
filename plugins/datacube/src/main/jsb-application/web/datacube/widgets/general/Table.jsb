@@ -196,10 +196,21 @@
 	        }
 	    },
 	    columns: {
-	        render: 'group',
+	        render: 'autocompleteGroup',
 	        name: 'Столбцы',
 	        collapsable: true,
 	        multiple: true,
+	        linkTo: 'rows',
+	        linkedFields: {
+	            title: {
+	                type: 'any',
+	                repeat: true
+	            },
+	            text: {
+	                type: 'any',
+	                repeat: true
+	            }
+	        },
 	        items: {
 	            title: {
                     render: 'item',
