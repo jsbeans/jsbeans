@@ -18,6 +18,8 @@ import akka.event.LoggingAdapter;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.SessionManager;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.jsbeans.Core;
@@ -82,6 +84,8 @@ public class HttpService extends Service {
 
         context.setDescriptor("WEB-INF/web.xml");
         context.setContextPath("/");
+        SessionManager sm = context.getSessionHandler().getSessionManager();
+        sm.getSessionCookieConfig().setName("_jsbSession_" + portVal.toString());
         
         // prevent directory browsing
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");

@@ -14,11 +14,13 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
          id="WebApp_ID" version="3.0">
     <display-name>jsBeans</display-name>
+    <!-- 
     <session-config>
         <cookie-config>
             <name>_dSessionId</name>
         </cookie-config>
     </session-config>
+     -->
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
         <welcome-file>index.htm</welcome-file>

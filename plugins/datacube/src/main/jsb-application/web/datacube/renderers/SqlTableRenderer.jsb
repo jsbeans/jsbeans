@@ -12,10 +12,11 @@
 			this.loadCss('SqlTableRenderer.css');
 			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();
+/*				
 				if(e.descriptor.isView){
 					$this.addClass('view');
 				}
-				
+*/				
 				if(opts.showSource && e.getParentId()){
 					$this.addClass('showSource');
 					$this.server().getSource(e, function(sourceEntry){

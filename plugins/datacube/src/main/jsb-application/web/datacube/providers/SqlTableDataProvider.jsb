@@ -37,7 +37,7 @@
 		},
 		
 		getTableDescriptor: function(){
-			return this.entry.descriptor;
+			return this.entry.getDescriptor();
 		},
 
 		getTableFullName:function(){

@@ -6269,7 +6269,7 @@ JSB({
 							respPacket.result = ret;
 							respPacket.success = true;
 						}
-						self.rpc('handleRpcResponse', [[respPacket]]);
+						self.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
 					});
 				} else {
 					if(fail){
@@ -6279,7 +6279,7 @@ JSB({
 						respPacket.result = ret;
 						respPacket.success = true;
 					}
-					this.rpc('handleRpcResponse', [[respPacket]]);
+					this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
 				}
 			} else {
 				if(JSB.isFuture(ret)){
