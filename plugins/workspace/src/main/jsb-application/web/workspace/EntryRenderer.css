@@ -18,16 +18,15 @@
     overflow: hidden;
     padding-left: 26px;
 	box-sizing: border-box;
-	padding-top: 2px;
-    padding-bottom: 3px;
+	padding-top: 0;
+    padding-bottom: 1px;
     font-size: 14px;
     white-space: nowrap;
 	vertical-align: middle;
+	max-width: 100%;
 }
 
 .entryRenderer > .title._dwp_primitiveEditor {
-	padding-top: 0;
-	padding-bottom: 0;
 	height: auto !important;
 }
 

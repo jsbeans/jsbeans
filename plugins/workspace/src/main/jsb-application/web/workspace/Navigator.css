@@ -44,6 +44,8 @@
 	max-width: 400px;
 	overflow: hidden;
     text-overflow: ellipsis;
+	padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .icon,

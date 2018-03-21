@@ -294,14 +294,22 @@
 			if(eDesc.eInst){
 				return eDesc.eInst;
 			}
-			var eJsb = JSB.get(eDesc.eType);
-			if(!eJsb){
-				throw new Error('Failed to create workspace entry with id: "' + id + '" due to missing it\'s bean: ' + eDesc.eType);
+			var eMtxName = 'JSB.Workspace.Workspace.eInst.' + id;
+			JSB.getLocker().lock(eMtxName);
+			try {
+				if(eDesc.eInst){
+					return eDesc.eInst; 
+				}
+				var eJsb = JSB.get(eDesc.eType);
+				if(!eJsb){
+					throw new Error('Failed to create workspace entry with id: "' + id + '" due to missing it\'s bean: ' + eDesc.eType);
+				}
+				var eInst = new (eJsb.getClass())(id, this);
+				eDesc.eInst = eInst;
+			} finally {
+				JSB.getLocker().unlock(eMtxName);
 			}
-			var eInst = new (eJsb.getClass())(id, this);
-			eDesc.eInst = eInst;
-			
-			return eInst;
+			return eDesc.eInst;
 		},
 
 		remove: function(){
