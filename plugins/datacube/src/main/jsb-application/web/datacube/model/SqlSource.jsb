@@ -11,7 +11,8 @@
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
-		           'JSB.Store.StoreManager'],
+		           'JSB.Store.StoreManager',
+		           'JSB.Crypt.MD5'],
 		
 		settings: null,
 		
@@ -75,8 +76,8 @@
 				var sDesc = schema[sName];
 				for(var tName in sDesc.tables){
 					var tDesc = sDesc.tables[tName];
-					var tId = this.getId() + '|' + sName + '|' + tName;
-					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
+					var tId = MD5.md5(this.getId() + '|' + sName + '|' + tName);
+//					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
 					if(existedTables[tId]){
 						// already exists
 						existedTables[tId].updateDescriptor(tDesc);

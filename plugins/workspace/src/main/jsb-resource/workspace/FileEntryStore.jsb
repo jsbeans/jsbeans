@@ -2,7 +2,7 @@
 	$name: 'JSB.Workspace.FileEntryStore',
 	$session: false,
 	$server: {
-		$require: 'JSB.IO.FileSystem',
+		$require: ['JSB.IO.FileSystem'],
 
 		$constructor: function(opts){
 			this.options = opts;
