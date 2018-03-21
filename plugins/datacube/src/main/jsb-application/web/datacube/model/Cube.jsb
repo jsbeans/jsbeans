@@ -202,14 +202,16 @@
 						// construct slices
 						for(var i = 0; i < snapshot.slices.length; i++){
 							var sDesc = snapshot.slices[i];
-							var slice = this.getWorkspace().entry(sDesc.id);
-							if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
-								continue;
+							if(this.getWorkspace().existsEntry(sDesc.id)){
+								var slice = this.getWorkspace().entry(sDesc.id);
+								if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
+									continue;
+								}
+								slice.setQuery(sDesc.query);
+								slice.setQueryParams(sDesc.queryParams);
+								this.slices[sDesc.id] = slice;
+								this.slicePositions[sDesc.id] = sDesc.position;
 							}
-							slice.setQuery(sDesc.query);
-							slice.setQueryParams(sDesc.queryParams);
-							this.slices[sDesc.id] = slice;
-							this.slicePositions[sDesc.id] = sDesc.position;
 						}
 						
 					}
