@@ -2,10 +2,10 @@
 	$name: 'DataCube.Model.SqlTable',
 	$parent: 'JSB.Workspace.Entry',
 	
-	descriptor: null,
-	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
+		
+		descriptor: null,
 		
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.SqlTableNode');

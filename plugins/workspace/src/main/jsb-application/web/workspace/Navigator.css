@@ -42,6 +42,8 @@
 .workspaceNavigator > ul.wnbContainer > li.tag > .renderer {
 	vertical-align: top;
 	max-width: 400px;
+	overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .workspaceNavigator > ul.wnbContainer > li.tag > .icon,
