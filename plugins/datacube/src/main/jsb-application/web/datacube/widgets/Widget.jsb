@@ -504,204 +504,205 @@
 		},
 
 		fetch: function(sourceId, dashboard, opts){
-			var batchSize = opts.batchSize || 50;
-			var source = dashboard.getWorkspace().entry(sourceId);
-			var data = [];
-			if(opts.reset){
-				this.needBreak = true;
-			}
-
-			var context = 'main';
-			if(opts.context){
-				context = opts.context;
-			}
-
-			JSB.getLocker().lock('fetch_' + $this.getId());
-			this.needBreak = false;
-
-			function clearLayerIterators(layerName){
-				var iteratorId = 'it_' + context + '_' + layerName + '_' + sourceId;
-				if($this.iterators[iteratorId]){
-					try {
-						$this.iterators[iteratorId].close();
-					}catch(e){}
-					delete $this.iterators[iteratorId];
+			var mtx = 'fetch_' + $this.getId();
+			JSB.getLocker().lock(mtx);
+			try {
+				var batchSize = opts.batchSize || 50;
+				var source = dashboard.getWorkspace().entry(sourceId);
+				var data = [];
+				if(opts.reset){
+					this.needBreak = true;
 				}
-				if($this.completed[iteratorId]){
-					delete $this.completed[iteratorId];
+	
+				var context = 'main';
+				if(opts.context){
+					context = opts.context;
 				}
-			}
-
-			// generate cursor
-			if(opts.reset || !this.cursor[context]){
-				this.cursor[context] = {
-					position: 0,
-					layer: 0,
-					layers: ['main']
-				};
-
-				if(opts.rowKeyColumns && opts.rowKeyColumns.length > 0){
-					if(opts.layers.back){
-						this.cursor[context].layers.push('back');
-					}
-					if(opts.layers.hover){
-						this.cursor[context].layers.push('hover');
-					}
-				}
-				$this.dataMap[context] = {}
-				clearLayerIterators('main');
-				clearLayerIterators('back');
-				clearLayerIterators('hover');
-			}
-
-			var contextBuffers = $this.buffers[context];
-			if(!contextBuffers || opts.reset){
-				contextBuffers = $this.buffers[context] = {};
-			}
-			var contextLayerDataMap = $this.layerDataMap[context];
-			if(!contextLayerDataMap || opts.reset){
-				contextLayerDataMap = $this.layerDataMap[context] = {};
-			}
-
-			function buildId(el){
-				var id = '';
-				if(!opts.rowKeyColumns || opts.rowKeyColumns.length == 0){
-					return JSB.generateUid();
-				}
-				for(var i = 0; i < opts.rowKeyColumns.length; i++){
-					var qColName = opts.rowKeyColumns[i];
-					var colParts = qColName.split(/[\.\/]/);
-					var curScope = el;
-					for(var j = 0; j < colParts.length; j++){
-						curScope = curScope[colParts[j]];
-					}
-					if(JSB.isObject(curScope) || JSB.isArray(curScope) || JSB.isNull(curScope)){
-						curScope = JSON.stringify(curScope);
-					}
-					id += MD5.md5('' + curScope);
-				}
-				return id;
-			}
-
-
-			function fillLayerBuffer(layerName){
-				if(!contextBuffers[layerName]){
-					contextBuffers[layerName] = [];
-				}
-				if(!contextLayerDataMap[layerName]){
-					contextLayerDataMap[layerName] = {};
-				}
-				var iteratorId = 'it_' + context + '_' + layerName + '_' + sourceId;
-
-				if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
-					// figure out data provider
-					if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-						var extQuery = opts.layers[layerName];
-                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, useCache: true});
-						$this.completed[iteratorId] = false;
-					} else {
-						// TODO
-					}
-				}
-				var i = 0;
-				for(; i < batchSize || opts.readAll; i++){
-					if($this.needBreak){
-						throw new Error('Fetch broke');
+	
+				this.needBreak = false;
+	
+				function clearLayerIterators(layerName){
+					var iteratorId = 'it_' + context + '_' + layerName + '_' + sourceId;
+					if($this.iterators[iteratorId]){
+						try {
+							$this.iterators[iteratorId].close();
+						}catch(e){}
+						delete $this.iterators[iteratorId];
 					}
 					if($this.completed[iteratorId]){
-						break;
+						delete $this.completed[iteratorId];
 					}
-					var el = null;
-					try {
-						el = $this.iterators[iteratorId].next();
-					}catch(e){
-						el = null;
-					}
-					if(!el){
-						if($this.iterators[iteratorId]){
-							try {
-								$this.iterators[iteratorId].close();
-							}catch(e){}
-							delete $this.iterators[iteratorId];
-						}
-						$this.completed[iteratorId] = true;
-						break;
-					}
-					var item = {id: buildId(el), data:el};
-					contextBuffers[layerName].push(item);
-					contextLayerDataMap[layerName][item.id] = el;
 				}
-
-				return i;
-			}
-
-			function findLayerRecord(layerName, rId){
-				while(true){
-					if(contextLayerDataMap[layerName] && JSB.isDefined(contextLayerDataMap[layerName][rId])){
-						return contextLayerDataMap[layerName][rId];
+	
+				// generate cursor
+				if(opts.reset || !this.cursor[context]){
+					this.cursor[context] = {
+						position: 0,
+						layer: 0,
+						layers: ['main']
+					};
+	
+					if(opts.rowKeyColumns && opts.rowKeyColumns.length > 0){
+						if(opts.layers.back){
+							this.cursor[context].layers.push('back');
+						}
+						if(opts.layers.hover){
+							this.cursor[context].layers.push('hover');
+						}
 					}
-					if(!fillLayerBuffer(layerName)){
+					$this.dataMap[context] = {}
+					clearLayerIterators('main');
+					clearLayerIterators('back');
+					clearLayerIterators('hover');
+				}
+	
+				var contextBuffers = $this.buffers[context];
+				if(!contextBuffers || opts.reset){
+					contextBuffers = $this.buffers[context] = {};
+				}
+				var contextLayerDataMap = $this.layerDataMap[context];
+				if(!contextLayerDataMap || opts.reset){
+					contextLayerDataMap = $this.layerDataMap[context] = {};
+				}
+	
+				function buildId(el){
+					var id = '';
+					if(!opts.rowKeyColumns || opts.rowKeyColumns.length == 0){
+						return JSB.generateUid();
+					}
+					for(var i = 0; i < opts.rowKeyColumns.length; i++){
+						var qColName = opts.rowKeyColumns[i];
+						var colParts = qColName.split(/[\.\/]/);
+						var curScope = el;
+						for(var j = 0; j < colParts.length; j++){
+							curScope = curScope[colParts[j]];
+						}
+						if(JSB.isObject(curScope) || JSB.isArray(curScope) || JSB.isNull(curScope)){
+							curScope = JSON.stringify(curScope);
+						}
+						id += MD5.md5('' + curScope);
+					}
+					return id;
+				}
+	
+	
+				function fillLayerBuffer(layerName){
+					if(!contextBuffers[layerName]){
+						contextBuffers[layerName] = [];
+					}
+					if(!contextLayerDataMap[layerName]){
+						contextLayerDataMap[layerName] = {};
+					}
+					var iteratorId = 'it_' + context + '_' + layerName + '_' + sourceId;
+	
+					if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
+						// figure out data provider
+						if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+							var extQuery = opts.layers[layerName];
+	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, useCache: true});
+							$this.completed[iteratorId] = false;
+						} else {
+							// TODO
+						}
+					}
+					var i = 0;
+					for(; i < batchSize || opts.readAll; i++){
+						if($this.needBreak){
+							throw new Error('Fetch broke');
+						}
+						if($this.completed[iteratorId]){
+							break;
+						}
+						var el = null;
+						try {
+							el = $this.iterators[iteratorId].next();
+						}catch(e){
+							el = null;
+						}
+						if(!el){
+							if($this.iterators[iteratorId]){
+								try {
+									$this.iterators[iteratorId].close();
+								}catch(e){}
+								delete $this.iterators[iteratorId];
+							}
+							$this.completed[iteratorId] = true;
+							break;
+						}
+						var item = {id: buildId(el), data:el};
+						contextBuffers[layerName].push(item);
+						contextLayerDataMap[layerName][item.id] = el;
+					}
+	
+					return i;
+				}
+	
+				function findLayerRecord(layerName, rId){
+					while(true){
+						if(contextLayerDataMap[layerName] && JSB.isDefined(contextLayerDataMap[layerName][rId])){
+							return contextLayerDataMap[layerName][rId];
+						}
+						if(!fillLayerBuffer(layerName)){
+							return null;
+						}
+					}
+				}
+	
+				function nextData(){
+					var cursor = $this.cursor[context];
+					if(cursor.layer >= cursor.layers.length){
 						return null;
 					}
-				}
-			}
-
-			function nextData(){
-				var cursor = $this.cursor[context];
-				if(cursor.layer >= cursor.layers.length){
-					return null;
-				}
-				var layerName = cursor.layers[cursor.layer];
-				var item = null;
-
-				while(true){
-					while(!contextBuffers[layerName] || contextBuffers[layerName].length <= cursor.position){
-						fillLayerBuffer(layerName);
-						if(contextBuffers[layerName].length <= cursor.position){
-							// reaches end of buffer
-							cursor.position = 0;
-							cursor.layer++;
-							if(cursor.layer >= cursor.layers.length){
-								return null;
+					var layerName = cursor.layers[cursor.layer];
+					var item = null;
+	
+					while(true){
+						while(!contextBuffers[layerName] || contextBuffers[layerName].length <= cursor.position){
+							fillLayerBuffer(layerName);
+							if(contextBuffers[layerName].length <= cursor.position){
+								// reaches end of buffer
+								cursor.position = 0;
+								cursor.layer++;
+								if(cursor.layer >= cursor.layers.length){
+									return null;
+								}
+								layerName = cursor.layers[cursor.layer]
+								continue;
 							}
-							layerName = cursor.layers[cursor.layer]
+							break;
+						}
+	
+						item = contextBuffers[layerName][cursor.position++];
+						if(!$this.dataMap[context][item.id]){
+							break;
+						}
+					}
+	
+					$this.dataMap[context][item.id] = true;
+					// prepare element
+					var el = {};
+					el[layerName] = {};
+					for(var f in item.data){
+						el[layerName][f] = item.data[f];
+					}
+	
+					// append right layers
+					for(var i = cursor.layer + 1; i < cursor.layers.length; i++){
+						var rightLayer = cursor.layers[i];
+						var rVal = findLayerRecord(rightLayer, item.id);
+						if(!rVal){
 							continue;
 						}
-						break;
+						// write values
+						el[rightLayer] = {};
+						for(var f in rVal){
+							el[rightLayer][f] = rVal[f];
+						}
 					}
-
-					item = contextBuffers[layerName][cursor.position++];
-					if(!$this.dataMap[context][item.id]){
-						break;
-					}
+	
+					return el;
 				}
 
-				$this.dataMap[context][item.id] = true;
-				// prepare element
-				var el = {};
-				el[layerName] = {};
-				for(var f in item.data){
-					el[layerName][f] = item.data[f];
-				}
-
-				// append right layers
-				for(var i = cursor.layer + 1; i < cursor.layers.length; i++){
-					var rightLayer = cursor.layers[i];
-					var rVal = findLayerRecord(rightLayer, item.id);
-					if(!rVal){
-						continue;
-					}
-					// write values
-					el[rightLayer] = {};
-					for(var f in rVal){
-						el[rightLayer][f] = rVal[f];
-					}
-				}
-
-				return el;
-			}
-
-			try {
 				for(var i = 0; i < batchSize || opts.readAll; i++){
 					if($this.needBreak){
 						throw new Error('Fetch broke');
@@ -750,31 +751,30 @@
 				if($this.needBreak){
 					throw new Error('Fetch broke');
 				}
-			} finally {
-				JSB.getLocker().unlock('fetch_' + $this.getId());
-			}
+				
+				return encoded;
 
-/*
-			Log.debug(JSON.stringify(data));
-			Log.debug(JSON.stringify(encoded));
-*/
-			return encoded;
+			} finally {
+				JSB.getLocker().unlock(mtx);
+			}
 		},
 		
 		executeQuery: function(sourceId, dashboard, opts){
-			var extQuery = (opts && opts.extQuery) || {};
-			var wrapQuery = (opts && opts.wrapQuery) || {};
-			var batchSize = opts.batchSize || 50;
-			var source = dashboard.getWorkspace().entry(sourceId);
-			var data = [];
-			if(opts.reset){
-				this.needBreak = true;
-			}
-			
-			JSB.getLocker().lock('executeQuery_' + $this.getId());
-			this.needBreak = false;
 			var it = null;
+			var data = [];
+			
+			var mtx = 'executeQuery_' + $this.getId();
+			JSB.getLocker().lock(mtx);
 			try {
+				var extQuery = (opts && opts.extQuery) || {};
+				var wrapQuery = (opts && opts.wrapQuery) || {};
+				var batchSize = opts.batchSize || 50;
+				var source = dashboard.getWorkspace().entry(sourceId);
+				if(opts.reset){
+					this.needBreak = true;
+				}
+				
+				this.needBreak = false;
 				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 	            	it = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: true});
 				} else {
@@ -794,9 +794,9 @@
 				}
 			} finally {
 				if(it){
-					it.close();
+					try { it.close(); } catch(e){}
 				}
-				JSB.getLocker().unlock('executeQuery_' + $this.getId());
+				JSB.getLocker().unlock(mtx);
 			}
 			
 			return data;
