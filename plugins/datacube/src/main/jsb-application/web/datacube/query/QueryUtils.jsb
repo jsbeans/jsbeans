@@ -459,7 +459,7 @@
             return isIsolated;
         },
 
-        extractIsolatedQueryFilter: function(dcQuery) {
+        extractSelfOrForeignQueryFilter: function(dcQuery, selfOnly) {
             function checkIsolated(expr){
                 var isIsolated = true;
                 var contexts = {};
@@ -504,7 +504,8 @@
 
             function filteredBinaryCondition(op, args, path) {
                 for (var i in args) {
-                    if (!checkIsolated(args[i])) {
+                    var isIsolated = checkIsolated(args[i]);
+                    if (selfOnly ? !isIsolated : isIsolated) {
                         return null;
                     }
                 }
@@ -536,8 +537,9 @@
                         var opp = Object.keys(exps[field])[0];
                         var rightExpr = exps[field][opp];
 
+                        var isIsolated = checkIsolated(rightExpr);
 
-                        if (isIsolated) {
+                        if (selfOnly ? isIsolated : !isIsolated) {
                             resultExps[field] = exps[field];
                         }
                     }
@@ -545,7 +547,9 @@
                 return Object.keys(resultExps).length > 0 ? resultExps : null;
             }
 
-            var filtered = filteredMultiFilter(dcQuery.$filter, ['$and']);
+            var filtered = dcQuery.$filter && Object.keys(dcQuery.$filter).length > 0
+                    ? filteredMultiFilter(dcQuery.$filter, ['$and'])
+                    : null;
             return filtered;
         },
 
@@ -1320,7 +1324,7 @@
         defineContextQueries: function(dcQuery){
             var idx = 0;
             var contextQueries = {};
-            $this.walkAllSubQueries(dcQuery, function(query,isFromQuery, isValueQuery, isViewQuery){
+            $this.walkAllSubQueries(dcQuery, function(query, isFromQuery, isValueQuery, isViewQuery){
                 if (!query.$context) query.$context = 'context_' + idx++;
                 if (contextQueries[query.$context] && contextQueries[query.$context] != query) {
                     // remove if context has no links

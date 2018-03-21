@@ -13,14 +13,6 @@
         	QueryTransformer.register(this);
         },
 
-		transform: function(dcQuery, cubeOrDataProvider){
-
-            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before NestedQueryOptimization: ' + JSON.stringify(dcQuery, 0, 2));
-
-		    var resultQuery = $this._buildViews(dcQuery);
-		    return resultQuery;
-		},
-
         /**
         * 1) Выделяет подзапросы с одинаковой основной частью
         * 2) объединяет их в один с общим $select
@@ -29,64 +21,128 @@
         * 4.1) если запрос лежал во $from - заменяется прямым обращением к вьюхе
         * 4.2) если запрос лежал в $select - заменяется запросом к вьюхе с выбором полей вьюхи как есть
         */
+		transform: function(dcQuery, cubeOrDataProvider){
+
+            QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Query before NestedQueryOptimization: ' + JSON.stringify(dcQuery, 0, 2));
+
+		    var resultQuery = $this._buildViews(dcQuery);
+		    return resultQuery;
+		},
+
+
         _buildViews: function (dcQuery) {
-//debugger;
             var views = {};
-            $this._walkViews(dcQuery, function(view, count){
+            $this._walkViews(dcQuery, true, function(view, count){
+                // extract only if fixed or multiple
                 if (!view.fixed && count < 2 ) return;
 
-                views[view.name] = JSB.merge({$select: view.fields}, view.query);
-                for(var q in view.linkedQueries) {
-                    var query = view.linkedQueries[q];
+                view.fixed = true; // store view
 
-                    if (view.linkedFromQueries.indexOf(query) == -1) {
-                        query.$select = $this._buildSelectFromView(query, view);
-                        query.$filter = $this._buildFilterFromView(query, view);
-                        if (!query.$filter) delete query.$filter;
-                        delete query.$groupBy;
-                        query.$from = view.name;
-                    } else {
-                        // replace self query with name
-                        QueryUtils.walkAllSubQueries(dcQuery, function(subQuery){
-                            if (subQuery.$from && subQuery.$from.$context == query.$context) {
-                                subQuery.$from = view.name;
-                            }
-                        });
-                    }
-                }
+                views[view.name] = JSB.merge({$select: view.fields}, view.query);
+                $this._fixViewFieldsForeignContext(view);
+                $this._rebuildLinkedQueries(dcQuery, view);
             });
             dcQuery.$views = views;
             return dcQuery;
         },
 
-        _walkViews: function(dcQuery, viewCallback) {
+        _fixViewFieldsForeignContext: function(view){
+            function fixFields(exp, oldContext){
+                if (typeof exp === 'object') {
+                    if (exp.$field && exp.$context == oldContext) {
+                        exp.$context = view.query.$context;
+                        return;
+                    }
+                    for(var i in exp) if (exp.hasOwnProperty(i)) {
+                        fixFields(exp[i], oldContext);
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for(var i in exp){
+                        fixFields(exp[i], oldContext);
+                    }
+                }
+            }
 //debugger;
+            for(var q in view.linkedQueries) {
+                var query = view.linkedQueries[q];
+                if (query.$context != view.query.$context) {
+                    for(var f in view.fields){
+                        fixFields(view.fields[f], query.$context);
+                    }
+                }
+            }
+        },
+
+        _rebuildLinkedQueries: function(dcQuery, view){
+//if ($this.getJsb().$name.indexOf('LinkedNestedQueryOptimization') != -1)
+//    debugger;
+            for(var q in view.linkedQueries) {
+                var query = view.linkedQueries[q];
+                query.$select = $this._buildSelectFromView(query, view);
+                query.$filter = $this._buildFilterFromView(query, view);
+                if (!query.$filter) delete query.$filter;
+                delete query.$groupBy;
+                query.$from = view.name;
+            }
+
+            for(var q in view.linkedFromQueries) {
+                var query = view.linkedFromQueries[q];
+                query.$from = view.name;
+            }
+        },
+
+        _walkViews: function(dcQuery, includeFrom, viewCallback) {
+if ($this.getJsb().$name.indexOf('LinkedNestedQueryOptimization') != -1)
+    debugger;
+
+            function findParentFromQuery(query, callback){
+                var parentFromQuery = null;
+                // replace self query with name
+                QueryUtils.walkAllSubQueries(dcQuery, function(subQuery){
+                    if (subQuery.$from && subQuery.$from == query
+                            || typeof subQuery.$from === 'string' && subQuery.$from == query.$context
+                            || typeof subQuery.$from === 'object' && subQuery.$from.$context == query.$context) {
+                        parentFromQuery = subQuery;
+                        callback(subQuery);
+                    }
+                });
+                if (!parentFromQuery) {
+                    throw new Error('Internal error: From query parent not found for query ' + query.$context);
+                }
+                return parentFromQuery;
+            }
+
             var views = {}, viewsUseCount = {}, viewKeysOrder = [];
-            $this._walkAllViews(dcQuery, function(viewKey, viewQuery, viewFields, linkedQuery, isFromQuery){
+            $this._walkAllViews(dcQuery, includeFrom, function(viewKey, viewQuery, viewFields, linkedQuery, isFromQuery){
 //                if (!isFromQuery) throw new Error('Internal error: failed view query type');
                 if(!views[viewKey]) {
                     var view = views[viewKey] = {
                         key: viewKey,
                         name: linkedQuery.$context || 'view'+(viewKeysOrder.length+1),
-                        fixed : isFromQuery,
+                        fixed : !!isFromQuery,
                         fields:  viewFields,
                         query: viewQuery,
-                        linkedQueries: [linkedQuery],
-                        linkedFromQueries: isFromQuery ? [linkedQuery] : [],
+                        linkedQueries: [],
+                        linkedFromQueries: [],
                     };
                     view.query.$context  = linkedQuery.$context || view.name;
                     viewKeysOrder.push(viewKey);
                     viewsUseCount[viewKey] = 1;
                 } else {
                     var view = views[viewKey];
-                    if (view.linkedQueries.indexOf(linkedQuery) == -1) {
-                        view.linkedQueries.push(linkedQuery);
-                    }
-                    if (isFromQuery && view.linkedFromQueries.indexOf(linkedQuery) == -1) {
-                        view.linkedFromQueries.push(linkedQuery);
-                    }
                     view.fields = $this._mergeFields(view.fields, viewFields);
                     viewsUseCount[viewKey] = viewsUseCount[viewKey] + 1;
+                }
+
+                if (!isFromQuery && view.linkedQueries.indexOf(linkedQuery) == -1) {
+                    view.linkedQueries.push(linkedQuery);
+                }
+                if (isFromQuery) {
+                    findParentFromQuery(linkedQuery, function(fromQuery){
+                        if (view.linkedFromQueries.indexOf(fromQuery) == -1) {
+                            view.linkedFromQueries.push(fromQuery);
+                        }
+                    });
                 }
             });
 
@@ -94,30 +150,21 @@
                 var key = viewKeysOrder[i];
                 var view = views[key];
                 var count = viewsUseCount[key];
-//                if (view.query.$from) {
-//                    $this._generateViewFromSelect(view);
-//                }
                 viewCallback(view, count);
             }
         },
 
-        _walkAllViews: function (dcQuery, localViewCallback) {
+        _walkAllViews: function (dcQuery, includeFrom, localViewCallback) {
 //debugger;
             QueryUtils.walkAllSubQueries(dcQuery, function(query, isFromQuery, isValueQuery, isViewQuery, path){
                 if (query.$sql) {
-                    return; // skip embedded SQL query
+                    return false; // skip embedded SQL query
                 }
-                if (!isFromQuery && !query.$filter && !query.$groupBy /*&& !query.$from*/ && !query.$sort && !query.$distinct) {
-                    return; // skip simple cube
+                if (!includeFrom && !isFromQuery) {
+                    return false; // extract only $from queries
                 }
 
-//                if (!isFromQuery) {
-//                    return; // extract only $from queries
-//                }
-
-                // skip not isolated subqueries
-                var isIsolated = QueryUtils.checkQueryIsIsolated(query);
-                if (!isIsolated) {
+                if(!$this._checkQueryHasView(query, isFromQuery)) {
                     return;
                 }
 
@@ -131,6 +178,18 @@
 
                 localViewCallback(viewKey, viewQuery, viewFields, query, isFromQuery);
             });
+        },
+
+        _checkQueryHasView: function(query, isFromQuery){
+            if (!isFromQuery && !query.$filter && !query.$groupBy /*&& !query.$from*/ && !query.$sort && !query.$distinct) {
+                return false; // skip simple cube
+            }
+            // skip not isolated subqueries
+            var isIsolated = QueryUtils.checkQueryIsIsolated(query);
+            if (!isIsolated) {
+                return false;
+            }
+            return true;
         },
 
         _extractKey: function(keyObject){
@@ -147,8 +206,10 @@
         },
 
         _mergeFields: function(viewFields1, viewFields2) {
-            /// слияние по значению
-            /// имя поля может измениться, если оно дублируется при отличающемся значении
+            /// Слияние по значению/выражению.
+            /// Имя поля может измениться, если оно дублируется при отличающемся значении.
+            /// В принципе, имя не имеет значение, т.к. замена в запросе
+            //  тоже будет выполняться по значению дабы минимизировать дубли.
             var keyExp = {};
             var keyAlias = {};
             var aliasKey = {};
@@ -183,23 +244,6 @@
             }
             return fields;
         },
-
-//        _generateViewFromSelect: function (view) {
-//            // collect $select from linkedQueries
-//            var select = view.query.$from.$select = {};
-//            for (var i in view.linkedQueries) {
-//                var query = view.linkedQueries[i];
-//                if (!query.$from || !query.$from.$select) throw new Error('View`s ' + view.name + ' linked query does not contain $from.$select');
-//                for (var alias in query.$from.$select) {
-//                    if (select[alias]) {
-//                        if (!JSB.isEqual(select[alias], query.$from.$select[alias])) {
-//                            throw new Error('Subquery contains duplicate aliases in $from.$select');
-//                        }
-//                    }
-//                    select[alias] = query.$from.$select[alias];
-//                }
-//            }
-//        },
 
         _extractViewFields: function(query, viewKey, viewQuery) {
             var viewFields = {};
@@ -290,12 +334,10 @@
 
         _buildSelectFromView: function(query, view){
             var select = {};
-//            for(var alias in view.fields){
-//                select[alias] = view.fields[alias];
-//            }
             for (var alias in query.$select) {
                 var viewField = null;
                 for(var f in view.fields){
+                    // поиск по значению/выражению
                     if(JSB.isEqual(view.fields[f], query.$select[alias])){
                         viewField = f;
                         break;
@@ -348,6 +390,8 @@
             }
 
             // remove view filter from $filter
+
+            // get only foreign fields
             var filter = QueryUtils._extractFilterByContext(query, false, true);
             if(filter) {
                 // replace $filter values with view fields aliases

@@ -59,21 +59,23 @@
 
         _translateWith: function(query){
             var sql = '';
-            var views = $this._orderedIsolatedViews(query);
-            for(var i in views) {
-                var view = views[i];
-                if (!$this.withContextViews[view.getContext()]) {
-                    if (sql.length != 0) sql += ',\n';
-                    sql += $this._quotedName(view.getContext());
-                    sql += ' AS ';
-                    sql += $this._translateAnyView(view);
-                    sql += '';
-                    $this.withContextViews[view.getContext()] = view.getContext();
+            if ($this.dcQuery.$id && $this.dcQuery.$id == query.$id) {
+                var views = $this._orderedIsolatedViews(query);
+                for(var i in views) {
+                    var view = views[i];
+                    if (!$this.withContextViews[view.getContext()]) {
+                        if (sql.length != 0) sql += ',\n';
+                        sql += $this._quotedName(view.getContext());
+                        sql += ' AS ';
+                        sql += $this._translateAnyView(view);
+                        sql += '';
+                        $this.withContextViews[view.getContext()] = view.getContext();
+                    }
                 }
-            }
-            if (sql.length > 0) {
-                sql = 'WITH\n' + sql;
-                sql += '\n';
+                if (sql.length > 0) {
+                    sql = 'WITH\n' + sql;
+                    sql += '\n';
+                }
             }
             return sql ;
         },
@@ -175,7 +177,7 @@
             if ($this.withContextViews[view.getContext()]) {
                 return $this._quotedName($this.withContextViews[view.getContext()]);
             }
-
+debugger;
             var query = view.getQuery();
 
             var sql = $this._translateWith(query);
