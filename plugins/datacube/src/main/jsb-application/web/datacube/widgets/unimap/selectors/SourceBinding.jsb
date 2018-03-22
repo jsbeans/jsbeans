@@ -60,8 +60,6 @@
 
         // fill values
         if(!this._linkedValues){
-            this._linkedValues = {};
-
             var linkedKeys = this.getLinkedFieldsByKey(this.getKey()),
                 linkedValues = [];
 
@@ -69,27 +67,24 @@
                 var selector = this._selectorBean._mainSelector.findAll(linkedKeys[i]);
 
                 for(var j = 0; j < selector.length; j++){
-                    if(selector[j].getRenderName() === 'dataBinding'){
+                    if(selector[j].getRenderName() === 'dataBinding' && selector[j]._values.length > 0){
                         linkedValues.push(selector[j]);
                     }
                 }
             }
 
-            for(var i = 0; i < linkedValues.length; i++){
-                if(linkedValues[i]._values.length > 0 && linkedValues[i]._values[0].binding){ // todo: check slice id
-                    if(!this._linkedValues[linkedValues[i]._values[0].binding]){
-                        this._linkedValues[linkedValues[i]._values[0].binding] = [];
-                    }
-
-                    this._linkedValues[linkedValues[i]._values[0].binding].push(linkedValues[i]);
-                }
-            }
+            this._linkedValues = linkedValues;
         }
 
-        for(var i in this._linkedValues){
-            for(var j = 0; j < this._linkedValues[i].length; j++){
-                this._linkedValues[i][j].setValue(dataEl[i]);
+        for(var i = 0; i < this._linkedValues.length; i++){
+            var values = [],
+                bindings = this._linkedValues[i].bindings();
+
+            for(var k = 0; k < bindings.length; k++){
+                values.push(dataEl[bindings[k]]);
             }
+
+            this._linkedValues[i].setValues(values);
         }
 
         return true;

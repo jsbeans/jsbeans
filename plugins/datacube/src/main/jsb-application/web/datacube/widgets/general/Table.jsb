@@ -1042,6 +1042,7 @@
 					var rowKey = null;
 					var keyValsMain = rowKeySelector.values();
 					var keyValsBack = rowKeySelector.values('back');
+
 					for(var i = 0; i < Math.max(keyValsMain.length, keyValsBack.length); i++){
 						var keyVal = keyValsMain[i];
 						if(!JSB.isDefined(keyVal)){

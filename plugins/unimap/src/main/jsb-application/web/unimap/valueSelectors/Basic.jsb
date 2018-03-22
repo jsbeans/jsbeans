@@ -129,8 +129,14 @@
         this._values[0].value = val;
     },
 
-    setValues: function(val){
-        // todo
+    setValues: function(values){
+        if(!JSB.isArray(values)){
+            values = [values];
+        }
+
+        for(var i = 0; i < values.length; i++){
+            this._values[i].value = values[i];
+        }
     },
 
     value: function(){
