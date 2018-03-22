@@ -134,7 +134,7 @@
     },
 
     value: function(){
-        if(!this._values){
+        if(!this._values || !this._values[0]){
             return;
         }
 
@@ -170,7 +170,7 @@
     },
 
     values: function(){
-        if(!this._values){
+        if(!this._values || !this._values[0]){
             return;
         }
 

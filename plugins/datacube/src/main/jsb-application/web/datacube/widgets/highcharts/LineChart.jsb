@@ -259,9 +259,9 @@
                             step: $this.isNone(seriesContext[seriesData[j].index].find('step').value())
                         };
 
-                        chartOpts.series[seriesData[j].index] = JSB.clone(chartOptsSeries[seriesData[j].index]);
+                        chartOpts.series[j] = JSB.clone(chartOptsSeries[seriesData[j].index]);
 
-                        JSB.merge(true, chartOpts.series[seriesData[j].index], series);
+                        JSB.merge(true, chartOpts.series[j], series);
                     }
 
                     chartOpts.xAxis.categories = xAxisCategories;

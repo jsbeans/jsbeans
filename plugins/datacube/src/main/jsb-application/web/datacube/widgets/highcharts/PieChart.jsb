@@ -120,7 +120,7 @@
             }
 
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(){
                 try {
                     var data = [];
 

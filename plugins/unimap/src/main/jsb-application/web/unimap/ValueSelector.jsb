@@ -89,7 +89,7 @@
 
         if(res){
             if(key.length > 0){
-                return res.find(key, undefined, isFindAll);
+                return res.find ? res.find(key, undefined, isFindAll) : res;
             } else {
                 return res;
             }

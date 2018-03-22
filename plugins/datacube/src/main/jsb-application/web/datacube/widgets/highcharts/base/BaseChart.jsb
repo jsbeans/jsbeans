@@ -637,7 +637,7 @@
             try{
                 var creditsContext = this.getContext().find('credits'),
                     legendContext = this.getContext().find('legend'),
-                    plotOptionsContext = this.getContext().find('plotOptions series'),
+                    plotOptionsContext = this.getContext().find('plotOptions series stacking'),
                     seriesContext = this.getContext().find('series').values(),
                     titleContext = this.getContext().find('header'),
                     tooltipContext = this.getContext().find('mainTooltip'),
@@ -724,7 +724,7 @@
 
                     plotOptions: {
                         series: {
-                            stacking: this.isNone(plotOptionsContext.find('stacking').value()),
+                            stacking: this.isNone(plotOptionsContext && plotOptionsContext.value()),
                             point: {
                                 events: {
                                     click: function(evt) {
