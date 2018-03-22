@@ -12,7 +12,7 @@
 
 .jsb-select > i.dropDownBtn {
 	position: absolute;
-    top: 34%;
+    top: calc(50% - 4px);
     right: 5px;
     margin-top: 1px;
     cursor: pointer;
@@ -32,8 +32,7 @@
 	display: none;
     position: absolute;
     right: 18px;
-    top: 50%;
-    margin-top: -8px;
+    top: calc(50% - 7px);
     padding: 0;
     background: none;
     color: darkred;

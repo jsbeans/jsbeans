@@ -32,7 +32,7 @@
     display: none;
     position: absolute;
     right: 24px;
-    top: 14px;
+    top: calc(50% - 7px);
     padding: 0;
     background: none;
     color: darkred;

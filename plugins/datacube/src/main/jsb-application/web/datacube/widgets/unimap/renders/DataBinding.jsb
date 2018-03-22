@@ -24,11 +24,19 @@
 	            }
             }
 
+            var dataList = [];
+            for(var i = 0; i < this._dataList.length; i++){
+                dataList.push({
+                    key: this._dataList[i].key,
+                    value: this._dataList[i].value.clone()
+                })
+            }
+
             switch(this._scheme.editor){
                 case 'input':
                     var editor = new ComboEditor({
                         clearBtn: true,
-                        options: this._dataList,
+                        options: dataList,
                         value: values.value,
                         valueKey: JSB.isDefined(values.binding) ? values.binding : undefined,
                         onchange: function(val){
@@ -52,7 +60,7 @@
                 default:
                     var editor = new Select({
                         clearBtn: true,
-                        options: this._dataList,
+                        options: dataList,
                         value: values.value,
                         onchange: function(val){
                             values.value = val.key;
@@ -98,9 +106,17 @@
 	    },
 
 	    changeLinkTo: function(values){
-	        var dataList = this.createDataList(values);
+	        this.createDataList(values);
 
             for(var i = 0; i < this._editors.length; i++){
+                var dataList = [];
+                for(var j = 0; j < this._dataList.length; j++){
+                    dataList.push({
+                        key: this._dataList[j].key,
+                        value: this._dataList[j].value.clone()
+                    })
+                }
+
                 this._editors[i].setOptions(dataList, true);
             }
 	    },
