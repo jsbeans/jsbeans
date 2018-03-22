@@ -762,7 +762,6 @@
 		executeQuery: function(sourceId, dashboard, opts){
 			var it = null;
 			var data = [];
-			
 			var mtx = 'executeQuery_' + $this.getId();
 			JSB.getLocker().lock(mtx);
 			try {
