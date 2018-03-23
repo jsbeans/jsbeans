@@ -236,6 +236,34 @@
 		    }
 		},
 		
+		removeProperty: function(path){
+			if(!path || !JSB.isString(path) || path.length == 0){
+				throw new Error('Invalid property path: ' + JSON.stringify(path));
+			}
+			var parts = path.split(/\.|\/|\\/);
+			var curDoc = this.getEntryProps();
+	    	var mtxName = 'JSB.Workspace.Entry.property.' + this.getId();
+	    	JSB.getLocker().lock(mtxName);
+	    	try {
+				for(var i = 0; i < parts.length - 1; i++){
+		    		curDoc = curDoc[parts[i]];
+		    		if(!JSB.isDefined(curDoc)){
+		    			return;
+		    		}
+		    	}
+				if(JSB.isDefined(curDoc[parts[parts.length - 1]])){
+					delete curDoc[parts[parts.length - 1]];
+					this._markStored(false);
+				}
+	    	} finally {
+	    		JSB.getLocker().unlock(mtxName);
+	    	}
+		},
+		
+		hasProperty: function(path){
+			return JSB.isDefined(this.property(path));
+		},
+		
 		setName: function(title){
 			if(this._name == title){
 				return;

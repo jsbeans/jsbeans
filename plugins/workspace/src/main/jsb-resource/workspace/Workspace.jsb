@@ -8,6 +8,11 @@
 	},
 	
 	_entryCount: 0,
+	_wt: null,
+	
+	getWorkspaceType: function(){
+		return this._wt;
+	},
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
@@ -47,8 +52,12 @@
             $base(id, this);
 		},
 		
-		getWorkspaceType: function(){
-			return this.property('_wt');
+		setWorkspaceType: function(t){
+			if(this._wt == t){
+				return;
+			}
+			this._wt = t;
+			this._markStored(false);
 		},
 		
 		loadEntry: function(){
@@ -57,6 +66,7 @@
 			// fill entry indices
 			var jsbArr = this.getEntryDoc()._jsbs;
 			var eIdx = this.getEntryDoc()._entries;
+			this._wt = this.getEntryDoc()._wt;
 			
 			var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
 			JSB.getLocker().lock(eMtxName);
@@ -232,6 +242,7 @@
 					JSB.getLocker().unlock(eMtxName);
 					this.getEntryDoc()._jsbs = jsbArr;
 					this.getEntryDoc()._entries = eIdx;
+					this.getEntryDoc()._wt = this._wt;
 					
 					// store entry file
 					this.storeEntry();
