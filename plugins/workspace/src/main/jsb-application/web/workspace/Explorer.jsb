@@ -338,6 +338,7 @@
 		
 		updateTab: function(){
 			var tab = this.getContainer().getTab(this.getId());
+			var wIcon = tab.tab.find('._dwp_icon');
 			var textElt = tab.tab.find('._dwp_tabText');
 			var editor = textElt.find('> ._dwp_primitiveEditor');
 			if(editor.length > 0){
@@ -393,6 +394,7 @@
 					.append(menuBtn.getElement());
 			}
 			editor.setData(this.currentWorkspace.getName());
+			wIcon.attr('wtype', this.currentWorkspace.getWorkspaceType());
 		},
 		
 		renameWorkspace: function(newName){
@@ -413,21 +415,28 @@
 					cssClass: 'menuItem menuCreate'
 				}];
 				
-				var bUserCount = 0;
-				var bSystemCount = 0;
+				var userWorkspaceIds = [];
+				var systemWorkspaceIds = [];
 				for(var wId in wMap){
 					if(wId == $this.currentWorkspace.getId()){
 						continue;
 					}
 					if(wMap[wId].wType == 'system'){
-						bSystemCount++;
+						systemWorkspaceIds.push(wId);
 					} else {
-						bUserCount++;
+						userWorkspaceIds.push(wId);
 					}
 				}
+				
+				function _compareWorkspaces(id1, id2){
+					return wMap[id1].wName.localeCompare(wMap[id2].wName);
+				}
+				
+				systemWorkspaceIds.sort(_compareWorkspaces);
+				userWorkspaceIds.sort(_compareWorkspaces);
 
 				// add separator
-				if(bUserCount > 1){
+				if(userWorkspaceIds.length > 0){
 					items.push({
 						key: 'menuSeparator',
 						element: '<div class="separator"></div>',
@@ -438,10 +447,8 @@
 				}
 				
 				// add other items
-				for(var wId in wMap){
-					if(wId == $this.currentWorkspace.getId() || wMap[wId].wType == 'system'){
-						continue;
-					}
+				for(var i = 0; i < userWorkspaceIds.length; i++){
+					wId = userWorkspaceIds[i];
 					(function(wId){
 						var strProc = $this.callbackAttr(function(evt){
 							if(!evt) {
@@ -451,17 +458,17 @@
 							if(evt.stopPropagation){
 								evt.stopPropagation();
 							}
-							$this.tryRemoveWorkspace(wId, evt, messageTool);
+							$this.tryRemoveWorkspace(wId, wMap[wId].wName, evt, $this.messageTool);
 						});
 						items.push({
 							key: wId,
-							element: '<div class="icon" key="'+wMap[wId].wType+'"></div><div class="text" key="'+wMap[wId].wType+'">'+wMap[wId].wName+'</div><div class="delete" key="'+wMap[wId].wType+'" onclick="('+strProc+')(event)"><div class="icon"></div></div>',
+							element: '<div class="icon"></div><div class="text">'+wMap[wId].wName+'</div><div class="delete" onclick="('+strProc+')(event)"><div class="icon"></div></div>',
 							cssClass: 'menuItem menuWorkspace userWorkspace'
 						});
 					})(wId);
 				}
 				
-				if(bSystemCount > 0){
+				if(systemWorkspaceIds.length > 0){
 					items.push({
 						key: 'menuSeparator',
 						element: '<div class="separator"></div>',
@@ -471,10 +478,8 @@
 					});
 				}
 				
-				for(var wId in wMap){
-					if(wId == $this.currentWorkspace.getId() || wMap[wId].wType != 'system'){
-						continue;
-					}
+				for(var i = 0; i < systemWorkspaceIds.length; i++){
+					wId = systemWorkspaceIds[i];
 					items.push({
 						key: wId,
 						element: '<div class="icon"></div><div class="text">'+wMap[wId].wName+'</div>',
@@ -482,7 +487,7 @@
 					});
 				}
 				
-				var messageTool = ToolManager.activate({
+				$this.messageTool = ToolManager.activate({
 					id: '_dwp_droplistTool',
 					cmd: 'show',
 					data: items,
@@ -510,11 +515,11 @@
 			});
 		},
 
-		tryRemoveWorkspace: function(w, evt, messageTool){
+		tryRemoveWorkspace: function(wId, wName, evt, messageTool){
 			var sel = this.$(evt.currentTarget);
 			ToolManager.showMessage({
 				icon: 'removeDialogIcon',
-				text: 'Содержимое рабочей области <strong>'+w.getName()+'</strong> будет безвозвратно удалено. Вы уверены, что хотите удалить?',
+				text: 'Содержимое рабочей области <strong>'+wName+'</strong> будет безвозвратно удалено. Вы уверены, что хотите удалить?',
 				buttons: [{text: 'Удалить', value: true},
 				          {text: 'Нет', value: false}],
 				target: {
@@ -533,7 +538,7 @@
 				}],
 				callback: function(bDel){
 					if(bDel){
-						$this.server().removeWorkspace(w, function(){
+						$this.server().removeWorkspace(wId, function(){
 							messageTool.close();
 						});
 					}
@@ -1285,13 +1290,13 @@
 		
 		createWorkspace: function(){
 			var names = {};
-			var wsArr = this.getWorkspaces();
-			for(var i = 0; i < wsArr.length; i++){
-				names[wsArr[i].wName] = true;
+			var wsMap = this.getWorkspaces();
+			for(var wId in wsMap){
+				names[wsMap[wId].wName.trim()] = true;
 			}
 			var userWType = 'user';
 			var ws = WorkspaceController.createWorkspace(userWType);
-			var prefix = ws.getName();
+			var prefix = ws.getName().trim();
 			var testName = prefix;
 			for(var i = 1; ; i++ ){
 				if(i > 1){
@@ -1301,23 +1306,19 @@
 					break;
 				}
 			}
-			ws.setName(prefix);
+			ws.setName(testName);
 			ws.store();
 			
 			var wInfo = WorkspaceController.getWorkspaceInfo(ws.getId());
-			wInfo.wName = ws.getName();
+			wInfo.wName = testName;
 			
 			return wInfo;
 		},
 		
 		removeWorkspace: function(wId){
-			debugger;
+			WorkspaceController.removeWorkspace(wId);
 		},
-/*		
-		renameCategory: function(oldCategory, newCategory){
-			return this.currentWorkspace.renameCategory(oldCategory, newCategory);
-		},
-*/		
+		
 		renameWorkspace: function(newName){
 			this.currentWorkspace.setName(newName);
 			this.currentWorkspace.store();

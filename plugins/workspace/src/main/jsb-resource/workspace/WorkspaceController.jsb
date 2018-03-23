@@ -152,7 +152,7 @@
 				var wInst = new wCls(wId, resolvedConf, wDesc);
 				wDesc.wInst = wInst;
 				wDesc.wOwner = wInst.getOwner();
-				wInst.property('_wt', wType);
+				wInst.setWorkspaceType(wType);
 	
 				// store indices
 				this.workspacesById[wId] = wDesc;
@@ -225,6 +225,14 @@
 			var wInst = new wCls(wId, resolvedConf, wDesc);
 			wDesc.wInst = wInst;
 			wDesc.wOwner = wInst.getOwner();
+			
+			// fix wType
+			if(wInst.hasProperty('_wt')){
+				debugger;
+				wInst.setWorkspaceType(wInst.property('_wt'));
+				wInst.removeProperty('_wt');
+				wInst.store();
+			}
 			
 			return wInst;
 		},
