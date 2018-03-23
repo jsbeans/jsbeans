@@ -31,26 +31,33 @@
 
 
         _buildViews: function (dcQuery) {
+debugger;
             var views = {};
             $this._walkViews(dcQuery, true, function(view, count){
                 // extract only if fixed or multiple
                 if (!view.fixed && count < 2 ) return;
-
-                view.fixed = true; // store view
-
-                views[view.name] = JSB.merge({$select: view.fields}, view.query);
-                $this._fixViewFieldsForeignContext(view);
-                $this._rebuildLinkedQueries(dcQuery, view);
+                views[view.name] = view;
             });
-            dcQuery.$views = views;
+
+            var count = 0;
+            dcQuery.$views = {};
+            for(var name in views) if(views.hasOwnProperty(name)) {
+                var view = views[name];
+                view.fixed = true; // store view
+                $this._fixViewContextAndName(view, 'view_context_' + count++);
+                $this._rebuildLinkedQueries(dcQuery, view);
+                //dcQuery.$views[view.name] = JSB.merge({$select: view.fields}, view.query);
+                dcQuery.$views[view.name] = JSB.merge({$select: view.fields}, view.query);
+
+            }
             return dcQuery;
         },
 
-        _fixViewFieldsForeignContext: function(view){
+        _fixViewContextAndName: function(view, newContext){
             function fixFields(exp, oldContext){
                 if (typeof exp === 'object') {
                     if (exp.$field && exp.$context == oldContext) {
-                        exp.$context = view.query.$context;
+                        exp.$context = newContext;
                         return;
                     }
                     for(var i in exp) if (exp.hasOwnProperty(i)) {
@@ -63,12 +70,12 @@
                 }
             }
 //debugger;
+            view.query.$context = newContext;
+            view.name = newContext;
             for(var q in view.linkedQueries) {
                 var query = view.linkedQueries[q];
-                if (query.$context != view.query.$context) {
-                    for(var f in view.fields){
-                        fixFields(view.fields[f], query.$context);
-                    }
+                for(var f in view.fields){
+                    fixFields(view.fields[f], query.$context);
                 }
             }
         },
@@ -107,13 +114,13 @@ if ($this.getJsb().$name.indexOf('LinkedNestedQueryOptimization') != -1)
                     }
                 });
                 if (!parentFromQuery) {
-                    throw new Error('Internal error: From query parent not found for query ' + query.$context);
+                    throw new Error('Internal error: From query parent not found for query ' + queryContext);
                 }
                 return parentFromQuery;
             }
 
             var views = {}, viewsUseCount = {}, viewKeysOrder = [];
-            $this._walkAllViews(dcQuery, includeFrom, function(viewKey, viewQuery, viewFields, linkedQuery, isFromQuery){
+            $this._walkAllViews(dcQuery, includeFrom, function(viewKey, viewQuery, viewFields, linkedQuery, isFromQuery, isViewQuery){
 //                if (!isFromQuery) throw new Error('Internal error: failed view query type');
                 if(!views[viewKey]) {
                     var view = views[viewKey] = {
@@ -125,7 +132,7 @@ if ($this.getJsb().$name.indexOf('LinkedNestedQueryOptimization') != -1)
                         linkedQueries: [],
                         linkedFromQueries: [],
                     };
-                    view.query.$context  = linkedQuery.$context || view.name;
+                    view.query.$context  = linkedQuery.$context ? linkedQuery.$context : view.name;
                     viewKeysOrder.push(viewKey);
                     viewsUseCount[viewKey] = 1;
                 } else {
@@ -163,7 +170,7 @@ if ($this.getJsb().$name.indexOf('LinkedNestedQueryOptimization') != -1)
                 if (!includeFrom && !isFromQuery) {
                     return false; // extract only $from queries
                 }
-
+if (query == dcQuery) debugger;
                 if(!$this._checkQueryHasView(query, isFromQuery)) {
                     return;
                 }
@@ -176,7 +183,7 @@ if ($this.getJsb().$name.indexOf('LinkedNestedQueryOptimization') != -1)
                     var viewFields = $this._extractViewFields(query, viewKey, viewQuery);
                 }
 
-                localViewCallback(viewKey, viewQuery, viewFields, query, isFromQuery);
+                localViewCallback(viewKey, viewQuery, viewFields, query, isFromQuery, isViewQuery);
             });
         },
 
