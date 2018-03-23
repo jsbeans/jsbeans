@@ -127,8 +127,7 @@
 					desc.wrappers[wId] = {
 						jsb: wWrapper.getWidgetType(),
 						name: wWrapper.getName(),
-						values: wWrapper.getValues(),
-						sourcesIds: wWrapper.getSourcesIds()
+						values: wWrapper.getData().values       // todo: нужно ли это?
 					}
 				}
 				this.widgetCount = Object.keys(this.wrappers).length;

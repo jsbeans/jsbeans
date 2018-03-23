@@ -85,7 +85,7 @@
             this.wrapper.ensureWidgetInitialized(function(){
                 $this.widgetSchemeRenderer = new Controller({
                     scheme: $this.entry.extractWidgetScheme(),
-                    values: JSB.clone($this.entry.getValues()),
+                    values: $this.wrapper.getWidget().getValues(),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(key, values){
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
@@ -132,7 +132,8 @@
             }, function(sourceDesc){
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.entry.getId(),
-                    sourceDesc: sourceDesc,
+				    sourceMap: sourceDesc.sourceMap,
+				    sources: sourceDesc.sources,
                     values: values
                 });
             });

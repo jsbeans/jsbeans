@@ -45,6 +45,7 @@
         setStyles: function(styles){
             this._styles = styles;
             this.stylesVersion++;
+            this.doSync();
         }
     }
 }

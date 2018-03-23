@@ -32,8 +32,12 @@
                 this.wrapper = opts.widgetWrapper;
                 this.filterManager = opts.filterManager;
 
-                this.updateValues({
-                    values: this.widgetEntry.getValues()
+                this.widgetEntry.getData(function(res){
+                    if(!res) { return ;}
+
+                    $this.updateValues(res);
+
+                    $this.setTrigger('_dataLoaded');
                 });
 		    }
 		},
@@ -102,7 +106,7 @@
 		},
 
 		ensureInitialized: function(callback){
-			this.ensureTrigger('_widgetInitialized', callback);
+			this.ensureTrigger(['_widgetInitialized', '_dataLoaded'], callback);
 		},
 
 		exportData: function(format){
@@ -361,6 +365,10 @@
             }
 		},
 
+		getValues: function(){
+            return this.values;
+		},
+
 		getWrapper: function(){
 			return this.wrapper;
 		},
@@ -461,12 +469,9 @@
 			this.values = opts.values;
 
 			this.context = {};
-			if(opts.sourceDesc){
-				this.sourceMap = opts.sourceDesc.sourceMap;
-				this.sources = opts.sourceDesc.sources;
-			} else {
-				this.sourceMap = this.widgetEntry.getSourceMap();
-				this.sources = this.widgetEntry.getSources();
+			if(opts.sourceMap && opts.sources){
+				this.sourceMap = opts.sourceMap;
+				this.sources = opts.sources;
 			}
 		}
 	},

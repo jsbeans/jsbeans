@@ -1,12 +1,10 @@
 {
 	$name: 'DataCube.Model.Widget',
 	$parent: 'JSB.Workspace.Entry',
-	
+
+	dataVersion: 0,
 	dashboard: null,
 	wType: null,
-	values: null,
-	sourceMap: null,
-	sources: {},
 	
 	getDashboard: function(){
 		return this.dashboard;
@@ -14,22 +12,6 @@
 	
 	getWidgetType: function(){
 		return this.wType;
-	},
-
-	getSourcesIds: function(){
-	    return this.sourcesIds;
-	},
-	
-	getValues: function(){
-		return this.values;
-	},
-	
-	getSourceMap: function(){
-		return this.sourceMap;
-	},
-	
-	getSources: function(){
-		return this.sources;
 	},
 
     extractWidgetScheme: function(){
@@ -55,7 +37,32 @@
         return scheme;
     },
 
+    $client: {
+        _clientDataVersion: -1,
+        _data: null,
+
+        getData: function(callback){
+	        if(this._clientDataVersion !== this.dataVersion){
+	            this.server().getData(function(result, fail){
+	                if(fail){ return; }
+
+	                $this._data = result;
+	                $this._clientDataVersion = this.dataVersion;
+
+	                callback(result);
+	            });
+	        } else {
+	            callback(this._styles);
+	        }
+        }
+    },
+
 	$server: {
+        sourceMap: null,
+        sources: {},
+        sourcesIds: null,
+        values: null,
+
 		$require: ['DataCube.Providers.DataProviderRepository',
 		           'DataCube.Query.QueryEngine',
 		           'JSB.Workspace.WorkspaceController',
@@ -84,8 +91,6 @@
 
 				    valueSelector.destroy();
 				}
-
-				//this.updateInteroperationMap();
 
 				this.property('values', this.values);
 				this.property('schemeVersion', 1.0);
@@ -121,80 +126,6 @@
 			}
 		},
 
-		setName: function(name){
-		    this.getDashboard().load();
-			$base(name);
-			this.getDashboard().store();
-			this.doSync();
-		},
-		
-		storeValues: function(opts){    //name, values, linkedFields, sourcesIds
-			this.getDashboard().load();
-			this.values = opts.values;
-			this.sourcesIds = opts.sourcesIds;
-			this.property('values', opts.values);
-			this.property('sourcesIds', opts.sourcesIds);
-			this.property('schemeVersion', 1.0);
-
-			this.setName(opts.name);
-
-			//this.setName(opts.name);
-			
-			// update interoperation maps in all widgets of current dashboard
-			var widgets = this.getDashboard().getWrappers();
-			for(var wId in widgets){
-				widgets[wId].updateInteroperationMap();
-				widgets[wId].doSync();
-			}
-			
-			this.getDashboard().store();
-			this.doSync();
-			return {sources: this.sources, sourceMap: this.sourceMap};
-		},
-		
-		getDataSchemeSource: function(ds){
-			if(!ds || !ds.source){
-				throw new Error('Invalid datascheme passed');
-			}
-			return this.getWorkspace().entry(ds.source);
-		},
-		
-		updateSources: function(){
-			this.sources = {};
-			for(var sId in this.sourceMap){
-				this.sources[sId] = this.getWorkspace().entry(sId);
-			}
-		},
-		
-		updateInteroperationMap: function(){
-		    if(!this.sourcesIds){
-		        return;
-		    }
-
-			var sourceMap = {};
-
-			for(var i = 0; i < this.sourcesIds.length; i++){
-			    var source = this.getWorkspace().entry(this.sourcesIds[i]);
-                sourceMap[this.sourcesIds[i]] = [];
-
-                if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-                    var cube = source.getCube();
-                    cube.load();
-                    var sliceMap = cube.getSlices();
-                    for(var sId in sliceMap){
-                        sourceMap[this.sourcesIds[i]].push(sId);
-                    }
-                } else {
-                    sourceMap[this.sourcesIds[i]].push(this.sourcesIds[i]);
-                }
-			}
-			
-			this.sourceMap = sourceMap;
-			this.property('sourceMap', this.sourceMap);
-			this.updateSources();
-			return sourceMap;
-		},
-		
 		combineDataScheme: function(source){
 			var iterator = null;
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
@@ -205,9 +136,7 @@
 				var ProviderClass = JSB.get(dpInfo.pType).getClass();
 				var provider = new ProviderClass(JSB.generateUid(), source, null);
 				provider.extractFields();
-/*				var qe = new QueryEngine(null);
-				iterator = qe.query({$select:{}}, {}, provider);
-*/
+
 				var buffer = provider.find();
 				iterator = {
 					buffer: buffer,
@@ -285,6 +214,89 @@
 				type: 'array',
 				source: source.getId(),
 				arrayType: recordTypes
+			}
+		},
+
+		getDataSchemeSource: function(ds){
+			if(!ds || !ds.source){
+				throw new Error('Invalid datascheme passed');
+			}
+			return this.getWorkspace().entry(ds.source);
+		},
+
+		getData: function(){
+		    return {
+                sourceMap: this.sourceMap,
+                sources: this.sources,
+                sourcesIds: this.sourcesIds,
+		        values: this.values
+		    }
+		},
+
+		setName: function(name){
+		    this.getDashboard().load();
+			$base(name);
+			this.getDashboard().store();
+			this.doSync();
+		},
+		
+		storeValues: function(opts){    //name, values, linkedFields, sourcesIds
+			this.getDashboard().load();
+			this.values = opts.values;
+			this.sourcesIds = opts.sourcesIds;
+			this.property('values', opts.values);
+			this.property('sourcesIds', opts.sourcesIds);
+			this.property('schemeVersion', 1.0);
+
+			this.setName(opts.name);
+			
+			// update interoperation maps in all widgets of current dashboard
+			var widgets = this.getDashboard().getWrappers();
+			for(var wId in widgets){
+				widgets[wId].updateInteroperationMap();
+				widgets[wId].doSync();
+			}
+
+			this.dataVersion++;
+			
+			this.getDashboard().store();    // todo: нужно ли это?
+			this.doSync();
+			return {sources: this.sources, sourceMap: this.sourceMap};
+		},
+
+		updateInteroperationMap: function(){
+		    if(!this.sourcesIds){
+		        return;
+		    }
+
+			var sourceMap = {};
+
+			for(var i = 0; i < this.sourcesIds.length; i++){
+			    var source = this.getWorkspace().entry(this.sourcesIds[i]);
+                sourceMap[this.sourcesIds[i]] = [];
+
+                if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+                    var cube = source.getCube();
+                    cube.load();
+                    var sliceMap = cube.getSlices();
+                    for(var sId in sliceMap){
+                        sourceMap[this.sourcesIds[i]].push(sId);
+                    }
+                } else {
+                    sourceMap[this.sourcesIds[i]].push(this.sourcesIds[i]);
+                }
+			}
+
+			this.sourceMap = sourceMap;
+			this.property('sourceMap', this.sourceMap);
+			this.updateSources();
+			return sourceMap;
+		},
+
+		updateSources: function(){
+			this.sources = {};
+			for(var sId in this.sourceMap){
+				this.sources[sId] = this.getWorkspace().entry(sId);
 			}
 		}
 	}
