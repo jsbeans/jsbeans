@@ -7,8 +7,6 @@
 	        name: 'Источник'
 	    },
 
-	    chart: {},
-
 	    series: {
 	        render: 'group',
 	        name: 'Серии',
@@ -81,7 +79,29 @@
         xAxis: {},
 
         yAxis: {},
-
+        /*
+	    chart: {
+	        render: 'group',
+	        name: 'Настройки диаграммы',
+            collapsable: true,
+            collapsed: true,
+            items: {
+                //alignTicks    need multiple axes
+                animation: {
+                    render: 'item',
+                    name: 'Анимация',
+                    optional: 'checked',
+                    editor: 'none'
+                },
+                inverted: {
+                    render: 'item',
+                    name: 'Инвертировать оси',
+                    optional: true,
+                    editor: 'none'
+                }
+            }
+	    },
+	    */
 	    header: {
 	        render: 'group',
 	        name: 'Заголовок',
@@ -635,7 +655,8 @@
             var chartOpts = {};
 
             try{
-                var creditsContext = this.getContext().find('credits'),
+                var chartContext = this.getContext().find('chart'),
+                    creditsContext = this.getContext().find('credits'),
                     legendContext = this.getContext().find('legend'),
                     plotOptionsContext = this.getContext().find('plotOptions series stacking'),
                     seriesContext = this.getContext().find('series').values(),
@@ -817,12 +838,26 @@
                         valueSuffix: tooltipContext.find('valueSuffix').value()
                     },
                 }
+
+                // props added after release
+                /*
+                if(chartContext.find){
+                    chartOpts.chart = {
+                        animation: this.isDefined(chartContext.find('animation').checked(), true),
+                        inverted: chartContext.find('inverted').checked()
+                    }
+                }
+                */
             } catch(e){
                 console.log('BaseChart build chart exception');
                 console.log(e);
             } finally {
                 return chartOpts;
             }
+        },
+
+        isDefined: function(prop, defaultValue){
+            return prop === undefined ? defaultValue : prop;
         },
 
         isNone: function(val){
@@ -993,7 +1028,7 @@
         _select: function(filters, b1, b2){
             for(var i in filters){
                 for(var j = 0; j < this.chart.series.length; j++){
-                    if(this.chart.series[j].options.datacube.binding === filters[i].field || this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
+                    if(this.chart.series[j].options.datacube.binding === filters[i].field || this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
                             if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
                                 this.chart.series[j].points[k].select(b1, b2);

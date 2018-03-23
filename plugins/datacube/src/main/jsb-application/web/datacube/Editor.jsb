@@ -128,6 +128,16 @@
 						explorer.createNewEntry('DataCube.Model.Dashboard', {}, 'Визуализация');
 					}
 				}, 'createSeparator');
+				/*
+				explorer.toolbar.insertItem({
+					key: 'createStyleSettings',
+					tooltip: 'Создать стилевое оформление',
+					element: '<div class="icon"></div>',
+					click: function(){
+						explorer.createNewEntry('DataCube.Model.StyleSettings', {}, 'Стилевое оформление');
+					}
+				}, 'createSeparator');
+				*/
 			});
 			
 			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){

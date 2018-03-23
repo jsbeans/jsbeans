@@ -4,7 +4,6 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
-			this.loadCss('SqlTableNode.css');
 			this.addClass('sqlTableNode');
 		}
 	}
