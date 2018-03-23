@@ -191,7 +191,7 @@
                     tooltip: 'Обновить схему данных',
                     onclick: function(evt){
                         evt.stopPropagation();
-                        $this.setBinding(source);
+                        $this.setBinding(source, itemIndex);
                     }
                 });
                 item.append(refreshButton.getElement());

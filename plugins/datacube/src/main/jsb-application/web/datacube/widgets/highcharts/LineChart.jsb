@@ -45,10 +45,31 @@
                                 }
                             }
                         },
-                        color: {
-                            render: 'item',
-                            name: 'Цвет',
-                            editor: 'JSB.Widgets.ColorEditor'
+                        colorType: {
+                            render: 'select',
+                            name: 'Источник цвета',
+                            items: {
+                                manualColor: {
+                                    name: 'Заданный цвет',
+                                    items: {
+                                        manualColorValue: {
+                                            render: 'item',
+                                            name: 'Цвет',
+                                            editor: 'JSB.Widgets.ColorEditor'
+                                        }
+                                    }
+                                },
+                                sourceColor: {
+                                    name: 'Цвет из источника',
+                                    items: {
+                                        sourceColorValue: {
+                                            render: 'dataBinding',
+                                            name: 'Цвет',
+                                            linkTo: 'source'
+                                        }
+                                    }
+                                }
+                            }
                         },
                         stack: {
                             render: 'item',
@@ -130,13 +151,17 @@
                 this._schemeOpts = {
                     seriesContext: this.getContext().find('series').values(),
                     xAxisCategories: this.getContext().find('xAxis categories'),
+                    series: [],
                     useCompositeSeries: false
                 };
 
                 for(var i = 0; i < this._schemeOpts.seriesContext.length; i++){
                     if(this._schemeOpts.seriesContext[i].find('name').hasBinding()){
                         this._schemeOpts.useCompositeSeries = true;
-                        break;
+                    }
+
+                    this._schemeOpts.series[i] = {
+                        colorType: this._schemeOpts.seriesContext[i].find('colorType').value()
                     }
                 }
             }
@@ -159,25 +184,27 @@
                         for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
                             var name = $this._schemeOpts.seriesContext[i].find('name'),
                                 data = $this._schemeOpts.seriesContext[i].find('data'),
+                                color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value(),
                                 x = $this._schemeOpts.xAxisCategories.value();
 
-                                if(!seriesData[i]){
-                                    seriesData[i] = {
-                                        data: {}
-                                    };
-                                }
+                            if(!seriesData[i]){
+                                seriesData[i] = {
+                                    data: {}
+                                };
+                            }
 
-                                if(!seriesData[i].data[name.value()]){
-                                    seriesData[i].data[name.value()] = [];
-                                }
+                            if(!seriesData[i].data[name.value()]){
+                                seriesData[i].data[name.value()] = [];
+                            }
 
-                                seriesData[i].data[name.value()].push({
-                                    datacube: {
-                                        binding: $this._schemeOpts.xAxisCategories.binding()
-                                    },
-                                    x: x ? x : undefined,
-                                    y: data.value()
-                                });
+                            seriesData[i].data[name.value()].push({
+                                datacube: {
+                                    binding: $this._schemeOpts.xAxisCategories.binding()
+                                },
+                                color: color,
+                                x: x ? x : undefined,
+                                y: data.value()
+                            });
                         }
                     }
 
@@ -209,9 +236,10 @@
 
                         for(var j in obj){
                             data.push({
+                                color: obj[j][0].color,
+                                data: resolveData(obj[j]),
                                 index: i,
-                                name: j,
-                                data: resolveData(obj[j])
+                                name: j
                             });
                         }
                     }
@@ -254,7 +282,7 @@
                                 binding: $this._schemeOpts.xAxisCategories.binding()
                             },
                             type: seriesContext[seriesData[j].index].find('type').value(),
-                            color: seriesContext[seriesData[j].index].find('color').value(),
+                            color: seriesData[j].color,
                             stack: seriesContext[seriesData[j].index].find('stack').value(),
                             step: $this.isNone(seriesContext[seriesData[j].index].find('step').value())
                         };
