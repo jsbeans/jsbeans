@@ -56,7 +56,7 @@
 						var el = desc.it.next();
 						if(!el){
 							desc.complete = true;
-							desc.it.close();
+							try { desc.it.close(); } catch(e){}
 							desc.it = null;
 							break;
 						}
@@ -68,18 +68,19 @@
 					for(var i = 0; i < $this.batchSize; i++){
 						var el = desc.it.next();
 						if(!el){
-							desc.it.close();
+							try { desc.it.close(); } catch(e){}
 							desc.it = null;
 							desc.complete = true;
 							break;
 						}
 						desc.buffer.push(el);
+						desc.cells += Object.keys(el).length;
 					}
 				}
 				if(!desc.complete){
 					JSB.defer(function(){
 						if(desc.it){
-							desc.it.close();
+							try { desc.it.close(); } catch(e){}
 							desc.it = null;
 						}
 					}, $this.closeIteratorTimeout, 'closeIterator_' + desc.qId);
@@ -139,7 +140,8 @@
 					params: params,
 					complete: false,
 					it: null,
-					buffer: []
+					buffer: [],
+					cells: 0
 				};
 				fillNextBatch(cDesc);
 				this.cacheMap[qId] = cDesc;

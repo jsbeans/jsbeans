@@ -25,7 +25,8 @@
 		},
 		
 		constructFilterId: function(fItem){
-			return MD5.md5('' + fItem.field) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5('' + fItem.value);
+			var f = fItem.cubeField || fItem.field;
+			return MD5.md5('' + f) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5('' + fItem.value);
 		},
 		
 		addFilterItem: function(sourceId, fDesc){
@@ -41,6 +42,7 @@
 				id: itemId,
 				type: fDesc.type,
 				field: fDesc.field,
+				cubeField: fDesc.cubeField,
 				value: fDesc.value,
 				op: fDesc.op
 			}
@@ -114,7 +116,7 @@
 				if(q.$select && q.$select[fDesc.field]){
 					var cubeField = extractCubeField(q.$select[fDesc.field]);
 					if(cubeField){
-						fDesc.field = cubeField;
+						fDesc.cubeField = cubeField;
 					} else {
 						fDesc.boundTo = fDesc.sourceId;
 					}
@@ -132,7 +134,7 @@
 			// check filter conflicts
             var f;
             for(var i = 0; i < $this.filterArr.length; i++){
-                if($this.filterArr[i].field === fDesc.field && $this.filterArr[i].op === fDesc.op){
+                if(($this.filterArr[i].cubeField || $this.filterArr[i].field) === (fDesc.cubeField || fDesc.field) && $this.filterArr[i].op === fDesc.op){
                     f = $this.filterArr[i];
                 }
             }
@@ -217,8 +219,9 @@
 			var ffMap = {};
 			for(var fItemId in filters){
 				var fDesc = filters[fItemId];
-				if(!ffMap[fDesc.field]){
-					ffMap[fDesc.field] = {
+				var f = fDesc.cubeField || fDesc.field;
+				if(!ffMap[f]){
+					ffMap[f] = {
 						andFilters: [],
 						orFilters: [],
 						andFiltersLocal: [],
@@ -226,11 +229,11 @@
 					};
 				}
 				
-				var ffDesc = ffMap[fDesc.field];
+				var ffDesc = ffMap[f];
 				var fOp = {};
 				fOp[fDesc.op] = fDesc.value;
 				var field = {};
-				field[fDesc.field] = fOp;
+				field[f] = fOp;
 				if(fDesc.type == '$and'){
 					if(fDesc.boundTo){
 						if(fDesc.boundTo == sourceId){

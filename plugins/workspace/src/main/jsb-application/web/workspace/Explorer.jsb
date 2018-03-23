@@ -397,7 +397,7 @@
 		
 		renameWorkspace: function(newName){
 			this.server().renameWorkspace(newName, function(){
-				$this.currentWorkspace.getEntryDoc()._name = newName;
+				$this.currentWorkspace._name = newName;
 			});
 		},
 
@@ -412,9 +412,22 @@
 					element: '<div class="icon"></div><div class="text">Создать рабочую область ...</div>',
 					cssClass: 'menuItem menuCreate'
 				}];
+				
+				var bUserCount = 0;
+				var bSystemCount = 0;
+				for(var wId in wMap){
+					if(wId == $this.currentWorkspace.getId()){
+						continue;
+					}
+					if(wMap[wId].wType == 'system'){
+						bSystemCount++;
+					} else {
+						bUserCount++;
+					}
+				}
 
 				// add separator
-				if(Object.keys(wMap).length > 1){
+				if(bUserCount > 1){
 					items.push({
 						key: 'menuSeparator',
 						element: '<div class="separator"></div>',
@@ -426,11 +439,10 @@
 				
 				// add other items
 				for(var wId in wMap){
-					var w = wMap[wId];
-					if(w == $this.currentWorkspace){
+					if(wId == $this.currentWorkspace.getId() || wMap[wId].wType == 'system'){
 						continue;
 					}
-					(function(w, wId){
+					(function(wId){
 						var strProc = $this.callbackAttr(function(evt){
 							if(!evt) {
 								evt = this.event;
@@ -439,20 +451,42 @@
 							if(evt.stopPropagation){
 								evt.stopPropagation();
 							}
-							$this.tryRemoveWorkspace(w, evt, messageTool);
+							$this.tryRemoveWorkspace(wId, evt, messageTool);
 						});
 						items.push({
 							key: wId,
-							element: '<div class="icon"></div><div class="text">'+w.getName()+'</div><div class="delete" onclick="('+strProc+')(event)"><div class="icon"></div></div>',
-							cssClass: 'menuItem menuWorkspace'
+							element: '<div class="icon" key="'+wMap[wId].wType+'"></div><div class="text" key="'+wMap[wId].wType+'">'+wMap[wId].wName+'</div><div class="delete" key="'+wMap[wId].wType+'" onclick="('+strProc+')(event)"><div class="icon"></div></div>',
+							cssClass: 'menuItem menuWorkspace userWorkspace'
 						});
-					})(w, wId);
+					})(wId);
+				}
+				
+				if(bSystemCount > 0){
+					items.push({
+						key: 'menuSeparator',
+						element: '<div class="separator"></div>',
+						cssClass: 'menuSeparator',
+						allowHover: false,
+						allowSelect: false
+					});
+				}
+				
+				for(var wId in wMap){
+					if(wId == $this.currentWorkspace.getId() || wMap[wId].wType != 'system'){
+						continue;
+					}
+					items.push({
+						key: wId,
+						element: '<div class="icon"></div><div class="text">'+wMap[wId].wName+'</div>',
+						cssClass: 'menuItem menuWorkspace systemWorkspace'
+					});
 				}
 				
 				var messageTool = ToolManager.activate({
 					id: '_dwp_droplistTool',
 					cmd: 'show',
 					data: items,
+					key: 'workspaceMenu',
 					target: {
 						selector: btnElt,
 						dock: 'bottom'
@@ -460,15 +494,15 @@
 					callback: function(key, item, evt){
 						if(key == 'createWorkspace'){
 							// create new workspace
-							$this.server().createWorkspace(function(w){
-								$this.setCurrentWorkspace(w, function(){
+							$this.server().createWorkspace(function(wInfo){
+								$this.setCurrentWorkspaceId(wInfo.wId, function(){
 									var editor = tab.tab.find('._dwp_primitiveEditor').jsb();
 									editor.beginEdit();
 								});
 							});
 						} else {
 							// switch workspace
-							$this.setCurrentWorkspace(wMap[key]);
+							$this.setCurrentWorkspaceId(key);
 						}
 					}
 				});
@@ -1218,7 +1252,12 @@
 			}
 			var wMap = {};
 			for(var i = 0; i < wArr.length; i++){
-				wMap[wArr[i].wId] = wArr[i];
+				wMap[wArr[i].wId] = {
+					wId: wArr[i].wId,
+					wType: wArr[i].wType,
+					wOwner: wArr[i].wOwner,
+					wName: WorkspaceController.getWorkspace(wArr[i].wId).getName()
+				};
 			}
 			return wMap;
 		},
@@ -1245,11 +1284,34 @@
 		},
 		
 		createWorkspace: function(){
-			return $this.manager.createWorkspace();
+			var names = {};
+			var wsArr = this.getWorkspaces();
+			for(var i = 0; i < wsArr.length; i++){
+				names[wsArr[i].wName] = true;
+			}
+			var userWType = 'user';
+			var ws = WorkspaceController.createWorkspace(userWType);
+			var prefix = ws.getName();
+			var testName = prefix;
+			for(var i = 1; ; i++ ){
+				if(i > 1){
+					testName = prefix + ' ' + i;
+				}
+				if(!names[testName]){
+					break;
+				}
+			}
+			ws.setName(prefix);
+			ws.store();
+			
+			var wInfo = WorkspaceController.getWorkspaceInfo(ws.getId());
+			wInfo.wName = ws.getName();
+			
+			return wInfo;
 		},
 		
-		removeWorkspace: function(w){
-			return $this.manager.removeWorkspace(w);
+		removeWorkspace: function(wId){
+			debugger;
 		},
 /*		
 		renameCategory: function(oldCategory, newCategory){

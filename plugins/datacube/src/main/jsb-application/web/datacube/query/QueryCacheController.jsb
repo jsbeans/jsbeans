@@ -52,6 +52,7 @@
 			var instanceCount = 0;
 			var queryCount = 0;
 			var itemCount = 0;
+			var cellCount = 0;
 			for(var cmId in this.cacheMap){
 				instanceCount++;
 				var cm = this.cacheMap[cmId];
@@ -60,12 +61,14 @@
 					queryCount++;
 					var qDesc = qcMap[qmId];
 					itemCount += qDesc.buffer.length;
+					cellCount += qDesc.cells;
 				}
 			}
 			return {
 				instances: instanceCount,
 				queries: queryCount,
-				items: itemCount
+				items: itemCount,
+				cells: cellCount
 			};
 		},
 		

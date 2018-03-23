@@ -214,6 +214,13 @@
 				toolEntry.instances[toolEntry.instances.length] = chosenInstance;
 			}
 			
+			// apply tool class
+			if(params.key){
+				chosenInstance.embeddedWidget.getElement().attr('key', params.key);
+			} else {
+				chosenInstance.embeddedWidget.getElement().removeAttr('key');
+			}
+			
 			// set data
 			chosenInstance.setData({data: params.data, callback: params.callback});
 			chosenInstance.compCntr = 0;

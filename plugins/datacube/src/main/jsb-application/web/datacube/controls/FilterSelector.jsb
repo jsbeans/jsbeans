@@ -60,6 +60,7 @@
 			
 			function _constructTag(fId){
 				var fDesc = filters[fId];
+				var fName = fDesc.cubeField || fDesc.field;
 				var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
 
 				var type = '';
@@ -73,7 +74,7 @@
 				}
                 //fTag.append($this.$('<div class="type"></div>').text(type));
 
-				fTag.append($this.$('<div class="field"></div>').text(fDesc.field).attr('title', fDesc.field));
+				fTag.append($this.$('<div class="field"></div>').text(fName).attr('title', fName));
 				var opSign = ':';
 				switch(fDesc.op){
 				case '$eq':
@@ -138,14 +139,15 @@
 			var ffMap = {};
 			for(var fItemId in filters){
 				var fDesc = filters[fItemId];
-				if(!ffMap[fDesc.field]){
-					ffMap[fDesc.field] = {
+				var f = fDesc.cubeField || fDesc.field;
+				if(!ffMap[f]){
+					ffMap[f] = {
 						andFilters: [],
 						orFilters: []
 					};
 				}
 				
-				var ffDesc = ffMap[fDesc.field];
+				var ffDesc = ffMap[f];
 				if(fDesc.type == '$and'){
 					ffDesc.andFilters.push({type:'tag', id: fItemId});
 				} else if(fDesc.type == '$or'){
