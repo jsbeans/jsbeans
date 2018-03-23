@@ -1,6 +1,7 @@
 {
 	$name: 'DataCube.Widgets.WidgetExplorer',
 	$parent: 'JSB.Widgets.Widget',
+	$require: ['DataCube.Widgets.WidgetRegistry'],
 	
 	$client: {
 		$require: ['JSB.Controls.ScrollBox',
@@ -18,7 +19,7 @@
 			this.scrollBox = new ScrollBox();
 			this.append(this.scrollBox);
 			
-			this.server().getWidgets(function(wDesc){
+			WidgetRegistry.server().getWidgets(function(wDesc){
 				$this.draw(wDesc);
 			});
 		},
@@ -59,38 +60,5 @@
 				}
 			}
 		}
-	},
-	
-	$server: {
-		$singleton: true,
-		registry: {},
-		
-		$constructor: function(){
-			$base();
-			JSB.onLoad(function(){
-				if(this.isSubclassOf('DataCube.Widgets.Widget') && JSB.isDefined(this.$expose)){
-					$this.register(this);
-				}
-			});
-		},
-		
-		register: function(jsb){
-			JSB.getLogger().info(jsb.$name);
-			var expose = jsb.getDescriptor().$expose;
-			if(!this.registry[expose.category]){
-				this.registry[expose.category] = [];
-			}
-			this.registry[expose.category].push({
-				name: expose.name,
-				description: expose.description,
-				thumb: expose.thumb,
-				icon: expose.icon,
-				jsb: jsb.$name,
-			});
-		},
-		
-		getWidgets: function(){
-			return this.registry;
-		},
 	}
 }

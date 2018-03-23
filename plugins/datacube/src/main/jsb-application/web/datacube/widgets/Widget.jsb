@@ -472,7 +472,7 @@
 	},
 
 	$server: {
-		$require: ['DataCube.Widgets.WidgetExplorer', 'JSB.Crypt.MD5'],
+		$require: ['DataCube.Widgets.WidgetRegistry', 'JSB.Crypt.MD5'],
 
 		iterators: {},
 		needBreak: false,
