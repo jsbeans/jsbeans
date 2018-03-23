@@ -19,7 +19,7 @@
 			this.scrollBox = new ScrollBox();
 			this.append(this.scrollBox);
 			
-			WidgetRegistry.server().getWidgets(function(wDesc){
+			WidgetRegistry.lookupWidgets(function(wDesc){
 				$this.draw(wDesc);
 			});
 		},

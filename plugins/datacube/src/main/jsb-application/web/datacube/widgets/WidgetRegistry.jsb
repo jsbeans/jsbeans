@@ -3,10 +3,31 @@
 	$singleton: true,
 	
 	$client: {
+		registry: {},
 		registryByType: {},
 		
 		$constructor: function(opts){
 			$base(opts);
+		},
+		
+		lookupWidgets: function(callback){
+			if(Object.keys(this.registry).length > 0){
+				callback.call(this, this.registry);
+				return;
+			}
+			this.server().getWidgets(function(r){
+				$this.registry = r;
+				// fill registryByType
+				for(var cat in $this.registry){
+					var arr = $this.registry[cat];
+					for(var i = 0; i < arr.length; i++){
+						var desc = arr[i];
+						$this.registryByType[desc.jsb] = desc;
+					}
+				}
+				
+				callback.call($this, $this.registry);
+			});
 		},
 		
 		lookupWidgetAttr: function(jsb, attr, callback){
@@ -51,7 +72,7 @@
 				jsb: jsb.$name,
 			};
 			this.registry[expose.category].push(desc);
-			this.registryByType[jsb.$name] = desc;
+			this.registryByType[desc.jsb] = desc;
 		},
 		
 		getWidgets: function(){
