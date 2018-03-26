@@ -243,7 +243,6 @@ public class JsbRegistryService extends Service {
                         // try to lookup locally via JsHub
                         LookupJsoMessage msg = this.getArgument(0);
                         ExecuteScriptMessage execMsg = new ExecuteScriptMessage(String.format("JSB.constructClientJSB('%s');", name), false);
-                        execMsg.setDispatcher("kernel.jsb.syncDispatcher");
                         execMsg.setScopePath(msg.getSession());
                         execMsg.setUser(msg.getUser());
                         execMsg.setUserToken(msg.getUserToken());
@@ -344,7 +343,6 @@ public class JsbRegistryService extends Service {
                             obj.get("proc").getAsString(),
                             paramElt != null ? paramElt.toString() : "null");
                     ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
-                    execMsg.setDispatcher("kernel.jsb.syncDispatcher");
                     execMsg.setScopePath(sessionId);
                     execMsg.setClientAddr(clientAddr);
                     execMsg.setUser(user);

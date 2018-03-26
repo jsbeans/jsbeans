@@ -30,9 +30,6 @@
 		
 		destroy: function(){
 			$base();
-			if(this.buffer){
-				this.buffer = null;
-			}
 			if(!this.closed){
 				this.close();
 			}
@@ -173,11 +170,16 @@
 		
 		close: function(){
 			if(!this.closed){
-				if(!$jsb.isNull(this.input)){
+				if(!JSB.isNull(this.input)){
 					this.input.close();
+					this.input = null;
 				}
-				if(!$jsb.isNull(this.output)){
+				if(!JSB.isNull(this.output)){
 					this.output.close();
+					this.output = null;
+				}
+				if(this.buffer){
+					this.buffer = null;
 				}
 				this.closed = true;
 				this.destroy();
