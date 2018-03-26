@@ -7,15 +7,96 @@
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'JSB.Widgets.PrimitiveEditor',
-                   'JSB.Widgets.Button',
+                   'JSB.Controls.Button',
+                   'JSB.Widgets.Dashboard.Dashboard',
                    'DataCube.SaveMessage'
         ],
 
 		$constructor: function(opts){
 			$base(opts);
 
-			//this.loadCss('StylesEditorView.css');
+			this.loadCss('StylesEditorView.css');
 			this.addClass('stylesEditorView');
+
+            this.titleBlock = this.$('<div class="titleBlock"></div>');
+            this.append(this.titleBlock);
+
+            this.titleEditor = new PrimitiveEditor();
+            this.titleBlock.append(this.titleEditor.getElement());
+
+            this.saveBtn = new Button({
+                cssClass: "btnOk",
+                caption: "Сохранить",
+                onclick: function(){
+                    $this.saveSettings();
+                }
+            });
+            this.titleBlock.append(this.saveBtn.getElement());
+
+            var splitBox = new SplitBox({
+				type: 'vertical',
+				position: 0.5
+			});
+			this.append(splitBox);
+
+			var schemeBlock = this.$('<div class="schemeBlock"></div>');
+			splitBox.append(schemeBlock);
+
+	        this.schemeScroll = new ScrollBox();
+	        schemeBlock.append(this.schemeScroll.getElement());
+
+	        this.dashboardBlock = this.$('<div class="dashboardBlock"></div>');
+	        splitBox.append(this.dashboardBlock);
+
+	        // todo: add save msg
+            this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
+            this.savedMessage.click(function(){
+                $this.savedMessage.css('display', 'none');
+            });
+            this.append(this.savedMessage);
+            /*
+			this.dashboard = new Dashboard({
+				emptyText: '',
+			});
+			this.append(this.dashboard);
+
+			var dashboardDesc = {
+                layout: layout,
+                widgets: ''
+			};
+
+			this.dashboard.setLayout(dashboardDesc);
+			*/
+        },
+
+        refresh: function(){
+            var entry = this.node.getEntry();
+
+            entry.getStyles(function(styles, fail){
+                if(fail) { return; };
+
+                $this.styleScheme = new Controller({
+                    scheme: entry.scheme,
+                    values: { values: styles },
+                    bootstrap: 'Datacube.Unimap.Bootstrap',
+                    onchange: function(key, values){
+                        //
+                    }
+                });
+                $this.schemeScroll.append($this.styleScheme.getElement());
+
+                // add setting to dashboard
+            });
+
+            this.titleEditor.setData(entry.getName());
+        },
+
+        saveSettings: function(){
+            $this.savedMessage.fadeIn(1600, "linear", function(){
+                $this.savedMessage.fadeOut(1600, "linear");
+            });
+
+            this.node.getEntry().server().setStyles($this.styleScheme.getValues().values);
         }
 	},
 
