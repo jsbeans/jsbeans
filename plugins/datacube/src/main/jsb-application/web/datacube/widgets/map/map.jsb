@@ -1556,9 +1556,34 @@
                     path: this._maps[i].path
                 });
             }
+            
+            if(params.maps.length == 0){
+            	$this.setTrigger('_mapLoaded');
+            	return;
+            }
 
             this.getElement().loader();
-            this.ajax('datacube/widgets/map/map.jsb', params, function(result, obj){
+
+            var cCnt = 0;
+            for(var i = 0; i < params.maps.length; i++){
+            	(function(idx){
+                	$this.ajax(params.maps[idx].path, params, function(result, obj){
+                		if(result == 'success'){
+	                		if(JSB.isString(obj)){
+	                			obj = eval( '(' + obj + ')');
+	                		}
+	                		$this._maps[idx].data = obj;
+                		}
+                		cCnt++;
+                		if(cCnt == params.maps.length){
+                			$this.setTrigger('_mapLoaded');
+                		}
+                	});
+            	})(i);
+            }
+/*
+            this.ajax('map.jsb', params, function(result, obj){
+            	console.log('map time: ' + (Date.now() - t1));
                 if(result !== 'success'){
                     $this.setTrigger('_mapLoaded');
                     return;
@@ -1567,11 +1592,14 @@
                 obj = obj.result;
 
                 for(var i = 0; i < obj.length; i++){
-                    $this._maps[i].data = obj[i].data;
+                    $this._maps[i].data = eval( '(' + obj[i].data + ')');
                 }
+                
+                console.log('map time2: ' + (Date.now() - t1));
 
                 $this.setTrigger('_mapLoaded');
             });
+*/            
         },
 
         // utils
@@ -1645,13 +1673,21 @@
 
     $server: {
         $require: ['JSB.Web', 'JSB.IO.FileSystem'],
+        
+        mapCache: {},
 
         post: function(params){
             for(var i = 0; i < params.maps.length; i++){
-                if(FileSystem.exists($jsb.getFullPath() + '/' + params.maps[i].path)){
-                    params.maps[i].data = eval('(' + FileSystem.read($jsb.getFullPath() + '/' + params.maps[i].path, 'r') + ')');
-                    //params.maps[i].data = JSON.parse(FileSystem.read($jsb.getFullPath() + '/' + params.maps[i].path, 'r'));
-                }
+            	var path = $jsb.getFullPath() + '/' + params.maps[i].path;
+            	if(!this.mapCache[path]){
+                    if(FileSystem.exists(path)){
+                    	this.mapCache[path] = FileSystem.read(path, 'r');
+                        //params.maps[i].data = JSON.parse(FileSystem.read($jsb.getFullPath() + '/' + params.maps[i].path, 'r'));
+                    }
+            		
+            	}
+                
+                params.maps[i].data = this.mapCache[path];
             }
 
             return Web.response(params.maps, {mode:'json'})

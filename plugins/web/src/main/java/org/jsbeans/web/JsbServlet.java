@@ -190,7 +190,7 @@ public class JsbServlet extends HttpServlet {
         }
 
         try {
-            return jObj.toJS();
+            return jObj.toJS(false);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -216,7 +216,7 @@ public class JsbServlet extends HttpServlet {
             f.onSuccess(new OnSuccess<Object>() {
                 @Override
                 public void onSuccess(Object obj) throws Throwable {
-                    String jsoStr = prepareGetJsoResponse((LookupJsoMessage) obj, false, true);
+                    String jsoStr = prepareGetJsoResponse((LookupJsoMessage) obj, false, false);
                     WebCache.put(jsoName, jsoStr);
                     responseResult(ac, jsoStr);
                 }
