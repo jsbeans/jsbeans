@@ -614,6 +614,7 @@
 
             if(opts && opts.updateStyles){
                 this._styles = null;
+                this._maps = [];
                 this._dataSource = null;
             }
 
@@ -706,7 +707,7 @@
                     // parsing regions data
                     /*********/
                     var maps = [],
-                        newMapHash = '';
+                        loadedMaps = this.getJsb().maps;
 
                     for(var i = 0; i < regionsContext.length; i++){
                         var colorSelector = regionsContext[i].find('fillColor');
@@ -755,37 +756,38 @@
                             compareTo: regionsContext[i].find('compareTo').value()
                         };
 
-                        switch(regionsContext[i].find('geojsonMap').value()){
-                            case 'russianRegions':
-                                maps.push(JSB.merge(r, {
-                                    data: null,
-                                    path: 'geojson/russianRegions.json'
-                                }));
-                                newMapHash += 'geojson/russianRegions.json';
-                                break;
-                            case 'russianRegionsMPT':
-                                maps.push(JSB.merge(r, {
-                                    data: null,
-                                    path: 'geojson/russianRegionsMPT.json'
-                                }));
-                                newMapHash += 'geojson/russianRegionsMPT.json';
-                                break;
-                            case 'worldCountries':
-                                maps.push(JSB.merge(r, {
-                                    data: null,
-                                    path: 'geojson/worldCountries.json'
-                                }));
-                                newMapHash += 'geojson/worldCountries.json';
-                                break;
+                        var mapName = regionsContext[i].find('geojsonMap').value();
+                        if(loadedMaps && loadedMaps[mapName]){
+                            this._maps.push({
+                                data: loadedMaps[mapName]
+                            });
+                        } else {
+                            switch(mapName){
+                                case 'russianRegions':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/russianRegions.json'
+                                    }));
+                                    break;
+                                case 'russianRegionsMPT':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/russianRegionsMPT.json'
+                                    }));
+                                    break;
+                                case 'worldCountries':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/worldCountries.json'
+                                    }));
+                                    break;
+                            }
                         }
                     }
 
-                    newMapHash = MD5.md5(newMapHash);
-                    if(newMapHash !== this._mapHash){
-                        this._mapHash = newMapHash;
-                        this._maps = maps;
+                    if(maps.length > 0){
                         this.resetTrigger('_mapLoaded');
-                        this.loadMaps();
+                        this.loadMaps(maps);
                     }
                     /*********/
 
@@ -1538,44 +1540,34 @@
             }
         },
 
-        loadMaps: function(){
-            if(this._maps.length === 0){
+        loadMaps: function(maps){
+            if(maps.length === 0){
                 this.setTrigger('_mapLoaded');
                 return;
-            }
-
-            var params = {
-                maps: []
-            };
-            for(var i = 0; i < this._maps.length; i++){
-                if(!this._maps[i].path){
-                    continue;
-                }
-
-                params.maps.push({
-                    path: this._maps[i].path
-                });
-            }
-            
-            if(params.maps.length == 0){
-            	$this.setTrigger('_mapLoaded');
-            	return;
             }
 
             this.getElement().loader();
 
             var cCnt = 0;
-            for(var i = 0; i < params.maps.length; i++){
+            for(var i = 0; i < maps.length; i++){
             	(function(idx){
-                	$this.ajax(params.maps[idx].path, params, function(result, obj){
+                	$this.ajax(maps[idx].path, null, function(result, obj){
                 		if(result == 'success'){
 	                		if(JSB.isString(obj)){
 	                			obj = eval( '(' + obj + ')');
 	                		}
-	                		$this._maps[idx].data = obj;
+	                		$this._maps[idx] = {
+	                		    compareTo: maps[idx].compareTo,
+	                		    data: obj
+	                		};
+
+	                		if(!$this.getJsb().maps){
+	                		    $this.getJsb().maps = {};
+	                		}
+	                		$this.getJsb().maps[idx] = obj;
                 		}
                 		cCnt++;
-                		if(cCnt == params.maps.length){
+                		if(cCnt == maps.length){
                 			$this.setTrigger('_mapLoaded');
                 		}
                 	});
@@ -1594,12 +1586,12 @@
                 for(var i = 0; i < obj.length; i++){
                     $this._maps[i].data = eval( '(' + obj[i].data + ')');
                 }
-                
+
                 console.log('map time2: ' + (Date.now() - t1));
 
                 $this.setTrigger('_mapLoaded');
             });
-*/            
+*/
         },
 
         // utils
