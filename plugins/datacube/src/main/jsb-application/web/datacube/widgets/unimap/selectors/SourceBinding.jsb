@@ -67,7 +67,7 @@
                 var selector = this._selectorBean._mainSelector.findAll(linkedKeys[i]);
 
                 for(var j = 0; j < selector.length; j++){
-                    if(selector[j].getRenderName() === 'dataBinding' && selector[j]._values.length > 0){
+                    if(selector[j].getRenderName() === 'dataBinding' && selector[j]._values.length > 0 && selector[j].bindings(true).length > 0){
                         linkedValues.push(selector[j]);
                     }
                 }
@@ -78,7 +78,7 @@
 
         for(var i = 0; i < this._linkedValues.length; i++){
             var values = [],
-                bindings = this._linkedValues[i].bindings();
+                bindings = this._linkedValues[i].bindings(true);
 
             for(var k = 0; k < bindings.length; k++){
                 values.push(dataEl[bindings[k]]);

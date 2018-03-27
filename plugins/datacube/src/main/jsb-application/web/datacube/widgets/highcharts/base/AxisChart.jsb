@@ -30,6 +30,12 @@
                             name: 'Шаг',
                             valueType: 'number'
                         },
+                        format: {
+                            render: 'item',
+                            name: 'Формат',
+                            valueType: 'string',
+                            defaultValue: '{value}'
+                        },
                         fontColor: {
                             render: 'item',
                             name: 'Цвет шрифта',
@@ -204,6 +210,12 @@
                             render: 'item',
                             name: 'Шаг',
                             valueType: 'number'
+                        },
+                        format: {
+                            render: 'item',
+                            name: 'Формат',
+                            valueType: 'string',
+                            defaultValue: '{value}'
                         },
                         fontColor: {
                             render: 'item',
@@ -423,6 +435,7 @@
                             enabled: xAxisLabels.find('enabled').checked(),
                             rotation: xAxisLabels.find('rotation').value(),
                             step: xAxisLabels.find('step').value(),
+                            format: xAxisLabels.find('format').value(),
                             color: xAxisLabels.find('fontColor').value(),
                             fontSize: xAxisLabels.find('fontSize').value() + 'px'
                         },
@@ -455,6 +468,7 @@
                             enabled: yAxisLabels.find('enabled').checked(),
                             rotation: yAxisLabels.find('rotation').value(),
                             step: yAxisLabels.find('step').value(),
+                            format: yAxisLabels.find('format').value(),
                             color: yAxisLabels.find('fontColor').value(),
                             fontSize: yAxisLabels.find('fontSize').value() + 'px'
                         },
