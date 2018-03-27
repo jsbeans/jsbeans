@@ -5,6 +5,11 @@
 	position: relative;
 }
 
+.workspaceExplorerNode.nodeColored {
+	color: #d37531;
+    font-weight: bold;
+}
+
 .workspaceExplorerNode > .icon {
 	width: 20px;
     height: 20px;

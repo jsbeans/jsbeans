@@ -5857,6 +5857,9 @@ JSB({
 				if(xhrObj.type == 'POST'){
 					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 				}
+				if (xhr.overrideMimeType) {
+					xhr.overrideMimeType("application/json");
+				}
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState != 4) return;
 					window.clearTimeout(to);

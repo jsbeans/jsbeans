@@ -484,9 +484,12 @@
 			if(token != null){
 				params['token'] = token;
 			}
-			this.ajax('jspoint', params, function(result, obj){
+			this.ajax('../../jspoint', params, function(result, obj){
 				// ready
 				if(result == 'success'){
+					if(JSB.isString(obj)){
+						obj = eval('(' + obj + ')');
+					}
 					self.trackTask(obj.token, code);
 				} else {
 					// communication error. retry in 5 secs
@@ -499,12 +502,16 @@
 		
 		trackTask: function(token, cmd){
 			var self = this;
-			this.ajax('jspoint',{
+			this.ajax('../../jspoint',{
 				type: 'check',
 				token: token
 			}, function(result, obj){
 				// ready
 				if(result == 'success'){
+					if(JSB.isString(obj)){
+						obj = eval('(' + obj + ')');
+					}
+
 					if(obj.status == 'MISSING') {
 						obj.status = 'FAIL';
 						obj.error = 'Command expired';

@@ -83,6 +83,10 @@
 			
 			var itemWrapper = this.$('<li class="_dwp_treeViewNode"></li>');
 			
+			if(itemObj.dummy){
+				itemWrapper.addClass('_dwp_treeDummy');
+			}
+			
 			var collapsed = self.options.collapsed;
 			if(!JSB().isNull(itemObj.collapsed)){
 				collapsed = itemObj.collapsed;
@@ -583,6 +587,26 @@
 			wrapper.addClass('collapsed');
 			if(itemObj.onCollapse){
 				itemObj.onCollapse.call(this, itemObj);
+			}
+		},
+		
+		collapseAll: function(){
+			var liArr = this.find('li._dwp_treeViewNode:not(.collapsed):not(._dwp_treeDummy)');
+			for(var i = 0; i < liArr.length; i++){
+				var key = this.$(liArr[i]).attr('key');
+				if(key){
+					this.collapseNode(key);
+				}
+			}
+		},
+		
+		expandAll: function(){
+			var liArr = this.find('li._dwp_treeViewNode.collapsed:not(._dwp_treeDummy)');
+			for(var i = 0; i < liArr.length; i++){
+				var key = this.$(liArr[i]).attr('key');
+				if(key){
+					this.expandNode(key);
+				}
 			}
 		},
 		

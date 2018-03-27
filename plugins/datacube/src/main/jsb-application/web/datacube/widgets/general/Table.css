@@ -33,7 +33,7 @@
     color: #316271;
     text-shadow: 1px 1px #ebeff3;
     font-weight: bold;
-    border-radius: 4px;
+    border-radius: 3px;
     
 	display: table-cell;
 }
@@ -175,11 +175,11 @@
 }
 
 .tableWidget > table.status > tfoot > tr > td.col:first-child {
-	border-radius: 4px 0 0 4px;
+	border-radius: 3px 0 0 3px;
 }
 
 .tableWidget > table.status > tfoot > tr > td.col:last-child {
-	border-radius: 0 4px 4px 0;
+	border-radius: 0 3px 3px 0;
 }
 
 .tableWidget.hasBorder > table.status > tfoot > tr > td.col:last-child {

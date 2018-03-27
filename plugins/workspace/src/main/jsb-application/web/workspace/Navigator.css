@@ -1,15 +1,6 @@
 @CHARSET "UTF-8";
 
-.workspaceNavigator {
-/*	
-	padding: 4px 6px;
-    background-color: #F8F8F8;
-    border-radius: 8px;
-    border-bottom: 1px solid #BABABA;
-    border-right: 1px solid #bababa;
-    box-shadow: inset 1px 1px 1px #9E9E9E;
-*/    
-}
+.workspaceNavigator {}
 
 .workspaceNavigator > ul.wnbContainer {
 	list-style: none;
@@ -62,6 +53,7 @@
 .workspaceNavigator > ul.wnbContainer > li.tag > .renderer > .title {
 	padding-left: 30px;
     font-size: 16px;
+    height: 20px;
 }
 
 
