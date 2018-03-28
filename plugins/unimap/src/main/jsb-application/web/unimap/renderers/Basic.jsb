@@ -148,10 +148,6 @@
 
         createValues: function(){
             this._values.checked = this._scheme.optional === 'checked' ? true : undefined;
-            this._values.render = this._scheme.render;
-            this._values.defaultValue = this._scheme.defaultValue;
-            this._values.valueType = this._scheme.valueType;
-            this._values.linkTo = this._scheme.linkTo;
             this._values.values = [];
 
             if(this._scheme.value){
@@ -166,9 +162,10 @@
         },
 
         extendValues: function(){
-            // if add new properties to values
-            // example
-            // this._values.valueType = this._scheme.valueType;
+            this._values.render = this._scheme.render;
+            this._values.defaultValue = this._scheme.defaultValue;
+            this._values.valueType = this._scheme.valueType;
+            this._values.linkTo = this._scheme.linkTo;
         },
 
         findRenderByKey: function(key){

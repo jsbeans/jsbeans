@@ -652,11 +652,7 @@
             var chartOpts = this._buildChart(data),
                 styleSelector = this.getContext().find('chart colorScheme');
 
-            styleSelector.value(function(widgetStyleSelector){
-                if(widgetStyleSelector){
-                    chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
-                }
-
+            function buildWidget(chartOpts){
                 if($this.chart){
                     $this.chart.update(chartOpts);
                 } else {
@@ -665,17 +661,19 @@
 
                 $this._select($this._curFilters, true, true);
                 $this._resolvePointContextFilters();
-            });
-            /*
-            if(this.chart){
-                this.chart.update(chartOpts);
-            } else {
-                this.chart = (function(){return this}).call(null).Highcharts[this._chartType](this.container.get(0), chartOpts);
             }
 
-            this._select(this._curFilters, true, true);
-            this._resolvePointContextFilters();
-            */
+            if(styleSelector.getKey() !== 'colorScheme'){
+                buildWidget(chartOpts);
+            } else {
+                styleSelector.value(function(widgetStyleSelector){
+                    if(widgetStyleSelector){
+                        chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
+                    }
+
+                    buildWidget(chartOpts);
+                });
+            }
         },
 
         setStyles: function(styles){

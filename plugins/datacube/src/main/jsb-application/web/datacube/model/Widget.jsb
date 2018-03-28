@@ -233,6 +233,10 @@
 		    }
 		},
 
+		getValues: function(){
+		    return this.values;
+		},
+
 		setName: function(name){
 		    this.getDashboard().load();
 			$base(name);
