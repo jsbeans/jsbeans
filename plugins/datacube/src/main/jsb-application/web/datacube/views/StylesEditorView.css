@@ -79,6 +79,10 @@
     font-size: 1.2em;
 }
 
+.stylesEditorView .schemeBlock > .jsb-scrollBox > .scheme {
+    padding: 5px;
+}
+
 .stylesEditorView > .savedMessage {
     position: absolute;
     top: calc(50% - 21px);
