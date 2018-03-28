@@ -73,10 +73,12 @@
 }
 
 .stylesEditorView .styleElementBlock > span {
-    display: block;
-    margin-top: 60%;
+	display: block;
+    top: 50%;
     text-align: center;
     font-size: 1.2em;
+    position: relative;
+    color: #5d8194;
 }
 
 .stylesEditorView .schemeBlock > .jsb-scrollBox > .scheme {
