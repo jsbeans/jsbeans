@@ -4,6 +4,8 @@
     _excludeMethods: ['$', '$constructor', '$parent'],
 
     $constructor: function(opts){
+        if(!opts){ opts = {}; }
+
         this._mainSelector = opts.mainSelector;
 
         this._selectorPrototype = function(opts){

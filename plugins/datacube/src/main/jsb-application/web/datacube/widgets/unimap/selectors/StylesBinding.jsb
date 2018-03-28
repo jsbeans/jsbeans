@@ -9,6 +9,10 @@
             return;
         }
 
+        if(!this._values[0].value){
+            callback();
+        }
+
         this._selectorBean.server().getValues(this._values[0].value, function(res, fail){
             if(fail){
                 callback();
@@ -30,6 +34,8 @@
     },
 
     $server: {
+        $require: ['JSB.Workspace.WorkspaceController'],
+
         getValues: function(opts){
             return WorkspaceController.getWorkspace(opts.workspaceId).entry(opts.entryId).getStyles();
         }

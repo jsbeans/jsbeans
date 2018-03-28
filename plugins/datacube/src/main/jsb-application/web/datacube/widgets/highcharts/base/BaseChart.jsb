@@ -647,7 +647,9 @@
                 styleSelector = this.getContext().find('chart colorScheme');
 
             styleSelector.value(function(widgetStyleSelector){
-                chartOpts.color = widgetStyleSelector.find('colorScheme').values();
+                if(widgetStyleSelector){
+                    chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
+                }
 
                 if($this.chart){
                     $this.chart.update(chartOpts);
