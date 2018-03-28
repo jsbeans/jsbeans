@@ -81,7 +81,7 @@
     color: #5d8194;
 }
 
-.stylesEditorView > .schemeBlock > .jsb-scrollBox > .scheme {
+.stylesEditorView .schemeBlock > .jsb-scrollBox > .scheme {
     padding: 5px;
 }
 
