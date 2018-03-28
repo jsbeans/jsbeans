@@ -143,81 +143,72 @@
 		},
 		
 		load: function(){
-			var bLocked = false;
 			var bNeedStore = false;
 			if(!this.loaded){
 				var mtxName = 'load_' + this.getId();
 				JSB.getLocker().lock(mtxName);
-				bLocked = true;
-			}
-			if(!this.loaded){
-				if(this.existsArtifact('.dashboard')){
-					var mtxName = 'load_' + this.getId();
-					JSB.getLocker().lock(mtxName);
-					try {
-						// read layout
-						var snapshot = this.loadArtifact('.dashboard');
-						this.layout = snapshot.layout;
-
-						// read wrappers
-						this.wrappers = this.getChildren();
-						
-						for(var wId in snapshot.wrappers){
-							var wDesc = snapshot.wrappers[wId];
+				try {
+					if(!this.loaded) {
+						if(this.existsArtifact('.dashboard')){
+							// read layout
+							var snapshot = this.loadArtifact('.dashboard');
+							this.layout = snapshot.layout;
+	
+							// read wrappers
+							this.wrappers = this.getChildren();
 							
-							if(!this.wrappers[wId]){
-								var wWrapper = this.getWorkspace().entry(wId);
-								if(!wWrapper){
-									bNeedStore = true;
-									wWrapper = new Widget(wId, this.getWorkspace(), this, wDesc.name, wDesc.jsb, wDesc.values);
-									this.addChildEntry(wWrapper);
-								}
+							for(var wId in snapshot.wrappers){
+								var wDesc = snapshot.wrappers[wId];
 								
-								this.wrappers[wId] = wWrapper;
-							}
-						}
-						
-						// remove unused wrappers
-						var unusedWrappers = JSB.clone(this.wrappers);
-						function performLayoutEntry(lEntry){
-							if(lEntry && lEntry.widgets){
-								for(var i = 0; i < lEntry.widgets.length; i++){
-									var wServerId = lEntry.widgets[i];
-									if(unusedWrappers[wServerId]){
-										delete unusedWrappers[wServerId];
+								if(!this.wrappers[wId]){
+									var wWrapper = this.getWorkspace().entry(wId);
+									if(!wWrapper){
+										bNeedStore = true;
+										wWrapper = new Widget(wId, this.getWorkspace(), this, wDesc.name, wDesc.jsb, wDesc.values);
+										this.addChildEntry(wWrapper);
 									}
+									
+									this.wrappers[wId] = wWrapper;
 								}
-							} 
-							if(lEntry && lEntry.containers){
-								for(var i = 0; i < lEntry.containers.length; i++){
-									performLayoutEntry(lEntry.containers[i]);
-								}
-							} 
-						}
-						
-						performLayoutEntry(this.layout);
-						
-						for(var wId in unusedWrappers){
-							bNeedStore = true;
-							var cEntry = this.removeChildEntry(wId);
-							if(cEntry){
-								cEntry.remove();
 							}
-							delete this.wrappers[wId];
+							
+							// remove unused wrappers
+							var unusedWrappers = JSB.clone(this.wrappers);
+							function performLayoutEntry(lEntry){
+								if(lEntry && lEntry.widgets){
+									for(var i = 0; i < lEntry.widgets.length; i++){
+										var wServerId = lEntry.widgets[i];
+										if(unusedWrappers[wServerId]){
+											delete unusedWrappers[wServerId];
+										}
+									}
+								} 
+								if(lEntry && lEntry.containers){
+									for(var i = 0; i < lEntry.containers.length; i++){
+										performLayoutEntry(lEntry.containers[i]);
+									}
+								} 
+							}
+							
+							performLayoutEntry(this.layout);
+							
+							for(var wId in unusedWrappers){
+								bNeedStore = true;
+								var cEntry = this.removeChildEntry(wId);
+								if(cEntry){
+									cEntry.remove();
+								}
+								delete this.wrappers[wId];
+							}
 						}
-						
-					} finally {
-						JSB.getLocker().unlock(mtxName);	
+						this.loaded = true;
+						this.widgetCount = Object.keys(this.wrappers).length;
 					}
-					
-					this.widgetCount = Object.keys(this.wrappers).length;
+				} finally {
+					JSB.getLocker().unlock(mtxName);	
 				}
-				this.loaded = true;
 			}
-			if(bLocked){
-				var mtxName = 'load_' + this.getId();
-				JSB.getLocker().unlock(mtxName);
-			}
+			
 			if(bNeedStore){
 				this.store();
 				this.doSync();

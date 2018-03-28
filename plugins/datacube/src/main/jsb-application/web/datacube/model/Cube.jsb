@@ -70,156 +70,158 @@
 			var mtxName = 'load_' + this.getId();
 			if(!this.loaded){
 				JSB.getLocker().lock(mtxName);
-
 				try {
-				    this.queryEngine = new QueryEngine(this);
-	
-					if(this.existsArtifact('.cube')){
-						var snapshot = this.loadArtifact('.cube');
-						
-						this.nodePosition = snapshot.position;
-						this.nodeSize = snapshot.size;
-						this.defaultFields = snapshot.defaultFields;
-						
-						// construct data providers
-						for(var i = 0; i < snapshot.providers.length; i++){
-							var pDesc = snapshot.providers[i];
-							var pEntry = null;
-							if(!this.getWorkspace().existsEntry(pDesc.entry)){
-								JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
-								continue;
-							} else {
-								pEntry = this.getWorkspace().entry(pDesc.entry);
-							}
-							var pJsb = JSB.get(pDesc.jsb);
-							if(!pJsb){
-								JSB.getLogger().error('Unable to construct data provider "'+pDesc.jsb+'" due to missing its bean');
-								continue;
-							}
-							var ProviderClass = pJsb.getClass();
-							var providerDesc = DataProviderRepository.queryDataProviderInfo(pEntry);
-							var provider = new ProviderClass(pDesc.id, pEntry, this, pDesc.options || {mode: pDesc.mode});
-							this.dataProviders[pDesc.id] = provider;
-							this.dataProviderEntries[pDesc.id] = pEntry;
-							this.dataProviderFields[pDesc.id] = pDesc.fields;
-							this.dataProviderPositions[pDesc.id] = pDesc.position;
-							this.dataProviderSizes[pDesc.id] = pDesc.size;
-	
-							// actualize dataProviderFields
-							for(var fName in this.dataProviderFields[pDesc.id]){
-								if(this.dataProviderFields[pDesc.id][fName] && !JSB.isObject(this.dataProviderFields[pDesc.id][fName])){
-									this.dataProviderFields[pDesc.id] = provider.extractFields({comment:true, type:true, nativeType:true});
-									break;
+					if(!this.loaded) {
+					    this.queryEngine = new QueryEngine(this);
+		
+						if(this.existsArtifact('.cube')){
+							var snapshot = this.loadArtifact('.cube');
+							
+							this.nodePosition = snapshot.position;
+							this.nodeSize = snapshot.size;
+							this.defaultFields = snapshot.defaultFields;
+							
+							// construct data providers
+							for(var i = 0; i < snapshot.providers.length; i++){
+								var pDesc = snapshot.providers[i];
+								var pEntry = null;
+								if(!this.getWorkspace().existsEntry(pDesc.entry)){
+									JSB.getLogger().warn('Unable to construct data provider "'+pDesc.jsb+'" due to missing source entry: ' + pDesc.entry);
+									continue;
+								} else {
+									pEntry = this.getWorkspace().entry(pDesc.entry);
 								}
-							}
-						}
-						
-						// construct fields
-						for(var i = 0; i < snapshot.fields.length; i++){
-							var fDesc = snapshot.fields[i];
-							this.fields[fDesc.field] = {
-								field: fDesc.field,
-								type: fDesc.type,
-								link: fDesc.link,
-								order: fDesc.order,
-								comment: fDesc.comment,
-								binding: []
-							};
-							for(var j = 0; j < fDesc.binding.length; j++){
-								var bDesc = fDesc.binding[j];
-								if(this.dataProviders[bDesc.provider]){
-									this.fields[fDesc.field].binding.push({
-										provider: this.dataProviders[bDesc.provider],
-										field: bDesc.field,
-										type: bDesc.type
-									});
-								}
-							}
-							if(this.fields[fDesc.field].binding.length == 0){
-								delete this.fields[fDesc.field];
-							}
-						}
-						
-						// construct materialization
-						if(snapshot.materialization && Object.keys(snapshot.materialization).length > 0 && snapshot.materialization.tables && Object.keys(snapshot.materialization.tables).length > 0){
-							try {
-								var materialization = {
-									lastUpdate: snapshot.materialization.lastUpdate,
-									fields: {},
-									tables: {}
-								};
-								
-								for(var tId in snapshot.materialization.tables){
-									if(!snapshot.materialization.tables[tId].provider.entry){
-										throw new Error('Missing materialized source for cube: ' + $this.getName());
-									}
-									var dataProviderEntry = this.getWorkspace().entry(snapshot.materialization.tables[tId].provider.entry);
-	
-									var pJsb = JSB.get(snapshot.materialization.tables[tId].provider.jsb);
-									if(!pJsb){
-										throw new Error('Unable to construct data provider "'+snapshot.materialization.tables[tId].provider.jsb+'" due to missing its bean');
-									}
-									var ProviderClass = pJsb.getClass();
-									var providerDesc = DataProviderRepository.queryDataProviderInfo(dataProviderEntry);
-									var dataProvider = new ProviderClass(snapshot.materialization.tables[tId].provider.id, dataProviderEntry, this, snapshot.materialization.tables[tId].provider.options || {mode:snapshot.materialization.tables[tId].provider.mode});
-									
-									materialization.tables[tId] = {
-										table: snapshot.materialization.tables[tId].table,
-										dataProviderEntry: dataProviderEntry,
-										dataProvider: dataProvider,
-										indexes: snapshot.materialization.tables[tId].indexes || {}
-									};
-								}
-								
-								for(var i = 0; i < snapshot.materialization.fields.length; i++){
-									var fDesc = snapshot.materialization.fields[i];
-									materialization.fields[fDesc.field] = {
-										field: fDesc.field,
-										type: fDesc.type,
-										binding: []
-									}
-									for(var j = 0; j < fDesc.binding.length; j++){
-										var provider = JSB.getInstance(fDesc.binding[j].provider);
-										if(provider){
-											materialization.fields[fDesc.field].binding.push({
-												provider: provider,
-												field: fDesc.binding[j].field,
-												type: fDesc.binding[j].type
-											});
-										}
-									}
-									if(materialization.fields[fDesc.field].binding.length == 0){
-										delete materialization.fields[fDesc.field];
-									}
-								}
-								
-								this.materialization = materialization;
-							} catch(e){
-								JSB.getLogger().error(e);
-							}
-						}
-						
-						// construct slices
-						for(var i = 0; i < snapshot.slices.length; i++){
-							var sDesc = snapshot.slices[i];
-							if(this.getWorkspace().existsEntry(sDesc.id)){
-								var slice = this.getWorkspace().entry(sDesc.id);
-								if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
+								var pJsb = JSB.get(pDesc.jsb);
+								if(!pJsb){
+									JSB.getLogger().error('Unable to construct data provider "'+pDesc.jsb+'" due to missing its bean');
 									continue;
 								}
-								slice.setQuery(sDesc.query);
-								slice.setQueryParams(sDesc.queryParams);
-								this.slices[sDesc.id] = slice;
-								this.slicePositions[sDesc.id] = sDesc.position;
+								var ProviderClass = pJsb.getClass();
+								var providerDesc = DataProviderRepository.queryDataProviderInfo(pEntry);
+								var provider = new ProviderClass(pDesc.id, pEntry, this, pDesc.options || {mode: pDesc.mode});
+								this.dataProviders[pDesc.id] = provider;
+								this.dataProviderEntries[pDesc.id] = pEntry;
+								this.dataProviderFields[pDesc.id] = pDesc.fields;
+								this.dataProviderPositions[pDesc.id] = pDesc.position;
+								this.dataProviderSizes[pDesc.id] = pDesc.size;
+		
+								// actualize dataProviderFields
+								for(var fName in this.dataProviderFields[pDesc.id]){
+									if(this.dataProviderFields[pDesc.id][fName] && !JSB.isObject(this.dataProviderFields[pDesc.id][fName])){
+										this.dataProviderFields[pDesc.id] = provider.extractFields({comment:true, type:true, nativeType:true});
+										break;
+									}
+								}
 							}
+							
+							// construct fields
+							for(var i = 0; i < snapshot.fields.length; i++){
+								var fDesc = snapshot.fields[i];
+								this.fields[fDesc.field] = {
+									field: fDesc.field,
+									type: fDesc.type,
+									link: fDesc.link,
+									order: fDesc.order,
+									comment: fDesc.comment,
+									binding: []
+								};
+								for(var j = 0; j < fDesc.binding.length; j++){
+									var bDesc = fDesc.binding[j];
+									if(this.dataProviders[bDesc.provider]){
+										this.fields[fDesc.field].binding.push({
+											provider: this.dataProviders[bDesc.provider],
+											field: bDesc.field,
+											type: bDesc.type
+										});
+									}
+								}
+								if(this.fields[fDesc.field].binding.length == 0){
+									delete this.fields[fDesc.field];
+								}
+							}
+							
+							// construct materialization
+							if(snapshot.materialization && Object.keys(snapshot.materialization).length > 0 && snapshot.materialization.tables && Object.keys(snapshot.materialization.tables).length > 0){
+								try {
+									var materialization = {
+										lastUpdate: snapshot.materialization.lastUpdate,
+										fields: {},
+										tables: {}
+									};
+									
+									for(var tId in snapshot.materialization.tables){
+										if(!snapshot.materialization.tables[tId].provider.entry){
+											throw new Error('Missing materialized source for cube: ' + $this.getName());
+										}
+										var dataProviderEntry = this.getWorkspace().entry(snapshot.materialization.tables[tId].provider.entry);
+		
+										var pJsb = JSB.get(snapshot.materialization.tables[tId].provider.jsb);
+										if(!pJsb){
+											throw new Error('Unable to construct data provider "'+snapshot.materialization.tables[tId].provider.jsb+'" due to missing its bean');
+										}
+										var ProviderClass = pJsb.getClass();
+										var providerDesc = DataProviderRepository.queryDataProviderInfo(dataProviderEntry);
+										var dataProvider = new ProviderClass(snapshot.materialization.tables[tId].provider.id, dataProviderEntry, this, snapshot.materialization.tables[tId].provider.options || {mode:snapshot.materialization.tables[tId].provider.mode});
+										
+										materialization.tables[tId] = {
+											table: snapshot.materialization.tables[tId].table,
+											dataProviderEntry: dataProviderEntry,
+											dataProvider: dataProvider,
+											indexes: snapshot.materialization.tables[tId].indexes || {}
+										};
+									}
+									
+									for(var i = 0; i < snapshot.materialization.fields.length; i++){
+										var fDesc = snapshot.materialization.fields[i];
+										materialization.fields[fDesc.field] = {
+											field: fDesc.field,
+											type: fDesc.type,
+											binding: []
+										}
+										for(var j = 0; j < fDesc.binding.length; j++){
+											var provider = JSB.getInstance(fDesc.binding[j].provider);
+											if(provider){
+												materialization.fields[fDesc.field].binding.push({
+													provider: provider,
+													field: fDesc.binding[j].field,
+													type: fDesc.binding[j].type
+												});
+											}
+										}
+										if(materialization.fields[fDesc.field].binding.length == 0){
+											delete materialization.fields[fDesc.field];
+										}
+									}
+									
+									this.materialization = materialization;
+								} catch(e){
+									JSB.getLogger().error(e);
+								}
+							}
+							
+							// construct slices
+							for(var i = 0; i < snapshot.slices.length; i++){
+								var sDesc = snapshot.slices[i];
+								if(this.getWorkspace().existsEntry(sDesc.id)){
+									var slice = this.getWorkspace().entry(sDesc.id);
+									if(!JSB.isInstanceOf(slice, 'DataCube.Model.Slice')){
+										continue;
+									}
+									slice.setQuery(sDesc.query);
+									slice.setQueryParams(sDesc.queryParams);
+									this.slices[sDesc.id] = slice;
+									this.slicePositions[sDesc.id] = sDesc.position;
+								}
+							}
+							
 						}
-						
+						this.loaded = true;
+						this.doSync();
 					}
-					this.loaded = true;
-					this.doSync();
 				} finally {
 					JSB.getLocker().unlock(mtxName);
 				}
+				
 			}
 			
 			

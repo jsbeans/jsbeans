@@ -234,6 +234,7 @@ if(!(function(){return this;}).call(null).JSB){
 			obj.$_session = jsb.getCurrentSession();
 			// repeating registration - wrong
 			if(scope[obj.id] && (isSingleton || isFixedId)){
+				debugger;
 				var n = jsb.$name;
 				if(isSingleton){
 					this.getLogger().warn('Duplicate singleton instantiation: ' + n);
