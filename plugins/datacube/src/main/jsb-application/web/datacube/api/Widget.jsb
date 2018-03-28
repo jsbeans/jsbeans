@@ -101,7 +101,6 @@
 		},
 
 		init: function(){
-			this.values = this.widgetEntry.getValues();
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.mainWidget = new WidgetClass({
 				    filterManager: WidgetController.getFilterManager(),
@@ -139,10 +138,6 @@
 		
 		getWidgetType: function(){
 			return this.getWidgetEntry().getWidgetType();
-		},
-		
-		getValues: function(){
-			return this.values;
 		},
 		
 		getDashboard: function(){

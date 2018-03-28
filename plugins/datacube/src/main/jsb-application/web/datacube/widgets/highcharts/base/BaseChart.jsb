@@ -102,7 +102,13 @@
                 colorScheme: {
                     render: 'styleBinding',
                     name: 'Цветовая схема'
+                },
+                /*
+                backgroundColor: {
+                    render: 'item',
+                    name: 'Анимация',
                 }
+                */
             }
 	    },
 
