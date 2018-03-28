@@ -31,9 +31,6 @@
                                 area: {
                                     name: 'Area'
                                 },
-                                bar: {
-                                    name: 'Bar'
-                                },
                                 column: {
                                     name: 'Column'
                                 },
@@ -177,15 +174,15 @@
                         xAxisData = [];
 
                     while($this._dataSource.next()){
+                        var x = $this._schemeOpts.xAxisCategories.value();
                         // xAxis
-                        xAxisData.push($this._schemeOpts.xAxisCategories.value());
+                        xAxisData.push(x);
 
                         // series data
                         for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
                             var name = $this._schemeOpts.seriesContext[i].find('name'),
                                 data = $this._schemeOpts.seriesContext[i].find('data'),
-                                color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value(),
-                                x = $this._schemeOpts.xAxisCategories.value();
+                                color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value();
 
                             if(!seriesData[i]){
                                 seriesData[i] = {
@@ -212,18 +209,18 @@
                     if($this._schemeOpts.useCompositeSeries){
                         var cats = {};
                         for(var i = 0; i < xAxisData.length; i++){
-                            cats[xAxisData[i]] = true;
+                            cats[xAxisData[i]] = xAxisData[i];
                         }
                         xAxisData = [];
                         for(var i in cats){
-                            xAxisData.push(i);
+                            xAxisData.push(cats[i]);
                         }
                     }
 
                     function resolveData(data){
                         for(var i in data){
                             if(data[i].x){
-                                data[i].x = xAxisData.indexOf(data[i].x.toString());
+                                data[i].x = xAxisData.indexOf(data[i].x);
                             }
                         }
                         return data;
