@@ -106,6 +106,10 @@
             entry.getStyles(function(styles, fail){
                 if(fail) { return; };
 
+                if($this.styleScheme){
+                    $this.styleScheme.destroy();
+                }
+
                 $this.styleScheme = new Controller({
                     scheme: entry.scheme,
                     values: { values: styles },
