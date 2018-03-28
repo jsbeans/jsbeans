@@ -11,6 +11,7 @@
 
         if(!this._values[0].value){
             callback();
+            return;
         }
 
         this._selectorBean.server().getValues(this._values[0].value, function(res, fail){

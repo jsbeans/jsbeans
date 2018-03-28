@@ -78,14 +78,6 @@
 	        }
 	    },
 
-	    destroy: function(){
-	        for(var i = 0; i < this._beans.length; i++){
-	            this._beans[i].destroy();
-	        }
-
-	        $base();
-	    },
-
 		removeBinding: function(item, itemIndex){
             this._items[itemIndex] = {};
 
