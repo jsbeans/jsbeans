@@ -52,8 +52,12 @@
     border-color: #1e7e34;
 }
 
+.stylesEditorView > ._dwp_splitbox {
+    height: calc(100% - 35px);
+}
+
 .stylesEditorView .styleElementBlock {
-    height: 100%;
+    height: calc(100% - 10px);
     margin: 5px;
 }
 
