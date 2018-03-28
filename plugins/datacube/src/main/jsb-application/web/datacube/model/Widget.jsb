@@ -233,6 +233,10 @@
 		    }
 		},
 
+		getSourcesIds: function(){
+		    return this.sourcesIds;
+		},
+
 		getValues: function(){
 		    return this.values;
 		},
