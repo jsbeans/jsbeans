@@ -59,6 +59,14 @@
 			return this.highlighted;
 		},
 		
+		setColored: function(bColored){
+			if(bColored){
+				this.addClass('nodeColored');
+			} else {
+				this.removeClass('nodeColored');
+			}
+		},
+		
 		updateState: function(){
 			// do nothing, this method should be overriden
 		}

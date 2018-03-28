@@ -4675,7 +4675,7 @@ JSB({
 		ajax: function(url, params, callback){
 			var pUrl = url;
 			if(pUrl.indexOf(':') == -1){
-				pUrl = JSB().getProvider().getServerBase() + pUrl;
+				pUrl = JSB.getProvider().getServerBase() + this.getJsb().getBasePath() + pUrl;
 			}
 			JSB().getProvider().ajax(pUrl, params, callback);
 		},
@@ -5738,6 +5738,9 @@ JSB({
 				name: className
 			}, function(status,obj){
 				if(status == 'success'){
+					if(JSB.isString(obj)){
+						obj = eval('(' + obj + ')');
+					}
 					var jsoRes = obj.result;
 					if(JSB.isArray(jsoRes)){
 						for(var i in jsoRes){
@@ -5854,6 +5857,9 @@ JSB({
 				if(xhrObj.type == 'POST'){
 					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 				}
+				if (xhr.overrideMimeType) {
+					xhr.overrideMimeType("application/json");
+				}
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState != 4) return;
 					window.clearTimeout(to);
@@ -5898,7 +5904,7 @@ JSB({
 					success: function(data, status, xhr){
 						self.curDeferTimeout = self.options.minDeferTimeout;
 						var respObj = data;
-						self.decodeObject(respObj);
+						//self.decodeObject(respObj);
 						callback('success', respObj);
 					},
 					error: function(xhr, status, err){
@@ -5924,8 +5930,9 @@ JSB({
 					timeout: 100000,	// 100 secs
 					success: function(data, status, xhr){
 						self.curDeferTimeout = self.options.minDeferTimeout;
-						var respObj = eval('('+data+')');
-						self.decodeObject(respObj);
+						//var respObj = eval('('+data+')');
+						var respObj = data;
+						//self.decodeObject(respObj);
 						callback('success', respObj);
 					},
 					error: function(xhr, status, err){
@@ -5945,7 +5952,7 @@ JSB({
 				});
 			}
 		},
-		
+/*		
 		decodeObject: function(obj){
 			if( typeof(obj) === 'object' ){
 				for( var key in obj ) {
@@ -5986,7 +5993,7 @@ JSB({
 				}
 			}
 		},
-		
+*/		
 		// on clinet side
 		enqueueRpc: function(cmd, callback){
 			var id = JSB().generateUid();
@@ -6047,6 +6054,9 @@ JSB({
 								self.updateRpc();
 							}, 5000);
 						} else {
+							if(JSB.isString(obj)){
+								obj = eval('(' + obj + ')');
+							}
 							self.handleRpcResponse(obj.result);
 						}
 					});

@@ -336,6 +336,33 @@
 			WorkspaceController.removeWorkspace(this.getId());
 		},
 		
+		search: function(pat){
+			pat = pat.replace(/\./g, '\\.').replace(/\*/g,'.*');
+			var rx = new RegExp(pat, 'i');
+			var foundEntries = [];
+			for(var eId in this._entries){
+				if(rx.test(this._entries[eId].eName)){
+					foundEntries.push(this._entries[eId]);
+				}
+			}
+			
+			var cursor = 0;
+			return {
+				next: function(){
+					if(cursor < foundEntries.length){
+						var e = foundEntries[cursor++];
+						return $this.entry(e.eId);
+					}
+				},
+				hasNext: function(){
+					return cursor < foundEntries.length;
+				},
+				count: function(){
+					return foundEntries.length;
+				}
+			};
+		},
+		
 		uploadFile: function(fileDesc){
 			try {
 				var pId = fileDesc.parent;

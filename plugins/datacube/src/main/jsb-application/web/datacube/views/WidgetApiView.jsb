@@ -115,6 +115,10 @@
 				width: 100%;
 				height: 100%;
 			}
+
+			#myWidgetContainer > .jsb-navigator > .navigatorPane > li:nth-child(odd) {
+    			padding: 5px 4px;
+			}
 		</style>
 		
 	</head>

@@ -1,9 +1,9 @@
 {
 	$name: 'DataCube.Api.Widget',
 	$parent: 'JSB.Widgets.Control',
-	
+
 	$client: {
-		$require: ['DataCube.Widgets.FilterManager','DataCube.Api.WidgetController'],
+		$require: ['DataCube.Widgets.FilterManager', 'DataCube.Api.WidgetController', 'JSB.Controls.Navigator'],
 		
 		options: {
 			wsid: null,
@@ -13,7 +13,9 @@
 		},
 		widgetEntry: null,
 		values: null,
-		widget: null,
+		childWidgets: [],
+		currentWidget: null,
+		mainWidget: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -25,22 +27,94 @@
 				$this.init();
 			});
 		},
-		
+
+		addDrilldownElement: function(opts){
+		    if(!this._drilldownPanel){
+		        this._drilldownPanel = new Navigator({
+		            onclick: function(key, index){
+		                $this.changeDrilldown(index);
+		            }
+		        });
+		        this.prepend(this._drilldownPanel);
+
+		        this._drilldownPanel.addElement({
+		            key: 'root',
+		            element: this.getWidgetEntry().getName()
+		        });
+		    } else {
+		        this._drilldownPanel.removeClass('hidden');
+		    }
+
+            this._drilldownPanel.addElement({
+                key: opts.widget.widgetWid,
+                element: opts.widget.name
+            });
+
+            this.currentWidget.addClass('hidden');
+
+            this.getElement().loader();
+            this.server().getWidgetEntry(opts.widget.widgetWsid, opts.widget.widgetWid, function(entry, fail){
+                if(fail){
+                    $this.getElement().loader('hide');
+                    return;
+                }
+
+                JSB.lookup(entry.wType, function(WidgetClass){
+                    var widget = new WidgetClass({
+                        filterManager: $this.owner ? $this.owner.getFilterManager() : null,
+                        widgetEntry: entry,
+                        widgetWrapper: $this
+                    });
+                    $this.append(widget);
+
+                    widget.ensureInitialized(function(){
+                        if(opts.filterOpts){
+                            widget.setContextFilter(opts.filterOpts);
+                        }
+                        widget.refresh();
+                    });
+
+                    $this.currentWidget = widget;
+
+                    $this.childWidgets.push(widget);
+
+                    $this.getElement().loader('hide');
+                });
+            });
+		},
+
+		changeDrilldown: function(index){
+            for(var i = index; i < this.childWidgets.length; i++){
+                this.childWidgets[i].destroy();
+            }
+
+		    if(index === 0){
+		        this._drilldownPanel.addClass('hidden');
+
+		        this.currentWidget = this.mainWidget;
+		    } else {
+		        this.currentWidget = this.childWidgets[index - 1];
+		    }
+
+		    this.currentWidget.removeClass('hidden');
+		    this.currentWidget.refresh();
+		},
+
 		init: function(){
 			this.values = this.widgetEntry.getValues();
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
-				$this.widget = new WidgetClass({
+				$this.mainWidget = new WidgetClass({
 				    filterManager: WidgetController.getFilterManager(),
 				    widgetEntry: $this.widgetEntry,
 				    widgetWrapper: $this
 				});
-				$this.append($this.widget);
-				$this.widget.ensureInitialized(function(){
+				$this.append($this.mainWidget);
+				$this.mainWidget.ensureInitialized(function(){
 					$this.subscribe('DataCube.filterChanged', function(sender, msg, params){
 						if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){
 							return;
 						}
-						$this.widget.refresh(params);
+						$this.mainWidget.refresh(params);
 					});
 
 					$this.publish('DataCube.Api.Widget.widgetCreated', {wsid: $this.options.wsid, wid: $this.options.wid});
@@ -48,13 +122,14 @@
 						if(JSB.isString($this.options.onCreateWidget)){
 							$this.options.onCreateWidget = eval('(' + $this.options.onCreateWidget + ')');
 						}
-						$this.options.onCreateWidget.call($this, $this.widget);
+						$this.options.onCreateWidget.call($this, $this.mainWidget);
 					}
 					if($this.options.auto){
-						$this.widget.refresh();
+						$this.mainWidget.refresh();
 					}
 				});
 
+				$this.currentWidget = $this.mainWidget;
 			});
 		},
 		
@@ -79,7 +154,7 @@
 		},
 		
 		getWidget: function(){
-			return $this.widget;
+			return $this.mainWidget;
 		},
 		/*
 		localizeFilter: function(src){

@@ -794,7 +794,7 @@
 						
 						var fVal = val;
 						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-							fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+							fVal = Numeral.format(val, $this.colDesc[d.colIdx].format);
 						}
 						cellEl.text(fVal);
 						cellEl.attr('title', val);

@@ -246,6 +246,7 @@
 					minSelector: gArr[i].find('min'),
 					maxSelector: gArr[i].find('max'),
 					valSelector: gArr[i].find('val'),
+					valFormat: gArr[i].find('valueFormat'),
 					colColor: gArr[i].find('colColor').value(),
 					colWidth: parseFloat(gArr[i].find('colWidth').value()),
 					trailColor: gArr[i].find('trailColor').value(),
@@ -299,7 +300,7 @@
 						var widget = new ProgressBar[d.type](this, opts);
 						var min = parseFloat(d.minSelector.value() || 0);
 						var max = parseFloat(d.maxSelector.value() || 0);
-						var val = parseFloat(d.valSelector.value() || 0);
+						var val = Numeral.format(d.valSelector.value() || 0, d.valFormat.value()); //parseFloat(d.valSelector.value() || 0);
 
 						var progress = 0;
 						if(max - min > 0 && val > 0){

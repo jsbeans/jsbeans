@@ -5,6 +5,7 @@
 	$require: ['JSB.Widgets.RendererRepository',
 	           'JSB.Workspace.FolderNode',
 	           'JSB.Workspace.UploadNode',
+	           'JSB.Workspace.SearchEditor',
 	           'JSB.Widgets.ToolBar', 
 	           'JSB.Widgets.TreeView', 
 	           'JSB.Widgets.ToolManager',
@@ -198,6 +199,19 @@
 						}
 					});
 				}
+			});
+			
+			this.toolbar.addSeparator({key: 'deleteSeparator'});
+			
+			this.toolbar.addItem({
+				key: 'search',
+				tooltip: 'Поиск',
+				allowHover: false,
+				element: new SearchEditor({
+					onChange: function(txt){
+						$this.updateFiltered(txt && txt.toLowerCase());
+					}
+				}),
 			});
 
 			this.tree = new TreeView({
@@ -395,6 +409,103 @@
 			}
 			editor.setData(this.currentWorkspace.getName());
 			wIcon.attr('wtype', this.currentWorkspace.getWorkspaceType());
+		},
+		
+		resetFiltered: function(){
+			for(var eId in this.wTreeMap){
+				if(JSB.isInstanceOf(this.wTreeMap[eId].node, 'JSB.Workspace.ExplorerNode')){
+					this.wTreeMap[eId].node.setColored(false);
+				}
+			}
+		},
+		
+		updateFiltered: function(filter){
+			function _updateFiltered(filter){
+				$this.lastFilter = filter;
+				if(filter && filter.length >= 3 ){
+					$this.tree.getElement().loader();
+					$this.server().loadFilteredNodes(filter, function(sTree){
+						
+						if($this.lastFilter != filter){
+							return;
+						}
+						$this.expandFound(sTree);
+					});
+				} else {
+					// reset filter
+					$this.resetFiltered();
+				}
+			}
+			JSB.defer(function(){
+				_updateFiltered(filter);
+			}, 300, 'JSB.Workspace.Explorer.updateFiltered.' + this.getId());
+		},
+		
+		highlightFiltered: function(sTree){
+			$this.resetFiltered();
+			var minTop = null;
+			var topNode = null;
+			
+			function _highlightFiltered(scope){
+				for(var eId in scope){
+					if(scope[eId].matched){
+						$this.wTreeMap[eId].node.setColored(true);
+						var rcNode = $this.wTreeMap[eId].node.getElement().get(0).getBoundingClientRect();
+						if(JSB.isNull(minTop) || rcNode.top < minTop){
+							minTop = rcNode.top;
+							topNode = $this.wTreeMap[eId].node;
+						}
+					}
+					_highlightFiltered(scope[eId].children);
+				}
+			}
+			
+			_highlightFiltered(sTree);
+			if(topNode){
+				$this.tree.scrollTo(topNode.treeNode.key);
+			}
+			$this.tree.getElement().loader('hide');
+		},
+		
+		expandFound: function(nTree){
+			this.tree.collapseAll();
+			
+			// prepare expand list
+			var eLst = [];
+			
+			function placeExpandList(dId, dDesc, deep){
+				if(dDesc.children && Object.keys(dDesc.children).length > 0){
+					if(!eLst[deep]){
+						eLst[deep] = {};
+					}
+					eLst[deep][dId] = true;
+					for(var chId in dDesc.children){
+						placeExpandList(chId, dDesc.children[chId], deep + 1);
+					}
+				}
+			}
+			
+			for(var eId in nTree){
+				placeExpandList(eId, nTree[eId], 0);
+			}
+			
+			function _expandIteration(){
+				if(eLst.length == 0){
+					JSB.defer(function(){
+						$this.highlightFiltered(nTree);	
+					});
+				} else {
+					var ids = eLst.shift();
+					JSB.chain(Object.keys(ids), function(id, callback){
+						var key = $this.wTreeMap[id].key;
+						$this.expandNode(key, callback);
+					}, function(){
+						_expandIteration();
+					})
+				}
+			}
+			
+			_expandIteration();
 		},
 		
 		renameWorkspace: function(newName){
@@ -715,6 +826,7 @@
 			this.tree.getElement().loader();
 			this.server().loadNodes(function(nTree){
 				$this.tree.getElement().loader('hide');
+				$this.wTree = nTree;
 				$this.redrawTree(nTree);
 				$this._isReady = true;
 			});
@@ -790,7 +902,7 @@
 					}
 
 					$this._isReady = true;
-					treeNode.obj.setTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded');
+					treeNode.obj.setTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded.' + treeNode.key);
 				});
 			}
 			function onNodeCollapse(treeNode, isManual){
@@ -930,7 +1042,7 @@
 				$this.tree.expandNode(key);
 				if($this.tree.isDynamicChildren(key)){
 					var node = $this.tree.get(key).obj;
-					node.ensureTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded', function(){
+					node.ensureTrigger('JSB.Workspace.Explorer.nodeChildrenLoaded.' + key, function(){
 						callback.call($this);
 					});
 				} else {
@@ -1070,11 +1182,11 @@
 			});
 		},
 		
-		redrawTree: function(nTree){
+		redrawTree: function(nTree, bExpanded){
 			this.tree.clear();
 			for(var eId in nTree){
 				var desc = nTree[eId];
-				this.addTreeItem(desc, null, false, {collapsed:true});
+				this.addTreeItem(desc, null, false, {collapsed:bExpanded ? false:true});
 			}
 			
 			this.sort();
@@ -1426,6 +1538,45 @@
 					name: chEntry.getName(),
 					entry: chEntry,
 					hasEntryChildren: chEntry.children().count() > 0
+				}
+			}
+			return nTree;
+		},
+		
+		loadFilteredNodes: function(filter){
+			var nTree = {};
+			function place(e, scope, matched){
+				if(e.getParent()){
+					var chScope = place(e.getParent(), scope);
+					if(!chScope[e.getId()]){
+						chScope[e.getId()] = {
+							children: {},
+							name: e.getName()
+						};
+					}
+					if(matched){
+						chScope[e.getId()].matched = true;
+					}
+					return chScope[e.getId()].children;
+				} else {
+					if(!scope[e.getId()]){
+						scope[e.getId()] = {
+							children: {},
+							name: e.getName()
+						};
+					}
+					if(matched){
+						scope[e.getId()].matched = true;
+					}
+					return scope[e.getId()].children;
+				}
+			}
+			
+			if(filter && filter.length >= 3){
+				var it = this.currentWorkspace.search(filter);
+				while(it.hasNext()){
+					var e = it.next();
+					place(e, nTree, true);
 				}
 			}
 			return nTree;

@@ -14,7 +14,6 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.Cancellable;
 import akka.actor.Scheduler;
-import akka.dispatch.MessageDispatcher;
 import akka.util.Timeout;
 import org.jboss.netty.channel.ChannelException;
 import org.jsbeans.Core;
@@ -26,7 +25,6 @@ import org.jsbeans.messages.Messages;
 import org.jsbeans.monads.Chain;
 import org.jsbeans.monads.CompleteMonad;
 import org.jsbeans.monads.FutureMonad;
-import org.jsbeans.monads.MapMonad;
 import org.jsbeans.scripting.JsTimeoutMessage.TimeoutType;
 import org.jsbeans.security.PrincipalMessage;
 import org.jsbeans.security.SecurityService;
@@ -45,8 +43,10 @@ import scala.concurrent.duration.Duration;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +56,6 @@ public class JsHub extends Service {
     private static final boolean openDebugger = ConfigHelper.has("kernel.jshub.openDebugger") ? ConfigHelper.getConfigBoolean("kernel.jshub.openDebugger") : false;
     private static final boolean createDump = ConfigHelper.has("kernel.jshub.createDump") ? ConfigHelper.getConfigBoolean("kernel.jshub.createDump"):false;
     
-    //	private static final String JSS_FOLDER_KEY = "kernel.jss.folder";
     private static final long completeDelta = ConfigHelper.getConfigInt("kernel.jshub.stateCompleteTimeout");
     private static final long execDelta = ConfigHelper.getConfigInt("kernel.jshub.stateExecutingTimeout");
     private static final long garbageCollectorInterval = ConfigHelper.getConfigInt("kernel.jshub.garbageCollectorInterval");
@@ -66,8 +65,8 @@ public class JsHub extends Service {
     
     private final Map<String, JsCmdState> stateMap = new ConcurrentHashMap<String, JsCmdState>();
     
-//	private static Global jsGlobal = new Global();
     private ThreadPoolExecutor threadPool = null;
+    private BlockingQueue<Runnable> threadQueue = null;
     private final Map<String, Cancellable> timeoutMap = new ConcurrentHashMap<String, Cancellable>();
     private final Map<String, Map<String, Object>> execMapScript = new ConcurrentHashMap<String, Map<String, Object>>();
     private Main debugger;
@@ -90,9 +89,13 @@ public class JsHub extends Service {
 
     @Override
     protected void onInit() throws PlatformException {
-    	this.threadPool = new ThreadPoolExecutor(0, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>());
+    	int threadPoolSize = 0;
+    	if(ConfigHelper.has("kernel.jshub.threadPoolSize")){
+    		threadPoolSize = ConfigHelper.getConfigInt("kernel.jshub.threadPoolSize");
+    	}
+    	
+    	this.threadQueue = new SynchronousQueue<Runnable>(true);
+    	this.threadPool = new ThreadPoolExecutor(0, threadPoolSize > 0 ? threadPoolSize : Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, this.threadQueue );
         this.contextFactory = new ContextFactory();
         this.context = contextFactory.enterContext();
         this.context.setOptimizationLevel(jsOptimizationLevel);
@@ -208,11 +211,11 @@ public class JsHub extends Service {
         }
         getSender().tell(msg.createResponse(retLst), getSelf());
     }
-    
+/*    
     private MessageDispatcher getDispatcher(String dName) {
         return Core.getActorSystem().dispatchers().lookup(dName);
     }
-
+*/
     private void handleRemoveScope(RemoveScopeMessage msg) {
         this.clearScope(msg.getScopePath());
         if(getSender() != ActorRef.noSender()){
@@ -331,18 +334,11 @@ public class JsHub extends Service {
         if (msg.getCallback() != null) {
             subToken = this.subclassToken(msg.getToken());
         }
-
-        String dispatcher = msg.getDispatcher();
-        if (dispatcher == null) {
-            dispatcher = "kernel.jshub.dispatcher";
-        }
-        MessageDispatcher md = this.getDispatcher(dispatcher);
-        this.createChain(md, JsAskMessage.class, Object.class, msg)
-                .add(new FutureMonad<JsAskMessage, Object>(JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().scope(), md) {
+        
+        this.createChain(Core.getActorSystem().dispatcher(), JsAskMessage.class, Object.class, msg)
+                .add(new FutureMonad<JsAskMessage, Object>(JsObjectSerializerHelper.getInstance().getScopeTree().getRoot().scope()) {
                     @Override
                     public Future<Object> run(JsAskMessage msg) throws ChannelException {
-//					Scriptable sharedScope = this.getArgument(0);
-                        MessageDispatcher md = this.getArgument(1);
                         // obtain target actor
                         ActorSelection targetActor = null;
                         if(msg.getNode() != null){
@@ -391,7 +387,7 @@ public class JsHub extends Service {
                                 public Object call() throws Exception {
                                     return null;
                                 }
-                            }, md);
+                            }, Core.getActorSystem().dispatcher());
                         }
                         Timeout timeout = msg.getTimeout() != null ? msg.getTimeout() : ActorHelper.getServiceCommTimeout();
                         return ActorHelper.futureAsk(targetActor, msgToSend, timeout);
@@ -579,7 +575,7 @@ public class JsHub extends Service {
         ActorRef self = this.getSelf();
         ActorRef sender = this.getSender();
         Scriptable scope = JsObjectSerializerHelper.getInstance().getScopeTree().touch(msg.getScopePath(), msg.isScopePreserved());
-        this.threadPool.execute(new Runnable() {
+        Runnable r = new Runnable() {
 			@Override
 			public void run() {
                 JsObject jsResult = null;
@@ -696,145 +692,17 @@ public class JsHub extends Service {
                     Context.exit();
                 }
 			}
-		});
+		};
+        
+		try {
+			this.threadPool.execute(r);
+		} catch(RejectedExecutionException re){
+			getLog().warning(re.getLocalizedMessage());
+			self.tell(msg, sender);
+		} catch(Exception e){
+			getLog().error(e, e.getLocalizedMessage());
+		}
 
-/*
-        String dispatcher = msg.getDispatcher();
-        if (dispatcher == null) {
-            dispatcher = "kernel.jshub.dispatcher";
-        }
-
-        // execute script
-        this.createChain(this.getDispatcher(dispatcher), Object.class, JsObject.class, msg)
-                .add(new MapMonad<Object, JsObject>(token, msg, execScope, this.getSelf()) {
-                    @Override
-                    public JsObject run(Object pp) throws PlatformException {
-                        String token = this.getArgument(0);
-                        ExecuteScriptMessage msg = this.getArgument(1);
-
-                        Scriptable scope = this.getArgument(2);
-                        ActorRef self = this.getArgument(3);
-                        JsObject jsResult = null;
-
-                        // put wrapped entries if any
-                        if (msg.getWrapped() != null) {
-                            for (String key : msg.getWrapped().keySet()) {
-                                Object obj = msg.getWrapped().get(key);
-                                ScriptableObject.putProperty(scope, key, obj);
-                            }
-                        }
-
-                        Context cx = contextFactory.enterContext();
-                        cx.setOptimizationLevel(jsOptimizationLevel);
-                        cx.setLanguageVersion(jsLanguageVersion);
-                        String scriptId = UUID.randomUUID().toString();
-                        try {
-                            if (msg.isAsync()) {
-                                // send local message to update status
-                                UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
-                                uMsg.status = ExecutionStatus.EXECUTING;
-                                uMsg.token = token;
-                                self.tell(uMsg, self);
-                            }
-
-                            // execute script
-                            cx.putThreadLocal("token", token);
-                            cx.putThreadLocal("session", msg.getScopePath());
-                            cx.putThreadLocal("user", msg.getUser());
-                            cx.putThreadLocal("userToken", msg.getUserToken());
-                            cx.putThreadLocal("clientAddr", msg.getClientAddr());
-                            cx.putThreadLocal("clientRequestId", msg.getClientRequestId());
-                            cx.putThreadLocal("scope", scope);
-                            cx.putThreadLocal("_jsbCallingContext", null);
-                            Object resultObj = null;
-                            if (msg.getBody() != null) {
-                            	if(createDump){
-                            		dumpScript(scriptId, msg.getBody(), null, true);
-                            	}
-                                resultObj = cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null);
-                            } else if (msg.getFunction() != null) {
-                            	Object[] args = msg.getArgs();
-                                List<Object> objArr = new ArrayList<Object>();
-                            	if(args.length > 0){
-                                    JsObjectSerializerHelper jser = new JsObjectSerializerHelper();
-                                    for (Object obj : args) {
-                                        objArr.add(jser.jsonElementToNativeObject(GsonWrapper.toGsonJsonElement(obj), cx, scope));
-                                    }
-                            	}
-                                if(createDump){
-                                	dumpScript(scriptId, null, msg.getFunction(), true);
-                                }
-                                resultObj = msg.getFunction().call(cx, scope, scope, objArr.toArray());
-                            }
-                            jsResult = new JsObjectSerializerHelper().serializeNative(resultObj);
-
-                        } catch (Throwable e) {
-                            StringBuilder sb = new StringBuilder("Execute script error: ");
-                            sb.append(e.getMessage()).append("\n");
-                            sb.append("--> Script executed: ");
-                            if (msg.getBody() != null) {
-                                sb.append(msg.getBody());
-                            } else {
-                                sb.append("Serialized function: \n");
-                                try {
-                                    sb.append(serializeFunction(msg.getFunction()));
-                                } catch (UnsupportedEncodingException e1) {
-                                    sb.append("(serialize error: " + e1.getMessage() + ")");
-                                }
-                            }
-
-                            if (e instanceof RhinoException) {
-                                RhinoException re = (RhinoException) e;
-                                sb.append("\n--> Stack trace:\n").append(re.getScriptStackTrace());
-                            }
-                            getLog().error(e, sb.toString());
-
-                            throw new PlatformException(e);
-                        } finally {
-                        	if(createDump){
-                        		dumpScript(scriptId, null, null, false);
-                        	}
-                            Context.exit();
-                        }
-                        return jsResult;
-                    }
-                }).add(new CompleteMonad<JsObject>(token, msg, this.getSender(), this.getSelf()) {
-
-            @Override
-            public void onComplete(Chain<?, JsObject> chain, JsObject result, Throwable fail) throws PlatformException {
-                String token = this.getArgument(0);
-                ExecuteScriptMessage msg = this.getArgument(1);
-                ActorRef sender = this.getArgument(2);
-                ActorRef self = this.getArgument(3);
-                UpdateStatusMessage uMsg = new UpdateStatusMessage(token);
-                if (msg.isTemporaryScope()) {
-                    self.tell(new RemoveScopeMessage(msg.getScopePath()), ActorRef.noSender());
-                }
-                if (fail != null) {
-                    // fail
-                    String messageStr = "";
-                    Throwable ex = fail.getCause();
-                    if (ex.getCause() instanceof EcmaError) {
-                        messageStr = ex.getLocalizedMessage();
-                    } else {
-                        messageStr = fail.getMessage();
-                    }
-                    uMsg.status = ExecutionStatus.FAIL;
-                    uMsg.error = messageStr;
-                } else {
-                    // success
-                    uMsg.status = ExecutionStatus.SUCCESS;
-                    uMsg.result = result;
-                }
-                if (msg.isAsync()) {
-                    self.tell(uMsg, self);
-                } else {
-                    if (!sender.equals(ActorRef.noSender())) {
-                        sender.tell(uMsg, self);
-                    }
-                }
-            }
-        });*/
     }
 
     private String getScriptNameByToken(String token) {

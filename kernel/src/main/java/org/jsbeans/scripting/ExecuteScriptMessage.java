@@ -30,7 +30,6 @@ public class ExecuteScriptMessage implements Message {
     private Object[] args;
     private Map<String, Object> wrappedObjects = null;
     private boolean temporaryScope = false;
-    private String dispatcher = null;
     private String user = null;
     private String clientRequestId = null;
 
@@ -119,14 +118,6 @@ public class ExecuteScriptMessage implements Message {
 
     public boolean isAsync() {
         return this.async;
-    }
-
-    public String getDispatcher() {
-        return this.dispatcher;
-    }
-
-    public void setDispatcher(String d) {
-        this.dispatcher = d;
     }
 
     public void addWrapped(String key, Object obj) {
