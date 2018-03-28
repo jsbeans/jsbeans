@@ -126,8 +126,7 @@
 					var wWrapper = this.wrappers[wId];
 					desc.wrappers[wId] = {
 						jsb: wWrapper.getWidgetType(),
-						name: wWrapper.getName(),
-						values: wWrapper.getData().values       // todo: нужно ли это?
+						name: wWrapper.getName()
 					}
 				}
 				this.widgetCount = Object.keys(this.wrappers).length;
@@ -168,7 +167,7 @@
 								var wWrapper = this.getWorkspace().entry(wId);
 								if(!wWrapper){
 									bNeedStore = true;
-									wWrapper = new Widget(wId, this.getWorkspace(), this, wDesc.name, wDesc.jsb, wDesc.values);
+									wWrapper = new Widget(wId, this.getWorkspace(), this, wDesc.name, wDesc.jsb);
 									this.addChildEntry(wWrapper);
 								}
 								

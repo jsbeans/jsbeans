@@ -455,6 +455,13 @@
             this.sourceFilterMap[source] = filters;
 		},
 
+		setStyles: function(styles){
+		    return new ValueSelector({
+                values: { values: styles },
+                bootstrap: 'Datacube.Unimap.Bootstrap'
+            });
+		},
+
 		setWrapper: function(w, valuesOpts, sourceDesc){
 			this.wrapper = w;
 			this.widgetEntry = w.getWidgetEntry();

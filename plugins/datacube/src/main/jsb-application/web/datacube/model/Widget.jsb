@@ -254,13 +254,13 @@
 			var widgets = this.getDashboard().getWrappers();
 			for(var wId in widgets){
 				widgets[wId].updateInteroperationMap();
-				widgets[wId].doSync();
+				//widgets[wId].doSync();
 			}
 
 			this.dataVersion++;
 			
-			this.getDashboard().store();    // todo: нужно ли это?
-			this.doSync();
+			this.getDashboard().store();
+
 			return {sources: this.sources, sourceMap: this.sourceMap};
 		},
 

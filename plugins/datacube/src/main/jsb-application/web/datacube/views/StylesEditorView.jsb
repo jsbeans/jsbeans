@@ -8,6 +8,7 @@
                    'JSB.Widgets.SplitBox',
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Controls.Button',
+                   'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.Dashboard.Dashboard',
                    'DataCube.SaveMessage'
         ],
@@ -45,8 +46,51 @@
 	        this.schemeScroll = new ScrollBox();
 	        schemeBlock.append(this.schemeScroll.getElement());
 
-	        this.dashboardBlock = this.$('<div class="dashboardBlock"></div>');
-	        splitBox.append(this.dashboardBlock);
+	        this.styleElementBlock = this.$('<div class="styleElementBlock"><span>Перетащите элемент для стилизации</span></div>');
+	        splitBox.append(this.styleElementBlock);
+
+            this.styleElementBlock.droppable({
+                accept: function(d){
+                    if(d && d.length > 0 && d.get(0).draggingItems){
+                        for(var i in d.get(0).draggingItems){
+                            var obj = d.get(0).draggingItems[i].obj;
+
+                            if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+                                continue;
+                            }
+
+                            var entry = obj.getEntry();
+                            if(JSB.isInstanceOf(entry, 'DataCube.Model.Widget') || JSB.isInstanceOf(entry, 'DataCube.Model.Dashboard')){
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                },
+                tolerance: 'pointer',
+                greedy: true,
+                over: function(evt, ui){
+                    if( !ui.helper.hasClass('accepted') ){
+                        ui.helper.addClass('accepted');
+                    }
+                    $this.styleElementBlock.addClass('acceptDraggable');
+                },
+                out: function(evt, ui){
+                    if( ui.helper.hasClass('accepted') ){
+                        ui.helper.removeClass('accepted');
+                    }
+                    $this.styleElementBlock.removeClass('acceptDraggable');
+                },
+                drop: function(evt, ui){
+                    var d = ui.draggable;
+                    $this.styleElementBlock.removeClass('acceptDraggable');
+                    $this.styleElementBlock.addClass('filled');
+                    for(var i in d.get(0).draggingItems){
+                        $this.setStyleElement(d.get(0).draggingItems[i].obj.getEntry());
+                        break;
+                    }
+                }
+            });
 
 	        // todo: add save msg
             this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
@@ -54,19 +98,6 @@
                 $this.savedMessage.css('display', 'none');
             });
             this.append(this.savedMessage);
-            /*
-			this.dashboard = new Dashboard({
-				emptyText: '',
-			});
-			this.append(this.dashboard);
-
-			var dashboardDesc = {
-                layout: layout,
-                widgets: ''
-			};
-
-			this.dashboard.setLayout(dashboardDesc);
-			*/
         },
 
         refresh: function(){
@@ -80,12 +111,10 @@
                     values: { values: styles },
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(key, values){
-                        //
+                        $this.setStyles($this.styleScheme.getValues().values);
                     }
                 });
                 $this.schemeScroll.append($this.styleScheme.getElement());
-
-                // add setting to dashboard
             });
 
             this.titleEditor.setData(entry.getName());
@@ -97,6 +126,53 @@
             });
 
             this.node.getEntry().server().setStyles($this.styleScheme.getValues().values);
+        },
+
+        setStyleElement: function(entry){
+            if(this.dashboard){
+                this.dashboard.destroy();
+            }
+
+            if(this.widgetWrapper){
+                this.widgetWrapper.destroy();
+            }
+
+            switch(entry.getJsb().$name){
+                case 'DataCube.Model.Widget':
+                    this.widgetWrapper = new WidgetWrapper(entry, null, { isCacheMod: true, designMode: true });
+                    this.styleElementBlock.empty().append(this.widgetWrapper.getElement());
+
+                    this.widgetWrapper.ensureWidgetInitialized(function(){
+                         $this.setStyles($this.styleScheme.getValues().values);
+                    });
+                    break;
+                case 'DataCube.Model.Dashboard':
+                    /*
+                    this.dashboard = new Dashboard({
+                        emptyText: '',
+                    });
+                    this.append(this.dashboard);
+
+                    var dashboardDesc = {
+                        layout: layout,
+                        widgets: ''
+                    };
+
+                    this.dashboard.setLayout(dashboardDesc);
+                    */
+                    // todo
+                    break;
+            }
+        },
+
+        setStyles: function(styles){
+            if(this.dashboard){
+                // todo
+            }
+
+            if(this.widgetWrapper){
+                this.widgetWrapper.getWidget().setStyles(styles);
+            }
         }
 	},
 
