@@ -1462,168 +1462,166 @@
 		
 		updateHeader: function(){
 			if(this.getContext().find('showHeader').checked()){
-				if(this.getContext().find('columns').checked()){
-					this.addClass('hasHeader');
-					var headerTable = d3.select($this.header.get(0));
-					var colGroup = headerTable.select('colgroup').selectAll('col');
+				this.addClass('hasHeader');
+				var headerTable = d3.select($this.header.get(0));
+				var colGroup = headerTable.select('colgroup').selectAll('col');
 
-					var dataColGroup = colGroup.data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
-					dataColGroup.enter()
-						.append('col')
-							.attr('key', function(d){ return d.key;})
-							.style('width', function(d){ return '' + d.size + '%'});
-					dataColGroup.exit()
-						.remove();
-					dataColGroup.each(function(d){
-						d3.select(this).style('width', function(d){ return '' + d.size + '%'});
+				var dataColGroup = colGroup.data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
+				dataColGroup.enter()
+					.append('col')
+						.attr('key', function(d){ return d.key;})
+						.style('width', function(d){ return '' + d.size + '%'});
+				dataColGroup.exit()
+					.remove();
+				dataColGroup.each(function(d){
+					d3.select(this).style('width', function(d){ return '' + d.size + '%'});
+				});
+				dataColGroup.order();
+
+				var rowsBody = headerTable.select('thead').select('tr');
+				var colData = rowsBody.selectAll('th.col').data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
+
+				colData
+					.attr('style', function(d){ return d.hStyle.cssStyle})
+					.style('text-align', function(d){ return d.hStyle.alignHorz})
+					.style('vertical-align', function(d){ return d.hStyle.alignVert})
+					.each(function(d){
+						var elt = $this.$(this);
+						var hWrapper = elt.find('> .hWrapper');
+						elt.find('> .hWrapper > .text').text(d.title);
+						
+						// sort
+						var sortSelector = hWrapper.find('> .sortSelector').jsb();
+						if(d.sortFields && d.sortFields.length > 0){
+							if(!sortSelector){
+								sortSelector = new SortSelector({
+									onChange: function(q){
+										$this.updateOrder(this, q);
+									}
+								});
+								hWrapper.append(sortSelector.getElement());
+							}
+							sortSelector.setFields(d.sortFields);
+							elt.addClass('sortable');
+						} else {
+							if(sortSelector){
+								sortSelector.destroy();
+							}
+							elt.removeClass('sortable');
+						}
+						
+						// filter
+						var filterEntry = elt.find('> .filterEntry').jsb();
+						var filterButtonElt = hWrapper.find('> .filterButton');
+						if(d.contextFilterField && d.contextFilterFieldType){
+							elt.addClass('contextFilter');
+							if(!filterEntry){
+								filterEntry = new FilterEntry({
+									onChange: function(filter){
+										$this.updateContextFilter(filter);
+									}
+								});
+								elt.append(filterEntry.getElement());
+							}
+							if(d.contextFilterFixed){
+								elt.addClass('contextFilterFixed');
+								if(filterButtonElt.length > 0){
+									filterButtonElt.remove();
+								}
+							} else {
+								elt.removeClass('contextFilterFixed');
+								if(filterButtonElt.length == 0){
+									filterButtonElt = $this.$('<div class="filterButton"></div>');
+									hWrapper.append(filterButtonElt);
+									filterButtonElt.click(function(){
+										elt.toggleClass('filtered');
+										if(elt.hasClass('filtered')){
+											var filter = filterEntry.getFilter();
+											$this.updateContextFilter(filter);
+											filterEntry.setFocus();
+										} else {
+											// clear field filter
+											var filter = {};
+											filter[d.contextFilterField] = null;
+											$this.updateContextFilter(filter);
+										}
+									});
+								}
+							}
+							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
+						} else {
+							elt.removeClass('contextFilter');
+							if(filterEntry){
+								filterEntry.destroy();
+							}
+							if(filterButtonElt.length > 0){
+								filterButtonElt.remove();
+							}
+						}
 					});
-					dataColGroup.order();
-
-					var rowsBody = headerTable.select('thead').select('tr');
-					var colData = rowsBody.selectAll('th.col').data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
-
-					colData
+					
+				colData.enter()
+					.append('th')
+						.classed('col', true)
+						.attr('key', function(d){ return d.key;})
 						.attr('style', function(d){ return d.hStyle.cssStyle})
 						.style('text-align', function(d){ return d.hStyle.alignHorz})
 						.style('vertical-align', function(d){ return d.hStyle.alignVert})
 						.each(function(d){
 							var elt = $this.$(this);
-							var hWrapper = elt.find('> .hWrapper');
-							elt.find('> .hWrapper > .text').text(d.title);
+							var hWrapper = $this.$('<div class="hWrapper"></div>');
+							elt.append(hWrapper);
+							hWrapper.append($this.$('<div class="text"></div>').text(d.title));
 							
 							// sort
-							var sortSelector = hWrapper.find('> .sortSelector').jsb();
 							if(d.sortFields && d.sortFields.length > 0){
-								if(!sortSelector){
-									sortSelector = new SortSelector({
-										onChange: function(q){
-											$this.updateOrder(this, q);
-										}
-									});
-									hWrapper.append(sortSelector.getElement());
-								}
-								sortSelector.setFields(d.sortFields);
 								elt.addClass('sortable');
-							} else {
-								if(sortSelector){
-									sortSelector.destroy();
-								}
-								elt.removeClass('sortable');
+								var sortSelector = new SortSelector({
+									onChange: function(q){
+										$this.updateOrder(this, q);
+									}
+								});
+								hWrapper.append(sortSelector.getElement());
+								sortSelector.setFields(d.sortFields);
 							}
 							
 							// filter
-							var filterEntry = elt.find('> .filterEntry').jsb();
-							var filterButtonElt = hWrapper.find('> .filterButton');
 							if(d.contextFilterField && d.contextFilterFieldType){
 								elt.addClass('contextFilter');
-								if(!filterEntry){
-									filterEntry = new FilterEntry({
-										onChange: function(filter){
-											$this.updateContextFilter(filter);
-										}
-									});
-									elt.append(filterEntry.getElement());
-								}
+								var filterEntry = new FilterEntry({
+									onChange: function(filter){
+										$this.updateContextFilter(filter);
+									}
+								});
+								elt.append(filterEntry.getElement());
+								
 								if(d.contextFilterFixed){
 									elt.addClass('contextFilterFixed');
-									if(filterButtonElt.length > 0){
-										filterButtonElt.remove();
-									}
 								} else {
-									elt.removeClass('contextFilterFixed');
-									if(filterButtonElt.length == 0){
-										filterButtonElt = $this.$('<div class="filterButton"></div>');
-										hWrapper.append(filterButtonElt);
-										filterButtonElt.click(function(){
-											elt.toggleClass('filtered');
-											if(elt.hasClass('filtered')){
-												var filter = filterEntry.getFilter();
-												$this.updateContextFilter(filter);
-												filterEntry.setFocus();
-											} else {
-												// clear field filter
-												var filter = {};
-												filter[d.contextFilterField] = null;
-												$this.updateContextFilter(filter);
-											}
-										});
-									}
-								}
-								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
-							} else {
-								elt.removeClass('contextFilter');
-								if(filterEntry){
-									filterEntry.destroy();
-								}
-								if(filterButtonElt.length > 0){
-									filterButtonElt.remove();
-								}
-							}
-						});
-						
-					colData.enter()
-						.append('th')
-							.classed('col', true)
-							.attr('key', function(d){ return d.key;})
-							.attr('style', function(d){ return d.hStyle.cssStyle})
-							.style('text-align', function(d){ return d.hStyle.alignHorz})
-							.style('vertical-align', function(d){ return d.hStyle.alignVert})
-							.each(function(d){
-								var elt = $this.$(this);
-								var hWrapper = $this.$('<div class="hWrapper"></div>');
-								elt.append(hWrapper);
-								hWrapper.append($this.$('<div class="text"></div>').text(d.title));
-								
-								// sort
-								if(d.sortFields && d.sortFields.length > 0){
-									elt.addClass('sortable');
-									var sortSelector = new SortSelector({
-										onChange: function(q){
-											$this.updateOrder(this, q);
-										}
-									});
-									hWrapper.append(sortSelector.getElement());
-									sortSelector.setFields(d.sortFields);
-								}
-								
-								// filter
-								if(d.contextFilterField && d.contextFilterFieldType){
-									elt.addClass('contextFilter');
-									var filterEntry = new FilterEntry({
-										onChange: function(filter){
+									var filterButtonElt = $this.$('<div class="filterButton"></div>');
+									hWrapper.append(filterButtonElt);
+									filterButtonElt.click(function(){
+										elt.toggleClass('filtered');
+										if(elt.hasClass('filtered')){
+											var filter = filterEntry.getFilter();
+											$this.updateContextFilter(filter);
+											filterEntry.setFocus();
+											filterEntry.setFocus();
+										} else {
+											var filter = {};
+											filter[d.contextFilterField] = null;
 											$this.updateContextFilter(filter);
 										}
 									});
-									elt.append(filterEntry.getElement());
-									
-									if(d.contextFilterFixed){
-										elt.addClass('contextFilterFixed');
-									} else {
-										var filterButtonElt = $this.$('<div class="filterButton"></div>');
-										hWrapper.append(filterButtonElt);
-										filterButtonElt.click(function(){
-											elt.toggleClass('filtered');
-											if(elt.hasClass('filtered')){
-												var filter = filterEntry.getFilter();
-												$this.updateContextFilter(filter);
-												filterEntry.setFocus();
-												filterEntry.setFocus();
-											} else {
-												var filter = {};
-												filter[d.contextFilterField] = null;
-												$this.updateContextFilter(filter);
-											}
-										});
-									}
-									filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
 								}
-							});
-					
-					colData.exit()
-						.remove();
-					
-					colData.order();
-				}
+								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
+							}
+						});
+				
+				colData.exit()
+					.remove();
+				
+				colData.order();
 				
 			} else {
 				this.removeClass('hasHeader');
