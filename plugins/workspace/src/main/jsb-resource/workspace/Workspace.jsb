@@ -128,7 +128,10 @@
 			this._markStored(false);
 		},
 		
-		_ensureEntryDesc: function(entry){
+		_ensureEntryDesc: function(entry, writeEntry){
+			if(entry == this){
+				return;	// not need ensure itself 
+			}
 			var eDesc = this._entries[entry.getId()];
 			if(!eDesc){
 				var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
@@ -156,7 +159,9 @@
 					JSB.getLocker().unlock(eMtxName);
 				}
 			}
-			eDesc.eInst = entry;
+			if(writeEntry){
+				eDesc.eInst = entry;
+			}
 			return eDesc;
 		},
 		

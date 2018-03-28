@@ -1533,9 +1533,9 @@
 			var nTree = {};
 			for(var chId in children){
 				var chEntry = children[chId];
-				if(!chEntry.getName()){
+/*				if(!chEntry.getName()){
 					debugger;
-				}
+				}*/
 				nTree[chId] = {
 					children: {},
 					name: chEntry.getName(),

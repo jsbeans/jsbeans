@@ -75,6 +75,7 @@
 			this._owner = Kernel.user();
 			this.getWorkspace()._attachEntry(this);
 			this.loadEntry();
+			this.getWorkspace()._ensureEntryDesc(this, true);
 		},
 		
 		getOwner: function(){
