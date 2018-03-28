@@ -92,7 +92,7 @@
 
                         JSB.lookup(this._scheme.editor, function(cls){
                             var editor = new cls(opts);
-                            item.append(editor.getElement());
+                            item.prepend(editor.getElement());
 
                             $this._editors.push(editor);
                         });
@@ -116,6 +116,15 @@
 	            item.addClass('multipleItem');
 
 	            item.attr('idx', itemIndex);
+
+	            var removeBtn = this.$('<i class="btnDelete fas fa-times"></i>');
+	            removeBtn.click(function(evt){
+                    evt.stopPropagation();
+                    $this._values.values.splice(itemIndex, 1);
+                    $this._editors[itemIndex].destroy();
+                    item.remove();
+	            });
+	            item.append(removeBtn);
 
 	            this.multipleBtn.before(item);
 	        } else {

@@ -106,13 +106,13 @@
 				});
 				$this.append($this.mainWidget);
 
-				$this.setWidgetInitialized();
+				$this.mainWidget.ensureInitialized(function(){
+				    $this.setWidgetInitialized();
 
-				if($this.options.auto){
-					$this.mainWidget.ensureInitialized(function(){
-						$this.mainWidget.refresh();
-					});
-				}
+				    if($this.options.auto){
+				        $this.mainWidget.refresh();
+				    }
+				});
 
 				$this.currentWidget = $this.mainWidget;
 			});

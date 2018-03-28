@@ -1,0 +1,17 @@
+.styleBindingRender .item {
+    height: 34px;
+    width: 200px;
+    background: rgba(24, 108, 138, 0.2);
+    color: #555;
+    border: 2px dotted rgba(2, 47, 78, 0.2);
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 15px;
+    text-align: center;
+}
+
+.styleBindingRender .item.acceptDraggable,
+.styleBindingRender .item.acceptDraggable.filled {
+	background: rgba(156, 92, 29, 0.3);
+    border-color: rgba(105, 45, 0, 0.5);
+}

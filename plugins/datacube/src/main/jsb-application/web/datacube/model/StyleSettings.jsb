@@ -4,6 +4,23 @@
 
 	stylesVersion: 0,
 
+	scheme: {
+	    // todo: dashboard style settings
+	    widgetSettings: {
+	        render: 'group',
+	        name: 'Параметры виджета',
+	        collapsable: true,
+	        items: {
+	            colorScheme: {
+	                render: 'item',
+	                name: 'Цветовая схема',
+	                multiple: true,
+	                editor: 'JSB.Widgets.ColorEditor'
+	            }
+	        }
+	    }
+	},
+
 	$client: {
 	    _styles: null,
 	    _clientStylesVersion: -1,
@@ -34,6 +51,18 @@
 
         $constructor: function(id, workspace, opts){
             $base(id, workspace);
+
+            this._styles = this.property('styles');
+
+            if(!this._styles){
+                var valueSelector = new ValueSelector({
+                    bootstrap: 'Datacube.Unimap.Bootstrap'
+                });
+
+                this._styles = valueSelector.createDefaultValues(this.scheme);
+
+                valueSelector.destroy();
+            }
         },
 
         _styles: null,
@@ -44,7 +73,11 @@
 
         setStyles: function(styles){
             this._styles = styles;
+            this.property('styles', styles);
+
             this.stylesVersion++;
+
+            this._workspace.store();
         }
     }
 }

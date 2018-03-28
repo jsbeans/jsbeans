@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', /*'JSB.Widgets.ComboBox'*/ 'JSB.Controls.ComboEditor'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor'],
 	$client: {
 	    _editors: [],
 

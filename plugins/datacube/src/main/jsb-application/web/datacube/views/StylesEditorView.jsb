@@ -7,15 +7,172 @@
                    'JSB.Controls.ScrollBox',
                    'JSB.Widgets.SplitBox',
                    'JSB.Widgets.PrimitiveEditor',
-                   'JSB.Widgets.Button',
+                   'JSB.Controls.Button',
+                   'DataCube.Widgets.WidgetWrapper',
+                   'JSB.Widgets.Dashboard.Dashboard',
                    'DataCube.SaveMessage'
         ],
 
 		$constructor: function(opts){
 			$base(opts);
 
-			//this.loadCss('StylesEditorView.css');
+			this.loadCss('StylesEditorView.css');
 			this.addClass('stylesEditorView');
+
+            this.titleBlock = this.$('<div class="titleBlock"></div>');
+            this.append(this.titleBlock);
+
+            this.titleEditor = new PrimitiveEditor();
+            this.titleBlock.append(this.titleEditor.getElement());
+
+            this.saveBtn = new Button({
+                cssClass: "btnOk",
+                caption: "Сохранить",
+                onclick: function(){
+                    $this.saveSettings();
+                }
+            });
+            this.titleBlock.append(this.saveBtn.getElement());
+
+            var splitBox = new SplitBox({
+				type: 'vertical',
+				position: 0.5
+			});
+			this.append(splitBox);
+
+			var schemeBlock = this.$('<div class="schemeBlock"></div>');
+			splitBox.append(schemeBlock);
+
+	        this.schemeScroll = new ScrollBox();
+	        schemeBlock.append(this.schemeScroll.getElement());
+
+	        this.styleElementBlock = this.$('<div class="styleElementBlock"><span>Перетащите элемент для стилизации</span></div>');
+	        splitBox.append(this.styleElementBlock);
+
+            this.styleElementBlock.droppable({
+                accept: function(d){
+                    if(d && d.length > 0 && d.get(0).draggingItems){
+                        for(var i in d.get(0).draggingItems){
+                            var obj = d.get(0).draggingItems[i].obj;
+
+                            if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+                                continue;
+                            }
+
+                            var entry = obj.getEntry();
+                            if(JSB.isInstanceOf(entry, 'DataCube.Model.Widget') || JSB.isInstanceOf(entry, 'DataCube.Model.Dashboard')){
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                },
+                tolerance: 'pointer',
+                greedy: true,
+                over: function(evt, ui){
+                    if( !ui.helper.hasClass('accepted') ){
+                        ui.helper.addClass('accepted');
+                    }
+                    $this.styleElementBlock.addClass('acceptDraggable');
+                },
+                out: function(evt, ui){
+                    if( ui.helper.hasClass('accepted') ){
+                        ui.helper.removeClass('accepted');
+                    }
+                    $this.styleElementBlock.removeClass('acceptDraggable');
+                },
+                drop: function(evt, ui){
+                    var d = ui.draggable;
+                    $this.styleElementBlock.removeClass('acceptDraggable');
+                    $this.styleElementBlock.addClass('filled');
+                    for(var i in d.get(0).draggingItems){
+                        $this.setStyleElement(d.get(0).draggingItems[i].obj.getEntry());
+                        break;
+                    }
+                }
+            });
+
+	        // todo: add save msg
+            this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
+            this.savedMessage.click(function(){
+                $this.savedMessage.css('display', 'none');
+            });
+            this.append(this.savedMessage);
+        },
+
+        refresh: function(){
+            var entry = this.node.getEntry();
+
+            entry.getStyles(function(styles, fail){
+                if(fail) { return; };
+
+                $this.styleScheme = new Controller({
+                    scheme: entry.scheme,
+                    values: { values: styles },
+                    bootstrap: 'Datacube.Unimap.Bootstrap',
+                    onchange: function(key, values){
+                        $this.setStyles($this.styleScheme.getValues().values);
+                    }
+                });
+                $this.schemeScroll.append($this.styleScheme.getElement());
+            });
+
+            this.titleEditor.setData(entry.getName());
+        },
+
+        saveSettings: function(){
+            this.savedMessage.fadeIn(1600, "linear", function(){
+                $this.savedMessage.fadeOut(1600, "linear");
+            });
+
+            this.node.getEntry().server().setStyles($this.styleScheme.getValues().values);
+        },
+
+        setStyleElement: function(entry){
+            if(this.dashboard){
+                this.dashboard.destroy();
+            }
+
+            if(this.widgetWrapper){
+                this.widgetWrapper.destroy();
+            }
+
+            switch(entry.getJsb().$name){
+                case 'DataCube.Model.Widget':
+                    this.widgetWrapper = new WidgetWrapper(entry, null, { isCacheMod: true, designMode: true });
+                    this.styleElementBlock.empty().append(this.widgetWrapper.getElement());
+
+                    this.widgetWrapper.ensureWidgetInitialized(function(){
+                         $this.setStyles($this.styleScheme.getValues().values);
+                    });
+                    break;
+                case 'DataCube.Model.Dashboard':
+                    /*
+                    this.dashboard = new Dashboard({
+                        emptyText: '',
+                    });
+                    this.append(this.dashboard);
+
+                    var dashboardDesc = {
+                        layout: layout,
+                        widgets: ''
+                    };
+
+                    this.dashboard.setLayout(dashboardDesc);
+                    */
+                    // todo
+                    break;
+            }
+        },
+
+        setStyles: function(styles){
+            if(this.dashboard){
+                // todo
+            }
+
+            if(this.widgetWrapper){
+                this.widgetWrapper.getWidget().setStyles(styles);
+            }
         }
 	},
 

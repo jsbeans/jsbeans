@@ -22,6 +22,10 @@
         {
             name: 'autocompleteGroup',
             render: 'Unimap.Render.AutocompleteGroup'
+        },
+        {
+            name: 'styleBinding',
+            render: 'Unimap.Render.StylesBinding'
         }
     ],
 
@@ -41,6 +45,10 @@
         {
             name: 'autocompleteGroup',
             render: 'Unimap.ValueSelectors.Group'
+        },
+        {
+            name: 'styleBinding',
+            render: 'Datacube.ValueSelectors.StylesBindingSelector'
         }
     ],
 }

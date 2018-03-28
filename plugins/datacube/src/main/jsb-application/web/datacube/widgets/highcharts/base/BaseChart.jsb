@@ -79,7 +79,7 @@
         xAxis: {},
 
         yAxis: {},
-        /*
+
 	    chart: {
 	        render: 'group',
 	        name: 'Настройки диаграммы',
@@ -98,10 +98,14 @@
                     name: 'Инвертировать оси',
                     optional: true,
                     editor: 'none'
+                },
+                colorScheme: {
+                    render: 'styleBinding',
+                    name: 'Цветовая схема'
                 }
             }
 	    },
-	    */
+
 	    header: {
 	        render: 'group',
 	        name: 'Заголовок',
@@ -639,8 +643,24 @@
         },
 
         buildChart: function(data){
-            var chartOpts = this._buildChart(data);
+            var chartOpts = this._buildChart(data),
+                styleSelector = this.getContext().find('chart colorScheme');
 
+            styleSelector.value(function(widgetStyleSelector){
+                if(widgetStyleSelector){
+                    chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
+                }
+
+                if($this.chart){
+                    $this.chart.update(chartOpts);
+                } else {
+                    $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
+                }
+
+                $this._select($this._curFilters, true, true);
+                $this._resolvePointContextFilters();
+            });
+            /*
             if(this.chart){
                 this.chart.update(chartOpts);
             } else {
@@ -649,6 +669,17 @@
 
             this._select(this._curFilters, true, true);
             this._resolvePointContextFilters();
+            */
+        },
+
+        setStyles: function(styles){
+            if(!this._styles){ return; }
+
+            var styleSelector = $base(styles);
+
+            this._styles.colors = styleSelector.find('widgetSettings colorScheme').values();
+
+            this.refresh();
         },
 
         _buildChart: function(){
@@ -840,24 +871,18 @@
                 }
 
                 // props added after release
-                /*
                 if(chartContext.find){
                     chartOpts.chart = {
-                        animation: this.isDefined(chartContext.find('animation').checked(), true),
+                        animation: chartContext.find('animation').checked(),
                         inverted: chartContext.find('inverted').checked()
                     }
                 }
-                */
             } catch(e){
                 console.log('BaseChart build chart exception');
                 console.log(e);
             } finally {
                 return chartOpts;
             }
-        },
-
-        isDefined: function(prop, defaultValue){
-            return prop === undefined ? defaultValue : prop;
         },
 
         isNone: function(val){
