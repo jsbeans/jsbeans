@@ -69,7 +69,13 @@
 		           'Unimap.ValueSelector'],
 		
         $bootstrap: function(){
-        	WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.WidgetNode');
+        	WorkspaceController.registerExplorerNode(null, this, {
+        		priority:0.5, 
+        		nodeType:'DataCube.WidgetNode',
+        		create: false,
+				move: false,
+				remove: false
+        	});
         },
 
 		$constructor: function(id, workspace, dashboard, name, wType, values){

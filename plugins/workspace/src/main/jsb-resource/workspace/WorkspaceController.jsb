@@ -302,7 +302,7 @@
 			
 		},
 		
-		registerExplorerNode: function(wTypes, entryType, priority, nodeType){
+		registerExplorerNode: function(wTypes, entryType, opts){
 			var locker = JSB.getLocker();
 			locker.lock('registerExplorerNode_' + this.getId());
 			try {
@@ -321,7 +321,7 @@
 					if(!regEntry[entryType]){
 						regEntry[entryType] = [];
 					}
-					regEntry[entryType].push({priority:priority, nodeType:nodeType});
+					regEntry[entryType].push(opts);
 				}
 			} finally {
 				locker.unlock('registerExplorerNode_' + this.getId());
@@ -389,7 +389,7 @@
 					return b.priority - a.priority;
 				});
 				if(arr.length > 0){
-					rSlice[eType] = arr[0].nodeType;
+					rSlice[eType] = JSB.clone(arr[0]);
 				}
 			}
 			

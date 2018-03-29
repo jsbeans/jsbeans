@@ -9,7 +9,13 @@
 			WorkspaceController.registerFileUploadCallback(null, this, 0, function(name, data){
 				return true;
 			});
-			WorkspaceController.registerExplorerNode(null, this, 0, 'JSB.Workspace.FileNode');
+			WorkspaceController.registerExplorerNode(null, this, {
+				priority: 0, 
+				nodeType:'JSB.Workspace.FileNode',
+				create: false,
+				move:true,
+				remove: true
+			});
 		},
 
 		$constructor: function(id, workspace, opts){

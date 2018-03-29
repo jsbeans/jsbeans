@@ -89,7 +89,7 @@
 			$this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb().showPane(1, false);
 			
 			$this.publish('DataCube.Editor.initialized');
-			
+/*			
 			this.subscribe('JSB.Workspace.Explorer.initialized', function(explorer){
 				// inject toolbar buttons
 				explorer.toolbar.insertItem({
@@ -138,7 +138,7 @@
 					}
 				}, 'createSeparator');
 			});
-			
+*/			
 			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
 				var leftSplit = $this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb();
 				if(JSB.isInstanceOf(node, 'DataCube.DashboardNode') || JSB.isInstanceOf(node, 'DataCube.WidgetNode')){

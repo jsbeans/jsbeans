@@ -25,7 +25,13 @@
 		           'DataCube.Query.QueryCache'],
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.SliceNode');
+			WorkspaceController.registerExplorerNode(null, this, {
+				priority: 0.5, 
+				nodeType:'DataCube.SliceNode',
+				create: false,
+				move: false,
+				remove: false
+			});
 		},
 		
 		$constructor: function(id, workspace, cube, name){

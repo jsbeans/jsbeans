@@ -50,7 +50,6 @@
 						cssClass: 'roundButton btnEdit btn10',
 						tooltip: 'Изменить название',
 						onClick: function(evt){
-							evt.stopPropagation();
 							JSB.defer(function(){
 								self.renderer.beginEdit();	
 							}, 10);
@@ -65,7 +64,6 @@
 						cssClass: 'roundButton btnOpen btn10',
 						tooltip: 'Открыть',
 						onClick: function(evt){
-							evt.stopPropagation();
 							$this.explorer.publish('JSB.Workspace.nodeOpen', $this);
 						}
 					});

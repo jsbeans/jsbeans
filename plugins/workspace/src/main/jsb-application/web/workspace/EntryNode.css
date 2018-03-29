@@ -12,6 +12,7 @@
 	display: block;
 	max-width: 100%;
 	padding: 1px 0;
+	overflow: hidden;
 }
 
 .workspaceExplorerNode.entryNode > .btnEdit {

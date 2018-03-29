@@ -19,7 +19,13 @@
 				}
 				return false;
 			});
-			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.JsonFileNode');
+			WorkspaceController.registerExplorerNode(null, this, {
+				priority: 0.5, 
+				nodeType:'DataCube.JsonFileNode',
+				create: false,
+				move: true,
+				remove: true
+			});
 		},
 		
 		$constructor: function(id, workspace, opts){

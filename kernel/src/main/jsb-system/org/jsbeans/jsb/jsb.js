@@ -1135,13 +1135,27 @@ if(!(function(){return this;}).call(null).JSB){
 			}
 		},
 		
+		isDomNode: function(o){
+			if(this.isServer()){
+				return false;
+			}
+			return ( typeof Node === "object" ? o instanceof Node : o && typeof o === "object" && typeof o.nodeType === "number" && typeof o.nodeName==="string" );
+		},
+		
+		isDomElement: function(o){
+			if(this.isServer()){
+				return false;
+			}
+			return ( typeof HTMLElement === "object" ? o instanceof HTMLElement : o && typeof o === "object" && o !== null && o.nodeType === 1 && typeof o.nodeName==="string" );			
+		},
+		
 		isPlainObject: function(obj, checkPojo){
 			var key;
 			var class2type = {};
 			var hasOwn = class2type.hasOwnProperty;
 			
 			try {
-				if ( !obj || typeof(obj) !== "object" || obj.nodeType || this.isWindow( obj ) || this.isArray(obj) || this.isString(obj) ) {
+				if ( !obj || typeof(obj) !== "object" || this.isDomNode(obj) || this.isWindow( obj ) || this.isArray(obj) || this.isString(obj) ) {
 					return false;
 				}
 			} catch(e){

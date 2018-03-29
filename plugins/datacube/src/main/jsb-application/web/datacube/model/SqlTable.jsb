@@ -8,7 +8,13 @@
 		descriptor: null,
 		
 		$bootstrap: function(){
-			WorkspaceController.registerExplorerNode(null, this, 0.5, 'DataCube.SqlTableNode');
+			WorkspaceController.registerExplorerNode(null, this, {
+				priority:0.5, 
+				nodeType:'DataCube.SqlTableNode',
+				create: false,
+				move: false,
+				remove: false
+			});
 		},
 
 		$constructor: function(id, workspace, opts){

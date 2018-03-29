@@ -47,6 +47,15 @@
 				}
 			});
 			
+			this.toolbar.addItem({
+				key: 'createEntry',
+				tooltip: 'Создать объект',
+				element: '<div class="icon"></div><span>&#x25BC;</span>',
+				click: function(evt){
+					$this.showCreateMenu(evt);
+				}
+			});
+			
 			this.toolbar.addSeparator({key: 'createSeparator'});
 
 			var uploadItem = this.toolbar.addItem({
@@ -327,7 +336,7 @@
 				// upload all node type beans
 				var nodeTypes = [];
 				for(var eType in explorerNodeTypes){
-					var nType = explorerNodeTypes[eType];
+					var nType = explorerNodeTypes[eType].nodeType;
 					nodeTypes.push(nType);
 				}
 				
@@ -513,6 +522,57 @@
 				$this.currentWorkspace._name = newName;
 			});
 		},
+		
+		showCreateMenu: function(evt, bShowFolder, parent){
+			var items = [];
+			var pivot = this.$(evt.currentTarget);
+			for(var eType in $this.explorerNodeTypes){
+				var nDesc = $this.explorerNodeTypes[eType];
+				if(!nDesc.create){
+					continue;
+				}
+				if(eType == 'JSB.Workspace.FolderEntry' && !bShowFolder) {
+					continue;
+				}
+				var elt = this.$('<div><img class="icon"></img><div class="info"><div class="title"></div><div class="desc"></div></div></div>');
+				elt.find('.title').text(nDesc.title);
+				elt.find('.desc').text(nDesc.description);
+				elt.find('.icon').attr('src',nDesc.icon);
+				items.push({
+					key: eType,
+					order: nDesc.order,
+					element: elt
+				});
+				if(eType == 'JSB.Workspace.FolderEntry'){
+					items.push({
+						key: 'menuSeparator',
+						element: '<div class="separator"></div>',
+						cssClass: 'menuSeparator',
+						allowHover: false,
+						allowSelect: false
+					});
+				}
+			}
+			
+			items.sort(function(a, b){
+				return a.order - b.order;
+			});
+			
+			ToolManager.activate({
+				id: '_dwp_droplistTool',
+				cmd: 'show',
+				data: items,
+				key: 'createMenu',
+				target: {
+					selector: pivot,
+					dock: 'bottom'
+				},
+				callback: function(key, item, evt){
+					var nDesc = $this.explorerNodeTypes[key];
+					$this.createNewEntry(key, {}, nDesc.prefix || nDesc.title);
+				}
+			});
+		},
 
 		showWorkspaceMenu: function(){
 			var tab = this.getContainer().getTab(this.getId());
@@ -668,22 +728,15 @@
 						var nodes = [];
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i].obj;
-							if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
+							if(!JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
 								continue;
 							}
-							// temporary check
-							if(JSB.isInstanceOf(obj, 'DataCube.SliceNode') 
-								|| JSB.isInstanceOf(obj, 'DataCube.SqlTableNode') 
-								|| JSB.isInstanceOf(obj, 'DataCube.WidgetNode')) {
+							
+							// moveable check
+							var nodeDesc = $this.explorerNodeTypes[obj.getEntry().getJsb().$name];
+							if(nodeDesc && !nodeDesc.move){
 								continue;
 							}
-/*							
-							if(JSB.isInstanceOf(obj, 'JSB.Workspace.EntryNode')){
-								if(obj.getEntry().getParentId()){
-									continue;	// node has a fixed parent - skipping
-								}
-							}
-*/							
 							nodes.push(obj);
 						}
 						// check for dragging items
@@ -793,6 +846,10 @@
 				var node = sel[i].obj;
 				if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					var entry = node.getEntry();
+					var nDesc = $this.explorerNodeTypes[entry.getJsb().$name];
+					if(nDesc && !nDesc.remove){
+						continue;
+					}
 				}
 				newSel.push(sel[i]);
 			}
@@ -857,7 +914,7 @@
 			}
 */			
 			var nodeSlice = this.explorerNodeTypes;
-			var nodeType = nodeSlice[itemDesc.entry.getJsb().$name];
+			var nodeType = nodeSlice[itemDesc.entry.getJsb().$name].nodeType;
 			if(!nodeType || !JSB.get(nodeType)){
 				return null;
 			}

@@ -1,6 +1,7 @@
 {
 	$name: 'JSB.Workspace.FolderNode',
 	$parent: 'JSB.Workspace.EntryNode',
+	$require: ['JSB.Widgets.Button'],
 	$client: {
 		$constructor: function(opts){
 			var self = this;
@@ -9,6 +10,16 @@
 			this.addClass('folderNode');
 			
 			this.renderer.append('<div class="childCount">(<span></span>)</div>');
+			
+			var createEntryBtn = new Button({
+				cssClass: 'roundButton btnCreate btn10',
+				tooltip: 'Создать объект',
+				onClick: function(evt){
+					$this.explorer.showCreateMenu(evt, true, this);
+				}
+			});
+			$this.toolbox.append(createEntryBtn.getElement());
+
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
 				if(sender != $this.getEntry()){
