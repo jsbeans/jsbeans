@@ -9,11 +9,10 @@
 }
 
 .embeddedWidgetBindingRender > .item {
-    height: 34px;
+    height: 32px;
     width: 200px;
     background: rgba(24, 108, 138, 0.2);
-    color: #555;
-    border: 2px dashed rgba(2, 47, 78, 0.2);
+    border: 1px dotted rgba(2, 47, 78, 0.2);
     border-radius: 4px;
     padding: 6px;
     font-size: 15px;
@@ -23,9 +22,13 @@
 }
 
 .embeddedWidgetBindingRender > .item.filled {
-    padding: 3px;
     text-align: left;
     width: initial;
+	color: #000;
+}
+
+.embeddedWidgetBindingRender > .item:not(.filled) {
+	color: #555;
 }
 
 .embeddedWidgetBindingRender > .item.acceptDraggable {

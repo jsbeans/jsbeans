@@ -137,6 +137,10 @@
 		2HQfguy2bp97RnGMKxpfeP217f8TYADeMEj5cXfIoQAAAABJRU5ErkJggg==`
 	},
 	$scheme: {
+	    rows: {
+	        render: 'sourceBinding',
+	        name: 'Источник'
+	    },
 	    showHeader: {
 	        render: 'item',
 	        name: 'Показывать заголовки столбцов',
@@ -148,10 +152,6 @@
             name: 'Показывать сетку',
 	        optional: 'checked',
 	        editor: 'none'
-	    },
-	    rows: {
-	        render: 'sourceBinding',
-	        name: 'Источник'
 	    },
 	    rowSettings: {
 	        render: 'group',
