@@ -75,6 +75,7 @@
 			this._owner = Kernel.user();
 			this.getWorkspace()._attachEntry(this);
 			this.loadEntry();
+			this._checkChildren();
 			this.getWorkspace()._ensureEntryDesc(this, true);
 		},
 		
@@ -90,6 +91,25 @@
 		_markStored: function(bStored){
 			this._stored = bStored;
 			this.getWorkspace()._markEntryStored(this, bStored);
+		},
+		
+		_checkChildren: function(){
+			var ws = this.getWorkspace();
+			var mtx = 'JSB.Workspace.Entry.children.' + this.getId();
+			JSB.getLocker().lock(mtx);
+			try {
+				var chDelArr = [];
+				for(var chId in this._children){
+					if(!ws.existsEntry(chId)){
+						chDelArr.push(chId);
+					}
+				}
+				for(var i = 0; i < chDelArr.length; i++){
+					delete this._children[chDelArr[i]];
+				}
+			} finally {
+				JSB.getLocker().unlock(mtx);
+			}
 		},
 		
 		
@@ -119,7 +139,8 @@
 				if(this._eDoc._children && this._eDoc._children.length > 0){
 					this._childCount = this._eDoc._children.length;
 					for(var i = 0; i < this._eDoc._children.length; i++){
-						this._children[this._eDoc._children[i]] = true;
+						var chId = this._eDoc._children[i];
+						this._children[chId] = true;
 					}
 				}
 				JSB.getLocker().unlock(mtx);
@@ -353,7 +374,19 @@
 			return {
 				next: function(){
 					if(cursor < chArr.length){
-						return $this.getWorkspace().entry(chArr[cursor++]);
+						var ch = null;
+						while(true){
+							if($this.getWorkspace().existsEntry(chArr[cursor])){
+								ch = $this.getWorkspace().entry(chArr[cursor]);
+							} else {
+								JSB.getLogger().error('Error: Entry "'+$this.getId()+'" has missing child "' + chArr[cursor] + '"');
+							}
+							cursor++;
+							if(ch){
+								break;
+							}
+						}
+						return ch;
 					}
 				},
 				hasNext: function(){
@@ -371,7 +404,11 @@
 			}
 			var children = {};
 			for(var eId in this._children){
-				children[eId] = this.getWorkspace().entry(eId);
+				if(this.getWorkspace().existsEntry(eId)){
+					children[eId] = this.getWorkspace().entry(eId);
+				} else {
+					JSB.getLogger().error('Error: Entry "'+this.getId()+'" has missing child "' + eId + '"');
+				}
 			}
 			return children;
 		},
