@@ -9,3 +9,19 @@
 }
 
 .htmlWidget > div.simpleContainer {}
+
+.htmlWidget[mode="simple"] > iframe {
+	display: none;
+}
+
+.htmlWidget[mode="simple"] > div.simpleContainer {
+	display: block;
+}
+
+.htmlWidget[mode="iframe"] > iframe {
+	display: block;
+}
+
+.htmlWidget[mode="iframe"] > div.simpleContainer {
+	display: none;
+}

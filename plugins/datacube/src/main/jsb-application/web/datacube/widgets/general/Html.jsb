@@ -376,6 +376,7 @@
 					callback(self.iframe);
 				}
 			}
+			this.attr('mode', this.currentRender);
 		},
 		
 		setSimpleMode: function(callback){
@@ -396,6 +397,7 @@
 			this.simpleContainer.css({
 				display: ''
 			});
+			this.attr('mode', this.currentRender);
 			callback(this.simpleContainer);
 		},
 		
