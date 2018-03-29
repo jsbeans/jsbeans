@@ -57,68 +57,73 @@
 		},
 		
 		extractScheme: function(){
-			$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Соединение с базой данных', success: true}, {session: true});
-			var store = this.getStore();
-			var lastPP = -1;
-			$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Получение списка таблиц', success: true}, {session: true});
-			var schema = store.extractSchema(function(idx, total){
-				var pp = Math.round(idx * 100 / total);
-            	if(pp > lastPP){
-            		$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Обновление схемы ' + pp + '%', success: true}, {session: true});
-            		lastPP = pp;
-            	}
-			}, this.settings.filter);
-			$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
-
-			// update entries
-			var existedTables = JSB.clone(this.getChildren());
-			for(var sName in schema){
-				var sDesc = schema[sName];
-				for(var tName in sDesc.tables){
-					var tDesc = sDesc.tables[tName];
-					var tId = MD5.md5(this.getId() + '|' + sName + '|' + tName);
-//					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
-					if(existedTables[tId]){
-						// already exists
-						existedTables[tId].updateDescriptor(tDesc);
-						delete existedTables[tId];
-						continue;
-					}
-					var tEntry = new SqlTable(tId, this.getWorkspace(), tDesc);
-					this.addChildEntry(tEntry);
-				}
-			}
-			
-			// remove unexisted
-			for(var tId in existedTables){
-				var cEntry = this.removeChildEntry(tId);
-				if(cEntry){
-					cEntry.remove();
-				}
-			}
-			
-			// construct details
-			var details = {
-				updated: Date.now(),
-				schemes: 0,
-				tables: 0,
-				columns: 0
-			};
-			for(var sName in schema){
-				details.schemes++;
-				var sDesc = schema[sName];
-				for(var tName in sDesc.tables){
-					details.tables++;
-					var tDesc = sDesc.tables[tName];
-					for(var cName in tDesc.columns){
-						details.columns++;
+			var mtx = 'DataCube.Model.SqlSource.extractScheme.' + this.getId();
+			JSB.getLocker().lock(mtx);
+			try {
+				$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Соединение с базой данных', success: true}, {session: true});
+				var store = this.getStore();
+				var lastPP = -1;
+				$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Получение списка таблиц', success: true}, {session: true});
+				var schema = store.extractSchema(function(idx, total){
+					var pp = Math.round(idx * 100 / total);
+	            	if(pp > lastPP){
+	            		$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Обновление схемы ' + pp + '%', success: true}, {session: true});
+	            		lastPP = pp;
+	            	}
+				}, this.settings.filter);
+				$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
+	
+				// update entries
+				var existedTables = JSB.clone(this.getChildren());
+				for(var sName in schema){
+					var sDesc = schema[sName];
+					for(var tName in sDesc.tables){
+						var tDesc = sDesc.tables[tName];
+						var tId = MD5.md5(this.getId() + '|' + sName + '|' + tName);
+	//					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
+						if(existedTables[tId]){
+							// already exists
+							existedTables[tId].updateDescriptor(tDesc);
+							delete existedTables[tId];
+							continue;
+						}
+						var tEntry = new SqlTable(tId, this.getWorkspace(), tDesc);
+						this.addChildEntry(tEntry);
 					}
 				}
+				
+				// remove unexisted
+				for(var tId in existedTables){
+					var cEntry = this.removeChildEntry(tId);
+					if(cEntry){
+						cEntry.remove();
+					}
+				}
+				
+				// construct details
+				var details = {
+					updated: Date.now(),
+					schemes: 0,
+					tables: 0,
+					columns: 0
+				};
+				for(var sName in schema){
+					details.schemes++;
+					var sDesc = schema[sName];
+					for(var tName in sDesc.tables){
+						details.tables++;
+						var tDesc = sDesc.tables[tName];
+						for(var cName in tDesc.columns){
+							details.columns++;
+						}
+					}
+				}
+				this.details = details;
+				this.property('details', this.details);
+			} finally {
+				JSB.getLocker().unlock(mtx);
 			}
-			this.details = details;
-			this.property('details', this.details);
 			this.getWorkspace().store();
-			this.doSync();
 			
 			return details;
 		}
