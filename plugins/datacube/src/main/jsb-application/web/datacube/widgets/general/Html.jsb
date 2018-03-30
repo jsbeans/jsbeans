@@ -322,7 +322,12 @@
                 var args = this.getContext().find('args').values();
                 var template = this.getContext().find('template').value();
                 for(var i = 0; i < args.length; i++){
-                    data[args[i].find('key').value()] = args[i].find('value').value();
+                	var key = args[i].find('key').value();
+                	var val = args[i].find('value').value();
+                	if(!JSB.isDefined(val)){
+                		val = args[i].find('value').value('back');
+                	}
+                    data[key] = val;
                 }
 		    }
 			
@@ -333,6 +338,7 @@
 				if(isCacheMod){
 				    this.storeCache(html);
 				}
+				this.html = html;
 				
 				if(this.getContext().find('useIframe').checked()){
 					this.renderIframe(html);
@@ -347,7 +353,10 @@
 		setIframeMode: function(callback){
 			var self = this;
 			if(this.currentRender == 'iframe'){
+				var iframeNode = this.iframe.get(0); 
+				iframeNode.contentDocument.designMode = "on";
 				callback(this.iframe);
+				iframeNode.contentDocument.designMode = "off";
 			} else {
 				this.currentRender = 'iframe';
 				if(JSB.isNull(this.iframe)){
@@ -363,17 +372,22 @@
 					},function(){
 						return self.iframe.width() > 0 && self.iframe.height() > 0; 
 					});
-				} else {
-					this.iframe.css({
-						display: ''
+/*					
+					this.iframe.resize(function(){
+						var iframeNode = $this.iframe.get(0);
+						var doc = iframeNode.contentDocument;
+						doc.designMode = "on";
+						doc.open();
+						doc.write($this.html);
+						doc.close();
+						doc.designMode = "off";
 					});
-					if(!JSB.isNull(this.simpleContainer)){
-						this.simpleContainer.css({
-							display: 'none'
-						});
-					}
-					
+*/					
+				} else {
+					var iframeNode = this.iframe.get(0); 
+					iframeNode.contentDocument.designMode = "on";
 					callback(self.iframe);
+					iframeNode.contentDocument.designMode = "off";
 				}
 			}
 			this.attr('mode', this.currentRender);
@@ -385,18 +399,10 @@
 				return;
 			}
 			this.currentRender = 'simple';
-			if(!JSB.isNull(this.iframe)){
-				this.iframe.css({
-					display: 'none'
-				});
-			}
 			if(JSB.isNull(this.simpleContainer)){
 				this.simpleContainer = this.$('<div class="simpleContainer"></div>');
 				this.getElement().append(this.simpleContainer);
 			}
-			this.simpleContainer.css({
-				display: ''
-			});
 			this.attr('mode', this.currentRender);
 			callback(this.simpleContainer);
 		},

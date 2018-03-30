@@ -52,7 +52,7 @@
 .itemRender > .multipleContainer > .multipleItem > .jsb-editor,
 .itemRender > .item > .jsb-editor {
     width: 200px;
-    padding: 0 4px;
+    padding: 2px 4px;
     font-size: 14px;
     color: #555;
     background-color: #fff;

@@ -300,7 +300,7 @@
 						var widget = new ProgressBar[d.type](this, opts);
 						var min = parseFloat(d.minSelector.value() || 0);
 						var max = parseFloat(d.maxSelector.value() || 0);
-						var val = Numeral.format(d.valSelector.value() || 0, d.valFormat.value()); //parseFloat(d.valSelector.value() || 0);
+						var val = parseFloat(d.valSelector.value() || 0);
 
 						var progress = 0;
 						if(max - min > 0 && val > 0){
@@ -313,10 +313,11 @@
 								easing: 'easeInOut'
 							});
 						}, 0)
-						if(JSB.isNumber(val) && d.format){
-							val = Numeral.format(val, d.format);
+						var valStr = '' + val;
+						if(JSB.isNumber(val) && d.valFormat.value()){
+							valStr = Numeral.format(val, d.valFormat.value());
 						}
-						widget.setText('' + val);
+						widget.setText(valStr);
 						d3.select(this).select('.progressbar-text').attr('style', d.textCss);
 						
 						$this.widgets[d.serieIdx] = {widget: widget, type: d.type};

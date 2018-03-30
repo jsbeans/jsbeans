@@ -137,6 +137,10 @@
 		2HQfguy2bp97RnGMKxpfeP217f8TYADeMEj5cXfIoQAAAABJRU5ErkJggg==`
 	},
 	$scheme: {
+	    rows: {
+	        render: 'sourceBinding',
+	        name: 'Источник'
+	    },
 	    showHeader: {
 	        render: 'item',
 	        name: 'Показывать заголовки столбцов',
@@ -148,10 +152,6 @@
             name: 'Показывать сетку',
 	        optional: 'checked',
 	        editor: 'none'
-	    },
-	    rows: {
-	        render: 'sourceBinding',
-	        name: 'Источник'
 	    },
 	    rowSettings: {
 	        render: 'group',
@@ -682,15 +682,12 @@
 						if($this.colDesc[j].widget){
 							var colName = $this.colDesc[j].title;
 							if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
-								//$this.widgetMap[key][colName].setWrapper($this.getWrapper(), { values: row[j].value });
 								$this.widgetMap[key][colName].updateValues({ values: row[j].value });
-								$this.widgetMap[key][colName].refresh();
 							} else {
 								var WidgetCls = $this.colDesc[j].widget.cls;
 								if(WidgetCls){
 									var widget = new WidgetCls();
 									widget.setWrapper($this.getWrapper(), { values: row[j].value });
-									widget.refresh();
 									if(!$this.widgetMap[key]){
 										$this.widgetMap[key] = {};
 									}
@@ -712,6 +709,9 @@
 				var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
 				var rowsSel = tbody.selectAll('tr.row');
 				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
+				
+				rowsSelData.order();
+				
 				rowsSelData.each(function(d){
 					if($this.highlightedRowKey == d.key){
 						$this.highlightedRowKey = null;
@@ -743,10 +743,10 @@
 							$this.onRowOut(d, $this.$(this));
 						})*/;
 				});
-				rowsSelData.order();
-
 				
 				var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
+				
+				rowsSelDataColData.order();
 				
 				rowsSelDataColData
 					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
@@ -776,6 +776,7 @@
 							cellEl.empty().append(widget.getElement());
 							cellEl.attr('widget', widget.getId());
 						}
+						widget.refresh();
 					} else {
 						var val = null;
 						var mainVal = d.value.main;
@@ -815,8 +816,6 @@
 					}
 				});
 				
-				rowsSelDataColData.order();
-				
 				rowsSelDataColData.exit()
 					.each(function(d){
 						var cell = d3.select(this).select('div.cell');
@@ -850,6 +849,7 @@
 									var widget = $this.widgetMap[d.rowKey][d.column];
 									cellEl.append(widget.getElement());
 									cellEl.attr('widget', widget.getId());
+									widget.refresh();
 								} else {
 									var val = null;
 									var mainVal = d.value.main;
@@ -877,9 +877,6 @@
 							});
 					
 				
-				
-				
-
 				// destroy widgets
 				rowsSelData.exit()
 					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
@@ -946,6 +943,7 @@
 												var widget = $this.widgetMap[d.rowKey][d.column];
 												cellEl.append(widget.getElement());
 												cellEl.attr('widget', widget.getId());
+												widget.refresh();
 											} else {
 												var val = null;
 												var mainVal = d.value.main;
@@ -1040,8 +1038,19 @@
 					var rowFlags = {};
 					// construct key
 					var rowKey = null;
-					var keyValsMain = rowKeySelector.values();
-					var keyValsBack = rowKeySelector.values('back');
+					var keyValsMain = rowKeySelector.values('main', true);
+					var keyValsBack = rowKeySelector.values('back', true);
+					var keyValsHover = rowKeySelector.values('hover', true);
+					
+					if(keyValsMain.length > 0){
+						rowFlags.main = true;
+					}
+					if(keyValsBack.length > 0){
+						rowFlags.back = true;
+					}
+					if(keyValsHover.length > 0){
+						rowFlags.hover = true;
+					}
 
 					for(var i = 0; i < Math.max(keyValsMain.length, keyValsBack.length); i++){
 						var keyVal = keyValsMain[i];
@@ -1058,8 +1067,20 @@
 					}	
 					// construct row filter
 					var rowFilter = [];
-					var rowFilterValsMain = rowFilterSelector.values();
-					var rowFilterValsBack = rowFilterSelector.values('back');
+					var rowFilterValsMain = rowFilterSelector.values('main', true);
+					var rowFilterValsBack = rowFilterSelector.values('back', true);
+					var rowFilterValsHover = rowFilterSelector.values('hover', true);
+					
+					if(rowFilterValsMain.length > 0){
+						rowFlags.main = true;
+					}
+					if(rowFilterValsBack.length > 0){
+						rowFlags.back = true;
+					}
+					if(rowFilterValsHover.length > 0){
+						rowFlags.hover = true;
+					}
+					
 					for(var i = 0; i < Math.max(rowFilterValsMain.length, rowFilterValsBack.length); i++){
 						if(rowFilterBinding[i]){
 							var val = rowFilterValsMain[i];
@@ -1082,15 +1103,6 @@
 							var mainValue = colSel.value();
 							var backValue = colSel.value('back');
 							var hoverValue = colSel.value('hover');
-							if(JSB.isDefined(mainValue)){
-								rowFlags.main = true;
-							}
-							if(JSB.isDefined(backValue)){
-								rowFlags.back = true;
-							}
-							if(JSB.isDefined(hoverValue)){
-								rowFlags.hover = true;
-							}
 							rDesc.value = {main: mainValue, back: backValue, hover: hoverValue};
 						} else if(cols[i].colType == 'widgetGroup'){
 						    if($this.colDesc[i].widget){

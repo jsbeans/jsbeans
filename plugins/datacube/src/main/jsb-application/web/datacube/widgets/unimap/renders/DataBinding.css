@@ -49,11 +49,10 @@
 }
 
 .dataBindingRender.itemRender .jsb-comboEditor > .curVal > .simpleValue {
-    padding: 1px 4px;
+    padding: 0 2px;
 }
 
 .dataBindingRender.itemRender .jsb-comboEditor > .dropDownBtn {
-    padding: 11px 5px;
 }
 
 .dataBindingRender .jsb-comboEditor .sliceRender,
@@ -75,7 +74,7 @@
 .dataBindingRender .jsb-comboEditor .curVal .sliceRender {
     width: 100%;
     cursor: pointer;
-    padding: 1px 4px 1px 16px;
+    padding: 0 4px 1px 16px;
     font-size: 14px;
     color: #555;
     text-overflow: ellipsis;
