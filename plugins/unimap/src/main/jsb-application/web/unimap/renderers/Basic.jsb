@@ -216,6 +216,10 @@
             this._errorDesc.icon.addClass('hidden');
         },
 
+        isMultiple: function(){
+            return this._scheme.multiple;
+        },
+
         onchange: function(){
             // check require
             if(this._warningIcon){

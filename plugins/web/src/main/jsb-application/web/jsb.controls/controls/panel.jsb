@@ -109,6 +109,7 @@
             titleEditBtn: false,
             settingsBtn: false,
             closeBtn: false,
+            titleValidateFunction: null,
             // events
             onCollapse: null,
             onExpand: null,
@@ -152,17 +153,38 @@
         editTitle: function(){
             var editor = new Editor({
                 value: this.options.title,
-                oneditcomplete: function(val){
-                    $this.options.title = val;
+                onenterpressed: function(val){
+                    function validTrue(){
+                        $this.options.title = val;
 
+                        $this.elements.title.find('span').removeClass('hidden').text(val);
+                        $this.elements.buttons.titleEditBtn.removeClass('hidden');
+
+                        editor.destroy();
+
+                        if(JSB.isFunction($this.options.onTitleEdited)){
+                            $this.options.onTitleEdited.call($this, val);
+                        }
+                    }
+
+                    if(JSB.isFunction($this.options.titleValidateFunction)){
+                        if($this.options.titleValidateFunction(val)){
+                            validTrue();
+                        } else {
+                            editor.getElement().focus();
+                            editor.addClass('notValid');
+                        }
+
+                        return;
+                    }
+
+                    validTrue();
+                },
+                onfocusout: function(val){
                     $this.elements.title.find('span').removeClass('hidden').text(val);
                     $this.elements.buttons.titleEditBtn.removeClass('hidden');
 
                     editor.destroy();
-
-                    if(JSB.isFunction($this.options.onTitleEdited)){
-                        $this.options.onTitleEdited.call($this, val);
-                    }
                 }
             });
 

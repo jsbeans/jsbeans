@@ -49,6 +49,10 @@
                     if(JSB.isFunction($this.options.oneditcomplete)){
                         $this.options.oneditcomplete.call($this, val);
                     }
+
+                    if(JSB.isFunction($this.options.onenterpressed)){
+                        $this.options.onenterpressed.call($this, val);
+                    }
                 }
 
                 $this._value = val;
@@ -57,6 +61,10 @@
             this.editor.focusout(function(){
                 if(JSB.isFunction($this.options.oneditcomplete)){
                     $this.options.oneditcomplete.call($this, $this.$(this).val());
+                }
+
+                if(JSB.isFunction($this.options.onfocusout)){
+                    $this.options.onfocusout.call($this, $this.$(this).val());
                 }
             });
 	    },
@@ -71,7 +79,9 @@
 
 	        // events
 	        onchange: null,
-	        oneditcomplete: null
+	        oneditcomplete: null,
+	        onenterpressed: null,
+	        onfocusout: null
 	    },
 
 	    _dataList: [],

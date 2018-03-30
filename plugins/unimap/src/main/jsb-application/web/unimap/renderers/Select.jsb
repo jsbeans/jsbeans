@@ -56,6 +56,15 @@
             }
 	    },
 
+	    changeCommonGroup: function(values){
+	        this.createOptionsList();
+
+	        for(var i = 0; i < this._selectors.length; i++){
+	            this._selectors[i].setOptions(this._optionsList, true);
+	            //this._selectors[i].setValue(this._optionsList[0].value, true);
+	        }
+	    },
+
 	    changeLinkTo: function(values){
 	        if($base(values)){
 	            return;
@@ -69,32 +78,47 @@
 	        }
 	    },
 
-	    createOptionsList: function(linkToValue){
+	    createOptionsList: function(linkToValue, commonGroupValues){
 	        var opList = [];
 
-	        if(this._scheme.linkTo){
-	            this._linkToValue = linkToValue || this.getValueByKey(this._scheme.linkTo),
-	                linkedOpts = [];
+	        if(this._scheme.linkTo || this._scheme.commonField){
+                if(this._scheme.linkTo){
+                    this._linkToValue = linkToValue || this.getValueByKey(this._scheme.linkTo),
+                        linkedOpts = [];
 
-	            for(var i = 0; i < this._linkToValue.values.length; i++){
-	                if(this._linkToValue.values[i].value){
-	                    linkedOpts.push(this._linkToValue.values[i].value);
-	                }
-	            }
+                    for(var i = 0; i < this._linkToValue.values.length; i++){
+                        if(this._linkToValue.values[i].value){
+                            linkedOpts.push(this._linkToValue.values[i].value);
+                        }
+                    }
 
-	            for(var i = 0; i < linkedOpts.length; i++){
-                    for(var j in this._scheme.itemsGroups){
-                        if(this._scheme.itemsGroups[j].forFields.indexOf(linkedOpts[i]) > -1){
-                            for(var k in this._scheme.itemsGroups[j].items){
-                                opList.push({
-                                    key: k,
-                                    value: this._scheme.itemsGroups[j].items[k].name
-                                });
+                    for(var i = 0; i < linkedOpts.length; i++){
+                        for(var j in this._scheme.itemsGroups){
+                            if(this._scheme.itemsGroups[j].forFields.indexOf(linkedOpts[i]) > -1){
+                                for(var k in this._scheme.itemsGroups[j].items){
+                                    opList.push({
+                                        key: k,
+                                        value: this._scheme.itemsGroups[j].items[k].name
+                                    });
+                                }
                             }
                         }
                     }
-	            }
-	        } else {
+                }
+
+                if(this._scheme.commonField){
+                    this._commonGroupValues = commonGroupValues || this.getCommonGroupValues(this._scheme.commonField);
+
+                    if(this._commonGroupValues){
+                        for(var i = 0; i < this._commonGroupValues.length; i++){
+                            opList.push({
+                                key: this._commonGroupValues[i],
+                                value: this._commonGroupValues[i]
+                            });
+                        }
+                    }
+                }
+            } else {
                 for(var i in this._scheme.items){
                     opList.push({
                         key: i,
@@ -125,10 +149,10 @@
 	            }
 	        }
 
-	        var scheme = this._scheme.items || findItems(this._linkToValue),
+	        var scheme = this._scheme.items || this._linkToValue && findItems(this._linkToValue),
 	            innerScheme = this.find('.innerScheme');
 
-	        if(!scheme[value] || !scheme[value].items){
+	        if(!scheme || !scheme[value] || !scheme[value].items){
 	            innerScheme.remove();
 	            return;
 	        }

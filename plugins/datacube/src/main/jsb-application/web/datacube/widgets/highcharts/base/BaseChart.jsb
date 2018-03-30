@@ -86,7 +86,6 @@
             collapsable: true,
             collapsed: true,
             items: {
-                //alignTicks    need multiple axes
                 animation: {
                     render: 'item',
                     name: 'Анимация',
@@ -490,6 +489,102 @@
                                     name: 'Процентный'
                                 }
                             }
+                        },
+                        dataLabels: {
+                            render: 'group',
+                            name: 'Подписи',
+                            collapsable: true,
+                            items: {
+                                enabled: {
+                                    render: 'item',
+                                    name: 'Активна',
+                                    optional: true,
+                                    editor: 'none'
+                                },
+                                align: {
+                                    render: 'select',
+                                    name: 'Горизонтальное выравнивание',
+                                    items: {
+                                        center: {
+                                            name: 'По центру'
+                                        },
+                                        left: {
+                                            name: 'По левому краю'
+                                        },
+                                        right: {
+                                            name: 'По правому краю'
+                                        }
+                                    }
+                                },
+                                verticalAlign: {
+                                    render: 'select',
+                                    name: 'Вертикальное выравнивание',
+                                    items: {
+                                        bottom: {
+                                            name: 'По нижнему краю'
+                                        },
+                                        middle: {
+                                            name: 'По центру'
+                                        },
+                                        top: {
+                                            name: 'По верхнему краю'
+                                        }
+                                    }
+                                },
+                                backgroundColor: {
+                                    render: 'item',
+                                    name: 'Цвет фона',
+                                    editor: 'JSB.Widgets.ColorEditor'
+                                },
+                                borderColor: {
+                                    render: 'item',
+                                    name: 'Цвет границы',
+                                    editor: 'JSB.Widgets.ColorEditor'
+                                },
+                                borderRadius: {
+                                    render: 'item',
+                                    name: 'Радиус границы',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                borderWidth: {
+                                    render: 'item',
+                                    name: 'Толщина границы',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                format: {
+                                    render: 'item',
+                                    name: 'Формат',
+                                    valueType: 'string',
+                                    defaultValue: '{y}'
+                                },
+                                style: {
+                                    render: 'group',
+                                    name: 'Стиль подписей',
+                                    collapsable: true,
+                                    items: {
+                                        color: {
+                                            render: 'item',
+                                            name: 'Цвет',
+                                            editor: 'JSB.Widgets.ColorEditor',
+                                            defaultValue: '#333333'
+                                        },
+                                        fontSize: {
+                                            render: 'item',
+                                            name: 'Размер шрифта',
+                                            valueType: 'number',
+                                            defaultValue: 11
+                                        },
+                                        fontWeight: {
+                                            render: 'item',
+                                            name: 'Полнота шрифта',
+                                            valueType: 'string',
+                                            defaultValue: 'bold'
+                                        }
+                                    }
+                                },
+                            }
                         }
                     }
                 }
@@ -654,7 +749,7 @@
 
             function buildWidget(chartOpts){
                 if($this.chart){
-                    $this.chart.update(chartOpts);
+                    $this.chart.update(chartOpts, true, true);
                 } else {
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
@@ -693,12 +788,13 @@
                 var chartContext = this.getContext().find('chart'),
                     creditsContext = this.getContext().find('credits'),
                     legendContext = this.getContext().find('legend'),
-                    plotOptionsContext = this.getContext().find('plotOptions series stacking'),
+                    plotOptionsContext = this.getContext().find('plotOptions series'),
                     seriesContext = this.getContext().find('series').values(),
                     titleContext = this.getContext().find('header'),
                     tooltipContext = this.getContext().find('mainTooltip'),
 
                     legendItemStyle = legendContext.find('itemStyle'),
+                    plotOptionsDataLabels = plotOptionsContext.find('dataLabels'),
 
                     series = [];
 
@@ -780,7 +876,7 @@
 
                     plotOptions: {
                         series: {
-                            stacking: this.isNone(plotOptionsContext && plotOptionsContext.value()),
+                            stacking: this.isNone(plotOptionsContext.find('stacking') && plotOptionsContext.find('stacking').value()),
                             point: {
                                 events: {
                                     click: function(evt) {
@@ -879,6 +975,24 @@
                     chartOpts.chart = {
                         animation: chartContext.find('animation').checked(),
                         inverted: chartContext.find('inverted').checked()
+                    }
+                }
+
+                if(plotOptionsDataLabels.find){
+                    chartOpts.plotOptions.series.dataLabels = {
+                        enabled: plotOptionsDataLabels.find('enabled').checked(),
+                        align: plotOptionsDataLabels.find('align').value(),
+                        verticalAlign: plotOptionsDataLabels.find('verticalAlign').value(),
+                        backgroundColor: plotOptionsDataLabels.find('backgroundColor').value(),
+                        borderColor: plotOptionsDataLabels.find('borderColor').value(),
+                        borderRadius: plotOptionsDataLabels.find('borderRadius').value(),
+                        borderWidth: plotOptionsDataLabels.find('borderWidth').value(),
+                        format: plotOptionsDataLabels.find('format').value(),
+                        style: {
+                            color: plotOptionsDataLabels.find('style color').value(),
+                            fontSize: plotOptionsDataLabels.find('style fontSize').value(),
+                            fontWeight: plotOptionsDataLabels.find('style fontWeight').value()
+                        }
                     }
                 }
             } catch(e){

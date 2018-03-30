@@ -43,12 +43,17 @@
 }
 
 .jsb-panel > .header > .jsb-editor {
+    outline: none;
     color: inherit;
     border-radius: 5px;
     background-color: #fff;
     background-image: none;
     border: 1px solid #ccc;
     padding: 0 4px;
+}
+
+.jsb-panel > .header > .jsb-editor.notValid {
+    border: 2px solid red;
 }
 
 .jsb-panel > .header > ul {

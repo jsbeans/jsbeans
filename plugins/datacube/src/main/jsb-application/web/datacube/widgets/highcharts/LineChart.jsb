@@ -90,7 +90,14 @@
                                     name: 'Правый'
                                 }
                             }
+                        },
+                        /*
+                        yAxis: {
+                            render: 'select',
+                            name: 'Ось Y',
+                            commonField: 'yAxisNames'
                         }
+                        */
                     }
                 }
             }

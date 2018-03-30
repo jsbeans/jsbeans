@@ -3,19 +3,27 @@
 	$parent: 'Unimap.Render.Basic',
 	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
 	$client: {
-	    construct: function(){
+	    _childNames: [],
+
+	    construct: function(opts){
 	        this.addClass('groupRender');
 	        this.loadCss('Group.css');
 
 	        this.group = new Panel({
 	        	toolbarPosition: 'left',
-	            title: this._values.name || this._scheme.name,
+	            title: opts.name || this._values.name || this._scheme.name,
 	            titleEditBtn: this._scheme.editableName,
                 collapseBtn: this._scheme.collapsable,
                 collapsed: this._scheme.collapsed,
+                titleValidateFunction: function(val){
+                    var parent = $this.getParent();
+                    if(JSB.isObject(parent.isMultiple()) && parent.isMultiple().uniqueNames){
+                        return (parent._childNames.indexOf(val) === -1);
+                    }
+                },
                 onTitleEdited: function(val){
                     if($this._scheme.editableName && $this._scheme.editableName.commonField){
-                        $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name || $this._scheme.name);
+                        $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, opts.name || $this._values.name || $this._scheme.name);
                         $this._values.name = val;
                     }
                 }
@@ -23,7 +31,7 @@
 	        this.append(this.group);
 
 	        if(this._scheme.editableName && this._scheme.editableName.commonField){
-	            this.getSchemeController().updateCommonFields(null, this._scheme.editableName.commonField, this._values.name || this._scheme.name);
+	            this.getSchemeController().updateCommonFields(null, this._scheme.editableName.commonField, opts.name || this._values.name || this._scheme.name);
 	        }
 
 	        var name = this.group.find('.header h1');
@@ -71,6 +79,14 @@
                     this.addItem(null, 0);
                 }
             }
+
+            if(JSB.isObject(this._scheme.multiple) && this._scheme.multiple.uniqueNames){
+                this._childNames = [];
+
+                for(var i = 0; i < this._childGroups.length; i++){
+                    this._childNames.push(this._childGroups[i].getName());
+                }
+            }
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -85,6 +101,18 @@
 
 	            if(!itemIndex){
 	                itemIndex = this._values.values.length - 1;
+	            }
+
+	            if(JSB.isObject(this._scheme.multiple) && this._scheme.multiple.uniqueNames){
+	                var name = this._scheme.items[Object.keys(this._scheme.items)[0]].name,
+	                    k = 1;
+	                while(this._childNames.indexOf(name) > -1){
+	                    name = this._scheme.items[Object.keys(this._scheme.items)[0]].name + ' ' + k;
+	                    k++;
+	                }
+
+	                values.name = name;
+	                this._childNames.push(name);
 	            }
 	        }
 
@@ -106,7 +134,7 @@
                         values[i] = {};
                     }
 
-                    var render = this.createRender(i, this._scheme.items[i], values[i]);
+                    var render = this.createRender(i, this._scheme.items[i], values[i], { name: values.name });
 
                     if(render){
                         item.append(render.getElement());
@@ -149,7 +177,12 @@
 
 	    removeItem: function(item){
 	        var items = this.group.getElement().find('>.content>.multipleItem'),
-	            itemIndex = Number(item.attr('idx'));
+	            itemIndex = Number(item.attr('idx')),
+	            name = this._values.values[itemIndex].name;
+
+            if(this._childNames){
+                this._childNames.splice(this._childNames.indexOf(name), 1);
+            }
 
 	        for(var i = 0; i < items.length; i++){
 	            if(i === itemIndex){
