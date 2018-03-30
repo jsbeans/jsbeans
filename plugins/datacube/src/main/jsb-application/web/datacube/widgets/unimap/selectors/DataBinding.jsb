@@ -51,7 +51,7 @@
         return this._values[0].value;
     },
 
-    values: function(layer){
+    values: function(layer, validOnly){
         if(!this._values || this._values.length === 0){
             return [];
         }
@@ -62,11 +62,17 @@
             layer = layer || 'main';
 
             for(var i = 0; i < this._values.length; i++){
-                valArr.push(this._values[i].value[layer]);
+            	var val = this._values[i].value[layer];
+            	if(!validOnly || JSB.isDefined(val)){
+            		valArr.push(val);
+            	}
             }
         } else {
             for(var i = 0; i < this._values.length; i++){
-                valArr.push(this._values[i].value);
+            	var val = this._values[i].value;
+            	if(!validOnly || JSB.isDefined(val)){
+            		valArr.push(val);
+            	}
             }
         }
 
