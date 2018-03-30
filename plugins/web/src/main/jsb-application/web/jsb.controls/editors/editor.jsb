@@ -38,28 +38,40 @@
                 this.setValue(this.options.value);
             }
 
-            if(JSB.isFunction(this.options.onchange)){
-                this.editor.keyup(function(){
-                    var val = $this.$(this).val();
+            this.editor.keyup(function(evt){
+                var val = $this.$(this).val();
 
-                    if(val !==  $this._value){
-                        $this.options.onchange.call($this, val);
+                if(val !==  $this._value && JSB.isFunction($this.options.onchange)){
+                    $this.options.onchange.call($this, val);
+                }
+
+                if(evt.keyCode === 13){
+                    if(JSB.isFunction($this.options.oneditcomplete)){
+                        $this.options.oneditcomplete.call($this, val);
                     }
+                }
 
-                    $this._value = val;
-                });
-            }
+                $this._value = val;
+            });
+
+            this.editor.focusout(function(){
+                if(JSB.isFunction($this.options.oneditcomplete)){
+                    $this.options.oneditcomplete.call($this, $this.$(this).val());
+                }
+            });
 	    },
 
 	    options: {
 	        readonly: false,
 	        type: 'text',    // password, color, search
 	        placeholder: null,
+	        value: null,
 
 	        dataList: null,
 
 	        // events
-	        onchange: null
+	        onchange: null,
+	        oneditcomplete: null
 	    },
 
 	    _dataList: [],

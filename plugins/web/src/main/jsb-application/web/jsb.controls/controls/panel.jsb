@@ -1,6 +1,7 @@
 {
 	$name: 'JSB.Controls.Panel',
 	$parent: 'JSB.Controls.Control',
+	$require: ['JSB.Controls.Editor'],
     $client: {
         $constructor: function(opts){
             $base(opts);
@@ -16,19 +17,31 @@
             this.append(this.elements.content);
 
             if(this.options.title){
-                this.elements.header.append('<h1>' + this.options.title + '</h1>');
+                this.elements.title = this.$('<h1><span>' + this.options.title + '</span></h1>');
+                this.elements.header.append(this.elements.title);
+            }
+
+            if(this.options.title && this.options.titleEditBtn){
+                this.elements.buttons.titleEditBtn = this.$('<i class="fas fa-pencil-alt"></i>');
+                this.elements.title.append(this.elements.buttons.titleEditBtn);
+
+                this.elements.buttons.titleEditBtn.click(function(evt){
+                    evt.stopPropagation();
+                    $this.elements.title.find('span').addClass('hidden');
+                    $this.elements.buttons.titleEditBtn.addClass('hidden');
+                    $this.editTitle();
+                });
             }
 
             if(this.options.hasToolbar){
                 this.elements.toolbar = this.$('<ul></ul>');
-                this.elements.header.append(this.elements.toolbar);
+
+                if(this.options.toolbarPosition == 'right'){
+                    this.elements.header.append(this.elements.toolbar);
+                } else if(this.options.toolbarPosition == 'left') {
+                    this.elements.header.prepend(this.elements.toolbar);
+                }
                 this.elements.header.addClass('hasToolbar');
-            }
-            
-            if(this.options.toolbarPosition == 'right'){
-            	this.elements.header.addClass('toolbar-right');
-            } else if(this.options.toolbarPosition == 'left') {
-            	this.elements.header.addClass('toolbar-left');
             }
 
             if(this.options.collapseBtn){
@@ -93,11 +106,13 @@
             hasToolbar: true,
             toolbarPosition: 'right',
             collapseBtn: true,
+            titleEditBtn: false,
             settingsBtn: false,
             closeBtn: false,
             // events
             onCollapse: null,
             onExpand: null,
+            onTitleEdited: null,
             onSettingsBtnClick: null,
             onCloseBtnClick: null
         },
@@ -132,6 +147,26 @@
             } else {
                 this.elements.content.append(content);
             }
+        },
+
+        editTitle: function(){
+            var editor = new Editor({
+                value: this.options.title,
+                oneditcomplete: function(val){
+                    $this.options.title = val;
+
+                    $this.elements.title.find('span').removeClass('hidden').text(val);
+                    $this.elements.buttons.titleEditBtn.removeClass('hidden');
+
+                    editor.destroy();
+
+                    if(JSB.isFunction($this.options.onTitleEdited)){
+                        $this.options.onTitleEdited.call($this, val);
+                    }
+                }
+            });
+
+            this.elements.header.append(editor.getElement());
         },
 
         setContent: function(content){

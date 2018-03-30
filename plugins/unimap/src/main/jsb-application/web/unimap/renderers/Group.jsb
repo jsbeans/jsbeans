@@ -9,11 +9,22 @@
 
 	        this.group = new Panel({
 	        	toolbarPosition: 'left',
-	            title: this._scheme.name,
+	            title: this._values.name || this._scheme.name,
+	            titleEditBtn: this._scheme.editableName,
                 collapseBtn: this._scheme.collapsable,
-                collapsed: this._scheme.collapsed
+                collapsed: this._scheme.collapsed,
+                onTitleEdited: function(val){
+                    if($this._scheme.editableName && $this._scheme.editableName.commonField){
+                        $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name || $this._scheme.name);
+                        $this._values.name = val;
+                    }
+                }
 	        });
 	        this.append(this.group);
+
+	        if(this._scheme.editableName && this._scheme.editableName.commonField){
+	            this.getSchemeController().updateCommonFields(null, this._scheme.editableName.commonField, this._values.name || this._scheme.name);
+	        }
 
 	        var name = this.group.find('.header h1');
 	        this.createDescription(name);
@@ -46,6 +57,10 @@
 	            });
 	            this.group.appendContent(this.multipleBtn);
 	        }
+
+            if(Object.keys(this._scheme.items).length === 1 && this._scheme.items[Object.keys(this._scheme.items)[0]].render === 'group'){
+                this._childGroups = [];
+            }
 
 	        if(this._values.values.length > 0){
 	            for(var i = 0; i < this._values.values.length; i++){
@@ -91,15 +106,20 @@
                         values[i] = {};
                     }
 
-                    var render = this.createRender(i, this._scheme.items[i], values[i])
+                    var render = this.createRender(i, this._scheme.items[i], values[i]);
+
                     if(render){
                         item.append(render.getElement());
+                    }
+
+                    if(render && this._childGroups){
+                        this._childGroups.push(render);
                     }
                 }
 
                 var dltBtn = this.$('<i class="dltBtn fas fa-times"></i>');
                 dltBtn.click(function(){
-                    $this.removeItem(itemIndex);
+                    $this.removeItem(item);
                 });
                 item.append(dltBtn);
 
@@ -118,6 +138,8 @@
 	        }
 	    },
 
+	    changeCommonGroup: function(){},
+
 	    destroy: function(){
 	        this.group && this.group.destroy();
 	        this.checkBox && this.checkBox.destroy();
@@ -125,20 +147,19 @@
 	        $base();
 	    },
 
-	    removeItem: function(itemIndex){
-	        var items = this.group.getElement().find('>.content>.multipleItem');
+	    removeItem: function(item){
+	        var items = this.group.getElement().find('>.content>.multipleItem'),
+	            itemIndex = Number(item.attr('idx'));
 
 	        for(var i = 0; i < items.length; i++){
-	            var idx = Number(this.$(items[i]).attr('idx'));
-
-	            if(idx === itemIndex){
+	            if(i === itemIndex){
 	                items[i].remove();
-	                this._values.values.splice(idx, 1);
+	                this._values.values.splice(i, 1);
 	                continue;
 	            }
 
-	            if(idx > itemIndex){
-	                this.$(items[i]).attr('idx', idx - 1);
+	            if(i > itemIndex){
+	                this.$(items[i]).attr('idx', i - 1);
 	            }
 	        }
 	    },

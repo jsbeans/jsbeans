@@ -176,8 +176,16 @@
             return this._schemeController.findRendersByKey(key);
         },
 
+        getCommonGroupValues: function(commonGroup){
+            return this._schemeController.getCommonGroupValues(commonGroup);
+        },
+
         getKey: function(){
             return this._key;
+        },
+
+        getName: function(){
+            return this._values.name || this._scheme.name;
         },
 
         getParent: function(){

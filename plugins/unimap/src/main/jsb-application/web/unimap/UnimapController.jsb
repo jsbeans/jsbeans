@@ -11,6 +11,10 @@
             this._scheme = opts.scheme;
             this._values = opts.values.values;
 
+            if(opts.values.commonFields){
+                this.createCommonFieldsMap(opts.values.commonFields);
+            }
+
             if(opts.rendersMap){
                 this._rendersMap = opts.rendersMap;
             } else {
@@ -43,6 +47,15 @@
 	        }
 	    },
 
+	    createCommonFieldsMap: function(commonFields){
+	        for(var i in commonFields){
+                this._commonFieldsMap[i] = {
+                    commonRenders: [],
+                    commonValues: commonFields[i].values
+                };
+	        }
+	    },
+
 	    createLink: function(key, render){
 	        if(!this._linksMap[key]){
 	            this._linksMap[key] = {
@@ -70,6 +83,10 @@
                         $this.options.onchange.call($this, key, value);
                     }
                     $this.updateLinks(key, value);
+
+                    if(scheme.commonField){
+                        $this.updateCommonFields(key, scheme.commonField, value);
+                    }
                 }
             });
             this.addRender(render);
@@ -80,6 +97,17 @@
                 } else {
                     this.createLink(scheme.linkTo, render);
                 }
+            }
+
+            if(scheme.commonField){
+                if(!this._commonFieldsMap[scheme.commonField]){
+                    this._commonFieldsMap[scheme.commonField] = {
+                        commonRenders: [],
+                        commonValues: []
+                    };
+                }
+
+                this._commonFieldsMap[scheme.commonField].commonRenders.push(render);
             }
 
             return render;
@@ -128,6 +156,22 @@
 	        return renders;
 	    },
 
+	    getCommonFields: function(){
+	        var commonFields = {};
+
+	        for(var i in this._commonFieldsMap){
+	            commonFields[i] = {
+	                values: this._commonFieldsMap[i].commonValues
+	            }
+	        }
+
+	        return commonFields;
+	    },
+
+	    getCommonGroupValues: function(commonGroup){
+	        return this._commonFieldsMap[commonGroup] && this._commonFieldsMap[commonGroup].commonValues;
+	    },
+
 	    getLinkedFields: function(){
 	        var links = {};
 
@@ -164,6 +208,7 @@
 
 	    getValues: function(){
 	        return {
+	            commonFields: this.getCommonFields(),
 	            linkedFields: this.getLinkedFields(),
 	            values: this._values
 	        }
@@ -180,6 +225,35 @@
 	        }
 
 	        return valRes;
+	    },
+
+	    updateCommonFields: function(key, commonGroup, newValue, oldValue){
+	        if(!this._commonFieldsMap[commonGroup]){
+                this._commonFieldsMap[commonGroup] = {
+                    commonRenders: [],
+                    commonValues: []
+                };
+	        }
+
+	        if(oldValue){
+	            var index = this._commonFieldsMap[commonGroup].commonValues.indexOf(oldValue);
+
+	            if(index > -1){
+	                this._commonFieldsMap[commonGroup].commonValues.splice(index, 1);
+	            }
+	        }
+
+	        if(this._commonFieldsMap[commonGroup].commonValues.indexOf(newValue) === -1){
+	            this._commonFieldsMap[commonGroup].commonValues.push(newValue);
+
+	            for(var i = 0; i < this._commonFieldsMap[commonGroup].commonRenders.length; i++){
+	                if(this._commonFieldsMap[commonGroup].commonRenders[i].getKey() === key){
+	                    continue;
+	                }
+
+	                this._commonFieldsMap[commonGroup].commonRenders[i].changeCommonGroup(this._commonFieldsMap[commonGroup].commonValues);
+	            }
+	        }
 	    },
 
 	    updateLinks: function(key, value){

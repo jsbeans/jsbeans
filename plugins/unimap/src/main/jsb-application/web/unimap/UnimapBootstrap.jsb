@@ -21,6 +21,10 @@
         {
             name: 'switch',
             render: 'Unimap.Render.Switch'
+        },
+        {
+            name: 'comboEditor',
+            render: 'Unimap.Render.ComboEditor'
         }
     ],
 

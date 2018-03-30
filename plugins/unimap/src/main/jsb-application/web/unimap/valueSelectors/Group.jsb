@@ -74,6 +74,10 @@
         return arr;
     },
 
+    getName: function(){
+        return this._selectorOpts.name;
+    },
+
     value: function(){
         if(!this._values){
             return;
