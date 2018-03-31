@@ -47,16 +47,25 @@
 		    if (this.dcQuery.$analyze) {
 		        return this.analyzeQuery(translatedQuery);
 		    } else {
-		        this.iterator = this.executeQuery(translatedQuery);
-                return {
-                    next: function(){
-                        return $this.translateResult($this.iterator.next());
-                    },
-                    close:function(){
-                        $this.iterator.close();
-                    }
-                };
+		        try {
+                    this.iterator = this.executeQuery(translatedQuery);
+                    return {
+                        next: function(){
+                            return $this.translateResult($this.iterator.next());
+                        },
+                        close:function(){
+                            $this.iterator.close();
+                        }
+                    };
+                } catch (error){
+                    var translatedError = $this.translateError(error);
+                    throw translatedError;
+                }
 		    }
+		},
+
+		translateError: function(error) {
+		    return error;
 		},
 
 		extractSelfSubQuery: function(dcQuery, params){

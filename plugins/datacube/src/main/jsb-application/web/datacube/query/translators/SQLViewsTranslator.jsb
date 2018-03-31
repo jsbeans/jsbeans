@@ -57,6 +57,47 @@
             return sql;
 		},
 
+		translateError: function(error) {
+            function buildInfo(){
+                return 'field "' + this.field + '" (context "' + this.queryContext + '", SQL column "' + this.origName + '")';
+            }
+
+            function findInfo(origName) {
+                for(var context in $this.contextQueryViews) {
+                    var queryView = $this.contextQueryViews[context];
+                    var sourceView = queryView.getSourceView();
+                    if (sourceView) {
+                        var sourceFields = sourceView.listFields();
+                        for(var f = 0; f < sourceFields.length; f++) {
+                            var sourceField = sourceView.getField(sourceFields[f]);
+                            if (sourceField && origName == sourceField.context + '.' + sourceField.providerField) {
+                                return buildInfo.call({
+                                    origName: origName,
+                                    field: sourceFields[f],
+                                    queryContext: queryView.getContext()
+                                });
+                            }
+                        }
+
+                    }
+                }
+                return null;
+            }
+
+
+            var reg = /column\s*\"(.*[^\"].*)\"/g
+            var message = error.message.replace(reg, function(s, name) {
+                var info = findInfo(name);
+                return info ? info : name;
+            });
+
+            message = message.replace(/\sPosition:\s*(\d*)/, function(s, pos){
+                return "SQL position: " + pos + ' (for get SQL use analyze)';
+            });
+
+		    return new Error(message);
+		},
+
         _translateWith: function(query){
             var sql = '';
             var views = $this._orderedIsolatedViews(query);
