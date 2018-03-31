@@ -794,7 +794,7 @@
                     tooltipContext = this.getContext().find('mainTooltip'),
 
                     legendItemStyle = legendContext.find('itemStyle'),
-                    plotOptionsDataLabels = plotOptionsContext.find('dataLabels'),
+                    plotOptionsDataLabels = plotOptionsContext.find && plotOptionsContext.find('dataLabels'),
 
                     series = [];
 
@@ -876,7 +876,7 @@
 
                     plotOptions: {
                         series: {
-                            stacking: this.isNone(plotOptionsContext.find('stacking') && plotOptionsContext.find('stacking').value()),
+                            stacking: this.isNone(plotOptionsContext.find && plotOptionsContext.find('stacking').value()),
                             point: {
                                 events: {
                                     click: function(evt) {
@@ -978,7 +978,7 @@
                     }
                 }
 
-                if(plotOptionsDataLabels.find){
+                if(plotOptionsDataLabels && plotOptionsDataLabels.find){
                     chartOpts.plotOptions.series.dataLabels = {
                         enabled: plotOptionsDataLabels.find('enabled').checked(),
                         align: plotOptionsDataLabels.find('align').value(),
