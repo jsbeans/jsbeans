@@ -59,6 +59,9 @@
 		},
 		
 		setQuery: function(q){
+			if(this.query && q && JSB.isEqual(this.query, q)){
+				return;
+			}
 			this.query = q;
 			this.property('query', this.query);
 			this.invalidate();
@@ -66,13 +69,19 @@
 		},
 
 		setQueryParams: function(q){
+			if(this.queryParams && q && JSB.isEqual(this.queryParams, q)){
+				return;
+			}
 		    this.queryParams = q;
             this.property('queryParams', this.queryParams);
             this.doSync();
 		},
-		
+/*		
 		updateSettings: function(desc){
 			$this.getCube().load();
+			if(desc && this.query && desc.query && JSB.isEqual(this.query, desc.query) && desc.name == this.getName()){
+				return;
+			}
 			this.query = desc.query;
 			this.setName(desc.name);
 			this.property('query', this.query);
@@ -80,7 +89,7 @@
 			this.cube.store();
 			this.doSync();
 		},
-		
+*/		
 		executeQuery: function(opts){
 			$this.getCube().load();
 			var params = {};
