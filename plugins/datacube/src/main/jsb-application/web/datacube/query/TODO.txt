@@ -1,0 +1,12 @@
+patterns:
+
+http://localhost:8888/datacube/api/Slice.jsb?wsid=c9442bdaf73c3e01d730a446c9d9bc1b&sid=394380b6914bbebf53ad7a4bd05f22e3&query={}&skip=0&limit=10
+http://localhost:8888/datacube/api/Slice.jsb?wsid=c9442bdaf73c3e01d730a446c9d9bc1b&sid=ca0f0f35acbb2ae3d9dc17ae3ac1775c&query={}&skip=0&limit=10
+
+
+
+http://localhost:8888/datacube/api/Slice.jsb?wsid=c9442bdaf73c3e01d730a446c9d9bc1b&sid=d9cdc3d0d0f1f9bab7db2f44a539f743&query={}&skip=0&limit=10
+почему-то в linkedFromQueries отсутствует главный запрос
+
+
+https://redmine.avicomp.ru/issues/27061
