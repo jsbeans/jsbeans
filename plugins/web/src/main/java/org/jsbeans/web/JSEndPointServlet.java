@@ -69,7 +69,7 @@ public class JSEndPointServlet extends HttpServlet {
         } else {
             jObj.addToObject("result", "");
         }
-        String result = jObj.toJS();
+        String result = jObj.toJS(false);
         if (req.getParameterMap().containsKey("callback")) {
             result = String.format("%s(%s);", req.getParameter("callback"), result);
         }
