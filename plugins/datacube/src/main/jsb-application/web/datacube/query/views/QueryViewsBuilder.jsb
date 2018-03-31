@@ -58,6 +58,7 @@
 //        },
 
         _buildQueryViews: function(query) {
+debugger;
             QueryUtils.walkAllSubQueries(query, function(subQuery, isFromQuery, isValueQuery, isViewQuery){
                 $this._buildContextView(subQuery, isValueQuery, isViewQuery);
             });
@@ -86,9 +87,10 @@
             } else {
                 // check if query without source or build cube
                 var usedFields = {/**usages*/};
+                var query2 = JSB.merge({}, query, {$views: $this.query.$views});
                 if($this.directProvider) {
-                    QueryUtils.walkDataProviderFields(query, /**includeSubQueries=*/false, $this.directProvider,
-                        function(field, context, query){
+                    QueryUtils.walkDataProviderFields(query2, /**includeSubQueries=*/false, $this.directProvider,
+                        function(field, context, q){
                             if (!usedFields[field]) {
                                 usedFields[field] = 0;
                             }
@@ -96,8 +98,8 @@
                         }
                     );
                 } else {
-                    QueryUtils.walkCubeFields(query, /**includeSubQueries=*/false, $this.cube,
-                        function(field, context, query, binding){
+                    QueryUtils.walkCubeFields(query2, /**includeSubQueries=*/false, $this.cube,
+                        function(field, context, q, binding){
                             if (!usedFields[field]) {
                                 usedFields[field] = 0;
                             }
@@ -147,8 +149,9 @@
             );
 
             //collect subquery Views
-            QueryUtils.walkSubQueries(query, function(subQuery, isFromQuery, isValueQuery){
-                if (subQuery != query) {
+            var query2 = JSB.merge({}, query, {$views:$this.query.$views});
+            QueryUtils.walkSubQueries(query2, function(subQuery, isFromQuery, isValueQuery){
+                if (subQuery != query2) {
                     var subView = $this.contextViews[subQuery.$context];
                     if (!subView) throw new Error('Internal error: unknown view context ' + subQuery.$context);
                     view.addSubView(subView);

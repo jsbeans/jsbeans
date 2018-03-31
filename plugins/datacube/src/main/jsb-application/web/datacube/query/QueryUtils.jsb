@@ -5,7 +5,9 @@
 	$server: {
 	    $require: [
 	        'DataCube.Query.QuerySyntax',
-		    'JSB.Crypt.MD5'
+		    'JSB.Crypt.MD5',
+
+		    'java:java.util.HashMap'
         ],
 
         logDebug: function(){
@@ -15,74 +17,274 @@
         },
 
         walkAllSubQueries: function (dcQuery, callback) {
-            $this._walkQueries(dcQuery, true, callback);
+            return $this.walkSubQueries(dcQuery, callback);
         },
 
         walkSubQueries: function (dcQuery, callback) {
-            $this._walkQueries(dcQuery, false, callback);
+            return $this.walkQueries(dcQuery, {}, function(){
+                return callback.call(
+                    this,
+                    this.query,
+                    this.inFrom ? this.fromPath[this.fromPath.length - 1] : null,
+                    this.isValueQuery,
+                    this.isView,
+                    this.nestedPath
+                );
+            });
         },
 
-        /**
-        * Обходит рекурсивно (от листьев к главному запросу) любой тип запроса, в следующем порядке:
-        *    - подзапрос $from или вьюха из $views
-        *    - подзапросы в выражениях условий, сортировки, группировки (все, кроме $from и $select)
-        *    - подзапросы в $select
-        */
-        _walkQueries: function (query, includeViews, callback/**callback(q, isFromQuery, isValueQuery, isViewQuery, parents)*/) {
-            var trace = false;
+        walkQueries: function (dcQuery, options, callback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
+            options = options || {};
+            var trace = options.trace || false;
+            var visitedQueries = new HashMap();
+
             if(trace) {
                 var oldCallback = callback;
-                $this.logDebug('[qid='+query.$id+'] Walk sub-queries start');
-                callback = function(q, isFromQuery, isValueQuery, isViewQuery, parents){
-                    $this.logDebug('[qid='+query.$id+'] Sub-query: '+q.$context+' (isInFrom='+isFromQuery+', isValue='+isValueQuery+', isView='+isViewQuery+')');
+                $this.logDebug('\n\n[qid='+dcQuery.$id+'] Walk sub-queries start: ' + JSB.stringify(dcQuery));
+                callback = function(q){
+                    $this.logDebug('[qid='+dcQuery.$id+'] Sub-query: ' + q.$context +
+                            ' (isInFrom=' + !!this.inFrom +
+                            ', isValueQuery=' + this.isValueQuery +
+                            ', isView=' + this.isView +
+                            ', nestedPath.length=' + this.nestedPath.length +
+                            ', fromPath.length=' + this.fromPath.length +
+                            ') : ' + JSB.stringify(q));
                     return oldCallback.apply(this, arguments);
                 }
             }
 
-
-            function collect(q, key, isView, path, queryParentFrom) {
-                function findView(name) {
-                    if (q.$views && q.$views[name]) return q.$views[name];
-                    for (var p in path) {
-                        if (path[p].$views && path[p].$views[name]) return path[p].$views[name];
-                    }
-                    if (query.$views && query.$views[name]) return query.$views[name];
-                }
-
-                if (JSB.isPlainObject(q)) {
-                    // from
-                    if (q.$from) {
-                        if (typeof q.$from === 'string' && includeViews) {
-                            collect(findView(q.$from), '$from', true, [], q);
-                        } else if (JSB.isPlainObject(q.$from)) {
-                            collect(q.$from, '$from', true, [], q);
+            function walkQuery(query){
+                function checkCircle(context){
+                    for (var i = this.nestedPath.length -1; i >= 0; i--) {
+                        if (this.nestedPath[i].$context == context) {
+                            throw new Error('Cyclical nested query with context ' + context);
                         }
                     }
-
-                    if (q.$select) {
-                        path = path.slice().concat([q]);
-                    }
-                    // inner values
-                    for (var f in q) if (f != '$from' && f != '$select' && f != '$views' && q.hasOwnProperty(f)) {
-                        collect(q[f], f, false, path);
-                    }
-                    // select
-                    if (q.$select) {
-                        collect(q.$select, '$select', false, path);
-                    }
-                    // self query
-                    if (q.$select) {
-                        callback(q, key == '$from' ? queryParentFrom : null, key != '$from' && q != query, isView, path);
-                    }
-                } else if (JSB.isArray(q)) {
-                    for (var i in q) {
-                        collect(q[i], i, false, path);
+                    for (var i = this.fromPath.length -1; i >= 0; i--) {
+                        if (this.fromPath[i].$context == context) {
+                            throw new Error('Cyclical view query with context ' + context);
+                        }
                     }
                 }
+
+                function findView(name) {
+                    if (query.$views && query.$views[name]) return query.$views[name];
+                    for (var p = this.nestedPath.length - 1; p >=0; p-- ) {
+                        if (this.nestedPath[p].$views && this.nestedPath[p].$views[name]) {
+                            return this.nestedPath[p].$views[name];
+                        }
+                    }
+                    if (dcQuery.$views && dcQuery.$views[name]) {
+                        return dcQuery.$views[name];
+                    }
+                    if (typeof options.viewCallback === 'function') {
+                        return options.viewCallback(name);
+                    }
+                    throw new Error('View is undefined: ' + name);
+                }
+
+                // from
+                if (query.$from) {
+                    if (typeof query.$from === 'string') {
+                        checkCircle.call(this, query.$from);
+                    }
+                    var fromQuery = typeof query.$from === 'string'
+                            ? findView.call(this, query.$from) : query.$from;
+                    if (!JSB.isObject(fromQuery)) {
+                        throw new Error('Invalid $from type ' + typeof query.$from);
+                    }
+                    var res = walkQuery.call(
+                        {
+                            query : fromQuery,
+                            nestedPath: [],
+                            fromPath: this.fromPath.concat([query]),
+                            isView : typeof query.$from === 'string',
+                            isValueQuery: false,
+                            inFrom : true,
+                        },
+                        fromQuery
+                    );
+                    if (res === false) return false;
+                }
+
+                // values
+                var keys = ['$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
+                for (var i = 0; i < keys.length; i++) if (query[keys[i]] != null) {
+                    var res = walkExpression.call(
+                        {
+                            nestedPath: this.nestedPath.concat([keys[i]]),
+                            fromPath: this.fromPath,
+                        },
+                        query[keys[i]],
+                        keys[i]
+                    );
+                    if (res === false) return false;
+                }
+
+                // visit self query
+                if (!options.skipDuplicates || !visitedQueries.containsKey(query)){
+                    visitedQueries.put(query, true);
+                    var res = callback.call(this, query);
+                }
+                return res === false ? false : true;
             }
-            collect(query, null, false, []);
-            trace && $this.logDebug('[qid='+query.$id+'] Walk sub-queries complete');
+
+            function walkExpression(exp, key) {
+                if (exp == null) {
+                } else if (JSB.isObject(exp)) {
+                    if (exp.$select) {
+                        var res = walkQuery.call(
+                            {
+                                query : exp,
+                                nestedPath: this.nestedPath.concat([key]),
+                                fromPath: this.fromPath,
+                                isView : false,
+                                isValueQuery: this.isValueQuery,
+                                inFrom : false,
+                            },
+                            exp
+                        );
+                        if (res === false) return false;
+                    } else {
+                        for (var f in exp) if (typeof exp[f] !== 'undefined') {
+                            var res = walkExpression.call(
+                                {
+                                    nestedPath: this.nestedPath.concat([f]),
+                                    fromPath: this.fromPath,
+                                },
+                                exp[f],
+                                f
+                            );
+                            if (res === false) return false;
+                        }
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for (var i = 0; i < exp.length; i++) {
+                        var res = walkExpression.call(
+                            {
+                                nestedPath: this.nestedPath.concat([i]),
+                                fromPath: this.fromPath,
+                            },
+                            exp[i],
+                            i
+                        );
+                        if (res === false) return false;
+                    }
+                }
+                return true;
+            }
+
+//debugger;
+            var res = dcQuery.$select
+                ? walkQuery.call(
+                    {
+                        query : dcQuery,
+                        nestedPath: [dcQuery],
+                        fromPath: [],
+                        isView : false,
+                        isValueQuery: false,
+                        inFrom : false,
+                    },
+                    dcQuery
+                )
+                : walkExpression.call(
+                    {
+                        nestedPath: [],
+                        fromPath: [],
+                    },
+                    dcQuery,
+                    null
+                );
+            visitedQueries.clear();
+            trace && $this.logDebug('[qid='+dcQuery.$id+'] Walk sub-queries complete');
+            return res === false ? false : true;
         },
+
+//        walkAllSubQueriesOld: function (dcQuery, callback) {
+//            $this._walkQueries(dcQuery, callback);
+//        },
+//
+//        walkSubQueriesOld: function (dcQuery, callback) {
+//            $this._walkQueries(dcQuery, callback);
+//        },
+//
+//        /**
+//        * Обходит рекурсивно (от листьев к главному запросу) любой тип запроса, в следующем порядке:
+//        *    - подзапрос $from или вьюха из $views
+//        *    - подзапросы в выражениях условий, сортировки, группировки (все, кроме $from и $select)
+//        *    - подзапросы в $select
+//        */
+//        _walkQueries: function (query, callback/**callback(q, fromParentQuery, isValueQuery, isViewQuery, parents)*/) {
+//            var trace = false;
+//            if(trace) {
+//                var oldCallback = callback;
+//                $this.logDebug('[qid='+query.$id+'] Walk sub-queries start');
+//                callback = function(q, isFromQuery, isValueQuery, isViewQuery, parents){
+//                    $this.logDebug('[qid='+query.$id+'] Sub-query: '+q.$context+' (inFrom='+isFromQuery+', isValue='+isValueQuery+', isView='+isViewQuery+')');
+//                    return oldCallback.apply(this, arguments);
+//                }
+//            }
+//
+//            function collect(q, key, isView, path, queryParentFrom) {
+//                function checkCircle(context){
+//                    for (var i = path.length -1; i >= 0; i--) {
+//                        if (path[i].$context == context) {
+//                            throw new Error('Circle query context ' + context);
+//                        }
+//                    }
+//                }
+//
+//                function findView(name) {
+//                    if (q.$views && q.$views[name]) return q.$views[name];
+//                    for (var p = path.length - 1; p >=0; p-- ) {
+//                        if (path[p].$views && path[p].$views[name]) return path[p].$views[name];
+//                    }
+//                    if (query.$views && query.$views[name]) return query.$views[name];
+//                    throw new Error('View is undefined: ' + name);
+//                }
+//
+//                if (q == null) {
+//                } else if (JSB.isObject(q)) {
+//                    // from
+//                    if (q.$from) {
+//                        if (typeof q.$from === 'string') {
+//                            checkCircle(q.$from);
+//                            collect(findView(q.$from), '$from', true, [], q);
+//                        } else if (JSB.isObject(q.$from)) {
+//                            collect(q.$from, '$from', true, [], q);
+//                        }
+//                    }
+//
+//                    if (q.$select) {
+//                        path = path.slice().concat([q]);
+//                    }
+//                    // inner values
+//                    for (var f in q) if (f != '$from' && f != '$select' && f != '$views' && typeof q[f] !== 'undefined') {
+//                        collect(q[f], f, false, path);
+//                    }
+//                    // select
+//                    if (q.$select) {
+//                        var aliases = Object.keys(q.$select);
+//                        for(var i = aliases.length - 1; i >= 0; i--) {
+//                            var a = aliases[i];
+//                            collect(q.$select[a], a, false, path);
+//                        }
+////                        collect(q.$select, '$select', false, path);
+//                    }
+//
+//                    // self query
+//                    if (q.$select) {
+//                        callback(q, key == '$from' ? queryParentFrom : null, key != '$from' && q != query, isView, path);
+//                    }
+//                } else if (JSB.isArray(q)) {
+//                    for (var i = 0 ; i < q.length; i++) {
+//                        collect(q[i], i, false, path);
+//                    }
+//                }
+//            }
+//            collect(query, null, false, []);
+//            trace && $this.logDebug('[qid='+query.$id+'] Walk sub-queries complete');
+//        },
 
         walkQueryForeignFields: function(dcQuery, callback /*(field, context, query)*/){
             $this.walkCurrentQueryFields(dcQuery, function(field, context, curQuery){
@@ -103,14 +305,14 @@
                 };
             }
 
-            $this._walkQueries(dcQuery, includeSubQueries, function(query) {
+            $this.walkAllSubQueries(dcQuery, function(query) {
                 $this.walkCurrentQueryFields(query, callback);
             });
         },
 
         walkCurrentQueryFields: function (query, callback){
             function walkMultiFilter(exps, fieldsCallback){
-                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                for (var field in exps) if (typeof exps[field] !== 'undefined') {
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
@@ -119,6 +321,9 @@
                                 for (var i in exps[op]) {
                                     walkMultiFilter(exps[op][i], fieldsCallback);
                                 }
+                                break;
+                            case '$not':
+                                walkMultiFilter(exps[op], fieldsCallback);
                                 break;
                             default:
                                 // $op: [left, right] expression
@@ -183,11 +388,13 @@
 
         walkCubeFields: function(dcQuery, includeSubQueries, cube, callback/**(field, context, query, binding)*/){
 		    var queriesByContext = {};
+
 		    this.walkSubQueries(dcQuery, function(query){
                 if (query.$context) {
                     queriesByContext[query.$context] = query;
                 }
 		    });
+
 		    this.walkQueryFields(dcQuery, includeSubQueries, function(field, context, query) {
 		        var fieldQuery = context && queriesByContext[context];
 		        var isFieldNotAlias = $this.isOriginalCubeField(
@@ -210,17 +417,17 @@
 		    function allFieldsBindingAndAllInOther(prov, mode){
 		        var allFieldsBinding = true;
 		        var allInOtherJoined = true;
-		        for (var f in prov.cubeFields) if (prov.cubeFields.hasOwnProperty(f)) {
+		        for (var f in prov.cubeFields) if (typeof prov.cubeFields[f] !== 'undefined') {
 		            if (!prov.cubeFields[f]) {
 		                allFieldsBinding = false;
 		                break;
 		            }
 		            var fieldInOtherJoined = false;
-		            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+		            for (var id in providersFieldsMap) if (typeof providersFieldsMap[id] !== 'undefined') {
 		                if (prov == providersFieldsMap[id]) continue;
 		                if (prov.provider.id != id &&
 		                        (!mode || mode == (providersFieldsMap[id].provider.getMode()||'union')) ) {
-		                    if(providersFieldsMap[id].cubeFields.hasOwnProperty(f)) {
+		                    if(typeof providersFieldsMap[id].cubeFields[f] !== 'undefined') {
 		                        fieldInOtherJoined = true;
 		                        break;
 		                    }
@@ -238,7 +445,7 @@
 		        // все общие поля оставшихся join провайдеров должны иметь другие биндинги с оставшимися провайдерами
 
                 var cubeFields = cube.getManagedFields();
-                for (var id in providersFieldsMap) if (id != excludeId && providersFieldsMap.hasOwnProperty(id)) {
+                for (var id in providersFieldsMap) if (id != excludeId && typeof providersFieldsMap[id] !== 'undefined') {
                     if (providersFieldsMap[id].provider.getMode() == 'join') {
                         for(var cubeField in providersFieldsMap[id].cubeFields) {
                             var binding = cubeFields[cubeField].binding;
@@ -263,22 +470,8 @@
                 return true;
 		    }
 
-//            var fields = {};
-//            for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
-//		        for (var f in providersFieldsMap[id].cubeFields) {
-//		            fields[f] = fields[f] || [];
-//		        }
-//            }
-//            for (var f in fields) if (fields.hasOwnProperty(f)) {
-//                var binding = cube.getManagedFields()[f].binding;
-//                for (var b in binding) {
-//                    fields[f].push(binding[b].provider.name + '/' + binding[b].field);
-//                }
-//            }
-//debugger;
-
             // first remove joins (in LEFT JOIN left is unions)
-		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+		    for (var id in providersFieldsMap) if (typeof providersFieldsMap[id] !== 'undefined') {
 		        if (providersFieldsMap[id].provider.getMode() == 'join'
 		                && allFieldsBindingAndAllInOther(providersFieldsMap[id])
 		                && checkBindingWithout(id)) {
@@ -286,7 +479,7 @@
 		        }
 		    }
             // then remove unions - only fields in join
-		    for (var id in providersFieldsMap) if (providersFieldsMap.hasOwnProperty(id)) {
+		    for (var id in providersFieldsMap) if (typeof providersFieldsMap[id] !== 'undefined') {
 		        if ((providersFieldsMap[id].provider.getMode()||'union') == 'union'
 		                && allFieldsBindingAndAllInOther(providersFieldsMap[id], 'join')
 		                && checkBindingWithout(id)) {
@@ -298,15 +491,16 @@
         extractAllFields: function(valueExp, defaultContext) {
             var cubeFields = {};
             function collect(q) {
-                if (JSB.isString(q) && !q.startsWith('$')) {
+                if (q == null) {
+                } else if (JSB.isString(q) && !q.startsWith('$')) {
                     cubeFields[defaultContext+'.'+ q] = {$field:q, $context: defaultContext};
-                } else if (JSB.isPlainObject(q) && q.$field) {
+                } else if (JSB.isObject(q) && q.$field) {
                     if (!JSB.isString(q.$field)) throw new Error('Invalid $field value type ' + typeof q.$field);
                     cubeFields[(q.$context||defaultContext)+'.'+q.$field] = q;
-                } else if (JSB.isPlainObject(q) && JSB.isNull(q.$const)) {
+                } else if (JSB.isObject(q) && JSB.isNull(q.$const)) {
                     // skip subqueries
                     if (!q.$select) {
-                        for (var f in q) if (q.hasOwnProperty(f)) {
+                        for (var f in q) if (typeof q[f] !== 'undefined') {
                             if (!f.startsWith('$')) {
                                 cubeFields[defaultContext+'.'+ f] = {$field:f, $context: defaultContext};
                             }
@@ -314,7 +508,7 @@
                         }
                     }
                 } else if (JSB.isArray(q)) {
-                    for (var i in q) {
+                    for (var i = 0 ; i < q.length; i++) {
                         collect(q[i]);
                     }
                 }
@@ -322,7 +516,7 @@
 
             collect(valueExp);
             var fields = [];
-            for(var f in cubeFields) if(cubeFields.hasOwnProperty(f)) {
+            for(var f in cubeFields) if(typeof cubeFields[f] !== 'undefined') {
                 fields.push(cubeFields[f]);
             }
             return fields;
@@ -333,13 +527,13 @@
             function collect(q) {
                 if (JSB.isString(q) && !q.startsWith('$')) {
                     cubeFields[q] = {$field:q};
-                } else if (JSB.isPlainObject(q) && q.$field) {
+                } else if (JSB.isObject(q) && q.$field) {
                     if (!JSB.isString(q.$field)) throw new Error('Invalid $field value type ' + typeof q.$field);
                     cubeFields[q.$field] = q;
-                } else if (JSB.isPlainObject(q) && JSB.isNull(q.$const)) {
+                } else if (JSB.isObject(q) && JSB.isNull(q.$const)) {
 
                     if (!q.$select || !skipSubQuery ) {
-                        for (var f in q) if (q.hasOwnProperty(f)) {
+                        for (var f in q) if (typeof q[f] !== 'undefined') {
                             if (!f.startsWith('$')) {
                                 cubeFields[f] = {$field:f};
                             }
@@ -347,7 +541,7 @@
                         }
                     }
                 } else if (JSB.isArray(q)) {
-                    for (var i in q) {
+                    for (var i = 0 ; i < q.length; i++) {
                         collect(q[i]);
                     }
                 }
@@ -370,7 +564,6 @@
         },
 
         filterFilterByFields: function(filter, isAccepted /** boolean isAccepted(field, expr, opPath) */) {
-//debugger;
             function filteredAndOr(array, isAccepted, path) {
                 if (!JSB.isArray(array)) {
                     throw new Error('Unsupported expression type for operator $and/$or');
@@ -397,18 +590,22 @@
             }
 
             function filteredMultiFilter(exps, isAccepted, path) {
-                if (!JSB.isPlainObject(exps)) {
+                if (!JSB.isObject(exps)) {
                     throw new Error('Unsupported expression type ' + exps);
                 }
 
                 var resultExps = {};
-                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                for (var field in exps) if (typeof exps[field] !== 'undefined') {
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
                             case '$or':
                             case '$and':
                                 resultExps[op] = filteredAndOr(exps[op], isAccepted, path.concat([op]));
+                                if (!resultExps[op]) delete resultExps[op];
+                                break;
+                            case '$not':
+                                resultExps[op] = filteredMultiFilter(exps, isAccepted, path.concat([op]));
                                 if (!resultExps[op]) delete resultExps[op];
                                 break;
                             default:
@@ -459,7 +656,7 @@
             return isIsolated;
         },
 
-        extractSelfOrForeignQueryFilter: function(dcQuery, selfOnly) {
+        extractSelfOrExternalQueryFilter: function(dcQuery, selfElseExternal) {
             function checkIsolated(expr){
                 var isIsolated = true;
                 var contexts = {};
@@ -467,7 +664,7 @@
                     contexts[subQuery.$context] = subQuery;
                 });
                 if (Object.keys(contexts).length > 0) {
-                    for(var ctx in contexts) if (contexts.hasOwnProperty(ctx)) {
+                    for(var ctx in contexts) if (typeof contexts[ctx] !== 'undefined') {
                         var q = contexts[ctx];
                         $this.walkQueryForeignFields(q,
                             function(field, context, curQuery){
@@ -493,7 +690,7 @@
                 }
 
                 var resultArray = [];
-                for (var i in array) {
+                for (var i = 0 ; i < array.length; i++) {
                     var fil = filteredMultiFilter(array[i], path);
                     if (fil) {
                         resultArray.push(fil);
@@ -505,7 +702,7 @@
             function filteredBinaryCondition(op, args, path) {
                 for (var i in args) {
                     var isIsolated = checkIsolated(args[i]);
-                    if (selfOnly ? !isIsolated : isIsolated) {
+                    if (selfElseExternal ? !isIsolated : isIsolated) {
                         return null;
                     }
                 }
@@ -513,18 +710,22 @@
             }
 
             function filteredMultiFilter(exps, path) {
-                if (!JSB.isPlainObject(exps)) {
+                if (!JSB.isObject(exps)) {
                     throw new Error('Unsupported expression type ' + exps);
                 }
 
                 var resultExps = {};
-                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                for (var field in exps) if (typeof exps[field] !== 'undefined') {
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
                             case '$or':
                             case '$and':
                                 resultExps[op] = filteredAndOr(exps[op], path.concat([op]));
+                                if (!resultExps[op]) delete resultExps[op];
+                                break;
+                            case '$not':
+                                resultExps[op] = filteredMultiFilter(exps[op], path.concat([op]));
                                 if (!resultExps[op]) delete resultExps[op];
                                 break;
                             default:
@@ -539,7 +740,7 @@
 
                         var isIsolated = checkIsolated(rightExpr);
 
-                        if (selfOnly ? isIsolated : !isIsolated) {
+                        if (selfElseExternal ? isIsolated : !isIsolated) {
                             resultExps[field] = exps[field];
                         }
                     }
@@ -569,7 +770,7 @@
                 }
 
                 var resultArray = [];
-                for (var i in array) {
+                for (var i = 0; i < array.length; i++) {
                     var fil = walkMultiFilter(array[i]);
                     if (fil) {
                         resultArray.push(fil);
@@ -596,17 +797,20 @@
             }
 
             function walkMultiFilter(exps) {
-                if (!JSB.isPlainObject(exps)) {
+                if (!JSB.isObject(exps)) {
                     throw new Error('Unsupported expression type ' + exps);
                 }
 
-                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                for (var field in exps) if (typeof exps[field] !== 'undefined') {
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
                             case '$or':
                             case '$and':
                                 walkAndOr(exps[op]);
+                                break;
+                            case '$not':
+                                walkMultiFilter(exps[op]);
                                 break;
                             case '$eq':
                                 walkBinaryCondition(op, exps[op]);
@@ -746,7 +950,7 @@
                 if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
                     // add all cube fields
                     var managedFields = cubeOrDataProvider.getManagedFields();
-                    for (var f in managedFields) if (managedFields.hasOwnProperty(f)) {
+                    for (var f in managedFields) if (typeof managedFields[f] !== 'undefined') {
                         var binding = managedFields[f].binding;
                         var name = f.replace(new RegExp('"','g'),'');
                         dcQuery.$select[name] = f;
@@ -754,7 +958,7 @@
                 } else {
                     // add all cube fields
                     var fields = cubeOrDataProvider.extractFields();
-                    for(var field in fields) if (fields.hasOwnProperty(field)){
+                    for(var field in fields) if (typeof fields[field] !== 'undefined'){
                         var name = field.replace(new RegExp('"','g'),'');
                          dcQuery.$select[name] = field;
                     }
@@ -764,15 +968,15 @@
 
 		isAggregatedExpression: function(expr){
 		    function findAggregated(e) {
-                if (JSB.isPlainObject(e)) {
-                    for (var f in e) if (e.hasOwnProperty(f)) {
+                if (JSB.isObject(e)) {
+                    for (var f in e) if (typeof e[f] !== 'undefined') {
                         if (QuerySyntax.isAggregateOperator(f)) {
                             return true;
                         }
                         findAggregated(e[f]);
                     }
                 } else if (JSB.isArray(e)) {
-                    for (var i in e) {
+                    for (var i = 0; i < e.length; i++) {
                         findAggregated(e[i]);
                     }
                 }
@@ -787,33 +991,33 @@
 		    function copyWithTopField(fieldName, obj) {
 		        var res = {};
 		        res[fieldName] = obj[fieldName];
-		        for (var f in obj) if (obj.hasOwnProperty(f) && f != fieldName) {
+		        for (var f in obj) if (typeof obj[f] !== 'undefined' && f != fieldName) {
 		            res[f] = obj[f];
 		        }
 		        return res;
 		    }
 
 		    function isFieldLinkedWith(field, exp) {
-                if (JSB.isPlainObject(exp)) {
+                if (JSB.isObject(exp)) {
                     if (exp.$field
                             && exp.$context == dcQuery.$context
                             && exp.$field == field) {
                         return true;
                     } else {
-                        for(var p in exp) if (exp.hasOwnProperty(p)) {
+                        for(var p in exp) if (typeof exp[p] !== 'undefined') {
                             if (isFieldLinkedWith(field, exp[p])) {
                                 return true;
                             }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
-                    for(var i in exp) {
+                    for(var i = 0; i < exp.length; i++) {
                         if (isFieldLinkedWith(field, exp[i])) {
                             return true;
                         }
                     }
                 } else if (JSB.isString(exp) && exp == field) {
-                    // not true - defined without context (see top where isPlainObject)
+                    // not true - defined without context (see top where isObject)
                     return false;
                 }
                 return false;
@@ -821,12 +1025,12 @@
 
             var select = dcQuery.$select;
 		    var topFields = {};
-		    for (var field in select) if (select.hasOwnProperty(field)) {
+		    for (var field in select) if (typeof select[field] !== 'undefined') {
                 var list = false;
                 for (var nextField in select) {
                     if (nextField == field) {
                         list = true;
-                    } else if (list && select.hasOwnProperty(nextField)) {
+                    } else if (list && typeof select[nextField] !== 'undefined') {
                         if (isFieldLinkedWith(field, select[nextField])) {
                             topFields[field] = Object.keys(topFields).length;
                         }
@@ -834,7 +1038,7 @@
                 }
 		    }
 
-            for (var field in topFields) if (topFields.hasOwnProperty(field)) {
+            for (var field in topFields) if (typeof topFields[field] !== 'undefined') {
 		        select = copyWithTopField(field, select);
 		    }
 		    dcQuery.$select = select;
@@ -857,7 +1061,7 @@
                         aggregated: aggregated || false
                     };
                 }
-                if (JSB.isPlainObject(exp) && JSB.isNull(exp.$const)) {
+                if (JSB.isObject(exp) && JSB.isNull(exp.$const)) {
                     if (Object.keys(exp).length == 1) {
                         var op = Object.keys(exp)[0];
                         if (aggregateFunctions[op]) {
@@ -872,7 +1076,7 @@
                     }
                 }
                 if (JSB.isArray(exp)) {
-                    for (var i in exp) {
+                    for (var i = 0; i < exp.length; i++) {
                         var f = findField(exp[i], aggregated);
                         if (f.field) return f;
                     }
@@ -944,7 +1148,7 @@
 		    });
 
             function patchFields(exp, query) {
-                var fieldName = JSB.isPlainObject(exp) && exp.$field;
+                var fieldName = JSB.isObject(exp) && exp.$field;
                 if (fieldName) {
                     var fieldQuery = exp.$context || query.$context ? queriesByContext[exp.$context || query.$context] : query;
                     var isAlias = !!fieldQuery.$select[fieldName];
@@ -961,16 +1165,16 @@
                             }
                         }
                     }
-                } else if (JSB.isPlainObject(exp)) {
+                } else if (JSB.isObject(exp)) {
                     if (!exp.$select || exp == query) {
-                        for (var f in exp) if (exp.hasOwnProperty(f)) {
+                        for (var f in exp) if (typeof exp[f] !== 'undefined') {
                             if (f != '$postFilter') {
                                 patchFields(exp[f], query);
                             }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
-                    for (var i in exp) {
+                    for (var i = 0; i < exp.length; i++) {
                         patchFields(exp[i], query);
                     }
                 }
@@ -1048,7 +1252,7 @@
                 }
 
                 function unwrapExpression(exp, setFunc) {
-                    if (JSB.isPlainObject(exp)) {
+                    if (JSB.isObject(exp)) {
                         if (exp.$select) return; // skip subquery
 
                         var key = Object.keys(exp)[0];
@@ -1057,13 +1261,13 @@
                                 || key == '$gcount' || key == '$gsum' || key == '$gavg') {
                             setFunc(createSubQuery(key, exp[key]));
                         }
-                        for (var f in exp) if(exp.hasOwnProperty(f)) {
+                        for (var f in exp) if(typeof exp[f] !== 'undefined') {
                             unwrapExpression(exp[f], function(newExp){
                                exp[f] = newExp;
                            });
                         }
                     } else if (JSB.isArray(exp)) {
-                        for (var i in exp) {
+                        for (var i = 0; i < exp.length; i++) {
                             unwrapExpression(exp[i], function(newExp){
                                 exp[i] = newExp;
                             });
@@ -1071,7 +1275,7 @@
                     }
                 }
 
-                for (var alias in query.$select) if(query.$select.hasOwnProperty(alias)) {
+                for (var alias in query.$select) if(typeof query.$select[alias] !== 'undefined') {
                     unwrapExpression(query.$select[alias], function(newExp){
                         query.$select[alias] = newExp;
                     });
@@ -1093,7 +1297,7 @@
 		            // move query fields to subQuery
 		            for (var i in queryFields) {
 		                var field = queryFields[i];
-		                if (query.hasOwnProperty(field)) {
+		                if (typeof query[field] !== 'undefined') {
 		                    subQuery[field] = query[field];
 		                    delete query[field];
 		                }
@@ -1101,7 +1305,7 @@
 		            }
 		            // build $select
 		            query.$select = {};
-                    for(var alias in subQuery.$select) if (subQuery.$select.hasOwnProperty(alias)) {
+                    for(var alias in subQuery.$select) if (typeof subQuery.$select[alias] !== 'undefined') {
                         query.$select[alias] = alias;
                     }
 
@@ -1146,11 +1350,11 @@
 //                    }
                 }
                 if (JSB.isObject(e)) {
-                    for(var i in e) if (e.hasOwnProperty(i)) {
+                    for(var i in e) if (typeof e[i] !== 'undefined') {
                         walk(e[i]);
                     }
                 } else if (JSB.isArray(e)) {
-                    for(var i in e) {
+                    for(var i = 0; i < e.length; i++) {
                         walk(e[i]);
                     }
                 }
@@ -1168,7 +1372,7 @@
 		unwrapFilters: function(dcQuery, includeSubQueries) {
             function walkMultiFilter(exps){
                 var $and = [];
-                for (var field in exps) if (exps.hasOwnProperty(field)) {
+                for (var field in exps) if (typeof exps[field] !== 'undefined') {
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
@@ -1186,6 +1390,9 @@
                                     $and.push(newCond);
                                 }
                                 break;
+                            case '$not':
+                                var newCond = walkMultiFilter(exps[op]);
+                                $and.push({$not: newCond});
                             default:
                                 // $op: [left, right] expression
                                 var cond = {};
@@ -1255,7 +1462,7 @@
                 return fieldType;
             }
             if (JSB.isArray(exp)) {
-                for(var i in exp) {
+                for(var i = 0; i < exp.length; i++) {
                     var type = $this.extractType(exp[i], query, cubeOrDataProvider, queryByContext);
                     if (type) {
                         return type;
@@ -1308,7 +1515,7 @@
         getFieldJdbcType: function(cubeOrDataProvider, field) {
             if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
                 var cubeFields = cubeOrDataProvider.getManagedFields();
-//                for(var cubeField in cubeFields) if(cubeFields.hasOwnProperty(cubeField)) {
+//                for(var cubeField in cubeFields) if(typeof cubeFields[cubeField] !== 'undefined') {
                 var binding = cubeFields[field].binding;
                 for (var i in binding) {
                     return binding[i].nativeType || binding[i].type;
@@ -1329,8 +1536,9 @@
                 if (contextQueries[query.$context] && contextQueries[query.$context] != query) {
                     // remove if context has no links
                     var hasLinks = false;
-                    $this.walkQueryFields(query, false, function(field, context, q){
-                        if (query != q) {
+                    var query2 = JSB.merge({}, query, {$views: dcQuery.$views});
+                    $this.walkQueryFields(query2, false, function(field, context, q){
+                        if (query2 != q) {
                             hasLinks = true;
                         }
                     });

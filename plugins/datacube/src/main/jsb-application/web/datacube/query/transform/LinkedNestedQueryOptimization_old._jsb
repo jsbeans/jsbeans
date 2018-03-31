@@ -43,7 +43,7 @@
             delete viewQuery.$context;
             delete viewQuery.$id;
             delete viewQuery.$views;
-            viewQuery.$filter = QueryUtils.extractSelfQueryFilter(query);
+            viewQuery.$filter = QueryUtils.extractSelfOrExternalQueryFilter(query, true);
             if (!query.$filter) delete query.$filter;
             return viewQuery;
         },
