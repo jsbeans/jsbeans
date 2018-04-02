@@ -1412,7 +1412,10 @@ if(!(function(){return this;}).call(null).JSB){
 					return false;
 				}
 				for(var key in b1){
-					if(b2[key] == undefined){
+					if(b2[key] === undefined && b1[key] !== undefined){
+						return false;
+					}
+					if(b2[key] === null && b1[key] !== null){
 						return false;
 					}
 					if(!this.isEqual(b1[key], b2[key])){

@@ -25,16 +25,7 @@
         		}
         	}
         },
-/*
-		push: function(transformerJsb){
-			if(!transformerJsb instanceof JSB){
-			    throw new Error('Invalid transformer type');
-			}
-			Log.debug('Registered transformer ' + transformerJsb.$name);
 
-			$this.transformerBeans.push(transformerJsb);
-		},
-*/
 		transform: function(dcQuery, cubeOrDataProvider){
 		    $this.initialize();
 		    for(var i in $this.transformers) {
@@ -46,7 +37,7 @@
 
 		initialize: function(){
 		    if ($this.transformers.length == 0) {
-		        for(var i = 0; i < $this.transformerBeans.length; i++) {
+		        for(var i = 0; i < $this.transformersCfg.length; i++) {
 		            var transformerJsb = $this.transformerBeans[i];
 		            if(!transformerJsb){
 		            	throw new Error('Missing transformer: ' + $this.transformersCfg[i]);

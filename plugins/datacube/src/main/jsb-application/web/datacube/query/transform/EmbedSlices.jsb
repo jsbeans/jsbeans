@@ -24,23 +24,49 @@
 
 		    dcQuery.$views = dcQuery.$views || {};
 		    var num = 0;
-		    function embedSlicesForQuery(query) {
-                QueryUtils.walkSubQueries(query, function(subQuery){
-                    if (typeof subQuery.$from === 'string') {
-                        var slice = slicesById[subQuery.$from] || slicesByName[subQuery.$from];
-                        if (slice) {
-                            subQuery.$from = $this.sliceLocalId(slice);
-                            if (!dcQuery.$views[subQuery.$from]) {
-                                var viewQuery = $this._rebuildQuery(slice.getQuery(), subQuery.$from);
-                                embedSlicesForQuery(viewQuery);
-                                dcQuery.$views[subQuery.$from] = viewQuery;
+//		    function embedSlicesForQuery(query) {
+//                QueryUtils.walkSubQueries(query, function(subQuery){
+//                    if (typeof subQuery.$from === 'string') {
+//                        var slice = slicesById[subQuery.$from] || slicesByName[subQuery.$from];
+//                        if (slice) {
+//                            subQuery.$from = $this.sliceLocalId(slice);
+//                            if (!dcQuery.$views[subQuery.$from]) {
+//                                var viewQuery = $this._rebuildQuery(slice.getQuery(), subQuery.$from);
+//                                embedSlicesForQuery(viewQuery);
+//                                dcQuery.$views[subQuery.$from] = viewQuery;
+//                            }
+//                        }
+//                    }
+//                });
+//            }
+//
+//            embedSlicesForQuery(dcQuery);
+            function walk(e){
+                if (JSB.isPlainObject(e)) {
+                    if (e.$from && e.$select && typeof e.$from == 'string') {
+                        var subQuery = e;
+                        var isView = subQuery.$views && subQuery.$views[subQuery.$from] || dcQuery.$views && dcQuery.$views[subQuery.$from];
+                        if (!isView) {
+                            var slice = slicesById[subQuery.$from] || slicesByName[subQuery.$from];
+                            if (slice) {
+                                subQuery.$from = $this.sliceLocalId(slice);
+                                if (!dcQuery.$views[subQuery.$from]) {
+                                    dcQuery.$views[subQuery.$from] = $this._rebuildQuery(slice.getQuery(), subQuery.$from);
+                                }
                             }
                         }
                     }
-                });
+                    for (var f in e) if (f != '$views') {
+                        walk(e[i]);
+                    }
+                } else if (JSB.isArray(e)) {
+                    for (var i = 0; i < e.length; i++) {
+                        walk(e[i]);
+                    }
+                }
             }
 
-            embedSlicesForQuery(dcQuery);
+            walk(dcQuery);
 		    return dcQuery;
 		},
 
@@ -68,7 +94,7 @@
 		                }
 		            }
 		        } else if(JSB.isArray(e)) {
-		            for(var i in e) {
+		            for(var i = 0; i < e.length; i++) {
 		                walk(e[i]);
 		            }
                 }

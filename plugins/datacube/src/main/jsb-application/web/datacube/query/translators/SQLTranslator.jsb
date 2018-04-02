@@ -359,7 +359,7 @@
 
             if (JSB.isArray(exp)) {
                 var sql = '';
-                for (var i in exp) {
+                for (var i = 0; i < exp.length; i++) {
                     if (i > 0) sql += ', ';
                     sql += $this._translateExpression(exp[i], dcQuery, useAlias);
                 }
@@ -1047,7 +1047,7 @@
 
                 var sql = '(';
                 var cnt = 0;
-                for (var i in exps) {
+                for (var i = 0; i < exps.length; i++) {
                     if (cnt++ > 0) sql += ' ' + op + ' ';
                     sql += translateMultiExpressions(exps[i]);
                 }
@@ -1159,7 +1159,7 @@
                     throw new Error('Unsupported $groupBy expression type (must be array):' + JSON.stringify(query.$groupBy));
                 }
 
-                for (var i in query.$groupBy) {
+                for (var i = 0; i < query.$groupBy.length; i++) {
                     if (i > 0) sql += ', ';
                     sql += $this._translateExpression(query.$groupBy[i], query);
                 }
@@ -1174,7 +1174,7 @@
                 if (!JSB.isArray(sort)) {
                     throw new Error('Unsupported $sort expression type (must be array):' + JSON.stringify(sort));
                 }
-                for (var i in sort) {
+                for (var i = 0; i < sort.length; i++) {
                     if (i > 0) sql += ', ';
                     var val = sort[i];
                     if (val.$expr && val.$type) {
