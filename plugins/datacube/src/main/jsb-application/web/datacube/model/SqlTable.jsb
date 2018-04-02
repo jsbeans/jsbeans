@@ -29,12 +29,13 @@
 				this.descriptor = this.property('descriptor');
 			}
 			
-			this.subscribe('DataCube.Model.SqlSource.updateSettings', function(sender){
+			this.subscribe(['DataCube.Model.SqlSource.updateSettings','DataCube.Model.SqlSource.clearCache'], function(sender){
 				if($this.getParent() != sender){
 					return;
 				}
 				$this.publish('DataCube.Model.SqlTable.updated');
 			});
+
 		},
 		
 		updateDescriptor: function(desc){

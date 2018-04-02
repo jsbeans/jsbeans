@@ -65,6 +65,7 @@
 			this.query = q;
 			this.property('query', this.query);
 			this.invalidate();
+			this.loadCacheFromCube();
 			this.doSync();
 		},
 
@@ -162,6 +163,21 @@
 				return this.queryCache.executeQuery(preparedQuery, params);
             }
             return this.cube.executeQuery(preparedQuery, params);
+		},
+		
+		loadCacheFromCube: function(){
+			if(!this.cacheEnabled || !$this.getCube().queryCache){
+				return;
+			}
+			if(!this.queryCache){
+				var mtx = this.getId() + '_queryCache';
+				JSB.getLocker().lock(mtx);
+				if(!this.queryCache){
+					this.queryCache = new QueryCache(this.cube);
+				}
+				JSB.getLocker().unlock(mtx);
+			}
+			this.queryCache.copyFrom($this.getCube().queryCache, $this.query);
 		},
 		
 		getCubeFields: function(){

@@ -8,6 +8,6 @@ div[jsb="DataCube.Api.Widget"] > .jsb-navigator {
 	margin-bottom: 2px;
 }
 
-div[jsb="DataCube.Api.Widget"] > .jsb-navigator ~ .datacubeWidget {
+div[jsb="DataCube.Api.Widget"] > .jsb-navigator:not(.hidden) ~ .datacubeWidget {
     height: calc(100% - 23px);
 }

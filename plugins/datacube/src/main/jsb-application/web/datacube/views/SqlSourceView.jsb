@@ -55,6 +55,9 @@
 								<div class="icon"></div>
 								<div class="message"></div>
 							</div>
+							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnClearCache" caption="Очистить кэш с данными"
+								onclick="{{=this.callbackAttr(function(evt){$this.clearCache()})}}"></div>
+
 						</div>
 						<div class="option details"></div>
 					</div>
@@ -151,6 +154,13 @@
 					return;
 				}
 				$this.fillDetails(details);
+			});
+		},
+		
+		clearCache: function(){
+			var entry = $this.node.getEntry();
+			entry.server().clearCache(function(){
+				
 			});
 		},
 		

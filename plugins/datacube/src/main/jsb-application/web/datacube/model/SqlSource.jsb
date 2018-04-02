@@ -67,6 +67,10 @@
 			return StoreManager.getStore(this.settings);
 		},
 		
+		clearCache: function(){
+			$this.publish('DataCube.Model.SqlSource.clearCache');
+		},
+		
 		extractScheme: function(){
 			var mtx = 'DataCube.Model.SqlSource.extractScheme.' + this.getId();
 			JSB.getLocker().lock(mtx);
@@ -131,6 +135,7 @@
 				}
 				this.details = details;
 				this.property('details', this.details);
+				$this.publish('DataCube.Model.SqlSource.schemeUpdated');
 			} finally {
 				JSB.getLocker().unlock(mtx);
 			}

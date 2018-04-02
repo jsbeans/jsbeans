@@ -83,6 +83,12 @@
     position: relative;
     border: 1px solid rgba(2, 47, 78, 0);
     color: #5f3601;
+    transition: background-color 300ms;
+}
+
+.jsb-navigator > .navigatorPane > li:nth-child(odd):not(:last-child):hover {
+	background-color: rgba(156, 92, 29, 0.3);
+    transition: background-color 300ms;
 }
 
 .jsb-navigator > .navigatorPane > li:nth-child(even) {

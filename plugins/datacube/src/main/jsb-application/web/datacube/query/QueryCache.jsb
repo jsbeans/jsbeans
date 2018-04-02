@@ -7,13 +7,14 @@
 		           'JSB.Crypt.MD5'],
 		
 		cube: null,
-		batchSize: 10,
+		batchSize: 50,
 		closeIteratorTimeout: 60000,
 		cacheMap: {},
 		
-		$constructor: function(cube){
+		$constructor: function(cube, opts){
 			$base();
 			this.cube = cube;
+			this.options = opts || {};
 			if(Config.has('datacube.queryCache.batchSize')){
 				this.batchSize = Config.get('datacube.queryCache.batchSize');
 			}
@@ -33,6 +34,14 @@
 		},
 		
 		clear: function(){
+			for(var qId in this.cacheMap){
+				if(this.cacheMap[qId].it){
+					try {
+						this.cacheMap[qId].it.close();
+					} catch(e){}
+					this.cacheMap[qId].it = null;
+				}
+			}
 			this.cacheMap = {};
 		},
 		
@@ -40,6 +49,40 @@
 		
 		getCacheMap: function(){
 			return this.cacheMap;
+		},
+		
+		copyFrom: function(otherCache, query){
+			if(!otherCache || !query){
+				return;
+			}
+			var qId = $this.generateQueryId(query);
+			var otherDesc = otherCache.getCacheMap()[qId];
+			if(!otherDesc){
+				return;
+			}
+			
+			var curDesc = $this.cacheMap[qId];
+			if(curDesc && curDesc.it){
+				curDesc.it.close();
+			}
+			$this.lock('cache_' + qId);
+			$this.cacheMap[qId] = {
+				qId: qId,
+				query: otherDesc.query,
+				params: otherDesc.params,
+				complete: otherDesc.complete,
+				it: null,
+				buffer: JSB.clone(otherDesc.buffer),
+				cells: otherDesc.cells
+			};
+			$this.unlock('cache_' + qId);
+		},
+		
+		copyTo: function(otherCache, query){
+			if(!otherCache || !query){
+				return;
+			}
+			otherCache.copyFrom(this, query);
 		},
 		
 		executeQuery: function(query, params){
@@ -62,7 +105,7 @@
 						}
 					}
 				} else {
-					JSB.cancelDefer('closeIterator_' + desc.qId);
+					JSB.cancelDefer($this.getId() + 'closeIterator_' + desc.qId);
 				}
 				if(!desc.complete){
 					for(var i = 0; i < $this.batchSize; i++){
@@ -83,7 +126,7 @@
 							try { desc.it.close(); } catch(e){}
 							desc.it = null;
 						}
-					}, $this.closeIteratorTimeout, 'closeIterator_' + desc.qId);
+					}, $this.closeIteratorTimeout, $this.getId() + 'closeIterator_' + desc.qId);
 				}
 			}
 			
@@ -95,14 +138,14 @@
 				return {
 					next: function(){
 						if(closed){
-							throw new Error('Iterator has been closed');
+							return;
 						}
 						desc.lastUsed = Date.now();
 						if(desc.buffer.length <= position){
 							if(desc.complete){
 								return null;
 							}
-							JSB.getLocker().lock('cacheFill_' + desc.qId);
+							$this.lock('cacheFill_' + desc.qId);
 							try {
 								if(desc.buffer.length <= position){
 									fillNextBatch(desc);
@@ -111,13 +154,23 @@
 									}
 								}
 							} finally {
-								JSB.getLocker().unlock('cacheFill_' + desc.qId);
+								$this.unlock('cacheFill_' + desc.qId);
 							}
 						}
 						return desc.buffer[position++];
 					},
 					close: function(){
+						if(closed){
+							return;
+						}
 						closed = true;
+/*						
+						JSB.cancelDefer($this.getId() + 'closeIterator_' + desc.qId);
+						if(desc.it){
+							try { desc.it.close(); } catch(e){}
+							desc.it = null;
+						}
+*/						
 					}
 				};
 			}
@@ -127,7 +180,7 @@
 				// existed
 				return produceIterator(this.cacheMap[qId]);
 			}
-			JSB.getLocker().lock('cache_' + qId);
+			$this.lock('cache_' + qId);
 			try {
 				if(this.cacheMap[qId]){
 					// existed
@@ -148,7 +201,7 @@
 				
 				return produceIterator(cDesc);
 			} finally {
-				JSB.getLocker().unlock('cache_' + qId);
+				$this.unlock('cache_' + qId);
 			}
 		}
 	}

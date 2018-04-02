@@ -68,7 +68,7 @@
 		clear: function(){
 		    this.error.addClass('hidden');
             this.table.clear();
-            this.server().clearIterator();
+            // this.server().clearIterator();
             // this.curData = null;
             // this.curLoadId = null;
             // this.params = {};
@@ -225,6 +225,11 @@
 	    it: null,
 	    exportQuery: null,
 	    
+	    destroy: function(){
+	    	this.clearIterator();
+	    	$base();
+	    },
+	    
 	    clearIterator: function(){
 	    	if(this.it) {
 	    		try {
@@ -240,6 +245,7 @@
                 	try {
                 		this.it.close();
                 	}catch(e){}
+                	this.it = null;
                 }
 
                 switch(obj.type){
@@ -271,7 +277,7 @@
 
                 this.exportObj = obj;
 
-                this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider);
+                this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
 
                 this.counter = 0;
 
@@ -293,7 +299,7 @@
                     max = this.counter + 20,
                     allLoaded = false;
 
-                while(this.counter < max){
+                while(this.counter < max && this.it){
                     var el = this.it.next();
 
                     if(!el) {
@@ -330,9 +336,11 @@
 
                 return e;
 	        }
+	        
+	        var it = null;
 
             try{
-                var it = this.exportObj.cube.executeQuery(this.exportObj.query, this.exportObj.queryParams, this.exportObj.provider);
+                it = this.exportObj.cube.executeQuery(this.exportObj.query, this.exportObj.queryParams, this.exportObj.provider);
 
                 var res = [];
 
@@ -361,6 +369,12 @@
                     result: null,
                     error: e
                 }
+            } finally {
+            	if(it){
+            		try {
+            			it.close();
+            		} catch(e){}
+            	}
             }
 	    }
 	}

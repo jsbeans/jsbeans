@@ -23,6 +23,7 @@
 		           'DataCube.Providers.DataProviderRepository',
 		           'DataCube.Model.Slice',
 		           'DataCube.Query.QueryEngine',
+		           'DataCube.Query.QueryCache',
 		           'DataCube.MaterializationEngine',
 		           'JSB.Crypt.MD5'],
 		
@@ -83,6 +84,9 @@
 				try {
 					if(!this.loaded) {
 					    this.queryEngine = new QueryEngine(this);
+					    if(Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled')){
+					    	this.queryCache = new QueryCache(this);
+					    }
 		
 						if(this.existsArtifact('.cube')){
 							var snapshot = this.loadArtifact('.cube');
@@ -872,7 +876,6 @@
 		},
 
 		linkFields: function(fields){
-			debugger;
 			this.load();
             var nFields = [], nField, fType;
 
@@ -1841,9 +1844,13 @@
 			}
 		},
 		
-		executeQuery: function(query, params, provider){
+		executeQuery: function(query, params, provider, bUseCache){
 		    this.load();
-			return this.queryEngine.query(query, params, provider);
+		    if(bUseCache && !provider && this.queryCache){
+		    	return this.queryCache.executeQuery(query, params);
+		    } else {
+		    	return this.queryEngine.query(query, params, provider);
+		    }
 		},
 		
 		invalidate: function(){
@@ -1854,6 +1861,9 @@
 					if(slice){
 						slice.invalidate();
 					}
+				}
+				if($this.queryCache){
+					$this.queryCache.clear();
 				}
 			}, 100, 'invalidate_' + this.getId());
 		}
