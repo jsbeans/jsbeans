@@ -1,0 +1,13 @@
+@CHARSET "UTF-8";
+
+@import "/fonts/roboto/roboto.css";
+
+div[jsb="DataCube.Api.Widget"] {}
+
+div[jsb="DataCube.Api.Widget"] > .jsb-navigator {
+	margin-bottom: 2px;
+}
+
+div[jsb="DataCube.Api.Widget"] > .jsb-navigator ~ .datacubeWidget {
+    height: calc(100% - 23px);
+}

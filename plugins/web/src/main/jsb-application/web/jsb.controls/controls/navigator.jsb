@@ -84,7 +84,7 @@
 
             if(JSB.isFunction(this.options.onclick)){
                 element.click(function(){
-                    if($this._noClick){ return; }
+//                    if($this._noClick){ return; }
 
                     $this.gotoElement(el.key);
                     $this.options.onclick.call($this, el.key, index - 1);

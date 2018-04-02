@@ -20,6 +20,8 @@
 		$constructor: function(opts){
 			$base(opts);
 			
+			this.loadCss('Widget.css');
+			
 			var wsId = opts.wsid;
 			var wId = opts.wid;
 			this.server().getWidgetEntry(wsId, wId, function(wEntry){

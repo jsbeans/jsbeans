@@ -80,10 +80,13 @@
     background: #b9b9b9 !important;
 }
 
+.widgetWrapper > .jsb-navigator {
+	margin-bottom: 2px;
+}
+
 .widgetWrapper > .jsb-navigator ~ .datacubeWidget {
-    height: calc(100% - 32px);
+    height: calc(100% - 23px);
 }
 
 .widgetWrapper > .jsb-navigator > .navigatorPane > li:nth-child(odd) {
-    padding: 5px 4px;
 }
