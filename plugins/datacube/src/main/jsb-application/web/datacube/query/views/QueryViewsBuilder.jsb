@@ -58,7 +58,6 @@
 //        },
 
         _buildQueryViews: function(query) {
-debugger;
             QueryUtils.walkAllSubQueries(query, function(subQuery, isFromQuery, isValueQuery, isViewQuery){
                 $this._buildContextView(subQuery, isValueQuery, isViewQuery);
             });

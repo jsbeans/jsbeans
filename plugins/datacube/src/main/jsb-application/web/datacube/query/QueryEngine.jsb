@@ -167,14 +167,6 @@
 		        3) объединить однотипные провайдеры в группы
 		    */
 
-//debugger;
-dcQuery.$id = 'NestedQueryOptimization';
-//QueryUtils._walkQueries(dcQuery, function(query) {
-//Log.debug(query.$context);
-//});
-//throw Error('COMPLETE');
-
-
             var orderedProviders = this.cube.getOrderedDataProviders();
 
 		    // collect used providers by name and all used cube fields
