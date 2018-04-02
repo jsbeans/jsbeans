@@ -3,7 +3,7 @@
 	$parent: 'JSB.Controls.Control',
 	$client: {
 	    _clickX: null,
-	    _noClick: false,
+	    _moved: false,
 
 	    $constructor: function(opts){
 	        $base(opts);
@@ -39,13 +39,13 @@
                     //document.body.style.cursor = 'move';
 
                     $this._navigatorPane.on('mousemove.navigator', function(e){
+                        $this._moved = true;
                         var pos = $this._navigatorPane.position().left - $this._clickX + e.pageX;
                         pos = pos > 0 ? 0 : pos < $this.getElement().outerWidth() - $this._navigatorPane.width() ? $this.getElement().outerWidth() - $this._navigatorPane.width() : pos;
                         $this._navigatorPane.css({left: pos});
                     });
 
                     $this.$(document).on('mouseup.navigator', function(e){
-                        $this._noClick = true;
                         $this._navigatorPane.off('mousemove.navigator');
                         $this.$(document).off('mouseup.navigator');
                         $this._navigatorPane.removeClass('moving');
@@ -84,7 +84,14 @@
 
             if(JSB.isFunction(this.options.onclick)){
                 element.click(function(){
-//                    if($this._noClick){ return; }
+                    if($this._moved){
+                        $this._moved = false;
+                        return;
+                    }
+
+                    if($this._elements.length === index){
+                        return;
+                    }
 
                     $this.gotoElement(el.key);
                     $this.options.onclick.call($this, el.key, index - 1);

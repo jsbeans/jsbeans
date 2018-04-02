@@ -195,6 +195,10 @@
 	                this.$(items[i]).attr('idx', i - 1);
 	            }
 	        }
+
+	        if(this._scheme.editableName && this._scheme.editableName.commonField){
+                this.getSchemeController().updateCommonFields(null, this._scheme.editableName.commonField, null, this._values.name || this._scheme.name);
+	        }
 	    },
 
 	    reorderValues: function(){

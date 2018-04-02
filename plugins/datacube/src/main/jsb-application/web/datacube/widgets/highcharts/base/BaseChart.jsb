@@ -28,7 +28,8 @@
                                 valueDecimals: {
                                     render: 'item',
                                     name: 'Число знаков после запятой',
-                                    valueType: 'number'
+                                    valueType: 'number',
+                                    defaultValue: 2
                                 },
                                 valuePrefix: {
                                     render: 'item',
@@ -127,11 +128,11 @@
                     render: 'select',
                     name: 'Горизонтальное выравнивание',
                     items: {
-                        left: {
-                            name: 'По левому краю'
-                        },
                         center: {
                             name: 'По центру'
+                        },
+                        left: {
+                            name: 'По левому краю'
                         },
                         right: {
                             name: 'По правому краю'
@@ -223,11 +224,11 @@
                     render: 'select',
                     name: 'Горизонтальное выравнивание',
                     items: {
-                        left: {
-                            name: 'По левому краю'
-                        },
                         center: {
                             name: 'По центру'
+                        },
+                        left: {
+                            name: 'По левому краю'
                         },
                         right: {
                             name: 'По правому краю'
@@ -238,14 +239,14 @@
                     render: 'select',
                     name: 'Вертикальное выравнивание',
                     items: {
-                        top: {
-                            name: 'По верхнему краю'
+                        bottom: {
+                            name: 'По нижнему краю'
                         },
                         middle: {
                             name: 'По центру'
                         },
-                        bottom: {
-                            name: 'По нижнему краю'
+                        top: {
+                            name: 'По верхнему краю'
                         }
                     }
                 },
@@ -967,7 +968,7 @@
                         valueDecimals: tooltipContext.find('valueDecimals').value(),
                         valuePrefix: tooltipContext.find('valuePrefix').value(),
                         valueSuffix: tooltipContext.find('valueSuffix').value()
-                    },
+                    }
                 }
 
                 // props added after release

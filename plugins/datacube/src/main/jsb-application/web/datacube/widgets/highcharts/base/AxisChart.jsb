@@ -245,14 +245,14 @@
                             render: 'select',
                             name: 'Вертикальное выравнивание',
                             items: {
-                                low: {
-                                    name: 'По левому краю'
+                                high: {
+                                    name: 'По правому краю'
                                 },
                                 middle: {
                                     name: 'По центру'
                                 },
-                                high: {
-                                    name: 'По правому краю'
+                                low: {
+                                    name: 'По левому краю'
                                 }
                             }
                         },
@@ -260,7 +260,7 @@
                             render: 'item',
                             name: 'Поворот',
                             valueType: 'number',
-                            defaultValue: 0
+                            defaultValue: 270
                         },
                         offset: {
                             render: 'item',
