@@ -204,7 +204,7 @@
 	    },
 
 	    reorderValues: function(){
-	        var items = this.group.getElement().find('.multipleItem');
+	        var items = this.group.getElement().find('>.content>.multipleItem');
 
 	        for(var i = 0; i < items.length; i++){
 	            var idx = Number(this.$(items[i]).attr('idx'));
