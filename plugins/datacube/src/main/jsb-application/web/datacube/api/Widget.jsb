@@ -63,7 +63,7 @@
 
                 JSB.lookup(entry.wType, function(WidgetClass){
                     var widget = new WidgetClass({
-                        filterManager: $this.owner ? $this.owner.getFilterManager() : null,
+                        filterManager: WidgetController.getFilterManager(),
                         widgetEntry: entry,
                         widgetWrapper: $this
                     });

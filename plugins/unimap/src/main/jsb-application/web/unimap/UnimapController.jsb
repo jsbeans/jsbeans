@@ -243,7 +243,7 @@
 	            }
 	        }
 
-	        if(this._commonFieldsMap[commonGroup].commonValues.indexOf(newValue) === -1){
+	        if(newValue && this._commonFieldsMap[commonGroup].commonValues.indexOf(newValue) === -1){
 	            this._commonFieldsMap[commonGroup].commonValues.push(newValue);
 
 	            for(var i = 0; i < this._commonFieldsMap[commonGroup].commonRenders.length; i++){

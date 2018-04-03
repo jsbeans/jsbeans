@@ -81,7 +81,7 @@
 		$constructor: function(id, workspace, dashboard, name, wType, values){
 			$base(id, workspace);
 
-			if(dashboard){
+			if(dashboard){  // create new
 				this.dashboard = dashboard;
 				this.property('dashboard', this.dashboard.getId());
 				this.setName(name);
@@ -100,7 +100,7 @@
 
 				this.property('values', this.values);
 				this.property('schemeVersion', 1.0);
-			} else {
+			} else {    // load from entry
 				var bNeedSave = false;
 				if(this.property('dashboard')){
 					this.dashboard = this.getWorkspace().entry(this.property('dashboard'));

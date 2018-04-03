@@ -27,6 +27,10 @@
 			this.refresh();
 		},
 		
+		getCurrentNode: function(){
+			return this.node;
+		},
+		
 		refresh: function(){
 			throw 'This method should be overriden';
 		},
