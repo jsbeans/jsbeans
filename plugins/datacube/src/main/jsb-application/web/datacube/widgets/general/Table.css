@@ -260,13 +260,10 @@
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight > td.col {
 	background-color: #eba172;
-/*	background: -webkit-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
-	background: -moz-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
-    background: linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
-	background: -o-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);
-	background: -ms-linear-gradient(top, #eba172, #f1ac7c 50%, #f9b686 50%, #e6a969);*/
-    cursor: pointer;
-    /*transition: color 200ms, text-shadow 200ms;*/ 
+}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight.useClick > td.col {
+	cursor: pointer;
 }
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter > td.col[type="text"] {

@@ -142,6 +142,12 @@
 	        name: 'Использовать iframe',
             optional: true,
             editor: 'none'
+	    },
+	    propagateMouseEvents: {
+	    	render: 'item',
+	    	name: 'Пробрасывать события мыши контейнеру',
+            optional: true,
+            editor: 'none'
 	    }
 	},
 	$client: {
@@ -399,9 +405,22 @@
 				return;
 			}
 			this.currentRender = 'simple';
+			var propagateSelector = this.getContext().find('propagateMouseEvents');
 			if(JSB.isNull(this.simpleContainer)){
 				this.simpleContainer = this.$('<div class="simpleContainer"></div>');
 				this.getElement().append(this.simpleContainer);
+				this.simpleContainer.on({
+					mousedown: function(evt){
+						if(!propagateSelector.checked()){
+							evt.stopPropagation();
+						}
+					},
+					mouseup: function(evt){
+						if(!propagateSelector.checked()){
+							evt.stopPropagation();
+						}
+					}
+				});
 			}
 			this.attr('mode', this.currentRender);
 			callback(this.simpleContainer);

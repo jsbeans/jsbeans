@@ -170,6 +170,12 @@
 	                linkTo: 'rows',
 	                multiple: true
 	            },
+	            useFilterOnClick: {
+	            	render: 'item',
+	                name: 'Использовать фильтрацию при клике',
+					optional: 'checked',
+					editor: 'none'
+	            },
 	            preserveFilteredRows: {
 	                render: 'item',
 	                name: 'Не скрывать отфильтрованные строки',
@@ -1160,6 +1166,9 @@
 		},
 		
 		onRowClick: function(d){
+			if(!this.useFilterOnClick){
+				return;
+			}
 			// remove all filters with
 			var filters = this.getFilters();
 			var idsToRemove = [];
@@ -1246,6 +1255,11 @@
 			}
 
 			rowElt.addClass('highlight');
+			if(this.useFilterOnClick){
+				rowElt.addClass('useClick');
+			} else {
+				rowElt.removeClass('useClick');
+			}
 			$this.highlightedRowKey = rowKey;
 			$this.highlightedRowData = d;
 			
@@ -1273,7 +1287,7 @@
 			var bSameApplied = (Object.keys(sameFieldMap).length == 0);
 			var bOtherApplied = (Object.keys(otherFieldMap).length == 0);
 			
-			var bAnd = bOtherApplied && !bSameApplied && bRowExisted;
+			var bAnd = /*bOtherApplied &&*/ !bSameApplied && (bOtherApplied || bRowExisted) /*&& bRowExisted*/;
 			var bOr = !bRowExisted && !bSameApplied;
 			var bNot = bRowExisted && !bSameApplied;
 			
@@ -1500,7 +1514,7 @@
 					.each(function(d){
 						var elt = $this.$(this);
 						var hWrapper = elt.find('> .hWrapper');
-						elt.find('> .hWrapper > .text').text(d.title);
+						elt.find('> .hWrapper > .text').text(d.title).attr('title', d.title);
 						
 						// sort
 						var sortSelector = hWrapper.find('> .sortSelector').jsb();
@@ -1583,7 +1597,7 @@
 							var elt = $this.$(this);
 							var hWrapper = $this.$('<div class="hWrapper"></div>');
 							elt.append(hWrapper);
-							hWrapper.append($this.$('<div class="text"></div>').text(d.title));
+							hWrapper.append($this.$('<div class="text"></div>').text(d.title).attr('title',d.title));
 							
 							// sort
 							if(d.sortFields && d.sortFields.length > 0){
@@ -1898,6 +1912,8 @@
 				
 				this.colDesc.push(desc);
 			}
+			
+			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
 			
 			// update row filters
 			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();
