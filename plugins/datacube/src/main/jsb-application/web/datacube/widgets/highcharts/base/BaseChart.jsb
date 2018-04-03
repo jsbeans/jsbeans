@@ -17,6 +17,7 @@
                     render: 'group',
                     name: 'Серия',
                     collapsable: true,
+                    editableName: true,
                     items: {
                         name: {},
                         data: {},

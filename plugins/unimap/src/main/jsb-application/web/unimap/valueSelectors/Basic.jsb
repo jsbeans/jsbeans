@@ -56,9 +56,12 @@
     },
 
     createDefaultValues: function(key, scheme, values){
+        if(!scheme.render){ return; }
+
         values.checked = scheme.optional === 'checked' ? true : undefined;
-        values.render = scheme.render;
         values.defaultValue = scheme.defaultValue;
+        values.render = scheme.render;
+        values.name = scheme.name;
         values.valueType = scheme.valueType;
         values.values = [];
 

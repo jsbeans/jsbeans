@@ -20,11 +20,13 @@
 
     createDefaultValues: function(scheme){
         for(var i in scheme){
-            if(!this._values[i]){
-                this._values[i] = {}
-            }
+            if(scheme[i].render){
+                if(!this._values[i]){
+                    this._values[i] = {}
+                }
 
-            this.getRenderByName(scheme[i].render).createDefaultValues(i, scheme[i], this._values[i]);
+                this.getRenderByName(scheme[i].render).createDefaultValues(i, scheme[i], this._values[i]);
+            }
         }
 
         return {
@@ -163,5 +165,51 @@
         } else {
             return this._baseSelector;
         }
+    },
+
+    updateValues: function(scheme, values){
+        var removedValues = {},
+            wasUpdated = false;
+
+        // remove keys
+        for(var i in values){
+            if(!scheme[i]){
+                if(!removedValues[i]){
+                    removedValues[i] = [];
+                }
+                removedValues[i].push(values[i]);
+                delete values[i];
+
+                wasUpdated = true;
+            } else {
+                var render = this.getRenderByName(scheme[i].render);
+
+                if(render.updateValues){
+                    wasUpdated = render.updateValues(scheme[i], values[i], removedValues) || wasUpdated;
+                }
+            }
+        }
+
+        // add keys
+        for(var i in scheme){
+            if(!values[i]){
+                if(removedValues[i]){
+                    values[i] = removedValues[i].shift();
+                } else {
+                    values[i] = {};
+
+                    this.getRenderByName().createDefaultValues(i, scheme[i], values[i]);
+
+                    var render = this.getRenderByName(scheme[i].render);
+                    if(render.updateValues){
+                        render.updateValues(scheme[i], values[i], removedValues);
+                    }
+                }
+
+                wasUpdated = true;
+            }
+        }
+
+        return wasUpdated;
     }
 }

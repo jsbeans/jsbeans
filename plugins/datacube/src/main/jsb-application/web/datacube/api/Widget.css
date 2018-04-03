@@ -2,12 +2,12 @@
 
 @import "/fonts/roboto/roboto.css";
 
-div[jsb="DataCube.Api.Widget"] {}
+.apiWidget {}
 
-div[jsb="DataCube.Api.Widget"] > .jsb-navigator {
+.apiWidget > .jsb-navigator {
 	margin-bottom: 2px;
 }
 
-div[jsb="DataCube.Api.Widget"] > .jsb-navigator:not(.hidden) ~ .datacubeWidget {
+.apiWidget > .jsb-navigator:not(.hidden) ~ .datacubeWidget {
     height: calc(100% - 23px);
 }

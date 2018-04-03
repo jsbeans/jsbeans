@@ -10,7 +10,6 @@
 
 .completeWidgetBindingRender > .item {
     height: 34px;
-    width: 200px;
     background: rgba(24, 108, 138, 0.2);
     color: #555;
     border: 2px dashed rgba(2, 47, 78, 0.2);

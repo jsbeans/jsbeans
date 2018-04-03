@@ -98,5 +98,71 @@
         }
 
         return itemsArr;
+    },
+
+    updateValues: function(scheme, values, removedValues){
+        var wasUpdated = false;
+
+        // remove keys
+        for(var i = 0; i < values.values.length; i++){
+            for(var j in values.values[i]){
+                if(!scheme.items[j]){
+                    if(!removedValues[j]){
+                        removedValues[j] = [];
+                    }
+
+                    removedValues[j].push(values.values[i][j]);
+                    delete values.values[i][j];
+
+                    wasUpdated = true;
+                } else {
+                    var render = this.getRenderByName(scheme.items[j]);
+
+                    if(render.updateValues){
+                        wasUpdated = render.updateValues(scheme.items[j], values[i][j], removedValues) || wasUpdated;
+                    }
+                }
+            }
+        }
+
+        if(!values.values[0]){
+            if(scheme.multiple){
+                return wasUpdated;
+            } else {
+                values.values[0] = {};
+            }
+        }
+
+        // add keys
+        for(var i in scheme.items){
+            if(!values.values[0][i]){
+                if(removedValues[i]){
+                    if(scheme.multiple){
+                        for(var j = 0; j < removedValues[i].length; j++){
+                            if(!values.values[j]){
+                                values.values[j] = {};
+                            }
+
+                            values.values[j][i] = removedValues[i][j];
+                        }
+                        delete removedValues[i];
+                    } else {
+                        values.values[0][i] = removedValues[i].shift();
+                    }
+                } else {
+                    values.values[0][i] = {};
+                    this.getRenderByName().createDefaultValues(i, scheme.items[i], values.values[0][i]);
+
+                    var render = this.getRenderByName(scheme.items[i].render);
+                    if(render.updateValues){
+                        render.updateValues(scheme.items[i], values.values[0][i], removedValues);
+                    }
+                }
+
+                wasUpdated = true;
+            }
+        }
+
+        return wasUpdated;
     }
 }

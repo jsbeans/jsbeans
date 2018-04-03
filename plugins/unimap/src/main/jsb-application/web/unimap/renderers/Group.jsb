@@ -9,9 +9,11 @@
 	        this.addClass('groupRender');
 	        this.loadCss('Group.css');
 
+	        this._values.name = opts.name || this._values.name || this._scheme.name;
+
 	        this.group = new Panel({
 	        	toolbarPosition: 'left',
-	            title: opts.name || this._values.name || this._scheme.name,
+	            title: this._values.name,
 	            titleEditBtn: this._scheme.editableName,
                 collapseBtn: this._scheme.collapsable,
                 collapsed: this._scheme.collapsed,
@@ -23,7 +25,7 @@
                 },
                 onTitleEdited: function(val){
                     if($this._scheme.editableName && $this._scheme.editableName.commonField){
-                        $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, opts.name || $this._values.name || $this._scheme.name);
+                        $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name);
                         $this._values.name = val;
                     }
                 }
@@ -31,7 +33,7 @@
 	        this.append(this.group);
 
 	        if(this._scheme.editableName && this._scheme.editableName.commonField){
-	            this.getSchemeController().updateCommonFields(null, this._scheme.editableName.commonField, opts.name || this._values.name || this._scheme.name);
+	            this.getSchemeController().updateCommonFields(null, this._scheme.editableName.commonField, this._values.name);
 	        }
 
 	        var name = this.group.find('.header h1');

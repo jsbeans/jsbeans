@@ -228,6 +228,10 @@
 	    },
 
 	    updateCommonFields: function(key, commonGroup, newValue, oldValue){
+	        if(!JSB.isString(newValue)){
+	            return;
+	        }
+
 	        if(!this._commonFieldsMap[commonGroup]){
                 this._commonFieldsMap[commonGroup] = {
                     commonRenders: [],

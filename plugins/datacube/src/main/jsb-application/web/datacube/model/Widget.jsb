@@ -81,6 +81,10 @@
 		$constructor: function(id, workspace, dashboard, name, wType, values){
 			$base(id, workspace);
 
+            var valueSelector = new ValueSelector({
+                bootstrap: 'Datacube.Unimap.Bootstrap'
+            });
+
 			if(dashboard){  // create new
 				this.dashboard = dashboard;
 				this.property('dashboard', this.dashboard.getId());
@@ -89,47 +93,55 @@
 				this.property('wType', wType);
 
 				if(!values){
-				    var valueSelector = new ValueSelector({
-				        bootstrap: 'Datacube.Unimap.Bootstrap'
-				    });
-
 				    this.values = valueSelector.createDefaultValues(this.extractWidgetScheme());
-
-				    valueSelector.destroy();
 				}
 
 				this.property('values', this.values);
-				this.property('schemeVersion', 1.0);
 			} else {    // load from entry
-				var bNeedSave = false;
-				if(this.property('dashboard')){
-					this.dashboard = this.getWorkspace().entry(this.property('dashboard'));
+				var bNeedSave = false,
+				    dashboard = this.property('dashboard'),
+				    wType = this.property('wType'),
+				    values = this.property('values'),
+				    sourcesIds = this.property('sourcesIds'),
+				    sourceMap = this.property('sourceMap');
+
+				if(dashboard){
+					this.dashboard = this.getWorkspace().entry(dashboard);
 				}
 
-				if(this.property('wType')){
-					this.wType = this.property('wType');
+				if(wType){
+					this.wType = wType;
 				}
 
-                if(this.property('values')){
-                    this.values = this.property('values');
+                if(values){
+                    this.values = values;
                 }
 
-				if(this.property('sourcesIds')){
-				    this.sourcesIds = this.property('sourcesIds');
+				if(sourcesIds){
+				    this.sourcesIds = sourcesIds;
 				}
 
-				if(this.property('sourceMap')){
-					this.sourceMap = this.property('sourceMap');
+				if(sourceMap){
+					this.sourceMap = sourceMap;
 					this.updateSources();
 				} else {
 					this.updateInteroperationMap();
 					bNeedSave = true;
 				}
-				
+
+				var wasUpdated = valueSelector.updateValues(this.extractWidgetScheme(), this.values.values);
+				if(wasUpdated){
+				    this.property('values', this.values);
+
+				    bNeedSave = wasUpdated || bNeedSave;
+				}
+
 				if(bNeedSave){
 					this.getWorkspace().store();
 				}
 			}
+
+			valueSelector.destroy();
 		},
 
 		combineDataScheme: function(source){
@@ -247,28 +259,25 @@
 		    return this.values;
 		},
 
-		setName: function(name){
-		    this.getDashboard().load();
-			$base(name);
-			this.getDashboard().store();
-			this.doSync();
+		setName: function(name, notSave){
+			if($base(name) && !notSave){
+			    this.getWorkspace().store();
+			}
 		},
 		
 		storeValues: function(opts){    //name, values, linkedFields, sourcesIds
-			this.getDashboard().load();
 			this.values = opts.values;
 			this.sourcesIds = opts.sourcesIds;
 			this.property('values', opts.values);
 			this.property('sourcesIds', opts.sourcesIds);
-			this.property('schemeVersion', 1.0);
 
-			this.setName(opts.name);
-			
+			this.setName(opts.name, true);
+
+			this.getDashboard().load(); // todo: update only after change source
 			// update interoperation maps in all widgets of current dashboard
 			var widgets = this.getDashboard().getWrappers();
 			for(var wId in widgets){
 				widgets[wId].updateInteroperationMap();
-				//widgets[wId].doSync();
 			}
 
 			this.dataVersion++;

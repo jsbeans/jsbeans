@@ -288,11 +288,12 @@
 		
 		setName: function(title){
 			if(this._name == title){
-				return;
+				return false;
 			}
 			this._name = title;
 			this._markStored(false);
 			this.getWorkspace()._changeEntryName(this);
+			return true;
 		},
 		
 		removeChildEntry: function(entry){

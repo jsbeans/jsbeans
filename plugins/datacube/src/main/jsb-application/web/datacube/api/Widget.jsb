@@ -19,7 +19,8 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			
+
+			this.addClass('apiWidget');
 			this.loadCss('Widget.css');
 			
 			var wsId = opts.wsid;

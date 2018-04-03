@@ -31,6 +31,9 @@
                                 area: {
                                     name: 'Area'
                                 },
+                                bar: {
+                                    name: 'Bar'
+                                },
                                 column: {
                                     name: 'Column'
                                 },
@@ -91,13 +94,11 @@
                                 }
                             }
                         },
-                        /*
                         yAxis: {
                             render: 'select',
                             name: 'Ось Y',
                             commonField: 'yAxisNames'
                         }
-                        */
                     }
                 }
             }
@@ -279,6 +280,8 @@
                         chartOptsSeries = JSB.clone(chartOpts.series);
 
                     for(var j = 0; j < seriesData.length; j++){
+                        var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[seriesData[j].index].find('yAxis').value());
+
                         var series = {
                             name: seriesData[j].name,
                             data: seriesData[j].data,
@@ -288,7 +291,8 @@
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,
                             stack: seriesContext[seriesData[j].index].find('stack').value(),
-                            step: $this.isNone(seriesContext[seriesData[j].index].find('step').value())
+                            step: $this.isNone(seriesContext[seriesData[j].index].find('step').value()),
+                            yAxis: yAxis > -1 ? yAxis : undefined
                         };
 
                         chartOpts.series[j] = JSB.clone(chartOptsSeries[seriesData[j].index]);

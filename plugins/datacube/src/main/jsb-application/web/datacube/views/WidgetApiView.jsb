@@ -154,7 +154,7 @@
 				wsid: "{{=wid}}", 
 		 		wid: "{{=eid}}",
 		 		onCreateWidget: function(widget){
-		 			this.$('#myWidgetContainer').append(widget.getElement());
+		 			this.$('#myWidgetContainer').append(this.getElement());
 		 			widget.refresh();
 		 		}
 			});
