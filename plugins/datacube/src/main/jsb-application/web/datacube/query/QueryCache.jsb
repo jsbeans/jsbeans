@@ -8,13 +8,15 @@
 		
 		cube: null,
 		batchSize: 50,
-		closeIteratorTimeout: 60000,
+		closeIteratorTimeout: 10000,
+		invalidateInterval: 0,
+		updateInterval: 0,
 		cacheMap: {},
 		
 		$constructor: function(cube, opts){
 			$base();
 			this.cube = cube;
-			this.options = opts || {};
+			this.options = opts;
 			if(Config.has('datacube.queryCache.batchSize')){
 				this.batchSize = Config.get('datacube.queryCache.batchSize');
 			}
@@ -22,11 +24,56 @@
 				this.closeIteratorTimeout = Config.get('datacube.queryCache.closeIteratorTimeout');
 			}
 			QueryCacheController.registerCache(this);
+			
+			if(opts && opts.invalidateInterval){
+				this.setInvalidateInterval(opts.invalidateInterval);
+			}
+			if(opts && opts.updateInterval){
+				this.setUpdateInterval(opts.updateInterval);
+			}
 		},
 		
 		destroy: function(){
+			this.setInvalidateInterval(0);
+			this.setUpdateInterval(0);
 			QueryCacheController.unregisterCache(this);
 			$base();
+		},
+		
+		setInvalidateInterval: function(val){
+			if(!JSB.isNumber(val) || this.invalidateInterval == val){
+				return;
+			}
+			var mtx = 'DataCube.Query.QueryCache.invalidateInterval.' + this.getId();
+			JSB.cancelDefer(mtx);
+			this.invalidateInterval = val;
+			function _invalidate(){
+				if($this.invalidateInterval > 0){
+					$this.invalidate();
+					JSB.defer(_invalidate, $this.invalidateInterval, mtx);
+				}
+			}
+			if($this.invalidateInterval > 0){
+				JSB.defer(_invalidate, $this.invalidateInterval, mtx);
+			}
+		},
+		
+		setUpdateInterval: function(val){
+			if(!JSB.isNumber(val) || this.updateInterval == val){
+				return;
+			}
+			var mtx = 'DataCube.Query.QueryCache.updateInterval.' + this.getId();
+			JSB.cancelDefer(mtx);
+			this.updateInterval = val;
+			function _update(){
+				if($this.updateInterval > 0){
+					$this.update();
+					JSB.defer(_update, $this.updateInterval, mtx);
+				}
+			}
+			if($this.updateInterval > 0){
+				JSB.defer(_update, $this.updateInterval, mtx);
+			}
 		},
 		
 		generateQueryId: function(query){
@@ -45,7 +92,44 @@
 			this.cacheMap = {};
 		},
 		
-		update: function(){},
+		invalidate: function(){
+			var idsToRemove = [];
+			var now = Date.now();
+			for(var qId in this.cacheMap){
+				var qDesc = this.cacheMap[qId];
+				if(qDesc.lastUsed && now - qDesc.lastUsed > $this.invalidateInterval){
+					idsToRemove.push(qId);
+				}
+			}
+			for(var i = 0; i < idsToRemove.length; i++){
+				var qId = idsToRemove[i];
+				$this.lock('cache_' + qId);
+				if(this.options.onInvalidate && JSB.isFunction(this.options.onInvalidate)){
+					if(!this.options.onInvalidate.call(this, this.cacheMap[qId])){
+						continue;
+					}
+				}
+				if(this.cacheMap[qId].it){
+					try {
+						this.cacheMap[qId].it.close();
+					} catch(e){}
+					this.cacheMap[qId].it = null;
+				}
+				delete this.cacheMap[qId];
+				$this.unlock('cache_' + qId);
+			}
+		},
+		
+		update: function(){
+			var idsToUpdate = [];
+			var now = Date.now();
+			for(var qId in this.cacheMap){
+				var qDesc = this.cacheMap[qId];
+				if(qDesc.lastUpdated && now - qDesc.lastUpdated > $this.updateInterval){
+					idsToUpdate.push(qId);
+				}
+			}
+		},
 		
 		getCacheMap: function(){
 			return this.cacheMap;
@@ -71,6 +155,8 @@
 				query: otherDesc.query,
 				params: otherDesc.params,
 				complete: otherDesc.complete,
+				lastUpdated: otherDesc.lastUpdated,
+				lastUsed: Date.now(),
 				it: null,
 				buffer: JSB.clone(otherDesc.buffer),
 				cells: otherDesc.cells
@@ -94,6 +180,7 @@
 				}
 				if(!desc.it){
 					desc.it = $this.cube.executeQuery(desc.query, desc.params);
+					desc.lastUpdated = Date.now();
 					// do skip
 					for(var i = 0; i < desc.buffer.length; i++){
 						var el = desc.it.next();

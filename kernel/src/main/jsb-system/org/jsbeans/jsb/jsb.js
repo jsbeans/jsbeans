@@ -445,6 +445,14 @@ if(!(function(){return this;}).call(null).JSB){
 			if(!this.isString(cfg.$name)){
 				throw new Error("Class name required to create managed object");
 			}
+			
+			if(this.objects[cfg.$name]){
+				return;	// already created or in progress
+			} else {
+				// add to objects
+				this.objects[cfg.$name] = this;
+			}
+			
 			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
 			var logger = this.getLogger();
@@ -460,9 +468,6 @@ if(!(function(){return this;}).call(null).JSB){
 			this._ready = false;
 			this._readyState = 0;
 			this._reqState = 0;
-			
-			// add to objects
-			this.objects[this.$name] = this;
 			
 			// build common section
 			var commonSection = this.$common;
@@ -5698,9 +5703,9 @@ JSB({
 			minDeferTimeout: 5000,	// 5 sec
 			maxDeferTimeout: 60000,	// 60 sec
 			
-			minScInterval: 10,
-			maxScInterval: 3000,
-			defScInterval: 100
+			minScInterval: 1,
+			maxScInterval: 4096,
+			defScInterval: 256
 		},
 		
 		queueToSend: {},
@@ -6128,7 +6133,7 @@ JSB({
 			if(newInterval > this.options.defScInterval){
 				newInterval = this.options.defScInterval;
 			} else {
-				newInterval /= 2;
+				newInterval *= 0.5;
 				if(newInterval < this.options.minScInterval){
 					newInterval = this.options.minScInterval;
 				}
@@ -6137,7 +6142,7 @@ JSB({
 		},
 		
 		slowDownServerClientCallTracking: function(){
-			var newInterval = this.serverClientCallTrackInterval * 2;
+			var newInterval = this.serverClientCallTrackInterval * 1.5;
 			if(newInterval > this.options.maxScInterval){
 				newInterval = this.options.maxScInterval;
 			}
@@ -6215,13 +6220,6 @@ JSB({
 										}, 0);
 									}
 									JSB().injectComplexObjectInRpcResult(params, doCall);
-/*									
-									if(cInst == self && proc == 'handleRpcResponse'){
-										doCall(params);
-									} else {
-										JSB().injectComplexObjectInRpcResult(params, doCall);
-									}
-*/									
 								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
 							}
 						} 

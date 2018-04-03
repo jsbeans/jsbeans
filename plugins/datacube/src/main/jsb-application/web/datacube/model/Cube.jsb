@@ -85,7 +85,10 @@
 					if(!this.loaded) {
 					    this.queryEngine = new QueryEngine(this);
 					    if(Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled')){
-					    	this.queryCache = new QueryCache(this);
+					    	var cacheInvalidateInterval = Config.has('datacube.queryCache.cubeInvalidateInterval') && Config.get('datacube.queryCache.cubeInvalidateInterval') || 600000;
+					    	this.queryCache = new QueryCache(this, {
+					    		invalidateInterval: cacheInvalidateInterval
+					    	});
 					    }
 		
 						if(this.existsArtifact('.cube')){
