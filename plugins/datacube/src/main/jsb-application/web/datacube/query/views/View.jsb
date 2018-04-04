@@ -25,5 +25,10 @@
 		visitInternalViews: function(visitor/**function visitor(view)*/) {
 		    visitor.call($this, $this);
 		},
+
+		info: function(){
+		    // TODO: generate structure info
+		    return {TODO:'TODO'};
+		},
 	}
 }
