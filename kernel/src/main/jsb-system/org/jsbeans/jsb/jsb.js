@@ -802,10 +802,15 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					}
 */					
+					var funcRx = /^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/;
+					var superRx = /\$super/;
+					var baseRx = /\$base/;
+					var currentRx = /\$current/;
+					var thisRx = /\$this/;
 					function _enrichFunction(mtdName, proc, isCtor, isBootstrap){
 						var procStr = proc.toString();
 						// extract proc declaration
-						var declM = procStr.match(/^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/);
+						var declM = procStr.match(funcRx);
 						if(!declM){
 							throw new Error('Internal error: wrong procStr: ' + procStr);
 						}
@@ -813,14 +818,30 @@ if(!(function(){return this;}).call(null).JSB){
 						if(fName.length === 0){
 							fName = mtdName;
 						}
-						var procDecl = 'function ' + fName + '(' + declM[2] + '){ var $this=this; var $current = new $curFunc(this); ';
+						
+						var hasSuper = superRx.test(procStr);
+						var hasBase = baseRx.test(procStr);
+						var hasCurrent = currentRx.test(procStr);
+						var hasThis = thisRx.test(procStr);
+						
+						var procDecl = 'function ' + fName + '(' + declM[2] + '){ ';
+						if(hasThis || (hasBase && isCtor)){
+							procDecl += 'var $this=this; ';
+						}
 						if(parent && !isBootstrap){ 
-							procDecl += 'var $super = new $superFunc(this); ';
-							if(isCtor){
-								procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this.$_superCalled = true; }; ';
-							} else {
-								procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
+							if(hasSuper || (hasBase && !isCtor)){
+								procDecl += 'var $super = new $superFunc(this); ';
 							}
+							if(hasBase){
+								if(isCtor){
+									procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this.$_superCalled = true; }; ';
+								} else {
+									procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
+								}
+							}
+						}
+						if(!isBootstrap && hasCurrent){
+							procDecl += 'var $current = new $curFunc(this); ';
 						}
 /*						if(self.isClient()){
 							procDecl += 'var $server = $serverFunc(this); ';
