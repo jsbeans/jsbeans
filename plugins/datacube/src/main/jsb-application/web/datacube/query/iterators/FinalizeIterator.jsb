@@ -31,6 +31,13 @@
 		    return value;
 		},
 
+		matchDataProvider: function(dataProvider){
+		    if (this.iterator.matchDataProvider(dataProvider)) {
+                return true;
+            }
+		    return false;
+		},
+
 		close: function() {
 		    this.iterator.close();
 		    this.destroy();

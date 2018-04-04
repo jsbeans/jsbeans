@@ -11,6 +11,10 @@
 		    return this;
 		},
 
+		matchDataProvider: function(dataProvider){
+		    return false;
+		},
+
 		next: function(){
 		    throw new Error('Not implemented');
 		},

@@ -24,8 +24,9 @@
             }
 
 		    // include join condition fields to $select
+		    // TODO 1: заменить алгоритм добавления join полей: 1) нужно умнее проверять наличие поля 2) добавлять, не влияя на целостность группировки
 		    var managedFields = this.cube.getManagedFields();
-		    for (var i in this.iterators) {
+		    for (var i = 0; i < this.iterators.length; i++) {
                 var fields = [];
                 for (var field in managedFields) if (managedFields.hasOwnProperty(field)) {
                    var binding = managedFields[field].binding;
@@ -147,8 +148,18 @@
 		    return value;
 		},
 
+		matchDataProvider: function(dataProvider){
+		    for (var i = 0; i < this.iterators.length; i++) {
+		        var iterator = this.iterators[i];
+                if (iterator.matchDataProvider(dataProvider)) {
+                    return true;
+                }
+		    }
+		    return false;
+		},
+
 		close: function() {
-		    for (var i in this.iterators) {
+		    for (var i = 0; i < this.iterators.length; i++) {
 		        var iterator = this.iterators[i];
                 try {
                     iterator.close();

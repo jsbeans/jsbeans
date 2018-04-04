@@ -18,7 +18,7 @@
 
             // restart
 		    this.currentIteratorIdx = 0;
-		    for (var i in this.iterators) {
+		    for (var i = 0; i < this.iterators.length; i++) {
 		        this.iterators[i].iterate(dcQuery, params);
 		    }
 
@@ -38,8 +38,18 @@
 		    return null;
 		},
 
+		matchDataProvider: function(dataProvider){
+		    for (var i = 0; i < this.iterators.length; i++) {
+		        var iterator = this.iterators[i];
+                if (iterator.matchDataProvider(dataProvider)) {
+                    return true;
+                }
+		    }
+		    return false;
+		},
+
 		close: function() {
-		    for (var i in this.iterators) {
+		    for (var i = 0; i < this.iterators.length; i++) {
 		        var iterator = this.iterators[i];
                 try {
                     iterator.close();

@@ -312,7 +312,7 @@
 
         walkCurrentQueryFields: function (query, callback){
             function walkMultiFilter(exps, fieldsCallback){
-                for (var field in exps) if (typeof exps[field] !== 'undefined') {
+                for (var field in exps) if (exps[field] != null) {
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
@@ -533,7 +533,7 @@
                 } else if (JSB.isObject(q) && JSB.isNull(q.$const)) {
 
                     if (!q.$select || !skipSubQuery ) {
-                        for (var f in q) if (typeof q[f] !== 'undefined') {
+                        for (var f in q) if (q[f] != null) {
                             if (!f.startsWith('$')) {
                                 cubeFields[f] = {$field:f};
                             }
@@ -595,7 +595,7 @@
                 }
 
                 var resultExps = {};
-                for (var field in exps) if (typeof exps[field] !== 'undefined') {
+                for (var field in exps) if (exps[field] != null) {
                     if (field.startsWith('$')) {
                         var op = field;
                         switch(op) {
@@ -1004,7 +1004,7 @@
                             && exp.$field == field) {
                         return true;
                     } else {
-                        for(var p in exp) if (typeof exp[p] !== 'undefined') {
+                        for(var p in exp) if (exp[p] != null) {
                             if (isFieldLinkedWith(field, exp[p])) {
                                 return true;
                             }
@@ -1030,7 +1030,7 @@
                 for (var nextField in select) {
                     if (nextField == field) {
                         list = true;
-                    } else if (list && typeof select[nextField] !== 'undefined') {
+                    } else if (list && select[nextField] != null) {
                         if (isFieldLinkedWith(field, select[nextField])) {
                             topFields[field] = Object.keys(topFields).length;
                         }
@@ -1167,7 +1167,7 @@
                     }
                 } else if (JSB.isObject(exp)) {
                     if (!exp.$select || exp == query) {
-                        for (var f in exp) if (typeof exp[f] !== 'undefined') {
+                        for (var f in exp) if (exp[f] != null) {
                             if (f != '$postFilter') {
                                 patchFields(exp[f], query);
                             }
@@ -1261,7 +1261,7 @@
                                 || key == '$gcount' || key == '$gsum' || key == '$gavg') {
                             setFunc(createSubQuery(key, exp[key]));
                         }
-                        for (var f in exp) if(typeof exp[f] !== 'undefined') {
+                        for (var f in exp) if(exp[f] != null) {
                             unwrapExpression(exp[f], function(newExp){
                                exp[f] = newExp;
                            });
@@ -1275,7 +1275,7 @@
                     }
                 }
 
-                for (var alias in query.$select) if(typeof query.$select[alias] !== 'undefined') {
+                for (var alias in query.$select) if(query.$select[alias] !=null) {
                     unwrapExpression(query.$select[alias], function(newExp){
                         query.$select[alias] = newExp;
                     });
@@ -1338,7 +1338,7 @@
         findSubQueries: function(exp) {
             var subQueries = [];
             function walk(e){
-                if (JSB.isNull(e)) {
+                if (e == null) {
                     return;
                 }
                 if (JSB.isObject(e)) {
@@ -1350,7 +1350,7 @@
 //                    }
                 }
                 if (JSB.isObject(e)) {
-                    for(var i in e) if (typeof e[i] !== 'undefined') {
+                    for(var i in e) if (e[i] != null) {
                         walk(e[i]);
                     }
                 } else if (JSB.isArray(e)) {
