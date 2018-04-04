@@ -29,14 +29,15 @@
                 cssClass: "btnOk",
                 caption: "Сохранить",
                 onClick: function(){
-                    $this.savedMessage.fadeIn(1600, "linear", function(){
-                        $this.savedMessage.fadeOut(1600, "linear");
-                    });
-                    $this.slice.cube.server().updateSliceSettings($this.slice.getId(), {
-                        name: $this.titleEditor.getData().getValue(),
-                        query: $this.query,
-                        queryParams: {}
-                    });
+                	$this.getElement().loader({message:'Сохранение...', onShow: function(){
+                        $this.slice.cube.server().updateSliceSettings($this.slice.getId(), {
+                            name: $this.titleEditor.getData().getValue(),
+                            query: $this.query,
+                            queryParams: {}
+                        }, function(){
+                        	$this.getElement().loader('hide');
+                        });
+                	}});
                 }
             });
             this.titleBlock.append(this.saveBtn.getElement());
@@ -136,12 +137,6 @@
 			// add grid view
 			this.gridView = new GridView();
 			hSplitBox.addToPane(1, this.gridView);
-
-            this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
-            this.savedMessage.click(function(){
-                $this.savedMessage.css('display', 'none');
-            });
-            this.append(this.savedMessage);
 		},
 		
 		refresh: function(){

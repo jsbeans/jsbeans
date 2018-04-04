@@ -159,9 +159,11 @@
 		
 		clearCache: function(){
 			var entry = $this.node.getEntry();
-			entry.server().clearCache(function(){
-				
-			});
+			$this.getElement().loader({message:'Очистка кэша...', onShow: function(){
+				entry.server().clearCache(function(){
+					$this.getElement().loader('hide');
+				});
+			}});
 		},
 		
 		updateSchemeStatus: function(status){

@@ -4,6 +4,10 @@
 @import "/fonts/roboto/roboto.css";
 @import "Buttons.css";
 
+div.ajaxloader > div.ajaxloaderInfo > .icon {
+	background-image: url(/datacube/images/datacube-loader.gif) !important;
+}
+
 .datacubeToolWrapper {
 	border-radius: 3px !important;
     background: #fcfbf6 !important;

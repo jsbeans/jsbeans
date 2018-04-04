@@ -432,7 +432,7 @@
 			function _updateFiltered(filter){
 				$this.lastFilter = filter;
 				if(filter && filter.length >= 3 ){
-					$this.tree.getElement().loader();
+					$this.tree.getElement().loader({message:'Обновление...'});
 					$this.server().loadFilteredNodes(filter, function(sTree){
 						
 						if($this.lastFilter != filter){
@@ -880,7 +880,7 @@
 
 		refresh: function(){
 		    this._isReady = false;
-			this.tree.getElement().loader();
+			this.tree.getElement().loader({message:'Загрузка...'});
 			this.server().loadNodes(function(nTree){
 				$this.tree.getElement().loader('hide');
 				$this.wTree = nTree;

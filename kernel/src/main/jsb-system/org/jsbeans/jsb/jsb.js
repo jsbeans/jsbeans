@@ -752,6 +752,20 @@ if(!(function(){return this;}).call(null).JSB){
 							})(mtdName);
 						}
 					}
+					
+					// propagate $current
+					$curFunc = function(inst){this.__instance = inst;};
+					var curScope = self.getClass().prototype;
+					for(var mtdName in curScope){
+						if(!self.isFunction(curScope[mtdName]) || self.isJavaObject(curScope[mtdName])){
+							continue;
+						}
+						(function(mtdName){
+							$curFunc.prototype[mtdName] = function(){
+								return curScope[mtdName].apply(this.__instance, arguments);
+							}
+						})(mtdName);
+					}
 /*					
 					// propagate $server and $client
 					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_serverProcs; return new f();}
@@ -762,7 +776,8 @@ if(!(function(){return this;}).call(null).JSB){
 						'$jsb': $jsb,
 						'$class': self._cls,
 						'$parent': $parent,
-						'$superFunc': $superFunc
+						'$superFunc': $superFunc,
+						'$curFunc': $curFunc
 					}, requireVals);
 					
 /*					
@@ -799,7 +814,7 @@ if(!(function(){return this;}).call(null).JSB){
 						if(fName.length === 0){
 							fName = mtdName;
 						}
-						var procDecl = 'function ' + fName + '(' + declM[2] + '){ var $this=this; ';
+						var procDecl = 'function ' + fName + '(' + declM[2] + '){ var $this=this; var $current = new $curFunc(this); ';
 						if(parent && !isBootstrap){ 
 							procDecl += 'var $super = new $superFunc(this); ';
 							if(isCtor){
