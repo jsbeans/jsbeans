@@ -30,6 +30,14 @@
 				$this.init();
 			});
 		},
+		
+		setWidgetInitialized: function(){
+		    this.setTrigger('_widgetInitialized');
+		},
+		
+		ensureWidgetInitialized: function(callback){
+		    this.ensureTrigger('_widgetInitialized', callback);
+		},
 
 		addDrilldownElement: function(opts){
 		    if(!this._drilldownPanel){
@@ -112,6 +120,7 @@
 				});
 				$this.append($this.mainWidget);
 				$this.mainWidget.ensureInitialized(function(){
+					$this.setWidgetInitialized();
 					$this.subscribe('DataCube.filterChanged', function(sender, msg, params){
 						if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){
 							return;

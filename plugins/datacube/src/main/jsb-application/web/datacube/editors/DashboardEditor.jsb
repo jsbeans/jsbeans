@@ -131,10 +131,12 @@
 				$this.ignoreHandlers = true;
 				$this.dashboard.setLayout(desc);
 				$this.ignoreHandlers = false;
-				JSB.defer(function(){
-					$this.removeClass('loading');
-				}, 300);
 				
+				JSB.chain(Object.keys($this.wrappers), function(wId, callback){
+					$this.wrappers[wId].ensureWidgetInitialized(callback);
+				}, function(){
+					$this.removeClass('loading');
+				});
 			});
 		},
 		
