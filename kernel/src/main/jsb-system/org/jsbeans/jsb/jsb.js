@@ -755,14 +755,13 @@ if(!(function(){return this;}).call(null).JSB){
 					
 					// propagate $current
 					$curFunc = function(inst){this.__instance = inst;};
-					var curScope = self.getClass().prototype;
-					for(var mtdName in curScope){
-						if(!self.isFunction(curScope[mtdName]) || self.isJavaObject(curScope[mtdName])){
+					for(var mtdName in body){
+						if(!self.isFunction(body[mtdName]) || self.isJavaObject(body[mtdName])){
 							continue;
 						}
 						(function(mtdName){
 							$curFunc.prototype[mtdName] = function(){
-								return curScope[mtdName].apply(this.__instance, arguments);
+								return self.getClass().prototype[mtdName].apply(this.__instance, arguments);
 							}
 						})(mtdName);
 					}
