@@ -261,7 +261,7 @@
 
 				// mark default fields
 				$this.cubeNode.markDefaultFields(desc.defaultFields);
-
+/*
 				// draw slices
 				for(var i = 0; i < desc.slices.length; i++){
 					var sDesc = desc.slices[i];
@@ -270,7 +270,7 @@
 						sNode.setPosition(sDesc.position.x, sDesc.position.y);
 					}
 				}
-				
+*/				
 				$this.ignoreHandlers = false;
 			});
 		},
@@ -300,6 +300,8 @@
 		
 		addSlice: function(checkedFieldList){
 			this.cubeEntry.server().addSlice(checkedFieldList, false, function(slice){
+				$this.publish('JSB.Workspace.Entry.open', slice);
+/*				
 				var sNode = $this.diagram.createNode('sliceDiagramNode', {slice: slice, editor: $this});
 				var cubeRect = $this.cubeNode.getRect();
 				sNode.setPosition(cubeRect.x + cubeRect.w + 100, cubeRect.y);
@@ -307,6 +309,7 @@
 				$this.diagram.select($this.diagram.getNodes(), false);
 				$this.diagram.select($this.diagram.getLinks(), false);
 				sNode.select(true);
+*/				
 			});
 		},
 		

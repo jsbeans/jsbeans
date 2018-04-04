@@ -30,7 +30,7 @@
 				nodeType:'DataCube.SliceNode',
 				create: false,
 				move: false,
-				remove: false
+				remove: true
 			});
 		},
 		

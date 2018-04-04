@@ -296,6 +296,28 @@
 			return true;
 		},
 		
+		hasChildEntry: function(entry){
+			if(JSB.isString(entry)){
+				entry = this.getWorkspace().entry(entry);
+			}
+			
+			if(!entry){
+				throw new Error('No child entry specified');
+			}
+			if(entry == this){
+				if(this.getWorkspace() == this){
+					return;
+				}
+				throw new Error('Failed to remove child entry from itself');
+			}
+			
+			if(this._children[entry.getId()]){
+				return true;
+			}
+			
+			return false;
+		},
+		
 		removeChildEntry: function(entry){
 			if(JSB.isString(entry)){
 				entry = this.getWorkspace().entry(entry);

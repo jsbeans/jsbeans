@@ -1073,6 +1073,20 @@
 			return slice;
 		},
 		
+		removeChildEntry: function(e){
+			if(!this.hasChildEntry(e)){
+				return;
+			}
+			$base(e);
+
+			if(JSB.isString(e)){
+				e = this.getWorkspace().entry(e);
+			}
+			if(JSB.isInstanceOf(e, 'DataCube.Model.Slice')){
+				this.removeSlice(e.getId());
+			}
+		},
+		
 		removeSlice: function(sId){
 			this.load();
 			var slice = this.slices[sId];
@@ -1084,7 +1098,6 @@
 			slice.remove();
 			this.sliceCount = Object.keys(this.slices).length;
 			this.store();
-			this.doSync();
 		},
 		
 		getSliceById: function(sId){
