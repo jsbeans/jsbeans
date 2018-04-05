@@ -432,7 +432,7 @@
 			function _updateFiltered(filter){
 				$this.lastFilter = filter;
 				if(filter && filter.length >= 3 ){
-					$this.tree.getElement().loader({message:'Обновление...'});
+					$this.tree.getElement().loader({message:'Поиск...'});
 					$this.server().loadFilteredNodes(filter, function(sTree){
 						
 						if($this.lastFilter != filter){

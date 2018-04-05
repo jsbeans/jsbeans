@@ -149,7 +149,7 @@
 		combineDataScheme: function(source){
 			var iterator = null;
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-				iterator = source.executeQuery();
+				iterator = source.executeQuery({useCache: true});
 			} else {
 				// TODO
 				var dpInfo = DataProviderRepository.queryDataProviderInfo(source);
@@ -221,7 +221,7 @@
 				}
 			}
 			var recordTypes = {};
-			for(var j = 0; j < 100; j++){
+			for(var j = 0; j < 50; j++){
 				var el = iterator.next();
 				if(!el){
 					break;

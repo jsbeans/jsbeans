@@ -828,20 +828,22 @@ if(!(function(){return this;}).call(null).JSB){
 						if(hasThis || (hasBase && isCtor)){
 							procDecl += 'var $this=this; ';
 						}
-						if(parent && !isBootstrap){ 
-							if(hasSuper || (hasBase && !isCtor)){
-								procDecl += 'var $super = new $superFunc(this); ';
-							}
-							if(hasBase){
-								if(isCtor){
-									procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this.$_superCalled = true; }; ';
-								} else {
-									procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
+						if(!isBootstrap){
+							if(parent){ 
+								if(hasSuper || (hasBase && !isCtor)){
+									procDecl += 'var $super = new $superFunc(this); ';
+								}
+								if(hasBase){
+									if(isCtor){
+										procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this.$_superCalled = true; }; ';
+									} else {
+										procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
+									}
 								}
 							}
-						}
-						if(!isBootstrap && hasCurrent){
-							procDecl += 'var $current = new $curFunc(this); ';
+							if(hasCurrent){
+								procDecl += 'var $current = new $curFunc(this); ';
+							}
 						}
 /*						if(self.isClient()){
 							procDecl += 'var $server = $serverFunc(this); ';

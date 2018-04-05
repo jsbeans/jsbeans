@@ -164,6 +164,7 @@
 			    this._updateData({
 			    	cube: source.getCube(),
 			    	query: query || source.getQuery(),
+			    	slice: source,
 			    	type: 'slice'
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
@@ -195,8 +196,20 @@
             var preparedQuery = source.query;
             this.curLoadId = JSB().generateUid();
             var storedLoadId = this.curLoadId;
+            
+            var qObj = { 
+            	cube: source.cube, 
+            	query: preparedQuery, 
+            	queryParams: source.queryParams, 
+            	provider: source.provider, 
+            	type: source.type 
+            };
+            
+            if(source.type == 'slice'){
+            	qObj.slice = source.slice;
+            }
 
-            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, type: source.type }, function(res){
+            $this.server().loadData( qObj, function(res){
                 if(storedLoadId !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
@@ -260,6 +273,7 @@
                                 $select: q
                             });
                         }
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
                         break;
                     case 'dataProvider':
                         var fields = obj.provider.extractFields();
@@ -270,14 +284,20 @@
                         obj.query = JSB.merge(obj.query, {
                             $select: q
                         });
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
                         break;
                     case 'slice':
+                    	if(JSB.isEqual(obj.query, obj.slice.getQuery())){
+                    		this.it = obj.slice.executeQuery({useCache: true});
+                    	} else {
+                    		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                    	}
                         break;
+                    default:
+                    	throw new Error('DataCube.GridView.loadData error: unknown type "' + obj.type + '"');
                 }
 
                 this.exportObj = obj;
-
-                this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
 
                 this.counter = 0;
 
