@@ -19,19 +19,22 @@
     },
 
     createDefaultValues: function(scheme){
+        var values = {},
+            linkedFields = {};
+
         for(var i in scheme){
             if(scheme[i].render){
-                if(!this._values[i]){
-                    this._values[i] = {}
+                if(!values[i]){
+                    values[i] = {}
                 }
 
-                this.getRenderByName(scheme[i].render).createDefaultValues(i, scheme[i], this._values[i]);
+                this.getRenderByName(scheme[i].render).createDefaultValues(i, scheme[i], values[i], {linkedFields: linkedFields});
             }
         }
 
         return {
-            values: this._values,
-            linkedFields: this._linkedFields
+            values: values,
+            linkedFields: linkedFields
         };
     },
 
@@ -167,13 +170,14 @@
         }
     },
 
-    updateValues: function(scheme, values){
+    updateValues: function(scheme, fullValues){
         var removedValues = {},
-            wasUpdated = false;
+            wasUpdated = false,
+            values = fullValues.values,
+            linkedFields = fullValues.linkedFields;
 
-        // remove keys
         for(var i in values){
-            if(!scheme[i]){
+            if(!scheme[i]){ // remove keys
                 if(!removedValues[i]){
                     removedValues[i] = [];
                 }
@@ -181,29 +185,24 @@
                 delete values[i];
 
                 wasUpdated = true;
-            } else {
-                var render = this.getRenderByName(scheme[i].render);
-
-                if(render.updateValues){
-                    wasUpdated = render.updateValues(scheme[i], values[i], removedValues) || wasUpdated;
+            } else {    // update old keys
+                if(!scheme[i].render){  // empty values was added in old scheme versions or scheme parts was disabled
+                    delete values[i];
+                    continue;
                 }
+
+                wasUpdated = this.getRenderByName(scheme[i].render).updateValues(i, scheme[i], values[i], {linkedFields: linkedFields, removedValues: removedValues}) || wasUpdated;
             }
         }
 
-        // add keys
         for(var i in scheme){
-            if(!values[i]){
-                if(removedValues[i]){
+            if(!values[i] && scheme[i].render){
+                if(removedValues[i]){   // move keys
                     values[i] = removedValues[i].shift();
-                } else {
+                } else {    // add keys
                     values[i] = {};
 
-                    this.getRenderByName().createDefaultValues(i, scheme[i], values[i]);
-
-                    var render = this.getRenderByName(scheme[i].render);
-                    if(render.updateValues){
-                        render.updateValues(scheme[i], values[i], removedValues);
-                    }
+                    this.getRenderByName(scheme[i].render).updateValues(i, scheme[i], values[i], {linkedFields: linkedFields, removedValues: removedValues});
                 }
 
                 wasUpdated = true;

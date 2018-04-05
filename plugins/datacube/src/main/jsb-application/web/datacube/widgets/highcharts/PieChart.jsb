@@ -40,7 +40,7 @@
                             render: 'item',
                             name: 'Внутренний диаметр',
                             valueType: 'string',
-                            defaultValue: '0'
+                            //defaultValue: '0'
                         },
                         dataLabels: {
                             render: 'group',
@@ -56,7 +56,7 @@
                                     render: 'item',
                                     name: 'Расстояние от центра',
                                     valueType: 'number',
-                                    defaultValue: 30
+                                    //defaultValue: 30
                                 }
                             }
                         }
@@ -79,7 +79,61 @@
             }
         },
         plotOptions: {
-	        render: null
+	        items: {
+	            series: {
+	                items: {
+	                    stacking: {
+	                        render: null
+	                    },
+	                    dataLabels: {
+	                        items: {
+	                            align: {
+	                                render: null
+	                            }
+	                        }
+	                    }
+	                }
+	            },
+	            pie: {
+                    render: 'group',
+                    name: 'Тип "Круговая диаграмма"',
+                    collapsable: true,
+                    collapsed: true,
+	                items: {
+	                    dataLabels: {
+                            render: 'group',
+                            name: 'Подписи',
+                            collapsable: true,
+	                        items: {
+	                            connectorColor: {
+                                    render: 'item',
+                                    name: 'Цвет коннектора',
+                                    editor: 'JSB.Widgets.ColorEditor',
+                                    defaultValue: '{point.color}'
+	                            },
+	                            connectorPadding: {
+                                    render: 'item',
+                                    name: 'Внутренний отступ коннектора',
+                                    valueType: 'number',
+                                    defaultValue: 5
+	                            },
+	                            connectorWidth: {
+                                    render: 'item',
+                                    name: 'Толщина коннектора',
+                                    valueType: 'number',
+                                    defaultValue: 1
+	                            },
+                                distance: {
+                                    render: 'item',
+                                    name: 'Расстояние от центра',
+                                    valueType: 'number',
+                                    defaultValue: 30
+                                }
+	                        }
+	                    }
+	                }
+	            }
+	        }
         }
     },
     $client: {
@@ -216,7 +270,9 @@
                     baseChartOpts = includeData(this._styles, data);
                 } else {
                     baseChartOpts = $base();
-                    var plotOptionsContext = this.getContext().find('plotOptions pie');
+
+                    var plotOptionsContext = this.getContext().find('plotOptions pie'),
+                        plotOptionsDataLabels = plotOptionsContext.find('dataLabels');
 
                     var chartOpts = {
                         chart: {
@@ -225,6 +281,12 @@
 
                         plotOptions: {
                             pie: {
+                                dataLabels: {
+                                    connectorColor: plotOptionsDataLabels.find('connectorColor').value(),
+                                    connectorPadding: plotOptionsDataLabels.find('connectorPadding').value(),
+                                    connectorWidth: plotOptionsDataLabels.find('connectorWidth').value(),
+                                    distance: plotOptionsDataLabels.find('distance').value()
+                                },
                                 showInLegend: this.getContext().find('legend enabled').checked()
                             }
                         }

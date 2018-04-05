@@ -132,6 +132,10 @@
                 `);
 
                 for(var i in this._scheme.items){
+                    if(!this._scheme.items[i].render){
+                        continue;
+                    }
+
                     if(!values[i]){
                         values[i] = {};
                     }
@@ -156,6 +160,10 @@
                 this.multipleBtn.before(item);
 	        } else {
                 for(var i in this._scheme.items){
+                    if(!this._scheme.items[i].render){
+                        continue;
+                    }
+
                     if(!values[i]){
                         values[i] = {};
                     }

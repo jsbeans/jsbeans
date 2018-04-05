@@ -47,12 +47,12 @@
 	                if(fail){ return; }
 
 	                $this._data = result;
-	                $this._clientDataVersion = this.dataVersion;
+	                $this._clientDataVersion = $this.dataVersion;
 
 	                callback(result);
 	            });
 	        } else {
-	            callback(this._styles);
+	            callback(this._data);
 	        }
         }
     },
@@ -129,11 +129,13 @@
 					bNeedSave = true;
 				}
 
-				var wasUpdated = valueSelector.updateValues(this.extractWidgetScheme(), this.values.values);
+				var wasUpdated = valueSelector.updateValues(this.extractWidgetScheme(), this.values);
 				if(wasUpdated){
 				    this.property('values', this.values);
 
 				    bNeedSave = wasUpdated || bNeedSave;
+
+				    JSB.getLogger().debug('Values updated');
 				}
 
 				if(bNeedSave){

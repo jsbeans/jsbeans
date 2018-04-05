@@ -2,8 +2,8 @@
     $name: 'Unimap.ValueSelectors.Group',
     $parent: 'Unimap.ValueSelectors.Basic',
 
-    createDefaultValues: function(key, scheme, values){
-        $base(key, scheme, values);
+    createDefaultValues: function(key, scheme, values, opts){
+        $base(key, scheme, values, opts);
 
         if(scheme.multiple){
             return;
@@ -15,7 +15,7 @@
         for(var i in scheme.items){
             val[i] = {};
 
-            this.getMainSelector().getRenderByName(scheme.items[i].render).createDefaultValues(i, scheme.items[i], val[i]);
+            this.getMainSelector().getRenderByName(scheme.items[i].render).createDefaultValues(i, scheme.items[i], val[i], opts);
         }
     },
 
@@ -100,27 +100,29 @@
         return itemsArr;
     },
 
-    updateValues: function(scheme, values, removedValues){
-        var wasUpdated = false;
+    updateValues: function(key, scheme, values, opts){
+        var wasUpdated = $base(key, scheme, values, opts);
 
         // remove keys
         for(var i = 0; i < values.values.length; i++){
             for(var j in values.values[i]){
-                if(!scheme.items[j]){
-                    if(!removedValues[j]){
-                        removedValues[j] = [];
+                if(!scheme.items[j]){   // remove keys
+                    if(!opts.removedValues[j]){
+                        opts.removedValues[j] = [];
                     }
 
-                    removedValues[j].push(values.values[i][j]);
+                    opts.removedValues[j].push(values.values[i][j]);
                     delete values.values[i][j];
 
                     wasUpdated = true;
-                } else {
-                    var render = this.getRenderByName(scheme.items[j]);
-
-                    if(render.updateValues){
-                        wasUpdated = render.updateValues(scheme.items[j], values[i][j], removedValues) || wasUpdated;
+                } else {    // update old keys
+                    if(!scheme.items[j].render){    // empty values was added in old scheme versions or scheme parts was disabled
+                        delete values.values[i][j];
+                        wasUpdated = true;
+                        continue;
                     }
+
+                    wasUpdated = this.getRenderByName(scheme.items[j].render).updateValues(j, scheme.items[j], values.values[i][j], opts) || wasUpdated;
                 }
             }
         }
@@ -133,30 +135,25 @@
             }
         }
 
-        // add keys
         for(var i in scheme.items){
-            if(!values.values[0][i]){
-                if(removedValues[i]){
+            if(!values.values[0][i] && scheme.items[i].render){
+                if(opts.removedValues[i]){   // move keys
                     if(scheme.multiple){
-                        for(var j = 0; j < removedValues[i].length; j++){
+                        for(var j = 0; j < opts.removedValues[i].length; j++){
                             if(!values.values[j]){
                                 values.values[j] = {};
                             }
 
-                            values.values[j][i] = removedValues[i][j];
+                            values.values[j][i] = opts.removedValues[i][j];
                         }
-                        delete removedValues[i];
+                        delete opts.removedValues[i];
                     } else {
-                        values.values[0][i] = removedValues[i].shift();
+                        values.values[0][i] = opts.removedValues[i].shift();
                     }
-                } else {
+                } else {    // add keys
                     values.values[0][i] = {};
-                    this.getRenderByName().createDefaultValues(i, scheme.items[i], values.values[0][i]);
 
-                    var render = this.getRenderByName(scheme.items[i].render);
-                    if(render.updateValues){
-                        render.updateValues(scheme.items[i], values.values[0][i], removedValues);
-                    }
+                    this.getRenderByName(scheme.items[i].render).updateValues(i, scheme.items[i], values.values[0][i], opts);
                 }
 
                 wasUpdated = true;

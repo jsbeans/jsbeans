@@ -31,7 +31,7 @@
 	                if(fail){ return; }
 
 	                $this._styles = result;
-	                $this._clientStylesVersion = this.stylesVersion;
+	                $this._clientStylesVersion = $this.stylesVersion;
 
 	                callback(result);
 	            });

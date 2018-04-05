@@ -169,6 +169,10 @@
             }
 
 	        for(var i in scheme[value].items){
+	            if(!scheme[value].items[i].render){
+	                continue;
+	            }
+
 	            if(!this._values.values[itemIndex].items[i]){
 	                this._values.values[itemIndex].items[i] = {};
 	            }

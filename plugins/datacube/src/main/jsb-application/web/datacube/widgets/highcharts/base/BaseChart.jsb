@@ -23,7 +23,7 @@
                         data: {},
                         tooltip: {
                             render: 'group',
-                            name: 'Подпись',
+                            name: 'Всплывающая подсказка',
                             collapsable: true,
                             items: {
                                 valueDecimals: {
@@ -499,7 +499,7 @@
                             items: {
                                 enabled: {
                                     render: 'item',
-                                    name: 'Активна',
+                                    name: 'Активны',
                                     optional: true,
                                     editor: 'none'
                                 },
@@ -561,6 +561,12 @@
                                     valueType: 'string',
                                     defaultValue: '{y}'
                                 },
+                                useHTML: {
+                                    render: 'item',
+                                    name: 'Использовать HTML',
+                                    optional: true,
+                                    editor: 'none'
+                                },
                                 style: {
                                     render: 'group',
                                     name: 'Стиль подписей',
@@ -586,6 +592,36 @@
                                         }
                                     }
                                 },
+                                padding: {
+                                    render: 'item',
+                                    name: 'Внутренний отступ',
+                                    valueType: 'number',
+                                    defaultValue: 5
+                                },
+                                rotation: {
+                                    render: 'item',
+                                    name: 'Поворот',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                shadow: {
+                                    render: 'item',
+                                    name: 'Тень',
+                                    optional: true,
+                                    editor: 'none'
+                                },
+                                x: {
+                                    render: 'item',
+                                    name: 'Расположение по оси Х',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                y: {
+                                    render: 'item',
+                                    name: 'Расположение по оси Y',
+                                    valueType: 'number',
+                                    defaultValue: -6
+                                }
                             }
                         }
                     }
@@ -796,7 +832,7 @@
                     tooltipContext = this.getContext().find('mainTooltip'),
 
                     legendItemStyle = legendContext.find('itemStyle'),
-                    plotOptionsDataLabels = plotOptionsContext.find && plotOptionsContext.find('dataLabels'),
+                    plotOptionsDataLabels = plotOptionsContext.find('dataLabels'),
 
                     series = [];
 
@@ -833,6 +869,11 @@
                 }
 
                 chartOpts = {
+                    chart: {
+                        animation: chartContext.find('animation').checked(),
+                        inverted: chartContext.find('inverted').checked()
+                    },
+
                     credits: {
                         enabled: creditsContext.find('enabled').checked(),
                         text: creditsContext.find('text').value(),
@@ -878,12 +919,33 @@
 
                     plotOptions: {
                         series: {
-                            stacking: this.isNone(plotOptionsContext.find && plotOptionsContext.find('stacking').value()),
+                            dataLabels: {
+                                enabled: plotOptionsDataLabels.find('enabled').checked(),
+                                align: plotOptionsDataLabels.find('align').value(),
+                                verticalAlign: plotOptionsDataLabels.find('verticalAlign').value(),
+                                backgroundColor: plotOptionsDataLabels.find('backgroundColor').value(),
+                                borderColor: plotOptionsDataLabels.find('borderColor').value(),
+                                borderRadius: plotOptionsDataLabels.find('borderRadius').value(),
+                                borderWidth: plotOptionsDataLabels.find('borderWidth').value(),
+                                format: plotOptionsDataLabels.find('format').value(),
+                                useHTML: plotOptionsDataLabels.find('useHTML').checked(),
+                                style: {
+                                    color: plotOptionsDataLabels.find('style color').value(),
+                                    fontSize: plotOptionsDataLabels.find('style fontSize').value(),
+                                    fontWeight: plotOptionsDataLabels.find('style fontWeight').value()
+                                },
+                                padding: plotOptionsDataLabels.find('padding').value(),
+                                rotation: plotOptionsDataLabels.find('rotation').value(),
+                                shadow: plotOptionsDataLabels.find('shadow').checked(),
+                                x: plotOptionsDataLabels.find('x').value(),
+                                y: plotOptionsDataLabels.find('y').value()
+                            },
+                            stacking: this.isNone(plotOptionsContext.find('stacking').value()),
                             point: {
                                 events: {
                                     click: function(evt) {
                                         evt.preventDefault();
-
+debugger;
                                         if(evt.point.series.options.datacube.filtration){
                                             if(evt.point.selected){
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
@@ -969,32 +1031,6 @@
                         valueDecimals: tooltipContext.find('valueDecimals').value(),
                         valuePrefix: tooltipContext.find('valuePrefix').value(),
                         valueSuffix: tooltipContext.find('valueSuffix').value()
-                    }
-                }
-
-                // props added after release
-                if(chartContext.find){
-                    chartOpts.chart = {
-                        animation: chartContext.find('animation').checked(),
-                        inverted: chartContext.find('inverted').checked()
-                    }
-                }
-
-                if(plotOptionsDataLabels && plotOptionsDataLabels.find){
-                    chartOpts.plotOptions.series.dataLabels = {
-                        enabled: plotOptionsDataLabels.find('enabled').checked(),
-                        align: plotOptionsDataLabels.find('align').value(),
-                        verticalAlign: plotOptionsDataLabels.find('verticalAlign').value(),
-                        backgroundColor: plotOptionsDataLabels.find('backgroundColor').value(),
-                        borderColor: plotOptionsDataLabels.find('borderColor').value(),
-                        borderRadius: plotOptionsDataLabels.find('borderRadius').value(),
-                        borderWidth: plotOptionsDataLabels.find('borderWidth').value(),
-                        format: plotOptionsDataLabels.find('format').value(),
-                        style: {
-                            color: plotOptionsDataLabels.find('style color').value(),
-                            fontSize: plotOptionsDataLabels.find('style fontSize').value(),
-                            fontWeight: plotOptionsDataLabels.find('style fontWeight').value()
-                        }
                     }
                 }
             } catch(e){

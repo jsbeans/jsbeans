@@ -36,6 +36,10 @@
 
 	    construct: function(){
 	        for(var i in this._scheme){
+	            if(!this._scheme[i].render){
+	                continue;
+	            }
+
 	            if(!this._values[i]){
 	                this._values[i] = {}
 	            }
@@ -66,10 +70,6 @@
 	    },
 
         createRender: function(parent, key, scheme, values, opts){
-            if(!scheme.render){
-                return;
-            }
-
             var constructor = this.getRenderByName(scheme.render);
             var render = new constructor({
                 key: key,
