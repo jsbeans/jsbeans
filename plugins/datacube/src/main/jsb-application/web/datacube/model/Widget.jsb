@@ -134,8 +134,6 @@
 				    this.property('values', this.values);
 
 				    bNeedSave = wasUpdated || bNeedSave;
-
-				    JSB.getLogger().debug('Values updated');
 				}
 
 				if(bNeedSave){

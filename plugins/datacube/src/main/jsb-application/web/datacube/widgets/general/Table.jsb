@@ -1006,7 +1006,12 @@
 			}
 			var rows = [];
 			var cols = [];
-			var rowsContext = this.getContext().find('rows');
+
+			if(!this._rowContext){
+			    this._rowContext = this.getContext().find('rows');
+			}
+
+			var rowsContext = this._rowContext;  //this.getContext().find('rows');
 			var rowKeySelector = this.getContext().find('rowKey');
 			var rowFilterSelector = this.getContext().find('rowFilter');
 			var rowFilterBinding = rowFilterSelector.bindings();

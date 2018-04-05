@@ -125,6 +125,10 @@
             return [];
         }
 
+        if(!JSB.isArray(res)){
+            res = [res];
+        }
+
         return res;
     },
 
