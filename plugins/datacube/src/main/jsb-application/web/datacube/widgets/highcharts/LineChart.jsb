@@ -204,7 +204,8 @@
 
                             seriesData[i].data[name.value()].push({
                                 datacube: {
-                                    binding: $this._schemeOpts.xAxisCategories.binding()
+                                    binding: $this._schemeOpts.xAxisCategories.binding(),
+                                    filterData: $this._addFilterData()
                                 },
                                 color: color,
                                 x: x ? x : undefined,

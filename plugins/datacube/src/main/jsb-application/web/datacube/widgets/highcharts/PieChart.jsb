@@ -186,7 +186,8 @@
 
                             data[i].push({
                                 datacube: {
-                                    binding: $this._schemeOpts.series[i].nameSelector.binding() || $this._schemeOpts.series[i].dataSelector.binding()
+                                    binding: $this._schemeOpts.series[i].nameSelector.binding() || $this._schemeOpts.series[i].dataSelector.binding(),
+                                    filterData: $this._addFilterData()
                                 },
                                 name: $this._schemeOpts.series[i].nameSelector.value(),
                                 y: $this._schemeOpts.series[i].dataSelector.value()

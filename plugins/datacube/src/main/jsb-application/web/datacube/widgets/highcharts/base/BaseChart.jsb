@@ -7,6 +7,13 @@
 	        name: 'Источник'
 	    },
 
+	    filterFields: {
+            render: 'dataBinding',
+            name: 'Фильтрующие поля',
+            linkTo: 'source',
+            multiple: true
+	    },
+
 	    series: {
 	        render: 'group',
 	        name: 'Серии',
@@ -747,7 +754,7 @@
 
         refresh: function(opts){
             // if filter source is current widget
-            if(opts && this == opts.initiator){
+            if(opts && this == opts.initiator && !opts.filterData){
                 return false;
             }
 
@@ -764,6 +771,7 @@
                 this._styles = null;
                 this._dataSource = null;
                 this._schemeOpts = null;
+                this._filterFields = null;
             }
 
             if(!this._dataSource){
@@ -774,6 +782,10 @@
                 }
 
                 this._dataSource = dataSource;
+            }
+
+            if(!this._filterFields){
+                this._filterFields = this.getContext().find('filterFields');
             }
 
             $base();
@@ -796,9 +808,7 @@
                 $this._resolvePointContextFilters();
             }
 
-            if(styleSelector.getKey() !== 'colorScheme'){
-                buildWidget(chartOpts);
-            } else {
+            if(styleSelector){
                 styleSelector.value(function(widgetStyleSelector){
                     if(widgetStyleSelector){
                         chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
@@ -806,6 +816,8 @@
 
                     buildWidget(chartOpts);
                 });
+            } else {
+                buildWidget(chartOpts);
             }
         },
 
@@ -945,7 +957,7 @@
                                 events: {
                                     click: function(evt) {
                                         evt.preventDefault();
-debugger;
+
                                         if(evt.point.series.options.datacube.filtration){
                                             if(evt.point.selected){
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
@@ -1119,19 +1131,24 @@ debugger;
             return true;
         },
 
-        _addPointFilter: function(point, accumulate){
-            var context = this.getContext().find('source').binding();
-            if(!context.source) {
+        _addFilterData: function(){
+            if(!this._filterFields || this._filterFields.values().length === 0){
                 return;
             }
 
-            var fDesc = {
-            	sourceId: context.source,
-            	type: '$or',
-            	op: '$eq',
-            	field: point.datacube.binding,
-            	value: point[this._filterPropName]
+            return {
+                bindings: this._filterFields.bindings(),
+                values: this._filterFields.values()
             };
+        },
+
+        _addPointFilter: function(point, accumulate){
+            var context = this.getContext().find('source').binding(),
+                refreshOpts = {};
+
+            if(!context.source) {
+                return;
+            }
 
             if(!accumulate && Object.keys(this._curFilters).length > 0){
                 this._select(this._curFilters, false, true);
@@ -1143,9 +1160,37 @@ debugger;
                 this._curFilters = {};
             }
 
-            this._curFilters[this.addFilter(fDesc)] = fDesc;
+            if(point.datacube.filterData){  // not widget filters
+                for(var i = 0; i < point.datacube.filterData.bindings.length; i++){
+                    var fDesc = {
+                        sourceId: context.source,
+                        type: '$and',
+                        op: '$eq',
+                        field: point.datacube.filterData.bindings[i],
+                        value: point.datacube.filterData.values[i]
+                    };
+
+                    if(point.datacube.filterData.bindings[i] === point.datacube.binding){
+                        this._curFilters[this.addFilter(fDesc)] = fDesc;
+                    } else {
+                        this.addFilter(fDesc);
+                        refreshOpts.filterData = true;
+                    }
+                }
+            } else {    // widget filters
+                var fDesc = {
+                    sourceId: context.source,
+                    type: '$or',
+                    op: '$eq',
+                    field: point.datacube.binding,
+                    value: point[this._filterPropName]
+                };
+
+                this._curFilters[this.addFilter(fDesc)] = fDesc;
+            }
+
             this._select(this._curFilters, true, true);
-            this.refreshAll();
+            this.refreshAll(refreshOpts);
         },
 
         _removePointFilter: function(point, accumulate){
@@ -1209,7 +1254,8 @@ debugger;
         _select: function(filters, b1, b2){
             for(var i in filters){
                 for(var j = 0; j < this.chart.series.length; j++){
-                    if(this.chart.series[j].options.datacube.binding === filters[i].field || this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
+                    if(this.chart.series[j].options.datacube.binding === filters[i].field ||
+                       this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
                             if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
                                 this.chart.series[j].points[k].select(b1, b2);
