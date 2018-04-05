@@ -246,7 +246,7 @@
             wasUpdated = true;
         }
 
-        if(!JSB.isDefined(values.name)){
+        if(!JSB.isDefined(values.name) && scheme.editableName){
             values.name =  scheme.name;
             wasUpdated = true;
         }

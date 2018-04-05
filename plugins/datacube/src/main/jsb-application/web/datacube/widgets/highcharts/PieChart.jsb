@@ -54,7 +54,7 @@
                                 },
                                 distance: {
                                     render: 'item',
-                                    name: 'Расстояние от центра',
+                                    name: 'Расстояние от внешнего радиуса',
                                     valueType: 'number',
                                     //defaultValue: 30
                                 }
@@ -125,7 +125,7 @@
 	                            },
                                 distance: {
                                     render: 'item',
-                                    name: 'Расстояние от центра',
+                                    name: 'Расстояние от внешнего радиуса',
                                     valueType: 'number',
                                     defaultValue: 30
                                 }
