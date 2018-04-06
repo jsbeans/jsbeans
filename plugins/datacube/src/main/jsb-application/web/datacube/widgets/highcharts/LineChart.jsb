@@ -104,16 +104,6 @@
             }
         },
 
-        xAxis: {
-            items: {
-                categories: {
-                    render: 'dataBinding',
-                    name: 'Категории',
-                    linkTo: 'source'
-                }
-            }
-        },
-
         plotOptions: {
             items: {
                 column: {
@@ -153,9 +143,12 @@
             }
 
             if(!this._schemeOpts){
+                var xAxisContext = this.getContext().find('xAxis').values();
+
                 this._schemeOpts = {
                     seriesContext: this.getContext().find('series').values(),
-                    xAxisCategories: this.getContext().find('xAxis categories'),
+                    xAxisContext: xAxisContext,
+                    xAxisFilterBinding: xAxisContext[0].find('categories').binding(),
                     series: [],
                     useCompositeSeries: false
                 };
@@ -171,20 +164,35 @@
                 }
             }
 
-            if(!this._resolvePointFilters(this._schemeOpts.xAxisCategories.binding())){
+            if(!this._resolvePointFilters(this._schemeOpts.xAxisFilterBinding)){
                 return;
             }
 
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(){
                 try{
                     var seriesData = [],
-                        xAxisData = [];
+                        xAxisData = {};
 
                     while($this._dataSource.next()){
-                        var x = $this._schemeOpts.xAxisCategories.value();
                         // xAxis
-                        xAxisData.push(x);
+                        var curCat = xAxisData,
+                            filterCat;
+
+                        // todo: несвязанные оси
+
+                        for(var i = $this._schemeOpts.xAxisContext.length - 1; i > -1 ; i--){
+                            var cat = $this._schemeOpts.xAxisContext[i].find('categories').value();
+
+                            if(!curCat[cat]){
+                                curCat[cat] = {};
+                            }
+                            curCat = curCat[cat];
+
+                            if(i === 0){
+                                filterCat = curCat;
+                            }
+                        }
 
                         // series data
                         for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
@@ -204,32 +212,55 @@
 
                             seriesData[i].data[name.value()].push({
                                 datacube: {
-                                    binding: $this._schemeOpts.xAxisCategories.binding(),
+                                    binding: $this._schemeOpts.xAxisFilterBinding,
                                     filterData: $this._addFilterData()
                                 },
                                 color: color,
-                                x: x ? x : undefined,
+                                x: filterCat,
                                 y: data.value()
                             });
                         }
                     }
 
-                    // resolve xAxis for composite series
-                    if($this._schemeOpts.useCompositeSeries){
-                        var cats = {};
-                        for(var i = 0; i < xAxisData.length; i++){
-                            cats[xAxisData[i]] = xAxisData[i];
+                    function resolveCategories(cats, result, index, max, curX){
+                        var keys = Object.keys(cats).sort();
+
+                        if(!result.categoriesArrays[index]){
+                            result.categoriesArrays[index] = [];
                         }
-                        xAxisData = [];
+
+                        result.categoriesArrays[index] = result.categoriesArrays[index].concat(keys);
+
+                        if(index === max){
+                            for(var i = 0; i < keys.length; i++){
+                                cats[keys[i]].x = curX.x++;
+                            }
+                            return keys.length;
+                        }
+
+                        if(!result.tickPositions[index]){
+                            result.tickPositions[index] = [];
+                        }
+
+                        var curTick = 0;
                         for(var i in cats){
-                            xAxisData.push(cats[i]);
+                            curTick = curTick + resolveCategories(cats[i], result, index + 1, max, curX);
+                            result.tickPositions[index].push(curTick);
                         }
                     }
+
+                    var xAxisCats = {
+                        categoriesArrays: [],
+                        tickPositions: []
+                    };
+                    resolveCategories(xAxisData, xAxisCats, 0, $this._schemeOpts.xAxisContext.length - 1, {x: 0});
+debugger;
+return;
 
                     function resolveData(data){
                         for(var i in data){
                             if(data[i].x){
-                                data[i].x = xAxisData.indexOf(data[i].x);
+                                data[i].x = data[i].x.x;
                             }
                         }
                         return data;
@@ -253,7 +284,7 @@
                     if(opts && opts.isCacheMod){
                         $this.storeCache({
                             data: data,
-                            xAxisData: xAxisData
+                            xAxisData: xAxisCats
                         });
                     }
 
@@ -313,6 +344,11 @@
                     var columnPlotOptionsContext = this.getContext().find('plotOptions column');
 
                     var chartOpts = {
+                        chart: {
+                            events: {
+                                //
+                            }
+                        },
                         plotOptions: {
                             column: {
                                 groupPadding: columnPlotOptionsContext.find('groupPadding').value(),
