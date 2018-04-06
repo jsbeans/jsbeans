@@ -1790,16 +1790,12 @@
 				// fill styles
 				var alignHorz = 'left';
 				var alignHorzSelector = gArr[i].find('alignHorz');
-				if(alignHorzSelector.checked()){
-					alignHorz = alignHorzSelector.value();
-				}
-				
+				alignHorz = alignHorzSelector.value();
+
 				var alignVert = 'top';
 				var alignVertSelector = gArr[i].find('alignVert');
-				if(alignVertSelector.checked()){
-					alignVert = alignVertSelector.value();
-				}
-				
+				alignVert = alignVertSelector.value();
+
 				var cssStyle = '';
 				var cssSelector = gArr[i].find('css');
 				if(cssSelector.checked()){
@@ -1809,16 +1805,12 @@
 				// fill header styles
 				var hAlignHorz = 'left';
 				var hAlignHorzSelector = gArr[i].find('hAlignHorz');
-				if(hAlignHorzSelector.checked()){
-					hAlignHorz = hAlignHorzSelector.value();
-				}
-				
+				hAlignHorz = hAlignHorzSelector.value();
+
 				var hAlignVert = 'top';
 				var hAlignVertSelector = gArr[i].find('hAlignVert');
-				if(hAlignVertSelector.checked()){
-					hAlignVert = hAlignVertSelector.value();
-				}
-				
+				hAlignVert = hAlignVertSelector.value();
+
 				var hCssStyle = '';
 				var hCssSelector = gArr[i].find('hCss');
 				if(hCssSelector.checked()){

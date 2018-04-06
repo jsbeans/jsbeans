@@ -21,7 +21,7 @@
 
 .workspaceExplorerNode.sqlSourceNode > .status {
 	position: absolute;
-    top: 15px;
+    top: 16px;
     left: 0;
 	padding-left: 32px;
     font-size: 10px;
