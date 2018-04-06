@@ -6,6 +6,8 @@
         _oldScroll:{
             y: 0
         },
+        
+        data: [],
 
 		$constructor: function(opts){
 			$base(opts);
@@ -27,8 +29,8 @@
 			if(this.callbacks.createHeader) // if undefined will set default header
 			    this.handsontable_options.colHeaders = function(i){ return $this._createHeaderCellCallback(i); };
 
-            JSB().loadCss('tpl/handsontable/handsontable.min.css');
-            JSB().loadScript('tpl/handsontable/handsontable.min.js', function(){    //tpl/handsontable/handsontable.min.js
+            this.loadCss('handsontable.min.css');
+            this.loadScript('handsontable.min.js', function(){    //tpl/handsontable/handsontable.min.js
                 // custom render for all cells
                 function customRenderer(hotInstance, td, row, column, prop, value, cellProperties){
                     // include default renderer
@@ -38,12 +40,10 @@
                 }
                 Handsontable.renderers.registerRenderer('customRenderer', customRenderer);
 
-                $this.handsontable = new Handsontable($this.table.get(0), $this.handsontable_options);
+                $this.handsontable = new Handsontable($this.table.get(0), this.handsontable_options);
 
                 $this.table.resize(function(){
-                    JSB().defer(function(){
-                        $this.handsontable.render();
-                    }, 300, 'handsontable.resize' + $this.getId())
+                	$this.deferredRender();
                 });
 
                 $this.options.isInit = true;
@@ -88,23 +88,30 @@
             startCols: 10,
 
             renderAllRows: true,
+            contextMenu: false,
 
             allowEmpty: true,
 
             stretchH: 'all',    // "last" or "all" or "none",
-
+/*
             cells: function (row, col, prop) {
                 return {
                     allowHtml: true,
                     allowEmpty: true,
                     renderer: "customRenderer"
                 };
-            }
+            }*/
         },
 
 		options: {
 		    isInit: false,
 		    preLoadItems: 10
+		},
+		
+		deferredRender: function(){
+            JSB().defer(function(){
+                $this.handsontable.render();
+            }, 300, 'handsontable.deferredRender.' + $this.getId())
 		},
 
 		addCell: function(row, col, data){
@@ -124,18 +131,32 @@
 		},
 */
 		addRow: function(row, input){
+			input = this.prepareData(input);
+			this.data.splice(row, 0, input);
+			this.columns = this.prepareColumns(this.data);
+			this.handsontable.updateSettings(JSB.merge({}, this.handsontable_options, {data:this.data, columns: this.columns}));
+		    this.deferredRender();
+/*		    
 		    this.handsontable.alter('insert_row', row);
 		    for(var j = 0; j < input.length; j++){
                 this.handsontable.setDataAtCell(row, j, input[j]);
             }
+*/            
 		},
 
 		addArray: function(row, input){
+/*			
 		    if(JSB().isArray(input)) this.data = this.data.concat(JSB().clone(input));
             if(JSB().isObject(input)) this.data = Object.assign(this.data, JSB().clone(input));
-
+*/
 		    input = this.prepareData(input);
-
+		    for(var i = 0; i < input.length; i++){
+		    	this.data.splice(row + i, 0, input[i]);
+		    }
+		    this.columns = this.prepareColumns(this.data);
+		    this.handsontable.updateSettings(JSB.merge({}, this.handsontable_options, {data:this.data, columns: this.columns}));
+		    this.deferredRender();
+/*
             this.handsontable.alter('insert_row', row, input.length);
 
             for(var i = 0; i < input.length; i++){
@@ -143,10 +164,11 @@
                     this.handsontable.setDataAtCell(row + i, j, input[i][j]);
                 }
             }
+*/            
 		},
 
 		_createHeaderCellCallback: function(i){
-            return this.callbacks.createHeader.call(this, i, this.columns[i]);
+            return this.callbacks.createHeader.call(this, i, this.columns[i].data);
 		},
 
 		clear: function(){
@@ -159,31 +181,35 @@
 		    if(!this.data || !this.data[row]) return td;
 		    if(typeof prop === 'number') return td;
 
-		    var val = this.data[row][prop];
+//		    var val = this.data[row][prop];
+		    var val = value;
 
             // empty object or array
             if((JSB.isObject(val) && Object.keys(val).length === 0) || (JSB.isArray(val) && val.length === 0)){
-                td.innerHTML = '<div class="tableCell"> </div>';
+            	$this.$(td).empty();
+            	$this.$(td).append('<div class="tableCell"> </div>');
                 return td;
             }
 
             // object or array
             if(JSB.isObject(val) || JSB.isArray(val)){
-                td.innerHTML = `#dot <div jsb="JsonView" collapsed="true"></div>`;
-
-                JSB().deferUntil(function(){
-                    var bean = $this.$(td.innerHTML).jsb();
-                    if(!bean) return;
-                    bean.setData(val);
-                }, function(){
-                    return $this.isContentReady();
-                });
-
+            	JSB.lookup('JsonView', function(jvcls){
+            		var jvInst = new jvcls({collapsed:true});
+            		jvInst.setData(val);
+            		$this.$(td).empty();
+            		$this.$(td).append(jvInst.getElement());
+/*            		
+            		jvInst.getElement().resize(function(){
+            			$this.deferredRender();
+            		});
+*/            		
+            	});
                 return td;
             }
 
             // basic types
-            td.innerHTML = '<div class="tableCell">' + val + '</div>';
+            $this.$(td).empty();
+            $this.$(td).append($this.$('<div class="tableCell"></div>').text(val));
             return td;
 		},
 
@@ -198,6 +224,72 @@
 		isInit: function(){
 		    return this.options.isInit;
 		},
+		
+		detectType: function(val){
+			if(!JSB.isDefined(val)){
+				return 'undefined';
+			}
+			if(JSB.isNull(val)){
+				return 'null';
+			}
+			if(JSB.isNumber(val)){
+				return 'number';
+			}
+			if(JSB.isString(val)){
+				return 'string';
+			}
+			if(JSB.isObject(val)){
+				return 'object';
+			}
+			if(JSB.isArray(val)){
+				return 'array';
+			}
+			if(JSB.isBoolean(val)){
+				return 'boolean';
+			}
+			if(JSB.isDate(val)){
+				return 'datetime';
+			}
+			return 'undefined';
+		},
+		
+		prepareColumns: function(data){
+			var cols = [];
+			var colMap = {};
+			function detectType(val){
+				
+			}
+			for(var i = 0; i < data.length; i++){
+				var row = data[i];
+				var idx = 0;
+				for(var f in row){
+					var val = row[f];
+					var type = this.detectType(val);
+					if(!colMap[f]){
+						var colDesc = {data: f, readOnly:true, copyable:true};
+						switch(type){
+						case 'number':
+//							colDesc.type = 'numeric';
+							break;
+						case 'boolean':
+							colDesc.type = 'checkbox';
+							break;
+						case 'datetime':
+							colDesc.type = 'date';
+							break;
+						case 'object':
+						case 'array':
+							colDesc.renderer = 'customRenderer';
+							break;
+						}
+						cols.splice(idx, 0, colDesc);
+						colMap[f] = true;
+					}
+					idx++;
+				}
+			}
+			return cols;
+		},
 
 		loadData: function(data){
 		    if(!data){
@@ -207,14 +299,13 @@
 		    }
 		    this.noData.addClass('hidden');
 		    this.table.removeClass('hidden');
-
-		    this.data = JSB().clone(data);
-		    data = this.prepareData(data);
-
-		    this.columns = Object.keys(data[0]);
-
-		    this.handsontable.loadData(data);
-		    this.handsontable.loadData(data);
+		    
+		    this.data = JSB().clone(this.prepareData(data));
+		    this.columns = this.prepareColumns(this.data);
+		    
+		    
+		    this.handsontable.updateSettings(JSB.merge({}, this.handsontable_options, {data:this.data, columns: this.columns}));
+		    this.deferredRender();
 		},
 
 		preLoad: function(evt){

@@ -249,6 +249,10 @@
                                             name: 'Всегда показывать фильтр',
                                             optional: true,
                                             editor: 'none'
+                                        },
+                                        contextFilterValue: {
+                                        	render: 'item',
+                                            name: 'Значение по умолчанию'
                                         }
                                     }
 	                            },
@@ -298,6 +302,10 @@
                                             name: 'Всегда показывать фильтр',
                                             optional: true,
                                             editor: 'none'
+                                        },
+                                        widgetContextFilterValue: {
+                                        	render: 'item',
+                                            name: 'Значение по умолчанию'
                                         }
                                     }
 	                            }
@@ -1006,12 +1014,7 @@
 			}
 			var rows = [];
 			var cols = [];
-
-			if(!this._rowContext){
-			    this._rowContext = this.getContext().find('rows');
-			}
-
-			var rowsContext = this._rowContext;  //this.getContext().find('rows');
+			var rowsContext = this.getContext().find('rows');
 			var rowKeySelector = this.getContext().find('rowKey');
 			var rowFilterSelector = this.getContext().find('rowFilter');
 			var rowFilterBinding = rowFilterSelector.bindings();
@@ -1554,11 +1557,14 @@
 								});
 								elt.append(filterEntry.getElement());
 							}
+							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue);
+							
 							if(d.contextFilterFixed){
 								elt.addClass('contextFilterFixed');
 								if(filterButtonElt.length > 0){
 									filterButtonElt.remove();
 								}
+								$this.updateContextFilter(filterEntry.getFilter(), true);
 							} else {
 								elt.removeClass('contextFilterFixed');
 								if(filterButtonElt.length == 0){
@@ -1579,7 +1585,8 @@
 									});
 								}
 							}
-							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
+							
+							
 						} else {
 							elt.removeClass('contextFilter');
 							if(filterEntry){
@@ -1625,9 +1632,11 @@
 									}
 								});
 								elt.append(filterEntry.getElement());
+								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue);
 								
 								if(d.contextFilterFixed){
 									elt.addClass('contextFilterFixed');
+									$this.updateContextFilter(filterEntry.getFilter(), true);
 								} else {
 									var filterButtonElt = $this.$('<div class="filterButton"></div>');
 									hWrapper.append(filterButtonElt);
@@ -1645,7 +1654,8 @@
 										}
 									});
 								}
-								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
+								
+								
 							}
 						});
 				
@@ -1672,7 +1682,7 @@
 			this.refresh();
 		},
 		
-		updateContextFilter: function(q){
+		updateContextFilter: function(q, dontRefresh){
 			var curFilter = this.getContextFilter();
 			var bChanged = false;
 			for(var f in q){
@@ -1688,7 +1698,9 @@
 			}
 			if(bChanged){
 				this.setContextFilter(curFilter);
-				this.refresh();
+				if(!dontRefresh){
+					this.refresh();
+				}
 			}
 		},
 		
@@ -1833,7 +1845,8 @@
 					sortFields: null,
 					status: null,
 					contextFilterField: null,
-					contextFilterFixed: false
+					contextFilterFixed: false,
+					contextFilterValue: ''
 				};
 				
 				// check for status
@@ -1891,6 +1904,7 @@
                                 desc.contextFilterField = widgetContextFilterFieldSelector.binding();
                                 desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
                             }
+                            desc.contextFilterValue = widgetContextFilterSelector.find('widgetContextFilterValue').value() || '';
                         }
                     }
 				} else {
@@ -1908,6 +1922,7 @@
 						}
 						desc.contextFilterField = textSelector.binding();
 						desc.contextFilterFieldType = textSelector.bindingType();
+						desc.contextFilterValue = contextFilterSelector.find('contextFilterValue').value() || '';
 					}
 					var formatSelector = viewSelector.find('textFormat');
 					if(formatSelector.checked()){

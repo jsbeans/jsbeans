@@ -106,13 +106,13 @@
 		preLoader: function(rowCount){
 		    if(this.allLoaded) return;
 
-		    $this.getElement().loader();
+//		    $this.getElement().loader();
             this.curLoadId = JSB().generateUid();
             var storedLoadId = this.curLoadId;
             $this.server().loadMore(function(res){
                 if(storedLoadId !== $this.curLoadId) return;
 
-                $this.getElement().loader('hide');
+//                $this.getElement().loader('hide');
 
                 if(!res) return;
                 if(res.error){
@@ -222,9 +222,11 @@
 
                 if(res.result.length !== 0) {
                     $this.table.loadData(res.result);
+                    
                     if(!res.allLoaded && $this.table.getElement().height() >= $this.table.getElement().find('.ht_master.handsontable > div.wtHolder').height()){
                         $this.preLoader($this.table.getRowCount());
                     }
+                    
                 } else {
                     $this.table.loadData(null);
                 }

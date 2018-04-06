@@ -6,6 +6,7 @@
 	$client: {
 		filterField: null,
 		filterFieldType: null,
+		defaultFilterValue: null,
 		curOp: null,
 		
 		opMap: {
@@ -89,16 +90,17 @@
 			this.curOp = op;
 		},
 		
-		setField: function(field, type){
-			if(this.filterField == field && this.filterFieldType == type){
+		setField: function(field, type, val){
+			if(this.filterField == field && this.filterFieldType == type && this.defaultFilterValue == val){
 				return;
 			}
 			this.filterField = field;
 			this.filterFieldType = type;
+			this.defaultFilterValue = val;
 			this.classed('showOp', this.filterFieldType != 'string' && this.filterFieldType != 'boolean');
 			this.classed('showEditor', this.filterFieldType != 'boolean');
 			this.classed('showBoolean', this.filterFieldType == 'boolean');
-			this.editor.setData('');
+			this.editor.setData(val);
 		},
 		
 		setFocus: function(){
