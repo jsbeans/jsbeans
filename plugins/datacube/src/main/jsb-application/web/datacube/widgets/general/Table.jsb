@@ -259,7 +259,38 @@
                                         contextFilterValue: {
                                         	render: 'item',
                                             name: 'Значение по умолчанию'
+                                        },
+                                        contextFilterOp: {
+                                            render: 'select',
+                                            name: 'Условие по умолчанию (для численных значений)',
+                                            items: {
+                                            	'$eq': {
+                                                    name: '=',
+                                                    value: '$eq'
+                                                },
+                                                '$lt': {
+                                                    name: '<',
+                                                    value: '$lt'
+                                                },
+                                                '$lte': {
+                                                    name: '&le;',
+                                                    value: '$lte'
+                                                },
+                                                '$gt': {
+                                                    name: '>',
+                                                    value: '$gt'
+                                                },
+                                                '$gte': {
+                                                    name: '&ge;',
+                                                    value: '$gte'
+                                                },
+                                                '$ne': {
+                                                    name: '&ne;',
+                                                    value: '$ne'
+                                                }
+                                            }
                                         }
+
                                     }
 	                            },
 	                            textFormat: {
@@ -312,6 +343,36 @@
                                         widgetContextFilterValue: {
                                         	render: 'item',
                                             name: 'Значение по умолчанию'
+                                        },
+                                        widgetContextFilterOp: {
+                                            render: 'select',
+                                            name: 'Условие по умолчанию (для численных значений)',
+                                            items: {
+                                            	'$eq': {
+                                                    name: '=',
+                                                    value: '$eq'
+                                                },
+                                                '$lt': {
+                                                    name: '<',
+                                                    value: '$lt'
+                                                },
+                                                '$lte': {
+                                                    name: '&le;',
+                                                    value: '$lte'
+                                                },
+                                                '$gt': {
+                                                    name: '>',
+                                                    value: '$gt'
+                                                },
+                                                '$gte': {
+                                                    name: '&ge;',
+                                                    value: '$gte'
+                                                },
+                                                '$ne': {
+                                                    name: '&ne;',
+                                                    value: '$ne'
+                                                }
+                                            }
                                         }
                                     }
 	                            }
@@ -1628,7 +1689,7 @@
 								});
 								elt.append(filterEntry.getElement());
 							}
-							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue);
+							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
 							
 							if(d.contextFilterFixed){
 								elt.addClass('contextFilterFixed');
@@ -1725,7 +1786,7 @@
 									}
 								});
 								elt.append(filterEntry.getElement());
-								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue);
+								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
 								
 								if(d.contextFilterFixed){
 									elt.addClass('contextFilterFixed');
@@ -1991,6 +2052,7 @@
                                 desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
                             }
                             desc.contextFilterValue = widgetContextFilterSelector.find('widgetContextFilterValue').value() || '';
+                            desc.contextFilterOp = widgetContextFilterSelector.find('widgetContextFilterOp').value() || '$eq';
                         }
                     }
 				} else {
@@ -2009,6 +2071,7 @@
 						desc.contextFilterField = textSelector.binding();
 						desc.contextFilterFieldType = textSelector.bindingType();
 						desc.contextFilterValue = contextFilterSelector.find('contextFilterValue').value() || '';
+						desc.contextFilterOp = contextFilterSelector.find('contextFilterOp').value() || '$eq';
 					}
 					var formatSelector = viewSelector.find('textFormat');
 					if(formatSelector.checked()){

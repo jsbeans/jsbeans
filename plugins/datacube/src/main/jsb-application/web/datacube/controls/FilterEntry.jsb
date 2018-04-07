@@ -7,6 +7,7 @@
 		filterField: null,
 		filterFieldType: null,
 		defaultFilterValue: null,
+		defaultFilterOp: null,
 		curOp: null,
 		
 		opMap: {
@@ -90,17 +91,19 @@
 			this.curOp = op;
 		},
 		
-		setField: function(field, type, val){
-			if(this.filterField == field && this.filterFieldType == type && this.defaultFilterValue == val){
+		setField: function(field, type, val, op){
+			if(this.filterField == field && this.filterFieldType == type && this.defaultFilterValue == val && this.defaultFilterOp == op){
 				return;
 			}
 			this.filterField = field;
 			this.filterFieldType = type;
 			this.defaultFilterValue = val;
+			this.defaultFilterOp = op;
 			this.classed('showOp', this.filterFieldType != 'string' && this.filterFieldType != 'boolean');
 			this.classed('showEditor', this.filterFieldType != 'boolean');
 			this.classed('showBoolean', this.filterFieldType == 'boolean');
 			this.editor.setData(val);
+			this.setOp(op);
 		},
 		
 		setFocus: function(){
