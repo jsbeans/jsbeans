@@ -258,6 +258,10 @@
 	/*transition: background-color 200ms;*/
 }
 
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col.spanned {
+	display: none;
+}
+
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight > td.col {
 	background-color: rgb(218, 200, 182);
 }

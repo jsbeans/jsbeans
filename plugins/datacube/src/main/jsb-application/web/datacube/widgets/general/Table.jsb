@@ -313,6 +313,12 @@
 	                    }
 	                }
 	            },
+	            cellSpan: {
+                    render: 'item',
+                    name: 'Объединять ячейки с одинаковыми значениями',
+                    editor: 'none',
+                    optional: true
+                },
                 summary: {
                     render: 'switch',
                     name: 'Отображать в строке статуса сводный показатель',
@@ -479,6 +485,8 @@
                     name: 'Ширина столбца',
                     value: 'auto'
                 }
+                
+
 	        }
 	    }
 	},
@@ -690,9 +698,36 @@
 					pRows.push(rowDesc);
 					$this.rowKeyMap[key] = rowDesc;
 					
-					// proceed widgets
+					// proceed cells
 					for(var j = 0; j < $this.colDesc.length; j++){
 						row[j].rowKey = key;
+						
+						// check for cellSpan
+						if($this.colDesc[j].cellSpan){
+							var prevDesc = null;
+							if(i > 0){
+								prevDesc = rows[i-1].row[j];
+							} else {
+								if(idxOffset > 0){
+									prevDesc = $this.rows[idxOffset-1].row[j];
+								}
+							}
+							if(prevDesc && JSB.isEqual(row[j].value, prevDesc.value)){
+								
+								if(JSB.isDefined(prevDesc.spanFrom)){
+									row[j].spanFrom = prevDesc.spanFrom;
+								} else {
+									row[j].spanFrom = idxOffset + i - 1;
+								}
+								if(row[j].spanFrom >= idxOffset){
+									rows[row[j].spanFrom - idxOffset].row[j].spanCount = (rows[row[j].spanFrom - idxOffset].row[j].spanCount || 1) + 1;
+								} else {
+									$this.rows[row[j].spanFrom].row[j].spanCount = ($this.rows[row[j].spanFrom].row[j].spanCount || 1) + 1;
+								}
+							}
+						}
+						
+						// perform widgets
 						if($this.colDesc[j].widget){
 							var colName = $this.colDesc[j].title;
 							if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
@@ -763,10 +798,12 @@
 				rowsSelDataColData.order();
 				
 				rowsSelDataColData
-					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-					.attr('type', function(d){return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
-					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
-					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert});
+					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle;})
+					.attr('type', function(d){return $this.colDesc[d.colIdx].widget ? 'widget':'text';})
+					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
+					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz;})
+					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert;});
 			
 				rowsSelDataColData.each(function(d){
 					var tdCell = d3.select(this);
@@ -851,6 +888,8 @@
 					.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
 					.attr('key', function(d){ return d.key;})
 					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
 					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
 					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
 						.append('div')
@@ -945,6 +984,8 @@
 									.attr('key', function(d){ return d.key;})
 									.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
 									.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
+									.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+									.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
 									.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
 									.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
 									.append('div')
@@ -1838,7 +1879,8 @@
 					status: null,
 					contextFilterField: null,
 					contextFilterFixed: false,
-					contextFilterValue: ''
+					contextFilterValue: '',
+					cellSpan: gArr[i].find('cellSpan').checked()
 				};
 				
 				// check for status
