@@ -256,12 +256,7 @@
 
 	    loadData: function(obj) {
             try{
-                if(this.it) {
-                	try {
-                		this.it.close();
-                	}catch(e){}
-                	this.it = null;
-                }
+            	this.clearIterator();
 
                 switch(obj.type){
                     case 'cube':
@@ -305,6 +300,7 @@
 
                 return this.loadMore();
             } catch(e){
+            	this.clearIterator();
                 JSB().getLogger().error(e);
 
                 return {
@@ -338,6 +334,7 @@
                     error: null
                 };
             } catch(e){
+            	this.clearIterator();
                 JSB().getLogger().error(e);
 
                 return {

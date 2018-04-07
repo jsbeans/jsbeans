@@ -105,7 +105,7 @@
                     conn.available = true;
                     JSB.defer(function() {
                         closeConnection(conn);
-                    }, ($this.closeUselessConnectionTimeoutSec||60)*1000, conn.deferredCloseKey);
+                    }, ($this.closeUselessConnectionTimeoutSec||10)*1000, conn.deferredCloseKey);
                 },
                 closed: function(){
                 	return closed;

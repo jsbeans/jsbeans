@@ -184,6 +184,9 @@
 			$this.resultsTab.getElement().loader();
 			$this.ajax(url, {}, function(result, obj){
 				$this.resultsTab.getElement().loader('hide');
+				if(JSB.isString(obj)){
+					obj = eval('(' + obj + ')');
+				}
 				$this.updateResults(obj);
 			});
 		},
