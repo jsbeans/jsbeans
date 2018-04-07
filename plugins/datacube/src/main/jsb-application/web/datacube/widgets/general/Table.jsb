@@ -188,6 +188,12 @@
 					optional: true,
 					editor: 'none'
 	            },
+	            showSortIcon: {
+	                render: 'item',
+	                name: 'Не скрывать значок сортировки',
+					optional: 'checked',
+					editor: 'none'
+	            },
 	            useTree: {
 	                render: 'switch',
 	                name: 'Отображать первый столбец в виде дерева',
@@ -1566,23 +1572,47 @@
 						elt.find('> .hWrapper > .text').text(d.title).attr('title', d.title);
 						
 						// sort
+						function _updateSortOrder(order){
+							if(order == 'asc'){
+								elt.addClass('sortAsc');
+								elt.removeClass('sortDesc');
+							} else if(order == 'desc'){
+								elt.addClass('sortDesc');
+								elt.removeClass('sortAsc');
+							} else {
+								elt.removeClass('sortAsc');
+								elt.removeClass('sortDesc');
+							}
+						}
 						var sortSelector = hWrapper.find('> .sortSelector').jsb();
 						if(d.sortFields && d.sortFields.length > 0){
 							if(!sortSelector){
 								sortSelector = new SortSelector({
 									onChange: function(q){
 										$this.updateOrder(this, q);
+										_updateSortOrder(this.getCurrentOrder());
 									}
 								});
 								hWrapper.append(sortSelector.getElement());
+								elt.find('> .hWrapper > .text').on('click.sort', function(){
+									sortSelector.toggleOrder();
+								});
 							}
 							sortSelector.setFields(d.sortFields);
 							elt.addClass('sortable');
+							if($this.showSortIcon){
+								elt.addClass('showSortIcon');
+							} else {
+								elt.removeClass('showSortIcon');
+							}
+							_updateSortOrder(sortSelector.getCurrentOrder());
 						} else {
 							if(sortSelector){
 								sortSelector.destroy();
+								elt.find('> .hWrapper > .text').off('click.sort');
 							}
 							elt.removeClass('sortable');
+							elt.removeClass('showSortIcon');
 						}
 						
 						// filter
@@ -1653,15 +1683,37 @@
 							hWrapper.append($this.$('<div class="text"></div>').text(d.title).attr('title',d.title));
 							
 							// sort
+							function _updateSortOrder(order){
+								if(order == 'asc'){
+									elt.addClass('sortAsc');
+									elt.removeClass('sortDesc');
+								} else if(order == 'desc'){
+									elt.addClass('sortDesc');
+									elt.removeClass('sortAsc');
+								} else {
+									elt.removeClass('sortAsc');
+									elt.removeClass('sortDesc');
+								}
+							}
 							if(d.sortFields && d.sortFields.length > 0){
 								elt.addClass('sortable');
 								var sortSelector = new SortSelector({
 									onChange: function(q){
 										$this.updateOrder(this, q);
+										_updateSortOrder(this.getCurrentOrder());
 									}
 								});
 								hWrapper.append(sortSelector.getElement());
 								sortSelector.setFields(d.sortFields);
+								elt.find('> .hWrapper > .text').on('click.sort', function(){
+									sortSelector.toggleOrder();
+								});
+								if($this.showSortIcon){
+									elt.addClass('showSortIcon');
+								} else {
+									elt.removeClass('showSortIcon');
+								}
+								_updateSortOrder(sortSelector.getCurrentOrder());
 							}
 							
 							// filter
@@ -1968,6 +2020,7 @@
 			}
 			
 			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
+			this.showSortIcon = this.getContext().find('showSortIcon').checked();
 			
 			// update row filters
 			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();
