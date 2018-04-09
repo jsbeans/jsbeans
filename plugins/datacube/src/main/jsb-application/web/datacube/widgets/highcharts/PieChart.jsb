@@ -296,8 +296,7 @@
                     JSB.merge(true, baseChartOpts, chartOpts);
 
                     this._styles = baseChartOpts;
-console.log(baseChartOpts);
-debugger;
+
                     baseChartOpts = includeData(baseChartOpts, data);
                 }
             } catch(ex){
