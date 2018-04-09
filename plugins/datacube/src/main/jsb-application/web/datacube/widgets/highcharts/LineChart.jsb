@@ -147,17 +147,23 @@
 
                 this._schemeOpts = {
                     seriesContext: this.getContext().find('series').values(),
-                    xAxisContext: xAxisContext,
+                    xAxisLinked: [],
+                    xAxisIndividual: [],
                     xAxisFilterBinding: xAxisContext[0].find('categories').binding(),
-                    series: [],
-                    useCompositeSeries: false
+                    series: []
                 };
 
-                for(var i = 0; i < this._schemeOpts.seriesContext.length; i++){
-                    if(this._schemeOpts.seriesContext[i].find('name').hasBinding()){
-                        this._schemeOpts.useCompositeSeries = true;
-                    }
+                for(var i = 0; i < xAxisContext.length; i++){
+                    var linkedTo = xAxisContext[i].find('linkedTo').value();
 
+                    if(linkedTo){
+                        this._schemeOpts.xAxisLinked.push(xAxisContext[i].find('categories'));
+                    } else {
+                        this._schemeOpts.xAxisIndividual.push(xAxisContext[i].find('categories'));
+                    }
+                }
+
+                for(var i = 0; i < this._schemeOpts.seriesContext.length; i++){
                     this._schemeOpts.series[i] = {
                         colorType: this._schemeOpts.seriesContext[i].find('colorType').value()
                     }
@@ -172,17 +178,19 @@
             this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(){
                 try{
                     var seriesData = [],
-                        xAxisData = {};
+                        xAxisLinkedData = {},
+                        xAxisIndividual = [],
+                        xAxisData = [];
 
                     while($this._dataSource.next()){
                         // xAxis
-                        var curCat = xAxisData,
-                            filterCat;
 
-                        // todo: несвязанные оси
+                        // связанные оси
+                        var curCat = xAxisLinkedData,
+                            filterCat = null;
 
-                        for(var i = $this._schemeOpts.xAxisContext.length - 1; i > -1 ; i--){
-                            var cat = $this._schemeOpts.xAxisContext[i].find('categories').value();
+                        for(var i = $this._schemeOpts.xAxisLinked.length - 1; i > -1 ; i--){
+                            var cat = $this._schemeOpts.xAxisLinked[i].value();
 
                             if(!curCat[cat]){
                                 curCat[cat] = {};
@@ -191,6 +199,20 @@
 
                             if(i === 0){
                                 filterCat = curCat;
+                            }
+                        }
+
+                        // несвязанные оси
+                        for(var i = 0; i < $this._schemeOpts.xAxisIndividual.length; i++){
+                            if(!xAxisIndividual[i]){
+                                xAxisIndividual[i] = {};
+                            }
+                            var val = $this._schemeOpts.xAxisIndividual.value();
+
+                            xAxisIndividual[i][val] = {};
+
+                            if(!filterCat && i === 0){
+                                filterCat = xAxisIndividual[i][val];
                             }
                         }
 
@@ -216,13 +238,13 @@
                                     filterData: $this._addFilterData()
                                 },
                                 color: color,
-                                x: filterCat,
+                                x: filterCat || $this._schemeOpts.xAxisFilterBinding.value(),
                                 y: data.value()
                             });
                         }
                     }
 
-                    function resolveCategories(cats, result, index, max, curX){
+                    function resolveLinkedCategories(cats, result, index, max, curX){
                         var keys = Object.keys(cats).sort();
 
                         if(!result.categoriesArrays[index]){
@@ -244,16 +266,22 @@
 
                         var curTick = 0;
                         for(var i in cats){
-                            curTick = curTick + resolveCategories(cats[i], result, index + 1, max, curX);
+                            curTick = curTick + resolveLinkedCategories(cats[i], result, index + 1, max, curX);
                             result.tickPositions[index].push(curTick);
                         }
                     }
 
-                    var xAxisCats = {
-                        categoriesArrays: [],
-                        tickPositions: []
-                    };
-                    resolveCategories(xAxisData, xAxisCats, 0, $this._schemeOpts.xAxisContext.length - 1, {x: 0});
+                    if($this._schemeOpts.xAxisLinked.length > 0){
+                        var xAxisLinkedCats = {
+                            categoriesArrays: [],
+                            tickPositions: []
+                        };
+                        resolveLinkedCategories(xAxisLinkedData, xAxisLinkedCats, 0, $this._schemeOpts.xAxisLinked.length - 1, {x: 0});
+                    }
+
+                    function resolveIndividualCategories(){
+                        //
+                    }
 debugger;
 return;
 
@@ -284,7 +312,7 @@ return;
                     if(opts && opts.isCacheMod){
                         $this.storeCache({
                             data: data,
-                            xAxisData: xAxisCats
+                            xAxisData: xAxisData
                         });
                     }
 

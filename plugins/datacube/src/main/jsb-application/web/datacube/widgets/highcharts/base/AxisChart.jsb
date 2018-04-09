@@ -23,6 +23,11 @@
                             name: 'Категории',
                             linkTo: 'source'
                         },
+                        linkedTo: {
+                            render: 'select',
+                            name: 'Привязка к оси',
+                            commonField: 'xAxisNames'
+                        },
                         labels: {
                             render: 'group',
                             name: 'Подписи',
@@ -161,6 +166,7 @@
                             optional: true,
                             editor: 'none'
                         },
+                        /*
                         type: {
                             render: 'select',
                             name: 'Тип',
@@ -173,6 +179,7 @@
                                 }
                             }
                         },
+                        */
                         minX: {
                             render: 'dataBinding',
                             name: 'Минимум',
@@ -217,6 +224,18 @@
                         commonField: 'yAxisNames'
                     },
                     items: {
+                        type: {
+                            render: 'select',
+                            name: 'Тип',
+                            items: {
+                                linear: {
+                                    name: 'Линейная'
+                                },
+                                logarithmic: {
+                                    name: 'Логарифмическая'
+                                }
+                            }
+                        },
                         labels: {
                             render: 'group',
                             name: 'Подписи',
@@ -354,18 +373,6 @@
                             name: 'Обратное направление',
                             optional: true,
                             editor: 'none'
-                        },
-                        type: {
-                            render: 'select',
-                            name: 'Тип',
-                            items: {
-                                linear: {
-                                    name: 'Линейная'
-                                },
-                                logarithmic: {
-                                    name: 'Логарифмическая'
-                                }
-                            }
                         },
                         gridLineColor: {
                             render: 'item',
