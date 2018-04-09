@@ -474,9 +474,12 @@
                         maxX: xAxisContext.find('maxX').value()
                     },
 
-                    yAxis: [],
                     yAxisNames: []
                 };
+
+                if(yAxisContext.length > 0){
+                    chartOpts.yAxis = [];
+                }
 
                 for(var i = 0; i < yAxisContext.length; i++){
                     var yAxisLabels = yAxisContext[i].find('labels'),
