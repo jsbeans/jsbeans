@@ -155,11 +155,15 @@
 
                 for(var i = 0; i < xAxisContext.length; i++){
                     var linkedTo = xAxisContext[i].find('linkedTo').value();
+                    var cat = {
+                        categories: xAxisContext[i].find('categories'),
+                        index: i
+                    };
 
                     if(linkedTo){
-                        this._schemeOpts.xAxisLinked.push(xAxisContext[i].find('categories'));
+                        this._schemeOpts.xAxisLinked.push(cat);
                     } else {
-                        this._schemeOpts.xAxisIndividual.push(xAxisContext[i].find('categories'));
+                        this._schemeOpts.xAxisIndividual.push(cat);
                     }
                 }
 
@@ -180,7 +184,7 @@
                     var seriesData = [],
                         xAxisLinkedData = {},
                         xAxisIndividual = [],
-                        xAxisData = [];
+                        xAxisData = {};
 
                     while($this._dataSource.next()){
                         // xAxis
@@ -190,7 +194,7 @@
                             filterCat = null;
 
                         for(var i = $this._schemeOpts.xAxisLinked.length - 1; i > -1 ; i--){
-                            var cat = $this._schemeOpts.xAxisLinked[i].value();
+                            var cat = $this._schemeOpts.xAxisLinked[i].categories.value();
 
                             if(!curCat[cat]){
                                 curCat[cat] = {};
@@ -207,7 +211,7 @@
                             if(!xAxisIndividual[i]){
                                 xAxisIndividual[i] = {};
                             }
-                            var val = $this._schemeOpts.xAxisIndividual.value();
+                            var val = $this._schemeOpts.xAxisIndividual.categories.value();
 
                             xAxisIndividual[i][val] = {};
 
@@ -276,15 +280,26 @@
                             categoriesArrays: [],
                             tickPositions: []
                         };
+
                         resolveLinkedCategories(xAxisLinkedData, xAxisLinkedCats, 0, $this._schemeOpts.xAxisLinked.length - 1, {x: 0});
+
+                        xAxisData.xAxisLinkedCats = xAxisLinkedCats;
                     }
 
-                    function resolveIndividualCategories(){
-                        //
+                    if($this._schemeOpts.xAxisIndividual.length > 0){
+                        var xAxisIndividualCats = [];
+
+                        for(var i = 0; i < xAxisIndividual.length; i++){
+                            xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]);
+                        }
+
+                        for(var j = 0; j < xAxisIndividualCats[0].length; j++){
+                            xAxisIndividual[0][j].x = j;
+                        }
+
+                        xAxisData.xAxisIndividualCats = xAxisIndividualCats;
                     }
 debugger;
-return;
-
                     function resolveData(data){
                         for(var i in data){
                             if(data[i].x){
@@ -333,7 +348,7 @@ return;
             var baseChartOpts;
 
             try{
-                function includeData(chartOpts, seriesData, xAxisCategories){
+                function includeData(chartOpts, seriesData, xAxisData){
                     chartOpts = JSB.clone(chartOpts);
 
                     var seriesContext = $this.getContext().find('series').values(),
@@ -346,7 +361,7 @@ return;
                             name: seriesData[j].name,
                             data: seriesData[j].data,
                             datacube: {
-                                binding: $this._schemeOpts.xAxisCategories.binding()
+                                binding: $this._schemeOpts.xAxisFilterBinding
                             },
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,
@@ -360,7 +375,18 @@ return;
                         JSB.merge(true, chartOpts.series[j], series);
                     }
 
-                    chartOpts.xAxis.categories = xAxisCategories;
+                    if(xAxisData.xAxisLinkedCats){
+                        for(var i = $this._schemeOpts.xAxisLinked.length - 1; i > -1 ; i--){
+                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].categories = xAxisData.xAxisLinkedCats[i].categoriesArrays;
+                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].tickPositions = xAxisData.xAxisLinkedCats[i].tickPositions;
+                        }
+                    }
+
+                    if(xAxisData.xAxisIndividualCats){
+                        for(var i = 0; i < $this._schemeOpts.xAxisIndividual.length; i++){
+                            chartOpts.xAxis[$this._schemeOpts.xAxisIndividual[i].index].categories = xAxisData.xAxisIndividualCats[i];
+                        }
+                    }
 
                     return chartOpts;
                 }

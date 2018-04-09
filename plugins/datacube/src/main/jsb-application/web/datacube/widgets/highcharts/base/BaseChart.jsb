@@ -1265,6 +1265,11 @@
                     }
                 }
             }
+        },
+
+        _syncFunctions: function(chartOpts){
+            // todo: sync all functions in chartOpts
+            return chartOpts;
         }
     }
 }
