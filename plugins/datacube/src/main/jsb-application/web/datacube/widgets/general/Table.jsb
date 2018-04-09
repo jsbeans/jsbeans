@@ -421,6 +421,12 @@
                                     name: 'Поле',
                                     linkTo: 'rows'
                                 },
+                                summaryFormat: {
+                                    render: 'item',
+                                    name: 'Использовать форматирование',
+                                    value: '0,0.[00]',
+                                    optional: true
+                                },
                                 summaryPrefix: {
                                     render: 'item',
                                     name: 'Префикс',
@@ -1594,7 +1600,11 @@
 			var wrapQuery = {$select:{'val':valQ}};
 			this.server().executeQuery(source, $this.getWrapper().getDashboard(), {extQuery: mainQuery, wrapQuery: wrapQuery}, function(res){
 				if(res && res.length > 0 && JSB.isDefined(res[0].val)){
-					callback.call(this, res[0].val);
+					var val = res[0].val;
+					if(statusDesc.summaryFormat && JSB.isNumber(val) && statusDesc.summaryFormat.length > 0){
+						val = Numeral.format(val, statusDesc.summaryFormat);
+					}
+					callback.call(this, val);
 				} else {
 					callback.call(this, 0);
 				}
@@ -2008,6 +2018,7 @@
 							statusDesc.summaryFieldSelector = summaryElts[j].find('summaryField');
 							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
 							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
+							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').checked() ? summaryElts[j].find('summaryFormat').value() : null; 
 							if(!desc.status){
 								desc.status = [];
 							}
