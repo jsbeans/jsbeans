@@ -6,8 +6,10 @@
 		    'DataCube.Query.Engine.QueryProfiler',
 		    'DataCube.Query.Transforms.QueryTransformer',
 		    'DataCube.Query.Views.QueryViewsBuilder',
-		    'DataCube.Providers.SqlTableDataProvider',
+//		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.Iterators.DataProviderIterator',
+		    'DataCube.Query.Engine.ItBuilder',
+
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
         ],
@@ -15,9 +17,10 @@
 		$constructor: function(queryEngine, cubeOrDataProvider, dcQuery, params){
 			$this.qid = dcQuery.$id = dcQuery.$id || JSB.generateUid();
 			$this.queryEngine = queryEngine;
-		    $this.dcQuery = dcQuery;
+		    $this.query = dcQuery;
 		    $this.params = params;
 
+            $this.itBuilder = new ItBuilder($this);
 		    $this.profiler = new QueryProfiler();
             $this.profiler.start($this.qid, {
                 dcQuery: dcQuery,
@@ -32,6 +35,12 @@
 		        $this.profiler.profile($this.qid, 'directProvider', $this.providers[0].getName());
 		    }
 		    $this.profiler.profile($this.qid, 'providers', $this.providers.length);
+		    
+		    $this.contextQueries = QueryUtils.defineContextQueries($this.query);
+		},
+
+		isDirectQuery: function(){
+		    return !$this.cube;
 		},
 
 		execute: function(){
@@ -46,7 +55,8 @@ debugger;
                 $this._buildViews();
                 $this.profiler.profile($this.qid, 'views', $this.queryView.info());
 
-                var it = $this._produceIterator();
+                var it = $this.itBuilder.buildIterator();
+                $this.profiler.profile($this.qid, 'iterator', $this.queryView.info());
                 return it;
             } catch(e) {
                 $this.profiler.failed($this.qid, e);
@@ -55,19 +65,24 @@ debugger;
 		},
 
 		destroy: function(){
+		    $this.itBuilder.destroy();
 		    $this.profiler.destroy();
 		    $base();
 		},
 
+		getCubeOrDataProvider(): function(){
+		    return $this.cube || $this.providers[0];
+		},
+
 		_prepareQuery: function() {
-		    var query = JSB.merge(true, {}, $this.dcQuery);
+		    var query = JSB.merge(true, {}, $this.query);
 		    $this.preparedQuery = QueryTransformer.transform(query, $this.cube || $this.providers[0]);
             return $this.preparedQuery;
 		},
 
 		_buildViews: function(){
             try {
-                var builder = new QueryViewsBuilder($this.dcQuery, $this.cube, $this.providers);
+                var builder = new QueryViewsBuilder($this.query, $this.cube, $this.providers);
                 $this.queryView = builder.build();
                 $this.contextQueryViews = builder.getContextQueryViews();
             } finally {
@@ -75,38 +90,38 @@ debugger;
             }
 		},
 
-		_produceIterator: function() {
-		    var it = null;
-            if ($this.providers.length == 0) {
-                // empty iterator
-                it = {
-                    next: function(){
-                        return {};
-                    },
-                    close: function(){}
-                };
-            } else {
-                var providersGroups = $this._groupSameProviders();
-                if (providersGroups.length == 1) {
-                    it = new DataProviderIterator($this.providers, $this.queryEngine);
-                } else {
-                    it = new JsQueryIterator($this); // TODO
-                }
-            }
-            it.iterate($this.dcQuery, $this.params);
-
-		    $this.profiler.profile($this.qid, 'iterator-created');
-		    return {
-		        next: function(){
-		            var next = it.next();
-		            return next;
-		        },
-		        close: function(){
-		            it.close();
-		            $this.profiler.complete($this.qid);
-		        }
-		    };
-		},
+//		_produceIterator: function() {
+//		    var it = null;
+//            if ($this.providers.length == 0) {
+//                // empty iterator
+//                it = {
+//                    next: function(){
+//                        return {};
+//                    },
+//                    close: function(){}
+//                };
+//            } else {
+//                var providersGroups = $this._groupSameProviders();
+//                if (providersGroups.length == 1) {
+//                    it = new DataProviderIterator($this.providers, $this.queryEngine);
+//                } else {
+//                    it = new JsQueryIterator($this); // TODO
+//                }
+//            }
+//            it.iterate($this.query, $this.params);
+//
+//		    $this.profiler.profile($this.qid, 'iterator-created');
+//		    return {
+//		        next: function(){
+//		            var next = it.next();
+//		            return next;
+//		        },
+//		        close: function(){
+//		            it.close();
+//		            $this.profiler.complete($this.qid);
+//		        }
+//		    };
+//		},
 
         /** Собирает в коллекцию только провайдеры куба, использующиеся в запросе
         */
@@ -119,7 +134,7 @@ debugger;
 		    // collect used providers by name and all used cube fields
 		    var providers = {}; // id: {provider, cubeFields}
 		    QueryUtils.walkCubeFields(
-		        $this.dcQuery, /**includeSubQueries=*/true, this.cube,
+		        $this.query, /**includeSubQueries=*/true, this.cube,
 		        function (field, context, query, binding){
                     for (var i in binding) {
                         var id = binding[i].provider.id;
@@ -160,29 +175,29 @@ debugger;
             }
 		},
 
-		_getProviderGroupKey: function (provider) {
-		    // store key for SQL or unique for other
-            return provider instanceof SqlTableDataProvider
-                ? provider.getJsb().$name + '/' + provider.getStore().getName()
-                : provider.id;
-        },
-
-        /** Объединяет провайдеры в группы по типам
-        */
-		_groupSameProviders: function(){
-		    var groupsMap = {/**key:[provider]*/}; //
-
-            for(var i = 0; i < $this.providers.length; i++) {
-                var provider = $this.providers[i];
-                var key = $this._getProviderGroupKey(provider);
-                groupsMap[key] = groupsMap[key] || [];
-                groupsMap[key].push(provider);
-            }
-		    var groups = []; // [[]]
-		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
-		        groups.push(groupsMap[k]);
-		    }
-		    return groups;
-		},
+//		_getProviderGroupKey: function (provider) {
+//		    // store key for SQL or unique for other
+//            return provider instanceof SqlTableDataProvider
+//                ? provider.getJsb().$name + '/' + provider.getStore().getName()
+//                : provider.id;
+//        },
+//
+//        /** Объединяет провайдеры в группы по типам
+//        */
+//		_groupSameProviders: function(){
+//		    var groupsMap = {/**key:[provider]*/}; //
+//
+//            for(var i = 0; i < $this.providers.length; i++) {
+//                var provider = $this.providers[i];
+//                var key = $this._getProviderGroupKey(provider);
+//                groupsMap[key] = groupsMap[key] || [];
+//                groupsMap[key].push(provider);
+//            }
+//		    var groups = []; // [[]]
+//		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
+//		        groups.push(groupsMap[k]);
+//		    }
+//		    return groups;
+//		},
 	}
 }

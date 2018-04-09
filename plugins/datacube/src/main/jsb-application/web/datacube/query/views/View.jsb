@@ -30,5 +30,8 @@
 		    // TODO: generate structure info
 		    return {TODO:'TODO'};
 		},
+
+		buildIterator: function(executionContext){
+		},
 	}
 }

@@ -5,6 +5,7 @@
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',
+		    'DataCube.Query.Engine.ItProcessor',
         ],
 
 		$constructor: function(name, query, sourceView){

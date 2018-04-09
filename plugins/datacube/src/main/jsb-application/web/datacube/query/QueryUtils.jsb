@@ -16,6 +16,14 @@
             }
         },
 
+        assert: function(isTrue, text){
+            if (Config.get('jsbeans.debug') && !isTrue) {
+                var msg = 'Assertion failed: ' + (text||'');
+                Log.debug(msg);
+                throw new Error(msg);
+            }
+        },
+
         walkAllSubQueries: function (dcQuery, callback) {
             return $this.walkSubQueries(dcQuery, callback);
         },
@@ -346,7 +354,7 @@
 
             // walk $select
             for(var alias in query.$select) {
-                walkFields([{$field: alias, $context: null}]);
+                walkFields([{$field: alias, $context: null, $alias:alias}]);
                 walkFields($this.extractAllFields(query.$select[alias], query.$context));
             }
 
@@ -605,7 +613,7 @@
                                 if (!resultExps[op]) delete resultExps[op];
                                 break;
                             case '$not':
-                                resultExps[op] = filteredMultiFilter(exps, isAccepted, path.concat([op]));
+                                resultExps[op] = filteredMultiFilter(exps[op], isAccepted, path.concat([op]));
                                 if (!resultExps[op]) delete resultExps[op];
                                 break;
                             default:
