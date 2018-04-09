@@ -921,7 +921,7 @@
 						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
 							fVal = Numeral.format(val, $this.colDesc[d.colIdx].format);
 						}
-						cellEl.text(fVal);
+						cellEl.text(fVal !== null ? fVal : '');
 						cellEl.attr('title', val);
 						
 						if(cellEl.attr('widget')){
