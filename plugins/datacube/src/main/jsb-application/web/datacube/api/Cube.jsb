@@ -117,33 +117,39 @@
 			
 			// read
 			var qDesc = cube.parametrizeQuery(q);
-			
-			var it = cube.executeQuery(qDesc.query, qDesc.params);
-			if(!it){
-				throw new Error('Failed to execute query: ' + JSON.stringify(params.query));
+			var it = null;
+			try {
+				it = cube.executeQuery(qDesc.query, qDesc.params, null, true);
+				if(!it){
+					throw new Error('Failed to execute query: ' + JSON.stringify(params.query));
+				}
+				
+				var cnt = 0;
+				while(true){
+					var el = null;
+					try {
+						el = it.next();
+						cnt++;
+					}catch(e){
+						el = null;
+					}
+					if(!el){
+						break;
+					}
+					if(skip >= cnt){
+						continue;
+					}
+					dataset.push(el);
+					if(limit && dataset.length >= limit){
+						break;
+					}
+				}
+			} finally {
+				if(it){
+					try {it.close();}catch(e){}
+				}
 			}
 			
-			var cnt = 0;
-			while(true){
-				var el = null;
-				try {
-					el = it.next();
-					cnt++;
-				}catch(e){
-					el = null;
-				}
-				if(!el){
-					break;
-				}
-				if(skip >= cnt){
-					continue;
-				}
-				dataset.push(el);
-				if(limit && dataset.length >= limit){
-					break;
-				}
-			}
-			it.close();
 			
 			return Web.response(dataset, {mode:'json'});
 		}

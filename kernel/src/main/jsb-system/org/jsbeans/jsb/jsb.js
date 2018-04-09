@@ -1454,7 +1454,10 @@ if(!(function(){return this;}).call(null).JSB){
 					return false;
 				}
 				for(var key in b1){
-					if(b2[key] == undefined){
+					if(b2[key] === undefined){
+						if(b1[key] === undefined){
+							continue;
+						}
 						return false;
 					}
 					if(!this.isEqual(b1[key], b2[key])){

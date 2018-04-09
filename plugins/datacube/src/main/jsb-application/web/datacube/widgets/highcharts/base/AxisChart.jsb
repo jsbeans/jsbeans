@@ -455,12 +455,14 @@
                     yAxisContext = this.getContext().find('yAxis').values();
 
                 var chartOpts = {
-                    xAxis: [],
                     xAxisNames: [],
 
-                    yAxis: [],
                     yAxisNames: []
                 };
+
+                if(xAxisContext.length > 0){
+                    chartOpts.xAxis = [];
+                }
 
                 for(var i = 0; i < xAxisContext.length; i++){
                     var xAxisLabels = xAxisContext[i].find('labels'),
@@ -500,6 +502,10 @@
                     });
 
                     chartOpts.xAxisNames.push(xAxisContext[i].find('item').getName());
+                }
+
+                if(yAxisContext.length > 0){
+                    chartOpts.yAxis = [];
                 }
 
                 for(var i = 0; i < yAxisContext.length; i++){

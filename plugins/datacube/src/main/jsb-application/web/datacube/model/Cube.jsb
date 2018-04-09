@@ -1862,8 +1862,8 @@
 		
 		executeQuery: function(query, params, provider, bUseCache){
 		    this.load();
-		    if(bUseCache && !provider && this.queryCache){
-		    	return this.queryCache.executeQuery(query, params);
+		    if(bUseCache && this.queryCache){
+		    	return this.queryCache.executeQuery(query, params, provider);
 		    } else {
 		    	return this.queryEngine.query(query, params, provider);
 		    }

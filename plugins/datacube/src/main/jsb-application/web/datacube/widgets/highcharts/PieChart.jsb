@@ -73,7 +73,7 @@
                 unionSeries: {
                     render: 'item',
                     name: 'Объединить все серии',
-                    optional: true,
+                    optional: 'checked',
                     editor: 'none'
                 }
             }
@@ -219,7 +219,7 @@
 
                     var seriesContext = $this.getContext().find('series').values();
 
-                    if(unionSeries){
+                    if(seriesContext.length > 1 && unionSeries){
                         var newData = [],
                             bindings = [],
                             series0 = JSB.clone(chartOpts.series[0]);

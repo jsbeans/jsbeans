@@ -76,8 +76,8 @@
 			}
 		},
 		
-		generateQueryId: function(query){
-			return MD5.md5(JSB.stringify(query));
+		generateQueryId: function(query, provider){
+			return MD5.md5(JSB.stringify(query) + (provider ? '_' + provider.getId() : ''));
 		},
 		
 		clear: function(){
@@ -156,6 +156,7 @@
 				qId: qId,
 				query: otherDesc.query,
 				params: otherDesc.params,
+				provider: otherDesc.provider,
 				complete: otherDesc.complete,
 				lastUpdated: otherDesc.lastUpdated,
 				lastUsed: Date.now(),
@@ -173,15 +174,15 @@
 			otherCache.copyFrom(this, query);
 		},
 		
-		executeQuery: function(query, params){
-			var qId = this.generateQueryId(query);
+		executeQuery: function(query, params, provider){
+			var qId = this.generateQueryId(query, provider);
 
 			function fillNextBatch(desc){
 				if(desc.complete){
 					return;
 				}
 				if(!desc.it){
-					desc.it = $this.cube.executeQuery(desc.query, desc.params);
+					desc.it = $this.cube.executeQuery(desc.query, desc.params, desc.provider);
 					desc.lastUpdated = Date.now();
 					// do skip
 					for(var i = 0; i < desc.buffer.length; i++){
@@ -280,6 +281,7 @@
 					qId: qId,
 					query: query,
 					params: params,
+					provider: provider,
 					complete: false,
 					it: null,
 					buffer: [],

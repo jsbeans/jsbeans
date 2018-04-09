@@ -1,7 +1,7 @@
 .jsb-select {
     display: inline-block;
     position: relative;
-    width: 200px;
+    min-width: 40px;
     height: 22px;
     border: 1px solid #ccc;
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
@@ -69,7 +69,8 @@
 
 .jsb-select > .dropDown {
     position: absolute;
-    width: 100%;
+	width: 100%;
+    min-width: 150px;
     left: 0;
     right: 0;
     top: 32px;
@@ -77,7 +78,7 @@
     z-index: 10;
     background: white;
     border: 1px solid lightgrey;
-    max-height: 150px;
+    max-height: 300px;
     overflow-y: auto;
 }
 

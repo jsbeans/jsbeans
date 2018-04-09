@@ -162,7 +162,7 @@
                 case 'number':
                     value = Number(this._values[0].value);
 
-                    if(isNaN(value)){
+                    if(isNaN(value) || typeof this._values[0].value === 'string' && this._values[0].value.length === 0 || !JSB.isDefined(this._values[0].value)){
                         value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
                     }
                     break;

@@ -149,6 +149,9 @@
 	    },
 
 	    setValue: function(key, hEvt){
+	    	if(key && !JSB.isDefined(this._optionsList[key])){
+	    		return;
+	    	}
 	        this._value = {
                 key: key,
                 value: this._optionsList[key]
