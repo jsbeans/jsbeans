@@ -143,7 +143,8 @@
             }
 
             if(!this._schemeOpts){
-                var xAxisContext = this.getContext().find('xAxis').values();
+                var xAxisContext = this.getContext().find('xAxis').values(),
+                    linkMap = {};
 
                 this._schemeOpts = {
                     seriesContext: this.getContext().find('series').values(),
@@ -155,12 +156,20 @@
 
                 for(var i = 0; i < xAxisContext.length; i++){
                     var linkedTo = xAxisContext[i].find('linkedTo').value();
+
+                    if(linkedTo){
+                        linkMap[linkedTo] = true;
+                        linkMap[xAxisContext[i].getName()] = true;
+                    }
+                }
+
+                for(var i = 0; i < xAxisContext.length; i++){
                     var cat = {
                         categories: xAxisContext[i].find('categories'),
                         index: i
                     };
 
-                    if(linkedTo){
+                    if(linkMap[xAxisContext[i].getName()]){
                         this._schemeOpts.xAxisLinked.push(cat);
                     } else {
                         this._schemeOpts.xAxisIndividual.push(cat);
@@ -181,6 +190,7 @@
             this.getElement().loader();
             this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(){
                 try{
+
                     var seriesData = [],
                         xAxisLinkedData = {},
                         xAxisIndividual = [],
@@ -211,7 +221,7 @@
                             if(!xAxisIndividual[i]){
                                 xAxisIndividual[i] = {};
                             }
-                            var val = $this._schemeOpts.xAxisIndividual.categories.value();
+                            var val = $this._schemeOpts.xAxisIndividual[i].categories.value();
 
                             xAxisIndividual[i][val] = {};
 
@@ -283,6 +293,22 @@
 
                         resolveLinkedCategories(xAxisLinkedData, xAxisLinkedCats, 0, $this._schemeOpts.xAxisLinked.length - 1, {x: 0});
 
+                        for(var i = 0; i < xAxisLinkedCats.categoriesArrays.length - 1; i++){
+                            var dummyCats = [],
+                                cutCount = 0;
+
+                            for(var j = 0; j < xAxisLinkedCats.tickPositions[i][xAxisLinkedCats.tickPositions[i].length - 1]; j++){
+                                if(xAxisLinkedCats.tickPositions[i].indexOf(j) > -1){
+                                    dummyCats[j] = xAxisLinkedCats.categoriesArrays[i][cutCount];
+                                    cutCount++;
+                                } else {
+                                    dummyCats[j] = 'dummy';
+                                }
+                            }
+
+                            xAxisLinkedCats.categoriesArrays[i] = dummyCats;
+                        }
+debugger;
                         xAxisData.xAxisLinkedCats = xAxisLinkedCats;
                     }
 
@@ -293,13 +319,15 @@
                             xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]);
                         }
 
+                        xAxisIndividualCats.sort();
+
                         for(var j = 0; j < xAxisIndividualCats[0].length; j++){
-                            xAxisIndividual[0][j].x = j;
+                            xAxisIndividual[0][xAxisIndividualCats[0][j]].x = j;
                         }
 
                         xAxisData.xAxisIndividualCats = xAxisIndividualCats;
                     }
-debugger;
+
                     function resolveData(data){
                         for(var i in data){
                             if(data[i].x){
@@ -376,9 +404,9 @@ debugger;
                     }
 
                     if(xAxisData.xAxisLinkedCats){
-                        for(var i = $this._schemeOpts.xAxisLinked.length - 1; i > -1 ; i--){
-                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].categories = xAxisData.xAxisLinkedCats[i].categoriesArrays;
-                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].tickPositions = xAxisData.xAxisLinkedCats[i].tickPositions;
+                        for(var i = 0; i < $this._schemeOpts.xAxisLinked.length; i++){
+                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].categories = xAxisData.xAxisLinkedCats.categoriesArrays[xAxisData.xAxisLinkedCats.categoriesArrays.length - 1 - i];
+                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].tickPositions = xAxisData.xAxisLinkedCats.tickPositions[xAxisData.xAxisLinkedCats.categoriesArrays.length - 1 - i];
                         }
                     }
 
@@ -412,7 +440,7 @@ debugger;
                         }
                     }
                }
-
+debugger;
                 if(this._styles){
                     baseChartOpts = includeData(this._styles, data.data, data.xAxisData);
                 } else {

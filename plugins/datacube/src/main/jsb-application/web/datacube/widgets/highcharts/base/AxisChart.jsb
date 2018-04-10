@@ -26,6 +26,7 @@
                         linkedTo: {
                             render: 'select',
                             name: 'Привязка к оси',
+                            allowEmpty: true,
                             commonField: 'xAxisNames'
                         },
                         labels: {
@@ -472,8 +473,13 @@
                 }
 
                 for(var i = 0; i < xAxisContext.length; i++){
+                    chartOpts.xAxisNames.push(xAxisContext[i].find('item').getName());
+                }
+
+                for(var i = 0; i < xAxisContext.length; i++){
                     var xAxisLabels = xAxisContext[i].find('labels'),
-                        xAxisTitle = xAxisContext[i].find('title');
+                        xAxisTitle = xAxisContext[i].find('title'),
+                        linkedToIndex = chartOpts.xAxisNames.indexOf(xAxisContext[i].find('linkedTo').value());
 
                     chartOpts.xAxis.push({
                         labels: {
@@ -498,6 +504,7 @@
                         alternateGridColor: xAxisContext[i].find('alternateGridColor').value(),
                         crosshair: xAxisContext[i].find('crosshair').checked(),
                         lineColor: xAxisContext[i].find('lineColor').value(),
+                        linkedTo: linkedToIndex > -1 ? linkedToIndex : undefined,
                         offset: xAxisContext[i].find('offset').value(),
                         opposite: xAxisContext[i].find('opposite').checked(),
                         reversed: xAxisContext[i].find('reversed').checked(),
@@ -507,8 +514,6 @@
                         minX: xAxisContext[i].find('minX').value(),
                         maxX: xAxisContext[i].find('maxX').value()
                     });
-
-                    chartOpts.xAxisNames.push(xAxisContext[i].find('item').getName());
                 }
 
                 if(yAxisContext.length > 0){
