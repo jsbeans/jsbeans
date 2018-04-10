@@ -391,6 +391,28 @@ debugger;
                     return chartOpts;
                 }
 
+               function centerLabels(axis){
+                    var tickWidth = axis.width / axis.categories.length,
+                        lastTick = -1;
+
+                    for (var i = 0; i < axis.categories.length; i++) {
+                        if (axis.ticks[i]) {
+                            var left = axis.chart.plotLeft + ((lastTick + 1) * tickWidth),
+                                label = axis.ticks[i].label,
+                                newX = left + (((axis.ticks[i].pos - lastTick) / 2) * tickWidth),
+                                x = newX - label.xy.x;
+
+                            label.attr({
+                                translateX: x,
+                                translateY: 0
+                            });
+
+                            lastTick = i;
+
+                        }
+                    }
+               }
+
                 if(this._styles){
                     baseChartOpts = includeData(this._styles, data.data, data.xAxisData);
                 } else {
@@ -400,7 +422,11 @@ debugger;
                     var chartOpts = {
                         chart: {
                             events: {
-                                //
+          	                    load: function () {
+                                    //centerLabels(this.xAxis[1]);
+                                }, resize: function () {
+                                    //centerLabels(this.xAxis[1]);
+                                }
                             }
                         },
                         plotOptions: {
