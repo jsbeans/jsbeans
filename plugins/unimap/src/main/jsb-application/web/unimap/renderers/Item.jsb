@@ -29,11 +29,11 @@
 	            this.createRequireDesc(this.checkBox);
 	            this.createDescription(this.checkBox);
 	        } else {
-                var name = this.$('<span class="name">' + this._scheme.name + '</span>');
-                this.append(name);
+                this._name = this.$('<span class="name">' + this._scheme.name + '</span>');
+                this.append(this._name);
 
-                this.createRequireDesc(name);
-                this.createDescription(name);
+                this.createRequireDesc(this._name);
+                this.createDescription(this._name);
 	        }
 
 	        if(this._scheme.multiple){

@@ -998,7 +998,7 @@
 									}
 									
 									cellEl.attr('title', val);
-									cellEl.text(fVal);
+									cellEl.text(fVal !== null ? fVal : '');
 								}
 							});
 					
@@ -1093,7 +1093,7 @@
 													fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
 												}
 												
-												cellEl.text(fVal);
+												cellEl.text(fVal !== null ? fVal : '');
 												cellEl.attr('title', val);
 											}
 										});

@@ -4,6 +4,7 @@
 }
 
 .basicRender .description,
+.basicRender .error,
 .basicRender .warning {
     position: absolute;
     line-height: 20px;
@@ -27,7 +28,9 @@
 }
 
 .basicRender .error {
-
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
 }
 
 .basicRender .description.show,

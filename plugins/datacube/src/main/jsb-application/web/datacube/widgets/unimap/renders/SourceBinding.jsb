@@ -377,7 +377,8 @@
 			return {
 				type: 'array',
 				source: source.getId(),
-				arrayType: recordTypes
+				arrayType: recordTypes,
+				workspaceId: source.getWorkspace().getId()
 			}
 	    },
 

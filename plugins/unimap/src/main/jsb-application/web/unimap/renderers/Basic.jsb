@@ -56,7 +56,7 @@
             var error = this.$('<div class="error hidden"></div>');
             name.append(error);
 
-            var icon = this.createMsgIcon(error, 'error fas fa-exclamation-triangle hidden');
+            var icon = this.createMsgIcon(error, 'err fas fa-exclamation-triangle hidden');
             name.append(icon);
 
             this._errorDesc ={
@@ -208,7 +208,7 @@
             return this._values;
         },
 
-        hideError: function(msg){
+        hideError: function(){
             if(!this._errorDesc){
                 throw new Error('Error description is not defined');
             }

@@ -44,6 +44,10 @@
     color: #fab005;
 }
 
+.itemRender > .name > .err {
+    color: #721c24;
+}
+
 .itemRender > .item {
     display: inline-block;
 	max-width: 100%;
