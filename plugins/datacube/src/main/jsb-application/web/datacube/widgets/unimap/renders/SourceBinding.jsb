@@ -23,10 +23,6 @@
 
 	        this.setEditor(item);
 
-            if(values.binding){
-                this.setDataScheme(values.binding, null, itemIndex);
-            }
-
             item.droppable({
                 accept: function(d){
                     if(d && d.length > 0 && d.get(0).draggingItems){
@@ -86,6 +82,10 @@
 	        } else {
 	            this.append(item);
 	        }
+
+            if(values.binding){
+                this.setDataScheme(values.binding, null, itemIndex);
+            }
 	    },
 
 	    destroy: function(){
