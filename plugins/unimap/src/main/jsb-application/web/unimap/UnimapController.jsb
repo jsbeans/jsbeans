@@ -228,10 +228,6 @@
 	    },
 
 	    updateCommonFields: function(key, commonGroup, newValue, oldValue){
-	        if(!JSB.isString(newValue)){
-	            return;
-	        }
-
 	        if(!this._commonFieldsMap[commonGroup]){
                 this._commonFieldsMap[commonGroup] = {
                     commonRenders: [],
@@ -247,7 +243,7 @@
 	            }
 	        }
 
-	        if(newValue && this._commonFieldsMap[commonGroup].commonValues.indexOf(newValue) === -1){
+	        if(newValue && JSB.isString(newValue) && this._commonFieldsMap[commonGroup].commonValues.indexOf(newValue) === -1){
 	            this._commonFieldsMap[commonGroup].commonValues.push(newValue);
 
 	            for(var i = 0; i < this._commonFieldsMap[commonGroup].commonRenders.length; i++){

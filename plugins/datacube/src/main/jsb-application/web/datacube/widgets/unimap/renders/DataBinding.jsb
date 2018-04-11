@@ -71,7 +71,7 @@
                 case 'select':
                 default:
                     var editor = new Select({
-                        clearBtn: true,
+                        clearBtn: !this._scheme.multiple,
                         options: dataList,
                         value: values.value,
                         onchange: function(val){

@@ -6,180 +6,206 @@
 	        render: 'group',
 	        name: 'Ось Х',
             collapsable: true,
+            multiple: {
+                createDefault: true,
+                uniqueNames: true
+            },
             items: {
-                categories: {},
-                labels: {
+                item: {
                     render: 'group',
-                    name: 'Подписи',
+                    name: 'Ось X',
                     collapsable: true,
+                    editableName: {
+                        commonField: 'xAxisNames'
+                    },
                     items: {
-                        enabled: {
-                            render: 'item',
-                            name: 'Активны',
-                            optional: 'checked',
-                            editor: 'none'
+                        categories: {
+                            render: 'dataBinding',
+                            name: 'Категории',
+                            linkTo: 'source'
                         },
-                        rotation: {
-                            render: 'item',
-                            name: 'Поворот',
-                            valueType: 'number',
-                            defaultValue: 0
-                        },
-                        step: {
-                            render: 'item',
-                            name: 'Шаг',
-                            valueType: 'number'
-                        },
-                        format: {
-                            render: 'item',
-                            name: 'Формат',
-                            valueType: 'string',
-                            defaultValue: '{value}'
-                        },
-                        fontColor: {
-                            render: 'item',
-                            name: 'Цвет шрифта',
-                            editor: 'JSB.Widgets.ColorEditor',
-                            defaultValue: '#666666'
-                        },
-                        fontSize: {
-                            render: 'item',
-                            name: 'Размер шрифта',
-                            valueType: 'number',
-                            defaultValue: 11
-                        }
-                    }
-                },
-                title: {
-                    render: 'group',
-                    name: 'Заголовок оси',
-                    collapsable: true,
-                    items: {
-                        text: {
-                            render: 'item',
-                            name: 'Текст',
-                            valueType: 'string'
-                        },
-                        align: {
+                        linkedTo: {
                             render: 'select',
-                            name: 'Горизонтальное выравнивание',
+                            name: 'Привязка к оси',
+                            allowEmpty: true,
+                            commonField: 'xAxisNames'
+                        },
+                        labels: {
+                            render: 'group',
+                            name: 'Подписи',
+                            collapsable: true,
                             items: {
-                                low: {
-                                    name: 'По левому краю'
+                                enabled: {
+                                    render: 'item',
+                                    name: 'Активны',
+                                    optional: 'checked',
+                                    editor: 'none'
                                 },
-                                middle: {
-                                    name: 'По центру'
+                                rotation: {
+                                    render: 'item',
+                                    name: 'Поворот',
+                                    valueType: 'number',
+                                    defaultValue: 0
                                 },
-                                high: {
-                                    name: 'По правому краю'
+                                step: {
+                                    render: 'item',
+                                    name: 'Шаг',
+                                    valueType: 'number'
+                                },
+                                format: {
+                                    render: 'item',
+                                    name: 'Формат',
+                                    valueType: 'string',
+                                    defaultValue: '{value}'
+                                },
+                                fontColor: {
+                                    render: 'item',
+                                    name: 'Цвет шрифта',
+                                    editor: 'JSB.Widgets.ColorEditor',
+                                    defaultValue: '#666666'
+                                },
+                                fontSize: {
+                                    render: 'item',
+                                    name: 'Размер шрифта',
+                                    valueType: 'number',
+                                    defaultValue: 11
                                 }
                             }
                         },
-                        rotation: {
+                        title: {
+                            render: 'group',
+                            name: 'Заголовок оси',
+                            collapsable: true,
+                            items: {
+                                text: {
+                                    render: 'item',
+                                    name: 'Текст',
+                                    valueType: 'string'
+                                },
+                                align: {
+                                    render: 'select',
+                                    name: 'Горизонтальное выравнивание',
+                                    items: {
+                                        low: {
+                                            name: 'По левому краю'
+                                        },
+                                        middle: {
+                                            name: 'По центру'
+                                        },
+                                        high: {
+                                            name: 'По правому краю'
+                                        }
+                                    }
+                                },
+                                rotation: {
+                                    render: 'item',
+                                    name: 'Поворот',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                offset: {
+                                    render: 'item',
+                                    name: 'Отступ',
+                                    valueType: 'number'
+                                },
+                                color: {
+                                    render: 'item',
+                                    name: 'Цвет',
+                                    editor: 'JSB.Widgets.ColorEditor',
+                                    defaultValue: '#666666'
+                                },
+                                x: {
+                                    render: 'item',
+                                    name: 'X',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                y: {
+                                    render: 'item',
+                                    name: 'Y',
+                                    valueType: 'number'
+                                }
+                            }
+                        },
+                        alternateGridColor: {
                             render: 'item',
-                            name: 'Поворот',
+                            name: 'Чередующийся цвет',
+                            editor: 'JSB.Widgets.ColorEditor'
+                        },
+                        crosshair: {
+                            render: 'item',
+                            name: 'Указатель',
+                            optional: true,
+                            editor: 'none'
+                        },
+                        lineColor: {
+                            render: 'item',
+                            name: 'Цвет оси',
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#ccd6eb'
+                        },
+                        lineWidth: {
+                            render: 'item',
+                            name: 'Толщина оси',
                             valueType: 'number',
-                            defaultValue: 0
+                            defaultValue: 1
                         },
                         offset: {
                             render: 'item',
-                            name: 'Отступ',
-                            valueType: 'number'
-                        },
-                        color: {
-                            render: 'item',
-                            name: 'Цвет',
-                            editor: 'JSB.Widgets.ColorEditor',
-                            defaultValue: '#666666'
-                        },
-                        x: {
-                            render: 'item',
-                            name: 'X',
+                            name: 'Отступ оси',
                             valueType: 'number',
-                            defaultValue: 0
+                            defaultValue: undefined
                         },
-                        y: {
+                        opposite: {
                             render: 'item',
-                            name: 'Y',
-                            valueType: 'number'
-                        }
-                    }
-                },
-                alternateGridColor: {
-                    render: 'item',
-                    name: 'Чередующийся цвет',
-                    editor: 'JSB.Widgets.ColorEditor'
-                },
-                crosshair: {
-                    render: 'item',
-                    name: 'Указатель',
-                    optional: true,
-                    editor: 'none'
-                },
-                lineColor: {
-                    render: 'item',
-                    name: 'Цвет оси',
-                    editor: 'JSB.Widgets.ColorEditor',
-                    defaultValue: '#ccd6eb'
-                },
-                lineWidth: {
-                    render: 'item',
-                    name: 'Толщина оси',
-                    valueType: 'number',
-                    defaultValue: 1
-                },
-                offset: {
-                    render: 'item',
-                    name: 'Отступ оси',
-                    valueType: 'number',
-                    defaultValue: 0
-                },
-                opposite: {
-                    render: 'item',
-                    name: 'Напротив',
-                    optional: true,
-                    editor: 'none'
-                },
-                reversed: {
-                    render: 'item',
-                    name: 'Обратное направление',
-                    optional: true,
-                    editor: 'none'
-                },
-                type: {
-                    render: 'select',
-                    name: 'Тип',
-                    items: {
-                        linear: {
-                            name: 'Линейная'
+                            name: 'Напротив',
+                            optional: true,
+                            editor: 'none'
                         },
-                        logarithmic: {
-                            name: 'Логарифмическая'
+                        reversed: {
+                            render: 'item',
+                            name: 'Обратное направление',
+                            optional: true,
+                            editor: 'none'
+                        },
+                        /*
+                        type: {
+                            render: 'select',
+                            name: 'Тип',
+                            items: {
+                                linear: {
+                                    name: 'Линейная'
+                                },
+                                logarithmic: {
+                                    name: 'Логарифмическая'
+                                }
+                            }
+                        },
+                        */
+                        minX: {
+                            render: 'dataBinding',
+                            name: 'Минимум',
+                            linkTo: 'source',
+                            editor: 'input'
+                        },
+                        maxX: {
+                            render: 'dataBinding',
+                            name: 'Максимум',
+                            linkTo: 'source',
+                            editor: 'input'
+                        },
+                        tickInterval: {
+                            render: 'item',
+                            name: 'Интервал отметок',
+                            valueType: 'number'
+                        },
+                        tickColor: {
+                            render: 'item',
+                            name: 'Цвет отметок',
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#ccd6eb'
                         }
                     }
-                },
-                minX: {
-                    render: 'dataBinding',
-                    name: 'Минимум',
-                    linkTo: 'source',
-                    editor: 'input'
-                },
-                maxX: {
-                    render: 'dataBinding',
-                    name: 'Максимум',
-                    linkTo: 'source',
-                    editor: 'input'
-                },
-                tickInterval: {
-                    render: 'item',
-                    name: 'Интервал отметок',
-                    valueType: 'number'
-                },
-                tickColor: {
-                    render: 'item',
-                    name: 'Цвет отметок',
-                    editor: 'JSB.Widgets.ColorEditor',
-                    defaultValue: '#ccd6eb'
                 }
             }
         },
@@ -189,6 +215,7 @@
 	        name: 'Оси Y',
             collapsable: true,
             multiple: {
+                createDefault: true,
                 uniqueNames: true
             },
             items: {
@@ -200,6 +227,18 @@
                         commonField: 'yAxisNames'
                     },
                     items: {
+                        type: {
+                            render: 'select',
+                            name: 'Тип',
+                            items: {
+                                linear: {
+                                    name: 'Линейная'
+                                },
+                                logarithmic: {
+                                    name: 'Логарифмическая'
+                                }
+                            }
+                        },
                         labels: {
                             render: 'group',
                             name: 'Подписи',
@@ -338,18 +377,6 @@
                             optional: true,
                             editor: 'none'
                         },
-                        type: {
-                            render: 'select',
-                            name: 'Тип',
-                            items: {
-                                linear: {
-                                    name: 'Линейная'
-                                },
-                                logarithmic: {
-                                    name: 'Логарифмическая'
-                                }
-                            }
-                        },
                         gridLineColor: {
                             render: 'item',
                             name: 'Цвет линий сетки',
@@ -434,14 +461,29 @@
             var baseChartOpts = $base();
 
             try{
-                var xAxisContext = this.getContext().find('xAxis'),
-                    yAxisContext = this.getContext().find('yAxis').values(),
-
-                    xAxisLabels = xAxisContext.find('labels'),
-                    xAxisTitle = xAxisContext.find('title');
+                var xAxisContext = this.getContext().find('xAxis').values(),
+                    yAxisContext = this.getContext().find('yAxis').values();
 
                 var chartOpts = {
-                    xAxis: {
+                    xAxisNames: [],
+
+                    yAxisNames: []
+                };
+
+                if(xAxisContext.length > 0){
+                    chartOpts.xAxis = [];
+                }
+
+                for(var i = 0; i < xAxisContext.length; i++){
+                    chartOpts.xAxisNames.push(xAxisContext[i].find('item').getName());
+                }
+
+                for(var i = 0; i < xAxisContext.length; i++){
+                    var xAxisLabels = xAxisContext[i].find('labels'),
+                        xAxisTitle = xAxisContext[i].find('title'),
+                        linkedToIndex = chartOpts.xAxisNames.indexOf(xAxisContext[i].find('linkedTo').value());
+
+                    chartOpts.xAxis.push({
                         labels: {
                             enabled: xAxisLabels.find('enabled').checked(),
                             rotation: xAxisLabels.find('rotation').value(),
@@ -461,21 +503,20 @@
                             x: xAxisTitle.find('x').value(),
                             y: xAxisTitle.find('y').value()
                         },
-                        alternateGridColor: xAxisContext.find('alternateGridColor').value(),
-                        crosshair: xAxisContext.find('crosshair').checked(),
-                        lineColor: xAxisContext.find('lineColor').value(),
-                        offset: xAxisContext.find('offset').value(),
-                        opposite: xAxisContext.find('opposite').checked(),
-                        reversed: xAxisContext.find('reversed').checked(),
-                        tickColor: xAxisContext.find('tickColor').value(),
-                        tickInterval: xAxisContext.find('tickInterval').value(),
-                        type: xAxisContext.find('type').value(),
-                        minX: xAxisContext.find('minX').value(),
-                        maxX: xAxisContext.find('maxX').value()
-                    },
-
-                    yAxisNames: []
-                };
+                        alternateGridColor: xAxisContext[i].find('alternateGridColor').value(),
+                        crosshair: xAxisContext[i].find('crosshair').checked(),
+                        lineColor: xAxisContext[i].find('lineColor').value(),
+                        linkedTo: linkedToIndex > -1 ? linkedToIndex : undefined,
+                        offset: xAxisContext[i].find('offset').value(),
+                        opposite: xAxisContext[i].find('opposite').checked(),
+                        reversed: xAxisContext[i].find('reversed').checked(),
+                        tickColor: xAxisContext[i].find('tickColor').value(),
+                        tickInterval: xAxisContext[i].find('tickInterval').value(),
+                        type: xAxisContext[i].find('type').value(),
+                        minX: xAxisContext[i].find('minX').value(),
+                        maxX: xAxisContext[i].find('maxX').value()
+                    });
+                }
 
                 if(yAxisContext.length > 0){
                     chartOpts.yAxis = [];

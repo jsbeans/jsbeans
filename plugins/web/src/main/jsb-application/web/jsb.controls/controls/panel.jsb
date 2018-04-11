@@ -181,7 +181,7 @@
                     validTrue();
                 },
                 onfocusout: function(val){
-                    $this.elements.title.find('span').removeClass('hidden').text(val);
+                    $this.elements.title.find('span').removeClass('hidden');//.text(val);
                     $this.elements.buttons.titleEditBtn.removeClass('hidden');
 
                     editor.destroy();

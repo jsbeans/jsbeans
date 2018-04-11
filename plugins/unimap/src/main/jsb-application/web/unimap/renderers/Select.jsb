@@ -20,11 +20,12 @@
 	            this._values.values.push(values);
 	        }
 
-	        values.value = values.value ? values.value : this._optionsList && this._optionsList.length > 0 ? this._optionsList[0].key : undefined;
+	        values.value = values.value ? values.value : !this._scheme.allowEmpty && this._optionsList && this._optionsList.length > 0 ? this._optionsList[0].key : undefined;
 
 	        var item = this.$('<div class="item"></div>');
 
             var select = new Select({
+                clearBtn: this._scheme.allowEmpty,
                 options: this._optionsList,
                 value: values.value,
                 onchange: function(val){
@@ -74,7 +75,10 @@
 
 	        for(var i = 0; i < this._selectors.length; i++){
 	            this._selectors[i].setOptions(this._optionsList, true);
-	            this._selectors[i].setValue(this._optionsList[0].value, true);
+
+	            if(!this._scheme.allowEmpty){
+	                this._selectors[i].setValue(this._optionsList[0].value, true);
+	            }
 	        }
 	    },
 

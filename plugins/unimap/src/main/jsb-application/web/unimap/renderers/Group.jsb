@@ -3,8 +3,6 @@
 	$parent: 'Unimap.Render.Basic',
 	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
 	$client: {
-	    _childNames: [],
-
 	    construct: function(opts){
 	        this.addClass('groupRender');
 	        this.loadCss('Group.css');
@@ -20,11 +18,18 @@
                 titleValidateFunction: function(val){
                     var parent = $this.getParent();
                     if(JSB.isObject(parent.isMultiple()) && parent.isMultiple().uniqueNames){
-                        return (parent._childNames.indexOf(val) === -1);
+                        return !parent._childNames[val];
                     }
                 },
                 onTitleEdited: function(val){
                     if($this._scheme.editableName && $this._scheme.editableName.commonField){
+                        var parent = $this.getParent();
+                        if(JSB.isObject(parent.isMultiple()) && parent.isMultiple().uniqueNames){
+                            delete parent._childNames[$this._values.name];
+
+                            parent._childNames[val] = true;
+                        }
+
                         $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name);
                         $this._values.name = val;
                     }
@@ -68,8 +73,11 @@
 	            this.group.appendContent(this.multipleBtn);
 	        }
 
-            if(Object.keys(this._scheme.items).length === 1 && this._scheme.items[Object.keys(this._scheme.items)[0]].render === 'group'){
-                this._childGroups = [];
+            if(Object.keys(this._scheme.items).length === 1 &&
+               this._scheme.items[Object.keys(this._scheme.items)[0]].render === 'group' &&
+               JSB.isObject(this._scheme.multiple) &&
+               this._scheme.multiple.uniqueNames){
+                this._childNames = {};
             }
 
 	        if(this._values.values.length > 0){
@@ -77,21 +85,15 @@
 	                this.addItem(this._values.values[i], i);
 	            }
 	        } else {
-	            if(!this._scheme.multiple){
+	            if(!this._scheme.multiple || JSB.isObject(this._scheme.multiple) && this._scheme.multiple.createDefault){
                     this.addItem(null, 0);
-                }
-            }
-
-            if(JSB.isObject(this._scheme.multiple) && this._scheme.multiple.uniqueNames){
-                this._childNames = [];
-
-                for(var i = 0; i < this._childGroups.length; i++){
-                    this._childNames.push(this._childGroups[i].getName());
                 }
             }
 	    },
 
 	    addItem: function(values, itemIndex){
+	        var name;
+
 	        if(!values){
 	            values = {};
 
@@ -106,15 +108,16 @@
 	            }
 
 	            if(JSB.isObject(this._scheme.multiple) && this._scheme.multiple.uniqueNames){
-	                var name = this._scheme.items[Object.keys(this._scheme.items)[0]].name,
-	                    k = 1;
-	                while(this._childNames.indexOf(name) > -1){
+	                var k = 1;
+
+                    name = this._scheme.items[Object.keys(this._scheme.items)[0]].name;
+
+	                while(this._childNames[name]){
 	                    name = this._scheme.items[Object.keys(this._scheme.items)[0]].name + ' ' + k;
 	                    k++;
 	                }
 
-	                values.name = name;
-	                this._childNames.push(name);
+	                this._childNames[name] = true;
 	            }
 	        }
 
@@ -140,20 +143,24 @@
                         values[i] = {};
                     }
 
-                    var render = this.createRender(i, this._scheme.items[i], values[i], { name: values.name });
+                    var render = this.createRender(i, this._scheme.items[i], values[i], { name: name });
 
                     if(render){
                         item.append(render.getElement());
                     }
 
-                    if(render && this._childGroups){
-                        this._childGroups.push(render);
+                    if(this._childNames){
+                        if(!name){
+                            name = render.getName();
+                        }
+
+                        this._childNames[name] = true;
                     }
                 }
 
                 var dltBtn = this.$('<i class="dltBtn fas fa-times"></i>');
                 dltBtn.click(function(){
-                    $this.removeItem(item);
+                    $this.removeItem(item, render);
                 });
                 item.append(dltBtn);
 
@@ -185,13 +192,18 @@
 	        $base();
 	    },
 
-	    removeItem: function(item){
+	    removeItem: function(item, render){
 	        var items = this.group.getElement().find('>.content>.multipleItem'),
-	            itemIndex = Number(item.attr('idx')),
-	            name = this._values.values[itemIndex].name;
+	            itemIndex = Number(item.attr('idx'));
 
             if(this._childNames){
-                this._childNames.splice(this._childNames.indexOf(name), 1);
+                var name = render.getName();
+
+                delete this._childNames[name];
+
+                if(render._scheme.editableName && render._scheme.editableName.commonField){
+                    this.getSchemeController().updateCommonFields(null, render._scheme.editableName.commonField, null, name);
+                }
             }
 
 	        for(var i = 0; i < items.length; i++){
@@ -204,10 +216,6 @@
 	            if(i > itemIndex){
 	                this.$(items[i]).attr('idx', i - 1);
 	            }
-	        }
-
-	        if(this._scheme.editableName && this._scheme.editableName.commonField){
-                this.getSchemeController().updateCommonFields(null, this._scheme.editableName.commonField, null, this._values.name || this._scheme.name);
 	        }
 	    },
 
