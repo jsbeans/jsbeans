@@ -198,7 +198,6 @@
 
                     while($this._dataSource.next()){
                         // xAxis
-
                         // связанные оси
                         var curCat = xAxisLinkedData,
                             filterCat = null;
@@ -223,7 +222,9 @@
                             }
                             var val = $this._schemeOpts.xAxisIndividual[i].categories.value();
 
-                            xAxisIndividual[i][val] = {};
+                            if(!xAxisIndividual[i][val]){
+                                xAxisIndividual[i][val] = {};
+                            }
 
                             if(!filterCat && i === 0){
                                 filterCat = xAxisIndividual[i][val];
@@ -252,7 +253,7 @@
                                     filterData: $this._addFilterData()
                                 },
                                 color: color,
-                                x: filterCat || $this._schemeOpts.xAxisFilterBinding.value(),
+                                x: filterCat,
                                 y: data.value()
                             });
                         }
@@ -319,11 +320,11 @@
                             xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]);
                         }
 
-                        xAxisIndividualCats.sort();
-
                         for(var j = 0; j < xAxisIndividualCats[0].length; j++){
                             xAxisIndividual[0][xAxisIndividualCats[0][j]].x = j;
                         }
+
+                        xAxisIndividualCats.sort();
 
                         xAxisData.xAxisIndividualCats = xAxisIndividualCats;
                     }
