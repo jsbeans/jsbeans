@@ -278,7 +278,7 @@
                             result.tickPositions[index] = [];
                         }
 
-                        var curTick = 0;
+                        var curTick = -1;
                         for(var i in cats){
                             curTick = curTick + resolveLinkedCategories(cats[i], result, index + 1, max, curX);
                             result.tickPositions[index].push(curTick);
@@ -297,7 +297,7 @@
                             var dummyCats = [],
                                 cutCount = 0;
 
-                            for(var j = 0; j < xAxisLinkedCats.tickPositions[i][xAxisLinkedCats.tickPositions[i].length - 1]; j++){
+                            for(var j = 0; j < xAxisLinkedCats.tickPositions[i][xAxisLinkedCats.tickPositions[i].length - 1] + 1; j++){
                                 if(xAxisLinkedCats.tickPositions[i].indexOf(j) > -1){
                                     dummyCats[j] = xAxisLinkedCats.categoriesArrays[i][cutCount];
                                     cutCount++;
@@ -308,7 +308,7 @@
 
                             xAxisLinkedCats.categoriesArrays[i] = dummyCats;
                         }
-debugger;
+
                         xAxisData.xAxisLinkedCats = xAxisLinkedCats;
                     }
 
@@ -352,6 +352,13 @@ debugger;
                         }
                     }
 
+                    // sort data for highcharts
+                    for(var i = 0; i < data.length; i++){
+                        data[i].data.sort(function(a, b){
+                            return a.x < b.x ? -1 : 1;
+                        });
+                    }
+
                     if(opts && opts.isCacheMod){
                         $this.storeCache({
                             data: data,
@@ -376,6 +383,30 @@ debugger;
             var baseChartOpts;
 
             try{
+                function centerLabels(chart){
+                    for(var j = 0; j < $this._schemeOpts.xAxisLinked.length; j++){
+                        var axis = chart.xAxis[$this._schemeOpts.xAxisLinked[j].index],
+                            tickWidth = axis.width / axis.categories.length,
+                            lastTick = -1;
+
+                        for (var i = 0; i < axis.categories.length; i++) {
+                            if (axis.ticks[i]) {
+                                var left = axis.chart.plotLeft + ((lastTick + 1) * tickWidth),
+                                    label = axis.ticks[i].label,
+                                    newX = left + (((axis.ticks[i].pos - lastTick) / 2) * tickWidth),
+                                    x = newX - label.xy.x;
+
+                                label.attr({
+                                    translateX: x,
+                                    translateY: 0
+                                });
+
+                                lastTick = i;
+                            }
+                        }
+                    }
+                }
+
                 function includeData(chartOpts, seriesData, xAxisData){
                     chartOpts = JSB.clone(chartOpts);
 
@@ -419,28 +450,6 @@ debugger;
                     return chartOpts;
                 }
 
-               function centerLabels(axis){
-                    var tickWidth = axis.width / axis.categories.length,
-                        lastTick = -1;
-
-                    for (var i = 0; i < axis.categories.length; i++) {
-                        if (axis.ticks[i]) {
-                            var left = axis.chart.plotLeft + ((lastTick + 1) * tickWidth),
-                                label = axis.ticks[i].label,
-                                newX = left + (((axis.ticks[i].pos - lastTick) / 2) * tickWidth),
-                                x = newX - label.xy.x;
-
-                            label.attr({
-                                translateX: x,
-                                translateY: 0
-                            });
-
-                            lastTick = i;
-
-                        }
-                    }
-               }
-debugger;
                 if(this._styles){
                     baseChartOpts = includeData(this._styles, data.data, data.xAxisData);
                 } else {
@@ -451,9 +460,9 @@ debugger;
                         chart: {
                             events: {
           	                    load: function () {
-                                    //centerLabels(this.xAxis[1]);
+                                    centerLabels(this);
                                 }, resize: function () {
-                                    //centerLabels(this.xAxis[1]);
+                                    centerLabels(this);
                                 }
                             }
                         },

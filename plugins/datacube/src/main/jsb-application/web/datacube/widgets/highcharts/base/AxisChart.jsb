@@ -7,6 +7,7 @@
 	        name: 'Ось Х',
             collapsable: true,
             multiple: {
+                createDefault: true,
                 uniqueNames: true
             },
             items: {
@@ -153,7 +154,7 @@
                             render: 'item',
                             name: 'Отступ оси',
                             valueType: 'number',
-                            defaultValue: 0
+                            defaultValue: undefined
                         },
                         opposite: {
                             render: 'item',
@@ -214,6 +215,7 @@
 	        name: 'Оси Y',
             collapsable: true,
             multiple: {
+                createDefault: true,
                 uniqueNames: true
             },
             items: {

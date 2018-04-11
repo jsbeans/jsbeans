@@ -798,11 +798,17 @@
                 styleSelector = this.getContext().find('chart colorScheme');
 
             function buildWidget(chartOpts){
+                /*
                 if($this.chart){
                     $this.chart.update(chartOpts, true, true);
                 } else {
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
+                */
+                if($this.chart){
+                    $this.chart.destroy();
+                }
+                $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
 
                 $this._select($this._curFilters, true, true);
                 $this._resolvePointContextFilters();
@@ -1259,7 +1265,6 @@
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
                             if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
                                 this.chart.series[j].points[k].select(b1, b2);
-                                break;
                             }
                         }
                     }
