@@ -346,7 +346,7 @@
 			var rx = new RegExp(pat, 'i');
 			var foundEntries = [];
 			for(var eId in this._entries){
-				if(rx.test(this._entries[eId].eName)){
+				if(rx.test(this._entries[eId].eName) || rx.test(eId)){
 					foundEntries.push(this._entries[eId]);
 				}
 			}
