@@ -342,13 +342,23 @@
 		},
 		
 		search: function(pat){
-			pat = pat.replace(/\./g, '\\.').replace(/\*/g,'.*');
-			var rx = new RegExp(pat, 'i');
 			var foundEntries = [];
-			for(var eId in this._entries){
-				if(rx.test(this._entries[eId].eName) || rx.test(eId)){
-					foundEntries.push(this._entries[eId]);
+			if(JSB.isFunction(pat)){
+				for(var eId in this._entries){
+					if(pat.call(this, this._entries[eId])){
+						foundEntries.push(this._entries[eId]);
+					}
 				}
+			} else if(JSB.isString(pat)){
+				pat = pat.replace(/\./g, '\\.').replace(/\*/g,'.*');
+				var rx = new RegExp(pat, 'i');
+				for(var eId in this._entries){
+					if(rx.test(this._entries[eId].eName) || rx.test(eId)){
+						foundEntries.push(this._entries[eId]);
+					}
+				}
+			} else {
+				throw new Error('Invalid argument passed');
 			}
 			
 			var cursor = 0;
