@@ -2,6 +2,7 @@
 
 ._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText  > ._dwp_primitiveEditor {
 	display: block;
+	white-space: nowrap;
 }
 
 ._jsb_dashboardContainer ._dwp_widgetContainer > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab.active > ._dwp_tabText  > ._dwp_primitiveEditor {
