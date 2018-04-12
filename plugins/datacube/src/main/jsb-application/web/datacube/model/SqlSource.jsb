@@ -67,11 +67,7 @@
 			return StoreManager.getStore(this.settings);
 		},
 		
-		clearCache: function(){
-			$this.publish('DataCube.Model.SqlSource.clearCache');
-		},
-		
-		updateCache: function(){
+		loadAffectedCubes: function(){
 			// temp: load all cubes
 			var it = this.getWorkspace().search(function(eDesc){
 				return eDesc.eType == 'DataCube.Model.Cube';
@@ -84,6 +80,15 @@
 			
 			// TODO: load only affected cubes
 			
+		},
+		
+		clearCache: function(){
+			this.loadAffectedCubes();
+			$this.publish('DataCube.Model.SqlSource.clearCache');
+		},
+		
+		updateCache: function(){
+			this.loadAffectedCubes();
 			$this.publish('DataCube.Model.SqlSource.updateCache');
 		},
 		

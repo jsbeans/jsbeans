@@ -86,7 +86,7 @@
 					    this.queryEngine = new QueryEngine(this);
 					    if(Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled')){
 					    	var cacheInvalidateInterval = Config.has('datacube.queryCache.cubeInvalidateInterval') && Config.get('datacube.queryCache.cubeInvalidateInterval') || 600000;
-					    	this.queryCache = new QueryCache(this, {
+					    	this.queryCache = new QueryCache(this, this, {
 					    		invalidateInterval: cacheInvalidateInterval
 					    	});
 					    }
@@ -1901,7 +1901,8 @@
 		            	}
 						var slice = $this.slices[slId];
 						if(slice){
-							slice.invalidate();
+							slice.updateCache();
+							
 							var it = null;
 							try {
 								it = slice.executeQuery({useCache:true});
@@ -1911,11 +1912,12 @@
 									try{ it.close(); }catch(e){}
 								}
 							}
+							
 						}
 						cnt++;
 					}
 					if($this.queryCache){
-						$this.queryCache.clear();
+						$this.queryCache.update();
 					}
 					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
 				} catch(e){
