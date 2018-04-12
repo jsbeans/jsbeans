@@ -61,12 +61,12 @@
 	    },
 
 	    createLink: function(key, render){
-	        if(!this._linksMap[key]){
-	            this._linksMap[key] = {
+	        if(!this._localLinksMap[key]){
+	            this._localLinksMap[key] = {
 	                linkedRenders: []
 	            }
 	        }
-	        this._linksMap[key].linkedRenders.push(render);
+	        this._localLinksMap[key].linkedRenders.push(render);
 	    },
 
         createRender: function(parent, key, scheme, values, opts){
@@ -92,11 +92,7 @@
             this.addRender(render);
 
             if(scheme.linkTo){
-                if(scheme.localLinkTo){
-                    // todo: linkTo in item (group, for example)
-                } else {
-                    this.createLink(scheme.linkTo, render);
-                }
+                this.createLink(scheme.linkTo, render);
             }
 
             if(scheme.commonField){

@@ -10,15 +10,8 @@
     },
     $scheme: {
         series: {
-	        render: 'group',
-	        name: 'Серии',
-            collapsable: true,
-            multiple: true,
             items: {
                 seriesItem: {
-                    render: 'group',
-                    name: 'Серия',
-                    collapsable: true,
                     items: {
                         name: {
                             render: 'dataBinding',

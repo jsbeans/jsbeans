@@ -196,6 +196,10 @@
             this.elements.content.append(content);
         },
 
+        setTitle: function(title){
+            this.elements.title.find('span').text(title);
+        },
+
         togglePanel: function(){
             var $BOX_PANEL = $this.getElement(),
                 $ICON = $this.elements.buttons.collapseBtn.find('i'),

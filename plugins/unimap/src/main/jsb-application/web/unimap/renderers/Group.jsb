@@ -185,6 +185,10 @@
 
 	    changeCommonGroup: function(){},
 
+	    changeLocalLink: function(values){
+	        this.group.setTitle(values[0].value);
+	    },
+
 	    destroy: function(){
 	        this.group && this.group.destroy();
 	        this.checkBox && this.checkBox.destroy();

@@ -3,6 +3,8 @@
 	$parent: 'JSB.Controls.Control',
 	$require: ['Unimap.Controller'],
     $client: {
+        _basicOpts: {},
+
         $constructor: function(opts){
             $base(opts);
             this.addClass('basicRender');
@@ -230,6 +232,10 @@
                 }
             }
 
+            if(this._scheme.localLink){
+                this.updateLocalLinks();
+            }
+
             if(JSB.isFunction(this.options.onchange)){
                 this.options.onchange.call(this, this._values);
             }
@@ -255,6 +261,37 @@
 
             if(Object.keys(res).length > 1){
                 return res;
+            }
+        },
+
+        updateLocalLinks: function(){
+            function findLinkGroup(render, key){
+                var parent = render.getParent();
+
+                if(parent.getKey() === key){
+                    return parent;
+                } else {
+                    return findLinkGroup(parent, key);
+                }
+            }
+
+            if(!this._basicOpts.linkedRenders){
+                this._basicOpts.linkedRenders = [];
+
+                var linkGroup = findLinkGroup(this, this._scheme.localLink.linkGroup),
+                    linkedFields = this._scheme.localLink.linkedFields
+
+                if(!JSB.isArray(linkedFields)){
+                    linkedFields = [linkedFields];
+                }
+
+                for(var i = 0; i < linkedFields.length; i++){
+                    renders.push(linkGroup.find(linkedFields[i]));
+                }
+            }
+
+            for(var i = 0; i < this._basicOpts.linkedRenders.length; i++){
+                this._basicOpts.linkedRenders[i].changeLocalLink(this._values.values, this);
             }
         }
     }

@@ -24,8 +24,8 @@
                     render: 'group',
                     name: 'Серия',
                     collapsable: true,
-                    editableName: true,
                     items: {
+                        seriesName: {},
                         name: {},
                         data: {},
                         tooltip: {
