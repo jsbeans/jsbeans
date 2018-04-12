@@ -57,6 +57,9 @@
 							</div>
 							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnClearCache" caption="Очистить кэш с данными"
 								onclick="{{=this.callbackAttr(function(evt){$this.clearCache()})}}"></div>
+							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnUpdateCache" caption="Обновить кэш с данными"
+								onclick="{{=this.callbackAttr(function(evt){$this.updateCache()})}}"></div>
+
 
 						</div>
 						<div class="option details"></div>
@@ -161,6 +164,15 @@
 			var entry = $this.node.getEntry();
 			$this.getElement().loader({message:'Очистка кэша...', onShow: function(){
 				entry.server().clearCache(function(){
+					$this.getElement().loader('hide');
+				});
+			}});
+		},
+		
+		updateCache: function(){
+			var entry = $this.node.getEntry();
+			$this.getElement().loader({message:'Загрузка подключенных кубов...', onShow: function(){
+				entry.server().updateCache(function(){
 					$this.getElement().loader('hide');
 				});
 			}});

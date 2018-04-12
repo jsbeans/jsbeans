@@ -1881,7 +1881,50 @@
 				if($this.queryCache){
 					$this.queryCache.clear();
 				}
-			}, 100, 'invalidate_' + this.getId());
+			}, 300, 'invalidate_' + this.getId());
+		},
+		
+		updateCache: function(){
+			JSB.defer(function(){
+				$this.lock('DataCube.Model.Cube.updateCache');
+				$this.updatingCache = true;
+				try {
+					// invalidate slices
+					var totalSlices = Object.keys($this.slices).length;
+					var cnt = 0;
+					var lastPP = -1;
+					for(var slId in $this.slices){
+						var pp = Math.round(cnt * 100 / totalSlices);
+						if(pp > lastPP){
+		            		$this.publish('DataCube.Model.Cube.status', {status: 'Обновление кэша ' + pp + '%', success: true}, {session: true});
+		            		lastPP = pp;
+		            	}
+						var slice = $this.slices[slId];
+						if(slice){
+							slice.invalidate();
+							var it = null;
+							try {
+								it = slice.executeQuery({useCache:true});
+							} catch(e){					
+							} finally {
+								if(it){
+									try{ it.close(); }catch(e){}
+								}
+							}
+						}
+						cnt++;
+					}
+					if($this.queryCache){
+						$this.queryCache.clear();
+					}
+					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+				} catch(e){
+					$this.publish('DataCube.Model.Cube.status', {status: e.message, success: false}, {session: true});
+				} finally {
+					$this.updatingCache = false;
+					$this.unlock('DataCube.Model.Cube.updateCache');
+				}
+			}, 300, 'updateCache_' + this.getId());
 		}
 	}
 }

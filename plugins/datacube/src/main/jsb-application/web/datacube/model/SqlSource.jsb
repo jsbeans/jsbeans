@@ -71,6 +71,22 @@
 			$this.publish('DataCube.Model.SqlSource.clearCache');
 		},
 		
+		updateCache: function(){
+			// temp: load all cubes
+			var it = this.getWorkspace().search(function(eDesc){
+				return eDesc.eType == 'DataCube.Model.Cube';
+			});
+			
+			while(it.hasNext()){
+				var e = it.next();
+				e.load();
+			}
+			
+			// TODO: load only affected cubes
+			
+			$this.publish('DataCube.Model.SqlSource.updateCache');
+		},
+		
 		extractScheme: function(){
 			var mtx = 'DataCube.Model.SqlSource.extractScheme.' + this.getId();
 			JSB.getLocker().lock(mtx);
