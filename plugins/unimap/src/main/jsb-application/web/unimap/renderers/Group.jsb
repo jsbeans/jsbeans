@@ -187,6 +187,7 @@
 
 	    changeLocalLink: function(values){
 	        this.group.setTitle(values[0].value);
+	        this._values.name = values[0].value;
 	    },
 
 	    destroy: function(){
