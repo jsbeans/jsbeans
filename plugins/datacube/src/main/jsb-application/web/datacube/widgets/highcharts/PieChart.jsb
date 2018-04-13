@@ -302,7 +302,6 @@
                 console.log('PieChart build chart exception');
                 console.log(ex);
             } finally {
-debugger;
                 return baseChartOpts;
             }
         }
