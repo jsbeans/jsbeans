@@ -42,7 +42,9 @@
                 var val = $this.$(this).val();
 
                 if(val !==  $this._value && JSB.isFunction($this.options.onchange)){
-                    $this.options.onchange.call($this, val);
+                    JSB.defer(function(){
+                        $this.options.onchange.call($this, val);
+                    }, 500, '_editor.changeValue' + $this.getId());
                 }
 
                 if(evt.keyCode === 13){

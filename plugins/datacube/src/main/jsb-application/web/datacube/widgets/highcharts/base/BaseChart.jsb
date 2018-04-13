@@ -25,7 +25,15 @@
                     name: 'Серия',
                     collapsable: true,
                     items: {
-                        seriesName: {},
+                        seriesName: {
+                            render: 'namesBinding',
+                            name: 'Имя серии',
+                            linkTo: 'source',
+                            localLink: {
+                                linkGroup: 'seriesItem',
+                                linkedFields: 'seriesItem'
+                            }
+                        },
                         name: {},
                         data: {},
                         tooltip: {
@@ -877,6 +885,7 @@
                         allowPointSelect: allowPointSelect,
                         cursor: allowPointSelect ? 'pointer' : undefined,
                         datacube: datacube,
+                        name: seriesContext[i].find('seriesName').value(),
                         tooltip: {
                             valueDecimals: tooltip.find('valueDecimals').value(),
                             valuePrefix: tooltip.find('valuePrefix').value(),

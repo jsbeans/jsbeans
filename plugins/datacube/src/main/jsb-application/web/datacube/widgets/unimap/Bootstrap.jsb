@@ -26,6 +26,10 @@
         {
             name: 'styleBinding',
             render: 'Unimap.Render.StylesBinding'
+        },
+        {
+            name: 'namesBinding',
+            render: 'Unimap.Render.NamesBinding'
         }
     ],
 

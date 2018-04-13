@@ -35,8 +35,8 @@
             }
         },
 
-        changeLinkToWarning: function(){
-            // todo: add standard warning
+        changeLocalLink: function(values){
+            // method must be overridden
         },
 
         createDescription: function(name){
@@ -279,14 +279,22 @@
                 this._basicOpts.linkedRenders = [];
 
                 var linkGroup = findLinkGroup(this, this._scheme.localLink.linkGroup),
-                    linkedFields = this._scheme.localLink.linkedFields
+                    linkedFields = this._scheme.localLink.linkedFields;
 
                 if(!JSB.isArray(linkedFields)){
                     linkedFields = [linkedFields];
                 }
 
                 for(var i = 0; i < linkedFields.length; i++){
-                    renders.push(linkGroup.find(linkedFields[i]));
+                    if(linkGroup.getKey() === linkedFields[i]){
+                        this._basicOpts.linkedRenders.push(linkGroup);
+                    } else {
+                        var r = linkGroup.find(linkedFields[i]);
+
+                        if(r.getKey() !== undefined){
+                            this._basicOpts.linkedRenders.push(r);
+                        }
+                    }
                 }
             }
 

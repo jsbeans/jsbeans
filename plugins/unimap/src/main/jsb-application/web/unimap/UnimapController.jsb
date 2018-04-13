@@ -61,12 +61,12 @@
 	    },
 
 	    createLink: function(key, render){
-	        if(!this._localLinksMap[key]){
-	            this._localLinksMap[key] = {
+	        if(!this._linksMap[key]){
+	            this._linksMap[key] = {
 	                linkedRenders: []
 	            }
 	        }
-	        this._localLinksMap[key].linkedRenders.push(render);
+	        this._linksMap[key].linkedRenders.push(render);
 	    },
 
         createRender: function(parent, key, scheme, values, opts){

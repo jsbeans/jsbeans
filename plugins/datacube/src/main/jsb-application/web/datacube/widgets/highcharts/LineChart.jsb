@@ -15,9 +15,8 @@
                     items: {
                         name: {
                             render: 'dataBinding',
-                            name: 'Имя серии или значения',
-                            linkTo: 'source',
-                            editor: 'input'
+                            name: 'Имена серий из источника',
+                            linkTo: 'source'
                         },
                         data: {
                             render: 'dataBinding',
@@ -233,7 +232,7 @@
 
                         // series data
                         for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
-                            var name = $this._schemeOpts.seriesContext[i].find('name'),
+                            var seriesName = $this._schemeOpts.seriesContext[i].find('name').value() || $this._schemeOpts.seriesContext[i].find('seriesName').value(),
                                 data = $this._schemeOpts.seriesContext[i].find('data'),
                                 color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value();
 
@@ -243,11 +242,11 @@
                                 };
                             }
 
-                            if(!seriesData[i].data[name.value()]){
-                                seriesData[i].data[name.value()] = [];
+                            if(!seriesData[i].data[seriesName]){
+                                seriesData[i].data[seriesName] = [];
                             }
 
-                            seriesData[i].data[name.value()].push({
+                            seriesData[i].data[seriesName].push({
                                 datacube: {
                                     binding: $this._schemeOpts.xAxisFilterBinding,
                                     filterData: $this._addFilterData()

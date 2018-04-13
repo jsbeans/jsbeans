@@ -16,8 +16,7 @@
                         name: {
                             render: 'dataBinding',
                             name: 'Имена частей',
-                            linkTo: 'source',
-                            editor: 'input'
+                            linkTo: 'source'
                         },
                         data: {
                             render: 'dataBinding',
@@ -64,10 +63,15 @@
             collapsed: true,
             items: {
                 unionSeries: {
-                    render: 'item',
+                    render: 'switch',
                     name: 'Объединить все серии',
-                    optional: 'checked',
-                    editor: 'none'
+                    items: {
+                        unionSeriesName: {
+                            render: 'item',
+                            name: 'Имя объединенной серии',
+                            valueType: 'string'
+                        }
+                    }
                 }
             }
         },
@@ -155,7 +159,8 @@
 
                     this._schemeOpts.series.push({
                         nameSelector: seriesContext[i].find('name'),
-                        dataSelector: seriesContext[i].find('data')
+                        dataSelector: seriesContext[i].find('data'),
+                        seriesNameSelector: seriesContext[i].find('seriesName')
                     });
 
                     this._schemeOpts.bindings.push(name.binding());
@@ -182,7 +187,7 @@
                                     binding: $this._schemeOpts.series[i].nameSelector.binding() || $this._schemeOpts.series[i].dataSelector.binding(),
                                     filterData: $this._addFilterData()
                                 },
-                                name: $this._schemeOpts.series[i].nameSelector.value(),
+                                name: $this._schemeOpts.series[i].nameSelector.value() || $this._schemeOpts.series[i].seriesNameSelector.value(),
                                 y: $this._schemeOpts.series[i].dataSelector.value()
                             });
                         }
@@ -232,7 +237,8 @@
                             dataLabels: {
                                 color: seriesContext[0].find('dataLabels color').value(),
                                 distance: seriesContext[0].find('dataLabels distance').value()
-                            }
+                            },
+                            name: $this.getContext().find('settings unionSeries unionSeriesName').value()
                         };
 
                         JSB.merge(true, series0, series);
@@ -296,6 +302,7 @@
                 console.log('PieChart build chart exception');
                 console.log(ex);
             } finally {
+debugger;
                 return baseChartOpts;
             }
         }

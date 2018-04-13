@@ -51,6 +51,10 @@
     height: 100%;
     cursor: text;
     padding: 2px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-wrap: break-word;
+    overflow: hidden;
 }
 
 .jsb-comboEditor > .curVal > .simpleValue {
