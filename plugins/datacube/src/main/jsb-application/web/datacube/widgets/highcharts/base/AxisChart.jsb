@@ -265,7 +265,7 @@
                                     render: 'item',
                                     name: 'Формат',
                                     valueType: 'string',
-                                    defaultValue: '{value}'
+                                    defaultValue: '{value:,.0f}' //'{value}'
                                 },
                                 fontColor: {
                                     render: 'item',

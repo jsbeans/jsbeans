@@ -204,57 +204,61 @@
 		},
 		
 		store: function(){
-			var mtxName = 'JSB.Workspace.Workspace.store.' + this.getId();
-			JSB.getLocker().lock(mtxName);
-			try {
-				// store changed entries
-				if(Object.keys(this._changedEntries).length > 0){
-					var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + this.getId();
-					
-					JSB.getLocker().lock(chMtxName);
-					var changedEntries = JSB.clone(this._changedEntries);
-					JSB.getLocker().unlock(chMtxName);
-					
-					for(var eId in changedEntries){
-						this.entry(eId).storeEntry();
-					}
-				}
-				
-				if(!this._stored){
-					// serialize entry indices
-					var eIdx = {};
-					var jsbDict = {};
-					var jsbArr = [];
-					var eMtxName = 'JSB.Workspace.Workspace.entries.' + this.getId();
-					JSB.getLocker().lock(eMtxName);
-					for(var eId in this._entries){
-						var jsbIdx = jsbDict[this._entries[eId].eType];
-						if(!JSB.isDefined(jsbIdx)){
-							jsbIdx = jsbDict[this._entries[eId].eType] = jsbArr.length;
-							jsbArr.push(this._entries[eId].eType);
-						}
-						eIdx[eId] = {
-							_j: jsbIdx,
-							_n: this._entries[eId].eName
-						}
-						if(!JSB.isNull(this._entries[eId].eOpts)){
-							eIdx[eId]._e = this._entries[eId].eOpts;
-						}
-						if(!JSB.isNull(this._entries[eId].aOpts)){
-							eIdx[eId]._a = this._entries[eId].aOpts;
+			JSB.defer(function(){
+				var mtxName = 'JSB.Workspace.Workspace.store';
+				$this.lock(mtxName);
+				try {
+					// store changed entries
+					if(Object.keys($this._changedEntries).length > 0){
+						var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + $this.getId();
+						
+						JSB.getLocker().lock(chMtxName);
+						var changedEntries = JSB.clone($this._changedEntries);
+						JSB.getLocker().unlock(chMtxName);
+						
+						for(var eId in changedEntries){
+							$this.entry(eId).storeEntry();
 						}
 					}
-					JSB.getLocker().unlock(eMtxName);
-					this.getEntryDoc()._jsbs = jsbArr;
-					this.getEntryDoc()._entries = eIdx;
-					this.getEntryDoc()._wt = this._wt;
 					
-					// store entry file
-					this.storeEntry();
+					if(!$this._stored){
+						// serialize entry indices
+						var eIdx = {};
+						var jsbDict = {};
+						var jsbArr = [];
+						var eMtxName = 'JSB.Workspace.Workspace.entries.' + $this.getId();
+						JSB.getLocker().lock(eMtxName);
+						for(var eId in $this._entries){
+							var jsbIdx = jsbDict[$this._entries[eId].eType];
+							if(!JSB.isDefined(jsbIdx)){
+								jsbIdx = jsbDict[$this._entries[eId].eType] = jsbArr.length;
+								jsbArr.push($this._entries[eId].eType);
+							}
+							eIdx[eId] = {
+								_j: jsbIdx,
+								_n: $this._entries[eId].eName
+							}
+							if(!JSB.isNull($this._entries[eId].eOpts)){
+								eIdx[eId]._e = $this._entries[eId].eOpts;
+							}
+							if(!JSB.isNull($this._entries[eId].aOpts)){
+								eIdx[eId]._a = $this._entries[eId].aOpts;
+							}
+						}
+						JSB.getLocker().unlock(eMtxName);
+						$this.getEntryDoc()._jsbs = jsbArr;
+						$this.getEntryDoc()._entries = eIdx;
+						$this.getEntryDoc()._wt = $this._wt;
+						
+						// store entry file
+						$this.storeEntry();
+					}
+					
+				} finally {
+					$this.unlock(mtxName);
 				}
-			} finally {
-				JSB.getLocker().unlock(mtxName);
-			}
+
+			}, 300, 'JSB.Workspace.Workspace.store.' + $this.getId());
 		},
 		
 		entries: function(){
@@ -342,13 +346,23 @@
 		},
 		
 		search: function(pat){
-			pat = pat.replace(/\./g, '\\.').replace(/\*/g,'.*');
-			var rx = new RegExp(pat, 'i');
 			var foundEntries = [];
-			for(var eId in this._entries){
-				if(rx.test(this._entries[eId].eName)){
-					foundEntries.push(this._entries[eId]);
+			if(JSB.isFunction(pat)){
+				for(var eId in this._entries){
+					if(pat.call(this, this._entries[eId])){
+						foundEntries.push(this._entries[eId]);
+					}
 				}
+			} else if(JSB.isString(pat)){
+				pat = pat.replace(/\./g, '\\.').replace(/\*/g,'.*');
+				var rx = new RegExp(pat, 'i');
+				for(var eId in this._entries){
+					if(rx.test(this._entries[eId].eName) || rx.test(eId)){
+						foundEntries.push(this._entries[eId]);
+					}
+				}
+			} else {
+				throw new Error('Invalid argument passed');
 			}
 			
 			var cursor = 0;

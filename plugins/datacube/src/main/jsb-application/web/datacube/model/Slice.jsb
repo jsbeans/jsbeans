@@ -50,6 +50,11 @@
 				}
 			}
 			this.cacheEnabled = Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled');
+			this.subscribe('DataCube.Query.QueryCache.updated', function(sender){
+				if($this.queryCache && sender == $this.queryCache){
+					$this.publish('DataCube.Model.Slice.updated');
+				}
+			});
 		},
 		
 		setName: function(name){
@@ -152,14 +157,7 @@
             	preparedQuery = q;
             }
             if(useCache && this.cacheEnabled){
-				if(!this.queryCache){
-					var mtx = this.getId() + '_queryCache';
-					JSB.getLocker().lock(mtx);
-					if(!this.queryCache){
-						this.queryCache = new QueryCache(this.cube);
-					}
-					JSB.getLocker().unlock(mtx);
-				}
+            	this.ensureQueryCache();
 				return this.queryCache.executeQuery(preparedQuery, params);
             }
             return this.cube.executeQuery(preparedQuery, params);
@@ -169,15 +167,20 @@
 			if(!this.cacheEnabled || !$this.getCube().queryCache){
 				return;
 			}
+			this.ensureQueryCache();
+			this.queryCache.copyFrom($this.getCube().queryCache, $this.query);
+		},
+		
+		ensureQueryCache: function(){
 			if(!this.queryCache){
 				var mtx = this.getId() + '_queryCache';
 				JSB.getLocker().lock(mtx);
 				if(!this.queryCache){
-					this.queryCache = new QueryCache(this.cube);
+					this.queryCache = new QueryCache(this, this.cube);
 				}
 				JSB.getLocker().unlock(mtx);
 			}
-			this.queryCache.copyFrom($this.getCube().queryCache, $this.query);
+			return this.queryCache;
 		},
 		
 		getCubeFields: function(){
@@ -205,9 +208,19 @@
 		},
 		
 		invalidate: function(){
-			if(this.queryCache){
-				this.queryCache.clear();
+			if(!this.cacheEnabled){
+				return;
 			}
+			this.ensureQueryCache();
+			this.queryCache.clear();
+		},
+		
+		updateCache: function(){
+			if(!this.cacheEnabled){
+				return;
+			}
+			this.ensureQueryCache();
+			this.queryCache.update(true);
 		}
 		
 	}

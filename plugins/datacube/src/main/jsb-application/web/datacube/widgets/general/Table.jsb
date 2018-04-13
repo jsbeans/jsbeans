@@ -585,6 +585,8 @@
 		scrollHeight: 0,
 		paneHeight: 0,
 		embeddedBindings: [],
+		refreshOrdered: false,
+		refreshOrderedOpts: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -676,6 +678,16 @@
 						$this.header.width($this.scroll.getPane().width());
 						$this.status.width($this.scroll.getPane().width());
 					});
+					
+					$this.getElement().visible(function(evt, isVisible){
+						if(!isVisible){
+							return;
+						}
+						if($this.refreshOrdered){
+							$this.refresh($this.refreshOrderedOpts);
+						}
+					});
+					
 /*					
 					if(!$this.scrollHeight){
 						JSB.deferUntil(function(){
@@ -717,7 +729,7 @@
 		},
 		
 		appendRows: function(bRefresh){
-			if(!$this.ready || this.rowAppending || $this.blockFetch || !$this.scroll.getElement().is(':visible')){
+			if(!$this.ready || this.rowAppending || $this.blockFetch /*|| !$this.scroll.getElement().is(':visible')*/){
 				return;
 			}
 			this.rowAppending = true;
@@ -1881,10 +1893,18 @@
 		refresh: function(opts){
 			if(!this.ready){
 				this.ensureInitialized(function(){
-					$this.refresh();
+					$this.refresh(opts);
 				});
 				return;
 			}
+			
+			if(!$this.getElement().is(':visible')){
+				$this.refreshOrdered = true;
+				$this.refreshOrderedOpts = opts;
+				return;
+			}
+			
+			$this.refreshOrdered = false;
 
             var dataSource = this.getContext().find('rows');
             if(!dataSource.hasBinding || !dataSource.hasBinding()){

@@ -34,6 +34,13 @@
 				}
 				$this.getCube().invalidate();
 			});
+			
+			this.subscribe('DataCube.Model.SqlTable.updateCache', function(sender){
+				if($this.entry != sender){
+					return;
+				}
+				$this.getCube().updateCache();
+			});
 		},
 		
 		getTableDescriptor: function(){

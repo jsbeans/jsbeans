@@ -317,7 +317,7 @@ public class JsHub extends Service {
             }
         } else {
             if (!this.timeoutMap.containsKey(msg.getKey())) {
-                this.getLog().warning("Invalid timeout key specified '{}'", msg.getKey());
+//                this.getLog().warning("Invalid timeout key specified '{}'", msg.getKey());
                 return;
             }
             Cancellable c = this.timeoutMap.get(msg.getKey());

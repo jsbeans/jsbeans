@@ -13,6 +13,7 @@
 
 			(function(jQuery){
 				`#include 'jquery.resize.js'`;
+				`#include 'jquery.visible.js'`;
 				`#include 'jquery.mousewheel.js'`;
 				`#include 'jquery.cookie.js'`;
 			}).call(null, JSB().$);
