@@ -5761,6 +5761,7 @@ JSB({
 		updateRpcTimeout: 300,
 		maxBatchSize: 30,
 		crossDomainBatchSize: 1,
+		runTag: null,
 
 		// methods
 		getServerBase: function(){
@@ -5828,6 +5829,17 @@ JSB({
 		},
 		
 		xhr: function(xhrObj){
+			
+			function setRunTag(runTag){
+				if(!runTag){
+					return;
+				}
+				if($this.runTag && runTag && $this.runTag != runTag){
+					$this.publish('JSB.AjaxProvider.serverReloaded', {oldTag: $this.runTag, newTag: runTag});
+				} 
+				$this.runTag = runTag;
+			}
+			
 			function getXHR(){
 				var xmlhttp;
 				try {
@@ -5923,8 +5935,9 @@ JSB({
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState != 4) return;
 					window.clearTimeout(to);
-					
+					$this.publish('JSB.AjaxProvider.xhrStatus', xhr.status);
 					if (xhr.status == 200) {
+						setRunTag(xhr.getResponseHeader('Run-Tag'));
 						if(xhrObj.success){
 							var resdata = xhr.responseText;
 							if(xhrObj.dataType == 'json'){
