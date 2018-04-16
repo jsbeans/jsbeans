@@ -10,7 +10,6 @@
 
 package org.jsbeans.helpers;
 
-import org.jsbeans.Core;
 import org.jsbeans.plugin.PluginActivator;
 import org.jsbeans.services.Service;
 import org.reflections.Reflections;
