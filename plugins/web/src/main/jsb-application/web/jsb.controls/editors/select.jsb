@@ -21,7 +21,8 @@
                 this.clearBtn = this.$('<i class="clearBtn fas fa-times hidden"></i>');
                 this.append(this.clearBtn);
 
-                this.clearBtn.click(function(){
+                this.clearBtn.click(function(evt){
+                    evt.stopPropagation();
                     $this.setValue();
                 });
             }
@@ -69,8 +70,7 @@
                 $this.dropDown.addClass('hidden');
             }
 
-            this.dropDownBtn.click(ddToggle);
-            this.currentVal.click(ddToggle);
+            this.getElement().click(ddToggle);
         },
 
 	    options: {
@@ -107,7 +107,8 @@
 	                el.append(options[i]);
 
                     (function(key, val){
-                        el.click(function(){
+                        el.click(function(evt){
+                            evt.stopPropagation();
                             $this.dropDown.addClass('hidden');
                             $this.$(document).off('click.comboEditor_closeDD');
                             $this.setValue(val, key);
@@ -135,7 +136,8 @@
                     }
 
                     (function(key){
-                        el.click(function(){
+                        el.click(function(evt){
+                            evt.stopPropagation();
                             $this.dropDown.addClass('hidden');
                             $this.$(document).off('click.comboEditor_closeDD');
                             $this.setValue(key);
