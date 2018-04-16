@@ -6,7 +6,6 @@
 		    'DataCube.Query.Engine.QueryProfiler',
 		    'DataCube.Query.Transforms.QueryTransformer',
 		    'DataCube.Query.Views.QueryViewsBuilder',
-//		    'DataCube.Providers.SqlTableDataProvider',
 		    'DataCube.Query.Iterators.DataProviderIterator',
 		    'DataCube.Query.Engine.ItBuilder',
 
@@ -14,16 +13,17 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
+        doProfile: true,
+
 		$constructor: function(queryEngine, cubeOrDataProvider, dcQuery, params){
-			$this.qid = dcQuery.$id = dcQuery.$id || JSB.generateUid();
+		    $this.query = JSB.cone($this.query);
+			$this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
 			$this.queryEngine = queryEngine;
-		    $this.query = dcQuery;
 		    $this.params = params;
 
-            $this.itBuilder = new ItBuilder($this);
-		    $this.profiler = new QueryProfiler();
-            $this.profiler.start($this.qid, {
-                dcQuery: dcQuery,
+		    $this.profiler = $this.doProfile ? new QueryProfiler() : null;
+            $this.profiler && $this.profiler.start($this.qid, {
+                query: $this.query,
                 params: params
             });
 
@@ -32,41 +32,44 @@
 		        $this.providers = $this.cube.getOrderedDataProviders();
 		    } else {
 		        $this.providers = [cubeOrDataProvider];
-		        $this.profiler.profile($this.qid, 'directProvider', $this.providers[0].getName());
+		        $this.profiler && $this.profiler.profile($this.qid, 'directProvider', $this.providers[0].getName());
 		    }
-		    $this.profiler.profile($this.qid, 'providers', $this.providers.length);
+		    $this.profiler && $this.profiler.profile($this.qid, 'providers', $this.providers.length);
 		    
 		    $this.contextQueries = QueryUtils.defineContextQueries($this.query);
-		},
-
-		isDirectQuery: function(){
-		    return !$this.cube;
 		},
 
 		execute: function(){
 debugger;
 		    try {
-		        $this.profiler.profile($this.qid, 'execute');
+		        $this.profiler && $this.profiler.profile($this.qid, 'execute');
 
                 $this._optimizeProviders();
                 $this._prepareQuery();
-                $this.profiler.profile($this.qid, 'preparedQuery', $this.preparedQuery);
+                $this.profiler && $this.profiler.profile($this.qid, 'preparedQuery', $this.preparedQuery);
 
                 $this._buildViews();
-                $this.profiler.profile($this.qid, 'views', $this.queryView.info());
+                $this.profiler && $this.profiler.profile($this.qid, 'views', $this.queryView.info());
 
-                var it = $this.itBuilder.buildIterator();
-                $this.profiler.profile($this.qid, 'iterator', $this.queryView.info());
+                var itBuilder = new ItBuilder($this);
+                var it = itBuilder.build();
+                $this.profiler && $this.profiler.profile($this.qid, 'iterator', $this.queryView.info());
                 return it;
             } catch(e) {
-                $this.profiler.failed($this.qid, e);
+                $this.profiler && $this.profiler.failed($this.qid, e);
                 throw e;
+            } finally {
+                itBuilder && itBuilder.destroy();
             }
 		},
 
-		destroy: function(){
-		    $this.itBuilder.destroy();
-		    $this.profiler.destroy();
+		destroy: function() {
+            $this.profiler && $this.profiler.profile($this.qid, 'destroy', $this.queryView.info());
+		    $this.profiler && $this.profiler.destroy();
+		    for(var c in $this.contextQueryViews) {
+		        $this.contextQueryViews[c].destroy();
+		        delete $this.contextQueryViews[c];
+		    }
 		    $base();
 		},
 
@@ -75,8 +78,7 @@ debugger;
 		},
 
 		_prepareQuery: function() {
-		    var query = JSB.merge(true, {}, $this.query);
-		    $this.preparedQuery = QueryTransformer.transform(query, $this.cube || $this.providers[0]);
+		    $this.preparedQuery = QueryTransformer.transform($this.query, $this.cube || $this.providers[0]);
             return $this.preparedQuery;
 		},
 
@@ -110,7 +112,7 @@ debugger;
 //            }
 //            it.iterate($this.query, $this.params);
 //
-//		    $this.profiler.profile($this.qid, 'iterator-created');
+//		    $this.profiler && $this.profiler.profile($this.qid, 'iterator-created');
 //		    return {
 //		        next: function(){
 //		            var next = it.next();
@@ -118,7 +120,7 @@ debugger;
 //		        },
 //		        close: function(){
 //		            it.close();
-//		            $this.profiler.complete($this.qid);
+//		            $this.profiler && $this.profiler.complete($this.qid);
 //		        }
 //		    };
 //		},
@@ -161,10 +163,10 @@ debugger;
                 var provider = $this.providers[i];
                 if (providers[provider.id]) {
                     providers[provider.id].matched = true;
-                    $this.profiler.profile($this.qid, 'usedProvider', provider.getName());
+                    $this.profiler && $this.profiler.profile($this.qid, 'usedProvider', provider.getName());
                 } else {
                     $this.providers[i].splice(i--, 1);
-                    $this.profiler.profile($this.qid, 'removedProvider', provider.getName());
+                    $this.profiler && $this.profiler.profile($this.qid, 'removedProvider', provider.getName());
                 }
             }
 
@@ -174,30 +176,5 @@ debugger;
                 }
             }
 		},
-
-//		_getProviderGroupKey: function (provider) {
-//		    // store key for SQL or unique for other
-//            return provider instanceof SqlTableDataProvider
-//                ? provider.getJsb().$name + '/' + provider.getStore().getName()
-//                : provider.id;
-//        },
-//
-//        /** Объединяет провайдеры в группы по типам
-//        */
-//		_groupSameProviders: function(){
-//		    var groupsMap = {/**key:[provider]*/}; //
-//
-//            for(var i = 0; i < $this.providers.length; i++) {
-//                var provider = $this.providers[i];
-//                var key = $this._getProviderGroupKey(provider);
-//                groupsMap[key] = groupsMap[key] || [];
-//                groupsMap[key].push(provider);
-//            }
-//		    var groups = []; // [[]]
-//		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
-//		        groups.push(groupsMap[k]);
-//		    }
-//		    return groups;
-//		},
 	}
 }

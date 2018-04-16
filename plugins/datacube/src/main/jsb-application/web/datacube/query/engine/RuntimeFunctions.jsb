@@ -10,7 +10,7 @@
             /** *** Filter functions *** */
 
             check: function(e) {
-                this.QueryUtils.throwError(JSB.isObject(e), 'Filter is not Object: ' + JSB.stringify(e));
+                this.QueryUtils.throwError(JSB.isObject(e), 'Filter is not Object: {}', JSB.stringify(e));
                 var and = true;
                 for (var op in e) {
                     if (op.startsWith('$')) {
@@ -34,7 +34,7 @@
             },
 
             checkAndOr: function (op, e){
-                this.QueryUtils.throwError(JSB.isArray(e), 'TODO operator ' + op);
+                this.QueryUtils.throwError(JSB.isArray(e), 'Unexpected operator type: {} is not array', op);
                 for(var i = 0; i < e.length; i++) {
                     value = this.__.match.call(this, e[i]);
                     if (op === '$and' && !value) return false;
@@ -54,7 +54,7 @@
                     return this.__.get.call(this, operands[0]) < this.__.get.call(this, operands[1]);
                 }
                 // TODO ...
-                this.QueryUtils.throwError(false, 'TODO operator ' + op);
+                this.QueryUtils.throwError(false, 'TODO operator {}', op);
             },
 
 
@@ -68,7 +68,7 @@
                 if (e.$field || typeof e === 'string')) {
                     // if external field find parent context
                     if (e.$context && e.$context != this.context) {
-                        this.QueryUtils.throwError(parent, 'External field is not defined: '+ e.$field||e);
+                        this.QueryUtils.throwError(!!parent, 'External field is not defined: {}', e.$field||e);
                         return this.__.get.call(parent, e);
                     }
                     // output or input value
@@ -76,7 +76,7 @@
                     if (typeof value === 'undefined') {
                         value = this.sourceCursor.object[e.$field||e];
                     }
-                    this.QueryUtils.throwError(typeof value !== 'undefined', 'Field is not defined: '+ e.$field||e);
+                    this.QueryUtils.throwError(typeof value !== 'undefined', 'Field is not defined: {}', e.$field||e);
                     return value;
                 } else if (e.$select) {
                     return this.__.subQueryCursor.call(this, e);

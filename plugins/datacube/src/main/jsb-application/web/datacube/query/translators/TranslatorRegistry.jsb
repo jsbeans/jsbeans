@@ -34,6 +34,12 @@
 			}
 		},
 
+		hasTranslator: function(providerOrProviders, cube){
+		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
+		    var translatorName = this._dataProviderTranslator[dataProvider.getJsb().$name];
+		    return !!translatorName;
+		},
+
 		newTranslator: function(providerOrProviders, cube){
 		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
 		    var translatorName = this._dataProviderTranslator[dataProvider.getJsb().$name];
@@ -42,6 +48,6 @@
 		    }
 		    var Translator = JSB.get(translatorName).getClass();
 		    return new Translator(providerOrProviders, cube);
-		}
+		},
 	}
 }

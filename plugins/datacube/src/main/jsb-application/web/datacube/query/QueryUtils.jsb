@@ -10,18 +10,47 @@
 		    'java:java.util.HashMap'
         ],
 
-        logDebug: function(){
+        sformat: function(msg, arg0, arg1) {
+            var pos = 0;
+            var args = arguments;
+            msg = msg.replace(/\{(\d{0,2})\}/g, function(s, n) {
+                if (!n) {
+                    n = pos ++;
+                } else {
+                    try {
+                        n = parseInt(n);
+                    } catch(e){
+                        n = pos ++;
+                    }
+                }
+                return args[n+1];
+            });
+            return msg;
+        },
+
+        logDebug: function(msg, a0, a1){
             if (Config.get('jsbeans.debug')) {
-                Log.debug.apply(Log, arguments);
+                Log.debug($this.sformat.apply(arguments));
             }
         },
 
-        assert: function(isTrue, text){
-            if (Config.get('jsbeans.debug') && !isTrue) {
-                var msg = 'Assertion failed: ' + (text||'');
+        assert: function(isAssert, message, a0, a1){
+            if (Config.get('jsbeans.debug') && !isAssert) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                var msg = 'Assertion failed: ' + $this.sformat.apply(args);
                 Log.debug(msg);
                 throw new Error(msg);
             }
+        },
+
+        throwError: function(isAssert, message, a0, a1) {
+            if (!isAssert) {
+                var args = Array.prototype.slice.call(arguments, 1);
+                var msg = 'Assertion failed: ' + $this.sformat.apply(args);
+                Log.debug(msg);
+                throw new Error(msg);
+            }
+
         },
 
         walkAllSubQueries: function (dcQuery, callback) {
@@ -29,27 +58,30 @@
         },
 
         walkSubQueries: function (dcQuery, callback) {
-            return $this.walkQueries(dcQuery, {}, function(){
-                return callback.call(
-                    this,
-                    this.query,
-                    this.inFrom ? this.fromPath[this.fromPath.length - 1] : null,
-                    this.isValueQuery,
-                    this.isView,
-                    this.nestedPath
-                );
-            });
+            return $this.walkQueries(dcQuery, {},
+                function() { },
+                function() {
+                    return callback.call(
+                        this,
+                        this.query,
+                        this.inFrom ? this.fromPath[this.fromPath.length - 1] : null,
+                        this.isValueQuery,
+                        this.isView,
+                        this.nestedPath
+                    );
+                }
+            );
         },
 
-        walkQueries: function (dcQuery, options, callback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
+        walkQueries: function (dcQuery, options, enterCallback, leaveCallback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
             options = options || {};
             var trace = options.trace || false;
             var visitedQueries = new HashMap();
 
             if(trace) {
-                var oldCallback = callback;
+                var oldCallback = leaveCallback;
                 $this.logDebug('\n\n[qid='+dcQuery.$id+'] Walk sub-queries start: ' + JSB.stringify(dcQuery));
-                callback = function(q){
+                leaveCallback = function(q){
                     $this.logDebug('[qid='+dcQuery.$id+'] Sub-query: ' + q.$context +
                             ' (isInFrom=' + !!this.inFrom +
                             ', isValueQuery=' + this.isValueQuery +
@@ -57,7 +89,7 @@
                             ', nestedPath.length=' + this.nestedPath.length +
                             ', fromPath.length=' + this.fromPath.length +
                             ') : ' + JSB.stringify(q));
-                    return oldCallback.apply(this, arguments);
+                    return oldCallback ? oldCallback.apply(this, arguments) : true;
                 }
             }
 
@@ -90,6 +122,11 @@
                     }
                     throw new Error('View is undefined: ' + name);
                 }
+
+                // walk current query
+
+                var res = enterCallback ? enterCallback.call(this, query) : null;
+                if(res === false) return; /// stop and go back
 
                 // from
                 if (query.$from) {
@@ -132,7 +169,7 @@
                 // visit self query
                 if (!options.skipDuplicates || !visitedQueries.containsKey(query)){
                     visitedQueries.put(query, true);
-                    var res = callback.call(this, query);
+                    var res = leaveCallback ? leaveCallback.call(this, query) : null;
                 }
                 return res === false ? false : true;
             }

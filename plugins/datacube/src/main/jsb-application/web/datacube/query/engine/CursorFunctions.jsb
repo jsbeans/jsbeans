@@ -19,11 +19,9 @@
             filter: function($filter){
                 var inputNext = this.cursor.next;
                 this.cursor.next = function(){
-                    inputNext.next();
-                    var object = this.cursor.object;
-                    while(object != null && !this._matched.call(this, $filter)) {
-                        inputNext.next();
-                        object = inputNext.object;
+                    var object = inputNext.call(this);
+                    while(object != null && !this.__.check.call(this, $filter)) {
+                        object = inputNext.call(this);
                     }
                     return object;
                 };
@@ -32,9 +30,15 @@
             produce: function($select){
                 var inputNext = this.cursor.next;
                 this.cursor.next = function(){
-                    for(var outputField in $select) {
-                        this.cursor.object[outputField] = this.__.get.call(this, $select[outputField]);
+                    var object = inputNext.call(this);
+                    if (object != null) {
+                        var obj = {};
+                        for(var outputField in $select) {
+                            obj[outputField] = this.__.get.call(this, $select[outputField]);
+                        }
+                        object = this.cursor.object = obj;
                     }
+                    return object;
                 }
             },
 
@@ -50,15 +54,9 @@
                 this.cursor.next = function(){
                     // TODO get all values and sort
                 };
-                var reset = this.cursor.reset;
-                this.cursor.reset = function(){
-                    reset.call(this);
-                    pos = -1;
-                    values = [];
-                };
-                var close = this.cursor.close;
+                var inputClose = this.cursor.close;
                 this.cursor.close = function(){
-                    close.call(this);
+                    inputClose.call(this);
                     pos = -1;
                     values = [];
                 };
@@ -66,9 +64,23 @@
 
             aggregate: function($groupBy){
                 var inputNext = this.cursor.next;
+                var values = {};
+                var pos = -1;
                 this.cursor.next = function(){
                     // TODO get all values aggregate and iterate
-                    return inputNext();
+                    /// aggregate with map, reduce, finalize
+//                    while(inputNext.call(this)) {
+//                        if(!values[map.call(this)]) {
+//                            values[map.call(this)] =
+//                        }
+//                    }
+                    /// TODO return
+                };
+                var inputClose = this.cursor.close;
+                this.cursor.close = function(){
+                    inputClose.call(this);
+                    pos = -1;
+                    values = [];
                 };
             },
 
@@ -82,22 +94,17 @@
                 var ids = {};
                 this.cursor.next = function(){
                     inputNext.call(this);
-                    var id = this.__.id();
+                    var id = this.__.id.call(this);
                     while(this.cursor.object && ids[id]) {
                         inputNext.call(this);
-                        id = this.__.id();
+                        id = this.__.id.call(this);
                     }
                     ids[id] = true;
                     return this.cursor.object;
                 };
-                var reset = this.cursor.reset;
-                this.cursor.reset = function(){
-                    reset.call(this);
-                    ids = {};
-                };
-                var close = this.cursor.close;
+                var inputClose = this.cursor.close;
                 this.cursor.close = function(){
-                    close.call(this);
+                    inputClose.call(this);
                     ids = {};
                 };
             },
