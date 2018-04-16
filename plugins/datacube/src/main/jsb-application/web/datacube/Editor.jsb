@@ -15,6 +15,8 @@
 	},
 	
 	$client: {
+		paused: false,
+		
 		$constructor: function(opts){
 			$base(opts);
 			this.loadCss('Editor.css');
@@ -145,6 +147,29 @@
 					leftSplit.showPane(1, true);
 				} else {
 					leftSplit.showPane(1, false);
+				}
+			});
+			
+			this.subscribe('JSB.AjaxProvider.serverReloaded', function(){
+				$this.getElement().loader({style:'reload', message:'Сервер был перезагружен<br>Через 3 секунды редактор тоже перезапустится'});
+				JSB.defer(function(){
+					location.reload();
+				}, 3000);
+				
+			});
+			
+			this.subscribe('JSB.AjaxProvider.xhrStatus', function(sender, msg, status){
+				if(status == 200){
+					if($this.paused){
+						$this.paused = false;
+						$this.getElement().loader('hide');
+					}
+				} else {
+					if($this.paused){
+						return;
+					}
+					$this.paused = true;
+					$this.getElement().loader({style:'connection', message:'К сожалению, сервер перестал отвечать на запросы'});
 				}
 			});
 		}

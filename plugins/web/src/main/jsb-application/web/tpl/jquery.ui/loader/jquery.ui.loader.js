@@ -20,9 +20,9 @@
         		this.loader.css({
         			display: 'none'
         		});
-        		this.loader.addClass(this.options.style);
         		this.element.append(this.loader);
     		}
+    		this.loader.attr('key', this.options.style);
     		this.message(this.options.message);
     		this.show();
     	},
@@ -32,7 +32,9 @@
     	message: function(data){
     		var c = this.loader.find('.content');
     		c.empty();
-    		c.append(data);
+    		if(data){
+    			c.append(data);
+    		}
     	},
     	
     	show: function(){
@@ -47,8 +49,8 @@
     	hide: function(){
     		var self = this;
     		this.loader.fadeOut(this.options.fadeOutTime, function(){
-    			var c = self.loader.find('.content');
-        		c.empty();
+/*    			var c = self.loader.find('.content');
+        		c.empty();*/
         		if(self.options.onHide){
     				self.options.onHide.call(self);
     			}
