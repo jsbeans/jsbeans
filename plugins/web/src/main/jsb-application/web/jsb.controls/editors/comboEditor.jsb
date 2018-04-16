@@ -82,7 +82,8 @@
 	    },
 
 	    options: {
-	        clearBtn: false
+	        clearBtn: false,
+	        editSelectValues: false
 	    },
 
 	    clear: function(){
@@ -100,6 +101,8 @@
 	        this.currentVal.append(this.editor);
 
 	        if(!this._value.key){
+	            this.editor.val(this._value.value);
+	        } else if(this.options.editSelectValues){
 	            this.editor.val(this._value.value);
 	        }
 

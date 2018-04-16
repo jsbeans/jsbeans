@@ -103,9 +103,11 @@
 				$this.dashboard.setLayout(desc);
 				$this.ignoreHandlers = false;
 				
-				JSB.defer(function(){
+				JSB.chain(Object.keys($this.wrappers), function(wId, callback){
+					$this.wrappers[wId].ensureWidgetInitialized(callback);
+				}, function(){
 					$this.removeClass('loading');
-				}, 1000);
+				});
 			});
 		},
 		

@@ -7,6 +7,13 @@
 	        name: 'Источник'
 	    },
 
+	    filterFields: {
+            render: 'dataBinding',
+            name: 'Фильтрующие поля',
+            linkTo: 'source',
+            multiple: true
+	    },
+
 	    series: {
 	        render: 'group',
 	        name: 'Серии',
@@ -18,11 +25,20 @@
                     name: 'Серия',
                     collapsable: true,
                     items: {
+                        seriesName: {
+                            render: 'namesBinding',
+                            name: 'Имя серии',
+                            linkTo: 'source',
+                            localLink: {
+                                linkGroup: 'seriesItem',
+                                linkedFields: 'seriesItem'
+                            }
+                        },
                         name: {},
                         data: {},
                         tooltip: {
                             render: 'group',
-                            name: 'Подпись',
+                            name: 'Всплывающая подсказка',
                             collapsable: true,
                             items: {
                                 valueDecimals: {
@@ -498,7 +514,7 @@
                             items: {
                                 enabled: {
                                     render: 'item',
-                                    name: 'Активна',
+                                    name: 'Активны',
                                     optional: true,
                                     editor: 'none'
                                 },
@@ -560,6 +576,12 @@
                                     valueType: 'string',
                                     defaultValue: '{y}'
                                 },
+                                useHTML: {
+                                    render: 'item',
+                                    name: 'Использовать HTML',
+                                    optional: true,
+                                    editor: 'none'
+                                },
                                 style: {
                                     render: 'group',
                                     name: 'Стиль подписей',
@@ -585,6 +607,36 @@
                                         }
                                     }
                                 },
+                                padding: {
+                                    render: 'item',
+                                    name: 'Внутренний отступ',
+                                    valueType: 'number',
+                                    defaultValue: 5
+                                },
+                                rotation: {
+                                    render: 'item',
+                                    name: 'Поворот',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                shadow: {
+                                    render: 'item',
+                                    name: 'Тень',
+                                    optional: true,
+                                    editor: 'none'
+                                },
+                                x: {
+                                    render: 'item',
+                                    name: 'Расположение по оси Х',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                y: {
+                                    render: 'item',
+                                    name: 'Расположение по оси Y',
+                                    valueType: 'number',
+                                    defaultValue: -6
+                                }
                             }
                         }
                     }
@@ -710,7 +762,7 @@
 
         refresh: function(opts){
             // if filter source is current widget
-            if(opts && this == opts.initiator){
+            if(opts && this == opts.initiator && !opts.filterData){
                 return false;
             }
 
@@ -727,6 +779,7 @@
                 this._styles = null;
                 this._dataSource = null;
                 this._schemeOpts = null;
+                this._filterFields = null;
             }
 
             if(!this._dataSource){
@@ -739,6 +792,10 @@
                 this._dataSource = dataSource;
             }
 
+            if(!this._filterFields){
+                this._filterFields = this.getContext().find('filterFields');
+            }
+
             $base();
 
             return true;
@@ -749,19 +806,23 @@
                 styleSelector = this.getContext().find('chart colorScheme');
 
             function buildWidget(chartOpts){
+                /*
                 if($this.chart){
                     $this.chart.update(chartOpts, true, true);
                 } else {
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
+                */
+                if($this.chart){
+                    $this.chart.destroy();
+                }
+                $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
 
                 $this._select($this._curFilters, true, true);
                 $this._resolvePointContextFilters();
             }
 
-            if(styleSelector.getKey() !== 'colorScheme'){
-                buildWidget(chartOpts);
-            } else {
+            if(styleSelector){
                 styleSelector.value(function(widgetStyleSelector){
                     if(widgetStyleSelector){
                         chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
@@ -769,6 +830,8 @@
 
                     buildWidget(chartOpts);
                 });
+            } else {
+                buildWidget(chartOpts);
             }
         },
 
@@ -795,7 +858,7 @@
                     tooltipContext = this.getContext().find('mainTooltip'),
 
                     legendItemStyle = legendContext.find('itemStyle'),
-                    plotOptionsDataLabels = plotOptionsContext.find && plotOptionsContext.find('dataLabels'),
+                    plotOptionsDataLabels = plotOptionsContext.find('dataLabels'),
 
                     series = [];
 
@@ -822,6 +885,7 @@
                         allowPointSelect: allowPointSelect,
                         cursor: allowPointSelect ? 'pointer' : undefined,
                         datacube: datacube,
+                        name: seriesContext[i].find('seriesName').value(),
                         tooltip: {
                             valueDecimals: tooltip.find('valueDecimals').value(),
                             valuePrefix: tooltip.find('valuePrefix').value(),
@@ -832,6 +896,11 @@
                 }
 
                 chartOpts = {
+                    chart: {
+                        animation: chartContext.find('animation').checked(),
+                        inverted: chartContext.find('inverted').checked()
+                    },
+
                     credits: {
                         enabled: creditsContext.find('enabled').checked(),
                         text: creditsContext.find('text').value(),
@@ -877,7 +946,28 @@
 
                     plotOptions: {
                         series: {
-                            stacking: this.isNone(plotOptionsContext.find && plotOptionsContext.find('stacking').value()),
+                            dataLabels: {
+                                enabled: plotOptionsDataLabels.find('enabled').checked(),
+                                align: plotOptionsDataLabels.find('align').value(),
+                                verticalAlign: plotOptionsDataLabels.find('verticalAlign').value(),
+                                backgroundColor: plotOptionsDataLabels.find('backgroundColor').value(),
+                                borderColor: plotOptionsDataLabels.find('borderColor').value(),
+                                borderRadius: plotOptionsDataLabels.find('borderRadius').value(),
+                                borderWidth: plotOptionsDataLabels.find('borderWidth').value(),
+                                format: plotOptionsDataLabels.find('format').value(),
+                                useHTML: plotOptionsDataLabels.find('useHTML').checked(),
+                                style: {
+                                    color: plotOptionsDataLabels.find('style color').value(),
+                                    fontSize: plotOptionsDataLabels.find('style fontSize').value(),
+                                    fontWeight: plotOptionsDataLabels.find('style fontWeight').value()
+                                },
+                                padding: plotOptionsDataLabels.find('padding').value(),
+                                rotation: plotOptionsDataLabels.find('rotation').value(),
+                                shadow: plotOptionsDataLabels.find('shadow').checked(),
+                                x: plotOptionsDataLabels.find('x').value(),
+                                y: plotOptionsDataLabels.find('y').value()
+                            },
+                            stacking: this.isNone(plotOptionsContext.find('stacking').value()),
                             point: {
                                 events: {
                                     click: function(evt) {
@@ -970,32 +1060,6 @@
                         valueSuffix: tooltipContext.find('valueSuffix').value()
                     }
                 }
-
-                // props added after release
-                if(chartContext.find){
-                    chartOpts.chart = {
-                        animation: chartContext.find('animation').checked(),
-                        inverted: chartContext.find('inverted').checked()
-                    }
-                }
-
-                if(plotOptionsDataLabels && plotOptionsDataLabels.find){
-                    chartOpts.plotOptions.series.dataLabels = {
-                        enabled: plotOptionsDataLabels.find('enabled').checked(),
-                        align: plotOptionsDataLabels.find('align').value(),
-                        verticalAlign: plotOptionsDataLabels.find('verticalAlign').value(),
-                        backgroundColor: plotOptionsDataLabels.find('backgroundColor').value(),
-                        borderColor: plotOptionsDataLabels.find('borderColor').value(),
-                        borderRadius: plotOptionsDataLabels.find('borderRadius').value(),
-                        borderWidth: plotOptionsDataLabels.find('borderWidth').value(),
-                        format: plotOptionsDataLabels.find('format').value(),
-                        style: {
-                            color: plotOptionsDataLabels.find('style color').value(),
-                            fontSize: plotOptionsDataLabels.find('style fontSize').value(),
-                            fontWeight: plotOptionsDataLabels.find('style fontWeight').value()
-                        }
-                    }
-                }
             } catch(e){
                 console.log('BaseChart build chart exception');
                 console.log(e);
@@ -1082,19 +1146,24 @@
             return true;
         },
 
-        _addPointFilter: function(point, accumulate){
-            var context = this.getContext().find('source').binding();
-            if(!context.source) {
+        _addFilterData: function(){
+            if(!this._filterFields || this._filterFields.values().length === 0){
                 return;
             }
 
-            var fDesc = {
-            	sourceId: context.source,
-            	type: '$or',
-            	op: '$eq',
-            	field: point.datacube.binding,
-            	value: point[this._filterPropName]
+            return {
+                bindings: this._filterFields.bindings(),
+                values: this._filterFields.values()
             };
+        },
+
+        _addPointFilter: function(point, accumulate){
+            var context = this.getContext().find('source').binding(),
+                refreshOpts = {};
+
+            if(!context.source) {
+                return;
+            }
 
             if(!accumulate && Object.keys(this._curFilters).length > 0){
                 this._select(this._curFilters, false, true);
@@ -1106,9 +1175,37 @@
                 this._curFilters = {};
             }
 
-            this._curFilters[this.addFilter(fDesc)] = fDesc;
+            if(point.datacube.filterData){  // not widget filters
+                for(var i = 0; i < point.datacube.filterData.bindings.length; i++){
+                    var fDesc = {
+                        sourceId: context.source,
+                        type: '$and',
+                        op: '$eq',
+                        field: point.datacube.filterData.bindings[i],
+                        value: point.datacube.filterData.values[i]
+                    };
+
+                    if(point.datacube.filterData.bindings[i] === point.datacube.binding){
+                        this._curFilters[this.addFilter(fDesc)] = fDesc;
+                    } else {
+                        this.addFilter(fDesc);
+                        refreshOpts.filterData = true;
+                    }
+                }
+            } else {    // widget filters
+                var fDesc = {
+                    sourceId: context.source,
+                    type: '$or',
+                    op: '$eq',
+                    field: point.datacube.binding,
+                    value: point[this._filterPropName]
+                };
+
+                this._curFilters[this.addFilter(fDesc)] = fDesc;
+            }
+
             this._select(this._curFilters, true, true);
-            this.refreshAll();
+            this.refreshAll(refreshOpts);
         },
 
         _removePointFilter: function(point, accumulate){
@@ -1172,11 +1269,11 @@
         _select: function(filters, b1, b2){
             for(var i in filters){
                 for(var j = 0; j < this.chart.series.length; j++){
-                    if(this.chart.series[j].options.datacube.binding === filters[i].field || this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
+                    if(this.chart.series[j].options.datacube.binding === filters[i].field ||
+                       this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
                             if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
                                 this.chart.series[j].points[k].select(b1, b2);
-                                break;
                             }
                         }
                     }

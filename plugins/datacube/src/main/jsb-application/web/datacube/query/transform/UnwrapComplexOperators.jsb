@@ -14,11 +14,11 @@
         },
 
 		transform: function(dcQuery, cubeOrDataProvider){
-		    // unwrap macros and $grmax* to complex expressions
-		    QuerySyntax.unwrapMacros(dcQuery);
-		    QueryUtils.unwrapGOperators(dcQuery);
-		    QueryUtils.unwrapPostFilters(dcQuery);
-		    return dcQuery;
+            // unwrap macros and $grmax* to complex expressions
+            QueryUtils.unwrapMacros(dcQuery);
+            QueryUtils.unwrapGOperators(dcQuery);
+            QueryUtils.unwrapPostFilters(dcQuery);
+            return dcQuery;
 		},
 	}
 }

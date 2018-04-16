@@ -35,6 +35,13 @@
 				}
 				$this.publish('DataCube.Model.SqlTable.updated');
 			});
+			
+			this.subscribe('DataCube.Model.SqlSource.updateCache', function(sender){
+				if($this.getParent() != sender){
+					return;
+				}
+				$this.publish('DataCube.Model.SqlTable.updateCache');
+			});
 
 		},
 		

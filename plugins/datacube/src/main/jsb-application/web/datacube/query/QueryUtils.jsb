@@ -1600,5 +1600,11 @@
             return contextQueries;
         },
 
+		unwrapMacros: function(dcQuery) {
+            $this.walkAllSubQueries(dcQuery, function(subQuery, isFromQuery, isValueQuery){
+                // unwrap macros and $grmax* to complex expressions
+                QuerySyntax.unwrapMacros(subQuery);
+            });
+		},
 	}
 }

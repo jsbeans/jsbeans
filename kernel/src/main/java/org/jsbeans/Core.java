@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 //import ch.qos.logback.classic.Level;
 //import ch.qos.logback.classic.LoggerContext;
@@ -47,6 +48,8 @@ public class Core {
     public static final boolean DEBUG = !"false".equalsIgnoreCase(System.getProperty("jsbeans.debug", "false"));
 
     public static final String configPath = System.getProperty("jsbeans.configPath", DEBUG ? debugConfigPath : defaultConfigPath);
+    
+    public static final String RUN_TAG = UUID.randomUUID().toString();
 
     static {
         DOMConfigurator.configure(
@@ -99,7 +102,7 @@ public class Core {
     public static Config getConfig() {
         return config;
     }
-
+    
     public static Config mergeConfigWith(Config conf, boolean skipDuplicates) {
         config = skipDuplicates ? config.withFallback(conf) : conf.withFallback(config);
         return config;

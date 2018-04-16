@@ -445,6 +445,14 @@ if(!(function(){return this;}).call(null).JSB){
 			if(!this.isString(cfg.$name)){
 				throw new Error("Class name required to create managed object");
 			}
+
+			if(this.objects[cfg.$name]){
+				return;	// already created or in progress
+			} else {
+				// add to objects
+				this.objects[cfg.$name] = this;
+			}
+
 			var _kfs = ['$constructor', '$bootstrap', '$singleton', '$globalize', '$fixedId', '$disableRpcInstance', '$require', '$sync', '$client', '$server', '$name', '$parent', '$require', '$format', '$common'];
 			var self = this;
 			var logger = this.getLogger();
@@ -460,10 +468,7 @@ if(!(function(){return this;}).call(null).JSB){
 			this._ready = false;
 			this._readyState = 0;
 			this._reqState = 0;
-			
-			// add to objects
-			this.objects[this.$name] = this;
-			
+
 			// build common section
 			var commonSection = this.$common;
 			if(!commonSection){
@@ -747,7 +752,20 @@ if(!(function(){return this;}).call(null).JSB){
 							})(mtdName);
 						}
 					}
-/*					
+
+					// propagate $current
+					$curFunc = function(inst){this.__instance = inst;};
+					for(var mtdName in body){
+						if(!self.isFunction(body[mtdName]) || self.isJavaObject(body[mtdName])){
+							continue;
+						}
+						(function(mtdName){
+							$curFunc.prototype[mtdName] = function(){
+								return self.getClass().prototype[mtdName].apply(this.__instance, arguments);
+							}
+						})(mtdName);
+					}
+/*
 					// propagate $server and $client
 					var $serverFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_serverProcs; return new f();}
 					var $clientFunc = function(inst){var f = function(){this.__instance = inst;}; f.prototype = inst.jsb.$_clientProcs; return new f();}
@@ -757,7 +775,8 @@ if(!(function(){return this;}).call(null).JSB){
 						'$jsb': $jsb,
 						'$class': self._cls,
 						'$parent': $parent,
-						'$superFunc': $superFunc
+						'$superFunc': $superFunc,
+						'$curFunc': $curFunc
 					}, requireVals);
 					
 /*					
@@ -783,10 +802,15 @@ if(!(function(){return this;}).call(null).JSB){
 						}
 					}
 */					
+					var funcRx = /^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/;
+					var superRx = /\$super/;
+					var baseRx = /\$base/;
+					var currentRx = /\$current/;
+					var thisRx = /\$this/;
 					function _enrichFunction(mtdName, proc, isCtor, isBootstrap){
 						var procStr = proc.toString();
 						// extract proc declaration
-						var declM = procStr.match(/^\s*function\s*([^\(\s]*)\s*\(([^\)]*)\)\s*\{/);
+						var declM = procStr.match(funcRx);
 						if(!declM){
 							throw new Error('Internal error: wrong procStr: ' + procStr);
 						}
@@ -794,13 +818,31 @@ if(!(function(){return this;}).call(null).JSB){
 						if(fName.length === 0){
 							fName = mtdName;
 						}
-						var procDecl = 'function ' + fName + '(' + declM[2] + '){ var $this=this; ';
-						if(parent && !isBootstrap){ 
-							procDecl += 'var $super = new $superFunc(this); ';
-							if(isCtor){
-								procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this.$_superCalled = true; }; ';
-							} else {
-								procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
+
+						var hasSuper = superRx.test(procStr);
+						var hasBase = baseRx.test(procStr);
+						var hasCurrent = currentRx.test(procStr);
+						var hasThis = thisRx.test(procStr);
+
+						var procDecl = 'function ' + fName + '(' + declM[2] + '){ ';
+						if(hasThis || (hasBase && isCtor)){
+							procDecl += 'var $this=this; ';
+						}
+						if(!isBootstrap){
+							if(parent){
+								if(hasSuper || (hasBase && !isCtor)){
+									procDecl += 'var $super = new $superFunc(this); ';
+								}
+								if(hasBase){
+									if(isCtor){
+										procDecl += 'var $base = function(){ $parent.apply($this, arguments); $this.$_superCalled = true; }; ';
+									} else {
+										procDecl += 'var $base = function(){return $super.'+mtdName+'.apply($super, arguments);}; ';
+									}
+								}
+							}
+							if(hasCurrent){
+								procDecl += 'var $current = new $curFunc(this); ';
 							}
 						}
 /*						if(self.isClient()){
@@ -1412,10 +1454,10 @@ if(!(function(){return this;}).call(null).JSB){
 					return false;
 				}
 				for(var key in b1){
-					if(b2[key] === undefined && b1[key] !== undefined){
-						return false;
-					}
-					if(b2[key] === null && b1[key] !== null){
+					if(b2[key] === undefined){
+						if(b1[key] === undefined){
+							continue;
+						}
 						return false;
 					}
 					if(!this.isEqual(b1[key], b2[key])){
@@ -5701,9 +5743,9 @@ JSB({
 			minDeferTimeout: 5000,	// 5 sec
 			maxDeferTimeout: 60000,	// 60 sec
 			
-			minScInterval: 10,
-			maxScInterval: 3000,
-			defScInterval: 100
+			minScInterval: 1,
+			maxScInterval: 4096,
+			defScInterval: 256
 		},
 		
 		queueToSend: {},
@@ -5719,6 +5761,7 @@ JSB({
 		updateRpcTimeout: 300,
 		maxBatchSize: 30,
 		crossDomainBatchSize: 1,
+		runTag: null,
 
 		// methods
 		getServerBase: function(){
@@ -5786,6 +5829,17 @@ JSB({
 		},
 		
 		xhr: function(xhrObj){
+
+			function setRunTag(runTag){
+				if(!runTag){
+					return;
+				}
+				if($this.runTag && runTag && $this.runTag != runTag){
+					$this.publish('JSB.AjaxProvider.serverReloaded', {oldTag: $this.runTag, newTag: runTag});
+				}
+				$this.runTag = runTag;
+			}
+
 			function getXHR(){
 				var xmlhttp;
 				try {
@@ -5881,8 +5935,9 @@ JSB({
 				xhr.onreadystatechange = function(){
 					if(xhr.readyState != 4) return;
 					window.clearTimeout(to);
-					
+					$this.publish('JSB.AjaxProvider.xhrStatus', xhr.status);
 					if (xhr.status == 200) {
+						setRunTag(xhr.getResponseHeader('Run-Tag'));
 						if(xhrObj.success){
 							var resdata = xhr.responseText;
 							if(xhrObj.dataType == 'json'){
@@ -6131,7 +6186,7 @@ JSB({
 			if(newInterval > this.options.defScInterval){
 				newInterval = this.options.defScInterval;
 			} else {
-				newInterval /= 2;
+				newInterval *= 0.5;
 				if(newInterval < this.options.minScInterval){
 					newInterval = this.options.minScInterval;
 				}
@@ -6140,7 +6195,7 @@ JSB({
 		},
 		
 		slowDownServerClientCallTracking: function(){
-			var newInterval = this.serverClientCallTrackInterval * 2;
+			var newInterval = this.serverClientCallTrackInterval * 1.5;
 			if(newInterval > this.options.maxScInterval){
 				newInterval = this.options.maxScInterval;
 			}
@@ -6218,13 +6273,6 @@ JSB({
 										}, 0);
 									}
 									JSB().injectComplexObjectInRpcResult(params, doCall);
-/*									
-									if(cInst == self && proc == 'handleRpcResponse'){
-										doCall(params);
-									} else {
-										JSB().injectComplexObjectInRpcResult(params, doCall);
-									}
-*/									
 								})(clientInstance, entry.proc, entry.params, entry.respond, entry.id, clientId);
 							}
 						} 

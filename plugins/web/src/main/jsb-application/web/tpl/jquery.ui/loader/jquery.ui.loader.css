@@ -21,16 +21,20 @@ div.ajaxloader > div.ajaxloaderInfo {
 
 div.ajaxloader > div.ajaxloaderInfo > .icon {
 	display: inline-block;
+	vertical-align: middle;
 }
 
-div.ajaxloader.gear32 > div.ajaxloaderInfo > .icon {
+div.ajaxloader > div.ajaxloaderInfo > .icon {
 	width: 32px;
 	height: 32px;
-	background-image: url("load1.gif");
 }
 
-div.ajaxloader.gear32 > div.ajaxloaderInfo > .content {
+div.ajaxloader > div.ajaxloaderInfo > .content {
 	display: inline-block;
-	margin-left: 10px;
+	margin-left: 8px;
 	vertical-align: middle;
+}
+
+div.ajaxloader[key="gear32"] > div.ajaxloaderInfo > .icon {
+	background-image: url("load1.gif");
 }

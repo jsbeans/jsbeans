@@ -4,6 +4,7 @@
 	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor'],
 	$client: {
 	    _editors: [],
+	    _errorList: [],
 
 	    construct: function(){
 	        this.addClass('dataBindingRender');
@@ -12,6 +13,8 @@
 	        this.createDataList(this.getValueByKey(this._scheme.linkTo));
 
 	        $base();
+
+	        this.createErrorDesc(this._name);
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -50,6 +53,15 @@
                                 values.bindingType = undefined;
                             }
 
+                            var errIndex = $this._errorList.indexOf(itemIndex);
+                            if(errIndex > -1){
+                                $this._errorList.splice(errIndex, 1);
+
+                                if($this._errorList.length === 0){
+                                    $this.hideError();
+                                }
+                            }
+
                             $this.onchange();
                         }
                     });
@@ -59,7 +71,7 @@
                 case 'select':
                 default:
                     var editor = new Select({
-                        clearBtn: true,
+                        clearBtn: !this._scheme.multiple,
                         options: dataList,
                         value: values.value,
                         onchange: function(val){
@@ -71,6 +83,15 @@
                             } else {
                                 values.binding = undefined;
                                 values.bindingType = undefined;
+                            }
+
+                            var errIndex = $this._errorList.indexOf(itemIndex);
+                            if(errIndex > -1){
+                                $this._errorList.splice(errIndex, 1);
+
+                                if($this._errorList.length === 0){
+                                    $this.hideError();
+                                }
                             }
 
                             $this.onchange();
@@ -92,6 +113,16 @@
                     onclick: function(evt){
                         evt.stopPropagation();
                         $this._values.values.splice(itemIndex, 1);
+
+                        var errIndex = $this._errorList.indexOf(itemIndex);
+                        if(errIndex > -1){
+                            $this._errorList.splice(errIndex, 1);
+
+                            if($this._errorList.length === 0){
+                                $this.hideError();
+                            }
+                        }
+
                         item.remove();
                         editor.destroy();
                         removeBtn.destroy();
@@ -119,6 +150,8 @@
 
                 this._editors[i].setOptions(dataList, true);
             }
+
+            this.updateCurrentBindings();
 	    },
 
 	    createDataList: function(values){
@@ -160,6 +193,26 @@
 	            } else {
 	                this._editors[i].setValue(values[i]);
 	            }
+	        }
+	    },
+
+	    updateCurrentBindings: function(){
+	        this._errorList = [];
+
+	        for(var i = 0; i < this._values.values.length; i++){
+	            if(this._bindingsInfo[this._values.values[i].value]){
+	                this._values.values[i].bindingType = this._bindingsInfo[this._values.values[i].value].type;
+	            } else {
+	                this._editors[i].setValue();
+                    this._values.values[i].binding = undefined;
+                    this._values.values[i].bindingType = undefined;
+                    this._values.values[i].value = undefined;
+                    this._errorList.push(i);
+	            }
+	        }
+
+	        if(this._errorList.length > 0){
+	            this.showError('Назначенное поле среза отсутствует!');
 	        }
 	    }
 	}

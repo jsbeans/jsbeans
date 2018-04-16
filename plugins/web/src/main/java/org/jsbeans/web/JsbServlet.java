@@ -142,6 +142,7 @@ public class JsbServlet extends HttpServlet {
                 result = String.format("%s(%s);", ac.getRequest().getParameter("callback"), result);
             }
             try {
+            	((HttpServletResponse) ac.getResponse()).addHeader("Run-Tag", Core.RUN_TAG);
             	ac.getResponse().getOutputStream().write(result.getBytes("UTF-8"));
             } catch(Exception e){}
         } else {

@@ -181,7 +181,7 @@
                     validTrue();
                 },
                 onfocusout: function(val){
-                    $this.elements.title.find('span').removeClass('hidden').text(val);
+                    $this.elements.title.find('span').removeClass('hidden');//.text(val);
                     $this.elements.buttons.titleEditBtn.removeClass('hidden');
 
                     editor.destroy();
@@ -194,6 +194,10 @@
         setContent: function(content){
             this.elements.content.empty();
             this.elements.content.append(content);
+        },
+
+        setTitle: function(title){
+            this.elements.title.find('span').text(title);
         },
 
         togglePanel: function(){

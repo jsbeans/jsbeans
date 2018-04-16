@@ -106,13 +106,13 @@
 		preLoader: function(rowCount){
 		    if(this.allLoaded) return;
 
-		    $this.getElement().loader();
+//		    $this.getElement().loader();
             this.curLoadId = JSB().generateUid();
             var storedLoadId = this.curLoadId;
             $this.server().loadMore(function(res){
                 if(storedLoadId !== $this.curLoadId) return;
 
-                $this.getElement().loader('hide');
+//                $this.getElement().loader('hide');
 
                 if(!res) return;
                 if(res.error){
@@ -164,6 +164,7 @@
 			    this._updateData({
 			    	cube: source.getCube(),
 			    	query: query || source.getQuery(),
+			    	slice: source,
 			    	type: 'slice'
 			    });
 			} else if(JSB.isInstanceOf(source, 'DataCube.Providers.DataProvider')){
@@ -195,8 +196,20 @@
             var preparedQuery = source.query;
             this.curLoadId = JSB().generateUid();
             var storedLoadId = this.curLoadId;
+            
+            var qObj = { 
+            	cube: source.cube, 
+            	query: preparedQuery, 
+            	queryParams: source.queryParams, 
+            	provider: source.provider, 
+            	type: source.type 
+            };
+            
+            if(source.type == 'slice'){
+            	qObj.slice = source.slice;
+            }
 
-            $this.server().loadData( { cube: source.cube, query: preparedQuery, queryParams: source.queryParams, provider: source.provider, type: source.type }, function(res){
+            $this.server().loadData( qObj, function(res){
                 if(storedLoadId !== $this.curLoadId) return;
 
                 $this.getElement().loader('hide');
@@ -209,9 +222,11 @@
 
                 if(res.result.length !== 0) {
                     $this.table.loadData(res.result);
+                    
                     if(!res.allLoaded && $this.table.getElement().height() >= $this.table.getElement().find('.ht_master.handsontable > div.wtHolder').height()){
                         $this.preLoader($this.table.getRowCount());
                     }
+                    
                 } else {
                     $this.table.loadData(null);
                 }
@@ -241,12 +256,7 @@
 
 	    loadData: function(obj) {
             try{
-                if(this.it) {
-                	try {
-                		this.it.close();
-                	}catch(e){}
-                	this.it = null;
-                }
+            	this.clearIterator();
 
                 switch(obj.type){
                     case 'cube':
@@ -260,6 +270,7 @@
                                 $select: q
                             });
                         }
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
                         break;
                     case 'dataProvider':
                         var fields = obj.provider.extractFields();
@@ -270,19 +281,26 @@
                         obj.query = JSB.merge(obj.query, {
                             $select: q
                         });
+                        this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
                         break;
                     case 'slice':
+                    	if(JSB.isEqual(obj.query, obj.slice.getQuery())){
+                    		this.it = obj.slice.executeQuery({useCache: true});
+                    	} else {
+                    		this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
+                    	}
                         break;
+                    default:
+                    	throw new Error('DataCube.GridView.loadData error: unknown type "' + obj.type + '"');
                 }
 
                 this.exportObj = obj;
-
-                this.it = obj.cube.executeQuery(obj.query, obj.queryParams, obj.provider, true);
 
                 this.counter = 0;
 
                 return this.loadMore();
             } catch(e){
+            	this.clearIterator();
                 JSB().getLogger().error(e);
 
                 return {
@@ -316,6 +334,7 @@
                     error: null
                 };
             } catch(e){
+            	this.clearIterator();
                 JSB().getLogger().error(e);
 
                 return {

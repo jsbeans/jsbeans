@@ -91,6 +91,9 @@
 		_markStored: function(bStored){
 			this._stored = bStored;
 			this.getWorkspace()._markEntryStored(this, bStored);
+			if(!bStored){
+				this.getWorkspace().store();
+			}
 		},
 		
 		_checkChildren: function(){
@@ -218,6 +221,7 @@
 			
 			// detach from workspace
 			this.getWorkspace()._detachEntry(this);
+			this.getWorkspace().store();
 			
 			this.destroy();
 		},
@@ -288,11 +292,34 @@
 		
 		setName: function(title){
 			if(this._name == title){
-				return;
+				return false;
 			}
 			this._name = title;
-			this._markStored(false);
 			this.getWorkspace()._changeEntryName(this);
+			this._markStored(false);
+			return true;
+		},
+		
+		hasChildEntry: function(entry){
+			if(JSB.isString(entry)){
+				entry = this.getWorkspace().entry(entry);
+			}
+			
+			if(!entry){
+				throw new Error('No child entry specified');
+			}
+			if(entry == this){
+				if(this.getWorkspace() == this){
+					return;
+				}
+				throw new Error('Failed to remove child entry from itself');
+			}
+			
+			if(this._children[entry.getId()]){
+				return true;
+			}
+			
+			return false;
 		},
 		
 		removeChildEntry: function(entry){
@@ -486,11 +513,11 @@
 			    } else {
 			    	throw new Error('Invalid artifact type');
 			    }
+			    this._artifactCount = Object.keys(artifacts).length;
+			    this._artifactStore.write(this, name, a);
 			    if(bNeedStoreEntry){
 			    	this._markStored(false);
 			    }
-			    this._artifactCount = Object.keys(artifacts).length;
-			    this._artifactStore.write(this, name, a);
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
@@ -509,8 +536,8 @@
 			try {
 				delete this._artifacts[name];
 				this._artifactCount = Object.keys(this._artifacts).length;
-				this._markStored(false);
 			    this._artifactStore.remove(this, name);
+				this._markStored(false);
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}

@@ -19,7 +19,8 @@
 		
 		$constructor: function(opts){
 			$base(opts);
-			
+
+			this.addClass('apiWidget');
 			this.loadCss('Widget.css');
 			
 			var wsId = opts.wsid;
@@ -28,6 +29,14 @@
 				$this.widgetEntry = wEntry;
 				$this.init();
 			});
+		},
+		
+		setWidgetInitialized: function(){
+		    this.setTrigger('_widgetInitialized');
+		},
+		
+		ensureWidgetInitialized: function(callback){
+		    this.ensureTrigger('_widgetInitialized', callback);
 		},
 
 		addDrilldownElement: function(opts){
@@ -111,6 +120,7 @@
 				});
 				$this.append($this.mainWidget);
 				$this.mainWidget.ensureInitialized(function(){
+					$this.setWidgetInitialized();
 					$this.subscribe('DataCube.filterChanged', function(sender, msg, params){
 						if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){
 							return;

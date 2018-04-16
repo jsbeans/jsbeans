@@ -493,6 +493,16 @@
 		layerDataMap: {},
 		dataMap: {},
 		cursor: {},
+		sourceIds: {},
+		
+		$constructor: function(){
+			$base();
+			this.subscribe('DataCube.Model.Slice.updated', function(sender){
+				if($this.sourceIds[sender.getId()]){
+					$this.client().refresh();
+				}
+			});
+		},
 
 		destroy: function(){
 			if(!this.isDestroyed()){
@@ -511,6 +521,7 @@
 				this.layerDataMap = {};
 				this.dataMap = {};
 				this.cursor = {};
+				this.sourceIds = {};
 				$base();
 			}
 		},
@@ -521,6 +532,7 @@
 			try {
 				var batchSize = opts.batchSize || 50;
 				var source = dashboard.getWorkspace().entry(sourceId);
+				$this.sourceIds[sourceId] = true;
 				var data = [];
 				if(opts.reset){
 					this.needBreak = true;

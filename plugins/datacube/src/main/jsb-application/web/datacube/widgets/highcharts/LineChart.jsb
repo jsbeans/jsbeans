@@ -15,9 +15,8 @@
                     items: {
                         name: {
                             render: 'dataBinding',
-                            name: 'Имя серии или значения',
-                            linkTo: 'source',
-                            editor: 'input'
+                            name: 'Имена серий из источника',
+                            linkTo: 'source'
                         },
                         data: {
                             render: 'dataBinding',
@@ -30,6 +29,9 @@
                             items: {
                                 area: {
                                     name: 'Area'
+                                },
+                                bar: {
+                                    name: 'Bar'
                                 },
                                 column: {
                                     name: 'Column'
@@ -91,24 +93,12 @@
                                 }
                             }
                         },
-                        /*
                         yAxis: {
                             render: 'select',
                             name: 'Ось Y',
                             commonField: 'yAxisNames'
                         }
-                        */
                     }
-                }
-            }
-        },
-
-        xAxis: {
-            items: {
-                categories: {
-                    render: 'dataBinding',
-                    name: 'Категории',
-                    linkTo: 'source'
                 }
             }
         },
@@ -152,42 +142,97 @@
             }
 
             if(!this._schemeOpts){
+                var xAxisContext = this.getContext().find('xAxis').values(),
+                    linkMap = {};
+
                 this._schemeOpts = {
                     seriesContext: this.getContext().find('series').values(),
-                    xAxisCategories: this.getContext().find('xAxis categories'),
-                    series: [],
-                    useCompositeSeries: false
+                    xAxisLinked: [],
+                    xAxisIndividual: [],
+                    xAxisFilterBinding: xAxisContext[0].find('categories').binding(),
+                    series: []
                 };
 
-                for(var i = 0; i < this._schemeOpts.seriesContext.length; i++){
-                    if(this._schemeOpts.seriesContext[i].find('name').hasBinding()){
-                        this._schemeOpts.useCompositeSeries = true;
-                    }
+                for(var i = 0; i < xAxisContext.length; i++){
+                    var linkedTo = xAxisContext[i].find('linkedTo').value();
 
+                    if(linkedTo){
+                        linkMap[linkedTo] = true;
+                        linkMap[xAxisContext[i].getName()] = true;
+                    }
+                }
+
+                for(var i = 0; i < xAxisContext.length; i++){
+                    var cat = {
+                        categories: xAxisContext[i].find('categories'),
+                        index: i
+                    };
+
+                    if(linkMap[xAxisContext[i].getName()]){
+                        this._schemeOpts.xAxisLinked.push(cat);
+                    } else {
+                        this._schemeOpts.xAxisIndividual.push(cat);
+                    }
+                }
+
+                for(var i = 0; i < this._schemeOpts.seriesContext.length; i++){
                     this._schemeOpts.series[i] = {
                         colorType: this._schemeOpts.seriesContext[i].find('colorType').value()
                     }
                 }
             }
 
-            if(!this._resolvePointFilters(this._schemeOpts.xAxisCategories.binding())){
+            if(!this._resolvePointFilters(this._schemeOpts.xAxisFilterBinding)){
                 return;
             }
 
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(){
                 try{
+
                     var seriesData = [],
-                        xAxisData = [];
+                        xAxisLinkedData = {},
+                        xAxisIndividual = [],
+                        xAxisData = {};
 
                     while($this._dataSource.next()){
-                        var x = $this._schemeOpts.xAxisCategories.value();
                         // xAxis
-                        xAxisData.push(x);
+                        // связанные оси
+                        var curCat = xAxisLinkedData,
+                            filterCat = null;
+
+                        for(var i = $this._schemeOpts.xAxisLinked.length - 1; i > -1 ; i--){
+                            var cat = $this._schemeOpts.xAxisLinked[i].categories.value();
+
+                            if(!curCat[cat]){
+                                curCat[cat] = {};
+                            }
+                            curCat = curCat[cat];
+
+                            if(i === 0){
+                                filterCat = curCat;
+                            }
+                        }
+
+                        // несвязанные оси
+                        for(var i = 0; i < $this._schemeOpts.xAxisIndividual.length; i++){
+                            if(!xAxisIndividual[i]){
+                                xAxisIndividual[i] = {};
+                            }
+                            var val = $this._schemeOpts.xAxisIndividual[i].categories.value();
+
+                            if(!xAxisIndividual[i][val]){
+                                xAxisIndividual[i][val] = {};
+                            }
+
+                            if(!filterCat && i === 0){
+                                filterCat = xAxisIndividual[i][val];
+                            }
+                        }
 
                         // series data
                         for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
-                            var name = $this._schemeOpts.seriesContext[i].find('name'),
+                            var seriesName = $this._schemeOpts.seriesContext[i].find('name').value() || $this._schemeOpts.seriesContext[i].find('seriesName').value(),
                                 data = $this._schemeOpts.seriesContext[i].find('data'),
                                 color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value();
 
@@ -197,37 +242,96 @@
                                 };
                             }
 
-                            if(!seriesData[i].data[name.value()]){
-                                seriesData[i].data[name.value()] = [];
+                            if(!seriesData[i].data[seriesName]){
+                                seriesData[i].data[seriesName] = [];
                             }
 
-                            seriesData[i].data[name.value()].push({
+                            seriesData[i].data[seriesName].push({
                                 datacube: {
-                                    binding: $this._schemeOpts.xAxisCategories.binding()
+                                    binding: $this._schemeOpts.xAxisFilterBinding,
+                                    filterData: $this._addFilterData()
                                 },
                                 color: color,
-                                x: x ? x : undefined,
+                                x: filterCat,
                                 y: data.value()
                             });
                         }
                     }
 
-                    // resolve xAxis for composite series
-                    if($this._schemeOpts.useCompositeSeries){
-                        var cats = {};
-                        for(var i = 0; i < xAxisData.length; i++){
-                            cats[xAxisData[i]] = xAxisData[i];
+                    function resolveLinkedCategories(cats, result, index, max, curX){
+                        var keys = Object.keys(cats).sort();
+
+                        if(!result.categoriesArrays[index]){
+                            result.categoriesArrays[index] = [];
                         }
-                        xAxisData = [];
+
+                        result.categoriesArrays[index] = result.categoriesArrays[index].concat(keys);
+
+                        if(index === max){
+                            for(var i = 0; i < keys.length; i++){
+                                cats[keys[i]].x = curX.x++;
+                            }
+                            return keys.length;
+                        }
+
+                        if(!result.tickPositions[index]){
+                            result.tickPositions[index] = [];
+                        }
+
+                        var curTick = -1;
                         for(var i in cats){
-                            xAxisData.push(cats[i]);
+                            curTick = curTick + resolveLinkedCategories(cats[i], result, index + 1, max, curX);
+                            result.tickPositions[index].push(curTick);
                         }
+                    }
+
+                    if($this._schemeOpts.xAxisLinked.length > 0){
+                        var xAxisLinkedCats = {
+                            categoriesArrays: [],
+                            tickPositions: []
+                        };
+
+                        resolveLinkedCategories(xAxisLinkedData, xAxisLinkedCats, 0, $this._schemeOpts.xAxisLinked.length - 1, {x: 0});
+
+                        for(var i = 0; i < xAxisLinkedCats.categoriesArrays.length - 1; i++){
+                            var dummyCats = [],
+                                cutCount = 0;
+
+                            for(var j = 0; j < xAxisLinkedCats.tickPositions[i][xAxisLinkedCats.tickPositions[i].length - 1] + 1; j++){
+                                if(xAxisLinkedCats.tickPositions[i].indexOf(j) > -1){
+                                    dummyCats[j] = xAxisLinkedCats.categoriesArrays[i][cutCount];
+                                    cutCount++;
+                                } else {
+                                    dummyCats[j] = 'dummy';
+                                }
+                            }
+
+                            xAxisLinkedCats.categoriesArrays[i] = dummyCats;
+                        }
+
+                        xAxisData.xAxisLinkedCats = xAxisLinkedCats;
+                    }
+
+                    if($this._schemeOpts.xAxisIndividual.length > 0){
+                        var xAxisIndividualCats = [];
+
+                        for(var i = 0; i < xAxisIndividual.length; i++){
+                            xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]);
+                        }
+
+                        for(var j = 0; j < xAxisIndividualCats[0].length; j++){
+                            xAxisIndividual[0][xAxisIndividualCats[0][j]].x = j;
+                        }
+
+                        xAxisIndividualCats.sort();
+
+                        xAxisData.xAxisIndividualCats = xAxisIndividualCats;
                     }
 
                     function resolveData(data){
                         for(var i in data){
                             if(data[i].x){
-                                data[i].x = xAxisData.indexOf(data[i].x);
+                                data[i].x = data[i].x.x;
                             }
                         }
                         return data;
@@ -246,6 +350,13 @@
                                 name: j
                             });
                         }
+                    }
+
+                    // sort data for highcharts
+                    for(var i = 0; i < data.length; i++){
+                        data[i].data.sort(function(a, b){
+                            return a.x < b.x ? -1 : 1;
+                        });
                     }
 
                     if(opts && opts.isCacheMod){
@@ -272,23 +383,50 @@
             var baseChartOpts;
 
             try{
-                function includeData(chartOpts, seriesData, xAxisCategories){
+                function centerLabels(chart){
+                    for(var j = 0; j < $this._schemeOpts.xAxisLinked.length; j++){
+                        var axis = chart.xAxis[$this._schemeOpts.xAxisLinked[j].index],
+                            tickWidth = axis.width / axis.categories.length,
+                            lastTick = -1;
+
+                        for (var i = 0; i < axis.categories.length; i++) {
+                            if (axis.ticks[i]) {
+                                var left = axis.chart.plotLeft + ((lastTick + 1) * tickWidth),
+                                    label = axis.ticks[i].label,
+                                    newX = left + (((axis.ticks[i].pos - lastTick) / 2) * tickWidth),
+                                    x = newX - label.xy.x;
+
+                                label.attr({
+                                    translateX: x,
+                                    translateY: 0
+                                });
+
+                                lastTick = i;
+                            }
+                        }
+                    }
+                }
+
+                function includeData(chartOpts, seriesData, xAxisData){
                     chartOpts = JSB.clone(chartOpts);
 
                     var seriesContext = $this.getContext().find('series').values(),
                         chartOptsSeries = JSB.clone(chartOpts.series);
 
                     for(var j = 0; j < seriesData.length; j++){
+                        var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[seriesData[j].index].find('yAxis').value());
+
                         var series = {
                             name: seriesData[j].name,
                             data: seriesData[j].data,
                             datacube: {
-                                binding: $this._schemeOpts.xAxisCategories.binding()
+                                binding: $this._schemeOpts.xAxisFilterBinding
                             },
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,
                             stack: seriesContext[seriesData[j].index].find('stack').value(),
-                            step: $this.isNone(seriesContext[seriesData[j].index].find('step').value())
+                            step: $this.isNone(seriesContext[seriesData[j].index].find('step').value()),
+                            yAxis: yAxis > -1 ? yAxis : undefined
                         };
 
                         chartOpts.series[j] = JSB.clone(chartOptsSeries[seriesData[j].index]);
@@ -296,7 +434,18 @@
                         JSB.merge(true, chartOpts.series[j], series);
                     }
 
-                    chartOpts.xAxis.categories = xAxisCategories;
+                    if(xAxisData.xAxisLinkedCats){
+                        for(var i = 0; i < $this._schemeOpts.xAxisLinked.length; i++){
+                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].categories = xAxisData.xAxisLinkedCats.categoriesArrays[xAxisData.xAxisLinkedCats.categoriesArrays.length - 1 - i];
+                            chartOpts.xAxis[$this._schemeOpts.xAxisLinked[i].index].tickPositions = xAxisData.xAxisLinkedCats.tickPositions[xAxisData.xAxisLinkedCats.categoriesArrays.length - 1 - i];
+                        }
+                    }
+
+                    if(xAxisData.xAxisIndividualCats){
+                        for(var i = 0; i < $this._schemeOpts.xAxisIndividual.length; i++){
+                            chartOpts.xAxis[$this._schemeOpts.xAxisIndividual[i].index].categories = xAxisData.xAxisIndividualCats[i];
+                        }
+                    }
 
                     return chartOpts;
                 }
@@ -308,6 +457,15 @@
                     var columnPlotOptionsContext = this.getContext().find('plotOptions column');
 
                     var chartOpts = {
+                        chart: {
+                            events: {
+          	                    load: function () {
+                                    centerLabels(this);
+                                }, resize: function () {
+                                    centerLabels(this);
+                                }
+                            }
+                        },
                         plotOptions: {
                             column: {
                                 groupPadding: columnPlotOptionsContext.find('groupPadding').value(),

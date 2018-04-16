@@ -36,6 +36,10 @@
 
 	    construct: function(){
 	        for(var i in this._scheme){
+	            if(!this._scheme[i].render){
+	                continue;
+	            }
+
 	            if(!this._values[i]){
 	                this._values[i] = {}
 	            }
@@ -66,10 +70,6 @@
 	    },
 
         createRender: function(parent, key, scheme, values, opts){
-            if(!scheme.render){
-                return;
-            }
-
             var constructor = this.getRenderByName(scheme.render);
             var render = new constructor({
                 key: key,
@@ -92,11 +92,7 @@
             this.addRender(render);
 
             if(scheme.linkTo){
-                if(scheme.localLinkTo){
-                    // todo: linkTo in item (group, for example)
-                } else {
-                    this.createLink(scheme.linkTo, render);
-                }
+                this.createLink(scheme.linkTo, render);
             }
 
             if(scheme.commonField){
@@ -243,7 +239,7 @@
 	            }
 	        }
 
-	        if(newValue && this._commonFieldsMap[commonGroup].commonValues.indexOf(newValue) === -1){
+	        if(newValue && JSB.isString(newValue) && this._commonFieldsMap[commonGroup].commonValues.indexOf(newValue) === -1){
 	            this._commonFieldsMap[commonGroup].commonValues.push(newValue);
 
 	            for(var i = 0; i < this._commonFieldsMap[commonGroup].commonRenders.length; i++){

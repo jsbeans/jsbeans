@@ -85,7 +85,10 @@
 					if(!this.loaded) {
 					    this.queryEngine = new QueryEngine(this);
 					    if(Config.has('datacube.queryCache.enabled') && Config.get('datacube.queryCache.enabled')){
-					    	this.queryCache = new QueryCache(this);
+					    	var cacheInvalidateInterval = Config.has('datacube.queryCache.cubeInvalidateInterval') && Config.get('datacube.queryCache.cubeInvalidateInterval') || 600000;
+					    	this.queryCache = new QueryCache(this, this, {
+					    		invalidateInterval: cacheInvalidateInterval
+					    	});
 					    }
 		
 						if(this.existsArtifact('.cube')){
@@ -1070,6 +1073,20 @@
 			return slice;
 		},
 		
+		removeChildEntry: function(e){
+			if(!this.hasChildEntry(e)){
+				return;
+			}
+			$base(e);
+
+			if(JSB.isString(e)){
+				e = this.getWorkspace().entry(e);
+			}
+			if(JSB.isInstanceOf(e, 'DataCube.Model.Slice')){
+				this.removeSlice(e.getId());
+			}
+		},
+		
 		removeSlice: function(sId){
 			this.load();
 			var slice = this.slices[sId];
@@ -1081,7 +1098,6 @@
 			slice.remove();
 			this.sliceCount = Object.keys(this.slices).length;
 			this.store();
-			this.doSync();
 		},
 		
 		getSliceById: function(sId){
@@ -1846,8 +1862,8 @@
 		
 		executeQuery: function(query, params, provider, bUseCache){
 		    this.load();
-		    if(bUseCache && !provider && this.queryCache){
-		    	return this.queryCache.executeQuery(query, params);
+		    if(bUseCache && this.queryCache){
+		    	return this.queryCache.executeQuery(query, params, provider);
 		    } else {
 		    	return this.queryEngine.query(query, params, provider);
 		    }
@@ -1865,7 +1881,52 @@
 				if($this.queryCache){
 					$this.queryCache.clear();
 				}
-			}, 100, 'invalidate_' + this.getId());
+			}, 300, 'invalidate_' + this.getId());
+		},
+		
+		updateCache: function(){
+			JSB.defer(function(){
+				$this.lock('DataCube.Model.Cube.updateCache');
+				$this.updatingCache = true;
+				try {
+					// invalidate slices
+					var totalSlices = Object.keys($this.slices).length;
+					var cnt = 0;
+					var lastPP = -1;
+					for(var slId in $this.slices){
+						var pp = Math.round(cnt * 100 / totalSlices);
+						if(pp > lastPP){
+		            		$this.publish('DataCube.Model.Cube.status', {status: 'Обновление кэша ' + pp + '%', success: true}, {session: true});
+		            		lastPP = pp;
+		            	}
+						var slice = $this.slices[slId];
+						if(slice){
+							slice.updateCache();
+							
+							var it = null;
+							try {
+								it = slice.executeQuery({useCache:true});
+							} catch(e){					
+							} finally {
+								if(it){
+									try{ it.close(); }catch(e){}
+								}
+							}
+							
+						}
+						cnt++;
+					}
+					if($this.queryCache){
+						$this.queryCache.update();
+					}
+					$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
+				} catch(e){
+					$this.publish('DataCube.Model.Cube.status', {status: e.message, success: false}, {session: true});
+				} finally {
+					$this.updatingCache = false;
+					$this.unlock('DataCube.Model.Cube.updateCache');
+				}
+			}, 300, 'updateCache_' + this.getId());
 		}
 	}
 }

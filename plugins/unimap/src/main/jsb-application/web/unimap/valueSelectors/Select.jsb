@@ -2,8 +2,8 @@
     $name: 'Unimap.ValueSelectors.Select',
     $parent: 'Unimap.ValueSelectors.Basic',
 
-    createDefaultValues: function(key, scheme, values){
-        $base(key, scheme, values);
+    createDefaultValues: function(key, scheme, values, opts){
+        $base(key, scheme, values, opts);
 
         var val = Object.keys(scheme.items)[0];
 
@@ -16,7 +16,7 @@
             for(var i in scheme.items[val].items){
                 values.values[0].items[i] = {};
 
-                this.getMainSelector().getRenderByName(scheme.items[val].items[i].render).createDefaultValues(i, scheme.items[val].items[i], values.values[0].items[i]);
+                this.getMainSelector().getRenderByName(scheme.items[val].items[i].render).createDefaultValues(i, scheme.items[val].items[i], values.values[0].items[i], opts);
             }
         }
     },
@@ -82,5 +82,13 @@
         }
 
         return arr;
+    },
+
+    updateValues: function(key, scheme, values, opts){
+        var wasUpdated = $base(key, scheme, values, opts);
+
+        // todo
+
+        return wasUpdated;
     }
 }

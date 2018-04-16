@@ -8,7 +8,13 @@
 	border: none;
 }
 
-.htmlWidget > div.simpleContainer {}
+.htmlWidget > div.simpleContainer {
+	-webkit-user-select: text;
+	-khtml-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+}
 
 .htmlWidget[mode="simple"] > iframe {
 	display: none;

@@ -468,8 +468,20 @@
                     return 'extract(isoyear from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
                 case '$dateMonth':
                     return 'extract(month from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
+                case '$dateMonthDay':
+                    return 'extract(day from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
+                case '$dateWeekDay':
+                    return 'extract(dow from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
+                case '$dateYearDay':
+                    return 'extract(doy from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
                 case '$dateTotalSeconds':
                     return 'extract(epoch from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
+                case '$timeHour':
+                    return 'extract(hour from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
+                case '$timeMinute':
+                    return 'extract(minute from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
+                case '$timeSecond':
+                    return 'extract(second from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
 
                 case '$dateIntervalOrder':
                     return 'CAST((extract(epoch from ' + (this._translateExpression(exp.$dateIntervalOrder.$field, dcQuery, useAlias)) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';

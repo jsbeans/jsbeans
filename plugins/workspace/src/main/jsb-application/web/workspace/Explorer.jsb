@@ -432,7 +432,7 @@
 			function _updateFiltered(filter){
 				$this.lastFilter = filter;
 				if(filter && filter.length >= 3 ){
-					$this.tree.getElement().loader();
+					$this.tree.getElement().loader({message:'Поиск...'});
 					$this.server().loadFilteredNodes(filter, function(sTree){
 						
 						if($this.lastFilter != filter){
@@ -880,7 +880,7 @@
 
 		refresh: function(){
 		    this._isReady = false;
-			this.tree.getElement().loader();
+			this.tree.getElement().loader({message:'Загрузка...'});
 			this.server().loadNodes(function(nTree){
 				$this.tree.getElement().loader('hide');
 				$this.wTree = nTree;
@@ -1319,79 +1319,51 @@
 					});
 				});
 			});
-
-/*			
-			this.server().loadEntryNames(function(names){
-				var nameMap = {};
-				for(var i = 0; i < names.length; i++){
-					nameMap[names[i]] = true;
-				}
-				var lastNum = 1;
-				var testName;
-				while(true){
-					// construct current folder path
-					var testName = prefixName + ' ' + lastNum;
-					if(!nameMap[testName]){
-						break;
-					}
-					lastNum++;
-				}
-				var curPath = $this.constructPathFromKey(parentKey);
-				$this.server().addEntry(eType, opts, testName, curPath, function(desc){
-					if(!desc){
-						// internal error: folder already exists
-						return;
-					}
-					var node = $this.addTreeItem(desc, parentKey);
-					if(!node){
-						return;
-					}
-					JSB().deferUntil(function(){
-						if(node.options.allowOpen){
-							$this.publish('JSB.Workspace.nodeOpen', node);
-						}
-						if(node.renderer && node.renderer.editor){
-							node.renderer.editor.beginEdit();	
-						}
-						
-					}, function(){
-						return node.getElement().width() > 0 && node.getElement().height() > 0 && node.renderer;
-					});
-					
-					$this.sort();
-				});
-			});*/
 		},
 
 		openNodeByEntry: function(entry){
 		    function getNodeKeyByEntryId(entryId){
     		    for(var i in $this.tree.itemMap){
-    		        if(!$this.tree.itemMap[i].dummy && $this.tree.itemMap[i].obj.descriptor.entry.getId() === entryId){
-    		            return $this.tree.itemMap[i].key;
-    		        }
+    		    	if($this.tree.itemMap[i].dummy){
+    		    		continue;
+    		    	}
+    		    	var node = $this.tree.itemMap[i].obj;
+    		    	if(!node || !JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
+    		    		continue;
+    		    	}
+    		    	if(node.getEntry().getId() === entryId ){
+    		    		return $this.tree.itemMap[i].key;
+    		    	}
     		    }
+		    }
+		    
+		    function openTreeNode(eId){
+		    	var nodeKey = getNodeKeyByEntryId(eId);
+		    	if(nodeKey){
+		    		$this.tree.selectItem(nodeKey);
+                    $this.publish('JSB.Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
+                    return true;
+		    	}
+		    	return false;
 		    }
 
 		    var nodeKey = getNodeKeyByEntryId(entry.getId());
 		    if(nodeKey){
 		        this.tree.selectItem(nodeKey);
-
 		        this.publish('JSB.Workspace.nodeOpen', this.tree.get(nodeKey).obj);
 		    } else {
 		        var parentKey = getNodeKeyByEntryId(entry.getParentId());
 
 		        if(parentKey){
 		            this.expandNode(parentKey, function(){
-		                var nodeKey = getNodeKeyByEntryId(entry.getId());
-
-		                if(nodeKey){
-		                    $this.tree.selectItem(nodeKey);
-
-		                    $this.publish('JSB.Workspace.nodeOpen', $this.tree.get(nodeKey).obj);
-		                }
+		            	if(!openTreeNode(entry.getId())){
+		            		JSB.deferUntil(function(){}, function(){
+		            			return openTreeNode(entry.getId());
+		            		});
+		            	}
 		            });
 		        } else {
-		            // todo
+		            // TODO: expand hierarchy
 		        }
 		    }
 		}

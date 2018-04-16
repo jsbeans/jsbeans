@@ -55,10 +55,18 @@
         }
     },
 
-    createDefaultValues: function(key, scheme, values){
+    createDefaultValues: function(key, scheme, values, opts){
+        //this.getRenderByName().updateValues(key, scheme, values);
+
+        $current.updateValues(key, scheme, values, opts);
+
+        /*
+        if(!scheme.render){ return; }
+
         values.checked = scheme.optional === 'checked' ? true : undefined;
-        values.render = scheme.render;
         values.defaultValue = scheme.defaultValue;
+        values.render = scheme.render;
+        values.name = scheme.name;
         values.valueType = scheme.valueType;
         values.values = [];
 
@@ -77,6 +85,7 @@
 
             mainSelector._linkedFields[scheme.linkTo].push(key);
         }
+        */
     },
 
     getContext: function(){
@@ -153,7 +162,7 @@
                 case 'number':
                     value = Number(this._values[0].value);
 
-                    if(isNaN(value)){
+                    if(isNaN(value) || typeof this._values[0].value === 'string' && this._values[0].value.length === 0 || !JSB.isDefined(this._values[0].value)){
                         value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
                     }
                     break;
@@ -217,5 +226,60 @@
         }
 
         return valArr;
+    },
+
+    updateValues: function(key, scheme, values, opts){
+        var wasUpdated = false;
+
+        if(!JSB.isDefined(values.checked)){
+            values.checked = scheme.optional === 'checked';
+            wasUpdated = true;
+        }
+
+        if(values.defaultValue !== scheme.defaultValue){
+            values.defaultValue = scheme.defaultValue;
+            wasUpdated = true;
+        }
+
+        if(values.render !== scheme.render){
+            values.render = scheme.render;
+            wasUpdated = true;
+        }
+
+        if(!JSB.isDefined(values.name) && scheme.editableName){
+            values.name =  scheme.name;
+            wasUpdated = true;
+        }
+
+        if(values.valueType !== scheme.valueType){
+            values.valueType = scheme.valueType;
+            wasUpdated = true;
+        }
+
+        if(!values.values){
+            values.values = [];
+
+            if(scheme.value){
+                values.values[0] = {
+                    value: scheme.value
+                }
+            }
+
+            wasUpdated = true;
+        }
+
+        if(scheme.linkTo){
+            if(!opts.linkedFields[scheme.linkTo]){
+                opts.linkedFields[scheme.linkTo] = [];
+                wasUpdated = true;
+            }
+
+            if(opts.linkedFields[scheme.linkTo].indexOf(key) < 0){
+                opts.linkedFields[scheme.linkTo].push(key);
+                wasUpdated = true;
+            }
+        }
+
+        return wasUpdated;
     }
 }

@@ -170,6 +170,12 @@
 	                linkTo: 'rows',
 	                multiple: true
 	            },
+	            useFilterOnClick: {
+	            	render: 'item',
+	                name: 'Использовать фильтрацию при клике',
+					optional: 'checked',
+					editor: 'none'
+	            },
 	            preserveFilteredRows: {
 	                render: 'item',
 	                name: 'Не скрывать отфильтрованные строки',
@@ -180,6 +186,12 @@
 	                render: 'item',
 	                name: 'Обновлять данные при наведении',
 					optional: true,
+					editor: 'none'
+	            },
+	            showSortIcon: {
+	                render: 'item',
+	                name: 'Не скрывать значок сортировки',
+					optional: 'checked',
 					editor: 'none'
 	            },
 	            useTree: {
@@ -243,7 +255,42 @@
                                             name: 'Всегда показывать фильтр',
                                             optional: true,
                                             editor: 'none'
+                                        },
+                                        contextFilterValue: {
+                                        	render: 'item',
+                                            name: 'Значение по умолчанию'
+                                        },
+                                        contextFilterOp: {
+                                            render: 'select',
+                                            name: 'Условие по умолчанию (для численных значений)',
+                                            items: {
+                                            	'$eq': {
+                                                    name: '=',
+                                                    value: '$eq'
+                                                },
+                                                '$lt': {
+                                                    name: '<',
+                                                    value: '$lt'
+                                                },
+                                                '$lte': {
+                                                    name: '&le;',
+                                                    value: '$lte'
+                                                },
+                                                '$gt': {
+                                                    name: '>',
+                                                    value: '$gt'
+                                                },
+                                                '$gte': {
+                                                    name: '&ge;',
+                                                    value: '$gte'
+                                                },
+                                                '$ne': {
+                                                    name: '&ne;',
+                                                    value: '$ne'
+                                                }
+                                            }
                                         }
+
                                     }
 	                            },
 	                            textFormat: {
@@ -292,6 +339,40 @@
                                             name: 'Всегда показывать фильтр',
                                             optional: true,
                                             editor: 'none'
+                                        },
+                                        widgetContextFilterValue: {
+                                        	render: 'item',
+                                            name: 'Значение по умолчанию'
+                                        },
+                                        widgetContextFilterOp: {
+                                            render: 'select',
+                                            name: 'Условие по умолчанию (для численных значений)',
+                                            items: {
+                                            	'$eq': {
+                                                    name: '=',
+                                                    value: '$eq'
+                                                },
+                                                '$lt': {
+                                                    name: '<',
+                                                    value: '$lt'
+                                                },
+                                                '$lte': {
+                                                    name: '&le;',
+                                                    value: '$lte'
+                                                },
+                                                '$gt': {
+                                                    name: '>',
+                                                    value: '$gt'
+                                                },
+                                                '$gte': {
+                                                    name: '&ge;',
+                                                    value: '$gte'
+                                                },
+                                                '$ne': {
+                                                    name: '&ne;',
+                                                    value: '$ne'
+                                                }
+                                            }
                                         }
                                     }
 	                            }
@@ -299,6 +380,12 @@
 	                    }
 	                }
 	            },
+	            cellSpan: {
+                    render: 'item',
+                    name: 'Объединять ячейки с одинаковыми значениями',
+                    editor: 'none',
+                    optional: true
+                },
                 summary: {
                     render: 'switch',
                     name: 'Отображать в строке статуса сводный показатель',
@@ -333,6 +420,12 @@
                                 	render: 'dataBinding',
                                     name: 'Поле',
                                     linkTo: 'rows'
+                                },
+                                summaryFormat: {
+                                    render: 'item',
+                                    name: 'Использовать форматирование',
+                                    value: '0,0.[00]',
+                                    optional: true
                                 },
                                 summaryPrefix: {
                                     render: 'item',
@@ -465,6 +558,8 @@
                     name: 'Ширина столбца',
                     value: 'auto'
                 }
+                
+
 	        }
 	    }
 	},
@@ -490,6 +585,8 @@
 		scrollHeight: 0,
 		paneHeight: 0,
 		embeddedBindings: [],
+		refreshOrdered: false,
+		refreshOrderedOpts: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -581,6 +678,16 @@
 						$this.header.width($this.scroll.getPane().width());
 						$this.status.width($this.scroll.getPane().width());
 					});
+					
+					$this.getElement().visible(function(evt, isVisible){
+						if(!isVisible){
+							return;
+						}
+						if($this.refreshOrdered){
+							$this.refresh($this.refreshOrderedOpts);
+						}
+					});
+					
 /*					
 					if(!$this.scrollHeight){
 						JSB.deferUntil(function(){
@@ -622,7 +729,7 @@
 		},
 		
 		appendRows: function(bRefresh){
-			if(!$this.ready || this.rowAppending || $this.blockFetch || !$this.scroll.getElement().is(':visible')){
+			if(!$this.ready || this.rowAppending || $this.blockFetch /*|| !$this.scroll.getElement().is(':visible')*/){
 				return;
 			}
 			this.rowAppending = true;
@@ -676,9 +783,36 @@
 					pRows.push(rowDesc);
 					$this.rowKeyMap[key] = rowDesc;
 					
-					// proceed widgets
+					// proceed cells
 					for(var j = 0; j < $this.colDesc.length; j++){
 						row[j].rowKey = key;
+						
+						// check for cellSpan
+						if($this.colDesc[j].cellSpan){
+							var prevDesc = null;
+							if(i > 0){
+								prevDesc = rows[i-1].row[j];
+							} else {
+								if(idxOffset > 0){
+									prevDesc = $this.rows[idxOffset-1].row[j];
+								}
+							}
+							if(prevDesc && JSB.isEqual(row[j].value, prevDesc.value)){
+								
+								if(JSB.isDefined(prevDesc.spanFrom)){
+									row[j].spanFrom = prevDesc.spanFrom;
+								} else {
+									row[j].spanFrom = idxOffset + i - 1;
+								}
+								if(row[j].spanFrom >= idxOffset){
+									rows[row[j].spanFrom - idxOffset].row[j].spanCount = (rows[row[j].spanFrom - idxOffset].row[j].spanCount || 1) + 1;
+								} else {
+									$this.rows[row[j].spanFrom].row[j].spanCount = ($this.rows[row[j].spanFrom].row[j].spanCount || 1) + 1;
+								}
+							}
+						}
+						
+						// perform widgets
 						if($this.colDesc[j].widget){
 							var colName = $this.colDesc[j].title;
 							if($this.widgetMap[key] && $this.widgetMap[key][colName] && $this.widgetMap[key][colName].getJsb().$name == $this.colDesc[j].widget.jsb){
@@ -749,10 +883,12 @@
 				rowsSelDataColData.order();
 				
 				rowsSelDataColData
-					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-					.attr('type', function(d){return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
-					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
-					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert});
+					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle;})
+					.attr('type', function(d){return $this.colDesc[d.colIdx].widget ? 'widget':'text';})
+					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
+					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz;})
+					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert;});
 			
 				rowsSelDataColData.each(function(d){
 					var tdCell = d3.select(this);
@@ -797,7 +933,7 @@
 						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
 							fVal = Numeral.format(val, $this.colDesc[d.colIdx].format);
 						}
-						cellEl.text(fVal);
+						cellEl.text(fVal !== null ? fVal : '');
 						cellEl.attr('title', val);
 						
 						if(cellEl.attr('widget')){
@@ -837,6 +973,8 @@
 					.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
 					.attr('key', function(d){ return d.key;})
 					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
 					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
 					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
 						.append('div')
@@ -872,7 +1010,7 @@
 									}
 									
 									cellEl.attr('title', val);
-									cellEl.text(fVal);
+									cellEl.text(fVal !== null ? fVal : '');
 								}
 							});
 					
@@ -931,6 +1069,8 @@
 									.attr('key', function(d){ return d.key;})
 									.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
 									.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
+									.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+									.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
 									.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
 									.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
 									.append('div')
@@ -965,7 +1105,7 @@
 													fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
 												}
 												
-												cellEl.text(fVal);
+												cellEl.text(fVal !== null ? fVal : '');
 												cellEl.attr('title', val);
 											}
 										});
@@ -1160,6 +1300,9 @@
 		},
 		
 		onRowClick: function(d){
+			if(!this.useFilterOnClick){
+				return;
+			}
 			// remove all filters with
 			var filters = this.getFilters();
 			var idsToRemove = [];
@@ -1246,6 +1389,11 @@
 			}
 
 			rowElt.addClass('highlight');
+			if(this.useFilterOnClick){
+				rowElt.addClass('useClick');
+			} else {
+				rowElt.removeClass('useClick');
+			}
 			$this.highlightedRowKey = rowKey;
 			$this.highlightedRowData = d;
 			
@@ -1273,7 +1421,7 @@
 			var bSameApplied = (Object.keys(sameFieldMap).length == 0);
 			var bOtherApplied = (Object.keys(otherFieldMap).length == 0);
 			
-			var bAnd = bOtherApplied && !bSameApplied && bRowExisted;
+			var bAnd = /*bOtherApplied &&*/ !bSameApplied && (bOtherApplied || bRowExisted) /*&& bRowExisted*/;
 			var bOr = !bRowExisted && !bSameApplied;
 			var bNot = bRowExisted && !bSameApplied;
 			
@@ -1464,7 +1612,11 @@
 			var wrapQuery = {$select:{'val':valQ}};
 			this.server().executeQuery(source, $this.getWrapper().getDashboard(), {extQuery: mainQuery, wrapQuery: wrapQuery}, function(res){
 				if(res && res.length > 0 && JSB.isDefined(res[0].val)){
-					callback.call(this, res[0].val);
+					var val = res[0].val;
+					if(statusDesc.summaryFormat && JSB.isNumber(val) && statusDesc.summaryFormat.length > 0){
+						val = Numeral.format(val, statusDesc.summaryFormat);
+					}
+					callback.call(this, val);
 				} else {
 					callback.call(this, 0);
 				}
@@ -1500,26 +1652,50 @@
 					.each(function(d){
 						var elt = $this.$(this);
 						var hWrapper = elt.find('> .hWrapper');
-						elt.find('> .hWrapper > .text').text(d.title);
+						elt.find('> .hWrapper > .text').text(d.title).attr('title', d.title);
 						
 						// sort
+						function _updateSortOrder(order){
+							if(order == 'asc'){
+								elt.addClass('sortAsc');
+								elt.removeClass('sortDesc');
+							} else if(order == 'desc'){
+								elt.addClass('sortDesc');
+								elt.removeClass('sortAsc');
+							} else {
+								elt.removeClass('sortAsc');
+								elt.removeClass('sortDesc');
+							}
+						}
 						var sortSelector = hWrapper.find('> .sortSelector').jsb();
 						if(d.sortFields && d.sortFields.length > 0){
 							if(!sortSelector){
 								sortSelector = new SortSelector({
 									onChange: function(q){
 										$this.updateOrder(this, q);
+										_updateSortOrder(this.getCurrentOrder());
 									}
 								});
 								hWrapper.append(sortSelector.getElement());
+								elt.find('> .hWrapper > .text').on('click.sort', function(){
+									sortSelector.toggleOrder();
+								});
 							}
 							sortSelector.setFields(d.sortFields);
 							elt.addClass('sortable');
+							if($this.showSortIcon){
+								elt.addClass('showSortIcon');
+							} else {
+								elt.removeClass('showSortIcon');
+							}
+							_updateSortOrder(sortSelector.getCurrentOrder());
 						} else {
 							if(sortSelector){
 								sortSelector.destroy();
+								elt.find('> .hWrapper > .text').off('click.sort');
 							}
 							elt.removeClass('sortable');
+							elt.removeClass('showSortIcon');
 						}
 						
 						// filter
@@ -1535,11 +1711,14 @@
 								});
 								elt.append(filterEntry.getElement());
 							}
+							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
+							
 							if(d.contextFilterFixed){
 								elt.addClass('contextFilterFixed');
 								if(filterButtonElt.length > 0){
 									filterButtonElt.remove();
 								}
+								$this.updateContextFilter(filterEntry.getFilter(), true);
 							} else {
 								elt.removeClass('contextFilterFixed');
 								if(filterButtonElt.length == 0){
@@ -1560,7 +1739,8 @@
 									});
 								}
 							}
-							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
+							
+							
 						} else {
 							elt.removeClass('contextFilter');
 							if(filterEntry){
@@ -1583,18 +1763,40 @@
 							var elt = $this.$(this);
 							var hWrapper = $this.$('<div class="hWrapper"></div>');
 							elt.append(hWrapper);
-							hWrapper.append($this.$('<div class="text"></div>').text(d.title));
+							hWrapper.append($this.$('<div class="text"></div>').text(d.title).attr('title',d.title));
 							
 							// sort
+							function _updateSortOrder(order){
+								if(order == 'asc'){
+									elt.addClass('sortAsc');
+									elt.removeClass('sortDesc');
+								} else if(order == 'desc'){
+									elt.addClass('sortDesc');
+									elt.removeClass('sortAsc');
+								} else {
+									elt.removeClass('sortAsc');
+									elt.removeClass('sortDesc');
+								}
+							}
 							if(d.sortFields && d.sortFields.length > 0){
 								elt.addClass('sortable');
 								var sortSelector = new SortSelector({
 									onChange: function(q){
 										$this.updateOrder(this, q);
+										_updateSortOrder(this.getCurrentOrder());
 									}
 								});
 								hWrapper.append(sortSelector.getElement());
 								sortSelector.setFields(d.sortFields);
+								elt.find('> .hWrapper > .text').on('click.sort', function(){
+									sortSelector.toggleOrder();
+								});
+								if($this.showSortIcon){
+									elt.addClass('showSortIcon');
+								} else {
+									elt.removeClass('showSortIcon');
+								}
+								_updateSortOrder(sortSelector.getCurrentOrder());
 							}
 							
 							// filter
@@ -1606,9 +1808,11 @@
 									}
 								});
 								elt.append(filterEntry.getElement());
+								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
 								
 								if(d.contextFilterFixed){
 									elt.addClass('contextFilterFixed');
+									$this.updateContextFilter(filterEntry.getFilter(), true);
 								} else {
 									var filterButtonElt = $this.$('<div class="filterButton"></div>');
 									hWrapper.append(filterButtonElt);
@@ -1626,7 +1830,8 @@
 										}
 									});
 								}
-								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType);
+								
+								
 							}
 						});
 				
@@ -1653,7 +1858,7 @@
 			this.refresh();
 		},
 		
-		updateContextFilter: function(q){
+		updateContextFilter: function(q, dontRefresh){
 			var curFilter = this.getContextFilter();
 			var bChanged = false;
 			for(var f in q){
@@ -1669,7 +1874,9 @@
 			}
 			if(bChanged){
 				this.setContextFilter(curFilter);
-				this.refresh();
+				if(!dontRefresh){
+					this.refresh();
+				}
 			}
 		},
 		
@@ -1686,10 +1893,18 @@
 		refresh: function(opts){
 			if(!this.ready){
 				this.ensureInitialized(function(){
-					$this.refresh();
+					$this.refresh(opts);
 				});
 				return;
 			}
+			
+			if(!$this.getElement().is(':visible')){
+				$this.refreshOrdered = true;
+				$this.refreshOrderedOpts = opts;
+				return;
+			}
+			
+			$this.refreshOrdered = false;
 
             var dataSource = this.getContext().find('rows');
             if(!dataSource.hasBinding || !dataSource.hasBinding()){
@@ -1759,16 +1974,12 @@
 				// fill styles
 				var alignHorz = 'left';
 				var alignHorzSelector = gArr[i].find('alignHorz');
-				if(alignHorzSelector.checked()){
-					alignHorz = alignHorzSelector.value();
-				}
-				
+				alignHorz = alignHorzSelector.value();
+
 				var alignVert = 'top';
 				var alignVertSelector = gArr[i].find('alignVert');
-				if(alignVertSelector.checked()){
-					alignVert = alignVertSelector.value();
-				}
-				
+				alignVert = alignVertSelector.value();
+
 				var cssStyle = '';
 				var cssSelector = gArr[i].find('css');
 				if(cssSelector.checked()){
@@ -1778,16 +1989,12 @@
 				// fill header styles
 				var hAlignHorz = 'left';
 				var hAlignHorzSelector = gArr[i].find('hAlignHorz');
-				if(hAlignHorzSelector.checked()){
-					hAlignHorz = hAlignHorzSelector.value();
-				}
-				
+				hAlignHorz = hAlignHorzSelector.value();
+
 				var hAlignVert = 'top';
 				var hAlignVertSelector = gArr[i].find('hAlignVert');
-				if(hAlignVertSelector.checked()){
-					hAlignVert = hAlignVertSelector.value();
-				}
-				
+				hAlignVert = hAlignVertSelector.value();
+
 				var hCssStyle = '';
 				var hCssSelector = gArr[i].find('hCss');
 				if(hCssSelector.checked()){
@@ -1814,7 +2021,9 @@
 					sortFields: null,
 					status: null,
 					contextFilterField: null,
-					contextFilterFixed: false
+					contextFilterFixed: false,
+					contextFilterValue: '',
+					cellSpan: gArr[i].find('cellSpan').checked()
 				};
 				
 				// check for status
@@ -1829,6 +2038,7 @@
 							statusDesc.summaryFieldSelector = summaryElts[j].find('summaryField');
 							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
 							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
+							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').checked() ? summaryElts[j].find('summaryFormat').value() : null; 
 							if(!desc.status){
 								desc.status = [];
 							}
@@ -1872,6 +2082,8 @@
                                 desc.contextFilterField = widgetContextFilterFieldSelector.binding();
                                 desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
                             }
+                            desc.contextFilterValue = widgetContextFilterSelector.find('widgetContextFilterValue').value() || '';
+                            desc.contextFilterOp = widgetContextFilterSelector.find('widgetContextFilterOp').value() || '$eq';
                         }
                     }
 				} else {
@@ -1889,6 +2101,8 @@
 						}
 						desc.contextFilterField = textSelector.binding();
 						desc.contextFilterFieldType = textSelector.bindingType();
+						desc.contextFilterValue = contextFilterSelector.find('contextFilterValue').value() || '';
+						desc.contextFilterOp = contextFilterSelector.find('contextFilterOp').value() || '$eq';
 					}
 					var formatSelector = viewSelector.find('textFormat');
 					if(formatSelector.checked()){
@@ -1898,6 +2112,9 @@
 				
 				this.colDesc.push(desc);
 			}
+			
+			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
+			this.showSortIcon = this.getContext().find('showSortIcon').checked();
 			
 			// update row filters
 			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();

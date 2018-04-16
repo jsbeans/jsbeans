@@ -130,8 +130,9 @@
 			try {
 				var desc = {
 					layout: this.layout,
-					wrappers: {}
+					//wrappers: {}
 				}
+				/*
 				for(var wId in this.wrappers){
 					var wWrapper = this.wrappers[wId];
 					desc.wrappers[wId] = {
@@ -141,6 +142,7 @@
 						sourcesIds: wWrapper.getSourcesIds()
 					}
 				}
+				*/
 				this.widgetCount = Object.keys(this.wrappers).length;
 				this.lastUpdated = Date.now();
 				this.property('widgets', this.widgetCount);
@@ -166,7 +168,8 @@
 	
 							// read wrappers
 							this.wrappers = this.getChildren();
-							
+
+							/*
 							for(var wId in snapshot.wrappers){
 								var wDesc = snapshot.wrappers[wId];
 								
@@ -181,6 +184,7 @@
 									this.wrappers[wId] = wWrapper;
 								}
 							}
+							*/
 							
 							// remove unused wrappers
 							var unusedWrappers = JSB.clone(this.wrappers);

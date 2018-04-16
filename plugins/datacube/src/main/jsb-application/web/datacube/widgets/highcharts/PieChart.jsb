@@ -10,21 +10,13 @@
     },
     $scheme: {
         series: {
-	        render: 'group',
-	        name: 'Серии',
-            collapsable: true,
-            multiple: true,
             items: {
                 seriesItem: {
-                    render: 'group',
-                    name: 'Серия',
-                    collapsable: true,
                     items: {
                         name: {
                             render: 'dataBinding',
                             name: 'Имена частей',
-                            linkTo: 'source',
-                            editor: 'input'
+                            linkTo: 'source'
                         },
                         data: {
                             render: 'dataBinding',
@@ -40,7 +32,7 @@
                             render: 'item',
                             name: 'Внутренний диаметр',
                             valueType: 'string',
-                            defaultValue: '0'
+                            //defaultValue: '0'
                         },
                         dataLabels: {
                             render: 'group',
@@ -54,9 +46,9 @@
                                 },
                                 distance: {
                                     render: 'item',
-                                    name: 'Расстояние от центра',
+                                    name: 'Расстояние от внешнего радиуса',
                                     valueType: 'number',
-                                    defaultValue: 30
+                                    //defaultValue: 30
                                 }
                             }
                         }
@@ -71,15 +63,74 @@
             collapsed: true,
             items: {
                 unionSeries: {
-                    render: 'item',
+                    render: 'switch',
                     name: 'Объединить все серии',
-                    optional: true,
-                    editor: 'none'
+                    items: {
+                        unionSeriesName: {
+                            render: 'item',
+                            name: 'Имя объединенной серии',
+                            valueType: 'string'
+                        }
+                    }
                 }
             }
         },
         plotOptions: {
-	        render: null
+	        items: {
+	            series: {
+	                items: {
+	                    stacking: {
+	                        render: null
+	                    },
+	                    dataLabels: {
+	                        items: {
+	                            align: {
+	                                render: null
+	                            }
+	                        }
+	                    }
+	                }
+	            },
+	            pie: {
+                    render: 'group',
+                    name: 'Тип "Круговая диаграмма"',
+                    collapsable: true,
+                    collapsed: true,
+	                items: {
+	                    dataLabels: {
+                            render: 'group',
+                            name: 'Подписи',
+                            collapsable: true,
+	                        items: {
+	                            connectorColor: {
+                                    render: 'item',
+                                    name: 'Цвет коннектора',
+                                    editor: 'JSB.Widgets.ColorEditor',
+                                    defaultValue: '{point.color}'
+	                            },
+	                            connectorPadding: {
+                                    render: 'item',
+                                    name: 'Внутренний отступ коннектора',
+                                    valueType: 'number',
+                                    defaultValue: 5
+	                            },
+	                            connectorWidth: {
+                                    render: 'item',
+                                    name: 'Толщина коннектора',
+                                    valueType: 'number',
+                                    defaultValue: 1
+	                            },
+                                distance: {
+                                    render: 'item',
+                                    name: 'Расстояние от внешнего радиуса',
+                                    valueType: 'number',
+                                    defaultValue: 30
+                                }
+	                        }
+	                    }
+	                }
+	            }
+	        }
         }
     },
     $client: {
@@ -108,7 +159,8 @@
 
                     this._schemeOpts.series.push({
                         nameSelector: seriesContext[i].find('name'),
-                        dataSelector: seriesContext[i].find('data')
+                        dataSelector: seriesContext[i].find('data'),
+                        seriesNameSelector: seriesContext[i].find('seriesName')
                     });
 
                     this._schemeOpts.bindings.push(name.binding());
@@ -132,9 +184,10 @@
 
                             data[i].push({
                                 datacube: {
-                                    binding: $this._schemeOpts.series[i].nameSelector.binding() || $this._schemeOpts.series[i].dataSelector.binding()
+                                    binding: $this._schemeOpts.series[i].nameSelector.binding() || $this._schemeOpts.series[i].dataSelector.binding(),
+                                    filterData: $this._addFilterData()
                                 },
-                                name: $this._schemeOpts.series[i].nameSelector.value(),
+                                name: $this._schemeOpts.series[i].nameSelector.value() || $this._schemeOpts.series[i].seriesNameSelector.value(),
                                 y: $this._schemeOpts.series[i].dataSelector.value()
                             });
                         }
@@ -164,7 +217,7 @@
 
                     var seriesContext = $this.getContext().find('series').values();
 
-                    if(unionSeries){
+                    if(seriesContext.length > 1 && unionSeries){
                         var newData = [],
                             bindings = [],
                             series0 = JSB.clone(chartOpts.series[0]);
@@ -184,7 +237,8 @@
                             dataLabels: {
                                 color: seriesContext[0].find('dataLabels color').value(),
                                 distance: seriesContext[0].find('dataLabels distance').value()
-                            }
+                            },
+                            name: $this.getContext().find('settings unionSeries unionSeriesName').value()
                         };
 
                         JSB.merge(true, series0, series);
@@ -216,7 +270,9 @@
                     baseChartOpts = includeData(this._styles, data);
                 } else {
                     baseChartOpts = $base();
-                    var plotOptionsContext = this.getContext().find('plotOptions pie');
+
+                    var plotOptionsContext = this.getContext().find('plotOptions pie'),
+                        plotOptionsDataLabels = plotOptionsContext.find('dataLabels');
 
                     var chartOpts = {
                         chart: {
@@ -225,6 +281,12 @@
 
                         plotOptions: {
                             pie: {
+                                dataLabels: {
+                                    connectorColor: plotOptionsDataLabels.find('connectorColor').value(),
+                                    connectorPadding: plotOptionsDataLabels.find('connectorPadding').value(),
+                                    connectorWidth: plotOptionsDataLabels.find('connectorWidth').value(),
+                                    distance: plotOptionsDataLabels.find('distance').value()
+                                },
                                 showInLegend: this.getContext().find('legend enabled').checked()
                             }
                         }

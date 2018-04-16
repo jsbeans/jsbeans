@@ -23,10 +23,6 @@
 
 	        this.setEditor(item);
 
-            if(values.binding){
-                this.setDataScheme(values.binding, null, itemIndex);
-            }
-
             item.droppable({
                 accept: function(d){
                     if(d && d.length > 0 && d.get(0).draggingItems){
@@ -86,6 +82,10 @@
 	        } else {
 	            this.append(item);
 	        }
+
+            if(values.binding){
+                this.setDataScheme(values.binding, null, itemIndex);
+            }
 	    },
 
 	    destroy: function(){
@@ -285,70 +285,94 @@
 
 	    combineDataScheme: function(source){
 			var iterator = null;
-			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-				iterator = source.executeQuery();
-			} else {
-				// todo
-			}
-
-            if(!iterator){
-                return null;
-            }
-
-			function processElement(val, path){
-				if(JSB.isNull(val)){
-					return {};
-				} else if(JSB.isObject(val)){
-					var rDesc = {type: 'object', record: {}};
-					for(var f in val){
-						var cVal = val[f];
-						var curPath = path;
-						if(curPath){
-							curPath = curPath + '.' + f;
-						} else {
-							curPath = f;
-						}
-						var r = processElement(cVal, curPath);
-						rDesc.record[f] = JSB.merge(true, rDesc.record[f] || {}, r);
-						rDesc.record[f].field = f;
-						if(path){
-							rDesc.record[f].path = path;
-						}
-					}
-					return rDesc;
-				} else if(JSB.isArray(val)){
-					var rDesc = {type:'array', arrayType: {}};
-					for(var i = 0; i < val.length; i++){
-						var r = processElement(val[i], path);
-						if(r && Object.keys(r).length > 0){
-							rDesc.arrayType = r;
-						}
-					}
-					return rDesc;
-				} else if(JSB.isString(val)){
-					return {type: 'string'};
-				} else if(JSB.isFloat(val)){
-					return {type: 'float'};
-				} else if(JSB.isInteger(val)){
-					return {type: 'integer'};
-				} else if(JSB.isBoolean(val)){
-					return {type: 'boolean'};
-				} else if(JSB.isDate(val)){
-					return {type: 'date'};
-				}
-			}
-
 			var recordTypes = {};
-			for(var j = 0; j < 100; j++){
-				var el = iterator.next();
-				if(!el){
-					break;
-				}
-				var r = processElement(el);
-				JSB.merge(true, recordTypes, r);
-			}
 
-			iterator.close();
+			try {
+                if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+                    iterator = source.executeQuery({useCache: true});
+                } else {
+                    // TODO
+                    var dpInfo = DataProviderRepository.queryDataProviderInfo(source);
+                    var ProviderClass = JSB.get(dpInfo.pType).getClass();
+                    var provider = new ProviderClass(JSB.generateUid(), source, null);
+                    provider.extractFields();
+
+                    var buffer = provider.find();
+                    iterator = {
+                        buffer: buffer,
+                        total: buffer.length,
+                        pos: 0,
+                        next: function(){
+                            if(this.pos >= this.total){
+                                return null;
+                            }
+                            return this.buffer[this.pos++];
+                        },
+                        close: function(){
+                            this.buffer = [];
+                            this.total = 0;
+                            this.pos = 0;
+                        }
+                    }
+                }
+                if(!iterator){
+                    return null;
+                }
+                function processElement(val, path){
+                    if(JSB.isNull(val)){
+                        return {};
+                    } else if(JSB.isObject(val)){
+                        var rDesc = {type: 'object', record: {}};
+                        for(var f in val){
+                            var cVal = val[f];
+                            var curPath = path;
+                            if(curPath){
+                                curPath = curPath + '.' + f;
+                            } else {
+                                curPath = f;
+                            }
+                            var r = processElement(cVal, curPath);
+                            rDesc.record[f] = JSB.merge(true, rDesc.record[f] || {}, r);
+                            rDesc.record[f].field = f;
+                            if(path){
+                                rDesc.record[f].path = path;
+                            }
+                        }
+                        return rDesc;
+                    } else if(JSB.isArray(val)){
+                        var rDesc = {type:'array', arrayType: {}};
+                        for(var i = 0; i < val.length; i++){
+                            var r = processElement(val[i], path);
+                            if(r && Object.keys(r).length > 0){
+                                rDesc.arrayType = r;
+                            }
+                        }
+                        return rDesc;
+                    } else if(JSB.isString(val)){
+                        return {type: 'string'};
+                    } else if(JSB.isFloat(val)){
+                        return {type: 'float'};
+                    } else if(JSB.isInteger(val)){
+                        return {type: 'integer'};
+                    } else if(JSB.isBoolean(val)){
+                        return {type: 'boolean'};
+                    } else if(JSB.isDate(val)){
+                        return {type: 'date'};
+                    }
+                }
+                for(var j = 0; j < 50; j++){
+                    var el = iterator.next();
+                    if(!el){
+                        break;
+                    }
+                    var r = processElement(el);
+                    JSB.merge(true, recordTypes, r);
+                }
+			} finally {
+                if(iterator){
+                    try {iterator.close();} catch(e){}
+                }
+			}
 
 			return {
 				type: 'array',

@@ -19,33 +19,7 @@
 			this.append(this.icon);
 			
 			this.icon.click(function(){
-				function toggleOrder(){
-					if($this.sortDir === null || $this.sortDir == -1){
-						$this.sortDir = 1;
-					} else {
-						$this.sortDir = -1;
-					}
-					if($this.options.onChange){
-						var sortQuery = {};
-						sortQuery[$this.sortField] = $this.sortDir;
-						$this.options.onChange.call($this, sortQuery);
-					}
-					$this.updateState();
-				}
-				
-				if(!$this.sortField){
-					if($this.sortFields.length == 1){
-						$this.sortField = $this.sortFields[0];
-						toggleOrder();
-					} else {
-						$this.showDropList(function(){
-							toggleOrder();
-						});
-					}
-				} else {
-					toggleOrder();
-				}
-				
+				$this.toggleOrder();
 			});
 			
 			this.field.click(function(){
@@ -96,6 +70,43 @@
 			$this.sortDir = null;
 			$this.sortField = null;
 			$this.updateState();
+		},
+		
+		getCurrentOrder: function(){
+			if($this.sortDir == 1){
+				return 'asc';
+			}
+			if($this.sortDir == -1){
+				return 'desc';
+			}
+		},
+		
+		toggleOrder: function(){
+			function _toggleOrder(){
+				if($this.sortDir === null || $this.sortDir == -1){
+					$this.sortDir = 1;
+				} else {
+					$this.sortDir = -1;
+				}
+				if($this.options.onChange){
+					var sortQuery = {};
+					sortQuery[$this.sortField] = $this.sortDir;
+					$this.options.onChange.call($this, sortQuery);
+				}
+				$this.updateState();
+			}
+			if(!$this.sortField){
+				if($this.sortFields.length == 1){
+					$this.sortField = $this.sortFields[0];
+					_toggleOrder();
+				} else {
+					$this.showDropList(function(){
+						_toggleOrder();
+					});
+				}
+			} else {
+				_toggleOrder();
+			}
 		},
 		
 		updateState: function(){

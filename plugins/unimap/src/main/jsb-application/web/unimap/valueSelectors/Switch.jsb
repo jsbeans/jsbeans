@@ -2,8 +2,8 @@
     $name: 'Unimap.ValueSelectors.Switch',
     $parent: 'Unimap.ValueSelectors.Basic',
 
-    createDefaultValues: function(key, scheme, values){
-        $base(key, scheme, values);
+    createDefaultValues: function(key, scheme, values, opts){
+        $base(key, scheme, values, opts);
 
         if(values.checked){
             values.values[0] = {
@@ -13,7 +13,7 @@
             for(var i in scheme.items){
                 values.values[0].items[i] = {};
 
-                this.getMainSelector().getRenderByName(scheme.items[i].render).createDefaultValues(i, scheme.items[i], values.values[0].items[i]);
+                this.getMainSelector().getRenderByName(scheme.items[i].render).createDefaultValues(i, scheme.items[i], values.values[0].items[i], opts);
             }
         }
     },
@@ -69,5 +69,13 @@
         this.getMainSelector().findRendersByName(name, arr, values);
 
         return arr;
+    },
+
+    updateValues: function(key, scheme, values, opts){
+        var wasUpdated = $base(key, scheme, values, opts);
+
+        // todo
+
+        return wasUpdated;
     }
 }

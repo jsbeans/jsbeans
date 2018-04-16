@@ -210,6 +210,9 @@
 		sendRequest: function(){
 			var url = this.find('.requestEditor').jsb().getData().getValue();
 			this.ajax(url, {}, function(result, obj){
+				if(JSB.isString(obj)){
+					obj = eval('(' + obj + ')');
+				}
 				$this.updateResults(obj);
 			});
 		},
