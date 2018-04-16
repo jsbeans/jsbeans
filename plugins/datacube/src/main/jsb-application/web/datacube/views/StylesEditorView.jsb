@@ -9,8 +9,7 @@
                    'JSB.Widgets.PrimitiveEditor',
                    'JSB.Controls.Button',
                    'DataCube.Widgets.WidgetWrapper',
-                   'JSB.Widgets.Dashboard.Dashboard',
-                   'DataCube.SaveMessage'
+                   'JSB.Widgets.Dashboard.Dashboard'
         ],
 
 		$constructor: function(opts){
@@ -91,13 +90,6 @@
                     }
                 }
             });
-
-	        // todo: add save msg
-            this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
-            this.savedMessage.click(function(){
-                $this.savedMessage.css('display', 'none');
-            });
-            this.append(this.savedMessage);
         },
 
         refresh: function(){
@@ -125,11 +117,10 @@
         },
 
         saveSettings: function(){
-            this.savedMessage.fadeIn(1600, "linear", function(){
-                $this.savedMessage.fadeOut(1600, "linear");
+            this.getElement().loader({message:'Сохранение...'});
+            this.node.getEntry().server().setStyles($this.styleScheme.getValues().values, function(){
+                $this.getElement().loader('hide');
             });
-
-            this.node.getEntry().server().setStyles($this.styleScheme.getValues().values);
         },
 
         setStyleElement: function(entry){

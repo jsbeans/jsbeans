@@ -19,6 +19,8 @@
 
             if(values.value){
                 this._setValue(values.value, item);
+            } else {
+                item.append('<span>Перетащите схему сюда</span>');
             }
 
             item.droppable({
@@ -78,18 +80,22 @@
 	        }
 	    },
 
-		removeBinding: function(item, itemIndex){
-            this._items[itemIndex] = {};
+		removeBinding: function(item){
+		    var itemIndex = item.attr('idx');
+
+		    if(!JSB.isDefined(itemIndex)){
+		        itemIndex = 0;
+		    }
 
             if(itemIndex > 0){
+                this._values.values.splice(itemIndex, 1);
                 item.remove();
             } else {
+                this._values.values[0] = {};
                 item.removeClass('filled');
                 item.empty();
-                this.setEditor(item);
+                item.append('<span class="empty">Перетащите схему сюда</span>');
             }
-
-            this.changeBinding(itemIndex);
 		},
 
 	    setBinding: function(entry, itemIndex, item){
@@ -105,7 +111,17 @@
 	    },
 
 	    _setValue: function(value, item){
-	        item.empty().append(value.name);
+	        var styleItem = this.$('<span>' + value.name + '</span>'),
+	            removeBtn = this.$('<i class="fas fa-times"></i>');
+
+            removeBtn.click(function(){
+                $this.removeBinding(item);
+                removeBtn.remove();
+            });
+
+            styleItem.append(removeBtn);
+
+	        item.empty().append(styleItem);
 	    }
 	}
 }
