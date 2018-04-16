@@ -419,13 +419,13 @@
 		    new this.SingleObject({
 		        name: '$toDate',
 		        category: 'Преобразование типов',
-		        desc: 'Преобразование к дате',
+		        desc: 'Преобразование строки или числа к дате',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
 		        name: '$toTimestamp',
 		        category: 'Преобразование типов',
-		        desc: 'Преобразование к timestamp',
+		        desc: 'Преобразование числа к timestamp',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
@@ -447,15 +447,54 @@
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
+		        name: '$dateMonthDay',
+		        category: 'Функции',
+		        desc: 'Извлечь день месяца (1-31) из даты (date/timestamp)',
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$dateWeekDay',
+		        category: 'Функции',
+		        desc: 'Извлечь день недели (воскресенье 0 - суббота 6) из даты (date/timestamp)',
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$dateYearDay',
+		        category: 'Функции',
+		        desc: 'Извлечь день в году (1-365/366) из даты (date/timestamp)',
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
 		        name: '$dateTotalSeconds',
 		        category: 'Функции',
 		        desc: 'Извлечь секунды из даты (date/timestamp; начиная отсчет с 1970-01-01)',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
-		    new this.SingleObject({
+		    new this.ComplexObject({
 		        name: '$dateIntervalOrder',
 		        category: 'Функции',
-		        desc: 'Разбить дату (date/timestamp) на равные интервалы и вернуть порядковый номер',
+		        desc: 'Разбить дату (date/timestamp) на равные интервалы в секундах и вернуть порядковый номер',
+		        values: {
+		            '$field': '$valueDefinition',
+		            '$seconds': '$constNumber'
+		        }
+		    });
+		    new this.SingleObject({
+		        name: '$timeHour',
+		        category: 'Функции',
+		        desc: 'Извлечь час в сутках (0-23) из даты/времени (date/timestamp)',
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$timeMinute',
+		        category: 'Функции',
+		        desc: 'Извлечь митуны в часе (0-59) из даты/времени (date/timestamp)',
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
+		        name: '$timeSecond',
+		        category: 'Функции',
+		        desc: 'Извлечь секунды в в минуте (0-59) из даты/времени (date/timestamp)',
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		    new this.SingleObject({
