@@ -12,6 +12,7 @@
 			this.loadCss('SqlTableRenderer.css');
 			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();
+				$this.updateMissing();
 /*				
 				if(e.descriptor.isView){
 					$this.addClass('view');
@@ -28,6 +29,21 @@
 					$this.removeClass('showSource');
 				}
 			});
+		},
+		
+		update: function(){
+			$base();
+			this.updateMissing();
+		},
+		
+		updateMissing: function(){
+			var e = $this.getEntry();
+			if(e.isMissing()){
+				$this.addClass('missing');
+				$this.attr('title', this.getEntry().getName() + ' - удален из базы');
+			} else {
+				$this.removeClass('missing');
+			}
 		}
 	},
 	

@@ -1,12 +1,18 @@
 {
 	$name: 'DataCube.Model.SqlTable',
 	$parent: 'JSB.Workspace.Entry',
+
+	missing: false,
+	
+	isMissing: function(){
+		return this.missing;
+	},
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
 		
 		descriptor: null,
-		
+	
 		$bootstrap: function(){
 			WorkspaceController.registerExplorerNode(null, this, {
 				priority:0.5, 
@@ -27,6 +33,7 @@
 				$this.publish('DataCube.Model.SqlTable.updated');
 			} else {
 				this.descriptor = this.property('descriptor');
+				this.missing = this.property('missing') || false;
 			}
 			
 			this.subscribe(['DataCube.Model.SqlSource.updateSettings','DataCube.Model.SqlSource.clearCache'], function(sender){
@@ -51,6 +58,11 @@
 			this.setName(this.descriptor.schema + '.' + this.descriptor.name);
 			this.doSync();
 			$this.publish('DataCube.Model.SqlTable.updated');
+		},
+		
+		setMissing: function(bMissing){
+			this.missing = bMissing;
+			this.property('missing', this.missing);
 		},
 		
 		getDescriptor: function(){
