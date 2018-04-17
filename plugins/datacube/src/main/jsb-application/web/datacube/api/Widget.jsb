@@ -9,6 +9,7 @@
 			wsid: null,
 			wid: null,
 			onCreateWidget: null,
+			onMessage: null,
 			auto: true
 		},
 		widgetEntry: null,
@@ -126,6 +127,17 @@
 							return;
 						}
 						$this.mainWidget.refresh(params);
+					});
+					$this.subscribe('DataCube.Widget.eventFired', function(sender, msg, params){
+						if($this.currentWidget != sender){
+							return;
+						}
+						if($this.options.onMessage){
+							if(JSB.isString($this.options.onMessage)){
+								$this.options.onMessage = eval('(' + $this.options.onMessage + ')');
+							}
+							$this.options.onMessage.call($this, params.message, params.data);
+						}
 					});
 
 					$this.publish('DataCube.Api.Widget.widgetCreated', {wsid: $this.options.wsid, wid: $this.options.wid});

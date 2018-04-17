@@ -12,12 +12,8 @@
 			this.loadCss('SqlTableRenderer.css');
 			entry.ensureSynchronized(function(){
 				var e = $this.getEntry();
-				$this.updateMissing();
-/*				
-				if(e.descriptor.isView){
-					$this.addClass('view');
-				}
-*/				
+				$this.updateAdditional();
+				
 				if(opts.showSource && e.getParentId()){
 					$this.addClass('showSource');
 					$this.server().getSource(e, function(sourceEntry){
@@ -33,16 +29,22 @@
 		
 		update: function(){
 			$base();
-			this.updateMissing();
+			this.updateAdditional();
 		},
 		
-		updateMissing: function(){
+		updateAdditional: function(){
 			var e = $this.getEntry();
 			if(e.isMissing()){
 				$this.addClass('missing');
 				$this.attr('title', this.getEntry().getName() + ' - удален из базы');
 			} else {
 				$this.removeClass('missing');
+				$this.attr('title', this.getEntry().getName());
+			}
+			if(e.isView()){
+				$this.addClass('view');
+			} else {
+				$this.removeClass('view');
 			}
 		}
 	},
