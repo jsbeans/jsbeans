@@ -184,6 +184,7 @@
 		            '$greatest', '$least',
 		            '$splitString', '$substring', '$trim', '$concat',
 		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString', '$toTimestamp',
+		            '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$timeHour', '$timeMinute', '$timeSecond',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
 		            '$distinct',
 		            '$any', '$last','$first', '$sum', '$count','$min', '$max', '$avg',
