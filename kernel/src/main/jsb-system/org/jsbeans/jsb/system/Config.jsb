@@ -17,7 +17,7 @@
 				// string value
 				return '' + cfgVal.unwrapped().toString();
 			} else if(cfgVal.valueType() == Packages.com.typesafe.config.ConfigValueType.BOOLEAN){
-				return cfgVal.unwrapped().booleanValue();
+				return !!cfgVal.unwrapped().booleanValue();
 			} else if(cfgVal.valueType() == Packages.com.typesafe.config.ConfigValueType.NUMBER){
 				return parseFloat(cfgVal.unwrapped().toString());
 			} else if(cfgVal.valueType() == Packages.com.typesafe.config.ConfigValueType.NULL){
@@ -44,7 +44,7 @@
 		},
 		
 		has: function(path){
-			return Packages.org.jsbeans.helpers.ConfigHelper.getInstance().has(path);
+			return !!Packages.org.jsbeans.helpers.ConfigHelper.getInstance().has(path);
 		}
 	}
 }

@@ -30,14 +30,14 @@
 
         logDebug: function(msg, a0, a1){
             if (Config.get('jsbeans.debug')) {
-                Log.debug($this.sformat.apply(arguments));
+                Log.debug($this.sformat.apply(this, arguments));
             }
         },
 
         assert: function(isAssert, message, a0, a1){
             if (Config.get('jsbeans.debug') && !isAssert) {
                 var args = Array.prototype.slice.call(arguments, 1);
-                var msg = 'Assertion failed: ' + $this.sformat.apply(args);
+                var msg = 'Assertion failed: ' + $this.sformat.apply(this, args);
                 Log.debug(msg);
                 throw new Error(msg);
             }
@@ -46,7 +46,7 @@
         throwError: function(isAssert, message, a0, a1) {
             if (!isAssert) {
                 var args = Array.prototype.slice.call(arguments, 1);
-                var msg = 'Assertion failed: ' + $this.sformat.apply(args);
+                var msg = 'Assertion failed: ' + $this.sformat.apply(this, args);
                 Log.debug(msg);
                 throw new Error(msg);
             }

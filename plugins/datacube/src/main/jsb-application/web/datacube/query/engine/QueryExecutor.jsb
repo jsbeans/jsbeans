@@ -16,7 +16,7 @@
         doProfile: true,
 
 		$constructor: function(queryEngine, cubeOrDataProvider, dcQuery, params){
-		    $this.query = JSB.cone($this.query);
+		    $this.query = JSB.clone(dcQuery);
 			$this.qid = $this.query.$id = $this.query.$id || JSB.generateUid();
 			$this.queryEngine = queryEngine;
 		    $this.params = params;
@@ -40,7 +40,6 @@
 		},
 
 		execute: function(){
-debugger;
 		    try {
 		        $this.profiler && $this.profiler.profile($this.qid, 'execute');
 
@@ -73,7 +72,7 @@ debugger;
 		    $base();
 		},
 
-		getCubeOrDataProvider(): function(){
+		getCubeOrDataProvider: function(){
 		    return $this.cube || $this.providers[0];
 		},
 
@@ -165,7 +164,7 @@ debugger;
                     providers[provider.id].matched = true;
                     $this.profiler && $this.profiler.profile($this.qid, 'usedProvider', provider.getName());
                 } else {
-                    $this.providers[i].splice(i--, 1);
+                    $this.providers.splice(i--, 1);
                     $this.profiler && $this.profiler.profile($this.qid, 'removedProvider', provider.getName());
                 }
             }

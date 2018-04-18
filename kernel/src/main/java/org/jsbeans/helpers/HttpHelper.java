@@ -9,6 +9,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Map;
 
 public class HttpHelper {
@@ -72,7 +73,7 @@ public class HttpHelper {
             if(options.containsKey("user") && options.containsKey("password")) {
                 String userPassword = options.getAsString("user") + ":" + options.getAsString("password");
                 @SuppressWarnings("restriction")
-                String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
+                String encoding = Base64.getEncoder().encodeToString(userPassword.getBytes());
                 con.addRequestProperty("Authorization", "Basic " + encoding);
             }
 //            if (options.getAsString("method").equalsIgnoreCase("post")) {
@@ -287,6 +288,6 @@ public class HttpHelper {
     }
 
     public static String toBase64(String data) {
-        return new sun.misc.BASE64Encoder().encode(data.getBytes());
+        return Base64.getEncoder().encodeToString(data.getBytes());
     }
 }

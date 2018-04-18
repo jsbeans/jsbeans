@@ -46,7 +46,7 @@ debugger;
                         currentExecutionContext.cursor = cursors[query.$context].clone();
                     }
                     /// Если запрос целиком транслируется в БД, то создается курсор БД и на этом заканчиваем
-                    if($this.tryQueryTranslateDB()) {
+                    if($this._tryQueryTranslateDB(currentExecutionContext)) {
                         cursors[query.$context] = currentExecutionContext.cursor;
                         if (this.inFrom) {
                             lastFromContext = currentExecutionContext;
@@ -116,7 +116,7 @@ debugger;
 
 		_initContextFields: function(currentExecutionContext){
                 currentExecutionContext.fields = {};
-                QueryUtils.walkQueryFields(query, /**includeSubQueries=*/false, function (field, context, query){
+                QueryUtils.walkQueryFields(currentExecutionContext.query, /**includeSubQueries=*/false, function (field, context, query){
                     currentExecutionContext.fields[field] = currentExecutionContext.fields[field] || {
                         name: field,
                         context: context,
@@ -174,31 +174,37 @@ debugger;
             }
 		},
 
-		tryQueryTranslateDB: function(query, callback) {
-            var providersGroups = $this._groupSameProviders();
-            if (providersGroups.length == 1) {
+		_tryQueryTranslateDB: function(currentExecutionContext) {
+		    function createCursor(){
                 try {
                     var translator = TranslatorRegistry.newTranslator(
                             $this.queryExecutor.providers,
                             $this.queryExecutor.cube || $this.queryExecutor.queryEngine
                     );
-                    var it = translator.translatedQueryIterator(query, $this.queryExecutor.params);
-                    currentExecutionContext.cursor = $this._buildCursor(
+                    var it = translator.translatedQueryIterator(currentExecutionContext.query, $this.queryExecutor.params);
+                    return $this._buildCursor(
                         function _next(){
                             return it.next();
                         },
                         function _reset(){
                             it && it.close();
-                            it = translator.translatedQueryIterator(query, $this.queryExecutor.params);
+                            it = translator.translatedQueryIterator(currentExecutionContext.query, $this.queryExecutor.params);
                         },
                         function _close(){
                             it && it.close();
+                        },
+                        function _clone(){
+                            return createCursor();
                         }
                     );
-                    return true;
                 } finally {
                     if(translator) translator.close();
                 }
+		    }
+            var providersGroups = $this._groupSameProviders();
+            if (providersGroups.length == 1) {
+                currentExecutionContext.cursor = createCursor();
+                return true;
             }
 		},
 
@@ -215,7 +221,7 @@ debugger;
             return cursor;
 		},
 
-		_buildCursor: function(next, reset close, clone){
+		_buildCursor: function(next, reset, close, clone){
 		    var cursor = {
 		        object:null,
 		        next: next,
@@ -296,26 +302,6 @@ debugger;
 		},
 
 		_buildQueryCursor: function(currentExecutionContext) {
-		    = $this._buildCursor(
-                function _next(){
-                    currentExecutionContext.sourceCursor().next();
-                    var object = currentExecutionContext.sourceCursor().object;
-                    return object;
-                }, function _reset(){
-                    currentExecutionContext.sourceCursor.reset();
-                    for(var c in currentExecutionContext.child) {
-                        currentExecutionContext.child[c].reset();
-                    }
-                }, function _close(){
-                   currentExecutionContext.sourceCursor.close();
-                    for(var c in currentExecutionContext.child) {
-                        currentExecutionContext.child[c].close();
-                    }
-                }, function _clone(){
-                    // TODO
-                }
-            );
-
             // prepare context
             currentExecutionContext.JSB = JSB;
             currentExecutionContext.MD5 = MD5;

@@ -9,8 +9,8 @@
 //		    'DataCube.Providers.SqlTableDataProvider',
 //		    'DataCube.Providers.InMemoryDataProvider',
 
-		    'DataCube.Query.Translators.SQLTranslator',
-		    'DataCube.Query.Translators.LockiTranslator',
+//		    'DataCube.Query.Translators.SQLTranslator',
+//		    'DataCube.Query.Translators.LockiTranslator',
         ],
 
 		$constructor: function(providerOrProviders, queryEngine){

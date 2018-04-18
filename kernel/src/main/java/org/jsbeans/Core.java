@@ -75,6 +75,7 @@ public class Core {
         Core.startActorSystem();
         Core.initPlugins();
         Core.startServiceManager();
+        Core.finalizeConfiguration();
     }
 
     private static void configureLogger() {
@@ -144,6 +145,12 @@ public class Core {
         String path = getConfigPath(configPath, "application.conf");
         config = ConfigFactory.load(path);
         log.info("Configuration loaded from '{}'", path);
+    }
+
+    private static void finalizeConfiguration() {
+        Config sys = ConfigFactory.systemProperties();
+        Core.mergeConfigWith(sys, false);
+        log.info("Configuration system property loaded");
     }
 
     private static String getConfigPath(String configPath, String name) {

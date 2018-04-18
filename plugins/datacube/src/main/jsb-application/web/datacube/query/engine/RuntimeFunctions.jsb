@@ -22,12 +22,12 @@
                                 and = and && !this.__.check.call(this, exps, isAccepted, path.concat([op]));
                             default:
                                 // $op: [left, right] expression
-                                and = and && this.__.checkOperator.call(this, (op, exps[op]);
+                                and = and && this.__.checkOperator.call(this, op, exps[op]);
                         }
                     } else {
                         var leftField = op;
                         op = Object.keys(e[op])[0];
-                        and = and && this.__.checkOperator.call(this, op, [{$field:leftField}, e[leftField][op]);
+                        and = and && this.__.checkOperator.call(this, op, [{$field:leftField}, e[leftField][op]]);
                     }
                 }
                 return and;
@@ -41,7 +41,7 @@
                     if (op === '$or' && value) return true;
                 }
                 return true;
-            }
+            },
 
             checkOperator: function (op, operands){
                 if (op === '$eq') {
@@ -65,7 +65,7 @@
                 if (typeof e.$const !== 'undefined') {
                     return e.$const;
                 }
-                if (e.$field || typeof e === 'string')) {
+                if (e.$field || typeof e === 'string') {
                     // if external field find parent context
                     if (e.$context && e.$context != this.context) {
                         this.QueryUtils.throwError(!!parent, 'External field is not defined: {}', e.$field||e);
@@ -105,53 +105,53 @@
             _$toInt: function(e){
                 var value = get(e[0]);
                 return this.JSB.isInteger(value) ? value : parseInt(''+value);
-            };
+            },
 
             _$toDouble: function(e){
                 var value = get(e[0]);
                 return this.JSB.isFloat(value) ? value : parseFloat(''+value);
-            };
+            },
 
             _$toBoolean: function(e){
                 var value = get(e[0]);
                 return this.JSB.isFloat(value) ? value : parseBoolean(''+value);
-            };
+            },
 
             _$toString: function(e){
                 var value = get(e[0]);
                 return this.JSB.isString(value) ? value : value;
-            };
+            },
 
             _$toTimestamp: function(e){
                 this.QueryUtils.trowError(false, 'TODO $toTimestamp');
-            };
+            },
 
 
             /** *** Math function */
 
             _$add: function(e){
                 return get(e[0]) + get(e[1]);
-            };
+            },
 
             _$sub: function(e){
                 return get(e[0]) - get(e[1]);
-            };
+            },
 
             _$mul: function(e){
                 return get(e[0]) * get(e[1]);
-            };
+            },
 
             _$div: function(e){
                 return get(e[0]) / get(e[1]);
-            };
+            },
 
             _$divz: function(e){
                 return get(e[0]) / get(e[1]);
-            };
+            },
 
             _$mod: function(e){
                 this.QueryUtils.trowError(false, 'TODO $mod');
-            };
+            },
 
 
 

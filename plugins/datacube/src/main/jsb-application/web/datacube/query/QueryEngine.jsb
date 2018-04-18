@@ -12,7 +12,6 @@
 		},
 
 		query: function(dcQuery, params, dataProvider){
-debugger;
 		    $this.cube.load();
 			var executor = new QueryExecutor($this, dataProvider || $this.cube, dcQuery, params);
             try {
