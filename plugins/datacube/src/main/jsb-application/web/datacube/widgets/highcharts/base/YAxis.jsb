@@ -1,10 +1,10 @@
 {
-    $name: 'DataCube.Widgets.AxisHighchart',
-    $parent: 'DataCube.Widgets.YAxis',
+    $name: 'DataCube.Widgets.YAxis',
+    $parent: 'DataCube.Widgets.BaseHighchart',
     $scheme: {
-        xAxis: {
+        yAxis: {
 	        render: 'group',
-	        name: 'Ось Х',
+	        name: 'Оси Y',
             collapsable: true,
             multiple: {
                 createDefault: true,
@@ -13,22 +13,23 @@
             items: {
                 item: {
                     render: 'group',
-                    name: 'Ось X',
+                    name: 'Ось Y',
                     collapsable: true,
                     editableName: {
-                        commonField: 'xAxisNames'
+                        commonField: 'yAxisNames'
                     },
                     items: {
-                        categories: {
-                            render: 'dataBinding',
-                            name: 'Категории',
-                            linkTo: 'source'
-                        },
-                        linkedTo: {
+                        type: {
                             render: 'select',
-                            name: 'Привязка к оси',
-                            allowEmpty: true,
-                            commonField: 'xAxisNames'
+                            name: 'Тип',
+                            items: {
+                                linear: {
+                                    name: 'Линейная'
+                                },
+                                logarithmic: {
+                                    name: 'Логарифмическая'
+                                }
+                            }
                         },
                         labels: {
                             render: 'group',
@@ -56,7 +57,7 @@
                                     render: 'item',
                                     name: 'Формат',
                                     valueType: 'string',
-                                    defaultValue: '{value}'
+                                    defaultValue: '{value:,.0f}' //'{value}'
                                 },
                                 fontColor: {
                                     render: 'item',
@@ -84,16 +85,16 @@
                                 },
                                 align: {
                                     render: 'select',
-                                    name: 'Горизонтальное выравнивание',
+                                    name: 'Вертикальное выравнивание',
                                     items: {
-                                        low: {
-                                            name: 'По левому краю'
+                                        high: {
+                                            name: 'По верхнему краю'
                                         },
                                         middle: {
                                             name: 'По центру'
                                         },
-                                        high: {
-                                            name: 'По правому краю'
+                                        low: {
+                                            name: 'По нижнему краю'
                                         }
                                     }
                                 },
@@ -101,7 +102,7 @@
                                     render: 'item',
                                     name: 'Поворот',
                                     valueType: 'number',
-                                    defaultValue: 0
+                                    defaultValue: 270
                                 },
                                 offset: {
                                     render: 'item',
@@ -154,7 +155,7 @@
                             render: 'item',
                             name: 'Отступ оси',
                             valueType: 'number',
-                            defaultValue: undefined
+                            defaultValue: 0
                         },
                         opposite: {
                             render: 'item',
@@ -168,27 +169,64 @@
                             optional: true,
                             editor: 'none'
                         },
-                        /*
-                        type: {
+                        gridLineColor: {
+                            render: 'item',
+                            name: 'Цвет линий сетки',
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#e6e6e6'
+                        },
+                        gridLineDashStyle: {
                             render: 'select',
-                            name: 'Тип',
+                            name: 'Тип линии сетки',
                             items: {
-                                linear: {
-                                    name: 'Линейная'
+                                Solid: {
+                                    name: 'Solid'
                                 },
-                                logarithmic: {
-                                    name: 'Логарифмическая'
+                                ShortDash: {
+                                    name: 'ShortDash'
+                                },
+                                ShortDot: {
+                                    name: 'ShortDot'
+                                },
+                                ShortDashDot: {
+                                    name: 'ShortDashDot'
+                                },
+                                ShortDashDotDot: {
+                                    name: 'ShortDashDotDot'
+                                },
+                                Dot: {
+                                    name: 'Dot'
+                                },
+                                Dash: {
+                                    name: 'Dash'
+                                },
+                                LongDash: {
+                                    name: 'LongDash'
+                                },
+                                DashDot: {
+                                    name: 'DashDot'
+                                },
+                                LongDashDot: {
+                                    name: 'LongDashDot'
+                                },
+                                LongDashDotDot: {
+                                    name: 'LongDashDotDot'
                                 }
                             }
                         },
-                        */
-                        minX: {
+                        gridLineWidth: {
+                            render: 'item',
+                            name: 'Толщина линии сетки',
+                            valueType: 'number',
+                            defaultValue: 1
+                        },
+                        minY: {
                             render: 'dataBinding',
                             name: 'Минимум',
                             linkTo: 'source',
                             editor: 'input'
                         },
-                        maxX: {
+                        maxY: {
                             render: 'dataBinding',
                             name: 'Максимум',
                             linkTo: 'source',
@@ -208,70 +246,69 @@
                     }
                 }
             }
-        }
+        },
     },
     $client: {
         _buildChart: function(){
             var baseChartOpts = $base();
 
             try{
-                var xAxisContext = this.getContext().find('xAxis').values();
+                var yAxisContext = this.getContext().find('yAxis').values();
 
                 var chartOpts = {
-                    xAxisNames: []
+                    yAxisNames: []
                 };
 
-                if(xAxisContext.length > 0){
-                    chartOpts.xAxis = [];
+                if(yAxisContext.length > 0){
+                    chartOpts.yAxis = [];
                 }
 
-                for(var i = 0; i < xAxisContext.length; i++){
-                    chartOpts.xAxisNames.push(xAxisContext[i].find('item').getName());
-                }
+                for(var i = 0; i < yAxisContext.length; i++){
+                    var yAxisLabels = yAxisContext[i].find('labels'),
+                        yAxisTitle = yAxisContext[i].find('title');
 
-                for(var i = 0; i < xAxisContext.length; i++){
-                    var xAxisLabels = xAxisContext[i].find('labels'),
-                        xAxisTitle = xAxisContext[i].find('title'),
-                        linkedToIndex = chartOpts.xAxisNames.indexOf(xAxisContext[i].find('linkedTo').value());
-
-                    chartOpts.xAxis.push({
+                    chartOpts.yAxis.push({
                         labels: {
-                            enabled: xAxisLabels.find('enabled').checked(),
-                            rotation: xAxisLabels.find('rotation').value(),
-                            step: xAxisLabels.find('step').value(),
-                            format: xAxisLabels.find('format').value(),
-                            color: xAxisLabels.find('fontColor').value(),
-                            fontSize: xAxisLabels.find('fontSize').value() + 'px'
+                            enabled: yAxisLabels.find('enabled').checked(),
+                            rotation: yAxisLabels.find('rotation').value(),
+                            step: yAxisLabels.find('step').value(),
+                            format: yAxisLabels.find('format').value(),
+                            color: yAxisLabels.find('fontColor').value(),
+                            fontSize: yAxisLabels.find('fontSize').value() + 'px'
                         },
                         title: {
-                            text: xAxisTitle.find('text').value(),
-                            align: xAxisTitle.find('align').value(),
-                            rotation: xAxisTitle.find('rotation').value(),
-                            offset: xAxisTitle.find('offset').value(),
+                            text: yAxisTitle.find('text').value(),
+                            align: yAxisTitle.find('align').value(),
+                            rotation: yAxisTitle.find('rotation').value(),
+                            offset: yAxisTitle.find('offset').value(),
                             style: {
-                                color: xAxisTitle.find('color').value(),
+                                color: yAxisTitle.find('color').value(),
                             },
-                            x: xAxisTitle.find('x').value(),
-                            y: xAxisTitle.find('y').value()
+                            x: yAxisTitle.find('x').value(),
+                            y: yAxisTitle.find('y').value()
                         },
-                        alternateGridColor: xAxisContext[i].find('alternateGridColor').value(),
-                        crosshair: xAxisContext[i].find('crosshair').checked(),
-                        lineColor: xAxisContext[i].find('lineColor').value(),
-                        linkedTo: linkedToIndex > -1 ? linkedToIndex : undefined,
-                        offset: xAxisContext[i].find('offset').value(),
-                        opposite: xAxisContext[i].find('opposite').checked(),
-                        reversed: xAxisContext[i].find('reversed').checked(),
-                        tickColor: xAxisContext[i].find('tickColor').value(),
-                        tickInterval: xAxisContext[i].find('tickInterval').value(),
-                        type: xAxisContext[i].find('type').value(),
-                        minX: xAxisContext[i].find('minX').value(),
-                        maxX: xAxisContext[i].find('maxX').value()
+                        alternateGridColor: yAxisContext[i].find('alternateGridColor').value(),
+                        crosshair: yAxisContext[i].find('crosshair').checked(),
+                        lineColor: yAxisContext[i].find('lineColor').value(),
+                        offset: yAxisContext[i].find('offset').value(),
+                        opposite: yAxisContext[i].find('opposite').checked(),
+                        reversed: yAxisContext[i].find('reversed').checked(),
+                        tickColor: yAxisContext[i].find('tickColor').value(),
+                        tickInterval: yAxisContext[i].find('tickInterval').value(),
+                        type: yAxisContext[i].find('type').value(),
+                        gridLineColor: yAxisContext[i].find('gridLineColor').value(),
+                        gridLineDashStyle: yAxisContext[i].find('gridLineDashStyle').value(),
+                        gridLineWidth: yAxisContext[i].find('gridLineWidth').value(),
+                        minY: yAxisContext[i].find('minY').value(),
+                        maxY: yAxisContext[i].find('maxY').value()
                     });
+
+                    chartOpts.yAxisNames.push(yAxisContext[i].find('item').getName());
                 }
 
                 JSB.merge(true, baseChartOpts, chartOpts);
             } catch(e){
-                console.log('AxisChart build chart exception');
+                console.log('YAxis build chart exception');
                 console.log(e);
             } finally{
                 return baseChartOpts;
