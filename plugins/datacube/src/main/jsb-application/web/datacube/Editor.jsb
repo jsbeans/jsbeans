@@ -91,56 +91,7 @@
 			$this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb().showPane(1, false);
 			
 			$this.publish('DataCube.Editor.initialized');
-/*			
-			this.subscribe('JSB.Workspace.Explorer.initialized', function(explorer){
-				// inject toolbar buttons
-				explorer.toolbar.insertItem({
-					key: 'createSqlSource',
-					tooltip: 'Создать подключение к базе данных',
-					element: '<div class="icon"></div>',
-					click: function(){
-						explorer.createNewEntry('DataCube.Model.SqlSource', {}, 'База');
-					}
-				}, 'createSeparator');
-
-				explorer.toolbar.insertItem({
-					key: 'createHttpServer',
-					tooltip: 'Создать подключение к серверу',
-					element: '<div class="icon"></div>',
-					click: function(){
-						explorer.createNewEntry('DataCube.Model.HttpServer', {}, 'Сервер');
-					}
-				}, 'createSeparator');
-
-				explorer.toolbar.insertItem({
-					key: 'createCube',
-					tooltip: 'Создать куб',
-					element: '<div class="icon"></div>',
-					click: function(){
-						explorer.createNewEntry('DataCube.Model.Cube', {}, 'Куб');
-					}
-				}, 'createSeparator');
-
-				
-				explorer.toolbar.insertItem({
-					key: 'createDashboard',
-					tooltip: 'Создать визуализацию',
-					element: '<div class="icon"></div>',
-					click: function(){
-						explorer.createNewEntry('DataCube.Model.Dashboard', {}, 'Визуализация');
-					}
-				}, 'createSeparator');
-
-				explorer.toolbar.insertItem({
-					key: 'createStyleSettings',
-					tooltip: 'Создать стиль',
-					element: '<div class="icon"></div>',
-					click: function(){
-						explorer.createNewEntry('DataCube.Model.StyleSettings', {}, 'Стиль');
-					}
-				}, 'createSeparator');
-			});
-*/			
+			
 			this.subscribe('JSB.Workspace.nodeOpen', function(sender, msg, node){
 				var leftSplit = $this.layoutManager.find('._dwp_splitbox[key="leftPane"]').jsb();
 				if(JSB.isInstanceOf(node, 'DataCube.DashboardNode') || JSB.isInstanceOf(node, 'DataCube.WidgetNode')){
@@ -151,10 +102,10 @@
 			});
 			
 			this.subscribe('JSB.AjaxProvider.serverReloaded', function(){
-				$this.getElement().loader({style:'reload', message:'Сервер был перезагружен<br>Через 3 секунды редактор тоже перезапустится'});
+				$this.getElement().loader({style:'reload', message:'<div class="title">Сервер был перезагружен</div><div class="subtitle">Через несколько секунд редактор перезапустится</div>'});
 				JSB.defer(function(){
 					location.reload();
-				}, 3000);
+				}, 5000);
 				
 			});
 			
@@ -169,7 +120,7 @@
 						return;
 					}
 					$this.paused = true;
-					$this.getElement().loader({style:'connection', message:'К сожалению, сервер перестал отвечать на запросы'});
+					$this.getElement().loader({style:'connection', message:'<div class="title">Потеряна связь с сервером!</div><div class="subtitle">Вероятно, выполняется обновление</div>'});
 				}
 			});
 		}

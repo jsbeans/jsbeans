@@ -170,24 +170,14 @@
 	                linkTo: 'rows',
 	                multiple: true
 	            },
-	            useFilterOnClick: {
-	            	render: 'item',
-	                name: 'Использовать фильтрацию при клике',
-					optional: 'checked',
-					editor: 'none'
-	            },
+	            
 	            preserveFilteredRows: {
 	                render: 'item',
 	                name: 'Не скрывать отфильтрованные строки',
 					optional: true,
 					editor: 'none'
 	            },
-	            hoverFilteredRows: {
-	                render: 'item',
-	                name: 'Обновлять данные при наведении',
-					optional: true,
-					editor: 'none'
-	            },
+	            
 	            showSortIcon: {
 	                render: 'item',
 	                name: 'Не скрывать значок сортировки',
@@ -204,6 +194,83 @@
                             linkTo: 'rows'
                         }
 	                }
+	            },
+	            rowClick: {
+	            	render: 'group',
+	            	name: 'Действия при клике',
+	            	items: {
+	            		useFilterOnClick: {
+	    	            	render: 'item',
+	    	                name: 'Использовать глобальную фильтрацию',
+	    					optional: true,
+	    					editor: 'none'
+	    	            },
+	    	            callApiOnClick: {
+	    	            	render: 'switch',
+	    	            	name: 'Уведомлять API-окружение',
+	    	            	items: {
+	    	            		rowClickParams: {
+	    	    	                render: 'dataBinding',
+	    	    	                name: 'Поля аргументов',
+	    	    	                linkTo: 'rows',
+	    	    	                multiple: true
+	    	    	            },
+	    	            	}
+	    	            },
+	    	            useDrillDownOnClick: {
+	    	            	render: 'switch',
+	    	            	name: 'Переходить на другой виджет',
+	    	            	items: {
+	    	            		drillDownWidget: {
+                                    render: 'completeWidget',
+                                    name: 'Виджет'
+                                }
+	    	            	}
+	    	            }
+	    	            
+	            	}
+	            },
+	            rowHover: {
+	            	render: 'group',
+	            	name: 'Действия при наведении',
+	            	items: {
+	            		hoverFilteredRows: {
+	    	                render: 'item',
+	    	                name: 'Обновлять данные',
+	    					optional: true,
+	    					editor: 'none'
+	    	            },
+	    	            showRowToolTip: {
+	    	            	render: 'switch',
+	    	            	name: 'Показывать виджет в выноске',
+	    	            	items: {
+	    	            		toolWidgetType: {
+	    	            			render: 'select',
+	    	            			name: 'Тип виджета',
+	    	            			items: {
+	    	            				toolNewWidget: {
+	    	            					name: 'Встроенный виджет',
+	    	            					items: {
+	    	            						widget: {
+	    	    	            					render: 'embeddedWidget',
+	    	    	                                name: 'Виджет'
+	    	            						}
+	    	            					}
+	    	            				},
+	    	            				toolExistedWidget: {
+	    	                                name: 'Существующий виджет',
+	    	                                items: {
+	    	                                	widget: {
+	    	    	            					render: 'completeWidget',
+	    	    	                                name: 'Виджет'
+	    	            						}
+	    	                                }
+	    	            				}
+	    	            			}
+	    	            		}
+	    	            	}
+	    	            }
+	            	}
 	            }
 	        }
 	    },
@@ -1050,15 +1117,9 @@
 								$this.onRowClick(d);
 							})
 							.on('mouseover', function(d){
-								if(!d.filter || d.filter.length == 0){
-									return;
-								}
 								$this.onRowHover(d, $this.$(this));
 							})
 							.on('mouseout', function(d){
-								if(!d.filter || d.filter.length == 0){
-									return;
-								}
 								$this.onRowOut(d, $this.$(this));
 							})
 							.attr('key', function(d){ return d.key;})
@@ -1144,6 +1205,10 @@
 			var rowKeySelector = this.getContext().find('rowKey');
 			var rowFilterSelector = this.getContext().find('rowFilter');
 			var rowFilterBinding = rowFilterSelector.bindings();
+			
+			var rowClickParamsSelector = this.callApiOnClick ? this.getContext().find('rowClickParams') : null;
+			var rowClickParamsBinding = rowClickParamsSelector && rowClickParamsSelector.bindings();
+
 			var gArr = this.getContext().find('columns').values();
 			for(var i = 0; i < gArr.length; i++){
 				//var valueSelector = gArr[i].find('view');
@@ -1231,6 +1296,25 @@
 						}
 					}
 					
+					// construct rowClickParams
+					var rowClickParams = [];
+					if(rowClickParamsSelector){
+						var rowClickParamsValsMain = rowClickParamsSelector.values('main', true);
+						var rowClickParamsValsBack = rowClickParamsSelector.values('back', true);
+						var rowClickParamsValsHover = rowClickParamsSelector.values('hover', true);
+						
+						for(var i = 0; i < Math.max(rowClickParamsValsMain.length, rowClickParamsValsBack.length); i++){
+							if(rowClickParamsBinding[i]){
+								var val = rowClickParamsValsMain[i];
+								if(!val){
+									val = rowClickParamsValsBack[i];
+								}
+								rowClickParams.push({field: rowClickParamsBinding[i], value: val});
+							}
+						}
+					}
+					
+					
 					// iterate by cells
 					for(var i = 0; i < gArr.length; i++){
 						var rDesc = {
@@ -1254,7 +1338,9 @@
 						
 						row.push(rDesc);	// push cell
 					}
-					rows.push({row: row, key: rowKey, filter: rowFilter, flags: rowFlags});
+					
+					rows.push({row: row, key: rowKey, filter: rowFilter, flags: rowFlags, clickParams: rowClickParams});
+					
 					if(rows.length >= batchSize){
 						$this.stopPreFetch = false;
 						
@@ -1300,24 +1386,41 @@
 		},
 		
 		onRowClick: function(d){
-			if(!this.useFilterOnClick){
-				return;
-			}
-			// remove all filters with
-			var filters = this.getFilters();
-			var idsToRemove = [];
-			for(var i = 0; i < d.filter.length; i++){
-				var fName = d.filter[i].field;
-				for(var fId in filters){
-					if(filters[fId].field == fName){
-						idsToRemove.push(fId);
+			if(this.useFilterOnClick){
+				// remove all filters with
+				var filters = this.getFilters();
+				var idsToRemove = [];
+				for(var i = 0; i < d.filter.length; i++){
+					var fName = d.filter[i].field;
+					for(var fId in filters){
+						if(filters[fId].field == fName){
+							idsToRemove.push(fId);
+						}
 					}
 				}
+				for(var i = 0; i < idsToRemove.length; i++){
+					this.removeFilter(idsToRemove[i], true);
+				}
+				$this.onFilterClick(d, '$and', '$eq');
 			}
-			for(var i = 0; i < idsToRemove.length; i++){
-				this.removeFilter(idsToRemove[i], true);
+			if(this.callApiOnClick){
+				// construct param object
+				var p = {};
+				if(d.clickParams && d.clickParams.length > 0){
+					for(var i = 0; i < d.clickParams.length; i++){
+						var col = d.clickParams[i].field;
+						var val = d.clickParams[i].value;
+						p[col] = val;
+					}
+				}
+				$this.publish('DataCube.Widget.eventFired', {
+					message: 'DataCube.Widgets.Table.rowClick',
+					data: p
+				});
 			}
-			$this.onFilterClick(d, '$and', '$eq');
+			if(this.useDrillDownOnClick){
+				debugger;
+			}
 		},
 		
 		onFilterClick: function(d, type, op){
@@ -1362,6 +1465,10 @@
 		},
 		
 		onRowOut: function(d, rowElt){
+			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick){
+				return;
+			}
+
 			var rowKey = rowElt.attr('key');
 			if(rowKey != $this.highlightedRowKey && !$this.rowfilterOver){
 				return;
@@ -1375,6 +1482,10 @@
 		},
 		
 		onRowHover: function(d, rowElt){
+			if((!d.filter || d.filter.length == 0) && !this.callApiOnClick && !this.useDrillDownOnClick){
+				return;
+			}
+			
 			var rowKey = rowElt.attr('key');
 			if($this.highlightedRowKey){
 				var existedDeferKey = 'rowOut' + $this.highlightedRowKey + $this.getId();
@@ -1389,7 +1500,7 @@
 			}
 
 			rowElt.addClass('highlight');
-			if(this.useFilterOnClick){
+			if(this.useFilterOnClick || this.callApiOnClick || this.useDrillDownOnClick){
 				rowElt.addClass('useClick');
 			} else {
 				rowElt.removeClass('useClick');
@@ -1398,66 +1509,68 @@
 			$this.highlightedRowData = d;
 			
 			// prepare tool buttons
-			var bRowExisted = !!d.flags.main;
-			
-			// check if filter has already been applied for the fields
-			var sameFieldMap = {};
-			var otherFieldMap = {};
-			for(var i = 0; i < d.filter.length; i++){
-				sameFieldMap[d.filter[i].field] = d.filter[i].value;
-				otherFieldMap[d.filter[i].field] = d.filter[i].value;
-			}
-			var filters = this.getFilters();
-			for(var fId in filters){
-				var fDesc = filters[fId];
+			if(d.filter && d.filter.length > 0){
+				var bRowExisted = !!d.flags.main;
 				
-				if(JSB.isDefined(sameFieldMap[fDesc.field]) && sameFieldMap[fDesc.field] == fDesc.value){
-					delete sameFieldMap[fDesc.field];
+				// check if filter has already been applied for the fields
+				var sameFieldMap = {};
+				var otherFieldMap = {};
+				for(var i = 0; i < d.filter.length; i++){
+					sameFieldMap[d.filter[i].field] = d.filter[i].value;
+					otherFieldMap[d.filter[i].field] = d.filter[i].value;
 				}
-				if(JSB.isDefined(otherFieldMap[fDesc.field]) && otherFieldMap[fDesc.field] != fDesc.value){
-					delete otherFieldMap[fDesc.field];
+				var filters = this.getFilters();
+				for(var fId in filters){
+					var fDesc = filters[fId];
+					
+					if(JSB.isDefined(sameFieldMap[fDesc.field]) && sameFieldMap[fDesc.field] == fDesc.value){
+						delete sameFieldMap[fDesc.field];
+					}
+					if(JSB.isDefined(otherFieldMap[fDesc.field]) && otherFieldMap[fDesc.field] != fDesc.value){
+						delete otherFieldMap[fDesc.field];
+					}
 				}
-			}
-			var bSameApplied = (Object.keys(sameFieldMap).length == 0);
-			var bOtherApplied = (Object.keys(otherFieldMap).length == 0);
-			
-			var bAnd = /*bOtherApplied &&*/ !bSameApplied && (bOtherApplied || bRowExisted) /*&& bRowExisted*/;
-			var bOr = !bRowExisted && !bSameApplied;
-			var bNot = bRowExisted && !bSameApplied;
-			
-			if(!bAnd && !bOr && !bNot){
-				$this.rowFilterTool.addClass('hidden');
-				return;
-			}
-			
-			$this.rowFilterTool.attr('and', bAnd);
-			$this.rowFilterTool.attr('or', bOr);
-			$this.rowFilterTool.attr('not', bNot);
-			
-			var scrollPane = $this.scroll.find('> ._dwp_scrollPane');
-			var offset = scrollPane.css('padding-top');
-			if(offset && offset.length > 0){
-				offset = parseInt(offset);
-				if(JSB.isNaN(offset)){
-					offset = 0;
+				var bSameApplied = (Object.keys(sameFieldMap).length == 0);
+				var bOtherApplied = (Object.keys(otherFieldMap).length == 0);
+				
+				var bAnd = /*bOtherApplied &&*/ !bSameApplied && (bOtherApplied || bRowExisted) /*&& bRowExisted*/;
+				var bOr = !bRowExisted && !bSameApplied;
+				var bNot = bRowExisted && !bSameApplied;
+				
+				if(!bAnd && !bOr && !bNot){
+					$this.rowFilterTool.addClass('hidden');
+					return;
 				}
+				
+				$this.rowFilterTool.attr('and', bAnd);
+				$this.rowFilterTool.attr('or', bOr);
+				$this.rowFilterTool.attr('not', bNot);
+				
+				var scrollPane = $this.scroll.find('> ._dwp_scrollPane');
+				var offset = scrollPane.css('padding-top');
+				if(offset && offset.length > 0){
+					offset = parseInt(offset);
+					if(JSB.isNaN(offset)){
+						offset = 0;
+					}
+				}
+				var paneRc = scrollPane.get(0).getBoundingClientRect();
+				var rowRc = rowElt.get(0).getBoundingClientRect();
+				var scrollRc = $this.scroll.getElement().get(0).getBoundingClientRect();
+				var pX = rowRc.left - paneRc.left;
+				var pY = rowRc.top - paneRc.top;
+				var vAlign = 'top';
+				
+				if(rowRc.top - scrollRc.top < offset + 20){
+					pY = rowRc.bottom - paneRc.top - 1;
+					vAlign = 'bottom';
+				}
+				
+				$this.rowFilterTool.removeClass('hidden');
+				$this.rowFilterTool.attr('valign', vAlign);
+	
+				$this.rowFilterTool.css({left: pX, top: pY});
 			}
-			var paneRc = scrollPane.get(0).getBoundingClientRect();
-			var rowRc = rowElt.get(0).getBoundingClientRect();
-			var scrollRc = $this.scroll.getElement().get(0).getBoundingClientRect();
-			var pX = rowRc.left - paneRc.left;
-			var pY = rowRc.top - paneRc.top;
-			var vAlign = 'top';
-			
-			if(rowRc.top - scrollRc.top < offset + 20){
-				pY = rowRc.bottom - paneRc.top - 1;
-				vAlign = 'bottom';
-			}
-			
-			$this.rowFilterTool.removeClass('hidden');
-			$this.rowFilterTool.attr('valign', vAlign);
-
-			$this.rowFilterTool.css({left: pX, top: pY});
 		},
 		
 		updateRows: function(){
@@ -2115,6 +2228,8 @@
 			
 			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
 			this.showSortIcon = this.getContext().find('showSortIcon').checked();
+			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
+			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
 			
 			// update row filters
 			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();

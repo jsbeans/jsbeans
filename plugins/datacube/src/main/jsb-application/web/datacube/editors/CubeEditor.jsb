@@ -138,6 +138,11 @@
 							var entry = node.getEntry();
 							var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
 							if(dpInfo){
+								if(JSB.isInstanceOf(entry, 'DataCube.Model.SqlTable')){
+									if(entry.isMissing()){
+										continue;
+									}
+								}
 								return true;
 							}
 						}

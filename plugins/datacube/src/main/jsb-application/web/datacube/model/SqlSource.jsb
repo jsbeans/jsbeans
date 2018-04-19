@@ -120,6 +120,10 @@
 						if(existedTables[tId]){
 							// already exists
 							existedTables[tId].updateDescriptor(tDesc);
+							if(existedTables[tId].isMissing()){
+								existedTables[tId].setMissing(false);
+								existedTables[tId].doSync();
+							}
 							delete existedTables[tId];
 							continue;
 						}
@@ -130,10 +134,14 @@
 				
 				// remove unexisted
 				for(var tId in existedTables){
-					var cEntry = this.removeChildEntry(tId);
+					if(!existedTables[tId].isMissing()){
+						existedTables[tId].setMissing(true);
+						existedTables[tId].doSync();
+					}
+/*					var cEntry = this.removeChildEntry(tId);
 					if(cEntry){
 						cEntry.remove();
-					}
+					}*/
 				}
 				
 				// construct details
