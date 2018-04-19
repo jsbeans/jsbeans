@@ -89,9 +89,16 @@
 		
 		
 		_markStored: function(bStored){
-			this._stored = bStored;
-			this.getWorkspace()._markEntryStored(this, bStored);
+			if(this._stored == bStored){
+				return;
+			}
 			if(!bStored){
+				this.lock('_stored');
+			}
+			this._stored = bStored;
+			this.getWorkspace()._markEntryStored(this);
+			if(!bStored){
+				this.unlock('_stored');
 				this.getWorkspace().store();
 			}
 		},
@@ -188,9 +195,13 @@
 			this._artifactCount = Object.keys(this._artifacts).length;
 			JSB.getLocker().unlock(mtx);
 			
-			this.doSync();
 			this._entryStore.write(this);
 			this._markStored(true);
+			
+			JSB.defer(function(){
+				$this.doSync();	
+			}, 0);
+			
 		},
 
 		remove: function(){
@@ -295,7 +306,7 @@
 				return false;
 			}
 			this._name = title;
-			this.getWorkspace()._changeEntryName(this);
+			this.getWorkspace()._updateEntryName(this);
 			this._markStored(false);
 			return true;
 		},

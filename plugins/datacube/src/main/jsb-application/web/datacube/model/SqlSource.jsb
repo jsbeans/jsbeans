@@ -116,7 +116,6 @@
 					for(var tName in sDesc.tables){
 						var tDesc = sDesc.tables[tName];
 						var tId = MD5.md5(this.getId() + '|' + sName + '|' + tName);
-	//					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
 						if(existedTables[tId]){
 							// already exists
 							existedTables[tId].updateDescriptor(tDesc);
