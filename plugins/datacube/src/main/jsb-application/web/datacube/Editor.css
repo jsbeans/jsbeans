@@ -45,13 +45,9 @@ div.ajaxloader[key="reload"] > div.ajaxloaderInfo > .icon {
     height: 48px;
 }
 
-
 div.ajaxloader[key="reload"] > div.ajaxloaderInfo > .content > .title {
 	color: #2a4a2a;
 }
-
-
-
 
 .datacubeToolWrapper {
 	border-radius: 3px !important;
@@ -211,6 +207,20 @@ div.ajaxloader[key="reload"] > div.ajaxloaderInfo > .content > .title {
 
 .workspaceBrowser > ._dwp_tabview > ._dwp_tabPane > ._dwp_tab > ._dwp_icon {
 	margin-right: 4px;
+}
+
+/* unimap */
+.scheme i.btn:hover {
+    text-shadow: 1px 1px 0px #9e9b9b;
+}
+
+.scheme .acceptDraggable {
+    background: rgba(98, 208, 0, 0.33) !important;
+}
+
+.scheme .acceptDraggable.hoverDraggable {
+	background: rgba(156, 92, 29, 0.3) !important;
+    border-color: rgba(105, 45, 0, 0.5) !important;
 }
 
 .hidden{

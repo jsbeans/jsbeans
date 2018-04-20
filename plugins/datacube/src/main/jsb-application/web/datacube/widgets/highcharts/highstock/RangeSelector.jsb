@@ -278,12 +278,14 @@
                         dataGrouping;
 
                     if(dataGroupingPlotOptionsContext.checked()){
+                        var units = dataGroupingPlotOptionsContext.find('groupUnits').value();
+
                         dataGrouping = {
                             approximation: $this.isNone(dataGroupingPlotOptionsContext.find('approximation').value()),
                             forced: dataGroupingPlotOptionsContext.find('forced').checked(),
                             groupAll: dataGroupingPlotOptionsContext.find('groupAll').checked(),
                             smoothed: dataGroupingPlotOptionsContext.find('smoothed').checked(),
-                            units: [[dataGroupingPlotOptionsContext.find('groupBy').value(), dataGroupingPlotOptionsContext.find('groupUnits').value().split(',')]]
+                            units: [[dataGroupingPlotOptionsContext.find('groupBy').value(), units ? units.split(',') : 1]]
                         }
                     }
 

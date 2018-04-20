@@ -43,21 +43,11 @@
                 },
                 tolerance: 'pointer',
                 greedy: true,
-                over: function(evt, ui){
-                    if( !ui.helper.hasClass('accepted') ){
-                        ui.helper.addClass('accepted');
-                    }
-                    item.addClass('acceptDraggable');
-                },
-                out: function(evt, ui){
-                    if( ui.helper.hasClass('accepted') ){
-                        ui.helper.removeClass('accepted');
-                    }
-                    item.removeClass('acceptDraggable');
-                },
+                activeClass : 'acceptDraggable',
+                hoverClass: 'hoverDraggable',
                 drop: function(evt, ui){
                     var d = ui.draggable;
-                    item.removeClass('acceptDraggable');
+
                     for(var i in d.get(0).draggingItems){
                         var entry = d.get(0).draggingItems[i].obj.getEntry();
                         $this.setBinding(entry, itemIndex, item);
@@ -112,7 +102,7 @@
 
 	    _setValue: function(value, item){
 	        var styleItem = this.$('<span>' + value.name + '</span>'),
-	            removeBtn = this.$('<i class="fas fa-times"></i>');
+	            removeBtn = this.$('<i class="btn fas fa-times"></i>');
 
             removeBtn.click(function(){
                 $this.removeBinding(item);
