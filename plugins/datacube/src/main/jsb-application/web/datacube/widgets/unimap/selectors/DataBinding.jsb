@@ -62,7 +62,7 @@
             layer = layer || 'main';
 
             for(var i = 0; i < this._values.length; i++){
-            	var val = this._values[i].value[layer];
+            	var val = this._values[i].value && this._values[i].value[layer];
             	if(!validOnly || JSB.isDefined(val)){
             		valArr.push(val);
             	}
