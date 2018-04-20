@@ -2,6 +2,7 @@
 	$name: 'DataCube.Query.Engine.QueryProfiler',
 	$server: {
 		$require: [
+		    'DataCube.Query.QueryUtils',
         ],
 
 		$constructor: function(){
@@ -13,7 +14,12 @@
 
 		profile: function(qid, name, details) {
 		    if (details) {
-		        Log.debug('[qid='+qid+'] - ' + name + ': ' + JSON.stringify(details));
+                var args = Array.prototype.slice.call(arguments, 0);
+		        if (JSB.isObject(details) || JSB.isArray(details)) {
+		            args[2] = JSON.stringify(details);
+		        }
+                var msg = QueryUtils.sformat('[qid={}] - {}: {}', args);
+		        Log.debug(msg);
             } else {
                 Log.debug('[qid='+qid+'] - ' + name);
             }

@@ -34,7 +34,7 @@
 			}
 		},
 
-		hasTranslator: function(providerOrProviders, cube){
+		hasTranslator: function(providerOrProviders){
 		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
 		    var translatorName = this._dataProviderTranslator[dataProvider.getJsb().$name];
 		    return !!translatorName;

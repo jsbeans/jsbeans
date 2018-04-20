@@ -6,11 +6,28 @@
 		    'DataCube.Providers.SqlTableDataProvider',
 
 		    'DataCube.Query.Translators.TranslatorRegistry',
+
+		    'DataCube.Query.Views.CubeView',
+		    'DataCube.Query.Views.DataProviderView',
+		    'DataCube.Query.Views.JoinView',
+		    'DataCube.Query.Views.UnionsView',
+
+		    'DataCube.Query.Engine.Cursors.EmptyCursor',
+		    'DataCube.Query.Engine.Cursors.CachedCursor',
+		    'DataCube.Query.Engine.Cursors.IteratorCursor',
+		    'DataCube.Query.Engine.Cursors.PipeCursor',
+
+		    'DataCube.Query.Engine.QueryBodyItBuilder',
+		    'DataCube.Query.Engine.RuntimeFunctions',
+
 		    'DataCube.Query.QueryUtils',
+		    'JSB.Crypt.MD5',
         ],
 
 		$constructor: function(queryExecutor){
 			$this.queryExecutor = queryExecutor;
+			$this.profiler = queryExecutor.profiler;
+			$this.qid = queryExecutor.qid;
 		},
 
         /** Build iterator: {next: function(){}, close: function(){}}
@@ -22,7 +39,7 @@
 		    var fullStack = [];
 		    var executionContexts = {};
 		    var cursors = {};
-		    var ictx = [];
+		    var ictx = {};
 debugger;
 		    QueryUtils.walkQueries(
 		        $this.queryExecutor.query, {},
@@ -47,6 +64,7 @@ debugger;
                     }
                     /// Если запрос целиком транслируется в БД, то создается курсор БД и на этом заканчиваем
                     if($this._tryQueryTranslateDB(currentExecutionContext)) {
+                        $this.profiler && $this.profiler.profile($this.qid, 'DB cursor created at {}', currentExecutionContext.id);
                         cursors[query.$context] = currentExecutionContext.cursor;
                         if (this.inFrom) {
                             lastFromContext = currentExecutionContext;
@@ -59,22 +77,25 @@ debugger;
 		        function _leaveQuery(query){
 		            /// this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}
 		            var currentExecutionContext = fullStack.pop();
-                    QueryUtils.assert(currentExecutionContext.query == query, 'Wrong execution context query: {}', currentExecutionContext.query.$context);
+                    QueryUtils.assert(currentExecutionContext.query.$context == query.$context, 'Wrong execution context query: {}', currentExecutionContext.query.$context);
                     QueryUtils.assert(!currentExecutionContext.cursor, 'Cursor exist');
 
-                    /// build query source cursor
+                    /// build query source
                     if (!query.$from) {
                         /// from cube (leaf query)
-                        currentExecutionContext.sourceCursor = $this._buildCubeCursor(currentExecutionContext);
+                        currentExecutionContext.source = {
+                            cursor: $this._buildCubeCursor(currentExecutionContext)
+                        };
                     } else if (query.$from && JSB.isEqual({}, query.$from)) {
                         /// from empty (return single object)
-                        currentExecutionContext.sourceCursor = $this._buildEmptyCursor(currentExecutionContext);
+                        currentExecutionContext.source = {
+                            cursor: new EmptyCursor(currentExecutionContext)
+                        };
                     } else if (query.$from) {
                         /// from view by name
-//                        var sourceName = JSB.isString(query.$from) ? query.$from : query.$from.$context;
-//                        QueryUtils.throwError(!!executionContexts[sourceName], 'Undefined view query context: {}', sourceName);
-                        currentExecutionContext.sourceCursor = lastFromContext.cursor;
+                        currentExecutionContext.source = lastFromContext;
                     }
+                    $this.profiler && $this.profiler.profile($this.qid, 'Source cursor created for {}', currentExecutionContext.id);
 
 //                    /// defile parent context
                     if (query != $this.queryExecutor.query) {
@@ -95,6 +116,7 @@ debugger;
 
                     /// build query cursor is not built early
                     cursors[query.$context] = $this._buildQueryCursor(currentExecutionContext);
+                    $this.profiler && $this.profiler.profile($this.qid, 'Query cursor created at {}', currentExecutionContext.id);
                     if (this.inFrom) {
                         lastFromContext = currentExecutionContext;
                     }
@@ -103,13 +125,14 @@ debugger;
             );
 
             /// create iterator for root cursor
+            $this.profiler && $this.profiler.profile($this.qid, 'main iterator created');
             return {
                 next: function() {
                     lastContext.cursor.next.call(lastContext);
                     return lastContext.cursor.object;
                 },
                 close: function(){
-                    lastContext.cursor.close();
+                    lastContext.cursor.close.call(lastContext);
                 },
             };
 		},
@@ -175,130 +198,91 @@ debugger;
 		},
 
 		_tryQueryTranslateDB: function(currentExecutionContext) {
-		    function createCursor(){
-                try {
-                    var translator = TranslatorRegistry.newTranslator(
-                            $this.queryExecutor.providers,
-                            $this.queryExecutor.cube || $this.queryExecutor.queryEngine
-                    );
-                    var it = translator.translatedQueryIterator(currentExecutionContext.query, $this.queryExecutor.params);
-                    return $this._buildCursor(
-                        function _next(){
-                            return it.next();
-                        },
-                        function _reset(){
-                            it && it.close();
-                            it = translator.translatedQueryIterator(currentExecutionContext.query, $this.queryExecutor.params);
-                        },
-                        function _close(){
-                            it && it.close();
-                        },
-                        function _clone(){
-                            return createCursor();
-                        }
-                    );
-                } finally {
-                    if(translator) translator.close();
-                }
-		    }
-            var providersGroups = $this._groupSameProviders();
+		    var providersGroups = $this._groupSameProviders();
             if (providersGroups.length == 1) {
-                currentExecutionContext.cursor = createCursor();
-                return true;
+                if (TranslatorRegistry.hasTranslator($this.queryExecutor.providers)) {
+                    currentExecutionContext.cursor = new IteratorCursor(currentExecutionContext, function(){
+                        try {
+                            var translator = TranslatorRegistry.newTranslator(
+                                    $this.queryExecutor.providers,
+                                    $this.queryExecutor.cube || $this.queryExecutor.queryEngine
+                            );
+                            return translator.translatedQueryIterator(currentExecutionContext.query, $this.queryExecutor.params);
+                        } finally {
+                            if(translator) translator.close();
+                        }
+                    });
+                    return true;
+                }
             }
 		},
 
-		_buildEmptyCursor: function(currentExecutionContext){
-		    var c = -1;
-		    var cursor = $this._buildCursor(
-                function _next(){return c===-1?(c=0,{}):null;},
-                function _reset(){c = -1},
-                function _close(){},
-                function _clone(){
-                    return $this._buildEmptyCursor(currentExecutionContext);
-                }
-            );
-            return cursor;
-		},
-
-		_buildCursor: function(next, reset, close, clone){
-		    var cursor = {
-		        object:null,
-		        next: next,
-		        reset: reset,
-		        close: close,
-		        clone: clone,
-		    };
-		    return cursor;
-		},
-
-        /** Курсор, все инстансы которого используют общий буффер и используют единственный итератор
-        */
-		_buildCachedCursor: function(next, close){
-            var fully = false;
-		    var cache = {
-		        values: [],
-		        pos :-1,
-		    };
-		    var currentPos = -1;
-		    var object = null;
-
-            function _next(){
-                currentPos++;
-                if(cache.values[currentPos] !== undefined) {
-                    object = cache.values[currentPos];
-                } else {
-                    object = cache.values[source.pos++] = next.call(this);
-                }
-                if (object == null) {
-                    fully = true;
-                    close.call(this); // close source
-                }
-                return object;
-            }
-            function _reset(){
-                if (!fully) {
-                    // complete and close
-                    while(_next.call(this));
-                }
-                currentPos = -1;
-                object = null;
-            }
-            function _close(){
-                object = null;
-                cachedValues = null;
-                if (!fully) {
-                    close.call(this);
-                }
-            }
-            function _clone(){
-                var cloned = $this._buildCachedCursor(next, close, null);
-                cloned.cache = cache;
-                return cloned;
-            }
-
-		    return $this._buildCursor(_next, _reset, _close, _clone);
-		},
 
 		_buildCubeCursor: function(currentExecutionContext) {
-		    // TODO: this is test data - need build Cube/DataProvider cursor
-		    var testValues = [
-		        {a: 1, b: null},
-		        {a: 1, b: 'a'},
-		        {a: 2, b: 'a'},
-		        {a: 3, b: 'b'},
-		        {a: 4, b: 'c'},
-		        {a: 5, b: 'b'},
-		        {a: 5, b: 'b'},
-		    ];
-		    var cursor = $this._buildCachedCursor(
-		        function(){
-                    return testValues.pop();
-                },
-		        function(){
+debugger;
+		    function anyView(view) {
+		        if(view instanceof CubeView) {
+                    var subIt = anyView(view.getView());
+                    var fields = view.listFields();
+                    return {
+                        next: function(){
+                            var inp = subIt.next();
+                            if (inp == null) return null;
+                            var out = {};
+                            for(var i = 0; i < fields.length++; i++) {
+                                var field = fields[i];
+                                var desc = view.getField(field);
+                                out[field] = inp[field]; // TODO map field name
+                            }
+                            return out;
+                        },
+                        close: function(){
+                            subIt.close();
+                        }
+                    };
+                } else if(view instanceof UnionsView) {
+
+                } else if(view instanceof JoinView) {
+
+                } else if(view instanceof DataProviderView) {
+                    QueryUtils.assert(
+                        view.getProvider().getJsb().$name == 'DataCube.Providers.InMemoryDataProvider' ||
+                        view.getProvider().getJsb().$name == 'DataCube.Providers.JsonFileDataProvider',
+                        'Unsupported data provider: ' + view.getProvider().getJsb());
+
+                    var fields = view.listFields();
+                    var rows = view.getProvider().find();
+                    var pos = -1;
+                    return {
+                        next: function(){
+                            var inp = rows[++pos];
+                            if (inp == null) return null;
+                            var out = {};
+                            for(var i = 0; i < fields.length++; i++) {
+                                var field = fields[i];
+                                out[field] = inp[field];
+                            }
+                            return out;
+                        },
+                        close: function(){
+                            rows = [];
+                        }
+                    };
+                } else {
+                    throw new Error('Unexpected view type ' + view.getJsb().$name);
                 }
-		    );
-		    return cursor;
+		    }
+
+            // TODO: optimize cube cursor for query - filtered joins by used fields
+		    var cursor = new IteratorCursor(currentExecutionContext, function() {
+		        return anyView($this.queryExecutor.cubeView);
+		    });
+
+		    if ($this.useCache) {
+		        return new CachedCursor(cursor);
+		    } else {
+                return cursor;
+		    }
 		},
 
 		_buildQueryCursor: function(currentExecutionContext) {
@@ -306,28 +290,31 @@ debugger;
             currentExecutionContext.JSB = JSB;
             currentExecutionContext.MD5 = MD5;
             currentExecutionContext.QueryUtils = QueryUtils;
-            currentExecutionContext._ = CursorFunctions._;
+            currentExecutionContext.EmptyCursor = EmptyCursor;
+            currentExecutionContext.CachedCursor = CachedCursor;
+            currentExecutionContext.PipeCursor = PipeCursor;
+            currentExecutionContext.IteratorCursor = IteratorCursor;
             currentExecutionContext.__ = RuntimeFunctions.__;
 
-            currentExecutionContext.cursor = {
-                next: function next(){
-                    currentExecutionContext.QueryUtils.assert(this != currentExecutionContext, 'Wrong execution context');
-                    return this.object = this.source.cursor.next.call(this.source);
-                },
-                close: function close(){
-                    currentExecutionContext.QueryUtils.assert(this != currentExecutionContext, 'Wrong execution context');
-                    return this.source.cursor.close.call(this.source);
+debugger;
+            currentExecutionContext.cursor = new IteratorCursor(currentExecutionContext, function(){
+                try {
+                    var builder = new QueryBodyItBuilder(currentExecutionContext);
+                    builder.query();
+                    return builder.it;
+                } finally {
+                    builder && builder.destroy();
                 }
-            };
+            });
 
-            // build cursor functions
-            currentExecutionContext._.query.call(currentExecutionContext);
+            CursorFunctions._.query.call(currentExecutionContext);
 
-		    return currentExecutionContext.cursor =
-		        $this._buildCachedCursor(
-		            currentExecutionContext.cursor.next,
-		            currentExecutionContext.cursor.close
-                );
+            if ($this.useCache) {
+                return currentExecutionContext.cursor = new CachedCursor(currentExecutionContext.cursor);
+            } else {
+                return currentExecutionContext.cursor;
+
+            }
 		},
 	}
 }

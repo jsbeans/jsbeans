@@ -5,8 +5,8 @@
 		$require: [
 		    'DataCube.Query.Engine.QueryProfiler',
 		    'DataCube.Query.Transforms.QueryTransformer',
+		    'DataCube.Query.Views.CubeViewsBuilder',
 		    'DataCube.Query.Views.QueryViewsBuilder',
-		    'DataCube.Query.Iterators.DataProviderIterator',
 		    'DataCube.Query.Engine.ItBuilder',
 
 		    'DataCube.Query.QuerySyntax',
@@ -35,7 +35,16 @@
 		        $this.profiler && $this.profiler.profile($this.qid, 'directProvider', $this.providers[0].getName());
 		    }
 		    $this.profiler && $this.profiler.profile($this.qid, 'providers', $this.providers.length);
-		    
+
+            try {
+                // TODO: можно оптимизировать, используя removeRedundantBindingProviders
+                var cubeViewsBuilder = new CubeViewsBuilder($this.cube, $this.providers);
+                $this.cubeView = cubeViewsBuilder.build($this.query.$context);
+                $this.profiler && $this.profiler.profile($this.qid, 'cubeView');
+            } finally {
+                cubeViewsBuilder && cubeViewsBuilder.destroy();
+            }
+
 		    $this.contextQueries = QueryUtils.defineContextQueries($this.query);
 		},
 
@@ -47,12 +56,13 @@
                 $this._prepareQuery();
                 $this.profiler && $this.profiler.profile($this.qid, 'preparedQuery', $this.preparedQuery);
 
-                $this._buildViews();
-                $this.profiler && $this.profiler.profile($this.qid, 'views', $this.queryView.info());
+//                $this._buildViews();
+//                $this.profiler && $this.profiler.profile($this.qid, 'views', $this.queryView.info());
 
                 var itBuilder = new ItBuilder($this);
                 var it = itBuilder.build();
-                $this.profiler && $this.profiler.profile($this.qid, 'iterator', $this.queryView.info());
+//                $this.profiler && $this.profiler.profile($this.qid, 'iterator', $this.queryView.info());
+                $this.profiler && $this.profiler.profile($this.qid, 'iterator');
                 return it;
             } catch(e) {
                 $this.profiler && $this.profiler.failed($this.qid, e);
@@ -63,12 +73,13 @@
 		},
 
 		destroy: function() {
-            $this.profiler && $this.profiler.profile($this.qid, 'destroy', $this.queryView.info());
+//		    $this.profiler && $this.profiler.profile($this.qid, 'destroy', $this.queryView.info());
+            $this.profiler && $this.profiler.profile($this.qid, 'destroy');
 		    $this.profiler && $this.profiler.destroy();
-		    for(var c in $this.contextQueryViews) {
-		        $this.contextQueryViews[c].destroy();
-		        delete $this.contextQueryViews[c];
-		    }
+//		    for(var c in $this.contextQueryViews) {
+//		        $this.contextQueryViews[c].destroy();
+//		        delete $this.contextQueryViews[c];
+//		    }
 		    $base();
 		},
 
@@ -81,48 +92,16 @@
             return $this.preparedQuery;
 		},
 
-		_buildViews: function(){
-            try {
-                var builder = new QueryViewsBuilder($this.query, $this.cube, $this.providers);
-                $this.queryView = builder.build();
-                $this.contextQueryViews = builder.getContextQueryViews();
-            } finally {
-                builder && builder.destroy();
-            }
-		},
-
-//		_produceIterator: function() {
-//		    var it = null;
-//            if ($this.providers.length == 0) {
-//                // empty iterator
-//                it = {
-//                    next: function(){
-//                        return {};
-//                    },
-//                    close: function(){}
-//                };
-//            } else {
-//                var providersGroups = $this._groupSameProviders();
-//                if (providersGroups.length == 1) {
-//                    it = new DataProviderIterator($this.providers, $this.queryEngine);
-//                } else {
-//                    it = new JsQueryIterator($this); // TODO
-//                }
+//		_buildViews: function(){
+//            try {
+//                var builder = new QueryViewsBuilder($this.query, $this.cube, $this.providers);
+//                $this.queryView = builder.build();
+//                $this.contextQueryViews = builder.getContextQueryViews();
+//            } finally {
+//                builder && builder.destroy();
 //            }
-//            it.iterate($this.query, $this.params);
-//
-//		    $this.profiler && $this.profiler.profile($this.qid, 'iterator-created');
-//		    return {
-//		        next: function(){
-//		            var next = it.next();
-//		            return next;
-//		        },
-//		        close: function(){
-//		            it.close();
-//		            $this.profiler && $this.profiler.complete($this.qid);
-//		        }
-//		    };
 //		},
+
 
         /** Собирает в коллекцию только провайдеры куба, использующиеся в запросе
         */
