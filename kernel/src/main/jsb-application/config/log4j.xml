@@ -10,8 +10,8 @@
 
     <appender name="FILE-MAIN" class="org.apache.log4j.RollingFileAppender">
         <param name="append" value="false" />
-        <param name="maxFileSize" value="100KB" />
-        <param name="maxBackupIndex" value="5" />
+        <param name="maxFileSize" value="1MB" />
+        <param name="maxBackupIndex" value="10" />
         <param name="file" value="./logs/jsbeans.log" />
 
         <layout class="org.apache.log4j.PatternLayout">
@@ -21,8 +21,8 @@
 
     <appender name="FILE-SCRIPTING" class="org.apache.log4j.RollingFileAppender">
         <param name="append" value="false" />
-        <param name="maxFileSize" value="100KB" />
-        <param name="maxBackupIndex" value="5" />
+        <param name="maxFileSize" value="1MB" />
+        <param name="maxBackupIndex" value="10" />
         <param name="file" value="./logs/scripting.log" />
 
         <layout class="org.apache.log4j.PatternLayout">
@@ -32,8 +32,8 @@
 
     <appender name="FILE-AUTH" class="org.apache.log4j.RollingFileAppender">
         <param name="append" value="false" />
-        <param name="maxFileSize" value="100KB" />
-        <param name="maxBackupIndex" value="5" />
+        <param name="maxFileSize" value="1MB" />
+        <param name="maxBackupIndex" value="10" />
         <param name="file" value="./logs/auth.log" />
 
         <layout class="org.apache.log4j.PatternLayout">
