@@ -12,9 +12,7 @@ package org.jsbeans;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import com.typesafe.config.ConfigValueFactory;
+import com.typesafe.config.*;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.helpers.NetworkHelper;
@@ -28,12 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 //import ch.qos.logback.classic.Level;
 //import ch.qos.logback.classic.LoggerContext;
@@ -148,8 +141,25 @@ public class Core {
     }
 
     private static void finalizeConfiguration() {
-        Config sys = ConfigFactory.systemProperties();
-        Core.mergeConfigWith(sys, false);
+        Config systemPropertiesConfig  = ConfigFactory.empty();
+        for(Map.Entry<Object, Object> e : System.getProperties().entrySet()) {
+            if ("false".equalsIgnoreCase(e.getValue().toString())) {
+                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(false));
+                continue;
+            } else if ("true".equalsIgnoreCase(e.getValue().toString())) {
+                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(true));
+                continue;
+            }
+//            try{
+//                systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(Integer.parseInt(e.getValue().toString())));
+//                continue;
+//            } catch(Exception err){
+//                // ignore
+//            }
+            systemPropertiesConfig = systemPropertiesConfig.withValue(e.getKey().toString(), ConfigValueFactory.fromAnyRef(e.getValue().toString()));
+        }
+
+        Core.mergeConfigWith(systemPropertiesConfig, false);
         log.info("Configuration system property loaded");
     }
 
