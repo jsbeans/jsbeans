@@ -256,9 +256,6 @@
 		prepareColumns: function(data){
 			var cols = [];
 			var colMap = {};
-			function detectType(val){
-				
-			}
 			for(var i = 0; i < data.length; i++){
 				var row = data[i];
 				var idx = 0;
@@ -302,7 +299,6 @@
 		    
 		    this.data = JSB().clone(this.prepareData(data));
 		    this.columns = this.prepareColumns(this.data);
-		    
 		    
 		    this.handsontable.updateSettings(JSB.merge({}, this.handsontable_options, {data:this.data, columns: this.columns}));
 		    this.deferredRender();

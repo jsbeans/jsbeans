@@ -1111,9 +1111,6 @@
 							.attr('pos', function(d){return d.position;})
 							.classed('rowFilter', function(d){return d.filter && d.filter.length > 0})
 							.on('click',function(d){
-								if(!d.filter || d.filter.length == 0){
-									return;
-								}
 								$this.onRowClick(d);
 							})
 							.on('mouseover', function(d){
@@ -1386,7 +1383,7 @@
 		},
 		
 		onRowClick: function(d){
-			if(this.useFilterOnClick){
+			if(this.useFilterOnClick && d.filter && d.filter.length > 0){
 				// remove all filters with
 				var filters = this.getFilters();
 				var idsToRemove = [];
