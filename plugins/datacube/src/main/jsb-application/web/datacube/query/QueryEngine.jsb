@@ -22,7 +22,7 @@
 			this.cube.load();
 			dcQuery.$id = dcQuery.$id || JSB.generateUid();
 
-		    QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Original DataCube Query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params));
+		    Log.debug('\n[qid='+dcQuery.$id+'] Original DataCube Query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params));
 		    dcQuery = this.prepareQuery(dcQuery, dataProvider);
 		    QueryUtils.logDebug('\n[qid='+dcQuery.$id+'] Prepared DataCube Query: ' + JSON.stringify(dcQuery, 0, 2) + '\n' + JSON.stringify(params));
 
