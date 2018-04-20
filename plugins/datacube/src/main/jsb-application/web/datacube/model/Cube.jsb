@@ -1810,9 +1810,7 @@
 				'$gte': true,
 				'$ne': true,
 				'$like': true,
-				'$ilike': true,
-				'$in': true,
-				'$nin': true
+				'$ilike': true
 			};
 			
 			if(newQuery && Object.keys(newQuery).length > 0){
@@ -1832,10 +1830,14 @@
 */
 	        					scope[f] = {$const:scope[f]};
 
-	        				} else if(f == '$and' || f == '$or'){
+	        				} else if(f == '$and' || f == '$or' || f == '$in' || f == '$nin'){
 	        					var arr = scope[f];
 	        					for(var i = 0; i < arr.length; i++){
-	        						prepareFilter(arr[i]);
+	        						if(!JSB.isObject(arr[i]) && !JSB.isArray(arr[i])){
+	        							arr[i] = {$const:arr[i]};
+	        						} else {
+	        							prepareFilter(arr[i]);
+	        						}
 	        					}
 	        				} else {
 	        					prepareFilter(scope[f]);

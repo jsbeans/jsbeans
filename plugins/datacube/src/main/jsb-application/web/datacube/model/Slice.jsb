@@ -153,6 +153,14 @@
             }
             if(opts && opts.wrapQuery){
             	var q = JSB.clone(opts.wrapQuery);
+            	if(preparedQuery.$cubeFilter){
+            		if(q.$cubeFilter){
+            			q.$cubeFilter = {$and:[q.$cubeFilter, preparedQuery.$cubeFilter]};
+            		} else {
+            			q.$cubeFilter = preparedQuery.$cubeFilter;
+            		}
+            		delete preparedQuery.$cubeFilter;
+            	}
             	q.$from = preparedQuery;
             	preparedQuery = q;
             }
