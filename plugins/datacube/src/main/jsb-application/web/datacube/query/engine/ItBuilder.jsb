@@ -15,10 +15,10 @@
 		    'DataCube.Query.Engine.Cursors.EmptyCursor',
 		    'DataCube.Query.Engine.Cursors.CachedCursor',
 		    'DataCube.Query.Engine.Cursors.IteratorCursor',
+		    'DataCube.Query.Engine.Cursors.QueryCursor',
 		    'DataCube.Query.Engine.Cursors.PipeCursor',
 
 		    'DataCube.Query.Engine.QueryBodyItBuilder',
-		    'DataCube.Query.Engine.RuntimeFunctions',
 
 		    'DataCube.Query.QueryUtils',
 		    'JSB.Crypt.MD5',
@@ -28,18 +28,35 @@
 			$this.queryExecutor = queryExecutor;
 			$this.profiler = queryExecutor.profiler;
 			$this.qid = queryExecutor.qid;
+
+			$this.ExecutionContext = function ExecutionContext(desc){
+			    this.id = desc.id;
+			    this.query = desc.query;
+			    this.parent = desc.parent;
+			    this.child = desc.child;
+			    this.source = desc.source;
+			    this.cursor = desc.cursor;
+			    this.closed = false;
+
+			    this.close = function(){
+                    if (this.source) this.source.close();
+                    if (this.child)  for(var c in this.child) this.child[c].close();
+                    this.cursor.destroy();
+                    this.closed = true;
+                    $this.profiler && $this.profiler.profile($this.qid, 'context closed: ' + this.id);
+			    };
+			};
 		},
 
         /** Build iterator: {next: function(){}, close: function(){}}
         */
 		build: function(){
+		    var parentStack = [];
+		    var fullStack = [];
+		    var cursors = {}; // by $context
 		    var lastContext= null;
 		    var lastFromContext = null;
-		    var executionStack = [];
-		    var fullStack = [];
-		    var executionContexts = {};
-		    var cursors = {};
-		    var ictx = {};
+
 debugger;
 		    QueryUtils.walkQueries(
 		        $this.queryExecutor.query, {},
@@ -48,113 +65,121 @@ debugger;
 		        function _enterQuery(query){
 		            /// this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}
 
-                    var currentExecutionContext = JSB.clone(this);
-                    currentExecutionContext.id = query.$context + '/' + (ictx[query.$context] = (ictx[query.$context]||0)+1);
-                    executionContexts[currentExecutionContext.id] = currentExecutionContext;
-                    fullStack.push(currentExecutionContext);
-                    if (!this.inFrom) {
-                        executionStack.push(currentExecutionContext);
-                    }
+                    var ctx = new $this.ExecutionContext({
+                        id: parentStack.length > 0
+                                ? parentStack[parentStack.length - 1].id + '/' + query.$context
+                                : query.$context,
+                        query: query,
+                    });
 
-                    $this._initContextFields(currentExecutionContext);
+                    fullStack.push(ctx);
+                    !this.inFrom && parentStack.push(ctx);
 
                     /// если курсор ранее был создан - в целях оптимизации его можно использовать повторно, а не создавать новый
                     if(cursors[query.$context]) {
-                        currentExecutionContext.cursor = cursors[query.$context].clone();
+                        ctx.cursor = cursors[query.$context].clone();
                     }
-                    /// Если запрос целиком транслируется в БД, то создается курсор БД и на этом заканчиваем
-                    if($this._tryQueryTranslateDB(currentExecutionContext)) {
-                        $this.profiler && $this.profiler.profile($this.qid, 'DB cursor created at {}', currentExecutionContext.id);
-                        cursors[query.$context] = currentExecutionContext.cursor;
+
+                    /// Если запрос целиком транслируется в БД, то создается курсор БД и на этом заканчиваем обходить текущий запрос
+                    if($this._tryQueryTranslateDB(ctx)) {
+                        $this.profiler && $this.profiler.profile($this.qid, 'DB cursor created at {}', ctx.id);
+                        cursors[query.$context] = ctx.cursor;
+                        lastContext = ctx;
                         if (this.inFrom) {
-                            lastFromContext = currentExecutionContext;
+                            lastFromContext = ctx;
                         }
-                        lastContext = currentExecutionContext;
-                        return false; /// skip query
+                        return false; // skip this query
                     };
+
+                    $this._initContextFields(ctx);
                 },
 
 		        function _leaveQuery(query){
 		            /// this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}
-		            var currentExecutionContext = fullStack.pop();
-                    QueryUtils.assert(currentExecutionContext.query.$context == query.$context, 'Wrong execution context query: {}', currentExecutionContext.query.$context);
-                    QueryUtils.assert(!currentExecutionContext.cursor, 'Cursor exist');
+		            var ctx = fullStack.pop();
+                    QueryUtils.assert(ctx.query.$context == query.$context, 'Wrong execution context query: {}', ctx.query.$context);
+                    QueryUtils.assert(!ctx.cursor, 'Cursor exists: ' + ctx.id);
 
                     /// build query source
                     if (!query.$from) {
                         /// from cube (leaf query)
-                        currentExecutionContext.source = {
-                            cursor: $this._buildCubeCursor(currentExecutionContext)
-                        };
+                        ctx.source = new $this.ExecutionContext({
+                            id: ctx.id + '/' + 'cube',
+                            cursor: $this._buildCubeCursorFor(ctx),
+                        });
                     } else if (query.$from && JSB.isEqual({}, query.$from)) {
                         /// from empty (return single object)
-                        currentExecutionContext.source = {
-                            cursor: new EmptyCursor(currentExecutionContext)
-                        };
+                        ctx.source = new $this.ExecutionContext({
+                            id: ctx.id + '/' + 'empty',
+                            cursor: new EmptyCursor(ctx)
+                        });
                     } else if (query.$from) {
                         /// from view by name
-                        currentExecutionContext.source = lastFromContext;
+                        ctx.source = lastFromContext;
                     }
-                    $this.profiler && $this.profiler.profile($this.qid, 'Source cursor created for {}', currentExecutionContext.id);
+                    $this.profiler && $this.profiler.profile($this.qid, 'Source cursor created for {}', ctx.id);
 
-//                    /// defile parent context
+                    /// defile parent context
                     if (query != $this.queryExecutor.query) {
-                        currentExecutionContext.parent = executionStack[executionStack.length-1];
-                        QueryUtils.assert(!!currentExecutionContext.parent, 'Parent execution context is undefined');
+                        ctx.parent = parentStack[parentStack.length-1];
+                        QueryUtils.assert(!!ctx.parent, 'Parent execution context is undefined');
                     }
 
                     /// define child contexts
-                    if (currentExecutionContext.parent) {
-                        currentExecutionContext.parent.child = currentExecutionContext.parent.child || {};
-                        currentExecutionContext.parent.child[currentExecutionContext.context] = currentExecutionContext;
+                    if (ctx.parent) {
+                        ctx.parent.child = ctx.parent.child || {};
+                        ctx.parent.child[ctx.context] = ctx;
                     }
 
-                    /// get created early cursor
                     if (cursors[query.$context]) {
-                        currentExecutionContext.cursor = cursors[query.$context].clone();
+                        /// use created early cursor for this query
+                        ctx.cursor = cursors[query.$context].clone();
+                    } else {
+                        /// build query cursor for current execution context
+                        cursors[query.$context] = $this._buildQueryCursor(ctx);
                     }
 
-                    /// build query cursor is not built early
-                    cursors[query.$context] = $this._buildQueryCursor(currentExecutionContext);
-                    $this.profiler && $this.profiler.profile($this.qid, 'Query cursor created at {}', currentExecutionContext.id);
+                    $this.profiler && $this.profiler.profile($this.qid, 'Query cursor created at {}', ctx.id);
                     if (this.inFrom) {
-                        lastFromContext = currentExecutionContext;
+                        lastFromContext = ctx;
                     }
-                    lastContext = currentExecutionContext;
+                    lastContext = ctx;
                 }
             );
 
+            var rootExecutionContext = lastContext;
             /// create iterator for root cursor
             $this.profiler && $this.profiler.profile($this.qid, 'main iterator created');
             return {
                 next: function() {
-                    lastContext.cursor.next.call(lastContext);
-                    return lastContext.cursor.object;
+                    return rootExecutionContext.cursor.next();
                 },
                 close: function(){
-                    lastContext.cursor.close.call(lastContext);
+                    rootExecutionContext.close();
                 },
             };
 		},
 
-		_initContextFields: function(currentExecutionContext){
-                currentExecutionContext.fields = {};
-                QueryUtils.walkQueryFields(currentExecutionContext.query, /**includeSubQueries=*/false, function (field, context, query){
-                    currentExecutionContext.fields[field] = currentExecutionContext.fields[field] || {
+		_initContextFields: function(ctx){
+                ctx.fields = {};
+                QueryUtils.walkQueryFields(ctx.query, /**includeSubQueries=*/false, function (field, context, query){
+                    var id = (context||query.$context) + '/' + field;
+                    ctx.fields[id] = ctx.fields[id] || {
+                        id: id,
                         name: field,
                         context: context,
 //                            isOutput: !!query.$select[field] || !query.$groupBy, /// если нет группировки - к выходным добавляются все входные поля
                         usages: 0,
                     };
-                    currentExecutionContext.fields[field].usages++;
-                    currentExecutionContext.type = QueryUtils.extractType(
+                    ctx.fields[id].usages++;
+                    ctx.fields[id].type = QueryUtils.extractType(
                             field, query,
                             $this.queryExecutor.getCubeOrDataProvider(),
                             $this.queryExecutor.contextQueries);
                 });
 
 //                    for(var alias in query.$select) {
-//                        currentExecutionContext.fields[alias].$isDirectAlias = query.$select[alias] == alias ||
+//                        ctx.fields[alias].$isDirectAlias = query.$select[alias] == alias ||
 //                                query.$select[alias].$field == alias && (
 //                                    !query.$select[alias].$context ||
 //                                    query.$select[alias].$context == query.$context
@@ -197,17 +222,17 @@ debugger;
             }
 		},
 
-		_tryQueryTranslateDB: function(currentExecutionContext) {
+		_tryQueryTranslateDB: function(ctx) {
 		    var providersGroups = $this._groupSameProviders();
             if (providersGroups.length == 1) {
                 if (TranslatorRegistry.hasTranslator($this.queryExecutor.providers)) {
-                    currentExecutionContext.cursor = new IteratorCursor(currentExecutionContext, function(){
+                    ctx.cursor = new IteratorCursor(ctx, function(){
                         try {
                             var translator = TranslatorRegistry.newTranslator(
                                     $this.queryExecutor.providers,
                                     $this.queryExecutor.cube || $this.queryExecutor.queryEngine
                             );
-                            return translator.translatedQueryIterator(currentExecutionContext.query, $this.queryExecutor.params);
+                            return translator.translatedQueryIterator(ctx.query, $this.queryExecutor.params);
                         } finally {
                             if(translator) translator.close();
                         }
@@ -218,7 +243,7 @@ debugger;
 		},
 
 
-		_buildCubeCursor: function(currentExecutionContext) {
+		_buildCubeCursorFor: function(ctx) {
 debugger;
 		    function anyView(view) {
 		        if(view instanceof CubeView) {
@@ -274,7 +299,7 @@ debugger;
 		    }
 
             // TODO: optimize cube cursor for query - filtered joins by used fields
-		    var cursor = new IteratorCursor(currentExecutionContext, function() {
+		    var cursor = new IteratorCursor(ctx, function() {
 		        return anyView($this.queryExecutor.cubeView);
 		    });
 
@@ -285,34 +310,13 @@ debugger;
 		    }
 		},
 
-		_buildQueryCursor: function(currentExecutionContext) {
-            // prepare context
-            currentExecutionContext.JSB = JSB;
-            currentExecutionContext.MD5 = MD5;
-            currentExecutionContext.QueryUtils = QueryUtils;
-            currentExecutionContext.EmptyCursor = EmptyCursor;
-            currentExecutionContext.CachedCursor = CachedCursor;
-            currentExecutionContext.PipeCursor = PipeCursor;
-            currentExecutionContext.IteratorCursor = IteratorCursor;
-            currentExecutionContext.__ = RuntimeFunctions.__;
-
-debugger;
-            currentExecutionContext.cursor = new IteratorCursor(currentExecutionContext, function(){
-                try {
-                    var builder = new QueryBodyItBuilder(currentExecutionContext);
-                    builder.query();
-                    return builder.it;
-                } finally {
-                    builder && builder.destroy();
-                }
-            });
-
-            CursorFunctions._.query.call(currentExecutionContext);
-
+		_buildQueryCursor: function(ctx) {
+		    ctx.params = $this.queryExecutor.params;
+            ctx.cursor = new QueryCursor(ctx);
             if ($this.useCache) {
-                return currentExecutionContext.cursor = new CachedCursor(currentExecutionContext.cursor);
+                return ctx.cursor = new CachedCursor(ctx.cursor);
             } else {
-                return currentExecutionContext.cursor;
+                return ctx.cursor;
 
             }
 		},

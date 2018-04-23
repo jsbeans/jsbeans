@@ -34,7 +34,7 @@
 
         filter: function(){
             var inputNext = $this.it.next;
-            $this.it.next = function(){
+            $this.next = function(){
                 var object = inputNext.call(this);
                 while(object != null && !$this.__.check.call($this.executionContext, $this.query.$filter)) {
                     object = inputNext.call(this);
