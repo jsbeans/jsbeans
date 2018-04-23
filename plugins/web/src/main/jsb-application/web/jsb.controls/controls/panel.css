@@ -20,7 +20,8 @@
     box-sizing: border-box;
 }
 
-.jsb-panel > .header {
+.jsb-panel > .header > * {
+    vertical-align: middle;
 }
 
 .jsb-panel > .header > h1 {
@@ -59,9 +60,16 @@
 .jsb-panel > .header > ul {
     display: inline-block;
     vertical-align: middle;
-    margin: -4px 4px 0 4px;
     padding-left: 0;
     list-style: none;
+}
+
+.jsb-panel > .header > ul.left {
+    margin-right: 4px;
+}
+
+.jsb-panel > .header > ul.right {
+    margin-left: 4px;
 }
 
 .jsb-panel > .header > ul > li {
@@ -69,9 +77,11 @@
     cursor: pointer;
     position: relative;
     display: block;
-    margin-left: 5px;
 }
 
+.jsb-panel > .header > ul > li:not(first-child) {
+    margin-left: 5px;
+}
 
 .jsb-panel > .header > ul > li > i {
     display: inline-block;

@@ -75,9 +75,11 @@
             }
 
             this.wrapper.ensureWidgetInitialized(function(){
+                var widget = $this.wrapper.getWidget();
+
                 $this.widgetSchemeRenderer = new Controller({
-                    scheme: $this.entry.extractWidgetScheme(),
-                    values: $this.wrapper.getWidget().getValues(),
+                    scheme: widget.getEntry().extractWidgetScheme(),
+                    values: widget.getValues(),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(key, values){
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){

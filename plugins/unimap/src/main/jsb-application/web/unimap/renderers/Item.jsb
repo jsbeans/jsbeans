@@ -46,7 +46,7 @@
                     }
                 });
 
-	            this.multipleBtn = this.$('<i class="multipleBtn fas fa-plus-circle"></i>');
+	            this.multipleBtn = this.$('<i class="btn btnMultiple fas fa-plus-circle"></i>');
 	            this.multipleBtn.click(function(){
 	                $this.addItem();
 	            });
@@ -117,7 +117,7 @@
 
 	            item.attr('idx', itemIndex);
 
-	            var removeBtn = this.$('<i class="btnDelete fas fa-times"></i>');
+	            var removeBtn = this.$('<i class="btn btnDelete fas fa-times"></i>');
 	            removeBtn.click(function(evt){
                     evt.stopPropagation();
                     $this._values.values.splice(itemIndex, 1);

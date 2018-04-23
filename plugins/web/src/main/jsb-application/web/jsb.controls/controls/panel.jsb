@@ -34,11 +34,11 @@
             }
 
             if(this.options.hasToolbar){
-                this.elements.toolbar = this.$('<ul></ul>');
+                this.elements.toolbar = this.$('<ul class="' + this.options.toolbarPosition + '"></ul>');
 
-                if(this.options.toolbarPosition == 'right'){
+                if(this.options.toolbarPosition === 'right'){
                     this.elements.header.append(this.elements.toolbar);
-                } else if(this.options.toolbarPosition == 'left') {
+                } else if(this.options.toolbarPosition === 'left') {
                     this.elements.header.prepend(this.elements.toolbar);
                 }
                 this.elements.header.addClass('hasToolbar');

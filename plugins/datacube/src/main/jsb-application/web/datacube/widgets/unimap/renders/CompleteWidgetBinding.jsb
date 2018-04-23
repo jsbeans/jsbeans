@@ -2,7 +2,7 @@
 	$name: 'Unimap.Render.CompleteWidgetBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Controls.Button'],
+	    $require: ['JSB.Widgets.RendererRepository'],
 
 	    construct: function(){
 	        this.addClass('completeWidgetBindingRender');
@@ -42,21 +42,11 @@
                 },
                 tolerance: 'pointer',
                 greedy: true,
-                over: function(evt, ui){
-                    if( !ui.helper.hasClass('accepted') ){
-                        ui.helper.addClass('accepted');
-                    }
-                    $this._item.addClass('acceptDraggable');
-                },
-                out: function(evt, ui){
-                    if( ui.helper.hasClass('accepted') ){
-                        ui.helper.removeClass('accepted');
-                    }
-                    $this._item.removeClass('acceptDraggable');
-                },
+                activeClass : 'acceptDraggable',
+                hoverClass: 'hoverDraggable',
                 drop: function(evt, ui){
                     var d = ui.draggable;
-                    $this._item.removeClass('acceptDraggable');
+
                     for(var i in d.get(0).draggingItems){
 						var obj = d.get(0).draggingItems[i].obj;
 						if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
@@ -83,42 +73,51 @@
 	    },
 
 	    destroy: function(){
-	        if(this._removeButton){
-	            this._removeButton.destroy();
-	        }
+            if(this._render){
+                this._render.destroy();
+            }
 
 	        $base();
 	    },
 
-	    setValue: function(val){
+	    setValue: function(val, entry){
             this._values.values[0] = {
                 value: val
             }
 
-	        if(!val){
-	            this._item.text('');
-	            this._item.removeClass('filled');
+            function createValue(entry){
+                $this._render = RendererRepository.createRendererFor(entry);
+                $this._item.append($this._render.getElement());
 
-	            if(this._removeButton){
-	                this._removeButton.destroy();
-	                this._removeButton = null;
-	            }
+                var removeButton = $this.$('<i class="btn btnDelete fas fa-times" title="Удалить"></i>');
+                removeButton.click(function(evt){
+                    evt.stopPropagation();
+                    $this.onchange();
+                    $this.setValue(null);
+                });
+                $this._item.append(removeButton);
+            }
+
+            if(this._render){
+                this._render.destroy();
+            }
+            this._item.empty();
+
+	        if(!val){
+	            this._item.removeClass('filled');
 	        } else {
-	            this._item.text(val.name);
 	            this._item.addClass('filled');
 
-	            if(!this._removeButton){
-	                this._removeButton = new Button({
-                         hasIcon: true,
-                         hasCaption: false,
-                         cssClass: 'deleteButton',
-                         tooltip: 'Удалить',
-                         onclick: function(evt){
-                             $this.onchange();
-                             $this.setValue(null);
-                         }
-                    });
-                    this._item.append(this._removeButton.getElement());
+	            if(entry){
+	                createValue(entry);
+	            } else {
+	                this.server().getEntry(val, function(entry, error){
+	                    if(!error){
+	                        createValue(entry);
+	                    } else {
+	                        $this._item.append('<span class="error">Виджет не найден!</span>')
+	                    }
+	                });
 	            }
 	        }
 	    },
@@ -130,8 +129,20 @@
                 name: entry.getName()
             };
 
-	        this.setValue(val);
+	        this.setValue(val, entry);
 	        this.onchange();
+	    }
+	},
+
+	$server: {
+	    $require: ['JSB.Workspace.WorkspaceController'],
+
+	    getEntry: function(entryDesc){
+            if(!entryDesc || !entryDesc.widgetWsid || !entryDesc.widgetWid){
+                throw new Error('Invalid entry description in CompleteWidgetBinding');
+            }
+
+            return WorkspaceController.getWorkspace(entryDesc.widgetWsid).entry(entryDesc.widgetWid);
 	    }
 	}
 }

@@ -1,6 +1,16 @@
-.styleBindingRender .item {
-    height: 34px;
+.styleBindingRender > .name {
     width: 200px;
+    display: inline-block;
+    line-height: 22px;
+    font-size: 15px;
+    color: #73879C;
+    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+    margin-right: 5px;
+}
+
+.styleBindingRender > .item {
+    display: inline-block;
+    height: 34px;
     background: rgba(24, 108, 138, 0.2);
     color: #555;
     border: 2px dotted rgba(2, 47, 78, 0.2);
@@ -8,11 +18,14 @@
     padding: 6px;
     font-size: 15px;
     text-align: center;
+    min-width: 200px;
 }
 
-.styleBindingRender .item > span > i {
+.styleBindingRender > .item.filled {
+    min-width: initial;
+}
+
+.styleBindingRender > .item > .btnDelete {
     font-size: 14px;
-    cursor: pointer;
-    color: darkred;
     margin-left: 5px;
 }

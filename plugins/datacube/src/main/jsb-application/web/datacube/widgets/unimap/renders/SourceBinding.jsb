@@ -1,8 +1,9 @@
 {
 	$name: 'Unimap.Render.SourceBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
 	$client: {
+	    $require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
+
 	    _beans: [],
 	    _render: null,
 	    _disabled: false,

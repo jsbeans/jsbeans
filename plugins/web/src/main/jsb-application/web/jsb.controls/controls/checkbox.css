@@ -10,7 +10,8 @@
     padding: 0;
     width: 20px;
     height: 20px;
-    background: url(/datacube/images/greenCheckBox.png) no-repeat;
+    background-image: url(/jsb.controls/images/greenCheckBox.png);
+    background-repeat: no-repeat;
     border: none;
     cursor: pointer;
 }
