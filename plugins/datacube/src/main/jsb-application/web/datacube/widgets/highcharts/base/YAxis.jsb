@@ -237,6 +237,11 @@
                             name: 'Интервал отметок',
                             valueType: 'number'
                         },
+                        tickAmount: {
+                            render: 'item',
+                            name: 'Количество отметок',
+                            valueType: 'number'
+                        },
                         tickColor: {
                             render: 'item',
                             name: 'Цвет отметок',
@@ -293,6 +298,7 @@
                         offset: yAxisContext[i].find('offset').value(),
                         opposite: yAxisContext[i].find('opposite').checked(),
                         reversed: yAxisContext[i].find('reversed').checked(),
+                        tickAmount: yAxisContext[i].find('tickAmount').value(),
                         tickColor: yAxisContext[i].find('tickColor').value(),
                         tickInterval: yAxisContext[i].find('tickInterval').value(),
                         type: yAxisContext[i].find('type').value(),

@@ -92,10 +92,8 @@
     display: none;
 }
 
-.itemRender > .multipleContainer > .multipleBtn {
-    cursor: pointer;
+.itemRender > .multipleContainer > .btnMultiple {
     font-size: 20px;
-    color: #1abc9c;
     vertical-align: middle;
 }
 
@@ -119,6 +117,5 @@
     margin-left: 5px;
     vertical-align: middle;
     line-height: 18px;
-    cursor: pointer;
     color: darkred;
 }

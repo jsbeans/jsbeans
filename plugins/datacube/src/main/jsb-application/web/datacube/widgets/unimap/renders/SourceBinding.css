@@ -90,10 +90,6 @@
     padding-left: 20px;
 }
 
-.sourceBindingRender > .item.bindingItem.filled {
-    border: 1px dotted rgba(2, 47, 78, 0.4);
-}
-
 .sourceBindingRender > .item.bindingItem.ui-droppable.filled {
     width: initial;
 }
@@ -109,8 +105,4 @@
 .sourceBindingRender > .item > i {
     margin-left: 5px;
     cursor: pointer;
-}
-
-.sourceBindingRender > .item > i.btnDelete {
-    color: darkred;
 }

@@ -1,12 +1,24 @@
 {
 	$name: 'Unimap.Render.StylesBinding',
-	$parent: 'Unimap.Render.Item',
+	$parent: 'Unimap.Render.Basic',
 	$client: {
+	    $require: ['JSB.Widgets.RendererRepository'],
+
 	    construct: function(){
 	        this.addClass('styleBindingRender');
 	        this.loadCss('StylesBinding.css');
 
-	        $base();
+	        var name = this.$('<span class="name">' + this._scheme.name + '</span>');
+	        this.append(name);
+
+	        this.createRequireDesc(name);
+	        this.createDescription(name);
+
+	        if(this._values.values.length > 0){
+	            this.addItem(this._values.values[0]);
+	        } else {
+	            this.addItem();
+	        }
 	    },
 
 	    addItem: function(values, itemIndex){
@@ -15,15 +27,15 @@
 	            this._values.values.push(values);
 	        }
 
-	        var item = this.$('<div class="item"></div>');
+	        this._item = this.$('<div class="item"></div>');
 
             if(values.value){
-                this._setValue(values.value, item);
+                this._setValue(values.value);
             } else {
-                item.append('<span>Перетащите схему сюда</span>');
+                this._item.append('<span>Перетащите схему сюда</span>');
             }
 
-            item.droppable({
+            this._item.droppable({
                 accept: function(d){
                     if(d && d.length > 0 && d.get(0).draggingItems){
                         for(var i in d.get(0).draggingItems){
@@ -50,68 +62,82 @@
 
                     for(var i in d.get(0).draggingItems){
                         var entry = d.get(0).draggingItems[i].obj.getEntry();
-                        $this.setBinding(entry, itemIndex, item);
+                        $this.setBinding(entry);
                         break;
                     }
                 }
             });
 
-	        if(this._scheme.multiple){
-	            item.addClass('.multipleItem');
-
-	            if(!itemIndex){
-	                itemIndex = this.multipleContainer.find('.multipleItem').length;
-	            }
-	            item.attr('idx', itemIndex);
-
-	            this.multipleBtn.before(item);
-	        } else {
-	            this.append(item);
-	        }
+            this.append(this._item);
 	    },
 
-		removeBinding: function(item){
-		    var itemIndex = item.attr('idx');
-
-		    if(!JSB.isDefined(itemIndex)){
-		        itemIndex = 0;
+		removeBinding: function(){
+		    if(this._render){
+		        this._render.destroy();
 		    }
 
-            if(itemIndex > 0){
-                this._values.values.splice(itemIndex, 1);
-                item.remove();
-            } else {
-                this._values.values[0] = {};
-                item.removeClass('filled');
-                item.empty();
-                item.append('<span class="empty">Перетащите схему сюда</span>');
-            }
+		    this._values.values[0] = {};
+
+		    this._item.removeClass('filled');
+		    this._item.empty().append('<span class="empty">Перетащите схему сюда</span>');
 		},
 
-	    setBinding: function(entry, itemIndex, item){
+	    setBinding: function(entry){
 	        var value = {
 	            workspaceId: entry.getWorkspace().getId(),
 	            entryId: entry.getId(),
 	            name: entry.getName()
 	        };
 
-	        this._values.values[itemIndex].value = value;
+	        this._values.values[0].value = value;
 
-	        this._setValue(value, item);
+	        this._setValue(value, entry);
 	    },
 
-	    _setValue: function(value, item){
-	        var styleItem = this.$('<span>' + value.name + '</span>'),
-	            removeBtn = this.$('<i class="btn fas fa-times"></i>');
+	    _setValue: function(value, entry){
+	        function createValue(entry){
+	            $this._item.addClass('filled');
 
-            removeBtn.click(function(){
-                $this.removeBinding(item);
-                removeBtn.remove();
-            });
+	            var removeBtn = $this.$('<i class="btn btnDelete fas fa-times"></i>');
+                removeBtn.click(function(){
+                    $this.removeBinding();
+                    removeBtn.remove();
+                });
 
-            styleItem.append(removeBtn);
+                $this._render = RendererRepository.createRendererFor(entry);
+                $this._item.append($this._render.getElement());
 
-	        item.empty().append(styleItem);
+                $this._item.append(removeBtn);
+	        }
+
+            if(this._render){
+                this._render.destroy();
+            }
+            this._item.empty();
+
+            if(entry){
+                createValue(entry);
+            } else {
+                this.server().getEntry(value, function(entry, error){
+                    if(!error){
+                        createValue(entry);
+                    } else {
+                        $this._item.append('<span class="error">Цветовая схема не найдена!</span>')
+                    }
+                });
+            }
+	    }
+	},
+
+	$server: {
+	    $require: ['JSB.Workspace.WorkspaceController'],
+
+	    getEntry: function(entryDesc){
+            if(!entryDesc || !entryDesc.workspaceId || !entryDesc.entryId){
+                throw new Error('Invalid entry description in CompleteWidgetBinding');
+            }
+
+            return WorkspaceController.getWorkspace(entryDesc.workspaceId).entry(entryDesc.entryId);
 	    }
 	}
 }
