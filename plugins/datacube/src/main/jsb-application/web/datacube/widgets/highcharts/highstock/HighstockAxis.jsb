@@ -7,7 +7,7 @@
 	        name: 'Ось Х',
             collapsable: true,
             items: {
-                date: {
+                xAxisDate: {
                     render: 'dataBinding',
                     name: 'Дата',
                     linkTo: 'source'
@@ -225,8 +225,8 @@
                         tickColor: xAxisContext.find('tickColor').value(),
                         tickInterval: xAxisContext.find('tickInterval').value(),
                         type: xAxisContext.find('type').value(),
-                        minX: xAxisContext.find('minX').value(),
-                        maxX: xAxisContext.find('maxX').value()
+                        min: xAxisContext.find('minX').value(),
+                        max: xAxisContext.find('maxX').value()
                     }
                 };
 

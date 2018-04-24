@@ -818,6 +818,7 @@
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
                 */
+
                 if($this.chart){
                     $this.chart.destroy();
                 }

@@ -190,7 +190,7 @@
             if(!this._schemeOpts){
                 this._schemeOpts = {
                     seriesContext: this.getContext().find('series').values(),
-                    dateContext: this.getContext().find('xAxis date')
+                    dateContext: this.getContext().find('xAxis xAxisDate')
                 };
             }
 
