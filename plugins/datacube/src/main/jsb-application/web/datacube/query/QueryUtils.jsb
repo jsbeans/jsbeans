@@ -979,12 +979,12 @@
                 } else if (JSB.isPlainObject(exp)) {
                     if (!exp.$select || exp == query) {
                         for (var f in exp) if (exp.hasOwnProperty(f)) {
-                            if (f != '$postFilter') {
+//                            if (f != '$postFilter') {
                                 var res = patchFields(exp[f], query);
                                 if (res) {
                                     exp[f] = res;
                                 }
-                            }
+//                            }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
@@ -1112,6 +1112,7 @@
 		    function unwrapForQuery(query) {
 		        function subFilter(post) {
 		            return $this.filterFilterByFields(query.$postFilter, function isAccepted(field, expr, opPath){
+		                if (field == null) return true;
                         for(var i = 0; i < query.$groupBy.length; i++){
                             var g = query.$groupBy[i];
                             if (typeof g === 'string' || typeof g.$field === 'string' && (!g.$context || g.$context == query.$context)) {
