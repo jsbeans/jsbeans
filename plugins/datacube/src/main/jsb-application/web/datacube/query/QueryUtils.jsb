@@ -924,16 +924,18 @@
 
         unwrapSort: function(dcQuery) {
 		    $this.walkAllSubQueries(dcQuery, function(query){
-                for(var i = 0; i < query.$sort.length; i++) {
-                    var e = query.$sort[i];
-                    if (!e.$expr) {
-                        if(Object.keys(e).length !== 1) {
-                            throw new Error('Invalid $sort definition: ' + JSON.stringify(e));
+		        if (query.$sort) {
+                    for(var i = 0; i < query.$sort.length; i++) {
+                        var e = query.$sort[i];
+                        if (!e.$expr) {
+                            if(Object.keys(e).length !== 1) {
+                                throw new Error('Invalid $sort definition: ' + JSON.stringify(e));
+                            }
+                            query.$sort[i] = {
+                                $expr : Object.keys(e)[0],
+                                $type: e[Object.keys(e)[0]]
+                            };
                         }
-                        query.$sort[i] = {
-                            $expr : Object.keys(e)[0],
-                            $type: e[Object.keys(e)[0]]
-                        };
                     }
                 }
 		    });
