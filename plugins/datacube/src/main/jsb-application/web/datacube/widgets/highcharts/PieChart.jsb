@@ -183,10 +183,6 @@
                             }
 
                             data[i].push({
-                                datacube: {
-                                    binding: $this._schemeOpts.series[i].nameSelector.binding() || $this._schemeOpts.series[i].dataSelector.binding(),
-                                    filterData: $this._addFilterData()
-                                },
                                 name: $this._schemeOpts.series[i].nameSelector.value() || $this._schemeOpts.series[i].seriesNameSelector.value(),
                                 y: $this._schemeOpts.series[i].dataSelector.value()
                             });
@@ -215,7 +211,8 @@
                 function includeData(chartOpts, data){
                     chartOpts = JSB.clone(chartOpts);
 
-                    var seriesContext = $this.getContext().find('series').values();
+                    var seriesContext = $this.getContext().find('series').values(),
+                        filterData = $this._addFilterData();
 
                     if(seriesContext.length > 1 && unionSeries){
                         var newData = [],
@@ -229,7 +226,8 @@
 
                         var series = {
                             datacube: {
-                                bindings: bindings
+                                bindings: bindings,
+                                filterData: filterData
                             },
                             data: newData,
                             size: seriesContext[0].find('size').value(),
@@ -248,7 +246,8 @@
                         for(var i = 0; i < seriesContext.length; i++){
                             var series = {
                                 datacube: {
-                                    binding: seriesContext[i].find('name').binding() || seriesContext[i].find('data').binding()
+                                    binding: seriesContext[i].find('name').binding() || seriesContext[i].find('data').binding(),
+                                    filterData: filterData
                                 },
                                 data: data[i],
                                 size: seriesContext[i].find('size').value(),

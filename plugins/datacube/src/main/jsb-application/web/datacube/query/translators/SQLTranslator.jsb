@@ -1106,9 +1106,11 @@
                     case '$ilike':
                         sqlOp = ' ~~* '; break;
                     case '$in':
-                        sqlOp = ' IN '; break;
+                        sqlOp = ' IN ';
+                        return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     case '$nin':
-                        sqlOp = ' NOT IN '; break;
+                        sqlOp = ' NOT IN ';
+                        return $this._translateExpression(operands[0], query) + sqlOp + '(' + $this._translateExpression(operands[1], query) + ') ';
                     default:
                         throw new Error('Unsupported condition expression ' + op);
                 }

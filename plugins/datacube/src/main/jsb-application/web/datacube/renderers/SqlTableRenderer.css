@@ -4,6 +4,10 @@
 	position: relative;
 }
 
+.sqlTableRenderer.missing {
+	opacity: 0.5;
+}
+
 .sqlTableRenderer > .icon {
 	width: 20px;
     height: 20px;

@@ -231,7 +231,7 @@
                         }
 
                         // series data
-                        for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
+                       for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
                             var seriesName = $this._schemeOpts.seriesContext[i].find('name').value() || $this._schemeOpts.seriesContext[i].find('seriesName').value(),
                                 data = $this._schemeOpts.seriesContext[i].find('data'),
                                 color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value();
@@ -247,10 +247,6 @@
                             }
 
                             seriesData[i].data[seriesName].push({
-                                datacube: {
-                                    binding: $this._schemeOpts.xAxisFilterBinding,
-                                    filterData: $this._addFilterData()
-                                },
                                 color: color,
                                 x: filterCat,
                                 y: data.value()
@@ -411,7 +407,8 @@
                     chartOpts = JSB.clone(chartOpts);
 
                     var seriesContext = $this.getContext().find('series').values(),
-                        chartOptsSeries = JSB.clone(chartOpts.series);
+                        chartOptsSeries = JSB.clone(chartOpts.series),
+                        filterData = $this._addFilterData();
 
                     for(var j = 0; j < seriesData.length; j++){
                         var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[seriesData[j].index].find('yAxis').value());
@@ -420,12 +417,14 @@
                             name: seriesData[j].name,
                             data: seriesData[j].data,
                             datacube: {
-                                binding: $this._schemeOpts.xAxisFilterBinding
+                                binding: $this._schemeOpts.xAxisFilterBinding,
+                                filterData: filterData
                             },
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,
                             stack: seriesContext[seriesData[j].index].find('stack').value(),
                             step: $this.isNone(seriesContext[seriesData[j].index].find('step').value()),
+                            turboThreshold: 0,
                             yAxis: yAxis > -1 ? yAxis : undefined
                         };
 

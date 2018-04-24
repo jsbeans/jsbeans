@@ -116,10 +116,13 @@
 					for(var tName in sDesc.tables){
 						var tDesc = sDesc.tables[tName];
 						var tId = MD5.md5(this.getId() + '|' + sName + '|' + tName);
-	//					tId = tId.replace(/\./g, '_').replace(/\//g, '_');
 						if(existedTables[tId]){
 							// already exists
 							existedTables[tId].updateDescriptor(tDesc);
+							if(existedTables[tId].isMissing()){
+								existedTables[tId].setMissing(false);
+								existedTables[tId].doSync();
+							}
 							delete existedTables[tId];
 							continue;
 						}
@@ -130,10 +133,14 @@
 				
 				// remove unexisted
 				for(var tId in existedTables){
-					var cEntry = this.removeChildEntry(tId);
+					if(!existedTables[tId].isMissing()){
+						existedTables[tId].setMissing(true);
+						existedTables[tId].doSync();
+					}
+/*					var cEntry = this.removeChildEntry(tId);
 					if(cEntry){
 						cEntry.remove();
-					}
+					}*/
 				}
 				
 				// construct details

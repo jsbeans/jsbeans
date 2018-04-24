@@ -8,8 +8,7 @@
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
-                   'JSB.Widgets.Button',
-                   'DataCube.SaveMessage'
+                   'JSB.Widgets.Button'
         ],
 
 		$constructor: function(opts){
@@ -59,13 +58,6 @@
 
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
 	        splitBox.append(this.widgetBlock);
-
-	        // todo: add save msg
-            this.savedMessage = this.$('<div class="savedMessage" style="display: none;">Изменения сохранены!</div>');
-            this.savedMessage.click(function(){
-                $this.savedMessage.css('display', 'none');
-            });
-            this.append(this.savedMessage);
 		},
 
 		refresh: function(){
@@ -83,9 +75,11 @@
             }
 
             this.wrapper.ensureWidgetInitialized(function(){
+                var widget = $this.wrapper.getWidget();
+
                 $this.widgetSchemeRenderer = new Controller({
-                    scheme: $this.entry.extractWidgetScheme(),
-                    values: $this.wrapper.getWidget().getValues(),
+                    scheme: widget.getEntry().extractWidgetScheme(),
+                    values: widget.getValues(),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(key, values){
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
@@ -121,15 +115,14 @@
 
             this.updateValidation();
 
-            $this.savedMessage.fadeIn(1600, "linear", function(){
-                $this.savedMessage.fadeOut(1600, "linear");
-            });
-
+            this.getElement().loader({message:'Сохранение...'});
             this.entry.server().storeValues({
                 name: this.titleEditor.getData().getValue(),
                 sourcesIds: sourcesIds,
                 values: values
             }, function(sourceDesc){
+                $this.getElement().loader('hide');
+
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.entry.getId(),
 				    sourceMap: sourceDesc.sourceMap,

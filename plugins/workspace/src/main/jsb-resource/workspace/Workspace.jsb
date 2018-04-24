@@ -88,13 +88,14 @@
 			}
 		},
 		
-		_markEntryStored: function(entry, bStored){
-			if(entry == this){
+		_markEntryStored: function(entry){
+			if(!entry || entry == this){
 				return;
 			}
+			var bStored = entry._stored;
 			var chMtxName = 'JSB.Workspace.Workspace.changedEntries.' + this.getId();
 			if(!bStored){
-				if(this._entries[entry.getId()]){
+				if(this._entries[entry.getId()] && !this._changedEntries[entry.getId()]){
 					JSB.getLocker().lock(chMtxName);
 					this._changedEntries[entry.getId()] = true;
 					JSB.getLocker().unlock(chMtxName);
@@ -119,13 +120,16 @@
 			}
 		},
 		
-		_changeEntryName: function(entry){
+		_updateEntryName: function(entry){
 			if(entry == this){
 				return;
 			}
 			var eDesc = this._ensureEntryDesc(entry);
-			eDesc.eName = entry.getName();
-			this._markStored(false);
+			var n = entry.getName();
+			if(n && eDesc.eName != n){
+				eDesc.eName = n;
+				this._markStored(false);
+			}
 		},
 		
 		_ensureEntryDesc: function(entry, writeEntry){
@@ -149,8 +153,10 @@
 							eOpts: entry._entryStoreOpts,
 							aOpts: entry._artifactStoreOpts
 						};
+						this._markEntryStored(entry);
+						
 						this.addChildEntry(entry);
-						entry._markStored(false);
+						//entry._markStored(false);
 						this._markStored(false);
 					
 						this._entryCount = Object.keys(this._entries).length;
@@ -160,6 +166,7 @@
 				}
 			}
 			if(writeEntry){
+				this._updateEntryName(entry);
 				eDesc.eInst = entry;
 			}
 			return eDesc;
@@ -217,7 +224,16 @@
 						JSB.getLocker().unlock(chMtxName);
 						
 						for(var eId in changedEntries){
-							$this.entry(eId).storeEntry();
+							var e = $this.entry(eId);
+							e.lock('_stored');
+							try {
+								e.storeEntry();
+							} catch(ex){
+								JSB.getLogger().error(ex);
+							} finally {
+								e.unlock('_stored');
+							}
+							
 						}
 					}
 					
@@ -226,32 +242,41 @@
 						var eIdx = {};
 						var jsbDict = {};
 						var jsbArr = [];
-						var eMtxName = 'JSB.Workspace.Workspace.entries.' + $this.getId();
-						JSB.getLocker().lock(eMtxName);
-						for(var eId in $this._entries){
-							var jsbIdx = jsbDict[$this._entries[eId].eType];
-							if(!JSB.isDefined(jsbIdx)){
-								jsbIdx = jsbDict[$this._entries[eId].eType] = jsbArr.length;
-								jsbArr.push($this._entries[eId].eType);
+						$this.lock('_stored');
+						try {
+							var eMtxName = 'JSB.Workspace.Workspace.entries.' + $this.getId();
+							JSB.getLocker().lock(eMtxName);
+							try {
+								for(var eId in $this._entries){
+									var jsbIdx = jsbDict[$this._entries[eId].eType];
+									if(!JSB.isDefined(jsbIdx)){
+										jsbIdx = jsbDict[$this._entries[eId].eType] = jsbArr.length;
+										jsbArr.push($this._entries[eId].eType);
+									}
+									eIdx[eId] = {
+										_j: jsbIdx,
+										_n: $this._entries[eId].eName
+									}
+									if(!JSB.isNull($this._entries[eId].eOpts)){
+										eIdx[eId]._e = $this._entries[eId].eOpts;
+									}
+									if(!JSB.isNull($this._entries[eId].aOpts)){
+										eIdx[eId]._a = $this._entries[eId].aOpts;
+									}
+								}
+							} finally {
+								JSB.getLocker().unlock(eMtxName);	
 							}
-							eIdx[eId] = {
-								_j: jsbIdx,
-								_n: $this._entries[eId].eName
-							}
-							if(!JSB.isNull($this._entries[eId].eOpts)){
-								eIdx[eId]._e = $this._entries[eId].eOpts;
-							}
-							if(!JSB.isNull($this._entries[eId].aOpts)){
-								eIdx[eId]._a = $this._entries[eId].aOpts;
-							}
+							
+							$this.getEntryDoc()._jsbs = jsbArr;
+							$this.getEntryDoc()._entries = eIdx;
+							$this.getEntryDoc()._wt = $this._wt;
+							
+							// store entry file
+							$this.storeEntry();
+						} finally {
+							$this.unlock('_stored');
 						}
-						JSB.getLocker().unlock(eMtxName);
-						$this.getEntryDoc()._jsbs = jsbArr;
-						$this.getEntryDoc()._entries = eIdx;
-						$this.getEntryDoc()._wt = $this._wt;
-						
-						// store entry file
-						$this.storeEntry();
 					}
 					
 				} finally {

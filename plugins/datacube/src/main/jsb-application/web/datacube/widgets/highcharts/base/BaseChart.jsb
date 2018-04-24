@@ -36,6 +36,7 @@
                         },
                         name: {},
                         data: {},
+                        date: {},
                         tooltip: {
                             render: 'group',
                             name: 'Всплывающая подсказка',
@@ -728,8 +729,12 @@
     $client: {
         $require: ['JSB.Tpl.Highcharts'],
 
+        // point filters
 	    _curFilters: {},
 	    _curFilterHash: null,
+
+	    // range filters
+	    _curRangeFilters: {},
 
 	    _chartType: 'chart',
 	    _filterPropName: null,
@@ -819,6 +824,11 @@
                 $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
 
                 $this._select($this._curFilters, true, true);
+
+                if($this._chartType === 'stockChart'){
+                    $this._selectRange();
+                }
+
                 $this._resolvePointContextFilters();
             }
 
@@ -833,6 +843,11 @@
             } else {
                 buildWidget(chartOpts);
             }
+        },
+
+        setInitialized: function(){
+            Highcharts.setOptions();
+            $base();
         },
 
         setStyles: function(styles){
@@ -1086,12 +1101,91 @@
             this._select(filters, true, true);
         },
 
+        _resolveFilters: function(binding){
+            var f1 = true, f2;
+
+            if($this._chartType === 'stockChart'){
+                f1 = this._resolveRangeFilters(binding);
+            }
+
+            f2 = this._resolvePointFilters(binding);
+
+            return f1 && f2;
+        },
+
+        _resolveRangeFilters: function( binding){
+            var globalFilters = this.getSourceFilters(this._dataSource);
+
+            if(globalFilters){
+                var isChanged = false,
+                    isgte = false,
+                    islte = false;
+
+                for(var i in globalFilters){
+                    // min
+                    if(globalFilters[i].op === '$gte'){
+                        if(this._curRangeFilters.min !== globalFilters[i].value){
+                            this._curRangeFilters.min = globalFilters[i].value;
+                            isChanged = true;
+                        }
+
+                        isgte = true;
+
+                        delete globalFilters[i];
+                        continue;
+                    }
+
+                    // max
+                    if(globalFilters[i].op === '$lte'){
+                        if(this._curRangeFilters.max !== globalFilters[i].value){
+                            this._curRangeFilters.max = globalFilters[i].value;
+                            isChanged = true;
+                        }
+
+                        islte = true;
+
+                        delete globalFilters[i];
+                    }
+                }
+
+                if(this._curRangeFilters.min && !isgte){
+                    delete this._curRangeFilters.min;
+                    delete this._curRangeFilters.minFilter;
+                    isChanged = true;
+                }
+
+                if(this._curRangeFilters.max && !islte){
+                    delete this._curRangeFilters.max;
+                    delete this._curRangeFilters.maxFilter;
+                    isChanged = true;
+                }
+
+                if(isChanged){
+                    this.setSourceFilters(this._dataSource, globalFilters);
+                    this._selectRange();
+                    return false;
+                }
+            } else {
+                if(this._curRangeFilters.max || this._curRangeFilters.min){
+                    this._curRangeFilters = {};
+                    this._selectRange();
+
+                    return false;
+                } else {
+                    this._curRangeFilters = {};
+                }
+            }
+
+            return true;
+        },
+
         _resolvePointFilters: function(bindings){
             if(!JSB.isArray(bindings)){
                 bindings = [bindings];
             }
 
             var globalFilters = this.getSourceFilters(this._dataSource);
+
             if(globalFilters){
                 var newFilters = {},
                     curFilters = {};
@@ -1138,6 +1232,7 @@
                 if(Object.keys(this._curFilters).length > 0){
                     this._select(this._curFilters, false, true);
                     this._curFilters = {};
+
                     return false;
                 }
                 this._curFilterHash = null;
@@ -1159,6 +1254,7 @@
 
         _addPointFilter: function(point, accumulate){
             var context = this.getContext().find('source').binding(),
+                datacubeOpts = point.series.options.datacube,
                 refreshOpts = {};
 
             if(!context.source) {
@@ -1175,17 +1271,17 @@
                 this._curFilters = {};
             }
 
-            if(point.datacube.filterData){  // not widget filters
-                for(var i = 0; i < point.datacube.filterData.bindings.length; i++){
+            if(datacubeOpts.filterData){  // not widget filters
+                for(var i = 0; i < datacubeOpts.filterData.bindings.length; i++){
                     var fDesc = {
                         sourceId: context.source,
                         type: '$and',
                         op: '$eq',
-                        field: point.datacube.filterData.bindings[i],
-                        value: point.datacube.filterData.values[i]
+                        field: datacubeOpts.filterData.bindings[i],
+                        value: datacubeOpts.filterData.values[i]
                     };
 
-                    if(point.datacube.filterData.bindings[i] === point.datacube.binding){
+                    if(datacubeOpts.filterData.bindings[i] === datacubeOpts.binding){
                         this._curFilters[this.addFilter(fDesc)] = fDesc;
                     } else {
                         this.addFilter(fDesc);
@@ -1197,7 +1293,7 @@
                     sourceId: context.source,
                     type: '$or',
                     op: '$eq',
-                    field: point.datacube.binding,
+                    field: datacubeOpts.binding,
                     value: point[this._filterPropName]
                 };
 
@@ -1208,13 +1304,61 @@
             this.refreshAll(refreshOpts);
         },
 
+        _changeRangeFilter: function(evt){
+            if(evt.triggerOp !== 'navigator-drag'){
+                return;
+            }
+
+            var binding = evt.target.series[0].options.datacube.binding,
+                context = this.getContext().find('source').binding();
+
+            function createFilter(type){
+                var value = type === 'min' ? evt.min : evt.max;
+
+                if($this._curRangeFilters[type] === value){
+                    return;
+                }
+
+                $this._curRangeFilters[type] = value;
+
+                var fDesc = {
+                    sourceId: context.source,
+                    type: '$and',
+                    op: type === 'min' ? '$gte' : '$lte',
+                    field: binding,
+                    value: value
+                };
+
+                $this._curRangeFilters[type + 'Filter'] = $this.addFilter(fDesc);
+            }
+
+            function resolveFilter(type){
+                if(JSB.isDefined($this._curRangeFilters[type])){
+                    if($this._curRangeFilters[type + 'Filter'] && $this._curRangeFilters[type] !== evt[type]){
+                        $this.removeFilter($this._curRangeFilters[type + 'Filter']);
+                    }
+                }
+
+                if(evt[type] !== evt['dataM' + type.substring(1)]){
+                    // add filter
+                    createFilter(type);
+                }
+            }
+
+            resolveFilter('min');
+            resolveFilter('max');
+
+            this.refreshAll();
+        },
+
         _removePointFilter: function(point, accumulate){
-            var contextFilters = this.getContextFilter();
+            var contextFilters = this.getContextFilter(),
+                datacubeOpts = point.series.options.datacube;
 
             if(accumulate){
                 // remove context filter
                 for(var i in contextFilters){
-                    if(i === point.options.datacube.binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
+                    if(i === datacubeOpts.binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
                         var filter = {};
                         filter[i] = {
                             field: i,
@@ -1229,7 +1373,7 @@
 
                 // remove global filter
                 for(var i in this._curFilters){
-                    if(this._curFilters[i].field === point.options.datacube.binding && this._curFilters[i].value === point[this._filterPropName]){
+                    if(this._curFilters[i].field === datacubeOpts.binding && this._curFilters[i].value === point[this._filterPropName]){
                         var filter = {};
                         filter[i] = this._curFilters[i];
                         this._select(filter, false, true);
@@ -1279,6 +1423,11 @@
                     }
                 }
             }
+        },
+
+        _selectRange: function(){
+            var extremes = this.chart.xAxis[0].getExtremes();
+            this.chart.xAxis[0].setExtremes(this._curRangeFilters.min || extremes.dataMin, this._curRangeFilters.max || extremes.dataMax);
         }
     }
 }

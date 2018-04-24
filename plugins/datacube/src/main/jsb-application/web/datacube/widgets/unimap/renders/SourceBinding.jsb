@@ -1,9 +1,11 @@
 {
 	$name: 'Unimap.Render.SourceBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
 	$client: {
+	    $require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
+
 	    _beans: [],
+	    _render: null,
 	    _disabled: false,
 	    _items: [],
 
@@ -48,21 +50,11 @@
                 },
                 tolerance: 'pointer',
                 greedy: true,
-                over: function(evt, ui){
-                    if( !ui.helper.hasClass('accepted') ){
-                        ui.helper.addClass('accepted');
-                    }
-                    item.addClass('acceptDraggable');
-                },
-                out: function(evt, ui){
-                    if( ui.helper.hasClass('accepted') ){
-                        ui.helper.removeClass('accepted');
-                    }
-                    item.removeClass('acceptDraggable');
-                },
+                activeClass : 'acceptDraggable',
+                hoverClass: 'hoverDraggable',
                 drop: function(evt, ui){
                     var d = ui.draggable;
-                    item.removeClass('acceptDraggable');
+
                     for(var i in d.get(0).draggingItems){
                         $this.setBinding(d.get(0).draggingItems[i].obj.getEntry(), itemIndex);
                         break;
@@ -89,6 +81,10 @@
 	    },
 
 	    destroy: function(){
+            if(this._render){
+                this._render.destroy();
+            }
+
 	        for(var i = 0; i < this._beans.length; i++){
 	            this._beans[i].destroy();
 	        }
@@ -182,35 +178,25 @@
 				    item = $this.find('.item');
 				}
 
-				item.empty().append(RendererRepository.createRendererFor(source, {showCube: true}).getElement());
+				if($this._render){
+				    $this._render.destroy();
+				}
+				$this._render = RendererRepository.createRendererFor(source, {showCube: true});
+				item.empty().append($this._render.getElement());
 
-                var refreshButton = new Button({
-                    hasIcon: true,
-                    hasCaption: false,
-                    cssClass: 'btnRefresh',
-                    tooltip: 'Обновить схему данных',
-                    onclick: function(evt){
-                        evt.stopPropagation();
-                        $this.setBinding(source, itemIndex);
-                    }
+                var refreshButton = $this.$('<i class="btn btnRefresh fas fa-sync-alt" title="Обновить схему данных"></i>');
+                refreshButton.click(function(evt){
+                    evt.stopPropagation();
+                    $this.setBinding(source, itemIndex);
                 });
-                item.append(refreshButton.getElement());
+                item.append(refreshButton);
 
-                $this._beans.push(refreshButton);
-
-                var removeButton = new Button({
-                    hasIcon: true,
-                    hasCaption: false,
-                    cssClass: 'btnDelete',
-                    tooltip: 'Удалить',
-                    onclick: function(evt){
-                        evt.stopPropagation();
-                        $this.removeBinding(item, itemIndex);
-                    }
+                var removeButton = $this.$('<i class="btn btnDelete fas fa-times" title="Удалить"></i>');
+                removeButton.click(function(evt){
+                    evt.stopPropagation();
+                    $this.removeBinding(item, itemIndex);
                 });
-                item.append(removeButton.getElement());
-
-                $this._beans.push(removeButton);
+                item.append(removeButton);
 
 				item.addClass('filled');
 			}

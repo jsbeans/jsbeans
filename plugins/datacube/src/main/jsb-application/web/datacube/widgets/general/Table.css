@@ -276,11 +276,11 @@
 	display: none;
 }
 
-.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight > td.col {
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.highlight > td.col {
 	background-color: rgb(218, 200, 182);
 }
 
-.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight.useClick > td.col {
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.highlight.useClick > td.col {
 	cursor: pointer;
 }
 
@@ -288,7 +288,7 @@
 	/*transition: background-color 300ms;*/
 }
 
-.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.rowFilter.highlight > td.col[type="text"] {
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.highlight > td.col[type="text"] {
 	color: #422601;
 }
 
@@ -362,9 +362,8 @@
 .tableWidget .rowFilterTool {
 	position: absolute;
     background-color: rgb(218, 200, 182);
-    padding: 1px 2px 1px 3px;
     border-radius: 4px 4px 0 0;
-	padding: 2px 3px 2px 4px;
+	padding: 2px 3px 3px 4px;
 }
 
 .tableWidget .rowFilterTool[valign="top"] {

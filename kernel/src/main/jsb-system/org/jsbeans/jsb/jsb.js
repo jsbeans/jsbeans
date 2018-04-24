@@ -2931,7 +2931,7 @@ if(!(function(){return this;}).call(null).JSB){
 		
 		defer: function( deferProc, timeout, key ){
 			var self = this;
-			if(timeout == null || timeout == undefined ){
+			if(!this.isNumber(timeout)){
 				timeout = 100;
 			}
 			if(key && this.deferTimeoutMap[key]){
@@ -2941,18 +2941,33 @@ if(!(function(){return this;}).call(null).JSB){
 			var deferTimeout = JSB().Window.setTimeout(function(){
 				self.putCallingContext(callCtx);
 				if(key && self.deferTimeoutMap[key]){
+					var locker = self.getLocker();
+					if(locker){
+						locker.lock('__deferTimeoutMap');
+					}
 					delete self.deferTimeoutMap[key];
+					if(locker){
+						locker.unlock('__deferTimeoutMap');
+					}
+
 				}
 				deferProc.call(self);
 			}, timeout);
 			if(key){
-				this.deferTimeoutMap[key] = deferTimeout; 
+				var locker = self.getLocker();
+				if(locker){
+					locker.lock('__deferTimeoutMap');
+				}
+				this.deferTimeoutMap[key] = deferTimeout;
+				if(locker){
+					locker.unlock('__deferTimeoutMap');
+				}
 			}
 		},
 		
 		deferUntil: function(deferProc, untilProc, interval, silent, key){
 			var self = this;
-			if(interval == null || interval == undefined){
+			if(!this.isNumber(interval)){
 				interval = 100;
 			}
 			if(key && this.deferTimeoutMap[key]){
@@ -2963,7 +2978,14 @@ if(!(function(){return this;}).call(null).JSB){
 				self.putCallingContext(callCtx);
 				var untilRes = false;
 				if(key && self.deferTimeoutMap[key]){
+					var locker = self.getLocker();
+					if(locker){
+						locker.lock('__deferTimeoutMap');
+					}
 					delete self.deferTimeoutMap[key];
+					if(locker){
+						locker.unlock('__deferTimeoutMap');
+					}
 				}
 				try {
 					untilRes = untilProc();
@@ -2975,20 +2997,41 @@ if(!(function(){return this;}).call(null).JSB){
 				} else {
 					var deferTimeout = JSB().Window.setTimeout(toProc, interval);
 					if(key){
-						self.deferTimeoutMap[key] = deferTimeout; 
+						var locker = self.getLocker();
+						if(locker){
+							locker.lock('__deferTimeoutMap');
+						}
+						self.deferTimeoutMap[key] = deferTimeout;
+						if(locker){
+							locker.unlock('__deferTimeoutMap');
+						}
 					}
 				}
 			}
 			var deferTimeout = JSB().Window.setTimeout(toProc, interval);
 			if(key){
-				this.deferTimeoutMap[key] = deferTimeout; 
+				var locker = self.getLocker();
+				if(locker){
+					locker.lock('__deferTimeoutMap');
+				}
+				this.deferTimeoutMap[key] = deferTimeout;
+				if(locker){
+					locker.unlock('__deferTimeoutMap');
+				}
 			}
 		},
 		
 		cancelDefer: function(key){
 			if(key && this.deferTimeoutMap[key]){
+				var locker = this.getLocker();
+				if(locker){
+					locker.lock('__deferTimeoutMap');
+				}
 				JSB().Window.clearTimeout(this.deferTimeoutMap[key]);
 				delete this.deferTimeoutMap[key];
+				if(locker){
+					locker.unlock('__deferTimeoutMap');
+				}
 			}
 		},
 		

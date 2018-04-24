@@ -283,7 +283,7 @@
 			// remove old
 			seriesSelData.exit()
 				.remove();
-			
+
 			// append new
 			seriesSelData.enter()
 				.append('div')
@@ -313,9 +313,11 @@
 								easing: 'easeInOut'
 							});
 						}, 0)
-						var valStr = '' + val;
-						if(JSB.isNumber(val) && d.valFormat.value()){
-							valStr = Numeral.format(val, d.valFormat.value());
+						var valStr = '' + val,
+						    format = d.valFormat.value();
+
+						if(JSB.isNumber(val) && format){
+							valStr = Numeral.format(val, format);
 						}
 						widget.setText(valStr);
 						d3.select(this).select('.progressbar-text').attr('style', d.textCss);
@@ -354,8 +356,10 @@
 					duration: 800,
 					easing: 'easeInOut'
 				});
-				if(JSB.isNumber(val) && d.format){
-					val = Numeral.format(val, d.format);
+
+				var format = d.valFormat.value();
+				if(JSB.isNumber(val) && format){
+					val = Numeral.format(val, format);
 				}
 				widget.setText('' + val);
 				

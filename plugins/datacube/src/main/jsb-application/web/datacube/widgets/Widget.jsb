@@ -285,6 +285,10 @@
 			return this.getWrapper().getDashboard();
 		},
 
+		getEntry: function(){
+		    return this.widgetEntry;
+		},
+
 		getFilterManager: function(){
 			return this.filterManager;
 		},

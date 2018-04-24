@@ -184,6 +184,7 @@
 		            '$greatest', '$least',
 		            '$splitString', '$substring', '$trim', '$concat',
 		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString', '$toTimestamp',
+		            '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$timeHour', '$timeMinute', '$timeSecond',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
 		            '$distinct',
 		            '$any', '$last','$first', '$sum', '$count','$min', '$max', '$avg',
@@ -877,13 +878,19 @@
 		        category: 'Операторы множеств',
 		        displayName: '&isin;',
 		        desc: 'Если содержится в массиве',
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$expressionsArray'],
 		    });
 		    new this.SingleObject({
 		        name: '$nin',
 		        category: 'Операторы множеств',
 		        displayName: '&notin;',
 		        desc: 'Если не содержится в массиве',
+		        values: ['$expressionsArray'],
+		    });
+		    new this.EArray({
+		        name: '$expressionsArray',
+		        desc: 'Если первое равно второму',
+		        minOperands: 1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
 		
@@ -949,14 +956,14 @@
 		        desc: 'Если первое содержится во втором (элемент содержится в массиве)',
 		        minOperands: 2,
 		        maxOperands: 2,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param', '$expressionsArray'],
 		    });
 		    new this.EArray({
 		        name: '$ninExpr',
 		        desc: 'Если первое не содержится во втором (элемент не содержится в массиве)',
 		        minOperands: 2,
 		        maxOperands: 2,
-		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		        values: ['$const', '$expression', '$query', '$field', '$param', '$expressionsArray'],
 		    });
 		    new this.SingleObject({
 		        name: '$not',

@@ -133,7 +133,8 @@
 			wsid - идентификатор рабочей области ({{=entry.getWorkspace().getName()}});
 			wid - инетификатор виджета ({{=entry.getName()}});
 			auto - автоматический запуск отрисовки виджета после инициализации;
-			oncreatewidget - обработчик события создания виджета.
+			oncreatewidget - обработчик события создания виджета;
+			onmessage - обработчик событий виджета.
 		-->
 		
 		<div id="myWidgetContainer" 
@@ -141,7 +142,8 @@
 			 wsid="{{=wid}}" 
 			 wid="{{=eid}}"
 			 auto="true"
-			 oncreatewidget="function(widget){ console.log(widget); }">
+			 oncreatewidget="function(widget){ console.log(widget); }"
+		     onmessage="function(msg, data){ alert(msg + ':' + JSON.stringify(data))}">
 		</div>
 		
 		
@@ -156,6 +158,9 @@
 		 		onCreateWidget: function(widget){
 		 			this.$('#myWidgetContainer').append(this.getElement());
 		 			widget.refresh();
+		 		},
+		 		onMessage: function(msg, data){
+		 			alert(msg + ':' + JSON.stringify(data))
 		 		}
 			});
 			*/

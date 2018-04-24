@@ -1175,6 +1175,25 @@
             }
         },
 
+        unwrapSort: function(dcQuery) {
+		    $this.walkAllSubQueries(dcQuery, function(query){
+		        if (query.$sort) {
+                    for(var i = 0; i < query.$sort.length; i++) {
+                        var e = query.$sort[i];
+                        if (!e.$expr) {
+                            if(Object.keys(e).length !== 1) {
+                                throw new Error('Invalid $sort definition: ' + JSON.stringify(e));
+                            }
+                            query.$sort[i] = {
+                                $expr : Object.keys(e)[0],
+                                $type: e[Object.keys(e)[0]]
+                            };
+                        }
+                    }
+                }
+		    });
+        },
+
         /** Производит замену алиасов на поле куба, если алиас равен полю куба
         */
         patchSimpleFieldAliases: function(dcQuery, cubeOrDataProvider) {
@@ -1193,7 +1212,7 @@
 		    });
 
             function patchFields(exp, query) {
-                var fieldName = JSB.isObject(exp) && exp.$field;
+                var fieldName = JSB.isPlainObject(exp) && exp.$field || typeof exp === 'string' && !exp.startsWith('$') && exp;
                 if (fieldName) {
                     var fieldQuery = exp.$context || query.$context ? queriesByContext[exp.$context || query.$context] : query;
                     var isAlias = !!fieldQuery.$select[fieldName];
@@ -1206,21 +1225,27 @@
                                     || JSB.isString(fieldQuery.$select[fieldName]) && fieldQuery.$select[fieldName];
                             if(fields[cubeField]) {
                                 // replace alias to field
-                                exp.$field = cubeField;
+                                return cubeField;
                             }
                         }
                     }
                 } else if (JSB.isObject(exp)) {
                     if (!exp.$select || exp == query) {
                         for (var f in exp) if (exp[f] != null) {
-                            if (f != '$postFilter') {
-                                patchFields(exp[f], query);
-                            }
+//                            if (f != '$postFilter') {
+                                var res = patchFields(exp[f], query);
+                                if (res) {
+                                    exp[f] = res;
+                                }
+//                            }
                         }
                     }
                 } else if (JSB.isArray(exp)) {
                     for (var i = 0; i < exp.length; i++) {
-                        patchFields(exp[i], query);
+                        var res = patchFields(exp[i], query);
+                        if (res) {
+                            exp[i] = res;
+                        }
                     }
                 }
             }
@@ -1332,8 +1357,40 @@
             });
 		},
 
+        /** Разворачивает $postFilter:
+        *  1) если фильтруется группировочное поле (оно же поле куба), то переносится в основной фильтр
+        *  2) если фильтруется выходное поле, то создается запрос-обертка с $filter
+        */
 		unwrapPostFilters: function(dcQuery) {
 		    function unwrapForQuery(query) {
+		        function subFilter(post) {
+		            return $this.filterFilterByFields(query.$postFilter, function isAccepted(field, expr, opPath){
+		                if (field == null) return true;
+                        for(var i = 0; i < query.$groupBy.length; i++){
+                            var g = query.$groupBy[i];
+                            if (typeof g === 'string' || typeof g.$field === 'string' && (!g.$context || g.$context == query.$context)) {
+                                if((g.$field || g) == field) {
+                                    return post;
+                                }
+                            }
+                        }
+                        return !post;
+                    });
+		        }
+
+		        // embed group fields to main filter
+		        if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
+                    var filter = subFilter(true);
+                    if (filter) {
+                        if (!query.$filter) query.$filter = {};
+                        if (!query.$filter.$and) query.$filter.$and = [];
+                        query.$filter.$and.push(filter);
+                        query.$postFilter = subFilter(false);
+                        if (!query.$postFilter) delete query.$postFilter;
+                    }
+		        }
+
+		        // create wrap query for post filter
 		        if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
     		        var queryFields = ['$context', '$select', '$filter', '$groupBy', '$from', '$distinct', '$sort', '$sql'];
     		        var postFilter = query.$postFilter;
