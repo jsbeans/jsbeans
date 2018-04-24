@@ -13,7 +13,6 @@
                         this.Aggregate[op].map();
                     }
                 }
-                walk.
             },
 
             reduce: function(){

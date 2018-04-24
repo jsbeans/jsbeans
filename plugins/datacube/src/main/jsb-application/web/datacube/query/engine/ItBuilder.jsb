@@ -18,8 +18,6 @@
 		    'DataCube.Query.Engine.Cursors.QueryCursor',
 		    'DataCube.Query.Engine.Cursors.PipeCursor',
 
-		    'DataCube.Query.Engine.QueryBodyItBuilder',
-
 		    'DataCube.Query.QueryUtils',
 		    'JSB.Crypt.MD5',
         ],

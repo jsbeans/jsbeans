@@ -44,7 +44,9 @@
                 $this.executionContext.source.cursor.close();
             }
             if ($this.executionContext.child) {
-                for(var c in $this.executionContext.child) $this.executionContext.child[c].cursor.close();
+                for(var c in $this.executionContext.child) {
+                    $this.executionContext.child[c].cursor.close();
+                }
             }
 
             $this._build();
@@ -101,9 +103,9 @@
             };
 
             var inputClose = $this.close;
-            this.close = function(){
-                $this.ordered && $this.ordered = null;
-                inputClose.close();
+            $this.close = function(){
+                if(ordered) ordered = null;
+                inputClose.call(this);
             };
         },
 
