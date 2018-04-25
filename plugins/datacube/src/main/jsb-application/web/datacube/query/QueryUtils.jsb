@@ -1113,6 +1113,9 @@
 		        function subFilter(post) {
 		            return $this.filterFilterByFields(query.$postFilter, function isAccepted(field, expr, opPath){
 		                if (field == null) return true;
+		                if (!query.$groupBy || query.$groupBy.length === 0) {
+		                    return post;
+		                }
                         for(var i = 0; i < query.$groupBy.length; i++){
                             var g = query.$groupBy[i];
                             if (typeof g === 'string' || typeof g.$field === 'string' && (!g.$context || g.$context == query.$context)) {
