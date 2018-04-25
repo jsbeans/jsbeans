@@ -271,7 +271,13 @@
 	    	            	}
 	    	            }
 	            	}
-	            }
+	            },
+	    	    usePrefetch: {
+	    	    	render: 'item',
+	                name: 'Использовать упреждающую загрузку данных',
+	                optional: true,
+	                editor: 'none'
+	    	    }
 	        }
 	    },
 	    columns: {
@@ -1339,9 +1345,11 @@
 					rows.push({row: row, key: rowKey, filter: rowFilter, flags: rowFlags, clickParams: rowClickParams});
 					
 					if(rows.length >= batchSize){
-						$this.stopPreFetch = false;
 						
-						preFetch();
+						if($this.usePrefetch){
+							$this.stopPreFetch = false;
+							preFetch();
+						}
 						
 						callback.call($this, rows);
 						return;
@@ -2227,6 +2235,7 @@
 			this.showSortIcon = this.getContext().find('showSortIcon').checked();
 			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
 			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
+			this.usePrefetch = this.getContext().find('usePrefetch').checked();
 			
 			// update row filters
 			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();

@@ -49,7 +49,7 @@
 				onChange: function(){
 					JSB.defer(function(){
 						$this.update();
-					}, 600, 'filterUpdate_' + $this.getId());
+					}, 1500, 'filterUpdate_' + $this.getId());
 				}
 			});
 			
