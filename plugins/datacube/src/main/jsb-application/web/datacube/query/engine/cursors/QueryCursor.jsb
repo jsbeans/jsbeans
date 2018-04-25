@@ -6,6 +6,8 @@
 		$require: [
 		    'JSB.Crypt.MD5',
 		    'DataCube.Query.Engine.RuntimeFunctions',
+
+            'java:java.util.HashMap'
         ],
 
 		$constructor: function(executionContext){
@@ -14,6 +16,7 @@
 		    $this.JSB = JSB;
 		    $this.Common = RuntimeFunctions.Common;
 		    $this.Aggregate = RuntimeFunctions.Aggregate;
+		    $this.HashMap = HashMap;
 
 		    // TODO: index reusable expressions
 
@@ -21,6 +24,8 @@
         },
 
         _build: function(){
+            $this.groups = {}:
+
             $this.next = function(){
                 return $this.executionContext.source.cursor.next();
             };
@@ -74,21 +79,16 @@
             $this.next = function(){
                 if ($this.query.$groupBy && $this.query.$groupBy.length > 0) {
                     if (!ordered) {
+                        $this.Aggregate.init.call($this.executionContext);
                         ordered = [];
                         var object = $this.cursor.object = inputNext.call($this);
                         while(object != null ) {
                             object = $this.Aggregate.map.call($this.executionContext);
-                            if (!groups[object._id]) {
+                            if (!$this.groups[object._id]) {
                                 ordered.push(object);
                             }
                             object = $this.cursor.object = inputNext.call($this);
                         }
-                        for(var i = 0; i < ordered.length; i++) {
-                            $this.cursor.object = ordered[i];
-                            object = $this.Aggregate.reduce.call($this.executionContext);
-                        }
-                        object = $this.Aggregate.finalize.call($this.executionContext);
-                        object = $this.cursor.object = inputNext.call($this);
                     }
                     $this.cursor.object = ordered[++currentPos];
                 } else {
