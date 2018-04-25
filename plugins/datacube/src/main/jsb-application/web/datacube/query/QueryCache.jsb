@@ -9,7 +9,7 @@
 		cube: null,
 		owner: null,
 		loaded: false,
-		batchSize: 50,
+		batchSize: 100,
 		closeIteratorTimeout: 10000,
 		invalidateInterval: 0,
 		updateInterval: 0,

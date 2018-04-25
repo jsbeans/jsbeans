@@ -806,7 +806,7 @@
 				return;
 			}
 			this.rowAppending = true;
-			var fetchSize = 10;
+			var fetchSize = 50;
 			
 			if(bRefresh){
 				if(this.rows.length > 0){
@@ -1207,10 +1207,10 @@
 			var rowsContext = this.getContext().find('rows');
 			var rowKeySelector = this.getContext().find('rowKey');
 			var rowFilterSelector = this.getContext().find('rowFilter');
-			var rowFilterBinding = rowFilterSelector.bindings();
+			var rowFilterBinding = rowFilterSelector.bindings(true);
 			
 			var rowClickParamsSelector = this.callApiOnClick ? this.getContext().find('rowClickParams') : null;
-			var rowClickParamsBinding = rowClickParamsSelector && rowClickParamsSelector.bindings();
+			var rowClickParamsBinding = rowClickParamsSelector && rowClickParamsSelector.bindings(true);
 
 			var gArr = this.getContext().find('columns').values();
 			for(var i = 0; i < gArr.length; i++){
@@ -1272,7 +1272,8 @@
 							rowKey = '';
 						}
 						rowKey += MD5.md5('' + keyVal);
-					}	
+					}
+					
 					// construct row filter
 					var rowFilter = [];
 					var rowFilterValsMain = rowFilterSelector.values('main', true);
@@ -1289,10 +1290,10 @@
 						rowFlags.hover = true;
 					}
 					
-					for(var i = 0; i < Math.max(rowFilterValsMain.length, rowFilterValsBack.length); i++){
+					for(var i = 0; i < rowFilterBinding.length; i++){
 						if(rowFilterBinding[i]){
 							var val = rowFilterValsMain[i];
-							if(!val){
+							if(!JSB.isDefined(val)){
 								val = rowFilterValsBack[i];
 							}
 							rowFilter.push({field: rowFilterBinding[i], value: val});

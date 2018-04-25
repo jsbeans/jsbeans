@@ -600,15 +600,23 @@
 					}
 					for(var i = 0; i < opts.rowKeyColumns.length; i++){
 						var qColName = opts.rowKeyColumns[i];
-						var colParts = qColName.split(/[\.\/]/);
 						var curScope = el;
-						for(var j = 0; j < colParts.length; j++){
-							curScope = curScope[colParts[j]];
+						if(qColName.indexOf('.') >= 0 || qColName.indexOf('/') >= 0){
+							var colParts = qColName.split(/[\.\/]/);
+							for(var j = 0; j < colParts.length; j++){
+								curScope = curScope[colParts[j]];
+							}
+							if(JSB.isObject(curScope) || JSB.isArray(curScope) || JSB.isNull(curScope)){
+								curScope = JSON.stringify(curScope);
+							}
+						} else {
+							curScope = el[qColName];
 						}
-						if(JSB.isObject(curScope) || JSB.isArray(curScope) || JSB.isNull(curScope)){
-							curScope = JSON.stringify(curScope);
+						//id += MD5.md5('' + curScope);
+						if(id && id.length > 0){
+							id += '|';
 						}
-						id += MD5.md5('' + curScope);
+						id += '' + curScope;
 					}
 					return id;
 				}
@@ -667,7 +675,7 @@
 	
 				function findLayerRecord(layerName, rId){
 					while(true){
-						if(contextLayerDataMap[layerName] && JSB.isDefined(contextLayerDataMap[layerName][rId])){
+						if(contextLayerDataMap[layerName] && contextLayerDataMap[layerName][rId]){
 							return contextLayerDataMap[layerName][rId];
 						}
 						if(!fillLayerBuffer(layerName)){
