@@ -105,30 +105,25 @@
 
 	            item.append(editor.getElement());
 
-	            var removeBtn = new Button({
-                    hasIcon: true,
-                    hasCaption: false,
-                    cssClass: 'btnDelete',
-                    tooltip: 'Удалить',
-                    onclick: function(evt){
-                        evt.stopPropagation();
-                        $this._values.values.splice(itemIndex, 1);
+                var removeButton = $this.$('<i class="btn btnDelete fas fa-times" title="Удалить"></i>');
+                removeButton.click(function(evt){
+                    evt.stopPropagation();
+                    $this._values.values.splice(itemIndex, 1);
 
-                        var errIndex = $this._errorList.indexOf(itemIndex);
-                        if(errIndex > -1){
-                            $this._errorList.splice(errIndex, 1);
+                    var errIndex = $this._errorList.indexOf(itemIndex);
+                    if(errIndex > -1){
+                        $this._errorList.splice(errIndex, 1);
 
-                            if($this._errorList.length === 0){
-                                $this.hideError();
-                            }
+                        if($this._errorList.length === 0){
+                            $this.hideError();
                         }
-
-                        item.remove();
-                        editor.destroy();
-                        removeBtn.destroy();
                     }
-	            });
-	            item.append(removeBtn.getElement());
+
+                    item.remove();
+                    editor.destroy();
+                    removeBtn.destroy();
+                });
+                item.append(removeButton);
 
 	            this.multipleBtn.before(item);
 	        } else {

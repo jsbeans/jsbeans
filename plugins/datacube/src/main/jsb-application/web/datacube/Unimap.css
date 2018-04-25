@@ -11,8 +11,17 @@
     border: 1px dotted rgba(2, 47, 78, 0.4) !important;
 }
 
+.widgetSettingsView .scheme i.btn {
+    font-size: 16px;
+}
+
+.widgetSettingsView .scheme i.btn:hover {
+    opacity: 0.7;
+}
+
 .widgetSettingsView .scheme i.btn.btnMultiple {
     color: #83ca8b;
+    font-size: 18px;
 }
 
 .widgetSettingsView .scheme .jsb-switch > input:checked + label:before {

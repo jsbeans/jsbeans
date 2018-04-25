@@ -189,8 +189,9 @@
 
             if(!this._schemeOpts){
                 this._schemeOpts = {
+                    dateContext: this.getContext().find('xAxis xAxisDate'),
                     seriesContext: this.getContext().find('series').values(),
-                    dateContext: this.getContext().find('xAxis xAxisDate')
+                    seriesTypes: []
                 };
             }
 
@@ -210,9 +211,25 @@
                                 seriesData[i] = [];
                             }
 
+                            var y = $this._schemeOpts.seriesContext[i].find('data').value();
+
+                            if(!$this._schemeOpts.seriesTypes[i]){
+                                var type = 'number';
+
+                                if(JSB.isDate(y)){
+                                    type = 'date';
+                                }
+
+                                $this._schemeOpts.seriesTypes[i] = type;
+                            }
+
+                            if($this._schemeOpts.seriesTypes[i] === 'date'){
+                                y = y.getTime();
+                            }
+
                             seriesData[i].push({
                                 x: $this._schemeOpts.dateContext.value(),
-                                y: $this._schemeOpts.seriesContext[i].find('data').value()
+                                y: y
                             });
                         }
                     }
@@ -255,7 +272,8 @@
                             data: seriesData[j],
                             datacube: {
                                 binding: $this._schemeOpts.dateContext.binding(),
-                                filterData: $this._addFilterData()
+                                filterData: $this._addFilterData(),
+                                valueType: $this._schemeOpts.seriesTypes[j]
                             },
                             type: seriesContext[j].find('type').value(),
                             color: seriesContext[j].find('color').value(),

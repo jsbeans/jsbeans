@@ -5,26 +5,20 @@
 .scheme i.btn {
     cursor: pointer;
 }
-
+/*
 .scheme i.btn:hover {
     -webkit-text-stroke: 1px black;
     text-stroke: 1px black;
 }
-
+*/
 .scheme i.btn.btnDelete {
-    color: darkred;
-}
-
-.scheme i.btn.btnDelete:hover{
+    color: #c30909;
     -webkit-text-stroke: 1px #b30707d1;
     text-stroke: 1px #b30707d1;
 }
 
 .scheme i.btn.btnMultiple {
     color: #1abc9c;
-}
-
-.scheme i.btn.btnMultiple:hover {
     -webkit-text-stroke: 1px #00800091;
     text-stroke: 1px #00800091;
 }

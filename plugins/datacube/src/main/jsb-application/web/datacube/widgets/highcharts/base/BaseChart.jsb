@@ -818,7 +818,7 @@
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
                 */
-
+                // todo: use update
                 if($this.chart){
                     $this.chart.destroy();
                 }
@@ -1306,11 +1306,8 @@
         },
 
         _changeRangeFilter: function(evt){
-            if(evt.triggerOp !== 'navigator-drag'){
-                return;
-            }
-
-            var binding = evt.target.series[0].options.datacube.binding,
+            var binding = evt.datacube.binding,
+                valueType = evt.datacube.valueType,
                 context = this.getContext().find('source').binding();
 
             function createFilter(type){
@@ -1321,6 +1318,12 @@
                 }
 
                 $this._curRangeFilters[type] = value;
+
+                var filterValue = value;
+
+                if(valueType === 'date'){
+                    filterValue = new Date(value);
+                }
 
                 var fDesc = {
                     sourceId: context.source,

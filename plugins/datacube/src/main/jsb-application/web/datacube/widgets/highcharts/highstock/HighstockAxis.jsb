@@ -174,6 +174,370 @@
                     defaultValue: '#ccd6eb'
                 }
             }
+        },
+
+        rangeSelector: {
+	        render: 'group',
+	        name: 'Селектор диапазона',
+            collapsable: true,
+            collapsed: true,
+            items: {
+                enabled: {
+                    render: 'item',
+                    name: 'Активен',
+                    optional: 'checked',
+                    editor: 'none'
+                },
+                verticalAlign: {
+                    render: 'select',
+                    name: 'Вертикальное выравнивание',
+                    items: {
+                        top: {
+                            name: 'По верхнему краю'
+                        },
+                        middle: {
+                            name: 'По центру'
+                        },
+                        bottom: {
+                            name: 'По нижнему краю'
+                        }
+                    }
+                },
+                floating: {
+                    render: 'item',
+                    name: 'Обтекание',
+                    optional: true,
+                    editor: 'none'
+                },
+                height: {
+                    render: 'item',
+                    name: 'Высота',
+                    valueType: 'number',
+                    defaultValue: undefined
+                },
+                color: {
+                    render: 'item',
+                    name: 'Цвет подписей',
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#666666'
+                },
+                x: {
+                    render: 'item',
+                    name: 'X',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                y: {
+                    render: 'item',
+                    name: 'Y',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                buttonSettings: {
+                    render: 'group',
+                    name: 'Настройки кнопок',
+                    collapsable: true,
+                    items: {
+                        allButtonsEnabled: {
+                            render: 'item',
+                            name: 'Включить все кнопки',
+                            optional: true,
+                            editor: 'none'
+                        },
+                        buttonPosition: {
+                            render: 'group',
+                            name: 'Расположение кнопок',
+                            items: {
+                                align: {
+                                    render: 'select',
+                                    name: 'Горизонтальное выравнивание',
+                                    items: {
+                                        left: {
+                                            name: 'По левому краю'
+                                        },
+                                        center: {
+                                            name: 'По центру'
+                                        },
+                                        right: {
+                                            name: 'По правому краю'
+                                        }
+                                    }
+                                },
+                                x: {
+                                    render: 'item',
+                                    name: 'X',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                y: {
+                                    render: 'item',
+                                    name: 'Y',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                }
+                            }
+                        },
+                        buttons: {
+                            render: 'group',
+                            name: 'Кнопки',
+                            multiple: true,
+                            collapsable: true,
+                            collapsed: true,
+                            items: {
+                                type: {
+                                    render: 'select',
+                                    name: 'Единица измерения',
+                                    items: {
+                                        millisecond: {
+                                            name: 'Миллисекунда'
+                                        },
+                                        second: {
+                                            name: 'Секунда'
+                                        },
+                                        minute: {
+                                            name: 'Минута'
+                                        },
+                                        hour: {
+                                            name: 'Час'
+                                        },
+                                        day: {
+                                            name: 'День'
+                                        },
+                                        week: {
+                                            name: 'Неделя'
+                                        },
+                                        month: {
+                                            name: 'Месяц'
+                                        },
+                                        year: {
+                                            name: 'Год'
+                                        }
+                                    }
+                                },
+                                count: {
+                                    render: 'item',
+                                    name: 'Количество',
+                                    valueType: 'number',
+                                    defaultValue: 1
+                                },
+                                text: {
+                                    render: 'item',
+                                    name: 'Текст на кнопке',
+                                    valueType: 'string',
+                                    defaultValue: undefined
+                                },
+                                offsetMin: {
+                                    render: 'item',
+                                    name: 'Отступ диапазона слева',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                offsetMax: {
+                                    render: 'item',
+                                    name: 'Отступ диапазона справа',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                dataGrouping: {
+                                    render: 'switch',
+                                    name: 'Группировка данных',
+                                    items: {
+                                        approximation: {
+                                            render: 'select',
+                                            name: 'Аппроксимация',
+                                            items: {
+                                                none: {
+                                                    name: 'По умолчанию'
+                                                },
+                                                average: {
+                                                    name: 'average'
+                                                },
+                                                averages: {
+                                                    name: 'averages'
+                                                },
+                                                open: {
+                                                    name: 'open'
+                                                },
+                                                high: {
+                                                    name: 'high'
+                                                },
+                                                low: {
+                                                    name: 'low'
+                                                },
+                                                close: {
+                                                    name: 'close'
+                                                },
+                                                sum: {
+                                                    name: 'sum'
+                                                }
+                                            }
+                                        },
+                                        forced: {
+                                            render: 'item',
+                                            name: 'Принудительно',
+                                            optional: 'checked',
+                                            editor: 'none'
+                                        },
+                                        groupAll: {
+                                            render: 'item',
+                                            name: 'Группировать все',
+                                            optional: true,
+                                            editor: 'none'
+                                        },
+                                        smoothed: {
+                                            render: 'item',
+                                            name: 'Сгладить границы',
+                                            optional: true,
+                                            editor: 'none'
+                                        },
+                                        groupBy: {
+                                            render: 'select',
+                                            name: 'Группировка по',
+                                            items: {
+                                                millisecond: {
+                                                    name: 'Миллисекунда'
+                                                },
+                                                second: {
+                                                    name: 'Секунда'
+                                                },
+                                                minute: {
+                                                    name: 'Минута'
+                                                },
+                                                hour: {
+                                                    name: 'Час'
+                                                },
+                                                day: {
+                                                    name: 'День'
+                                                },
+                                                week: {
+                                                    name: 'Неделя'
+                                                },
+                                                month: {
+                                                    name: 'Месяц'
+                                                },
+                                                year: {
+                                                    name: 'Год'
+                                                }
+                                            }
+                                        },
+                                        groupUnits: {
+                                            render: 'item',
+                                            name: 'Единица группировки'
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        buttonSpacing: {
+                            render: 'item',
+                            name: 'Расстояние между кнопками',
+                            valueType: 'number',
+                            defaultValue: 0
+                        },
+                        buttonTheme: {
+                            render: 'group',
+                            name: 'Стиль кнопок',
+                            collapsable: true,
+                            items: {
+                                height: {
+                                    render: 'item',
+                                    name: 'Высота кнопок',
+                                    valueType: 'number',
+                                    defaultValue: 18
+                                },
+                                width: {
+                                    render: 'item',
+                                    name: 'Длина кнопок',
+                                    valueType: 'number',
+                                    defaultValue: 28
+                                },
+                                padding: {
+                                    render: 'item',
+                                    name: 'Внутренний отступ',
+                                    valueType: 'number',
+                                    defaultValue: 2
+                                }
+                            }
+                        }
+                    }
+                },
+                inputSettings: {
+                    render: 'group',
+                    name: 'Настройки полей ввода',
+                    collapsable: true,
+                    items: {
+                        inputEnabled: {
+                            render: 'item',
+                            name: 'Активны',
+                            optional: 'checked',
+                            editor: 'none'
+                        },
+                        inputBoxHeight: {
+                            render: 'item',
+                            name: 'Высота полей',
+                            valueType: 'number',
+                            defaultValue: 17
+                        },
+                        inputBoxWidth: {
+                            render: 'item',
+                            name: 'Ширина полей',
+                            valueType: 'number',
+                            defaultValue: 90
+                        },
+                        inputBoxBorderColor: {
+                            render: 'item',
+                            name: 'Цвет границ',
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#cccccc'
+                        },
+                        inputDateFormat: {
+                            render: 'item',
+                            name: 'Формат отображений даты',
+                            valueType: 'string',
+                            defaultValue: '%b %e %Y'
+                        },
+                        inputEditDateFormat: {
+                            render: 'item',
+                            name: 'Формат редактирования даты',
+                            valueType: 'string',
+                            defaultValue: '%Y-%m-%d'
+                        },
+                        inputPosition: {
+                            render: 'group',
+                            name: 'Расположение полей',
+                            items: {
+                                align: {
+                                    render: 'select',
+                                    name: 'Горизонтальное выравнивание',
+                                    items: {
+                                        right: {
+                                            name: 'По правому краю'
+                                        },
+                                        left: {
+                                            name: 'По левому краю'
+                                        },
+                                        center: {
+                                            name: 'По центру'
+                                        }
+                                    }
+                                },
+                                x: {
+                                    render: 'item',
+                                    name: 'X',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                },
+                                y: {
+                                    render: 'item',
+                                    name: 'Y',
+                                    valueType: 'number',
+                                    defaultValue: 0
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     $client: {
@@ -186,9 +550,76 @@
             try{
                 var xAxisContext = this.getContext().find('xAxis'),
                     xAxisLabels = xAxisContext.find('labels'),
-                    xAxisTitle = xAxisContext.find('title')
+                    xAxisTitle = xAxisContext.find('title'),
+
+                    rangeSelector = this.getContext().find('rangeSelector'),
+                    buttonSettings = rangeSelector.find('buttonSettings'),
+                    buttonsContext = buttonSettings.find('buttons').values(),
+                    buttons = [],
+
+                    inputSettings = rangeSelector.find('inputSettings');
+
+                for(var i = 0; i < buttonsContext.length; i++){
+                    var dataGrouping = buttonsContext[i].find('dataGrouping'),
+                        units = dataGrouping.find('groupUnits').value();
+
+                    buttons.push({
+                        type: buttonsContext[i].find('type').value(),
+                        count: buttonsContext[i].find('count').value(),
+                        text: buttonsContext[i].find('text').value(),
+                        offsetMin: buttonsContext[i].find('offsetMin').value(),
+                        offsetMax: buttonsContext[i].find('offsetMax').value(),
+                        dataGrouping: {
+                            approximation: dataGrouping.find('approximation').value(),
+                            forced: dataGrouping.find('forced').checked(),
+                            groupAll: dataGrouping.find('groupAll').checked(),
+                            smoothed: dataGrouping.find('smoothed').checked(),
+                            units: [[dataGrouping.find('groupBy').value(), units ? units.split(',') : 1]]
+                        }
+                    });
+                }
 
                 var chartOpts = {
+                    rangeSelector: {
+                        enabled: rangeSelector.find('enabled').checked(),
+                        verticalAlign: rangeSelector.find('verticalAlign').value(),
+                        floating: rangeSelector.find('floating').checked(),
+                        height: rangeSelector.find('height').value(),
+                        labelStyle: {
+                            color: rangeSelector.find('color').value(),
+                        },
+                        x: rangeSelector.find('x').value(),
+                        y: rangeSelector.find('y').value(),
+
+                        // buttons
+                        allButtonsEnabled: buttonSettings.find('allButtonsEnabled').checked(),
+                        buttonPosition: {
+                            align: buttonSettings.find('buttonPosition align').value(),
+                            x: buttonSettings.find('buttonPosition x').value(),
+                            y: buttonSettings.find('buttonPosition y').value()
+                        },
+                        buttons: buttons,
+                        buttonSpacing: buttonSettings.find('buttonSpacing').value(),
+                        buttonTheme: {
+                            height: buttonSettings.find('height').value(),
+                            width: buttonSettings.find('width').value(),
+                            padding: buttonSettings.find('padding').value()
+                        },
+
+                        // input
+                        inputEnabled: inputSettings.find('inputEnabled').checked(),
+                        inputBoxHeight: inputSettings.find('inputBoxHeight').value(),
+                        inputBoxWidth: inputSettings.find('inputBoxWidth').value(),
+                        inputBoxBorderColor: inputSettings.find('inputBoxBorderColor').value(),
+                        inputDateFormat: inputSettings.find('inputDateFormat').value(),
+                        inputEditDateFormat: inputSettings.find('inputEditDateFormat').value(),
+                        inputPosition: {
+                            align: inputSettings.find('inputPosition align').value(),
+                            x: inputSettings.find('inputPosition x').value(),
+                            y: inputSettings.find('inputPosition y').value()
+                        }
+                    },
+
                     xAxis:{
                         labels: {
                             enabled: xAxisLabels.find('enabled').checked(),
@@ -212,10 +643,18 @@
                         alternateGridColor: xAxisContext.find('alternateGridColor').value(),
                         crosshair: xAxisContext.find('crosshair').checked(),
                         events: {
-                            afterSetExtremes: function(evt){
-                                JSB.defer(function(){
-                                    $this._changeRangeFilter(evt);
-                                }, 300, 'highstockAxis.changeRangeFilter' + $this.getId());
+                            setExtremes: function(evt){
+                                if(evt.trigger === 'navigator' && evt.DOMEvent && evt.DOMEvent.type == 'mouseup' || evt.trigger === 'rangeSelectorInput') {
+                                    var extremes = this.getExtremes();
+
+                                    $this._changeRangeFilter({
+                                        datacube: evt.target.series[0].options.datacube,
+                                        dataMax: extremes.dataMax,
+                                        dataMin: extremes.dataMin,
+                                        max: evt.max,
+                                        min: evt.min
+                                    });
+                                }
                             }
                         },
                         lineColor: xAxisContext.find('lineColor').value(),
