@@ -63,21 +63,11 @@
                 },
                 tolerance: 'pointer',
                 greedy: true,
-                over: function(evt, ui){
-                    if( !ui.helper.hasClass('accepted') ){
-                        ui.helper.addClass('accepted');
-                    }
-                    $this._item.addClass('acceptDraggable');
-                },
-                out: function(evt, ui){
-                    if( ui.helper.hasClass('accepted') ){
-                        ui.helper.removeClass('accepted');
-                    }
-                    $this._item.removeClass('acceptDraggable');
-                },
+                activeClass : 'acceptDraggable',
+                hoverClass: 'hoverDraggable',
                 drop: function(evt, ui){
                     var d = ui.draggable;
-                    $this._item.removeClass('acceptDraggable');
+
                     for(var i in d.get(0).draggingItems){
                         $this._values.values[0] = {
                             binding: {name: d.get(0).draggingItems[i].descriptor.name, jsb: d.get(0).draggingItems[i].descriptor.jsb},
@@ -161,10 +151,6 @@
                 this.render.destroy();
             }
 
-            if(this.deleteBtn){
-                this.deleteBtn.destroy();
-            }
-
             if(this._innerController){
                 this._innerController.destroy();
             }
@@ -174,7 +160,6 @@
 
         removeBinding: function(){
             this.render.destroy();
-            this.deleteBtn.destroy();
             this._item.removeClass('filled');
             this._innerController.destroy();
             this.childSourceBinding = null;
@@ -189,25 +174,16 @@
                 this.render.destroy();
             }
 
-            if(this.deleteBtn){
-                this.deleteBtn.destroy();
-            }
-
 			this.render = new EmbededWidgetRenderer(wDesc, {});
 			this._item.prepend(this.render.getElement());
 			this._item.addClass('filled');
 
-            this.deleteBtn = new Button({
-                hasIcon: true,
-                hasCaption: false,
-                cssClass: 'btnDelete',
-                tooltip: 'Удалить',
-                onclick: function(evt){
-                    evt.stopPropagation();
-                    $this.removeBinding();
-                }
+            var removeButton = $this.$('<i class="btn btnDelete fas fa-times-circle" title="Удалить"></i>');
+            removeButton.click(function(evt){
+                evt.stopPropagation();
+                $this.removeBinding();
             });
-            this._item.append(this.deleteBtn.getElement());
+            this._item.append(removeButton);
 
 			this.constructScheme(wDesc.jsb);
 

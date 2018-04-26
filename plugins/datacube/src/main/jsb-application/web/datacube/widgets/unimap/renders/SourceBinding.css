@@ -106,3 +106,12 @@
     margin-left: 5px;
     cursor: pointer;
 }
+
+.sourceBindingRender > .item > i.btnRefresh {
+    font-size: 9px;
+    border: 1px solid #3c7e92;
+    border-radius: 100%;
+    padding: 3px;
+    background: #6095a5;
+    color: #fdfdfd;
+}

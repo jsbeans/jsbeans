@@ -158,7 +158,7 @@
                     }
                 }
 
-                var dltBtn = this.$('<i class="btn btnDelete fas fa-times"></i>');
+                var dltBtn = this.$('<i class="btn btnDelete fas fa-times-circle"></i>');
                 dltBtn.click(function(){
                     $this.removeItem(item, render);
                 });

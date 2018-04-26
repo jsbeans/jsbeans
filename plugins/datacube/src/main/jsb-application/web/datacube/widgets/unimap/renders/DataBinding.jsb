@@ -105,7 +105,7 @@
 
 	            item.append(editor.getElement());
 
-                var removeButton = $this.$('<i class="btn btnDelete fas fa-times" title="Удалить"></i>');
+                var removeButton = $this.$('<i class="btn btnDelete fas fa-times-circle" title="Удалить"></i>');
                 removeButton.click(function(evt){
                     evt.stopPropagation();
                     $this._values.values.splice(itemIndex, 1);

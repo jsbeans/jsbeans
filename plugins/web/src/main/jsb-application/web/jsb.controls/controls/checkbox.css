@@ -20,6 +20,10 @@
     background-position: -22px 0;
 }
 
+.jsb-checkbox > .check-elem:hover:not(.checked) {
+    background-position: -88px 0;
+}
+
 .jsb-checkbox > .caption{
     vertical-align: middle;
     line-height: 20px;
