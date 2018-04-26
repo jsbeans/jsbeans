@@ -613,12 +613,6 @@
 							curScope = el[qColName];
 						}
 						id += MD5.md5('' + curScope);
-/*						
-						if(id && id.length > 0){
-							id += '|';
-						}
-						id += '' + curScope;
-*/						
 					}
 					return id;
 				}
