@@ -49,7 +49,7 @@
 			}
 			this.lock('DataCube.Query.QueryCache.load');
 			function _prepareLoad(obj){
-				if(JSB.isNull(obj)){
+				if(!obj){
 					return obj;
 				} else if(JSB.isObject(obj)){
 					if(obj.__type && obj.__type == 'date'){
@@ -117,7 +117,7 @@
 				$this.lock('DataCube.Query.QueryCache.store');
 				
 				function _prepareStore(obj){
-					if(JSB.isNull(obj)){
+					if(!obj){
 						return obj;
 					} else if(JSB.isDate(obj)){
 						return {
@@ -153,7 +153,7 @@
 						if(qDesc && !qDesc.provider){
 							// prepare buffer
 							var prepBuffer = [];
-							for(var j = 0; j < qDesc.buffer; j++){
+							for(var j = 0; j < qDesc.buffer.length; j++){
 								prepBuffer.push(_prepareStore(qDesc.buffer[j]));
 							}
 							

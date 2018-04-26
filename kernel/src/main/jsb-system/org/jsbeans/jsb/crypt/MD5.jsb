@@ -150,6 +150,13 @@
 
 	add32: function(a, b) {
 		return (a + b) & 0xFFFFFFFF;
-	}
+	},
 
+	$server: {
+		$require: ['java:org.jsbeans.helpers.StringHelper'],
+		
+		md5: function(s){
+			return '' + StringHelper.MD5(s);
+		}
+	}
 }
