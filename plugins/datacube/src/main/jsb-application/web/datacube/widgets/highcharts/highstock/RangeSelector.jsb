@@ -211,12 +211,12 @@
                                 seriesData[i] = [];
                             }
 
-                            var y = $this._schemeOpts.seriesContext[i].find('data').value();
+                            var x = $this._schemeOpts.dateContext.value();
 
                             if(!$this._schemeOpts.seriesTypes[i]){
                                 var type = 'number';
 
-                                if(JSB.isDate(y)){
+                                if(JSB.isDate(x)){
                                     type = 'date';
                                 }
 
@@ -224,12 +224,12 @@
                             }
 
                             if($this._schemeOpts.seriesTypes[i] === 'date'){
-                                y = y.getTime();
+                                x = x.getTime();
                             }
 
                             seriesData[i].push({
-                                x: $this._schemeOpts.dateContext.value(),
-                                y: y
+                                x: x,
+                                y: $this._schemeOpts.seriesContext[i].find('data').value()
                             });
                         }
                     }
