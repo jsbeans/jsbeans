@@ -32,10 +32,7 @@
 .dataBindingRender.itemRender > .multipleContainer > .multipleItem > .btnDelete {
     background: none;
     padding: 0;
-    width: 20px;
-    height: 20px;
     margin-left: 5px;
-    margin-top: 2px;
     vertical-align: middle;
 }
 

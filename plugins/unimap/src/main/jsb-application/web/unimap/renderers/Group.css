@@ -24,7 +24,6 @@
     top: 0;
     padding: 0;
     background: none;
-    line-height: 0.5;
     font-weight: 900;
 }
 
@@ -61,7 +60,6 @@
 }
 
 .groupRender > .jsb-panel > .content > .btnMultiple {
-    font-size: 20px;
     float: right;
     margin-top: 5px;
 }

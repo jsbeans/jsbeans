@@ -11,17 +11,12 @@
     border: 1px dotted rgba(2, 47, 78, 0.4) !important;
 }
 
-.widgetSettingsView .scheme i.btn {
-    font-size: 16px;
-}
-
 .widgetSettingsView .scheme i.btn:hover {
     opacity: 0.7;
 }
 
 .widgetSettingsView .scheme i.btn.btnMultiple {
     color: #83ca8b;
-    font-size: 18px;
 }
 
 .widgetSettingsView .scheme .jsb-switch > input:checked + label:before {
@@ -30,4 +25,32 @@
 
 .widgetSettingsView .scheme .jsb-checkbox > .check-elem {
     background-image: url(/datacube/images/datacube-checkbox.png);
+}
+
+.widgetSettingsView .scheme .itemRender > .jsb-checkbox > .check-elem {
+    width: 16px;
+    height: 16px;
+    background-size: auto 16px;
+}
+
+.widgetSettingsView .scheme .itemRender > .jsb-checkbox > .check-elem.checked {
+    background-position: -16px 0;
+}
+
+.widgetSettingsView .scheme .itemRender > .jsb-checkbox > .check-elem:hover:not(.checked) {
+    background-position: -48px 0;
+}
+
+.widgetSettingsView .scheme .switchRender > .jsb-switch > label {
+    width: 24px;
+    height: 12px;
+}
+
+.widgetSettingsView .scheme .switchRender > .jsb-switch > label:after {
+    width: 12px;
+    height: 12px;
+}
+
+.widgetSettingsView .scheme .switchRender > .jsb-switch > input:checked + label:after {
+    margin-left: 10px;
 }

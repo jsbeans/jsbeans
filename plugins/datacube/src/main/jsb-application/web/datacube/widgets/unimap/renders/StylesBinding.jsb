@@ -98,7 +98,7 @@
 	        function createValue(entry){
 	            $this._item.addClass('filled');
 
-	            var removeBtn = $this.$('<i class="btn btnDelete fas fa-times"></i>');
+	            var removeBtn = $this.$('<i class="btn btnDelete fas fa-times-circle"></i>');
                 removeBtn.click(function(){
                     $this.removeBinding();
                     removeBtn.remove();
