@@ -806,7 +806,7 @@
 				return;
 			}
 			this.rowAppending = true;
-			var fetchSize = 50;
+			var fetchSize = 20;
 			
 			if(bRefresh){
 				if(this.rows.length > 0){

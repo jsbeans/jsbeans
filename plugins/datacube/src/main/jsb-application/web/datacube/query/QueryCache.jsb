@@ -48,6 +48,29 @@
 				return;
 			}
 			this.lock('DataCube.Query.QueryCache.load');
+			function _prepareLoad(obj){
+				if(JSB.isNull(obj)){
+					return obj;
+				} else if(JSB.isObject(obj)){
+					if(obj.__type && obj.__type == 'date'){
+						return new Date(obj.__value);
+					} else {
+						var nObj = {};
+						for(var k in obj){
+							nObj[k] = _prepareLoad(obj[k]);
+						}
+						return nObj;
+					}
+				} else if(JSB.isArray(obj)){
+					var nObj = [];
+					for(var k = 0; k < obj.length; k++){
+						nObj.push(_prepareLoad(obj[k]));
+					}
+					return nObj;
+				} else {
+					return obj;
+				}
+			}
 			try {
 				if(this.loaded){
 					return;
@@ -60,6 +83,10 @@
 						$this.lock('cache_' + qId);
 						var qDesc = snapshot[qId];
 						if(qDesc){
+							var restoredBuffer = [];
+							for(var k = 0; k < qDesc.buffer.length; k++){
+								restoredBuffer.push(_prepareLoad(qDesc.buffer[k]));
+							}
 							$this.cacheMap[qId] = {
 								qId: qId,
 								query: qDesc.query,
@@ -67,7 +94,7 @@
 								complete: qDesc.complete,
 								lastUpdated: qDesc.lastUpdated,
 								lastUsed: qDesc.lastUsed,
-								buffer: qDesc.buffer,
+								buffer: restoredBuffer,
 								cells: qDesc.cells,
 								it: null,
 								provider: null
@@ -88,6 +115,32 @@
 			this.load();
 			JSB.defer(function(){
 				$this.lock('DataCube.Query.QueryCache.store');
+				
+				function _prepareStore(obj){
+					if(JSB.isNull(obj)){
+						return obj;
+					} else if(JSB.isDate(obj)){
+						return {
+							__type: 'date',
+							__value: obj.getTime()
+						};
+					} else if(JSB.isObject(obj)){
+						var nObj = {};
+						for(var k in obj){
+							nObj[k] = _prepareStore(obj[k]);
+						}
+						return nObj;
+					} else if(JSB.isArray(obj)){
+						var nObj = [];
+						for(var k = 0; k < obj.length; k++){
+							nObj.push(_prepareStore(obj[k]));
+						}
+						return nObj;
+					} else {
+						return obj;
+					}
+				}
+				
 				try {
 					// prepare artifact
 					var art = {};
@@ -98,6 +151,12 @@
 						$this.lock('cache_' + qId);
 						var qDesc = $this.cacheMap[qId];
 						if(qDesc && !qDesc.provider){
+							// prepare buffer
+							var prepBuffer = [];
+							for(var j = 0; j < qDesc.buffer; j++){
+								prepBuffer.push(_prepareStore(qDesc.buffer[j]));
+							}
+							
 							art[qId] = {
 								qId: qId,
 								query: qDesc.query,
@@ -105,7 +164,7 @@
 								complete: qDesc.complete,
 								lastUpdated: qDesc.lastUpdated,
 								lastUsed: qDesc.lastUsed,
-								buffer: qDesc.buffer,
+								buffer: prepBuffer,
 								cells: qDesc.cells
 							};
 						}
