@@ -1256,6 +1256,7 @@
         _addPointFilter: function(point, accumulate){
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
+                binding = point.series.options.datacube.binding || point.options.datacube.binding,
                 refreshOpts = {};
 
             if(!context.source) {
@@ -1282,7 +1283,7 @@
                         value: datacubeOpts.filterData.values[i]
                     };
 
-                    if(datacubeOpts.filterData.bindings[i] === datacubeOpts.binding){
+                    if(datacubeOpts.filterData.bindings[i] === binding){
                         this._curFilters[this.addFilter(fDesc)] = fDesc;
                     } else {
                         this.addFilter(fDesc);
@@ -1294,7 +1295,7 @@
                     sourceId: context.source,
                     type: '$or',
                     op: '$eq',
-                    field: datacubeOpts.binding,
+                    field: binding,
                     value: point[this._filterPropName]
                 };
 
@@ -1357,12 +1358,12 @@
 
         _removePointFilter: function(point, accumulate){
             var contextFilters = this.getContextFilter(),
-                datacubeOpts = point.series.options.datacube;
+                binding = point.series.options.datacube.binding || point.options.datacube.binding;
 
             if(accumulate){
                 // remove context filter
                 for(var i in contextFilters){
-                    if(i === datacubeOpts.binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
+                    if(i === binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
                         var filter = {};
                         filter[i] = {
                             field: i,
@@ -1377,7 +1378,7 @@
 
                 // remove global filter
                 for(var i in this._curFilters){
-                    if(this._curFilters[i].field === datacubeOpts.binding && this._curFilters[i].value === point[this._filterPropName]){
+                    if(this._curFilters[i].field === binding && this._curFilters[i].value === point[this._filterPropName]){
                         var filter = {};
                         filter[i] = this._curFilters[i];
                         this._select(filter, false, true);
