@@ -1425,7 +1425,20 @@
 				});
 			}
 			if(this.useDrillDownOnClick){
-				debugger;
+				var widget = this.getContext().find('drillDownWidget').value();
+				var filterOpts = {};
+				if(!this.useFilterOnClick && d.filter && d.filter.length > 0){
+					for(var i = 0; i < d.filter.length; i++){
+						var cubeField = this.getCubeField(d.filter[i].field);
+						if(cubeField){
+							filterOpts[cubeField] = {$eq:{$const:d.filter[i].value}};
+						}
+					}
+				}
+				$this.addDrilldownElement({
+                    filterOpts: filterOpts,
+                    widget: widget
+                });
 			}
 		},
 		
