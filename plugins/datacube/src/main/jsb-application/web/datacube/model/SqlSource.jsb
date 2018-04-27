@@ -82,6 +82,18 @@
 			
 		},
 		
+		fuxupAffectedCubes: function(){
+			var it = this.getWorkspace().search(function(eDesc){
+				return eDesc.eType == 'DataCube.Model.Cube';
+			});
+			
+			while(it.hasNext()){
+				var e = it.next();
+				e.load();
+				e.fixupProviders();
+			}
+		},
+		
 		clearCache: function(){
 			this.loadAffectedCubes();
 			$this.publish('DataCube.Model.SqlSource.clearCache');

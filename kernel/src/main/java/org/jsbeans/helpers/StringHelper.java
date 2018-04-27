@@ -1,5 +1,6 @@
 package org.jsbeans.helpers;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.CharBuffer;
 import java.security.MessageDigest;
@@ -20,11 +21,22 @@ public class StringHelper {
         return -1;
     }
     
-    public static String MD5(String st) throws NoSuchAlgorithmException{
-    	MessageDigest messageDigest = MessageDigest.getInstance("MD5");
-    	messageDigest.reset();
-    	messageDigest.update(st.getBytes());
-    	byte[] digest = messageDigest.digest();
+    private static ThreadLocal<MessageDigest> digesters = new ThreadLocal<MessageDigest>() {
+    	@Override
+    	protected MessageDigest initialValue() {
+	    	try { 
+	    		return MessageDigest.getInstance("MD5"); 
+	    	}
+	    	catch (NoSuchAlgorithmException e) { 
+	    		throw new RuntimeException(e); 
+	    	}
+    	}
+    };
+    
+    public static String MD5(String st) throws UnsupportedEncodingException {
+    	MessageDigest md = digesters.get();
+    	md.reset();
+    	byte[] digest = md.digest(st.getBytes("UTF-8"));
     	BigInteger bigInt = new BigInteger(1, digest);
         String md5Hex = bigInt.toString(16);
 

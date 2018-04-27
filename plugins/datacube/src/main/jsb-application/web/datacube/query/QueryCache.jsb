@@ -435,7 +435,6 @@
 		executeQuery: function(query, params, provider){
 			this.load();
 			var qId = this.generateQueryId(query, provider);
-
 			
 			function produceIterator(desc){
 				var position = 0;
