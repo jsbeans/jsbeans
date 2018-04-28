@@ -31,6 +31,10 @@
 		    return $this.view.getField(name);
 		},
 
+        getOriginalField: function(name) {
+            return $this.view.getOriginalField(name)
+		},
+
 //		getContext: function(){
 //		    return $this.view.getContext();
 //		},
