@@ -41,6 +41,7 @@
 
 		    // build QueryView and nested views
 		    $this.buildViews();
+		    $this._buildUsedFields();
 
 		    // translate query
 		    var sql = $this.translateQueryExpression($this.dcQuery);
@@ -128,6 +129,31 @@
             });
 
 		    return new Error(message);
+		},
+
+		_buildUsedFields: function(){
+            // check if query without source or build cube
+            var usedFields = {/**usages*/};
+            if(!$this.cube) {
+                QueryUtils.walkDataProviderFields($this.dcQuery, /**includeSubQueries=*/true, $this.providers[0],
+                    function(field, context, query){
+                        if (!usedFields[field]) {
+                            usedFields[field] = 0;
+                        }
+                        usedFields[field]++;
+                    }
+                );
+            } else {
+                QueryUtils.walkCubeFields($this.dcQuery, /**includeSubQueries=*/true, $this.cube,
+                    function(field, context, query, binding){
+                        if (!usedFields[field]) {
+                            usedFields[field] = 0;
+                        }
+                        usedFields[field]++;
+                    }
+                );
+            }
+            $this.usedFields = usedFields;
 		},
 
         _translateWith: function(query){
@@ -300,6 +326,11 @@
                 var view = views[v];
                 var fieldsSql = '';
                 for (var f in unionsFields) {
+                    if (!$this.usedFields[unionsFields[f]]) {
+                        /// skip unused field
+                        continue;
+                    }
+
                     var field = unionsFields[f];
                     var viewField = view.getField(field);
                     if (fieldsSql.length > 0) fieldsSql += ', ';
