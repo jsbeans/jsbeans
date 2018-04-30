@@ -45,7 +45,13 @@
 				} else if(artifactType == 'value'){
 					FileSystem.write(eFileName, JSON.stringify(a, null, 4));
 				} else if(artifactType == 'binary'){
-					FileSystem.write(eFileName, a, {binary: true});
+					if(JSB.isInstanceOf(a, 'JSB.IO.Stream')){
+						var oStream = FileSystem.open(eFileName, {binary: true, write: true, read: false});
+						a.copy(oStream);
+						oStream.close();
+					} else {
+						FileSystem.write(eFileName, a, {binary: true});
+					}
 				} else {
 					throw new Error('Unexpected artifact type: ' + artifactType);
 				}
