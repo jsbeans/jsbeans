@@ -25,12 +25,30 @@
         getField: function(name) {
             return $this.managedFields[name] ? JSB.merge({
 //                provider: $this.provider,
+//                providerId: $this.provider.id,
                 context: $this.getContext(),
             }, $this.managedFields[name]) : null;
 		},
 
         getProvider: function() {
             return $this.provider;
+		},
+
+		getFromBody: function(){
+		    var from = {
+		        $provider: $this.provider.id,
+		        $select: {},
+		        $context: 'DataProvider:' + $this.provider.id,
+		    };
+		    var fields = $this.listFields();
+            for(var i = 0; i < fields.length; i++){
+                if (!$this.usedFields || $this.usedFields[fields[i]] && $this.usedFields[fields[i]] > 0) {
+                    var field = $this.getField(fields[i]);
+                    from.$select[fields[i]] = field.providerField;
+                }
+            }
+
+		    return from;
 		},
 	}
 }

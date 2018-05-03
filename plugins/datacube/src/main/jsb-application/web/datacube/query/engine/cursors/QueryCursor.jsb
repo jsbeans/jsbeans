@@ -13,10 +13,11 @@
 		$constructor: function(executionContext){
 		    $base(executionContext);
 		    $this.query = executionContext.query;
-		    $this.JSB = JSB;
-		    $this.Common = RuntimeFunctions.Common;
-		    $this.Aggregate = RuntimeFunctions.Aggregate;
-		    $this.HashMap = HashMap;
+		    executionContext.JSB = JSB;
+		    executionContext.Common = RuntimeFunctions.Common;
+		    executionContext.Aggregate = RuntimeFunctions.Aggregate;
+		    executionContext.Operators = RuntimeFunctions.Operators;
+		    executionContext.HashMap = HashMap;
 
 		    // TODO: index reusable expressions
 
@@ -24,7 +25,7 @@
         },
 
         _build: function(){
-            $this.groups = {}:
+            $this.groups = {};
 
             $this.next = function(){
                 return $this.executionContext.source.cursor.next();
@@ -65,7 +66,7 @@
             var inputNext = $this.next;
             $this.next = function(){
                 var object = $this.object = inputNext.call($this);
-                while(object != null && !$this.Runtime.check.call($this.executionContext, $this.query.$filter)) {
+                while(object != null && !$this.executionContext.Common.check.call($this.executionContext, $this.query.$filter)) {
                     object = $this.object = inputNext.call($this);
                 }
                 return object;
@@ -79,11 +80,11 @@
             $this.next = function(){
                 if ($this.query.$groupBy && $this.query.$groupBy.length > 0) {
                     if (!ordered) {
-                        $this.Aggregate.init.call($this.executionContext);
+                        $this.executionContext.Aggregate.init.call($this.executionContext);
                         ordered = [];
                         var object = $this.cursor.object = inputNext.call($this);
                         while(object != null ) {
-                            object = $this.Aggregate.map.call($this.executionContext);
+                            object = $this.executionContext.Aggregate.map.call($this.executionContext);
                             if (!$this.groups[object._id]) {
                                 ordered.push(object);
                             }
@@ -97,7 +98,7 @@
 
                 var object = {};
                 for(var outputField in $this.query.$select) {
-                    object[outputField] = $this.Runtime.get.call($this.executionContext, $this.query.$select[outputField]);
+                    object[outputField] = $this.executionContext.Common.get.call($this.executionContext, $this.query.$select[outputField]);
                 }
                 return object;
             };
@@ -115,7 +116,7 @@
             $this.next = function(){
                 do {
                     var object = $this.object = inputNext.call($this);
-                    var id = $this.Runtime.id.call($this.executionContext);
+                    var id = $this.executionContext.Runtime.id.call($this.executionContext);
                 } while(object != null && ids[id]);
 
                 ids[id] = true;

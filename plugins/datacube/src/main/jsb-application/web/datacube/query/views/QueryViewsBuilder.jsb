@@ -64,6 +64,16 @@
 		},
 
 		_buildContextView: function(query, isValueQuery, isViewQuery) {
+debugger;
+            if (query.$provider) {
+                // TODO:
+            } else if (query.$cube) {
+                // TODO:
+            } else if (query.$union) {
+                // TODO:
+            } else if (query.$join) {
+                // TODO:
+            }
 		    var sourceView = $this.contextSourceViews[query.$context] = $this._buildContextSourceViews(query);
 		    var resultView = $this.contextViews[query.$context] = $this._buildContextViews(query, sourceView);
 		    if (!sourceView || !resultView) throw new Error('Internal error: result or source view for query is not defined');
@@ -85,34 +95,15 @@
                 sourceView = $this.contextViews[fromContext];
             } else {
                 // check if query without source or build cube
-                var usedFields = {/**usages*/};
                 var query2 = JSB.merge({}, query, {$views: $this.query.$views});
-                if($this.directProvider) {
-                    QueryUtils.walkDataProviderFields(query2, /**includeSubQueries=*/false, $this.directProvider,
-                        function(field, context, q){
-                            if (!usedFields[field]) {
-                                usedFields[field] = 0;
-                            }
-                            usedFields[field]++;
-                        }
-                    );
-                } else {
-                    QueryUtils.walkCubeFields(query2, /**includeSubQueries=*/false, $this.cube,
-                        function(field, context, q, binding){
-                            if (!usedFields[field]) {
-                                usedFields[field] = 0;
-                            }
-                            usedFields[field]++;
-                        }
-                    );
-                }
+                var usedFields = /**{field:usages};*/ QueryUtils.extractUsedFields(query2, $this.cube || $this.directProvider);
 
                 if (Object.keys(usedFields).length == 0) {
                     // is NothingView
                     sourceView = new NothingView(query.$context);
                 } else {
                     // is Cube/DataProvider source
-                    sourceView = $this.cubeViewsBuilder.build(query.$context);
+                    sourceView = $this.cubeViewsBuilder.build(query.$context, usedFields);
                 }
             }
 

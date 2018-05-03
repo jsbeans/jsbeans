@@ -17,6 +17,8 @@
 		    'DataCube.Query.Engine.Cursors.IteratorCursor',
 		    'DataCube.Query.Engine.Cursors.QueryCursor',
 		    'DataCube.Query.Engine.Cursors.PipeCursor',
+		    'DataCube.Query.Engine.Cursors.UnionsCursor',
+		    'DataCube.Query.Engine.Cursors.JoinCursor',
 
 		    'DataCube.Query.QueryUtils',
 		    'JSB.Crypt.MD5',
@@ -26,6 +28,7 @@
 			$this.queryExecutor = queryExecutor;
 			$this.profiler = queryExecutor.profiler;
 			$this.qid = queryExecutor.qid;
+			$this.translateOnlyProviders = /*true; //*/Config.has('datacube.engine.translateOnlyProviders') && Config.get('datacube.engine.translateOnlyProviders');
 
 			$this.ExecutionContext = function ExecutionContext(desc){
 			    this.id = desc.id;
@@ -39,6 +42,7 @@
 			    this.close = function(){
                     if (this.source) this.source.close();
                     if (this.child)  for(var c in this.child) this.child[c].close();
+                    if (this.links)  for(var c in this.links) this.links[c].close();
                     this.cursor.destroy();
                     this.closed = true;
                     $this.profiler && $this.profiler.profile($this.qid, 'context closed: ' + this.id);
@@ -69,6 +73,7 @@ debugger;
                                 : query.$context,
                         query: query,
                     });
+                    ctx.params = $this.queryExecutor.params;
 
                     fullStack.push(ctx);
                     !this.inFrom && parentStack.push(ctx);
@@ -79,7 +84,7 @@ debugger;
                     }
 
                     /// Если запрос целиком транслируется в БД, то создается курсор БД и на этом заканчиваем обходить текущий запрос
-                    if($this._tryQueryTranslateDB(ctx)) {
+                    if(!$this.translateOnlyProviders && $this._tryQueryTranslateDB(ctx)) {
                         $this.profiler && $this.profiler.profile($this.qid, 'DB cursor created at {}', ctx.id);
                         cursors[query.$context] = ctx.cursor;
                         lastContext = ctx;
@@ -240,76 +245,44 @@ debugger;
             }
 		},
 
-
-		_buildCubeCursorFor: function(ctx) {
-debugger;
-		    function anyView(view) {
-		        if(view instanceof CubeView) {
-                    var subIt = anyView(view.getView());
-                    var fields = view.listFields();
-                    return {
-                        next: function(){
-                            var inp = subIt.next();
-                            if (inp == null) return null;
-                            var out = {};
-                            for(var i = 0; i < fields.length++; i++) {
-                                var field = fields[i];
-                                var desc = view.getField(field);
-                                out[field] = inp[field]; // TODO map field name
+		buildCubeCursorFor: function(ctx) {
+            function createCursor(from) {
+                if (from.$union) {
+                    return new UnionsCursor(ctx, from.$union, createCursor);
+                } else if (from.$join) {
+                    return new JoinCursor(
+                            ctx, from.$join.on,
+                            createCursor(from.$join.$left),
+                            function (query) {
+                                return createCursor(JSB.merge(query||{}, from.$join.$right));
                             }
-                            return out;
-                        },
-                        close: function(){
-                            subIt.close();
-                        }
+                    );
+                } else if (from.$provider) {
+                    var providerContext = $this.ExecutionContext({
+                        id: ctx.id + '/' + from.$provider,
+                        query: from,
+                        params: from.$params
+                    });
+
+                    $this._tryQueryTranslateDB(providerContext) || QueryUtils.throwError(failse, 'Cannot translate: {}', JSON.stringify(from));
+                    $this.profiler && $this.profiler.profile($this.qid, 'DB cursor created at {}', ctx.id);
+
+                    var baseClose = providerContext.cursor.close;
+                    providerContext.cursor.close = function(){
+                        if (providerContext.closed) return;
+                        providerContext.close();
+                        baseClose.call(this);
                     };
-                } else if(view instanceof UnionsView) {
-
-                } else if(view instanceof JoinView) {
-
-                } else if(view instanceof DataProviderView) {
-                    QueryUtils.assert(
-                        view.getProvider().getJsb().$name == 'DataCube.Providers.InMemoryDataProvider' ||
-                        view.getProvider().getJsb().$name == 'DataCube.Providers.JsonFileDataProvider',
-                        'Unsupported data provider: ' + view.getProvider().getJsb());
-
-                    var fields = view.listFields();
-                    var rows = view.getProvider().find();
-                    var pos = -1;
-                    return {
-                        next: function(){
-                            var inp = rows[++pos];
-                            if (inp == null) return null;
-                            var out = {};
-                            for(var i = 0; i < fields.length++; i++) {
-                                var field = fields[i];
-                                out[field] = inp[field];
-                            }
-                            return out;
-                        },
-                        close: function(){
-                            rows = [];
-                        }
-                    };
+                    return providerContext.cursor;
                 } else {
-                    throw new Error('Unexpected view type ' + view.getJsb().$name);
+                    QueryUtils.throwError(false, "Unexpected source in $from: {}", JSON.stringify(from));
                 }
-		    }
+            }
 
-            // TODO: optimize cube cursor for query - filtered joins by used fields
-		    var cursor = new IteratorCursor(ctx, function() {
-		        return anyView($this.queryExecutor.cubeView);
-		    });
-
-		    if ($this.useCache) {
-		        return new CachedCursor(cursor);
-		    } else {
-                return cursor;
-		    }
+            var cubeCursor = createCursor(ctx.query.$from);
 		},
 
 		_buildQueryCursor: function(ctx) {
-		    ctx.params = $this.queryExecutor.params;
             ctx.cursor = new QueryCursor(ctx);
             if ($this.useCache) {
                 return ctx.cursor = new CachedCursor(ctx.cursor);

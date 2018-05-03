@@ -34,5 +34,22 @@
 		getContext: function(){
 		    return $this.name;
 		},
+
+		getFromBody: function(){
+		    var from = {
+		        $union: [],
+		        $select: {},
+		    };
+		    for(var i = 0; i < $this.views.length; i++) {
+		        var inner = $this.views[i].getFromBody();
+		        from.$union.push(inner);
+		        for(var field in inner.$select) {
+		            if (!select[field]) {
+		                from.$select[field] = inner.$select[field];
+                    }
+		        }
+		    }
+		    return from;
+		},
 	}
 }

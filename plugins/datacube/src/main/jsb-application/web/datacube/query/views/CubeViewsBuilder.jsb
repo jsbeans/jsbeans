@@ -20,15 +20,16 @@
 		    $base();
 		},
 
-		build: function(name) {
+		build: function(name, usedFields) {
 		    var view = $this.cube
-                    ? $this._buildCubeView(name)
-                    : $this._buildDataProviderView(name, $this.directProvider);
+                    ? $this._buildCubeView(name, usedFields)
+                    : $this._buildDataProviderView(name, $this.directProvider, usedFields);
             return view;
 		},
 
-		_buildCubeView: function(name) {
-            var cubeView = new CubeView(name);
+        _buildCubeView: function(name, usedFields) {
+            var cubeView = new CubeView(name, $this.cube, $this.providers);
+            cubeView.usedFields = usedFields;
 
             var unionsCount = 0;
             var joinsCount = 0;
@@ -47,16 +48,19 @@
 
             var leftView;
             // build unions view
-            if (unionsCount > 1) {
-                leftView = new UnionsView("unions_"+name);
-            }
             for(var p in $this.providers) {
                 if (($this.providers[p].getMode()||'union') == 'union') {
-                    var providerView = $this._buildDataProviderView("union_"+p+'_'+name, $this.providers[p]);
-                    if (leftView) {
-                        leftView.addView(providerView);
+                    var providerView = $this._buildDataProviderView("union_"+p+'_'+name, $this.providers[p], usedFields);
+                    if (!leftView) {
+                        if (unionsCount > 1) {
+                            leftView = new UnionsView("unions_"+name);
+                            leftView.usedFields = usedFields;
+                            leftView.addView(providerView);
+                        } else {
+                            leftView = providerView;
+                        }
                     } else {
-                        leftView = providerView;
+                        leftView.addView(providerView);
                     }
                 }
             }
@@ -64,12 +68,13 @@
             // build join views (note: providers already ordered)
             for(var p in $this.providers){
                 if (($this.providers[p].getMode()||'union') == 'join') {
-                    var providerView = $this._buildDataProviderView("join_"+p+'_'+name, $this.providers[p]);
+                    var providerView = $this._buildDataProviderView("join_"+p+'_'+name, $this.providers[p], usedFields);
 
                     if (!leftView) {
                         leftView = providerView;
                     } else {
                         var joinView = new JoinView(name, leftView);
+                        joinView.usedFields = usedFields;
                         joinView.setRightView(providerView);
                         leftView = joinView;
                     }
@@ -80,8 +85,9 @@
             return cubeView;
         },
 
-		_buildDataProviderView: function(name, dataProvider) {
+		_buildDataProviderView: function(name, dataProvider, usedFields) {
 		    var view = new DataProviderView(name, dataProvider);
+		    view.usedFields = usedFields;
 		    var managedFields = $this.directProvider == dataProvider
 		            ? dataProvider.extractFields()
 		            : $this.cube.getManagedFields();

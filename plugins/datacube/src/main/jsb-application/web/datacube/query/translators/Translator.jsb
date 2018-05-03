@@ -203,6 +203,13 @@ debugger;
                     if ($this.providers[0].extractFields()[field]) {
                         return;
                     }
+                    if (fieldQuery.$provider) {
+                        for(var i = 0; i <$this.providers.length; i++){
+                            if ($this.providers[i].extractFields()[field]) {
+                                return;
+                            }
+                        }
+                    }
                     // is alias
                     var query = fieldQuery || $this.dcQuery;
                     if(query.$select && query.$select[field]) {

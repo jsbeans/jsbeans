@@ -6,138 +6,6 @@
 		$require: [
         ],
 
-        Aggregate: {
-            init: function(){
-                var query = this.query;
-                query.$$aggregates = {};
-                function walk(e, path) {
-                    if (this.JSB.isObject(e)) {
-                        for (var op in e) if (e[op] != null) {
-                            if(this.Aggregate[op]) {
-                                e.$$aggregatePath = path; /// store aggregator key path to query for finalize
-                                query.$$aggregates[path] = e;
-                                break;
-                            }
-                            walk(e[i], path + '/' + op);
-                        }
-                    } else if (this.JSB.isArray(e)) {
-                        for (var i = 0; i < e.length; i++) {
-                            walk(e[i], path + '/' + i);
-                        }
-                    }
-                }
-
-                walk(this.query, '');
-            },
-
-            map: function(){
-                var id = this.Common.id();
-                var group = !this.groups[id] ? this.groups[id] = this.cursor.object : this.groups[id];
-
-                for(var path in this.query.$$aggregates) {
-                    var exp = this.query.$$aggregates[path];
-                    var i = 0;
-                    do {
-                        var op = Object.keys(exp)[i++];
-                    } while (!op.startsWith('$$'));
-                    var state = group.$$aggregateState[path] || group.$$aggregateState[path] = this.Aggregate[op].init.call(this);
-                    var newState = this.Aggregate[op].aggregate.call(this, state, exp[op]);
-                    if (newState) group.$$aggregateState[path] = newState;
-                }
-                return group;
-            },
-
-
-            /** Aggregate functions:
-            *   * aggregate : (inputState, expr) -> nextState
-            *   * finalize : (finalState) -> aggregated
-            */
-
-
-            $distinct: {
-                init: function() {
-                    return {objects: {}, last:null};
-                },
-                aggregate: function(state, exp, path){
-                    var val = this.Common.get(exp);
-                    if (val != null) {
-                        var id = this.MD5(this.JSB.stringify(val));
-                        if(!state.objects[id]) {
-                            state.objects[id] = true;
-                        } else {
-                            val = null;
-                        }
-                    }
-                    state.last = val;
-                },
-                get: function(state){
-                    var val = state.last;
-                    state.last = null;
-                    return val;
-                },
-            },
-
-            $any: {
-                init: function() {
-                    return {any:null};
-                },
-                aggregate: function(state, exp, path){
-                    if (state.any == null) state.any = this.Common.get(exp);
-                },
-                get: function(state){
-                    return state.any;
-                },
-            },
-
-            $first: {
-                init: function() {
-                    return {first:null};
-                },
-                aggregate: function(state, exp, path){
-                    if (state.first == null) state.first = this.Common.get(exp);
-                },
-                get: function(state){
-                    return state.first;
-                },
-            },
-
-            $last: {
-                init: function() {
-                    return {last:null};
-                },
-                aggregate: function(state, exp, path){
-                    state.last = this.Common.get(exp);
-                },
-                get: function(state){
-                    return state.last;
-                },
-            },
-
-            $sum: {
-                init: function() {
-                    return {sum:0};
-                },
-                aggregate: function(state, exp, path){
-                    state.sum += this.Common.get(exp) || 0;
-                },
-                get: function(state){
-                    return state.sum;
-                },
-            },
-
-            $count: {
-                init: function() {
-                    return {count:0};
-                },
-                aggregate: function(state, exp, path){
-                    if (this.Common.get(exp) != null) state.count += 1;
-                },
-                get: function(state){
-                    return state.count;
-                },
-            },
-        },
-
         Common: {
 
             /** *** Filter functions *** */
@@ -223,7 +91,7 @@
 
                     if (this.Operators[op]){
                         return this.Operators[op].call(this);
-                    } else if (this.Aggregate[op) {
+                    } else if (this.Aggregate[op]) {
                         var path = e.$$aggregatePath;
                         var state = this.cursor.object.$$aggregateState[path];
                         return this.Aggregate[op].get.call(this, state);

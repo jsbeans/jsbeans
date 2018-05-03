@@ -4,10 +4,13 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.Views.NothingView',
         ],
 
-		$constructor: function(name){
+		$constructor: function(name, cube, providers){
 		    $base(name);
+		    $this.cube = cube;
+		    $this.providers = providers;
 		},
 
 		destroy: function(){
@@ -38,6 +41,15 @@
 		visitInternalViews: function(visitor/**function visitor(view)*/) {
             $base(visitor);
             $this.view && $this.view.visitInternalViews(visitor);
+		},
+
+		getFromBody: function(){
+		    if ($this.view instanceof NothingView) {
+		        return {};
+		    }
+		    var from = $this.view.getFromBody();
+		    from.$cube = $this.cube.id;
+		    return from;
 		},
 	}
 }

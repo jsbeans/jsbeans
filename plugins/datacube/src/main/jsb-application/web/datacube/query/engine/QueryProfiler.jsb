@@ -5,32 +5,42 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
-		$constructor: function(){
+		$constructor: function(qid){
+		    $this.qid = qid;
 		},
 
-		start: function(qid, details) {
-            Log.debug('[qid='+qid+'] - START: ' + JSON.stringify(details));
+//		history: {},
+
+		start: function(details) {
+//		    $this.history[''+Date.now()] = {
+//		        details: details,
+//		    }
+            Log.debug('[qid='+$this.qid+'] - START: ' + JSON.stringify(details));
 		},
 
-		profile: function(qid, name, details) {
+		profile: function(name, details) {
 		    if (details) {
-                var args = Array.prototype.slice.call(arguments, 0);
-		        if (JSB.isObject(details) || JSB.isArray(details)) {
-		            args[2] = JSON.stringify(details);
-		        }
-                var msg = QueryUtils.sformat('[qid={}] - {}: {}', args);
+                var msg = QueryUtils.sformat('[qid={}] - {}: {}',
+                    $this.qid, name,
+                    JSB.isObject(details) || JSB.isArray(details) ? JSON.stringify(details) : details
+                );
 		        Log.debug(msg);
             } else {
-                Log.debug('[qid='+qid+'] - ' + name);
+                Log.debug('[qid='+$this.qid+'] - ' + name);
             }
 		},
 
-		complete: function(qid) {
-            Log.debug('[qid='+qid+'] - COMPLETE');
+		complete: function(name) {
+            Log.debug('[qid='+$this.qid+'] - COMPLETE:' + name);
 		},
 
-		failed: function(qid, error) {
-            Log.debug('[qid='+qid+'] - FAILED: ' + JSB.stringifyError(error));
+		failed: function(name, error) {
+            Log.debug('[qid='+$this.qid+'] - FAILED: ' + name + ': ' + JSB.stringifyError(error));
+		},
+
+		destroy: function(){
+//		    history = null;
+		    $base();
 		},
 	}
 }

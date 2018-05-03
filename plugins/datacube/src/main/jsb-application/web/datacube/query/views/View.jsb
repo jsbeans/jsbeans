@@ -31,7 +31,8 @@
 		    return {TODO:'TODO'};
 		},
 
-		buildIterator: function(executionContext){
+		getFromBody: function(){
+		    throw new Error('Not implemented');
 		},
 	}
 }

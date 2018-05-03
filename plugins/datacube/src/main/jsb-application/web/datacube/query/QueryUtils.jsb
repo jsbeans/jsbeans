@@ -153,7 +153,7 @@
                 }
 
                 // values
-                var keys = ['$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
+                var keys = ['$union', '$join', '$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
                 for (var i = 0; i < keys.length; i++) if (query[keys[i]] != null) {
                     var res = walkExpression.call(
                         {
@@ -594,6 +594,30 @@
 
             collect(valueExp);
             return cubeFields;
+        },
+
+        extractUsedFields: function(dcQuery, cubeOrDataProvider) {
+            var usedFields = {/**usages*/};
+            if(cubeOrDataProvider.getJsb().$name != 'DataCube.Model.Cube') {
+                $this.walkDataProviderFields(dcQuery, /**includeSubQueries=*/false, cubeOrDataProvider,
+                    function(field, context, q){
+                        if (!usedFields[field]) {
+                            usedFields[field] = 0;
+                        }
+                        usedFields[field]++;
+                    }
+                );
+            } else {
+                $this.walkCubeFields(dcQuery, /**includeSubQueries=*/false, cubeOrDataProvider,
+                    function(field, context, q, binding){
+                        if (!usedFields[field]) {
+                            usedFields[field] = 0;
+                        }
+                        usedFields[field]++;
+                    }
+                );
+            }
+            return usedFields;
         },
 
         extractSingleField: function (valueExp) {
@@ -1662,6 +1686,35 @@
                 // unwrap macros and $grmax* to complex expressions
                 QuerySyntax.unwrapMacros(subQuery);
             });
+		},
+
+		extractQueryProviders: function(dcQuery, cube) {
+            var provs = {}; // id: {provider, cubeFields}
+            $this.walkCubeFields(
+                dcQuery, /**includeSubQueries=*/true, cube,
+                function (field, context, query, binding){
+                    for (var i in binding) {
+                        var id = binding[i].provider.id;
+                        if(!provs[id]) {
+                            var prov = provs[id] = {
+                                provider: binding[i].provider,
+                                cubeFields: {},
+                            };
+                        } else {
+                            var prov = provs[id];
+                        }
+                        prov.cubeFields[field] = /**hasOtherBinding*/ binding.length > 1;
+                    }
+                }
+            );
+            // TODO: add join path providers (now all providers must have field in query)
+            /// filter redundant providers
+            $this.removeRedundantBindingProviders(provs, cube);
+            var providers = [];
+            for(var p in provs) {
+                providers.push(provs[p].provider);
+            }
+            return providers;
 		},
 	}
 }
