@@ -97,7 +97,7 @@
                         var sourceFields = sourceView.listFields();
                         for(var f = 0; f < sourceFields.length; f++) {
                             var sourceField = sourceView.getField(sourceFields[f]);
-                            var sourceOriginalField = sourceView.getOriginalField(sourceFields[f]);
+                            var sourceOriginalField = sourceView.getOriginalField(sourceFields[f]) || sourceField;
 
                             if (sourceField && origName == sourceField.context + '.' + sourceField.providerField
                                     || sourceOriginalField && origName == sourceOriginalField.context + '.' + sourceOriginalField.providerField) {
