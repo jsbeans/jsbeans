@@ -327,32 +327,53 @@
 				return {filter: filter, postFilter: postFilter}
 			}
 			
-			var filter = {$and:[]};
-			var postFilter = {$and:[]};
+			var filter = {$or:[{$and:[]}]};
+			var postFilter = {$or:[{$and:[]}]};
 			
 			for(var fName in ffMap){
 				var fDesc = _constructFieldFilter(fName);
+				var ffDesc = ffMap[fName];
 				if(fDesc.filter){
-					filter.$and.push(fDesc.filter);
+					if(ffDesc.andFilters.length > 0){
+						filter.$or[0].$and.push(fDesc.filter);
+					} else {
+						filter.$or.push(fDesc.filter);
+					}
 				}
 				if(fDesc.postFilter){
-					postFilter.$and.push(fDesc.postFilter);
+					if(ffDesc.andFiltersLocal.length > 0){
+						postFilter.$or[0].$and.push(fDesc.postFilter);	
+					} else {
+						postFilter.$or.push(fDesc.postFilter);
+					}
 				}
 			}
 			
-			// correct filters
-			if(filter.$and.length == 0){
+			// simplify filters
+			if(filter.$or[0].$and.length == 0){
+				filter.$or.splice(0, 1);
+			} else if(filter.$or[0].$and.length == 1){
+				filter.$or[0] = filter.$or[0].$and[0];
+			}
+			if(filter.$or.length == 0){
 				filter = null;
-			} else if(filter.$and.length == 1){
-				filter = filter.$and[0];
+			} else if(filter.$or.length == 1){
+				filter = filter.$or[0];
 			}
 			
-			if(postFilter.$and.length == 0){
-				postFilter = null;
-			} else if(postFilter.$and.length == 1){
-				postFilter = postFilter.$and[0];
+			if(postFilter.$or[0].$and.length == 0){
+				postFilter.$or.splice(0, 1);
+			} else if(postFilter.$or[0].$and.length == 1){
+				postFilter.$or[0] = postFilter.$or[0].$and[0];
 			}
-
+			if(postFilter.$or.length == 0){
+				postFilter = null;
+			} else if(postFilter.$or.length == 1){
+				postFilter = postFilter.$or[0];
+			}
+			
+			JSB.getLogger().debug(JSON.stringify(filter, null, 4));
+			
 			return {
 				filter: filter,
 				postFilter: postFilter

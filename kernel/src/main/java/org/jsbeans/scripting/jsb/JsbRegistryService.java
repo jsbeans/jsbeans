@@ -83,6 +83,8 @@ public class JsbRegistryService extends Service {
             this.handleLookupJso((LookupJsoMessage) msg);
         } else if (msg instanceof RpcMessage) {
             this.handleRpc((RpcMessage) msg);
+        } else if (msg instanceof UploadMessage) {
+            this.handleUpload((UploadMessage) msg);
         } else if (msg instanceof LoadAdditionalObjectsMessage) {
             this.handleLoadAdditionalObjects((LoadAdditionalObjectsMessage) msg);
         } /*else if (msg instanceof String && msg.equals(Message.TICK)) {
@@ -92,7 +94,8 @@ public class JsbRegistryService extends Service {
         }
     }
 
-    private void handleLoadAdditionalObjects(LoadAdditionalObjectsMessage msg) {
+
+	private void handleLoadAdditionalObjects(LoadAdditionalObjectsMessage msg) {
     	String resPath = ConfigHelper.getConfigString("kernel.jsb.lookupResourcePath");
     	this.registerBeans(resPath, true);
         // load client-server JSBs
@@ -417,6 +420,36 @@ public class JsbRegistryService extends Service {
             this.getSender().tell(new RpcMessage(e), this.getSelf());
         }
     }
+    
+    private void handleUpload(UploadMessage msg) {
+    	String sessionId = msg.getSessionId();
+    	String streamId = msg.getStreamId();
+        String clientAddr = msg.getClientAddr();
+        String user = msg.getUser();
+        String userToken = msg.getUserToken();
+        String clientRequestId = msg.getClientRequestId();
+		try {
+			String script = String.format( "JSB().getProvider().performUpload('%s');", streamId );
+            ExecuteScriptMessage execMsg = new ExecuteScriptMessage(script, false);
+            execMsg.addWrapped(streamId, msg.getStream());
+            execMsg.setScopePath(sessionId);
+            execMsg.setClientAddr(clientAddr);
+            execMsg.setUser(user);
+            execMsg.setUserToken(userToken);
+            execMsg.setClientRequestId(clientRequestId);
+            Timeout timeout = ActorHelper.getServiceCommTimeout();
+            Future<Object> f = ActorHelper.futureAsk(ActorHelper.getActorSelection(JsHub.class), execMsg, timeout);
+            try {
+                UpdateStatusMessage result = (UpdateStatusMessage) Await.result(f, timeout.duration());
+            } catch (Throwable fail) {
+                getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
+
+            }
+		} catch(PlatformException e) {
+			getLog().error(e.getMessage());
+		}
+	}
+
 /*
     private void updateSessionMap() {
         long curTime = System.currentTimeMillis();

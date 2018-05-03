@@ -14,5 +14,9 @@
         getField: function(name) {
             return null;
 		},
+
+        getOriginalField: function(name) {
+            return null;
+		},
 	}
 }

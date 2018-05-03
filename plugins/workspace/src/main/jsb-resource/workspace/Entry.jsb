@@ -515,12 +515,12 @@
 			    if(JSB.isString(a)){
 			    	bNeedStoreEntry = artifacts[name] != 'string';
 			    	artifacts[name] = 'string';
+			    } else if(JSB.isArrayBuffer(a) || JSB.isInstanceOf(a, 'JSB.IO.Stream')){
+			    	bNeedStoreEntry = artifacts[name] != 'binary';
+			    	artifacts[name] = 'binary';
 			    } else if(JSB.isObject(a) || JSB.isArray(a) || JSB.isNumber(a) || JSB.isBoolean(a)){
 			    	bNeedStoreEntry = artifacts[name] != 'value';
 			    	artifacts[name] = 'value';
-			    } else if(JSB.isArrayBuffer(a)){
-			    	bNeedStoreEntry = artifacts[name] != 'binary';
-			    	artifacts[name] = 'binary';
 			    } else {
 			    	throw new Error('Invalid artifact type');
 			    }

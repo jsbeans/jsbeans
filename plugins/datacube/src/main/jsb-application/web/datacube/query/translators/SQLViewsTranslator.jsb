@@ -41,6 +41,7 @@
 
 		    // build QueryView and nested views
 		    $this.buildViews();
+		    $this._buildUsedFields();
 
 		    // translate query
 		    var sql = $this.translateQueryExpression($this.dcQuery);
@@ -59,7 +60,33 @@
 
 		translateError: function(error) {
             function buildInfo(){
-                return 'field "' + this.field + '" (context "' + this.queryContext + '", SQL column "' + this.origName + '")';
+                if (this.providerField) {
+                    try {
+                        var cubeField = $this.cubeFields[this.field];
+                        for(var b = 0; b < cubeField.binding.length; b++) {
+                            var bind = cubeField.binding[b];
+                            if (bind.provider.id == this.providerId) {
+                                var provider = bind.provider;
+                                var field = provider.extractFields({comment:true})[this.providerField];
+                                if (field) {
+                                    if (field.comment && field.comment.name && this.providerField != field.comment.name) {
+                                        return 'cube field "'+this.field+'" (provider "'+provider.name+'", name "'+field.comment.name+'", column "'+this.origName+'")';
+                                    } else {
+                                        return 'cube field "'+this.field+'" (provider "'+provider.name+'", column "'+this.origName+'")';
+                                    }
+                                } else {
+                                    // not existed in provider
+                                    return 'cube field "'+this.field+'" (provider "'+provider.name+'", column "'+this.origName+'")';
+                                }
+                            }
+                        }
+                    }catch(e) {
+                        Log.error(e);
+                        return 'field "' + this.field + '" (context "' + this.queryContext + '", SQL column "' + this.origName + '")';
+                    }
+                } else {
+                    return 'field "' + this.field + '" (context "' + this.queryContext + '", SQL column "' + this.origName + '")';
+                }
             }
 
             function findInfo(origName) {
@@ -70,11 +97,17 @@
                         var sourceFields = sourceView.listFields();
                         for(var f = 0; f < sourceFields.length; f++) {
                             var sourceField = sourceView.getField(sourceFields[f]);
-                            if (sourceField && origName == sourceField.context + '.' + sourceField.providerField) {
+                            var sourceOriginalField = sourceView.getOriginalField(sourceFields[f]) || sourceField;
+
+                            if (sourceField && origName == sourceField.context + '.' + sourceField.providerField
+                                    || sourceOriginalField && origName == sourceOriginalField.context + '.' + sourceOriginalField.providerField) {
+
                                 return buildInfo.call({
                                     origName: origName,
                                     field: sourceFields[f],
-                                    queryContext: queryView.getContext()
+                                    queryContext: queryView.getContext(),
+                                    providerId: sourceOriginalField.providerId,
+                                    providerField: sourceOriginalField.providerField,
                                 });
                             }
                         }
@@ -85,7 +118,7 @@
             }
 
 
-            var reg = /column\s*\"(.*[^\"].*)\"/g
+            var reg = /column\s*\"?(.*?[^\"].*?)\"?\s/g;
             var message = error.message.replace(reg, function(s, name) {
                 var info = findInfo(name);
                 return info ? info : name;
@@ -96,6 +129,31 @@
             });
 
 		    return new Error(message);
+		},
+
+		_buildUsedFields: function(){
+            // check if query without source or build cube
+            var usedFields = {/**usages*/};
+            if(!$this.cube) {
+                QueryUtils.walkDataProviderFields($this.dcQuery, /**includeSubQueries=*/true, $this.providers[0],
+                    function(field, context, query){
+                        if (!usedFields[field]) {
+                            usedFields[field] = 0;
+                        }
+                        usedFields[field]++;
+                    }
+                );
+            } else {
+                QueryUtils.walkCubeFields($this.dcQuery, /**includeSubQueries=*/true, $this.cube,
+                    function(field, context, query, binding){
+                        if (!usedFields[field]) {
+                            usedFields[field] = 0;
+                        }
+                        usedFields[field]++;
+                    }
+                );
+            }
+            $this.usedFields = usedFields;
 		},
 
         _translateWith: function(query){
@@ -268,6 +326,11 @@
                 var view = views[v];
                 var fieldsSql = '';
                 for (var f in unionsFields) {
+                    if (!$this.usedFields[unionsFields[f]]) {
+                        /// skip unused field
+                        continue;
+                    }
+
                     var field = unionsFields[f];
                     var viewField = view.getField(field);
                     if (fieldsSql.length > 0) fieldsSql += ', ';

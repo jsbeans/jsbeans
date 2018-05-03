@@ -26,12 +26,13 @@
 				move: true,
 				remove: true
 			});
+			
 		},
 		
 		$constructor: function(id, workspace, opts){
-			$base(id, workspace);
+			$base(id, workspace, opts);
 			if(opts){
-				if(opts.fileName){
+/*				if(opts.fileName){
 					this.setName(opts.fileName);
 				}
 				if(opts.fileData){
@@ -75,7 +76,7 @@
 					this.property('records', this.records);
 					// store artifact
 					this.storeArtifact('.data', json);
-				}
+				} */
 			} else {
 				this.records = this.property('records');
 			}

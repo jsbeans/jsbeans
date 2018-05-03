@@ -189,6 +189,7 @@
 		},
 		
 		getEntry: function(){
+			JSB.getLogger().debug('Requested dashboard: ' + this.dashboardEntry.getName());
 			return this.dashboardEntry;
 		}
 

@@ -10,6 +10,7 @@
 
 package org.jsbeans.web;
 
+import akka.actor.ActorRef;
 import akka.dispatch.OnFailure;
 import akka.dispatch.OnSuccess;
 import akka.util.Timeout;
@@ -19,6 +20,7 @@ import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.scripting.jsb.JsbRegistryService;
 import org.jsbeans.scripting.jsb.LookupJsoMessage;
 import org.jsbeans.scripting.jsb.RpcMessage;
+import org.jsbeans.scripting.jsb.UploadMessage;
 import org.jsbeans.types.JsObject;
 import org.jsbeans.types.JsObject.JsObjectType;
 import org.slf4j.LoggerFactory;
@@ -31,9 +33,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.Principal;
+import java.util.Map;
 
 public class JsbServlet extends HttpServlet {
     private static final long serialVersionUID = -4914554821670876067L;
@@ -133,10 +137,24 @@ public class JsbServlet extends HttpServlet {
             this.handleGetJsoCommand(ac, req.getRemoteAddr(), userName, rid, userToken);
         } else if ("rpc".equals(cmd)) {
             this.handleRpcCommand(ac, req.getRemoteAddr(), userName, rid, userToken);
+        } else if("upload".equals(cmd)) {
+        	this.handleUploadCommand(ac, req.getRemoteAddr(), userName, rid, userToken);
         }
     }
 
-    private void responseResult(AsyncContext ac, String result) throws UnsupportedEncodingException, IOException {
+    private void handleUploadCommand(AsyncContext ac, String remoteAddr, String userName, String rid, String userToken) throws IOException {
+    	String streamId = ac.getRequest().getParameter("id");
+    	InputStream is = ac.getRequest().getInputStream();
+    	HttpServletRequest req = ((HttpServletRequest) ac.getRequest());
+    	
+    	((HttpServletResponse) ac.getResponse()).addHeader("Run-Tag", Core.RUN_TAG);
+    	
+    	InputStream iss = new UploadStream(ac, is);
+		
+		ActorHelper.getActorSelection(JsbRegistryService.class).tell(new UploadMessage(streamId, iss, req.getSession().getId(), remoteAddr, userName, rid, userToken), ActorRef.noSender());
+	}
+
+	private void responseResult(AsyncContext ac, String result) throws UnsupportedEncodingException, IOException {
         if (result != null && result.length() > 0) {
             if (ac.getRequest().getParameterMap().containsKey("callback")) {
                 result = String.format("%s(%s);", ac.getRequest().getParameter("callback"), result);

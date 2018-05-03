@@ -67,6 +67,38 @@
 
 			throw new Error('Missing sourceId');
 		},
+		
+		getCubeField: function(field){
+			function extractCubeField(rValue){
+				if(JSB.isString(rValue)){
+					return rValue;
+				} else if(JSB.isObject(rValue)){
+					if(JSB.isDefined(rValue.$field) && JSB.isString(rValue.$field)){
+						return rValue.$field;
+					}
+					return null;
+				} else {
+					return null;
+				}
+			}
+			var sourceArr = this.getSourceIds();
+			if(!sourceArr || sourceArr.length == 0){
+				return;
+			}
+			var sourceId = sourceArr[0];
+			var source = this.sources[sourceId];
+			
+			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+				var q = source.getQuery();
+				if(q.$select && q.$select[field]){
+					var cubeField = extractCubeField(q.$select[field]);
+					if(cubeField){
+						return cubeField;
+					}
+				}
+			}
+			
+		},
 
 		clearFilters: function(){
 		    if(!this.filterManager){ return; }
@@ -303,12 +335,42 @@
 			}
 			return null;
 		},
+		
+		translateContextFilter: function(sourceId){
+			var postFilter = {};
+			var cubeFilter = {};
+			if(Object.keys($this.contextFilter).length > 0){
+				var source = this.sources[sourceId];
+				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+					var q = source.getQuery();
+					for(var fName in $this.contextFilter){
+						if(q.$select && q.$select[fName]){
+							postFilter[fName] = $this.contextFilter[fName];
+						} else {
+							cubeFilter[fName] = $this.contextFilter[fName];
+						}
+					}
+					
+				}
+			}
+			return {
+				postFilter: postFilter,
+				cubeFilter: cubeFilter
+			}
+		},
 
 		getLayerQuery: function(layerName, sourceId){
 			var query = {};
+			
 			if(layerName == 'back'){
 				if(Object.keys($this.contextFilter).length > 0){
-					query.$postFilter = $this.contextFilter;
+					var contextFilterDesc = $this.translateContextFilter(sourceId);
+					if(contextFilterDesc.postFilter && Object.keys(contextFilterDesc.postFilter).length > 0){
+						query.$postFilter = contextFilterDesc.postFilter;
+					}
+					if(contextFilterDesc.cubeFilter && Object.keys(contextFilterDesc.cubeFilter).length > 0){
+						query.$cubeFilter = contextFilterDesc.cubeFilter;
+					}
 				}
 				if($this.sort){
 					query.$sort = [$this.sort];
@@ -335,10 +397,20 @@
 					}
 				}
 				if(Object.keys($this.contextFilter).length > 0){
-					if(query.$postFilter){
-						query.$postFilter = {'$and':[query.$postFilter, $this.contextFilter]};
-					} else {
-						query.$postFilter = $this.contextFilter;
+					var contextFilterDesc = $this.translateContextFilter(sourceId);
+					if(contextFilterDesc.postFilter && Object.keys(contextFilterDesc.postFilter).length > 0){
+						if(query.$postFilter){
+							query.$postFilter = {'$and':[query.$postFilter, contextFilterDesc.postFilter]};
+						} else {
+							query.$postFilter = contextFilterDesc.postFilter;
+						}
+					}
+					if(contextFilterDesc.cubeFilter && Object.keys(contextFilterDesc.cubeFilter).length > 0){
+						if(query.$cubeFilter){
+							query.$cubeFilter = {'$and':[query.$cubeFilter, contextFilterDesc.cubeFilter]};
+						} else {
+							query.$cubeFilter = contextFilterDesc.cubeFilter;
+						}
 					}
 				}
 				if($this.sort){
@@ -616,12 +688,6 @@
 							curScope = el[qColName];
 						}
 						id += MD5.md5('' + curScope);
-/*						
-						if(id && id.length > 0){
-							id += '|';
-						}
-						id += '' + curScope;
-*/						
 					}
 					return id;
 				}

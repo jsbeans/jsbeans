@@ -24,6 +24,7 @@
 
         getField: function(name) {
             return $this.managedFields[name] ? JSB.merge({
+                providerId: $this.provider.id,
 //                provider: $this.provider,
                 context: $this.getContext(),
             }, $this.managedFields[name]) : null;

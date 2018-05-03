@@ -3316,6 +3316,18 @@ if(!(function(){return this;}).call(null).JSB){
 					}
 					return nobj;
 				}
+				if(rType === "[object File]"){
+					var fid = JSB.generateUid();
+					dict[fid] = {
+						p: [JSB.clone(path)],
+						d: {
+							__type: 'File',
+							__data: res,
+							__id: fid
+						}
+					};
+					return {};
+				}
 				if(JSB().isBean(res)){
 					// encode jsb object
 					var bId = res.getId();
@@ -3366,7 +3378,7 @@ if(!(function(){return this;}).call(null).JSB){
 				if(callback){
 					callback(res);
 				}
-				return;
+				return res;
 			}
 			var obj = res.__dt; 
 
@@ -3374,7 +3386,7 @@ if(!(function(){return this;}).call(null).JSB){
 				if(callback){
 					callback(obj);
 				}
-				return;
+				return obj;
 			} else {
 				JSB.chain(res.__di, function(complexDesc, callback){
 					var res = complexDesc.d;
@@ -3385,6 +3397,13 @@ if(!(function(){return this;}).call(null).JSB){
 								callback(fObj);
 							}
 						}, opts);
+					} else if(res.__type && res.__type == 'File') {
+						if(callback && JSB().isServer()){
+							JSB().getProvider().ensureUpload(res.__id, function(javaStream){
+								var StreamClass = JSB().get('JSB.IO.Stream').getClass();
+								callback(new StreamClass(javaStream));
+							})
+						}
 					} else if(res.__type && res.__type == 'ArrayBuffer'){
 						if(callback){
 							callback(JSB().Base64.decode(res.__data));
@@ -3464,6 +3483,7 @@ if(!(function(){return this;}).call(null).JSB){
 					singleThreaded: true
 				});
 			}
+			return obj;
 		},
 		
 		getBindMap: function(){
@@ -4548,6 +4568,21 @@ JSB({
 			}
 			if(JSB.isDefined($this.$_ecMap[key].val)){
 				delete $this.$_ecMap[key].val;
+			}
+		}
+	},
+	
+	removeTrigger: function(keyArr){
+		if(!$this.$_ecMap){
+			$this.$_ecMap = {};
+		}
+		if(!JSB.isArray(keyArr)){
+			keyArr = [keyArr];
+		}
+		for(var i = 0; i < keyArr.length; i++){
+			var key = keyArr[i];
+			if($this.$_ecMap[key]){
+				delete $this.$_ecMap[key];
 			}
 		}
 	},
@@ -5912,15 +5947,19 @@ JSB({
 			
 			// prepare params
 			var params = '';
-			for(var i in xhrObj.data){
-				if(params.length > 0){
-					params += '&';
+			if(JSB.isObject(xhrObj.data)){
+				for(var i in xhrObj.data){
+					if(params.length > 0){
+						params += '&';
+					}
+					var pObj = xhrObj.data[i];
+					if(JSB().isPlainObject(pObj) || JSB().isArray(pObj)){
+						pObj = JSON.stringify(pObj);
+					}
+					params += i + '=' + encodeURIComponent(pObj);
 				}
-				var pObj = xhrObj.data[i];
-				if(JSB().isPlainObject(pObj) || JSB().isArray(pObj)){
-					pObj = JSON.stringify(pObj);
-				}
-				params += i + '=' + encodeURIComponent(pObj);
+			} else {
+				params = xhrObj.data;
 			}
 			
 			// combine url and params if GET
@@ -5970,7 +6009,14 @@ JSB({
 				var to = null;
 				xhr.open(xhrObj.type, url, true);
 				if(xhrObj.type == 'POST'){
-					xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+					if(params && !JSB.isObject(params) && !JSB.isString(params)){
+						if(!xhrObj.timeout){
+							xhrObj.timeout = 3600000;
+						}
+						//xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+					} else {
+						xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+					}
 				}
 				if (xhr.overrideMimeType) {
 					xhr.overrideMimeType("application/json");
@@ -6110,6 +6156,7 @@ JSB({
 			}
 		},
 */		
+		
 		// on clinet side
 		enqueueRpc: function(cmd, callback){
 			var id = JSB().generateUid();
@@ -6118,6 +6165,7 @@ JSB({
 				callback: callback
 			};
 			this.updateRpc();
+			return id;
 		},
 		
 		updateRpc: function(){
@@ -6137,6 +6185,21 @@ JSB({
 			}, this.cmdTimeoutVal);
 		},
 		
+		translateStreaming: function(entry){
+			var p = entry.cmd.params;
+			if(p && p.__di){
+				// look for object for streamed transfer
+				for(var i = 0; i < p.__di.length; i++){
+					var dDesc = p.__di[i];
+					if(dDesc.d.__type == 'File'){
+						$this.ajax($this.getServerBase() + 'jsb?cmd=upload&id=' + dDesc.d.__id, dDesc.d.__data, function(res, obj){
+						});
+						delete dDesc.d.__data;
+					}
+				}
+			}
+		},
+		
 		doRpc: function(){
 			var self = this;
 			var rpcBatch = [];
@@ -6144,6 +6207,7 @@ JSB({
 			// place new queries into batch 
 			for(var id in this.queueToSend){
 				var entry = this.queueToSend[id];
+				this.translateStreaming(entry);
 				rpcBatch.push(entry.cmd);
 				this.rpcEntryMap[id] = entry;
 			}
@@ -6342,6 +6406,7 @@ JSB({
 		rpcQueueFirst: null,
 		rpcQueueLast: null,
 		rpcMap: {},
+		uploadMap: {},
 		
 		maxBatchSize: 10,
 		
@@ -6354,33 +6419,65 @@ JSB({
 			this.enableRpcCleanup(true);
 		},
 		
+		performUpload: function(streamId){
+			var scope = (function(){return this;}).call(null);
+			var javaStream = scope[streamId];
+			
+			this.lock('uploadMap');
+			this.uploadMap[streamId] = javaStream;
+			this.unlock('uploadMap');
+			
+			delete scope[streamId];
+			this.setTrigger('uploadMap' + streamId);
+		},
+		
+		ensureUpload: function(streamId, callback){
+			var key = 'uploadMap' + streamId;
+			this.ensureTrigger(key, function(){
+				$this.lock('uploadMap');
+				var javaStream = $this.uploadMap[streamId];
+				delete $this.uploadMap[streamId];
+				$this.unlock('uploadMap');
+				$this.removeTrigger(key);
+				callback.call($this, javaStream);
+			});
+		},
+		
 		performRpc: function(jsoName, instanceId, procName, params, rpcId){
 			var np = {};
+			var ret = null, fail = null;
 			$jsb.injectComplexObjectInRpcResult(params, function(r){
 				np.res = r;
-			});
-			var ret = null, fail = null;
-			try {
-				ret = this.executeClientRpc(jsoName, instanceId, procName, np.res);
-			} catch(e){
-				fail = e;
-				if($jsb.getLogger()){
-					$jsb.getLogger().error(e);
+				try {
+					ret = $this.executeClientRpc(jsoName, instanceId, procName, np.res);
+				} catch(e){
+					fail = e;
+					if($jsb.getLogger()){
+						$jsb.getLogger().error(e);
+					}
+					if(!rpcId){
+						throw e;
+					} 
 				}
-				if(!rpcId){
-					throw e;
-				} 
-			}
-			if(rpcId){
-				var respPacket = {
-					id: rpcId,
-					completed: true,
-					result: null,
-					error: null,
-				};
-				if(JSB.isFuture(ret)){
-					var self = this;
-					ret.await(function(ret, fail){
+				if(rpcId){
+					var respPacket = {
+						id: rpcId,
+						completed: true,
+						result: null,
+						error: null,
+					};
+					if(JSB.isFuture(ret)){
+						ret.await(function(ret, fail){
+							if(fail){
+								respPacket.error = fail;
+								respPacket.success = false;
+							} else {
+								respPacket.result = ret;
+								respPacket.success = true;
+							}
+							$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
+						});
+					} else {
 						if(fail){
 							respPacket.error = fail;
 							respPacket.success = false;
@@ -6388,24 +6485,20 @@ JSB({
 							respPacket.result = ret;
 							respPacket.success = true;
 						}
-						self.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
-					});
-				} else {
-					if(fail){
-						respPacket.error = fail;
-						respPacket.success = false;
-					} else {
-						respPacket.result = ret;
-						respPacket.success = true;
+						$this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
 					}
-					this.rpc('handleRpcResponse', [[respPacket]], null, {session:JSB.getCurrentSession()});
 				}
-			} else {
+			});
+
+			if(!rpcId){
+				if(!JSB.isDefined(np.res)){
+					throw new Error("Synchronous RPC don't support streamed transfers");
+				}
 				if(JSB.isFuture(ret)){
 					throw new Error("Synchronous RPC don't support futures");
 				}
 				return $jsb.substComplexObjectInRpcResult(ret);
-			}
+			} 
 		},
 
 
