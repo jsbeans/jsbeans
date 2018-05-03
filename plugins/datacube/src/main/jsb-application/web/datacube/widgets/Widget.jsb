@@ -201,7 +201,7 @@
 
             item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
-            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
+            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(serverData, fail){
                 if(fail && fail.message == 'Fetch broke'){
                     return;
                 }
@@ -212,8 +212,11 @@
                     }
                 }
                 item.fetchOpts.reset = false;
-                if(data){
-                    data = $this.decompressData(data);
+
+                var data;
+
+                if(serverData){
+                    data = $this.decompressData(serverData);
                     if(!item.data){
                         item.data = data;
                     } else {
@@ -224,7 +227,7 @@
                     if(fail){
                         JSB.getLogger().error(fail);
                     }
-                    callback.call($this, data, fail);
+                    callback.call($this, data, fail, serverData.widgetOpts);
                 }
             });
             return true;
@@ -488,7 +491,7 @@
 	},
 
 	$server: {
-		$require: ['DataCube.Widgets.WidgetRegistry', 'JSB.Crypt.MD5'],
+		$require: ['DataCube.Widgets.WidgetRegistry', 'JSB.Crypt.MD5', 'JSB.Workspace.WorkspaceController', 'Unimap.ValueSelector'],
 
 		iterators: {},
 		needBreak: false,
@@ -623,7 +626,6 @@
 					return id;
 				}
 	
-	
 				function fillLayerBuffer(layerName){
 					if(!contextBuffers[layerName]){
 						contextBuffers[layerName] = [];
@@ -752,12 +754,12 @@
 					data.push(el);
 				}
 
-
 				// compress data
 				var encoded = {
 					layers: [],
 					data: [],
-					dict: []
+					dict: [],
+					widgetOpts: this.extendWidgetOpts(opts.widgetOpts)
 				};
 
 				var encMap = {};
@@ -786,15 +788,33 @@
 					}
 					encoded.data.push(cItem);
 				}
+
 				if($this.needBreak){
 					throw new Error('Fetch broke');
 				}
 				
 				return encoded;
-
 			} finally {
 				JSB.getLocker().unlock(mtx);
 			}
+		},
+
+		extendWidgetOpts: function(opts){
+		    var widgetOpts = {};
+
+		    if(!opts){
+		        return;
+		    }
+
+		    if(opts.styleScheme){
+                var valueSelector = new ValueSelector({
+                    values: { values: WorkspaceController.getWorkspace(opts.styleScheme.workspaceId).entry(opts.styleScheme.entryId).getStyles() }
+                });
+
+                widgetOpts.styleScheme = valueSelector.find('widgetSettings colorScheme').values();
+		    }
+
+		    return widgetOpts;
 		},
 		
 		executeQuery: function(sourceId, dashboard, opts){

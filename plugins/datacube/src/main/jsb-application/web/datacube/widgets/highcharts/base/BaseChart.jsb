@@ -785,6 +785,7 @@
                 this._dataSource = null;
                 this._schemeOpts = null;
                 this._filterFields = null;
+                this._widgetOpts = null;
             }
 
             if(!this._dataSource){
@@ -833,17 +834,7 @@
                 $this._resolvePointContextFilters();
             }
 
-            if(styleSelector){
-                styleSelector.value(function(widgetStyleSelector){
-                    if(widgetStyleSelector){
-                        chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
-                    }
-
-                    buildWidget(chartOpts);
-                });
-            } else {
-                buildWidget(chartOpts);
-            }
+            buildWidget(chartOpts);
         },
 
         setInitialized: function(){
@@ -861,7 +852,7 @@
             this.refresh();
         },
 
-        _buildChart: function(){
+        _buildChart: function(data){
             var chartOpts = {};
 
             try{
@@ -916,6 +907,8 @@
                         animation: chartContext.find('animation').checked(),
                         inverted: chartContext.find('inverted').checked()
                     },
+
+                    colors: this._widgetOpts && this._widgetOpts.styleScheme,
 
                     credits: {
                         enabled: creditsContext.find('enabled').checked(),
@@ -1040,9 +1033,9 @@
                                         }
                                     }
                                 }
-                            }
-                        },
-                        turboThreshold: 0
+                            },
+                            turboThreshold: 0
+                        }
                     },
 
                     series: series,

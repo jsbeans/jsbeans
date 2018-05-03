@@ -278,8 +278,7 @@
                             type: seriesContext[j].find('type').value(),
                             color: seriesContext[j].find('color').value(),
                             stack: seriesContext[j].find('stack').value(),
-                            step: $this.isNone(seriesContext[j].find('step').value()),
-                            turboThreshold: 0
+                            step: $this.isNone(seriesContext[j].find('step').value())
                         };
 
                         JSB.merge(true, chartOpts.series[j], series);

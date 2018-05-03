@@ -424,7 +424,6 @@
                             color: seriesData[j].color,
                             stack: seriesContext[seriesData[j].index].find('stack').value(),
                             step: $this.isNone(seriesContext[seriesData[j].index].find('step').value()),
-                            turboThreshold: 0,
                             yAxis: yAxis > -1 ? yAxis : undefined
                         };
 

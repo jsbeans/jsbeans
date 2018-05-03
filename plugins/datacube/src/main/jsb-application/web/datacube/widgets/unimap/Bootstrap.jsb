@@ -49,10 +49,6 @@
         {
             name: 'autocompleteGroup',
             render: 'Unimap.ValueSelectors.Group'
-        },
-        {
-            name: 'styleBinding',
-            render: 'Datacube.ValueSelectors.StylesBindingSelector'
         }
     ],
 }
