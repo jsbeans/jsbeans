@@ -309,7 +309,6 @@
                 console.log('TreemapChart build chart exception');
                 console.log(ex);
             } finally {
-debugger;
                 return baseChartOpts;
             }
 	    }

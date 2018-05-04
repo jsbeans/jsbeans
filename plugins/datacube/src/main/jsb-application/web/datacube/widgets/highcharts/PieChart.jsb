@@ -171,8 +171,14 @@
                 return;
             }
 
+            var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() };
+
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(){
+            this.fetchBinding(this._dataSource, { readAll: true, reset: true, widgetOpts: widgetOpts }, function(res, fail, widgetOpts){
+                if(widgetOpts){
+                    $this._widgetOpts = widgetOpts;
+                }
+
                 try {
                     var data = [];
 
