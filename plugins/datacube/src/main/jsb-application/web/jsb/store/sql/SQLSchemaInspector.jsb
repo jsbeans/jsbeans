@@ -12,21 +12,6 @@
 		extractSchemas: function(jdbcConnection, stageCallback, filter){
 			var schemas = {};
             var databaseMetaData = jdbcConnection.getMetaData();
-/*
-            var types = {};
-            var tables = databaseMetaData.getTables(null, null, null, null);
-            while (tables.next()) {
-                var tableSchema = ''+tables.getString("TABLE_SCHEM");
-                var tableName = ''+tables.getString("TABLE_NAME");
-                var tableType = ''+tables.getString("TABLE_TYPE");
-                if(!types[tableType]){
-                	types[tableType] = 1;
-                } else {
-                	types[tableType]++;
-                };
-                
-            }
-*/
             var skipTypes = {
             	'INDEX': true,
             	'SEQUENCE': true,
@@ -58,7 +43,9 @@
                 if(skipTypes[tableType]){
                 	continue;
                 }
-                
+                if(!tableSchema || tableSchema == 'null'){
+                	tableSchema = 'public';
+                }
                 var compoundName = tableSchema + '.' + tableName;
                 if(rxFilters && rxFilters.length > 0){
                 	var bMatched = false;
@@ -130,9 +117,11 @@
                 var pks = databaseMetaData.getPrimaryKeys(null, tableSchema, tableName);
                 while (pks.next()) {
                     var columnName = ''+pks.getString("COLUMN_NAME");
-                    tableDesc.columns[columnName].primaryKey = ''+pks.getString("PK_NAME");
+                    if(tableDesc.columns[columnName]){
+                    	tableDesc.columns[columnName].primaryKey = ''+pks.getString("PK_NAME");
+                    }
                 }
-
+                
                 // list foreign keys
                 var fks = databaseMetaData.getImportedKeys(null, tableSchema, tableName);
                 while (fks.next()) {
