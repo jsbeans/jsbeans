@@ -301,7 +301,7 @@
 
         _translateSourceView: function(sourceView, context) {
             var sql  = sourceView instanceof QueryView
-                    ? '' + $this._translateAnyView(sourceView) + ' AS ' + context
+                    ? '' + $this._translateAnyView(sourceView) + ' AS ' + $this._quotedName(context)
                     : $this._translateAnyView(sourceView);
             return sql;
         },
