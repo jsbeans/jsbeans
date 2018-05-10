@@ -35,6 +35,8 @@
                                 embedSlicesForQuery(viewQuery);
                                 dcQuery.$views[subQuery.$from] = viewQuery;
                             }
+                        } else if (!dcQuery.$views || !dcQuery.$views[subQuery.$from]){
+                            throw new Error('Undefined slice: ' + subQuery.$from);
                         }
                     }
                 });

@@ -428,6 +428,10 @@
                     return '('+ translateNOperator(exp[op], '/', function(arg, n, type){return n == 0 ? 'COALESCE('+arg+', 0.0)' : arg}) + ')';
                 case '$divz':
                     return '('+ translateDivzOperator(exp[op]) + ')';
+                case '$sqrt':
+                    return 'SQRT('+ $this._translateExpression(exp[op], dcQuery, useAlias) + ')';
+                case '$pow2':
+                    return 'POW('+ $this._translateExpression(exp[op], dcQuery, useAlias) + ', 2)';
 
                 case '$concat':
                     return 'CONCAT(' + translateNOperator(exp[op], ',') + ')';

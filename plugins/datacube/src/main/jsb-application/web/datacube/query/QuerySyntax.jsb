@@ -180,7 +180,7 @@
 		    new this.Group({
 		        name: '$expression',
 		        values: [
-		            '$add', '$sub', '$mul', '$div', '$divz', '$mod',
+		            '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
 		            '$greatest', '$least',
 		            '$splitString', '$substring', '$trim', '$concat',
 		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString', '$toTimestamp',
@@ -286,6 +286,22 @@
 		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
+
+
+		    new this.SingleObject({
+		        name: '$sqrt',
+		        displayName: "&Sqrt;",
+		        category: 'Математические операторы',
+		        desc: 'Квадратный корень от числа',
+		        values: ['$const', '$expression', '$query', '$field', '$param'],
+		    });
+		    new this.SingleObject({
+                name: '$pow2',
+                displayName: 'x&#xb2;',
+                category: 'Математические операторы',
+                desc: 'Возведение числа в квадрат',
+                values: ['$const', '$expression', '$query', '$field', '$param'],
+            });
 
 		    // $greatest
 		    new this.SingleObject({
