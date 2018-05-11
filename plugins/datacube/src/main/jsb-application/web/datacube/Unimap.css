@@ -25,19 +25,16 @@
 
 .widgetSettingsView .scheme .jsb-checkbox > .check-elem {
     background-image: url(/datacube/images/datacube-checkbox.png);
-}
-
-.widgetSettingsView .scheme .itemRender > .jsb-checkbox > .check-elem {
     width: 16px;
     height: 16px;
     background-size: auto 16px;
 }
 
-.widgetSettingsView .scheme .itemRender > .jsb-checkbox > .check-elem.checked {
+.widgetSettingsView .scheme .jsb-checkbox > .check-elem.checked {
     background-position: -16px 0;
 }
 
-.widgetSettingsView .scheme .itemRender > .jsb-checkbox > .check-elem:hover:not(.checked) {
+.widgetSettingsView .scheme .jsb-checkbox > .check-elem:hover:not(.checked) {
     background-position: -48px 0;
 }
 

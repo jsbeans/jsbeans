@@ -571,6 +571,24 @@
                                     valueType: 'number',
                                     defaultValue: 0
                                 },
+                                /*
+                                format: {
+                                    render: 'formatter',
+                                    name: 'Форматирование',
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Значение точки',
+                                                type: 'number',
+                                                value: 'y'
+                                            }
+                                        ],
+                                        variablesBlock: true
+                                    },
+                                    valueType: 'string',
+                                    defaultValue: '{y}'
+                                },
+                                */
                                 format: {
                                     render: 'item',
                                     name: 'Формат',

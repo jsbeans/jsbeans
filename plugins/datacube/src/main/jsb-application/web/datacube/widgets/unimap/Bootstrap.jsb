@@ -30,6 +30,10 @@
         {
             name: 'namesBinding',
             render: 'Unimap.Render.NamesBinding'
+        },
+        {
+            name: 'formatter',
+            render: 'Unimap.Render.Formatter'
         }
     ],
 

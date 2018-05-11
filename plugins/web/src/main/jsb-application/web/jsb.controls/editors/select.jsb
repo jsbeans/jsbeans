@@ -63,11 +63,9 @@
                             $this.$(document).off('click.comboEditor_closeDD');
                         }
                     });
-
-                    return;
+                } else {
+                    $this.dropDown.addClass('hidden');
                 }
-
-                $this.dropDown.addClass('hidden');
             }
 
             this.getElement().click(ddToggle);
@@ -115,7 +113,10 @@
                         });
                     })(i)
 
-                    this._optionsList[key] = el;
+                    this._optionsList[i] = {
+                        element: el,
+                        options: options[i]
+                    };
 	                this.dropDown.append(el);
 	            }
 	        } else {
@@ -144,7 +145,10 @@
                         });
                     })(key)
 
-                    this._optionsList[key] = el;
+                    this._optionsList[key] = {
+                        element: el,
+                        options: options[i]
+                    };
                     this.dropDown.append(el);
                 }
 	        }
@@ -156,15 +160,16 @@
 	    	}
 	        this._value = {
                 key: key,
-                value: this._optionsList[key]
+                options: key ? this._optionsList[key].options : undefined,
+                value: key ? this._optionsList[key].element : undefined
             };
 
             this.currentVal.empty();
 	        this.dropDown.find('li').removeClass('selected');
 
 	        if(JSB.isDefined(key)){  // select
-	            this.currentVal.append(this._optionsList[key].html());
-	            this._optionsList[key].addClass('selected');
+	            this.currentVal.append(this._optionsList[key].element.html());
+	            this._optionsList[key].element.addClass('selected');
 	        }
 
 	        if(this.clearBtn){

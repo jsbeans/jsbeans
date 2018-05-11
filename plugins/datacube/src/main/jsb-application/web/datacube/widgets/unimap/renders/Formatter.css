@@ -1,0 +1,157 @@
+.formatter {
+    padding-left: 5px;
+}
+
+.formatter > * {
+    vertical-align: middle;
+}
+
+.formatter > .name {
+    display: inline-block;
+    min-width: 150px;
+    font-size: 15px;
+    margin-left: -5px;
+    color: #73879C;
+    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+}
+
+.formatter > h3 {
+    display: block;
+    font-weight: 400;
+}
+
+.formatter > .variablesBlock > .variableItem {
+    border-bottom: 1px solid lightgrey;
+    padding: 5px 0;
+}
+
+.formatter > .variablesBlock > .variableItem > * {
+    vertical-align: middle;
+}
+
+.formatter > .variablesBlock > .variableItem > .selectLabel {
+    display: inline-block;
+    width: 40%;
+    vertical-align: middle;
+}
+
+.formatter > .variablesBlock > .variableItem > .selectLabel > .jsb-select {
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.formatter > .variablesBlock > .variableItem > .editorLabel {
+    display: inline-block;
+    width: 50%;
+}
+
+.formatter > .variablesBlock > .variableItem > .editorLabel > .jsb-editor {
+    margin-left: 5px;
+    width: 200px;
+    padding: 2px 4px;
+    font-size: 14px;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    border-radius: 3px;
+}
+
+.formatter > .variablesBlock > .variableItem > .btnDelete {
+
+}
+
+.formatter > .variablesBlock > .variableItem > .typeSettings {
+    padding: 5px;
+}
+
+.formatter > .variablesBlock > .variableItem > .typeSettings > .jsb-checkbox {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.formatter > .variablesBlock > .variableItem > .typeSettings > .decimalsLabel > input {
+    margin-left: 5px;
+    width: 20px;
+    padding: 2px 4px;
+    font-size: 14px;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    border-radius: 3px;
+}
+
+.formatter > .addVarBtn {
+
+}
+
+.formatter > .addVarToTempBtn {
+    margin-left: 5px;
+}
+
+.formatter > .editBlock {
+    -moz-appearance: textfield-multiline;
+    -webkit-appearance: textarea;
+    border: 1px solid gray;
+    min-height: 40px;
+    max-height: 200px;
+    overflow: auto;
+    padding: 5px 3px;
+    resize: both;
+    display: inline-block;
+    min-width: 300px;
+
+    color: #555;
+    border: 1px solid #ccc;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+}
+
+.formatter > .editBlock > span.variable {
+    border: 1px solid #00800091;
+    background-color: #83ca8b;
+    color: white;
+    padding: 2px;
+    border-radius: 5px;
+    margin: 0 2px;
+}
+
+.formatter > .dropDown {
+    position: absolute;
+    min-width: 150px;
+    top: 32px;
+    min-height: 4px;
+    z-index: 10;
+    background: white;
+    border: 1px solid lightgrey;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+
+.formatter > .dropDown:empty {
+    background: royalblue;
+}
+
+.formatter > .dropDown > li {
+    position: relative;
+    list-style: none;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid transparent;
+}
+
+.formatter > .dropDown > li:hover {
+    background: rgba(220, 220, 220, 0.45);
+    border: 1px solid rgb(158, 158, 158);
+}
+
+.formatter > .dropDown > li.selected {
+    background: rgb(220, 220, 220);
+    border: 1px solid rgb(158, 158, 158);
+}
