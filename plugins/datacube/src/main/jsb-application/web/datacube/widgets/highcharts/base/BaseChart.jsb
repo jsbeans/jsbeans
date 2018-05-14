@@ -344,8 +344,17 @@
                     }
                 },
                 labelFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат подписей',
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'name'
+                            }
+                        ]
+                    },
                     valueType: 'string',
                     defaultValue: '{name}'
                 },
@@ -423,33 +432,114 @@
                     editor: 'none'
                 },
                 headerFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат верхнего колонтитула',
-                    valueType: 'string',
-                    editor: 'JSB.Widgets.MultiEditor',
-                    options: {
-                        valueType: 'org.jsbeans.types.Html'
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Процентное соотношение',
+                                title: 'Только для круговой диаграммы и стеков',
+                                type: 'number',
+                                value: 'percentage'
+                            },
+                            {
+                                alias: 'Общее значение стека',
+                                title: 'Только для стеков',
+                                type: 'number',
+                                value: 'total'
+                            },
+                            {
+                                alias: 'Координаты точки(X)',
+                                type: 'number',
+                                value: 'x'
+                            },
+                            {
+                                alias: 'Значение точки(Y)',
+                                type: 'number',
+                                value: 'y'
+                            },
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'series.name'
+                            }
+                        ]
                     },
+                    valueType: 'string',
                     defaultValue: '<span style="font-size: 10px">{point.key}</span><br/>'
                 },
                 pointFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат точек',
-                    valueType: 'string',
-                    editor: 'JSB.Widgets.MultiEditor',
-                    options: {
-                        valueType: 'org.jsbeans.types.Html'
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Процентное соотношение',
+                                title: 'Только для круговой диаграммы и стеков',
+                                type: 'number',
+                                value: 'percentage'
+                            },
+                            {
+                                alias: 'Общее значение стека',
+                                title: 'Только для стеков',
+                                type: 'number',
+                                value: 'total'
+                            },
+                            {
+                                alias: 'Координаты точки(X)',
+                                type: 'number',
+                                value: 'x'
+                            },
+                            {
+                                alias: 'Значение точки(Y)',
+                                type: 'number',
+                                value: 'y'
+                            },
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'series.name'
+                            }
+                        ]
                     },
+                    valueType: 'string',
                     defaultValue: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y}</b><br/>'
                 },
                 footerFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат нижнего колонтитула',
-                    valueType: 'string',
-                    editor: 'JSB.Widgets.MultiEditor',
-                    options: {
-                        valueType: 'org.jsbeans.types.Html'
-                    }
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Процентное соотношение',
+                                title: 'Только для круговой диаграммы и стеков',
+                                type: 'number',
+                                value: 'percentage'
+                            },
+                            {
+                                alias: 'Общее значение стека',
+                                title: 'Только для стеков',
+                                type: 'number',
+                                value: 'total'
+                            },
+                            {
+                                alias: 'Координаты точки(X)',
+                                type: 'number',
+                                value: 'x'
+                            },
+                            {
+                                alias: 'Значение точки(Y)',
+                                type: 'number',
+                                value: 'y'
+                            },
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'series.name'
+                            }
+                        ]
+                    },
+                    valueType: 'string'
                 },
                 padding: {
                     render: 'item',
@@ -571,27 +661,40 @@
                                     valueType: 'number',
                                     defaultValue: 0
                                 },
-                                /*
                                 format: {
                                     render: 'formatter',
                                     name: 'Форматирование',
                                     formatterOpts: {
                                         variables: [
                                             {
-                                                alias: 'Значение точки',
+                                                alias: 'Процентное соотношение',
+                                                title: 'Только для круговой диаграммы и стеков',
+                                                type: 'number',
+                                                value: 'percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'total'
+                                            },
+                                            {
+                                                alias: 'Координаты точки(X)',
+                                                type: 'number',
+                                                value: 'x'
+                                            },
+                                            {
+                                                alias: 'Значение точки(Y)',
                                                 type: 'number',
                                                 value: 'y'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'series.name'
                                             }
-                                        ],
-                                        variablesBlock: true
+                                        ]
                                     },
-                                    valueType: 'string',
-                                    defaultValue: '{y}'
-                                },
-                                */
-                                format: {
-                                    render: 'item',
-                                    name: 'Формат',
                                     valueType: 'string',
                                     defaultValue: '{y}'
                                 },
@@ -830,19 +933,20 @@
                 styleSelector = this.getContext().find('chart colorScheme');
 
             function buildWidget(chartOpts){
-                /*
+
                 if($this.chart){
-                    $this.chart.update(chartOpts, true, true);
+                    $this.chart.update(chartOpts, true, false); // chartOpts, true, true
                 } else {
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
-                */
-                // todo: use update
+
+                // todo: test on multiple axis
+                /*
                 if($this.chart){
                     $this.chart.destroy();
                 }
                 $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
-
+                */
                 $this._select($this._curFilters, true, true);
 
                 if($this._chartType === 'stockChart'){

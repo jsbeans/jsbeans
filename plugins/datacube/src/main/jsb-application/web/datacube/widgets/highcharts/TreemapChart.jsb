@@ -79,6 +79,20 @@
                                     }
                                 },
                                 format: {
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Значение точки',
+                                                type: 'number',
+                                                value: 'y'
+                                            },
+                                            {
+                                                alias: 'Имя точки',
+                                                type: 'string',
+                                                value: 'point.name'
+                                            }
+                                        ]
+                                    },
                                     defaultValue: '{point.name}'
                                 }
                             }

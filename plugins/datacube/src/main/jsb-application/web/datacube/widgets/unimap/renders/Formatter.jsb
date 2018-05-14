@@ -10,7 +10,7 @@
 	    _formatterVariablesList: [],
 
 	    _defaultOpts: {
-	        //variablesBlock: true
+	        variablesBlock: true
 	    },
 	    _editorValue: '',
 
@@ -23,6 +23,8 @@
 
             this.createRequireDesc(this._name);
             this.createDescription(this._name);
+
+            JSB.merge(this._scheme.formatterOpts, this._defaultOpts);
 
             this.createBasicVariablesList();
 
@@ -115,7 +117,7 @@
 	            value = value.clone();
 	        }
 
-            var item = this.$('<li key="' + obj.key + '">' + value + '</li>');
+            var item = this.$('<li key="' + obj.key + '" title="' + (obj.title ? obj.title : '') + '">' + value + '</li>');
             item.click(function(evt){
                 $this.addVariableToText(obj.key);
                 $this._dropDownList.addClass('hidden');
@@ -380,6 +382,7 @@
 	                innerValue: this._scheme.formatterOpts.variables[i].value,
 	                key: this._scheme.formatterOpts.variables[i].alias,
 	                type: this._scheme.formatterOpts.variables[i].type,
+	                title: this._scheme.formatterOpts.variables[i].title,
 	                value: this._scheme.formatterOpts.variables[i].alias
 	            });
 	        }
@@ -414,7 +417,7 @@
 	                settingsItem.append(separator.getElement());
 	                this._beans.push(separator);
 
-	                var decimalsLabel = this.$('<label class="decimalsLabel">Число знаков после запятой</label>');
+	                var decimalsLabel = this.$('<label class="label decimalsLabel">Число знаков после запятой</label>');
 	                var decimals = new Editor({
                         value: JSB.isDefined(variable.typeSettings.decimals) ? variable.typeSettings.decimals : (variable.type === 'float' ? 2 : 0),
                         onchange: function(val){
@@ -430,7 +433,20 @@
 	                this._beans.push(decimals);
 	                break;
                 case 'date':
-                    //
+                    var dateLabel = this.$('<label class="label dateLabel">Формат даты</label>');
+                    var dateFormat = new Editor({
+                        value: JSB.isDefined(variable.typeSettings.dateFormat) ? variable.typeSettings.dateFormat : '%d-%m-%Y',
+                        onchange: function(val){
+                            variable.typeSettings.dateFormat = val;
+
+                            variable.typeSettings.formatPart = val;
+
+                            $this.changeValue();
+                        }
+                    });
+                    dateLabel.append(dateFormat.getElement());
+	                settingsItem.append(dateLabel);
+	                this._beans.push(dateFormat);
                     break;
 	        }
 	    },
@@ -490,6 +506,10 @@
 	    },
 
 	    _findInArray: function(arr, key, value){
+	        if(!arr){
+	            return -1;
+	        }
+
 	        for(var i = 0; i < arr.length; i++){
 	            if(arr[i][key] === value){
 	                return i;

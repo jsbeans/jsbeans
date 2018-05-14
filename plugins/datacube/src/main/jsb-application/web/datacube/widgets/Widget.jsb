@@ -234,9 +234,10 @@
             item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
             this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(serverData, fail){
-                if(fail && fail.message == 'Fetch broke'){
+                if(fail){
                     return;
                 }
+
                 if(item.fetchOpts.reset){
                     item.cursor = 0;
                     if(item.data){

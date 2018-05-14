@@ -53,8 +53,17 @@
                                     valueType: 'number'
                                 },
                                 format: {
-                                    render: 'item',
+                                    render: 'formatter',
                                     name: 'Формат',
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Значение',
+                                                type: 'string',
+                                                value: 'value'
+                                            }
+                                        ]
+                                    },
                                     valueType: 'string',
                                     defaultValue: '{value}'
                                 },

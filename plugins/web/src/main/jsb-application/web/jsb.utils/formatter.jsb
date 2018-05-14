@@ -2,18 +2,121 @@
 {
 	$name: 'JSB.Utils.Formatter',
 
+	_lang: {
+	    decimalPoint: '.',
+	    thousandsSep: ' '
+	},
+
+    _pick: function () {
+        var args = arguments,
+            i,
+            arg,
+            length = args.length;
+        for (i = 0; i < length; i++) {
+            arg = args[i];
+            if (arg !== undefined && arg !== null) {
+                return arg;
+            }
+        }
+    },
+
+	// H.numberFormat
+    _numberFormat: function (number, decimals, decimalPoint, thousandsSep) {
+        number = +number || 0;
+        decimals = +decimals;
+
+        var lang = this._lang,
+            origDec = (number.toString().split('.')[1] || '').split('e')[0].length,
+            strinteger,
+            thousands,
+            ret,
+            roundedNumber,
+            exponent = number.toString().split('e'),
+            fractionDigits;
+
+        if (decimals === -1) {
+            // Preserve decimals. Not huge numbers (#3793).
+            decimals = Math.min(origDec, 20);
+        } else if (!JSB.isNumber(decimals)) {
+            decimals = 2;
+        } else if (decimals && exponent[1] && exponent[1] < 0) {
+            // Expose decimals from exponential notation (#7042)
+            fractionDigits = decimals + +exponent[1];
+            if (fractionDigits >= 0) {
+                // remove too small part of the number while keeping the notation
+                exponent[0] = (+exponent[0]).toExponential(fractionDigits)
+                    .split('e')[0];
+                decimals = fractionDigits;
+            } else {
+                // fractionDigits < 0
+                exponent[0] = exponent[0].split('.')[0] || 0;
+
+                if (decimals < 20) {
+                    // use number instead of exponential notation (#7405)
+                    number = (exponent[0] * Math.pow(10, exponent[1]))
+                        .toFixed(decimals);
+                } else {
+                    // or zero
+                    number = 0;
+                }
+                exponent[1] = 0;
+            }
+        }
+
+        // Add another decimal to avoid rounding errors of float numbers. (#4573)
+        // Then use toFixed to handle rounding.
+        roundedNumber = (
+            Math.abs(exponent[1] ? exponent[0] : number) +
+            Math.pow(10, -Math.max(decimals, origDec) - 1)
+        ).toFixed(decimals);
+
+        // A string containing the positive integer component of the number
+        strinteger = String(parseInt(s, roundedNumber || 10));
+
+        // Leftover after grouping into thousands. Can be 0, 1 or 3.
+        thousands = strinteger.length > 3 ? strinteger.length % 3 : 0;
+
+        // Language
+        decimalPoint = this._pick(decimalPoint, lang.decimalPoint);
+        thousandsSep = this._pick(thousandsSep, lang.thousandsSep);
+
+        // Start building the return
+        ret = number < 0 ? '-' : '';
+
+        // Add the leftover after grouping into thousands. For example, in the
+        // number 42 000 000, this line adds 42.
+        ret += thousands ? strinteger.substr(0, thousands) + thousandsSep : '';
+
+        // Add the remaining thousands groups, joined by the thousands separator
+        ret += strinteger
+            .substr(thousands)
+            .replace(/(\d{3})(?=\d)/g, '$1' + thousandsSep);
+
+        // Add the decimal point and the decimal component
+        if (decimals) {
+            // Get the decimal component
+            ret += decimalPoint + roundedNumber.slice(-decimals);
+        }
+
+        if (exponent[1] && +ret !== 0) {
+            ret += 'e' + exponent[1];
+        }
+
+        return ret;
+    },
+
 	// H.formatSingle
     _formatSingle: function (format, val, time) {
         var floatRegex = /f$/,
             decRegex = /\.([0-9])/,
-            lang = H.defaultOptions.lang,
+            lang = this._lang,
             decimals;
 
         if (floatRegex.test(format)) { // float
             decimals = format.match(decRegex);
             decimals = decimals ? decimals[1] : -1;
             if (val !== null) {
-                val = H.numberFormat(
+                val = this._numberFormat(
                     val,
                     decimals,
                     lang.decimalPoint,
@@ -21,13 +124,14 @@
                 );
             }
         } else {
+            // todo
             // val = (time || H.time).dateFormat(format, val);
         }
         return val;
     },
 
     // H.format
-    _format: function (str, ctx, time) {
+    format: function (str, ctx, time) {
         var splitter = '{',
             isInside = false,
             segment,
@@ -78,9 +182,5 @@
         }
         ret.push(str);
         return ret.join('');
-    },
-
-	format: function(data, variables, template){
-	    //
-	}
+    }
 }

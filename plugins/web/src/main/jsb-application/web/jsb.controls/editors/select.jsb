@@ -128,7 +128,7 @@
                     var el, key;
 
                     if(JSB.isObject(options[i])){
-                        el = this.$('<li key="' + options[i].key + '"></li>');
+                        el = this.$('<li key="' + options[i].key + '" title="' + options[i].title + '"></li>');
                         el.append(options[i].value);
                         key = options[i].key;
                     } else {
