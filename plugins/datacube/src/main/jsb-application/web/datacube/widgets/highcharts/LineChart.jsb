@@ -189,76 +189,88 @@
             var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() };
 
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true, widgetOpts: widgetOpts }, function(res, fail, widgetOpts){
-                if(widgetOpts){
-                    $this._widgetOpts = widgetOpts;
+
+            var seriesData = [],
+                xAxisLinkedData = {},
+                xAxisIndividual = [],
+                xAxisData = {};
+
+            try{
+                function fetch(isReset){
+                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                        if(res.length === 0){
+                            resultProcessing();
+                            return;
+                        }
+
+                        if(serverWidgetOpts){
+                            $this._widgetOpts = serverWidgetOpts;
+                        }
+
+                        while($this._dataSource.next()){
+                            // xAxis
+                            // связанные оси
+                            var curCat = xAxisLinkedData,
+                                filterCat = null;
+
+                            for(var i = $this._schemeOpts.xAxisLinked.length - 1; i > -1 ; i--){
+                                var cat = $this._schemeOpts.xAxisLinked[i].categories.value();
+
+                                if(!curCat[cat]){
+                                    curCat[cat] = {};
+                                }
+                                curCat = curCat[cat];
+
+                                if(i === 0){
+                                    filterCat = curCat;
+                                }
+                            }
+
+                            // несвязанные оси
+                            for(var i = 0; i < $this._schemeOpts.xAxisIndividual.length; i++){
+                                if(!xAxisIndividual[i]){
+                                    xAxisIndividual[i] = {};
+                                }
+                                var val = $this._schemeOpts.xAxisIndividual[i].categories.value();
+
+                                if(!xAxisIndividual[i][val]){
+                                    xAxisIndividual[i][val] = {};
+                                }
+
+                                if(!filterCat && i === 0){
+                                    filterCat = xAxisIndividual[i][val];
+                                }
+                            }
+
+                            // series data
+                           for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
+                                var seriesName = $this._schemeOpts.seriesContext[i].find('name').value() || $this._schemeOpts.seriesContext[i].find('seriesName').value(),
+                                    data = $this._schemeOpts.seriesContext[i].find('data'),
+                                    color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value();
+
+                                if(!seriesData[i]){
+                                    seriesData[i] = {
+                                        data: {}
+                                    };
+                                }
+
+                                if(!seriesData[i].data[seriesName]){
+                                    seriesData[i].data[seriesName] = [];
+                                }
+
+                                seriesData[i].data[seriesName].push({
+                                    color: color,
+                                    x: filterCat,
+                                    y: data.value()
+                                });
+                            }
+                        }
+
+                        fetch();
+                    });
                 }
 
-                try{
-                    var seriesData = [],
-                        xAxisLinkedData = {},
-                        xAxisIndividual = [],
-                        xAxisData = {};
-
-                    while($this._dataSource.next()){
-                        // xAxis
-                        // связанные оси
-                        var curCat = xAxisLinkedData,
-                            filterCat = null;
-
-                        for(var i = $this._schemeOpts.xAxisLinked.length - 1; i > -1 ; i--){
-                            var cat = $this._schemeOpts.xAxisLinked[i].categories.value();
-
-                            if(!curCat[cat]){
-                                curCat[cat] = {};
-                            }
-                            curCat = curCat[cat];
-
-                            if(i === 0){
-                                filterCat = curCat;
-                            }
-                        }
-
-                        // несвязанные оси
-                        for(var i = 0; i < $this._schemeOpts.xAxisIndividual.length; i++){
-                            if(!xAxisIndividual[i]){
-                                xAxisIndividual[i] = {};
-                            }
-                            var val = $this._schemeOpts.xAxisIndividual[i].categories.value();
-
-                            if(!xAxisIndividual[i][val]){
-                                xAxisIndividual[i][val] = {};
-                            }
-
-                            if(!filterCat && i === 0){
-                                filterCat = xAxisIndividual[i][val];
-                            }
-                        }
-
-                        // series data
-                       for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
-                            var seriesName = $this._schemeOpts.seriesContext[i].find('name').value() || $this._schemeOpts.seriesContext[i].find('seriesName').value(),
-                                data = $this._schemeOpts.seriesContext[i].find('data'),
-                                color = $this._schemeOpts.series[i].colorType === 'manualColor' ? $this._schemeOpts.seriesContext[i].find('manualColorValue').value() : $this._schemeOpts.seriesContext[i].find('sourceColorValue').value();
-
-                            if(!seriesData[i]){
-                                seriesData[i] = {
-                                    data: {}
-                                };
-                            }
-
-                            if(!seriesData[i].data[seriesName]){
-                                seriesData[i].data[seriesName] = [];
-                            }
-
-                            seriesData[i].data[seriesName].push({
-                                color: color,
-                                x: filterCat,
-                                y: data.value()
-                            });
-                        }
-                    }
-
+                function resultProcessing(){
                     function resolveLinkedCategories(cats, result, index, max, curX){
                         var keys = Object.keys(cats).sort();
 
@@ -371,13 +383,16 @@
                         data: data,
                         xAxisData: xAxisData
                     });
-                } catch(ex){
-                    console.log('LineChart load data exception');
-                    console.log(ex);
-                } finally {
+
                     $this.getElement().loader('hide');
                 }
-            });
+
+                fetch(true);
+            } catch(ex){
+                console.log('LineChart load data exception');
+                console.log(ex);
+                $this.getElement().loader('hide');
+            }
         },
 
         _buildChart: function(data){

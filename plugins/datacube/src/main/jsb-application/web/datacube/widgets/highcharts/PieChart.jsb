@@ -174,39 +174,54 @@
             var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() };
 
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true, widgetOpts: widgetOpts }, function(res, fail, widgetOpts){
-                if(widgetOpts){
-                    $this._widgetOpts = widgetOpts;
+
+            var data = [];
+
+            try {
+                function fetch(isReset){
+                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, widgetOpts){
+                        if(res.length === 0){
+                            resultProcessing();
+                            return;
+                        }
+
+                        if(widgetOpts){
+                            $this._widgetOpts = widgetOpts;
+                        }
+
+                        while($this._dataSource.next()){
+                            for(var i = 0; i < $this._schemeOpts.series.length; i++){
+                                if(!data[i]){
+                                    data[i] = [];
+                                }
+
+                                data[i].push({
+                                    name: $this._schemeOpts.series[i].nameSelector.value() || $this._schemeOpts.series[i].seriesNameSelector.value(),
+                                    y: $this._schemeOpts.series[i].dataSelector.value()
+                                });
+                            }
+                        }
+
+                        fetch();
+                    });
                 }
 
-                try {
-                    var data = [];
-
-                    while($this._dataSource.next()){
-                        for(var i = 0; i < $this._schemeOpts.series.length; i++){
-                            if(!data[i]){
-                                data[i] = [];
-                            }
-
-                            data[i].push({
-                                name: $this._schemeOpts.series[i].nameSelector.value() || $this._schemeOpts.series[i].seriesNameSelector.value(),
-                                y: $this._schemeOpts.series[i].dataSelector.value()
-                            });
-                        }
-                    }
-
+                function resultProcessing(){
                     if(opts && opts.isCacheMod){
                         $this.storeCache(data);
                     }
 
                     $this.buildChart(data);
-                } catch (ex){
-                    console.log('PieChart load data exception');
-                    console.log(ex);
-                } finally {
+
                     $this.getElement().loader('hide');
                 }
-            });
+
+                fetch(true);
+            } catch (ex){
+                console.log('PieChart load data exception');
+                console.log(ex);
+                $this.getElement().loader('hide');
+            }
         },
 
         _buildChart: function(data){

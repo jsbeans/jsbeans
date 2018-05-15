@@ -200,40 +200,52 @@
             }
 
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
-                try{
-                    var seriesData = [];
 
-                    while($this._dataSource.next()){
-                        // series data
-                        for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
-                            if(!seriesData[i]){
-                                seriesData[i] = [];
-                            }
+            var seriesData = [];
 
-                            var x = $this._schemeOpts.dateContext.value();
+            try {
+                function fetch(isReset){
+                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
+                        if(res.length === 0){
+                            resultProcessing();
+                            return;
+                        }
 
-                            if(!$this._schemeOpts.seriesTypes[i]){
-                                var type = 'number';
-
-                                if(JSB.isDate(x)){
-                                    type = 'date';
+                        while($this._dataSource.next()){
+                            // series data
+                            for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
+                                if(!seriesData[i]){
+                                    seriesData[i] = [];
                                 }
 
-                                $this._schemeOpts.seriesTypes[i] = type;
-                            }
+                                var x = $this._schemeOpts.dateContext.value();
 
-                            if($this._schemeOpts.seriesTypes[i] === 'date'){
-                                x = x.getTime();
-                            }
+                                if(!$this._schemeOpts.seriesTypes[i]){
+                                    var type = 'number';
 
-                            seriesData[i].push({
-                                x: x,
-                                y: $this._schemeOpts.seriesContext[i].find('data').value()
-                            });
+                                    if(JSB.isDate(x)){
+                                        type = 'date';
+                                    }
+
+                                    $this._schemeOpts.seriesTypes[i] = type;
+                                }
+
+                                if($this._schemeOpts.seriesTypes[i] === 'date'){
+                                    x = x.getTime();
+                                }
+
+                                seriesData[i].push({
+                                    x: x,
+                                    y: $this._schemeOpts.seriesContext[i].find('data').value()
+                                });
+                            }
                         }
-                    }
 
+                        fetch();
+                    });
+                }
+
+                function resultProcessing(){
                     for(var i = 0; i < seriesData.length; i++){
                         seriesData[i].sort(function(a, b){
                             return a.x < b.x ? -1 : 1;
@@ -249,13 +261,16 @@
                     $this.buildChart({
                         data: seriesData
                     });
-                } catch(ex){
-                    console.log('RangeSelectorChart load data exception');
-                    console.log(ex);
-                } finally{
+
                     $this.getElement().loader('hide');
                 }
-            });
+
+                fetch(true);
+            } catch(ex){
+                console.log('RangeSelectorChart load data exception');
+                console.log(ex);
+                $this.getElement().loader('hide');
+            }
 	    },
 
 	    _buildChart: function(data){

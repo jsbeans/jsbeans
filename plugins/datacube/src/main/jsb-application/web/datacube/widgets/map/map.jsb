@@ -920,11 +920,19 @@
 
             this.resetTrigger('_dataLoaded');
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true }, function(res){
-                try{
-                    var regions = [],
-                        markers = [],
-                        bindings = [];
+
+            var regions = [],
+                markers = [],
+                bindings = [];
+
+            try{
+                function fetch(isReset){
+                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
+                        if(res.length === 0){
+                            resultProcessing();
+                            return;
+                        }
+                    });
 
                     while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
                         // load regions
@@ -1054,7 +1062,9 @@
                         }
                         /*********/
                     }
+                }
 
+                function resultProcessing(){
                     // processing regions
                     /*********/
                     for(var i = 0; i < $this._styles.regions.length; i++){
@@ -1124,17 +1134,19 @@
                     }
                     /*********/
 
+                    $this.setTrigger('_dataLoaded');
+
                     $this.buildChart({
                         regions: regions,
                         markers: markers
                     });
-                } catch(ex){
-                    console.log('Load data exception!');
-                    console.log(ex);
-                } finally {
-                    $this.setTrigger('_dataLoaded');
                 }
-            });
+
+                fetch(true);
+            } catch(ex){
+                console.log('Load data exception!');
+                console.log(ex);
+            }
 
             this.ensureDataLoaded(function(){
                 try{
