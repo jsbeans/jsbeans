@@ -496,10 +496,19 @@
             collapsed: true,
             items: {
                 formatter: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Форматирование значений',
+                    formatterOpts: {
+                    	variables: [
+                    		{
+                    			alias: 'Значение',
+                    			type: 'number',
+                    			value: 'y'
+                    		}
+                    	]
+                    },
                     valueType: 'string',
-                    defaultValue: '0,0.[00]'
+                    defaultValue: '{y:,.0f}'
                 },
                 infoControl: {
                     render: 'group',
@@ -566,7 +575,7 @@
         }
     },
     $client: {
-        $require: ['JSB.Utils.Rainbow', 'JQuery.UI.Loader', 'JSB.Crypt.MD5', 'JSB.Numeral'],
+        $require: ['JSB.Utils.Rainbow', 'JSB.Crypt.MD5', 'JSB.Utils.Formatter'],
 
         $constructor: function(opts){
             $base(opts);
@@ -581,8 +590,6 @@
             JSB.loadScript('tpl/leaflet/leaflet-src.js', function(){    // tpl/leaflet/leaflet.js
                 $this.setInitialized();
             });
-
-            Numeral.setLocale('ru');
 
             this.getElement().resize(function(){
                 JSB.defer(function(){
@@ -1248,7 +1255,7 @@
                                             return;
                                         }
 
-                                        layer.bindPopup(reg.region + ': ' + Numeral.format(reg.value, $this._styles.settings.formatter), {closeButton: false, autoPan: false});
+                                        layer.bindPopup(reg.region + ': ' + Formatter.format($this._styles.settings.formatter, {y: reg.value}), {closeButton: false, autoPan: false});
 
                                         layer.on({
                                             mouseover: function(evt){
@@ -1263,7 +1270,7 @@
                                     }
 
                                     if($this._styles.regions[i].showValuesPermanent){
-                                        layer.bindTooltip(String(Numeral.format(reg.value, $this._styles.settings.formatter)), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String(Formatter.format($this._styles.settings.formatter, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 
@@ -1332,7 +1339,7 @@
                                 var marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1])).addTo($this.map);
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
-                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : ''), {closeButton: false, autoPan: false});
+                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : ''), {closeButton: false, autoPan: false});
 
                                     marker.on({
                                         mouseover: function(evt){
@@ -1356,7 +1363,7 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : '');
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
                                 }
                             }
 
@@ -1402,7 +1409,7 @@
                                 }
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
-                                    html = '<span>' + Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) + '</span>';
+                                    html = '<span>' + Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) + '</span>';
                                 }
 
                                 if($this._styles.markers[i].fixedSize){
@@ -1414,7 +1421,7 @@
                                 marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon}).addTo($this.map);
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
-                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : ''), {closeButton: false, autoPan: false});
+                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : ''), {closeButton: false, autoPan: false});
 
                                     marker.on({
                                         mouseover: function(evt){
@@ -1438,7 +1445,7 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Numeral.format(data.markers[i].markerValues[j], $this._styles.settings.formatter) : '');
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
                                 }
                             }
 
@@ -1619,7 +1626,7 @@
                 div.append(list);
 
                 for (var j = 0; j < colorMap.length; j++) {
-                    list.append('<li><i style="background: #' + colorMap[j].color + ';"></i><span>' + Numeral.format(colorMap[j].max, '0 0') + '</span></li>');
+                    list.append('<li><i style="background: #' + colorMap[j].color + ';"></i><span>' + Formatter.format('{y:,.0f}', {y: colorMap[j].max}) + '</span></li>');
                 }
 
                 return div.get(0);
