@@ -4810,12 +4810,12 @@ JSB({
 			$jsb.getCallerJsb().loadCss(relativeUrl);
 		},
 
-		ajax: function(url, params, callback){
+		ajax: function(url, params, callback, opts){
 			var pUrl = url;
 			if(pUrl.indexOf(':') == -1){
 				pUrl = JSB.getProvider().getServerBase() + this.getJsb().getBasePath() + pUrl;
 			}
-			JSB().getProvider().ajax(pUrl, params, callback);
+			JSB().getProvider().ajax(pUrl, params, callback, opts);
 		},
 
 		onBeforeSync: function(syncInfo){
@@ -6010,9 +6010,6 @@ JSB({
 				xhr.open(xhrObj.type, url, true);
 				if(xhrObj.type == 'POST'){
 					if(params && !JSB.isObject(params) && !JSB.isString(params)){
-						if(!xhrObj.timeout){
-							xhrObj.timeout = 3600000;
-						}
 						//xhr.setRequestHeader('Content-Type', 'application/octet-stream');
 					} else {
 						xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
@@ -6041,28 +6038,31 @@ JSB({
 					}
 				}
 				
-				if(!xhrObj.timeout){
-					xhrObj.timeout = 10000;
+				if(JSB.isDefined(xhrObj.timeout) && xhrObj.timeout > 0){
+					to = window.setTimeout(function(){
+						xhr.abort();
+						if(xhrObj.error){
+							xhrObj.error(xhr, -1, 'XHR timeout');
+						}
+					}, xhrObj.timeout);
 				}
-				to = window.setTimeout(function(){
-					xhr.abort();
-					if(xhrObj.error){
-						xhrObj.error(xhr, -1, 'XHR timeout');
-					}
-				}, xhrObj.timeout);
 				
 				xhr.send(params);
 			}
 		},
 		
-		ajax: function(url, params, callback){
+		ajax: function(url, params, callback, opts){
 			var self = this;
+			var timeout = opts && opts.timeout;
+			if(!JSB.isDefined(timeout)){
+				timeout = 100000; // 100 secs
+			}
 			if(this.crossDomain){
 				this.xhr({
 					url: url,
 					data: params,
 					dataType: 'jsonp',
-					timeout: 100000,	// 100 secs
+					timeout: timeout,
 					success: function(data, status, xhr){
 						self.curDeferTimeout = self.options.minDeferTimeout;
 						var respObj = data;
@@ -6079,7 +6079,7 @@ JSB({
 								self.curDeferTimeout = self.options.maxDeferTimeout;
 							}
 							JSB.defer(function(){
-								self.ajax(url, params, callback);
+								self.ajax(url, params, callback, opts);
 							}, self.curDeferTimeout);
 						}
 					}
@@ -6089,7 +6089,7 @@ JSB({
 					url: url,
 					data: params,
 					type: 'post',
-					timeout: 100000,	// 100 secs
+					timeout: timeout,
 					success: function(data, status, xhr){
 						self.curDeferTimeout = self.options.minDeferTimeout;
 						//var respObj = eval('('+data+')');
@@ -6107,7 +6107,7 @@ JSB({
 								self.curDeferTimeout = self.options.maxDeferTimeout;
 							}
 							JSB.defer(function(){
-								self.ajax(url, params, callback);
+								self.ajax(url, params, callback, opts);
 							}, self.curDeferTimeout);
 						}
 					}
@@ -6193,7 +6193,7 @@ JSB({
 					var dDesc = p.__di[i];
 					if(dDesc.d.__type == 'File'){
 						$this.ajax($this.getServerBase() + 'jsb?cmd=upload&id=' + dDesc.d.__id, dDesc.d.__data, function(res, obj){
-						});
+						}, {timeout: 0});
 						delete dDesc.d.__data;
 					}
 				}

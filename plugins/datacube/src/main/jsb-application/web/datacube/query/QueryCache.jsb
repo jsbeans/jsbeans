@@ -182,7 +182,7 @@
 				} finally {
 					$this.unlock('DataCube.Query.QueryCache.store');
 				}
-			}, 300, 'DataCube.Query.QueryCache.store.' + this.getId());
+			}, 15000, 'DataCube.Query.QueryCache.store.' + this.getId());
 		},
 		
 		setInvalidateInterval: function(val){

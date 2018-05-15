@@ -246,7 +246,7 @@
                 }
                 item.fetchOpts.reset = false;
 
-                var data;
+                var data = null;
 
                 if(serverData){
                     data = $this.decompressData(serverData);
@@ -713,7 +713,7 @@
 						}
 					}
 					var i = 0;
-					for(; i < batchSize || opts.readAll; i++){
+					for(; i < batchSize /*|| opts.readAll*/; i++){
 						if($this.needBreak){
 							throw new Error('Fetch broke');
 						}
@@ -810,7 +810,7 @@
 					return el;
 				}
 
-				for(var i = 0; i < batchSize || opts.readAll; i++){
+				for(var i = 0; i < batchSize /*|| opts.readAll*/; i++){
 					if($this.needBreak){
 						throw new Error('Fetch broke');
 					}

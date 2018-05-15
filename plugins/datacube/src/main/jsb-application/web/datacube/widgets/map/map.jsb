@@ -1570,7 +1570,7 @@
                 		if(cCnt == maps.length){
                 			$this.setTrigger('_mapLoaded');
                 		}
-                	});
+                	}, {timeout: 0});
             	})(i);
             }
 /*
@@ -1661,8 +1661,8 @@
                 }
             }
         }
-    },
-
+    }
+/*
     $server: {
         $require: ['JSB.Web', 'JSB.IO.FileSystem'],
         
@@ -1684,5 +1684,5 @@
 
             return Web.response(params.maps, {mode:'json'})
         }
-    }
+    }*/
 }
