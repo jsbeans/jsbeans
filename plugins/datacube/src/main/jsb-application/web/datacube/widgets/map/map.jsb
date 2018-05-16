@@ -1069,6 +1069,8 @@
                         }
                         /*********/
                     }
+
+                    fetch();
                 }
 
                 function resultProcessing(){
