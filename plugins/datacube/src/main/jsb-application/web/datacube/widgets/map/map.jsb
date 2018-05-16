@@ -1591,7 +1591,7 @@
                 		if(cCnt == maps.length){
                 			$this.setTrigger('_mapLoaded');
                 		}
-                	}, {timeout: 0});
+                	}, {timeout: 0, method:'get'});
             	})(i);
             }
 /*
