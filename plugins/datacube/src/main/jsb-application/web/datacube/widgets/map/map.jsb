@@ -1487,13 +1487,15 @@
                 value: opts.regionValue
             };
 
-            if(!evt.originalEvent.ctrlKey && !evt.originalEvent.shiftKey && Object.keys(this._curFilters).length > 0){
+            if(!evt.originalEvent.ctrlKey && !evt.originalEvent.shiftKey){
                 for(var i in this._curFilters){
                     this._deselectFeature(i);
                     this.removeFilter(this._curFilters[i]);
                 }
 
                 this._curFilters = {};
+
+                fDesc.type = '$and';
             }
 
             if(!this.hasFilter(fDesc)){
@@ -1594,25 +1596,6 @@
                 	}, {timeout: 0, method:'get'});
             	})(i);
             }
-/*
-            this.ajax('map.jsb', params, function(result, obj){
-            	console.log('map time: ' + (Date.now() - t1));
-                if(result !== 'success'){
-                    $this.setTrigger('_mapLoaded');
-                    return;
-                }
-
-                obj = obj.result;
-
-                for(var i = 0; i < obj.length; i++){
-                    $this._maps[i].data = eval( '(' + obj[i].data + ')');
-                }
-
-                console.log('map time2: ' + (Date.now() - t1));
-
-                $this.setTrigger('_mapLoaded');
-            });
-*/
         },
 
         // utils
@@ -1636,7 +1619,13 @@
 
             legend.addTo(this.map);
 
-            list.width(list.find('li:last-child span').width() + 25);
+            function updateWidth(list){
+                list.width(list.find('li:last-child span').width() + 25);
+            }
+
+            updateWidth(list);
+
+            //todo: update after resize
         },
 
         _createInfoControl: function(){
@@ -1683,27 +1672,4 @@
             }
         }
     }
-/*
-    $server: {
-        $require: ['JSB.Web', 'JSB.IO.FileSystem'],
-        
-        mapCache: {},
-
-        post: function(params){
-            for(var i = 0; i < params.maps.length; i++){
-            	var path = $jsb.getFullPath() + '/' + params.maps[i].path;
-            	if(!this.mapCache[path]){
-                    if(FileSystem.exists(path)){
-                    	this.mapCache[path] = FileSystem.read(path, 'r');
-                        //params.maps[i].data = JSON.parse(FileSystem.read($jsb.getFullPath() + '/' + params.maps[i].path, 'r'));
-                    }
-            		
-            	}
-                
-                params.maps[i].data = this.mapCache[path];
-            }
-
-            return Web.response(params.maps, {mode:'json'})
-        }
-    }*/
 }

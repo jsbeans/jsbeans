@@ -182,7 +182,6 @@
                         dataSelector: seriesContext[i].find('data'),
                         autoSize: seriesContext[i].find('autoSize').checked(),
                         isSum: seriesContext[i].find('isSum').checked(),
-                        skipSmallGroups: seriesContext[i].find('skipSmallGroups').checked(),
                         skipEmptyNamedGroups: seriesContext[i].find('skipEmptyNamedGroups').checked()
                     });
                 }
@@ -226,9 +225,9 @@
 
                                 if(curCat[name]){
                                     if($this._schemeOpts.series[i].autoSize){
-                                        curCat[name].highchartsOpts.value++;
+                                        curCat[name].chartOpts.value++;
                                     } else if($this._schemeOpts.series[i].isSum){
-                                        curCat[name].highchartsOpts.value += value;
+                                        curCat[name].chartOpts.value += value;
                                     }
                                 } else {
                                     var color;
@@ -243,7 +242,7 @@
 
                                     curCat[name] = {
                                         child: {},
-                                        highchartsOpts: {
+                                        chartOpts: {
                                             datacube: {
                                                 binding: $this._schemeOpts.series[i].nameSelector.binding(),
                                             },
@@ -272,11 +271,11 @@
                         }
 
                         for(var i in data){
-                            data[i].highchartsOpts.parent = parent;
+                            data[i].chartOpts.parent = parent;
 
-                            arr.push(data[i].highchartsOpts);
+                            arr.push(data[i].chartOpts);
 
-                            resolveData(arr, data[i].child, data[i].highchartsOpts.id);
+                            resolveData(arr, data[i].child, data[i].chartOpts.id);
                         }
                     }
 

@@ -55,6 +55,7 @@ topleft
 .mapWidget .legend > ul > li > span {
     position: absolute;
     bottom: -8px;
+    white-space: nowrap;
 }
 
 .mapWidget .infoControl {}
