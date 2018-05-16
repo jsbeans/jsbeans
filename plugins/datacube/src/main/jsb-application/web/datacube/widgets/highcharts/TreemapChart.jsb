@@ -195,65 +195,77 @@
             var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() };
 
             this.getElement().loader();
-            this.fetchBinding(this._dataSource, { readAll: true, reset: true, widgetOpts: widgetOpts }, function(res, fail, widgetOpts){
-                if(widgetOpts){
-                    $this._widgetOpts = widgetOpts;
+
+            var data = {},
+                colorCount = 0;
+
+            try {
+                function fetch(isReset){
+                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                        if(res.length === 0){
+                            resultProcessing();
+                            return;
+                        }
+
+                        if(serverWidgetOpts){
+                            $this._widgetOpts = serverWidgetOpts;
+                        }
+
+                        while($this._dataSource.next()){
+                            var curCat = data;
+
+                            for(var i = 0; i < $this._schemeOpts.series.length; i++){
+                                var name = $this._schemeOpts.series[i].nameSelector.value(),
+                                    value = $this._schemeOpts.series[i].dataSelector.value();
+
+                                if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
+                                    break;
+                                }
+
+                                var id = name + '_' + i;
+
+                                if(curCat[name]){
+                                    if($this._schemeOpts.series[i].autoSize){
+                                        curCat[name].highchartsOpts.value++;
+                                    } else if($this._schemeOpts.series[i].isSum){
+                                        curCat[name].highchartsOpts.value += value;
+                                    }
+                                } else {
+                                    var color;
+
+                                    if(i === 0){
+                                        if($this._widgetOpts.styleScheme){
+                                            color = $this._widgetOpts.styleScheme[colorCount%$this._widgetOpts.styleScheme.length];
+                                        } else {
+                                            color = Highcharts.getOptions().colors[colorCount%10];
+                                        }
+                                    }
+
+                                    curCat[name] = {
+                                        child: {},
+                                        highchartsOpts: {
+                                            datacube: {
+                                                binding: $this._schemeOpts.series[i].nameSelector.binding(),
+                                            },
+                                            color: color,
+                                            id: id,
+                                            name: name,
+                                            value: $this._schemeOpts.series[i].autoSize ? 0 : value
+                                        }
+                                    };
+
+                                    i === 0 && colorCount++;
+                                }
+
+                                curCat = curCat[name].child;
+                            }
+                        }
+
+                        fetch();
+                    });
                 }
 
-                try {
-                    var data = {},
-                        colorCount = 0;
-
-                    while($this._dataSource.next()){
-                        var curCat = data;
-
-                        for(var i = 0; i < $this._schemeOpts.series.length; i++){
-                            var name = $this._schemeOpts.series[i].nameSelector.value(),
-                                value = $this._schemeOpts.series[i].dataSelector.value();
-
-                            if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
-                                break;
-                            }
-
-                            var id = name + '_' + i;
-
-                            if(curCat[name]){
-                                if($this._schemeOpts.series[i].autoSize){
-                                    curCat[name].highchartsOpts.value++;
-                                } else if($this._schemeOpts.series[i].isSum){
-                                    curCat[name].highchartsOpts.value += value;
-                                }
-                            } else {
-                                var color;
-
-                                if(i === 0){
-                                    if($this._widgetOpts.styleScheme){
-                                        color = $this._widgetOpts.styleScheme[colorCount%$this._widgetOpts.styleScheme.length];
-                                    } else {
-                                        color = Highcharts.getOptions().colors[colorCount%10];
-                                    }
-                                }
-
-                                curCat[name] = {
-                                    child: {},
-                                    highchartsOpts: {
-                                        datacube: {
-                                            binding: $this._schemeOpts.series[i].nameSelector.binding(),
-                                        },
-                                        color: color,
-                                        id: id,
-                                        name: name,
-                                        value: $this._schemeOpts.series[i].autoSize ? 0 : value
-                                    }
-                                };
-
-                                i === 0 && colorCount++;
-                            }
-
-                            curCat = curCat[name].child;
-                        }
-                    }
-
+                function resultProcessing(){
                     function resolveData(arr, data, parent){
                         if(!data){
                             return;
@@ -276,13 +288,16 @@
                     }
 
                     $this.buildChart(seriesData);
-                } catch (ex){
-                    console.log('TreemapChart load data exception');
-                    console.log(ex);
-                } finally {
+
                     $this.getElement().loader('hide');
                 }
-            });
+
+                fetch(true);
+            } catch (ex){
+                console.log('TreemapChart load data exception');
+                console.log(ex);
+                $this.getElement().loader('hide');
+            }
 	    },
 
 	    _buildChart: function(data){

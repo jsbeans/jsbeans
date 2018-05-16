@@ -1,6 +1,7 @@
 // based on Highcharts ver 6.1.0
 {
 	$name: 'JSB.Utils.Formatter',
+	$singleton: true,
 
 	_lang: {
 	    decimalPoint: '.',
@@ -71,7 +72,7 @@
         ).toFixed(decimals);
 
         // A string containing the positive integer component of the number
-        strinteger = String(parseInt(s, roundedNumber || 10));
+        strinteger = String(parseInt(roundedNumber));
 
         // Leftover after grouping into thousands. Can be 0, 1 or 3.
         thousands = strinteger.length > 3 ? strinteger.length % 3 : 0;

@@ -371,9 +371,19 @@
                                     name: 'Форматировать числа',
 	                                items: {
 	                                    format: {
-                                            render: 'item',
+                                            render: 'formatter',
                                             name: 'Формат',
-                                            value: '0,0.[00]'
+                                            formatterOpts: {
+                                                variables: [
+                                                    {
+                                                        alias: 'Значение',
+                                                        type: 'number',
+                                                        value: 'y'
+                                                    }
+                                                ]
+                                            },
+                                            valueType: 'string',
+                                            defaultValue: '{y:,.0f}'
 	                                    }
 	                                }
 	                            }
@@ -495,10 +505,19 @@
                                     linkTo: 'rows'
                                 },
                                 summaryFormat: {
-                                    render: 'item',
+                                    render: 'formatter',
                                     name: 'Использовать форматирование',
-                                    value: '0,0.[00]',
-                                    optional: true
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Значение',
+                                                type: 'number',
+                                                value: 'y'
+                                            }
+                                        ]
+                                    },
+                                    valueType: 'string',
+                                    defaultValue: '{y:,.0f}'
                                 },
                                 summaryPrefix: {
                                     render: 'item',
@@ -641,8 +660,7 @@
 		           'JSB.Crypt.MD5',
 		           'DataCube.Controls.SortSelector',
 		           'DataCube.Controls.FilterEntry',
-		           'JSB.Numeral',
-		           'JQuery.UI.Loader'],
+		           'JSB.Utils.Formatter'],
 		
 		ready: false,
 		headerDesc: [],
@@ -666,7 +684,6 @@
 			
 			this.addClass('tableWidget');
 			this.loadCss('Table.css');
-			Numeral.setLocale('ru');
 			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
@@ -1004,7 +1021,7 @@
 						
 						var fVal = val;
 						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-							fVal = Numeral.format(val, $this.colDesc[d.colIdx].format);
+							fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
 						}
 						cellEl.text(fVal !== null ? fVal : '');
 						cellEl.attr('title', val);
@@ -1079,7 +1096,7 @@
 									
 									var fVal = val;
 									if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-										fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+										fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
 									}
 									
 									cellEl.attr('title', val);
@@ -1166,7 +1183,7 @@
 												
 												var fVal = val;
 												if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-													fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+													fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
 												}
 												
 												cellEl.text(fVal !== null ? fVal : '');
@@ -1746,7 +1763,7 @@
 				if(res && res.length > 0 && JSB.isDefined(res[0].val)){
 					var val = res[0].val;
 					if(statusDesc.summaryFormat && JSB.isNumber(val) && statusDesc.summaryFormat.length > 0){
-						val = Numeral.format(val, statusDesc.summaryFormat);
+						val = Formatter.format(statusDesc.summaryFormat, {y: val});
 					}
 					callback.call(this, val);
 				} else {
@@ -2170,7 +2187,7 @@
 							statusDesc.summaryFieldSelector = summaryElts[j].find('summaryField');
 							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
 							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
-							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').checked() ? summaryElts[j].find('summaryFormat').value() : null; 
+							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').value();
 							if(!desc.status){
 								desc.status = [];
 							}
