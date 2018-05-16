@@ -4433,25 +4433,41 @@ JSB({
 		}
 	},
 	
+	existTrigger: function(key){
+		if(!$this.$_ecMap){
+			$this.$_ecMap = {};
+		}
+		if($this.$_ecMap[key]){
+			return true;
+		}
+		return false;
+	},
+	
 	ensureTrigger: function(keyArr, callback, valOrCondOpt){
 		if(!$this.$_ecMap){
 			$this.$_ecMap = {};
 		}
+		var bKeyArr = true;
 		if(!JSB.isArray(keyArr)){
 			keyArr = [keyArr];
+			bKeyArr = false;
 		}
 		if(!JSB.isDefined(valOrCondOpt)){
 			valOrCondOpt = true;	// default value expecation
 		}
 		if($this.matchTrigger(keyArr, valOrCondOpt)){
-			callback.call($this);
+			var vals = [];
+			for(var i = 0; i < keyArr.length; i++){
+				vals.push($this.$_ecMap[keyArr[i]].val);
+			}
+			callback.call($this, bKeyArr ? vals : vals[0]);
 		} else {
 			for(var i = 0; i < keyArr.length; i++){
 				var key = keyArr[i];
 				if(!$this.$_ecMap[key]){
 					$this.$_ecMap[key] = {cArr:[]};
 				}
-				$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt, keyArr: keyArr});
+				$this.$_ecMap[key].cArr.push({exec:callback, cond:valOrCondOpt, keyArr: keyArr, bKeyArr: bKeyArr});
 			}
 		}
 	},
@@ -4535,8 +4551,10 @@ JSB({
 				}
 				if(bMatched){
 					// remove entries from others
+					var vals = [];
 					for(var j = 0; j < cDesc.keyArr.length; j++){
 						var otherKey = cDesc.keyArr[j];
+						vals.push($this.$_ecMap[otherKey].val);
 						if(otherKey == key){
 							continue;
 						}
@@ -4548,7 +4566,7 @@ JSB({
 					}
 					// remove this
 					$this.$_ecMap[key].cArr.splice(i, 1);
-					cDesc.exec.call($this);
+					cDesc.exec.call($this, cDesc.bKeyArr ? vals : vals[0]);
 				}
 			}
 		}
@@ -6085,33 +6103,66 @@ JSB({
 					}
 				});
 			} else {
-				this.xhr({
-					url: url,
-					data: params,
-					type: 'post',
-					timeout: timeout,
-					success: function(data, status, xhr){
-						self.curDeferTimeout = self.options.minDeferTimeout;
-						//var respObj = eval('('+data+')');
-						var respObj = data;
-						//self.decodeObject(respObj);
-						callback('success', respObj);
-					},
-					error: function(xhr, status, err){
-						if(xhr.status == 404 || xhr.status == 401){
-							self.curDeferTimeout = self.options.minDeferTimeout;
-							callback(status, xhr);
-						} else {
-							self.curDeferTimeout *= 2;
-							if(self.curDeferTimeout > self.options.maxDeferTimeout) {
-								self.curDeferTimeout = self.options.maxDeferTimeout;
-							}
-							JSB.defer(function(){
-								self.ajax(url, params, callback, opts);
-							}, self.curDeferTimeout);
-						}
+				var method = opts && opts.method || 'post';
+				var needRequest = true;
+				var triggerKey = null;
+				if(method.toLowerCase() == 'get'){
+					triggerKey = 'ajax_get_' + url;
+					if($this.existTrigger(triggerKey)){
+						needRequest = false;
 					}
-				});
+					$this.ensureTrigger(triggerKey, function(val){
+						callback(val.status, val.data);
+					}, function(val){
+						return JSB.isDefined(val);
+					})
+
+				}
+				function doXHR(){
+					$this.xhr({
+						url: url,
+						data: params,
+						type: method,
+						timeout: timeout,
+						success: function(data, status, xhr){
+							self.curDeferTimeout = self.options.minDeferTimeout;
+							if(triggerKey){
+								$this.setTrigger(triggerKey, {
+									status: 'success',
+									data: data
+								})	
+							} else {
+								callback('success', data);
+							}
+							
+						},
+						error: function(xhr, status, err){
+							if(xhr.status == 404 || xhr.status == 401){
+								self.curDeferTimeout = self.options.minDeferTimeout;
+								if(triggerKey){
+									$this.setTrigger(triggerKey, {
+										status: status,
+										data: xhr
+									})	
+								} else {
+									callback(status, xhr);
+								}
+							} else {
+								self.curDeferTimeout *= 2;
+								if(self.curDeferTimeout > self.options.maxDeferTimeout) {
+									self.curDeferTimeout = self.options.maxDeferTimeout;
+								}
+								JSB.defer(function(){
+									doXHR();
+								}, self.curDeferTimeout);
+							}
+						}
+					});
+				}
+				
+				if(needRequest){
+					doXHR();
+				}
 			}
 		},
 /*		
