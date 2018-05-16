@@ -504,21 +504,27 @@
                                     name: 'Поле',
                                     linkTo: 'rows'
                                 },
-                                summaryFormat: {
-                                    render: 'formatter',
+	                            summaryFormat: {
+                                    render: 'switch',
                                     name: 'Использовать форматирование',
-                                    formatterOpts: {
-                                        variables: [
-                                            {
-                                                alias: 'Значение',
-                                                type: 'number',
-                                                value: 'y'
-                                            }
-                                        ]
-                                    },
-                                    valueType: 'string',
-                                    defaultValue: '{y:,.0f}'
-                                },
+	                                items: {
+	                                    format: {
+                                            render: 'formatter',
+                                            name: 'Формат',
+                                            formatterOpts: {
+                                                variables: [
+                                                    {
+                                                        alias: 'Значение',
+                                                        type: 'number',
+                                                        value: 'y'
+                                                    }
+                                                ]
+                                            },
+                                            valueType: 'string',
+                                            defaultValue: '{y:,.0f}'
+	                                    }
+	                                }
+	                            },
                                 summaryPrefix: {
                                     render: 'item',
                                     name: 'Префикс',
@@ -2187,7 +2193,7 @@
 							statusDesc.summaryFieldSelector = summaryElts[j].find('summaryField');
 							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
 							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
-							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').value();
+							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').checked() ? summaryElts[j].find('summaryFormat format').value() : undefined;
 							if(!desc.status){
 								desc.status = [];
 							}

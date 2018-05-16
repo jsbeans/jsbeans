@@ -120,6 +120,12 @@
         	    return;
         	}
 
+            if(opts && opts.updateStyles){
+                this._dataSource = null;
+                this._schemeOpts = null;
+                this._widgetOpts = null;
+            }
+
         	if(!this._dataSource){
         	    var dataSource = this.getContext().find('source');
 
@@ -178,6 +184,10 @@
                                 var name = $this._schemeOpts.series[i].nameSelector.value(),
                                     value = $this._schemeOpts.series[i].dataSelector.value();
 
+                                if(JSB.isString(value)){
+                                    value = Number(value.replace(/,/g, '.'));
+                                }
+
                                 if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
                                     break;
                                 }
@@ -201,7 +211,7 @@
                                     */
 
                                     curCat[name] = {
-                                        binding: $this._schemeOpts.series[i].dataSelector.binding(),
+                                        binding: $this._schemeOpts.series[i].nameSelector.binding(),
                                         child: {},
                                         name: name,
                                         weight: $this._schemeOpts.series[i].autoSize ? 0 : value
@@ -276,6 +286,7 @@
                         groups: data
                     }
                 });
+                this.foamtree.redraw();
             } else {
                 this.foamtree = new CarrotSearchFoamTree({
                     element: this.container.get(0),

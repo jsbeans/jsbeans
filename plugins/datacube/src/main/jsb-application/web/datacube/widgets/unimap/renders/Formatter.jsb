@@ -106,7 +106,9 @@
 	        }
 
 	        if(this._values.values[0].value){
-	            this._editBlock.html(this.restoreValue(this._values.values[0].value));
+	            var val = this.restoreValue(this._values.values[0].value);
+	            this._editorValue = val;
+	            this._editBlock.html(val);
 	        }
 	    },
 
@@ -331,7 +333,7 @@
                 }
             }
 
-            this._values.values[0].value = editBlockCopy.html().replace(/&nbsp;/, ' ');
+            this._values.values[0].value = editBlockCopy.html().replace(/&nbsp;/g, ' ');
 
             this.onchange();
 	    },
