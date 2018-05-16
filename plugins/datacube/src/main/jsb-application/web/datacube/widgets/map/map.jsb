@@ -939,7 +939,6 @@
                             resultProcessing();
                             return;
                         }
-                    });
 
                     while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
                         // load regions
@@ -1071,6 +1070,7 @@
                     }
 
                     fetch();
+                    });
                 }
 
                 function resultProcessing(){
