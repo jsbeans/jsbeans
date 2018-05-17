@@ -383,7 +383,7 @@
                                                 ]
                                             },
                                             valueType: 'string',
-                                            defaultValue: '{y:,.0f}'
+                                            defaultValue: '{y:,.2f}'
 	                                    }
 	                                }
 	                            }
@@ -521,7 +521,7 @@
                                                 ]
                                             },
                                             valueType: 'string',
-                                            defaultValue: '{y:,.0f}'
+                                            defaultValue: '{y:,.2f}'
 	                                    }
 	                                }
 	                            },
