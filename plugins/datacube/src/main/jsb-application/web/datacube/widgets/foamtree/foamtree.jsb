@@ -251,9 +251,7 @@
                     var seriesData = [];
                     resolveData(seriesData, data);
 
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache(seriesData);
-                    }
+                    $this.storeCache(seriesData);
 
                     $this.buildChart(seriesData);
 
@@ -270,7 +268,6 @@
 
         buildChart: function(data){
             if(this.container.is(':visible')){
-                this._isNeedUpdate = false;
                 this._buildChart(data);
             } else {
                 this._isNeedUpdate = true;
@@ -327,6 +324,8 @@
                     }
                 });
             }
+
+            this._isNeedUpdate = false;
         }
 	}
 }
