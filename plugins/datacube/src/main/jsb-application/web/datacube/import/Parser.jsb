@@ -1,0 +1,6 @@
+{
+	$name: 'DataCube.Parser',
+	
+	$server: {
+	}
+}

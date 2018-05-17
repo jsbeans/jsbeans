@@ -30,6 +30,10 @@
 				}
 			}
 		},
+		
+		read: function(opts){
+			return this.loadArtifact('.data', opts);
+		},
 
 		destroy: function(){
 			if(this.existsArtifact('.data')){

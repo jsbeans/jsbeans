@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Model.JsonFile',
+	$name: 'DataCube.Model.CsvFile',
 	$parent: 'JSB.Workspace.FileEntry',
 	
 	records: null,
@@ -14,14 +14,14 @@
 		
 		$bootstrap: function(){
 			WorkspaceController.registerFileUploadCallback(null, this, 0.5, function(name, data){
-				if(/\.json$/i.test(name)){
+				if(/\.csv$/i.test(name)){
 					return true;
 				}
 				return false;
 			});
 			WorkspaceController.registerExplorerNode(null, this, {
 				priority: 0.5, 
-				nodeType:'DataCube.JsonFileNode',
+				nodeType:'DataCube.CsvFileNode',
 				create: false,
 				move: true,
 				remove: true
@@ -80,10 +80,6 @@
 			} else {
 				this.records = this.property('records');
 			}
-		},
-		
-		read: function(){
-			return this.loadArtifact('.data');
 		}
 
 	}

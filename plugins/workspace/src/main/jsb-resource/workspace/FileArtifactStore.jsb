@@ -61,7 +61,7 @@
 			}
 		},
 		
-		read: function(entry, name){
+		read: function(entry, name, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
 			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
@@ -77,10 +77,16 @@
 				}
 				
 				if(artifactType == 'string'){
+					if(opts && opts.stream){
+						return FileSystem.open(eFileName, JSB.merge({binary: false}, opts, {read: true, write:false, append: false, update: false}));
+					}
 					return FileSystem.read(eFileName);	
 				} else if(artifactType == 'value'){
 					return JSON.parse(FileSystem.read(eFileName));
 				} else if(artifactType == 'binary'){
+					if(opts && opts.stream){
+						return FileSystem.open(eFileName, JSB.merge({binary: true}, opts, {read: true, write:false, append: false, update: false}));
+					}
 					return FileSystem.read(eFileName, {binary: true});
 				} else {
 					throw new Error('Unexpected artifact type: ' + artifactType);

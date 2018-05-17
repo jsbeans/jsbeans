@@ -489,7 +489,7 @@
 		    return !!this._artifacts[name];
         },
 
-		loadArtifact: function(name) {
+		loadArtifact: function(name, opts) {
 			if(!JSB.isString(name)){
 				throw new Error('Invalid artifact name');
 			}
@@ -497,7 +497,7 @@
 			if(!this.existsArtifact(name)){
 				throw new Error('Missing artifact "'+name+'" in entry: ' + this.getId());
 			}
-		    return this._artifactStore.read(this, name);
+		    return this._artifactStore.read(this, name, opts);
 		},
 
 		storeArtifact: function(name, a) {
