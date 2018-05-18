@@ -259,9 +259,14 @@
                     render: 'group',
                     name: 'Группа маркеров',
                     items: {
-                        coordinates: {
+                        coordinatesX: {
                             render: 'dataBinding',
-                            name: 'Координаты',
+                            name: 'Координаты X',
+                            linkTo: 'dataSource'
+                        },
+                        coordinatesY: {
+                            render: 'dataBinding',
+                            name: 'Координаты Y',
                             linkTo: 'dataSource'
                         },
                         markerType: {
@@ -587,7 +592,7 @@
             this.loadCss('map.css');
 
             JSB.loadCss('tpl/leaflet/leaflet.css');
-            JSB.loadScript('tpl/leaflet/leaflet-src.js', function(){    // tpl/leaflet/leaflet.js
+            JSB.loadScript(['tpl/leaflet/leaflet-src.js', 'tpl/topojson/topojson-client.js'], function(){    // tpl/leaflet/leaflet.js
                 $this.setInitialized();
             });
 
@@ -596,16 +601,28 @@
                     if(!$this.getElement().is(':visible') || !$this.map){
                         return;
                     }
+
                     $this.map.invalidateSize();
                 }, 300, 'hcResize' + $this.getId());
+            });
+
+            this.getElement().visible(function(evt, isVisible){
+                if($this._isNeedLegendsResize && isVisible){
+                    for(var i = 0; i < $this._legends.length; i++){
+                        $this._resizeLegend($this._legends[i]);
+                    }
+
+                    $this._isNeedLegendsResize = false;
+                }
             });
         },
 
         // inner variables
         _curFilters: {},
+        _isNeedLegendsResize: false,
         _maps: [],
         _mapHash: null,
-        _legendsList: [],
+        _legends: [],
         _styles: null,
 
         refresh: function(opts){
@@ -770,6 +787,7 @@
                             });
                         } else {
                             switch(mapName){
+                                /*
                                 case 'russianRegions':
                                     maps.push(JSB.merge(r, {
                                         data: null,
@@ -782,10 +800,25 @@
                                         path: 'geojson/russianRegionsMPT.json'
                                     }));
                                     break;
+                                */
                                 case 'worldCountries':
                                     maps.push(JSB.merge(r, {
                                         data: null,
                                         path: 'geojson/worldCountries.json'
+                                    }));
+                                    break;
+                                case 'russianRegions':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/russianRegionsTopojson.json',
+                                        type: 'TopoJSON'
+                                    }));
+                                    break;
+                                case 'russianRegionsMPT':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/russianRegionsMPTTopojson.json',
+                                        type: 'TopoJSON'
                                     }));
                                     break;
                             }
@@ -806,7 +839,8 @@
                         var markerType = markersContext[i].find('markerType').value();
                         this._styles.markers[i].markerType = markerType;
 
-                        this._styles.markers[i].coordinatesBinding = markersContext[i].find('coordinates');
+                        this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
+                        this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
 
                         switch(markerType){
                             case 'defaultMarker':
@@ -991,7 +1025,7 @@
                                 }
                             }
 
-                            markers[i].coordinates.push($this._styles.markers[i].coordinatesBinding.value());
+                            markers[i].coordinates.push([$this._styles.markers[i].coordinatesX.value(), $this._styles.markers[i].coordinatesY.value()]);
 
                             if($this._styles.markers[i].markerValueBinding){
                                 if(!markers[i].markerValues){
@@ -1192,6 +1226,9 @@
                 if(this._infoControl){
                     this._infoControl = undefined;
                 }
+
+                // clear legends list
+                this._legends = [];
 
                 // add tile and wms layers
                 if(this._styles.tiles){
@@ -1579,6 +1616,11 @@
 	                		if(JSB.isString(obj)){
 	                			obj = eval( '(' + obj + ')');
 	                		}
+
+	                		if(maps[idx].type && maps[idx].type === 'TopoJSON'){
+	                		    obj = topojson.feature(obj, obj.objects[Object.keys(obj.objects)[0]]);
+	                		}
+
 	                		$this._maps[idx] = {
 	                		    compareTo: maps[idx].compareTo,
 	                		    data: obj
@@ -1607,7 +1649,7 @@
                 div = $this.$('<div class="legend ' + position + '"></div>');
                 list = $this.$('<ul></ul>');
 
-                div.append('<span>' + colorMap[0].min + '</span>');
+                div.append('<span>' + Formatter.format('{y:,.0f}', {y: colorMap[0].min}) + '</span>');
                 div.append(list);
 
                 for (var j = 0; j < colorMap.length; j++) {
@@ -1619,13 +1661,11 @@
 
             legend.addTo(this.map);
 
-            function updateWidth(list){
-                list.width(list.find('li:last-child span').width() + 25);
-            }
+            this._resizeLegend(list);
 
-            updateWidth(list);
+            this._legends.push(list);
 
-            //todo: update after resize
+            this._isNeedLegendsResize = true;
         },
 
         _createInfoControl: function(){
@@ -1653,6 +1693,20 @@
             };
 
             this._infoControl.addTo(this.map);
+        },
+
+        _resizeLegend: function(list){
+            var li = list && list.find('li > span'),
+                max = 0;
+
+            for(var i = 0; i < li.length; i++){
+                var w = this.$(li[i]).width();
+                if(w > max){
+                    max = w;
+                }
+            }
+
+            list.width(max + 25);
         },
 
         findRegion: function(region, array){

@@ -370,7 +370,7 @@
                                     render: 'switch',
                                     name: 'Форматировать числа',
 	                                items: {
-	                                    format: {
+	                                    formatter: {
                                             render: 'formatter',
                                             name: 'Формат',
                                             formatterOpts: {
@@ -2261,7 +2261,7 @@
 					}
 					var formatSelector = viewSelector.find('textFormat');
 					if(formatSelector.checked()){
-						desc.format = formatSelector.find('format').value();
+						desc.format = formatSelector.find('formatter').value();
 					}
 				}
 				

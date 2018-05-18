@@ -136,7 +136,7 @@
 	                editor: 'input',
 	                defaultValue: 50
 	            },
-	            valueFormat: {
+	            formatter: {
 	                render: 'formatter',
 	                name: 'Формат значения',
                     formatterOpts: {
@@ -253,7 +253,7 @@
 					minSelector: gArr[i].find('min'),
 					maxSelector: gArr[i].find('max'),
 					valSelector: gArr[i].find('val'),
-					valFormat: gArr[i].find('valueFormat'),
+					valFormat: gArr[i].find('formatter'),
 					colColor: gArr[i].find('colColor').value(),
 					colWidth: parseFloat(gArr[i].find('colWidth').value()),
 					trailColor: gArr[i].find('trailColor').value(),
