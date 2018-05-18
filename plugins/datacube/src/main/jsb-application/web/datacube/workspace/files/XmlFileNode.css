@@ -1,0 +1,29 @@
+@CHARSET "UTF-8";
+
+.workspaceExplorerNode.xmlFileNode {
+	
+}
+
+.workspaceExplorerNode.xmlFileNode > .entryRenderer > .icon {
+	width: 26px;
+    height: 26px;
+    margin-top: -13px;
+}
+
+.workspaceExplorerNode.xmlFileNode > .entryRenderer > .title {
+	padding-left: 32px;
+	padding-bottom: 10px;
+}
+
+.workspaceExplorerNode.xmlFileNode > .status {
+	position: absolute;
+    top: 16px;
+    left: 0;
+	padding-left: 32px;
+    font-size: 10px;
+    color: #555;
+}
+
+.workspaceExplorerNode.xmlFileNode > .status > .count {
+	color: #773e01;
+}
