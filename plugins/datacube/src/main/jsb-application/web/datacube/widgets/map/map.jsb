@@ -262,12 +262,14 @@
                         coordinatesX: {
                             render: 'dataBinding',
                             name: 'Координаты X',
-                            linkTo: 'dataSource'
+                            linkTo: 'dataSource',
+                            valueType: 'number'
                         },
                         coordinatesY: {
                             render: 'dataBinding',
                             name: 'Координаты Y',
-                            linkTo: 'dataSource'
+                            linkTo: 'dataSource',
+                            valueType: 'number'
                         },
                         markerType: {
                             render: 'select',
@@ -339,7 +341,9 @@
                                                         color: {
                                                             render: 'item',
                                                             name: 'Цвет',
-                                                            editor: 'JSB.Widgets.ColorEditor'
+                                                            editor: 'JSB.Widgets.ColorEditor',
+                                                            valueType: 'string',
+                                                            defaultValue: '#000'
                                                         }
                                                     }
                                                 },
@@ -354,12 +358,16 @@
                                                         startColor: {
                                                             render: 'item',
                                                             name: 'Начальный цвет',
-                                                            editor: 'JSB.Widgets.ColorEditor'
+                                                            editor: 'JSB.Widgets.ColorEditor',
+                                                            valueType: 'string',
+                                                            defaultValue: '#000'
                                                         },
                                                         endColor: {
                                                             render: 'item',
                                                             name: 'Конечный цвет',
-                                                            editor: 'JSB.Widgets.ColorEditor'
+                                                            editor: 'JSB.Widgets.ColorEditor',
+                                                            valueType: 'string',
+                                                            defaultValue: '#000'
                                                         },
                                                         functionType: {
                                                             render: 'select',
@@ -828,6 +836,8 @@
                     if(maps.length > 0){
                         this.resetTrigger('_mapLoaded');
                         this.loadMaps(maps);
+                    } else {
+                        this.setTrigger('_mapLoaded');
                     }
                     /*********/
 
@@ -1206,7 +1216,7 @@
         },
 
         _buildChart: function(data){
-            try {
+            //try {
                 var mapOpts = {};
                 if(this.map){
                     mapOpts = {
@@ -1499,10 +1509,12 @@
                     }
                 }
                 /*********/
+            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
+            */
         },
 
         ensureDataLoaded: function(callback){
@@ -1601,11 +1613,6 @@
         },
 
         loadMaps: function(maps){
-            if(maps.length === 0){
-                this.setTrigger('_mapLoaded');
-                return;
-            }
-
             this.getElement().loader();
 
             var cCnt = 0;

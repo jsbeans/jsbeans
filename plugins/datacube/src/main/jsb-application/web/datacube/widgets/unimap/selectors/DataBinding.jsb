@@ -44,11 +44,44 @@
             return;
         }
 
+        var value;
+
         if(typeof this._values[0].value === 'object'){
             layer = layer || 'main';
-            return this._values[0].value[layer];
+            value = this._values[0].value[layer];
+        } else {
+            value = this._values[0].value;
         }
-        return this._values[0].value;
+
+        if(this._selectorOpts && this._selectorOpts.valueType){
+            switch(this._selectorOpts.valueType){
+                case 'number':
+                    if(typeof value === 'string'){
+                        value = value.replace(/,/g, '.');
+                    }
+
+                    value = Number(value);
+
+                    if(isNaN(value) || typeof this._values[0].value === 'string' && this._values[0].value.length === 0 || !JSB.isDefined(this._values[0].value)){
+                        value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
+                    }
+                    break;
+                case 'string':
+                default:
+                    value = value;
+
+                    if(!JSB.isDefined(value)){
+                        value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
+                        break;
+                    }
+
+                    if(typeof value === 'string' && value.length === 0){
+                        value = JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : '';
+                    }
+            }
+        }
+
+        return value;
     },
 
     values: function(layer, validOnly){
