@@ -3,6 +3,8 @@
 	$parent: 'JSB.Workspace.BrowserView',
 	$client: {
 	    $require: ['Unimap.Controller',
+	               'Unimap.ValueSelector',
+	               'JSB.Controls.Select',
 	               'DataCube.ParserManager',
 	               'Datacube.Unimap.Bootstrap',
                    'JSB.Controls.ScrollBox',
@@ -45,14 +47,18 @@
 			});
 			this.append(splitBox);
 
-			var schemeBlock = this.$('<div class="schemeBlock"></div>');
-			splitBox.append(schemeBlock);
-
-	        this.schemeScroll = new ScrollBox();
-	        schemeBlock.append(this.schemeScroll.getElement());
-
-	        this.warningBlock = this.$('<div class="warningBlock hidden"></div>');
-	        schemeBlock.append(this.warningBlock);
+			this.schemeScroll = new ScrollBox();
+			splitBox.append(this.schemeScroll.getElement());
+			
+			var parserSelectorElt = this.$('<div class="parserSelector"></div>').append('<div class="label">Парсер</div>');
+			this.parserSelectorCombo = new Select({
+				onchange: function(val){
+					$this.setParser(val.key);
+				}
+			});
+			parserSelectorElt.append(this.parserSelectorCombo.getElement());
+			this.schemeScroll.append(parserSelectorElt);
+			
 
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
 	        splitBox.append(this.widgetBlock);
@@ -61,7 +67,7 @@
 		refresh: function(){
 			this.entry = this.node.getEntry();
 			ParserManager.getSupportedParsers(this.entry, function(parsers){
-				debugger;
+				$this.setParsers(parsers);
 			});
 
 /*
@@ -89,6 +95,52 @@
                 $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
             });
 */
+		},
+		
+		setParsers: function(parsers){
+			$this.parsers = parsers;
+			var comboOpts = {};
+			for(var i = 0; i < $this.parsers.length; i++){
+				var pDesc = $this.parsers[i];
+				comboOpts[pDesc.jsb] = pDesc.name;
+			}
+			$this.parserSelectorCombo.setOptions(comboOpts);
+			if($this.parsers.length > 0){
+				var currentParserKey = $this.parsers[0].jsb;
+				$this.setParser(currentParserKey);
+				$this.parserSelectorCombo.setValue(currentParserKey);
+			}
+		},
+		
+		setParser: function(parserKey){
+			if($this.currentParser && $this.currentParser.getJsb().$name == parserKey){
+				return;
+			}
+			for(var i = 0; i < $this.parsers.length; i++){
+				var pDesc = $this.parsers[i];
+				if(pDesc.jsb == parserKey){
+					$this.currentParser = new (pDesc.jsbClass)();
+					if($this.schemeRenderer){
+						$this.schemeRenderer.destroy();
+					}
+					
+					var bootstrap = 'Datacube.Unimap.Bootstrap';
+					var valSel = new ValueSelector({
+						bootstrap: bootstrap
+					});
+					var vals = valSel.createDefaultValues(pDesc.scheme);
+					
+					$this.schemeRenderer = new Controller({
+	                    scheme: pDesc.scheme,
+	                    values: vals,
+	                    bootstrap: bootstrap,
+	                    onchange: function(key, values){
+	                    }
+	                });
+					$this.schemeScroll.append($this.schemeRenderer.getElement());
+					return;
+				}
+			}
 		},
 /*
 		applySettings: function(){

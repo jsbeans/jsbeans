@@ -78,36 +78,25 @@
     padding: 3px;
 }
 
-.parserView .savedMessage {
-    position: absolute;
-    top: calc(50% - 21px);
-    left: calc(50% - 100px);
-    padding: .75rem 1.25rem;
-    margin-bottom: 1rem;
-    border: 1px solid transparent;
-    border-radius: .25rem;
-    color: #0c5460;
-    background-color: #d1ecf1;
-    border-color: #bee5eb;
-    width: 200px;
-    height: 42px;
-    text-align: center;
-    user-select: none;
-    cursor: default;
-    z-index: 10000;
+
+.parserView .parserSelector {
+	padding: 4px;
 }
 
-.parserView .schemeBlock > .warningBlock {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #fff9db;
-    font-size: 14px;
+.parserView .parserSelector > .label {
+	display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+	font-size: 15px;
+    color: #73879C;
+    font-family: Roboto,Arial,"Droid Sans",sans-serif;
 }
 
-.parserView .schemeBlock > .warningBlock > p {
-
+.parserView .parserSelector > .jsb-select {
+	display: inline-block;
+    vertical-align: middle;
 }
 
-.parserView .schemeBlock > .warningBlock > p > b {
-
+.parserView .scheme {
+	padding: 4px;
 }
