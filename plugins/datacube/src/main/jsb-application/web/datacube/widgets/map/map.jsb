@@ -493,6 +493,18 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        markerStyleType: {
+                                            render: 'select',
+                                            name: 'Стиль маркера',
+                                            items: {
+                                                fillCircle: {
+                                                    name: 'Закрашенный кружок'
+                                                },
+                                                hollowCircle: {
+                                                    name: 'Полый кружок'
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -919,6 +931,8 @@
                                     this._styles.markers[i].markerValueBinding = markersContext[i].find('markerValue value');
                                     this._styles.markers[i].valueDisplayType = markersContext[i].find('markerValue valueDisplayType').value();
                                 }
+
+                                this._styles.markers[i].markerStyleType = markersContext[i].find('markerStyleType').value();
                                 break;
                         }
                     }
@@ -1132,7 +1146,12 @@
 
                             if($this._styles.regions[i].rangeColor.stepGradation){
                                 for(var j = 0; j < regions[i].data.length; j++){
+                                    if(!regions[i].data[j].value){
+                                        continue;
+                                    }
+
                                     var col = rainbow.colorAt(regions[i].data[j].value);
+
                                     regions[i].data[j].color = '#' + col.color;
                                     regions[i].data[j].group = col.group;
                                 }
@@ -1162,7 +1181,12 @@
 
                                 if($this._styles.markers[i].rangeColor.stepGradation){
                                     for(var j = 0; j < markers[i].colorValues.length; j++){
+                                        if(!markers[i].colorValues[j].value){
+                                            continue;
+                                        }
+
                                         var col = rainbow.colorAt(markers[i].colorValues[j].value);
+
                                         markers[i].colorValues[j].color = '#' + col.color;
                                         markers[i].colorValues[j].group = col.group;
                                     }
@@ -1216,7 +1240,7 @@
         },
 
         _buildChart: function(data){
-            //try {
+            try {
                 var mapOpts = {};
                 if(this.map){
                     mapOpts = {
@@ -1453,7 +1477,7 @@
                                     icon = undefined,
                                     html = undefined;
 
-                                if(!color){
+                                if(data.markers[i].colorValues[j].color){
                                     color = data.markers[i].colorValues[j].color;
                                 }
 
@@ -1462,9 +1486,17 @@
                                 }
 
                                 if($this._styles.markers[i].fixedSize){
-                                    icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
+                                    if($this._styles.markers[i].markerStyleType === 'hollowCircle'){
+                                        icon = L.divIcon({ html: html, iconStyle: 'background-color: white; border: 2px solid ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
+                                    } else {
+                                        icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + $this._styles.markers[i].fixedSize + 'px', className: 'heatCircles', iconSize: [$this._styles.markers[i].fixedSize, $this._styles.markers[i].fixedSize] });
+                                    }
                                 } else {
-                                    icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
+                                    if($this._styles.markers[i].markerStyleType === 'hollowCircle'){
+                                        icon = L.divIcon({ html: html, iconStyle: 'background-color: white; border: 2px solid ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
+                                    } else {
+                                        icon = L.divIcon({ html: html, iconStyle: 'background-color: ' + color + '; border-radius: ' + data.markers[i].sizeValues[j].size + 'px', className: 'heatCircles', iconSize: [data.markers[i].sizeValues[j].size, data.markers[i].sizeValues[j].size] });
+                                    }
                                 }
 
                                 marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon}).addTo($this.map);
@@ -1509,12 +1541,10 @@
                     }
                 }
                 /*********/
-            /*
             } catch(ex){
                 console.log('Build chart exception!');
                 console.log(ex);
             }
-            */
         },
 
         ensureDataLoaded: function(callback){
