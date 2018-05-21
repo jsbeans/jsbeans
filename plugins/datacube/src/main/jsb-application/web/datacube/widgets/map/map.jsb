@@ -998,168 +998,170 @@
                             return;
                         }
 
-                    while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
-                        // load regions
-                        /*********/
-                        for(var i = 0; i < regionsContext.length; i++){
-                            if(!bindings[i]){
-                                bindings[i] = {
-                                    region: regionsContext[i].find('region'),
-                                    value: regionsContext[i].find('value')
+                        while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
+                            // load regions
+                            /*********/
+                            for(var i = 0; i < regionsContext.length; i++){
+                                if(!bindings[i]){
+                                    bindings[i] = {
+                                        region: regionsContext[i].find('region'),
+                                        value: regionsContext[i].find('value')
+                                    }
+                                }
+
+                                if(!regions[i]){
+                                    regions[i] = {
+                                        data: []
+                                    };
+                                }
+
+                                var value = bindings[i].value.value();
+
+                                regions[i].data.push({
+                                    region: bindings[i].region.value(),
+                                    value: value
+                                });
+
+                                if(!regions[i].maxValue || regions[i].maxValue < value){
+                                    regions[i].maxValue = value;
+                                }
+
+                                if(!regions[i].minValue || regions[i].minValue > value){
+                                    regions[i].minValue = value;
+                                }
+
+                                if($this._styles.regions[i].simpleColor){
+                                    regions[i].color = $this._styles.regions[i].simpleColor;
+                                }
+
+                                if($this._styles.regions[i].sourceColor){
+                                    regions[i].color = $this._styles.regions[i].sourceColor.value();
                                 }
                             }
+                            /*********/
 
-                            if(!regions[i]){
-                                regions[i] = {
-                                    data: []
-                                };
+                            // load markers
+                            /*********/
+                            for(var i = 0; i < markersContext.length; i++){
+                                if(!markers[i]){
+                                    markers[i] = {
+                                        coordinates: []
+                                    }
+                                }
+
+                                markers[i].coordinates.push([$this._styles.markers[i].coordinatesX.value(), $this._styles.markers[i].coordinatesY.value()]);
+
+                                if($this._styles.markers[i].markerValueBinding){
+                                    if(!markers[i].markerValues){
+                                        markers[i].markerValues = [];
+                                    }
+
+                                    markers[i].markerValues.push($this._styles.markers[i].markerValueBinding.value());
+                                }
+
+                                if($this._styles.markers[i].markerNameBinding){
+                                    if(!markers[i].markerNames){
+                                        markers[i].markerNames = [];
+                                    }
+
+                                    markers[i].markerNames.push($this._styles.markers[i].markerNameBinding.value());
+                                }
+
+                                switch($this._styles.markers[i].markerType){
+                                    case 'widget':
+                                        if(!markers[i].values){
+                                            markers[i].values = [];
+                                        }
+
+                                        if($this._styles.markers[i].valueSkipping){
+                                            markers[i].values.push(JSB.clone($this._styles.markers[i].widgetBinding.getFullValues()));
+                                        }
+                                        break;
+                                    case 'heatCircles':
+                                        if($this._styles.markers[i].rangeColor){
+                                            if(!markers[i].colorValues){
+                                                markers[i].colorValues = [];
+                                            }
+
+                                            var value = $this._styles.markers[i].rangeColor.colorValues.value();
+
+                                            if(!markers[i].maxColorValue || markers[i].maxColorValue < value){
+                                                markers[i].maxColorValue = value;
+                                            }
+
+                                            if(!markers[i].minColorValue || markers[i].minColorValue > value){
+                                                markers[i].minColorValue = value;
+                                            }
+
+                                            markers[i].colorValues.push({
+                                                value: value
+                                            });
+                                        }
+
+                                        if($this._styles.markers[i].sourceColor){
+                                            markers[i].color = $this._styles.markers[i].sourceColor.value();
+                                        }
+
+                                        if($this._styles.markers[i].sizeValuesBinding){
+                                            if(!markers[i].sizeValues){
+                                                markers[i].sizeValues = [];
+                                            }
+
+                                            var value = $this._styles.markers[i].sizeValuesBinding.value();
+
+                                            if(!markers[i].maxSizeValue || markers[i].maxSizeValue < value){
+                                                markers[i].maxSizeValue = value;
+                                            }
+
+                                            if(!markers[i].minSizeValue || markers[i].minSizeValue > value){
+                                                markers[i].minSizeValue = value;
+                                            }
+
+                                            markers[i].sizeValues.push({
+                                                value: value
+                                            });
+                                        }
+                                        break;
+                                }
                             }
-
-                            var value = bindings[i].value.value();
-
-                            regions[i].data.push({
-                                region: bindings[i].region.value(),
-                                value: value
-                            });
-
-                            if(!regions[i].maxValue || regions[i].maxValue < value){
-                                regions[i].maxValue = value;
-                            }
-
-                            if(!regions[i].minValue || regions[i].minValue > value){
-                                regions[i].minValue = value;
-                            }
-
-                            if($this._styles.regions[i].simpleColor){
-                                regions[i].color = $this._styles.regions[i].simpleColor;
-                            }
-
-                            if($this._styles.regions[i].sourceColor){
-                                regions[i].color = $this._styles.regions[i].sourceColor.value();
-                            }
+                            /*********/
                         }
-                        /*********/
 
-                        // load markers
-                        /*********/
-                        for(var i = 0; i < markersContext.length; i++){
-                            if(!markers[i]){
-                                markers[i] = {
-                                    coordinates: []
-                                }
-                            }
-
-                            markers[i].coordinates.push([$this._styles.markers[i].coordinatesX.value(), $this._styles.markers[i].coordinatesY.value()]);
-
-                            if($this._styles.markers[i].markerValueBinding){
-                                if(!markers[i].markerValues){
-                                    markers[i].markerValues = [];
-                                }
-
-                                markers[i].markerValues.push($this._styles.markers[i].markerValueBinding.value());
-                            }
-
-                            if($this._styles.markers[i].markerNameBinding){
-                                if(!markers[i].markerNames){
-                                    markers[i].markerNames = [];
-                                }
-
-                                markers[i].markerNames.push($this._styles.markers[i].markerNameBinding.value());
-                            }
-
-                            switch($this._styles.markers[i].markerType){
-                                case 'widget':
-                                    if(!markers[i].values){
-                                        markers[i].values = [];
-                                    }
-
-                                    if($this._styles.markers[i].valueSkipping){
-                                        markers[i].values.push(JSB.clone($this._styles.markers[i].widgetBinding.getFullValues()));
-                                    }
-                                    break;
-                                case 'heatCircles':
-                                    if($this._styles.markers[i].rangeColor){
-                                        if(!markers[i].colorValues){
-                                            markers[i].colorValues = [];
-                                        }
-
-                                        var value = $this._styles.markers[i].rangeColor.colorValues.value();
-
-                                        if(!markers[i].maxColorValue || markers[i].maxColorValue < value){
-                                            markers[i].maxColorValue = value;
-                                        }
-
-                                        if(!markers[i].minColorValue || markers[i].minColorValue > value){
-                                            markers[i].minColorValue = value;
-                                        }
-
-                                        markers[i].colorValues.push({
-                                            value: value
-                                        });
-                                    }
-
-                                    if($this._styles.markers[i].sourceColor){
-                                        markers[i].color = $this._styles.markers[i].sourceColor.value();
-                                    }
-
-                                    if($this._styles.markers[i].sizeValuesBinding){
-                                        if(!markers[i].sizeValues){
-                                            markers[i].sizeValues = [];
-                                        }
-
-                                        var value = $this._styles.markers[i].sizeValuesBinding.value();
-
-                                        if(!markers[i].maxSizeValue || markers[i].maxSizeValue < value){
-                                            markers[i].maxSizeValue = value;
-                                        }
-
-                                        if(!markers[i].minSizeValue || markers[i].minSizeValue > value){
-                                            markers[i].minSizeValue = value;
-                                        }
-
-                                        markers[i].sizeValues.push({
-                                            value: value
-                                        });
-                                    }
-                                    break;
-                            }
-                        }
-                        /*********/
-                    }
-
-                    fetch();
+                        fetch();
                     });
                 }
 
                 function resultProcessing(){
                     // processing regions
                     /*********/
-                    for(var i = 0; i < $this._styles.regions.length; i++){
-                        if($this._styles.regions[i].rangeColor){
-                            var rainbow = new Rainbow({
-                                colorFunction: $this._styles.regions[i].rangeColor.functionType,
-                                minNum: regions[i].minValue,
-                                maxNum: regions[i].maxValue,
-                                spectrum: [$this._styles.regions[i].rangeColor.startColor, $this._styles.regions[i].rangeColor.endColor],
-                                stepColors: $this._styles.regions[i].rangeColor.stepGradation
-                            });
+                    if(regions.length > 0){
+                        for(var i = 0; i < $this._styles.regions.length; i++){
+                            if($this._styles.regions[i].rangeColor){
+                                var rainbow = new Rainbow({
+                                    colorFunction: $this._styles.regions[i].rangeColor.functionType,
+                                    minNum: regions[i].minValue,
+                                    maxNum: regions[i].maxValue,
+                                    spectrum: [$this._styles.regions[i].rangeColor.startColor, $this._styles.regions[i].rangeColor.endColor],
+                                    stepColors: $this._styles.regions[i].rangeColor.stepGradation
+                                });
 
-                            if($this._styles.regions[i].rangeColor.stepGradation){
-                                for(var j = 0; j < regions[i].data.length; j++){
-                                    if(!regions[i].data[j].value){
-                                        continue;
+                                if($this._styles.regions[i].rangeColor.stepGradation){
+                                    for(var j = 0; j < regions[i].data.length; j++){
+                                        if(!regions[i].data[j].value){
+                                            continue;
+                                        }
+
+                                        var col = rainbow.colorAt(regions[i].data[j].value);
+
+                                        regions[i].data[j].color = '#' + col.color;
+                                        regions[i].data[j].group = col.group;
                                     }
 
-                                    var col = rainbow.colorAt(regions[i].data[j].value);
-
-                                    regions[i].data[j].color = '#' + col.color;
-                                    regions[i].data[j].group = col.group;
-                                }
-
-                                regions[i].colorMap = rainbow.getColorMap();
-                            } else {
-                                for(var j = 0; j < regions[i].data.length; j++){
-                                    regions[i].data[j].color = '#' + rainbow.colorAt(regions[i].data[j].value);
+                                    regions[i].colorMap = rainbow.getColorMap();
+                                } else {
+                                    for(var j = 0; j < regions[i].data.length; j++){
+                                        regions[i].data[j].color = '#' + rainbow.colorAt(regions[i].data[j].value);
+                                    }
                                 }
                             }
                         }
@@ -1168,43 +1170,45 @@
 
                     // processing markers
                     /*********/
-                    for(var i = 0; i < $this._styles.markers.length; i++){
-                        if($this._styles.markers[i].markerType === 'heatCircles'){
-                            if($this._styles.markers[i].rangeColor){
-                                var rainbow = new Rainbow({
-                                    colorFunction: $this._styles.markers[i].rangeColor.functionType,
-                                    minNum: markers[i].minColorValue,
-                                    maxNum: markers[i].maxColorValue,
-                                    spectrum: [$this._styles.markers[i].rangeColor.startColor, $this._styles.markers[i].rangeColor.endColor],
-                                    stepColors: $this._styles.markers[i].rangeColor.stepGradation
-                                });
+                    if(markers.length > 0){
+                        for(var i = 0; i < $this._styles.markers.length; i++){
+                            if($this._styles.markers[i].markerType === 'heatCircles'){
+                                if($this._styles.markers[i].rangeColor){
+                                    var rainbow = new Rainbow({
+                                        colorFunction: $this._styles.markers[i].rangeColor.functionType,
+                                        minNum: markers[i].minColorValue,
+                                        maxNum: markers[i].maxColorValue,
+                                        spectrum: [$this._styles.markers[i].rangeColor.startColor, $this._styles.markers[i].rangeColor.endColor],
+                                        stepColors: $this._styles.markers[i].rangeColor.stepGradation
+                                    });
 
-                                if($this._styles.markers[i].rangeColor.stepGradation){
-                                    for(var j = 0; j < markers[i].colorValues.length; j++){
-                                        if(!markers[i].colorValues[j].value){
-                                            continue;
+                                    if($this._styles.markers[i].rangeColor.stepGradation){
+                                        for(var j = 0; j < markers[i].colorValues.length; j++){
+                                            if(!markers[i].colorValues[j].value){
+                                                continue;
+                                            }
+
+                                            var col = rainbow.colorAt(markers[i].colorValues[j].value);
+
+                                            markers[i].colorValues[j].color = '#' + col.color;
+                                            markers[i].colorValues[j].group = col.group;
                                         }
 
-                                        var col = rainbow.colorAt(markers[i].colorValues[j].value);
-
-                                        markers[i].colorValues[j].color = '#' + col.color;
-                                        markers[i].colorValues[j].group = col.group;
-                                    }
-
-                                    markers[i].colorMap = rainbow.getColorMap();
-                                } else {
-                                    for(var j = 0; j < markers[i].colorValues.length; j++){
-                                        markers[i].colorValues[j].color = '#' + rainbow.colorAt(markers[i].colorValues[j].value);
+                                        markers[i].colorMap = rainbow.getColorMap();
+                                    } else {
+                                        for(var j = 0; j < markers[i].colorValues.length; j++){
+                                            markers[i].colorValues[j].color = '#' + rainbow.colorAt(markers[i].colorValues[j].value);
+                                        }
                                     }
                                 }
-                            }
 
-                            if($this._styles.markers[i].sizeValuesBinding){
-                                var maxSize = markers[i].maxSizeValue - markers[i].minSizeValue,
-                                    maxPx = $this._styles.markers[i].maxRadius - $this._styles.markers[i].minRadius;
+                                if($this._styles.markers[i].sizeValuesBinding){
+                                    var maxSize = markers[i].maxSizeValue - markers[i].minSizeValue,
+                                        maxPx = $this._styles.markers[i].maxRadius - $this._styles.markers[i].minRadius;
 
-                                for(var j = 0; j < markers[i].sizeValues.length; j++){
-                                    markers[i].sizeValues[j].size = (markers[i].sizeValues[j].value - markers[i].minSizeValue) / markers[i].maxSizeValue * maxPx + $this._styles.markers[i].minRadius;
+                                    for(var j = 0; j < markers[i].sizeValues.length; j++){
+                                        markers[i].sizeValues[j].size = (markers[i].sizeValues[j].value - markers[i].minSizeValue) / markers[i].maxSizeValue * maxPx + $this._styles.markers[i].minRadius;
+                                    }
                                 }
                             }
                         }

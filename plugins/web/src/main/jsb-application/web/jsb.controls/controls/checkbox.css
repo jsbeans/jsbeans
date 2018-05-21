@@ -21,7 +21,7 @@
 }
 
 .jsb-checkbox > .check-elem:hover:not(.checked) {
-    background-position: -88px 0;
+    background-position: -66px 0;
 }
 
 .jsb-checkbox > .caption{

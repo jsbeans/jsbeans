@@ -21,12 +21,14 @@
                 fieldName: {
                     render: 'dataBinding',
                     name: 'Имя поля',
-                    linkTo: 'source'
+                    linkTo: 'source',
+                    valueType: 'string'
                 },
                 fieldWeight: {
                     render: 'dataBinding',
                     name: 'Вес поля',
-                    linkTo: 'source'
+                    linkTo: 'source',
+                    valueType: 'number'
                 },
                 autoSize: {
                     render: 'item',
@@ -183,10 +185,6 @@
                             for(var i = 0; i < $this._schemeOpts.series.length; i++){
                                 var name = $this._schemeOpts.series[i].nameSelector.value(),
                                     value = $this._schemeOpts.series[i].dataSelector.value();
-
-                                if(JSB.isString(value)){
-                                    value = Number(value.replace(/,/g, '.'));
-                                }
 
                                 if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
                                     break;

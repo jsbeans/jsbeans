@@ -933,9 +933,8 @@
                 styleSelector = this.getContext().find('chart colorScheme');
 
             function buildWidget(chartOpts){
-
                 if($this.chart){
-                    $this.chart.update(chartOpts, true, false); // chartOpts, true, true
+                    $this.chart.update(chartOpts, true, true);
                 } else {
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
