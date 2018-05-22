@@ -6,11 +6,18 @@
 		supportedMap: {},
 		
 		getSupportedParsers: function(entry, callback){
+			function getParserScheme(jsb){
+				if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
+					return;
+				}
+				
+				return JSB.merge(true, {}, getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
+			}
 			this.server().getSupportedParsers(entry, function(supported){
 				JSB.chain(supported, function(pDesc, c){
 					JSB.lookup(pDesc.jsb, function(pCls){
 						pDesc.jsbClass = pCls;
-						pDesc.scheme = pCls.jsb.$scheme;
+						pDesc.scheme = getParserScheme(pCls.jsb);//pCls.jsb.$scheme;
 						c(pDesc);
 					});
 				}, function(pDescArr){

@@ -1,8 +1,23 @@
 {
 	$name: 'DataCube.JsonParser',
-	$parent: 'DataCube.Parser',
+	$parent: 'DataCube.TextStreamParser',
 	$scheme: {
-		
+		parserSettings: {
+			items: {
+				trimValues: {
+			        render: 'item',
+			        name: 'Обрезать пробелы в строках',
+			        optional: 'checked',
+			        editor: 'none'
+			    },
+				multiTable: {
+			        render: 'item',
+			        name: 'Разбить на несколько таблиц',
+			        optional: true,
+			        editor: 'none'
+			    }
+			}
+		}
 	},
 	
 	$require: ['DataCube.ParserManager'],
