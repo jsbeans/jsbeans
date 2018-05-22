@@ -32,10 +32,11 @@
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace, opts);
 			if(opts){
-/*				if(opts.fileName){
+				if(opts.fileName){
 					this.setName(opts.fileName);
 				}
 				if(opts.fileData){
+					var jsonBinary = this.loadArtifact('.data');
 					// try to parse JSON
 					var charsets = ['UTF-8','Windows-1251','UTF-16LE','UTF-16BE'];
 					var json = null;
@@ -43,7 +44,7 @@
 						var charset = charsets[i];
 						var decoder = new Decoder(charset);
 						try {
-							var jsonStr = decoder.decode(opts.fileData);
+							var jsonStr = decoder.decode(jsonBinary);
 							var chrx = /[\{\[]/i;
 							var j = 0;
 							for(; j < jsonStr.length; j++){
@@ -75,11 +76,15 @@
 					}
 					this.property('records', this.records);
 					// store artifact
-					this.storeArtifact('.data', json);
-				} */
+					this.storeArtifact('.json', json);
+				}
 			} else {
 				this.records = this.property('records');
 			}
+		},
+		
+		read: function(opts){
+			return this.loadArtifact('.json', opts);
 		}
 
 	}

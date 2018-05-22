@@ -11,7 +11,7 @@
 					return;
 				}
 				
-				return JSB.merge({}, getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
+				return JSB.merge(true, {}, getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
 			}
 			this.server().getSupportedParsers(entry, function(supported){
 				JSB.chain(supported, function(pDesc, c){
