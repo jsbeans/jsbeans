@@ -1481,7 +1481,7 @@
                                     icon = undefined,
                                     html = undefined;
 
-                                if(data.markers[i].colorValues[j].color){
+                                if(data.markers[i].colorValues && data.markers[i].colorValues[j].color){
                                     color = data.markers[i].colorValues[j].color;
                                 }
 
