@@ -198,6 +198,10 @@
             return this._scheme.render;
         },
 
+        getScheme: function(){
+            return this._scheme;
+        },
+
         getSchemeController: function(){
             return this._schemeController;
         },

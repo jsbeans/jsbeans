@@ -210,6 +210,16 @@
 	        }
 	    },
 
+	    redraw: function(key){
+	        var oldRender = this.findRenderByKey(key),
+	            newRender = this.createRender(null, key, oldRender.getScheme(), oldRender.getValues());
+
+            if(newRender){
+                oldRender.getElement().replaceWith(newRender.getElement());
+                oldRender.destroy();
+            }
+	    },
+
 	    validate: function(){
 	        var valRes = [];
 
