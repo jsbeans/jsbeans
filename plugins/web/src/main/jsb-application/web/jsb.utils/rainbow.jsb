@@ -37,15 +37,13 @@
                     + calcHex(number, startColour.substring(4,6), endColour.substring(4,6));
             }
 
-            function calcHex(num, channelStart_Base16, channelEnd_Base16)
-            {
+            function calcHex(num, channelStart_Base16, channelEnd_Base16){
                 if (num <= minNum) {
                     num = minNum;
                 }
                 if (num >= maxNum) {
                     num = maxNum;
                 }
-
 
                 var cStart_Base10 = parseInt(channelStart_Base16, 16);
                 var cEnd_Base10 = parseInt(channelEnd_Base16, 16);
@@ -75,8 +73,7 @@
                 return formatHex(c_Base10.toString(16));
             }
 
-            function formatHex(hex)
-            {
+            function formatHex(hex){
                 if (hex.length === 1) {
                     return '0' + hex;
                 } else {
@@ -84,14 +81,12 @@
                 }
             }
 
-            function isHexColour(string)
-            {
+            function isHexColour(string){
                 var regex = /^#?[0-9a-fA-F]{6}$/i;
                 return regex.test(string);
             }
 
-            function getHexColour(string)
-            {
+            function getHexColour(string){
                 if (isHexColour(string)) {
                     return string.substring(string.length - 6, string.length);
                 } else {
@@ -282,8 +277,17 @@
         }
 
         if(this.stepColors){
+            switch(this.colorFunction){
+                case 'quadratic':
+                    number = Math.pow(number, 2);
+                    break;
+                case 'logarithmic':
+                    number = Math.log(number);
+                    break;
+            }
+
             for(var i = 0; i < this.colorMap.length; i++){
-                if(this.colorMap[i].min <= number && this.colorMap[i].max >= number){
+                if(this.colorMap[i].innerMin <= number && this.colorMap[i].innerMax >= number){
                     return {
                         color: this.colorMap[i].color,
                         group: i
@@ -302,16 +306,60 @@
     },
 
     createColorMap: function(count){
-        var increment = (this.maxNum - this.minNum) / count;
-
         this.colorMap = [];
 
-        for(var j = 0; j < count; j++){
-            this.colorMap.push({
-                min: j * increment + this.minNum,
-                max: (j + 1) * increment + this.minNum,
-                color: this.colorAt(j * increment + this.minNum)
-            });
+        var linearIncrement = (this.maxNum - this.minNum) / count;
+
+        switch(this.colorFunction){
+            case 'quadratic':
+                var increment = (Math.pow(this.maxNum, 2) - Math.pow(this.minNum, 2)) / count,
+                    minNum = Math.sqrt(this.minNum);
+
+                for(var j = 0; j < count; j++){
+                    var innerMin = j * increment + minNum;
+
+                    this.colorMap.push({
+                        min: Math.sqrt(innerMin),
+                        innerMin: innerMin,
+                        max: Math.sqrt(innerMax),
+                        innerMax: innerMax,
+                        color: this.colorAt(j * linearIncrement + this.minNum)
+                    });
+                }
+                break;
+            case 'logarithmic':
+                var increment = (Math.log(this.maxNum) - Math.log(this.minNum)) / count,
+                    minNum = Math.log(this.minNum);
+
+                for(var j = 0; j < count; j++){
+                    var innerMin = j * increment + minNum,
+                        innerMax = (j + 1) * increment + minNum;
+
+                    this.colorMap.push({
+                        min: Math.exp(innerMin),
+                        innerMin: innerMin,
+                        max: Math.exp(innerMax),
+                        innerMax: innerMax,
+                        color: this.colorAt(j * linearIncrement + this.minNum)
+                    });
+                }
+                break;
+            default:
+                var increment = (this.maxNum - this.minNum) / count;
+
+                for(var j = 0; j < count; j++){
+                    var min = j * increment + this.minNum,
+                        max = (j + 1) * increment + this.minNum;
+
+                    this.colorMap.push({
+                        min: min,
+                        innerMin: min,
+                        max: max,
+                        innerMax: max,
+                        color: this.colorAt(j * linearIncrement + this.minNum)
+                    });
+                }
+                break;
         }
     },
 

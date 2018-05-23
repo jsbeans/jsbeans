@@ -261,13 +261,13 @@
                     items: {
                         coordinatesX: {
                             render: 'dataBinding',
-                            name: 'Координаты X',
+                            name: 'Широта',
                             linkTo: 'dataSource',
                             valueType: 'number'
                         },
                         coordinatesY: {
                             render: 'dataBinding',
-                            name: 'Координаты Y',
+                            name: 'Долгота',
                             linkTo: 'dataSource',
                             valueType: 'number'
                         },
@@ -807,20 +807,6 @@
                             });
                         } else {
                             switch(mapName){
-                                /*
-                                case 'russianRegions':
-                                    maps.push(JSB.merge(r, {
-                                        data: null,
-                                        path: 'geojson/russianRegions.json'
-                                    }));
-                                    break;
-                                case 'russianRegionsMPT':
-                                    maps.push(JSB.merge(r, {
-                                        data: null,
-                                        path: 'geojson/russianRegionsMPT.json'
-                                    }));
-                                    break;
-                                */
                                 case 'worldCountries':
                                     maps.push(JSB.merge(r, {
                                         data: null,
@@ -1163,6 +1149,8 @@
                                         regions[i].data[j].color = '#' + rainbow.colorAt(regions[i].data[j].value);
                                     }
                                 }
+
+                                rainbow.destroy();
                             }
                         }
                     }
@@ -1200,6 +1188,8 @@
                                             markers[i].colorValues[j].color = '#' + rainbow.colorAt(markers[i].colorValues[j].value);
                                         }
                                     }
+
+                                    rainbow.destroy();
                                 }
 
                                 if($this._styles.markers[i].sizeValuesBinding){
