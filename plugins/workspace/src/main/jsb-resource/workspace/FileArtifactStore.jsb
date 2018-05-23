@@ -78,6 +78,7 @@
 				
 				if(artifactType == 'string'){
 					if(opts && opts.stream){
+						delete opts.stream;
 						return FileSystem.open(eFileName, JSB.merge({binary: false}, opts, {read: true, write:false, append: false, update: false}));
 					}
 					return FileSystem.read(eFileName);	
@@ -85,6 +86,7 @@
 					return JSON.parse(FileSystem.read(eFileName));
 				} else if(artifactType == 'binary'){
 					if(opts && opts.stream){
+						delete opts.stream;
 						return FileSystem.open(eFileName, JSB.merge({binary: true}, opts, {read: true, write:false, append: false, update: false}));
 					}
 					return FileSystem.read(eFileName, {binary: true});

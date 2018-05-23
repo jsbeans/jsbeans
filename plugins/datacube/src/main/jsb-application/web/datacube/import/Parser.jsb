@@ -1,11 +1,16 @@
 {
 	$name: 'DataCube.Parser',
+	$session: false,
 	
 	$scheme: {
 		parserSettings: {
 			render: 'group',
 	        name: 'Настройки парсера',
 	        items: {}
+		},
+		
+		structure: {
+			render: 'parserBinding'
 		},
 		
 		tablesSettings: {
@@ -26,6 +31,19 @@
 	        }
 		}
 	},
+	
 	$server: {
+		entry: null,
+		context: null,
+		
+		$constructor: function(entry, context){
+			$base();
+			this.entry = entry;
+			this.context = context;
+		},
+		
+		analyze: function(){
+			throw new Error('This method should be overriden');
+		}
 	}
 }

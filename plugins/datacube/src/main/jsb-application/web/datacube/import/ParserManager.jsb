@@ -6,28 +6,12 @@
 		supportedMap: {},
 		
 		getSupportedParsers: function(entry, callback){
-			function getParserScheme(jsb){
-				if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
-					return;
-				}
-				
-				return JSB.merge(true, {}, getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
-			}
-			this.server().getSupportedParsers(entry, function(supported){
-				JSB.chain(supported, function(pDesc, c){
-					JSB.lookup(pDesc.jsb, function(pCls){
-						pDesc.jsbClass = pCls;
-						pDesc.scheme = getParserScheme(pCls.jsb);//pCls.jsb.$scheme;
-						c(pDesc);
-					});
-				}, function(pDescArr){
-					callback(pDescArr);
-				});
-			});
+			this.server().getSupportedParsers(entry, callback);
 		},
 	},
 	
 	$server: {
+		$require: ['Unimap.ValueSelector'],
 		parsers: {},
 		
 		registerParser: function(parserJsb, opts){
@@ -42,23 +26,50 @@
 		},
 		
 		getSupportedParsers: function(fileEntry){
+			function getParserScheme(jsb){
+				if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
+					return;
+				}
+				
+				return JSB.merge(true, {}, getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
+			}
+			
 			var supported = [];
-			for(var pJsb in this.parsers){
-				var pDesc = this.parsers[pJsb];
+			for(var pJsbName in this.parsers){
+				var pDesc = this.parsers[pJsbName];
 				var pOpts = pDesc.opts;
 				if(!pOpts || !pOpts.accepts || !JSB.isFunction(pOpts.accepts)){
 					continue;
 				}
 				var bAccepts = pOpts.accepts.call(this, fileEntry);
 				if(bAccepts){
+					var pJsb = JSB.get(pJsbName);
 					supported.push({
-						jsb: pJsb,
+						jsb: pJsbName,
+						scheme: getParserScheme(pJsb),
 						name: pOpts.name
 					});
 				}
 			}
 			
 			return supported;
+		},
+		
+		runStructureAnalyzing: function(entry, parser, values){
+			if(!this.parsers[parser]){
+				throw new Error('Failed to find parser: ' + parser);
+			}
+			var pJsbClass = JSB.get(parser).getClass();
+			var bootstrap = 'Datacube.Unimap.Bootstrap';
+			var valSel = new ValueSelector({
+				bootstrap: bootstrap,
+				values: values
+			});
+			var pInst = new pJsbClass(entry, valSel);
+			JSB.defer(function(){
+				pInst.analyze();
+			}, 0);
+			return pInst;
 		}
 	}
 }

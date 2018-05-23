@@ -73,7 +73,8 @@
 				return '' + JavaString.valueOf(this.outputBuffer.array(), this.mark, this.outputBuffer.position() - this.mark);
 			} else if($jsb.isInstanceOf(arg1, 'JSB.IO.Stream')){
 				var stream = arg1;
-				while(stream.available()){
+				var count = arg2;
+				while(stream.available() && (!count || count > this.outputBuffer.position() - this.mark)){
 					if(this.mark > 0){
 						this.outputBuffer.limit(this.outputBuffer.position());
 						this.outputBuffer.position(this.mark);
@@ -90,16 +91,28 @@
 					}
 				}
 				this.outputBuffer.flip();
-				return this.mark == this.outputBuffer.limit() ? null: '' + String(this.outputBuffer.subSequence(this.mark, this.outputBuffer.limit()));
+				var result = null;
+				if(count && this.outputBuffer.limit() - this.mark > count){
+					result = this.mark == this.outputBuffer.limit() ? null : '' + String(this.outputBuffer.subSequence(this.mark, this.mark + Math.min(count, this.outputBuffer.limit() - this.mark)));
+					this.mark += count;
+					this.outputBuffer.position(this.outputBuffer.limit());
+		            this.outputBuffer.limit(this.outputBuffer.capacity());
+				} else {
+		            result = this.mark == this.outputBuffer.limit() ? null : '' +  String(this.outputBuffer.subSequence(this.mark, this.outputBuffer.limit()));
+		            if(!stream.available()){
+		            	this.clear();	
+		            }
+				}
+				return result;
 			}
 		},
 		
-		read: function(stream){
+		read: function(stream, count){
 			stream = stream || this.stream;
 			if(!stream){
 				throw new Error('Decoder.read works with streams only');
 			}
-			return this.decode(stream);
+			return this.decode(stream, count);
 		},
 		
 		readLine: function(includeNewline, stream){
