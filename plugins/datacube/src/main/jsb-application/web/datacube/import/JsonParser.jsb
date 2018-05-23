@@ -1,6 +1,7 @@
 {
 	$name: 'DataCube.JsonParser',
 	$parent: 'DataCube.TextStreamParser',
+	$session: false,
 	$scheme: {
 		parserSettings: {
 			items: {
@@ -22,6 +23,12 @@
 	
 	$require: ['DataCube.ParserManager'],
 	$server: {
+		$require: ['Peg', 'JSB.IO.FileSystem'],
+		
+		$constructor: function(){
+			var grammarPath = FileSystem.join(this.getJsb().getFullPath(), 'json.grammar.peg');
+			this.jsonGrammar = FileSystem.read(grammarPath);
+		},
 		
 		$bootstrap: function(){
 			ParserManager.registerParser(this, {
@@ -30,6 +37,15 @@
 					return JSB.isInstanceOf(entry, 'DataCube.Model.JsonFile');
 				}
 			});
+		},
+		
+		analyze: function(){
+			// do something with this.stream
+			debugger;
+			var parser = Peg.generate(this.jsonGrammar);
+			var obj = Peg.parseStream(parser, this.stream);
+			debugger;
+			this.stream.close();
 		}
 	}
 }
