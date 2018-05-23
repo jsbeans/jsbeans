@@ -7,56 +7,81 @@
 	$constructor: function(){
 		this.StringBuffer = function(stream){
 			this.stream = stream;
-			this.pos = 0;
-			this.buffer = '';
+			this.buffers = [{
+				pos: 0,
+				buffer: ''
+			},{
+				pos: 0,
+				buffer: ''
+			}];
+			this.currentBuffer = 0;
+			this.lastBuffer = 1;
 			this.length = 0;
+			this.batchSize = 131072;
+			this.eof = false;
 		}
 		this.StringBuffer.prototype = {
 			checkFill: function(idx){
-				while(idx >= this.length){
-					var ch = this.stream.read(65536);
-					if(!ch || ch.length == 0){
+				while(idx >= this.length && !this.eof){
+					var nBuffer = this.stream.read(this.batchSize);
+					if(!nBuffer || nBuffer.length == 0){
+						this.eof = true;
 						break;
 					}
-					this.buffer += ch;
-					this.length = this.buffer.length;
+					this.lastBuffer = this.currentBuffer;
+					this.currentBuffer = (this.currentBuffer + 1) & 1;
+					var bDesc = this.buffers[this.currentBuffer];
+					bDesc.buffer = nBuffer;
+					bDesc.pos = this.buffers[this.lastBuffer].pos + this.buffers[this.lastBuffer].buffer.length;
+					this.length += bDesc.buffer.length;
+					JSB.getLogger().debug('size: ' + this.length);
 				}
 			},
+			
 			charCodeAt: function(idx){
-				if(idx >= this.length){
+				if(idx >= this.length && !this.eof){
 					this.checkFill(idx);
 				}
-				var r = this.buffer.charCodeAt(idx);
-//				JSB.getLogger().info('charCodeAt(' + idx + '):' + r);
-				return r;
+				var bDesc = this.buffers[this.currentBuffer];
+				if(idx < bDesc.pos){
+					bDesc = this.buffers[this.lastBuffer];
+				}
+				return bDesc.buffer.charCodeAt(idx - bDesc.pos);
 			},
+			
 			charAt: function(idx){
-				if(idx >= this.length){
+				if(idx >= this.length && !this.eof){
 					this.checkFill(idx);
+				} 
+				var bDesc = this.buffers[this.currentBuffer];
+				if(idx < bDesc.pos){
+					bDesc = this.buffers[this.lastBuffer];
 				}
-				var r = this.buffer.charAt(idx);
-//				JSB.getLogger().info('charAt(' + idx + '):' + r);
-				return r;
+				return bDesc.buffer.charAt(idx - bDesc.pos);
 			},
+			
 			substr: function(a, b){
-				if(b && a + b >= this.length){
+				if(a + b >= this.length && !this.eof){
 					this.checkFill(a + b);
-				} else if(a >= this.length) {
-					this.checkFill(a);
 				}
-				var r = this.buffer.substr(a, b);
-//				JSB.getLogger().info('substr(' + a + ', ' + b + '):' + r);
-				return r;
+				var bDesc = this.buffers[this.currentBuffer];
+				if(a < bDesc.pos && a + b < bDesc.pos){
+					bDesc = this.buffers[this.lastBuffer];
+					return bDesc.buffer.substr(a - bDesc.pos, b);
+				} else if(a < bDesc.pos && a + b >= bDesc.pos){
+					var prevDesc = this.buffers[this.lastBuffer];
+					var part1 = prevDesc.buffer.substr(a - prevDesc.pos);
+					var part2 = bDesc.buffer.substr(0, b - part1.length);
+					return part1 + part2;
+				} else if(a >= bDesc.pos && a + b >= bDesc.pos){
+					return bDesc.buffer.substr(a - bDesc.pos, b);
+				} else {
+					debugger;
+				}
 			},
+			
 			substring: function(a, b){
-				if(b && b >= this.length){
-					this.checkFill(b);
-				} else if(a >= this.length){
-					this.checkFill(a);
-				}
-				var r = this.buffer.substring(a, b);
-//				JSB.getLogger().info('substring(' + a + ', ' + b + '):' + r);
-				return r;
+				return this.substr(a, b - a);
 			}
 
 		};
