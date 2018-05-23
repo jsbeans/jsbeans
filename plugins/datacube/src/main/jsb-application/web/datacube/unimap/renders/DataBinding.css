@@ -102,8 +102,8 @@
     top: -8px;
 }
 
-.dataBindingRender .jsb-comboEditor li > .sliceRender:before,
-.dataBindingRender .jsb-select li > .sliceRender:before {
+.dataBindingRender .jsb-comboEditor li .sliceRender:before,
+.dataBindingRender .jsb-select li .sliceRender:before {
     top: -3px;
 }
 

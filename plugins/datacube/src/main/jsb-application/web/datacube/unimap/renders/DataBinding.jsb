@@ -27,16 +27,18 @@
 	            }
             }
 
-            var dataList = [];
-            for(var i = 0; i < this._dataList.length; i++){
-                dataList.push({
-                    key: this._dataList[i].key,
-                    value: this._dataList[i].value.clone()
-                })
-            }
-
             switch(this._scheme.editor){
                 case 'input':
+                    var dataList = [];
+                    for(var i = 0; i < this._dataList.length; i++){
+                        dataList.push({
+                            key: this._dataList[i].key,
+                            value: this._dataList[i].value.clone()
+                        })
+                    }
+
+                    // todo: ComboEditor like Select
+
                     var editor = new ComboEditor({
                         clearBtn: true,
                         options: dataList,
@@ -72,7 +74,8 @@
                 default:
                     var editor = new Select({
                         clearBtn: !this._scheme.multiple,
-                        options: dataList,
+                        cloneOptions: true,
+                        options: this._dataList,
                         value: values.value,
                         onchange: function(val){
                             values.value = val.key;
@@ -135,42 +138,40 @@
 	        this.createDataList(values);
 
             for(var i = 0; i < this._editors.length; i++){
-                var dataList = [];
-                for(var j = 0; j < this._dataList.length; j++){
-                    dataList.push({
-                        key: this._dataList[j].key,
-                        value: this._dataList[j].value.clone()
-                    })
-                }
-
-                this._editors[i].setOptions(dataList, true);
+                this._editors[i].setOptions(this._dataList, true);
             }
 
             this.updateCurrentBindings();
 	    },
 
 	    createDataList: function(values){
-	        var dataList = [],
-	            bindingsInfo = {};
+	        this._dataList = [];
+	        this._bindingsInfo = {};
 
-	        for(var i = 0; i < values.values.length; i++){
-	            if(!values.values[i].binding){
-	                continue;
-	            }
+            function parseArray(array, parent){
+                var list = [];
 
-	            for(var j in values.values[i].binding.arrayType.record){
-	                dataList.push({
-	                    key: j,
-	                    value: this.$('<div class="sliceRender">' + j + '</div>')
-	                });
+                for(var i in array.arrayType.record){
+                    var item = {
+                        key: (parent ? parent + '.' : '') + i,
+                        value: $this.$('<div class="sliceRender">' + i + '</div>')
+                    };
 
-	                bindingsInfo[j] = values.values[i].binding.arrayType.record[j];
-	            }
-	        }
-	        this._dataList = dataList;
-	        this._bindingsInfo = bindingsInfo;
+                    if(array.arrayType.record[i].type === 'array' && array.arrayType.record[i].arrayType.type === 'object'){
+                        item.child = parseArray(array.arrayType.record[i], (parent ? parent + '.' : '') + i);
+                    }
 
-	        return dataList;
+                    $this._bindingsInfo[(parent ? parent + '.' : '') + i] = array.arrayType.record[i];
+
+                    list.push(item);
+                }
+
+                return list;
+            }
+
+            if(values.values[0].binding){
+                this._dataList = parseArray(values.values[0].binding);
+            }
 	    },
 
 	    destroy: function(){

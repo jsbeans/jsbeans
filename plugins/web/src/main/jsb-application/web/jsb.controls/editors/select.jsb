@@ -72,7 +72,8 @@
         },
 
 	    options: {
-	        clearBtn: false
+	        clearBtn: false,
+	        cloneOptions: false
 	    },
 
 	    clear: function(){
@@ -93,10 +94,21 @@
 	        return Object.keys(this._optionsList).indexOf(key) > -1;
 	    },
 
-	    setOptions: function(options, clear){
-	        if(clear){
+	    setOptions: function(options, isClear, isCloneElements){
+	        if(!JSB.isDefined(isCloneElements)){
+	            isCloneElements = this.options.cloneOptions;
+	        }
+
+	        if(isClear){
                 this._optionsList = {};
                 this.dropDown.empty();
+	        }
+
+	        function clickEvt(evt){
+                evt.stopPropagation();
+                $this.dropDown.addClass('hidden');
+                $this.$(document).off('click.comboEditor_closeDD');
+                $this.setValue(evt.delegateTarget.getAttribute('key'));
 	        }
 
 	        if(JSB.isObject(options)){
@@ -104,14 +116,9 @@
 	                var el = this.$('<li key="' + i + '"></li>');
 	                el.append(options[i]);
 
-                    (function(key, val){
-                        el.click(function(evt){
-                            evt.stopPropagation();
-                            $this.dropDown.addClass('hidden');
-                            $this.$(document).off('click.comboEditor_closeDD');
-                            $this.setValue(val, key);
-                        });
-                    })(i)
+                    el.click(function(evt){
+                        clickEvt(evt);
+                    });
 
                     this._optionsList[i] = {
                         element: el,
@@ -124,33 +131,51 @@
                     options = [options];
                 }
 
-                for(var i = 0; i < options.length; i++){
-                    var el, key;
+                function createOptions(parentElement, options){
+                    for(var i = 0; i < options.length; i++){
+                        var el, key;
 
-                    if(JSB.isObject(options[i])){
-                        el = this.$('<li key="' + options[i].key + '" title="' + (options[i].title ? options[i].title : '') + '"></li>');
-                        el.append(options[i].value);
-                        key = options[i].key;
-                    } else {
-                        el = this.$('<li key="' + options[i] + '"">' + options[i] + '</li>');
-                        key = options[i];
-                    }
+                        if(JSB.isObject(options[i])){
+                            el = $this.$('<li key="' + options[i].key + '" title="' + (options[i].title ? options[i].title : '') + '"></li>');
 
-                    (function(key){
+                            var val = $this.$('<div class="selectValue"></div>');
+                            el.append(val);
+
+                            if(isCloneElements && options[i].value instanceof jQuery){
+                                val.append(options[i].value.clone());
+                            } else {
+                                val.append(options[i].value);
+                            }
+
+                            key = options[i].key;
+
+                            if(options[i].child){
+                                var childElement = $this.$('<ul class="childOptions"></ul>');
+                                el.append(childElement);
+
+                                // todo: expand icon
+
+                                createOptions(childElement, options[i].child);
+                            }
+                        } else {
+                            el = $this.$('<li key="' + options[i] + '"">' + options[i] + '</li>');
+                            key = options[i];
+                        }
+
                         el.click(function(evt){
-                            evt.stopPropagation();
-                            $this.dropDown.addClass('hidden');
-                            $this.$(document).off('click.comboEditor_closeDD');
-                            $this.setValue(key);
+                            clickEvt(evt);
                         });
-                    })(key)
 
-                    this._optionsList[key] = {
-                        element: el,
-                        options: options[i]
-                    };
-                    this.dropDown.append(el);
+                        $this._optionsList[key] = {
+                            element: el,
+                            options: options[i]
+                        };
+
+                        parentElement.append(el);
+                    }
                 }
+
+                createOptions(this.dropDown, options);
 	        }
 	    },
 
@@ -165,11 +190,11 @@
             };
 
             this.currentVal.empty();
-	        this.dropDown.find('li').removeClass('selected');
+	        this.dropDown.find('.selectValue').removeClass('selected');
 
 	        if(JSB.isDefined(key)){  // select
 	            this.currentVal.append(this._optionsList[key].element.html());
-	            this._optionsList[key].element.addClass('selected');
+	            this._optionsList[key].element.find('> .selectValue').addClass('selected');
 	        }
 
 	        if(this.clearBtn){
