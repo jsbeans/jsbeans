@@ -203,6 +203,15 @@ public class ConfigHelper {
         }
     }
 
+    public static String getPluginConfigHome(Object obj){
+        String pluginHome = getPluginHomeFolder(obj);
+        if (Core.DEBUG) {
+            return pluginHome + "/jsb-application/config";
+        } else {
+            return pluginHome + "../config";
+        }
+    }
+
 
     public static boolean has(String path) {
         return getConfig().hasPath(path);

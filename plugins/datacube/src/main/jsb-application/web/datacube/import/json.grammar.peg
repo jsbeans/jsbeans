@@ -73,7 +73,7 @@ array
   = begin_array
     values:(
       head:value
-      tail:(value_separator v:value { return v; })*
+      tail:(value_separator v:value { return null; })*
       { return [head].concat(tail); }
     )?
     end_array

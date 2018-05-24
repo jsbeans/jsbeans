@@ -344,6 +344,16 @@
 		    } else {
 		    	Files.delete(nioPath);
 		    }
+        },
+
+
+		getOwner: function(path){
+		    return ''+Files.getOwner(this._resolvePath(path)).getName();
+		},
+
+		setOwner: function(path, user){
+		    var userPrincipal = FileSystems.getDefault().getUserPrincipalLookupService().lookupPrincipalByName(user);
+		    Files.setOwner(this._resolvePath(path), userPrincipal);
 		},
 
 

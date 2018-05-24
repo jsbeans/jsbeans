@@ -41,6 +41,7 @@ import org.jsbeans.services.ServiceManagerService;
 public class HttpService extends Service {
 //    private static final String WEB_FOLDER_KEY = "web.folder";
     private static final String WEB_PORT_KEY = "web.http.port";
+    private static final String WEB_XML = "web.config";
     private static final String WEB_REQUEST_HEADER_SIZE = "web.http.requestHeaderSize";
     private static final String WEB_RESPONSE_BUFFER_SIZE = "web.http.responseBufferSize";
     
@@ -59,6 +60,10 @@ public class HttpService extends Service {
     	if(ConfigHelper.has(WEB_PORT_KEY)){
     		portVal = ConfigHelper.getConfigInt(WEB_PORT_KEY);
     	}
+
+    	String webXml = ConfigHelper.has(WEB_XML)
+                ? ConfigHelper.getConfigString(WEB_XML)
+                : "WEB-INF/web.xml";
 
         Server server = new Server(portVal);
         server.setAttribute("org.eclipse.jetty.server.Request.maxFormContentSize", -1);
@@ -82,14 +87,14 @@ public class HttpService extends Service {
 //        context.setResourceBase(ConfigHelper.getWebFolder());
         context.setBaseResource(resources);
 
-        context.setDescriptor("WEB-INF/web.xml");
+//        context.setDescriptor(webXml);
         context.setContextPath("/");
         SessionManager sm = context.getSessionHandler().getSessionManager();
         sm.getSessionCookieConfig().setName("_jsbSession_" + portVal.toString());
         
         // prevent directory browsing
         context.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
-        
+
         server.setHandler(context);
         
         // set requestHeaderSize for long cross-domain GET requests

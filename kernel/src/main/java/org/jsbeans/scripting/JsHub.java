@@ -40,8 +40,10 @@ import org.mozilla.javascript.tools.debugger.ScopeProvider;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 
+import javax.security.auth.Subject;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.security.PrivilegedExceptionAction;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -610,12 +612,18 @@ public class JsHub extends Service {
                     cx.putThreadLocal("clientRequestId", msg.getClientRequestId());
                     cx.putThreadLocal("scope", scope);
                     cx.putThreadLocal("_jsbCallingContext", null);
+
+                    Subject subj = Subject.getSubject(msg.getAccessControlContext());
                     Object resultObj = null;
                     if (msg.getBody() != null) {
                     	if(createDump){
                     		dumpScript(scriptId, msg.getBody(), null, true);
                     	}
-                        resultObj = cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null);
+
+                        resultObj = Subject.doAs(
+                                subj,
+                                (PrivilegedExceptionAction<Object>) () -> cx.evaluateString(scope, msg.getBody(), getScriptNameByToken(token), 1, null)
+                        );
                     } else if (msg.getFunction() != null) {
                     	Object[] args = msg.getArgs();
                         List<Object> objArr = new ArrayList<Object>();
@@ -628,7 +636,10 @@ public class JsHub extends Service {
                         if(createDump){
                         	dumpScript(scriptId, null, msg.getFunction(), true);
                         }
-                        resultObj = msg.getFunction().call(cx, scope, scope, objArr.toArray());
+                        resultObj = Subject.doAs(
+                                subj,
+                                (PrivilegedExceptionAction<Object>) () -> msg.getFunction().call(cx, scope, scope, objArr.toArray())
+                        );
                     }
                     jsResult = new JsObjectSerializerHelper().serializeNative(resultObj);
 
