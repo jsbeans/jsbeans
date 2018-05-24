@@ -933,19 +933,19 @@
                 styleSelector = this.getContext().find('chart colorScheme');
 
             function buildWidget(chartOpts){
+                /*
                 if($this.chart){
                     $this.chart.update(chartOpts, true, true);
                 } else {
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
+                */
 
-                // todo: test on multiple axis
-                /*
                 if($this.chart){
                     $this.chart.destroy();
                 }
                 $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
-                */
+
                 $this._select($this._curFilters, true, true);
 
                 if($this._chartType === 'stockChart'){

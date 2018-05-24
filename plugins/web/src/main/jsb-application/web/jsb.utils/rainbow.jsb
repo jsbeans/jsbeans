@@ -308,45 +308,38 @@
     createColorMap: function(count){
         this.colorMap = [];
 
-        var linearIncrement = (this.maxNum - this.minNum) / count;
+        var increment = (this.maxNum - this.minNum) / count;
 
         switch(this.colorFunction){
             case 'quadratic':
-                var increment = (Math.pow(this.maxNum, 2) - Math.pow(this.minNum, 2)) / count,
-                    minNum = Math.sqrt(this.minNum);
-
                 for(var j = 0; j < count; j++){
-                    var innerMin = j * increment + minNum;
+                    var min = j * increment + this.minNum,
+                        max = (j + 1) * increment + this.minNum;
 
                     this.colorMap.push({
-                        min: Math.sqrt(innerMin),
-                        innerMin: innerMin,
-                        max: Math.sqrt(innerMax),
-                        innerMax: innerMax,
-                        color: this.colorAt(j * linearIncrement + this.minNum)
+                        min: min,
+                        innerMin: Math.pow(min, 2),
+                        max: max,
+                        innerMax: Math.pow(max, 2),
+                        color: this.colorAt(j * increment + this.minNum)
                     });
                 }
                 break;
             case 'logarithmic':
-                var increment = (Math.log(this.maxNum) - Math.log(this.minNum)) / count,
-                    minNum = Math.log(this.minNum);
-
                 for(var j = 0; j < count; j++){
-                    var innerMin = j * increment + minNum,
-                        innerMax = (j + 1) * increment + minNum;
+                    var min = j * increment + this.minNum,
+                        max = (j + 1) * increment + this.minNum;
 
                     this.colorMap.push({
-                        min: Math.exp(innerMin),
-                        innerMin: innerMin,
-                        max: Math.exp(innerMax),
-                        innerMax: innerMax,
-                        color: this.colorAt(j * linearIncrement + this.minNum)
+                        min: min,
+                        innerMin: Math.log(min),
+                        max: max,
+                        innerMax: Math.log(max),
+                        color: this.colorAt(j * increment + this.minNum)
                     });
                 }
                 break;
             default:
-                var increment = (this.maxNum - this.minNum) / count;
-
                 for(var j = 0; j < count; j++){
                     var min = j * increment + this.minNum,
                         max = (j + 1) * increment + this.minNum;
@@ -356,7 +349,7 @@
                         innerMin: min,
                         max: max,
                         innerMax: max,
-                        color: this.colorAt(j * linearIncrement + this.minNum)
+                        color: this.colorAt(j * increment + this.minNum)
                     });
                 }
                 break;

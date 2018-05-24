@@ -1269,10 +1269,14 @@
 
                 // remove old controls
                 if(this._infoControl){
+                    this._infoControl.remove();
                     this._infoControl = undefined;
                 }
 
                 // clear legends list
+                for(var i = 0; i < this._legends.length; i++){
+                    this._legends[i].control.remove();
+                }
                 this._legends = [];
 
                 // add tile and wms layers
@@ -1745,9 +1749,14 @@
 
             legend.addTo(this.map);
 
-            this._resizeLegend(list);
+            var leg = {
+                control: legend,
+                list: list
+            };
 
-            this._legends.push(list);
+            this._resizeLegend(leg);
+
+            this._legends.push(leg);
 
             this._isNeedLegendsResize = true;
         },
@@ -1779,8 +1788,9 @@
             this._infoControl.addTo(this.map);
         },
 
-        _resizeLegend: function(list){
-            var li = list && list.find('li > span'),
+        _resizeLegend: function(legend){
+            var list = legend.list,
+                li = list && list.find('li > span'),
                 max = 0;
 
             for(var i = 0; i < li.length; i++){
