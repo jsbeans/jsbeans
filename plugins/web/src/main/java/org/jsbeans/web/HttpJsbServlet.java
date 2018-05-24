@@ -25,6 +25,8 @@ import org.jsbeans.types.JsonObject;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
+import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,7 +34,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedExceptionAction;
+import java.util.Collections;
 import java.util.Map;
 
 public class HttpJsbServlet extends HttpServlet {
@@ -53,26 +58,20 @@ public class HttpJsbServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String rid = WebHelper.extractHeadersFromRequest(req);
         try {
-            String session = req.getSession().getId();
-            String token = null;
-            Object tokenObj = req.getSession().getAttribute("token");
-            if (tokenObj != null) {
-                token = tokenObj.toString();
-            }
-            String user = null;
-            Principal p = req.getUserPrincipal();
-            if (p != null) {
-                user = p.getName();
-            }
+            final String session = req.getSession().getId();
+            final Object tokenObj = req.getSession().getAttribute("token");
+            final String token = tokenObj != null ? tokenObj.toString() : null;
+            final Principal principal = req.getUserPrincipal();
+            final String user = principal != null ? principal.getName() : null;
             
             // construct proc 
-            String proc = req.getMethod().toLowerCase();
+            final String proc = req.getMethod().toLowerCase();
             
             // construct bean path
-            String beanPath = req.getServletPath().toLowerCase();
+            final String beanPath = req.getServletPath().toLowerCase();
             
             // construct params json
-            JsonObject pObj = new JsonObject();
+            final JsonObject pObj = new JsonObject();
 
             Map<String, String[]> pMap = req.getParameterMap();
             for (String pName : pMap.keySet()) {
@@ -90,9 +89,16 @@ public class HttpJsbServlet extends HttpServlet {
                 }
             }
 
-            String params = pObj.toJson();
-
-            UpdateStatusMessage respObj = this.execCmd(beanPath, proc, params, session, req.getRemoteAddr(), user, rid, getFullURL(req), token);
+            Subject subj = principal != null
+                    ? new Subject(true, Collections.singleton(principal), Collections.emptySet(), Collections.emptySet())
+                    : null;
+            UpdateStatusMessage respObj = Subject.doAs(subj, new PrivilegedExceptionAction<UpdateStatusMessage>() {
+                @Override
+                public UpdateStatusMessage run() throws Exception {
+                    String params = pObj.toJson();
+                    return HttpJsbServlet.this.execCmd(beanPath, proc, params, session, req.getRemoteAddr(), user, rid, getFullURL(req), token);
+                }
+            });
             this.responseResult(respObj, req, resp, rid);
 
         } catch (Exception ex) {
