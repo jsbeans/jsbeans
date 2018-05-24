@@ -642,6 +642,12 @@
         _isNeedLegendsResize: false,
         _maps: [],
         _mapHash: null,
+        _layers: {
+            geoJson: [],
+            markers: [],
+            tile: [],
+            wms: []
+        },
         _legends: [],
         _styles: null,
 
@@ -976,9 +982,9 @@
                 markers = [],
                 bindings = [];
 
-            try{
-                function fetch(isReset){
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
+            function fetch(isReset){
+                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
+                    try{
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -1085,7 +1091,10 @@
                                         }
 
                                         if($this._styles.markers[i].sourceColor){
-                                            markers[i].color = $this._styles.markers[i].sourceColor.value();
+                                            if(!markers[i].colors){
+                                                markers[i].colors = [];
+                                            }
+                                            markers[i].colors.push($this._styles.markers[i].sourceColor.value());
                                         }
 
                                         if($this._styles.markers[i].sizeValuesBinding){
@@ -1114,10 +1123,17 @@
                         }
 
                         fetch();
-                    });
-                }
+                    } catch(ex){
+                        console.log('Loading data exception!');
+                        console.log(ex);
 
-                function resultProcessing(){
+                        resultProcessing();
+                    }
+                });
+            }
+
+            function resultProcessing(){
+                try{
                     // processing regions
                     /*********/
                     if(regions.length > 0){
@@ -1211,13 +1227,13 @@
                         regions: regions,
                         markers: markers
                     });
+                } catch(ex){
+                    console.log('Processing data exception!');
+                    console.log(ex);
                 }
-
-                fetch(true);
-            } catch(ex){
-                console.log('Load data exception!');
-                console.log(ex);
             }
+
+            fetch(true);
 
             this.ensureDataLoaded(function(){
                 try{
@@ -1237,18 +1253,19 @@
             try {
                 var mapOpts = {};
                 if(this.map){
-                    mapOpts = {
-                        center: this.map.getCenter(),
-                        zoom: this.map.getZoom()
+                    for(var i = 0; i < this._layers.markers.length; i++){
+                        this._layers.markers[i].remove();
                     }
-                    this.map.remove();
+
+                    for(var i = 0; i < this._layers.geoJson.length; i++){
+                        this._layers.geoJson[i].remove();
+                    }
                 } else {
-                    mapOpts = {
+                    this.map = L.map(this.container.get(0), {
                         center: [40.5, 40.5],
                         zoom: 2
-                    };
+                    });
                 }
-                this.map = L.map(this.container.get(0), mapOpts);
 
                 // remove old controls
                 if(this._infoControl){
@@ -1262,13 +1279,15 @@
                 if(this._styles.tiles){
                     for(var i = 0; i < this._styles.tiles.length; i++){
                         if(this._styles.tiles[i].isWMS){
-                            L.tileLayer.wms(this._styles.tiles[i].url).addTo(this.map);
+                            L.tileLayer.wms(this._styles.tiles[i].url, {layerType: 'wms'}).addTo(this.map);
                         } else {
-                            L.tileLayer(this._styles.tiles[i].url, {foo: 'bar'}).addTo(this.map);
+                            L.tileLayer(this._styles.tiles[i].url, {foo: 'bar', layerType: 'tile'}).addTo(this.map);
                         }
                     }
                 }
 
+                // add geojson layers
+                /*********/
                 function regionStyle(i, reg){
                     if(!reg){
                         if($this._styles.regions[i].showEmptyRegions){
@@ -1285,8 +1304,6 @@
                     return {fillColor: reg.color, color: $this._styles.regions[i].borderColor, weight: $this._styles.regions[i].borderWidth, fillOpacity: 0.7};
                 }
 
-                // add geojson layers
-                /*********/
                 for(var i = 0; i < this._maps.length; i++){
                     if(this._maps[i].data){
                         // create maps
@@ -1390,23 +1407,45 @@
                         }
                     }
                 }
-                /*********/
 
                 // select regions which were selected before refresh
                 for(var i in $this._curFilters){
                     this._selectFeature(i);
                 }
+                /*********/
 
                 // add markers layers
                 /*********/
+                function formatMarkerText(i, j){
+                    var text = '';
+
+                    if(data.markers[i].markerNames && JSB.isDefined(data.markers[i].markerNames[j])){
+                        text += data.markers[i].markerNames[j];
+                    }
+
+                    if(data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j])){
+                        if(data.markers[i].markerNames){
+                            text += ' : ';
+                        }
+
+                        text += Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]});
+                    }
+
+                    return text;
+                }
+
+                var markersGroups = [];
+
                 for(var i = 0; i < data.markers.length; i++){
+                    markersGroups[i] = [];
+
                     switch(this._styles.markers[i].markerType){
                         case 'defaultMarker':
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
-                                var marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1])).addTo($this.map);
+                                var marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]));
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
-                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : ''), {closeButton: false, autoPan: false});
+                                    marker.bindPopup(formatMarkerText(i, j), {closeButton: false, autoPan: false});
 
                                     marker.on({
                                         mouseover: function(evt){
@@ -1430,8 +1469,10 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j]) ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
                                 }
+
+                                markersGroups[i].push(marker);
                             }
 
                             if(this._styles.markers[i].valueDisplayType === 'legend'){
@@ -1445,9 +1486,8 @@
                                         var widget = new cls();
 
                                         (function(widget){
-                                            var marker = L.divIcon({ html: widget.getElement().get(0), iconSize: [$this._styles.markers[i].markerWidth, $this._styles.markers[i].markerHeight] });
-
-                                            L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: marker}).addTo($this.map);
+                                            var icon = L.divIcon({ html: widget.getElement().get(0), iconSize: [$this._styles.markers[i].markerWidth, $this._styles.markers[i].markerHeight] }),
+                                                marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon}); //.addTo($this.map);
 
                                             if($this._styles.markers[i].valueSkipping){
                                                 widget.setWrapper($this.getWrapper(), {values: data.markers[i].values[j]});
@@ -1458,13 +1498,15 @@
                                             widget.ensureInitialized(function(){
                                                 widget.refresh();
                                             });
+
+                                            markersGroups[i].push(marker);
                                         })(widget);
                                     }
                                 });
                             })(i);
                             break;
                         case 'heatCircles':
-                            var color = $this._styles.markers[i].simpleColor || data.markers[i].color;
+                            var color = $this._styles.markers[i].simpleColor;
 
                             for(var j = 0; j < data.markers[i].coordinates.length; j++){
                                 var marker = undefined,
@@ -1475,7 +1517,11 @@
                                     color = data.markers[i].colorValues[j].color;
                                 }
 
-                                if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
+                                if(data.markers[i].colors){
+                                    color = data.markers[i].colors[j];
+                                }
+
+                                if(this._styles.markers[i].valueDisplayType === 'onObject' && data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j])){
                                     html = '<span>' + Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) + '</span>';
                                 }
 
@@ -1493,10 +1539,10 @@
                                     }
                                 }
 
-                                marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon}).addTo($this.map);
+                                marker = L.marker(L.latLng(data.markers[i].coordinates[j][0], data.markers[i].coordinates[j][1]), {icon: icon});
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'onObject'){
-                                    marker.bindPopup((data.markers[i].markerNames ? data.markers[i].markerNames[j] : '') + ': ' + (data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : ''), {closeButton: false, autoPan: false});
+                                    marker.bindPopup(formatMarkerText(i, j), {closeButton: false, autoPan: false});
 
                                     marker.on({
                                         mouseover: function(evt){
@@ -1520,8 +1566,10 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
+                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j]) ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
                                 }
+
+                                markersGroups[i].push(marker);
                             }
 
                             if(this._styles.markers[i].legend){
@@ -1533,6 +1581,11 @@
                             }
                             break;
                     }
+                }
+
+                this._layers.markers = [];
+                for(var i = 0; i < markersGroups.length; i++){
+                    this._layers.markers.push(L.layerGroup(markersGroups[i], {pane: 'markerPane', layerType: 'markersGroup'}).addTo(this.map));
                 }
                 /*********/
             } catch(ex){
