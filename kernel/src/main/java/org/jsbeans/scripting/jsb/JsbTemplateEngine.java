@@ -145,13 +145,17 @@ public class JsbTemplateEngine {
     		}
     	} else {
     		// perform multi-line string
-    		
+
+    		// replace all slashes
+    		newText = text.replaceAll("\\\\", "\\\\\\\\");
+
     		// replace all commas
-    		newText = text.replaceAll("\\\"", "\\\\\"");
+    		newText = newText.replaceAll("\\\"", "\\\\\"");
             
             // replace newlines
-    		newText = newText.replaceAll("\\\r", "\\\\r");
-    		newText = newText.replaceAll("\\\n", "\\\\n");
+    		newText = newText.replaceAll("\\t", "\\\\t");
+    		newText = newText.replaceAll("\\r", "\\\\r");
+    		newText = newText.replaceAll("\\n", "\\\\n");
     		
     		newText = "\"" + newText + "\"";
     	}
