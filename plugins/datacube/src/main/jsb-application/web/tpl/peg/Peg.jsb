@@ -95,24 +95,6 @@
 	},
 	
 	parseStream: function(parser, stream){
-		debugger;
-		var t1 = Date.now();
-		// wrap stream
-/*		var str = '';
-		while(true){
-			var l = stream.read(65536);
-			if(!l || l.length == 0){
-				break;
-			}
-			str += l;
-		}*/
-		var t2 = Date.now();
-//		var res = parser.parse(str);
-		var res = parser.parse(new (this.StringBuffer)(stream));
-		var t3 = Date.now();
-//		JSB.getLogger().debug('input length: ' + str.length);
-		JSB.getLogger().debug('read time: '+(t2-t1)+'; parse time: ' + (t3-t2));
-		debugger;
-		return res;
+		return parser.parse(new (this.StringBuffer)(stream));
 	}
 }
