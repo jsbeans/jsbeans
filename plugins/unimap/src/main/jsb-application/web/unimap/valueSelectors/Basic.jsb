@@ -43,6 +43,10 @@
         }
     },
 
+    addMultipleValue: function(key){
+        //
+    },
+
     checked: function(){
         if(!this._selectorOpts){
             return undefined;
@@ -134,6 +138,10 @@
 
     getRenderName: function(){
         return this._selectorOpts ? this._selectorOpts.render : undefined;
+    },
+
+    setChecked: function(b){
+        this._selectorOpts.checked = b;
     },
 
     setValue: function(val){
