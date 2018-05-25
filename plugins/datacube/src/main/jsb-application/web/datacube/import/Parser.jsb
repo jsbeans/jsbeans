@@ -26,7 +26,79 @@
 	        		render: 'group',
 	        		name: 'Таблица',
 	        		editableName: true,
-	        		items: {}
+	        		items: {
+	        			store: {
+	        				render: 'select',
+	        				name: 'Сохранить в',
+	        				items: {
+	        					database: {
+	        						name: 'базу'
+	        					},
+	        					collection: {
+	        						name: 'коллекцию'
+	        					}
+	        				}
+	        			},
+	        			actions: {
+	        				render: 'group',
+	        				multiple: true,
+	        				name: 'Последовательность действий',
+	        				items: {
+	        					action: {
+	        						render: 'select',
+	        						name: 'Операция',
+	        						items: {
+	    	        					storeField: {
+	    	        						name: 'Сохранить поле',
+	    	        						render: 'group',
+	    	        						items: {
+	    	        							columnAlias: {
+	    	                                        name: 'Название столбца',
+	    		        							render: 'item'
+	    	        							},
+/*	    	        							field: {
+	        	                                    name: 'Поле',
+	        	                                	render: 'dataBinding',
+	        	                                    linkTo: 'structure'
+	    	        							}*/
+	    	        						}
+	    	        					},
+	    	        					storeVariable: {
+	    	        						name: 'Сохранить переменную',
+	    	        						render: 'group',
+	    	        						items: {
+	    	        							varRef: {
+	    	                                        name: 'Переменная',
+	    		        							render: 'select',
+	    		        							commonField: 'vars'
+	    	        							},
+	    	        							columnAlias: {
+	    	                                        name: 'Название столбца',
+	    		        							render: 'item'
+	    	        							}
+	    	        						}
+	    	        					},
+	    	        					copyToVariable: {
+	    	        						name: 'Загрузить в переменную',
+	    	        						render: 'group',
+	    	        						items: {
+	    	        							varAlias: {
+	    	                                        name: 'Название переменной',
+	    		        							render: 'item',
+	    		        							commonField: 'vars'
+	    	        							},
+/*	    	        							field: {
+	        	                                    name: 'Поле',
+	        	                                	render: 'dataBinding',
+	        	                                    linkTo: 'structure'
+	    	        							}*/
+	    	        						}
+	    	        					}
+	        						}
+	        					}
+	        				}
+	        			}
+	        		}
 	        	}
 	        }
 		}
@@ -45,6 +117,15 @@
 		structLastChangedCount: null,
 		
 		deep: 0,
+		typeOrder: {
+			'null':0,
+			'boolean': 1,
+			'integer': 2,
+			'float': 3,
+			'string': 4,
+			'object': 5,
+			'array': 6
+		},
 		
 		$constructor: function(entry, context){
 			$base();
@@ -61,51 +142,47 @@
 		},
 		
 		checkBreak: function(){
-			if(this.structScope == this.structTopArray && this.structScope._count - this.structLastChangedCount > 10){
+			if(this.structScope == this.structTopArray && this.structScope.count - this.structLastChangedCount > 10){
 				throw 'Break';
 			}
 		},
 		
 		beginArray: function(field){
 			if(field === null){
-				this.struct = {array:{_count: 0}};
-				this.structScope = this.struct.array;
+				this.struct = {count: 0, type:'array', arrayType:null};
+				this.structScope = this.struct;
 				if(!this.structTopArray){
 					this.structTopArray = this.structScope;
 				}
 				if(this.structTopArray){
-					this.structLastChangedCount = this.structTopArray._count;
+					this.structLastChangedCount = this.structTopArray.count;
 				}
 			} else {
 				this.structStack.push(this.structScope);
 				this.structTypeStack.push(this.structScopeType);
 				if(this.structScopeType == 0){
-					this.structScope._count++;
-					if(!this.structScope.array){
-						this.structScope.array = {_count: 0};
-						this.structLastChangedCount = this.structTopArray._count;
+					this.structScope.count++;
+					if(!this.structScope.arrayType || this.structScope.arrayType.type != 'array'){
+						this.structScope.arrayType = {count: 0, type:'array', arrayType:null};
+						this.structLastChangedCount = this.structTopArray.count;
 					}
-					this.structScope = this.structScope.array;
+					this.structScope = this.structScope.arrayType;
 					
 				} else if(this.structScopeType == 1){
-					if(!this.structScope[field]){
-						this.structScope[field] = {};
-					}
-					if(!this.structScope[field].array){
-						this.structScope[field].array = {_count: 0};
+					if(!this.structScope.record[field] || this.structScope.record[field].type != 'array'){
+						this.structScope.record[field] = {count: 0, type:'array', arrayType:null};
 						if(this.structTopArray){
-							this.structLastChangedCount = this.structTopArray._count;
+							this.structLastChangedCount = this.structTopArray.count;
 						}
-
 					}
-					this.structScope = this.structScope[field].array;
+					this.structScope = this.structScope.record[field];
 				} else {
 					throw new Error('Unexpected structure type: ' + this.structScopeType);
 				}
 				
 				if(!this.structTopArray){
 					this.structTopArray = this.structScope;
-					this.structLastChangedCount = this.structTopArray._count;
+					this.structLastChangedCount = this.structTopArray.count;
 				}
 			}
 			this.structScopeType = 0;
@@ -119,31 +196,28 @@
 		
 		beginObject: function(field){
 			if(field === null){
-				this.struct = {object:{}};
-				this.structScope = this.struct.object;
+				this.struct = {type:'object', record:{}};
+				this.structScope = this.struct;
 			} else {
 				this.structStack.push(this.structScope);
 				this.structTypeStack.push(this.structScopeType);
 				if(this.structScopeType == 0){
-					this.structScope._count++;
-					if(!this.structScope.object){
-						this.structScope.object = {};
+					this.structScope.count++;
+					if(!this.structScope.arrayType || this.typeOrder['object'] > this.typeOrder[this.structScope.arrayType.type]){
+						this.structScope.arrayType = {type:'object', record:{}};
 						if(this.structTopArray){
-							this.structLastChangedCount = this.structTopArray._count;
+							this.structLastChangedCount = this.structTopArray.count;
 						}
 					}
-					this.structScope = this.structScope.object;
+					this.structScope = this.structScope.arrayType;
 				} else if(this.structScopeType == 1){
-					if(!this.structScope[field]){
-						this.structScope[field] = {};
-					}
-					if(!this.structScope[field].object){
-						this.structScope[field].object = {};
+					if(!this.structScope.record[field] || this.typeOrder['object'] > this.typeOrder[this.structScope.record[field].type]){
+						this.structScope.record[field] = {type:'object', record:{}};
 						if(this.structTopArray){
-							this.structLastChangedCount = this.structTopArray._count;
+							this.structLastChangedCount = this.structTopArray.count;
 						}
 					}
-					this.structScope = this.structScope[field].object;
+					this.structScope = this.structScope.record[field];
 				} else {
 					throw new Error('Unexpected structure type: ' + this.structScopeType);
 				}
@@ -158,6 +232,9 @@
 		},
 		
 		setValue: function(field, value){
+			function checkTypeOrder(newType, oldType){
+				return $this.typeOrder[newType] > $this.typeOrder[oldType];
+			}
 			// detect value type
 			var type = null;
 			if(JSB.isNull(value)){
@@ -175,22 +252,19 @@
 			}
 			
 			if(this.structScopeType == 0){
-				this.structScope._count++;
-				if(!this.structScope[type]){
-					this.structScope[type] = true;
+				this.structScope.count++;
+				if(!this.structScope.arrayType || $this.typeOrder[type] > $this.typeOrder[this.structScope.arrayType.type]){
+					this.structScope.arrayType = {type:type};
 					if(this.structTopArray){
-						this.structLastChangedCount = this.structTopArray._count;
+						this.structLastChangedCount = this.structTopArray.count;
 					}
 				}
 				this.checkBreak();
 			} else if(this.structScopeType == 1) {
-				if(!this.structScope[field]){
-					this.structScope[field] = {};
-				}
-				if(!this.structScope[field][type]){
-					this.structScope[field][type] = true;
+				if(!this.structScope.record[field] || $this.typeOrder[type] > $this.typeOrder[this.structScope.record[field].type]){
+					this.structScope.record[field] = {type: type};
 					if(this.structTopArray){
-						this.structLastChangedCount = this.structTopArray._count;
+						this.structLastChangedCount = this.structTopArray.count;
 					}
 				}
 			} else {

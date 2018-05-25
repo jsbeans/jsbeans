@@ -218,6 +218,10 @@
 			
 			var struct = this.getStruct();
 			JSB.getLogger().debug(JSON.stringify(struct, null, 4));
+			var isMultiTable = this.context.find('multiTable').checked();
+			
+			// construct table values
+			this.entry.property('structure', struct);
 		}
 	}
 }

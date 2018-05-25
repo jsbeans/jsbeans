@@ -100,3 +100,8 @@
 .parserView .scheme {
 	padding: 4px;
 }
+
+.parserView .scheme .itemRender > .jsb-checkbox > .caption,
+.parserView .scheme .itemRender > .name {
+	min-width: auto;
+}

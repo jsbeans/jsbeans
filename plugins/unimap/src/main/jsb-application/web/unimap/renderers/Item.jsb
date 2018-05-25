@@ -84,7 +84,7 @@
                         return;
                     default:
                         var onChangeFunc = function(val){
-                            $this.getSchemeController().updateCommonFields(null, $this._scheme.commonField, val, values.value);
+                            $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, val, values.value);
 
                             values.value = val;
 
@@ -106,7 +106,7 @@
                     onchange: function(){
                         var newValue = this.getValue();
 
-                        $this.getSchemeController().updateCommonFields(null, $this._scheme.commonField, newValue, values.value);
+                        $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, newValue, values.value);
 
                         values.value = newValue;
 

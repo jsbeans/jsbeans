@@ -258,7 +258,7 @@
 	                    continue;
 	                }
 
-	                this._commonFieldsMap[commonGroup].commonRenders[i].changeCommonGroup(this._commonFieldsMap[commonGroup].commonValues);
+	                this._commonFieldsMap[commonGroup].commonRenders[i].changeCommonGroup && this._commonFieldsMap[commonGroup].commonRenders[i].changeCommonGroup(this._commonFieldsMap[commonGroup].commonValues);
 	            }
 	        }
 	    },
