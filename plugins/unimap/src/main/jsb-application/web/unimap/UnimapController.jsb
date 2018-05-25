@@ -83,10 +83,11 @@
                         $this.options.onchange.call($this, key, value);
                     }
                     $this.updateLinks(key, value);
-
+                    /*
                     if(scheme.commonField){
                         $this.updateCommonFields(key, scheme.commonField, value);
                     }
+                    */
                 }
             });
             this.addRender(render);
