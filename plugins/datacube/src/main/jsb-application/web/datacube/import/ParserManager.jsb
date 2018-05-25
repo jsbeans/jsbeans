@@ -8,6 +8,10 @@
 		getSupportedParsers: function(entry, callback){
 			this.server().getSupportedParsers(entry, callback);
 		},
+		
+		onAnalysisComplete: function(entry, struct, values){
+			$this.publish('ParserManager.analysisComplete', {entry: entry, struct:struct, values:values});
+		},
 	},
 	
 	$server: {
@@ -67,7 +71,14 @@
 			});
 			var pInst = new pJsbClass(entry, valSel);
 			JSB.defer(function(){
+				JSB.getLogger().debug('Analyzing structure for: ' + entry.getName());
+				entry.property('status', 1);
 				pInst.analyze();
+				var struct = pInst.getStruct();
+				entry.property('structure', struct);
+				entry.property('status', 0);
+				JSB.getLogger().debug('Analysis complete for: ' + entry.getName() + ': ' + JSON.stringify(struct, null, 4));
+				$this.client().onAnalysisComplete(entry, struct, {});
 			}, 0);
 			return pInst;
 		}

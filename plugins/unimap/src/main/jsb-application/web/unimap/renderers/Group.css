@@ -71,9 +71,23 @@
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel {
     border: none;
+    padding: 0;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header {
+	font-size: 11px;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header > ul > li:not(first-child) {
+	margin-left: 2px;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header > h1 {
+	margin: 0;
+	font-size: 16px;
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .content {
     border-top: none;
-    padding-left: 5px;
+    padding-left: 8px;
 }

@@ -101,6 +101,14 @@
 
 	        $base();
 	    },
+	    
+	    setScheme: function(scheme){
+		    this._values.values[0] = {
+		        binding: scheme,
+		    }
+
+		    this.onchange();
+		},
 
 	    disable: function(){
 	        if(this._disabled){

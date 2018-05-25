@@ -204,7 +204,6 @@
 		},
 		
 		analyze: function(){
-			JSB.getLogger().debug('Analyzing structure');
 			try {
 				var parser = Peg.generate(this.jsonGrammar);
 				var obj = Peg.parseStream(parser, this.stream);
@@ -216,12 +215,12 @@
 				this.stream.close();	
 			}
 			
-			var struct = this.getStruct();
-			JSB.getLogger().debug(JSON.stringify(struct, null, 4));
+//			var struct = this.getStruct();
+//			JSB.getLogger().debug(JSON.stringify(struct, null, 4));
 			var isMultiTable = this.context.find('multiTable').checked();
 			
 			// construct table values
-			this.entry.property('structure', struct);
+			
 		}
 	}
 }
