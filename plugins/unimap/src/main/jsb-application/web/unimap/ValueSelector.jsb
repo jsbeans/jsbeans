@@ -7,6 +7,7 @@
     _values: null,
 
     $constructor: function(opts){
+        this._scheme = opts.scheme;
         this._values = opts.values && opts.values.values || {};
         this._linkedFields = opts.values && opts.values.linkedFields || {};
         this._context = opts.context;
@@ -19,6 +20,14 @@
     },
 
     createDefaultValues: function(scheme){
+        if(!scheme){
+            scheme = this._scheme;
+        }
+
+        if(!scheme){
+            throw new Error('Must specify a scheme');
+        }
+
         var values = {},
             linkedFields = {};
 
@@ -214,5 +223,15 @@
         }
 
         return wasUpdated;
+    },
+
+    _findInScheme: function(key){
+        if(!this._scheme){
+            throw new Error('Must specify a scheme');
+        }
+
+        function find(scheme){
+            //
+        }
     }
 }
