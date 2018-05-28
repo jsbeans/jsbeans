@@ -64,7 +64,7 @@
         $base();
     },
 
-    find: function(key, values, isFindAll){
+    find: function(key, values, isFindAll, schemePath){
         if(!key || key.length == 0){
             return;
         }
@@ -73,6 +73,10 @@
         if(!values){
             main = true;
             values = this._values;
+
+            if(!schemePath){
+                schemePath = this._schemePath || '';
+            }
         }
 
         key = key.trim();
@@ -92,7 +96,15 @@
 
         for(var i in values){
             if(i == curKey[0]){
-                res = this.getRenderByName(values[i].render).getInstance(i, values[i]);
+                if(JSB.isString(schemePath)){
+                    if(schemePath.length > 0){
+                        schemePath += '.' + i;
+                    } else {
+                        schemePath += i;
+                    }
+                }
+
+                res = this.getRenderByName(values[i].render).getInstance({ key: i, selector: values[i], schemePath: schemePath });
                 break;
             }
         }
@@ -103,18 +115,18 @@
 
         if(res){
             if(key.length > 0){
-                return res.find ? res.find(key, undefined, isFindAll) : res;
+                return res.find ? res.find(key, undefined, isFindAll, schemePath) : res;
             } else {
                 return res;
             }
         } else {
             for(var i in values){
                 var r = this.getRenderByName(values[i].render),
-                    res = r.find ? r.find(curKey[0], values[i].values, isFindAll) : undefined;
+                    res = r.find ? r.find(curKey[0], values[i].values, isFindAll, schemePath) : undefined;
 
                 if(res){
                     if(key.length > 0){
-                        return res.find(key, undefined, isFindAll);
+                        return res.find(key, undefined, isFindAll, schemePath);
                     } else {
                         return res;
                     }
@@ -154,7 +166,7 @@
             var r = this.getRenderByName(values[i].render);
 
             if(values[i].render === name){
-                arr.push(r.getInstance(i, values[i]));
+                arr.push(r.getInstance({key: i, selector: values[i]}));
             }
 
             r.findRendersByName && r.findRendersByName(name, arr, values[i].values);
@@ -181,6 +193,10 @@
         } else {
             return this._baseSelector;
         }
+    },
+
+    getScheme: function(){
+        return this._scheme;
     },
 
     updateValues: function(scheme, fullValues){
@@ -223,15 +239,5 @@
         }
 
         return wasUpdated;
-    },
-
-    _findInScheme: function(key){
-        if(!this._scheme){
-            throw new Error('Must specify a scheme');
-        }
-
-        function find(scheme){
-            //
-        }
     }
 }

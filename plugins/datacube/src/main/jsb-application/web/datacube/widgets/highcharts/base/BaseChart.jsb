@@ -989,7 +989,11 @@
                     plotOptionsDataLabels = plotOptionsContext.find('dataLabels'),
 
                     series = [];
-
+/*
+var test = this.getContext().find('series').addMultipleValue();
+console.log(test);
+debugger;
+*/
                 for(var i = 0; i < seriesContext.length; i++){
                     var allowPointSelect = seriesContext[i].find('allowPointSelect').checked(),
                         tooltip = seriesContext[i].find('tooltip'),
@@ -1196,6 +1200,8 @@
             } finally {
                 return chartOpts;
             }
+
+            return chartOpts;
         },
 
         isNone: function(val){

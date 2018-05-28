@@ -2,6 +2,43 @@
     $name: 'Unimap.ValueSelectors.Group',
     $parent: 'Unimap.ValueSelectors.Basic',
 
+    addValue: function(){
+        var scheme = this.getMainSelector().getScheme();
+        if(!scheme){
+            throw new Error('Must specify a scheme');
+        }
+
+        function objectByString(obj, str){
+            str = str.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+            str = str.replace(/^\./, '');           // strip a leading dot
+            var a = str.split('.');
+            for (var i = 0, n = a.length; i < n; ++i) {
+                var k = a[i];
+                if (k in obj) {
+                    obj = obj[k];
+                } else {
+                    return;
+                }
+            }
+            return obj;
+        }
+
+        var schemePart = objectByString(scheme, this._schemePath),
+            itemsKeys = Object.keys(schemePart.items),
+            value = {};
+
+        this.createDefaultValues(this.getKey(), schemePart, value);
+
+        this._values.push(value);
+
+        if(itemsKeys.length > 1){
+            // todo: test
+            // return this.getRenderByName(this.getRenderName()).getInstance({selector: value});
+        } else {
+            return this.getRenderByName(schemePart.items[itemsKeys[0]]).getInstance({key: itemsKeys[0], selector: value, schemePath: this._schemePath + '.items.' + itemsKeys[0]});
+        }
+    },
+
     createDefaultValues: function(key, scheme, values, opts){
         $base(key, scheme, values, opts);
 
@@ -19,17 +56,29 @@
         }
     },
 
-    find: function(key, values, isFindAll){
+    find: function(key, values, isFindAll, schemePath){
         var main = false,
             resArr = [];
 
         if(!values){
             main = true;
             values = this._values;
+
+            if(!schemePath){
+                schemePath = this._schemePath || '';
+            }
+        }
+
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+                schemePath += '.items';
+            } else {
+                schemePath += 'items';
+            }
         }
 
         for(var i = 0; i < values.length; i++){
-            var res = this.getMainSelector().find(key, values[i]);
+            var res = this.getMainSelector().find(key, values[i], null, !i ? schemePath : undefined);
             if(res){
                 if(isFindAll){
                     resArr.push(res);
@@ -83,7 +132,7 @@
             return;
         }
 
-        return this.getRenderByName(this.getRenderName()).getInstance(undefined, { values: this._values[0] });
+        return this.getRenderByName(this.getRenderName()).getInstance({selector: { values: this._values[0] }});
     },
 
     values: function(){
@@ -94,7 +143,7 @@
         var itemsArr = [];
 
         for(var i = 0; i < this._values.length; i++){
-            itemsArr.push(this.getRenderByName(this.getRenderName()).getInstance(undefined, { values: this._values[i] }));
+            itemsArr.push(this.getRenderByName(this.getRenderName()).getInstance({selector: { values: this._values[i] }}));
         }
 
         return itemsArr;

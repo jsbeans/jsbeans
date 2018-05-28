@@ -12,6 +12,7 @@
             this._selectorBean = $this;
             this._key = opts.key;
             this._selectorOpts = opts.selector;
+            this._schemePath = opts.schemePath;
 
             if(opts.selector && opts.selector.values){
                 this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
@@ -19,6 +20,7 @@
         }
 
         this._selectorPrototype.prototype = {
+            addMultipleValue: this.addMultipleValue,
             checked: this.checked,
             getContext: this.getContext,
             getInstance: this.getInstance,
@@ -43,8 +45,8 @@
         }
     },
 
-    addMultipleValue: function(key){
-        //
+    addValue: function(){
+        // todo
     },
 
     checked: function(){
@@ -60,36 +62,7 @@
     },
 
     createDefaultValues: function(key, scheme, values, opts){
-        //this.getRenderByName().updateValues(key, scheme, values);
-
         $current.updateValues(key, scheme, values, opts);
-
-        /*
-        if(!scheme.render){ return; }
-
-        values.checked = scheme.optional === 'checked' ? true : undefined;
-        values.defaultValue = scheme.defaultValue;
-        values.render = scheme.render;
-        values.name = scheme.name;
-        values.valueType = scheme.valueType;
-        values.values = [];
-
-        if(scheme.value){
-            values.values[0] = {
-                value: scheme.value
-            }
-        }
-
-        if(scheme.linkTo){
-            var mainSelector = this.getMainSelector();
-
-            if(!mainSelector._linkedFields[scheme.linkTo]){
-                mainSelector._linkedFields[scheme.linkTo] = [];
-            }
-
-            mainSelector._linkedFields[scheme.linkTo].push(key);
-        }
-        */
     },
 
     getContext: function(){
@@ -100,16 +73,22 @@
         return this._selectorOpts ? this._selectorOpts.defaultValue : undefined;
     },
 
-    getInstance: function(key, selector){
+    getInstance: function(opts){
+        if(!opts){
+            opts = {};
+        }
+
         if(this._selectorPrototype){
             return new this._selectorPrototype({
-                key: key,
-                selector: selector
+                key: opts.key,
+                selector: opts.selector,
+                schemePath: opts.schemePath
             });
         } else {
             return new this._selectorBean._selectorPrototype({
-                key: key,
-                selector: selector
+                key: opts.key,
+                selector: opts.selector,
+                schemePath: opts.schemePath
             });
         }
     },
