@@ -8,7 +8,8 @@
 			'java:java.io.InputStream',
 			'java:java.io.OutputStream',
 			'java:java.lang.reflect.Array',
-			'java:java.lang.Byte'],
+			'java:java.lang.Byte',
+			'java:java.lang.Class'],
 		
 		input: null,
 		output: null,
@@ -36,10 +37,10 @@
 		},
 		
 		_setStream: function(obj){
-			if(obj instanceof InputStream){
+			if(Class.forName('java.io.InputStream').isAssignableFrom(obj.getClass())){
 				this.input = obj;
 				this.closed = false;
-			} else if(obj instanceof OutputStream){
+			} else if(Class.forName('java.io.OutputStream').isAssignableFrom(obj.getClass())){
 				this.output = obj;
 				this.closed = false;
 			} else {
@@ -78,8 +79,9 @@
 	        		this.buffer = Array.newInstance(Byte.TYPE, to - from);
 	        	}
 				var count = this.input.read(this.buffer, 0, to - from);
-				BufferHelper.copyToArrayBuffer(this.buffer, 0, arrayBuffer, from, count);
-				
+				if(count > 0){
+					BufferHelper.copyToArrayBuffer(this.buffer, 0, arrayBuffer, from, count);
+				}
 				return count;
 	        } else if(!$jsb.isNull(arg) && $jsb.isNumber(arg) && arg > 0) {
 	        	var limit = arg;
@@ -146,8 +148,14 @@
 				throw new Error('Expected JSB.IO.Stream as first argument');
 			}
 			var buffer = new ArrayBuffer(Math.max(4096, Math.min(this.available(), 65536)));
-			while(this.available()){
+			while(true){
 				var count = this.read(buffer);
+				if(count == -1){
+					break;
+				} else if(count == 0){
+					this.input.wait();
+					continue;
+				}
 				output.write(buffer, 0, count);
 			}
 			output.flush();

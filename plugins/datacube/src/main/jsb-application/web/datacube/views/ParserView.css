@@ -1,0 +1,107 @@
+@CHARSET "UTF-8";
+
+.parserView {
+	background: -webkit-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+	background: -moz-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+    background: -o-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+    background: -ms-linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+    background: linear-gradient(top, #fdfdfd 0%, #fbfbfb 10%);
+}
+
+.parserView * {
+    box-sizing: border-box;
+}
+
+.parserView .titleBlock {
+    width: 100%;
+    height: 35px;
+    padding: 5px;
+    border-bottom: 1px solid lightgray;
+}
+
+.parserView .titleBlock ._dwp_button {
+    float: right;
+    color: #fff;
+    border-radius: 3px;
+    padding: 3px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+.parserView .titleBlock ._dwp_button.btnOk {
+    background: #169F85;
+    border-color: #398439;
+}
+
+.parserView .titleBlock ._dwp_button.btnOk:hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+
+.parserView .titleBlock ._dwp_button.btnUpdate {
+    background: #868e96;
+    border-color: #868e96;
+}
+
+.parserView .titleBlock ._dwp_button.btnUpdate:hover {
+    background: #727b84;
+    border-color: #6c757d;
+}
+
+.parserView .titleBlock ._dwp_button > ._dwp_icon,
+.parserView .titleBlock ._dwp_button > ._dwp_separator {
+    display: none;
+}
+
+.parserView > ._dwp_splitbox {
+	height: calc(100% - 35px);
+}
+
+.parserView > ._dwp_splitbox > ._dwp_splitPane {
+	padding: 2px;
+}
+
+.parserView .schemeBlock,
+.parserView .widgetBlock {
+	width: 100%;
+    height: 100%;
+}
+
+.parserView .schemeBlock {
+    padding: 0 6px;
+}
+
+.parserView .widgetBlock {
+	box-sizing: border-box;
+    padding: 3px;
+}
+
+
+.parserView .parserSelector {
+	padding: 4px;
+}
+
+.parserView .parserSelector > .label {
+	display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+	font-size: 15px;
+    color: #73879C;
+    font-family: Roboto,Arial,"Droid Sans",sans-serif;
+}
+
+.parserView .parserSelector > .jsb-select {
+	display: inline-block;
+    vertical-align: middle;
+}
+
+.parserView .scheme {
+	padding: 4px;
+}
+
+.parserView .scheme .itemRender > .jsb-checkbox > .caption,
+.parserView .scheme .itemRender > .name {
+	min-width: auto;
+}

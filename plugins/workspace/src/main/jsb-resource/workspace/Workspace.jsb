@@ -431,7 +431,7 @@
 					name: entry.getName()
 				};
 			} catch(e){
-				debugger;
+				JSB.getLogger().error(e);
 				return {
 					error: e.message
 				};

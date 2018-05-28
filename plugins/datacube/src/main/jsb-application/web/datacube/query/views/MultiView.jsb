@@ -36,6 +36,10 @@
 		},
 
         getField: function(name) {
+            return $this.getOriginalField(name);
+		},
+
+        getOriginalField: function(name) {
             var views = $this.listViews();
             for(var i in views) {
                 var desc = views[i].getField(name);

@@ -21,12 +21,32 @@
                 fieldName: {
                     render: 'dataBinding',
                     name: 'Имя поля',
-                    linkTo: 'source'
+                    linkTo: 'source',
+                    valueType: 'string'
                 },
                 fieldWeight: {
                     render: 'dataBinding',
                     name: 'Вес поля',
-                    linkTo: 'source'
+                    linkTo: 'source',
+                    valueType: 'number'
+                },
+                autoSize: {
+                    render: 'item',
+                    name: 'Автоматически считать размеры',
+                    optional: true,
+                    editor: 'none'
+                },
+                isSum: {
+                    render: 'item',
+                    name: 'Суммировать количество',
+                    optional: true,
+                    editor: 'none'
+                },
+                skipEmptyNamedGroups: {
+                    render: 'item',
+                    name: 'Опускать группы с пустыми именами',
+                    optional: 'checked',
+                    editor: 'none'
                 }
             }
         },
@@ -60,44 +80,40 @@
                             name: 'flattened'
                         }
                     }
-                },
-                autoSize: {
-                    render: 'item',
-                    name: 'Автоматически считать размеры',
-                    optional: true,
-                    editor: 'none'
-                },
-                skipSmallGroups: {
-                    render: 'item',
-                    name: 'Опускать группы с одним элементом',
-                    optional: true,
-                    editor: 'none'
-                },
-                skipEmptyNamedGroups: {
-                    render: 'item',
-                    name: 'Опускать группы с пустыми именами',
-                    optional: true,
-                    editor: 'none'
                 }
             }
         }
     },
-	$require: ['JQuery.UI.Loader'],
 	$client: {
+	    _isNeedUpdate: false,
+
         $constructor: function(opts){
             $base(opts);
             this.loadCss('foamtree.css');
-            this.foamtreeId = "foamtree_" + JSB().generateUid();
 
-            this.foamtreeContainer = this.$('<div class="foamtreeWidget" id="' + this.foamtreeId + '"></div>');
-            this.append(this.foamtreeContainer);
+            $this.container = $this.$('<div class="container"></div>');
+            $this.append($this.container);
 
-            JSB().loadScript(['tpl/carrotsearch/foamtree.js'],
-                function(){
-                    $this.isScriptLoaded = true;
+            JSB().loadScript(['tpl/carrotsearch/foamtree.js'], function(){
                     $this.setInitialized();
                 }
             );
+
+            this.container.resize(function(){
+                if(!$this.container.is(':visible') || !$this.foamtree){
+                    return;
+                }
+
+                JSB().defer(function(){
+                    $this.foamtree.resize();
+                }, 300, 'foamtree.resize_' + $this.getId())
+            });
+
+            this.container.visible(function(evt, isVisible){
+                if($this._isNeedUpdate && isVisible){
+                    $this._buildChart($this.getCache());
+                }
+            });
         },
 
         refresh: function(opts){
@@ -106,173 +122,208 @@
         	    return;
         	}
 
-        	var source = this.getContext().find('source');
-            if(!source.hasBinding || !source.hasBinding()){
+            if(opts && opts.updateStyles){
+                this._dataSource = null;
+                this._schemeOpts = null;
+                this._widgetOpts = null;
+            }
+
+        	if(!this._dataSource){
+        	    var dataSource = this.getContext().find('source');
+
+                if(!dataSource.hasBinding()){
+                    return;
+                }
+
+                this._dataSource = dataSource;
+        	}
+
+        	if(!this._schemeOpts){
+        	    var seriesContext = this.getContext().find('levels').values(),
+        	        settings = this.getContext().find('settings');
+
+        	    this._schemeOpts = {
+        	        series: [],
+        	        settings: {
+        	            layout: settings.find('layout').value(),
+        	            stacking: settings.find('stacking').value()
+        	        }
+        	    }
+
+        	    for(var i = 0; i < seriesContext.length; i++){
+        	        this._schemeOpts.series.push({
+                        nameSelector: seriesContext[i].find('fieldName'),
+                        dataSelector: seriesContext[i].find('fieldWeight'),
+                        autoSize: seriesContext[i].find('autoSize').checked(),
+                        isSum: seriesContext[i].find('isSum').checked(),
+                        skipEmptyNamedGroups: seriesContext[i].find('skipEmptyNamedGroups').checked()
+        	        });
+        	    }
+        	}
+
+            if(opts && opts.refreshFromCache){
+                this.buildChart(this.getCache());
                 return;
             }
 
+            var data = [],
+                colorCount = 0;
+
             this.getElement().loader();
 
-            if(opts && opts.refreshFromCache){
-                this.updateFoamtree(this.getCache());
-            } else {
-                this.getData(opts ? opts.isCacheMod : false);
-            }
-        },
+            try{
+                function fetch(isReset){
+                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res, fail, serverWidgetOpts){
+                        if(res.length === 0){
+                            resultProcessing();
+                            return;
+                        }
 
-        getData: function(isCacheMod){
-            var context = this.getContext().find('source');
-            var levels = this.getContext().find('levels').values();
-            var data = [];
+                        while($this._dataSource.next()){
+                            var curCat = data;
 
-            var autoSize = this.getContext().find('autoSize').checked(),
-                skipSmallGroups = this.getContext().find('skipSmallGroups').checked(),
-                skipEmptyNamedGroups = this.getContext().find('skipEmptyNamedGroups').checked();
+                            for(var i = 0; i < $this._schemeOpts.series.length; i++){
+                                var name = $this._schemeOpts.series[i].nameSelector.value(),
+                                    value = $this._schemeOpts.series[i].dataSelector.value();
 
-            this.fetchBinding(context, {readAll: true, reset: true}, function(){
-                while(context.next()){
-                    var el = data;
+                                if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
+                                    break;
+                                }
 
-                    for(var i = 0; i < levels.length; i++){
-                        var fieldName = levels[i].find('fieldName'),
-                            label = fieldName.value();
+                                if(curCat[name]){
+                                    if($this._schemeOpts.series[i].autoSize){
+                                        curCat[name].weight++;
+                                    } else if($this._schemeOpts.series[i].isSum){
+                                        curCat[name].weight += value;
+                                    }
+                                } else {
+                                    var color;
+                                    /*
+                                    if(i === 0){
+                                        if($this._widgetOpts.styleScheme){
+                                            color = $this._widgetOpts.styleScheme[colorCount%$this._widgetOpts.styleScheme.length];
+                                        } else {
+                                            color = Highcharts.getOptions().colors[colorCount%10];
+                                        }
+                                    }
+                                    */
 
-                        var e = null;
-                        for(var j = 0; j < el.length; j++){
-                            if(el[j].label === label){
-                                e = el[j];
-                                break;
+                                    curCat[name] = {
+                                        binding: $this._schemeOpts.series[i].nameSelector.binding(),
+                                        child: {},
+                                        name: name,
+                                        weight: $this._schemeOpts.series[i].autoSize ? 0 : value
+                                    };
+
+                                    i === 0 && colorCount++;
+                                }
+
+                                curCat = curCat[name].child;
                             }
                         }
 
-                        if(!e){
-                            el.push({
-                                label: label,
-                                fieldName: fieldName.binding(),
-                                weight: parseInt(levels[i].find('fieldWeight').value()),
-                                groups: []
+                        fetch();
+                    });
+                }
+
+                function resultProcessing(){
+                    function resolveData(arr, data){
+                        if(!data){
+                            return;
+                        }
+
+                        for(var i in data){
+                            var groups = [];
+
+                            arr.push({
+                                binding: data[i].binding,
+                                groups: groups,
+                                label: data[i].name,
+                                weight: data[i].weight
                             });
 
-                            el = el[el.length - 1].groups;
-                        } else {
-                            el = e.groups;
+                            resolveData(groups, data[i].child);
                         }
                     }
+
+                    var seriesData = [];
+                    resolveData(seriesData, data);
+
+                    $this.storeCache(seriesData);
+
+                    $this.buildChart(seriesData);
+
+                    $this.getElement().loader('hide');
                 }
 
-                data = $this.procData(data, autoSize, skipSmallGroups, skipEmptyNamedGroups);
-
-                if(isCacheMod){
-                    $this.storeCache(data);
-                }
-
-                $this.updateFoamtree(data);
-            });
+                fetch(true);
+            } catch(ex){
+                console.log('Foamtree load data exception');
+                console.log(ex);
+                $this.getElement().loader('hide');
+            }
         },
 
-        updateFoamtree: function(data){
-            if(this.foamtree){
-                JSB().deferUntil(function(){
-                    $this.getElement().loader('hide');
-
-                    $this.foamtree.set({
-                        layout: $this.getContext().find('layout').value(),
-                        stacking: $this.getContext().find('stacking').value(),
-                        dataObject: {
-                            groups: data
-                        }
-                    });
-
-                }, function(){
-                    return $this.foamtreeContainer.height() > 0 && $this.foamtreeContainer.width() > 0 && $this.isScriptLoaded && $this.getElement().is(':visible');
-                });
+        buildChart: function(data){
+            if(this.container.is(':visible')){
+                this._buildChart(data);
             } else {
-                JSB().deferUntil(function(){
-                    $this.getElement().loader('hide');
+                this._isNeedUpdate = true;
+            }
+        },
 
-                    $this.foamtree = new CarrotSearchFoamTree({
-                        id: $this.foamtreeId,
-                        dataObject: {
-                            groups: data
-                        },
-                        layout: $this.getContext().find('layout').value(),
-                        stacking: $this.getContext().find('stacking').value(),
-                        onGroupSelectionChanged: function(event){
-                            if(event.groups.length){
-                                var context = $this.getContext().find('source').binding();
-                                if(!context.source) return;
-                                var fDesc = {
-                                	sourceId: context.source,
-                                	type: '$and',
-                                	op: '$eq',
-                                	field: event.groups[0].fieldName,
-                                	value: event.groups[0].label
-                                };
-                                if(!$this.hasFilter(fDesc)){
-                                	if($this._currentFilter){
-                                    	$this.removeFilter($this._currentFilter);
-                                    }
-                                	$this._currentFilter = $this.addFilter(fDesc);
-                                	$this.refreshAll();
-                                }
-                            } else {
+        _buildChart: function(data){
+            if(this.foamtree){
+                this.foamtree.set({
+                    layout: this._schemeOpts.settings.layout,
+                    stacking: this._schemeOpts.settings.stacking,
+                    dataObject: {
+                        groups: data
+                    }
+                });
+                this.foamtree.redraw();
+            } else {
+                this.foamtree = new CarrotSearchFoamTree({
+                    element: this.container.get(0),
+                    dataObject: {
+                        groups: data
+                    },
+                    layout: this._schemeOpts.settings.layout,
+                    stacking: this._schemeOpts.settings.stacking,
+                    onGroupSelectionChanged: function(event){
+                        if(event.groups.length){
+                            var context = $this._dataSource.binding();
+                            if(!context.source){
+                                return;
+                            }
+
+                            var fDesc = {
+                                sourceId: context.source,
+                                type: '$and',
+                                op: '$eq',
+                                field: event.groups[0].binding,
+                                value: event.groups[0].label
+                            };
+
+                            if(!$this.hasFilter(fDesc)){
                                 if($this._currentFilter){
                                     $this.removeFilter($this._currentFilter);
-                                    $this._currentFilter = null;
                                 }
+                                $this._currentFilter = $this.addFilter(fDesc);
+                                $this.refreshAll();
+                            }
+                        } else {
+                            if($this._currentFilter){
+                                $this.removeFilter($this._currentFilter);
+                                $this._currentFilter = null;
+                                $this.refreshAll();
                             }
                         }
-                    });
-                    $this.foamtreeContainer.resize(function(){
-                    	if(!$this.foamtreeContainer.is(':visible')){
-        					return;
-        				}
-                        JSB().defer(function(){
-                            $this.foamtree.resize();
-                        }, 300, 'foamtree.resize.' + $this.getId())
-                    });
-                }, function(){
-                    return $this.foamtreeContainer.height() > 0 && $this.foamtreeContainer.width() > 0 && $this.isScriptLoaded && $this.getElement().is(':visible');
+                    }
                 });
             }
-        },
 
-        // utils
-        procData: function(data, autoSize, skipSmallGroups, skipEmptyNamedGroups){
-            if(!data) return;
-
-            var newData = [];
-
-            for(var i = 0; i < data.length; i++){
-                if((skipEmptyNamedGroups && data[i].label === "") || (skipSmallGroups && data[i].groups.length === 1)){
-                    newData = newData.concat(this.procData(data[i].groups, autoSize, skipSmallGroups, skipEmptyNamedGroups));
-                    continue;
-                }
-
-                if((data[i].weight !== data[i].weight) && autoSize){
-                    data[i].weight = this.countWeight(data[i]);
-                }
-
-                data[i].groups = this.procData(data[i].groups, autoSize, skipSmallGroups, skipEmptyNamedGroups);
-
-                newData.push(data[i]);
-            }
-
-            return newData;
-        },
-
-        countWeight: function(a){
-            if(a.weight === a.weight) return a.weight;
-
-            if(a.groups.length !== 0){
-                var b = 0;
-                for(var i = 0; i < a.groups.length; i++){
-                    b += countWeight(a.groups[i]);
-                }
-                return b;
-            } else {
-                return 1;
-            }
+            this._isNeedUpdate = false;
         }
 	}
 }

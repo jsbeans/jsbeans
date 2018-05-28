@@ -228,7 +228,6 @@
 			
 			// fix wType
 			if(wInst.hasProperty('_wt')){
-				debugger;
 				wInst.setWorkspaceType(wInst.property('_wt'));
 				wInst.removeProperty('_wt');
 				wInst.store();

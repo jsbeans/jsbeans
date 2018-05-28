@@ -18,6 +18,10 @@
             return null;
 		},
 
+        getOriginalField: function(name) {
+            return null;
+		},
+
 		getContext: function(){
 		    return $this.name;
 		},

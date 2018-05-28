@@ -54,6 +54,8 @@
                                     dcQuery.$views[subQuery.$from] = $this._rebuildQuery(slice.getQuery(), subQuery.$from);
                                 }
                             }
+                        } else if (!dcQuery.$views || !dcQuery.$views[subQuery.$from]){
+                            throw new Error('Undefined slice: ' + subQuery.$from);
                         }
                     }
                     for (var f in e) if (f != '$views') {

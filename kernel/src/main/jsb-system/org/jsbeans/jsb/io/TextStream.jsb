@@ -46,8 +46,8 @@
 		},
 		
 		read: function(arg1, arg2, arg3){
-			if(!arg1 && !arg2 && !arg3){
-				return this.decoder.read();
+			if(!arg1 && !arg2 && !arg3 || JSB.isNumber(arg1)){
+				return this.decoder.read(this.decoder.stream, arg1);
 			} else {
 				return $base(arg1, arg2, arg3);
 			}

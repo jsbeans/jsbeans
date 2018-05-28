@@ -45,7 +45,13 @@
 				} else if(artifactType == 'value'){
 					FileSystem.write(eFileName, JSON.stringify(a, null, 4));
 				} else if(artifactType == 'binary'){
-					FileSystem.write(eFileName, a, {binary: true});
+					if(JSB.isInstanceOf(a, 'JSB.IO.Stream')){
+						var oStream = FileSystem.open(eFileName, {binary: true, write: true, read: false});
+						a.copy(oStream);
+						oStream.close();
+					} else {
+						FileSystem.write(eFileName, a, {binary: true});
+					}
 				} else {
 					throw new Error('Unexpected artifact type: ' + artifactType);
 				}
@@ -55,7 +61,7 @@
 			}
 		},
 		
-		read: function(entry, name){
+		read: function(entry, name, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
 			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
@@ -71,10 +77,18 @@
 				}
 				
 				if(artifactType == 'string'){
+					if(opts && opts.stream){
+						delete opts.stream;
+						return FileSystem.open(eFileName, JSB.merge({binary: false}, opts, {read: true, write:false, append: false, update: false}));
+					}
 					return FileSystem.read(eFileName);	
 				} else if(artifactType == 'value'){
 					return JSON.parse(FileSystem.read(eFileName));
 				} else if(artifactType == 'binary'){
+					if(opts && opts.stream){
+						delete opts.stream;
+						return FileSystem.open(eFileName, JSB.merge({binary: true}, opts, {read: true, write:false, append: false, update: false}));
+					}
 					return FileSystem.read(eFileName, {binary: true});
 				} else {
 					throw new Error('Unexpected artifact type: ' + artifactType);

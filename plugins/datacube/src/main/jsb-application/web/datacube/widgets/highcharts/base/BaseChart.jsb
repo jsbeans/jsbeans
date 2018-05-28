@@ -344,8 +344,17 @@
                     }
                 },
                 labelFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат подписей',
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'name'
+                            }
+                        ]
+                    },
                     valueType: 'string',
                     defaultValue: '{name}'
                 },
@@ -423,33 +432,114 @@
                     editor: 'none'
                 },
                 headerFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат верхнего колонтитула',
-                    valueType: 'string',
-                    editor: 'JSB.Widgets.MultiEditor',
-                    options: {
-                        valueType: 'org.jsbeans.types.Html'
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Процентное соотношение',
+                                title: 'Только для круговой диаграммы и стеков',
+                                type: 'number',
+                                value: 'percentage'
+                            },
+                            {
+                                alias: 'Общее значение стека',
+                                title: 'Только для стеков',
+                                type: 'number',
+                                value: 'total'
+                            },
+                            {
+                                alias: 'Координаты точки(X)',
+                                type: 'number',
+                                value: 'x'
+                            },
+                            {
+                                alias: 'Значение точки(Y)',
+                                type: 'number',
+                                value: 'y'
+                            },
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'series.name'
+                            }
+                        ]
                     },
+                    valueType: 'string',
                     defaultValue: '<span style="font-size: 10px">{point.key}</span><br/>'
                 },
                 pointFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат точек',
-                    valueType: 'string',
-                    editor: 'JSB.Widgets.MultiEditor',
-                    options: {
-                        valueType: 'org.jsbeans.types.Html'
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Процентное соотношение',
+                                title: 'Только для круговой диаграммы и стеков',
+                                type: 'number',
+                                value: 'percentage'
+                            },
+                            {
+                                alias: 'Общее значение стека',
+                                title: 'Только для стеков',
+                                type: 'number',
+                                value: 'total'
+                            },
+                            {
+                                alias: 'Координаты точки(X)',
+                                type: 'number',
+                                value: 'x'
+                            },
+                            {
+                                alias: 'Значение точки(Y)',
+                                type: 'number',
+                                value: 'y'
+                            },
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'series.name'
+                            }
+                        ]
                     },
+                    valueType: 'string',
                     defaultValue: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y}</b><br/>'
                 },
                 footerFormat: {
-                    render: 'item',
+                    render: 'formatter',
                     name: 'Формат нижнего колонтитула',
-                    valueType: 'string',
-                    editor: 'JSB.Widgets.MultiEditor',
-                    options: {
-                        valueType: 'org.jsbeans.types.Html'
-                    }
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Процентное соотношение',
+                                title: 'Только для круговой диаграммы и стеков',
+                                type: 'number',
+                                value: 'percentage'
+                            },
+                            {
+                                alias: 'Общее значение стека',
+                                title: 'Только для стеков',
+                                type: 'number',
+                                value: 'total'
+                            },
+                            {
+                                alias: 'Координаты точки(X)',
+                                type: 'number',
+                                value: 'x'
+                            },
+                            {
+                                alias: 'Значение точки(Y)',
+                                type: 'number',
+                                value: 'y'
+                            },
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'series.name'
+                            }
+                        ]
+                    },
+                    valueType: 'string'
                 },
                 padding: {
                     render: 'item',
@@ -572,8 +662,39 @@
                                     defaultValue: 0
                                 },
                                 format: {
-                                    render: 'item',
-                                    name: 'Формат',
+                                    render: 'formatter',
+                                    name: 'Форматирование',
+                                    formatterOpts: {
+                                        variables: [
+                                            {
+                                                alias: 'Процентное соотношение',
+                                                title: 'Только для круговой диаграммы и стеков',
+                                                type: 'number',
+                                                value: 'percentage'
+                                            },
+                                            {
+                                                alias: 'Общее значение стека',
+                                                title: 'Только для стеков',
+                                                type: 'number',
+                                                value: 'total'
+                                            },
+                                            {
+                                                alias: 'Координаты точки(X)',
+                                                type: 'number',
+                                                value: 'x'
+                                            },
+                                            {
+                                                alias: 'Значение точки(Y)',
+                                                type: 'number',
+                                                value: 'y'
+                                            },
+                                            {
+                                                alias: 'Имя серии',
+                                                type: 'string',
+                                                value: 'series.name'
+                                            }
+                                        ]
+                                    },
                                     valueType: 'string',
                                     defaultValue: '{y}'
                                 },
@@ -785,6 +906,7 @@
                 this._dataSource = null;
                 this._schemeOpts = null;
                 this._filterFields = null;
+                this._widgetOpts = null;
             }
 
             if(!this._dataSource){
@@ -818,6 +940,7 @@
                     $this.chart = (function(){return this}).call().Highcharts[$this._chartType]($this.container.get(0), chartOpts);
                 }
                 */
+
                 if($this.chart){
                     $this.chart.destroy();
                 }
@@ -832,17 +955,7 @@
                 $this._resolvePointContextFilters();
             }
 
-            if(styleSelector){
-                styleSelector.value(function(widgetStyleSelector){
-                    if(widgetStyleSelector){
-                        chartOpts.colors = widgetStyleSelector.find('colorScheme').values();
-                    }
-
-                    buildWidget(chartOpts);
-                });
-            } else {
-                buildWidget(chartOpts);
-            }
+            buildWidget(chartOpts);
         },
 
         setInitialized: function(){
@@ -860,7 +973,7 @@
             this.refresh();
         },
 
-        _buildChart: function(){
+        _buildChart: function(data){
             var chartOpts = {};
 
             try{
@@ -915,6 +1028,8 @@
                         animation: chartContext.find('animation').checked(),
                         inverted: chartContext.find('inverted').checked()
                     },
+
+                    colors: this._widgetOpts && this._widgetOpts.styleScheme,
 
                     credits: {
                         enabled: creditsContext.find('enabled').checked(),
@@ -1039,9 +1154,9 @@
                                         }
                                     }
                                 }
-                            }
-                        },
-                        turboThreshold: 0
+                            },
+                            turboThreshold: 0
+                        }
                     },
 
                     series: series,
@@ -1255,6 +1370,7 @@
         _addPointFilter: function(point, accumulate){
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
+                binding = point.series.options.datacube.binding || point.options.datacube.binding,
                 refreshOpts = {};
 
             if(!context.source) {
@@ -1281,7 +1397,7 @@
                         value: datacubeOpts.filterData.values[i]
                     };
 
-                    if(datacubeOpts.filterData.bindings[i] === datacubeOpts.binding){
+                    if(datacubeOpts.filterData.bindings[i] === binding){
                         this._curFilters[this.addFilter(fDesc)] = fDesc;
                     } else {
                         this.addFilter(fDesc);
@@ -1293,7 +1409,7 @@
                     sourceId: context.source,
                     type: '$or',
                     op: '$eq',
-                    field: datacubeOpts.binding,
+                    field: binding,
                     value: point[this._filterPropName]
                 };
 
@@ -1305,11 +1421,8 @@
         },
 
         _changeRangeFilter: function(evt){
-            if(evt.triggerOp !== 'navigator-drag'){
-                return;
-            }
-
-            var binding = evt.target.series[0].options.datacube.binding,
+            var binding = evt.datacube.binding,
+                valueType = evt.datacube.valueType,
                 context = this.getContext().find('source').binding();
 
             function createFilter(type){
@@ -1320,6 +1433,12 @@
                 }
 
                 $this._curRangeFilters[type] = value;
+
+                var filterValue = value;
+
+                if(valueType === 'date'){
+                    filterValue = new Date(value);
+                }
 
                 var fDesc = {
                     sourceId: context.source,
@@ -1353,12 +1472,12 @@
 
         _removePointFilter: function(point, accumulate){
             var contextFilters = this.getContextFilter(),
-                datacubeOpts = point.series.options.datacube;
+                binding = point.series.options.datacube.binding || point.options.datacube.binding;
 
             if(accumulate){
                 // remove context filter
                 for(var i in contextFilters){
-                    if(i === datacubeOpts.binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
+                    if(i === binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
                         var filter = {};
                         filter[i] = {
                             field: i,
@@ -1373,7 +1492,7 @@
 
                 // remove global filter
                 for(var i in this._curFilters){
-                    if(this._curFilters[i].field === datacubeOpts.binding && this._curFilters[i].value === point[this._filterPropName]){
+                    if(this._curFilters[i].field === binding && this._curFilters[i].value === point[this._filterPropName]){
                         var filter = {};
                         filter[i] = this._curFilters[i];
                         this._select(filter, false, true);

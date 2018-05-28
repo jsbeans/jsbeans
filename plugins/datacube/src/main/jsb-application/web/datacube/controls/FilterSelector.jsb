@@ -62,7 +62,7 @@
 				var fDesc = filters[fId];
 				var fName = fDesc.cubeField || fDesc.field;
 				var fTag = $this.$('<div class="filterTag"></div>').attr('fId', fId);
-
+/*
 				var type = '';
 				switch(fDesc.type){
 				    case '$and':
@@ -73,7 +73,7 @@
                         break;
 				}
                 //fTag.append($this.$('<div class="type"></div>').text(type));
-
+*/
 				fTag.append($this.$('<div class="field"></div>').text(fName).attr('title', fName));
 				var opSign = ':';
 				switch(fDesc.op){
@@ -155,7 +155,7 @@
 				}
 			}
 			
-			var drawTree = {type:'and', values:[]};
+			var drawTree = {type:'or', values:[{type:'and', values:[]}]};
 			
 			for(var fName in ffMap){
 				var ffDesc = ffMap[fName];
@@ -191,10 +191,18 @@
 				} else if(and){
 					treeNode = and;
 				}
-				
-				drawTree.values.push(treeNode);
+				if(ffDesc.andFilters.length > 0){
+					drawTree.values[0].values.push(treeNode);
+				} else {
+					drawTree.values.push(treeNode);
+				}
 			}
 			
+			if(drawTree.values[0].values.length == 0){
+				drawTree.values.splice(0, 1);
+			} else if(drawTree.values[0].values.length == 1){
+				drawTree.values[0] = drawTree.values[0].values[0];
+			}
 			if(drawTree.values.length == 0){
 				drawTree = null;
 			} else if(drawTree.values.length == 1){

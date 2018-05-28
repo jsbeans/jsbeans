@@ -84,6 +84,8 @@
                         return;
                     default:
                         var onChangeFunc = function(val){
+                            $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, val, values.value);
+
                             values.value = val;
 
                             $this.onchange();
@@ -102,7 +104,11 @@
                     type: this._scheme.editorOpts && this._scheme.editorOpts.type ? this._scheme.editorOpts.type : undefined,
                     value: values.value,
                     onchange: function(){
-                        values.value = this.getValue();
+                        var newValue = this.getValue();
+
+                        $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, newValue, values.value);
+
+                        values.value = newValue;
 
                         $this.onchange();
                     }

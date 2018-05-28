@@ -4,6 +4,7 @@
     min-width: 40px;
     height: 22px;
     border: 1px solid #ccc;
+	border-radius: 3px;
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
     overflow: visible;
@@ -14,7 +15,8 @@
     background: linear-gradient(top, #f7f7f7 0%, #fbfbfb 50%,#e8e8e8 100%);
 	background: -o-linear-gradient(top, #f7f7f7 0%, #fbfbfb 50%,#e8e8e8 100%);
 	background: -ms-linear-gradient(top, #f7f7f7 0%, #fbfbfb 50%,#e8e8e8 100%);
-	
+
+	cursor: pointer;
 }
 
 .jsb-select > i.dropDownBtn {
@@ -22,7 +24,6 @@
     top: 50%;
     right: 5px;
     margin-top: 1px;
-    cursor: pointer;
     font-size: 13px;
 }
 
@@ -56,7 +57,6 @@
 .jsb-select > .curVal {
     width: 100%;
     height: 100%;
-    cursor: pointer;
     padding: 2px 4px;
     font-size: 14px;
     color: #555;
@@ -86,20 +86,27 @@
     background: royalblue;
 }
 
-.jsb-select > .dropDown > li {
+.jsb-select > .dropDown li {
     position: relative;
     list-style: none;
     cursor: pointer;
+}
+
+.jsb-select > .dropDown li > ul {
+    padding-left: 5px;
+}
+
+.jsb-select > .dropDown li > .selectValue {
     padding: 5px;
     border: 1px solid transparent;
 }
 
-.jsb-select > .dropDown > li:hover {
+.jsb-select > .dropDown li > .selectValue:hover {
     background: rgba(220, 220, 220, 0.45);
     border: 1px solid rgb(158, 158, 158);
 }
 
-.jsb-select > .dropDown > li.selected {
+.jsb-select > .dropDown li > .selectValue.selected {
     background: rgb(220, 220, 220);
     border: 1px solid rgb(158, 158, 158);
 }

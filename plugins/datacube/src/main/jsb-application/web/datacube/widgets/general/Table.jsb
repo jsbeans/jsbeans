@@ -271,7 +271,13 @@
 	    	            	}
 	    	            }
 	            	}
-	            }
+	            },
+	    	    usePrefetch: {
+	    	    	render: 'item',
+	                name: 'Использовать упреждающую загрузку данных',
+	                optional: true,
+	                editor: 'none'
+	    	    }
 	        }
 	    },
 	    columns: {
@@ -364,10 +370,20 @@
                                     render: 'switch',
                                     name: 'Форматировать числа',
 	                                items: {
-	                                    format: {
-                                            render: 'item',
+	                                    formatter: {
+                                            render: 'formatter',
                                             name: 'Формат',
-                                            value: '0,0.[00]'
+                                            formatterOpts: {
+                                                variables: [
+                                                    {
+                                                        alias: 'Значение',
+                                                        type: 'number',
+                                                        value: 'y'
+                                                    }
+                                                ]
+                                            },
+                                            valueType: 'string',
+                                            defaultValue: '{y:,.2f}'
 	                                    }
 	                                }
 	                            }
@@ -488,12 +504,27 @@
                                     name: 'Поле',
                                     linkTo: 'rows'
                                 },
-                                summaryFormat: {
-                                    render: 'item',
+	                            summaryFormat: {
+                                    render: 'switch',
                                     name: 'Использовать форматирование',
-                                    value: '0,0.[00]',
-                                    optional: true
-                                },
+	                                items: {
+	                                    format: {
+                                            render: 'formatter',
+                                            name: 'Формат',
+                                            formatterOpts: {
+                                                variables: [
+                                                    {
+                                                        alias: 'Значение',
+                                                        type: 'number',
+                                                        value: 'y'
+                                                    }
+                                                ]
+                                            },
+                                            valueType: 'string',
+                                            defaultValue: '{y:,.2f}'
+	                                    }
+	                                }
+	                            },
                                 summaryPrefix: {
                                     render: 'item',
                                     name: 'Префикс',
@@ -635,8 +666,7 @@
 		           'JSB.Crypt.MD5',
 		           'DataCube.Controls.SortSelector',
 		           'DataCube.Controls.FilterEntry',
-		           'JSB.Numeral',
-		           'JQuery.UI.Loader'],
+		           'JSB.Utils.Formatter'],
 		
 		ready: false,
 		headerDesc: [],
@@ -660,7 +690,6 @@
 			
 			this.addClass('tableWidget');
 			this.loadCss('Table.css');
-			Numeral.setLocale('ru');
 			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
@@ -800,7 +829,7 @@
 				return;
 			}
 			this.rowAppending = true;
-			var fetchSize = 10;
+			var fetchSize = 20;
 			
 			if(bRefresh){
 				if(this.rows.length > 0){
@@ -998,7 +1027,7 @@
 						
 						var fVal = val;
 						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-							fVal = Numeral.format(val, $this.colDesc[d.colIdx].format);
+							fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
 						}
 						cellEl.text(fVal !== null ? fVal : '');
 						cellEl.attr('title', val);
@@ -1073,7 +1102,7 @@
 									
 									var fVal = val;
 									if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-										fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+										fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
 									}
 									
 									cellEl.attr('title', val);
@@ -1160,7 +1189,7 @@
 												
 												var fVal = val;
 												if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-													fVal = Numeral.format(val, $this.colDesc[d.colIdx].format)
+													fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
 												}
 												
 												cellEl.text(fVal !== null ? fVal : '');
@@ -1201,10 +1230,10 @@
 			var rowsContext = this.getContext().find('rows');
 			var rowKeySelector = this.getContext().find('rowKey');
 			var rowFilterSelector = this.getContext().find('rowFilter');
-			var rowFilterBinding = rowFilterSelector.bindings();
+			var rowFilterBinding = rowFilterSelector.bindings(true);
 			
 			var rowClickParamsSelector = this.callApiOnClick ? this.getContext().find('rowClickParams') : null;
-			var rowClickParamsBinding = rowClickParamsSelector && rowClickParamsSelector.bindings();
+			var rowClickParamsBinding = rowClickParamsSelector && rowClickParamsSelector.bindings(true);
 
 			var gArr = this.getContext().find('columns').values();
 			for(var i = 0; i < gArr.length; i++){
@@ -1266,7 +1295,8 @@
 							rowKey = '';
 						}
 						rowKey += MD5.md5('' + keyVal);
-					}	
+					}
+					
 					// construct row filter
 					var rowFilter = [];
 					var rowFilterValsMain = rowFilterSelector.values('main', true);
@@ -1283,10 +1313,10 @@
 						rowFlags.hover = true;
 					}
 					
-					for(var i = 0; i < Math.max(rowFilterValsMain.length, rowFilterValsBack.length); i++){
+					for(var i = 0; i < rowFilterBinding.length; i++){
 						if(rowFilterBinding[i]){
 							var val = rowFilterValsMain[i];
-							if(!val){
+							if(!JSB.isDefined(val)){
 								val = rowFilterValsBack[i];
 							}
 							rowFilter.push({field: rowFilterBinding[i], value: val});
@@ -1339,9 +1369,11 @@
 					rows.push({row: row, key: rowKey, filter: rowFilter, flags: rowFlags, clickParams: rowClickParams});
 					
 					if(rows.length >= batchSize){
-						$this.stopPreFetch = false;
 						
-						preFetch();
+						if($this.usePrefetch){
+							$this.stopPreFetch = false;
+							preFetch();
+						}
 						
 						callback.call($this, rows);
 						return;
@@ -1416,7 +1448,20 @@
 				});
 			}
 			if(this.useDrillDownOnClick){
-				debugger;
+				var widget = this.getContext().find('drillDownWidget').value();
+				var filterOpts = {};
+				if(!this.useFilterOnClick && d.filter && d.filter.length > 0){
+					for(var i = 0; i < d.filter.length; i++){
+						var cubeField = this.getCubeField(d.filter[i].field);
+						if(cubeField){
+							filterOpts[cubeField] = {$eq:{$const:d.filter[i].value}};
+						}
+					}
+				}
+				$this.addDrilldownElement({
+                    filterOpts: filterOpts,
+                    widget: widget
+                });
 			}
 		},
 		
@@ -1724,7 +1769,7 @@
 				if(res && res.length > 0 && JSB.isDefined(res[0].val)){
 					var val = res[0].val;
 					if(statusDesc.summaryFormat && JSB.isNumber(val) && statusDesc.summaryFormat.length > 0){
-						val = Numeral.format(val, statusDesc.summaryFormat);
+						val = Formatter.format(statusDesc.summaryFormat, {y: val});
 					}
 					callback.call(this, val);
 				} else {
@@ -2148,7 +2193,7 @@
 							statusDesc.summaryFieldSelector = summaryElts[j].find('summaryField');
 							statusDesc.summaryPrefix = summaryElts[j].find('summaryPrefix').value();
 							statusDesc.summaryPostfix = summaryElts[j].find('summaryPostfix').value();
-							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').checked() ? summaryElts[j].find('summaryFormat').value() : null; 
+							statusDesc.summaryFormat = summaryElts[j].find('summaryFormat').checked() ? summaryElts[j].find('summaryFormat format').value() : undefined;
 							if(!desc.status){
 								desc.status = [];
 							}
@@ -2216,7 +2261,7 @@
 					}
 					var formatSelector = viewSelector.find('textFormat');
 					if(formatSelector.checked()){
-						desc.format = formatSelector.find('format').value();
+						desc.format = formatSelector.find('formatter').value();
 					}
 				}
 				
@@ -2227,6 +2272,7 @@
 			this.showSortIcon = this.getContext().find('showSortIcon').checked();
 			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
 			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
+			this.usePrefetch = this.getContext().find('usePrefetch').checked();
 			
 			// update row filters
 			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();

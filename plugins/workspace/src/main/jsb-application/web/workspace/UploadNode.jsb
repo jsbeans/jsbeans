@@ -89,8 +89,30 @@
 			
 			// proceed current file
 			if(!isDir){
+				self.options.w.pushIgnoreSync();
+				self.options.workspace.server().uploadFile({
+					parent: self.options.node ? self.options.node.getEntry().getId() : null,
+					name: self.options.file.name,
+					content: self.options.file
+				}, function(nDesc){
+					if(nDesc.error){
+						self.addClass('error');
+						self.getElement().attr('title', nDesc.error.message + ' ' + nDesc.error.fileName + '(' + nDesc.error.lineNumber + ')');
+					} else {
+						self.options.w.addTreeItem(nDesc, self.treeNode.key, true);
+					}
+					self.options.w.popIgnoreSync();
+				});
+/*				
+				debugger;
+				JSB.getProvider().ajax( JSB.getProvider().getServerBase() + 'jsb?cmd=upload', this.options.file, function(res, obj){
+					debugger;
+				});
+*/				
+/*				
 				var reader = new FileReader();
 				reader.onload = function(){
+					debugger;
 					self.options.w.pushIgnoreSync();
 					self.options.workspace.server().uploadFile({
 						parent: self.options.node ? self.options.node.getEntry().getId() : null,
@@ -106,7 +128,7 @@
 						self.options.w.popIgnoreSync();
 					});
 				}
-				reader.readAsArrayBuffer(this.options.file);
+				reader.readAsArrayBuffer(this.options.file); */
 			}
 
 		}

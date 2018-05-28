@@ -489,7 +489,7 @@
 		    return !!this._artifacts[name];
         },
 
-		loadArtifact: function(name) {
+		loadArtifact: function(name, opts) {
 			if(!JSB.isString(name)){
 				throw new Error('Invalid artifact name');
 			}
@@ -497,7 +497,7 @@
 			if(!this.existsArtifact(name)){
 				throw new Error('Missing artifact "'+name+'" in entry: ' + this.getId());
 			}
-		    return this._artifactStore.read(this, name);
+		    return this._artifactStore.read(this, name, opts);
 		},
 
 		storeArtifact: function(name, a) {
@@ -515,12 +515,12 @@
 			    if(JSB.isString(a)){
 			    	bNeedStoreEntry = artifacts[name] != 'string';
 			    	artifacts[name] = 'string';
+			    } else if(JSB.isArrayBuffer(a) || JSB.isInstanceOf(a, 'JSB.IO.Stream')){
+			    	bNeedStoreEntry = artifacts[name] != 'binary';
+			    	artifacts[name] = 'binary';
 			    } else if(JSB.isObject(a) || JSB.isArray(a) || JSB.isNumber(a) || JSB.isBoolean(a)){
 			    	bNeedStoreEntry = artifacts[name] != 'value';
 			    	artifacts[name] = 'value';
-			    } else if(JSB.isArrayBuffer(a)){
-			    	bNeedStoreEntry = artifacts[name] != 'binary';
-			    	artifacts[name] = 'binary';
 			    } else {
 			    	throw new Error('Invalid artifact type');
 			    }

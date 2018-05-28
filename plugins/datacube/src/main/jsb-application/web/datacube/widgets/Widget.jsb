@@ -67,6 +67,38 @@
 
 			throw new Error('Missing sourceId');
 		},
+		
+		getCubeField: function(field){
+			function extractCubeField(rValue){
+				if(JSB.isString(rValue)){
+					return rValue;
+				} else if(JSB.isObject(rValue)){
+					if(JSB.isDefined(rValue.$field) && JSB.isString(rValue.$field)){
+						return rValue.$field;
+					}
+					return null;
+				} else {
+					return null;
+				}
+			}
+			var sourceArr = this.getSourceIds();
+			if(!sourceArr || sourceArr.length == 0){
+				return;
+			}
+			var sourceId = sourceArr[0];
+			var source = this.sources[sourceId];
+			
+			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+				var q = source.getQuery();
+				if(q.$select && q.$select[field]){
+					var cubeField = extractCubeField(q.$select[field]);
+					if(cubeField){
+						return cubeField;
+					}
+				}
+			}
+			
+		},
 
 		clearFilters: function(){
 		    if(!this.filterManager){ return; }
@@ -201,10 +233,11 @@
 
             item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
-            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(data, fail){
-                if(fail && fail.message == 'Fetch broke'){
+            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(serverData, fail){
+                if(fail){
                     return;
                 }
+
                 if(item.fetchOpts.reset){
                     item.cursor = 0;
                     if(item.data){
@@ -212,8 +245,11 @@
                     }
                 }
                 item.fetchOpts.reset = false;
-                if(data){
-                    data = $this.decompressData(data);
+
+                var data = null;
+
+                if(serverData){
+                    data = $this.decompressData(serverData);
                     if(!item.data){
                         item.data = data;
                     } else {
@@ -224,7 +260,7 @@
                     if(fail){
                         JSB.getLogger().error(fail);
                     }
-                    callback.call($this, data, fail);
+                    callback.call($this, data, fail, serverData.widgetOpts);
                 }
             });
             return true;
@@ -300,12 +336,42 @@
 			}
 			return null;
 		},
+		
+		translateContextFilter: function(sourceId){
+			var postFilter = {};
+			var cubeFilter = {};
+			if(Object.keys($this.contextFilter).length > 0){
+				var source = this.sources[sourceId];
+				if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
+					var q = source.getQuery();
+					for(var fName in $this.contextFilter){
+						if(q.$select && q.$select[fName]){
+							postFilter[fName] = $this.contextFilter[fName];
+						} else {
+							cubeFilter[fName] = $this.contextFilter[fName];
+						}
+					}
+					
+				}
+			}
+			return {
+				postFilter: postFilter,
+				cubeFilter: cubeFilter
+			}
+		},
 
 		getLayerQuery: function(layerName, sourceId){
 			var query = {};
+			
 			if(layerName == 'back'){
 				if(Object.keys($this.contextFilter).length > 0){
-					query.$postFilter = $this.contextFilter;
+					var contextFilterDesc = $this.translateContextFilter(sourceId);
+					if(contextFilterDesc.postFilter && Object.keys(contextFilterDesc.postFilter).length > 0){
+						query.$postFilter = contextFilterDesc.postFilter;
+					}
+					if(contextFilterDesc.cubeFilter && Object.keys(contextFilterDesc.cubeFilter).length > 0){
+						query.$cubeFilter = contextFilterDesc.cubeFilter;
+					}
 				}
 				if($this.sort){
 					query.$sort = [$this.sort];
@@ -332,10 +398,20 @@
 					}
 				}
 				if(Object.keys($this.contextFilter).length > 0){
-					if(query.$postFilter){
-						query.$postFilter = {'$and':[query.$postFilter, $this.contextFilter]};
-					} else {
-						query.$postFilter = $this.contextFilter;
+					var contextFilterDesc = $this.translateContextFilter(sourceId);
+					if(contextFilterDesc.postFilter && Object.keys(contextFilterDesc.postFilter).length > 0){
+						if(query.$postFilter){
+							query.$postFilter = {'$and':[query.$postFilter, contextFilterDesc.postFilter]};
+						} else {
+							query.$postFilter = contextFilterDesc.postFilter;
+						}
+					}
+					if(contextFilterDesc.cubeFilter && Object.keys(contextFilterDesc.cubeFilter).length > 0){
+						if(query.$cubeFilter){
+							query.$cubeFilter = {'$and':[query.$cubeFilter, contextFilterDesc.cubeFilter]};
+						} else {
+							query.$cubeFilter = contextFilterDesc.cubeFilter;
+						}
 					}
 				}
 				if($this.sort){
@@ -488,7 +564,7 @@
 	},
 
 	$server: {
-		$require: ['DataCube.Widgets.WidgetRegistry', 'JSB.Crypt.MD5'],
+		$require: ['DataCube.Widgets.WidgetRegistry', 'JSB.Crypt.MD5', 'JSB.Workspace.WorkspaceController', 'Unimap.ValueSelector'],
 
 		iterators: {},
 		needBreak: false,
@@ -600,19 +676,22 @@
 					}
 					for(var i = 0; i < opts.rowKeyColumns.length; i++){
 						var qColName = opts.rowKeyColumns[i];
-						var colParts = qColName.split(/[\.\/]/);
 						var curScope = el;
-						for(var j = 0; j < colParts.length; j++){
-							curScope = curScope[colParts[j]];
-						}
-						if(JSB.isObject(curScope) || JSB.isArray(curScope) || JSB.isNull(curScope)){
-							curScope = JSON.stringify(curScope);
+						if(qColName.indexOf('.') >= 0 || qColName.indexOf('/') >= 0){
+							var colParts = qColName.split(/[\.\/]/);
+							for(var j = 0; j < colParts.length; j++){
+								curScope = curScope[colParts[j]];
+							}
+							if(JSB.isObject(curScope) || JSB.isArray(curScope) || JSB.isNull(curScope)){
+								curScope = JSON.stringify(curScope);
+							}
+						} else {
+							curScope = el[qColName];
 						}
 						id += MD5.md5('' + curScope);
 					}
 					return id;
 				}
-	
 	
 				function fillLayerBuffer(layerName){
 					if(!contextBuffers[layerName]){
@@ -634,7 +713,7 @@
 						}
 					}
 					var i = 0;
-					for(; i < batchSize || opts.readAll; i++){
+					for(; i < batchSize /*|| opts.readAll*/; i++){
 						if($this.needBreak){
 							throw new Error('Fetch broke');
 						}
@@ -667,7 +746,7 @@
 	
 				function findLayerRecord(layerName, rId){
 					while(true){
-						if(contextLayerDataMap[layerName] && JSB.isDefined(contextLayerDataMap[layerName][rId])){
+						if(contextLayerDataMap[layerName] && contextLayerDataMap[layerName][rId]){
 							return contextLayerDataMap[layerName][rId];
 						}
 						if(!fillLayerBuffer(layerName)){
@@ -731,7 +810,7 @@
 					return el;
 				}
 
-				for(var i = 0; i < batchSize || opts.readAll; i++){
+				for(var i = 0; i < batchSize /*|| opts.readAll*/; i++){
 					if($this.needBreak){
 						throw new Error('Fetch broke');
 					}
@@ -742,12 +821,12 @@
 					data.push(el);
 				}
 
-
 				// compress data
 				var encoded = {
 					layers: [],
 					data: [],
-					dict: []
+					dict: [],
+					widgetOpts: this.extendWidgetOpts(opts.widgetOpts)
 				};
 
 				var encMap = {};
@@ -776,15 +855,33 @@
 					}
 					encoded.data.push(cItem);
 				}
+
 				if($this.needBreak){
 					throw new Error('Fetch broke');
 				}
 				
 				return encoded;
-
 			} finally {
 				JSB.getLocker().unlock(mtx);
 			}
+		},
+
+		extendWidgetOpts: function(opts){
+		    var widgetOpts = {};
+
+		    if(!opts){
+		        return;
+		    }
+
+		    if(opts.styleScheme){
+                var valueSelector = new ValueSelector({
+                    values: { values: WorkspaceController.getWorkspace(opts.styleScheme.workspaceId).entry(opts.styleScheme.entryId).getStyles() }
+                });
+
+                widgetOpts.styleScheme = valueSelector.find('widgetSettings colorScheme').values();
+		    }
+
+		    return widgetOpts;
 		},
 		
 		executeQuery: function(sourceId, dashboard, opts){

@@ -13,6 +13,8 @@ package org.jsbeans.scripting;
 import org.jsbeans.messages.Message;
 import org.mozilla.javascript.Function;
 
+import java.security.AccessControlContext;
+import java.security.AccessController;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,21 +33,33 @@ public class ExecuteScriptMessage implements Message {
     private Map<String, Object> wrappedObjects = null;
     private boolean temporaryScope = false;
     private String user = null;
+    private AccessControlContext accessControlContext;
     private String clientRequestId = null;
 
+    public ExecuteScriptMessage() {
+        initAccessControl();
+    }
+
     public ExecuteScriptMessage(String script) {
+        this();
         this.scriptBody = script;
     }
 
     public ExecuteScriptMessage(String script, boolean async) {
+        this();
         this.scriptBody = script;
         this.async = async;
     }
 
     public ExecuteScriptMessage(String token, Function func, Object[] args) {
+        this();
         this.scriptable = func;
         this.token = token;
         this.args = args;
+    }
+
+    private void initAccessControl() {
+        this.accessControlContext = AccessController.getContext();
     }
     
     public void setPreserveScope(boolean b){
@@ -145,5 +159,9 @@ public class ExecuteScriptMessage implements Message {
 
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public AccessControlContext getAccessControlContext() {
+        return accessControlContext;
     }
 }

@@ -136,11 +136,20 @@
 	                editor: 'input',
 	                defaultValue: 50
 	            },
-	            valueFormat: {
-	                render: 'item',
+	            formatter: {
+	                render: 'formatter',
 	                name: 'Формат значения',
-	                optional: true,
-	                defaultValue: '0,0.[00]'
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Значение',
+                                type: 'number',
+                                value: 'y'
+                            }
+                        ]
+                    },
+                    valueType: 'string',
+                    defaultValue: '{y:,.0f}'
 	            },
 	            colColor: {
                     render: 'item',
@@ -196,7 +205,7 @@
 	    }
 	},
 	$client: {
-		$require: 'JSB.Numeral',
+		$require: 'JSB.Utils.Formatter',
 		widgets: [],
 		
 		$bootstrap: function(){
@@ -210,8 +219,6 @@
 			
 			this.addClass('progressBar');
 			this.loadCss('ProgressBar.css');
-			
-			Numeral.setLocale('ru');
 			
 			JSB.loadScript('tpl/d3/d3.min.js', function(){
 				$this.setInitialized();
@@ -246,7 +253,7 @@
 					minSelector: gArr[i].find('min'),
 					maxSelector: gArr[i].find('max'),
 					valSelector: gArr[i].find('val'),
-					valFormat: gArr[i].find('valueFormat'),
+					valFormat: gArr[i].find('formatter'),
 					colColor: gArr[i].find('colColor').value(),
 					colWidth: parseFloat(gArr[i].find('colWidth').value()),
 					trailColor: gArr[i].find('trailColor').value(),
@@ -261,11 +268,7 @@
 				if(gArr[i].find('textCss').checked()){
 					serieDesc.textCss = prepareCss(gArr[i].find('textCss cssStyle').value());
 				}
-				/*
-				if(gArr[i].find('textFormat').used()){
-					serieDesc.format = gArr[i].find('textFormat').value();
-				}
-				*/
+
 				series.push(serieDesc);
 			}
 
@@ -317,7 +320,7 @@
 						    format = d.valFormat.value();
 
 						if(JSB.isNumber(val) && format){
-							valStr = Numeral.format(val, format);
+							valStr = Formatter.format(format, {y: val});
 						}
 						widget.setText(valStr);
 						d3.select(this).select('.progressbar-text').attr('style', d.textCss);
@@ -359,7 +362,7 @@
 
 				var format = d.valFormat.value();
 				if(JSB.isNumber(val) && format){
-					val = Numeral.format(val, format);
+					val = Formatter.format(format, {y: val});
 				}
 				widget.setText('' + val);
 				

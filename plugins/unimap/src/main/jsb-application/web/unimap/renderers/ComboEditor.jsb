@@ -26,7 +26,10 @@
                 options: this._optionsList,
                 value: values.value,
                 onchange: function(val){
-                    values.value = val.key;
+                    $this.getSchemeController().updateCommonFields($this.getKey(), $this._scheme.commonField, val.key || val.value, values.value);
+
+                    values.key = val.key;
+                    values.value = val.key || val.value;
 
                     $this.onchange();
                 }
@@ -54,7 +57,11 @@
 	    },
 
 	    changeCommonGroup: function(values){
-	        //
+	        this.createOptionsList();
+
+	        for(var i = 0; i < this._editors.length; i++){
+	            this._editors[i].setOptions(this._optionsList, true);
+	        }
 	    },
 
 	    createOptionsList: function(linkToValue, commonGroupValues){

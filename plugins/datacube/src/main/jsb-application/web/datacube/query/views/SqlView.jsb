@@ -23,6 +23,10 @@
             return null;
 		},
 
+        getOriginalField: function(name) {
+            return null;
+		},
+
         getSql: function() {
             return $this.sql;
 		},

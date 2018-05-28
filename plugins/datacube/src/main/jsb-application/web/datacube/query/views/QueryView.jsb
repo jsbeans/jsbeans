@@ -65,6 +65,10 @@
 		},
 
         getField: function(field) {
+            return $this.getOriginalField(field);
+		},
+
+        getOriginalField: function(field) {
             var desc = $this.managedFields[field];
             return desc;
 		},
