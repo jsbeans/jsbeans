@@ -1622,8 +1622,8 @@
                         var fieldType = extractFieldType(exp.$field);
                         return fieldType;
                     } else {
-                        var outerQuery = queryByContext(query.$context);
-                        if (!outerQuery) throw new Error('Unknown query context ' + query.$context);
+                        var outerQuery = queryByContext(exp.$context);
+                        if (!outerQuery) throw new Error('Unknown query context ' + exp.$context);
                         var fieldType = $this.extractType(outerQuery.$select[exp.$field], outerQuery, cubeOrDataProvider, queryByContext);
                         return fieldType;
                     }

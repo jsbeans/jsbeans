@@ -10,16 +10,20 @@
             'java:java.util.HashMap'
         ],
 
-		$constructor: function(executionContext, typeon, leftCursor, createRightCursor){
-		    $base(executionContext);
+		$constructor: function(type, filter, leftCursor, createRightCursor){
+		    $base();
 
-		    $this.on = on;
+		    $this.filter = filter;
 		    $this.leftCursor = leftCursor;
 		    $this.createRightCursor = createRightCursor;
 		    $this.rightCursor = null;
-		    $this.type = 'outer'; // or inner
+		    $this.type = type || 'left outer'; // or inner
 
             $this._build();
+        },
+
+        _build: function(){
+		    $this.objects = [];
         },
 
         next: function(){
@@ -62,10 +66,6 @@
             return null;
         },
 
-        _build: function(){
-		    $this.objects = [];
-        },
-
         close: function(){
             if(!$this.leftCursor.closed) {
                 $this.leftCursor.close();
@@ -84,7 +84,7 @@
         },
 
         clone: function(){
-            return new $this.Class($this.executionContext, $this.on, $this.leftCursor.clone(), $this.createRightCursor);
+            return new $this.Class($this.filter, $this.type, $this.leftCursor.clone(), $this.createRightCursor);
         },
 	}
 }

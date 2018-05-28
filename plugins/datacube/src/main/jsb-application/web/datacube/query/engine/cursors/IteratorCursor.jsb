@@ -6,10 +6,10 @@
 		$require: [
         ],
 
-		$constructor: function(executionContext, createIterator){
-		    $base(executionContext);
+		$constructor: function(createIterator){
+		    $base();
 		    $this.createIterator = createIterator;
-		    $this.iterator = createIterator.call(executionContext);
+		    $this.iterator = createIterator.call();
         },
 
         next: function(){
@@ -24,11 +24,11 @@
         reset: function(){
             $this.object = null;
             $this.iterator && $this.iterator.close();
-            $this.iterator = createIterator.call(executionContext);
+            $this.iterator = createIterator.call();
         },
 
         clone: function(){
-            return new $this.Class($this.executionContext, $this.createIterator);
+            return new $this.Class($this.createIterator);
         },
 	}
 }

@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Transforms.EmbedFromBody',
+	$name: 'DataCube.Query.Transforms.EmbedCubeBody',
 	$parent: 'DataCube.Query.Transforms.Transformer',
 	$session: false,
 	$server: {

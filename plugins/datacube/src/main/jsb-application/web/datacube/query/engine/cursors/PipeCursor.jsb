@@ -7,7 +7,7 @@
         ],
 
 		$constructor: function(inputCursor){
-		    $base(inputCursor.executionContext);
+		    $base();
 		    $this.inputCursor = inputCursor;
         },
 
@@ -24,7 +24,7 @@
         },
 
         clone: function(){
-            $this.inputCursor.clone();
+            return new $this.Class($this.inputCursor.clone());
         },
 	}
 }

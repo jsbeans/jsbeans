@@ -46,11 +46,13 @@
                 return cubeView;
             }
 
+            var provIndexes = {};
             var leftView;
             // build unions view
             for(var p in $this.providers) {
                 if (($this.providers[p].getMode()||'union') == 'union') {
-                    var providerView = $this._buildDataProviderView("union_"+p+'_'+name, $this.providers[p], usedFields);
+                    var provName = 'DataProvider['+p+'#'+(provIndexes[p]=(provIndexes[p]||0)+1)+']:' + $this.providers[p].id;
+                    var providerView = $this._buildDataProviderView(provName, $this.providers[p], usedFields);
                     if (!leftView) {
                         if (unionsCount > 1) {
                             leftView = new UnionsView("unions_"+name);
@@ -68,12 +70,14 @@
             // build join views (note: providers already ordered)
             for(var p in $this.providers){
                 if (($this.providers[p].getMode()||'union') == 'join') {
-                    var providerView = $this._buildDataProviderView("join_"+p+'_'+name, $this.providers[p], usedFields);
+                    var provName = 'DataProvider['+p+'#'+(provIndexes[p]=(provIndexes[p]||0)+1)+']:' + $this.providers[p].id;
+                    var providerView = $this._buildDataProviderView(provName, $this.providers[p], usedFields);
 
                     if (!leftView) {
                         leftView = providerView;
                     } else {
-                        var joinView = new JoinView(name, leftView);
+                        var joinName = 'left outer join:(' + leftView.name + ') X (' + providerView.name + ')';
+                        var joinView = new JoinView(joinName, leftView, 'left outer');
                         joinView.usedFields = usedFields;
                         joinView.setRightView(providerView);
                         leftView = joinView;

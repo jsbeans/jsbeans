@@ -5,8 +5,7 @@
 		$require: [
         ],
 
-		$constructor: function(executionContext){
-		    $this.executionContext = executionContext;
+		$constructor: function(){
 		    $this.Class = JSB.get($this.getJsb().$name).getClass();
         },
 
@@ -27,6 +26,17 @@
         clone: function(){
             throw new Error('Not implemented');
         },
+
+		asIterator: function(){
+            return {
+                next: function() {
+                    return $this.next();
+                },
+                close: function(){
+                    $this.close();
+                },
+            };
+		},
 
 	}
 }

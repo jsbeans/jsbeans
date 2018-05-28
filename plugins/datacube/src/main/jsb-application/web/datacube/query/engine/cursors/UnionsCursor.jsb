@@ -10,8 +10,8 @@
             'java:java.util.HashMap'
         ],
 
-		$constructor: function(executionContext, unions, createCursor){
-		    $base(executionContext);
+		$constructor: function(unions, createCursor){
+		    $base();
 
 		    $this.unions = unions;
 		    $this.createCursor = createCursor;
@@ -60,7 +60,7 @@
         },
 
         clone: function(){
-            return new $this.Class($this.executionContext, $this.unions, $this.createCursor);
+            return new $this.Class($this.unions, $this.createCursor);
         },
 	}
 }

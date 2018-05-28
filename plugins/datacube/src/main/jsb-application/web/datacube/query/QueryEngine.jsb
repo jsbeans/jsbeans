@@ -16,6 +16,11 @@
 			var executor = new QueryExecutor($this, dataProvider || $this.cube, dcQuery, params);
             try {
                 var it = executor.execute();
+                var oldClose = it.close;
+                it.close = function(){
+                    oldClose.call(this);
+                    executor.destroy();
+                };
                 return it;
             } catch(e) {
                 executor.destroy();

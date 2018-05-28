@@ -37,6 +37,7 @@
 
 		getFromBody: function(){
 		    var from = {
+		        $context: $this.name,
 		        $union: [],
 		        $select: {},
 		    };

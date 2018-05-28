@@ -5,37 +5,44 @@
 	$server: {
 		$require: [
 		    'JSB.Crypt.MD5',
-		    'DataCube.Query.Engine.RuntimeFunctions',
-
-            'java:java.util.HashMap'
         ],
 
-		$constructor: function(executionContext){
-		    $base(executionContext);
-		    $this.query = executionContext.query;
-		    executionContext.JSB = JSB;
-		    executionContext.Common = RuntimeFunctions.Common;
-		    executionContext.Aggregate = RuntimeFunctions.Aggregate;
-		    executionContext.Operators = RuntimeFunctions.Operators;
-		    executionContext.HashMap = HashMap;
+		$constructor: function(query){
+		    $base();
+		    $this.query = query;
 
-		    // TODO: index reusable expressions
+		    // TODO: optimize: cache values of reusable expressions
 
-            $this._build();
         },
 
-        _build: function(){
+        build: function(){
+
+            /// build query source
+
+            if ($this.query.$from) {
+                if (JSB.isEqual({}, $this.query.$from)) {
+                    $this.source = builder.buildEmptyCursor(this);
+                } else {
+                    $this.source = builder.buildQueryCursor($this.query.$from, this);
+                }
+            } else if ($this.query.$union){
+                $this.source = builder.buildUnionCursor($this.query.$union, this);
+            } else if ($this.query.$join){
+                $this.source = builder.buildJoinCursor($this.query.$join, this);
+            }
+
+            /// build query body
+
+            // init
             $this.groups = {};
 
             $this.next = function(){
-                return $this.executionContext.source.cursor.next();
+                return $this.source.next();
             };
 
             $this.close = function(){
-                return $this.executionContext.source.cursor.close();
+                return $this.source.close();
             };
-
-            $this._buildFieldsFunctions();
 
             $this.query.$filter   && $this._buildFilter();
             $this.query.$select   && $this._buildProduce();
@@ -46,20 +53,21 @@
         },
 
         reset: function(){
-            if ($this.executionContext.source) {
-                $this.executionContext.source.cursor.close();
+            if ($this.source) {
+                $this.source.close();
             }
+            // TODO
             if ($this.executionContext.child) {
                 for(var c in $this.executionContext.child) {
                     $this.executionContext.child[c].cursor.close();
                 }
             }
 
-            $this._build();
+            $this.build();
         },
 
         clone: function(){
-            return new $this.Class($this.executionContext);
+            return new $this.Class($this);
         },
 
         _buildFilter: function(){

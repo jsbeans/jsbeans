@@ -3,10 +3,10 @@
 	$parent: 'DataCube.Query.Views.MultiView',
 
 	$server: {
-		$constructor: function(name, leftView){
+		$constructor: function(name, leftView, joinType){
 		    $base(name);
 		    $this.leftView = leftView;
-		    $this.joinType = 'left outer';
+		    $this.joinType = joinType;
 		},
 
 		setRightView: function(rightView) {
@@ -39,7 +39,7 @@
 
 		getFromBody: function(){
 		    var from = {
-		        $context : null,
+		        $context : $this.name,
                 $select: null,
                 $join: {
                     $joinType: $this.joinType,
@@ -51,7 +51,7 @@
 		    var left = from.$join.$left = $this.leftView.getFromBody();
 		    var right = from.$join.$right = $this.rightView.getFromBody();
 
-		    from.$context = $this.joinType + ' join:[' + left.$context + ' (X) ' + right.$context + ']';
+		    //from.$context = $this.joinType + ' join:[' + left.$context + ' (X) ' + right.$context + ']';
 		    var filter = from.$join.$filter = {$and:[]};
 		    var select = from.$select = {};
 

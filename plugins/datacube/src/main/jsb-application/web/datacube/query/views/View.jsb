@@ -22,6 +22,10 @@
 		    return $this.name;
 		},
 
+        isIsolated: function(){
+            return true;
+		},
+
 		visitInternalViews: function(visitor/**function visitor(view)*/) {
 		    visitor.call($this, $this);
 		},

@@ -6,8 +6,7 @@
 		$require: [
         ],
 
-		$constructor: function(executionContext){
-		    $base(executionContext);
+		$constructor: function(){
 		    $this._pos = -1;
         },
 
@@ -29,7 +28,7 @@
         },
 
         clone: function(){
-            return new $this.Class($this.executionContext);
+            return new $this.Class();
         },
 	}
 }

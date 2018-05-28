@@ -7,7 +7,8 @@
 		    'DataCube.Query.Transforms.QueryTransformer',
 //		    'DataCube.Query.Views.CubeViewsBuilder',
 		    'DataCube.Query.Views.QueryViewsBuilder',
-		    'DataCube.Query.Engine.ItBuilder',
+//		    'DataCube.Query.Engine.ItBuilder',
+		    'DataCube.Query.Engine.Cursors.CursorBuilder',
 
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
@@ -34,8 +35,6 @@
             } else {
                 $this.providers = [cubeOrDataProvider];
             }
-
-		    $this.contextQueries = QueryUtils.defineContextQueries($this.query);
 		},
 
 		execute: function(){
@@ -45,11 +44,17 @@
 //                $this._optimizeProviders();
 
                 $this._prepareQuery();
+		        $this.contextQueries = QueryUtils.defineContextQueries($this.query);
 
                 $this.profiler && $this.profiler.profile('query prepared', $this.preparedQuery);
 
-                var itBuilder = new ItBuilder($this);
-                var it = itBuilder.build();
+                var builder = new CursorBuilder($this);
+                var it = builder.build().asIterator();
+                var oldClose = it.close;
+                it.close = function(){
+                    oldClose.call(this);
+                    builder.destroy();
+                };
                 $this.profiler && $this.profiler.profile('built iterator', it);
 
                 return it;
@@ -77,59 +82,57 @@
 		    return $this.query = $this.preparedQuery = QueryTransformer.transform($this.query, $this.cube || $this.providers[0]);
 		},
 
+		_getProviderGroupKey: function (provider) {
+		    // store key for SQL or unique for other
+            return provider instanceof SqlTableDataProvider
+                ? provider.getJsb().$name + '/' + provider.getStore().getName()
+                : provider.id;
+        },
 
-//        /** Собирает в коллекцию только провайдеры куба, использующиеся в запросе
-//        */
-//		_optimizeProviders: function(){
-//            // optimize providers only for cube
-//		    if (!$this.cube) {
-//		        return;
-//		    }
-//
-//            $this.profiler && $this.profiler.profile('ordered providers', $this.providers);
-//
-//		    // collect used providers by name and all used cube fields
-//		    var providers = {}; // id: {provider, cubeFields}
-//		    QueryUtils.walkCubeFields(
-//		        $this.query, /**includeSubQueries=*/true, this.cube,
-//		        function (field, context, query, binding){
-//                    for (var i in binding) {
-//                        var id = binding[i].provider.id;
-//                        var prov = providers[id] = providers[id] || {
-//                            provider: binding[i].provider,
-//                            cubeFields: {}
-//                        };
-//                        var hasOtherBinding = binding.length > 1;
-//                        prov.cubeFields[field] = hasOtherBinding;
-//                    }
-//                }
-//            );
-//
-//		    /// NOTE в текущей версии все необходимые для пересечения провайдеры
-//		    /// должны использоваться в запросе - в будущем необходимо добавить
-//		    /// промежуточные провадеры, которые необходимы только для пересечения
-//		    /// используемых в запросе
-//
-//            // filter redundant providers
-//            QueryUtils.removeRedundantBindingProviders(providers, $this.cube);
-//
-//            // remove unused providers
-//            for(var i = 0; i < $this.providers.length; i++) {
-//                var provider = $this.providers[i];
-//                if (providers[provider.id]) {
-//                    providers[provider.id].matched = true;
-//                } else {
-//                    $this.providers.splice(i--, 1);
-//                    $this.profiler && $this.profiler.profile('data provider removed', provider.getName());
-//                }
-//            }
-//            $this.profiler && $this.profiler.profile('optimized data providers', providers);
-//
-//            for(var pid in providers) {
-//                if(!providers[pid].matched) {
-//                    throw new Error('QueryExecutor internal error: Unexpected DataProvider: ' + providers[pid].provider.getName());
-//                }
-//            }
-//		},
+        /** Объединяет провайдеры в группы по типам
+        */
+		_groupSameProviders: function(){
+		    var groupsMap = {/**key:[provider]*/}; //
+
+            for(var i = 0; i < $this.providers.length; i++) {
+                var provider = $this.providers[i];
+                var key = $this._getProviderGroupKey(provider);
+                groupsMap[key] = groupsMap[key] || [];
+                groupsMap[key].push(provider);
+            }
+		    var groups = []; // [[]]
+		    for (var k in groupsMap) if (groupsMap.hasOwnProperty(k)) {
+		        groups.push(groupsMap[k]);
+		    }
+		    return groups;
+		},
+
+		_createTranslator: function(providers) {
+            try {
+                var translator = TranslatorRegistry.newTranslator(providers, $this.cube || $this.queryEngine);
+                return translator.translatedQueryIterator(query, $this.params);
+            } finally {
+                if(translator) translator.close();
+            }
+		},
+
+		tryTranslateQuery: function(query) {
+		    var providersGroups = $this._groupSameProviders();
+            if (providersGroups.length == 1) {
+                if (TranslatorRegistry.hasTranslator($this.providers)) {
+                    try {
+                        var translator = TranslatorRegistry.newTranslator(
+                                $this.providers,
+                                $this.cube || $this.queryEngine
+                        );
+                        var it = translator.translatedQueryIterator(query, $this.params);
+                        return it;
+                    } finally {
+                        if(translator) translator.close();
+                    }
+                }
+            }
+            return null;
+		},
 	}
 }

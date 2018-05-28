@@ -7,7 +7,7 @@
         ],
 
 		$constructor: function(sourceCursor){
-		    $base(sourceCursor.executionContext);
+		    $base();
 
 		    $this.sourceCursor = sourceCursor;
 

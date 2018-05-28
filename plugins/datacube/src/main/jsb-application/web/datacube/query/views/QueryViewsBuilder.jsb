@@ -8,6 +8,8 @@
             'DataCube.Query.Views.CubeViewsBuilder',
 		    'DataCube.Query.Views.NothingView',
 		    'DataCube.Query.Views.QueryView',
+		    'DataCube.Query.Views.JoinView',
+		    'DataCube.Query.Views.UnionsView',
 		    'DataCube.Query.Views.SqlView',
         ],
 
@@ -64,19 +66,44 @@
 		},
 
 		_buildContextView: function(query, isValueQuery, isViewQuery) {
-debugger;
             if (query.$provider) {
-                // TODO:
-            } else if (query.$cube) {
-                // TODO:
+                var dataProvider = $this.cube.getProviderById(query.$provider);
+                QueryUtils.throwError(dataProvider, 'Undefined data provider {}', query.$provider);
+                var usedFields = query.$select;
+                var resultView = $this.cubeViewsBuilder._buildDataProviderView(query.$context, dataProvider, usedFields)
+                //var resultViewBody = resultView.getFromBody();
             } else if (query.$union) {
-                // TODO:
+                var resultView = new UnionsView("unions_"+name);
+                resultView.usedFields = query.$select;
+                for(var i = 0; i < query.$union.length; i++) {
+                    var innerView = $this.contextViews[query.$union[i].$context];
+                    QueryUtils.throwError(innerView, 'Undefined union inner view {}', query.$union[i].$context);
+                    resultView.addView(innerView);
+                }
             } else if (query.$join) {
-                // TODO:
+                var leftView = $this.contextViews[query.$join.$left.$context];
+                var rightView = $this.contextViews[query.$join.$right.$context];
+                QueryUtils.throwError(leftView, 'Undefined join left view {}', query.$join.$left.$context);
+                QueryUtils.throwError(rightView, 'Undefined join right view {}', query.$join.$right.$context);
+
+                var joinName = 'left outer join:(' + leftView.name + ') X (' + rightView.name + ')';;
+                var resultView = new JoinView(joinName, leftView, 'left outer');
+                resultView.usedFields = query.$select;
+                resultView.setRightView(rightView);
+            } else if (query.$cube) {
+                var query2 = JSB.merge({}, query, {$views: $this.query.$views});
+                var usedFields = {}; // TODO usedFields
+                //QueryUtils.extractUsedFields(query2, $this.cube || $this.directProvider);
+                var resultView = $this.cubeViewsBuilder.build(query.$context, usedFields);
+            } else {
+                var sourceView = $this.contextSourceViews[query.$context] = $this._buildContextSourceViews(query);
+                QueryUtils.throwError(sourceView, 'Undefined source view for {}', query.$context);
+                var resultView = $this._buildContextViews(query, sourceView);
+
             }
-		    var sourceView = $this.contextSourceViews[query.$context] = $this._buildContextSourceViews(query);
-		    var resultView = $this.contextViews[query.$context] = $this._buildContextViews(query, sourceView);
-		    if (!sourceView || !resultView) throw new Error('Internal error: result or source view for query is not defined');
+
+            QueryUtils.throwError(resultView, 'Undefined view {}', query.$context);
+            return $this.contextViews[query.$context] = resultView;
 		},
 
 		_buildContextSourceViews: function(query) {

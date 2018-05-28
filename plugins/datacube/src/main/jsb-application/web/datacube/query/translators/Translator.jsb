@@ -18,6 +18,9 @@
             } else {
                 this.queryEngine = cubeOrQueryEngine;
             }
+            this.translatorExecuteLazy = Config.has('datacube.queryengine.translatorExecuteLazy')
+                    ? Config.get('datacube.queryengine.translatorExecuteLazy')
+                    : true;
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
@@ -48,9 +51,14 @@
 		        return this.analyzeQuery(translatedQuery);
 		    } else {
 		        try {
-                    this.iterator = this.executeQuery(translatedQuery);
+                    this.iterator = $this.translatorExecuteLazy ? null : this.executeQuery(translatedQuery);
                     return {
                         next: function(){
+                            if (!$this.iterator) {
+                                QueryUtils.logDebug('\n[qid='+$this.dcQuery.$id+'] Executing SQL...');
+                                $this.iterator = $this.executeQuery(translatedQuery);
+                                QueryUtils.logDebug('\n[qid='+$this.dcQuery.$id+'] SQL executed');
+                            }
                             return $this.translateResult($this.iterator.next());
                         },
                         close:function(){
