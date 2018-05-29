@@ -88,11 +88,6 @@
         var wasUpdated = $base(key, scheme, values, opts),
             value;
 
-        // todo: test
-if(key === 'yAxis'){
-    debugger;
-}
-try{
         if(values.values[0]){
             value = values.values[0].value;
 
@@ -118,7 +113,7 @@ try{
                 }
             }
         } else {
-            value = Object.keys(scheme.items)[0];
+            value = scheme.items ? Object.keys(scheme.items)[0] : undefined;
 
             values.values[0] = {
                 items: {},
@@ -126,25 +121,22 @@ try{
             };
         }
 
-        for(var i in scheme.items[value].items){
-            if(!values.values[0].items[i] && scheme.items[value].items[i].render){
-                if(opts.removedValues[i]){   // move keys
-                    values.values[0].items[i] = opts.removedValues[i].shift();
-                } else {    // add keys
-                    values.values[0].items[i] = {};
+        if(scheme.items && value){
+            for(var i in scheme.items[value].items){
+                if(!values.values[0].items[i] && scheme.items[value].items[i].render){
+                    if(opts.removedValues[i]){   // move keys
+                        values.values[0].items[i] = opts.removedValues[i].shift();
+                    } else {    // add keys
+                        values.values[0].items[i] = {};
 
-                    this.getRenderByName(scheme.items[value].items[i].render).updateValues(i, scheme.items[value].items[i], values.values[0].items[i], opts);
+                        this.getRenderByName(scheme.items[value].items[i].render).updateValues(i, scheme.items[value].items[i], values.values[0].items[i], opts);
+                    }
+
+                    wasUpdated = true;
                 }
-
-                wasUpdated = true;
             }
         }
-}catch(e){
-    var k = key,
-        val = values,
-        sch = scheme;
-    debugger;
-}
+
         return wasUpdated;
     }
 }

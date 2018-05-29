@@ -306,8 +306,7 @@
 				this.context[ctxName] = new ValueSelector({
 				    context: ctxName,
 				    values: JSB.clone(this.values),
-				    bootstrap: 'Datacube.Unimap.Bootstrap',
-				    scheme: this.widgetEntry.extractWidgetScheme()
+				    bootstrap: 'Datacube.Unimap.Bootstrap'
 				});
 			}
 

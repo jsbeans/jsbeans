@@ -27,13 +27,12 @@
             itemsKeys = Object.keys(schemePart.items),
             value = {};
 
-        this.createDefaultValues(this.getKey(), schemePart, value);
+        this.createDefaultValues(this.getKey(), schemePart, value, {linkedFields: {}});
 
         this._values.push(value);
 
         if(itemsKeys.length > 1){
-debugger;
-            return this.getRenderByName(this.getRenderName()).getInstance({selector: value});
+            return this.getRenderByName(this.getRenderName()).getInstance({selector: value, schemePath: this._schemePath + ".items." + itemsKeys[0]});
         } else {
             return this.getRenderByName(schemePart.items[itemsKeys[0]]).getInstance({key: itemsKeys[0], selector: value, schemePath: this._schemePath + '.items.' + itemsKeys[0]});
         }

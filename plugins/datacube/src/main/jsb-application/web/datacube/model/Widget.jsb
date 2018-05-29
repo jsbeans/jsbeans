@@ -80,7 +80,7 @@
 
 		$constructor: function(id, workspace, dashboard, name, wType, values){
 			$base(id, workspace);
-JSB.getLogger().info('Widget ID: ' + id);
+
             var valueSelector = new ValueSelector({
                 bootstrap: 'Datacube.Unimap.Bootstrap'
             });
