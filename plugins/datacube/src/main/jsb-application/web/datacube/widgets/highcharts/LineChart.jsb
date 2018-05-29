@@ -410,7 +410,7 @@
                                 var left = axis.chart.plotLeft + ((lastTick + 1) * tickWidth),
                                     label = axis.ticks[i].label,
                                     newX = left + (((axis.ticks[i].pos - lastTick) / 2) * tickWidth),
-                                    x = newX - label ? label.xy.x : 0;
+                                    x = newX - (label ? label.xy.x : 0);
 
                                 label && label.attr({
                                     translateX: x,
