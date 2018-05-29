@@ -70,6 +70,8 @@
 
                     this._editors.push(editor);
                     break;
+                case 'scheme':
+                	break;
                 case 'select':
                 default:
                     var editor = new Select({
@@ -148,29 +150,27 @@
 	        this._dataList = [];
 	        this._bindingsInfo = {};
 
-            function parseArray(array, parent){
-                var list = [];
-
-                for(var i in array.arrayType.record){
-                    var item = {
-                        key: (parent ? parent + '.' : '') + i,
-                        value: $this.$('<div class="sliceRender">' + i + '</div>')
-                    };
-
-                    if(array.arrayType.record[i].type === 'array' && array.arrayType.record[i].arrayType.type === 'object'){
-                        item.child = parseArray(array.arrayType.record[i], (parent ? parent + '.' : '') + i);
-                    }
-
-                    $this._bindingsInfo[(parent ? parent + '.' : '') + i] = array.arrayType.record[i];
-
-                    list.push(item);
-                }
-
-                return list;
-            }
-
-            if(values.values[0].binding){
-                this._dataList = parseArray(values.values[0].binding);
+	        function collectFields(desc, items, path){
+	        	if(desc.type == 'array'){
+	        		collectFields(desc.arrayType, items, path);
+	        	} else if(desc.type == 'object'){
+	        		for(var f in desc.record){
+	        			var rf = desc.record[f];
+	        			var curPath = (path ? path + '.' : '') + f;
+	        			var item = {
+                            key: curPath,
+                            value: $this.$('<div class="sliceRender">' + f + '</div>'),
+                            child: []
+                        };
+	        			$this._bindingsInfo[curPath] = JSB.merge({field: f}, rf);
+	        			items.push(item);
+	        			collectFields(rf, item.child, curPath);
+	        		}
+	        	}
+	        }
+	        
+            if(values.values && values.values.length > 0 && values.values[0].binding){
+            	collectFields(values.values[0].binding, this._dataList, '')
             }
 	    },
 

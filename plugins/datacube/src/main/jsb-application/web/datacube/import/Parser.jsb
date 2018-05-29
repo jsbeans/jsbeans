@@ -56,11 +56,12 @@
 	    	                                        name: 'Название столбца',
 	    		        							render: 'item'
 	    	        							},
-/*	    	        							field: {
+	    	        							field: {
 	        	                                    name: 'Поле',
 	        	                                	render: 'dataBinding',
+	        	                                	editor: 'scheme',
 	        	                                    linkTo: 'structure'
-	    	        							}*/
+	    	        							}
 	    	        						}
 	    	        					},
 	    	        					storeVariable: {
@@ -84,14 +85,15 @@
 	    	        						items: {
 	    	        							varAlias: {
 	    	                                        name: 'Название переменной',
-	    		        							render: 'item',
+	    		        							render: 'comboEditor',
 	    		        							commonField: 'vars'
 	    	        							},
-/*	    	        							field: {
+	    	        							field: {
 	        	                                    name: 'Поле',
 	        	                                	render: 'dataBinding',
+	        	                                	editor: 'scheme',
 	        	                                    linkTo: 'structure'
-	    	        							}*/
+	    	        							}
 	    	        						}
 	    	        					}
 	        						}
