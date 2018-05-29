@@ -32,8 +32,8 @@
         this._values.push(value);
 
         if(itemsKeys.length > 1){
-            // todo: test
-            // return this.getRenderByName(this.getRenderName()).getInstance({selector: value});
+debugger;
+            return this.getRenderByName(this.getRenderName()).getInstance({selector: value});
         } else {
             return this.getRenderByName(schemePart.items[itemsKeys[0]]).getInstance({key: itemsKeys[0], selector: value, schemePath: this._schemePath + '.items.' + itemsKeys[0]});
         }

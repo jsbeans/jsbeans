@@ -89,7 +89,10 @@
             value;
 
         // todo: test
-
+if(key === 'yAxis'){
+    debugger;
+}
+try{
         if(values.values[0]){
             value = values.values[0].value;
 
@@ -136,7 +139,12 @@
                 wasUpdated = true;
             }
         }
-
+}catch(e){
+    var k = key,
+        val = values,
+        sch = scheme;
+    debugger;
+}
         return wasUpdated;
     }
 }
