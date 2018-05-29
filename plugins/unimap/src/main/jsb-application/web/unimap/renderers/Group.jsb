@@ -49,14 +49,25 @@
 	        this.createDescription(name);
 
 	        if(this._scheme.optional){
+	            var content = this.group.find('.content'),
+	                toolbar = this.group.find('.header ul');
+
 	            this.addClass('optional');
 
 	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
+
+	            if(!this._values.checked){
+	                content.addClass('hidden');
+	                toolbar.addClass('hidden');
+	            }
 
 	            this.checkBox = new Checkbox({
 	                checked: this._values.checked,
 	                onchange: function(b){
 	                    $this._values.checked = b;
+
+	                    content.toggleClass('hidden');
+	                    toolbar.toggleClass('hidden');
 	                }
 	            });
 	            this.group.prepend(this.checkBox);
