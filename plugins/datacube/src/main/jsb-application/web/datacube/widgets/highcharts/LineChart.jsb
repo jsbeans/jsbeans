@@ -329,7 +329,7 @@
                         var xAxisIndividualCats = [];
 
                         for(var i = 0; i < xAxisIndividual.length; i++){
-                            xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]);
+                            xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]) || [];
                         }
 
                         for(var j = 0; j < xAxisIndividualCats[0].length; j++){
@@ -410,9 +410,9 @@
                                 var left = axis.chart.plotLeft + ((lastTick + 1) * tickWidth),
                                     label = axis.ticks[i].label,
                                     newX = left + (((axis.ticks[i].pos - lastTick) / 2) * tickWidth),
-                                    x = newX - label.xy.x;
+                                    x = newX - label ? label.xy.x : 0;
 
-                                label.attr({
+                                label && label.attr({
                                     translateX: x,
                                     translateY: 0
                                 });
@@ -477,9 +477,9 @@
                     var chartOpts = {
                         chart: {
                             events: {
-          	                    load: function () {
+          	                    load: function(){
                                     centerLabels(this);
-                                }, resize: function () {
+                                }, resize: function(){
                                     centerLabels(this);
                                 }
                             }
