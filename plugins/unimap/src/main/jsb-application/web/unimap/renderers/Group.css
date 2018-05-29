@@ -14,8 +14,12 @@
 
 .groupRender > .jsb-panel > .content > .multipleItem {
     position: relative;
-    padding: 0 16px;
-    border-bottom: 2px solid lightgray;
+    padding: 0 16px 0 0;
+	border-bottom: 1px dotted #d6d4d4;
+}
+
+.groupRender > .jsb-panel > .content.ui-sortable > .multipleItem {
+	padding: 0 16px 0 16px;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem > .btnDelete {
@@ -66,7 +70,6 @@
 
 .groupRender > .jsb-panel > .content > .multipleItem > .groupRender > .jsb-panel {
     border: none;
-    padding-left: 2px;
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel {
@@ -76,10 +79,12 @@
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header {
 	font-size: 11px;
+	border-bottom: 1px dotted #d6d4d4;
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header > ul > li:not(first-child) {
 	margin-left: 2px;
+	margin-right: 2px;
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header > h1 {
@@ -89,5 +94,9 @@
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .content {
     border-top: none;
-    padding-left: 8px;
+    padding-left: 16px;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .content.ui-sortable {
+	padding-left: 0;
 }

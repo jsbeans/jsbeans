@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector'],
 	$client: {
 	    _editors: [],
 	    _errorList: [],
@@ -70,10 +70,8 @@
 
                     this._editors.push(editor);
                     break;
-                case 'scheme':
-                	break;
                 case 'select':
-                default:
+                
                     var editor = new Select({
                         clearBtn: !this._scheme.multiple,
                         cloneOptions: true,
@@ -103,6 +101,39 @@
                         }
                     });
                     this._editors.push(editor);
+                    break;
+                case 'scheme':
+                default:
+                	var editor = new SchemeSelector({
+                		items: this._dataList,
+                		value: values.value,
+                		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
+                		onChange: function(key, val){
+                            if(val && JSB.isDefined(val.key)){
+                            	values.value = val.key;
+                                values.binding = val.key;
+                                values.bindingType = $this._bindingsInfo[val.key].type;
+                            } else {
+                            	values.value = undefined;
+                                values.binding = undefined;
+                                values.bindingType = undefined;
+                            }
+
+                            var errIndex = $this._errorList.indexOf(itemIndex);
+                            if(errIndex > -1){
+                                $this._errorList.splice(errIndex, 1);
+
+                                if($this._errorList.length === 0){
+                                    $this.hideError();
+                                }
+                            }
+
+                            $this.onchange();
+                		}
+                	});
+                	this._editors.push(editor);
+                	break;
+
             }
 
 	        if(this._scheme.multiple){
@@ -151,18 +182,29 @@
 	        this._bindingsInfo = {};
 
 	        function collectFields(desc, items, path){
+	        	if(!desc){
+	        		return;
+	        	}
 	        	if(desc.type == 'array'){
 	        		collectFields(desc.arrayType, items, path);
 	        	} else if(desc.type == 'object'){
-	        		for(var f in desc.record){
+	        		var fieldArr = Object.keys(desc.record);
+	        		fieldArr.sort(function(a, b){
+	        			return a.toLowerCase().localeCompare(b.toLowerCase());
+	        		});
+	        		for(var i = 0; i < fieldArr.length; i++){
+	        			var f = fieldArr[i];
 	        			var rf = desc.record[f];
 	        			var curPath = (path ? path + '.' : '') + f;
+	        			var schemeRef = JSB.merge({field: f}, rf);
 	        			var item = {
                             key: curPath,
                             value: $this.$('<div class="sliceRender">' + f + '</div>'),
-                            child: []
+                            child: [],
+                            scheme: schemeRef,
+                            parent: parent
                         };
-	        			$this._bindingsInfo[curPath] = JSB.merge({field: f}, rf);
+	        			$this._bindingsInfo[curPath] = schemeRef;
 	        			items.push(item);
 	        			collectFields(rf, item.child, curPath);
 	        		}

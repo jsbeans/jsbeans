@@ -1,10 +1,9 @@
-.jsb-scrollBox{
+.jsb-scrollBox {
     height: 100%;
     width: 100%;
     max-height: inherit;
     max-width: inherit;
 	overflow: auto;
-	padding-right: 3px;
 }
 
 /* IE, Edge & Firefox not support -webkit-scrollbar */

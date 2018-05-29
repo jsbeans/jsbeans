@@ -6,6 +6,7 @@
 		parserSettings: {
 			render: 'group',
 	        name: 'Настройки парсера',
+	        collapsable: false,
 	        items: {}
 		},
 		
@@ -16,13 +17,14 @@
 		tablesSettings: {
 			render: 'group',
 	        name: 'Настройки таблиц',
+	        collapsable: false,
 	        
 	        multiple: {
                 createDefault: false,
                 uniqueNames: true
             },
 	        items: {
-	        	tableSettings: {
+	        	tables: {
 	        		render: 'group',
 	        		name: 'Таблица',
 	        		editableName: true,
@@ -39,63 +41,98 @@
 	        					}
 	        				}
 	        			},
-	        			actions: {
+	        			columns: {
 	        				render: 'group',
 	        				multiple: true,
-	        				name: 'Последовательность действий',
+	        				collapsable: false,
+	        				name: 'Столбцы',
 	        				items: {
-	        					action: {
-	        						render: 'select',
-	        						name: 'Операция',
+	        					columnAlias: {
+                                    name: 'Столбец',
+        							render: 'item'
+    							},
+    							field: {
+                                    name: 'Поле',
+                                	render: 'dataBinding',
+                                	editor: 'scheme',
+                                	selectNodes: false,
+                                    linkTo: 'structure'
+    							},
+	        					transforms: {
+	        						render: 'group',
+	        						multiple: true,
+	        						collapsable: false,
+	        						name: 'Преобразования',
 	        						items: {
-	    	        					storeField: {
-	    	        						name: 'Сохранить поле',
-	    	        						render: 'group',
-	    	        						items: {
-	    	        							columnAlias: {
-	    	                                        name: 'Название столбца',
-	    		        							render: 'item'
+	        							transform: {
+	        								render: 'select',
+	        								name: 'Операция',
+	        								items: {
+	        									convertType: {
+	    	        								render: 'group',
+	    	        								name: 'Преобразовать тип',
+	    	        								items: {
+	    	        									resultType: {
+	    	        										render: 'select',
+	    	        										name: 'Привести к типу',
+	    	        										items: {
+	    	        											ctString: {
+	    	    	        										name: 'string',
+	    	    	        									},
+	    	    	        									ctInteger: {
+	    	    	        										name: 'integer',
+	    	    	        									},
+	    	    	        									ctFloat: {
+	    	    	        										name: 'float',
+	    	    	        									},
+	    	    	        									ctBoolean: {
+	    	    	        										name: 'boolean',
+	    	    	        									},
+	    	    	        									ctDate: {
+	    	    	        										name: 'date',
+	    	    	        									}		
+	    	        										}
+	    	        									}
+	    	        									
+	    	        								}
 	    	        							},
-	    	        							field: {
-	        	                                    name: 'Поле',
-	        	                                	render: 'dataBinding',
-	        	                                	editor: 'scheme',
-	        	                                    linkTo: 'structure'
+	    	        							scriptExpression: {
+	    	        								render: 'group',
+	    	        								name: 'Скриптовое выражение',
+	    	        								items: {
+	    	        									variables: {
+	    	        										render: 'group',
+	    	        										name: 'Переменные',
+	    	        										multiple: true,
+	    	        										items: {
+	    	        											varField: {
+	    	        												name: 'Поле',
+	    	    	        	                                	render: 'dataBinding',
+	    	    	        	                                	editor: 'scheme',
+	    	    	        	                                	selectNodes: false,
+	    	    	        	                                    linkTo: 'structure'
+	    	        											},
+	    	        											varName: {
+	    	        												name: 'Название',
+	    	        												render: 'item',
+	    	        												commonField: 'vars'
+	    	        											}
+	    	        										}
+	    	        									},
+	    	        									expression: {
+	    	        										name: 'Шаблон выражения',
+	    	        										render: 'item',
+	    	        										editor: 'JSB.Widgets.MultiEditor',
+	    	        	                                    editorOpts: {
+	    	        	                                        valueType: 'org.jsbeans.types.JavaScript'
+	    	        	                                    },
+	    	        	                                    value: 'this.value'
+	    	        									}
+	    	        								}
 	    	        							}
-	    	        						}
-	    	        					},
-	    	        					storeVariable: {
-	    	        						name: 'Сохранить переменную',
-	    	        						render: 'group',
-	    	        						items: {
-	    	        							varRef: {
-	    	                                        name: 'Переменная',
-	    		        							render: 'select',
-	    		        							commonField: 'vars'
-	    	        							},
-	    	        							columnAlias: {
-	    	                                        name: 'Название столбца',
-	    		        							render: 'item'
-	    	        							}
-	    	        						}
-	    	        					},
-	    	        					copyToVariable: {
-	    	        						name: 'Загрузить в переменную',
-	    	        						render: 'group',
-	    	        						items: {
-	    	        							varAlias: {
-	    	                                        name: 'Название переменной',
-	    		        							render: 'comboEditor',
-	    		        							commonField: 'vars'
-	    	        							},
-	    	        							field: {
-	        	                                    name: 'Поле',
-	        	                                	render: 'dataBinding',
-	        	                                	editor: 'scheme',
-	        	                                    linkTo: 'structure'
-	    	        							}
-	    	        						}
-	    	        					}
+	        								}
+	        							}
+	        							
 	        						}
 	        					}
 	        				}

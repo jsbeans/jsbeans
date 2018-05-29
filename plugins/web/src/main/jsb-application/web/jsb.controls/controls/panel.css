@@ -65,11 +65,9 @@
 }
 
 .jsb-panel > .header > ul.left {
-    margin-right: 4px;
 }
 
 .jsb-panel > .header > ul.right {
-    margin-left: 4px;
 }
 
 .jsb-panel > .header > ul > li {
@@ -81,6 +79,7 @@
 
 .jsb-panel > .header > ul > li:not(first-child) {
     margin-left: 5px;
+    margin-right: 3px;
 }
 
 .jsb-panel > .header > ul > li > i {
