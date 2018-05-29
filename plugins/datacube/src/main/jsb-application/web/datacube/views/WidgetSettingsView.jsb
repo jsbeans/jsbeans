@@ -43,7 +43,7 @@
             
             var splitBox = new SplitBox({
 				type: 'vertical',
-				position: 0.5
+				position: 0.33
 			});
 			this.append(splitBox);
 
