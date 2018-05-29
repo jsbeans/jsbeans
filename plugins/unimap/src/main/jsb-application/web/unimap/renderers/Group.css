@@ -12,18 +12,20 @@
     margin-left: 22px;
 }
 
-.groupRender > .jsb-panel > .content > .multipleItem.sortable {
-    position: relative;
-    padding: 0 16px 0 0;
+.groupRender > .jsb-panel > .content > .multipleItem {
+	position: relative;
+	padding-right: 16px;
 	border-bottom: 1px dotted #d6d4d4;
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem.sortable {
+    padding: 0 16px 0 0;
 }
 
 .groupRender > .jsb-panel > .content.ui-sortable > .multipleItem {
 	padding: 0 16px 0 16px;
 }
 
-.groupRender > .jsb-panel > .content > .multipleItem {
-}
 
 .groupRender > .jsb-panel > .content > .multipleItem > .btnDelete {
     position: absolute;

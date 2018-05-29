@@ -203,24 +203,14 @@
 
 		},
 		
-		analyze: function(){
-			try {
-				var parser = Peg.generate(this.jsonGrammar);
-				var obj = Peg.parseStream(parser, this.stream);
-			} catch(e){
-				if(e != 'Break'){
-					throw e;
-				}
-			} finally {
-				this.stream.close();	
-			}
-			
-//			var struct = this.getStruct();
-//			JSB.getLogger().debug(JSON.stringify(struct, null, 4));
+		execute: function(){
+			var parser = Peg.generate(this.jsonGrammar);
+			Peg.parseStream(parser, this.stream);
+		},
+		
+		prepare: function(){
+			// do additional operations
 			var isMultiTable = this.context.find('multiTable').checked();
-			
-			// construct table values
-			
 		}
 	}
 }

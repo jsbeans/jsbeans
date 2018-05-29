@@ -63,6 +63,7 @@
 	        						render: 'group',
 	        						multiple: true,
 	        						collapsable: false,
+	        						optional: true,
 	        						name: 'Преобразования',
 	        						items: {
 	        							transform: {
@@ -105,6 +106,8 @@
 	    	        										render: 'group',
 	    	        										name: 'Переменные',
 	    	        										multiple: true,
+	    	        										collapsable: false,
+	    	        										sortable: false,
 	    	        										items: {
 	    	        											varField: {
 	    	        												name: 'Поле',
@@ -148,6 +151,7 @@
 		entry: null,
 		context: null,
 		
+		mode: null,
 		struct: null,
 		structScope: null,
 		structScopeType: null,
@@ -173,8 +177,12 @@
 			this.context = context;
 		},
 		
-		analyze: function(){
-			throw new Error('This method should be overriden');
+		isAnalyzing: function(){
+			return this.mode == 0;
+		},
+		
+		isParsing: function(){
+			return this.mode == 1;
 		},
 		
 		getStruct: function(){
@@ -311,6 +319,21 @@
 				throw new Error('Unexpected structure type: ' + this.structScopeType);
 			}
 			
+		},
+		
+		execute: function(){
+			throw new Error('This method should be overriden');
+		},
+		
+		analyze: function(){
+			this.mode = 0;	// analyze mode
+			this.execute();
+		},
+
+		
+		parse: function(rowCallback){
+			this.mode = 1; // parse mode
+			this.execute();
 		}
 	}
 }

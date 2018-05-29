@@ -94,6 +94,8 @@
 
 .itemRender > .multipleContainer > .btnMultiple {
     vertical-align: middle;
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
 
 .itemRender > .item > .multiEditor {
