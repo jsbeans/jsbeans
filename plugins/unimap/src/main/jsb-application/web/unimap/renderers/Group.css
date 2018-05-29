@@ -83,7 +83,6 @@
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header {
 	font-size: 11px;
-	border-bottom: 1px dotted #d6d4d4;
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header > ul > li:not(first-child) {
@@ -97,7 +96,8 @@
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .content {
-    border-top: none;
+    border-top: 1px dotted #d6d4d4;
+    margin-top: 2px;
     padding-left: 16px;
 }
 
