@@ -18,6 +18,7 @@
 			render: 'group',
 	        name: 'Настройки таблиц',
 	        collapsable: false,
+	        sortable: false,
 	        
 	        multiple: {
                 createDefault: false,
