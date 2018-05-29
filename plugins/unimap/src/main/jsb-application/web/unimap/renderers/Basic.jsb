@@ -4,6 +4,7 @@
 	$require: ['Unimap.Controller'],
     $client: {
         _basicOpts: {},
+        _defaultSchemeOpts: {},
 
         $constructor: function(opts){
             $base(opts);
@@ -11,7 +12,7 @@
             this.loadCss('Basic.css');
 
             this._key = opts.key;
-            this._scheme = opts.scheme;
+            this._scheme = JSB.merge(true, this._defaultSchemeOpts, opts.scheme);
             this._values = opts.values;
             this._schemeController = opts.schemeController;
 

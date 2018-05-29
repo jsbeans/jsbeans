@@ -12,10 +12,14 @@
     margin-left: 22px;
 }
 
-.groupRender > .jsb-panel > .content > .multipleItem {
+.groupRender > .jsb-panel > .content > .multipleItem.sortable {
     position: relative;
     padding: 0 16px;
     border-bottom: 2px solid lightgray;
+}
+
+.groupRender > .jsb-panel > .content > .multipleItem {
+    padding: 0 8px;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem > .btnDelete {

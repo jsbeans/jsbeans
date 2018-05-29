@@ -3,6 +3,10 @@
 	$parent: 'Unimap.Render.Basic',
 	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
 	$client: {
+	    _defaultSchemeOpts: {
+	        sortable: true
+	    },
+
 	    construct: function(opts){
 	        this.addClass('groupRender');
 	        this.loadCss('Group.css');
@@ -59,12 +63,14 @@
 	        }
 
 	        if(this._scheme.multiple){
-                this.group.elements.content.sortable({
-                    handle: '.sortableHandle',
-                    update: function(){
-                        $this.reorderValues();
-                    }
-                });
+	            if(this._scheme.sortable){
+                    this.group.elements.content.sortable({
+                        handle: '.sortableHandle',
+                        update: function(){
+                            $this.reorderValues();
+                        }
+                    });
+	            }
 
 	            this.multipleBtn = this.$('<i class="btn btnMultiple fas fa-plus-circle"></i>');
 	            this.multipleBtn.click(function(){
@@ -126,13 +132,17 @@
 
 	            item.attr('idx', itemIndex);
 
-	            item.append(`#dot
-                    <div class="sortableHandle">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                `);
+	            if(this._scheme.sortable){
+	                item.addClass('sortable');
+
+                    item.append(`#dot
+                        <div class="sortableHandle">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    `);
+                }
 
                 for(var i in this._scheme.items){
                     if(!this._scheme.items[i].render){
