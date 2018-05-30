@@ -108,7 +108,7 @@
                 column: {
                     render: 'group',
                     name: 'Тип "Колонки"',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
                     items: {
                         groupPadding: {

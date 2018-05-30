@@ -5,7 +5,7 @@
         xAxis: {
 	        render: 'group',
 	        name: 'Ось Х',
-            collapsable: true,
+            collapsible: true,
             items: {
                 xAxisDate: {
                     render: 'dataBinding',
@@ -15,7 +15,7 @@
                 labels: {
                     render: 'group',
                     name: 'Подписи',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         enabled: {
                             render: 'item',
@@ -66,7 +66,7 @@
                 title: {
                     render: 'group',
                     name: 'Заголовок оси',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         text: {
                             render: 'item',
@@ -188,7 +188,7 @@
         rangeSelector: {
 	        render: 'group',
 	        name: 'Селектор диапазона',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
@@ -245,7 +245,7 @@
                 buttonSettings: {
                     render: 'group',
                     name: 'Настройки кнопок',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         allButtonsEnabled: {
                             render: 'item',
@@ -290,7 +290,7 @@
                             render: 'group',
                             name: 'Кнопки',
                             multiple: true,
-                            collapsable: true,
+                            collapsible: true,
                             collapsed: true,
                             items: {
                                 type: {
@@ -446,7 +446,7 @@
                         buttonTheme: {
                             render: 'group',
                             name: 'Стиль кнопок',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 height: {
                                     render: 'item',
@@ -473,7 +473,7 @@
                 inputSettings: {
                     render: 'group',
                     name: 'Настройки полей ввода',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         inputEnabled: {
                             render: 'item',

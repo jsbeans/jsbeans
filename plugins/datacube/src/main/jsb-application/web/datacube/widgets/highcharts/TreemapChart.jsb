@@ -12,13 +12,13 @@
         series: {
 	        render: 'group',
 	        name: 'Серии',
-            collapsable: true,
+            collapsible: true,
             multiple: true,
             items: {
                 seriesItem: {
                     render: 'group',
                     name: 'Серия',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         name: {
                             render: 'dataBinding',
@@ -102,7 +102,7 @@
                 treemap: {
                     render: 'group',
                     name: 'Карта дерева',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
                     items: {
                         layoutAlgorithm: {

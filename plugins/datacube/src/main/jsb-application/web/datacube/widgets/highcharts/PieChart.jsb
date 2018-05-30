@@ -37,7 +37,7 @@
                         dataLabels: {
                             render: 'group',
                             name: 'Подпись',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 color: {
                                     render: 'item',
@@ -59,7 +59,7 @@
         settings: {
 	        render: 'group',
 	        name: 'Общие настройки',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 unionSeries: {
@@ -94,13 +94,13 @@
 	            pie: {
                     render: 'group',
                     name: 'Тип "Круговая диаграмма"',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
 	                items: {
 	                    dataLabels: {
                             render: 'group',
                             name: 'Подписи',
-                            collapsable: true,
+                            collapsible: true,
 	                        items: {
 	                            connectorColor: {
                                     render: 'item',

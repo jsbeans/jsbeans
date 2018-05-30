@@ -72,13 +72,13 @@
         plotOptions: {
 	        render: 'group',
 	        name: 'Опции точек',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 series: {
                     render: 'group',
                     name: 'Общие',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
                     items: {
                         dataGrouping: {

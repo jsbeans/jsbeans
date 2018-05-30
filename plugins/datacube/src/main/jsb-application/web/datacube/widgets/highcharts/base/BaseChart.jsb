@@ -17,13 +17,13 @@
 	    series: {
 	        render: 'group',
 	        name: 'Серии',
-            collapsable: true,
+            collapsible: true,
             multiple: true,
             items: {
                 seriesItem: {
                     render: 'group',
                     name: 'Серия',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         seriesName: {
                             render: 'namesBinding',
@@ -40,7 +40,7 @@
                         tooltip: {
                             render: 'group',
                             name: 'Всплывающая подсказка',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 valueDecimals: {
                                     render: 'item',
@@ -101,7 +101,7 @@
 	    chart: {
 	        render: 'group',
 	        name: 'Настройки диаграммы',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 animation: {
@@ -132,7 +132,7 @@
 	    header: {
 	        render: 'group',
 	        name: 'Заголовок',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 text: {
@@ -216,7 +216,7 @@
 	    legend: {
 	        render: 'group',
 	        name: 'Легенда',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
@@ -321,7 +321,7 @@
                 itemStyle: {
                     render: 'group',
                     name: 'Стиль подписей',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         color: {
                             render: 'item',
@@ -393,7 +393,7 @@
 	    mainTooltip: {
 	        render: 'group',
 	        name: 'Всплывающая подсказка',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
@@ -574,13 +574,13 @@
         plotOptions: {
 	        render: 'group',
 	        name: 'Опции точек',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 series: {
                     render: 'group',
                     name: 'Общие',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
                     items: {
                         stacking: {
@@ -601,7 +601,7 @@
                         dataLabels: {
                             render: 'group',
                             name: 'Подписи',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 enabled: {
                                     render: 'item',
@@ -707,7 +707,7 @@
                                 style: {
                                     render: 'group',
                                     name: 'Стиль подписей',
-                                    collapsable: true,
+                                    collapsible: true,
                                     items: {
                                         color: {
                                             render: 'item',
@@ -769,7 +769,7 @@
 	    credits: {
 	        render: 'group',
 	        name: 'Авторская подпись',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
