@@ -108,7 +108,7 @@
                 column: {
                     render: 'group',
                     name: 'Тип "Колонки"',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
                     items: {
                         groupPadding: {
@@ -329,11 +329,12 @@
                         var xAxisIndividualCats = [];
 
                         for(var i = 0; i < xAxisIndividual.length; i++){
-                            xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]) || [];
+                            xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]);
                         }
-
-                        for(var j = 0; j < xAxisIndividualCats[0].length; j++){
-                            xAxisIndividual[0][xAxisIndividualCats[0][j]].x = j;
+                        if(xAxisIndividualCats[0]){
+                            for(var j = 0; j < xAxisIndividualCats[0].length; j++){
+                                xAxisIndividual[0][xAxisIndividualCats[0][j]].x = j;
+                            }
                         }
 
                         xAxisIndividualCats.sort();

@@ -31,7 +31,7 @@
     display: inline-block;
 }
 
-.jsb-panel > .header > h1.collapsable {
+.jsb-panel > .header > h1.collapsible {
     cursor: pointer;
 }
 

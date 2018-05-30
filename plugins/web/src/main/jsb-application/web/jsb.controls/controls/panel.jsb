@@ -45,7 +45,7 @@
             }
 
             if(this.options.collapseBtn){
-            	this.addClass('collapsable');
+            	this.addClass('collapsible');
                 var cl = 'fas fa-chevron-up';
                 if(this.options.collapsed){
                 	this.addClass('collapsed');
@@ -60,7 +60,7 @@
                 });
 
                 var title = this.elements.header.find('h1');
-                title.addClass('collapsable');
+                title.addClass('collapsible');
                 title.click(function(){
                     $this.togglePanel();
                 });

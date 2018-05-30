@@ -9,10 +9,11 @@
 
 .groupRender.optional > .jsb-panel > .header {
     display: inline-block;
+    margin-left: 4px;
 }
 
-.groupRender.optional > .jsb-panel > .header > ul.hidden + h1 {
-    margin-left: 4px;
+.groupRender.optional > .jsb-panel > .header > h1 {
+    cursor: pointer;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem {

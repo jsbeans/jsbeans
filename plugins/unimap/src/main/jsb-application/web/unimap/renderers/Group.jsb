@@ -17,7 +17,7 @@
 	        	toolbarPosition: 'left',
 	            title: this._values.name,
 	            titleEditBtn: this._scheme.editableName,
-                collapseBtn: this._scheme.collapsable,
+                collapseBtn: this._scheme.optional ? false : this._scheme.collapsible,
                 collapsed: this._scheme.collapsed,
                 titleValidateFunction: function(val){
                     var parent = $this.getParent();
@@ -49,8 +49,7 @@
 	        this.createDescription(name);
 
 	        if(this._scheme.optional){
-	            var content = this.group.find('.content'),
-	                toolbar = this.group.find('.header ul');
+	            var content = this.group.find('.content');
 
 	            this.addClass('optional');
 
@@ -58,7 +57,6 @@
 
 	            if(!this._values.checked){
 	                content.addClass('hidden');
-	                toolbar.addClass('hidden');
 	            }
 
 	            this.checkBox = new Checkbox({
@@ -67,10 +65,13 @@
 	                    $this._values.checked = b;
 
 	                    content.toggleClass('hidden');
-	                    toolbar.toggleClass('hidden');
 	                }
 	            });
 	            this.group.prepend(this.checkBox);
+
+	            name.click(function(){
+	                $this.checkBox.toggleChecked();
+	            });
 	        }
 
 	        if(this._scheme.multiple){

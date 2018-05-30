@@ -16,7 +16,7 @@
         regions: {
          render: 'group',
          name: 'Регионы',
-         collapsable: true,
+         collapsible: true,
          multiple: true,
          items: {
              item: {
@@ -99,6 +99,46 @@
                                          }
                                     }
                                  }
+                             },
+                             moscowAO: {
+                                name: 'Москва. Административные округа',
+                                items: {
+                                    compareTo: {
+                                        render: 'select',
+                                        name: 'Сопоставление по',
+                                        items: {
+                                            NAME: {
+                                                name: 'Имя'
+                                            },
+                                            OKATO: {
+                                                name: 'Код ОКАТО'
+                                            },
+                                            ABBREV: {
+                                                name: 'Аббревиатура'
+                                            }
+                                        }
+                                    }
+                                }
+                             },
+                             moscowMO: {
+                                name: 'Москва. Муниципальные образования',
+                                items: {
+                                    compareTo: {
+                                        render: 'select',
+                                        name: 'Сопоставление по',
+                                        items: {
+                                            NAME: {
+                                                name: 'Имя'
+                                            },
+                                            OKATO: {
+                                                name: 'Код ОКАТО'
+                                            },
+                                            OKTMO: {
+                                                name: 'Код OKTMO'
+                                            }
+                                        }
+                                    }
+                                }
                              }
                          }
                      },
@@ -252,7 +292,7 @@
         markers: {
             render: 'group',
             name: 'Маркеры',
-            collapsable: true,
+            collapsible: true,
             multiple: true,
             items: {
                 item: {
@@ -517,7 +557,7 @@
         settings: {
             render: 'group',
             name: 'Общие настройки',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 formatter: {
@@ -831,6 +871,18 @@
                                         data: null,
                                         path: 'geojson/russianRegionsMPTTopojson.json',
                                         type: 'TopoJSON'
+                                    }));
+                                    break;
+                                case 'moscowAO':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/moscowAO.json'
+                                    }));
+                                    break;
+                                case 'moscowMO':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/moscowMO.json'
                                     }));
                                     break;
                             }
