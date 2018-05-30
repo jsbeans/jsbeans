@@ -6,7 +6,7 @@
 		parserSettings: {
 			render: 'group',
 	        name: 'Парсер',
-	        collapsable: false,
+	        collapsible: false,
 	        items: {}
 		},
 		
@@ -17,7 +17,7 @@
 		tablesSettings: {
 			render: 'group',
 	        name: 'Таблицы',
-	        collapsable: false,
+	        collapsible: false,
 	        sortable: false,
 	        
 	        multiple: {
@@ -45,7 +45,7 @@
 	        			columns: {
 	        				render: 'group',
 	        				multiple: true,
-	        				collapsable: false,
+	        				collapsible: false,
 	        				name: 'Столбцы',
 	        				items: {
 	        					columnAlias: {
@@ -68,7 +68,7 @@
 	        					transforms: {
 	        						render: 'group',
 	        						multiple: true,
-	        						collapsable: false,
+	        						collapsible: false,
 	        						optional: true,
 	        						name: 'Выполнить преобразование данных',
 	        						items: {
