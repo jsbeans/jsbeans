@@ -83,7 +83,6 @@
 }
 
 .widgetSettingsView > ._dwp_splitbox > ._dwp_splitPane {
-	padding: 2px;
 }
 
 .widgetSettingsView .schemeBlock,
@@ -93,7 +92,11 @@
 }
 
 .widgetSettingsView .schemeBlock {
-    padding: 0 6px;
+    padding: 2px;
+}
+
+.widgetSettingsView .schemeBlock > .jsb-scrollBox {
+	padding: 4px;
 }
 
 .widgetSettingsView .widgetBlock {

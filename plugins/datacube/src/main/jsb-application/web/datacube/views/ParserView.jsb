@@ -167,7 +167,9 @@
 		updatePreview: function(){
 			// TODO: perform validation
 			
-			ParserManager.server().executePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues());
+			ParserManager.server().executePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues(), function(){
+				debugger;
+			});
 		},
 /*
 		applySettings: function(){

@@ -3,6 +3,10 @@
     overflow: visible;
 }
 
+.groupRender > .jsb-panel > .jsb-checkbox {
+	margin-right: 3px;
+}
+
 .groupRender.optional > .jsb-panel > .header {
     display: inline-block;
 }
