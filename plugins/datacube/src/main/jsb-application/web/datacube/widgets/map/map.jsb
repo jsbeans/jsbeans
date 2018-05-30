@@ -637,6 +637,43 @@
                  }
              }
          }
+        },
+        header: {
+	        render: 'group',
+	        name: 'Заголовок',
+            collapsible: true,
+            collapsed: true,
+            items: {
+                text: {
+                    render: 'item',
+                    name: 'Текст',
+                    valueType: 'string',
+                    defaultValue: ''
+                },
+                fontColor: {
+                    render: 'item',
+                    name: 'Цвет шрифта',
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#333333'
+                },
+                fontSize: {
+                    render: 'item',
+                    name: 'Размер шрифта',
+                    valueType: 'number',
+                    defaultValue: 18
+                },
+                x: {
+                    render: 'item',
+                    name: 'X',
+                    valueType: 'number'
+                },
+                y: {
+                    render: 'item',
+                    name: 'Y',
+                    valueType: 'number',
+                    defaultValue: 10
+                }
+            }
         }
     },
     $client: {
@@ -647,6 +684,9 @@
 
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);
+
+            this._widgetElements.header = this.$('<span class="header"></span>');
+            this.append(this._widgetElements.header);
 
             this.addClass('mapWidget');
             this.loadCss('map.css');
@@ -690,6 +730,10 @@
         },
         _legends: [],
         _styles: null,
+        _widgetElements: {
+            header: null,
+            map: null
+        },
 
         refresh: function(opts){
             // if filter source is current widget
@@ -774,6 +818,16 @@
 
             try{
                 if(!this._styles){
+                    // set header
+                    /*********/
+                    var headerContext = this.getContext().find('header');
+                    this._widgetElements.header.text(headerContext.find('text').value());
+                    this._widgetElements.header.css('color', headerContext.find('fontColor').value());
+                    this._widgetElements.header.css('font-size', headerContext.find('fontSize').value());
+                    this._widgetElements.header.css('left', this._isDefined(headerContext.find('x').value(), 'calc(50% - ' + (this._widgetElements.header.width() / 2) + 'px)'));
+                    this._widgetElements.header.css('top', headerContext.find('y').value());
+                    /*********/
+
                     this._styles = {
                         regions: [],
                         markers: [],
@@ -1853,6 +1907,10 @@
             }
 
             list.width(max + 25);
+        },
+
+        _isDefined: function(val, def){
+            return JSB.isDefined(val) ? val : def;
         },
 
         findRegion: function(region, array){
