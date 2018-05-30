@@ -59,7 +59,7 @@
 			return supported;
 		},
 		
-		runStructureAnalyzing: function(entry, parser, values){
+		createParser: function(entry, parser, values){
 			if(!this.parsers[parser]){
 				throw new Error('Failed to find parser: ' + parser);
 			}
@@ -69,18 +69,54 @@
 				bootstrap: bootstrap,
 				values: values
 			});
-			var pInst = new pJsbClass(entry, valSel);
+			return new pJsbClass(entry, valSel);
+		},
+		
+		runStructureAnalyzing: function(entry, parser, values){
+			var pInst = this.createParser(entry, parser, values);
 			JSB.defer(function(){
 				JSB.getLogger().debug('Analyzing structure for: ' + entry.getName());
 				entry.property('status', 1);
-				pInst.analyze();
-				var struct = pInst.getStruct();
-				entry.property('structure', struct);
-				entry.property('status', 0);
-				JSB.getLogger().debug('Analysis complete for: ' + entry.getName() + ': ' + JSON.stringify(struct, null, 4));
-				$this.client().onAnalysisComplete(entry, struct, {});
+				var struct = null;
+				try {
+					try {
+						pInst.analyze();
+					} catch(e){
+						if(e != 'Break'){
+							throw e;
+						}
+					}
+					struct = pInst.getStruct();
+					pInst.prepare();
+					
+					entry.property('structure', struct);
+					entry.property('status', 0);
+					JSB.getLogger().debug('Analysis complete for: ' + entry.getName() + ': ' + JSON.stringify(struct, null, 4));
+					$this.client().onAnalysisComplete(entry, struct, {});
+				} finally {
+					pInst.destroy();
+				}
 			}, 0);
 			return pInst;
+		},
+		
+		executePreview: function(entry, parser, values){
+			var pInst = this.createParser(entry, parser, values);
+			try {
+				try {
+					pInst.parse(function(tableDesc, rowData){
+						debugger;
+					});
+				} catch(e){
+					if(e != 'Break'){
+						throw e;
+					}
+				} 
+				
+				// combine tables
+			} finally {
+				pInst.destroy();
+			}
 		}
 	}
 }

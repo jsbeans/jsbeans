@@ -48,7 +48,7 @@
         }
     },
 
-    findAll: function(){
+    findAll: function(key, values){
         var res = this.find(key, values, true);
 
         if(!JSB.isDefined(res)){
