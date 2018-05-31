@@ -43,5 +43,8 @@
     },{
         name: 'autocompleteGroup',
         render: 'Unimap.ValueSelectors.Group'
-    }],
+    },{
+        name: 'formatter',
+        render: 'Datacube.ValueSelectors.Formatter'
+    }]
 }

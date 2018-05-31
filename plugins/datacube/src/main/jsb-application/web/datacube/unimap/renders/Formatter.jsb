@@ -173,7 +173,7 @@
 
                 this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ');
 	        } else {
-	            //
+	            this._values.values[0].baseValue = (this._values.basicSettings.prefix + ' {' + this._values.basicSettings.value + (this._values.basicSettings.typeSettings ? this._values.basicSettings.typeSettings.formatPart : '') + '} ' + this._values.basicSettings.suffix).trim();
             }
 
             this.onchange();
@@ -356,22 +356,23 @@
 
 	    // +
 	    createBasicSettings: function(){
-	        if(!this._values.basicSettings){
-	            this._values.basicSettings = {
+	        if(!this._values.values[0].basicSettings){
+	            this._values.values[0].basicSettings = {
 	                prefix: '',
 	                suffix: '',
-	                type: this._scheme.formatterOpts.basicSettings.type
+	                type: this._scheme.formatterOpts.basicSettings.type,
+	                value: this._scheme.formatterOpts.basicSettings.value
 	            }
 	        }
 
-	        var typeSettings = this.createTypeSettings(this._values.basicSettings);
+	        var typeSettings = this.createTypeSettings(this._values.values[0].basicSettings);
 	        this._basicSettings.append(typeSettings);
 
 	        var prefixLabel = this.$('<label class="label">Префикс</label>');
             var prefix = new Editor({
-                value: this._values.basicSettings.prefix,
+                value: this._values.values[0].basicSettings.prefix,
                 onchange: function(val){
-                    $this._values.basicSettings.prefix = val;
+                    $this._values.values[0].basicSettings.prefix = val;
 
                     $this.changeValue();
                 }
@@ -381,9 +382,9 @@
 
             var suffixLabel = this.$('<label class="label">Суффикс</label>');
             var suffix = new Editor({
-                value: this._values.basicSettings.suffix,
+                value: this._values.values[0].basicSettings.suffix,
                 onchange: function(val){
-                    $this._values.basicSettings.suffix = val;
+                    $this._values.values[0].basicSettings.suffix = val;
 
                     $this.changeValue();
                 }
@@ -424,7 +425,7 @@
 	        this._advancedSettings.append('<h3>Формат</h3>');
 
 	        this._editBlock = this.$('<div class="editBlock" contenteditable></div>');
-	        editBlock.keyup(function(evt){
+	        this._editBlock.keyup(function(evt){
 	            $this.changeEvent();
 	        });
 	        this._advancedSettings.append(this._editBlock);
@@ -542,6 +543,8 @@
 	                settingsItem.append(dateLabel);
 	                this._beans.push(dateFormat);
                     break;
+                default:
+                    delete variable.typeSettings;
 	        }
 
 	        return settingsItem;

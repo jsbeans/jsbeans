@@ -30,7 +30,7 @@
 
 .formatter > .basicSettings,
 .formatter > .advancedSettings {
-    margin-left: 10px;
+    margin: 5px 0 0 10px;
 }
 
 .formatter > .basicSettings > .label {
