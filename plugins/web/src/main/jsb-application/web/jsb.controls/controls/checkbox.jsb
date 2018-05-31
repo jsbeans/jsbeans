@@ -62,7 +62,7 @@
 			return this.options.enabled;
 		},
 
-		setChecked: function(b, dontNotify){
+		setChecked: function(b, hideEvent){
 			this.find('> .check-elem > input').prop('checked', b);
 
 			if(b){
@@ -73,8 +73,27 @@
 
 			this.enableContents(b);
 
-			if(this.options.onchange && !dontNotify){
+			if(this.options.onchange && !hideEvent){
 				this.options.onchange.call(this, b);
+			}
+		},
+
+		toggleChecked: function(hideEvent){
+		    var input = this.find('> .check-elem > input'),
+		        checked = input.prop('checked');
+
+            input.prop('checked', !checked);
+
+			if(!checked){
+			    this.find('> .check-elem').addClass('checked');
+			} else {
+			    this.find('> .check-elem').removeClass('checked');
+			}
+
+			this.enableContents(!checked);
+
+			if(this.options.onchange && !hideEvent){
+				this.options.onchange.call(this, !checked);
 			}
 		},
 

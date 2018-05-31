@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector'],
 	$client: {
 	    _editors: [],
 	    _errorList: [],
@@ -71,7 +71,7 @@
                     this._editors.push(editor);
                     break;
                 case 'select':
-                default:
+                
                     var editor = new Select({
                         clearBtn: !this._scheme.multiple,
                         cloneOptions: true,
@@ -101,6 +101,39 @@
                         }
                     });
                     this._editors.push(editor);
+                    break;
+                case 'scheme':
+                default:
+                	var editor = new SchemeSelector({
+                		items: this._dataList,
+                		value: values.value,
+                		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
+                		onChange: function(key, val){
+                            if(val && JSB.isDefined(val.key)){
+                            	values.value = val.key;
+                                values.binding = val.key;
+                                values.bindingType = $this._bindingsInfo[val.key].type;
+                            } else {
+                            	values.value = undefined;
+                                values.binding = undefined;
+                                values.bindingType = undefined;
+                            }
+
+                            var errIndex = $this._errorList.indexOf(itemIndex);
+                            if(errIndex > -1){
+                                $this._errorList.splice(errIndex, 1);
+
+                                if($this._errorList.length === 0){
+                                    $this.hideError();
+                                }
+                            }
+
+                            $this.onchange();
+                		}
+                	});
+                	this._editors.push(editor);
+                	break;
+
             }
 
 	        if(this._scheme.multiple){
@@ -148,29 +181,38 @@
 	        this._dataList = [];
 	        this._bindingsInfo = {};
 
-            function parseArray(array, parent){
-                var list = [];
-
-                for(var i in array.arrayType.record){
-                    var item = {
-                        key: (parent ? parent + '.' : '') + i,
-                        value: $this.$('<div class="sliceRender">' + i + '</div>')
-                    };
-
-                    if(array.arrayType.record[i].type === 'array' && array.arrayType.record[i].arrayType.type === 'object'){
-                        item.child = parseArray(array.arrayType.record[i], (parent ? parent + '.' : '') + i);
-                    }
-
-                    $this._bindingsInfo[(parent ? parent + '.' : '') + i] = array.arrayType.record[i];
-
-                    list.push(item);
-                }
-
-                return list;
-            }
-
-            if(values.values[0].binding){
-                this._dataList = parseArray(values.values[0].binding);
+	        function collectFields(desc, items, path){
+	        	if(!desc){
+	        		return;
+	        	}
+	        	if(desc.type == 'array'){
+	        		collectFields(desc.arrayType, items, path);
+	        	} else if(desc.type == 'object'){
+	        		var fieldArr = Object.keys(desc.record);
+	        		fieldArr.sort(function(a, b){
+	        			return a.toLowerCase().localeCompare(b.toLowerCase());
+	        		});
+	        		for(var i = 0; i < fieldArr.length; i++){
+	        			var f = fieldArr[i];
+	        			var rf = desc.record[f];
+	        			var curPath = (path ? path + '.' : '') + f;
+	        			var schemeRef = JSB.merge({field: f}, rf);
+	        			var item = {
+                            key: curPath,
+                            value: $this.$('<div class="sliceRender">' + f + '</div>'),
+                            child: [],
+                            scheme: schemeRef,
+                            parent: parent
+                        };
+	        			$this._bindingsInfo[curPath] = schemeRef;
+	        			items.push(item);
+	        			collectFields(rf, item.child, curPath);
+	        		}
+	        	}
+	        }
+	        
+            if(values.values && values.values.length > 0 && values.values[0].binding){
+            	collectFields(values.values[0].binding, this._dataList, '')
             }
 	    },
 

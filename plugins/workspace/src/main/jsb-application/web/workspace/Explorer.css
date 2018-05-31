@@ -61,7 +61,11 @@
     left: 0;
     right: 0;
     height: auto;
-    padding: 2px 2px 2px 4px;
+    padding: 2px;
+}
+
+.workspaceExplorer > ._dwp_treeview > .jsb-scrollBox {
+	padding: 2px;
 }
 
 .workspaceExplorer > ._dwp_treeview ._dwp_treeViewContainer > ._dwp_treeViewNode {

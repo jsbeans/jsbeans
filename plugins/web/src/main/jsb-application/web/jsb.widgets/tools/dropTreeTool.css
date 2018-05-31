@@ -9,11 +9,16 @@
 }
 
 ._dwp_dropTreeTool {
-	max-height: 300px;
-	max-width: 600px;
 }
 
 ._dwp_dropTreeTool ._dwp_treeview {
-	padding: 2px;
+	margin: 2px;
+	width: auto;
+    height: auto;
+    max-height: 300px;
+	max-width: 600px;
+    
 }
 
+._dwp_dropTreeTool ._dwp_treeview > .jsb-scrollBox {
+}

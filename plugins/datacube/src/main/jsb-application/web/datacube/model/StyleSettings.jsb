@@ -9,7 +9,7 @@
 	    widgetSettings: {
 	        render: 'group',
 	        name: 'Параметры виджета',
-	        collapsable: true,
+	        collapsible: true,
 	        items: {
 	            colorScheme: {
 	                render: 'item',

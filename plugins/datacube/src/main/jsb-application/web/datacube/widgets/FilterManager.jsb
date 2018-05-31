@@ -4,7 +4,6 @@
 	
 	$client: {
 		owner: null,
-		filterBySource: {},
 		filters: {},
 		filterArr: [],
 		
@@ -18,7 +17,6 @@
 		},
 		
 		clear: function(){
-			this.filterBySource = {};
 			this.filters = {};
 			this.filterArr = [];
 			this.publish('DataCube.filterChanged');
@@ -29,40 +27,8 @@
 			return MD5.md5('' + f) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5('' + fItem.value);
 		},
 		
-		addFilterItem: function(sourceId, fDesc){
-			var itemId = this.constructFilterId(fDesc);
-			if(!$this.filterBySource[sourceId]){
-				$this.filterBySource[sourceId] = {};
-			}
-			if($this.filterBySource[sourceId][itemId]){
-				return false; 
-			}
-
-			$this.filterBySource[sourceId][itemId] = {
-				id: itemId,
-				type: fDesc.type,
-				field: fDesc.field,
-				cubeField: fDesc.cubeField,
-				value: fDesc.value,
-				op: fDesc.op
-			}
-			
-			if(!$this.filters[itemId]){
-				$this.filters[itemId] = $this.filterBySource[sourceId][itemId];
-				$this.filterArr.push($this.filters[itemId]);
-			}
-			
-			return true;
-		},
-		
 		removeFilter: function(itemId, dontPublish){
 			var pfCount = Object.keys($this.filters).length;
-			// remove from sources
-			for(var srcId in $this.filterBySource){
-				if($this.filterBySource[srcId][itemId]){
-					delete $this.filterBySource[srcId][itemId];
-				}
-			}
 			
 			// remove from filters
 			if($this.filters[itemId]){
@@ -81,7 +47,7 @@
 			}
 		},
 		
-		clearFilters: function(initiator){
+		clearFilters: function(){
 			var filtersIds = Object.keys($this.filters);
 			for(var i = 0; i < filtersIds.length; i++){
 				$this.removeFilter(filtersIds[i], true);
@@ -89,7 +55,6 @@
 		},
 		
 		hasFilter: function(fDesc){
-			this.translateFilter(fDesc);
 			var fId = this.constructFilterId(fDesc);
 			if($this.filters[fId]){
 				return fId;
@@ -97,39 +62,47 @@
 			return false;
 		},
 		
-		translateFilter: function(fDesc){
+		translateFilter: function(fDesc, source){
+			var newDesc = JSB.clone(fDesc);
 			// translate local fields into cube fields
-			if(JSB.isInstanceOf(fDesc.source, 'DataCube.Model.Slice')){
+			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
 				function extractCubeField(rValue){
 					if(JSB.isString(rValue)){
 						return rValue;
 					} else if(JSB.isObject(rValue)){
-						if(JSB.isDefined(rValue.$field) && JSB.isString(rValue.$field)){
-							return rValue.$field;
+						var d = ['$field','$first','$last','$any'];
+						for(var i = 0; i < d.length; i++){
+							if(JSB.isDefined(rValue[d[i]]) && JSB.isString(rValue[d[i]])){
+								return rValue[d[i]];
+							}
 						}
 						return null;
 					} else {
 						return null;
 					}
 				}
-				var q = fDesc.source.getQuery();
-				if(q.$select && q.$select[fDesc.field]){
-					var cubeField = extractCubeField(q.$select[fDesc.field]);
+				var q = source.getQuery();
+				if(q.$select && q.$select[newDesc.field]){
+					var cubeField = extractCubeField(q.$select[newDesc.field]);
 					if(cubeField){
-						fDesc.cubeField = cubeField;
+						newDesc.cubeField = cubeField;
+						newDesc.cubeId = source.getCube().getId();
 					} else {
-						fDesc.boundTo = fDesc.sourceId;
+						newDesc.boundTo = source.getId();
 					}
 				}
 			} else {
-				fDesc.boundTo = fDesc.sourceId;
+				throw new Error('Unknown source type: ' + source.getJsb().$name);
 			}
+			return newDesc;
 		},
 		
-		addFilter: function(fDesc, sourceArr, initiator){
+		addFilter: function(fDesc){
             // create new filters
-			this.translateFilter(fDesc);
-			var fId = this.constructFilterId(fDesc);
+			var itemId = this.constructFilterId(fDesc);
+			if($this.filters[itemId]){
+				return itemId;
+			}
 
 			// check filter conflicts
             var f;
@@ -184,29 +157,36 @@
                 }
             }
 			
-			var bNeedRefresh = false;
-			for(var i = 0; i < sourceArr.length; i++){
-				if($this.addFilterItem(sourceArr[i], fDesc)){
-					bNeedRefresh = true;
-				}
-			}
-			if(bNeedRefresh){
-				this.publish('DataCube.filterChanged');
-			}
-			return fId;
+			$this.filters[itemId] = {
+				id: itemId,
+				type: fDesc.type,
+				field: fDesc.field,
+				cubeField: fDesc.cubeField,
+				boundTo: fDesc.boundTo,
+				value: fDesc.value,
+				op: fDesc.op
+			};
+			$this.filterArr.push($this.filters[itemId]);
+			
+			$this.publish('DataCube.filterChanged');
+
+			return itemId;
 		},
 		
-		localizeFilter: function(source){
+		getFiltersBySource: function(source){
 			var sourceId = source.getId();
-			var filters = this.filterBySource[sourceId];
-			if(!filters || Object.keys(filters).length == 0){
-				return null;
+			var srcFilters = {};
+			for(var fItemId in this.filters){
+				var fDesc = this.filters[fItemId];
+				if(!fDesc.boundTo || fDesc.boundTo == sourceId){
+					srcFilters[fItemId] = JSB.clone(fDesc);
+				}
 			}
-			return filters;
+			return srcFilters;
 		},
 		
 		constructFilterBySource: function(source){
-			return this.constructFilterByLocal(this.localizeFilter(source), source);
+			return this.constructFilterByLocal(this.getFiltersBySource(source), source);
 		},
 		
 		constructFilterByLocal: function(filters, source){

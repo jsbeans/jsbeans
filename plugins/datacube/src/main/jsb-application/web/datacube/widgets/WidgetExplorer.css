@@ -1,7 +1,11 @@
 @CHARSET "UTF-8";
 
 .widgetExplorer {
-	padding: 4px 2px 2px 4px;
+	padding: 2px;
+}
+
+.widgetExplorer > .jsb-scrollBox {
+	padding: 2px;
 }
 
 .widgetExplorer ._dwp_groupBox[category] {

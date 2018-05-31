@@ -17,19 +17,21 @@
 }
 
 .sourceBindingRender > .item.ui-droppable {
-    width: 200px;
+	height: 26px;
     background: rgba(24, 108, 138, 0.2);
 	
     border: 1px dotted rgba(2, 47, 78, 0.2);
     border-radius: 4px;
-    padding: 5px 7px 6px 6px;
+    padding: 2px 4px;
     font-size: 15px;
     text-align: center;
 	color: #000;
 }
 
 .sourceBindingRender > .item.ui-droppable:not(.filled) {
-	color: #6d8898;
+	color: #5a7682;
+    font-size: 11px;
+    padding-top: 5px;
 }
 
 .sourceBindingRender > .item.ui-droppable > .jsb-editor > input {

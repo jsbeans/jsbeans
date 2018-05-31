@@ -3,20 +3,33 @@
     overflow: visible;
 }
 
-.groupRender.optional > .jsb-panel > .jsb-checkbox{
-    position: absolute;
-    top: 18px;
+.groupRender > .jsb-panel > .jsb-checkbox {
+	margin-right: 3px;
 }
 
-.groupRender.optional > .jsb-panel > .header h1 {
-    margin-left: 22px;
+.groupRender.optional > .jsb-panel > .header {
+    display: inline-block;
+    margin-left: 4px;
+}
+
+.groupRender.optional > .jsb-panel > .header > h1 {
+    cursor: pointer;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem {
-    position: relative;
-    padding: 0 16px;
-    border-bottom: 2px solid lightgray;
+	position: relative;
+	padding-right: 16px;
+	border-bottom: 1px dotted #d6d4d4;
 }
+
+.groupRender > .jsb-panel > .content > .multipleItem.sortable {
+    padding: 0 16px 0 0;
+}
+
+.groupRender > .jsb-panel > .content.ui-sortable > .multipleItem {
+	padding: 0 16px 0 16px;
+}
+
 
 .groupRender > .jsb-panel > .content > .multipleItem > .btnDelete {
     position: absolute;
@@ -66,14 +79,33 @@
 
 .groupRender > .jsb-panel > .content > .multipleItem > .groupRender > .jsb-panel {
     border: none;
-    padding-left: 2px;
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel {
     border: none;
+    padding: 0;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header {
+	font-size: 11px;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header > ul > li:not(first-child) {
+	margin-left: 2px;
+	margin-right: 2px;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .header > h1 {
+	margin: 0;
+	font-size: 16px;
 }
 
 .groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .content {
-    border-top: none;
-    padding-left: 5px;
+    border-top: 1px dotted #d6d4d4;
+    margin-top: 2px;
+    padding-left: 16px;
+}
+
+.groupRender > .jsb-panel > .content .groupRender > .jsb-panel > .content.ui-sortable {
+	padding-left: 0;
 }

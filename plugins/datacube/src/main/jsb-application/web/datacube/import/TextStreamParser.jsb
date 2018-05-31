@@ -40,5 +40,10 @@
 				charset: charset
 			})
 		},
+		
+		destroy: function(){
+			this.stream.close();
+			$base();
+		}
 	}
 }

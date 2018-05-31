@@ -25,7 +25,7 @@
 
             this.saveBtn = new Button({
                 cssClass: "btnOk",
-                caption: "Сохранить",
+                caption: "Сохранить настройки",
                 onClick: function(){
                     $this.applySettings();
                 }
@@ -36,14 +36,14 @@
                 cssClass: "btnUpdate",
                 caption: "Обновить",
                 onClick: function(){
-                    $this.setChanges(true);
+                    $this.updatePreview();
                 }
             });
             this.titleBlock.append(this.saveBtn.getElement());
             
             var splitBox = new SplitBox({
 				type: 'vertical',
-				position: 0.3
+				position: 0.33
 			});
 			this.append(splitBox);
 
@@ -65,6 +65,13 @@
 	        
 	        this.subscribe('Unimap.Render.ParserSourceBinding.analyze', function(sender, msg, params){
 	        	$this.extractStructure(sender);
+	        });
+	        
+	        this.subscribe('ParserManager.analysisComplete', function(sender, msg, params){
+	        	if(params.entry != $this.entry){
+	        		return;
+	        	}
+	        	$this.applyValues(params.struct, params.values);
 	        });
 		},
 
@@ -150,6 +157,19 @@
 		extractStructure: function(parserBinding){
 			ParserManager.server().runStructureAnalyzing($this.entry, $this.currentParser, $this.schemeRenderer.getValues());
 			
+		},
+		
+		applyValues: function(struct, values){
+			debugger;
+			$this.schemeRenderer.findRenderByKey('structure').setScheme(struct);
+		},
+		
+		updatePreview: function(){
+			// TODO: perform validation
+			
+			ParserManager.server().executePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues(), function(){
+				debugger;
+			});
 		},
 /*
 		applySettings: function(){

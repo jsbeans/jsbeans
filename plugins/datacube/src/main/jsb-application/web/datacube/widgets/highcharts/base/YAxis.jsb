@@ -5,7 +5,7 @@
         yAxis: {
 	        render: 'group',
 	        name: 'Оси Y',
-            collapsable: true,
+            collapsible: true,
             multiple: {
                 createDefault: true,
                 uniqueNames: true
@@ -14,7 +14,7 @@
                 item: {
                     render: 'group',
                     name: 'Ось Y',
-                    collapsable: true,
+                    collapsible: true,
                     editableName: {
                         commonField: 'yAxisNames'
                     },
@@ -34,7 +34,7 @@
                         labels: {
                             render: 'group',
                             name: 'Подписи',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 enabled: {
                                     render: 'item',
@@ -85,7 +85,7 @@
                         title: {
                             render: 'group',
                             name: 'Заголовок оси',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 text: {
                                     render: 'item',
