@@ -2,16 +2,13 @@
 	$name: 'Unimap.Render.Formatter',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Controls.Select', 'JSB.Controls.Editor', 'JSB.Controls.Checkbox'],
+	    $require: ['JSB.Controls.Select', 'JSB.Controls.Editor', 'JSB.Controls.Checkbox', 'JSB.Controls.Switch'],
 
 	    _beans: [],
 	    _selectors: [],
 	    _basicVariablesList: [],
 	    _formatterVariablesList: [],
 
-	    _defaultOpts: {
-	        variablesBlock: true
-	    },
 	    _editorValue: '',
 
 	    construct: function(){
@@ -24,94 +21,48 @@
             this.createRequireDesc(this._name);
             this.createDescription(this._name);
 
-            JSB.merge(this._scheme.formatterOpts, this._defaultOpts);
-
-            this.createBasicVariablesList();
-
-            /* variables */
-            if(this._scheme.formatterOpts.variablesBlock){
-                this.append('<h3>Переменные</h3>');
-
-                this._variablesBlock = this.$('<div class="variablesBlock"></div>');
-                this.append(this._variablesBlock);
-
-                var addVarBtn = this.$('<i class="btn btnMultiple addVarBtn fas fa-plus-circle"></i>');
-                addVarBtn.click(function(){
-                    $this.addVariable();
-                });
-                this.append(addVarBtn);
-	        }
-
-	        /* editor */
-	        this.append('<h3>Формат</h3>');
-
-	        this._editBlock = this.$('<div class="editBlock" contenteditable></div>');
-	        this._editBlock.keyup(function(evt){
-	            $this.changeEvent();
-	        });
-	        this.append(this._editBlock);
-
-	        /* add btn */
-	        this._addButton = this.$('<i class="btn btnMultiple addVarToTempBtn fas fa-plus-circle"></i>');
-	        this._addButton.click(function(evt){
-	            evt.stopPropagation();
-
-                if($this._dropDownList.hasClass('hidden')){
-                    $this._dropDownList.removeClass('hidden');
-
-                    var top = $this.getElement().offset().top,
-                        elementHeight = $this.getElement().height(),
-                        ddHeight = $this._dropDownList.outerHeight(),
-                        bodyHeight = $this.$(window).height(),
-                        btnLeft = $this._addButton.position().left;
-
-                    if(bodyHeight <= top + elementHeight + ddHeight){
-                        $this._dropDownList.css('top', 'initial');
-                        $this._dropDownList.css('bottom', elementHeight);
-                    } else {
-                        $this._dropDownList.css('top', elementHeight);
-                        $this._dropDownList.css('bottom', 'initial');
-                    }
-
-                    $this._dropDownList.css('left', btnLeft + 16 - $this._dropDownList.outerWidth());
-
-                    $this.$(document).on('click.formatter_closeDD', function(evt){
-                        if(!$this._dropDownList.is(evt.target) && $this._dropDownList.has(evt.target).length === 0){
-                            $this._dropDownList.addClass('hidden');
-                            $this.$(document).off('click.formatter_closeDD');
-                        }
-                    });
-                } else {
-                    $this._dropDownList.addClass('hidden');
-                }
-	        });
-	        this.append(this._addButton);
-
-	        /* dropdown */
-	        this._dropDownList = this.$('<ul class="dropDown hidden"></ul>');
-	        this.append(this._dropDownList);
-
             if(!this._values.values[0]){
                 this._values.values.push({});
             }
 
-	        this.createFormatterVariablesList();
-
-	        if(this._scheme.formatterOpts.variablesBlock){
-                if(this._values.values[0].variables){
-                    for(var i = 0; i < this._values.values[0].variables.length; i++){
-                        this.addVariable(this._values.values[0].variables[i]);
+            // settings type switch
+            this._settingsTypeSwitch = new Switch({
+                checked: this._values.isAdvancedSettings,
+                cssClass: 'settingsTypeSwitch',
+                label: 'Расширенные настройки',
+                leftLabel: true,
+                onchange: function(b){
+                    if(b){
+                        $this._basicSettings.addClass('hidden');
+                        $this._advancedSettings.removeClass('hidden');
+                    } else {
+                        $this._basicSettings.removeClass('hidden');
+                        $this._advancedSettings.addClass('hidden');
                     }
-                }
-	        }
 
-	        if(this._values.values[0].value){
-	            var val = this.restoreValue(this._values.values[0].value);
-	            this._editorValue = val;
-	            this._editBlock.html(val);
-	        }
+                    $this._values.isAdvancedSettings = b;
+                }
+            });
+            this.append(this._settingsTypeSwitch);
+
+            // basic settings
+            /*********/
+            this._basicSettings = this.$('<div class="basicSettings ' + (this._values.isAdvancedSettings ? 'hidden' : '') + '"></div>');
+            this.append(this._basicSettings);
+
+            this.createBasicSettings();
+            /*********/
+
+            // advanced settings
+            /*********/
+            this._advancedSettings = this.$('<div class="advancedSettings ' + (!this._values.isAdvancedSettings ? 'hidden' : '') + '"></div>');
+            this.append(this._advancedSettings);
+
+            this.createAdvancedSettings();
+            /*********/
 	    },
 
+	    // +
 	    addFormatterVariableItem: function(obj){
 	        var value = obj.value;
 
@@ -130,125 +81,7 @@
             this._dropDownList.append(item);
 	    },
 
-	    addVariable: function(variable){
-	        if(!this._values.values[0].variables){
-	            this._values.values[0].variables = [];
-	        }
-
-	        if(!variable){
-	            variable = {}
-	            this._values.values[0].variables.push(variable);
-	        }
-
-	        // functions
-	        function createAlias(item){
-	            var newAlias = item.options.value,
-	                count = 1;
-
-                while($this._findInArray($this._formatterVariablesList, 'value', newAlias) !== -1){
-                    newAlias = item.options.value + '_' + count;
-                    count++;
-                }
-
-                var newItem = {
-                    innerValue: item.options.innerValue,
-                    key: newAlias,
-                    value: newAlias
-                };
-
-	            $this._formatterVariablesList.push(newItem);
-
-                editor.setValue(newAlias);
-
-                $this.addFormatterVariableItem(newItem);
-
-                oldAlias = newAlias;
-                variable.alias = newAlias;
-	        }
-
-	        /* create item */
-	        var varItem = this.$('<div class="variableItem"></div>');
-
-	        var selectLabel = this.$('<div class="selectLabel">Переменная</div>');
-	        varItem.append(selectLabel);
-
-	        var select = new Select({
-                options: this._basicVariablesList,
-                value: variable.value,
-                onchange: function(val){
-                    if(editor.getValue() === ''){
-                        createAlias(val);
-                    } else {
-                        var itemIndex = $this._findInArray($this._formatterVariablesList, 'value', variable.alias);
-
-                        if(itemIndex > -1){
-                            $this._formatterVariablesList[itemIndex].value = val.key;
-                            $this._formatterVariablesList[itemIndex].innerValue = val.options.innerValue;
-                            $this._formatterVariablesList[itemIndex].type = val.options.type;
-                        }
-                    }
-
-                    variable.innerValue = val.options.innerValue;
-                    variable.type = val.options.type;
-                    variable.value = val.key;
-
-                    $this.createTypeSettings(typeSettings, variable);
-                }
-	        });
-	        selectLabel.append(select.getElement());
-	        this._selectors.push(select);
-
-	        var editorLabel = this.$('<label class="editorLabel">Алиас</label>');
-	        varItem.append(editorLabel);
-
-	        var editor = new Editor({
-                value: variable.alias,
-                onchange: function(val){
-	                var itemIndex = $this._findInArray($this._formatterVariablesList, 'value', variable.alias);
-
-                    if(itemIndex > -1){
-                        $this._formatterVariablesList[itemIndex].value = val;
-                    }
-
-                    $this._dropDownList.find('li[key="' + variable.alias + '"]').attr('key', val).text(val);
-
-                    variable.alias = val;
-                }
-	        });
-	        editorLabel.append(editor.getElement());
-	        this._beans.push(editor);
-
-	        var removeBtn = this.$('<i class="btn btnDelete fas fa-times"></i>');
-	        removeBtn.click(function(){
-	            var key = editor.getValue(),
-	                itemIndex = $this._findInArray($this._formatterVariablesList, 'value', key),
-	                valueIndex = $this._findInArray($this._values.values[0].variables, 'alias', key);
-
-                if(itemIndex > -1){
-                    $this._formatterVariablesList.splice(itemIndex, 1);
-                }
-
-                if(valueIndex > -1){
-                    $this._values.values[0].variables.splice(valueIndex, 1);
-                }
-
-                $this._dropDownList.find('li[key="' + key + '"]').remove();
-
-	            varItem.remove();
-	        });
-	        varItem.append(removeBtn);
-
-	        // type settings
-	        var typeSettings = this.$('<div class="typeSettings"></div>');
-	        varItem.append(typeSettings);
-
-	        if(variable.type){
-	            this.createTypeSettings(typeSettings, variable);
-	        }
-
-	        this._variablesBlock.append(varItem);
-	    },
-
+	    // +
 	    addVariableToText: function(value){
             function pasteHtmlAtCaret(html) {
                 var sel, range;
@@ -290,6 +123,7 @@
             this.changeEvent();
 	    },
 
+	    // +
 	    changeEvent: function(){
             var val = this._editBlock.html();
             if(val !==  this._editorValue){
@@ -302,6 +136,8 @@
 	    },
 
 	    changeLinkTo: function(){
+	        // todo
+	        /*
 	        this._dropDownList.empty();
 
 	        this.createBasicVariablesList();
@@ -310,56 +146,45 @@
 	        for(var i = 0; i < this._selectors.length; i++){
 	            this._selectors[i].setOptions(this._basicVariablesList);
 	        }
+	        */
 	    },
 
 	    changeValue: function(){
-	        var editBlockCopy = this._editBlock.clone(),
-	            variables = editBlockCopy.find('>span.variable');
+	        if(this._values.isAdvancedSettings){
+                var editBlockCopy = this._editBlock.clone(),
+                    variables = editBlockCopy.find('>span.variable');
 
-            // todo: bindings
+                // todo: bindings
 
-            for(var i = 0; i < variables.length; i++){
-                var key = this.$(variables[i]).attr('key'),
-                    index = this._findInArray(this._formatterVariablesList, 'value', key),
-                    valIndex = this._findInArray(this._values.values[0].variables, 'alias', key);
+                for(var i = 0; i < variables.length; i++){
+                    var key = this.$(variables[i]).attr('key'),
+                        index = this._findInArray(this._formatterVariablesList, 'value', key),
+                        valIndex = this._findInArray(this._values.values[0].variables, 'alias', key);
 
-                if(index > -1){
-                    var typeSettings = '';
+                    if(index > -1){
+                        var typeSettings = '';
 
-                    if(valIndex > -1 && this._values.values[0].variables[valIndex].typeSettings){
-                        typeSettings = ':' + this._values.values[0].variables[valIndex].typeSettings.formatPart;
+                        if(valIndex > -1 && this._values.values[0].variables[valIndex].typeSettings){
+                            typeSettings = ':' + this._values.values[0].variables[valIndex].typeSettings.formatPart;
+                        }
+                        variables[i].replaceWith('{' + $this._formatterVariablesList[index].innerValue + typeSettings + '}');
                     }
-                    variables[i].replaceWith('{' + $this._formatterVariablesList[index].innerValue + typeSettings + '}');
                 }
-            }
 
-            this._values.values[0].value = editBlockCopy.html().replace(/&nbsp;/g, ' ');
+                this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ');
+	        } else {
+	            //
+            }
 
             this.onchange();
 	    },
 
-	    createFormatterVariablesList: function(){
-	        this._formatterVariablesList = JSB.clone(this._basicVariablesList);
-
-            if(this._values.values[0].variables){
-                for(var i = 0; i < this._values.values[0].variables.length; i++){
-                    this._formatterVariablesList.push({
-                        innerValue: this._values.values[0].variables[i].innerValue,
-                        key: this._values.values[0].variables[i].alias,
-                        type: this._values.values[0].variables[i].type,
-                        value: this._values.values[0].variables[i].alias
-                    });
-                }
-            }
-
-            for(var i = 0; i < this._formatterVariablesList.length; i++){
-                this.addFormatterVariableItem(this._formatterVariablesList[i]);
-            }
-	    },
-
+	    // +
 	    createBasicVariablesList: function(){
 	        this._basicVariablesList = [];
 
+	        // todo: bindings
+	        /*
 	        var linkedValues = this.getValueByKey(this._scheme.linkTo);
 
             if(linkedValues){
@@ -378,6 +203,7 @@
                     }
                 }
             }
+            */
 
 	        for(var i = 0; i < this._scheme.formatterOpts.variables.length; i++){
 	            this._basicVariablesList.push({
@@ -390,8 +216,273 @@
 	        }
 	    },
 
-	    createTypeSettings: function(settingsItem, variable){
-            settingsItem.empty();
+	    // +
+	    createFormatterVariablesList: function(){
+	        this._formatterVariablesList = JSB.clone(this._basicVariablesList);
+
+            if(this._values.values[0].variables){
+                for(var i = 0; i < this._values.values[0].variables.length; i++){
+                    this._formatterVariablesList.push({
+                        innerValue: this._values.values[0].variables[i].innerValue,
+                        key: this._values.values[0].variables[i].alias,
+                        type: this._values.values[0].variables[i].type,
+                        value: this._values.values[0].variables[i].alias
+                    });
+                }
+            }
+	    },
+
+	    // +
+	    createBasicVariableItem: function(variable){
+	        if(!variable){
+	            variable = {}
+	            this._values.values[0].variables.push(variable);
+	        }
+
+	        function createDefaultAlias(item){
+	            var newAlias = item.options.value,
+	                count = 1;
+
+                while($this._findInArray($this._formatterVariablesList, 'value', newAlias) !== -1){
+                    newAlias = item.options.value + '_' + count;
+                    count++;
+                }
+
+                var newItem = {
+                    innerValue: item.options.innerValue,
+                    key: newAlias,
+                    value: newAlias
+                };
+
+	            $this._formatterVariablesList.push(newItem);
+
+                editor.setValue(newAlias);
+
+                $this.addFormatterVariableItem(newItem);
+
+                oldAlias = newAlias;
+                variable.alias = newAlias;
+	        }
+
+	        var varItem = this.$('<div class="variableItem"></div>');
+
+            // select basic variable for formatting
+            /*********/
+	        var selectLabel = this.$('<div class="selectLabel">Переменная</div>');
+	        varItem.append(selectLabel);
+
+	        var select = new Select({
+                options: this._basicVariablesList,
+                value: variable.value,
+                onchange: function(val){
+                    if(editor.getValue() === ''){
+                        createDefaultAlias(val);
+                    } else {
+                        var itemIndex = $this._findInArray($this._formatterVariablesList, 'value', variable.alias);
+
+                        if(itemIndex > -1){
+                            $this._formatterVariablesList[itemIndex].value = val.key;
+                            $this._formatterVariablesList[itemIndex].innerValue = val.options.innerValue;
+                            $this._formatterVariablesList[itemIndex].type = val.options.type;
+                        }
+                    }
+
+                    variable.innerValue = val.options.innerValue;
+                    variable.type = val.options.type;
+                    variable.value = val.key;
+
+                    $this.createTypeSettings(variable);
+                }
+	        });
+	        selectLabel.append(select.getElement());
+	        this._selectors.push(select);
+            /*********/
+
+            // alias editor
+            /*********/
+	        var editorLabel = this.$('<label class="editorLabel">Алиас</label>');
+	        varItem.append(editorLabel);
+
+	        var editor = new Editor({
+                value: variable.alias,
+                onchange: function(val){
+	                var itemIndex = $this._findInArray($this._formatterVariablesList, 'value', variable.alias);
+
+                    if(itemIndex > -1){
+                        $this._formatterVariablesList[itemIndex].value = val;
+                    }
+
+                    $this._dropDownList.find('li[key="' + variable.alias + '"]').attr('key', val).text(val);
+
+                    variable.alias = val;
+                }
+	        });
+	        editorLabel.append(editor.getElement());
+	        this._beans.push(editor);
+            /*********/
+
+            // remove btn
+            /*********/
+	        var removeBtn = this.$('<i class="btn btnDelete fas fa-times"></i>');
+	        removeBtn.click(function(){
+	            var key = editor.getValue(),
+	                itemIndex = $this._findInArray($this._formatterVariablesList, 'value', key),
+	                valueIndex = $this._findInArray($this._values.values[0].variables, 'alias', key);
+
+                if(itemIndex > -1){
+                    $this._formatterVariablesList.splice(itemIndex, 1);
+                }
+
+                if(valueIndex > -1){
+                    $this._values.values[0].variables.splice(valueIndex, 1);
+                }
+
+                $this._dropDownList.find('li[key="' + key + '"]').remove();
+
+	            varItem.remove();
+	        });
+	        varItem.append(removeBtn);
+            /*********/
+
+            // type settings
+            /*********/
+            if(variable.type){
+                varItem.append(this.createTypeSettings(variable));
+            }
+            /*********/
+
+            return varItem;
+	    },
+
+	    // +
+	    createBasicSettings: function(){
+	        if(!this._values.basicSettings){
+	            this._values.basicSettings = {
+	                prefix: '',
+	                suffix: '',
+	                type: this._scheme.formatterOpts.basicSettings.type
+	            }
+	        }
+
+	        var typeSettings = this.createTypeSettings(this._values.basicSettings);
+	        this._basicSettings.append(typeSettings);
+
+	        var prefixLabel = this.$('<label class="label">Префикс</label>');
+            var prefix = new Editor({
+                value: this._values.basicSettings.prefix,
+                onchange: function(val){
+                    $this._values.basicSettings.prefix = val;
+
+                    $this.changeValue();
+                }
+            });
+            prefixLabel.append(prefix.getElement());
+            this._basicSettings.append(prefixLabel);
+
+            var suffixLabel = this.$('<label class="label">Суффикс</label>');
+            var suffix = new Editor({
+                value: this._values.basicSettings.suffix,
+                onchange: function(val){
+                    $this._values.basicSettings.suffix = val;
+
+                    $this.changeValue();
+                }
+            });
+            suffixLabel.append(suffix.getElement());
+            this._basicSettings.append(suffixLabel);
+	    },
+
+	    createAdvancedSettings: function(){
+	        this.createBasicVariablesList();
+	        this.createFormatterVariablesList();
+
+            /* variables */
+            if(this._basicVariablesList.length > 0){
+                this._advancedSettings.append('<h3>Переменные</h3>');
+
+                var variablesBlock = this.$('<div class="variablesBlock"></div>');
+                this._advancedSettings.append(variablesBlock);
+
+                var addVarBtn = this.$('<i class="btn btnMultiple addVarBtn fas fa-plus-circle"></i>');
+                addVarBtn.click(function(){
+                    if(!$this._values.values[0].variables){
+                        $this._values.values[0].variables = [];
+                    }
+
+                    variablesBlock.append($this.createBasicVariableItem());
+                });
+                this._advancedSettings.append(addVarBtn);
+
+                if(this._values.values[0].variables){
+                    for(var i = 0; i < this._values.values[0].variables.length; i++){
+                        variablesBlock.append(this.createBasicVariableItem(this._values.values[0].variables[i]));
+                    }
+                }
+	        }
+
+	        /* editor */
+	        this._advancedSettings.append('<h3>Формат</h3>');
+
+	        this._editBlock = this.$('<div class="editBlock" contenteditable></div>');
+	        editBlock.keyup(function(evt){
+	            $this.changeEvent();
+	        });
+	        this._advancedSettings.append(this._editBlock);
+
+	        /* format variables btn */
+	        var addButton = this.$('<i class="btn btnMultiple addVarToTempBtn fas fa-plus-circle"></i>');
+	        addButton.click(function(evt){
+	            evt.stopPropagation();
+
+                if($this._dropDownList.hasClass('hidden')){
+                    $this._dropDownList.removeClass('hidden');
+
+                    var top = $this.getElement().offset().top,
+                        elementHeight = $this.getElement().height(),
+                        ddHeight = $this._dropDownList.outerHeight(),
+                        bodyHeight = $this.$(window).height(),
+                        btnLeft = addButton.position().left;
+
+                    if(bodyHeight <= top + elementHeight + ddHeight){
+                        $this._dropDownList.css('top', 'initial');
+                        $this._dropDownList.css('bottom', elementHeight);
+                    } else {
+                        $this._dropDownList.css('top', elementHeight);
+                        $this._dropDownList.css('bottom', 'initial');
+                    }
+
+                    $this._dropDownList.css('left', btnLeft + 16 - $this._dropDownList.outerWidth());
+
+                    $this.$(document).on('click.formatter_closeDD', function(evt){
+                        if(!$this._dropDownList.is(evt.target) && $this._dropDownList.has(evt.target).length === 0){
+                            $this._dropDownList.addClass('hidden');
+                            $this.$(document).off('click.formatter_closeDD');
+                        }
+                    });
+                } else {
+                    $this._dropDownList.addClass('hidden');
+                }
+	        });
+	        this._advancedSettings.append(addButton);
+
+	        /* format variables dd */
+	        this._dropDownList = this.$('<ul class="dropDown hidden"></ul>');
+	        this._advancedSettings.append(this._dropDownList);
+
+	        for(var i = 0; i < this._formatterVariablesList.length; i++){
+	            this.addFormatterVariableItem(this._formatterVariablesList[i]);
+	        }
+
+	        if(this._values.values[0].advancedValue || this._values.values[0].value){
+	            var val = this.restoreValue(this._values.values[0].advancedValue || this._values.values[0].value);
+	            this._editorValue = val;
+	            this._editBlock.html(val);
+	        }
+	    },
+
+	    // +
+	    createTypeSettings: function(variable){
+            var settingsItem = this.$('<div class="typeSettings"></div>');
 
             if(!variable.typeSettings){
                 variable.typeSettings = {}
@@ -435,6 +526,7 @@
 	                this._beans.push(decimals);
 	                break;
                 case 'date':
+                    // todo: add description
                     var dateLabel = this.$('<label class="label dateLabel">Формат даты</label>');
                     var dateFormat = new Editor({
                         value: JSB.isDefined(variable.typeSettings.dateFormat) ? variable.typeSettings.dateFormat : '%d-%m-%Y',
@@ -451,6 +543,8 @@
 	                this._beans.push(dateFormat);
                     break;
 	        }
+
+	        return settingsItem;
 	    },
 
 	    destroy: function(){

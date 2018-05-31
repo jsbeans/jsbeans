@@ -347,6 +347,10 @@
                     render: 'formatter',
                     name: 'Формат подписей',
                     formatterOpts: {
+                        basicSettings: {
+                            type: 'number',
+                            value: '{name:,.2f}'
+                        },
                         variables: [
                             {
                                 alias: 'Имя серии',
@@ -431,6 +435,7 @@
                     optional: true,
                     editor: 'none'
                 },
+                /*
                 headerFormat: {
                     render: 'formatter',
                     name: 'Формат верхнего колонтитула',
@@ -541,6 +546,7 @@
                     },
                     valueType: 'string'
                 },
+                */
                 padding: {
                     render: 'item',
                     name: 'Внутренний отступ',
@@ -661,6 +667,7 @@
                                     valueType: 'number',
                                     defaultValue: 0
                                 },
+                                /*
                                 format: {
                                     render: 'formatter',
                                     name: 'Форматирование',
@@ -698,6 +705,7 @@
                                     valueType: 'string',
                                     defaultValue: '{y}'
                                 },
+                                */
                                 useHTML: {
                                     render: 'item',
                                     name: 'Использовать HTML',
