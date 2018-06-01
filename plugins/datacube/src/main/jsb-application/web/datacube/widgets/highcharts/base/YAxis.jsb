@@ -53,7 +53,6 @@
                                     name: 'Шаг',
                                     valueType: 'number'
                                 },
-                                /*
                                 format: {
                                     render: 'formatter',
                                     name: 'Формат',
@@ -69,7 +68,6 @@
                                     valueType: 'string',
                                     defaultValue: '{value:,.0f}' //'{value}'
                                 },
-                                */
                                 fontColor: {
                                     render: 'item',
                                     name: 'Цвет шрифта',

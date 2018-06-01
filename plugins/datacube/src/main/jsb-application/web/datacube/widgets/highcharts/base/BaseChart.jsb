@@ -347,10 +347,6 @@
                     render: 'formatter',
                     name: 'Формат подписей',
                     formatterOpts: {
-                        basicSettings: {
-                            type: 'number',
-                            value: '{name:,.2f}'
-                        },
                         variables: [
                             {
                                 alias: 'Имя серии',
@@ -435,7 +431,6 @@
                     optional: true,
                     editor: 'none'
                 },
-                /*
                 headerFormat: {
                     render: 'formatter',
                     name: 'Формат верхнего колонтитула',
@@ -477,6 +472,10 @@
                     render: 'formatter',
                     name: 'Формат точек',
                     formatterOpts: {
+                        basicSettings: {
+                            type: 'number',
+                            value: 'y'
+                        },
                         variables: [
                             {
                                 alias: 'Процентное соотношение',
@@ -546,7 +545,6 @@
                     },
                     valueType: 'string'
                 },
-                */
                 padding: {
                     render: 'item',
                     name: 'Внутренний отступ',
@@ -667,11 +665,14 @@
                                     valueType: 'number',
                                     defaultValue: 0
                                 },
-                                /*
                                 format: {
                                     render: 'formatter',
                                     name: 'Форматирование',
                                     formatterOpts: {
+                                        basicSettings: {
+                                            type: 'number',
+                                            value: 'y'
+                                        },
                                         variables: [
                                             {
                                                 alias: 'Процентное соотношение',
@@ -705,7 +706,6 @@
                                     valueType: 'string',
                                     defaultValue: '{y}'
                                 },
-                                */
                                 useHTML: {
                                     render: 'item',
                                     name: 'Использовать HTML',

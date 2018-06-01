@@ -3,10 +3,26 @@
     $parent: 'Unimap.ValueSelectors.Basic',
 
     value: function(){
-        if(JSB.isDefined(this._values.isAdvancedSettings) && this._values.isAdvancedSettings){
-            return this._values[0].advancedValue;
+        if(!this._values || !this._values[0]){
+            return JSB.isDefined(this._selectorOpts.defaultValue) ? this._selectorOpts.defaultValue : undefined;
+        }
+
+        if(JSB.isDefined(this._values[0].isAdvancedSettings)){
+            if(this._values[0].isAdvancedSettings){
+                return this._values[0].advancedValue;
+            } else {
+                return this._values[0].baseValue;
+            }
         } else {
-            return JSB.isDefined(this._values[0].baseValue) ? this._values[0].baseValue : this._values[0].value;
+            if(JSB.isDefined(this._values[0].baseValue)){
+                return this._values[0].baseValue;
+            }
+
+            if(JSB.isDefined(this._values[0].advancedValue)){
+                return this._values[0].advancedValue;
+            }
+
+            return this._values[0].value;
         }
     }
 }

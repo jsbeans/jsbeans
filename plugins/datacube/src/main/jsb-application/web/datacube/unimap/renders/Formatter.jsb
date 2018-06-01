@@ -25,40 +25,51 @@
                 this._values.values.push({});
             }
 
-            // settings type switch
-            this._settingsTypeSwitch = new Switch({
-                checked: this._values.isAdvancedSettings,
-                cssClass: 'settingsTypeSwitch',
-                label: 'Расширенные настройки',
-                leftLabel: true,
-                onchange: function(b){
-                    if(b){
-                        $this._basicSettings.addClass('hidden');
-                        $this._advancedSettings.removeClass('hidden');
-                    } else {
-                        $this._basicSettings.removeClass('hidden');
-                        $this._advancedSettings.addClass('hidden');
+	        this.createBasicVariablesList();
+	        this.createFormatterVariablesList();
+
+	        if(this._scheme.formatterOpts.basicSettings && this._basicVariablesList.length > 0){
+                // settings type switch
+                this._settingsTypeSwitch = new Switch({
+                    checked: this._values.values[0].isAdvancedSettings,
+                    cssClass: 'settingsTypeSwitch',
+                    label: 'Расширенные настройки',
+                    leftLabel: true,
+                    onchange: function(b){
+                        if(b){
+                            $this._basicSettings.addClass('hidden');
+                            $this._advancedSettings.removeClass('hidden');
+                        } else {
+                            $this._basicSettings.removeClass('hidden');
+                            $this._advancedSettings.addClass('hidden');
+                        }
+
+                        $this._values.values[0].isAdvancedSettings = b;
                     }
+                });
+                this.append(this._settingsTypeSwitch);
+	        }
 
-                    $this._values.isAdvancedSettings = b;
-                }
-            });
-            this.append(this._settingsTypeSwitch);
+            if(this._scheme.formatterOpts.basicSettings){
+                // basic settings
+                /*********/
+                this._basicSettings = this.$('<div class="basicSettings ' + (this._values.values[0].isAdvancedSettings ? 'hidden' : '') + '"></div>');
+                this.append(this._basicSettings);
 
-            // basic settings
-            /*********/
-            this._basicSettings = this.$('<div class="basicSettings ' + (this._values.isAdvancedSettings ? 'hidden' : '') + '"></div>');
-            this.append(this._basicSettings);
-
-            this.createBasicSettings();
-            /*********/
+                this.createBasicSettings();
+                /*********/
+            }
 
             // advanced settings
             /*********/
-            this._advancedSettings = this.$('<div class="advancedSettings ' + (!this._values.isAdvancedSettings ? 'hidden' : '') + '"></div>');
-            this.append(this._advancedSettings);
+            if(this._basicVariablesList.length > 0){
+                var hidden = (this._scheme.formatterOpts.basicSettings && !this._values.values[0].isAdvancedSettings) ? 'hidden' : '';
 
-            this.createAdvancedSettings();
+                this._advancedSettings = this.$('<div class="advancedSettings ' + hidden + '"></div>');
+                this.append(this._advancedSettings);
+
+                this.createAdvancedSettings();
+            }
             /*********/
 	    },
 
@@ -126,6 +137,7 @@
 	    // +
 	    changeEvent: function(){
             var val = this._editBlock.html();
+
             if(val !==  this._editorValue){
                 this._editorValue = val;
 
@@ -150,7 +162,7 @@
 	    },
 
 	    changeValue: function(){
-	        if(this._values.isAdvancedSettings){
+	        if(this._values.values[0].isAdvancedSettings || !this._scheme.formatterOpts.basicSettings){
                 var editBlockCopy = this._editBlock.clone(),
                     variables = editBlockCopy.find('>span.variable');
 
@@ -171,9 +183,12 @@
                     }
                 }
 
-                this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ');
+                this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ')
+                                                                           .replace(/&lt;/g, '<')
+                                                                           .replace(/&gt;/g, '>');
 	        } else {
-	            this._values.values[0].baseValue = (this._values.basicSettings.prefix + ' {' + this._values.basicSettings.value + (this._values.basicSettings.typeSettings ? this._values.basicSettings.typeSettings.formatPart : '') + '} ' + this._values.basicSettings.suffix).trim();
+	            //this._values.values[0].baseValue = (this._values.basicSettings.prefix + ' {' + this._values.basicSettings.value + (this._values.basicSettings.typeSettings ? this._values.basicSettings.typeSettings.formatPart : '') + '} ' + this._values.basicSettings.suffix).trim();
+	            this._values.values[0].baseValue = ('{' + this._values.values[0].basicSettings.value + (this._values.values[0].basicSettings.typeSettings ? (':' + this._values.values[0].basicSettings.typeSettings.formatPart) : '') + '} ').trim();
             }
 
             this.onchange();
@@ -358,8 +373,10 @@
 	    createBasicSettings: function(){
 	        if(!this._values.values[0].basicSettings){
 	            this._values.values[0].basicSettings = {
+	                /*
 	                prefix: '',
 	                suffix: '',
+	                */
 	                type: this._scheme.formatterOpts.basicSettings.type,
 	                value: this._scheme.formatterOpts.basicSettings.value
 	            }
@@ -367,7 +384,7 @@
 
 	        var typeSettings = this.createTypeSettings(this._values.values[0].basicSettings);
 	        this._basicSettings.append(typeSettings);
-
+	        /*
 	        var prefixLabel = this.$('<label class="label">Префикс</label>');
             var prefix = new Editor({
                 value: this._values.values[0].basicSettings.prefix,
@@ -391,12 +408,10 @@
             });
             suffixLabel.append(suffix.getElement());
             this._basicSettings.append(suffixLabel);
+            */
 	    },
 
 	    createAdvancedSettings: function(){
-	        this.createBasicVariablesList();
-	        this.createFormatterVariablesList();
-
             /* variables */
             if(this._basicVariablesList.length > 0){
                 this._advancedSettings.append('<h3>Переменные</h3>');
@@ -527,8 +542,12 @@
 	                this._beans.push(decimals);
 	                break;
                 case 'date':
-                    // todo: add description
+                    var desc = '<b>Форматирование даты</b><br/>%Y - год<br/>%m - месяц<br/>%d - день<br/><a href="http://php.net/manual/en/function.strftime.php" target="_blank">Больше форматов</a>',
+                        description = this.$('<div class="description hidden">' + desc + '</div>'),
+                        msgIcon = this.createMsgIcon(description, 'desc fas fa-question-circle');
+
                     var dateLabel = this.$('<label class="label dateLabel">Формат даты</label>');
+                    dateLabel.append(msgIcon);
                     var dateFormat = new Editor({
                         value: JSB.isDefined(variable.typeSettings.dateFormat) ? variable.typeSettings.dateFormat : '%d-%m-%Y',
                         onchange: function(val){
@@ -541,6 +560,7 @@
                     });
                     dateLabel.append(dateFormat.getElement());
 	                settingsItem.append(dateLabel);
+	                settingsItem.append(description);
 	                this._beans.push(dateFormat);
                     break;
                 default:

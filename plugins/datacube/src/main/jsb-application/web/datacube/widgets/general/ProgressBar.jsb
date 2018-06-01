@@ -140,6 +140,10 @@
 	                render: 'formatter',
 	                name: 'Формат значения',
                     formatterOpts: {
+                        basicSettings: {
+                            type: 'number',
+                            value: 'y'
+                        },
                         variables: [
                             {
                                 alias: 'Значение',

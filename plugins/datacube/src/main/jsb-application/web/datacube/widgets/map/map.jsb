@@ -564,6 +564,10 @@
                     render: 'formatter',
                     name: 'Форматирование значений',
                     formatterOpts: {
+                        basicSettings: {
+                            type: 'number',
+                            value: 'y'
+                        },
                     	variables: [
                     		{
                     			alias: 'Значение',

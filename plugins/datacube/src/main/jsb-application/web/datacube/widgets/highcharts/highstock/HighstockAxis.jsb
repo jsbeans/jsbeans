@@ -38,6 +38,10 @@
                             render: 'formatter',
                             name: 'Формат',
                             formatterOpts: {
+                                basicSettings: {
+                                    type: 'date',
+                                    value: 'value'
+                                },
                                 variables: [
                                     {
                                         alias: 'Значение',

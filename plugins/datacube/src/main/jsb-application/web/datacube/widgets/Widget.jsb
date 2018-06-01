@@ -206,7 +206,6 @@
             if(opts.groupBy){
                 item.fetchOpts.layers.main.$groupBy = opts.groupBy;
             }
-            console.log(item.fetchOpts.layers);
 
             // construct hover layer
 /*					if($this.filterLayers.hover){

@@ -374,6 +374,10 @@
                                             render: 'formatter',
                                             name: 'Формат',
                                             formatterOpts: {
+                                                basicSettings: {
+                                                    type: 'number',
+                                                    value: 'y'
+                                                },
                                                 variables: [
                                                     {
                                                         alias: 'Значение',
@@ -512,6 +516,10 @@
                                             render: 'formatter',
                                             name: 'Формат',
                                             formatterOpts: {
+                                                basicSettings: {
+                                                    type: 'number',
+                                                    value: 'y'
+                                                },
                                                 variables: [
                                                     {
                                                         alias: 'Значение',
