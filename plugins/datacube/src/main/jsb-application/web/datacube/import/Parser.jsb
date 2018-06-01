@@ -14,6 +14,27 @@
 			render: 'parserBinding'
 		},
 		
+		previewSettings: {
+			render: 'group',
+	        name: 'Предварительный просмотр',
+	        collapsible: false,
+	        items: {
+	        	previewRowCount: {
+	        		render: 'item',
+	        		name: 'Количество записей в таблице',
+	        		value: 50,
+	        		valueType: 'number'
+	        	},
+	        	restrictCellLength: {
+	        		render: 'item',
+	        		name: 'Ограничить длину строк',
+	        		value: 150,
+	        		valueType: 'number',
+	        		optional: 'checked'
+	        	}
+	        }
+		},
+		
 		tablesSettings: {
 			render: 'group',
 	        name: 'Таблицы',
@@ -211,6 +232,10 @@
 			return this.struct;
 		},
 		
+		getContext: function(){
+			return this.context;
+		},
+		
 		checkBreak: function(){
 			if(this.mode == 0){
 				if(this.structScope != this.structTopArray){
@@ -230,8 +255,41 @@
 		},
 		
 		emitTables: function(){
-			var record = this.dataTopArray[0];
-			debugger;
+			function resolveCellType(bindingInfo){
+				if(bindingInfo.type == 'array'){
+					return resolveCellType(bindingInfo.arrayType);
+				}
+				return bindingInfo.type;
+			}
+			function resolveCellValue(colDesc, rootSel, dataBindMap){
+				var val = dataBindMap[colDesc.field];
+				var type = resolveCellType(colDesc.bindingInfo);
+				return {value: val, type: type};
+			}
+			
+			for(var i = 0; i < this.descriptors.length; i++){
+				var tableDesc = this.descriptors[i];
+				var dataBindMap = {};
+				tableDesc.bindingTree.setData(this.data, dataBindMap);
+				do {
+					// iterate over columns and construct record
+					var record = {};
+					var columns = {};
+					for(var colName in tableDesc.columns){
+						var colDesc = tableDesc.columns[colName];
+						var cellInfo = resolveCellValue(colDesc, tableDesc.bindingTree, dataBindMap);
+						record[colName] = cellInfo.value;
+						columns[colName] = cellInfo.type;
+					}
+					this.emitRecord({table: tableDesc.table, columns: columns}, record);
+				} while(tableDesc.bindingTree.next(dataBindMap));
+			}
+		},
+		
+		emitRecord: function(table, record){
+			if(this.rowCollback){
+				this.rowCollback.call(this, table, record);
+			}
 		},
 		
 		beginArray: function(field){
@@ -429,8 +487,89 @@
 
 		
 		parse: function(rowCallback){
-			debugger;
 			this.mode = 1; // parse mode
+			this.rowCollback = rowCallback;
+			
+			var BindingSelector = function(){
+				this.nested = {};
+				this.nestedArr = [];
+				this.nestedCursor = 0;
+				this.path = null;
+				this.data = null;
+				this.binding = false;
+			}
+			BindingSelector.prototype = {
+				addSelector: function(name, isBinding){
+					var sel = this.nested[name];
+					if(!sel){
+						sel = new BindingSelector();
+						if(this.path){
+							sel.path = this.path + '.' + name;
+						} else {
+							sel.path = name;
+						}
+						this.nested[name] = sel;
+						this.nestedArr.push(sel);
+					}
+					
+					if(isBinding){
+						sel.binding = true;
+					}
+					return sel;
+				},
+				
+				setData: function(data, dataBindMap){
+					this.data = data;
+					this.reset(dataBindMap);
+				},
+				
+				next: function(dataBindMap){
+					for(var i = 0; i < this.nestedArr.length; i++){
+						if(this.nestedArr[i].next(dataBindMap)){
+							for(var j = 0; j < i; j++){
+								this.nestedArr[j].reset(dataBindMap);
+							}
+							return true;
+						}
+					}
+					this.cursor++;
+					return this.propagate(dataBindMap);
+				},
+				
+				propagate: function(dataBindMap){
+					var curData = null;
+					if(JSB.isArray(this.data)){
+						if(this.data.length > this.cursor){
+							curData = this.data[this.cursor];
+						} else {
+							return false;
+						}
+					} else {
+						if(this.cursor == 0){
+							curData = this.data;
+						} else {
+							return false;
+						}
+					}
+					if(this.binding){
+						dataBindMap[this.path] = curData;
+					}
+					for(var n in this.nested){
+						var nSel = this.nested[n];
+						if(curData){
+							nSel.setData(curData[n], dataBindMap);
+						} else {
+							nSel.setData(null, dataBindMap);
+						}
+					}
+					return true;
+				},
+				
+				reset: function(dataBindMap){
+					this.cursor = 0;
+					return this.propagate(dataBindMap);
+				}
+			};
 			
 			this.descriptors = [];
 			
@@ -445,10 +584,11 @@
 				var tableCtx = tablesCtxArr[i];
 				var tableName = tableCtx.getName();
 				
+				var bindings = {};
 				var tableDesc = {
 					table: tableName,
 					columns: {},
-					bindings: {}
+					bindingTree: {}
 				};
 				
 				var columnsCtxArr = tableCtx.find('columns').values();
@@ -458,20 +598,25 @@
 				for(var j = 0; j < columnsCtxArr.length; j++){
 					var columnCtx = columnsCtxArr[j];
 					var colName = columnCtx.find('columnAlias').value();
-					var colField = columnCtx.find('field').binding();
+					var fieldCtx = columnCtx.find('field');
+					var colField = fieldCtx.binding();
+					var colBindingInfo = fieldCtx.bindingInfo();
+					var colType = fieldCtx.bindingType();
 					
 					if(!colName || colName.length == 0){
 						continue;
 					}
 					
 					var colDesc = tableDesc.columns[colName] = {
-						columns: colName,
+						column: colName,
 						field: colField,
+						type: colType,
+						bindingInfo: colBindingInfo,
 						transforms: []
 					};
 					
-					if(colField && colField.length > 0 && !tableDesc.bindings[colField]){
-						tableDesc.bindings[colField] = true;
+					if(colField && colField.length > 0 && !bindings[colField]){
+						bindings[colField] = true;
 					}
 					
 					var transformCtx = columnCtx.find('transforms');
@@ -487,7 +632,14 @@
 							
 							switch(op) {
 							case 'convertType':
-								transformDesc.targetType = tCtx.find('resultType').value();
+								transformDesc.targetType = {
+									'ctString': 'string',
+									'ctInteger': 'integer',
+									'ctFloat': 'float',
+									'ctBoolean': 'boolean',
+									'ctArray': 'array',
+									'ctDate': 'date'
+								}[tCtx.find('resultType').value()]
 								break;
 							case 'scriptExpression':
 								var valArrCtx = tCtx.find('variables').values();
@@ -503,8 +655,8 @@
 										name: varName,
 										field: varField
 									}
-									if(varField && varField.length > 0 && !tableDesc.bindings[varField]){
-										tableDesc.bindings[varField] = true;
+									if(varField && varField.length > 0 && !bindings[varField]){
+										bindings[varField] = true;
 									}
 								}
 								transformDesc.expression = tCtx.find('expression').value();
@@ -515,10 +667,19 @@
 						
 					}
 				}
+				// generate binding tree
+				var bindingTree = new BindingSelector();
+				for(var b in bindings){
+					var parts = b.split('.');
+					var bindScope = bindingTree;
+					for(var p = 0; p < parts.length; p++){
+						var b = parts[p];
+						bindScope = bindScope.addSelector(b, p == parts.length - 1);
+					}
+				}
+				tableDesc.bindingTree = bindingTree;
 				this.descriptors.push(tableDesc);
 			}
-			JSB.getLogger().debug(JSON.stringify(this.descriptors, null, 4));
-			debugger;
 			this.execute();
 		}
 	}

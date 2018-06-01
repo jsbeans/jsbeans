@@ -18,7 +18,7 @@
             this.noData = this.$('<div class="noData hidden"></div>').text((opts && opts.noDataMessage)||'Нет данных');
             this.append(this.noData);
 
-			this.table = this.$('<div></div>');
+			this.table = this.$('<div class="container"></div>');
 			this.append(this.table);
 
             //callbacks
@@ -42,10 +42,15 @@
 
                 $this.handsontable = new Handsontable($this.table.get(0), this.handsontable_options);
 
-                $this.table.resize(function(){
+                $this.getElement().resize(function(evt, x, y){
+                	$this.handsontable.updateSettings({
+                		width: x,
+                		height: y
+                	});
+
                 	$this.deferredRender();
                 });
-
+                
                 $this.options.isInit = true;
 
                 $this.find('.ht_master.handsontable > div.wtHolder').scroll(function(evt){
@@ -60,6 +65,8 @@
 
                     $this._oldScroll.y = scrollTop;
                 });
+                
+                $this.setTrigger('initialized');
             });
 		},
 
@@ -112,6 +119,10 @@
             JSB().defer(function(){
                 $this.handsontable.render();
             }, 300, 'handsontable.deferredRender.' + $this.getId())
+		},
+		
+		ensureInitialized: function(callback){
+			this.ensureTrigger('initialized', callback);
 		},
 
 		addCell: function(row, col, data){
