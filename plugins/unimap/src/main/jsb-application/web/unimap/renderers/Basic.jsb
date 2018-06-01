@@ -16,6 +16,8 @@
             this._values = opts.values;
             this._schemeController = opts.schemeController;
 
+            this.getElement().attr('key', opts.key);
+
 	        if(this._values && Object.keys(this._values).length === 0){
 	            this.createValues();
 	        }
