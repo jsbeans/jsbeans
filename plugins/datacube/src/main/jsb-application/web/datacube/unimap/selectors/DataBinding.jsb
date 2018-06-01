@@ -10,6 +10,14 @@
         return this._values[0].binding;
     },
 
+    bindingInfo: function(){
+        if(!this._values || this._values.length === 0){
+            return;
+        }
+
+        return this._values[0].bindingInfo;
+    },
+
     bindingType: function(){
         if(!this._values || this._values.length === 0){
             return;

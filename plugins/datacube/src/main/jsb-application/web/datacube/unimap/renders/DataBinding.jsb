@@ -49,10 +49,12 @@
                                 values.value = val.key;
                                 values.binding = val.key;
                                 values.bindingType = $this._bindingsInfo[val.key].type;
+                                values.bindingInfo = $this._bindingsInfo[val.key];
                             } else {
                                 values.value = val.value;
                                 values.binding = undefined;
                                 values.bindingType = undefined;
+                                values.bindingInfo = undefined;
                             }
 
                             var errIndex = $this._errorList.indexOf(itemIndex);
@@ -83,9 +85,11 @@
                             if(JSB.isDefined(val.key)){
                                 values.binding = val.key;
                                 values.bindingType = $this._bindingsInfo[val.key].type;
+                                values.bindingInfo = $this._bindingsInfo[val.key];
                             } else {
                                 values.binding = undefined;
                                 values.bindingType = undefined;
+                                values.bindingInfo = undefined;
                             }
 
                             var errIndex = $this._errorList.indexOf(itemIndex);
@@ -113,10 +117,12 @@
                             	values.value = val.key;
                                 values.binding = val.key;
                                 values.bindingType = $this._bindingsInfo[val.key].type;
+                                values.bindingInfo = $this._bindingsInfo[val.key];
                             } else {
                             	values.value = undefined;
                                 values.binding = undefined;
                                 values.bindingType = undefined;
+                                values.bindingInfo = undefined;
                             }
 
                             var errIndex = $this._errorList.indexOf(itemIndex);
