@@ -288,7 +288,7 @@
                     var seriesContext = $this.getContext().find('series').values();
 
                     for(var j = 0; j < seriesData.length; j++){
-                        //var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[seriesData[j].index].find('yAxis').value());
+                        var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[j].find("yAxis").value());
 
                         var series = {
                             data: seriesData[j],
@@ -301,7 +301,7 @@
                             color: seriesContext[j].find('color').value(),
                             stack: seriesContext[j].find('stack').value(),
                             step: $this.isNone(seriesContext[j].find('step').value()),
-                            //yAxis: yAxis > -1 ? yAxis : undefined
+                            yAxis: yAxis > -1 ? yAxis : undefined
                         };
 
                         JSB.merge(true, chartOpts.series[j], series);
