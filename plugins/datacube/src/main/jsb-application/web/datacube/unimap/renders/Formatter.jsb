@@ -183,6 +183,10 @@
                     }
                 }
 
+                this._values.values[0].editableValue = this._editBlock.html().replace(/&nbsp;/g, ' ')
+                                                                             .replace(/&lt;/g, '<')
+                                                                             .replace(/&gt;/g, '>');
+
                 this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ')
                                                                            .replace(/&lt;/g, '<')
                                                                            .replace(/&gt;/g, '>');
@@ -497,10 +501,9 @@
 	            this.addFormatterVariableItem(this._formatterVariablesList[i]);
 	        }
 
-	        if(this._values.values[0].advancedValue || this._values.values[0].value){
-	            var val = this.restoreValue(this._values.values[0].advancedValue || this._values.values[0].value);
-	            this._editorValue = val;
-	            this._editBlock.html(val);
+	        if(this._values.values[0].editableValue){
+	            this.restoreValue(this._values.values[0].editableValue);
+	            this._editorValue = this._values.values[0].editableValue;
 	        }
 	    },
 
@@ -590,7 +593,7 @@
 
 	        $base();
 	    },
-
+/*
 	    restoreValue: function(str){
             var splitter = '{',
                 isInside = false,
@@ -614,23 +617,55 @@
 
                     var el = null;
                     for(var i = 0; i < this._formatterVariablesList.length; i++){
-                        if(this._formatterVariablesList[i].innerValue === value){
-                            el = '<span class="variable" key="' + this._formatterVariablesList[i].value + '" contenteditable="false">' + this._formatterVariablesList[i].value + '</span> '
+                        if(this._formatterVariablesList[i].value === value){
+                            el = '<span class="variable" key="' + this._formatterVariablesList[i].value + '" contenteditable="false">' + this._formatterVariablesList[i].value + '</span> ';
+                            break;
                         }
                     }
 
                     // Push the result and advance the cursor
                     ret.push(el);
+                    this._editBlock.append(el);
                 } else {
                     ret.push(segment);
-
+                    this._editBlock.append(document.createTextNode(segment));
                 }
                 str = str.slice(index + 1); // the rest
                 isInside = !isInside; // toggle
                 splitter = isInside ? '}' : '{'; // now look for next matching bracket
             }
-            ret.push(str);
+
             return ret.join('');
+	    },
+*/
+	    restoreValue: function(str){
+	        var splitter = '<span',
+                isInside = false,
+                segment,
+                index;
+
+	        while (str) {
+	            index = str.indexOf(splitter);
+
+                if (index === -1) {
+                    break;
+                }
+
+                segment = str.slice(0, index);
+
+                if (isInside) { // we're on the closing bracket looking back
+                    this._editBlock.append(this.$(segment + '</span>'));
+                    str = str.slice(index + 7);
+                } else {
+                    this._editBlock.append(document.createTextNode(segment));
+                    str = str.slice(index);
+                }
+
+                isInside = !isInside; // toggle
+                splitter = isInside ? '</span>' : '<span'; // now look for next matching bracket
+	        }
+
+	        this._editBlock.append(document.createTextNode(str));
 	    },
 
 	    _findInArray: function(arr, key, value){

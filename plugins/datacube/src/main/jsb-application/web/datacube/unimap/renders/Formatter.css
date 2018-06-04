@@ -19,7 +19,6 @@
     float: right;
 }
 
-.formatter .typeSettings > .jsb-checkbox,
 .formatter .typeSettings > .label {
     display: block;
 }
@@ -115,6 +114,10 @@
     padding: 2px;
     border-radius: 5px;
     margin: 0 2px;
+}
+
+.formatter > .advancedSettings > .btnMultiple {
+    margin-left: 5px;
 }
 
 .formatter > .advancedSettings > .dropDown {
