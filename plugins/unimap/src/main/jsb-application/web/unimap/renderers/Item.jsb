@@ -12,6 +12,22 @@
 	        if(this._scheme.optional){
 	            this.addClass('optional');
 
+	            function hideInput(b){
+                    if(b){
+                        if($this._scheme.multiple){
+                            $this.multipleContainer.removeClass('hidden');
+                        } else {
+                            $this._editors[0] && $this._editors[0].removeClass('hidden');
+                        }
+                    } else {
+                        if($this._scheme.multiple){
+                            $this.multipleContainer.addClass('hidden');
+                        } else {
+                            $this._editors[0] && $this._editors[0].addClass('hidden');
+                        }
+                    }
+	            }
+
 	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 
 	            this.checkBox = new Checkbox({
@@ -19,6 +35,8 @@
 	                label: this._scheme.name,
 	                onchange: function(b){
 	                    $this._values.checked = b;
+
+	                    hideInput(b);
 
 	                    $this.options.onchange.call($this, $this._values);
 	                }
@@ -52,6 +70,10 @@
 	            });
 	            this.multipleContainer.append(this.multipleBtn);
 	            this.append(this.multipleContainer);
+	        }
+
+	        if(this._scheme.optional){
+                hideInput(this._values.checked);
 	        }
 
 	        if(this._values.values.length > 0){

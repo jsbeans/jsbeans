@@ -163,7 +163,7 @@
 
                     item.remove();
                     editor.destroy();
-                    removeBtn.destroy();
+                    removeButton.destroy();
                 });
                 item.append(removeButton);
 

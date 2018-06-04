@@ -11,7 +11,8 @@
             render: 'dataBinding',
             name: 'Фильтрующие поля',
             linkTo: 'source',
-            multiple: true
+            multiple: true,
+            optional: true
 	    },
 
 	    series: {
