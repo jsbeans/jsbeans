@@ -1309,7 +1309,7 @@
 
             var globalFilters = this.getSourceFilters(this._dataSource);
 
-            if(globalFilters){
+            if(globalFilters && Object.keys(globalFilters).length > 0){
                 var newFilters = {},
                     curFilters = {};
 

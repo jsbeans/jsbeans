@@ -306,7 +306,12 @@
                     variable.type = val.options.type;
                     variable.value = val.key;
 
-                    $this.createTypeSettings(variable);
+                    if(variable.type){
+                        var typeSettings = $this.createTypeSettings(variable)
+                        if(typeSettings){
+                            varItem.append(typeSettings);
+                        }
+                    }
                 }
 	        });
 	        selectLabel.append(select.getElement());
@@ -362,7 +367,10 @@
             // type settings
             /*********/
             if(variable.type){
-                varItem.append(this.createTypeSettings(variable));
+                var typeSettings = this.createTypeSettings(variable)
+                if(typeSettings){
+                    varItem.append(typeSettings);
+                }
             }
             /*********/
 
@@ -446,7 +454,7 @@
 	        this._advancedSettings.append(this._editBlock);
 
 	        /* format variables btn */
-	        var addButton = this.$('<i class="btn btnMultiple addVarToTempBtn fas fa-plus-circle"></i>');
+	        var addButton = this.$('<i class="btn btnMultiple fas fa-plus-circle"></i>');
 	        addButton.click(function(evt){
 	            evt.stopPropagation();
 
@@ -565,6 +573,7 @@
                     break;
                 default:
                     delete variable.typeSettings;
+                    return;
 	        }
 
 	        return settingsItem;

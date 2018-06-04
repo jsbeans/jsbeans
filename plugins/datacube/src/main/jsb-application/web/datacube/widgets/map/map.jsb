@@ -771,7 +771,7 @@
                 regionsContext = this.getContext().find('regions').values(),
                 markersContext = this.getContext().find('markers').values();;
 
-            if(globalFilters){
+            if(globalFilters && Object.keys(globalFilters).length > 0){
                 var bindings = [],
                     newFilters = {};
 

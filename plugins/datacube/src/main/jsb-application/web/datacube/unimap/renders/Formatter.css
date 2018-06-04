@@ -85,18 +85,27 @@
 }
 
 .formatter > .advancedSettings > .variablesBlock > .variableItem > .selectLabel > .jsb-select {
-    margin-left: 5px;
+    display: block;
     vertical-align: middle;
 }
 
 .formatter > .advancedSettings > .variablesBlock > .variableItem > .editorLabel {
+    margin-left: 5px;
     display: inline-block;
-    width: 50%;
+    width: 40%;
 }
 
 .formatter > .advancedSettings > .variablesBlock > .variableItem > .editorLabel > input {
-    width: 50%;
+    display: block;
+    width: 100%;
+}
+
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .btnDelete {
     margin-left: 5px;
+}
+
+.formatter > .advancedSettings > .btnMultiple {
+    margin-top: 5px;
 }
 
 .formatter > .advancedSettings > .editBlock > span.variable {
@@ -140,9 +149,4 @@
 .formatter > .advancedSettings > .dropDown > li.selected {
     background: rgb(220, 220, 220);
     border: 1px solid rgb(158, 158, 158);
-}
-
-.formatter > .advancedSettings > .addVarToTempBtn {
-    margin-left: 5px;
-    vertical-align: top;
 }
