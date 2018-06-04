@@ -105,3 +105,18 @@
 .parserView .scheme .itemRender > .name {
 	min-width: auto;
 }
+
+.parserView .tablesView {}
+
+.parserView .tablesView > ._dwp_tabPane {
+	background: none !important;
+}
+
+.parserView .tablesView > ._dwp_tabPane > li._dwp_tab {
+	min-height: auto;
+	padding: 1px 6px 2px 6px;
+}
+
+.parserView .tablesView > ._dwp_tabPane > li._dwp_tab.active {
+	background: #fff;
+}

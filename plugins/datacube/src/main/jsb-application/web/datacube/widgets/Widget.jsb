@@ -254,30 +254,43 @@
         },
 
 		getBindingsData: function(callback){
-            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding');
+            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding'),
+                result = [];
 
-            this.fetchBinding(sourceBindings[0], {readAll: true, reset: true}, function(data){
-                var result = [],
-                    res;
-
-                result.push(Object.keys(data[0]));
-
-                for(var i = 0; i < data.length; i++){
-                    res = [];
-
-                    for(var j in data[i]){
-                        if(JSB.isObject(data[i][j])){
-                            res.push(data[i][j].main);
-                        } else {
-                            res.push(data[i][j]);
-                        }
+            function fetch(isReset){
+                $this.fetchBinding(sourceBindings[0], { fetchSize: 100, reset: isReset }, function(data){
+                    if(data.length === 0){
+                        callback.call($this, result);
+                        $this.getElement().loader('hide');
+                        return;
                     }
 
-                    result.push(res);
-                }
+                    if(result.length === 0){
+                        result.push(Object.keys(data[0]));
+                    }
 
-                callback.call(this, result);
-            });
+                    var res;
+
+                    for(var i = 0; i < data.length; i++){
+                        res = [];
+
+                        for(var j in data[i]){
+                            if(JSB.isObject(data[i][j])){
+                                res.push(data[i][j].main);
+                            } else {
+                                res.push(data[i][j]);
+                            }
+                        }
+
+                        result.push(res);
+                    }
+
+                    fetch();
+                });
+            }
+
+            this.getElement().loader();
+            fetch(true);
 		},
 
 		getCache: function(){

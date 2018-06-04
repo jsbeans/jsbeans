@@ -75,6 +75,10 @@
 			return !JSB().isNull(entry);
 		},
 		
+		getTabs: function(){
+			return this.tabs;
+		},
+		
 		addTab: function(title, cls, opts){
 			var self = this;
 			opts = opts || {};

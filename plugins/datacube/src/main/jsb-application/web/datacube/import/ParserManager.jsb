@@ -103,9 +103,54 @@
 		executePreview: function(entry, parser, values){
 			var pInst = this.createParser(entry, parser, values);
 			try {
+				var context = pInst.getContext();
+				var maxRows = context.find('previewRowCount').value() || 50;
+				var restrictCellLength = context.find('restrictCellLength').checked() ? context.find('restrictCellLength').value() : 0;
+				var tables = {};
+				var tablesCtxArr = context.findAll('tables');
+				if(tablesCtxArr.length == 0){
+					return tables;
+				}
+				for(var i = 0; i < tablesCtxArr.length; i++){
+					var tableCtx = tablesCtxArr[i];
+					var tableName = tableCtx.getName();
+					tables[tableName] = {
+						columns: null,
+						rows: []
+					};
+				}
+				
 				try {
 					pInst.parse(function(tableDesc, rowData){
-						debugger;
+						if(!tables[tableDesc.table]){
+							tables[tableDesc.table] = {
+								columns: null,
+								rows: []
+							}
+						}
+						if(tables[tableDesc.table].rows.length >= maxRows){
+							return;
+						}
+						if(!tables[tableDesc.table].columns){
+							tables[tableDesc.table].columns = tableDesc.columns;
+						}
+						if(restrictCellLength){
+							for(var c in rowData){
+								if(JSB.isString(rowData[c]) && rowData[c].length > restrictCellLength){
+									rowData[c] = rowData[c].substr(0, restrictCellLength) + '...';
+								}
+							}
+						}
+						tables[tableDesc.table].rows.push(rowData);
+						if(tables[tableDesc.table].rows.length >= maxRows){
+							// check for all tables to be filled enough
+							for(var t in tables){
+								if(tables[t].rows.length < maxRows){
+									return;
+								}
+							}
+							throw 'Break';
+						}
 					});
 				} catch(e){
 					if(e != 'Break'){
@@ -114,6 +159,7 @@
 				} 
 				
 				// combine tables
+				return tables;
 			} finally {
 				pInst.destroy();
 			}

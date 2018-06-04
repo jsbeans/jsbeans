@@ -11,3 +11,8 @@
     position: relative;
     margin-top: -15px;
 }
+
+.tableControl .container {
+	max-height: 100%;
+	max-width: 100%;
+}

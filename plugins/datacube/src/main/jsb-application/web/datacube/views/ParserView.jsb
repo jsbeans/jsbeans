@@ -11,7 +11,9 @@
                    'JSB.Widgets.SplitBox',
                    'DataCube.Widgets.WidgetWrapper',
                    'JSB.Widgets.PrimitiveEditor',
-                   'JSB.Widgets.Button'
+                   'JSB.Widgets.Button',
+                   'JSB.Widgets.TabView',
+                   'Handsontable'
         ],
 
 		$constructor: function(opts){
@@ -59,9 +61,13 @@
 			parserSelectorElt.append(this.parserSelectorCombo.getElement());
 			this.schemeScroll.append(parserSelectorElt);
 			
-
-	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
-	        splitBox.append(this.widgetBlock);
+			this.tableTabView = new TabView({
+				tabPosition: 'bottom',
+				allowCloseTab: false,
+				allowNewTab: false
+			});
+			splitBox.append(this.tableTabView);
+			this.tableTabView.addClass('tablesView');
 	        
 	        this.subscribe('Unimap.Render.ParserSourceBinding.analyze', function(sender, msg, params){
 	        	$this.extractStructure(sender);
@@ -167,8 +173,62 @@
 		updatePreview: function(){
 			// TODO: perform validation
 			
-			ParserManager.server().executePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues(), function(){
-				debugger;
+			function renderPreview(tables){
+				var tabsToRemove = [];
+				var tabs = $this.tableTabView.getTabs();
+				for(var tabId in tabs){
+					if(!tables[tabId]){
+						tabsToRemove.push(tabId);
+					}
+				}
+				for(var i = 0; i < tabsToRemove.length; i++){
+					$this.tableTabView.removeTab(tabsToRemove[i]);
+				}
+				
+				// render
+				for(var t in tables){
+					(function(t){
+						var tableCtrl = null;
+						if(!tabs[t]){
+							tableCtrl = new Handsontable({
+								table: {
+				                    rowHeaders: false,
+				                    readOnly: false,
+				                    manualRowMove: false,
+				                    //colWidths: 300,
+				                    //stretchH: 'none'
+				                },
+				                callbacks: {
+				                    createHeader: function(i, header) {
+				                    	if(!header) return i + 1;
+				                    	 return '<div>' + header + '</div>';
+				                    },
+				                    preLoader: function(rowCount){}
+				                }
+							});
+							$this.tableTabView.addTab(t, tableCtrl, {id:t});
+							tabs = $this.tableTabView.getTabs();
+						} else {
+							tableCtrl = tabs[t].ctrl;
+						}
+						
+						// fill table
+						tableCtrl.ensureInitialized(function(){
+							debugger;
+							tableCtrl.loadData(tables[t].rows);	
+						});
+					})(t);
+				}
+			}
+			
+			$this.tableTabView.getElement().loader();
+			ParserManager.server().executePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues(), function(tables, fail){
+				if(fail){
+					// TODO: show error message
+					return;
+				}
+				renderPreview(tables);
+				$this.tableTabView.getElement().loader('hide');
 			});
 		},
 /*
