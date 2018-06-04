@@ -141,7 +141,6 @@
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab > ._dwp_tabText {
 	display: inline-block;
 	vertical-align: middle;
-	margin-right: 3px;
 	text-shadow: 1px 1px #fff;
 	color: #666;
 }

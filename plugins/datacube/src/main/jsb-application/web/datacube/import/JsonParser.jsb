@@ -10,12 +10,6 @@
 			        name: 'Обрезать пробелы в строках',
 			        optional: 'checked',
 			        editor: 'none'
-			    },
-				multiTable: {
-			        render: 'item',
-			        name: 'Разбить на несколько таблиц',
-			        optional: true,
-			        editor: 'none'
 			    }
 			}
 		}
@@ -209,8 +203,6 @@
 		},
 		
 		prepare: function(){
-			// do additional operations
-			var isMultiTable = this.context.find('multiTable').checked();
 		}
 	}
 }

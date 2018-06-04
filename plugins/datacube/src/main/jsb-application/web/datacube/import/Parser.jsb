@@ -6,18 +6,35 @@
 		parserSettings: {
 			render: 'group',
 	        name: 'Парсер',
-	        collapsible: false,
 	        items: {}
 		},
 		
-		structure: {
-			render: 'parserBinding'
+		analyzer: {
+			render: 'group',
+	        name: 'Анализатор',
+	        items: {
+	        	useHeuristics: {
+	        		render: 'switch',
+	        		name: 'Использовать эвристику при извлечении структуры',
+	        		optional: 'checked',
+	        		items: {
+	        			heuricticRecords: {
+		        			render: 'item',
+			        		name: 'Количество записей для анализа',
+			        		value: 30,
+			        		valueType: 'number'
+	        			}
+	        		}
+	        	},
+	    		structure: {
+	    			render: 'parserBinding'
+	    		}
+	        }
 		},
 		
 		previewSettings: {
 			render: 'group',
 	        name: 'Предварительный просмотр',
-	        collapsible: false,
 	        items: {
 	        	previewRowCount: {
 	        		render: 'item',
@@ -38,7 +55,6 @@
 		tablesSettings: {
 			render: 'group',
 	        name: 'Таблицы',
-	        collapsible: false,
 	        sortable: false,
 	        
 	        multiple: {
@@ -51,18 +67,6 @@
 	        		name: 'Таблица',
 	        		editableName: true,
 	        		items: {
-	        			store: {
-	        				render: 'select',
-	        				name: 'Сохранить в',
-	        				items: {
-	        					database: {
-	        						name: 'базу'
-	        					},
-	        					collection: {
-	        						name: 'коллекцию'
-	        					}
-	        				}
-	        			},
 	        			columns: {
 	        				render: 'group',
 	        				multiple: true,
@@ -79,12 +83,6 @@
                                 	editor: 'scheme',
                                 	selectNodes: false,
                                     linkTo: 'structure'
-    							},
-    							index: {
-    								name: 'Установить индексацию',
-    								render: 'item',
-    								optional: true,
-    								editor: 'none'
     							},
 	        					transforms: {
 	        						render: 'group',
@@ -186,6 +184,7 @@
 	$server: {
 		entry: null,
 		context: null,
+		cancelFlag: false,
 		
 		mode: null,
 		
@@ -218,6 +217,13 @@
 			$base();
 			this.entry = entry;
 			this.context = context;
+			
+			this.subscribe('ParserManager.cancel', function(sender, msg, entry){
+				if($this.entry != entry){
+					return;
+				}
+				$this.cancelFlag = true;
+			});
 		},
 		
 		isAnalyzing: function(){
@@ -236,14 +242,23 @@
 			return this.context;
 		},
 		
+		getEntry: function(){
+			return this.entry;
+		},
+		
 		checkBreak: function(){
+			if($this.cancelFlag){
+				throw 'Cancel';
+			}
 			if(this.mode == 0){
 				if(this.structScope != this.structTopArray){
 					return;
 				}
-				if(this.structScope.count - this.structLastChangedCount > 10){
-					throw 'Break';
-				}	
+				if(this.useHeuristics){
+					if(this.structScope.count - this.structLastChangedCount > this.heuristicRecords){
+						throw 'Break';
+					}	
+				}
 			} else if(this.mode == 1){
 				if(this.dataScope != this.dataTopArray){
 					return;
@@ -293,6 +308,10 @@
 		},
 		
 		beginArray: function(field){
+			if($this.cancelFlag){
+				throw 'Cancel';
+			}
+
 			if(field === null){
 				if(this.mode == 0){
 					this.struct = {count: 0, type:'array', arrayType:null};
@@ -358,6 +377,10 @@
 		},
 		
 		endArray: function(){
+			if($this.cancelFlag){
+				throw 'Cancel';
+			}
+
 			this.scopeType = this.scopeTypeStack.pop();
 			if(this.mode == 0){
 				this.structScope = this.structStack.pop();
@@ -368,6 +391,10 @@
 		},
 		
 		beginObject: function(field){
+			if($this.cancelFlag){
+				throw 'Cancel';
+			}
+
 			if(field === null){
 				if(this.mode == 0){
 					this.struct = {type:'object', record:{}};
@@ -417,6 +444,10 @@
 		},
 		
 		endObject: function(){
+			if($this.cancelFlag){
+				throw 'Cancel';
+			}
+
 			this.scopeType = this.scopeTypeStack.pop();
 			if(this.mode == 0){
 				this.structScope = this.structStack.pop();
@@ -427,6 +458,10 @@
 		},
 		
 		setValue: function(field, value){
+			if($this.cancelFlag){
+				throw 'Cancel';
+			}
+
 			function checkTypeOrder(newType, oldType){
 				return $this.typeOrder[newType] > $this.typeOrder[oldType];
 			}
@@ -482,6 +517,10 @@
 		
 		analyze: function(){
 			this.mode = 0;	// analyze mode
+			this.useHeuristics = this.getContext().find('useHeuristics').checked();
+			if(this.useHeuristics){
+				this.heuristicRecords = this.getContext().find('heuricticRecords').value();
+			}
 			this.execute();
 		},
 

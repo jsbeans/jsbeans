@@ -9,9 +9,9 @@
 			this.server().getSupportedParsers(entry, callback);
 		},
 		
-		onAnalysisComplete: function(entry, struct, values){
-			$this.publish('ParserManager.analysisComplete', {entry: entry, struct:struct, values:values});
-		},
+		onStatusChanged: function(entry){
+			$this.publish('ParserManager.statusChanged', entry);
+		}
 	},
 	
 	$server: {
@@ -69,20 +69,24 @@
 				bootstrap: bootstrap,
 				values: values
 			});
-			return new pJsbClass(entry, valSel);
+			var parser = new pJsbClass(entry, valSel);
+			return parser;
 		},
 		
 		runStructureAnalyzing: function(entry, parser, values){
 			var pInst = this.createParser(entry, parser, values);
 			JSB.defer(function(){
 				JSB.getLogger().debug('Analyzing structure for: ' + entry.getName());
-				entry.property('status', 1);
+				entry.property('status', 'analyzing');
+				$this.client().onStatusChanged(entry);
 				var struct = null;
 				try {
 					try {
 						pInst.analyze();
 					} catch(e){
 						if(e != 'Break'){
+							debugger;
+							entry.property('lastParserMessage', e);
 							throw e;
 						}
 					}
@@ -90,14 +94,44 @@
 					pInst.prepare();
 					
 					entry.property('structure', struct);
-					entry.property('status', 0);
+					entry.property('values', values);
+					entry.property('lastParserMessage', null);
 					JSB.getLogger().debug('Analysis complete for: ' + entry.getName() + ': ' + JSON.stringify(struct, null, 4));
-					$this.client().onAnalysisComplete(entry, struct, {});
 				} finally {
+					entry.property('status', 'ready');
+					$this.client().onStatusChanged(entry);
 					pInst.destroy();
 				}
 			}, 0);
 			return pInst;
+		},
+		
+		loadSourcePreview: function(entry, parser, values){
+			var pInst = this.createParser(entry, parser, values);
+			try {
+				return pInst.getSourcePreview();
+			} finally {
+				pInst.destroy();
+			}
+		},
+		
+		getEntryStatus: function(entry){
+			return {
+				status: entry.property('status') || 'ready',
+				structure: entry.property('structure'),
+				values: entry.property('values')
+			}
+		},
+		
+		storeEntryValues: function(entry, values){
+			entry.property('values', values);
+			$this.client().onStatusChanged(entry);
+		},
+		
+		cancelAction: function(entry){
+			this.publish('ParserManager.cancel', entry);
+			entry.property('status', 'ready');
+			$this.client().onStatusChanged(entry);
 		},
 		
 		executePreview: function(entry, parser, values){

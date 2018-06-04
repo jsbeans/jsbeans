@@ -38,12 +38,31 @@
 				stream: true,
 				binary: false,
 				charset: charset
-			})
+			});
 		},
 		
 		destroy: function(){
 			this.stream.close();
 			$base();
+		},
+		
+		getSourcePreview: function(){
+			var val = this.getContext().find('encoding').value();
+			var charset = this.encodingMap[val];
+			var stream = this.getEntry().read({
+				stream: true,
+				binary: false,
+				charset: charset
+			});
+			var lines = [];
+			try {
+				var data = stream.read(131062);
+				lines = data.split(/\n/i);
+				lines = lines.slice(0, 100);
+			} finally {
+				stream.close();
+			}
+			return lines;
 		}
 	}
 }
