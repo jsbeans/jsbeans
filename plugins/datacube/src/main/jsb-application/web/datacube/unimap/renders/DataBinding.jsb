@@ -163,7 +163,7 @@
 
                     item.remove();
                     editor.destroy();
-                    removeButton.destroy();
+                    removeButton.remove();
                 });
                 item.append(removeButton);
 
@@ -244,15 +244,17 @@
 	        this._errorList = [];
 
 	        for(var i = 0; i < this._values.values.length; i++){
-	            if(this._bindingsInfo[this._values.values[i].value]){
-	                this._values.values[i].bindingType = this._bindingsInfo[this._values.values[i].value].type;
-	            } else {
-	                this._editors[i].setValue();
-                    this._values.values[i].binding = undefined;
-                    this._values.values[i].bindingType = undefined;
-                    this._values.values[i].value = undefined;
-                    this._errorList.push(i);
-	            }
+	            if(JSB.isDefined(this._values.values[i].value)){
+                    if(this._bindingsInfo[this._values.values[i].value]){
+                        this._values.values[i].bindingType = this._bindingsInfo[this._values.values[i].value].type;
+                    } else {
+                        this._editors[i].setValue();
+                        this._values.values[i].binding = undefined;
+                        this._values.values[i].bindingType = undefined;
+                        this._values.values[i].value = undefined;
+                        this._errorList.push(i);
+                    }
+                }
 	        }
 
 	        if(this._errorList.length > 0){
