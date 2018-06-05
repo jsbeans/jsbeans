@@ -119,6 +119,22 @@
         this._selectorOpts.checked = b;
     },
 
+    removeAllValues: function(){
+        this._values = [];
+    },
+
+    removeValue: function(){
+        //
+    },
+
+    removeValues: function(){
+        //
+    },
+
+    setName: function(name){
+        this._selectorOpts.name = name;
+    },
+
     setValue: function(val){
         this._values[0].value = val;
     },

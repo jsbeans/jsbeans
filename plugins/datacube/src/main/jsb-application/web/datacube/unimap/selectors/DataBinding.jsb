@@ -47,6 +47,15 @@
         return this._values[0] && JSB.isDefined(this._values[0].binding);
     },
 
+    setBinding: function(binding){
+        if(this._values || this._values.length === 0){
+            this._values = [];
+            this._values.push({});
+        }
+
+        this._values[0].binding = binding;
+    },
+
     value: function(layer){
         if(!this._values || this._values.length === 0){
             return;
