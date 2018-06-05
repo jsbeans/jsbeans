@@ -84,8 +84,9 @@
 			});
 		},
 		
-		$constructor: function(entry, context){
-			$base(entry, context);
+		$constructor: function(entry, values){
+			$base(entry, values);
+			
 			var comma = this.getContext().find('delimiter').value();
 			var quote = this.getContext().find('escapeChar').value();
 			var useHeader = this.getContext().find('header').checked();
@@ -185,9 +186,7 @@
 		execute: function(){
 			var parser = Peg.generate(this.csvGrammar);
 			Peg.parseStream(parser, this.stream);
-		},
-		
-		prepare: function(){
 		}
+		
 	}
 }

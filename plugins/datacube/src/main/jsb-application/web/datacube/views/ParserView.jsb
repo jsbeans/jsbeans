@@ -156,6 +156,7 @@
 		
 		updateStatus: function(){
 			ParserManager.server().getEntryStatus($this.entry, function(info){
+				debugger;
 				$this.applyValues(info.structure, info.values);
 				$this.setCurrentStatus(info.status);
 			});

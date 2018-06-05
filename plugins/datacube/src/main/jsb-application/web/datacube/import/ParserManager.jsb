@@ -15,7 +15,6 @@
 	},
 	
 	$server: {
-		$require: ['Unimap.ValueSelector'],
 		parsers: {},
 		
 		registerParser: function(parserJsb, opts){
@@ -29,15 +28,15 @@
 			this.parsers[parserJsb.$name] = {opts: opts};
 		},
 		
-		getSupportedParsers: function(fileEntry){
-			function getParserScheme(jsb){
-				if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
-					return;
-				}
-				
-				return JSB.merge(true, {}, getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
+		getParserScheme: function(jsb){
+			if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
+				return;
 			}
 			
+			return JSB.merge(true, {}, this.getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
+		},
+		
+		getSupportedParsers: function(fileEntry){
 			var supported = [];
 			for(var pJsbName in this.parsers){
 				var pDesc = this.parsers[pJsbName];
@@ -50,7 +49,7 @@
 					var pJsb = JSB.get(pJsbName);
 					supported.push({
 						jsb: pJsbName,
-						scheme: getParserScheme(pJsb),
+						scheme: this.getParserScheme(pJsb),
 						name: pOpts.name
 					});
 				}
@@ -64,12 +63,8 @@
 				throw new Error('Failed to find parser: ' + parser);
 			}
 			var pJsbClass = JSB.get(parser).getClass();
-			var bootstrap = 'Datacube.Unimap.Bootstrap';
-			var valSel = new ValueSelector({
-				bootstrap: bootstrap,
-				values: values
-			});
-			var parser = new pJsbClass(entry, valSel);
+			
+			var parser = new pJsbClass(entry, values);
 			return parser;
 		},
 		
@@ -94,7 +89,7 @@
 					pInst.prepare();
 					
 					entry.property('structure', struct);
-					entry.property('values', values);
+					entry.property('values', pInst.getValues());
 					entry.property('lastParserMessage', null);
 					JSB.getLogger().debug('Analysis complete for: ' + entry.getName() + ': ' + JSON.stringify(struct, null, 4));
 				} finally {

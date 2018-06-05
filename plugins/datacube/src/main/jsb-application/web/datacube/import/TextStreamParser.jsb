@@ -30,9 +30,9 @@
 			'encUtf16': 'UTF-16'
 		},
 		
-		$constructor: function(entry, context){
-			$base(entry, context);
-			var val = context.find('encoding').value();
+		$constructor: function(entry, values){
+			$base(entry, values);
+			var val = this.getContext().find('encoding').value();
 			var charset = this.encodingMap[val];
 			this.stream = entry.read({
 				stream: true,

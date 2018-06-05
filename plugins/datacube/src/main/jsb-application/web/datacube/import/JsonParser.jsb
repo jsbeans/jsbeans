@@ -28,8 +28,8 @@
 			});
 		},
 		
-		$constructor: function(entry, context){
-			$base(entry, context);
+		$constructor: function(entry, values){
+			$base(entry, values);
 			
 			this.jsonGrammar = `#dot
 			// JSON Grammar
@@ -200,9 +200,6 @@
 		execute: function(){
 			var parser = Peg.generate(this.jsonGrammar);
 			Peg.parseStream(parser, this.stream);
-		},
-		
-		prepare: function(){
 		}
 	}
 }

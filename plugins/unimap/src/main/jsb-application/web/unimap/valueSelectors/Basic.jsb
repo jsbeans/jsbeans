@@ -122,7 +122,13 @@
     },
 
     removeAllValues: function(){
-        this._values = [];
+    	if(!this._values){
+    		return;
+    	}
+    	
+        for(var i = this._values.length - 1; i > -1 ; i--){
+        	this._values.splice(i, 1);
+        }
     },
 
     removeValue: function(){
@@ -137,7 +143,11 @@
         this._selectorOpts.name = name;
     },
 
-    setValue: function(val){
+    setValue: function(val){    	
+    	if(!this._values[0]){
+    		this._values[0] = {};
+    	}
+    	
         this._values[0].value = val;
     },
 

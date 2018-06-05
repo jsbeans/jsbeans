@@ -27,21 +27,21 @@
             itemsKeys = Object.keys(schemePart.items),
             value = {};
 
-        this.createDefaultValues(this.getKey(), schemePart, value, {linkedFields: {}});
+        this.createDefaultValues(this.getKey(), schemePart, value, {linkedFields: {}}, true);
 
-        this._values.push(value);
+        this._values.push(value.values[0]);
 
         if(itemsKeys.length > 1){
             return this.getRenderByName(this.getRenderName()).getInstance({selector: value, schemePath: this._schemePath + ".items." + itemsKeys[0]});
         } else {
-            return this.getRenderByName(schemePart.items[itemsKeys[0]]).getInstance({key: itemsKeys[0], selector: value, schemePath: this._schemePath + '.items.' + itemsKeys[0]});
+            return this.getRenderByName(schemePart.items[itemsKeys[0]].render).getInstance({key: itemsKeys[0], selector: value.values[0][itemsKeys[0]], schemePath: this._schemePath + '.items.' + itemsKeys[0]});
         }
     },
 
-    createDefaultValues: function(key, scheme, values, opts){
+    createDefaultValues: function(key, scheme, values, opts, isAddNewValue){
         $base(key, scheme, values, opts);
 
-        if(scheme.multiple){
+        if(scheme.multiple && !isAddNewValue){
             return;
         }
 
@@ -70,7 +70,9 @@
 
         if(JSB.isString(schemePath)){
             if(schemePath.length > 0){
-                schemePath += '.items';
+        		if(schemePath.length - schemePath.lastIndexOf('items') !== 5){
+        			schemePath += '.items';
+        		}
             } else {
                 schemePath += 'items';
             }

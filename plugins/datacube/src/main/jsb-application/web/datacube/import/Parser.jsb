@@ -182,6 +182,8 @@
 	},
 	
 	$server: {
+		$require: ['Unimap.ValueSelector'],
+		
 		entry: null,
 		context: null,
 		cancelFlag: false,
@@ -213,10 +215,16 @@
 			'array': 6
 		},
 		
-		$constructor: function(entry, context){
+		$constructor: function(entry, values){
 			$base();
 			this.entry = entry;
-			this.context = context;
+			this.values = values;
+			
+			this.context = new ValueSelector({
+				bootstrap: 'Datacube.Unimap.Bootstrap',
+				values: this.values,
+				scheme: this.getParserScheme(this.getJsb())
+			});
 			
 			this.subscribe('ParserManager.cancel', function(sender, msg, entry){
 				if($this.entry != entry){
@@ -225,6 +233,15 @@
 				$this.cancelFlag = true;
 			});
 		},
+		
+		getParserScheme: function(jsb){
+			if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
+				return;
+			}
+			
+			return JSB.merge(true, {}, this.getParserScheme(jsb.getParent()) || {}, jsb.getDescriptor().$scheme || {})
+		},
+
 		
 		isAnalyzing: function(){
 			return this.mode == 0;
@@ -244,6 +261,10 @@
 		
 		getEntry: function(){
 			return this.entry;
+		},
+		
+		getValues: function(){
+			return this.values;
 		},
 		
 		checkBreak: function(){
@@ -523,7 +544,88 @@
 			}
 			this.execute();
 		},
-
+		
+		prepare: function(){
+			var struct = this.getStruct();
+			
+			// generate columns
+			var cols = [];
+			var pathMap = {};
+			var nameMap = {};
+			
+			function generateName(bindingPath){
+				var parts = bindingPath.split(/\./i);
+				var qName = '';
+				var lastName = '';
+				for(var i = 0; i < parts.length - 1; i++){
+					var part = parts[i];
+					if(qName && qName.length > 0){
+						qName += '.';
+					}
+					qName += part;
+					if(!pathMap[qName]){
+						var testName = null;
+						for(var j = 1; ; j++){
+							var nc = '' + part.charAt(0).toLowerCase();
+							if(j > 1){
+								nc += j;
+							}
+							testName = lastName + nc;
+							if(!nameMap[testName]){
+								nameMap[testName] = true;
+								break;
+							}
+						}
+						pathMap[qName] = testName;
+					}
+					 
+					lastName = pathMap[qName];
+				}
+				var fName = parts[parts.length - 1];
+				if(lastName && lastName.length > 0){
+					fName = lastName + '-' + fName;
+				}
+				return fName;
+			}
+			
+			function processStructureElement(elt, path){
+				if(elt.type == 'object'){
+					for(var f in elt.record){
+						var p = (path && path.length > 0 ? (path + '.') : '') + f;
+						processStructureElement(elt.record[f], p);
+					}
+				} else if(elt.type == 'array'){
+					processStructureElement(elt.arrayType, path);
+				} else {
+					cols.push({
+						name: generateName(path),
+						type: elt.type,
+						binding: path
+					});
+				}
+			}
+			
+			processStructureElement(struct, null);
+			
+			
+			
+			var tableGroup = this.getContext().find('tablesSettings');
+			tableGroup.removeAllValues();
+			var tableSel = tableGroup.addValue();
+			var tName = this.getEntry().getName().replace(/\./g, '_');
+			tableSel.setName(tName);
+						
+			var colGroup = tableSel.find('columns');
+			
+			for(var i = 0; i < cols.length; i++){
+				var colDesc = cols[i];
+				var colSel = colGroup.addValue();
+				colSel.find('columnAlias').setValue(colDesc.name);
+				colSel.find('field').setBinding(colDesc.binding);
+			}
+			
+			
+		},
 		
 		parse: function(rowCallback){
 			this.mode = 1; // parse mode

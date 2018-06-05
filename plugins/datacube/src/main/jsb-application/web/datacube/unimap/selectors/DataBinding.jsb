@@ -48,12 +48,12 @@
     },
 
     setBinding: function(binding){
-        if(this._values || this._values.length === 0){
-            this._values = [];
+        if(!this._values || this._values.length === 0){
             this._values.push({});
         }
 
         this._values[0].binding = binding;
+        this._values[0].value = binding;
     },
 
     value: function(layer){
