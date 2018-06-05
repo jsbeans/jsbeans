@@ -26,7 +26,7 @@
                     }
                 },
                 onTitleEdited: function(val){
-                    if($this._scheme.editableName && $this._scheme.editableName.commonField){
+                    if($this._scheme.editableName){
                         var parent = $this.getParent();
                         if(JSB.isObject(parent.isMultiple()) && parent.isMultiple().uniqueNames){
                             delete parent._childNames[$this._values.name];
@@ -34,7 +34,10 @@
                             parent._childNames[val] = true;
                         }
 
-                        $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name);
+                        if($this._scheme.editableName.commonField){
+                            $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name);
+                        }
+
                         $this._values.name = val;
                     }
                 }
