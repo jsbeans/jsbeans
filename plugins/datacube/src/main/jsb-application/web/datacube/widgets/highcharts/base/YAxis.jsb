@@ -59,8 +59,13 @@
                                     formatterOpts: {
                                         variables: [
                                             {
-                                                alias: 'Значение',
+                                                alias: 'Значение строчное',
                                                 type: 'string',
+                                                value: 'value'
+                                            },
+                                            {
+                                                alias: 'Значение числовое',
+                                                type: 'number',
                                                 value: 'value'
                                             }
                                         ]

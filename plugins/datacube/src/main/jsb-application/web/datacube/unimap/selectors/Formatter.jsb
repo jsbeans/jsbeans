@@ -9,17 +9,17 @@
 
         if(JSB.isDefined(this._values[0].isAdvancedSettings)){
             if(this._values[0].isAdvancedSettings){
-                return this._values[0].advancedValue;
+                return this._values[0].advancedValue || undefined;
             } else {
-                return this._values[0].baseValue;
+                return this._values[0].baseValue || undefined;
             }
         } else {
             if(JSB.isDefined(this._values[0].baseValue)){
-                return this._values[0].baseValue;
+                return this._values[0].baseValue || undefined;
             }
 
             if(JSB.isDefined(this._values[0].advancedValue)){
-                return this._values[0].advancedValue;
+                return this._values[0].advancedValue || undefined;
             }
 
             return this._values[0].value;

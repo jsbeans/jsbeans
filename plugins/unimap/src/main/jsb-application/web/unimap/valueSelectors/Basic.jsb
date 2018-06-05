@@ -45,10 +45,6 @@
         }
     },
 
-    addValue: function(){
-        // todo
-    },
-
     checked: function(){
         if(!this._selectorOpts){
             return undefined;
