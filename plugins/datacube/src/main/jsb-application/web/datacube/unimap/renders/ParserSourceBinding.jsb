@@ -109,6 +109,13 @@
 
 		    this.onchange();
 		},
+		
+		getScheme: function(){
+			if(this._values && this._values.values && this._values.values.length > 0){
+				return this._values.values[0].binding;
+			}
+			return null;
+		},
 
 	    disable: function(){
 	        if(this._disabled){

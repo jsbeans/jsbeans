@@ -87,7 +87,7 @@
     display: inline-block;
     position: relative;
     top: -3px;
-	margin-right: 4px;
+	margin-right: 6px;
 }
 
 .parserView .parserSelector > .label {
@@ -209,6 +209,12 @@
 .parserView[stage="tables"] .scheme > [key="tablesSettings"] {
 	display: block;
 }
+
+.parserView[stage="import"] .scheme > [key="importSettings"] {
+	display: block;
+}
+
+
 
 /* message */
 div.ajaxloader[key="parser"] > div.ajaxloaderInfo {
