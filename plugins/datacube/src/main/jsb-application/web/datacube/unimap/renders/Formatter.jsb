@@ -167,7 +167,7 @@
                     variables = editBlockCopy.find('>span.variable');
 
                 // todo: bindings
-                /*
+                
                 for(var i = 0; i < variables.length; i++){
                     var key = this.$(variables[i]).attr('key'),
                         index = this._findInArray(this._formatterVariablesList, 'value', key),
@@ -182,7 +182,6 @@
                         this.$(variables[i]).replaceWith('{' + $this._formatterVariablesList[index].innerValue + typeSettings + '}');
                     }
                 }
-                */
 
                 var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox');
 
