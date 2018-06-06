@@ -67,7 +67,7 @@
             
             // add stages
             this.stageCtrl.addTab('<span>1</span>Анализ', $this.$('<div class="stagePage"></div>'), {id: 'analysis'});
-            this.stageCtrl.addTab('<span>2</span>Настройка таблиц', $this.$('<div class="stagePage"></div>'), {id: 'tables'});
+            this.stageCtrl.addTab('<span>2</span>Настройка', $this.$('<div class="stagePage"></div>'), {id: 'tables'});
             this.stageCtrl.addTab('<span>3</span>Импорт', $this.$('<div class="stagePage"></div>'), {id: 'import'});
             
             
