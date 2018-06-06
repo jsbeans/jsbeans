@@ -107,43 +107,19 @@
 	        
 		},
 		
-		
-
 		refresh: function(){
 			this.entry = this.node.getEntry();
+			$this.enableStage('analysis', false);
+			$this.clearTablesPreview();
+
 			ParserManager.getSupportedParsers(this.entry, function(parsers){
 				$this.setParsers(parsers);
 				
 				$this.updateSourcePreview();
 				
+				
 				$this.updateStatus();
 			});
-
-/*
-            if(this.widgetSchemeRenderer){
-                this.widgetSchemeRenderer.destroy();
-            }
-
-            this.wrapper.ensureWidgetInitialized(function(){
-                var widget = $this.wrapper.getWidget();
-
-                $this.widgetSchemeRenderer = new Controller({
-                    scheme: widget.getEntry().extractWidgetScheme(),
-                    values: widget.getValues(),
-                    bootstrap: 'Datacube.Unimap.Bootstrap',
-                    onchange: function(key, values){
-                        if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
-                            return;
-                        }
-
-                        JSB().defer(function(){
-                            $this.setChanges();
-                        }, 800, "widgetSettingsView_setChanges" + $this.getId());
-                    }
-                });
-                $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
-            });
-*/
 		},
 		
 		updateStatus: function(){
@@ -167,10 +143,16 @@
 				this.stageCtrl.enableTab('import', false);
 				
 				this.stageCtrl.switchTab('analysis');
-				
+
 				
 			} else if(status == 'importing'){
-				this.schemeScroll.getElement().loader({message:'Выполняется импорт...'});
+				this.schemeScroll.getElement().loader({
+					style:'parser',
+					message:`#dot 
+							<div class="title">Выполняется импорт файла...</div>
+							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnCancel" caption="Отмена"
+								onclick="{{=$this.callbackAttr(function(evt){ $this.cancelAction(); })}}"></div>`
+				});
 				
 				this.stageCtrl.enableTab('analysis', false);
 				this.stageCtrl.enableTab('tables', false);
@@ -243,6 +225,7 @@
 		
 		applyValues: function(values){
 			if(!values){
+				this.switchStage('analysis');
 				return;
 			}
 			var pDesc = null;
@@ -311,8 +294,13 @@
 					var s = stages[i];
 					this.stageCtrl.enableTab(s, false);
 					if(curStage == s){
-						curStage = stages[i - 1];
-						needSwitchStage = true;
+						if(i > 0){
+							curStage = stages[i - 1];
+							needSwitchStage = true;
+						} else {
+							curStage = null;
+							needSwitchStage = false;
+						}
 					}
 					if(s == stage){
 						break;

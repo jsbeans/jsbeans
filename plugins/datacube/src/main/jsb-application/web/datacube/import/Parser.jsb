@@ -190,7 +190,7 @@
 	        		items: {
 	        			database: {
 	        				render: 'group',
-	        				name: 'Базу',
+	        				name: 'базу',
 	        				items: {
 	        					databaseEntry: {
 	        						render: 'databaseBinding',
