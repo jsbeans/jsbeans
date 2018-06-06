@@ -51,7 +51,7 @@
                                 ]
                             },
                             valueType: 'string',
-                            //defaultValue: '{value}'
+                            defaultValue: '{value}'
                         },
                         fontColor: {
                             render: 'item',
