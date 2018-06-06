@@ -114,15 +114,7 @@
 			ParserManager.getSupportedParsers(this.entry, function(parsers){
 				$this.setParsers(parsers);
 				
-				ParserManager.server().loadSourcePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues(), function(lines){
-					$this.sourcePanel.empty();
-					if(JSB.isArray(lines)){
-						for(var i = 0; i < lines.length; i++){
-							$this.sourcePanel.append($this.$('<div class="line"></div>').text(lines[i]));
-						}
-					}
-					
-				});
+				$this.updateSourcePreview();
 				
 				$this.updateStatus();
 			});
@@ -156,7 +148,7 @@
 		
 		updateStatus: function(){
 			ParserManager.server().getEntryStatus($this.entry, function(info){
-				$this.applyValues(info.structure, info.values);
+				$this.applyValues(info.values);
 				$this.setCurrentStatus(info.status);
 			});
 		},
@@ -236,6 +228,7 @@
 	                    values: vals,
 	                    bootstrap: bootstrap,
 	                    onchange: function(key, values){
+	                    	$this.schemeChanged(key, values);
 	                    }
 	                });
 					$this.schemeScroll.append($this.schemeRenderer.getElement());
@@ -248,188 +241,196 @@
 			ParserManager.server().runStructureAnalyzing($this.entry, $this.currentParser, $this.schemeRenderer.getValues());
 		},
 		
-		applyValues: function(struct, values){
-			if(values){
-				var pDesc = null;
-				for(var i = 0; i < $this.parsers.length; i++){
-					pDesc = $this.parsers[i];
-					if(pDesc.jsb == $this.currentParser){
-						break;
-					}
-					pDesc = null;
-				}
-				var bootstrap = 'Datacube.Unimap.Bootstrap';
-				var newSchemeRenderer = new Controller({
-                    scheme: pDesc.scheme,
-                    values: values,
-                    bootstrap: bootstrap,
-                    onchange: function(key, values){
-                    }
-                });
-				if($this.schemeRenderer){
-					$this.schemeRenderer.getElement().after(newSchemeRenderer.getElement());
-					$this.schemeRenderer.destroy();
-					$this.schemeRenderer = newSchemeRenderer;
-				} else {
-					$this.schemeRenderer = newSchemeRenderer;
-					$this.schemeScroll.append($this.schemeRenderer.getElement());
-				}
-				
+		applyValues: function(values){
+			if(!values){
+				return;
 			}
-			$this.schemeRenderer.findRenderByKey('structure').setScheme(struct);
-			if(struct){
-				this.stageCtrl.enableTab('tables', true);
-				this.stageCtrl.switchTab('tables');
+			var pDesc = null;
+			for(var i = 0; i < $this.parsers.length; i++){
+				pDesc = $this.parsers[i];
+				if(pDesc.jsb == $this.currentParser){
+					break;
+				}
+				pDesc = null;
+			}
+			var bootstrap = 'Datacube.Unimap.Bootstrap';
+			var newSchemeRenderer = new Controller({
+                scheme: pDesc.scheme,
+                values: values,
+                bootstrap: bootstrap,
+                onchange: function(key, values){
+                	$this.schemeChanged(key, values);
+                }
+            });
+			if($this.schemeRenderer){
+				$this.schemeRenderer.getElement().after(newSchemeRenderer.getElement());
+				$this.schemeRenderer.destroy();
+				$this.schemeRenderer = newSchemeRenderer;
 			} else {
-				this.stageCtrl.enableTab('tables', false);
-				this.stageCtrl.switchTab('analysis');
+				$this.schemeRenderer = newSchemeRenderer;
+				$this.schemeScroll.append($this.schemeRenderer.getElement());
 			}
 
-			this.validateValuesForImport();
+			var struct = $this.schemeRenderer.findRenderByKey('structure').getScheme();
+			if(struct){
+				this.switchStage('tables');
+//				this.stageCtrl.enableTab('tables', true);
+//				this.stageCtrl.switchTab('tables');
+				this.updateTablesPreview();
+			} else {
+				this.enableStage('tables', false);
+//				this.stageCtrl.enableTab('import', false);
+//				this.stageCtrl.enableTab('tables', false);
+//				this.stageCtrl.switchTab('analysis');
+			}
 		},
 		
-		validateValuesForImport: function(){
-			
+		schemeChanged: function(key, values){
+			debugger;
 		},
 		
-		updatePreview: function(){
-			// TODO: perform validation
-			
-			function renderPreview(tables){
-				var tabsToRemove = [];
-				var tabs = $this.tableTabView.getTabs();
-				for(var tabId in tabs){
-					if(tabId != '__source' && !tables[tabId]){
-						tabsToRemove.push(tabId);
+		switchStage: function(stage){
+			this.enableStage(stage, true);
+			this.stageCtrl.switchTab(stage);
+		},
+		
+		enableStage: function(stage, b){
+			var stages = ['analysis', 'tables', 'import'];
+			if(b){
+				for(var i = 0; i < stages.length; i++){
+					var s = stages[i];
+					this.stageCtrl.enableTab(s, true);
+					if(s == stage){
+						break;
 					}
 				}
-				for(var i = 0; i < tabsToRemove.length; i++){
-					$this.tableTabView.removeTab(tabsToRemove[i]);
+			} else {
+				var curStage = this.stageCtrl.getCurrentTab().id;
+				var needSwitchStage = false;
+				for(var i = stages.length - 1; i >= 0; i--){
+					var s = stages[i];
+					this.stageCtrl.enableTab(s, false);
+					if(curStage == s){
+						curStage = stages[i - 1];
+						needSwitchStage = true;
+					}
+					if(s == stage){
+						break;
+					}
 				}
-				
-				// render
-				for(var t in tables){
-					(function(t){
-						var tableCtrl = null;
-						if(!tabs[t]){
-							tableCtrl = new Handsontable({
-								table: {
-				                    rowHeaders: false,
-				                    readOnly: false,
-				                    manualRowMove: false,
-				                    //colWidths: 300,
-				                    //stretchH: 'none'
-				                },
-				                callbacks: {
-				                    createHeader: function(i, header) {
-				                    	if(!header) return i + 1;
-				                    	 return '<div>' + header + '</div>';
-				                    },
-				                    preLoader: function(rowCount){}
-				                }
-							});
-							$this.tableTabView.addTab(t, tableCtrl, {id:t});
-							tabs = $this.tableTabView.getTabs();
-						} else {
-							tableCtrl = tabs[t].ctrl;
-						}
-						
-						// fill table
-						tableCtrl.ensureInitialized(function(){
-							debugger;
-							tableCtrl.loadData(tables[t].rows);	
-						});
-					})(t);
+				if(needSwitchStage){
+					this.switchStage(curStage);
 				}
 			}
+		},
+		
+		clearTablesPreview: function(){
+			var tabsToRemove = [];
+			var tabs = $this.tableTabView.getTabs();
+			for(var tabId in tabs){
+				if(tabId != '__source'){
+					tabsToRemove.push(tabId);
+				}
+			}
+			for(var i = 0; i < tabsToRemove.length; i++){
+				$this.tableTabView.removeTab(tabsToRemove[i]);
+			}
+		},
+		
+		renderTablesPreview: function(tables){
+			var tabsToRemove = [];
+			var tabs = $this.tableTabView.getTabs();
+			for(var tabId in tabs){
+				if(tabId != '__source' && !tables[tabId]){
+					tabsToRemove.push(tabId);
+				}
+			}
+			for(var i = 0; i < tabsToRemove.length; i++){
+				$this.tableTabView.removeTab(tabsToRemove[i]);
+			}
+			
+			// render
+			for(var t in tables){
+				(function(t){
+					var tableCtrl = null;
+					if(!tabs[t]){
+						tableCtrl = new Handsontable({
+							table: {
+			                    rowHeaders: false,
+			                    readOnly: false,
+			                    manualRowMove: false,
+			                    //colWidths: 300,
+			                    //stretchH: 'none'
+			                },
+			                callbacks: {
+			                    createHeader: function(i, header) {
+			                    	if(!header) return i + 1;
+			                    	 return '<div>' + header + '</div>';
+			                    },
+			                    preLoader: function(rowCount){}
+			                }
+						});
+						$this.tableTabView.addTab(t, tableCtrl, {id:t});
+						tabs = $this.tableTabView.getTabs();
+					} else {
+						tableCtrl = tabs[t].ctrl;
+					}
+					
+					// fill table
+					tableCtrl.ensureInitialized(function(){
+						tableCtrl.loadData(tables[t].rows);	
+					});
+				})(t);
+			}
+		},
+		
+		
+		updatePreview: function(){
+			var tab = this.stageCtrl.getCurrentTab();
+			switch(tab.id){
+			case 'analysis':
+				this.updateSourcePreview();
+				break;
+			case 'tables':
+				var struct = $this.schemeRenderer.findRenderByKey('structure').getScheme();
+				if(struct){
+					this.updateTablesPreview();
+				}
+				break;
+			case 'import':
+				break;
+			}
+		},
+
+		
+		updateSourcePreview: function(){
+			ParserManager.server().loadSourcePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues(), function(lines){
+				$this.sourcePanel.empty();
+				if(JSB.isArray(lines)){
+					for(var i = 0; i < lines.length; i++){
+						$this.sourcePanel.append($this.$('<div class="line"></div>').text(lines[i]));
+					}
+				}
+			});
+		},
+		
+		updateTablesPreview: function(){
+			// TODO: perform validation
 			
 			$this.tableTabView.getElement().loader();
 			ParserManager.server().executePreview($this.entry, $this.currentParser, $this.schemeRenderer.getValues(), function(tables, fail){
+				$this.tableTabView.getElement().loader('hide');
 				if(fail){
 					// TODO: show error message
+					
+					$this.clearTablesPreview();
+					$this.enableStage('import', false);
 					return;
 				}
-				renderPreview(tables);
-				$this.tableTabView.getElement().loader('hide');
+				$this.renderTablesPreview(tables);
+				$this.enableStage('import', Object.keys(tables).length > 0);
 			});
-		},
-/*
-		applySettings: function(){
-		    var values = this.widgetSchemeRenderer.getValues();
-
-		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),
-		        sourcesIds = [];
-
-            for(var i = 0; i < sources.length; i++){
-                var s = sources[i].getValues();
-
-                for(var j = 0; j < s.values.length; j++){
-                    if(s.values[j].binding){
-                        sourcesIds.push(s.values[j].binding.source);
-                    }
-                }
-            }
-
-            this.updateValidation();
-
-            this.getElement().loader({message:'Сохранение...'});
-            this.entry.server().storeValues({
-                name: this.titleEditor.getData().getValue(),
-                sourcesIds: sourcesIds,
-                values: values
-            }, function(sourceDesc){
-                $this.getElement().loader('hide');
-
-                $this.publish('widgetSettings.updateValues', {
-                    entryId: $this.entry.getId(),
-				    sourceMap: sourceDesc.sourceMap,
-				    sources: sourceDesc.sources,
-                    values: values
-                });
-            });
-		},
-
-		setChanges: function(isUpdateData){
-		    if(!this.warningBlock.hasClass('hidden')){
-		        this.updateValidation();
-		    }
-
-		    this.wrapper.getWidget().updateValues({values: this.widgetSchemeRenderer.getValues()});
-
-            this.wrapper.getWidget().ensureInitialized(function(){
-                $this.wrapper.getWidget().refresh({
-                    isCacheMod: isUpdateData,
-                    refreshFromCache: !isUpdateData,
-                    updateStyles: true
-                });
-        	});
-		},
-
-		updateValidation: function(){
-		    this.warningBlock.empty();
-
-            var validate = this.widgetSchemeRenderer.validate();
-            if(validate.length > 0){
-                this.warningBlock.removeClass('hidden');
-
-                for(var i = 0; i < validate.length; i++){
-                    this.warningBlock.append('<p>Поле <b>' + validate[i].name + '</b> обязательно к заполнению!</p>');
-                }
-
-                var warningBlockHeight = this.warningBlock.outerHeight();
-
-                if(warningBlockHeight > 200){
-                    this.warningBlock.outerHeight(200);
-                    this.schemeScroll.getElement().outerHeight('calc(100% - 200px)');
-                } else {
-                    this.schemeScroll.getElement().outerHeight('calc(100% - ' + warningBlockHeight + 'px)');
-                }
-            } else {
-                this.warningBlock.addClass('hidden');
-                this.schemeScroll.getElement().outerHeight('100%');
-            }
 		}
-		*/
 	},
 	
 	$server: {

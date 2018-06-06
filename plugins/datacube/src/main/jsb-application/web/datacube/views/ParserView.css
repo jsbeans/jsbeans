@@ -210,6 +210,12 @@
 	display: block;
 }
 
+.parserView[stage="import"] .scheme > [key="importSettings"] {
+	display: block;
+}
+
+
+
 /* message */
 div.ajaxloader[key="parser"] > div.ajaxloaderInfo {
     border-radius: 16px;

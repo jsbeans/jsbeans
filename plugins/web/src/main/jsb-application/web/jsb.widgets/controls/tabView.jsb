@@ -207,6 +207,14 @@
 			}
 		},
 		
+		isEnabled: function(tab){
+			var entry = this.resolveTab(tab);
+			if(entry.tab.hasClass('disabled')){
+				return false;
+			}
+			return true;
+		},
+		
 		switchTab: function(tab){
 			var self = this;
 			var entry = this.resolveTab(tab);

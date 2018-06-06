@@ -18,6 +18,9 @@
         name: 'completeWidget',
         render: 'Unimap.Render.CompleteWidgetBinding'
     },{
+        name: 'databaseBinding',
+        render: 'Unimap.Render.DatabaseBinding'
+    },{
         name: 'autocompleteGroup',
         render: 'Unimap.Render.AutocompleteGroup'
     },{

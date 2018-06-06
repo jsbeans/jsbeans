@@ -178,6 +178,29 @@
 	        		}
 	        	}
 	        }
+		},
+		
+		importSettings: {
+			render: 'group',
+	        name: 'Сохранение',
+	        items: {
+	        	target: {
+	        		render: 'select',
+	        		name: 'Сохранить таблицы в',
+	        		items: {
+	        			database: {
+	        				render: 'group',
+	        				name: 'Базу',
+	        				items: {
+	        					databaseEntry: {
+	        						render: 'databaseBinding',
+	        						name: 'База данных'
+	        					}
+	        				}
+	        			}
+	        		}
+	        	}
+	        }
 		}
 	},
 	
@@ -589,7 +612,9 @@
 			}
 			
 			function processStructureElement(elt, path){
-				if(elt.type == 'object'){
+				if(!elt || !elt.type || elt.type == 'null'){
+					return;
+				} else if(elt.type == 'object'){
 					for(var f in elt.record){
 						var p = (path && path.length > 0 ? (path + '.') : '') + f;
 						processStructureElement(elt.record[f], p);

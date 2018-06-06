@@ -113,7 +113,6 @@
 		getEntryStatus: function(entry){
 			return {
 				status: entry.property('status') || 'ready',
-				structure: entry.property('structure'),
 				values: entry.property('values')
 			}
 		},
