@@ -25,9 +25,12 @@
 
         var schemePart = objectByString(scheme, this._schemePath),
             itemsKeys = Object.keys(schemePart.items),
-            value = {};
+            value = {},
+            linkedFields = {};
 
-        this.createDefaultValues(this.getKey(), schemePart, value, {linkedFields: {}}, true);
+        this.createDefaultValues(this.getKey(), schemePart, value, {linkedFields: linkedFields}, true);
+
+        this.getMainSelector().addLinkedFields(linkedFields);
 
         this._values.push(value.values[0]);
 
