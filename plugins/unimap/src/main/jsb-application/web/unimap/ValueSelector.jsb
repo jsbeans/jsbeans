@@ -19,6 +19,20 @@
         this.createRendersMapByClasses(JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getValueSelectorsMap());
     },
 
+    addLinkedFields: function(linkedFields){
+        for(var i in linkedFields){
+            if(!this._linkedFields[i]){
+                this._linkedFields[i] = [];
+            }
+
+            for(var j = 0; j < linkedFields[i].length; j++){
+                if(this._linkedFields[i].indexOf(linkedFields[i][j]) < 0){
+                    this._linkedFields[i].push(linkedFields[i][j]);
+                }
+            }
+        }
+    },
+
     createDefaultValues: function(scheme){
         if(!scheme){
             scheme = this._scheme;

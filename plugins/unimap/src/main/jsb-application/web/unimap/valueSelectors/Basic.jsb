@@ -32,6 +32,7 @@
             getRenderName: this.getRenderName,
             removeAllValues: this.removeAllValues,
             setName: this.setName,
+            setFullValue: this.setFullValue,
             setValue: this.setValue,
             setValues: this.setValues,
             value: this.value,
@@ -141,6 +142,10 @@
 
     setName: function(name){
         this._selectorOpts.name = name;
+    },
+
+    setFullValue: function(val){
+        this._values[0] = val;
     },
 
     setValue: function(val){    	
@@ -289,6 +294,8 @@
                 opts.linkedFields[scheme.linkTo].push(key);
                 wasUpdated = true;
             }
+
+            values.linkTo = scheme.linkTo;
         }
 
         return wasUpdated;

@@ -104,7 +104,7 @@
 	    
 	    setScheme: function(scheme){
 		    this._values.values[0] = {
-		        binding: scheme,
+		        binding: scheme
 		    }
 
 		    this.onchange();

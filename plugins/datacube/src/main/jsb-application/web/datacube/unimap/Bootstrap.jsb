@@ -46,5 +46,8 @@
     },{
         name: 'formatter',
         render: 'Datacube.ValueSelectors.Formatter'
+    },{
+        name: 'parserBinding',
+        render: 'Datacube.ValueSelectors.SourceSelector'
     }]
 }

@@ -606,9 +606,10 @@
 			}
 			
 			processStructureElement(struct, null);
-			
-			
-			
+
+			var sourceSelector = this.getContext().find('structure');
+			sourceSelector.setFullValue({binding: struct});
+
 			var tableGroup = this.getContext().find('tablesSettings');
 			tableGroup.removeAllValues();
 			var tableSel = tableGroup.addValue();
@@ -621,10 +622,8 @@
 				var colDesc = cols[i];
 				var colSel = colGroup.addValue();
 				colSel.find('columnAlias').setValue(colDesc.name);
-				colSel.find('field').setBinding(colDesc.binding);
+				colSel.find('field').setBinding(colDesc.binding, sourceSelector);
 			}
-			
-			
 		},
 		
 		parse: function(rowCallback){
