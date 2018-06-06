@@ -167,7 +167,7 @@
                     variables = editBlockCopy.find('>span.variable');
 
                 // todo: bindings
-
+                /*
                 for(var i = 0; i < variables.length; i++){
                     var key = this.$(variables[i]).attr('key'),
                         index = this._findInArray(this._formatterVariablesList, 'value', key),
@@ -179,19 +179,33 @@
                         if(valIndex > -1 && this._values.values[0].variables[valIndex].typeSettings){
                             typeSettings = ':' + this._values.values[0].variables[valIndex].typeSettings.formatPart;
                         }
-                        variables[i].replaceWith('{' + $this._formatterVariablesList[index].innerValue + typeSettings + '}');
+                        this.$(variables[i]).replaceWith('{' + $this._formatterVariablesList[index].innerValue + typeSettings + '}');
                     }
                 }
+                */
 
-                this._values.values[0].editableValue = this._editBlock.html().replace(/&nbsp;/g, ' ')
-                                                                             .replace(/&lt;/g, '<')
-                                                                             .replace(/&gt;/g, '>');
+                var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox');
 
-                this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ')
-                                                                           .replace(/&lt;/g, '<')
-                                                                           .replace(/&gt;/g, '>');
+                if(isFirefox > -1 && Number(navigator.userAgent.substring(isFirefox + 8)) < 60){ // for astralinux firefox ver. 44.0.2
+                    var editableValue = this._editBlock.html().replace(/&nbsp;/g, ' ')
+                                                              .replace(/&lt;/g, '<')
+                                                              .replace(/&gt;/g, '>'),
+                        advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ')
+                                                            .replace(/&lt;/g, '<')
+                                                            .replace(/&gt;/g, '>');
+
+                    this._values.values[0].editableValue = editableValue === '<br> ' ? '' : editableValue;
+                    this._values.values[0].advancedValue = advancedValue === '<br> ' ? '' : advancedValue;
+                } else {
+                    this._values.values[0].editableValue = this._editBlock.html().replace(/&nbsp;/g, ' ')
+                                                                                 .replace(/&lt;/g, '<')
+                                                                                 .replace(/&gt;/g, '>');
+
+                    this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ')
+                                                                               .replace(/&lt;/g, '<')
+                                                                               .replace(/&gt;/g, '>');
+                }
 	        } else {
-	            //this._values.values[0].baseValue = (this._values.basicSettings.prefix + ' {' + this._values.basicSettings.value + (this._values.basicSettings.typeSettings ? this._values.basicSettings.typeSettings.formatPart : '') + '} ' + this._values.basicSettings.suffix).trim();
 	            this._values.values[0].baseValue = ('{' + this._values.values[0].basicSettings.value + (this._values.values[0].basicSettings.typeSettings ? (':' + this._values.values[0].basicSettings.typeSettings.formatPart) : '') + '} ').trim();
             }
 
@@ -203,7 +217,6 @@
 	        this._basicVariablesList = [];
 
 	        // todo: bindings
-	        /*
 	        var linkedValues = this.getValueByKey(this._scheme.linkTo);
 
             if(linkedValues){
@@ -222,7 +235,6 @@
                     }
                 }
             }
-            */
 
 	        for(var i = 0; i < this._scheme.formatterOpts.variables.length; i++){
 	            this._basicVariablesList.push({

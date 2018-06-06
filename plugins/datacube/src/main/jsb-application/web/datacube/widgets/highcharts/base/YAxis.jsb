@@ -71,7 +71,7 @@
                                         ]
                                     },
                                     valueType: 'string',
-                                    defaultValue: '{value:,.0f}' //'{value}'
+                                    defaultValue: '{value:,.0f}'
                                 },
                                 fontColor: {
                                     render: 'item',
