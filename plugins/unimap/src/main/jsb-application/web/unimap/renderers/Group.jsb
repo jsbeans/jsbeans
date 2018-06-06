@@ -39,6 +39,8 @@
                         }
 
                         $this._values.name = val;
+
+                        $this.onchange();
                     }
                 }
 	        });
@@ -68,6 +70,8 @@
 	                    $this._values.checked = b;
 
 	                    content.toggleClass('hidden');
+
+	                    $this.onchange();
 	                }
 	            });
 	            this.group.prepend(this.checkBox);
@@ -90,6 +94,8 @@
 	            this.multipleBtn = this.$('<i class="btn btnMultiple fas fa-plus-circle"></i>');
 	            this.multipleBtn.click(function(){
 	                $this.addItem();
+
+	                $this.onchange();
 	            });
 	            this.group.appendContent(this.multipleBtn);
 	        }
@@ -247,6 +253,8 @@
 	                this.$(items[i]).attr('idx', i - 1);
 	            }
 	        }
+
+	        $this.onchange();
 	    },
 
 	    reorderValues: function(){
