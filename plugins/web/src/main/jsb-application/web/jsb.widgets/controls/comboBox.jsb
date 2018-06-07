@@ -87,7 +87,7 @@
 				itemObj.element = this.$(obj);
 				itemObj.key = itemObj.element.text();
 			}
-			
+
 			return itemObj;
 		},
 

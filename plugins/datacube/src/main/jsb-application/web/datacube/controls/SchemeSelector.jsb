@@ -109,7 +109,7 @@
 			
 			function _translateItem(item, pKey){
 				var fieldElt = $this.$('<div class="schemeField" type="'+item.scheme.type+'"></div>').append('<div class="icon"></div>').append($this.$('<div class="field" type="'+item.scheme.type+'"></div>').text(item.scheme.field)).append($this.$('<div class="type"></div>').text(item.scheme.type));
-				var isNode = item.child.length > 0; //item.scheme.type == 'array' || item.scheme.type == 'object';
+				var isNode = item.child && item.child.length > 0; //item.scheme.type == 'array' || item.scheme.type == 'object';
 				var allowSelect = true;
 				if(isNode){
 					fieldElt.addClass('schemeNode');
@@ -130,7 +130,8 @@
 					element: fieldElt,
 					children: [],
 					allowSelect: allowSelect,
-					allowHover: allowSelect
+					allowHover: allowSelect,
+					options: item
 				};
 				if(item.child && item.child.length > 0){
 					for(var i = 0; i < item.child.length; i++){

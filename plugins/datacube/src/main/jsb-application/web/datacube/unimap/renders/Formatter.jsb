@@ -2,7 +2,7 @@
 	$name: 'Unimap.Render.Formatter',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Controls.Select', 'JSB.Controls.Editor', 'JSB.Controls.Checkbox', 'JSB.Controls.Switch'],
+	    $require: ['JSB.Controls.Select', 'JSB.Controls.Editor', 'JSB.Controls.Checkbox', 'JSB.Controls.Switch', 'DataCube.Controls.SchemeSelector'],
 
 	    _beans: [],
 	    _selectors: [],
@@ -73,7 +73,6 @@
             /*********/
 	    },
 
-	    // +
 	    addFormatterVariableItem: function(obj){
 	        var value = obj.value;
 
@@ -83,7 +82,7 @@
 
             var item = this.$('<li key="' + obj.key + '" title="' + (obj.title ? obj.title : '') + '">' + value + '</li>');
             item.click(function(evt){
-                $this.addVariableToText(obj.key);
+                $this.addVariableToText(obj.value);
                 $this._dropDownList.addClass('hidden');
                 $this.$(document).off('click.formatter_closeDD');
                 evt.stopPropagation();
@@ -92,7 +91,6 @@
             this._dropDownList.append(item);
 	    },
 
-	    // +
 	    addVariableToText: function(value){
             function pasteHtmlAtCaret(html) {
                 var sel, range;
@@ -134,7 +132,6 @@
             this.changeEvent();
 	    },
 
-	    // +
 	    changeEvent: function(){
             var val = this._editBlock.html();
 
@@ -147,18 +144,15 @@
             }
 	    },
 
-	    changeLinkTo: function(){
-	        // todo
-	        /*
+	    changeLinkTo: function(linkedValues){
 	        this._dropDownList.empty();
 
-	        this.createBasicVariablesList();
+	        this.createBasicVariablesList(linkedValues);
 	        this.createFormatterVariablesList();
 
 	        for(var i = 0; i < this._selectors.length; i++){
 	            this._selectors[i].setOptions(this._basicVariablesList);
 	        }
-	        */
 	    },
 
 	    changeValue: function(){
@@ -166,8 +160,6 @@
                 var editBlockCopy = this._editBlock.clone(),
                     variables = editBlockCopy.find('>span.variable');
 
-                // todo: bindings
-                
                 for(var i = 0; i < variables.length; i++){
                     var key = this.$(variables[i]).attr('key'),
                         index = this._findInArray(this._formatterVariablesList, 'value', key),
@@ -211,34 +203,57 @@
             this.onchange();
 	    },
 
-	    // +
-	    createBasicVariablesList: function(){
+	    createBasicVariablesList: function(linkedValues){
 	        this._basicVariablesList = [];
 
-	        // todo: bindings
-	        var linkedValues = this.getValueByKey(this._scheme.linkTo);
+	        if(!linkedValues){
+	            linkedValues = this.getValueByKey(this._scheme.linkTo);
+	        }
 
             if(linkedValues){
-                for(var i = 0; i < linkedValues.values.length; i++){
-                    if(!linkedValues.values[i].binding){
-                        continue;
+                function collectFields(desc, path){
+                    if(!desc){
+                        return;
                     }
-
-                    for(var j in linkedValues.values[i].binding.arrayType.record){
-                        this._basicVariablesList.push({
-                            innerValue: 'binding.' + j,
-                            key: 'binding.' + j,
-                            type: linkedValues.values[i].binding.arrayType.record[j].type,
-                            value: j
+                    if(desc.type == 'array'){
+                        collectFields(desc.arrayType, path);
+                    } else if(desc.type == 'object'){
+                        var fieldArr = Object.keys(desc.record);
+                        fieldArr.sort(function(a, b){
+                            return a.toLowerCase().localeCompare(b.toLowerCase());
                         });
+                        for(var i = 0; i < fieldArr.length; i++){
+                            var f = fieldArr[i];
+                            var rf = desc.record[f];
+                            var curPath = (path ? path + '.' : '') + f;
+                            var schemeRef = JSB.merge({field: f}, rf);
+                            var item = {
+                                innerValue: 'binding$' + curPath,
+                                key: 'binding$' + curPath,
+                                child: [],
+                                scheme: schemeRef,
+                                type: schemeRef.type,
+                                parent: parent,
+                                value: schemeRef.field
+                            };
+
+                            $this._basicVariablesList.push(item);
+                            collectFields(rf, curPath);
+                        }
                     }
                 }
+
+                collectFields(linkedValues.values[0].binding, '');
             }
 
 	        for(var i = 0; i < this._scheme.formatterOpts.variables.length; i++){
 	            this._basicVariablesList.push({
 	                innerValue: this._scheme.formatterOpts.variables[i].value,
 	                key: this._scheme.formatterOpts.variables[i].alias,
+	                scheme: {
+	                    type: this._scheme.formatterOpts.variables[i].type,
+	                    field: this._scheme.formatterOpts.variables[i].alias
+	                },
 	                type: this._scheme.formatterOpts.variables[i].type,
 	                title: this._scheme.formatterOpts.variables[i].title,
 	                value: this._scheme.formatterOpts.variables[i].alias
@@ -246,7 +261,6 @@
 	        }
 	    },
 
-	    // +
 	    createFormatterVariablesList: function(){
 	        this._formatterVariablesList = JSB.clone(this._basicVariablesList);
 
@@ -262,7 +276,6 @@
             }
 	    },
 
-	    // +
 	    createBasicVariableItem: function(variable){
 	        if(!variable){
 	            variable = {}
@@ -301,6 +314,37 @@
 	        var selectLabel = this.$('<div class="selectLabel">Переменная</div>');
 	        varItem.append(selectLabel);
 
+            var select = new SchemeSelector({
+                items: this._basicVariablesList,
+                value: variable.value,
+                selectNodes: false,
+                onChange: function(key, val){
+                    if(editor.getValue() === ''){
+                        createDefaultAlias(val);
+                    } else {
+                        var itemIndex = $this._findInArray($this._formatterVariablesList, 'value', variable.alias);
+
+                        if(itemIndex > -1){
+                            $this._formatterVariablesList[itemIndex].value = val.key;
+                            $this._formatterVariablesList[itemIndex].innerValue = val.options.innerValue;
+                            $this._formatterVariablesList[itemIndex].type = val.options.type;
+                        }
+                    }
+
+                    variable.innerValue = val.options.innerValue;
+                    variable.type = val.options.type;
+                    variable.value = val.key;
+
+                    if(variable.type){
+                        var typeSettings = $this.createTypeSettings(variable)
+                        if(typeSettings){
+                            varItem.append(typeSettings);
+                        }
+                    }
+                }
+            });
+
+	        /*
 	        var select = new Select({
                 options: this._basicVariablesList,
                 value: variable.value,
@@ -329,6 +373,7 @@
                     }
                 }
 	        });
+	        */
 	        selectLabel.append(select.getElement());
 	        this._selectors.push(select);
             /*********/
@@ -392,14 +437,9 @@
             return varItem;
 	    },
 
-	    // +
 	    createBasicSettings: function(){
 	        if(!this._values.values[0].basicSettings){
 	            this._values.values[0].basicSettings = {
-	                /*
-	                prefix: '',
-	                suffix: '',
-	                */
 	                type: this._scheme.formatterOpts.basicSettings.type,
 	                value: this._scheme.formatterOpts.basicSettings.value
 	            }
@@ -407,31 +447,6 @@
 
 	        var typeSettings = this.createTypeSettings(this._values.values[0].basicSettings);
 	        this._basicSettings.append(typeSettings);
-	        /*
-	        var prefixLabel = this.$('<label class="label">Префикс</label>');
-            var prefix = new Editor({
-                value: this._values.values[0].basicSettings.prefix,
-                onchange: function(val){
-                    $this._values.values[0].basicSettings.prefix = val;
-
-                    $this.changeValue();
-                }
-            });
-            prefixLabel.append(prefix.getElement());
-            this._basicSettings.append(prefixLabel);
-
-            var suffixLabel = this.$('<label class="label">Суффикс</label>');
-            var suffix = new Editor({
-                value: this._values.values[0].basicSettings.suffix,
-                onchange: function(val){
-                    $this._values.values[0].basicSettings.suffix = val;
-
-                    $this.changeValue();
-                }
-            });
-            suffixLabel.append(suffix.getElement());
-            this._basicSettings.append(suffixLabel);
-            */
 	    },
 
 	    createAdvancedSettings: function(){
@@ -518,7 +533,6 @@
 	        }
 	    },
 
-	    // +
 	    createTypeSettings: function(variable){
             var settingsItem = this.$('<div class="typeSettings"></div>');
 
@@ -604,51 +618,7 @@
 
 	        $base();
 	    },
-/*
-	    restoreValue: function(str){
-            var splitter = '{',
-                isInside = false,
-                segment,
-                valueAndFormat,
-                path,
-                i,
-                len,
-                ret = [],
-                index;
 
-            while (str) {
-                index = str.indexOf(splitter);
-                if (index === -1) {
-                    break;
-                }
-
-                segment = str.slice(0, index);
-                if (isInside) { // we're on the closing bracket looking back
-                    value= segment.split(':')[0];
-
-                    var el = null;
-                    for(var i = 0; i < this._formatterVariablesList.length; i++){
-                        if(this._formatterVariablesList[i].value === value){
-                            el = '<span class="variable" key="' + this._formatterVariablesList[i].value + '" contenteditable="false">' + this._formatterVariablesList[i].value + '</span> ';
-                            break;
-                        }
-                    }
-
-                    // Push the result and advance the cursor
-                    ret.push(el);
-                    this._editBlock.append(el);
-                } else {
-                    ret.push(segment);
-                    this._editBlock.append(document.createTextNode(segment));
-                }
-                str = str.slice(index + 1); // the rest
-                isInside = !isInside; // toggle
-                splitter = isInside ? '}' : '{'; // now look for next matching bracket
-            }
-
-            return ret.join('');
-	    },
-*/
 	    restoreValue: function(str){
 	        var splitter = '<span',
                 isInside = false,

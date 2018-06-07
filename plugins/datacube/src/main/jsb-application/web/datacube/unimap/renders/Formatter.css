@@ -83,7 +83,8 @@
     vertical-align: middle;
 }
 
-.formatter > .advancedSettings > .variablesBlock > .variableItem > .selectLabel > .jsb-select {
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .selectLabel > .jsb-select,
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .selectLabel > .schemeSelector {
     display: block;
     vertical-align: middle;
 }

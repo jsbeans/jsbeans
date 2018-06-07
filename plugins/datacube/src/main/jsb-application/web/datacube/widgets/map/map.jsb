@@ -284,6 +284,22 @@
                                 name: 'На регионе'
                             }
                         }
+                     },
+                     displayContent: {
+                        render: 'formatter',
+                        name: 'Контент',
+                        linkTo: 'dataSource',
+                        formatterOpts: {
+                            variables: [
+                                {
+                                    alias: 'Значение',
+                                    type: 'number',
+                                    value: 'y'
+                                }
+                            ]
+                        },
+                        valueType: 'string',
+                        defaultValue: '{y:,.0f}'
                      }
                  }
              }
@@ -549,7 +565,23 @@
                                     }
                                 }
                             }
-                        }
+                        },
+                        displayContent: {
+                            render: 'formatter',
+                            name: 'Контент',
+                            linkTo: 'dataSource',
+                            formatterOpts: {
+                                variables: [
+                                    {
+                                        alias: 'Значение',
+                                        type: 'number',
+                                        value: 'y'
+                                    }
+                                ]
+                            }
+                        },
+                        valueType: 'string',
+                        defaultValue: '{y:,.0f}'
                     }
                 }
             }
@@ -833,6 +865,8 @@
                     /*********/
 
                     this._styles = {
+                        contentBindings: [],
+                        contentData: [],
                         regions: [],
                         markers: [],
                         embeddedBindings: [],
@@ -890,6 +924,9 @@
                                 }
                                 break;
                         }
+
+                        this._styles.contentBindings = this._styles.contentBindings.concat(regionsContext[i].find('displayContent').getBindingFields());
+                        this._styles.regions[i].displayContent = regionsContext[i].find('displayContent').value();
 
                         this._styles.regions[i].defaultColor = regionsContext[i].find('defaultColor').value();
                         this._styles.regions[i].borderColor = regionsContext[i].find('borderColor').value();
@@ -965,6 +1002,9 @@
 
                         this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
                         this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
+
+                        this._styles.contentBindings = this._styles.contentBindings.concat(markersContext[i].find('displayContent').getBindingFields());
+                        this._styles.markers[i].displayContent = markersContext[i].find('displayContent').value();
 
                         switch(markerType){
                             case 'defaultMarker':
@@ -1098,6 +1138,18 @@
                         if(res.length === 0){
                             resultProcessing();
                             return;
+                        }
+
+                        if($this._styles.contentBindings.length > 0){
+                            for(var j = 0; j < res.length; j++){
+                                var item = {};
+
+                                for(var i = 0; i < $this._styles.contentBindings.length; i++){
+                                    item['binding$' + $this._styles.contentBindings[i]] = res[j][$this._styles.contentBindings[i]].main;
+                                }
+
+                                $this._styles.contentData.push(item);
+                            }
                         }
 
                         while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
@@ -1430,30 +1482,33 @@
 
                             $this._maps[i].map = L.geoJSON($this._maps[i].data, {
                                 onEachFeature: function(feature, layer){
-                                    var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
+                                    var regInfo = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data),
+                                        reg = regInfo.region;
 
                                     layer.setStyle(regionStyle(i, reg));
 
                                     // set values properties
                                     /*********/
                                     if($this._styles.regions[i].valueDisplayType === 'legend'){
-                                        layer.on({
-                                            mouseover: function(evt){
-                                                if(reg){
-                                                    $this._infoControl.update(reg.region, reg.value);
+                                        (function(i, index){
+                                            layer.on({
+                                                mouseover: function(evt){
+                                                    if(reg){
+                                                        $this._infoControl.update($this._format($this._styles.regions[i].displayContent, index, {y: reg.value}));
+                                                    }
+                                                },
+                                                mouseout: function(evt){
+                                                    $this._infoControl.update();
                                                 }
-                                            },
-                                            mouseout: function(evt){
-                                                $this._infoControl.update();
-                                            }
-                                        });
+                                            });
+                                        })(i, regInfo.index);
                                     } else {
                                         if(!reg){
                                             layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
                                             return;
                                         }
 
-                                        layer.bindPopup(reg.region + ': ' + Formatter.format($this._styles.settings.formatter, {y: reg.value}), {closeButton: false, autoPan: false});
+                                        layer.bindPopup(reg.region + ': ' + $this._format($this._styles.regions[i].displayContent, i, {y: reg.value}), {closeButton: false, autoPan: false});
 
                                         layer.on({
                                             mouseover: function(evt){
@@ -1468,7 +1523,7 @@
                                     }
 
                                     if($this._styles.regions[i].showValuesPermanent){
-                                        layer.bindTooltip(String(Formatter.format($this._styles.settings.formatter, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, i, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 
@@ -1542,7 +1597,7 @@
                             text += ' : ';
                         }
 
-                        text += Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]});
+                        text += $this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]});
                     }
 
                     return text;
@@ -1574,7 +1629,7 @@
                                 }
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
-                                    (function(name, value){
+                                    (function(content){
                                         marker.on({
                                             mouseover: function(evt){
                                                 $this._infoControl.update(name, value);
@@ -1583,7 +1638,7 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j]) ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
+                                    })($this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}));
                                 }
 
                                 markersGroups[i].push(marker);
@@ -1636,7 +1691,7 @@
                                 }
 
                                 if(this._styles.markers[i].valueDisplayType === 'onObject' && data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j])){
-                                    html = '<span>' + Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) + '</span>';
+                                    html = '<span>' + $this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}) + '</span>';
                                 }
 
                                 if($this._styles.markers[i].fixedSize){
@@ -1671,7 +1726,7 @@
                                 }
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
-                                    (function(name, value){
+                                    (function(content){
                                         marker.on({
                                             mouseover: function(evt){
                                                 $this._infoControl.update(name, value);
@@ -1680,7 +1735,7 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j]) ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
+                                    })($this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}));
                                 }
 
                                 markersGroups[i].push(marker);
@@ -1881,21 +1936,38 @@
             this._infoControl.onAdd = function(){
                 var legend = $this.$('<div class="infoControl"><h4>' + $this._styles.settings.infoControl.header + '</h4></div>');
 
+                this._content = $this.$('<div class="content"></div>');
+                legend.append(this._content);
+
+                /*
                 this._name = $this.$('<p class="name"></p>');
                 legend.append(this._name);
 
                 this._value = $this.$('<p class="value"></p>');
                 legend.append(this._value);
+                */
 
                 return legend.get(0);
             };
 
-            this._infoControl.update = function(name, value){
+            this._infoControl.update = function(content){
+                this._content.empty().append(content);
+                /*
                 this._name.text(name ? name : '');
                 this._value.text(value ? value : '');
+                */
             };
 
             this._infoControl.addTo(this.map);
+        },
+
+        _format: function(format, i, obj){
+            /*
+            if(!this._styles.contentData || this._styles.contentData.length - 1 < i){
+                return obj || {};
+            }
+            */
+            return Formatter.format(format, JSB.merge(obj || {}, this._styles.contentData[i]));
         },
 
         _resizeLegend: function(legend){
@@ -1919,7 +1991,7 @@
 
         findRegion: function(region, array){
             if(!region){
-                return;
+                return {};
             }
 
             for(var j = 0; j < array.length; j++){
@@ -1929,9 +2001,14 @@
                 }
 
                 if(name.indexOf(region) > -1){
-                    return array[j];
+                    return {
+                        index: j,
+                        region: array[j]
+                    };
                 }
             }
+
+            return {};
         }
     }
 }
