@@ -67,6 +67,11 @@
                 });
                 
                 $this.setTrigger('initialized');
+                
+                $this.handsontable.updateSettings({
+            		width: $this.getElement().width(),
+            		height: $this.getElement().height()
+            	});
             });
 		},
 

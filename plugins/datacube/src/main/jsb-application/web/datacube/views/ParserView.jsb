@@ -15,6 +15,8 @@
                    'JSB.Widgets.TabView',
                    'Handsontable'
         ],
+        
+        logEntries: [],
 
 		$constructor: function(opts){
 			$base(opts);
@@ -77,27 +79,67 @@
 			});
 			this.append(splitBox);
 
+			// scheme
 			this.schemeScroll = new ScrollBox();
+			this.schemeContainer = this.$('<div class="schemeContainer"></div>');
+			this.schemeScroll.append(this.schemeContainer);
+
+			// buttons
+			this.buttonBar = this.$('<div class="buttonBar"></div>');
+			this.schemeScroll.append(this.buttonBar);
+			var analyzeBtn = new Button({
+                cssClass: "btnAnalyze",
+                caption: "Анализировать",
+                onClick: function(){
+                	$this.extractStructure();
+                }
+            });
+            this.buttonBar.append(analyzeBtn.getElement());
+
+			var previewBtn = new Button({
+                cssClass: "btnPreview",
+                caption: "Посмотреть результат",
+                onClick: function(){
+                	$this.updateTablesPreview();
+                }
+            });
+            this.buttonBar.append(previewBtn.getElement());
+
+			this.importBtn = new Button({
+                cssClass: "btnImport",
+                caption: "Начать импорт",
+                onClick: function(){
+                	$this.doImport();
+                }
+            });
+            this.buttonBar.append(this.importBtn.getElement());
+
 			splitBox.append(this.schemeScroll.getElement());
 			
+			var logSplitBox = new SplitBox({
+				type: 'horizontal',
+				position: 0.8
+			});
+			splitBox.append(logSplitBox);
 			
 			this.tableTabView = new TabView({
 				tabPosition: 'bottom',
 				allowCloseTab: false,
 				allowNewTab: false
 			});
-			splitBox.append(this.tableTabView);
+			logSplitBox.append(this.tableTabView);
 			this.tableTabView.addClass('tablesView');
+			
+			// log
+			this.logScroll = new ScrollBox();
+			this.logScroll.addClass('log');
+			logSplitBox.append(this.logScroll);
 			
 			this.sourcePanel = this.$('<div class="source"></div>');
 			var sourceScroll = new ScrollBox();
 			sourceScroll.append(this.sourcePanel);
 			$this.tableTabView.addTab('Источник', sourceScroll, {id:'__source'});
-	        
-	        this.subscribe('Unimap.Render.ParserSourceBinding.analyze', function(sender, msg, params){
-	        	$this.extractStructure();
-	        });
-	        
+			
 	        this.subscribe('ParserManager.statusChanged', function(sender, msg, entry){
 	        	if(entry != $this.entry){
 	        		return;
@@ -105,26 +147,45 @@
 	        	$this.updateStatus();
 	        });
 	        
+	        this.subscribe('ParserManager.clearLog', function(sender, msg, params){
+	        	if(params.entry != $this.entry){
+	        		return;
+	        	}
+	        	$this.logEntries = [];
+	        	$this.updateLog();
+	        });
+
+	        this.subscribe('ParserManager.appendLog', function(sender, msg, params){
+	        	if(params.entry != $this.entry){
+	        		return;
+	        	}
+	        	$this.logEntries.push(params.desc);
+	        	$this.updateLog();
+	        });
+
 		},
 		
 		refresh: function(){
 			this.entry = this.node.getEntry();
 			$this.enableStage('analysis', false);
 			$this.clearTablesPreview();
+			ParserManager.server().logRead(this.entry, function(logEntries){
+				$this.logEntries = logEntries;
+				$this.updateLog();
+			});
 
 			ParserManager.getSupportedParsers(this.entry, function(parsers){
 				$this.setParsers(parsers);
-				
-				$this.updateSourcePreview();
-				
-				
 				$this.updateStatus();
 			});
 		},
 		
 		updateStatus: function(){
 			ParserManager.server().getEntryStatus($this.entry, function(info){
-				$this.applyValues(info.values);
+				if(info.status != 'importing'){
+					$this.applyValues(info.values);
+					$this.updateSourcePreview();
+				}
 				$this.setCurrentStatus(info.status);
 			});
 		},
@@ -213,7 +274,7 @@
 	                    	$this.schemeChanged(key, values);
 	                    }
 	                });
-					$this.schemeScroll.append($this.schemeRenderer.getElement());
+					this.schemeContainer.append($this.schemeRenderer.getElement());
 					return;
 				}
 			}
@@ -221,6 +282,10 @@
 		
 		extractStructure: function(){
 			ParserManager.server().runStructureAnalyzing($this.entry, $this.currentParser, $this.schemeRenderer.getValues());
+		},
+		
+		doImport: function(){
+			ParserManager.server().runImport($this.entry, $this.currentParser, $this.schemeRenderer.getValues());
 		},
 		
 		applyValues: function(values){
@@ -245,14 +310,16 @@
                 	$this.schemeChanged(key, values);
                 }
             });
+			
 			if($this.schemeRenderer){
-				$this.schemeRenderer.getElement().after(newSchemeRenderer.getElement());
 				$this.schemeRenderer.destroy();
-				$this.schemeRenderer = newSchemeRenderer;
-			} else {
-				$this.schemeRenderer = newSchemeRenderer;
-				$this.schemeScroll.append($this.schemeRenderer.getElement());
 			}
+			
+			$this.schemeRenderer = newSchemeRenderer;
+			
+			this.schemeContainer.empty();
+			this.schemeContainer.append($this.schemeRenderer.getElement());
+			this.validateButtons();
 
 			var struct = $this.schemeRenderer.findRenderByKey('structure').getScheme();
 			if(struct){
@@ -269,7 +336,16 @@
 		},
 		
 		schemeChanged: function(key, values){
-			debugger;
+			this.validateButtons();
+		},
+		
+		validateButtons: function(){
+			// validate buttons
+			if($this.schemeRenderer.findRenderByKey('databaseEntry').getValue()){
+				this.importBtn.enable(true);
+			} else {
+				this.importBtn.enable(false);
+			}
 		},
 		
 		switchStage: function(stage){
@@ -353,7 +429,8 @@
 			                callbacks: {
 			                    createHeader: function(i, header) {
 			                    	if(!header) return i + 1;
-			                    	 return '<div>' + header + '</div>';
+			                    	var type = tables[t].columns[header];
+			                    	return '<div class="name" type="'+type+'">' + header + '</div><div class="type">'+type+'</div>';
 			                    },
 			                    preLoader: function(rowCount){}
 			                }
@@ -372,6 +449,51 @@
 			}
 		},
 		
+		updateLog: function(){
+			// generate logMap
+			var logMap = {};
+			for(var i = 0; i < this.logEntries.length; i++){
+				logMap[this.logEntries[i].key] = this.logEntries[i];
+			}
+			var logEntries = [];
+			for(var key in logMap){
+				logEntries.push(logMap[key]);
+			}
+			logEntries.sort(function(a, b){
+				return a.time - b.time;
+			});
+			
+			var curEntries = this.logScroll.find('div.entry');
+			var keysToRemove = [];
+			curEntries.each(function(){
+				var curKey = $this.$(this).attr('key');
+				if(!logMap[curKey]){
+					keysToRemove.push(curKey);
+				}
+			});
+			for(var i = 0; i < keysToRemove.length; i++){
+				this.logScroll.find('div.entry[key="'+keysToRemove[i]+'"]').remove();
+			}
+			
+			for(var i = 0; i < logEntries.length; i++){
+				var logEntry = logEntries[i];
+				var time = new Date(logEntry.time).toLocaleTimeString();
+
+				var entry = this.logScroll.find('div.entry[key="'+logEntry.key+'"]');
+				
+				if(entry.length == 0){
+					// append new
+					entry = $this.$('<div class="entry"><span class="time"></span><span class="text"></span></div>');
+					entry.attr('key', logEntry.key);
+					entry.attr('type', logEntry.type);
+				}
+				entry.find('.time').text(time);
+				entry.find('.text').text(logEntry.data);
+				this.logScroll.append(entry);
+				
+			}
+			this.logScroll.scrollToElement('div.entry[key="'+logEntries[logEntries.length - 1].key+'"]', 'bottom');
+		},
 		
 		updatePreview: function(){
 			var tab = this.stageCtrl.getCurrentTab();

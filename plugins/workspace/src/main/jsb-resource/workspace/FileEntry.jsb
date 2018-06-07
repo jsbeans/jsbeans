@@ -2,6 +2,8 @@
 	$name: 'JSB.Workspace.FileEntry',
 	$parent: 'JSB.Workspace.Entry',
 	
+	fileSize: null,
+	
 	$server: {
 		$require: 'JSB.Workspace.WorkspaceController',
 		
@@ -28,11 +30,17 @@
 					// store artifact
 					this.storeArtifact('.data', opts.fileData);
 				}
+			} else {
+				this.fileSize = this.property('fileSize');
 			}
 		},
 		
 		read: function(opts){
 			return this.loadArtifact('.data', opts);
+		},
+		
+		getFileSize: function(){
+			return this.getArtifactSize('.data');
 		},
 
 		destroy: function(){

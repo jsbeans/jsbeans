@@ -93,8 +93,8 @@
                 var removeButton = $this.$('<i class="btn btnDelete fas fa-times" title="Удалить"></i>');
                 removeButton.click(function(evt){
                     evt.stopPropagation();
-                    $this.onchange();
                     $this.setValue(null);
+                    $this.onchange();
                 });
                 $this._item.append(removeButton);
             }
@@ -118,6 +118,13 @@
 	                });
 	            }
 	        }
+	    },
+	    
+	    getValue: function(){
+	    	if(this._values.values.length > 0 && this._values.values[0].value){
+	    		return this._values.values[0].value;
+	    	}
+	    	return null;
 	    },
 
 	    setValueFromEntry: function(entry){

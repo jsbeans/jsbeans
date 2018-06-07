@@ -24,6 +24,10 @@
     color: #555;
 }
 
-.workspaceExplorerNode.jsonFileNode > .status > .count {
+.workspaceExplorerNode.jsonFileNode > .status .item {
+	display: inline-block;
+}
+
+.workspaceExplorerNode.jsonFileNode > .status .count {
 	color: #773e01;
 }

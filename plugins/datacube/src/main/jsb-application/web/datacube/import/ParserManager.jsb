@@ -11,6 +11,14 @@
 		
 		onStatusChanged: function(entry){
 			$this.publish('ParserManager.statusChanged', entry);
+		},
+		
+		onClearLog: function(entry){
+			$this.publish('ParserManager.clearLog', {entry:entry});
+		},
+		
+		onAppendLog: function(entry, desc){
+			$this.publish('ParserManager.appendLog', {entry:entry, desc:desc});
 		}
 	},
 	
@@ -69,19 +77,31 @@
 		},
 		
 		runStructureAnalyzing: function(entry, parser, values){
+			var curStatus = entry.property('status') || 'ready';
+			if(curStatus != 'ready'){
+				return;
+			}
+			$this.logClear(entry);
+			
 			var pInst = this.createParser(entry, parser, values);
 			JSB.defer(function(){
-				JSB.getLogger().debug('Analyzing structure for: ' + entry.getName());
 				entry.property('status', 'analyzing');
+				entry.property('values', values);
+				JSB.getLogger().debug('Analyzing structure for: ' + entry.getName());
 				$this.client().onStatusChanged(entry);
 				var struct = null;
 				try {
 					try {
+						$this.logAppend(entry, 'info', 'Анализ файла: ' + entry.getName());
 						pInst.analyze();
 					} catch(e){
-						if(e != 'Break'){
-							debugger;
-							entry.property('lastParserMessage', e);
+						if(e == 'Break'){
+							// Do nothing
+						} else if(e == 'Cancel'){
+							$this.logAppend(entry, 'error', 'Анализ прерван пользователем');
+							throw e;
+						} else {
+							$this.logAppend(entry, 'error', e);
 							throw e;
 						}
 					}
@@ -90,7 +110,7 @@
 					
 					entry.property('structure', struct);
 					entry.property('values', pInst.getValues());
-					entry.property('lastParserMessage', null);
+					$this.logAppend(entry, 'ok', 'Анализ успешно завершен: ' + entry.getName());
 					JSB.getLogger().debug('Analysis complete for: ' + entry.getName() + ': ' + JSON.stringify(struct, null, 4));
 				} finally {
 					entry.property('status', 'ready');
@@ -99,6 +119,51 @@
 				}
 			}, 0);
 			return pInst;
+		},
+		
+		runImport: function(entry, parser, values){
+			var curStatus = entry.property('status') || 'ready';
+			if(curStatus != 'ready'){
+				return;
+			}
+			$this.logClear(entry);
+			var pInst = null;
+			try {
+				// create parser
+				pInst = this.createParser(entry, parser, values);
+				
+				JSB.defer(function(){
+					entry.property('values', values);
+					entry.property('status', 'importing');
+					JSB.getLogger().debug('Importing: ' + entry.getName());
+					$this.client().onStatusChanged(entry);
+					try {
+						$this.logAppend(entry, 'info', 'Импорт файла: ' + entry.getName());
+						pInst.import();
+						JSB.getLogger().debug('Import complete for: ' + entry.getName());
+						$this.logAppend(entry, 'ok', 'Импорт файла ' + entry.getName() + ' успешно завершен');
+					} catch(e){
+						if(e == 'Break'){
+							// Do nothing
+						} else if(e == 'Cancel'){
+							$this.logAppend(entry, 'error', 'Импорт файла прерван пользователем');
+							throw e;
+						} else {
+							$this.logAppend(entry, 'error', e);
+							throw e;
+						}
+					} finally {
+						entry.property('status', 'ready');
+						$this.client().onStatusChanged(entry);
+						pInst.destroy();
+					}
+				}, 0);
+			} catch(e){
+				if(pInst){
+					pInst.destroy();
+				}
+				throw e;
+			}
 		},
 		
 		loadSourcePreview: function(entry, parser, values){
@@ -191,6 +256,63 @@
 			} finally {
 				pInst.destroy();
 			}
+		},
+		
+		logClear: function(entry){
+			if(entry.existsArtifact('.log')){
+				entry.removeArtifact('.log');
+				this.client().onClearLog(entry);
+			}
+		},
+		
+		logAppend: function(entry, type, str, key){
+			if(!key){
+				key = JSB.generateUid();
+			}
+			if(!JSB.isString(str)){
+				if(str.message){
+					str = (str.name ? str.name + ': ' : '') + str.message;
+				} else {
+					str = JSON.stringify(str);
+				}
+			}
+			
+			var desc = {key: key, type: type, data: str, time: Date.now()};
+			var opts = {charset: 'UTF-8'};
+			if(entry.existsArtifact('.log')){
+				opts.append = true;
+			}
+			entry.storeArtifact('.log', JSON.stringify(desc) + '\r\n', opts);
+			this.client().onAppendLog(entry, desc);
+		},
+		
+		logRead: function(entry){
+			var logEntries = [];
+			var logMap = {};
+			if(!entry.existsArtifact('.log')){
+				return logEntries;
+			}
+			var stream = entry.loadArtifact('.log', {stream:true, charset: 'UTF-8'});
+			try {
+				while(true) {
+					var line = stream.readLine();
+					if(JSB.isNull(line)){
+						break;
+					}
+					var logEntry = JSON.parse(line);
+					logMap[logEntry.key] = logEntry;
+				}
+			} finally {
+				stream.close();	
+			}
+			for(var key in logMap){
+				logEntries.push(logMap[key]);
+			}
+			logEntries.sort(function(a, b){
+				return a.time - b.time;
+			});
+			
+			return logEntries;
 		}
 	}
 }

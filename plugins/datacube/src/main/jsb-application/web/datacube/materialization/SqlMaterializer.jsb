@@ -41,12 +41,12 @@
 				}
 				
 				// create table with suggestedName
-				var sql = 'create table '+suggestedName+' ()';
+				var sql = 'create table "'+suggestedName+'" ()';
 				JDBC.executeUpdate(connection, sql);
 				
 				var fNameArr = Object.keys(fields);
 				for(var i = 0; i < fNameArr.length; i++){
-					sql = 'alter table ' + suggestedName + ' add column "c' + i + '_' + fNameArr[i] + '" ' + JDBC.translateType(fields[fNameArr[i]], vendor);
+					sql = 'alter table "' + suggestedName + '" add column "' + fNameArr[i] + '" ' + JDBC.translateType(fields[fNameArr[i]], vendor);
 					JDBC.executeUpdate(connection, sql);
 					
 					// extract current field
@@ -64,7 +64,7 @@
 				
 			} catch(e){
 				try {
-					JDBC.executeUpdate(connection, 'drop table ' + suggestedName);
+					JDBC.executeUpdate(connection, 'drop table "' + suggestedName + '"');
 				} catch(ex) {
 				}
 				throw e;
@@ -87,7 +87,7 @@
 				if(!rs.next()){
 					return;
 				}
-				JDBC.executeUpdate(connection, 'drop table ' + tName);
+				JDBC.executeUpdate(connection, 'drop table "' + tName + '"');
 			} finally {
 				connWrap.close();
 			}
@@ -106,7 +106,7 @@
 				if(!rs.next()){
 					return;
 				}
-				JDBC.executeUpdate(connection, 'alter table ' + oldName + ' rename to ' + newName);
+				JDBC.executeUpdate(connection, 'alter table "' + oldName + '" rename to "' + newName + '"');
 			} finally {
 				connWrap.close();
 			}
@@ -120,10 +120,10 @@
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
 				if(rs.next()){
-					JDBC.executeUpdate(connection, 'drop index ' + idxName);
+					JDBC.executeUpdate(connection, 'drop index "' + idxName + '"');
 				}
 				
-				var sql = 'create index ' + idxName + ' on ' + tName + '(';
+				var sql = 'create index "' + idxName + '" on "' + tName + '" (';
 				var fArr = Object.keys(idxFields);
 				for(var i = 0; i < fArr.length; i++){
 					sql += '"' + fArr[i] + '"';
@@ -146,7 +146,7 @@
 				var databaseMetaData = connection.getMetaData();
 				var rs = databaseMetaData.getTables(null, null, idxName, null);
 				if(rs.next()){
-					JDBC.executeUpdate(connection, 'drop index ' + idxName);
+					JDBC.executeUpdate(connection, 'drop index "' + idxName + '"');
 				}
 			} finally {
 				connWrap.close();
@@ -165,7 +165,7 @@
 				for(var b = 0; b < objArr.length; b++){
 					var obj = objArr[b];
 					var fNameArr = Object.keys(obj);
-					var sql = 'insert into ' + tName + '(';
+					var sql = 'insert into "' + tName + '" (';
 					var bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
 						if(JSB.isNull(obj[fNameArr[i]])){

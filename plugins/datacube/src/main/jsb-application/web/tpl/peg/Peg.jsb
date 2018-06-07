@@ -5,8 +5,9 @@
 	
 	
 	$constructor: function(){
-		this.StringBuffer = function(stream){
+		this.StringBuffer = function(stream, opts){
 			this.stream = stream;
+			this.opts = opts;
 			this.buffers = [{
 				pos: 0,
 				buffer: ''
@@ -34,7 +35,9 @@
 					bDesc.buffer = nBuffer;
 					bDesc.pos = this.buffers[this.lastBuffer].pos + this.buffers[this.lastBuffer].buffer.length;
 					this.length += bDesc.buffer.length;
-					JSB.getLogger().debug('size: ' + this.length);
+					if(this.opts && this.opts.onProgress){
+						this.opts.onProgress(this.length, this.stream.available());
+					}
 				}
 			},
 			
@@ -94,7 +97,7 @@
 		return this.peg.generate.apply(this.peg, arguments);
 	},
 	
-	parseStream: function(parser, stream){
-		return parser.parse(new (this.StringBuffer)(stream));
+	parseStream: function(parser, stream, opts){
+		return parser.parse(new (this.StringBuffer)(stream, opts));
 	}
 }

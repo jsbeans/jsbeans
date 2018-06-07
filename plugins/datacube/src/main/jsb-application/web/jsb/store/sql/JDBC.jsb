@@ -312,7 +312,7 @@
 			'PostgreSQL': {
 				'integer': 'int8',
 				'int': 'int8',
-				'boolean': 'bit',
+				'boolean': 'boolean',
 				'nvarchar': 'varchar',
 				'varchar': 'varchar',
 				'string': 'text',

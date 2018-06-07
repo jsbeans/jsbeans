@@ -199,7 +199,14 @@
 		
 		execute: function(){
 			var parser = Peg.generate(this.jsonGrammar);
-			Peg.parseStream(parser, this.stream);
+			Peg.parseStream(parser, this.stream, {
+				onProgress: function(position, available){
+					var total = $this.getFileSize();
+					position = total - available;
+					var progress = Math.round(position * 100 / total);
+					$this.publish('Parser.progress', {progress: progress, position: position, total: total});
+				}
+			});
 		}
 	}
 }

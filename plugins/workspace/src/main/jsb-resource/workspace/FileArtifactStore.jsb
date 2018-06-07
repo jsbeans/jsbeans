@@ -25,7 +25,7 @@
 			return eDir;
 		},
 		
-		write: function(entry, name, a){
+		write: function(entry, name, a, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
 			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
@@ -41,7 +41,7 @@
 				}
 				
 				if(artifactType == 'string'){
-					FileSystem.write(eFileName, a);	
+					FileSystem.write(eFileName, a, opts);	
 				} else if(artifactType == 'value'){
 					FileSystem.write(eFileName, JSON.stringify(a, null, 4));
 				} else if(artifactType == 'binary'){
@@ -59,6 +59,15 @@
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
+		},
+		
+		size: function(entry, name){
+			var eDir = this.getArtifactDir(entry);
+			var eFileName = FileSystem.join(eDir, name);
+			if(!FileSystem.exists(eFileName)){
+				throw new Error('Internal error: Missing artifact file "'+eFileName+'" defined in entry: ' + entry.getId());
+			}
+			return FileSystem.size(eFileName);
 		},
 		
 		read: function(entry, name, opts){
