@@ -86,6 +86,7 @@
             }
 
             function createValue(entry){
+            	$this._item.addClass('filled');
                 $this._render = RendererRepository.createRendererFor(entry);
                 $this._item.append($this._render.getElement());
 
@@ -103,20 +104,17 @@
             }
             this._item.empty();
 
-	        if(!val){
-	            this._item.removeClass('filled');
-	        } else {
-	            this._item.addClass('filled');
-
+            this._item.removeClass('filled');
+	        if(val){
 	            if(entry){
 	                createValue(entry);
 	            } else {
 	                this.server().getEntry(val, function(entry, error){
-	                    if(!error){
-	                        createValue(entry);
-	                    } else {
-	                        $this._item.append('<span class="error">База не найдена!</span>')
-	                    }
+	                	if(entry){
+	                		createValue(entry);
+	                	}/* else {
+	                		$this._item.append('<span class="error">База не задана</span>')
+	                	}*/
 	                });
 	            }
 	        }
@@ -139,10 +137,15 @@
 
 	    getEntry: function(entryDesc){
             if(!entryDesc || !entryDesc.workspaceId || !entryDesc.entryId){
-                throw new Error('Invalid entry description in CompleteWidgetBinding');
+            	return null;
             }
+            
+            try {
+            	return WorkspaceController.getWorkspace(entryDesc.workspaceId).entry(entryDesc.entryId);	
+            } catch(e){}
 
-            return WorkspaceController.getWorkspace(entryDesc.workspaceId).entry(entryDesc.entryId);
+            return null;
+            
 	    }
 	}
 }
