@@ -3,10 +3,14 @@
 	$name: 'JSB.Utils.Formatter',
 	$singleton: true,
 
-	_lang: {
-	    decimalPoint: '.',
-	    thousandsSep: ' '
+	$constructor: function(){
+	    this._lang = {
+            decimalPoint: (1.1).toLocaleString()[1],
+            thousandsSep: (1.1).toLocaleString()[1] === ',' ? ' ' : ','
+	    };
 	},
+
+	_lang: {},
 
     _pick: function () {
         var args = arguments,

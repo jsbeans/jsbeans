@@ -1939,34 +1939,17 @@
                 this._content = $this.$('<div class="content"></div>');
                 legend.append(this._content);
 
-                /*
-                this._name = $this.$('<p class="name"></p>');
-                legend.append(this._name);
-
-                this._value = $this.$('<p class="value"></p>');
-                legend.append(this._value);
-                */
-
                 return legend.get(0);
             };
 
             this._infoControl.update = function(content){
                 this._content.empty().append(content);
-                /*
-                this._name.text(name ? name : '');
-                this._value.text(value ? value : '');
-                */
             };
 
             this._infoControl.addTo(this.map);
         },
 
         _format: function(format, i, obj){
-            /*
-            if(!this._styles.contentData || this._styles.contentData.length - 1 < i){
-                return obj || {};
-            }
-            */
             return Formatter.format(format, JSB.merge(obj || {}, this._styles.contentData[i]));
         },
 

@@ -457,7 +457,7 @@
                 var variablesBlock = this.$('<div class="variablesBlock"></div>');
                 this._advancedSettings.append(variablesBlock);
 
-                var addVarBtn = this.$('<i class="btn btnMultiple addVarBtn fas fa-plus-circle"></i>');
+                var addVarBtn = this.$('<i class="btn btnMultiple addVar fas fa-plus-circle"></i>');
                 addVarBtn.click(function(){
                     if(!$this._values.values[0].variables){
                         $this._values.values[0].variables = [];
@@ -484,7 +484,7 @@
 	        this._advancedSettings.append(this._editBlock);
 
 	        /* format variables btn */
-	        var addButton = this.$('<i class="btn btnMultiple fas fa-plus-circle"></i>');
+	        var addButton = this.$('<i class="btn btnMultiple addVarToTextBtn fas fa-plus-circle"></i>');
 	        addButton.click(function(evt){
 	            evt.stopPropagation();
 

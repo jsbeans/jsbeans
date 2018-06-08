@@ -104,10 +104,6 @@
     margin-left: 5px;
 }
 
-.formatter > .advancedSettings > .btnMultiple {
-    margin-top: 5px;
-}
-
 .formatter > .advancedSettings > .editBlock > span.variable {
     border: 1px solid #00800091;
     background-color: #83ca8b;
@@ -117,8 +113,13 @@
     margin: 0 2px;
 }
 
-.formatter > .advancedSettings > .btnMultiple {
+.formatter > .advancedSettings > .addVar{
+    margin-top: 5px;
+}
+
+.formatter > .advancedSettings > .addVarToTextBtn {
     margin-left: 5px;
+    vertical-align: top;
 }
 
 .formatter > .advancedSettings > .dropDown {
