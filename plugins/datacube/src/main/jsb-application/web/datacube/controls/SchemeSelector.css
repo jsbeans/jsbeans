@@ -54,13 +54,21 @@
 	color: #007710;
 }
 
+.schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="date"],
+._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="date"] > .field {
+	color: #92009a;
+}
+
+
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="integer"],
 ._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="integer"] > .field {
 	color: #b36e02;
 }
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="float"],
-._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="float"] > .field {
+._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="float"] > .field,
+.schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="number"],
+._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="number"] > .field {
 	color: #9c8300;
 }
 

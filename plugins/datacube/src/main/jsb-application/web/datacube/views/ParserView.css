@@ -159,13 +159,19 @@
 	color: #b36e02;
 }
 
-.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="float"] {
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="float"],
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="number"] {
 	color: #9c8300;
 }
 
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="boolean"] {
 	color: #007710;
 }
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="date"] {
+	color: #92009a;
+}
+
 
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="object"],
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="array"] {

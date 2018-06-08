@@ -247,6 +247,7 @@
 					});
 				} catch(e){
 					if(e != 'Break'){
+						$this.logAppend(entry, 'error', e);
 						throw e;
 					}
 				} 

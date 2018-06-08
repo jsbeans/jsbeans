@@ -342,7 +342,246 @@
 			
 		},
 		
+		executeConvertType: function(valDesc, targetType){
+			var currentType = $this.detectValueTable(valDesc.value);
+			switch(targetType){
+			case 'string':
+				switch(currentType){
+				case 'null':
+					break;
+				case 'array':
+				case 'object':
+					valDesc.value = JSON.stringify(valDesc.value);
+					break;
+				case 'boolean':
+					if(valDesc.value){
+						valDesc.value = 'true';
+					} else {
+						valDesc.value = 'false';
+					}
+					break;
+				case 'date':
+					valDesc.value = valDesc.value.toString();
+					break;
+				default:
+					valDesc.value = '' + valDesc.value;
+				}
+				break;
+			case 'integer':
+				switch(currentType){
+				case 'null':
+					break;
+				case 'array':
+					if(valDesc.value.length > 0){
+						valDesc.value = valDesc.value[0];
+						$this.executeConvertType(valDesc, targetType);
+					} else {
+						valDesc.value = null;
+					}
+					break;
+				case 'object':
+					valDesc.value = 0;
+					break;
+				case 'boolean':
+					if(valDesc.value){
+						valDesc.value = 1;
+					} else {
+						valDesc.value = 0;
+					}
+					break;
+				case 'float':
+					valDesc.value = Math.floor(valDesc.value);
+					break;
+				case 'string':
+					valDesc.value = parseInt(valDesc.value);
+					if(JSB.isNaN(valDesc.value)){
+						valDesc.value = null;
+					}
+					break;
+				case 'date':
+					valDesc.value = valDesc.value.getTime();
+					break;
+				}
+				break;
+			case 'float':
+				switch(currentType){
+				case 'null':
+					break;
+				case 'array':
+					if(valDesc.value.length > 0){
+						valDesc.value = valDesc.value[0];
+						$this.executeConvertType(valDesc, targetType);
+					} else {
+						valDesc.value = null;
+					}
+					break;
+				case 'object':
+					valDesc.value = 0.0;
+					break;
+				case 'boolean':
+					if(valDesc.value){
+						valDesc.value = 1.0;
+					} else {
+						valDesc.value = 0.0;
+					}
+					break;
+				case 'integer':
+					valDesc.value = parseFloat(valDesc.value);
+					break;
+				case 'string':
+					valDesc.value = parseFloat(valDesc.value);
+					if(JSB.isNaN(valDesc.value)){
+						valDesc.value = null;
+					}
+					break;
+				case 'date':
+					valDesc.value = valDesc.value.getTime();
+					break;
+
+				}
+				break;
+			case 'boolean':
+				switch(currentType){
+				case 'array':
+					if(valDesc.value.length > 0){
+						valDesc.value = valDesc.value[0];
+						$this.executeConvertType(valDesc, targetType);
+					} else {
+						valDesc.value = null;
+					}
+					break;
+				default:
+					if(valDesc.value){
+						valDesc.value = true;
+					} else {
+						valDesc.value = false;
+					}
+				}
+				break;
+			case 'date':
+				switch(currentType){
+				case 'null':
+					break;
+				case 'array':
+					if(valDesc.value.length > 0){
+						valDesc.value = valDesc.value[0];
+						$this.executeConvertType(valDesc, targetType);
+					} else {
+						valDesc.value = null;
+					}
+					break;
+				case 'object':
+				case 'boolean':
+					valDesc.value = new Date();
+					break;
+				case 'integer':
+				case 'float':
+					valDesc.value = new Date(parseInt(valDesc.value));
+					break;
+				case 'string':
+					valDesc.value = Date.parse(valDesc.value);
+					break;
+				}
+				break;
+			case 'array':
+				switch(currentType){
+				case 'null':
+					valDesc.value = [];
+					break;
+				case 'array':
+					// do nothing
+					break;
+				case 'object':
+					var nArr = [];
+					for(var k in valDesc.value){
+						nArr.push(valDesc.value[k]);
+					}
+					valDesc.value = nArr;
+					break;
+				case 'string':
+					try {
+						var ss = JSON.parse(valDesc.value);
+						if(JSB.isArray(ss)){
+							valDesc.value = ss;
+						} else {
+							valDesc.value = [valDesc.value];
+						}
+					} catch(e){
+						valDesc.value = [valDesc.value];
+					}
+					break;
+				default:
+					valDesc.value = [valDesc.value];
+				}
+				break;
+			case 'object':
+				switch(currentType){
+				case 'null':
+					valDesc.value = {};
+					break;
+				case 'object':
+					// do nothing
+					break;
+				case 'array':
+					var obj = {};
+					for(var i = 0; i < valDesc.value.length; i++){
+						obj[i] = valDesc.value[i];
+					}
+					valDesc.value = obj;
+					break;
+				case 'string':
+					try {
+						var ss = JSON.parse(valDesc.value);
+						if(JSB.isObject(ss)){
+							valDesc.value = ss;
+						} else {
+							valDesc.value = {0:valDesc.value};
+						}
+					} catch(e){
+						valDesc.value = {0:valDesc.value};
+					}
+					break;
+				default:
+					valDesc.value = {0:valDesc.value};
+				}
+				break;
+			}
+			valDesc.type = targetType;
+		},
+		
+		executeScript: function(valDesc, expression, vars, dataBindMap){
+			// construct thisObj
+			var thisObj = {value: valDesc.value};
+			for(var vName in vars){
+				var b = vars[vName].field;
+				thisObj[vName] = dataBindMap[b];
+			}
+			var res = (function(){
+				return eval('(' + expression + ')');
+			}).call(thisObj);
+			var type = $this.detectValueTable(res);
+			valDesc.value = res;
+			if(type != 'null'){
+				valDesc.type = type;
+			}
+		},
+		
 		emitTables: function(){
+			function executeTransformChain(colDesc, valDesc, dataBindMap){
+				for(var i = 0; i < colDesc.transforms.length; i++){
+					var tDesc = colDesc.transforms[i];
+					switch(tDesc.op){
+					case 'convertType':
+						$this.executeConvertType(valDesc, tDesc.targetType);
+						break;
+					case 'scriptExpression':
+						$this.executeScript(valDesc, tDesc.expression, tDesc.vars, dataBindMap);
+						break;
+					}
+				}
+				return valDesc;
+			}
+			
 			function resolveCellType(bindingInfo){
 				if(bindingInfo.type == 'array'){
 					return resolveCellType(bindingInfo.arrayType);
@@ -352,7 +591,8 @@
 			function resolveCellValue(colDesc, rootSel, dataBindMap){
 				var val = dataBindMap[colDesc.field];
 				var type = resolveCellType(colDesc.bindingInfo);
-				return {value: val, type: type};
+				return executeTransformChain(colDesc, {value: val, type: type}, dataBindMap);
+//				return {value: val, type: type};
 			}
 			
 			for(var i = 0; i < this.descriptors.length; i++){
