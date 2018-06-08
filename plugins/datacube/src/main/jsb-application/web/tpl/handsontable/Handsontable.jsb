@@ -93,7 +93,7 @@
             manualColumnMove: true,
             manualRowMove: true,
 
-            autoRowSize: true,
+//            autoRowSize: true,
 
             // empty table if no data
             startRows: 10,

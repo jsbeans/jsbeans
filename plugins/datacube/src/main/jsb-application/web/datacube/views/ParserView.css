@@ -116,6 +116,7 @@
 .parserView .tablesView > ._dwp_tabPane > li._dwp_tab {
 	min-height: auto;
 	padding: 1px 6px 2px 6px;
+	margin-left: -1px;
 }
 
 .parserView .tablesView > ._dwp_tabPane > li._dwp_tab.active {
