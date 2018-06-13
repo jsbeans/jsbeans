@@ -5,7 +5,7 @@
     getBindingFields: function(){
         var result = [];
 
-        if(this._values[0].advancedValue){
+        if(this._values[0] && this._values[0].advancedValue){
             var res = this._values[0].advancedValue.match(/{binding\$[^}]+/g);
 
             for(var i = 0; i < res.length; i++){
