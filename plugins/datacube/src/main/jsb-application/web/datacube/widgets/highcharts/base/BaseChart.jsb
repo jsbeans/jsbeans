@@ -1111,7 +1111,7 @@
                                 events: {
                                     click: function(evt) {
                                         evt.preventDefault();
-debugger;
+
                                         if(evt.point.series.options.datacube.filtration){
                                             if(evt.point.selected){ // remove filter
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
