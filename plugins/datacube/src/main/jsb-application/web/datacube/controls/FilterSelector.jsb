@@ -99,15 +99,25 @@
 				case '$ilike':
 					opSign = '&asymp;';
 					break;
+				case '$in':
+				case '$range':
+					opSign = '&isin;';
+					break;
+				case '$nin':
+					opSign = '&notin;';
+					break;
 				default:
 					opSign = ':';
 				}
 				fTag.append('<div class="op">'+opSign+'</div>');
 
-				if(JSB().isDate(fDesc.value)){
-				    var v = fDesc.value.toDateString();
-				} else {
-				    var v = fDesc.value;
+				var v = fDesc.value;
+				if(fDesc.op == '$range' && JSB.isArray(fDesc.value)){
+					v = '[' + fDesc.value[0] + ' - ' + fDesc.value[1] + ']';
+				} else if(JSB.isArray(fDesc.value)){
+					v = JSON.stringify(fDesc.value);
+				} else if(JSB().isDate(fDesc.value)){
+				    v = fDesc.value.toDateString();
 				}
 				var valElt = $this.$('<div class="value"></div>').text('' + v).attr('title', '' + v);
 				if(JSB.isString(v)){

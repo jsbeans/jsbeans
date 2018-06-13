@@ -24,7 +24,7 @@
 		
 		constructFilterId: function(fItem){
 			var f = fItem.cubeField || fItem.field;
-			return MD5.md5('' + f) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5('' + fItem.value);
+			return MD5.md5('' + f) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5(JSON.stringify(fItem.value));
 		},
 		
 		removeFilter: function(itemId, dontPublish){
@@ -164,7 +164,8 @@
 				cubeField: fDesc.cubeField,
 				boundTo: fDesc.boundTo,
 				value: fDesc.value,
-				op: fDesc.op
+				op: fDesc.op,
+				options: fDesc.options
 			};
 			$this.filterArr.push($this.filters[itemId]);
 			
@@ -211,9 +212,18 @@
 				
 				var ffDesc = ffMap[f];
 				var fOp = {};
-				fOp[fDesc.op] = fDesc.value;
 				var field = {};
-				field[f] = fOp;
+				if(fDesc.op == '$range'){
+					if(JSB.isArray(fDesc.value) && fDesc.value.length >= 2){
+						var f1 = {}, f2 = {};
+						f1[f] = {$gte: fDesc.value[0]};
+						f2[f] = {$lte: fDesc.value[1]};
+						field.$and = [f1, f2];
+					}
+				} else {
+					fOp[fDesc.op] = fDesc.value;
+					field[f] = fOp;
+				}
 				if(fDesc.type == '$and'){
 					if(fDesc.boundTo){
 						if(fDesc.boundTo == sourceId){
