@@ -429,7 +429,7 @@
 					valDesc.value = parseFloat(valDesc.value);
 					break;
 				case 'string':
-					valDesc.value = parseFloat(valDesc.value);
+					valDesc.value = parseFloat(valDesc.value.trim().replace(/\,/g, '.'));
 					if(JSB.isNaN(valDesc.value)){
 						valDesc.value = null;
 					}
