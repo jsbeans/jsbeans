@@ -1111,12 +1111,12 @@
                                 events: {
                                     click: function(evt) {
                                         evt.preventDefault();
-
+debugger;
                                         if(evt.point.series.options.datacube.filtration){
-                                            if(evt.point.selected){
+                                            if(evt.point.selected){ // remove filter
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                            } else {
-                                                $this._addPointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                            } else {    // add filter
+                                                $this._addPointFilter(evt.point, evt.ctrlKey || evt.shiftKey, true);
                                             }
                                         }
 
@@ -1237,7 +1237,7 @@
             return f1 && f2;
         },
 
-        _resolveRangeFilters: function( binding){
+        _resolveRangeFilters: function(binding){
             var globalFilters = this.getSourceFilters(this._dataSource);
 
             if(globalFilters){
@@ -1323,7 +1323,7 @@
 
                     var cur = globalFilters[i];
 
-                    if(bindings.indexOf(cur.field) > -1 && cur.op === '$eq'){
+                    if(bindings.indexOf(cur.field) > -1 && (cur.op === '$eq' || cur.op === '$range')){
                         curFilters[i] = cur;
                         newFilters[i] = cur;
 
@@ -1376,7 +1376,7 @@
             };
         },
 
-        _addPointFilter: function(point, accumulate){
+        _addPointFilter: function(point, accumulate, isRange){
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
                 binding = point.series.options.datacube.binding || point.options.datacube.binding,
@@ -1384,6 +1384,11 @@
 
             if(!context.source) {
                 return;
+            }
+
+            if(isRange){
+                var gStart = point.dataGroup.start,
+                    gLength = point.dataGroup.length;
             }
 
             if(!accumulate && Object.keys(this._curFilters).length > 0){
@@ -1397,6 +1402,7 @@
             }
 
             if(datacubeOpts.filterData){  // not widget filters
+                // todo: isRange
                 for(var i = 0; i < datacubeOpts.filterData.bindings.length; i++){
                     var fDesc = {
                         sourceId: context.source,
@@ -1416,10 +1422,11 @@
             } else {    // widget filters
                 var fDesc = {
                     sourceId: context.source,
-                    type: '$or',
-                    op: '$eq',
+                    type: isRange ? '$and' : '$or',
+                    op: isRange ? '$range' : '$eq',
+                    options: isRange ? {rangeCatValue: point[this._filterPropName]} : undefined,
                     field: binding,
-                    value: point[this._filterPropName]
+                    value: isRange ? [point.series.xData[gStart], point.series.xData[gStart + gLength]] : point[this._filterPropName]
                 };
 
                 this._curFilters[this.addFilter(fDesc)] = fDesc;
@@ -1485,6 +1492,7 @@
 
             if(accumulate){
                 // remove context filter
+                // todo: test isRange
                 for(var i in contextFilters){
                     if(i === binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
                         var filter = {};
@@ -1544,7 +1552,7 @@
                     if(this.chart.series[j].options.datacube.binding === filters[i].field ||
                        this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
-                            if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
+                            if(filters[i].value === this.chart.series[j].points[k][this._filterPropName] || filters[i].options.rangeCatValue === this.chart.series[j].points[k][this._filterPropName]){
                                 this.chart.series[j].points[k].select(b1, b2);
                             }
                         }

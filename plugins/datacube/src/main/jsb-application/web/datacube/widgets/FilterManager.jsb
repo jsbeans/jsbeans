@@ -362,7 +362,7 @@
 				postFilter = postFilter.$or[0];
 			}
 			
-			JSB.getLogger().debug(JSON.stringify(filter, null, 4));
+			//JSB.getLogger().debug(JSON.stringify(filter, null, 4));
 			
 			return {
 				filter: filter,
