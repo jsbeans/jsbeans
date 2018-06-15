@@ -9,7 +9,6 @@
 
 .groupRender.optional > .jsb-panel > .header {
     display: inline-block;
-    margin-left: 4px;
 }
 
 .groupRender.optional > .jsb-panel > .header > h1 {

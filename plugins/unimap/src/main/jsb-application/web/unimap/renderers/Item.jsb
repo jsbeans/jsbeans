@@ -72,10 +72,6 @@
 	            this.append(this.multipleContainer);
 	        }
 
-	        if(this._scheme.optional){
-                hideInput(this._values.checked);
-	        }
-
 	        if(this._values.values.length > 0){
 	            for(var i = 0; i < this._values.values.length; i++){
 	                this.addItem(this._values.values[i], i);
@@ -84,6 +80,10 @@
 	            if(!this._scheme.multiple){
 	                this.addItem(null, 0);
                 }
+	        }
+	        
+	        if(this._scheme.optional){
+                hideInput(this._values.checked);
 	        }
 	    },
 

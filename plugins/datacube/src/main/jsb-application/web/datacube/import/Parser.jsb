@@ -84,6 +84,11 @@
                                     name: 'Столбец',
         							render: 'item'
     							},
+    							columnComment: {
+    								name: 'Вставить комментарий',
+        							render: 'item',
+        							optional: true
+    							},
 	        					transforms: {
 	        						render: 'group',
 	        						multiple: true,
@@ -654,16 +659,16 @@
 						var colDesc = tableDesc.columns[colName];
 						var cellInfo = resolveCellValue(colDesc, tableDesc.bindingTree, dataBindMap);
 						record[colName] = cellInfo.value;
-						columns[colName] = cellInfo.type;
+						columns[colName] = {type: cellInfo.type, comment: colDesc.comment};
 					}
 					this.emitRecord({table: tableDesc.table, columns: columns}, record);
 				} while(tableDesc.bindingTree.next(dataBindMap));
 			}
 		},
 		
-		emitRecord: function(table, record){
+		emitRecord: function(tableDesc, record){
 			if(this.rowCollback){
-				this.rowCollback.call(this, table, record);
+				this.rowCollback.call(this, tableDesc, record);
 			}
 		},
 		
@@ -1107,6 +1112,10 @@
 						transforms: []
 					};
 					
+					if(columnCtx.find('columnComment').checked()){
+						colDesc.comment = columnCtx.find('columnComment').value();
+					}
+					
 					if(colField && colField.length > 0 && !bindings[colField]){
 						bindings[colField] = true;
 					}
@@ -1208,13 +1217,12 @@
 					// update columns
 					if(!tDesc.created){
 						for(var c in tableDesc.columns){
-							if(tableDesc.columns[c]){
-								tDesc.columns[c] = tableDesc.columns[c];
-							} else {
+							tDesc.columns[c] = tableDesc.columns[c];
+							if(!tDesc.columns[c].type){
 								// detect type
 								var type = $this.detectValueTable(rowData[c]);
 								if(type != 'null'){
-									tDesc.columns[c] = type;
+									tDesc.columns[c].type = type;
 								}
 							}
 						}	
@@ -1274,7 +1282,7 @@
 					// check for all columns are filled
 					var bColumnsCorrect = true;
 					for(var c in tDesc.columns){
-						if(!tDesc.columns[c]){
+						if(!tDesc.columns[c] || !tDesc.columns[c].type){
 							bColumnsCorrect = false;
 							break;
 						}

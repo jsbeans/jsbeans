@@ -29,7 +29,6 @@
 			var vendor = JDBC.getDatabaseVendor(connection);
 			var suggestedName = cName;
 			var schema = opts && opts.schema || 'public';
-			debugger;
 			try {
 				var databaseMetaData = connection.getMetaData();
 				// check schema for existence
@@ -62,7 +61,9 @@
 				
 				var fNameArr = Object.keys(fields);
 				for(var i = 0; i < fNameArr.length; i++){
-					sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + JDBC.translateType(fields[fNameArr[i]], vendor);
+					var fType = fields[fNameArr[i]].type;
+					var fComment = fields[fNameArr[i]].comment;
+					sql = 'alter table "' + schema + '"."' +suggestedName + '" add column "' + fNameArr[i] + '" ' + JDBC.translateType(fType, vendor);
 					JDBC.executeUpdate(connection, sql);
 					
 					// extract current field
@@ -74,6 +75,11 @@
 						}
 						sqlFields[columnName] = true;
 						fieldMap[fNameArr[i]] = columnName;
+						
+						if(fComment && fComment.length > 0){
+							sql = 'comment on column "' + schema + '"."' + suggestedName + '"."' + columnName + '" is \'' + fComment + '\'';
+							JDBC.executeUpdate(connection, sql);
+						}
 						break;
 					}
 				}
@@ -94,7 +100,6 @@
 			if(!tName){
 				return;
 			}
-			debugger;
 			var schema = opts && opts.schema || 'public';
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);

@@ -432,7 +432,8 @@
 			                callbacks: {
 			                    createHeader: function(i, header) {
 			                    	if(!header) return i + 1;
-			                    	var type = $this.previewTables[t].columns[header];
+			                    	var type = $this.previewTables[t].columns[header].type;
+			                    	var comment = $this.previewTables[t].columns[header].comment;
 			                    	return '<div class="name" type="'+type+'">' + header + '</div><div class="type">'+type+'</div>';
 			                    },
 			                    preLoader: function(rowCount){}
