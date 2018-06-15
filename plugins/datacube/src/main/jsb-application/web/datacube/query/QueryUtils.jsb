@@ -74,7 +74,8 @@
         },
 
         walkQueries: function (dcQuery, options, enterCallback, leaveCallback/**false=break: callback(q) and this={query, nestedPath, fromPath, isView, isValueQuery, inFrom}*/) {
-            options = options || {};
+            options = options || {depth:0, findView: null};
+            var queryDepth = -1;
             var trace = options.trace || false;
             var visitedQueries = new HashMap();
 
@@ -93,6 +94,22 @@
                 }
             }
 
+            var findView = options.findView || function(query, name) {
+                if (query.$views && query.$views[name]) return query.$views[name];
+                for (var p = this.nestedPath.length - 1; p >=0; p-- ) {
+                    if (this.nestedPath[p].$views && this.nestedPath[p].$views[name]) {
+                        return this.nestedPath[p].$views[name];
+                    }
+                }
+                if (dcQuery.$views && dcQuery.$views[name]) {
+                    return dcQuery.$views[name];
+                }
+                if (typeof options.viewCallback === 'function') {
+                    return options.viewCallback(name);
+                }
+                throw new Error('View is undefined: ' + name);
+            };
+
             function walkQuery(query){
                 function checkCircle(context){
                     for (var i = this.nestedPath.length -1; i >= 0; i--) {
@@ -107,71 +124,65 @@
                     }
                 }
 
-                function findView(name) {
-                    if (query.$views && query.$views[name]) return query.$views[name];
-                    for (var p = this.nestedPath.length - 1; p >=0; p-- ) {
-                        if (this.nestedPath[p].$views && this.nestedPath[p].$views[name]) {
-                            return this.nestedPath[p].$views[name];
+                queryDepth++;
+                try {
+
+                    if (options.depth && queryDepth > options.depth) {
+                        return;
+                    }
+
+                    // walk current query
+
+                    var res = enterCallback ? enterCallback.call(this, query) : null;
+                    if(res === false) return; /// stop and go back
+
+                    // from
+                    if (query.$from) {
+                        if (typeof query.$from === 'string') {
+                            checkCircle.call(this, query.$from);
                         }
+                        var fromQuery = typeof query.$from === 'string'
+                                ? findView.call(this, query, query.$from) : query.$from;
+                        if (!JSB.isObject(fromQuery)) {
+                            throw new Error('Invalid $from type ' + typeof query.$from);
+                        }
+                        var res = walkQuery.call(
+                            {
+                                query : fromQuery,
+                                nestedPath: [],
+                                fromPath: this.fromPath.concat([query]),
+                                isView : typeof query.$from === 'string',
+                                isValueQuery: false,
+                                inFrom : true,
+                            },
+                            fromQuery
+                        );
+                        if (res === false) return false;
                     }
-                    if (dcQuery.$views && dcQuery.$views[name]) {
-                        return dcQuery.$views[name];
+
+                    // values
+                    var keys = ['$union', '$join', '$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
+                    for (var i = 0; i < keys.length; i++) if (query[keys[i]] != null) {
+                        var res = walkExpression.call(
+                            {
+                                nestedPath: this.nestedPath.concat([keys[i]]),
+                                fromPath: this.fromPath,
+                            },
+                            query[keys[i]],
+                            keys[i]
+                        );
+                        if (res === false) return false;
                     }
-                    if (typeof options.viewCallback === 'function') {
-                        return options.viewCallback(name);
+
+                    // visit self query
+                    if (!options.skipDuplicates || !visitedQueries.containsKey(query)){
+                        visitedQueries.put(query, true);
+                        var res = leaveCallback ? leaveCallback.call(this, query) : null;
                     }
-                    throw new Error('View is undefined: ' + name);
+                    return res === false ? false : true;
+                } finally {
+                    queryDepth--;
                 }
-
-                // walk current query
-
-                var res = enterCallback ? enterCallback.call(this, query) : null;
-                if(res === false) return; /// stop and go back
-
-                // from
-                if (query.$from) {
-                    if (typeof query.$from === 'string') {
-                        checkCircle.call(this, query.$from);
-                    }
-                    var fromQuery = typeof query.$from === 'string'
-                            ? findView.call(this, query.$from) : query.$from;
-                    if (!JSB.isObject(fromQuery)) {
-                        throw new Error('Invalid $from type ' + typeof query.$from);
-                    }
-                    var res = walkQuery.call(
-                        {
-                            query : fromQuery,
-                            nestedPath: [],
-                            fromPath: this.fromPath.concat([query]),
-                            isView : typeof query.$from === 'string',
-                            isValueQuery: false,
-                            inFrom : true,
-                        },
-                        fromQuery
-                    );
-                    if (res === false) return false;
-                }
-
-                // values
-                var keys = ['$union', '$join', '$select', '$filter', '$globalFilter', '$groupBy', '$sort', '$postFilter'];
-                for (var i = 0; i < keys.length; i++) if (query[keys[i]] != null) {
-                    var res = walkExpression.call(
-                        {
-                            nestedPath: this.nestedPath.concat([keys[i]]),
-                            fromPath: this.fromPath,
-                        },
-                        query[keys[i]],
-                        keys[i]
-                    );
-                    if (res === false) return false;
-                }
-
-                // visit self query
-                if (!options.skipDuplicates || !visitedQueries.containsKey(query)){
-                    visitedQueries.put(query, true);
-                    var res = leaveCallback ? leaveCallback.call(this, query) : null;
-                }
-                return res === false ? false : true;
             }
 
             function walkExpression(exp, key) {
@@ -385,7 +396,7 @@
             function walkFields (fields) {
                 for (var f in fields) {
                     var field = fields[f];
-                    callback(field.$field, field.$context || query.$context, query);
+                    callback.call(field, field.$field, field.$context || query.$context, query);
                 }
             }
 
@@ -1566,6 +1577,46 @@
             walkQueryFilter(dcQuery, '$postFilter');
 		},
 
+        extractExpressionType: function(exp, getFieldType){
+            function lookup(e) {
+                if (e == null) {
+                    return null;
+                }
+                if (JSB.isObject(e)) {
+                    if (e.$toString) return 'string';
+                    if (e.$toInt) return 'int';
+                    if (e.$toDouble) return 'double';
+                    if (e.$toBoolean) return 'boolean';
+                    if (e.$toDate) return 'date';
+                    if (e.$toTimestamp) return 'timestamp';
+                    if (e.$dateYear || e.$dateYearDay || e.$dateMonth || e.$dateMonthDay || e.$dateWeekDay
+                        || e.$dateTotalSeconds || e.$dateIntervalOrder
+                        || e.$timeHour || e.$timeMinute || e.$timeSecond
+                        ) return 'int';
+                    if (e.$const) {
+                        if (JSB.isString(e.$const)) return 'string';
+                        if (JSB.isInteger(e.$const)) return 'int';
+                        if (JSB.isFloat(e.$const)) return 'double';
+                        if (JSB.isBoolean(e.$const)) return 'boolean';
+                        if (JSB.isDate(e.$const)) return 'date';
+                        throw new Error('Unsupported $const type ' + typeof e.$const);
+                    }
+                    if (e.$field) {
+                        return getFieldType(e.$field, e.$context);
+                    }
+                    for(var op in e) {
+                        var type = lookup(e[op]);
+                        if (type) {
+                            return type;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            return lookup(exp);
+        },
+
         extractType: function (exp, query, cubeOrDataProvider, queryByContext) {
             var fields = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube'
                         ? cubeOrDataProvider.getManagedFields()
@@ -1608,10 +1659,10 @@
                 if (exp.$toBoolean) return 'boolean';
                 if (exp.$toDate) return 'date';
                 if (exp.$toTimestamp) return 'timestamp';
-                if (exp.$dateYear) return 'int';
-                if (exp.$dateMonth) return 'int';
-                if (exp.$dateTotalSeconds) return 'int';
-                if (exp.$dateIntervalOrder) return 'int';
+                if (exp.$dateYear || exp.$dateYearDay || exp.$dateMonth || exp.$dateMonthDay || exp.$dateWeekDay
+                    || exp.$dateTotalSeconds || exp.$dateIntervalOrder
+                    || exp.$timeHour || exp.$timeMinute || exp.$timeSecond
+                    ) return 'int';
                 if (exp.$const) {
                     if (JSB.isString(exp.$const)) return 'string';
                     if (JSB.isInteger(exp.$const)) return 'int';

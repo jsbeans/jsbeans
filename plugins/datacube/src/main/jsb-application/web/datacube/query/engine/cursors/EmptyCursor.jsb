@@ -7,7 +7,7 @@
         ],
 
 		$constructor: function(){
-		    $this._pos = -1;
+		    $base();
         },
 
         next: function(){
@@ -19,7 +19,9 @@
         },
 
         close: function(){
-            $this.cursor.object = null
+            if ($this.closed) return;
+            $this.object = null;
+            $base();
         },
 
         reset: function(){
@@ -27,8 +29,13 @@
             $this.object = null;
         },
 
-        clone: function(){
-            return new $this.Class();
-        },
+//        clone: function(){
+//            return new $this.Class();
+//        },
+
+		analyze: function(){
+		    var json = $base();
+		    return json;
+		},
 	}
 }

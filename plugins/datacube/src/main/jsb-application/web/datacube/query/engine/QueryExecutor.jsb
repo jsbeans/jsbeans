@@ -5,10 +5,12 @@
 		$require: [
 		    'DataCube.Query.Engine.QueryProfiler',
 		    'DataCube.Query.Transforms.QueryTransformer',
-//		    'DataCube.Query.Views.CubeViewsBuilder',
 		    'DataCube.Query.Views.QueryViewsBuilder',
-//		    'DataCube.Query.Engine.ItBuilder',
 		    'DataCube.Query.Engine.Cursors.CursorBuilder',
+
+		    'DataCube.Providers.SqlTableDataProvider',
+
+		    'DataCube.Query.Translators.TranslatorRegistry',
 
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
@@ -35,39 +37,43 @@
             } else {
                 $this.providers = [cubeOrDataProvider];
             }
+
+            $this.builder = new CursorBuilder($this);
 		},
 
 		execute: function(){
 		    try {
 		        $this.profiler && $this.profiler.profile('execute query started');
 
-//                $this._optimizeProviders();
-
                 $this._prepareQuery();
 		        $this.contextQueries = QueryUtils.defineContextQueries($this.query);
-
                 $this.profiler && $this.profiler.profile('query prepared', $this.preparedQuery);
+debugger;
 
-                var builder = new CursorBuilder($this);
-                var it = builder.build().asIterator();
-                var oldClose = it.close;
-                it.close = function(){
-                    oldClose.call(this);
-                    builder.destroy();
+                var rootCursor = $this.builder.buildAnyCursor($this.query, $this.params, null);
+                $this.profiler && $this.profiler.profile('root cursor created');
+                rootCursor.analyze();
+                var it =  rootCursor.asIterator();
+                var oldNext = it.next;
+                it.next = function(){
+debugger;
+                    try {
+                        return oldNext.apply(this, arguments);
+                    }catch(e){
+                        $this.profiler && $this.profiler.failed('execute query next failed', e);
+                        this.close();
+                    }
                 };
-                $this.profiler && $this.profiler.profile('built iterator', it);
-
                 return it;
 
             } catch(e) {
                 $this.profiler && $this.profiler.failed('execute query failed', e);
                 throw e;
-            } finally {
-                itBuilder && itBuilder.destroy();
             }
 		},
 
 		destroy: function() {
+		    $this.builder.destroy();
             $this.profiler && $this.profiler.complete('builder destroyed');
 		    $this.profiler && $this.profiler.destroy();
 		    $base();
@@ -75,6 +81,26 @@
 
 		getCubeOrDataProvider: function(){
 		    return $this.cube || $this.providers[0];
+		},
+
+		tryTranslateQuery: function(query, params) {
+		    var providers = $this._extractProviders(query);
+		    var providersGroups = $this._groupSameProviders(providers);
+            if (providers.length == 1 || providersGroups.length == 1) {
+                if (TranslatorRegistry.hasTranslator(providers[0])) {
+                    try {
+                        var translator = TranslatorRegistry.newTranslator(
+                                providers,
+                                $this.queryEngine
+                        );
+                        var it = translator.translatedQueryIterator(query, params);
+                        return it;
+                    } finally {
+                        if(translator) translator.close();
+                    }
+                }
+            }
+            return null;
 		},
 
 		_prepareQuery: function() {
@@ -89,13 +115,38 @@
                 : provider.id;
         },
 
-        /** Объединяет провайдеры в группы по типам
-        */
-		_groupSameProviders: function(){
-		    var groupsMap = {/**key:[provider]*/}; //
+        _extractProviders: function(query){
+            if (query.$context == $this.query.$context) {
+                return $this.providers;
+            }
 
+            var allProvidersMap = {};
             for(var i = 0; i < $this.providers.length; i++) {
                 var provider = $this.providers[i];
+                allProvidersMap[provider.id] = provider;
+            }
+
+            var providers = [];
+            var providersMap = {};
+            QueryUtils.walkSubQueries(query, function(query){
+                if (query.$provider) {
+                    if(!providersMap[query.$provider]) {
+                        var provider = allProvidersMap[query.$provider];
+                        providersMap[query.$provider] = provider;
+                        providers.push(provider);
+                    }
+                }
+            });
+            return providers;
+        },
+
+        /** Объединяет провайдеры в группы по типам
+        */
+		_groupSameProviders: function(providers){
+		    var groupsMap = {/**key:[provider]*/}; //
+
+            for(var i = 0; i < providers.length; i++) {
+                var provider = providers[i];
                 var key = $this._getProviderGroupKey(provider);
                 groupsMap[key] = groupsMap[key] || [];
                 groupsMap[key].push(provider);
@@ -107,32 +158,27 @@
 		    return groups;
 		},
 
-		_createTranslator: function(providers) {
-            try {
-                var translator = TranslatorRegistry.newTranslator(providers, $this.cube || $this.queryEngine);
-                return translator.translatedQueryIterator(query, $this.params);
-            } finally {
-                if(translator) translator.close();
-            }
-		},
+		_initContextFields: function(ctx){
+            ctx.fields = {};
+            QueryUtils.walkQueryFields(ctx.query, /**includeSubQueries=*/false, function (field, context, query){
+                var id = (context||query.$context) + '/' + field;
+                ctx.fields[id] = ctx.fields[id] || {
+                    id: id,
+                    name: field,
+                    context: context,
+//                            isOutput: !!query.$select[field] || !query.$groupBy, /// если нет группировки - к выходным добавляются все входные поля
+                    usages: 0,
+                };
+                ctx.fields[id].usages++;
+                ctx.fields[id].type = QueryUtils.extractType(
+                        field, query,
+                        $this.getCubeOrDataProvider(),
+                        function (c) {
+                            return $this.contextQueries[c];
+                        }
+                );
+            });
 
-		tryTranslateQuery: function(query) {
-		    var providersGroups = $this._groupSameProviders();
-            if (providersGroups.length == 1) {
-                if (TranslatorRegistry.hasTranslator($this.providers)) {
-                    try {
-                        var translator = TranslatorRegistry.newTranslator(
-                                $this.providers,
-                                $this.cube || $this.queryEngine
-                        );
-                        var it = translator.translatedQueryIterator(query, $this.params);
-                        return it;
-                    } finally {
-                        if(translator) translator.close();
-                    }
-                }
-            }
-            return null;
 		},
 	}
 }

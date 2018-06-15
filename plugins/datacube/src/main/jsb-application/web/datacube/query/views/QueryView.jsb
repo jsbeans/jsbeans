@@ -4,6 +4,7 @@
 
 	$server: {
 		$require: [
+		    'DataCube.Query.Views.DataProviderView',
 		    'DataCube.Query.QueryUtils',
         ],
 
@@ -65,12 +66,28 @@
 		},
 
         getField: function(field) {
-            return $this.getOriginalField(field);
+            var desc = $this.getOriginalField(field);
+            return desc;
 		},
 
         getOriginalField: function(field) {
             var desc = $this.managedFields[field];
+            if (desc && !desc.context) {
+                desc.context = $this.name;
+            }
             return desc;
+		},
+
+		isProviderWrapper: function(){
+		    if (!$this.query.$filter
+		            && !$this.query.$groupBy
+                    && !$this.query.$sort
+                    && !$this.query.$limit
+                    && !$this.query.$offset
+                    && $this.getSourceView() instanceof DataProviderView
+                ) {
+                return true;
+            }
 		},
 
 //        getFieldLinkedViews: function(field) {
@@ -86,22 +103,6 @@
 		        $field: foreignField,
 		        $context: foreignContext
 		    };
-		},
-
-        lookupField: function(name, useAlias) {
-            if (useAlias) {
-                var desc = $this.getField(name);
-            }
-            if (!desc) {
-                var desc = $this.sourceView.getField(name);
-            }
-            if (desc) {
-                desc = JSB.clone(desc);
-                if (!desc.context && !useAlias) {
-                    desc.context = $this.getContext();
-                }
-            }
-            return desc;
 		},
 
 		getSourceView: function() {

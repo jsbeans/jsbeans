@@ -1,134 +1,173 @@
 {
 	$name: 'DataCube.Query.Engine.Cursors.QueryCursor',
-	$parent: 'DataCube.Query.Engine.Cursors.Cursor',
+	$parent: 'DataCube.Query.Engine.Cursors.ViewCursor',
 
 	$server: {
 		$require: [
-		    'JSB.Crypt.MD5',
         ],
 
-		$constructor: function(query){
-		    $base();
-		    $this.query = query;
+        nested: {},
+        chain: [],
+        state: {},
 
-		    // TODO: optimize: cache values of reusable expressions
+		$constructor: function(executor, query, params, parent){
+		    $base(executor, query, params, parent);
 
         },
 
-        build: function(){
-
-            /// build query source
-
-            if ($this.query.$from) {
-                if (JSB.isEqual({}, $this.query.$from)) {
-                    $this.source = builder.buildEmptyCursor(this);
-                } else {
-                    $this.source = builder.buildQueryCursor($this.query.$from, this);
-                }
-            } else if ($this.query.$union){
-                $this.source = builder.buildUnionCursor($this.query.$union, this);
-            } else if ($this.query.$join){
-                $this.source = builder.buildJoinCursor($this.query.$join, this);
-            }
-
-            /// build query body
-
-            // init
-            $this.groups = {};
-
-            $this.next = function(){
-                return $this.source.next();
-            };
-
-            $this.close = function(){
-                return $this.source.close();
-            };
-
-            $this.query.$filter   && $this._buildFilter();
-            $this.query.$select   && $this._buildProduce();
-//            $this.query.$sort     && $this._buildPreSort();
-//            $this.query.$groupBy  && $this._buildAggregate();
-//            $this.query.$sort     && $this._buildPostSort();
-            $this.query.$distinct && $this._buildDistinct();
+        addNested: function(name, cursor){
+            $this.nested[name] = cursor;
         },
+
+        getNested: function(){
+            return $this.nested;
+        },
+
+		analyze: function(){
+		    var json = $base();
+		    json.chain = $this.chain;
+		    return json;
+		},
 
         reset: function(){
-            if ($this.source) {
-                $this.source.close();
-            }
-            // TODO
-            if ($this.executionContext.child) {
-                for(var c in $this.executionContext.child) {
-                    $this.executionContext.child[c].cursor.close();
-                }
-            }
-
-            $this.build();
+            $base();
+            $this.state = {};
+            $this.buildQueryBody();
         },
 
-        clone: function(){
-            return new $this.Class($this);
+        close: function(){
+            if ($this.closed) return;
+            $this.chain = null;
+            $this.state = null;
+            $base();
         },
 
-        _buildFilter: function(){
+        next: function(){
+             /// look $this.buildQueryBody
+        },
+
+        buildQueryBody: function(){
+
+            // вход запроса
+            $this.next = function nextInput(){
+                $this.state = {};
+                return $this.object = $this.source.next();
+            }
+            $this.chain.push('input');
+
+            // фильтрация  - только в отношении входных полей (условия с выходными игнорируются)
+            $this.query.$filter
+                    && $this._installFilter(
+                        $this._extractSubFilter($this.query.$filter, true)
+                    );
+            // предварительная сортировка - по выражениям с входными полями (с выходными игнорируется)
+            $this.query.$sort
+                    && $this._installSort(
+                        $this._extractSubSort($this.query.$sort, true)
+                    );
+            // группировка - формируются группы и итераторы по элементам группы
+            $this.query.$groupBy
+                    && $this.query.$groupBy.length > 0
+                    && $this._installGroupBy($this.query.$groupBy);
+            // построение объекта - выполняются выражения и агрегационные функции
+            $this.query.$select
+                    && $this._installSelect($this.query.$select);
+            // фильтрация  - только в отношении выходных полей (условия с входными пропускаются)
+            $this.query.$filter
+                    && $this._installFilter(
+                        $this._extractSubFilter($this.query.$filter, false)
+                    );
+            // сортировка результата - по выражениям с выходными полями (с входными пропускаются)
+            $this.query.$sort
+                    && $this._installSort(
+                        $this._extractSubSort($this.query.$sort, false)
+                    );
+            // пропуск дубликатов
+            $this.query.$distinct
+                    && $this._installDistinct($this.query.$distinct);
+            // пропуск N элементов
+            $this.query.$offset
+                    && $this._installOffset($this.query.$offset);
+            // ограничение по кол-ву
+            $this.query.$limit
+                    && $this._installLimit($this.query.$limit);
+        },
+
+        _installFilter: function($filter){
             var inputNext = $this.next;
-            $this.next = function(){
-                var object = $this.object = inputNext.call($this);
-                while(object != null && !$this.executionContext.Common.check.call($this.executionContext, $this.query.$filter)) {
-                    object = $this.object = inputNext.call($this);
+
+            $this.next = function (){
+                var object = inputNext.call($this);
+                while(object != null && !$this.Common.check.call($this, $filter)) {
+                    object = inputNext.call($this);
                 }
-                return object;
+                return $this.object = object;
             };
+
+            $this.chain.push('filter');
         },
 
-        _buildProduce: function(){
+        _installGroupBy: function($select){
             var inputNext = $this.next;
-            var ordered = null;
+            var objects = [];
             var currentPos = -1;
             $this.next = function(){
-                if ($this.query.$groupBy && $this.query.$groupBy.length > 0) {
-                    if (!ordered) {
-                        $this.executionContext.Aggregate.init.call($this.executionContext);
-                        ordered = [];
-                        var object = $this.cursor.object = inputNext.call($this);
-                        while(object != null ) {
-                            object = $this.executionContext.Aggregate.map.call($this.executionContext);
-                            if (!$this.groups[object._id]) {
-                                ordered.push(object);
-                            }
-                            object = $this.cursor.object = inputNext.call($this);
-                        }
+                if (currentPos == -1) {
+debugger;
+                    $this.Aggregate.init.call($this);
+
+                    var object = inputNext.call($this);
+                    while(object != null) {
+                        $this.Aggregate.map.call($this, object);
+
+                        object = inputNext.call($this);
                     }
-                    $this.cursor.object = ordered[++currentPos];
-                } else {
-                    $this.cursor.object = inputNext.next();
+                    for(var id in $this.state.groups) {
+                        objects.push($this.state.groups[id]);
+                    }
+                    $this.state.groups = {};
                 }
 
-                var object = {};
-                for(var outputField in $this.query.$select) {
-                    object[outputField] = $this.executionContext.Common.get.call($this.executionContext, $this.query.$select[outputField]);
-                }
-                return object;
-            };
+                return $this.object = objects[++currentPos];
+            }
 
             var inputClose = $this.close;
             $this.close = function(){
-                if(ordered) ordered = null;
-                inputClose.call(this);
+                inputClose.call($this);
+                objects = null;
             };
+
+            $this.chain.push('group');
         },
 
-        _buildDistinct: function(exp){
+        _installSelect: function($select){
+            var inputNext = $this.next;
+
+            $this.next = function(){
+                var object = inputNext.call($this);
+
+                if (object != null) {
+                    var obj = {};
+                    for(var outputField in $select) {
+                        obj[outputField] = $this.Common.get.call($this, $select[outputField]);
+                    }
+                    object = $this.object = obj;
+                }
+                return object;
+            }
+        },
+
+        _installDistinct: function($distinct){
             var inputNext = $this.next;
             var ids = {};
             $this.next = function(){
                 do {
-                    var object = $this.object = inputNext.call($this);
-                    var id = $this.executionContext.Runtime.id.call($this.executionContext);
+                    var object = inputNext.call($this);
+                    var id = $this.Runtime.id.call($this);
                 } while(object != null && ids[id]);
 
                 ids[id] = true;
-                return object;
+                return $this.object = object;
             };
 
             var inputClose = $this.close;
@@ -136,6 +175,69 @@
                 inputClose.call($this);
                 ids = {};
             };
+
+            $this.chain.push('distinct');
         },
+
+        _installSort: function($sort){
+            var inputNext = $this.next;
+            var objects = {};
+
+            $this.next = function sorting(){
+                // TODO sort next
+                return inputNext.call($this);
+            };
+
+            var inputClose = $this.close;
+            $this.close = function sorting(){
+                // TODO sort close
+                inputClose.call($this);
+                objects = {};
+            };
+
+            $this.chain.push('sort');
+        },
+
+        _installOffset: function($offset){
+            var inputNext = $this.next;
+            var current = 0;
+
+            $this.next = function offset(){
+                var object = inputNext.call($this);
+                while(object != null && current++ < $offset) {
+                    object = inputNext.call($this);
+                }
+                return $this.object = object;
+            };
+
+            $this.chain.push('offset');
+        },
+
+        _installLimit: function($limit){
+            if ($limit < 0) return;
+            var inputNext = $this.next;
+            var count = 0;
+
+            $this.next = function limit(){
+                var object = inputNext.call($this);
+                if (count++ == $limit) {
+                    return $this.object = null;
+                }
+                return $this.object = object;
+            };
+
+            $this.chain.push('limit');
+        },
+
+        _extractSubFilter: function($filter, inputOrOutput) {
+            // TODO only with input fields or only with output fields
+            return $filter;
+        },
+
+        _extractSubSort: function($sort, inputOrOutput) {
+            // TODO only with input fields or only with output fields
+            return $sort;
+        },
+
 	}
 }

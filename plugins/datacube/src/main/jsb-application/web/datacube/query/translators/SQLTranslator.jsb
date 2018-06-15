@@ -99,12 +99,25 @@
 		            $context: 'wrapped_' + query.$context
 		        });
 		        this._registerContextQuery(wrappedQuery);
-		        sql = 'SELECT * FROM (' + sql + ') AS ' + this._quotedName(wrappedQuery.$context) +
+		        sql = 'SELECT * FROM (' + sql + ') AS ' + $this._translateContext(this._quotedName(wrappedQuery.$context)) +
 		              ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
 		    }
 
 //		    Log.debug('Translated SQL Query: \n' + sql);
             return sql;
+        },
+
+        _translatedContexts: {},
+
+        _translateContext: function(context) {
+//            return context;
+            if (!$this._translatedContexts[context]) {
+                var name = $this._translatedContexts[context] = 'Q'+Object.keys($this._translatedContexts).length;
+                QueryUtils.logDebug('Query context: {} = {}',name, context);
+                return name;
+
+            }
+            return $this._translatedContexts[context];
         },
 
         _generateUid: function(){
@@ -180,7 +193,7 @@
             for (var id in this.withViews) {
                 if (sqlWith.length > 0) sqlWith += ', ';
                 var view = this.withViews[id];
-                sqlWith += '\n\t' + this._quotedName(view.name) + ' AS (' + view.sql + ')'
+                sqlWith += '\n\t' + $this._translateContext(this._quotedName(view.name)) + ' AS (' + view.sql + ')'
             }
             return sqlWith.length > 0 ? 'WITH' + sqlWith + '\n' : '';
         },
@@ -353,7 +366,7 @@
                     return exp;
                 } else {
                     // is field
-                    return this._translateField(exp, dcQuery.$context, useAlias);
+                    return this._translateField(exp, dcQuery.$context, useAlias, dcQuery.$context);
                 }
             }
 
@@ -407,7 +420,8 @@
                             // if context is not defined then use current
                             exp.$context || dcQuery.$context,
                             // if foreign context force use table field not alias
-                            useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context
+                            useAlias && (exp.$context || dcQuery.$context) == dcQuery.$context,
+                            dcQuery.$context
                     );
             }
 
@@ -619,7 +633,7 @@
                     throw new Error('Field descriptor is not defined for context ' + context);
                 }
                 if (fieldDesc.tableAlias && fieldDesc.fieldAlias) {
-                    return this._quotedName(fieldDesc.tableAlias) + '.' + this._quotedName(fieldDesc.fieldAlias);
+                    return $this._translateContext(this._quotedName(fieldDesc.tableAlias)) + '.' + this._quotedName(fieldDesc.fieldAlias);
                 } else if (fieldDesc.providerTable && fieldDesc.providerField) {
                     return this._printTableName(fieldDesc.providerTable) + '.' + this._quotedName(fieldDesc.providerField);
                 } else {
@@ -628,7 +642,7 @@
             } else {
                 for(var i in this.providers){
                     if(this.providers[i].extractFields()[field]) {
-                        return this._quotedName(context) + '.' + this._quotedName(field);
+                        return $this._translateContext(this._quotedName(context)) + '.' + this._quotedName(field);
                     }
                 }
             }
@@ -665,7 +679,7 @@
             // is select from sub-query
             if (query.$from) {
 //                debugger; // TODO update uery.$from
-                return '(' + this.translateQueryExpression(query.$from) + ') AS ' + this._quotedName(query.$context);
+                return '(' + this.translateQueryExpression(query.$from) + ') AS ' + $this._translateContext(this._quotedName(query.$context));
             }
 
             if (this.cube) {
@@ -723,7 +737,7 @@
                         return true;
                     }
                 });
-                var sql = $this._printTableName(singleProv.provider.getTableFullName()) + ' AS ' + $this._quotedName(query.$context);
+                var sql = $this._printTableName(singleProv.provider.getTableFullName()) + ' AS ' + $this._translateContext($this._quotedName(query.$context));
                 return sql;
             }
             function addJoinOnFields(allFields, providers){
@@ -883,9 +897,9 @@
                     }
                 }
                 if (unionsCount > 1) {
-                    var sql = '(' + sqlUnions + ') AS ' + $this._quotedName(unionsAlias);
+                    var sql = '(' + sqlUnions + ') AS ' + $this._translateContext($this._quotedName(unionsAlias));
                 } else if (unionsCount > 0) {
-                    var sql = sqlUnions + ' AS ' + $this._quotedName(unionsAlias);
+                    var sql = sqlUnions + ' AS ' + $this._translateContext($this._quotedName(unionsAlias));
                 } else {
                     var sql = '';
                 }
@@ -918,7 +932,7 @@
                     var joinedViewAlias = query.$context + '_joined_' + $this.providers.indexOf(prov.provider);
 
                     sqlJoins += $this._printTableName(prov.provider.getTableFullName());
-                    sqlJoins += ' AS ' + $this._quotedName(joinedViewAlias);
+                    sqlJoins += ' AS ' + $this._translateContext($this._quotedName(joinedViewAlias));
 
                     forEachViewColumn(allFields, prov,
                         function visitField(cubeField, isNull, binding){
@@ -956,10 +970,10 @@
                         if (sqlOn.length > 0) sqlOn  += ' AND ';
                         var providerField = fieldsMap[cubeField].providerField;
                         sqlOn += unionsFields[cubeField]
-                                ? $this._quotedName(unionsAlias) + '.' + $this._quotedName(unionsFields[cubeField])
-                                : $this._quotedName(fieldsMap[cubeField].joinOn.tableAlias) + '.' + $this._quotedName(fieldsMap[cubeField].joinOn.fieldAlias);
+                                ? $this._translateContext($this._quotedName(unionsAlias)) + '.' + $this._quotedName(unionsFields[cubeField])
+                                : $this._translateContext($this._quotedName(fieldsMap[cubeField].joinOn.tableAlias)) + '.' + $this._quotedName(fieldsMap[cubeField].joinOn.fieldAlias);
                         sqlOn += ' = ';
-                        sqlOn += $this._quotedName(joinedViewAlias) + '.' + $this._quotedName(providerField);
+                        sqlOn += $this._translateContext($this._quotedName(joinedViewAlias)) + '.' + $this._quotedName(providerField);
                     }
                     if (sqlOn) {
                         sqlJoins += ' ON ' + sqlOn;
@@ -1050,7 +1064,7 @@
             if (fieldsSql.length == 0) fieldsSql += 'NULL';
 
             sql += fieldsSql + ' FROM ' + $this._printTableName(this.providers[0].getTableFullName());
-            sql += ') AS ' + this._quotedName(query.$context);
+            sql += ') AS ' + $this._translateContext(this._quotedName(query.$context));
             return sql;
         },
 

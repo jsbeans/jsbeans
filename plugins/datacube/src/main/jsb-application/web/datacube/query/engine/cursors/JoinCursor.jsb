@@ -1,90 +1,178 @@
 {
 	$name: 'DataCube.Query.Engine.Cursors.JoinCursor',
-	$parent: 'DataCube.Query.Engine.Cursors.Cursor',
+	$parent: 'DataCube.Query.Engine.Cursors.ViewCursor',
 
 	$server: {
 		$require: [
-		    'JSB.Crypt.MD5',
-		    'DataCube.Query.Engine.RuntimeFunctions',
-
-            'java:java.util.HashMap'
+		    'DataCube.Query.QueryUtils',
         ],
 
-		$constructor: function(type, filter, leftCursor, createRightCursor){
-		    $base();
+		$constructor: function(executor, query, params, parent){
+		    $base(executor, query, params, parent);
+		    $this.type = query.$join.$joinType || 'left outer';
+		    $this.types = $this.type.split(' ');
+		    $this.filter = query.$join.$filter;
 
-		    $this.filter = filter;
-		    $this.leftCursor = leftCursor;
-		    $this.createRightCursor = createRightCursor;
-		    $this.rightCursor = null;
-		    $this.type = type || 'left outer'; // or inner
-
-            $this._build();
+		    QueryUtils.throwError($this.types[0] === 'left', 'Unsupported join type {} in {}', $this.type, query.$context);
+		    QueryUtils.throwError($this.types[1] === 'outer' || $this.types[1] === 'inner', 'Unsupported join type {} in {}', $this.type, query.$context);
         },
 
-        _build: function(){
-		    $this.objects = [];
+        type:null,
+        types: null,
+        filter: null,
+        left: null,
+        right: null,
+        rightInitialized: false,
+        createRight: null,
+        leftObject: null,
+
+        setLeft: function(cursor){
+            $this.left = cursor;
         },
 
-        next: function(){
-            /// next left or complete
-            if (!$this.leftObject) {
-                $this.leftObject = $this.leftCursor.next();
-                if ($this.leftObject == null) {
-                    $this.leftCursor.close();
-                    return null;
-                }
+        setRight: function(cursor){
+            if ($this.right) {
+                $this.right.close();
             }
-            /// next right
-            if ($this.rightCursor) {
-                var value = $this.rightCursor.next();
-                if (value == null) {
-                    $this.rightCursor.close();
-                    $this.rightCursor = null;
-                    if ($this.type === 'inner') {
-                        /// next left
-                        $this.leftObject = null;
-                        return next(); // TODO delete recursion
-                    }
-                } else {
-                    return merge(value, $this.leftObject);
-                }
-            }
+            $this.right = cursor;
+            $this.rightContext = cursor.context;
+        },
 
-            /// create right
-            var params = {};
-            var select = {};
-            for(var i = 0; $this.on.length; i++) {
-                params[$this.on[i].$rightField] = $this.leftObject[$this.on[i].$leftField];
-                select[$this.on[i].$rightField] = $this.on[i].$rightField;
-            }
-            // TODO: fill select used fields
-            $this.rightCursor = createRightCursor({
-                $select: select,
-                $params: params,
-            });
-            return null;
+        setCreateRight: function(createRight){
+            $this.createRight = function(){
+                var right = createRight.apply(null, arguments);
+                $this.setRight(right);
+                return right;
+            };
+        },
+
+        getNested: function(){
+            var nested = {};
+            nested['left'] = $this.left;
+            nested['right'] = $this.right;
+            return nested;
         },
 
         close: function(){
-            if(!$this.leftCursor.closed) {
-                $this.leftCursor.close();
+            if ($this.closed) return;
+            $this.left = null;
+            $this.right = null;
+            $base();
+        },
+
+		analyze: function(){
+		    var json = $base();
+            json.type = $this.type;
+		    json.filter = $this.filter;
+		    json.left  = $this.left  && $this.left.analyze();
+		    json.right = $this.right && $this.right.analyze();
+		    return json;
+		},
+
+		_patchFilter: function(filter, callback) {
+		    function walk(e){
+                if (JSB.isObject(e)) {
+                    for (var f in e) if (typeof e[f] !== 'undefined') {
+                        if (e[f].$field || typeof e[f] === 'string' && !e[f].startsWith('$')) {
+                            e[f] = callback(e[f]);
+                        } else {
+                            walk(e[f]);
+                        }
+                    }
+                } else if (JSB.isArray(e)) {
+                    for (var i = 0; i < e.length; i++) {
+                        if (e[i].$field || typeof e[i] === 'string' && !e[i].startsWith('$')) {
+                            e[i] = callback(e[i]);
+                        } else {
+                            walk(e[i]);
+                        }
+                    }
+                }
+		    }
+		    walk(filter);
+		    return filter;
+		},
+
+        next: function(){
+debugger;
+            function createRight(){
+                var idx = 0;
+                var params = {};
+                var filter = $this._patchFilter($this.filter, function(field) {
+                    if ($this.rightContext == field.$context) {
+                        return field.$field;
+                    } else if ($this.left.context == field.$context) {
+                        var name = "joinParam_" + idx++;
+                        params[name] = $this.Common.get.call($this.left, field.$field);
+                        return '$' + name;
+                    } else {
+                        var name = "joinParam_" + idx++;
+                        params[name] = $this.Common.get.call($this.left, field);
+                        return '$' + name;
+                    }
+                    return field;
+                });
+                $this.right = $this.createRight(filter, params);
             }
-            if($this.rightCursor && !$this.rightCursor.closed) {
-                $this.rightCursor.close();
+
+            _NEXT: while(true) {
+
+                /// next left or complete
+                if (!$this.leftObject) {
+                    $this.leftObject = $this.left.next();
+                    $this.right.close();
+                    $this.right = null;
+                    if ($this.leftObject == null) {
+                        return null;
+                    }
+                }
+
+                if (!$this.right || !$this.rightInitialized) {
+                    createRight();
+                }
+
+                /// next right
+                var rightObject = $this.right.next();
+                if (rightObject == null) {
+                    // clear right
+                    $this.right.close();
+                    $this.right = null;
+                    if ($this.types[1] === 'inner') {
+                        /// next left
+                        $this.leftObject = null;
+                        continue _NEXT; // return next();
+                    } else if ($this.types[1] === 'outer') {
+                        /// only left
+                        var rightObject = $this.leftObject;
+                        $this.leftObject = null
+                        return rightObject;
+                    }
+                } else {
+                    return $this._merge(rightObject);
+                }
             }
         },
 
-        reset: function(){
-            $this.leftCursor.reset();
-            if($this.rightCursor && !$this.rightCursor.closed) {
-                $this.rightCursor.close();
+        getFieldValue: function(e) {
+debugger;
+            // if external field find parent context
+            if (e.$context && e.$context != $this.context) {
+                $this.QueryUtils.throwError($this.parent, 'External field is not defined: {}', JSON.stringify(e));
+                return $this.Common.get.call($this.parent, e);
             }
-		    $this.leftObject = null;
+            // output or input value
+            var value = $this.object[e.$field];
+            if (typeof value === 'undefined') {
+                value = $this.source.object[e.$field];
+            }
+            $this.QueryUtils.throwError(typeof value !== 'undefined', 'Field is not defined: {}', JSON.stringify(e));
+            return value;
         },
 
-        clone: function(){
-            return new $this.Class($this.filter, $this.type, $this.leftCursor.clone(), $this.createRightCursor);
+        _merge: function(rightObject){
+            // TODO $this.leftObject + rightObject with mapped fields
+            return JSB._merge(rightObject, leftObject);
         },
+
 	}
 }

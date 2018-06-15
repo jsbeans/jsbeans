@@ -1,0 +1,51 @@
+{
+	$name: 'DataCube.Query.Transforms.WrapProviderQueries',
+	$parent: 'DataCube.Query.Transforms.Transformer',
+	$session: false,
+	$server: {
+		$require: [
+		    'DataCube.Query.QueryUtils',
+		    'DataCube.Query.Transforms.QueryTransformer',
+
+		    'DataCube.Query.Views.CubeViewsBuilder',
+        ],
+        
+        $bootstrap: function(){
+        	QueryTransformer.register(this);
+        },
+
+		transform: function(dcQuery, cubeOrDataProvider){
+            var cube = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube' && cubeOrDataProvider;
+		    dcQuery = JSB.clone(dcQuery);
+		    QueryUtils.walkAllSubQueries(dcQuery, function(query){
+		        if (query.$provider) {
+		            if (query.$filter||query.$groupBy||query.$sort||query.$offset||query.$limit) {
+debugger;
+                        // wrap with query
+                        query.$from = {
+                            $context: 'sourceOf:' + query.$context,
+                            $select: (function(){
+                                var provider = cube ? cube.getProviderById(query.$provider): cubeOrDataProvider;
+                                var providerFields = provider.extractFields();
+                                var select = {};
+                                QueryUtils.walkQueryFields(
+                                    query, true,
+                                    function(field){
+                                        if (providerFields[field]) {
+                                            select[field] = field;
+                                        }
+                                    }
+                                );
+                                return select;
+                            })(),
+                            $provider: query.$provider
+                        };
+                        delete query.$provider;
+                    }
+                }
+		    });
+
+		    return dcQuery;
+		},
+	}
+}

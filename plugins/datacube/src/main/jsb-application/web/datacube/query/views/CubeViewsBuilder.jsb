@@ -92,21 +92,31 @@
 		_buildDataProviderView: function(name, dataProvider, usedFields) {
 		    var view = new DataProviderView(name, dataProvider);
 		    view.usedFields = usedFields;
-		    var managedFields = $this.directProvider == dataProvider
-		            ? dataProvider.extractFields()
-		            : $this.cube.getManagedFields();
-            for(var field in managedFields) {
-                var binding = managedFields[field].binding;
-                for(var b in binding) if (binding[b].provider == dataProvider){
-		            view.setField(field, {
-		                type: managedFields[field].type,
-		                nativeType: managedFields[field].nativeType || managedFields[field].type,
-		                field: field,
-		                providerField: $this.directProvider == dataProvider ? field : binding[b].field,
-		            });
-                    break;
+		    if (!$this.cube) {
+                var managedFields = dataProvider.extractFields({type:true, nativeType:true});
+                for(var field in managedFields) {
+                    view.setField(field, {
+                        type: managedFields[field].type,
+                        nativeType: managedFields[field].nativeType || managedFields[field].type,
+                        field: field,
+                        providerField: field,
+                    });
                 }
-            }
+		    } else {
+                var managedFields = $this.cube.getManagedFields();
+                for(var field in managedFields) {
+                    var binding = managedFields[field].binding;
+                    for(var b in binding) if (binding[b].provider == dataProvider){
+                        view.setField(field, {
+                            type: managedFields[field].type,
+                            nativeType: managedFields[field].nativeType || managedFields[field].type,
+                            field: field,
+                            providerField: binding[b].field,
+                        });
+                        break;
+                    }
+                }
+		    }
 
 		    return view;
 		},

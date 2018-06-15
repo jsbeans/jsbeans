@@ -36,7 +36,8 @@
 		},
 
         getField: function(name) {
-            return $this.getOriginalField(name);
+            var desc = $this.getOriginalField(name);
+            return desc;
 		},
 
         getOriginalField: function(name) {

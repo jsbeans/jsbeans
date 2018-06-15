@@ -34,9 +34,8 @@
 			}
 		},
 
-		hasTranslator: function(providerOrProviders){
-		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
-		    var translatorName = this._dataProviderTranslator[dataProvider.getJsb().$name];
+		hasTranslator: function(provider){
+		    var translatorName = this._dataProviderTranslator[provider.getJsb().$name];
 		    return !!translatorName;
 		},
 

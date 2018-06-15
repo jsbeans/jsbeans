@@ -55,15 +55,16 @@
                     return {
                         next: function(){
                             if (!$this.iterator) {
-                                QueryUtils.logDebug('\n[qid='+$this.dcQuery.$id+'] Executing SQL...');
+                                QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] Executing SQL...');
                                 $this.iterator = $this.executeQuery(translatedQuery);
-                                QueryUtils.logDebug('\n[qid='+$this.dcQuery.$id+'] SQL executed');
+                                QueryUtils.logDebug('[qid='+$this.dcQuery.$id+'] SQL executed');
                             }
                             return $this.translateResult($this.iterator.next());
                         },
                         close:function(){
-                            $this.iterator.close();
-                        }
+                            $this.iterator$this.iterator.close();
+                        },
+                        translatedQuery: translatedQuery
                     };
                 } catch (error){
                     var translatedError = $this.translateError(error);

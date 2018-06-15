@@ -6,6 +6,7 @@
 		    'DataCube.Query.QueryUtils',
 
             'DataCube.Query.Views.CubeViewsBuilder',
+		    'DataCube.Query.Views.DataProviderView',
 		    'DataCube.Query.Views.NothingView',
 		    'DataCube.Query.Views.QueryView',
 		    'DataCube.Query.Views.JoinView',
@@ -67,11 +68,10 @@
 
 		_buildContextView: function(query, isValueQuery, isViewQuery) {
             if (query.$provider) {
-                var dataProvider = $this.cube.getProviderById(query.$provider);
+                var dataProvider = $this._getProviderById(query.$provider);
                 QueryUtils.throwError(dataProvider, 'Undefined data provider {}', query.$provider);
-                var usedFields = query.$select;
-                var resultView = $this.cubeViewsBuilder._buildDataProviderView(query.$context, dataProvider, usedFields)
-                //var resultViewBody = resultView.getFromBody();
+
+                var resultView = $this._buildDataProviderQuery(query.$context, dataProvider, query);
             } else if (query.$union) {
                 var resultView = new UnionsView("unions_"+name);
                 resultView.usedFields = query.$select;
@@ -88,6 +88,7 @@
 
                 var joinName = 'left outer join:(' + leftView.name + ') X (' + rightView.name + ')';;
                 var resultView = new JoinView(joinName, leftView, 'left outer');
+                resultView.query = query.$join;
                 resultView.usedFields = query.$select;
                 resultView.setRightView(rightView);
             } else if (query.$cube) {
@@ -104,6 +105,26 @@
 
             QueryUtils.throwError(resultView, 'Undefined view {}', query.$context);
             return $this.contextViews[query.$context] = resultView;
+		},
+
+		_buildDataProviderQuery: function(name, dataProvider, query) {
+//if (name =='DataProvider[0#1]:d5f2c471d705fe580f141f9a62ecdc78|dp_d2bb4f5b74d9e2ff52e2284d02a89aee') debugger;
+		    var view = new DataProviderView(name, dataProvider);
+		    view.usedFields = query.$select;
+		    var managedFields = dataProvider.extractFields({type:true, nativeType:true});
+            for(var alias in query.$select) {
+                QueryUtils.throwError(typeof query.$select[alias] === 'string', 'Query with $provider does not support select expressions: {}', query.$context);
+
+                var providerField = query.$select[alias];
+                view.setField(alias, {
+                    type: managedFields[providerField].type,
+                    nativeType: managedFields[providerField].nativeType || managedFields[providerField].type,
+                    field: alias,
+                    providerField: providerField,
+                });
+            }
+
+		    return view;
 		},
 
 		_buildContextSourceViews: function(query) {
@@ -176,6 +197,19 @@
             });
 
             return view;
+		},
+
+		_getProviderById: function(id) {
+		    if ($this.directProvider && $this.directProvider.id === id) {
+		        return $this.directProvider;
+		    }
+
+		    for(var i = 0; i < $this.providers.length; i++) {
+		        if ($this.providers[i].id === id) {
+		            return $this.providers[i];
+		        }
+		    }
+		    QueryUtils.throwError(false, 'DataProvider is undefined: {}', id);
 		},
 	}
 }

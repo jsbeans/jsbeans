@@ -40,6 +40,16 @@
 		        $this.schemeExpressions = $this.schemeExpressions || {};
 		        $this.schemeExpressions[expr.name] = expr;
 		    }
+
+		    /**
+		    Запрос состоит из:
+		    - выражение - любая логически неделимая часть запроса (именованные массив, объект или значение)
+            - выражение/запрос - простой запрос или подзапрос, возвращающий буквально таблицу
+		    - выражение/запрос/вычисление - подзапрос в $select, который генерирует единственное значение
+		    - выражение/поле - входное поле или поле выходного объекта (именно в такой последовательности)
+		    - выражение/константа - типизированное значение в $const с дополнительными ограничениями
+		    - выражение/параметр - значение именованного параметра запроса
+		    */
 		
 		    /** Abstract expression value
 		    */
@@ -107,6 +117,7 @@
 		    */
 		    this.EObject = function EObject(desc) {
 		        desc.type = 'object';
+		        desc.expressionType = desc.expressionType || 'EObject';
 		        desc.expressionType = desc.expressionType || 'EObject';
 		        var _super = installSuper(this, new $this.Expression(desc));
 		    };
