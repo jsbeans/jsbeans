@@ -1114,10 +1114,10 @@
                                         evt.stopPropagation();
 
                                         if(evt.point.series.options.datacube.filtration){
-                                            if(evt.point.selected){ // remove filter
+                                            if(evt.point.selected){
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
-                                            } else {    // add filter
-                                                $this._addPointFilter(evt.point, evt.ctrlKey || evt.shiftKey, true);
+                                            } else {
+                                                $this._addPointFilter(evt.point, evt.ctrlKey || evt.shiftKey, $this._chartType === 'stockChart');
                                             }
                                         }
 
