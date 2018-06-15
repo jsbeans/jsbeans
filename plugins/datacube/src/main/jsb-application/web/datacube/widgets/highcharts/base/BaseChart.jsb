@@ -881,7 +881,7 @@
                     if(!$this.getElement().is(':visible') || !$this.chart){
                         return;
                     }
-                    $this.chart.setSize($this.getElement().width(), $this.getElement().height());
+                    //$this.chart.setSize($this.getElement().width(), $this.getElement().height());
                 }, 500, 'hcResize_' + $this.getId());
             });
         },
@@ -1111,7 +1111,8 @@
                                 events: {
                                     click: function(evt) {
                                         evt.preventDefault();
-
+                                        evt.stopPropagation();
+//debugger;
                                         if(evt.point.series.options.datacube.filtration){
                                             if(evt.point.selected){ // remove filter
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
@@ -1143,11 +1144,13 @@
                                         }
                                     },
                                     select: function(){
+console.log('select');
                                         if(JSB().isFunction($this.options.onSelect)){
                                             $this.options.onSelect.call(this, evt);
                                         }
                                     },
                                     unselect: function(evt){
+console.log('unselect');
                                         if(JSB().isFunction($this.options.onUnselect)){
                                             $this.options.onUnselect.call(this, evt);
                                         }
@@ -1387,8 +1390,12 @@
             }
 
             if(isRange){
-                var gStart = point.dataGroup.start,
-                    gLength = point.dataGroup.length;
+                if(point.dataGroup){
+                    var gStart = point.dataGroup.start,
+                        gLength = point.dataGroup.length;
+                } else {
+                    isRange = false;
+                }
             }
 
             if(!accumulate && Object.keys(this._curFilters).length > 0){
@@ -1424,9 +1431,9 @@
                     sourceId: context.source,
                     type: isRange ? '$and' : '$or',
                     op: isRange ? '$range' : '$eq',
-                    options: isRange ? {rangeCatValue: point[this._filterPropName]} : undefined,
+                      //isRange ? {rangeCatValue: point[this._filterPropName]} : undefined,
                     field: binding,
-                    value: isRange ? [point.series.xData[gStart], point.series.xData[gStart + gLength]] : point[this._filterPropName]
+                    value: isRange ? [point[this._filterPropName], point[this._filterPropName] + point.series.currentDataGrouping.unitRange] : point[this._filterPropName] //[point.series.xData[gStart], point.series.xData[gStart + gLength]]
                 };
 
                 this._curFilters[this.addFilter(fDesc)] = fDesc;
@@ -1552,8 +1559,11 @@
                     if(this.chart.series[j].options.datacube.binding === filters[i].field ||
                        this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
-                            if(filters[i].value === this.chart.series[j].points[k][this._filterPropName] || filters[i].options.rangeCatValue === this.chart.series[j].points[k][this._filterPropName]){
+                            if(filters[i].value === this.chart.series[j].points[k][this._filterPropName] ||
+                               JSB.isArray(filters[i].value) && (filters[i].value[0] === this.chart.series[j].points[k][this._filterPropName] ||
+                               (filters[i].value[0] <= this.chart.series[j].points[k][this._filterPropName]) && (filters[i].value[1] >= this.chart.series[j].points[k][this._filterPropName]))){
                                 this.chart.series[j].points[k].select(b1, b2);
+                                break;
                             }
                         }
                     }
