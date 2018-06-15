@@ -495,7 +495,9 @@
 				this.logScroll.append(entry);
 				
 			}
-			this.logScroll.scrollToElement('div.entry[key="'+logEntries[logEntries.length - 1].key+'"]', 'bottom');
+			if(logEntries.length > 0){
+				this.logScroll.scrollToElement('div.entry[key="'+logEntries[logEntries.length - 1].key+'"]', 'bottom');
+			}
 		},
 		
 		updatePreview: function(){

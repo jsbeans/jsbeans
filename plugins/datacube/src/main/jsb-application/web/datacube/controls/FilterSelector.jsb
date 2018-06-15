@@ -120,7 +120,7 @@
 				    v = fDesc.value.toDateString();
 				}
 				var valElt = $this.$('<div class="value"></div>').text('' + v).attr('title', '' + v);
-				if(JSB.isString(v)){
+				if(JSB.isString(fDesc.value)){
 					valElt.addClass('string');
 				}
 				fTag.append(valElt);
