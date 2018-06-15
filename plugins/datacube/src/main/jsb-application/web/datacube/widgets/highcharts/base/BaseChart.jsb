@@ -881,7 +881,7 @@
                     if(!$this.getElement().is(':visible') || !$this.chart){
                         return;
                     }
-                    //$this.chart.setSize($this.getElement().width(), $this.getElement().height());
+                    $this.chart.setSize($this.getElement().width(), $this.getElement().height());
                 }, 500, 'hcResize_' + $this.getId());
             });
         },
@@ -1112,7 +1112,7 @@
                                     click: function(evt) {
                                         evt.preventDefault();
                                         evt.stopPropagation();
-//debugger;
+
                                         if(evt.point.series.options.datacube.filtration){
                                             if(evt.point.selected){ // remove filter
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
@@ -1144,13 +1144,11 @@
                                         }
                                     },
                                     select: function(){
-console.log('select');
                                         if(JSB().isFunction($this.options.onSelect)){
                                             $this.options.onSelect.call(this, evt);
                                         }
                                     },
                                     unselect: function(evt){
-console.log('unselect');
                                         if(JSB().isFunction($this.options.onUnselect)){
                                             $this.options.onUnselect.call(this, evt);
                                         }
