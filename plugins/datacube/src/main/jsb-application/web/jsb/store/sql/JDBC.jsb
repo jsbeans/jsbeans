@@ -325,6 +325,23 @@
 				'timestamp': 'timestamp',
 				'array': '_text',
 				'object': 'text'
+			},
+			'H2': {
+				'integer': 'int8',
+				'int': 'int8',
+				'boolean': 'boolean',
+				'nvarchar': 'varchar',
+				'varchar': 'varchar',
+				'string': 'nvarchar',
+				'float': 'double precision',
+				'double': 'double precision',
+				'number': 'double precision',
+				'date': 'timestamp',
+				'time': 'timestamp',
+				'datetime': 'timestamp',
+				'timestamp': 'timestamp',
+				'array': 'array',
+				'object': 'nvarchar'
 			}
 		},
 		

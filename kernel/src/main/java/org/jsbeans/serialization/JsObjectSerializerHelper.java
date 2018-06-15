@@ -54,8 +54,8 @@ public class JsObjectSerializerHelper {
         JsObject jObj = new JsObject(JsObjectType.JSONOBJECT);
         Object[] ids = no.getAllIds();
         for (Object keyObj : ids) {
-            JsObject val = this.serializeNative(no.get(keyObj));
             String key = keyObj.toString();
+            JsObject val = this.serializeNative(no.get(keyObj));
             jObj.addToObject(key, val);
         }
         return jObj;

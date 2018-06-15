@@ -612,12 +612,14 @@ public class JsObject implements Serializable {
         }
 
         public JsObjectWriter value(double value) throws IOException {
-            if (Double.isNaN(value) || Double.isInfinite(value)) {
-                throw new IllegalArgumentException("Numeric values must be finite, but was " + value);
-            }
             writeDeferredName();
             beforeValue(false);
-            writer.append(Double.toString(value));
+            if (Double.isNaN(value) || Double.isInfinite(value)) {
+            	writer.append("null");
+//                throw new IllegalArgumentException("Numeric values must be finite, but was " + value);
+            } else {
+            	writer.append(Double.toString(value));
+            }
             return this;
         }
 
@@ -633,12 +635,13 @@ public class JsObject implements Serializable {
 
             writeDeferredName();
             String string = value.toString();
-            if (!lenient
-                    && (string.equals("-Infinity") || string.equals("Infinity") || string.equals("NaN"))) {
-                throw new IllegalArgumentException("Numeric values must be finite, but was " + value);
-            }
             beforeValue(false);
-            writer.append(string);
+            if (!lenient && (string.equals("-Infinity") || string.equals("Infinity") || string.equals("NaN"))) {
+            	writer.append("null");
+//                throw new IllegalArgumentException("Numeric values must be finite, but was " + value);
+            } else {
+            	writer.append(string);
+            }
             return this;
         }
 

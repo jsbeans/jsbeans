@@ -73,16 +73,16 @@
 	        				collapsible: false,
 	        				name: 'Столбцы',
 	        				items: {
-	        					columnAlias: {
-                                    name: 'Столбец',
-        							render: 'item'
-    							},
     							field: {
                                     name: 'Поле',
                                 	render: 'dataBinding',
                                 	editor: 'scheme',
                                 	selectNodes: false,
                                     linkTo: 'structure'
+    							},
+	        					columnAlias: {
+                                    name: 'Столбец',
+        							render: 'item'
     							},
 	        					transforms: {
 	        						render: 'group',
@@ -126,6 +126,42 @@
 	    	    	        									ctDate: {
 	    	    	        										name: 'date',
 	    	    	        										value: 'date',
+	    	    	        										render: 'group',
+	    	    	        										items: {
+	    	    	        											datePattern: {
+	    	    	        												render: 'item',
+	    	    	        												name: 'Использовать шаблон для анализа строк',
+	    	    	        												optional: true,
+	    	    	        												value: 'YYYY-MM-DDTHH:mm:ss.SSS',
+	    	    	        												description: `
+<h3>Примеры</h3>
+<div>DD.MM.YYYY HH:mm</div>
+<div>YYYY-MM-DDTHH:mm:ss.SSS</div>
+<h3>Значения</h3>
+<table>
+  <thead>
+    <tr><th>Токен</th><th>Пример</th><th>Описание</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>YYYY</td><td>2018</td><td>2 или 4 цифры года</td></tr>
+    <tr><td>YY</td><td>18</td><td>2 цифры года</td></tr>
+    <tr><td>Q</td><td>1..4</td><td>Номер квартала</td></tr>
+    <tr><td>M MM</td><td>1..12</td><td>Номер месяца</td></tr>
+    <tr><td>MMM MMMM</td><td>Янв..Декабрь</td><td>Название месяца</td></tr>
+    <tr><td>D DD</td><td>1..31</td><td>День месяца</td></tr>
+    <tr><td>DDD DDDD</td><td>1..365</td><td>День года</td></tr>
+    <tr><td>H HH</td><td>0..23</td><td>Часы (24 формат)</td></tr>
+    <tr><td>h hh</td><td>1..12</td><td>Часы (12 формат совместно с "a A")</td></tr>
+    <tr><td>a A</td><td>am pm</td><td>Маркер полудня</td></tr>
+    <tr><td>m mm</td><td>0..59</td><td>Минуты</td></tr>
+    <tr><td>s ss</td><td>0..59</td><td>Секунды</td></tr>
+    <tr><td>S SS SSS</td><td>0..999</td><td>Миллисекунды</td></tr>
+    <tr><td>Z ZZ</td><td>+3:00</td><td>Смещение часового пояса относительно UTC</td></tr>
+  </tbody>
+</table>	    	    	        									
+	    	    	        												`
+	    	    	        											}
+	    	    	        										}
 	    	    	        									}		
 	    	        										}
 	    	        									}
@@ -196,6 +232,11 @@
 	        						render: 'databaseBinding',
 	        						name: 'База данных'
 	        					},
+	        					databaseScheme: {
+	        						render: 'item',
+	        						name: 'Схема',
+	        						value: 'public'
+	        					},
 	        					removeOldTable: {
 	        						render: 'item',
 	        						name: 'Перезаписать существующие таблицы',
@@ -215,7 +256,8 @@
 		           'DataCube.MaterializationEngine',
 		           'JSB.Workspace.WorkspaceController',
 		           'DataCube.ParserManager',
-		           'JSB.Crypt.MD5'],
+		           'JSB.Crypt.MD5',
+		           'Moment'],
 		
 		entry: null,
 		context: null,
@@ -342,7 +384,7 @@
 			
 		},
 		
-		executeConvertType: function(valDesc, targetType){
+		executeConvertType: function(valDesc, targetType, pattern){
 			var currentType = $this.detectValueTable(valDesc.value);
 			switch(targetType){
 			case 'string':
@@ -374,7 +416,7 @@
 				case 'array':
 					if(valDesc.value.length > 0){
 						valDesc.value = valDesc.value[0];
-						$this.executeConvertType(valDesc, targetType);
+						$this.executeConvertType(valDesc, targetType, pattern);
 					} else {
 						valDesc.value = null;
 					}
@@ -410,7 +452,7 @@
 				case 'array':
 					if(valDesc.value.length > 0){
 						valDesc.value = valDesc.value[0];
-						$this.executeConvertType(valDesc, targetType);
+						$this.executeConvertType(valDesc, targetType, pattern);
 					} else {
 						valDesc.value = null;
 					}
@@ -445,7 +487,7 @@
 				case 'array':
 					if(valDesc.value.length > 0){
 						valDesc.value = valDesc.value[0];
-						$this.executeConvertType(valDesc, targetType);
+						$this.executeConvertType(valDesc, targetType, pattern);
 					} else {
 						valDesc.value = null;
 					}
@@ -465,7 +507,7 @@
 				case 'array':
 					if(valDesc.value.length > 0){
 						valDesc.value = valDesc.value[0];
-						$this.executeConvertType(valDesc, targetType);
+						$this.executeConvertType(valDesc, targetType, pattern);
 					} else {
 						valDesc.value = null;
 					}
@@ -479,7 +521,12 @@
 					valDesc.value = new Date(parseInt(valDesc.value));
 					break;
 				case 'string':
-					valDesc.value = Date.parse(valDesc.value);
+					var m = Moment.moment(valDesc.value, pattern);
+					if(m.isValid()){
+						valDesc.value = m.toDate();
+					} else {
+						valDesc.value = new Date(0);
+					}
 					break;
 				}
 				break;
@@ -572,7 +619,7 @@
 					var tDesc = colDesc.transforms[i];
 					switch(tDesc.op){
 					case 'convertType':
-						$this.executeConvertType(valDesc, tDesc.targetType);
+						$this.executeConvertType(valDesc, tDesc.targetType, tDesc.pattern);
 						break;
 					case 'scriptExpression':
 						$this.executeScript(valDesc, tDesc.expression, tDesc.vars, dataBindMap);
@@ -1084,7 +1131,14 @@
 									'ctBoolean': 'boolean',
 									'ctArray': 'array',
 									'ctDate': 'date'
-								}[tCtx.find('resultType').value()]
+								}[tCtx.find('resultType').value()];
+								if(transformDesc.targetType == 'date'){
+									var patCtx = tCtx.find('datePattern');
+									if(patCtx.checked()){
+										transformDesc.pattern =	patCtx.value();
+									}
+								}
+								 
 								break;
 							case 'scriptExpression':
 								var valArrCtx = tCtx.find('variables').values();
@@ -1209,6 +1263,11 @@
 		},
 		
 		storeBatch: function(mInst){
+			if(!this.importOpts){
+				this.importOpts = {
+					schema: this.getContext().find('databaseScheme').value() || 'public'
+				};
+			}
 			for(var t in $this.importTables){
 				var tDesc = $this.importTables[t];
 				if(!tDesc.created){
@@ -1223,11 +1282,11 @@
 					if(bColumnsCorrect){
 						if(this.getContext().find('removeOldTable').checked()){
 							this.logAppend('info', 'Удаление старой таблицы: ' + t);
-							mInst.removeTable(t);
+							mInst.removeTable(t, $this.importOpts);
 						}
 						// create table in db
 						this.logAppend('info', 'Создание таблицы: ' + t);
-						var res = mInst.createTable(t, tDesc.columns);
+						var res = mInst.createTable(t, tDesc.columns, $this.importOpts);
 						if(res){
 							tDesc.table = res.table;
 							tDesc.fieldMap = res.fieldMap;
@@ -1253,7 +1312,7 @@
 					}
 					translatedRows.push(nRow);
 				}
-				mInst.insert(tDesc.table, translatedRows);
+				mInst.insert(tDesc.table, translatedRows, $this.importOpts);
 				tDesc.total += translatedRows.length;
 				this.logAppend('info', 'В таблицу "'+tDesc.table+'" записано ' + tDesc.total + ' строк', MD5.md5('rowsWritten' + tDesc.table));
 				tDesc.rows = [];
