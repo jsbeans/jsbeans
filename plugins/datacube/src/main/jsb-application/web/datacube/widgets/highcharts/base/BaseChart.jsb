@@ -1381,7 +1381,8 @@
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
                 binding = point.series.options.datacube.binding || point.options.datacube.binding,
-                refreshOpts = {};
+                refreshOpts = {},
+                gLength;
 
             if(!context.source) {
                 return;
@@ -1389,10 +1390,9 @@
 
             if(isRange){
                 if(point.dataGroup){
-                    var gStart = point.dataGroup.start,
-                        gLength = point.dataGroup.length;
+                    gLength = point.dataGroup.length;
                 } else {
-                    isRange = false;
+                    gLength = 1;
                 }
             }
 
@@ -1425,13 +1425,27 @@
                     }
                 }
             } else {    // widget filters
+                var startRangeValue = point.x,
+                    groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
+                    units = this._schemeOpts.dataGrouping.units || 1;
+
+                if(isRange && this._schemeOpts.dataGrouping.isGrouped){
+                    switch(this._schemeOpts.dataGrouping.groupBy){
+                        case 'millisecond':
+                            startRangeValue = point.x;
+                            break;
+                        default:
+                            startRangeValue = Math.floor(point.x / groupConst) * groupConst;
+                            break;
+                    }
+                }
+
                 var fDesc = {
                     sourceId: context.source,
                     type: isRange ? '$and' : '$or',
                     op: isRange ? '$range' : '$eq',
-                      //isRange ? {rangeCatValue: point[this._filterPropName]} : undefined,
                     field: binding,
-                    value: isRange ? [point[this._filterPropName], point[this._filterPropName] + point.series.currentDataGrouping.unitRange] : point[this._filterPropName] //[point.series.xData[gStart], point.series.xData[gStart + gLength]]
+                    value: isRange ? [startRangeValue, startRangeValue + gLength * groupConst * units] : point[this._filterPropName]
                 };
 
                 this._curFilters[this.addFilter(fDesc)] = fDesc;
@@ -1559,7 +1573,7 @@
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
                             if(filters[i].value === this.chart.series[j].points[k][this._filterPropName] ||
                                JSB.isArray(filters[i].value) && (filters[i].value[0] === this.chart.series[j].points[k][this._filterPropName] ||
-                               (filters[i].value[0] <= this.chart.series[j].points[k][this._filterPropName]) && (filters[i].value[1] >= this.chart.series[j].points[k][this._filterPropName]))){
+                               (filters[i].value[0] <= this.chart.series[j].points[k][this._filterPropName]) && (filters[i].value[1] > this.chart.series[j].points[k][this._filterPropName]))){
                                 this.chart.series[j].points[k].select(b1, b2);
                                 break;
                             }

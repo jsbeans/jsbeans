@@ -120,6 +120,7 @@
                                         }
                                     }
                                 },
+                                /*
                                 forced: {
                                     render: 'item',
                                     name: 'Принудительно',
@@ -138,6 +139,7 @@
                                     optional: true,
                                     editor: 'none'
                                 },
+                                */
                                 groupBy: {
                                     render: 'select',
                                     name: 'Группировка по',
@@ -160,12 +162,14 @@
                                         week: {
                                             name: 'Неделя'
                                         },
+                                        /*
                                         month: {
                                             name: 'Месяц'
                                         },
                                         year: {
                                             name: 'Год'
                                         }
+                                        */
                                     }
                                 },
                                 groupUnits: {
@@ -193,8 +197,49 @@
             }
 
             if(!this._schemeOpts){
+                var dataGroupingPlotOptionsContext = this.getContext().find('plotOptions series dataGrouping'),
+                    groupConst,
+                    groupBy = dataGroupingPlotOptionsContext.find('groupBy').value();
+
+                switch(groupBy){
+                    case 'millisecond':
+                        groupConst = 1;
+                        break;
+                    case 'second':
+                        groupConst = 1000;
+                        break;
+                    case 'minute':
+                        groupConst = 60 * 1000;
+                        break;
+                    case 'hour':
+                        groupConst = 60 * 60 * 1000;
+                        break;
+                    case 'day':
+                        groupConst = 24 * 60 * 60 * 1000;
+                        break;
+                    case 'week':
+                        groupConst = 7 * 24 * 60 * 60 * 1000;
+                        break;
+                    // todo: 31 days, 366 days
+
+                    /*
+                    case 'month':
+                        groupConst = 30 * 24 * 60 * 60 * 1000;
+                        break;
+                    case 'year':
+                        groupConst = 365 * 24 * 60 * 60 * 1000;
+                        break;
+                    */
+                }
+
                 this._schemeOpts = {
                     dateContext: this.getContext().find('xAxis xAxisDate'),
+                    dataGrouping: {
+                        isGrouped: dataGroupingPlotOptionsContext.checked(),
+                        groupBy: groupBy,
+                        groupConst: groupConst,
+                        units: dataGroupingPlotOptionsContext.find('groupUnits').value()
+                    },
                     seriesContext: this.getContext().find('series').values(),
                     seriesTypes: []
                 };
@@ -204,13 +249,35 @@
                 return;
             }
 
-            this.getElement().loader();
+            var seriesData = [],
+                groupBy;
 
-            var seriesData = [];
+            if(this._schemeOpts.dataGrouping.isGrouped){
+                groupBy = [{
+                    $toInt: {
+                      $div: [
+                        {
+                          $sub: [
+                            this._schemeOpts.dateContext.binding(),
+                            {
+                              $const: -(new Date()).getTimezoneOffset()*60 * 1000 // to current locale
+                            }
+                          ]
+                        },
+                        {
+                          $const: this._schemeOpts.dataGrouping.units * this._schemeOpts.dataGrouping.groupConst
+                        }
+                      ]
+                    }
+                  }
+                ]
+            }
+
+            this.getElement().loader();
 
             try {
                 function fetch(isReset){
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
+                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, groupBy: groupBy }, function(res){
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -314,6 +381,7 @@
                     baseChartOpts = includeData(this._styles, data.data);
                 } else {
                     baseChartOpts = $base();
+                    /*
                     var dataGroupingPlotOptionsContext = this.getContext().find('plotOptions series dataGrouping'),
                         dataGrouping;
 
@@ -338,6 +406,7 @@
                     }
 
                     JSB.merge(true, baseChartOpts, chartOpts);
+                    */
 
                     this._styles = baseChartOpts;
 
