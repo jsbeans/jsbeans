@@ -17,6 +17,13 @@
 				$this.update();
 			});
 			
+			this.subscribe(['JSB.Workspace.FileEntry.upload','DataCube.Parser.progress'], {session: true}, function(sender, msg, params){
+				if(sender != $this.getEntry()){
+					return;
+				}
+				$this.update(params.status);
+			});
+			
 			this.update();
 			
 		},

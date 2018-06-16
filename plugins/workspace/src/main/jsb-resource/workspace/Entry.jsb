@@ -559,6 +559,25 @@
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
+		},
+		
+		renameArtifact: function(name, newName){
+			if(!JSB.isString(name)){
+				throw new Error('Invalid artifact name');
+			}
+		    if(!this.existsArtifact(name)){
+		    	return;
+		    }
+		    var mtxName = 'JSB.Workspace.Entry.artifacts.' + this.getId();
+			JSB.getLocker().lock(mtxName);
+			try {
+			    this._artifactStore.rename(this, name, newName);
+			    this._artifacts[newName] = this._artifacts[name];
+				delete this._artifacts[name];
+				this._markStored(false);
+			} finally {
+				JSB.getLocker().unlock(mtxName);
+			}
 		}
 	}
 }

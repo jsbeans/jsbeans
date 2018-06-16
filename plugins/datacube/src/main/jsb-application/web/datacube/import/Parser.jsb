@@ -303,6 +303,7 @@
 			this.values = values;
 			
 			this.fileSize = entry.getFileSize();
+			this.lastProgress = -1;
 			
 			this.context = new ValueSelector({
 				bootstrap: 'Datacube.Unimap.Bootstrap',
@@ -326,6 +327,11 @@
 					return;
 				}
 				$this.logAppend('info', 'Обработано ' + params.progress + '% (' + params.position + ' из ' + params.total + ')', 'progress');
+				if($this.lastProgress != params.progress){
+					$this.lastProgress = params.progress;
+					$this.entry.publish('DataCube.Parser.progress', {status: 'Обработано ' + $this.lastProgress + '%', success: true}, {session: true});
+				}
+				
 			});
 		},
 		

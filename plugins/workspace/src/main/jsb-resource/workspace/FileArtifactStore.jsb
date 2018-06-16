@@ -47,7 +47,9 @@
 				} else if(artifactType == 'binary'){
 					if(JSB.isInstanceOf(a, 'JSB.IO.Stream')){
 						var oStream = FileSystem.open(eFileName, {binary: true, write: true, read: false});
-						a.copy(oStream);
+						a.copy(oStream, {
+							onProgress: opts.onProgress
+						});
 						oStream.close();
 					} else {
 						FileSystem.write(eFileName, a, {binary: true});
@@ -122,6 +124,21 @@
 					if(FileSystem.exists(eDir)){
 						FileSystem.remove(eDir);
 					}
+				}
+			} finally {
+				JSB.getLocker().unlock(mtxName);
+			}
+		},
+		
+		rename: function(entry, existedName, newName){
+			var eDir = this.getArtifactDir(entry);
+			var eFileName = FileSystem.join(eDir, existedName);
+			var eFileNewName = FileSystem.join(eDir, newName);
+			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
+			JSB.getLocker().lock(mtxName);
+			try {
+				if(FileSystem.exists(eFileName)){
+					FileSystem.move(eFileName, eFileNewName);
 				}
 			} finally {
 				JSB.getLocker().unlock(mtxName);
