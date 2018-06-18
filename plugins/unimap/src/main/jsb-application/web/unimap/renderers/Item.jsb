@@ -44,8 +44,8 @@
 
 	            this.prepend(this.checkBox);
 
-	            this.createRequireDesc(this.checkBox);
-	            this.createDescription(this.checkBox);
+	            this.createRequireDesc(this.checkBox.getElement().find('.caption'));
+	            this.createDescription(this.checkBox.getElement().find('.caption'));
 	        } else {
                 this._name = this.$('<span class="name">' + this._scheme.name + '</span>');
                 this.append(this._name);

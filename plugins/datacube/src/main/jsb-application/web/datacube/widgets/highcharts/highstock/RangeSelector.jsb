@@ -308,7 +308,10 @@
 
                                 seriesData[i].push({
                                     x: x,
-                                    y: $this._schemeOpts.seriesContext[i].find('data').value()
+                                    y: $this._schemeOpts.seriesContext[i].find('data').value(),
+                                    datacube: {
+                                        filterData: $this._addFilterData()
+                                    }
                                 });
                             }
                         }
@@ -361,7 +364,6 @@
                             data: seriesData[j],
                             datacube: {
                                 binding: $this._schemeOpts.dateContext.binding(),
-                                filterData: $this._addFilterData(),
                                 valueType: $this._schemeOpts.seriesTypes[j]
                             },
                             type: seriesContext[j].find('type').value(),

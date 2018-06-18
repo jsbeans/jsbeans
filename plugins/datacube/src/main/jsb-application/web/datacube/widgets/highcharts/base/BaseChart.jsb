@@ -1367,7 +1367,7 @@
         },
 
         _addFilterData: function(){
-            if(!this._filterFields || this._filterFields.values().length === 0){
+            if(!this._filterFields || !this._filterFields.checked() || this._filterFields.values().length === 0){
                 return;
             }
 
@@ -1380,6 +1380,7 @@
         _addPointFilter: function(point, accumulate, isRange){
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
+                datacubePointOpts = point.options.datacube,
                 binding = point.series.options.datacube.binding || point.options.datacube.binding,
                 refreshOpts = {},
                 gLength;
@@ -1406,15 +1407,15 @@
                 this._curFilters = {};
             }
 
-            if(datacubeOpts.filterData){  // not widget filters
+            if(datacubePointOpts.filterData){  // not widget filters
                 // todo: isRange
                 for(var i = 0; i < datacubeOpts.filterData.bindings.length; i++){
                     var fDesc = {
                         sourceId: context.source,
                         type: '$and',
                         op: '$eq',
-                        field: datacubeOpts.filterData.bindings[i],
-                        value: datacubeOpts.filterData.values[i]
+                        field: datacubePointOpts.filterData.bindings[i],
+                        value: datacubePointOpts.filterData.values[i]
                     };
 
                     if(datacubeOpts.filterData.bindings[i] === binding){
@@ -1425,11 +1426,11 @@
                     }
                 }
             } else {    // widget filters
-                var startRangeValue = point.x,
-                    groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
-                    units = this._schemeOpts.dataGrouping.units || 1;
+                if(isRange && this._schemeOpts.dataGrouping && this._schemeOpts.dataGrouping.isGrouped){
+                    var startRangeValue = point.x,
+                        groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
+                        units = this._schemeOpts.dataGrouping.units || 1;
 
-                if(isRange && this._schemeOpts.dataGrouping.isGrouped){
                     switch(this._schemeOpts.dataGrouping.groupBy){
                         case 'millisecond':
                             startRangeValue = point.x;

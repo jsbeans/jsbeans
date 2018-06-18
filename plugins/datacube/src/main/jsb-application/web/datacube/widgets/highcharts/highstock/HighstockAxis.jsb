@@ -657,8 +657,7 @@
                         crosshair: xAxisContext.find('crosshair').checked(),
                         events: {
                             setExtremes: function(evt){
-//debugger;
-                                if(evt.trigger === 'navigator' && evt.DOMEvent && evt.DOMEvent.type == 'mouseup' || evt.trigger === 'rangeSelectorInput') {
+                                if(evt.trigger === 'navigator' && evt.DOMEvent && evt.DOMEvent.type == 'mouseup' || evt.trigger === 'rangeSelectorInput' || evt.trigger === 'rangeSelectorButton') {
                                     var extremes = this.getExtremes();
 
                                     $this._changeRangeFilter({

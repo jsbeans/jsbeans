@@ -100,6 +100,20 @@
                                     }
                                  }
                              },
+                             countriesInEng: {
+                                name: 'Карта мира (страны на англ)',
+                                 items: {
+                                    compareTo: {
+                                         render: 'select',
+                                         name: 'Сопоставление по',
+                                         items: {
+                                             name: {
+                                                 name: 'Название страны'
+                                             }
+                                         }
+                                    }
+                                 }
+                             },
                              moscowAO: {
                                 name: 'Москва. Административные округа',
                                 items: {
@@ -978,6 +992,12 @@
                                     maps.push(JSB.merge(r, {
                                         data: null,
                                         path: 'geojson/moscowMO.json'
+                                    }));
+                                    break;
+                                case 'countriesInEng':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/countriesInEng.json'
                                     }));
                                     break;
                             }

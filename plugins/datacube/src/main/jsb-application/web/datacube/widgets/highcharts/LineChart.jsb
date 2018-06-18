@@ -261,7 +261,10 @@
                                 seriesData[i].data[seriesName].push({
                                     color: color,
                                     x: filterCat,
-                                    y: data.value()
+                                    y: data.value(),
+                                    datacube: {
+                                        filterData: $this._addFilterData()
+                                    }
                                 });
                             }
                         }
@@ -428,8 +431,7 @@
                     chartOpts = JSB.clone(chartOpts);
 
                     var seriesContext = $this.getContext().find('series').values(),
-                        chartOptsSeries = JSB.clone(chartOpts.series),
-                        filterData = $this._addFilterData();
+                        chartOptsSeries = JSB.clone(chartOpts.series);
 
                     for(var j = 0; j < seriesData.length; j++){
                         var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[seriesData[j].index].find('yAxis').value());
@@ -438,8 +440,7 @@
                             name: seriesData[j].name,
                             data: seriesData[j].data,
                             datacube: {
-                                binding: $this._schemeOpts.xAxisFilterBinding,
-                                filterData: filterData
+                                binding: $this._schemeOpts.xAxisFilterBinding
                             },
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,

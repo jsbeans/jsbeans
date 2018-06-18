@@ -197,7 +197,10 @@
 
                                 data[i].push({
                                     name: $this._schemeOpts.series[i].nameSelector.value() || $this._schemeOpts.series[i].seriesNameSelector.value(),
-                                    y: $this._schemeOpts.series[i].dataSelector.value()
+                                    y: $this._schemeOpts.series[i].dataSelector.value(),
+                                    datacube: {
+                                        filterData: $this._addFilterData()
+                                    }
                                 });
                             }
                         }
@@ -232,8 +235,7 @@
                 function includeData(chartOpts, data){
                     chartOpts = JSB.clone(chartOpts);
 
-                    var seriesContext = $this.getContext().find('series').values(),
-                        filterData = $this._addFilterData();
+                    var seriesContext = $this.getContext().find('series').values();
 
                     if(seriesContext.length > 1 && unionSeries){
                         var newData = [],
@@ -247,8 +249,7 @@
 
                         var series = {
                             datacube: {
-                                bindings: bindings,
-                                filterData: filterData
+                                bindings: bindings
                             },
                             data: newData,
                             size: seriesContext[0].find('size').value(),

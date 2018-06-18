@@ -16,6 +16,19 @@
     cursor: pointer;
 }
 
+.jsb-checkbox > .check-elem > .check-helper {
+    position: absolute;
+    top: 0%; left: 0%;
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    background: rgb(255, 255, 255);
+    border: 0px;
+    opacity: 0;
+}
+
 .jsb-checkbox > .check-elem.checked {
     background-position: -22px 0;
 }

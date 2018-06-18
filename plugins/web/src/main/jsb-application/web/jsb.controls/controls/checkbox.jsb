@@ -11,7 +11,7 @@
 			this.getElement().append(`#dot
 			    <div class="check-elem">
 			        <input type="checkbox" class="flat" style="position: absolute; opacity: 0;">
-			        <ins class="check-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+			        <ins class="check-helper"></ins>
                 </div>
                 <span class="caption"></span>
                 <div class="contents">
