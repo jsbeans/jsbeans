@@ -33,7 +33,12 @@
 			try {
 				// ensure directory
 				FileSystem.createDirectory(eDir, true);
-
+			} finally {
+				JSB.getLocker().unlock(mtxName);
+			}
+			mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId() + '.' + name;
+			JSB.getLocker().lock(mtxName);
+			try {
 				// write file
 				var artifactType = entry._artifacts[name];
 				if(!artifactType){
@@ -75,7 +80,7 @@
 		read: function(entry, name, opts){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
-			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
+			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId() + '.' + name;
 			JSB.getLocker().lock(mtxName);
 			try {
 				if(!FileSystem.exists(eFileName)){
@@ -114,7 +119,7 @@
 		remove: function(entry, name){
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, name);
-			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
+			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId() + '.' + name;
 			JSB.getLocker().lock(mtxName);
 			try {
 				if(FileSystem.exists(eFileName)){
@@ -134,7 +139,7 @@
 			var eDir = this.getArtifactDir(entry);
 			var eFileName = FileSystem.join(eDir, existedName);
 			var eFileNewName = FileSystem.join(eDir, newName);
-			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId();
+			var mtxName = 'JSB.Workspace.FileArtifactStore.' + entry.getId() + '.' + existedName;
 			JSB.getLocker().lock(mtxName);
 			try {
 				if(FileSystem.exists(eFileName)){
