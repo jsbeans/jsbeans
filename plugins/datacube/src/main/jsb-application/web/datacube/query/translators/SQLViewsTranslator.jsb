@@ -16,6 +16,7 @@
 
 		    'DataCube.Query.Views.QueryView',
 		    'DataCube.Query.Views.CubeView',
+		    'DataCube.Query.Views.MultiView',
 		    'DataCube.Query.Views.JoinView',
 		    'DataCube.Query.Views.UnionsView',
 		    'DataCube.Query.Views.DataProviderView',
@@ -32,7 +33,7 @@
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    $this.config = {
-		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'),
+//		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'),
 		        excludeProviderWrappers: Config.get('datacube.query.excludeProviderWrappers'),
 		    }
 //debugger
@@ -219,55 +220,109 @@
             return sql;
         },
 
-        _translateField: function(name, context, useAlias, currentQueryContext) {
-if (name.indexOf("Код отрасли") != -1) debugger;
+        _translateField: function(name, context, useAlias, callerContext) {
+
+//if (name.indexOf("Код отрасли") != -1) debugger;
 //if (context == 'RightWrapper:DataProvider[1#1]:d5f2c471d705fe580f141f9a62ecdc78|dp_8ef6b67011879d53cf0d55744b7bd9a7') debugger;
-            var desc, view = $this._findQueryView(context);
 
-            if ($this.config.excludeProviderWrappers && view instanceof QueryView && view.isProviderWrapper()) {
-//debugger
-                context = view.getSourceView().name;
-                return $this._translateField(name, context, currentQueryContext);
-            }
+            // TODO адресация полей по контексту может быть:
+            // а) сверху - когда запрос используется в качестве источника, подставляется выходное поле
+            // callerContext/$from/$context=context
+            // б) снизу - когда адресация идет из вложенного запроса в рамках текущего
+            //    положения курсора источника, подставляется поле источника
 
-            if (useAlias) {
-                desc = view.getField(name);
-                if (desc && currentQueryContext && desc.context == currentQueryContext) {
-                    desc = JSB.clone(desc);
-                    delete desc.context;
+
+            var view = $this._findQueryView(context);
+
+            // if call as source - use query result fields
+            if (callerContext != context) {
+                var callerView = $this._findQueryView(callerContext);
+                if (callerView instanceof QueryView && callerView.getSourceView().name == view.name){
+                    var desc = view.getField(name);
+                    return $this._translateViewField(desc);
+                } else if (callerView instanceof JoinView) {
+                    if (callerView.rightView.name == view.name || callerView.leftView.name == view.name) {
+//                        var desc = view.getField(name);
+//                        return $this._translateViewField(desc);
+                        return $this._translateField(name, context, false, context);
+                    }
                 }
             }
 
-            if(!desc) {
-                if (view instanceof QueryView) {
-                    desc = view.sourceView.getField(name);
+            // if self field - use alias as-is
+            if (useAlias) {
+                var desc = view.getField(name);
+                if (desc && desc.context && desc.context == callerContext) {
+                    desc = JSB.clone(desc);
+                    delete desc.context;
+                    return $this._translateViewField(desc);
+                }
+            }
+
+            // if source field
+            if (view instanceof QueryView) {
+                desc = view.sourceView.getField(name);
+                if (desc) {
+                    // try optimize provider wrapper
                     if (desc && desc.context) {
                         var sourceView = $this._findQueryView(desc.context);
                         if ($this.config.excludeProviderWrappers && sourceView instanceof QueryView && sourceView.isProviderWrapper()) {
-                            return $this._translateField(name, desc.context, currentQueryContext);
+                            return $this._translateField(name, desc.context, false, callerContext);
                         }
                     }
-//                    if (desc) {
-//                        context = view.getSourceView().name;
-//                        return
-//                    }
+                    return $this._translateViewField(desc);
                 }
             }
-            if(!desc) {
-                desc = view.getField(name);
-            }
 
+            // if query field
+            var desc = view.getField(name);
             return $this._translateViewField(desc);
-
-//            var contextField = queryView.lookupSourceField && queryView.lookupSourceField(name, useAlias);
-//            if (!contextField) {
-//                contextField = queryView.getField(name);
+//
+//
+//            if ($this.config.excludeProviderWrappers && view instanceof QueryView && view.isProviderWrapper()) {
+////debugger
+//                context = view.getSourceView().name;
+//                return $this._translateField(name, context, callerContext);
 //            }
-//            if (!contextField) {
-//                // unknown field: print as-is
-//                return $this._quotedName(name);
+//
+//            if (useAlias) {
+//                desc = view.getField(name);
+//                if (desc && callerContext && desc.context == callerContext) {
+//                    desc = JSB.clone(desc);
+//                    delete desc.context;
+//                }
 //            }
-//            return $this._translateViewField(contextField);
+//
+//            if(!desc) {
+//                if (view instanceof QueryView) {
+//                    desc = view.sourceView.getField(name);
+//                    if (desc && desc.context) {
+//                        var sourceView = $this._findQueryView(desc.context);
+//                        if ($this.config.excludeProviderWrappers && sourceView instanceof QueryView && sourceView.isProviderWrapper()) {
+//                            return $this._translateField(name, desc.context, callerContext);
+//                        }
+//                    }
+////                    if (desc) {
+////                        context = view.getSourceView().name;
+////                        return
+////                    }
+//                }
+//            }
+//            if(!desc) {
+//                desc = view.getField(name);
+//            }
+//
+//            return $this._translateViewField(desc);
+//
+////            var contextField = queryView.lookupSourceField && queryView.lookupSourceField(name, useAlias);
+////            if (!contextField) {
+////                contextField = queryView.getField(name);
+////            }
+////            if (!contextField) {
+////                // unknown field: print as-is
+////                return $this._quotedName(name);
+////            }
+////            return $this._translateViewField(contextField);
         },
 
 		_translateViewField: function(viewField) {
@@ -421,7 +476,7 @@ if (name.indexOf("Код отрасли") != -1) debugger;
                 }
 
                 var viewSql = '(SELECT ' + fieldsSql + ' FROM ';
-                viewSql += $this._translateAnyView(view);
+                viewSql += $this._translateSourceView(view, view.name);
                 viewSql += ')';
 
                 if (sqlUnions.length > 0) sqlUnions  += ' UNION ALL ';
@@ -445,7 +500,7 @@ if (name.indexOf("Код отрасли") != -1) debugger;
             sql += ' ON ';
 
             if (view.query) {
-                sql += $this._translateWhere(view.query, view.query.$filter);
+                sql += $this._translateWhere(view.query, view.filter);
             } else {
                 var joinFields = view.listJoinFields();
                 var count = 0;

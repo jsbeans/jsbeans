@@ -25,16 +25,6 @@
             }
 		},
 
-		translateQuery: function() {
-//		    this._prepareWithViews();
-		    this._verifyFields();
-		    var sql = '';
-//		    sql += this._translateWith();
-		    sql += this.translateQueryExpression(this.dcQuery);
-		    QueryUtils.logDebug('\n[qid='+this.dcQuery.$id+'] Translated SQL Query: \n' + JSON.stringify(this.dcQuery, 0, 2));
-            return sql;
-        },
-
 		executeQuery: function(translatedQuery){
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asSQL().iteratedParametrizedQuery2(
@@ -71,42 +61,6 @@
 		    };
 		},
 
-		translateQueryExpression: function(query) {
-		    var sql = '';
-		    if (query.$sql) {
-		        sql += this._prepareEmbeddedSQL(query.$sql, query);
-		    } else {
-                var from  = this._translateFrom(query);
-                var columns = this._translateSelectColumns(query);
-                var where = this._translateWhere(query, this._extractWhereOrHavingFilter(query, true));
-                var group = this._translateGroup(query);
-                //TODO: HAVING is not support filter by alias: if $filter contains alias of aggregate expression move it to $postFilter
-                var having = this._translateWhere(query, this._extractWhereOrHavingFilter(query, false));
-                var order = this._translateOrder(query);
-                var offset = query.$offset ? ' OFFSET ' + query.$offset: '';
-                var limit = query.$limit ? ' LIMIT ' + query.$limit: '';
-                from = from ? ' FROM ' + from : ' ';
-                where = where ? ' WHERE ' + where : ' ';
-                group = group ? ' GROUP BY ' + group : ' ';
-                having = having ? ' HAVING ' + having : ' ';
-                order = order ? ' ORDER BY ' + order : ' ';
-
-                sql += 'SELECT ' + columns + from + where + group + having + order + offset + limit;
-            }
-
-		    if (query.$postFilter && Object.keys(query.$postFilter).length > 0) {
-		        var wrappedQuery = JSB.merge({}, query, {
-		            $context: 'wrapped_' + query.$context
-		        });
-		        this._registerContextQuery(wrappedQuery);
-		        sql = 'SELECT * FROM (' + sql + ') AS ' + $this._translateContext(this._quotedName(wrappedQuery.$context)) +
-		              ' WHERE ' + this._translateWhere(wrappedQuery, wrappedQuery.$postFilter);
-		    }
-
-//		    Log.debug('Translated SQL Query: \n' + sql);
-            return sql;
-        },
-
         _translatedContexts: {},
 
         _translateContext: function(context) {
@@ -131,71 +85,6 @@
                 global: global
             };
             return JSON.stringify(key);
-        },
-
-//        _prepareWithViews: function(){
-//            function forEach$g (callback){
-//                for (var alias in $this.dcQuery.$select) {
-//                    var exp = $this.dcQuery.$select[alias];
-//                    if (typeof exp === 'object' && QuerySyntax.getSchema()[Object.keys(exp)[0]].global) {
-//                        callback(alias, exp);
-//                    }
-//                }
-//            }
-//
-//            var withViews = {};
-//            // extract views for $g* expression
-//            QueryUtils.walkSubQueries(this.dcQuery, function(query){
-//                forEach$g(function(alias, exp){
-//                    var viewKey = $this._extractViewKey(query, true);
-//                    var view = withViews[viewKey] = withViews[viewKey] || {
-//                        viewKey: viewKey,
-//                        fields: {},
-//                        global: true,
-//                        name: 'global_view_' + Object.keys(withViews).length
-//                    };
-//                    var field = 'global_' + alias;//JSON.stringify(expr);
-//                    if (view.fields[field]) {
-//                        throw new Error('Result field alias ' + alias + ' has some expressions');
-//                    }
-//                    view.fields[field] = query.$select[alias];
-//                });
-//            });
-//            for (var id in withViews) {
-//                var view = withViews[id];
-//                var from = this._translateFrom(this.dcQuery);
-//
-//                var columns = '';
-//                for (var field in view.fields) {
-//                    if (columns.length != 0) columns += ', ';
-//                    columns += this._translateExpression(view.fields[field], this.dcQuery, true) + ' AS ' + this._quotedName(field);
-//                }
-//
-//                if (view.global) {
-//                    view.sql = 'SELECT ' + columns;
-//                } else {
-//                    var where = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, true));
-//                    var group = this._translateGroup(this.dcQuery);
-//                    var having = this._translateWhere(this.dcQuery, this._extractWhereOrHavingFilter(this.dcQuery, false));
-//                    where = where ? ' WHERE ' + where : ' ';
-//                    group = group ? ' GROUP BY ' + group : ' ';
-//                    having = having ? ' HAVING ' + having : ' ';
-//                    from = from ? ' FROM ' + from : ' ';
-//
-//                    view.sql = 'SELECT ' + columns + from + where + group + having;
-//                }
-//            }
-//            this.withViews = withViews;
-//        },
-
-        _translateWith: function(){
-            var sqlWith = '';
-            for (var id in this.withViews) {
-                if (sqlWith.length > 0) sqlWith += ', ';
-                var view = this.withViews[id];
-                sqlWith += '\n\t' + $this._translateContext(this._quotedName(view.name)) + ' AS (' + view.sql + ')'
-            }
-            return sqlWith.length > 0 ? 'WITH' + sqlWith + '\n' : '';
         },
 
         _prepareEmbeddedSQL: function(sql, dcQuery){
@@ -255,19 +144,6 @@
                         : isHaving.call(null, filteredField, filteredExpr);
             });
             return filter ? filter : {};
-        },
-
-        _translateSelectColumns: function(query){
-            var sqlColumns = '';
-            var select = query.$select;
-            var i = 0;
-            for (var alias in select) if (select.hasOwnProperty(alias)) {
-                if (i++ > 0) sqlColumns += ', '
-                // in SELECT expression force use table fields
-                sqlColumns += this._translateExpression(select[alias], query) + ' AS ' + this._quotedName(alias);
-            }
-            if (i == 0) sqlColumns += 'NULL';
-            return sqlColumns;
         },
 
         _translateExpression: function(exp, dcQuery, useAlias) {
@@ -585,70 +461,6 @@
             return false;
         },
 
-        _translateField: function(field, context, useAlias) {
-            var query = this._getQueryByContext(context);
-            var cubeField = this.asCubeFieldExpression(query.$select[field]);
-//            // is allow use aliases
-//            if (!notAlias) {
-//                // is alias and not cube field as-is expression return quoted alias
-//                var isAlias = !!query.$select[field];
-//                if (isAlias && !cubeField) {
-//                    // print alias
-//                    return this._quotedName(field);
-//                }
-//            }
-            if (!this.contextFieldsMap[context]){
-                // print alias
-                return this._quotedName(field);
-            }
-
-            var nameSql = this._translateCubeField(cubeField || field, context);
-            // is not cube field and is alias print as is
-            if (!nameSql) {
-//                if (notAlias) {
-                    var query = this._getQueryByContext(context);
-                    if (!!query.$select[field]) {
-                        nameSql = this._quotedName(field);
-//                    }
-                }
-            }
-            if (!nameSql) {
-                throw new Error('Cube or provider has no field or query has no definition for alias ' + field);
-            }
-            return nameSql;
-        },
-
-        _translateCubeField: function(field, context){
-            if (this.cube) {
-            	var managedFields = this.cubeFields;
-                if (!managedFields[field]) {
-                    return null;
-                }
-                var fieldsMap = this.contextFieldsMap[context];
-                if (!fieldsMap) {
-                    throw new Error('Fields map is not defined for context ' + context);
-                }
-                var fieldDesc = fieldsMap[field];
-                if (!fieldsMap) {
-                    throw new Error('Field descriptor is not defined for context ' + context);
-                }
-                if (fieldDesc.tableAlias && fieldDesc.fieldAlias) {
-                    return $this._translateContext(this._quotedName(fieldDesc.tableAlias)) + '.' + this._quotedName(fieldDesc.fieldAlias);
-                } else if (fieldDesc.providerTable && fieldDesc.providerField) {
-                    return this._printTableName(fieldDesc.providerTable) + '.' + this._quotedName(fieldDesc.providerField);
-                } else {
-                    throw new Error('Field descriptor is wrong ' + JSON.stringify(fieldDesc));
-                }
-            } else {
-                for(var i in this.providers){
-                    if(this.providers[i].extractFields()[field]) {
-                        return $this._translateContext(this._quotedName(context)) + '.' + this._quotedName(field);
-                    }
-                }
-            }
-            return null;
-        },
-
         _printTableName: function(tableName){
             if (tableName.startsWith('"') && tableName.endsWith('"')) {
                 // is quoted return as is
@@ -673,21 +485,6 @@
                 name = name.replace(new RegExp('"', 'g'), '""');
             }
             return '"' + name + '"';
-        },
-
-        _translateFrom: function(query) {
-            // is select from sub-query
-            if (query.$from) {
-//                debugger; // TODO update uery.$from
-                return '(' + this.translateQueryExpression(query.$from) + ') AS ' + $this._translateContext(this._quotedName(query.$context));
-            }
-
-            if (this.cube) {
-                return this._translateQueryCubeView(query);
-            } else {
-                return this._translateQueryDataProviderView(query);
-            }
-
         },
 
         _translateQueryCubeView: function(query) {

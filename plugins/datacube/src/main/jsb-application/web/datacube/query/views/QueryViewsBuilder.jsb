@@ -88,7 +88,8 @@
 
                 var joinName = 'left outer join:(' + leftView.name + ') X (' + rightView.name + ')';;
                 var resultView = new JoinView(joinName, leftView, 'left outer');
-                resultView.query = query.$join;
+                resultView.query = query;
+                resultView.filter = query.$join.$filter;
                 resultView.usedFields = query.$select;
                 resultView.setRightView(rightView);
             } else if (query.$cube) {
