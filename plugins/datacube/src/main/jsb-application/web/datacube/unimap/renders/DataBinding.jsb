@@ -73,7 +73,6 @@
                     this._editors.push(editor);
                     break;
                 case 'select':
-                
                     var editor = new Select({
                         clearBtn: !this._scheme.multiple,
                         cloneOptions: true,
@@ -139,7 +138,6 @@
                 	});
                 	this._editors.push(editor);
                 	break;
-
             }
 
 	        if(this._scheme.multiple){
@@ -248,11 +246,13 @@
                     if(this._bindingsInfo[this._values.values[i].value]){
                         this._values.values[i].bindingType = this._bindingsInfo[this._values.values[i].value].type;
                     } else {
-                        this._editors[i].setValue();
-                        this._values.values[i].binding = undefined;
-                        this._values.values[i].bindingType = undefined;
-                        this._values.values[i].value = undefined;
-                        this._errorList.push(i);
+                        if(!this._scheme.editor === 'input'){
+                            this._editors[i].setValue();
+                            this._values.values[i].binding = undefined;
+                            this._values.values[i].bindingType = undefined;
+                            this._values.values[i].value = undefined;
+                            this._errorList.push(i);
+                        }
                     }
                 }
 	        }
