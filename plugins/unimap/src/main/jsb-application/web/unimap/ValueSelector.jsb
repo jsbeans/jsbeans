@@ -135,7 +135,7 @@
             }
         } else {
             for(var i in values){
-                var r = this.getRenderByName(values[i].render),
+                var r = this.getRenderByName(values[i] && values[i].render),
                     res = r.find ? r.find(curKey[0], values[i].values, isFindAll, schemePath) : undefined;
 
                 if(res){

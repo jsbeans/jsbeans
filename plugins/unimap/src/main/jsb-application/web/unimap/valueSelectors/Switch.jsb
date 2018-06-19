@@ -94,7 +94,9 @@
                     continue;
                 }
 
-                wasUpdated = this.getRenderByName(scheme.items[i].render).updateValues(i, scheme.items[i], values.values[0][i], opts) || wasUpdated;
+                if(values.values[0][i]){
+                    wasUpdated = this.getRenderByName(scheme.items[i].render).updateValues(i, scheme.items[i], values.values[0][i], opts) || wasUpdated;
+                }
             }
         }
 

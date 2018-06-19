@@ -175,7 +175,9 @@
                         continue;
                     }
 
-                    wasUpdated = this.getRenderByName(scheme.items[j].render).updateValues(j, scheme.items[j], values.values[i][j], opts) || wasUpdated;
+                    if(values.values[i][j]){
+                        wasUpdated = this.getRenderByName(scheme.items[j].render).updateValues(j, scheme.items[j], values.values[i][j], opts) || wasUpdated;
+                    }
                 }
             }
         }

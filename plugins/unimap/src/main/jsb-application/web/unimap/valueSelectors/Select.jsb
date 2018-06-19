@@ -109,7 +109,9 @@
                         continue;
                     }
 
-                    wasUpdated = this.getRenderByName(scheme.items[value].items[i].render).updateValues(i, scheme.items[value].items[i], values.values[0].items[i], opts) || wasUpdated;
+                    if(values.values[0].items[i]){
+                        wasUpdated = this.getRenderByName(scheme.items[value].items[i].render).updateValues(i, scheme.items[value].items[i], values.values[0].items[i], opts) || wasUpdated;
+                    }
                 }
             }
         } else {
