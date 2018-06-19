@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -63,9 +64,21 @@ public class JsBridge {
         ReentrantLock l = (ReentrantLock) lockMap.get(str);
         if (l != null) {
             if (l.isLocked()) {
+            	boolean needRemove = !l.hasQueuedThreads();
                 l.unlock();
+                if(needRemove && !l.isLocked()){
+                	synchronized (lockMap) {
+                		if (lockMap.containsKey(str)){
+                			 lockMap.remove(str);
+                		}
+                	}
+                }
             }
         }
+    }
+    
+    public Map<String, ReentrantLock> getLockMap(){
+    	return lockMap;
     }
 
     public void clearLock(String str) {
@@ -73,7 +86,9 @@ public class JsBridge {
             return;
         }
         synchronized (lockMap) {
-            lockMap.remove(str);
+        	if (lockMap.containsKey(str)) {
+        		lockMap.remove(str);
+            }
         }
     }
     

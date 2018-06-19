@@ -14,7 +14,7 @@
 			this.loadCss('GridView.css');
 
             this.table = new Handsontable({
-            	noDataMessage: 'Выберите объект на диаграмме',
+            	noDataMessage: opts && opts.noDataMessage || 'Нет данных',
                 table: {
                     rowHeaders: false,
                     readOnly: false,

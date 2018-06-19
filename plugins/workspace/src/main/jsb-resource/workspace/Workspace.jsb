@@ -20,6 +20,7 @@
 		
 		config: null,
 		wDesc: null,
+		storeQueued: false,
 		_entries: {},
 		_changedEntries: {},
 		
@@ -211,9 +212,14 @@
 		},
 		
 		store: function(){
+			if(this.storeQueued){
+				return;
+			}
+			this.storeQueued = true;
 			JSB.defer(function(){
 				var mtxName = 'JSB.Workspace.Workspace.store';
 				$this.lock(mtxName);
+				$this.storeQueued = false;
 				try {
 					// store changed entries
 					if(Object.keys($this._changedEntries).length > 0){
@@ -283,7 +289,7 @@
 					$this.unlock(mtxName);
 				}
 
-			}, 300, 'JSB.Workspace.Workspace.store.' + $this.getId());
+			}, 1000, 'JSB.Workspace.Workspace.store.' + $this.getId());
 		},
 		
 		entries: function(){

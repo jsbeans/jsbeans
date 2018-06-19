@@ -33,6 +33,9 @@
 					},
 					gridView: {
 						jsb: 'DataCube.GridView',
+						options: {
+							noDataMessage: 'Выберите объект на диаграмме'
+						},
 						title: 'Таблица'
 					},
 				}

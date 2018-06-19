@@ -135,7 +135,9 @@
 			vSplitBox.addToPane(1, this.textQueryEditor);
 			
 			// add grid view
-			this.gridView = new GridView();
+			this.gridView = new GridView({
+				noDataMessage: 'Сформируйте запрос в конструкторе и нажмите кнопку "Обновить"'
+			});
 			hSplitBox.addToPane(1, this.gridView);
 		},
 		
