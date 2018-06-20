@@ -532,13 +532,13 @@
 			    	throw new Error('Invalid artifact type');
 			    }
 			    this._artifactCount = Object.keys(artifacts).length;
-			    this._artifactStore.write(this, name, a, opts);
-			    if(bNeedStoreEntry){
-			    	this._markStored(false);
-			    }
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
+		    this._artifactStore.write(this, name, a, opts);
+		    if(bNeedStoreEntry){
+		    	this._markStored(false);
+		    }
 		},
 
 		removeArtifact: function(name) {

@@ -600,7 +600,7 @@
 				}
 				
 				function _compareWorkspaces(id1, id2){
-					return wMap[id1].wName.localeCompare(wMap[id2].wName);
+					return (wMap[id1].wName||'').localeCompare(wMap[id2].wName||'');
 				}
 				
 				systemWorkspaceIds.sort(_compareWorkspaces);
@@ -949,7 +949,9 @@
 				$this.server().loadNodes(itemDesc.entry, function(nTree){
 					var chArr = Object.keys(nTree);
 					chArr.sort(function(a, b){
-						return nTree[a].name.localeCompare(nTree[b].name);
+						var an = nTree[a].name || '';
+						var bn = nTree[b].name || '';
+						return an.localeCompare(bn);
 					});
 					var parentKey = treeNode.key;
 					for(var i = 0; i < chArr.length; i++){
@@ -1082,7 +1084,9 @@
 			if(itemDesc.children && Object.keys(itemDesc.children).length > 0){
 				var chArr = Object.keys(itemDesc.children);
 				chArr.sort(function(a, b){
-					return itemDesc.children[a].name.localeCompare(itemDesc.children[b].name);
+					var an = itemDesc.children[a].name || '';
+					var bn = itemDesc.children[b].name || '';
+					return an.localeCompare(bn);
 				});
 				for(var i = 0; i < chArr.length; i++){
 					var eId = chArr[i];
@@ -1258,7 +1262,7 @@
 					return 1;
 				}
 				
-				return a.obj.getName().localeCompare(b.obj.getName());
+				return (a.obj.getName()||'').localeCompare(b.obj.getName()||'');
 			});
 		},
 		

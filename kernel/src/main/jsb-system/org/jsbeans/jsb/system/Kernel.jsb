@@ -228,6 +228,24 @@
 			}
 			Bridge.clearLock(mtxName);
 		},
+		
+		lockStats: function(){
+			var stats = [];
+			var lockMap = Bridge.getLockMap();
+			var lockNames = lockMap.keys();
+			while(lockNames.hasMoreElements()){
+				var curLockName = lockNames.nextElement();
+				var lock = lockMap.get(curLockName);
+				stats.push({
+					lock: '' + curLockName,
+					locked: lock.isLocked(),
+					queueLength: lock.getQueueLength(),
+					queued: lock.hasQueuedThreads()
+				});
+			}
+			
+			return stats;
+		},
 
 		hostName: function() {
 		    return ''+Packages.java.net.InetAddress.getLocalHost().getHostName();
