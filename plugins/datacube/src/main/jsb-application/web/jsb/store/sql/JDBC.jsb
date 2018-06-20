@@ -306,6 +306,24 @@
 				}
 			}
 			return nameMap;
+        },
+
+		_typeJdbcMap: {
+            'integer': 'INTEGER',
+            'int': 'INTEGER',
+            'boolean': 'BOOLEAN',
+            'nvarchar': 'NVARCHAR',
+            'varchar': 'VARCHAR',
+            'string': 'NVARCHAR',
+            'float': 'FLOAT',
+            'double': 'DOUBLE',
+            'number': 'DOUBLE',
+            'date': 'DATE',
+            'time': 'TIME',
+            'datetime': 'TIMESTAMP',
+            'timestamp': 'TIMESTAMP',
+            'array': 'ARRAY',
+            'object': 'OTHER'
 		},
 		
 		_typeMap: {
@@ -335,6 +353,10 @@
 			}
 			var sqlType = jsonType.toLowerCase();
 			return vendorTypeMap[sqlType] || sqlType;
+		},
+
+		toJdbcType: function(jsonType){
+			return $this._typeJdbcMap[jsonType];
 		},
 		
 		toJsonType: function(sqlType){
@@ -397,9 +419,8 @@
 			return jsonType;
 		},
 
-
-        _getJDBCType: function (value, type) {
-            var jdbcType = type || null;
+        _getJDBCType: function (value, typeJDBC) {
+            var jdbcType = typeJDBC || null;
             if (JSB.isString(jdbcType)) {
                 jdbcType = JDBCType.valueOf(jdbcType);
             } else if (JSB.isNull(jdbcType)) {

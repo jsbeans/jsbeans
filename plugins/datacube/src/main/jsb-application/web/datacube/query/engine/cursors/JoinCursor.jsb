@@ -17,12 +17,12 @@
 		    QueryUtils.throwError($this.types[1] === 'outer' || $this.types[1] === 'inner', 'Unsupported join type {} in {}', $this.type, query.$context);
         },
 
+        count: {left:0,right:0,result:0},
         type:null,
         types: null,
         filter: null,
         left: null,
         right: null,
-        rightInitialized: false,
         createRight: null,
         leftObject: null,
 
@@ -94,25 +94,28 @@
 		},
 
         next: function(){
-debugger;
+//debugger;
             function createRight(){
                 var idx = 0;
                 var params = {};
-                var filter = $this._patchFilter($this.filter, function(field) {
+                var filter = $this._patchFilter(JSB.clone($this.filter), function(field) {
                     if ($this.rightContext == field.$context) {
                         return field.$field;
                     } else if ($this.left.context == field.$context) {
                         var name = "joinParam_" + idx++;
                         params[name] = $this.Common.get.call($this.left, field.$field);
-                        return '$' + name;
+                        return '${' + name + '}';
                     } else {
                         var name = "joinParam_" + idx++;
                         params[name] = $this.Common.get.call($this.left, field);
-                        return '$' + name;
+                        return '${' + name + '}';
                     }
                     return field;
                 });
+                $this.isRightFirstObject = true;
                 $this.right = $this.createRight(filter, params);
+
+                $this.profiler && $this.profiler.profile('New right cursor', params);
             }
 
             _NEXT: while(true) {
@@ -120,35 +123,43 @@ debugger;
                 /// next left or complete
                 if (!$this.leftObject) {
                     $this.leftObject = $this.left.next();
-                    $this.right.close();
+                    $this.profiler && $this.profiler.profile('Next left object ['+ $this.count.left++ +']', $this.leftObject);
+
+                    $this.right && $this.right.close();
                     $this.right = null;
                     if ($this.leftObject == null) {
                         return null;
                     }
                 }
 
-                if (!$this.right || !$this.rightInitialized) {
+                if (!$this.right) {
                     createRight();
+                } else {
+                    $this.isRightFirstObject = false;
                 }
 
                 /// next right
                 var rightObject = $this.right.next();
+                $this.profiler && $this.profiler.profile('Next right object ['+ $this.count.right++ +']', rightObject);
+
                 if (rightObject == null) {
                     // clear right
                     $this.right.close();
                     $this.right = null;
-                    if ($this.types[1] === 'inner') {
-                        /// next left
-                        $this.leftObject = null;
-                        continue _NEXT; // return next();
-                    } else if ($this.types[1] === 'outer') {
+                    if ($this.types[1] === 'outer' && $this.isRightFirstObject) {
                         /// only left
                         var rightObject = $this.leftObject;
                         $this.leftObject = null
                         return rightObject;
+                    } else {
+                        /// next left
+                        $this.leftObject = null;
+                        continue _NEXT; // return next();
                     }
                 } else {
-                    return $this._merge(rightObject);
+                    $this.object = $this._merge(rightObject);
+                    $this.profiler && $this.profiler.profile('Return object ['+ $this.count.result++ +']', $this.object);
+                    return $this.object;
                 }
             }
         },
@@ -170,8 +181,22 @@ debugger;
         },
 
         _merge: function(rightObject){
-            // TODO $this.leftObject + rightObject with mapped fields
-            return JSB._merge(rightObject, leftObject);
+            function getValue(field) {
+                if($this.left.query.$context == field.$context) {
+                    return $this.leftObject[field.$field];
+                } else if ($this.right.query.$context == field.$context) {
+                    return rightObject[field.$field];
+                }
+debugger
+                QueryUtils.throwError(false, 'Unknown field "{}" in join context: {}', field.$field, $this.query.$context);
+            }
+
+            var object = {};
+            for(var alias in $this.query.$select) {
+                var field = $this.query.$select[alias];
+                object[alias] = getValue(field);
+            }
+            return object;
         },
 
 	}

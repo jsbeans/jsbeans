@@ -8,6 +8,7 @@
 		$constructor: function(executor, parent){
 		    $this.Class = JSB.get($this.getJsb().$name).getClass();
 		    $this.executor = executor;
+		    $this.profiler = executor.profiler;
 		    $this.parent = parent;
         },
 

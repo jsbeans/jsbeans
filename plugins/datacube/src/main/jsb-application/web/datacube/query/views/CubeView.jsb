@@ -52,7 +52,7 @@
 		        return {};
 		    }
 		    var from = $this.view.getFromBody();
-		    from.$cube = $this.cube.id;
+//		    from.$cube = $this.cube.id;
 		    return from;
 		},
 	}

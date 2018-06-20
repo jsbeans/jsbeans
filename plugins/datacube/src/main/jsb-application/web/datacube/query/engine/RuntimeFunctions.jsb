@@ -158,10 +158,10 @@
                             case '$and':
                                 and = and && this.Common.checkAndOr.call(this, op, e[op]);
                             case '$not':
-                                and = and && !this.Common.check.call(this, exps, isAccepted, path.concat([op]));
+                                and = and && !this.Common.check.call(this, e[op], isAccepted, path.concat([op]));
                             default:
                                 // $op: [left, right] expression
-                                and = and && this.Common.checkOperator.call(this, op, exps[op]);
+                                and = and && this.Common.checkOperator.call(this, op, e[op]);
                         }
                     } else {
                         var leftField = op;
@@ -175,7 +175,7 @@
             checkAndOr: function (op, e){
                 this.QueryUtils.throwError(JSB.isArray(e), 'Unexpected operator type: {} is not array', op);
                 for(var i = 0; i < e.length; i++) {
-                    value = this.Common.match.call(this, e[i]);
+                    value = this.Common.check.call(this, e[i]);
                     if (op === '$and' && !value) return false;
                     if (op === '$or' && value) return true;
                 }

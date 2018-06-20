@@ -33,10 +33,11 @@
 		            return $this.params[param];
 		        },
 		        function getType(param) {
-		            for (var i in $this.providers) {
-                        return $this.queryEngine && $this.queryEngine.getParamType(param, $this.providers[i])
-                                || store.config.argumentTypes[param];
+		            var type = $this.getParamType(param);
+		            if (type) {
+		                return JDBC.toJdbcType(type);
                     }
+		            return null;
 		        }
 		    );
 		    return iterator;

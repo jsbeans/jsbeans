@@ -7,6 +7,8 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
+		paramTypes: {},
+
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    this.providers = JSB.isArray(providerOrProviders) ? providerOrProviders : [providerOrProviders];
 		    if (!JSB.isBean(cubeOrQueryEngine)) {
@@ -21,6 +23,22 @@
             this.translatorExecuteLazy = Config.has('datacube.queryengine.translatorExecuteLazy')
                     ? Config.get('datacube.queryengine.translatorExecuteLazy')
                     : true;
+		},
+
+		setParamType: function(param, type){
+            $this.paramTypes[param] = type;
+		},
+
+		getParamType: function(param){
+		    return $this.paramTypes[param] || $this.params && $this.params.hasOwnProperty(param) && (function(){
+		        if (JSB.isString($this.params[param])) return 'string';
+                if (JSB.isInteger($this.params[param])) return 'int';
+                if (JSB.isFloat($this.params[param])) return 'double';
+                if (JSB.isBoolean($this.params[param])) return 'boolean';
+                if (JSB.isDate($this.params[param])) return 'timestamp';
+                if (JSB.isArray($this.params[param])) return 'array';
+                return null;
+		    })() || null;
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
@@ -62,7 +80,7 @@
                             return $this.translateResult($this.iterator.next());
                         },
                         close:function(){
-                            $this.iterator$this.iterator.close();
+                            $this.iterator && $this.iterator.close();
                         },
                         translatedQuery: translatedQuery
                     };

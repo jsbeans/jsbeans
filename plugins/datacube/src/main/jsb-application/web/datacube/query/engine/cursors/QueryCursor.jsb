@@ -100,6 +100,7 @@
                 var object = inputNext.call($this);
                 while(object != null && !$this.Common.check.call($this, $filter)) {
                     object = inputNext.call($this);
+if (object['Год отчетного периода'] == '2016' && object['Номер в ЕМД'] == '03.01.0042' ) debugger;
                 }
                 return $this.object = object;
             };
