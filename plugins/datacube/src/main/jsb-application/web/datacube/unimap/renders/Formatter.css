@@ -66,6 +66,7 @@
     resize: both;
     display: inline-block;
     min-width: 300px;
+    max-width: calc(100% - 30px);
 
     color: #555;
     border: 1px solid #ccc;

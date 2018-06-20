@@ -15,6 +15,8 @@
 	        this.addClass('formatter');
 	        this.loadCss('Formatter.css');
 
+	        this._scheme.formatterOpts = this._scheme.formatterOpts || {};
+
             this._name = this.$('<span class="name">' + this._scheme.name + '</span>');
             this.append(this._name);
 
@@ -180,21 +182,25 @@
                 if(isFirefox > -1 && Number(navigator.userAgent.substring(isFirefox + 8)) < 60){ // for astralinux firefox ver. 44.0.2
                     var editableValue = this._editBlock.html().replace(/&nbsp;/g, ' ')
                                                               .replace(/&lt;/g, '<')
-                                                              .replace(/&gt;/g, '>'),
+                                                              .replace(/&gt;/g, '>')
+                                                              .replace(/&amp;/g, '&'),
                         advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ')
                                                             .replace(/&lt;/g, '<')
-                                                            .replace(/&gt;/g, '>');
+                                                            .replace(/&gt;/g, '>')
+                                                            .replace(/&amp;/g, '&');
 
                     this._values.values[0].editableValue = editableValue === '<br> ' ? '' : editableValue;
                     this._values.values[0].advancedValue = advancedValue === '<br> ' ? '' : advancedValue;
                 } else {
                     this._values.values[0].editableValue = this._editBlock.html().replace(/&nbsp;/g, ' ')
                                                                                  .replace(/&lt;/g, '<')
-                                                                                 .replace(/&gt;/g, '>');
+                                                                                 .replace(/&gt;/g, '>')
+                                                                                 .replace(/&amp;/g, '&');
 
                     this._values.values[0].advancedValue = editBlockCopy.html().replace(/&nbsp;/g, ' ')
                                                                                .replace(/&lt;/g, '<')
-                                                                               .replace(/&gt;/g, '>');
+                                                                               .replace(/&gt;/g, '>')
+                                                                               .replace(/&amp;/g, '&');
                 }
 	        } else {
 	            this._values.values[0].baseValue = ('{' + this._values.values[0].basicSettings.value + (this._values.values[0].basicSettings.typeSettings ? (':' + this._values.values[0].basicSettings.typeSettings.formatPart) : '') + '} ').trim();
@@ -246,19 +252,21 @@
                 collectFields(linkedValues.values[0].binding, '');
             }
 
-	        for(var i = 0; i < this._scheme.formatterOpts.variables.length; i++){
-	            this._basicVariablesList.push({
-	                innerValue: this._scheme.formatterOpts.variables[i].value,
-	                key: this._scheme.formatterOpts.variables[i].alias,
-	                scheme: {
-	                    type: this._scheme.formatterOpts.variables[i].type,
-	                    field: this._scheme.formatterOpts.variables[i].alias
-	                },
-	                type: this._scheme.formatterOpts.variables[i].type,
-	                title: this._scheme.formatterOpts.variables[i].title,
-	                value: this._scheme.formatterOpts.variables[i].alias
-	            });
-	        }
+            if(this._scheme.formatterOpts.variables){
+                for(var i = 0; i < this._scheme.formatterOpts.variables.length; i++){
+                    this._basicVariablesList.push({
+                        innerValue: this._scheme.formatterOpts.variables[i].value,
+                        key: this._scheme.formatterOpts.variables[i].alias,
+                        scheme: {
+                            type: this._scheme.formatterOpts.variables[i].type,
+                            field: this._scheme.formatterOpts.variables[i].alias
+                        },
+                        type: this._scheme.formatterOpts.variables[i].type,
+                        title: this._scheme.formatterOpts.variables[i].title,
+                        value: this._scheme.formatterOpts.variables[i].alias
+                    });
+                }
+            }
 	    },
 
 	    createFormatterVariablesList: function(){

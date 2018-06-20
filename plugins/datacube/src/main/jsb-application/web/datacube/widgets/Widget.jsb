@@ -485,6 +485,20 @@
 			}
 		},
 
+		parseFormatterData: function(bindings, dataArr, res){
+            if(bindings.length > 0){
+                for(var j = 0; j < res.length; j++){
+                    var item = {};
+
+                    for(var i = 0; i < bindings.length; i++){
+                        item[bindings[i]] = res[j][bindings[i]].main;
+                    }
+
+                    dataArr.push(item);
+                }
+            }
+		},
+
 		refresh: function(opts){
 			this.localizeFilters();
 		},
