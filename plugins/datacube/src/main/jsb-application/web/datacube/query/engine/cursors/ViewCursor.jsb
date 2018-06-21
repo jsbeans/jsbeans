@@ -11,8 +11,8 @@
 		    'JSB.Crypt.MD5'
         ],
 
-		$constructor: function(executor, query, params, parent){
-		    $base(executor, parent);
+		$constructor: function(executor, query, params, parent, caller){
+		    $base(executor, parent, caller);
 		    $this.query = query;
 		    $this.context = query.$context;
 		    $this.params = params;

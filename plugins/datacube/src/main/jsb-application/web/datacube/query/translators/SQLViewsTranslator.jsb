@@ -277,52 +277,6 @@
             // if query field
             var desc = view.getField(name);
             return $this._translateViewField(desc);
-//
-//
-//            if ($this.config.excludeProviderWrappers && view instanceof QueryView && view.isProviderWrapper()) {
-////debugger
-//                context = view.getSourceView().name;
-//                return $this._translateField(name, context, callerContext);
-//            }
-//
-//            if (useAlias) {
-//                desc = view.getField(name);
-//                if (desc && callerContext && desc.context == callerContext) {
-//                    desc = JSB.clone(desc);
-//                    delete desc.context;
-//                }
-//            }
-//
-//            if(!desc) {
-//                if (view instanceof QueryView) {
-//                    desc = view.sourceView.getField(name);
-//                    if (desc && desc.context) {
-//                        var sourceView = $this._findQueryView(desc.context);
-//                        if ($this.config.excludeProviderWrappers && sourceView instanceof QueryView && sourceView.isProviderWrapper()) {
-//                            return $this._translateField(name, desc.context, callerContext);
-//                        }
-//                    }
-////                    if (desc) {
-////                        context = view.getSourceView().name;
-////                        return
-////                    }
-//                }
-//            }
-//            if(!desc) {
-//                desc = view.getField(name);
-//            }
-//
-//            return $this._translateViewField(desc);
-//
-////            var contextField = queryView.lookupSourceField && queryView.lookupSourceField(name, useAlias);
-////            if (!contextField) {
-////                contextField = queryView.getField(name);
-////            }
-////            if (!contextField) {
-////                // unknown field: print as-is
-////                return $this._quotedName(name);
-////            }
-////            return $this._translateViewField(contextField);
         },
 
 		_translateViewField: function(viewField) {
@@ -365,27 +319,18 @@
             } else if(view instanceof JoinView) {
                 sql = $this._translateJoinView(view);
             } else if(view instanceof DataProviderView) {
-//                if (view.filter && Object.keys(view.filter)) {
-//debugger;
-//                    var q = {$filter: view.filter};
-//                    var where = $this._translateWhere(q, q.$filter);
-//
-//                    var selectSql = '';
-//                    var fields = view.listFields();
-//                    for(var i=0; i < fields.length; i++) {
-//                        var name = fields[i];
-//                        if (!view.usedFields || view.usedFields.length == 0 || view.usedFields[name]) {
-//                            var field = view.getField(name);
-//                            if (selectSql.length > 0) selectSql += ', ';
-//                            selectSql += $this._quotedName(field.providerField);
-//                            selectSql += ' AS ' + $this._quotedName(name);
-//                        }
-//                    }
-//                    sql = '(SELECT ' + selectSql + ' WHERE ' + where + ' FROM ' + sql + ')';
-//                } else {
+                /// if as-is return table name or generate subquery
+
+                if (!view.query.$filter
+                        && !view.query.$groupBy
+                        && !view.query.$sort
+                        && !view.query.$limit
+                        && !view.query.$offset
+                    ) {
                     sql = $this._printTableName(view.getProvider().getTableFullName());
-//                    sql += ' AS ' + $this._quotedName($this._translateContext(view.getContext()));
-//                }
+                } else {
+                    sql = $this._translateQueryView(view);
+                }
             } else if(view instanceof SqlView) {
                 sql = view.getSql();
             } else if(view instanceof NothingView) {
@@ -396,6 +341,33 @@
             return sql;
         },
 
+//        _translateDataProviderViewAsQuery: function(view) {
+//debugger;
+//
+//            var query = view.getQuery();
+//
+//            var sql = $this._translateWith(query);
+//
+//            var from  = $this._printTableName(view.getProvider().getTableFullName());
+//            var columns = $this._translateSelectColumns(view);
+//
+//            var where = $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));
+//            var group = $this._translateGroup(query);
+//            var having = $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, false));
+//            var order = $this._translateOrder(query);
+//
+//            var offset = query.$offset ? ' OFFSET ' + query.$offset: '';
+//            var limit = query.$limit ? ' LIMIT ' + query.$limit: '';
+//
+//            from = from ? ' FROM ' + from : ' ';
+//            where = where ? ' WHERE ' + where : ' ';
+//            group = group ? ' GROUP BY ' + group : ' ';
+//            having = having ? ' HAVING ' + having : ' ';
+//            order = order ? ' ORDER BY ' + order : ' ';
+//            sql += 'SELECT ' + columns + from + where + group + having + order + offset + limit + '';
+//            return query.$context != $this.dcQuery.$context ? '('+sql+')': sql;
+//        },
+
         _translateQueryView: function(view) {
             if ($this.withContextViews[view.getContext()]) {
                 return $this._quotedName($this._translateContext($this.withContextViews[view.getContext()]));
@@ -404,8 +376,12 @@
             var query = view.getQuery();
 
             var sql = $this._translateWith(query);
-
-            var from  = $this._translateSourceView(view.getSourceView(), view.getSourceView().getContext());
+            if (view instanceof DataProviderView) {
+                var from  = $this._printTableName(view.getProvider().getTableFullName()) +
+                        ' AS ' + $this._quotedName($this._translateContext(view.getContext()));
+            } else if (view instanceof QueryView){
+                var from  = $this._translateSourceView(view.getSourceView(), view.getSourceView().getContext());
+            }
             var columns = $this._translateSelectColumns(view);
 
             var where = $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));

@@ -6,8 +6,8 @@
 		$require: [
         ],
 
-		$constructor: function(){
-		    $base();
+		$constructor: function(executor, parent, caller){
+		    $base(executor, parent, caller);
         },
 
         next: function(){

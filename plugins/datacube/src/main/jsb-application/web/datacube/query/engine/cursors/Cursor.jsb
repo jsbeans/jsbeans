@@ -5,11 +5,12 @@
 		$require: [
         ],
 
-		$constructor: function(executor, parent){
+		$constructor: function(executor, parent, caller){
 		    $this.Class = JSB.get($this.getJsb().$name).getClass();
 		    $this.executor = executor;
 		    $this.profiler = executor.profiler;
 		    $this.parent = parent;
+		    $this.caller = caller;
         },
 
         object: null,

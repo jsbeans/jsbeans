@@ -123,7 +123,8 @@ debugger;
                 },
             };
 		    var left = from.$join.$left = $this.leftView.getFromBody();
-		    var right = from.$join.$right = wrapRight($this.rightView.getFromBody());
+//		    var right = from.$join.$right = wrapRight($this.rightView.getFromBody());
+            var right = from.$join.$right = $this.rightView.getFromBody();
 
 		    //from.$context = $this.joinType + ' join:[' + left.$context + ' (X) ' + right.$context + ']';
 		    var filter = from.$join.$filter = {$and:[]};

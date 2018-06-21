@@ -6,8 +6,8 @@
 		$require: [
         ],
 
-		$constructor: function(executor, query, parent, createIterator){
-		    $base(executor, parent);
+		$constructor: function(executor, query, parent, caller, createIterator){
+		    $base(executor, parent, caller);
 		    $this.query = query;
 		    $this.context = query.$context;
 		    $this.createIterator = createIterator;

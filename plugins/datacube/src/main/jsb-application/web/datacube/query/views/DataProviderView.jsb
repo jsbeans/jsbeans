@@ -14,6 +14,10 @@
 
 		managedFields: {},
 
+        getQuery: function() {
+            return $this.query;
+		},
+
         setField: function(field, desc) {
             $this.managedFields[field] = desc;
 		},

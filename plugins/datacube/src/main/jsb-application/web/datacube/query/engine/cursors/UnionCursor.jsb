@@ -6,8 +6,8 @@
 		$require: [
         ],
 
-		$constructor: function(executor, query, params, parent){
-		    $base(executor, query, params, parent);
+		$constructor: function(executor, query, params, parent, caller){
+		    $base(executor, query, params, parent, caller);
         },
 
         unions: [],

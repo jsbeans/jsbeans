@@ -20,34 +20,34 @@
             $this._translateQueriesFromProviders = Config.has('datacube.queryengine.translateQueriesFromProviders') && Config.get('datacube.queryengine.translateQueriesFromProviders');
         },
 
-        buildAnyCursor:function(query, params, parent) {
+        buildAnyCursor:function(query, params, parent, caller) {
             // is empty
             if (query == null || JSB.isEqual(query, {})) {
-                return $this.buildEmptyCursor(parent);
+                return $this.buildEmptyCursor(parent, caller);
             }
             // is provider or translate whole query
             if ($this._checkTranslateQuery(query)) {
-                var cursor = $this.buildTranslatedCursor(query, params, parent);
+                var cursor = $this.buildTranslatedCursor(query, params, parent, caller);
                 if (cursor) {
                     return cursor;
                 }
             }
             // is union
             if (query.$union) {
-                return $this.buildUnionCursor(query, params, parent);
+                return $this.buildUnionCursor(query, params, parent, caller);
             }
             // is join
             if (query.$join) {
-                return $this.buildJoinCursor(query, params, parent);
+                return $this.buildJoinCursor(query, params, parent, caller);
             }
             // query
-            return $this.buildQueryCursor(query, params, parent);
+            return $this.buildQueryCursor(query, params, parent, caller);
         },
 
-        buildTranslatedCursor: function(query, params, parent) {
+        buildTranslatedCursor: function(query, params, parent, caller) {
             var it = $this.executor.tryTranslateQuery(query, params);
             if (it) {
-                var cursor = new TranslatedCursor($this.executor, query, parent, function(){
+                var cursor = new TranslatedCursor($this.executor, query, parent, caller, function(){
                     if(it) {
                         // use pre-created
                         var curIt = it;
@@ -64,12 +64,12 @@
             return null;
         },
 
-        buildQueryCursor: function(query, params, parent){
+        buildQueryCursor: function(query, params, parent, caller){
             QueryUtils.throwError(query.$from, 'Query source/$from is undefined in context {}', query.$context);
 
-            var cursor = new QueryCursor($this.executor, query, params, parent);
+            var cursor = new QueryCursor($this.executor, query, params, parent, caller);
 
-            cursor.source = $this.buildAnyCursor(query.$from, params, parent);
+            cursor.source = $this.buildAnyCursor(query.$from, params, parent, cursor);
 
             QueryUtils.walkQueries(
                 JSB.merge({},query,{$from:null}),
@@ -85,7 +85,7 @@
                     if (subQuery.$context != query.$context) {
                         cursor.addNested(
                             subQuery.$context,
-                            $this.buildAnyCursor(subQuery, params, cursor)
+                            $this.buildAnyCursor(subQuery, params, cursor, cursor)
                         );
                     }
                 }
@@ -98,21 +98,21 @@
             return cursor;
         },
 
-        buildEmptyCursor: function(parent){
-            return new EmptyCursor($this.executor, parent);
+        buildEmptyCursor: function(parent, caller){
+            return new EmptyCursor($this.executor, parent, caller);
         },
 
-        buildUnionCursor: function(unionQuery, params, parent){
+        buildUnionCursor: function(unionQuery, params, parent, caller){
             $this.profiler && $this.profiler.profile('Create union source cursor at {}', unionQuery.$context);
 
-            var unionsCursor = new UnionCursor($this.executor, unionQuery, params, parent);
+            var unionsCursor = new UnionCursor($this.executor, unionQuery, params, parent, caller);
 
             for(var i = 0; i < unionQuery.$union.length; i++) {
                 var subQuery = unionQuery.$unions[i];
                 QueryUtils.throwError(subQuery, 'Union {} contains undefined subquery', unionQuery.$context);
 
                 unionsCursor.addUnion(
-                    $this.buildAnyCursor(subQuery, params, parent)
+                    $this.buildAnyCursor(subQuery, params, parent, unionsCursor)
                 );
             }
 
@@ -121,7 +121,7 @@
             return unionsCursor;
         },
 
-        buildJoinCursor: function(joinQuery, params, parent){
+        buildJoinCursor: function(joinQuery, params, parent, caller){
             $this.profiler && $this.profiler.profile('Create join cursor at {}', joinQuery.$context);
 
             var joinCursor = new JoinCursor($this.executor, joinQuery, params, parent);
@@ -131,11 +131,11 @@
 
             $this.profiler && $this.profiler.profile('Create left join cursor at {}', joinQuery.$join.$left);
             joinCursor.setLeft(
-                $this.buildAnyCursor(joinQuery.$join.$left, params, parent)
+                $this.buildAnyCursor(joinQuery.$join.$left, params, parent, joinCursor)
             );
             $this.profiler && $this.profiler.profile('Create right join cursor at {}', joinQuery.$join.$right);
             joinCursor.setRight(
-                $this.buildAnyCursor(joinQuery.$join.$right, params, parent)
+                $this.buildAnyCursor(joinQuery.$join.$right, params, parent, joinCursor)
             );
             joinCursor.setCreateRight(function (filter, params){
                 /// построение правого запроса - добавление доп.условий
@@ -149,7 +149,7 @@
                     }
                     query.$filter = filter;
                 }
-                return $this.buildAnyCursor(query, params, parent);
+                return $this.buildAnyCursor(query, params, parent, joinCursor);
             });
 
             $this._buildViewFields(joinCursor);

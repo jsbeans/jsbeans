@@ -112,6 +112,7 @@
 //if (name =='DataProvider[0#1]:d5f2c471d705fe580f141f9a62ecdc78|dp_d2bb4f5b74d9e2ff52e2284d02a89aee') debugger;
 		    var view = new DataProviderView(name, dataProvider);
 		    view.usedFields = query.$select;
+		    view.query = query;
 		    var managedFields = dataProvider.extractFields({type:true, nativeType:true});
             for(var alias in query.$select) {
                 QueryUtils.throwError(typeof query.$select[alias] === 'string', 'Query with $provider does not support select expressions: {}', query.$context);

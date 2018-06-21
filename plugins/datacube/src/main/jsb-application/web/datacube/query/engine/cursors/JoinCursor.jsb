@@ -7,8 +7,8 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
-		$constructor: function(executor, query, params, parent){
-		    $base(executor, query, params, parent);
+		$constructor: function(executor, query, params, parent, caller){
+		    $base(executor, query, params, parent, caller);
 		    $this.type = query.$join.$joinType || 'left outer';
 		    $this.types = $this.type.split(' ');
 		    $this.filter = query.$join.$filter;
@@ -94,7 +94,7 @@
 		},
 
         next: function(){
-//debugger;
+debugger;
             function createRight(){
                 var idx = 0;
                 var params = {};
