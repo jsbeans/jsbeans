@@ -8,7 +8,7 @@
 
         this._mainSelector = opts.mainSelector;
 
-        this._selectorPrototype = function(opts){
+        this.Selector = function(opts){
             this._selectorBean = $this;
             this._key = opts.key;
             this._selectorOpts = opts.selector;
@@ -19,7 +19,7 @@
             }
         }
 
-        this._selectorPrototype.prototype = {
+        this.Selector.prototype = {
             addMultipleValue: this.addMultipleValue,
             checked: this.checked,
             getContext: this.getContext,
@@ -43,7 +43,7 @@
 
         for(var i = 0; i < methods.length; i++){
             if(this._excludeMethods.indexOf(methods[i]) < 0){
-                this._selectorPrototype.prototype[methods[i]] = this[methods[i]];
+                this.Selector.prototype[methods[i]] = this[methods[i]];
             }
         }
     },
@@ -77,14 +77,14 @@
             opts = {};
         }
 
-        if(this._selectorPrototype){
-            return new this._selectorPrototype({
+        if(this.Selector){
+            return new this.Selector({
                 key: opts.key,
                 selector: opts.selector,
                 schemePath: opts.schemePath
             });
         } else {
-            return new this._selectorBean._selectorPrototype({
+            return new this._selectorBean.Selector({
                 key: opts.key,
                 selector: opts.selector,
                 schemePath: opts.schemePath
