@@ -53,7 +53,7 @@
 					if(JSB.isInstanceOf(a, 'JSB.IO.Stream')){
 						var oStream = FileSystem.open(eFileName, {binary: true, write: true, read: false});
 						a.copy(oStream, {
-							onProgress: opts.onProgress
+							onProgress: opts && opts.onProgress
 						});
 						oStream.close();
 					} else {
