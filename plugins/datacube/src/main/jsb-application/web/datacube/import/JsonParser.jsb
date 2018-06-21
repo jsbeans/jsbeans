@@ -10,12 +10,6 @@
 			        name: 'Обрезать пробелы в строках',
 			        optional: 'checked',
 			        editor: 'none'
-			    },
-				multiTable: {
-			        render: 'item',
-			        name: 'Разбить на несколько таблиц',
-			        optional: true,
-			        editor: 'none'
 			    }
 			}
 		}
@@ -34,8 +28,8 @@
 			});
 		},
 		
-		$constructor: function(entry, context){
-			$base(entry, context);
+		$constructor: function(entry, values){
+			$base(entry, values);
 			
 			this.jsonGrammar = `#dot
 			// JSON Grammar
@@ -203,24 +197,16 @@
 
 		},
 		
-		analyze: function(){
-			try {
-				var parser = Peg.generate(this.jsonGrammar);
-				var obj = Peg.parseStream(parser, this.stream);
-			} catch(e){
-				if(e != 'Break'){
-					throw e;
+		execute: function(){
+			var parser = Peg.generate(this.jsonGrammar);
+			Peg.parseStream(parser, this.stream, {
+				onProgress: function(position, available){
+					var total = $this.getFileSize();
+					position = total - available;
+					var progress = Math.round(position * 100 / total);
+					$this.publish('Parser.progress', {progress: progress, position: position, total: total});
 				}
-			} finally {
-				this.stream.close();	
-			}
-			
-//			var struct = this.getStruct();
-//			JSB.getLogger().debug(JSON.stringify(struct, null, 4));
-			var isMultiTable = this.context.find('multiTable').checked();
-			
-			// construct table values
-			
+			});
 		}
 	}
 }

@@ -108,7 +108,7 @@
                 column: {
                     render: 'group',
                     name: 'Тип "Колонки"',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
                     items: {
                         groupPadding: {
@@ -261,7 +261,10 @@
                                 seriesData[i].data[seriesName].push({
                                     color: color,
                                     x: filterCat,
-                                    y: data.value()
+                                    y: data.value(),
+                                    datacube: {
+                                        filterData: $this._addFilterData()
+                                    }
                                 });
                             }
                         }
@@ -331,9 +334,10 @@
                         for(var i = 0; i < xAxisIndividual.length; i++){
                             xAxisIndividualCats[i] = Object.keys(xAxisIndividual[i]);
                         }
-
-                        for(var j = 0; j < xAxisIndividualCats[0].length; j++){
-                            xAxisIndividual[0][xAxisIndividualCats[0][j]].x = j;
+                        if(xAxisIndividualCats[0]){
+                            for(var j = 0; j < xAxisIndividualCats[0].length; j++){
+                                xAxisIndividual[0][xAxisIndividualCats[0][j]].x = j;
+                            }
                         }
 
                         xAxisIndividualCats.sort();
@@ -410,9 +414,9 @@
                                 var left = axis.chart.plotLeft + ((lastTick + 1) * tickWidth),
                                     label = axis.ticks[i].label,
                                     newX = left + (((axis.ticks[i].pos - lastTick) / 2) * tickWidth),
-                                    x = newX - label.xy.x;
+                                    x = newX - (label ? label.xy.x : 0);
 
-                                label.attr({
+                                label && label.attr({
                                     translateX: x,
                                     translateY: 0
                                 });
@@ -427,8 +431,7 @@
                     chartOpts = JSB.clone(chartOpts);
 
                     var seriesContext = $this.getContext().find('series').values(),
-                        chartOptsSeries = JSB.clone(chartOpts.series),
-                        filterData = $this._addFilterData();
+                        chartOptsSeries = JSB.clone(chartOpts.series);
 
                     for(var j = 0; j < seriesData.length; j++){
                         var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[seriesData[j].index].find('yAxis').value());
@@ -437,8 +440,7 @@
                             name: seriesData[j].name,
                             data: seriesData[j].data,
                             datacube: {
-                                binding: $this._schemeOpts.xAxisFilterBinding,
-                                filterData: filterData
+                                binding: $this._schemeOpts.xAxisFilterBinding
                             },
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,
@@ -477,9 +479,9 @@
                     var chartOpts = {
                         chart: {
                             events: {
-          	                    load: function () {
+          	                    load: function(){
                                     centerLabels(this);
-                                }, resize: function () {
+                                }, resize: function(){
                                     centerLabels(this);
                                 }
                             }

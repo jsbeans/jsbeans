@@ -110,7 +110,11 @@
 		},
 
 		scrollToElement: function(target, vAlign, hAlign){
-            var targetRc = this.find(target).get(0).getBoundingClientRect();
+			var tgt = this.find(target);
+			if(tgt.length == 0){
+				return;
+			}
+            var targetRc = tgt.get(0).getBoundingClientRect();
             var sbRc = this.getElement().get(0).getBoundingClientRect();
 
             if(!vAlign){
@@ -124,29 +128,29 @@
 
             switch(vAlign){
             case 'top':
-                vOffs = 0;
+                vOffs = targetRc.top - sbRc.top;
                 break;
             case 'bottom':
-                vOffs = sbRc.bottom - sbRc.top;
+                vOffs = targetRc.bottom - sbRc.bottom;
                 break;
             case 'center':
-                vOffs = (sbRc.bottom - sbRc.top) / 2;
+                vOffs = (targetRc.bottom + targetRc.top) / 2 - (sbRc.bottom + sbRc.top) / 2;
                 break;
             }
 
             switch(hAlign){
             case 'left':
-                hOffs = 0;
+                hOffs = targetRc.left - sbRc.left;
                 break;
             case 'right':
-                hOffs = sbRc.right - sbRc.left;
+                hOffs = targetRc.right - sbRc.right;
                 break;
             case 'center':
-                hOffs = (sbRc.right - sbRc.left) / 2;
+                hOffs = (targetRc.right + targetRc.left) / 2 - (sbRc.right + sbRc.left) / 2;
                 break;
             }
 
-            this.scrollTo(-(targetRc.left - hOffs), -(targetRc.top - vOffs));
+            this.scrollTo(hOffs, vOffs);
 		},
 
 		/**

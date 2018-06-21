@@ -1,5 +1,5 @@
 .embeddedWidgetBindingRender > .name {
-    width: 200px;
+    width: 150px;
     display: inline-block;
     line-height: 22px;
     font-size: 15px;
@@ -9,12 +9,11 @@
 }
 
 .embeddedWidgetBindingRender > .item {
-    height: 32px;
-    width: 200px;
+	height: 26px;
     background: rgba(24, 108, 138, 0.2);
     border: 1px dotted rgba(2, 47, 78, 0.2);
     border-radius: 4px;
-    padding: 6px;
+    padding: 2px 4px;
     font-size: 15px;
     text-align: center;
     display: inline-block;
@@ -32,7 +31,9 @@
 }
 
 .embeddedWidgetBindingRender > .item:not(.filled) {
-	color: #555;
+	color: #5a7682;
+    font-size: 11px;
+    padding-top: 5px;
 }
 
 .embeddedWidgetBindingRender > .item > .render {

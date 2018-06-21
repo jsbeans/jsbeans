@@ -162,6 +162,9 @@
 			options.write = true;
 			options.read = false;
 			options.binary = $jsb.isArrayBuffer(data);
+			if(options.append){
+				options.write = false;
+			}
 			var stream = this.open(path, options);
 			try {
 				stream.write(data);
@@ -171,8 +174,12 @@
 			}
 		},
 		
-		exists: function(path) {
+		exists: function(path){
 		    return Files.exists(this._resolvePath(path));
+		},
+		
+		size: function(path){
+			return Files.size(this._resolvePath(path));
 		},
 		
 		list: function(path, opts) {

@@ -2,6 +2,8 @@
 	$name: 'JSB.Workspace.FileEntry',
 	$parent: 'JSB.Workspace.Entry',
 	
+	fileSize: null,
+	
 	$server: {
 		$require: 'JSB.Workspace.WorkspaceController',
 		
@@ -28,11 +30,37 @@
 					// store artifact
 					this.storeArtifact('.data', opts.fileData);
 				}
+			} else {
+				this.fileSize = this.property('fileSize');
+			}
+		},
+		
+		uploadFile: function(fileInfo){
+			var tempName = '.data.' + JSB.generateUid();
+			try {
+				var lastProgress = -1;
+				this.storeArtifact(tempName, fileInfo.data, {
+					onProgress: function(copied){
+						var curProgress = Math.floor((copied * 100) / fileInfo.size);
+						if(curProgress != lastProgress){
+							$this.publish('JSB.Workspace.FileEntry.upload', {status: 'Обновление файла ' + curProgress + '%', success: true}, {session: true});
+							lastProgress = curProgress;
+						}
+					}
+				});
+				this.removeArtifact('.data');
+				this.renameArtifact(tempName, '.data');
+			} finally {
+				this.removeArtifact(tempName);
 			}
 		},
 		
 		read: function(opts){
 			return this.loadArtifact('.data', opts);
+		},
+		
+		getFileSize: function(){
+			return this.getArtifactSize('.data');
 		},
 
 		destroy: function(){

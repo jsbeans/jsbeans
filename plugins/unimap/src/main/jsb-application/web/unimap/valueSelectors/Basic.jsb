@@ -12,6 +12,7 @@
             this._selectorBean = $this;
             this._key = opts.key;
             this._selectorOpts = opts.selector;
+            this._schemePath = opts.schemePath;
 
             if(opts.selector && opts.selector.values){
                 this._values = JSB.isArray(opts.selector.values) ? opts.selector.values : [opts.selector.values];
@@ -19,6 +20,7 @@
         }
 
         this._selectorPrototype.prototype = {
+            addMultipleValue: this.addMultipleValue,
             checked: this.checked,
             getContext: this.getContext,
             getInstance: this.getInstance,
@@ -28,6 +30,9 @@
             getMainSelector: this.getMainSelector,
             getRenderByName: this.getRenderByName,
             getRenderName: this.getRenderName,
+            removeAllValues: this.removeAllValues,
+            setName: this.setName,
+            setFullValue: this.setFullValue,
             setValue: this.setValue,
             setValues: this.setValues,
             value: this.value,
@@ -43,10 +48,6 @@
         }
     },
 
-    addMultipleValue: function(key){
-        //
-    },
-
     checked: function(){
         if(!this._selectorOpts){
             return undefined;
@@ -60,36 +61,7 @@
     },
 
     createDefaultValues: function(key, scheme, values, opts){
-        //this.getRenderByName().updateValues(key, scheme, values);
-
         $current.updateValues(key, scheme, values, opts);
-
-        /*
-        if(!scheme.render){ return; }
-
-        values.checked = scheme.optional === 'checked' ? true : undefined;
-        values.defaultValue = scheme.defaultValue;
-        values.render = scheme.render;
-        values.name = scheme.name;
-        values.valueType = scheme.valueType;
-        values.values = [];
-
-        if(scheme.value){
-            values.values[0] = {
-                value: scheme.value
-            }
-        }
-
-        if(scheme.linkTo){
-            var mainSelector = this.getMainSelector();
-
-            if(!mainSelector._linkedFields[scheme.linkTo]){
-                mainSelector._linkedFields[scheme.linkTo] = [];
-            }
-
-            mainSelector._linkedFields[scheme.linkTo].push(key);
-        }
-        */
     },
 
     getContext: function(){
@@ -100,16 +72,22 @@
         return this._selectorOpts ? this._selectorOpts.defaultValue : undefined;
     },
 
-    getInstance: function(key, selector){
+    getInstance: function(opts){
+        if(!opts){
+            opts = {};
+        }
+
         if(this._selectorPrototype){
             return new this._selectorPrototype({
-                key: key,
-                selector: selector
+                key: opts.key,
+                selector: opts.selector,
+                schemePath: opts.schemePath
             });
         } else {
             return new this._selectorBean._selectorPrototype({
-                key: key,
-                selector: selector
+                key: opts.key,
+                selector: opts.selector,
+                schemePath: opts.schemePath
             });
         }
     },
@@ -144,7 +122,37 @@
         this._selectorOpts.checked = b;
     },
 
-    setValue: function(val){
+    removeAllValues: function(){
+    	if(!this._values){
+    		return;
+    	}
+    	
+        for(var i = this._values.length - 1; i > -1 ; i--){
+        	this._values.splice(i, 1);
+        }
+    },
+
+    removeValue: function(){
+        //
+    },
+
+    removeValues: function(){
+        //
+    },
+
+    setName: function(name){
+        this._selectorOpts.name = name;
+    },
+
+    setFullValue: function(val){
+        this._values[0] = val;
+    },
+
+    setValue: function(val){    	
+    	if(!this._values[0]){
+    		this._values[0] = {};
+    	}
+    	
         this._values[0].value = val;
     },
 
@@ -286,6 +294,8 @@
                 opts.linkedFields[scheme.linkTo].push(key);
                 wasUpdated = true;
             }
+
+            values.linkTo = scheme.linkTo;
         }
 
         return wasUpdated;

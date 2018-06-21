@@ -16,7 +16,7 @@
         regions: {
          render: 'group',
          name: 'Регионы',
-         collapsable: true,
+         collapsible: true,
          multiple: true,
          items: {
              item: {
@@ -99,6 +99,60 @@
                                          }
                                     }
                                  }
+                             },
+                             countriesInEng: {
+                                name: 'Карта мира (страны на англ)',
+                                 items: {
+                                    compareTo: {
+                                         render: 'select',
+                                         name: 'Сопоставление по',
+                                         items: {
+                                             name: {
+                                                 name: 'Название страны'
+                                             }
+                                         }
+                                    }
+                                 }
+                             },
+                             moscowAO: {
+                                name: 'Москва. Административные округа',
+                                items: {
+                                    compareTo: {
+                                        render: 'select',
+                                        name: 'Сопоставление по',
+                                        items: {
+                                            NAME: {
+                                                name: 'Имя'
+                                            },
+                                            OKATO: {
+                                                name: 'Код ОКАТО'
+                                            },
+                                            ABBREV: {
+                                                name: 'Аббревиатура'
+                                            }
+                                        }
+                                    }
+                                }
+                             },
+                             moscowMO: {
+                                name: 'Москва. Муниципальные образования',
+                                items: {
+                                    compareTo: {
+                                        render: 'select',
+                                        name: 'Сопоставление по',
+                                        items: {
+                                            NAME: {
+                                                name: 'Имя'
+                                            },
+                                            OKATO: {
+                                                name: 'Код ОКАТО'
+                                            },
+                                            OKTMO: {
+                                                name: 'Код OKTMO'
+                                            }
+                                        }
+                                    }
+                                }
                              }
                          }
                      },
@@ -244,6 +298,22 @@
                                 name: 'На регионе'
                             }
                         }
+                     },
+                     displayContent: {
+                        render: 'formatter',
+                        name: 'Контент',
+                        linkTo: 'dataSource',
+                        formatterOpts: {
+                            variables: [
+                                {
+                                    alias: 'Значение',
+                                    type: 'number',
+                                    value: 'y'
+                                }
+                            ]
+                        },
+                        valueType: 'string',
+                        defaultValue: '{y:,.0f}'
                      }
                  }
              }
@@ -252,7 +322,7 @@
         markers: {
             render: 'group',
             name: 'Маркеры',
-            collapsable: true,
+            collapsible: true,
             multiple: true,
             items: {
                 item: {
@@ -509,7 +579,23 @@
                                     }
                                 }
                             }
-                        }
+                        },
+                        displayContent: {
+                            render: 'formatter',
+                            name: 'Контент',
+                            linkTo: 'dataSource',
+                            formatterOpts: {
+                                variables: [
+                                    {
+                                        alias: 'Значение',
+                                        type: 'number',
+                                        value: 'y'
+                                    }
+                                ]
+                            }
+                        },
+                        valueType: 'string',
+                        defaultValue: '{y:,.0f}'
                     }
                 }
             }
@@ -517,13 +603,17 @@
         settings: {
             render: 'group',
             name: 'Общие настройки',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 formatter: {
                     render: 'formatter',
                     name: 'Форматирование значений',
                     formatterOpts: {
+                        basicSettings: {
+                            type: 'number',
+                            value: 'y'
+                        },
                     	variables: [
                     		{
                     			alias: 'Значение',
@@ -597,6 +687,43 @@
                  }
              }
          }
+        },
+        header: {
+	        render: 'group',
+	        name: 'Заголовок',
+            collapsible: true,
+            collapsed: true,
+            items: {
+                text: {
+                    render: 'item',
+                    name: 'Текст',
+                    valueType: 'string',
+                    defaultValue: ''
+                },
+                fontColor: {
+                    render: 'item',
+                    name: 'Цвет шрифта',
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#333333'
+                },
+                fontSize: {
+                    render: 'item',
+                    name: 'Размер шрифта',
+                    valueType: 'number',
+                    defaultValue: 18
+                },
+                x: {
+                    render: 'item',
+                    name: 'X',
+                    valueType: 'number'
+                },
+                y: {
+                    render: 'item',
+                    name: 'Y',
+                    valueType: 'number',
+                    defaultValue: 10
+                }
+            }
         }
     },
     $client: {
@@ -607,6 +734,9 @@
 
             this.container = this.$('<div class="container"></div>');
             this.append(this.container);
+
+            this._widgetElements.header = this.$('<span class="header"></span>');
+            this.append(this._widgetElements.header);
 
             this.addClass('mapWidget');
             this.loadCss('map.css');
@@ -650,6 +780,10 @@
         },
         _legends: [],
         _styles: null,
+        _widgetElements: {
+            header: null,
+            map: null
+        },
 
         refresh: function(opts){
             // if filter source is current widget
@@ -683,7 +817,7 @@
                 regionsContext = this.getContext().find('regions').values(),
                 markersContext = this.getContext().find('markers').values();;
 
-            if(globalFilters){
+            if(globalFilters && Object.keys(globalFilters).length > 0){
                 var bindings = [],
                     newFilters = {};
 
@@ -715,7 +849,7 @@
                     }
                 }
 
-                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash){
+                if(Object.keys(globalFilters).length > 0 && this.createFilterHash(globalFilters) === this._curFilterHash || Object.keys(globalFilters).length === 0 && !this._curFilterHash && this.map){
                     return;
                 } else {
                     this._curFilterHash = Object.keys(globalFilters).length > 0 ? this.createFilterHash(globalFilters) : undefined;
@@ -734,7 +868,19 @@
 
             try{
                 if(!this._styles){
+                    // set header
+                    /*********/
+                    var headerContext = this.getContext().find('header');
+                    this._widgetElements.header.text(headerContext.find('text').value());
+                    this._widgetElements.header.css('color', headerContext.find('fontColor').value());
+                    this._widgetElements.header.css('font-size', headerContext.find('fontSize').value());
+                    this._widgetElements.header.css('left', this._isDefined(headerContext.find('x').value(), 'calc(50% - ' + (this._widgetElements.header.width() / 2) + 'px)'));
+                    this._widgetElements.header.css('top', headerContext.find('y').value());
+                    /*********/
+
                     this._styles = {
+                        contentBindings: [],
+                        contentData: [],
                         regions: [],
                         markers: [],
                         embeddedBindings: [],
@@ -793,6 +939,9 @@
                                 break;
                         }
 
+                        this._styles.contentBindings = this._styles.contentBindings.concat(regionsContext[i].find('displayContent').getBindingFields());
+                        this._styles.regions[i].displayContent = regionsContext[i].find('displayContent').value();
+
                         this._styles.regions[i].defaultColor = regionsContext[i].find('defaultColor').value();
                         this._styles.regions[i].borderColor = regionsContext[i].find('borderColor').value();
                         this._styles.regions[i].borderWidth = regionsContext[i].find('borderWidth').value();
@@ -833,6 +982,24 @@
                                         type: 'TopoJSON'
                                     }));
                                     break;
+                                case 'moscowAO':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/moscowAO.json'
+                                    }));
+                                    break;
+                                case 'moscowMO':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/moscowMO.json'
+                                    }));
+                                    break;
+                                case 'countriesInEng':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/countriesInEng.json'
+                                    }));
+                                    break;
                             }
                         }
                     }
@@ -855,6 +1022,9 @@
 
                         this._styles.markers[i].coordinatesX = markersContext[i].find('coordinatesX');
                         this._styles.markers[i].coordinatesY = markersContext[i].find('coordinatesY');
+
+                        this._styles.contentBindings = this._styles.contentBindings.concat(markersContext[i].find('displayContent').getBindingFields());
+                        this._styles.markers[i].displayContent = markersContext[i].find('displayContent').value();
 
                         switch(markerType){
                             case 'defaultMarker':
@@ -982,6 +1152,8 @@
                 markers = [],
                 bindings = [];
 
+            this._styles.contentData = [];
+
             function fetch(isReset){
                 $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
                     try{
@@ -989,6 +1161,8 @@
                             resultProcessing();
                             return;
                         }
+
+                        $this.parseFormatterData($this._styles.contentBindings, $this._styles.contentData, res);
 
                         while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
                             // load regions
@@ -1320,30 +1494,33 @@
 
                             $this._maps[i].map = L.geoJSON($this._maps[i].data, {
                                 onEachFeature: function(feature, layer){
-                                    var reg = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data);
+                                    var regInfo = $this.findRegion(feature.properties[$this._maps[i].compareTo], data.regions[i].data),
+                                        reg = regInfo.region;
 
                                     layer.setStyle(regionStyle(i, reg));
 
                                     // set values properties
                                     /*********/
                                     if($this._styles.regions[i].valueDisplayType === 'legend'){
-                                        layer.on({
-                                            mouseover: function(evt){
-                                                if(reg){
-                                                    $this._infoControl.update(reg.region, reg.value);
+                                        (function(i, index){
+                                            layer.on({
+                                                mouseover: function(evt){
+                                                    if(reg){
+                                                        $this._infoControl.update($this._format($this._styles.regions[i].displayContent, index, {y: reg.value}));
+                                                    }
+                                                },
+                                                mouseout: function(evt){
+                                                    $this._infoControl.update();
                                                 }
-                                            },
-                                            mouseout: function(evt){
-                                                $this._infoControl.update();
-                                            }
-                                        });
+                                            });
+                                        })(i, regInfo.index);
                                     } else {
                                         if(!reg){
                                             layer.bindPopup(feature.properties[$this._maps[i].compareTo] + ': Нет данных', {closeButton: false, autoPan: false});
                                             return;
                                         }
 
-                                        layer.bindPopup(reg.region + ': ' + Formatter.format($this._styles.settings.formatter, {y: reg.value}), {closeButton: false, autoPan: false});
+                                        layer.bindPopup(reg.region + ': ' + $this._format($this._styles.regions[i].displayContent, i, {y: reg.value}), {closeButton: false, autoPan: false});
 
                                         layer.on({
                                             mouseover: function(evt){
@@ -1358,7 +1535,7 @@
                                     }
 
                                     if($this._styles.regions[i].showValuesPermanent){
-                                        layer.bindTooltip(String(Formatter.format($this._styles.settings.formatter, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
+                                        layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, i, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
 
@@ -1432,7 +1609,7 @@
                             text += ' : ';
                         }
 
-                        text += Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]});
+                        text += $this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]});
                     }
 
                     return text;
@@ -1464,7 +1641,7 @@
                                 }
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
-                                    (function(name, value){
+                                    (function(content){
                                         marker.on({
                                             mouseover: function(evt){
                                                 $this._infoControl.update(name, value);
@@ -1473,7 +1650,7 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j]) ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
+                                    })($this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}));
                                 }
 
                                 markersGroups[i].push(marker);
@@ -1526,7 +1703,7 @@
                                 }
 
                                 if(this._styles.markers[i].valueDisplayType === 'onObject' && data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j])){
-                                    html = '<span>' + Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) + '</span>';
+                                    html = '<span>' + $this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}) + '</span>';
                                 }
 
                                 if($this._styles.markers[i].fixedSize){
@@ -1561,7 +1738,7 @@
                                 }
 
                                 if(data.markers[i].markerValues && this._styles.markers[i].valueDisplayType === 'legend'){
-                                    (function(name, value){
+                                    (function(content){
                                         marker.on({
                                             mouseover: function(evt){
                                                 $this._infoControl.update(name, value);
@@ -1570,7 +1747,7 @@
                                                 $this._infoControl.update();
                                             }
                                         });
-                                    })(data.markers[i].markerNames ? data.markers[i].markerNames[j] : '', data.markers[i].markerValues && JSB.isDefined(data.markers[i].markerValues[j]) ? Formatter.format($this._styles.settings.formatter, {y: data.markers[i].markerValues[j]}) : '');
+                                    })($this._format($this._styles.markers[i].displayContent, i, {y: data.markers[i].markerValues[j]}));
                                 }
 
                                 markersGroups[i].push(marker);
@@ -1771,21 +1948,21 @@
             this._infoControl.onAdd = function(){
                 var legend = $this.$('<div class="infoControl"><h4>' + $this._styles.settings.infoControl.header + '</h4></div>');
 
-                this._name = $this.$('<p class="name"></p>');
-                legend.append(this._name);
-
-                this._value = $this.$('<p class="value"></p>');
-                legend.append(this._value);
+                this._content = $this.$('<div class="content"></div>');
+                legend.append(this._content);
 
                 return legend.get(0);
             };
 
-            this._infoControl.update = function(name, value){
-                this._name.text(name ? name : '');
-                this._value.text(value ? value : '');
+            this._infoControl.update = function(content){
+                this._content.empty().append(content);
             };
 
             this._infoControl.addTo(this.map);
+        },
+
+        _format: function(format, i, obj){
+            return Formatter.format(format, JSB.merge(obj || {}, this._styles.contentData[i]));
         },
 
         _resizeLegend: function(legend){
@@ -1803,9 +1980,13 @@
             list.width(max + 25);
         },
 
+        _isDefined: function(val, def){
+            return JSB.isDefined(val) ? val : def;
+        },
+
         findRegion: function(region, array){
             if(!region){
-                return;
+                return {};
             }
 
             for(var j = 0; j < array.length; j++){
@@ -1815,9 +1996,14 @@
                 }
 
                 if(name.indexOf(region) > -1){
-                    return array[j];
+                    return {
+                        index: j,
+                        region: array[j]
+                    };
                 }
             }
+
+            return {};
         }
     }
 }

@@ -480,6 +480,13 @@
 				}
 			};
 		},
+		
+		getArtifactSize: function(name){
+			if(!this.existsArtifact(name)){
+				throw new Error('Missing artifact "'+name+'" in entry: ' + this.getId());
+			}
+			return this._artifactStore.size(this, name);
+		},
 
 		existsArtifact: function(name) {
 			if(!JSB.isString(name)){
@@ -500,7 +507,7 @@
 		    return this._artifactStore.read(this, name, opts);
 		},
 
-		storeArtifact: function(name, a) {
+		storeArtifact: function(name, a, opts) {
 			if(!JSB.isString(name)){
 				throw new Error('Invalid artifact name');
 			}
@@ -525,13 +532,13 @@
 			    	throw new Error('Invalid artifact type');
 			    }
 			    this._artifactCount = Object.keys(artifacts).length;
-			    this._artifactStore.write(this, name, a);
-			    if(bNeedStoreEntry){
-			    	this._markStored(false);
-			    }
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
+		    this._artifactStore.write(this, name, a, opts);
+		    if(bNeedStoreEntry){
+		    	this._markStored(false);
+		    }
 		},
 
 		removeArtifact: function(name) {
@@ -548,6 +555,25 @@
 				delete this._artifacts[name];
 				this._artifactCount = Object.keys(this._artifacts).length;
 			    this._artifactStore.remove(this, name);
+				this._markStored(false);
+			} finally {
+				JSB.getLocker().unlock(mtxName);
+			}
+		},
+		
+		renameArtifact: function(name, newName){
+			if(!JSB.isString(name)){
+				throw new Error('Invalid artifact name');
+			}
+		    if(!this.existsArtifact(name)){
+		    	return;
+		    }
+		    var mtxName = 'JSB.Workspace.Entry.artifacts.' + this.getId();
+			JSB.getLocker().lock(mtxName);
+			try {
+			    this._artifactStore.rename(this, name, newName);
+			    this._artifacts[newName] = this._artifacts[name];
+				delete this._artifacts[name];
 				this._markStored(false);
 			} finally {
 				JSB.getLocker().unlock(mtxName);

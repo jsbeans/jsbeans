@@ -1,0 +1,44 @@
+.databaseBindingRender > .name {
+    width: 100px;
+    display: inline-block;
+    line-height: 22px;
+    font-size: 15px;
+    color: #73879C;
+    font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
+    margin-right: 5px;
+}
+
+.databaseBindingRender > .item {
+    height: 34px;
+    background: rgba(24, 108, 138, 0.2);
+    color: #555;
+    border: 2px dashed rgba(2, 47, 78, 0.2);
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 15px;
+    text-align: center;
+    display: inline-block;
+    vertical-align: middle;
+    min-width: 200px;
+    max-width: 100%;
+}
+
+.databaseBindingRender > .item.filled {
+    min-width: initial;
+}
+
+.databaseBindingRender > .item > * {
+    vertical-align: middle;
+}
+
+.databaseBindingRender > .item > .widgetRenderer {
+    max-width: calc(100% - 17px);
+}
+
+.databaseBindingRender > .item > .btnDelete {
+    margin-left: 5px;
+}
+
+.databaseBindingRender > .item > .error {
+    color: darkred;
+}

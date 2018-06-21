@@ -5,12 +5,13 @@
 }
 
 .progressBar > div.serie {
-	padding: 2px;
-	
+	min-height: 14px;
+    position: relative;
 }
 
 .progressBar > div.serie > svg {
-	min-height: 8px;
+	min-height: 14px;
+    padding: 3px 3px;
 }
 
 .progressBar > div.serie > svg > path {}
@@ -30,11 +31,12 @@
     color: #fff;
     border-radius: 4px;
     padding: 0 2px;
+	opacity: 0.9;
 }
 
 .progressBar > div.serie[type="Line"] > .progressbar-text {
 	top: 50%;
-	right: 2px;
+	right: 0;
 }
 
 .progressBar > div.serie[type="Circle"] > .progressbar-text {

@@ -15,93 +15,47 @@
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
 }
 
-.formatter > h3 {
+.formatter > .settingsTypeSwitch {
+    float: right;
+}
+
+.formatter .typeSettings > .label {
+    display: block;
+}
+
+.formatter .typeSettings > .label > input {
+    margin: 5px 0 5px 5px;
+}
+
+.formatter .typeSettings > .dateLabel > i {
+    color: #0035ff82;
+    margin-left: 5px;
+}
+
+.formatter > .basicSettings,
+.formatter > .advancedSettings {
+    margin: 5px 0 0 10px;
+}
+
+.formatter > .basicSettings > .label {
+    display: block;
+    margin: 5px 0;
+}
+
+.formatter > .basicSettings > .label > input {
+    margin-left: 5px;
+}
+
+.formatter .typeSettings > .label.decimalsLabel > input {
+    width: 20px;
+}
+
+.formatter > .advancedSettings > h3 {
     display: block;
     font-weight: 400;
 }
 
-.formatter > .variablesBlock > .variableItem {
-    border-bottom: 1px solid lightgrey;
-    padding: 5px 0;
-}
-
-.formatter > .variablesBlock > .variableItem > * {
-    vertical-align: middle;
-}
-
-.formatter > .variablesBlock > .variableItem > .selectLabel {
-    display: inline-block;
-    width: 40%;
-    vertical-align: middle;
-}
-
-.formatter > .variablesBlock > .variableItem > .selectLabel > .jsb-select {
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.formatter > .variablesBlock > .variableItem > .editorLabel {
-    display: inline-block;
-    width: 50%;
-}
-
-.formatter > .variablesBlock > .variableItem > .editorLabel > .jsb-editor {
-    margin-left: 5px;
-    width: 200px;
-    padding: 2px 4px;
-    font-size: 14px;
-    color: #555;
-    background-color: #fff;
-    background-image: none;
-    border: 1px solid #ccc;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-    border-radius: 3px;
-}
-
-.formatter > .variablesBlock > .variableItem > .btnDelete {
-
-}
-
-.formatter > .variablesBlock > .variableItem > .typeSettings {
-    padding: 5px;
-}
-
-.formatter > .variablesBlock > .variableItem > .typeSettings > .jsb-checkbox {
-    display: block;
-    margin-bottom: 5px;
-}
-
-.formatter > .variablesBlock > .variableItem > .typeSettings > .label > input {
-    margin-left: 5px;
-    padding: 2px 4px;
-    font-size: 14px;
-    color: #555;
-    background-color: #fff;
-    background-image: none;
-    border: 1px solid #ccc;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-    border-radius: 3px;
-}
-
-.formatter > .variablesBlock > .variableItem > .typeSettings > .label.decimalsLabel > input {
-    width: 20px;
-}
-
-.formatter > .variablesBlock > .variableItem > .typeSettings > .label.dateLabel > input {
-    width: 100px;
-}
-
-.formatter > .addVarBtn {
-
-}
-
-.formatter > .addVarToTempBtn {
-    margin-left: 5px;
-}
-
-.formatter > .editBlock {
+.formatter > .advancedSettings > .editBlock {
     -moz-appearance: textfield-multiline;
     -webkit-appearance: textarea;
     border: 1px solid gray;
@@ -112,6 +66,7 @@
     resize: both;
     display: inline-block;
     min-width: 300px;
+    max-width: calc(100% - 30px);
 
     color: #555;
     border: 1px solid #ccc;
@@ -119,7 +74,38 @@
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
 }
 
-.formatter > .editBlock > span.variable {
+.formatter > .advancedSettings > .variablesBlock > .variableItem > * {
+    vertical-align: middle;
+}
+
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .selectLabel {
+    display: inline-block;
+    width: 40%;
+    vertical-align: middle;
+}
+
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .selectLabel > .jsb-select,
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .selectLabel > .schemeSelector {
+    display: block;
+    vertical-align: middle;
+}
+
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .editorLabel {
+    margin-left: 5px;
+    display: inline-block;
+    width: 40%;
+}
+
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .editorLabel > input {
+    display: block;
+    width: 100%;
+}
+
+.formatter > .advancedSettings > .variablesBlock > .variableItem > .btnDelete {
+    margin-left: 5px;
+}
+
+.formatter > .advancedSettings > .editBlock > span.variable {
     border: 1px solid #00800091;
     background-color: #83ca8b;
     color: white;
@@ -128,7 +114,16 @@
     margin: 0 2px;
 }
 
-.formatter > .dropDown {
+.formatter > .advancedSettings > .addVar{
+    margin-top: 5px;
+}
+
+.formatter > .advancedSettings > .addVarToTextBtn {
+    margin-left: 5px;
+    vertical-align: top;
+}
+
+.formatter > .advancedSettings > .dropDown {
     position: absolute;
     min-width: 150px;
     top: 32px;
@@ -140,12 +135,11 @@
     overflow-y: auto;
 }
 
-
-.formatter > .dropDown:empty {
+.formatter > .advancedSettings > .dropDown:empty {
     background: royalblue;
 }
 
-.formatter > .dropDown > li {
+.formatter > .advancedSettings > .dropDown > li {
     position: relative;
     list-style: none;
     cursor: pointer;
@@ -153,12 +147,12 @@
     border: 1px solid transparent;
 }
 
-.formatter > .dropDown > li:hover {
+.formatter > .advancedSettings > .dropDown > li:hover {
     background: rgba(220, 220, 220, 0.45);
     border: 1px solid rgb(158, 158, 158);
 }
 
-.formatter > .dropDown > li.selected {
+.formatter > .advancedSettings > .dropDown > li.selected {
     background: rgb(220, 220, 220);
     border: 1px solid rgb(158, 158, 158);
 }

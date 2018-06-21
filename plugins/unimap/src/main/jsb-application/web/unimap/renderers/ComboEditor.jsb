@@ -105,6 +105,15 @@
                     }
 	            }
 	        }
+	        if(this._scheme.items && Object.keys(this._scheme.items).length > 0){
+	        	for(var itemKey in this._scheme.items){
+	        		var val = this._scheme.items[itemKey];
+	        		opList.push({
+                        key: itemKey,
+                        value: val.value || val.name 
+                    });
+	        	}
+	        }
 
 	        this._optionsList = opList;
 	    },

@@ -12,6 +12,22 @@
 	        if(this._scheme.optional){
 	            this.addClass('optional');
 
+	            function hideInput(b){
+                    if(b){
+                        if($this._scheme.multiple){
+                            $this.multipleContainer.removeClass('hidden');
+                        } else {
+                            $this._editors[0] && $this._editors[0].removeClass('hidden');
+                        }
+                    } else {
+                        if($this._scheme.multiple){
+                            $this.multipleContainer.addClass('hidden');
+                        } else {
+                            $this._editors[0] && $this._editors[0].addClass('hidden');
+                        }
+                    }
+	            }
+
 	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 
 	            this.checkBox = new Checkbox({
@@ -20,14 +36,16 @@
 	                onchange: function(b){
 	                    $this._values.checked = b;
 
+	                    hideInput(b);
+
 	                    $this.options.onchange.call($this, $this._values);
 	                }
 	            });
 
 	            this.prepend(this.checkBox);
 
-	            this.createRequireDesc(this.checkBox);
-	            this.createDescription(this.checkBox);
+	            this.createRequireDesc(this.checkBox.getElement().find('.caption'));
+	            this.createDescription(this.checkBox.getElement().find('.caption'));
 	        } else {
                 this._name = this.$('<span class="name">' + this._scheme.name + '</span>');
                 this.append(this._name);
@@ -62,6 +80,10 @@
 	            if(!this._scheme.multiple){
 	                this.addItem(null, 0);
                 }
+	        }
+	        
+	        if(this._scheme.optional){
+                hideInput(this._values.checked);
 	        }
 	    },
 

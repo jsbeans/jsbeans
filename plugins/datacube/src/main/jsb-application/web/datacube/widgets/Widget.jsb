@@ -48,24 +48,7 @@
 
 		addFilter: function(fDesc){
 		    if(!this.filterManager){ return; }
-
-			if(!fDesc.sourceId){
-				var sourceArr = this.getSourceIds();
-				if(sourceArr && sourceArr.length > 0){
-					fDesc.sourceId = sourceArr[0];
-				}
-			}
-
-			if(fDesc.sourceId){
-				if(!this.sourceMap[fDesc.sourceId] || !this.sources[fDesc.sourceId]){
-					throw new Error('Invalid sourceId');
-				}
-				fDesc.source = this.sources[fDesc.sourceId];
-
-				return this.filterManager.addFilter(fDesc, this.sourceMap[fDesc.sourceId], this);
-			}
-
-			throw new Error('Missing sourceId');
+			return this.filterManager.addFilter(this.translateFilter(fDesc));
 		},
 		
 		getCubeField: function(field){
@@ -73,8 +56,11 @@
 				if(JSB.isString(rValue)){
 					return rValue;
 				} else if(JSB.isObject(rValue)){
-					if(JSB.isDefined(rValue.$field) && JSB.isString(rValue.$field)){
-						return rValue.$field;
+					var d = ['$field','$first','$last','$any'];
+					for(var i = 0; i < d.length; i++){
+						if(JSB.isDefined(rValue[d[i]]) && JSB.isString(rValue[d[i]])){
+							return rValue[d[i]];
+						}
 					}
 					return null;
 				} else {
@@ -103,7 +89,7 @@
 		clearFilters: function(){
 		    if(!this.filterManager){ return; }
 
-			this.filterManager.clearFilters(this);
+			this.filterManager.clearFilters();
 		},
 
 		createFilterHash: function(filter){
@@ -213,6 +199,7 @@
 
             // construct main layer
             item.fetchOpts.layers.main = $this.getLayerQuery('main', item.source);
+            
             if(opts.select){
                 item.fetchOpts.layers.main.$select = opts.select;
             }
@@ -267,30 +254,43 @@
         },
 
 		getBindingsData: function(callback){
-            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding');
+            var sourceBindings = this.getContext('export').findRendersByName('sourceBinding'),
+                result = [];
 
-            this.fetchBinding(sourceBindings[0], {readAll: true, reset: true}, function(data){
-                var result = [],
-                    res;
-
-                result.push(Object.keys(data[0]));
-
-                for(var i = 0; i < data.length; i++){
-                    res = [];
-
-                    for(var j in data[i]){
-                        if(JSB.isObject(data[i][j])){
-                            res.push(data[i][j].main);
-                        } else {
-                            res.push(data[i][j]);
-                        }
+            function fetch(isReset){
+                $this.fetchBinding(sourceBindings[0], { fetchSize: 100, reset: isReset }, function(data){
+                    if(data.length === 0){
+                        callback.call($this, result);
+                        $this.getElement().loader('hide');
+                        return;
                     }
 
-                    result.push(res);
-                }
+                    if(result.length === 0){
+                        result.push(Object.keys(data[0]));
+                    }
 
-                callback.call(this, result);
-            });
+                    var res;
+
+                    for(var i = 0; i < data.length; i++){
+                        res = [];
+
+                        for(var j in data[i]){
+                            if(JSB.isObject(data[i][j])){
+                                res.push(data[i][j].main);
+                            } else {
+                                res.push(data[i][j]);
+                            }
+                        }
+
+                        result.push(res);
+                    }
+
+                    fetch();
+                });
+            }
+
+            this.getElement().loader();
+            fetch(true);
 		},
 
 		getCache: function(){
@@ -388,6 +388,7 @@
 						    filterDesc = $this.filterManager.constructFilterBySource($this.sources[sourceId]);
                         }
 					}
+					
 					if(filterDesc){
 						if(filterDesc.filter){
 							query.$cubeFilter = filterDesc.filter;
@@ -425,6 +426,7 @@
 		},
 
 		getLocalFilters: function(){
+			if(!this.filterManager){ return; }
 			return this.sourceFilterMap;
 		},
 
@@ -439,10 +441,11 @@
 		    }
 
 		    var source = selector.binding().source;
-
+		    
             if(this.sourceFilterMap && this.sourceFilterMap[source]){
                 return JSB().clone($this.sourceFilterMap[source]);
             }
+            
 		},
 
 		getValues: function(){
@@ -452,10 +455,24 @@
 		getWrapper: function(){
 			return this.wrapper;
 		},
+		
+		translateFilter: function(fDesc){
+			if(!this.filterManager){ return; }
+			var source = null;
+		    var sourceArr = this.getSourceIds();
+			if(sourceArr && sourceArr.length > 0){
+				source = this.sources[sourceArr[0]];
+			}
+		    
+			if(source){
+				fDesc = this.filterManager.translateFilter(fDesc, source);
+			}
+			return fDesc;
+		},
 
 		hasFilter: function(fDesc){
 		    if(!this.filterManager){ return; }
-			return this.filterManager.hasFilter(fDesc);
+			return this.filterManager.hasFilter(this.translateFilter(fDesc));
 		},
 
 		localizeFilters: function(){
@@ -463,8 +480,23 @@
 			this.sourceFilterMap = {};
 			for(var srcId in this.sources){
 				var src = this.sources[srcId];
-				this.sourceFilterMap[srcId] = this.filterManager.localizeFilter(src);
+				
+				this.sourceFilterMap[srcId] = this.filterManager.getFiltersBySource(src);
 			}
+		},
+
+		parseFormatterData: function(bindings, dataArr, res){
+            if(bindings.length > 0){
+                for(var j = 0; j < res.length; j++){
+                    var item = {};
+
+                    for(var i = 0; i < bindings.length; i++){
+                        item[bindings[i]] = res[j][bindings[i]].main;
+                    }
+
+                    dataArr.push(item);
+                }
+            }
 		},
 
 		refresh: function(opts){

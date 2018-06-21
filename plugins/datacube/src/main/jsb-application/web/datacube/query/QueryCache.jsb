@@ -9,6 +9,7 @@
 		cube: null,
 		owner: null,
 		loaded: false,
+		storeQueued: false,
 		batchSize: 100,
 		closeIteratorTimeout: 10000,
 		invalidateInterval: 0,
@@ -112,9 +113,14 @@
 		},
 		
 		store: function(){
+			if(this.storeQueued){
+				return;
+			}
+			this.storeQueued = true;
 			this.load();
 			JSB.defer(function(){
 				$this.lock('DataCube.Query.QueryCache.store');
+				$this.storeQueued = false;
 				
 				function _prepareStore(obj){
 					if(!obj){
@@ -149,26 +155,29 @@
 					for(var i = 0; i < idArr.length; i++){
 						var qId = idArr[i];
 						$this.lock('cache_' + qId);
-						var qDesc = $this.cacheMap[qId];
-						if(qDesc && !qDesc.provider){
-							// prepare buffer
-							var prepBuffer = [];
-							for(var j = 0; j < qDesc.buffer.length; j++){
-								prepBuffer.push(_prepareStore(qDesc.buffer[j]));
+						try {
+							var qDesc = $this.cacheMap[qId];
+							if(qDesc && !qDesc.provider){
+								// prepare buffer
+								var prepBuffer = [];
+								for(var j = 0; j < qDesc.buffer.length; j++){
+									prepBuffer.push(_prepareStore(qDesc.buffer[j]));
+								}
+								
+								art[qId] = {
+									qId: qId,
+									query: qDesc.query,
+									params: qDesc.params,
+									complete: qDesc.complete,
+									lastUpdated: qDesc.lastUpdated,
+									lastUsed: qDesc.lastUsed,
+									buffer: prepBuffer,
+									cells: qDesc.cells
+								};
 							}
-							
-							art[qId] = {
-								qId: qId,
-								query: qDesc.query,
-								params: qDesc.params,
-								complete: qDesc.complete,
-								lastUpdated: qDesc.lastUpdated,
-								lastUsed: qDesc.lastUsed,
-								buffer: prepBuffer,
-								cells: qDesc.cells
-							};
+						} finally {
+							$this.unlock('cache_' + qId);
 						}
-						$this.unlock('cache_' + qId);
 					}
 					if(Object.keys(art).length > 0){
 						$this.owner.storeArtifact('.querycache', art);
@@ -365,19 +374,22 @@
 				curDesc.it.close();
 			}
 			$this.lock('cache_' + qId);
-			$this.cacheMap[qId] = {
-				qId: qId,
-				query: otherDesc.query,
-				params: otherDesc.params,
-				provider: otherDesc.provider,
-				complete: otherDesc.complete,
-				lastUpdated: otherDesc.lastUpdated,
-				lastUsed: Date.now(),
-				it: null,
-				buffer: JSB.clone(otherDesc.buffer),
-				cells: otherDesc.cells
-			};
-			$this.unlock('cache_' + qId);
+			try {
+				$this.cacheMap[qId] = {
+					qId: qId,
+					query: otherDesc.query,
+					params: otherDesc.params,
+					provider: otherDesc.provider,
+					complete: otherDesc.complete,
+					lastUpdated: otherDesc.lastUpdated,
+					lastUsed: Date.now(),
+					it: null,
+					buffer: JSB.clone(otherDesc.buffer),
+					cells: otherDesc.cells
+				};
+			} finally {
+				$this.unlock('cache_' + qId);
+			}
 			$this.store();
 		},
 		

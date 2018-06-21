@@ -105,6 +105,7 @@
 */
 ._dwp_tabview._dwp_tabBottom > ._dwp_tabPane > li._dwp_tab.active {
 	border-top: 1px solid rgba(0,0,0,0);
+	border-bottom: 1px solid #ccc;
 }
 
 ._dwp_tabview._dwp_tabLeft > ._dwp_tabPane > li._dwp_tab.active {
@@ -140,7 +141,6 @@
 ._dwp_tabview > ._dwp_tabPane > li._dwp_tab > ._dwp_tabText {
 	display: inline-block;
 	vertical-align: middle;
-	margin-right: 3px;
 	text-shadow: 1px 1px #fff;
 	color: #666;
 }

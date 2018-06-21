@@ -11,7 +11,7 @@
 			this.getElement().append(`#dot
 			    <div class="check-elem">
 			        <input type="checkbox" class="flat" style="position: absolute; opacity: 0;">
-			        <ins class="check-helper" style="position: absolute; top: 0%; left: 0%; display: block; width: 100%; height: 100%; margin: 0px; padding: 0px; background: rgb(255, 255, 255); border: 0px; opacity: 0;"></ins>
+			        <ins class="check-helper"></ins>
                 </div>
                 <span class="caption"></span>
                 <div class="contents">
@@ -62,7 +62,7 @@
 			return this.options.enabled;
 		},
 
-		setChecked: function(b, dontNotify){
+		setChecked: function(b, hideEvent){
 			this.find('> .check-elem > input').prop('checked', b);
 
 			if(b){
@@ -73,8 +73,27 @@
 
 			this.enableContents(b);
 
-			if(this.options.onchange && !dontNotify){
+			if(this.options.onchange && !hideEvent){
 				this.options.onchange.call(this, b);
+			}
+		},
+
+		toggleChecked: function(hideEvent){
+		    var input = this.find('> .check-elem > input'),
+		        checked = input.prop('checked');
+
+            input.prop('checked', !checked);
+
+			if(!checked){
+			    this.find('> .check-elem').addClass('checked');
+			} else {
+			    this.find('> .check-elem').removeClass('checked');
+			}
+
+			this.enableContents(!checked);
+
+			if(this.options.onchange && !hideEvent){
+				this.options.onchange.call(this, !checked);
 			}
 		},
 

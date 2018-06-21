@@ -81,7 +81,7 @@
                 name: 'Связи',
                 key: 'graphGroups',
                 multiple: true,
-                collapsable: true,
+                collapsible: true,
                 items: [
                 {
                    name: 'Начальный элемент',
@@ -111,7 +111,7 @@
                 type: 'group',
                 key: 'viewTypes',
                 multiple: 'true',
-                collapsable: true,
+                collapsible: true,
                 items:[
                 {
                     name: 'Элемент',
@@ -206,7 +206,7 @@
                 type: 'group',
                 name: 'Дополнительные настройки алгоритма расположения',
                 key: 'advancedSettings',
-                collapsable: true,
+                collapsible: true,
                 collapsed: true,
                 items: [
                 {

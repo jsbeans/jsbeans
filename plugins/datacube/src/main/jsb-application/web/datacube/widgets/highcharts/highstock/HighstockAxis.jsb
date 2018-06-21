@@ -5,7 +5,7 @@
         xAxis: {
 	        render: 'group',
 	        name: 'Ось Х',
-            collapsable: true,
+            collapsible: true,
             items: {
                 xAxisDate: {
                     render: 'dataBinding',
@@ -15,7 +15,7 @@
                 labels: {
                     render: 'group',
                     name: 'Подписи',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         enabled: {
                             render: 'item',
@@ -38,6 +38,10 @@
                             render: 'formatter',
                             name: 'Формат',
                             formatterOpts: {
+                                basicSettings: {
+                                    type: 'date',
+                                    value: 'value'
+                                },
                                 variables: [
                                     {
                                         alias: 'Значение',
@@ -47,7 +51,7 @@
                                 ]
                             },
                             valueType: 'string',
-                            //defaultValue: '{value}'
+                            defaultValue: '{value}'
                         },
                         fontColor: {
                             render: 'item',
@@ -66,7 +70,7 @@
                 title: {
                     render: 'group',
                     name: 'Заголовок оси',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         text: {
                             render: 'item',
@@ -188,7 +192,7 @@
         rangeSelector: {
 	        render: 'group',
 	        name: 'Селектор диапазона',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
@@ -245,7 +249,7 @@
                 buttonSettings: {
                     render: 'group',
                     name: 'Настройки кнопок',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         allButtonsEnabled: {
                             render: 'item',
@@ -290,7 +294,7 @@
                             render: 'group',
                             name: 'Кнопки',
                             multiple: true,
-                            collapsable: true,
+                            collapsible: true,
                             collapsed: true,
                             items: {
                                 type: {
@@ -446,7 +450,7 @@
                         buttonTheme: {
                             render: 'group',
                             name: 'Стиль кнопок',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 height: {
                                     render: 'item',
@@ -473,7 +477,7 @@
                 inputSettings: {
                     render: 'group',
                     name: 'Настройки полей ввода',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         inputEnabled: {
                             render: 'item',
@@ -569,8 +573,19 @@
                     inputSettings = rangeSelector.find('inputSettings');
 
                 for(var i = 0; i < buttonsContext.length; i++){
-                    var dataGrouping = buttonsContext[i].find('dataGrouping'),
-                        units = dataGrouping.find('groupUnits').value();
+                    var dataGroupingSel = buttonsContext[i].find('dataGrouping'),
+                        units = dataGroupingSel.find('groupUnits').value(),
+                        dataGrouping;
+
+                    if(dataGroupingSel.checked()){
+                        dataGrouping = {
+                            approximation: dataGroupingSel.find('approximation').value(),
+                            forced: dataGroupingSel.find('forced').checked(),
+                            groupAll: dataGroupingSel.find('groupAll').checked(),
+                            smoothed: dataGroupingSel.find('smoothed').checked(),
+                            units: [[dataGroupingSel.find('groupBy').value(), units ? units.split(',') : 1]]
+                        }
+                    }
 
                     buttons.push({
                         type: buttonsContext[i].find('type').value(),
@@ -578,13 +593,7 @@
                         text: buttonsContext[i].find('text').value(),
                         offsetMin: buttonsContext[i].find('offsetMin').value(),
                         offsetMax: buttonsContext[i].find('offsetMax').value(),
-                        dataGrouping: {
-                            approximation: dataGrouping.find('approximation').value(),
-                            forced: dataGrouping.find('forced').checked(),
-                            groupAll: dataGrouping.find('groupAll').checked(),
-                            smoothed: dataGrouping.find('smoothed').checked(),
-                            units: [[dataGrouping.find('groupBy').value(), units ? units.split(',') : 1]]
-                        }
+                        dataGrouping: dataGrouping
                     });
                 }
 
@@ -653,7 +662,7 @@
                         crosshair: xAxisContext.find('crosshair').checked(),
                         events: {
                             setExtremes: function(evt){
-                                if(evt.trigger === 'navigator' && evt.DOMEvent && evt.DOMEvent.type == 'mouseup' || evt.trigger === 'rangeSelectorInput') {
+                                if(evt.trigger === 'navigator' && evt.DOMEvent && evt.DOMEvent.type == 'mouseup' || evt.trigger === 'rangeSelectorInput' || evt.trigger === 'rangeSelectorButton') {
                                     var extremes = this.getExtremes();
 
                                     $this._changeRangeFilter({

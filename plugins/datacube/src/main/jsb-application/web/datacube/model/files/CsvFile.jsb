@@ -2,11 +2,27 @@
 	$name: 'DataCube.Model.CsvFile',
 	$parent: 'JSB.Workspace.FileEntry',
 	
+	lastTimestamp: null,
 	records: null,
+	tables: null,
+	columns: null,
 	
 	getRecordsCount: function(){
 		return this.records;
 	},
+	
+	getLastTimestamp: function(){
+		return this.lastTimestamp;
+	},
+
+	getTablesCount: function(){
+		return this.tables;
+	},
+
+	getColumnsCount: function(){
+		return this.columns;
+	},
+
 	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
@@ -32,53 +48,12 @@
 		$constructor: function(id, workspace, opts){
 			$base(id, workspace, opts);
 			if(opts){
-/*				if(opts.fileName){
-					this.setName(opts.fileName);
-				}
-				if(opts.fileData){
-					// try to parse JSON
-					var charsets = ['UTF-8','Windows-1251','UTF-16LE','UTF-16BE'];
-					var json = null;
-					for(var i = 0; i < charsets.length; i++){
-						var charset = charsets[i];
-						var decoder = new Decoder(charset);
-						try {
-							var jsonStr = decoder.decode(opts.fileData);
-							var chrx = /[\{\[]/i;
-							var j = 0;
-							for(; j < jsonStr.length; j++){
-								if(chrx.test(jsonStr[j])){
-									break;
-								}
-							}
-							if(j > 0 && j < jsonStr.length){
-								jsonStr = jsonStr.substr(j);
-							}
-							if(j >= jsonStr.length){
-								continue;
-							}
-							json = eval('(' + jsonStr + ')');
-							break;
-						} catch(e){
-							JSB.getLogger().warn(e);
-							continue;
-						} finally {
-							decoder.close();	
-						}
-					}
-					if(!json){
-						throw new Error('Wrong file specified: ' + opts.fileName);
-					}
-					this.records = 1;
-					if(JSB.isArray(json)){
-						this.records = json.length;
-					}
-					this.property('records', this.records);
-					// store artifact
-					this.storeArtifact('.data', json);
-				} */
+				
 			} else {
 				this.records = this.property('records');
+				this.lastTimestamp = this.property('lastTimestamp');
+				this.tables = this.property('tables');
+				this.columns = this.property('columns');
 			}
 		}
 

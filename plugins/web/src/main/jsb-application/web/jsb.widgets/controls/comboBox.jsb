@@ -4,7 +4,8 @@
 	$require: {
 		Editor: 'JSB.Widgets.PrimitiveEditor',
 		ToolManager: 'JSB.Widgets.ToolManager',
-		DroplistTool: 'JSB.Widgets.DroplistTool'
+		DroplistTool: 'JSB.Widgets.DroplistTool',
+		DropTreeTool: 'JSB.Widgets.DropTreeTool'
 	},
 	$client: {
 		$constructor: function(opts){
@@ -20,6 +21,7 @@
 			items: [],
 			value: '',
 			enabled: true,
+			tree: false,
 			onChange: function(key, obj){},
 			onEditorChange: function(value, evt){}
 		},
@@ -37,6 +39,9 @@
 			if(this.options.dropDown){
 				// create dropdown list
 				this.addClass('_dwp_dropDown');
+				this.getElement().append('<div class="_dwp_cbContainer"></div>');
+				this.getElement().append('<div class="_dwp_dropBtn"></div>');
+				
 				this.getElement().click(function(evt){
 					if(!self.options.enabled) return;
 					self.onDropDownClick();
@@ -65,8 +70,7 @@
 		},
 		
 		resolveItem: function(obj){
-			var itemObj = {
-			};
+			var itemObj = {};
 			if(JSB().isPlainObject(obj) && !JSB().isNull(obj.element)){
 				JSB().merge(itemObj, obj);
 				if(JSB().isInstanceOf(itemObj.element, 'JSB.Widgets.Control')){
@@ -83,7 +87,7 @@
 				itemObj.element = this.$(obj);
 				itemObj.key = itemObj.element.text();
 			}
-			
+
 			return itemObj;
 		},
 
@@ -95,7 +99,7 @@
 		showDropList: function(list){
 			var self = this;
 			var toolMgr = JSB().getInstance('JSB.Widgets.ToolManager');
-			if(!JSB().isNull(this.autoBox) && this.autoBox.isVisible()){
+			if(this.autoBox && this.autoBox.isVisible()){
 				if(JSB().isNull(list) || list.length == 0){
 					this.autoBox.close();
 					this.autoBox = null;
@@ -109,7 +113,8 @@
 			}
 			if(!JSB().isNull(list) && list.length > 0){
 				this.autoBox = toolMgr.activate({
-					id: '_dwp_droplistTool',
+					id: this.options.tree ? '_dwp_dropTreeTool' : '_dwp_droplistTool',
+					key: this.options.key || 'cb_' + $this.getId(),
 					cmd: 'show',
 					data: list,
 					scope: this,
@@ -133,7 +138,18 @@
 		addItem: function(item){
 			var itemObj = this.resolveItem(item);
 			this.items.push(itemObj);
-			this.itemMap[itemObj.key] = itemObj;
+			
+			function _fillMap(valObj){
+				$this.itemMap[valObj.key] = valObj;
+				if(JSB.isArray(valObj.children)){
+					for(var i = 0; i < valObj.children.length; i++){
+						var chObj = $this.resolveItem(valObj.children[i]);
+						_fillMap(chObj);
+					}
+				}	
+			}
+			_fillMap(itemObj);
+			
 		},
 		
 		setItems: function(items){
@@ -144,27 +160,47 @@
 			for(var i = 0; i < items.length; i++){
 				this.addItem(items[i]);
 			}
+			if(this.selectedObject && this.selectedObject.key){
+				if(this.itemMap[this.selectedObject.key]){
+					this.selectedObject = this.itemMap[this.selectedObject.key];
+				} else {
+					this.setData(null);
+				}
+			}
 		},
 		
 		setData: function(val){
-			var valObj = this.resolveItem(val);
 			if(this.options.dropDown){
+				if(!val){
+					this.selectedObject = null;
+					this.find('> ._dwp_cbContainer').empty();
+					this.getElement().removeAttr('value');
+					if(!JSB().isNull(this.options.onChange) && this.initialized){
+						this.options.onChange(null, null);
+					}
+					return;
+				}
+				var valObj = this.resolveItem(val);
 				// check the specified data is existed in drop list
 				if(JSB().isNull(this.selectedObject) || this.selectedObject.key != valObj.key) {
 					if(this.itemMap[valObj.key]){
 						valObj = this.itemMap[valObj.key];
+						this.find('> ._dwp_cbContainer').empty().append($this.$(valObj.element).clone());
+						this.selectedObject = valObj;
+						this.getElement().attr('value', valObj.key);
+					} else {
+						this.find('> ._dwp_cbContainer').empty();
+						this.selectedObject = null;
+						this.getElement().removeAttr('value');
 					}
-					this.getElement().empty();
-					var innerElt = this.$('<div class="_dwp_cbContainer"></div>');
-					innerElt.append(valObj.element);
-					this.getElement().append(innerElt);
-					this.getElement().append('<div class="_dwp_dropBtn"></div>');
-					this.selectedObject = valObj;
+					
 					if(!JSB().isNull(this.options.onChange) && this.initialized){
-						this.options.onChange(valObj.key, valObj);
+						this.options.onChange(valObj ? valObj.key : null, valObj);
 					}
 				}
+				
 			} else {
+				var valObj = this.resolveItem(val);
 				var val = valObj.element;
 				if(JSB.isObject(val) || JSB.isArray(val)){
 					val = valObj.key;
@@ -175,8 +211,8 @@
 						this.options.onChange(valObj.key, valObj);
 					}
 				}
+				this.getElement().attr('value', valObj.key);
 			}
-			this.getElement().attr('value', valObj.key);
 		},
 		
 		getItems: function(){

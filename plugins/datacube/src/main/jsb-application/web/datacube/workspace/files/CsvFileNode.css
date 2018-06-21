@@ -24,6 +24,10 @@
     color: #555;
 }
 
-.workspaceExplorerNode.csvFileNode > .status > .count {
+.workspaceExplorerNode.csvFileNode > .status .item {
+	display: inline-block;
+}
+
+.workspaceExplorerNode.csvFileNode > .status .count {
 	color: #773e01;
 }

@@ -20,6 +20,38 @@
         return item.fetchOpts && item.fetchOpts.reset;
     },
 
+    getBindingInfo: function(binding){
+        function collectFields(desc, path){
+            if(!desc){
+                return;
+            }
+            if(desc.type == 'array'){
+                collectFields(desc.arrayType, path);
+            } else if(desc.type == 'object'){
+                var fieldArr = Object.keys(desc.record);
+                fieldArr.sort(function(a, b){
+                    return a.toLowerCase().localeCompare(b.toLowerCase());
+                });
+                for(var i = 0; i < fieldArr.length; i++){
+                    var f = fieldArr[i];
+                    var rf = desc.record[f];
+                    var curPath = (path ? path + '.' : '') + f;
+                    var schemeRef = JSB.merge({field: f}, rf);
+                    $this._bindingsInfoMap[curPath] = schemeRef;
+                    collectFields(rf, curPath);
+                }
+            }
+        }
+
+        if(!this._bindingsInfoMap){
+            this._bindingsInfoMap = {};
+
+            collectFields(this._values[0].binding, '');
+        }
+
+        return $this._bindingsInfoMap[binding];
+    },
+
     hasBinding: function(){
         return this._values[0] && JSB.isDefined(this._values[0].binding);
     },

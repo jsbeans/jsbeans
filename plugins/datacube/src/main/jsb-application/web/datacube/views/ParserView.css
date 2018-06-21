@@ -28,6 +28,7 @@
     font-weight: 400;
     vertical-align: middle;
     margin-left: 5px;
+	z-index: 10;
 }
 
 .parserView .titleBlock ._dwp_button.btnOk {
@@ -79,8 +80,14 @@
 }
 
 
+/* parser selector */
+
 .parserView .parserSelector {
-	padding: 4px;
+	padding: 0 2px 0 2px;
+    display: inline-block;
+    position: relative;
+    top: -3px;
+	margin-right: 6px;
 }
 
 .parserView .parserSelector > .label {
@@ -97,6 +104,178 @@
     vertical-align: middle;
 }
 
+
+
+
+.parserView .tablesView {}
+
+.parserView .tablesView > ._dwp_tabPane {
+	background: none !important;
+}
+
+.parserView .tablesView > ._dwp_tabPane > li._dwp_tab {
+	min-height: auto;
+	padding: 1px 6px 2px 6px;
+	margin-left: -1px;
+}
+
+.parserView .tablesView > ._dwp_tabPane > li._dwp_tab.active {
+	background: #fff;
+}
+
+.parserView .tablesView > ._dwp_clientPane {}
+
+.parserView .tablesView > ._dwp_clientPane > div[key="__source"] {
+	background: #fff;
+	padding: 2px;
+}
+
+.parserView .tablesView > ._dwp_clientPane > div[key="__source"] > .jsb-scrollBox {
+	padding: 2px;
+}
+
+.parserView .tablesView > ._dwp_clientPane > div[key="__source"] .source {
+	font-family: monospace;
+    color: #555;
+}
+
+.parserView .tablesView > ._dwp_clientPane > div[key="__source"] .source > .line {
+	white-space: nowrap;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader {
+	line-height: 14px;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name {
+	font-weight: bold;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="string"] {
+	color: #0042a9;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="integer"] {
+	color: #b36e02;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="float"],
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="number"] {
+	color: #9c8300;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="boolean"] {
+	color: #007710;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="date"] {
+	color: #92009a;
+}
+
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="object"],
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="array"] {
+	color: #b51c02;
+}
+
+.parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .type {
+	color: #555;
+    font-size: 11px;
+}
+
+/* stages */
+.parserView > .titleBlock > ._dwp_tabview.stage {
+	display: inline-block;
+    width: auto;
+}
+
+.parserView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane {
+	background: transparent;
+	padding: 0;
+    border: none;
+	position: relative;
+}
+
+.parserView > .titleBlock > ._dwp_tabview.stage > ._dwp_clientPane {
+	display: none;
+}
+
+.parserView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab {
+	margin: 0 2px;
+    padding: 5px 14px 5px 10px;
+    height: 29px;
+}
+
+.parserView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab.active {
+	background: #fbfbfb;
+    border-bottom: none;
+}
+
+.parserView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText {
+	text-shadow: none;
+}
+
+.parserView > .titleBlock > ._dwp_tabview.stage > ._dwp_tabPane > ._dwp_tab > ._dwp_tabText > span {
+	display: inline-block;
+    background: #d37531;
+    padding: 0 4px;
+    margin-right: 4px;
+    border-radius: 10px;
+    text-shadow: none;
+    color: #fff;
+    font-size: 13px;
+}
+
+/* buttons */
+
+.parserView .buttonBar {
+	text-align: center;
+	padding: 0 0 10px 0;
+}
+
+.parserView .buttonBar > ._dwp_button {
+	display: none;
+	
+    color: #fff;
+    border-radius: 3px;
+    padding: 3px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    margin-left: 5px;
+    z-index: 10;
+    border-color: transparent;
+}
+
+.parserView[stage="analysis"] .buttonBar > .btnAnalyze {
+	display: inline-block;
+	background: #868e96;
+}
+
+.parserView[stage="analysis"] .buttonBar > .btnAnalyze:hover {
+	background: #727b84;
+}
+
+.parserView[stage="tables"] .buttonBar > .btnPreview {
+	display: inline-block;
+	background: #868e96;
+}
+
+.parserView[stage="tables"] .buttonBar > .btnPreview:hover {
+	background: #727b84;
+}
+
+.parserView[stage="import"] .buttonBar > .btnImport {
+	display: inline-block;
+	background: #5c7ea0;
+}
+
+.parserView[stage="import"] .buttonBar > .btnImport:hover {
+	background: #3d668e;
+}
+
+
+/* scheme */
 .parserView .scheme {
 	padding: 4px;
 }
@@ -104,4 +283,77 @@
 .parserView .scheme .itemRender > .jsb-checkbox > .caption,
 .parserView .scheme .itemRender > .name {
 	min-width: auto;
+}
+
+.parserView .scheme [key="structure"] {
+	display: none;
+}
+
+.parserView .scheme > [key] {
+	display: none;
+}
+
+.parserView[stage="analysis"] .scheme > [key="parserSettings"],
+.parserView[stage="analysis"] .scheme > [key="analyzer"] {
+	display: block;
+}
+
+.parserView[stage="tables"] .scheme > [key="previewSettings"],
+.parserView[stage="tables"] .scheme > [key="tablesSettings"] {
+	display: block;
+}
+
+.parserView[stage="import"] .scheme > [key="importSettings"] {
+	display: block;
+}
+
+
+
+/* message */
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo {
+    border-radius: 16px;
+    padding: 10px 16px;
+    background: #ececdd;
+}
+
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo > .content {
+	text-align: center;
+}
+
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo > .content > .title {
+	text-align: left;
+	color: #776f35;
+    font-size: 15px;
+	margin-bottom: 8px;
+}
+
+div.ajaxloader[key="parser"] > div.ajaxloaderInfo > .content > .btnCancel {
+	width: initial !important;
+    padding: 3px 6px !important;
+}
+
+/* log */
+.parserView .log {}
+
+.parserView .log > .entry {
+	font-family: monospace;
+    padding: 1px 2px;
+}
+
+.parserView .log > .entry > .time {
+	margin-right: 8px;
+    font-size: 11px;
+    color: #949494;
+}
+
+.parserView .log > .entry[type="info"] {
+	color: #3a3a3a;
+}
+
+.parserView .log > .entry[type="error"] {
+	color: #c00;
+}
+
+.parserView .log > .entry[type="ok"] {
+	color: #007900;
 }

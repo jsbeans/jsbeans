@@ -156,7 +156,7 @@
 	    rowSettings: {
 	        render: 'group',
 	        name: 'Строки',
-	        collapsable: true,
+	        collapsible: true,
 	        items: {
 	            rowKey: {
 	                render: 'dataBinding',
@@ -283,7 +283,7 @@
 	    columns: {
 	        render: 'autocompleteGroup',
 	        name: 'Столбцы',
-	        collapsable: true,
+	        collapsible: true,
 	        multiple: true,
 	        linkTo: 'rows',
 	        linkedFields: {
@@ -374,6 +374,10 @@
                                             render: 'formatter',
                                             name: 'Формат',
                                             formatterOpts: {
+                                                basicSettings: {
+                                                    type: 'number',
+                                                    value: 'y'
+                                                },
                                                 variables: [
                                                     {
                                                         alias: 'Значение',
@@ -512,6 +516,10 @@
                                             render: 'formatter',
                                             name: 'Формат',
                                             formatterOpts: {
+                                                basicSettings: {
+                                                    type: 'number',
+                                                    value: 'y'
+                                                },
                                                 variables: [
                                                     {
                                                         alias: 'Значение',
@@ -541,7 +549,7 @@
                 cellAlign: {
                     render: 'group',
                     name: 'Стиль ячейки',
-		            collapsable: true,
+		            collapsible: true,
 		            collapsed: true,
 		            items: {
 		                alignHorz: {
@@ -598,7 +606,7 @@
                 headerAlign: {
                     render: 'group',
                     name: 'Стиль заголовка',
-		            collapsable: true,
+		            collapsible: true,
 		            collapsed: true,
 		            items: {
 		                hAlignHorz: {

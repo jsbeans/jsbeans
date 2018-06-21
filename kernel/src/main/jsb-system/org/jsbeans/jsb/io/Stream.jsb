@@ -143,11 +143,12 @@
 			return to - from;
 		},
 		
-		copy: function(output){
+		copy: function(output, opts){
 			if(!$jsb.isInstanceOf(output, 'JSB.IO.Stream')){
 				throw new Error('Expected JSB.IO.Stream as first argument');
 			}
 			var buffer = new ArrayBuffer(Math.max(4096, Math.min(this.available(), 65536)));
+			var copied = 0;
 			while(true){
 				var count = this.read(buffer);
 				if(count == -1){
@@ -157,6 +158,10 @@
 					continue;
 				}
 				output.write(buffer, 0, count);
+				copied += count;
+				if(opts && opts.onProgress){
+					opts.onProgress(copied);
+				}
 			}
 			output.flush();
 			return this;

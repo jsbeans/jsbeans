@@ -16,7 +16,11 @@
             `);
 
             this.caption = this.$('<span class="caption"></span>');
-            this.append(this.caption);
+            if(this.options.leftLabel){
+                this.prepend(this.caption);
+            } else {
+                this.append(this.caption);
+            }
 
             if(this.options.label){
                 this.setLabel(this.options.label);
@@ -46,7 +50,8 @@
 
 	    options: {
 	        checked: false,
-	        label: null
+	        label: null,
+	        leftLabel: false
 	    },
 
 	    setChecked: function(b, noHandle){

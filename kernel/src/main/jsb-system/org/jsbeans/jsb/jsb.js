@@ -6141,11 +6141,11 @@ JSB({
 								self.curDeferTimeout = self.options.minDeferTimeout;
 								if(triggerKey){
 									$this.setTrigger(triggerKey, {
-										status: status,
+										status: 'error',
 										data: xhr
 									})	
 								} else {
-									callback(status, xhr);
+									callback('error', xhr);
 								}
 							} else {
 								self.curDeferTimeout *= 2;

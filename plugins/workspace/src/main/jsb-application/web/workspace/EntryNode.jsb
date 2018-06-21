@@ -5,6 +5,7 @@
 		Editor: 'JSB.Widgets.PrimitiveEditor',
 		Button: 'JSB.Widgets.Button',
 		RendererRepository: 'JSB.Widgets.RendererRepository',
+		ToolManager: 'JSB.Widgets.ToolManager'
 	},
 	
 	$client: {
@@ -44,31 +45,31 @@
 				
 				$this.append($this.renderer);
 				
-				if($this.options.allowEdit){
-					// add buttons
-					var editBtn = new Button({
-						cssClass: 'roundButton btnEdit btn10',
-						tooltip: 'Изменить название',
-						onClick: function(evt){
-							JSB.defer(function(){
-								self.renderer.beginEdit();	
-							}, 10);
-							
-						}
-					});
-					$this.toolbox.append(editBtn.getElement());
-				}
-				
-				if($this.options.allowOpen){
-					var openBtn = new Button({
-						cssClass: 'roundButton btnOpen btn10',
-						tooltip: 'Открыть',
-						onClick: function(evt){
-							$this.explorer.publish('JSB.Workspace.nodeOpen', $this);
-						}
-					});
-					$this.toolbox.append(openBtn.getElement());
-				}
+				var menuBtn = new Button({
+					cssClass: 'roundButton btnMenu btn10',
+					tooltip: 'Дополнительные опции',
+					onClick: function(evt){
+						var pivot = $this.$(evt.currentTarget);
+						var items = $this.collectMenuItems();
+						ToolManager.activate({
+							id: '_dwp_droplistTool',
+							cmd: 'show',
+							data: items,
+							key: 'entryMenu',
+							target: {
+								selector: pivot,
+								dock: 'bottom'
+							},
+							callback: function(key, item, evt){
+								if(item && item.callback){
+									item.callback(evt);
+								}
+							}
+						});
+					}
+				});
+				$this.toolbox.append(menuBtn.getElement());
+
 			});
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender, msg, syncInfo){
@@ -96,6 +97,36 @@
 				// destroy self
 				$this.destroy();
 			});
+		},
+		
+		collectMenuItems: function(){
+			var items = [];
+			if($this.options.allowOpen){
+				items.push({
+					key: 'entryOpen',
+					element: '<div class="icon"></div><div class="text">Открыть</div>',
+					allowHover: true,
+					allowSelect: true,
+					callback: function(){
+						$this.explorer.publish('JSB.Workspace.nodeOpen', $this);
+					}
+				});
+			}
+			
+			if($this.options.allowEdit){
+				items.push({
+					key: 'entryRename',
+					element: '<div class="icon"></div><div class="text">Изменить название</div>',
+					allowHover: true,
+					allowSelect: true,
+					callback: function(){
+						JSB.defer(function(){
+							$this.renderer.beginEdit();	
+						}, 10);
+					}
+				});
+			}
+			return items;
 		},
 		
 		getName: function(){

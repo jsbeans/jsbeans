@@ -75,6 +75,10 @@
 			return !JSB().isNull(entry);
 		},
 		
+		getTabs: function(){
+			return this.tabs;
+		},
+		
 		addTab: function(title, cls, opts){
 			var self = this;
 			opts = opts || {};
@@ -83,7 +87,7 @@
 			// add tab
 			var tab = this.$('<li class="_dwp_tab" clientId="'+uid+'"></li>');
 			tab.append('<div class="_dwp_icon"></div>');
-			tab.append(this.$('<div class="_dwp_tabText"></div>').text(title));
+			tab.append(this.$('<div class="_dwp_tabText"></div>').append(title));
 			if(this.options.allowCloseTab || opts.allowCloseTab){
 				var closeBtn = this.$('<div class="_dwp_closeBtn"></div>'); 
 				tab.append(closeBtn);
@@ -123,7 +127,11 @@
                     opts: opts
                 };
 			} else {
-			    clientWrap.append(cls.getElement());
+				if(JSB.isInstanceOf(cls, 'JSB.Widgets.Control') || JSB.isInstanceOf(cls, 'JSB.Controls.Control')){
+					clientWrap.append(cls.getElement());
+				} else {
+					clientWrap.append(cls);
+				}
 
                 self.tabs[uid] = {
                     id: uid,
@@ -197,6 +205,14 @@
 			} else {
 				entry.tab.addClass('disabled');
 			}
+		},
+		
+		isEnabled: function(tab){
+			var entry = this.resolveTab(tab);
+			if(entry.tab.hasClass('disabled')){
+				return false;
+			}
+			return true;
 		},
 		
 		switchTab: function(tab){

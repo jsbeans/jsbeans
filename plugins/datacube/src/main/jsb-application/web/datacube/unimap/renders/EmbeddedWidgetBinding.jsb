@@ -48,7 +48,7 @@
 	            this._values.values.push(values);
 	        }
 
-	        this._item = this.$('<div class="item"></div>');
+	        this._item = this.$('<div class="item">Перетащите виджет</div>');
 
             this._item.droppable({
                 accept: function(d){
@@ -160,7 +160,9 @@
 
         removeBinding: function(){
             this.render.destroy();
+            this._item.find('.btnDelete').remove();
             this._item.removeClass('filled');
+            this._item.text('Перетащите виджет');
             this._innerController.destroy();
             this.childSourceBinding = null;
 
@@ -172,9 +174,11 @@
         setValue: function(wDesc, event){
             if(this.render){
                 this.render.destroy();
+                this._item.find('.btnDelete').remove();
             }
 
 			this.render = new EmbededWidgetRenderer(wDesc, {});
+			this._item.empty();
 			this._item.prepend(this.render.getElement());
 			this._item.addClass('filled');
 

@@ -8,6 +8,7 @@
 .itemRender > .jsb-checkbox {
     display: inline-block;
     margin-right: 5px;
+    overflow: visible;
 }
 
 .itemRender > .jsb-checkbox + .name {
@@ -32,19 +33,27 @@
     width: initial;
 }
 
-.itemRender > .name > i {
+.itemRender > .name > i,
+.itemRender > .jsb-checkbox > .caption > i {
     margin-left: 5px;
 }
 
-.itemRender > .name > i.desc {
+.itemRender > .jsb-checkbox > .check-elem > .check-helper {
+    width: calc(100% - 20px);
+}
+
+.itemRender > .name > i.desc,
+.itemRender > .jsb-checkbox > .caption > i.desc {
     color: #0035ff82;
 }
 
-.itemRender > .name > i.warn {
+.itemRender > .name > i.warn,
+.itemRender > .jsb-checkbox > .caption > i.warn {
     color: #fab005;
 }
 
-.itemRender > .name > .err {
+.itemRender > .name > .err,
+.itemRender > .jsb-checkbox > .caption > i.err {
     color: #721c24;
 }
 
@@ -94,6 +103,8 @@
 
 .itemRender > .multipleContainer > .btnMultiple {
     vertical-align: middle;
+    margin-top: 8px;
+    margin-bottom: 8px;
 }
 
 .itemRender > .item > .multiEditor {

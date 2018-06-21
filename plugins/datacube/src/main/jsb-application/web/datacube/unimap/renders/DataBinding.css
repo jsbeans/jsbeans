@@ -2,9 +2,16 @@
     width: 200px;
 }
 
+.dataBindingRender > .multipleContainer {
+	border-top: 1px dotted #d6d4d4;
+	padding-left: 16px;
+}
+
 .dataBindingRender > .multipleContainer > .multipleBtn {
     display: inline-block;
 	vertical-align: middle;
+	margin-top: 8px;
+    margin-bottom: 8px;
 }
 
 .dataBindingRender.itemRender > .multipleContainer > .multipleItem {

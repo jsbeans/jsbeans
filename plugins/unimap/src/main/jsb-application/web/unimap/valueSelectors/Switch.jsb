@@ -74,7 +74,53 @@
     updateValues: function(key, scheme, values, opts){
         var wasUpdated = $base(key, scheme, values, opts);
 
-        // todo
+        // todo: test
+
+        // remove keys
+        for(var i in values.values[0]){
+            if(!scheme.items[i]){   // remove keys
+                if(!opts.removedValues[i]){
+                    opts.removedValues[i] = [];
+                }
+
+                opts.removedValues[i].push(values.values[0][i]);
+                delete values.values[0][i];
+
+                wasUpdated = true;
+            } else {    // update old keys
+                if(!scheme.items[i].render){    // empty values was added in old scheme versions or scheme parts was disabled
+                    delete values.values[0][i];
+                    wasUpdated = true;
+                    continue;
+                }
+
+                if(values.values[0][i]){
+                    wasUpdated = this.getRenderByName(scheme.items[i].render).updateValues(i, scheme.items[i], values.values[0][i], opts) || wasUpdated;
+                }
+            }
+        }
+
+        if(!values.values[0]){
+            if(Object.keys(scheme.items).length > 0){
+                values.values[0] = {};
+            } else {
+                return wasUpdated;
+            }
+        }
+
+        for(var i in scheme.items){
+            if(!values.values[0][i] && scheme.items[i].render){
+                if(opts.removedValues[i]){   // move keys
+                    values.values[0][i] = opts.removedValues[i].shift();
+                } else {    // add keys
+                    values.values[0][i] = {};
+
+                    this.getRenderByName(scheme.items[i].render).updateValues(i, scheme.items[i], values.values[0][i], opts);
+                }
+
+                wasUpdated = true;
+            }
+        }
 
         return wasUpdated;
     }

@@ -45,8 +45,10 @@
             }
 
             if(this.options.collapseBtn){
+            	this.addClass('collapsible');
                 var cl = 'fas fa-chevron-up';
                 if(this.options.collapsed){
+                	this.addClass('collapsed');
                     cl = 'fas fa-chevron-down'
                     this.elements.content.css('display', 'none');
                 }
@@ -58,7 +60,7 @@
                 });
 
                 var title = this.elements.header.find('h1');
-                title.addClass('collapsable');
+                title.addClass('collapsible');
                 title.click(function(){
                     $this.togglePanel();
                 });
@@ -216,10 +218,12 @@
             }
 
             if($ICON.hasClass('fa-chevron-up')){
+            	this.addClass('collapsed');
                 if(JSB.isFunction($this.options.onCollapse)){
                     $this.options.onCollapse.call($this);
                 }
             } else {
+            	this.removeClass('collapsed');
                 if(JSB.isFunction($this.options.onExpand)){
                     $this.options.onExpand.call($this);
                 }

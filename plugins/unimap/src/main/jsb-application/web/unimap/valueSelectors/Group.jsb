@@ -2,10 +2,49 @@
     $name: 'Unimap.ValueSelectors.Group',
     $parent: 'Unimap.ValueSelectors.Basic',
 
-    createDefaultValues: function(key, scheme, values, opts){
+    addValue: function(){
+        var scheme = this.getMainSelector().getScheme();
+        if(!scheme){
+            throw new Error('Must specify a scheme');
+        }
+
+        function objectByString(obj, str){
+            str = str.replace(/\[(\w+)\]/g, '.$1'); // convert indexes to properties
+            str = str.replace(/^\./, '');           // strip a leading dot
+            var a = str.split('.');
+            for (var i = 0, n = a.length; i < n; ++i) {
+                var k = a[i];
+                if (k in obj) {
+                    obj = obj[k];
+                } else {
+                    return;
+                }
+            }
+            return obj;
+        }
+
+        var schemePart = objectByString(scheme, this._schemePath),
+            itemsKeys = Object.keys(schemePart.items),
+            value = {},
+            linkedFields = {};
+
+        this.createDefaultValues(this.getKey(), schemePart, value, {linkedFields: linkedFields}, true);
+
+        this.getMainSelector().addLinkedFields(linkedFields);
+
+        this._values.push(value.values[0]);
+
+        if(itemsKeys.length > 1){
+            return this.getRenderByName(this.getRenderName()).getInstance({selector: value, schemePath: this._schemePath + ".items." + itemsKeys[0]});
+        } else {
+            return this.getRenderByName(schemePart.items[itemsKeys[0]].render).getInstance({key: itemsKeys[0], selector: value.values[0][itemsKeys[0]], schemePath: this._schemePath + '.items.' + itemsKeys[0]});
+        }
+    },
+
+    createDefaultValues: function(key, scheme, values, opts, isAddNewValue){
         $base(key, scheme, values, opts);
 
-        if(scheme.multiple){
+        if(scheme.multiple && !isAddNewValue){
             return;
         }
 
@@ -19,17 +58,31 @@
         }
     },
 
-    find: function(key, values, isFindAll){
+    find: function(key, values, isFindAll, schemePath){
         var main = false,
             resArr = [];
 
         if(!values){
             main = true;
             values = this._values;
+
+            if(!schemePath){
+                schemePath = this._schemePath || '';
+            }
+        }
+
+        if(JSB.isString(schemePath)){
+            if(schemePath.length > 0){
+        		if(schemePath.length - schemePath.lastIndexOf('items') !== 5){
+        			schemePath += '.items';
+        		}
+            } else {
+                schemePath += 'items';
+            }
         }
 
         for(var i = 0; i < values.length; i++){
-            var res = this.getMainSelector().find(key, values[i]);
+            var res = this.getMainSelector().find(key, values[i], null, !i ? schemePath : undefined);
             if(res){
                 if(isFindAll){
                     resArr.push(res);
@@ -48,7 +101,7 @@
         }
     },
 
-    findAll: function(){
+    findAll: function(key, values){
         var res = this.find(key, values, true);
 
         if(!JSB.isDefined(res)){
@@ -83,7 +136,7 @@
             return;
         }
 
-        return this.getRenderByName(this.getRenderName()).getInstance(undefined, { values: this._values[0] });
+        return this.getRenderByName(this.getRenderName()).getInstance({selector: { values: this._values[0] }});
     },
 
     values: function(){
@@ -94,7 +147,7 @@
         var itemsArr = [];
 
         for(var i = 0; i < this._values.length; i++){
-            itemsArr.push(this.getRenderByName(this.getRenderName()).getInstance(undefined, { values: this._values[i] }));
+            itemsArr.push(this.getRenderByName(this.getRenderName()).getInstance({selector: { values: this._values[i] }}));
         }
 
         return itemsArr;
@@ -122,7 +175,9 @@
                         continue;
                     }
 
-                    wasUpdated = this.getRenderByName(scheme.items[j].render).updateValues(j, scheme.items[j], values.values[i][j], opts) || wasUpdated;
+                    if(values.values[i][j]){
+                        wasUpdated = this.getRenderByName(scheme.items[j].render).updateValues(j, scheme.items[j], values.values[i][j], opts) || wasUpdated;
+                    }
                 }
             }
         }

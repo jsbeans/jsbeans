@@ -3,6 +3,10 @@
 	$parent: 'Unimap.Render.Basic',
 	$require: ['JSB.Controls.Panel', 'JSB.Controls.Checkbox'],
 	$client: {
+	    _defaultSchemeOpts: {
+	        sortable: true
+	    },
+
 	    construct: function(opts){
 	        this.addClass('groupRender');
 	        this.loadCss('Group.css');
@@ -13,7 +17,7 @@
 	        	toolbarPosition: 'left',
 	            title: this._values.name,
 	            titleEditBtn: this._scheme.editableName,
-                collapseBtn: this._scheme.collapsable,
+                collapseBtn: this._scheme.optional ? false : this._scheme.collapsible,
                 collapsed: this._scheme.collapsed,
                 titleValidateFunction: function(val){
                     var parent = $this.getParent();
@@ -22,7 +26,7 @@
                     }
                 },
                 onTitleEdited: function(val){
-                    if($this._scheme.editableName && $this._scheme.editableName.commonField){
+                    if($this._scheme.editableName){
                         var parent = $this.getParent();
                         if(JSB.isObject(parent.isMultiple()) && parent.isMultiple().uniqueNames){
                             delete parent._childNames[$this._values.name];
@@ -30,8 +34,13 @@
                             parent._childNames[val] = true;
                         }
 
-                        $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name);
+                        if($this._scheme.editableName.commonField){
+                            $this.getSchemeController().updateCommonFields(null, $this._scheme.editableName.commonField, val, $this._values.name);
+                        }
+
                         $this._values.name = val;
+
+                        $this.onchange();
                     }
                 }
 	        });
@@ -45,30 +54,48 @@
 	        this.createDescription(name);
 
 	        if(this._scheme.optional){
+	            var content = this.group.find('.content');
+
 	            this.addClass('optional');
 
 	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
+
+	            if(!this._values.checked){
+	                content.addClass('hidden');
+	            }
 
 	            this.checkBox = new Checkbox({
 	                checked: this._values.checked,
 	                onchange: function(b){
 	                    $this._values.checked = b;
+
+	                    content.toggleClass('hidden');
+
+	                    $this.onchange();
 	                }
 	            });
 	            this.group.prepend(this.checkBox);
+
+	            name.click(function(){
+	                $this.checkBox.toggleChecked();
+	            });
 	        }
 
 	        if(this._scheme.multiple){
-                this.group.elements.content.sortable({
-                    handle: '.sortableHandle',
-                    update: function(){
-                        $this.reorderValues();
-                    }
-                });
+	            if(this._scheme.sortable){
+                    this.group.elements.content.sortable({
+                        handle: '.sortableHandle',
+                        update: function(){
+                            $this.reorderValues();
+                        }
+                    });
+	            }
 
 	            this.multipleBtn = this.$('<i class="btn btnMultiple fas fa-plus-circle"></i>');
 	            this.multipleBtn.click(function(){
 	                $this.addItem();
+
+	                $this.onchange();
 	            });
 	            this.group.appendContent(this.multipleBtn);
 	        }
@@ -126,13 +153,17 @@
 
 	            item.attr('idx', itemIndex);
 
-	            item.append(`#dot
-                    <div class="sortableHandle">
-                        <div></div>
-                        <div></div>
-                        <div></div>
-                    </div>
-                `);
+	            if(this._scheme.sortable){
+	                item.addClass('sortable');
+
+                    item.append(`#dot
+                        <div class="sortableHandle">
+                            <div></div>
+                            <div></div>
+                            <div></div>
+                        </div>
+                    `);
+                }
 
                 for(var i in this._scheme.items){
                     if(!this._scheme.items[i].render){
@@ -222,6 +253,8 @@
 	                this.$(items[i]).attr('idx', i - 1);
 	            }
 	        }
+
+	        $this.onchange();
 	    },
 
 	    reorderValues: function(){

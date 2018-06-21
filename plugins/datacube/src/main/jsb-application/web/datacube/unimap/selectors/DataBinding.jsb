@@ -10,6 +10,14 @@
         return this._values[0].binding;
     },
 
+    bindingInfo: function(){
+        if(!this._values || this._values.length === 0){
+            return;
+        }
+
+        return this._values[0].bindingInfo;
+    },
+
     bindingType: function(){
         if(!this._values || this._values.length === 0){
             return;
@@ -37,6 +45,22 @@
 
     hasBinding: function(){
         return this._values[0] && JSB.isDefined(this._values[0].binding);
+    },
+
+    setBinding: function(binding, linkToSelector){
+        if(!this._values || this._values.length === 0){
+            this._values.push({});
+        }
+
+        this._values[0].binding = binding;
+        this._values[0].value = binding;
+
+        if(!linkToSelector){
+            linkToSelector = this.getLinkToSelector();
+        }
+
+        this._values[0].bindingInfo = linkToSelector.getBindingInfo(binding);
+        this._values[0].bindingType = this._values[0].bindingInfo.type;
     },
 
     value: function(layer){

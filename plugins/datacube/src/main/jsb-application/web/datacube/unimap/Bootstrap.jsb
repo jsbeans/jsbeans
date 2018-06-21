@@ -18,6 +18,9 @@
         name: 'completeWidget',
         render: 'Unimap.Render.CompleteWidgetBinding'
     },{
+        name: 'databaseBinding',
+        render: 'Unimap.Render.DatabaseBinding'
+    },{
         name: 'autocompleteGroup',
         render: 'Unimap.Render.AutocompleteGroup'
     },{
@@ -43,5 +46,11 @@
     },{
         name: 'autocompleteGroup',
         render: 'Unimap.ValueSelectors.Group'
-    }],
+    },{
+        name: 'formatter',
+        render: 'Datacube.ValueSelectors.Formatter'
+    },{
+        name: 'parserBinding',
+        render: 'Datacube.ValueSelectors.SourceSelector'
+    }]
 }

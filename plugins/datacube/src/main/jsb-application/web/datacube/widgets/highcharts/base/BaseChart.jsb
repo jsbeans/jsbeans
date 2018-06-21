@@ -11,19 +11,20 @@
             render: 'dataBinding',
             name: 'Фильтрующие поля',
             linkTo: 'source',
-            multiple: true
+            multiple: true,
+            optional: true
 	    },
 
 	    series: {
 	        render: 'group',
 	        name: 'Серии',
-            collapsable: true,
+            collapsible: true,
             multiple: true,
             items: {
                 seriesItem: {
                     render: 'group',
                     name: 'Серия',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         seriesName: {
                             render: 'namesBinding',
@@ -40,7 +41,7 @@
                         tooltip: {
                             render: 'group',
                             name: 'Всплывающая подсказка',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 valueDecimals: {
                                     render: 'item',
@@ -101,7 +102,7 @@
 	    chart: {
 	        render: 'group',
 	        name: 'Настройки диаграммы',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 animation: {
@@ -132,7 +133,7 @@
 	    header: {
 	        render: 'group',
 	        name: 'Заголовок',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 text: {
@@ -216,7 +217,7 @@
 	    legend: {
 	        render: 'group',
 	        name: 'Легенда',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
@@ -321,7 +322,7 @@
                 itemStyle: {
                     render: 'group',
                     name: 'Стиль подписей',
-                    collapsable: true,
+                    collapsible: true,
                     items: {
                         color: {
                             render: 'item',
@@ -393,7 +394,7 @@
 	    mainTooltip: {
 	        render: 'group',
 	        name: 'Всплывающая подсказка',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
@@ -472,6 +473,10 @@
                     render: 'formatter',
                     name: 'Формат точек',
                     formatterOpts: {
+                        basicSettings: {
+                            type: 'number',
+                            value: 'y'
+                        },
                         variables: [
                             {
                                 alias: 'Процентное соотношение',
@@ -574,13 +579,13 @@
         plotOptions: {
 	        render: 'group',
 	        name: 'Опции точек',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 series: {
                     render: 'group',
                     name: 'Общие',
-                    collapsable: true,
+                    collapsible: true,
                     collapsed: true,
                     items: {
                         stacking: {
@@ -601,7 +606,7 @@
                         dataLabels: {
                             render: 'group',
                             name: 'Подписи',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 enabled: {
                                     render: 'item',
@@ -665,6 +670,10 @@
                                     render: 'formatter',
                                     name: 'Форматирование',
                                     formatterOpts: {
+                                        basicSettings: {
+                                            type: 'number',
+                                            value: 'y'
+                                        },
                                         variables: [
                                             {
                                                 alias: 'Процентное соотношение',
@@ -707,7 +716,7 @@
                                 style: {
                                     render: 'group',
                                     name: 'Стиль подписей',
-                                    collapsable: true,
+                                    collapsible: true,
                                     items: {
                                         color: {
                                             render: 'item',
@@ -769,7 +778,7 @@
 	    credits: {
 	        render: 'group',
 	        name: 'Авторская подпись',
-            collapsable: true,
+            collapsible: true,
             collapsed: true,
             items: {
                 enabled: {
@@ -1102,12 +1111,13 @@
                                 events: {
                                     click: function(evt) {
                                         evt.preventDefault();
+                                        evt.stopPropagation();
 
                                         if(evt.point.series.options.datacube.filtration){
                                             if(evt.point.selected){
                                                 $this._removePointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
                                             } else {
-                                                $this._addPointFilter(evt.point, evt.ctrlKey || evt.shiftKey);
+                                                $this._addPointFilter(evt.point, evt.ctrlKey || evt.shiftKey, $this._chartType === 'stockChart');
                                             }
                                         }
 
@@ -1228,7 +1238,7 @@
             return f1 && f2;
         },
 
-        _resolveRangeFilters: function( binding){
+        _resolveRangeFilters: function(binding){
             var globalFilters = this.getSourceFilters(this._dataSource);
 
             if(globalFilters){
@@ -1301,7 +1311,7 @@
 
             var globalFilters = this.getSourceFilters(this._dataSource);
 
-            if(globalFilters){
+            if(globalFilters && Object.keys(globalFilters).length > 0){
                 var newFilters = {},
                     curFilters = {};
 
@@ -1314,7 +1324,7 @@
 
                     var cur = globalFilters[i];
 
-                    if(bindings.indexOf(cur.field) > -1 && cur.op === '$eq'){
+                    if(bindings.indexOf(cur.field) > -1 && (cur.op === '$eq' || cur.op === '$range')){
                         curFilters[i] = cur;
                         newFilters[i] = cur;
 
@@ -1357,7 +1367,7 @@
         },
 
         _addFilterData: function(){
-            if(!this._filterFields || this._filterFields.values().length === 0){
+            if(!this._filterFields || !this._filterFields.checked() || this._filterFields.values().length === 0){
                 return;
             }
 
@@ -1367,14 +1377,24 @@
             };
         },
 
-        _addPointFilter: function(point, accumulate){
+        _addPointFilter: function(point, accumulate, isRange){
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
+                datacubePointOpts = point.options.datacube,
                 binding = point.series.options.datacube.binding || point.options.datacube.binding,
-                refreshOpts = {};
+                refreshOpts = {},
+                gLength;
 
             if(!context.source) {
                 return;
+            }
+
+            if(isRange){
+                if(point.dataGroup){
+                    gLength = point.dataGroup.length;
+                } else {
+                    gLength = 1;
+                }
             }
 
             if(!accumulate && Object.keys(this._curFilters).length > 0){
@@ -1387,17 +1407,18 @@
                 this._curFilters = {};
             }
 
-            if(datacubeOpts.filterData){  // not widget filters
-                for(var i = 0; i < datacubeOpts.filterData.bindings.length; i++){
+            if(datacubePointOpts.filterData){  // not widget filters
+                // todo: isRange
+                for(var i = 0; i < datacubePointOpts.filterData.bindings.length; i++){
                     var fDesc = {
                         sourceId: context.source,
                         type: '$and',
                         op: '$eq',
-                        field: datacubeOpts.filterData.bindings[i],
-                        value: datacubeOpts.filterData.values[i]
+                        field: datacubePointOpts.filterData.bindings[i],
+                        value: datacubePointOpts.filterData.values[i]
                     };
 
-                    if(datacubeOpts.filterData.bindings[i] === binding){
+                    if(datacubePointOpts.filterData.bindings[i] === binding){
                         this._curFilters[this.addFilter(fDesc)] = fDesc;
                     } else {
                         this.addFilter(fDesc);
@@ -1405,12 +1426,27 @@
                     }
                 }
             } else {    // widget filters
+                if(isRange && this._schemeOpts.dataGrouping && this._schemeOpts.dataGrouping.isGrouped){
+                    var startRangeValue = point.x,
+                        groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
+                        units = this._schemeOpts.dataGrouping.units || 1;
+
+                    switch(this._schemeOpts.dataGrouping.groupBy){
+                        case 'millisecond':
+                            startRangeValue = point.x;
+                            break;
+                        default:
+                            startRangeValue = Math.floor(point.x / groupConst) * groupConst;
+                            break;
+                    }
+                }
+
                 var fDesc = {
                     sourceId: context.source,
-                    type: '$or',
-                    op: '$eq',
+                    type: isRange ? '$and' : '$or',
+                    op: isRange ? '$range' : '$eq',
                     field: binding,
-                    value: point[this._filterPropName]
+                    value: isRange ? [startRangeValue, startRangeValue + gLength * groupConst * units] : point[this._filterPropName]
                 };
 
                 this._curFilters[this.addFilter(fDesc)] = fDesc;
@@ -1476,6 +1512,7 @@
 
             if(accumulate){
                 // remove context filter
+                // todo: test isRange
                 for(var i in contextFilters){
                     if(i === binding && contextFilters[i].$eq.$const === point[this._filterPropName]){
                         var filter = {};
@@ -1535,8 +1572,11 @@
                     if(this.chart.series[j].options.datacube.binding === filters[i].field ||
                        this.chart.series[j].options.datacube.bindings && this.chart.series[j].options.datacube.bindings.indexOf(filters[i].field) > -1){
                         for(var k = 0; k < this.chart.series[j].points.length; k++){
-                            if(filters[i].value === this.chart.series[j].points[k][this._filterPropName]){
+                            if(filters[i].value === this.chart.series[j].points[k][this._filterPropName] ||
+                               JSB.isArray(filters[i].value) && (filters[i].value[0] === this.chart.series[j].points[k][this._filterPropName] ||
+                               (filters[i].value[0] <= this.chart.series[j].points[k][this._filterPropName]) && (filters[i].value[1] > this.chart.series[j].points[k][this._filterPropName]))){
                                 this.chart.series[j].points[k].select(b1, b2);
+                                break;
                             }
                         }
                     }

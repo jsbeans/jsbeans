@@ -5,7 +5,7 @@
         xAxis: {
 	        render: 'group',
 	        name: 'Ось Х',
-            collapsable: true,
+            collapsible: true,
             multiple: {
                 createDefault: true,
                 uniqueNames: true
@@ -14,7 +14,7 @@
                 item: {
                     render: 'group',
                     name: 'Ось X',
-                    collapsable: true,
+                    collapsible: true,
                     editableName: {
                         commonField: 'xAxisNames'
                     },
@@ -33,7 +33,7 @@
                         labels: {
                             render: 'group',
                             name: 'Подписи',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 enabled: {
                                     render: 'item',
@@ -58,8 +58,13 @@
                                     formatterOpts: {
                                         variables: [
                                             {
-                                                alias: 'Значение',
+                                                alias: 'Значение строчное',
                                                 type: 'string',
+                                                value: 'value'
+                                            },
+                                            {
+                                                alias: 'Значение числовое',
+                                                type: 'number',
                                                 value: 'value'
                                             }
                                         ]
@@ -84,7 +89,7 @@
                         title: {
                             render: 'group',
                             name: 'Заголовок оси',
-                            collapsable: true,
+                            collapsible: true,
                             items: {
                                 text: {
                                     render: 'item',
