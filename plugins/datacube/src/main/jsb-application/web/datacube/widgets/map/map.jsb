@@ -1152,6 +1152,8 @@
                 markers = [],
                 bindings = [];
 
+            this._styles.contentData = [];
+
             function fetch(isReset){
                 $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
                     try{
@@ -1160,17 +1162,7 @@
                             return;
                         }
 
-                        if($this._styles.contentBindings.length > 0){
-                            for(var j = 0; j < res.length; j++){
-                                var item = {};
-
-                                for(var i = 0; i < $this._styles.contentBindings.length; i++){
-                                    item['binding$' + $this._styles.contentBindings[i]] = res[j][$this._styles.contentBindings[i]].main;
-                                }
-
-                                $this._styles.contentData.push(item);
-                            }
-                        }
+                        $this.parseFormatterData($this._styles.contentBindings, $this._styles.contentData, res);
 
                         while($this._dataSource.next({ embeddedBindings: $this._styles.embeddedBindings })){
                             // load regions

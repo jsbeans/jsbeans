@@ -47,6 +47,23 @@
                     name: 'Опускать группы с пустыми именами',
                     optional: 'checked',
                     editor: 'none'
+                },
+                useImages: {
+                    render: 'switch',
+                    name: 'Использовать изображения',
+                    items: {
+                        url: {
+                            render: 'formatter',
+                            name: 'URL',
+                            linkTo: 'source'
+                        },
+                        showLabels: {
+                            render: 'item',
+                            name: 'Показывать подписи',
+                            optional: 'checked',
+                            editor: 'none'
+                        }
+                    }
                 }
             }
         },
@@ -77,7 +94,21 @@
                             name: 'hierarchical'
                         },
                         flattened: {
-                            name: 'flattened'
+                            name: 'flattened',
+                            items: {
+                                descriptionGroupType: {
+                                    render: 'select',
+                                    name: 'Тип имён групп',
+                                    items: {
+                                        stab: {
+                                            name: 'stab'
+                                        },
+                                        floating: {
+                                            name: 'floating'
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -85,6 +116,8 @@
         }
     },
 	$client: {
+	    $require: ['JSB.Utils.Formatter'],
+
 	    _isNeedUpdate: false,
 
         $constructor: function(opts){
@@ -126,6 +159,7 @@
                 this._dataSource = null;
                 this._schemeOpts = null;
                 this._widgetOpts = null;
+                this._styles = null;
             }
 
         	if(!this._dataSource){
@@ -143,21 +177,31 @@
         	        settings = this.getContext().find('settings');
 
         	    this._schemeOpts = {
-        	        series: [],
-        	        settings: {
-        	            layout: settings.find('layout').value(),
-        	            stacking: settings.find('stacking').value()
-        	        }
+        	        contentBindings: [],
+        	        contentData: [],
+        	        series: []
         	    }
 
         	    for(var i = 0; i < seriesContext.length; i++){
+        	        var useImages = seriesContext[i].find('useImages').checked();
+
         	        this._schemeOpts.series.push({
                         nameSelector: seriesContext[i].find('fieldName'),
                         dataSelector: seriesContext[i].find('fieldWeight'),
                         autoSize: seriesContext[i].find('autoSize').checked(),
                         isSum: seriesContext[i].find('isSum').checked(),
-                        skipEmptyNamedGroups: seriesContext[i].find('skipEmptyNamedGroups').checked()
+                        skipEmptyNamedGroups: seriesContext[i].find('skipEmptyNamedGroups').checked(),
+                        url: useImages ? seriesContext[i].find('useImages url').value() : undefined,
+                        showLabels: useImages ? seriesContext[i].find('useImages showLabels').checked() : undefined
         	        });
+        	    }
+        	}
+
+        	if(!this._styles){
+        	    this._styles = {
+                    layout: settings.find('layout').value(),
+                    stacking: settings.find('stacking').value(),
+                    descriptionGroupType: settings.find('descriptionGroupType').value()
         	    }
         	}
 
@@ -171,13 +215,25 @@
 
             this.getElement().loader();
 
-            try{
-                function fetch(isReset){
+            function parseFormatterData(res){
+                var data = {};
+
+                for(var i in res){
+                    data[i] = res[i].main;
+                }
+
+                return data;
+            }
+
+            function fetch(isReset){
+                try{
                     $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res, fail, serverWidgetOpts){
                         if(res.length === 0){
                             resultProcessing();
                             return;
                         }
+
+                        var resCount = 0;
 
                         while($this._dataSource.next()){
                             var curCat = data;
@@ -211,6 +267,8 @@
                                     curCat[name] = {
                                         binding: $this._schemeOpts.series[i].nameSelector.binding(),
                                         child: {},
+                                        image: $this._schemeOpts.series[i].url ? Formatter.format($this._schemeOpts.series[i].url, parseFormatterData(res[resCount])) : undefined,
+                                        showLabels: $this._schemeOpts.series[i].showLabels,
                                         name: name,
                                         weight: $this._schemeOpts.series[i].autoSize ? 0 : value
                                     };
@@ -220,27 +278,71 @@
 
                                 curCat = curCat[name].child;
                             }
+
+                            resCount++;
                         }
 
                         fetch();
                     });
+                } catch(ex){
+                    console.log('Foamtree load data exception');
+                    console.log(ex);
+                    $this.getElement().loader('hide');
                 }
+            }
 
-                function resultProcessing(){
+            function resultProcessing(){
+                try{
                     function resolveData(arr, data){
                         if(!data){
                             return;
                         }
 
                         for(var i in data){
-                            var groups = [];
+                            var groups = []
+                                group = {
+                                    binding: data[i].binding,
+                                    groups: groups,
+                                    label: data[i].name,
+                                    showLabels: data[i].showLabels,
+                                    weight: data[i].weight
+                                };
 
-                            arr.push({
-                                binding: data[i].binding,
-                                groups: groups,
-                                label: data[i].name,
-                                weight: data[i].weight
-                            });
+                            if(data[i].image){
+                                (function(group){
+                                    JSB.merge(group, {
+                                        image: undefined,
+                                        imageLoaded: false,         // true when image has just been loaded
+                                        imageLoadedTime: undefined, // time the image completed loading, used for fading-in animation
+
+                                        hasImage: true,
+
+                                        // True when some image-specific data is loading. We'll set this flag to true
+                                        // when the list of author's images is loading to show a spinner in that group.
+                                        loading: false
+                                    });
+
+                                    // Initiate loading of the low-resolution image
+                                    var img = new Image();
+                                    img.onload = function () {
+                                      // Once the image has been loaded,
+                                      // put it in the group's data object
+                                      group.image = img;
+                                      group.imageLoaded = true;
+                                      group.imageLoadedTime = Date.now();
+
+                                      // Schedule FoamTree redraw to show the newly loaded image
+                                      if($this.foamtree){
+                                        $this.foamtree.redraw(false, group);
+                                      } else {
+                                        $this._isNeedUpdate = true;
+                                      }
+                                    };
+                                    img.src = data[i].image;
+                                })(group);
+                            }
+
+                            arr.push(group);
 
                             resolveData(groups, data[i].child);
                         }
@@ -254,14 +356,14 @@
                     $this.buildChart(seriesData);
 
                     $this.getElement().loader('hide');
+                } catch(ex){
+                    console.log('Foamtree processing data exception');
+                    console.log(ex);
+                    $this.getElement().loader('hide');
                 }
-
-                fetch(true);
-            } catch(ex){
-                console.log('Foamtree load data exception');
-                console.log(ex);
-                $this.getElement().loader('hide');
             }
+
+            fetch(true);
         },
 
         buildChart: function(data){
@@ -275,21 +377,19 @@
         _buildChart: function(data){
             if(this.foamtree){
                 this.foamtree.set({
-                    layout: this._schemeOpts.settings.layout,
-                    stacking: this._schemeOpts.settings.stacking,
                     dataObject: {
                         groups: data
                     }
                 });
+
                 this.foamtree.redraw();
             } else {
-                this.foamtree = new CarrotSearchFoamTree({
+                this.foamtree = new CarrotSearchFoamTree(JSB.merge(this._styles, {
                     element: this.container.get(0),
+                    pixelRatio: window.devicePixelRatio || 1,
                     dataObject: {
                         groups: data
                     },
-                    layout: this._schemeOpts.settings.layout,
-                    stacking: this._schemeOpts.settings.stacking,
                     onGroupSelectionChanged: function(event){
                         if(event.groups.length){
                             var context = $this._dataSource.binding();
@@ -319,8 +419,180 @@
                                 $this.refreshAll();
                             }
                         }
-                    }
-                });
+                    },
+
+                    // for images
+                    groupContentDecorator: function (opts, props, vars) {
+                        var group = props.group;
+
+                        if(!group.hasImage){
+                            return;
+                        }
+
+                        // The canvas 2d context on which we'll be drawing
+                        var ctx = props.context;
+
+                        // Current time, we'll need it to draw animations
+                        var now = Date.now();
+
+                        // Don't draw default labels and polygons, we'll draw everything on our own.
+                        if(props.exposure >= 1){
+                            vars.groupLabelDrawn = true;
+                        } else {
+                            vars.groupLabelDrawn = group.showLabels;
+                        }
+
+                        // Here we handle the fading-in of the image that was just loaded and
+                        // fading-out of the loading spinner animation.
+                        var imageAlpha = 0;
+                        if (group.image) {
+                          // Image is available, fade it in
+                          imageAlpha = Math.min(1, (now - group.imageLoadedTime) / 300);
+                          ctx.globalAlpha = imageAlpha;
+                          drawImage();
+                        }
+                        if (imageAlpha < 1 || group.loading) {
+                          // Image still loading of fading-in, draw spinner animation.
+                          // We'll also draw the spinner when we're loading more of
+                          // authors photos.
+                          ctx.globalAlpha = group.loading ? 1.0 : 1 - imageAlpha;
+                          drawSpinner();
+
+                          // Schedule a redraw of this group.
+                          $this.foamtree.redraw(false, group);
+                        }
+
+                        // Draws the loading spinner animation
+                        function drawSpinner() {
+                            var cx = props.polygonCenterX;
+                            var cy = props.polygonCenterY;
+
+                            if (props.shapeDirty) {
+                                // If group's polygon changed, recompute the radius of the inscribed polygon.
+                                group.spinnerRadius = CarrotSearchFoamTree.geometry.circleInPolygon(props.polygon, cx, cy) * 0.1;
+                            }
+
+                            // Draw the spinner. Advance the animation based on the current time.
+                            var angle = 2 * Math.PI * (now % 1000) / 1000;
+                            ctx.beginPath();
+                            ctx.arc(cx, cy, group.spinnerRadius, angle, angle + Math.PI / 5, true);
+                            ctx.strokeStyle = "white";
+                            ctx.lineWidth = group.spinnerRadius * 0.3;
+                            ctx.stroke();
+                        }
+
+                        // Draws the image in the group's polygon.
+                        //
+                        // If the group is not exposed, we'll crop the image in such a way that it covers the whole polygon.
+                        // If the group is exposed, we'll show the whole image. To fill the remaining space in the polygon,
+                        // we'll draw the blurred version of the same image as the backdrop.
+                        //
+                        function drawImage() {
+                          // If the group's polygon changed or image has just loaded, recompute the geometry-dependent elements.
+                          if (props.shapeDirty || group.imageLoaded) {
+                            group.imageLoaded = false;
+
+                            // Bounding box of the polygon
+                            group.boundingBox = CarrotSearchFoamTree.geometry.boundingBox(props.polygon);
+
+                            // Rectangle inscribed in the polygon. We'll set the aspect ratio of the rectangle to be the
+                            // same as the aspect ratio of the image. When the group is exposed, we'll draw the full
+                            // image in the inscribed rectangle.
+                            group.inscribedBox = CarrotSearchFoamTree.geometry.rectangleInPolygon(
+                              props.polygon, props.polygonCenterX, props.polygonCenterY, group.image.width / group.image.height, 0.95);
+
+                            // Check if there's enough space for the label. If not, shift the inscribed box upwards a bit.
+                            var descriptionHeight = group.boundingBox.y + group.boundingBox.h - group.inscribedBox.y - group.inscribedBox.h;
+                            var minDescriptionHeight = 0.125 * group.boundingBox.h;
+                            if (descriptionHeight < minDescriptionHeight) {
+                              group.inscribedBox = CarrotSearchFoamTree.geometry.rectangleInPolygon(
+                                props.polygon, props.polygonCenterX, props.polygonCenterY - (minDescriptionHeight - descriptionHeight), group.image.width / group.image.height, 0.95);
+                            }
+
+                            // Clear the label buffer. We'll lay out the label when needed.
+                            group.labelBuffer = null;
+                          }
+
+                          var image = group.image;
+
+                          // To ensure a smooth transition between the cropped and full image view, we'll animate the
+                          // image rectangle during the expose animation.
+                          var mainImageBox;
+                          var exposure = props.exposure;
+                          if (exposure <= 0) {
+                            // Not exposed, render cropped image
+                            mainImageBox = group.boundingBox;
+                          } else if (exposure == 1) {
+                            // Exposed, render full image
+                            mainImageBox = group.inscribedBox;
+                          } else {
+                            // Expose animation in progress, transition the image rectangle geometry.
+                            mainImageBox = {
+                              x: group.boundingBox.x * (1 - exposure) + group.inscribedBox.x * exposure,
+                              y: group.boundingBox.y * (1 - exposure) + group.inscribedBox.y * exposure,
+                              w: group.boundingBox.w * (1 - exposure) + group.inscribedBox.w * exposure,
+                              h: group.boundingBox.h * (1 - exposure) + group.inscribedBox.h * exposure
+                            };
+                          }
+
+                          // Set the group polygon path on the drawing context.
+                          ctx.beginPath();
+                          props.polygonContext.replay(ctx);
+                          ctx.closePath();
+
+                          // Since the image is larger than the polygon, we'll need to apply
+                          // clipping so that we don't draw beyond the polygon's area.
+                          ctx.save();
+                          ctx.clip();
+
+                          // Draw the main image
+                          if (exposure > 0) {
+                            drawImageInBox(image, mainImageBox);
+                          } else {
+                            ctx.save();
+                            ctx.globalAlpha *= 0.9;
+                            drawImageInBox(image, mainImageBox);
+                            ctx.restore();
+                          }
+
+                          ctx.restore();
+
+                          // Draw a subtle polygon outline
+                          ctx.strokeStyle = props.exposure > 0 || props.hovered ? "rgba(255, 255, 255, 0.25)" : "rgba(0, 0, 0, 0.4)";
+                          ctx.lineWidth = 1;
+                          ctx.stroke();
+
+                          // Draws the image positioned in the provided rectangle.
+                          function drawImageInBox(image, box) {
+                            var groupWidthToHeight = box.w / box.h;
+                            var imageWidthToHeight = image.width / image.height;
+
+                            var scale = groupWidthToHeight < imageWidthToHeight ?
+                                box.h / image.height : box.w / image.width;
+
+                            var xOffset = box.x / scale, yOffset = box.y / scale;
+                            if (groupWidthToHeight < imageWidthToHeight) {
+                              scale = box.h / image.height;
+                              xOffset -= (image.width - box.w / scale) / 2;
+                            } else {
+                              scale = box.w / image.width;
+                              yOffset -= (image.height - box.h / scale) / 2;
+                            }
+
+                            group.scale = scale;
+
+                            ctx.save();
+                            ctx.scale(scale, scale);
+                            ctx.translate(xOffset, yOffset);
+
+                            ctx.drawImage(image, 0, 0);
+                            ctx.restore();
+                          }
+                        }
+                    },
+
+                    groupContentDecoratorTriggering: "onSurfaceDirty" //onShapeDirty
+                }));
             }
 
             this._isNeedUpdate = false;

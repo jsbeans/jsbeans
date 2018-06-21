@@ -268,8 +268,7 @@
                         for(var i = 0; i < seriesContext.length; i++){
                             var series = {
                                 datacube: {
-                                    binding: seriesContext[i].find('name').binding() || seriesContext[i].find('data').binding(),
-                                    filterData: filterData
+                                    binding: seriesContext[i].find('name').binding() || seriesContext[i].find('data').binding()
                                 },
                                 data: data[i],
                                 size: seriesContext[i].find('size').value(),

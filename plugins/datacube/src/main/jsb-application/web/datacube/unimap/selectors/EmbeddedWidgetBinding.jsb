@@ -6,6 +6,29 @@
         return this._selectorOpts.valueSkipping;
     },
 
+    extractWidgetScheme: function(wName){
+        var scheme = {},
+            curWidgetJsb = JSB.get(wName),
+            schemesArray = [];
+
+        while(curWidgetJsb){
+            if(!curWidgetJsb.isSubclassOf('DataCube.Widgets.Widget')){
+                break;
+            }
+            var wScheme = curWidgetJsb.getDescriptor().$scheme;
+            if(wScheme && Object.keys(wScheme).length > 0){
+                schemesArray.push(wScheme);
+            }
+            curWidgetJsb = curWidgetJsb.getParent();
+        }
+
+        for(var i = schemesArray.length - 1; i > -1; i--){
+            JSB.merge(true, scheme, schemesArray[i]);
+        }
+
+        return scheme;
+    },
+
     findRendersByName: function(name, arr, values){
         if(!arr){
             arr = [];
@@ -59,5 +82,25 @@
         }
 
         return this._values[0].value;
+    },
+
+    updateValues: function(key, scheme, values, opts){
+        var wasUpdated = $base(key, scheme, values, opts);
+
+        if(!JSB.isDefined(values.valueSkipping)){
+            values.valueSkipping = true;
+        }
+
+        for(var i = 0; i < values.values.length; i++){
+            if(!values.values[i].binding){
+                continue;
+            }
+
+            var wScheme = this.extractWidgetScheme(values.values[i].binding.jsb);
+            wasUpdated = this.getMainSelector().updateValues(wScheme, {values: values.values[i].value, linkedFields: values.values[i].linkedFields}) || wasUpdated;
+        }
+
+
+        return wasUpdated;
     }
 }

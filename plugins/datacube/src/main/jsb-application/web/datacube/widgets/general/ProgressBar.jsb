@@ -73,6 +73,12 @@
                     valueType: 'string',
                     defaultValue: '{y:,.0f}'
 	            },
+	            showValues: {
+	                render: 'item',
+	                name: 'Показывать значения',
+	                optional: 'checked',
+	                editor: 'none'
+	            },
 	            colColorSelector: {
 	                render: 'select',
 	                name: 'Цвет',
@@ -199,6 +205,7 @@
 					valSelector: gArr[i].find('val'),
 					colSelector: gArr[i].find('colColor'),
 					valFormat: gArr[i].find('formatter'),
+					showValues: gArr[i].find('showValues').checked(),
 					colWidth: parseFloat(gArr[i].find('colWidth').value()),
 					trailColor: gArr[i].find('trailColor').value(),
 					trailWidth: parseFloat(gArr[i].find('trailWidth').value()),
@@ -260,15 +267,18 @@
 								duration: 800,
 								easing: 'easeInOut'
 							});
-						}, 0)
-						var valStr = '' + val,
-						    format = d.valFormat.value();
+						}, 0);
 
-						if(JSB.isNumber(val) && format){
-							valStr = Formatter.format(format, {y: val});
-						}
-						widget.setText(valStr);
-						d3.select(this).select('.progressbar-text').attr('style', d.textCss);
+						if(d.showValues){
+                            var valStr = '' + val,
+                                format = d.valFormat.value();
+
+                            if(JSB.isNumber(val) && format){
+                                valStr = Formatter.format(format, {y: val});
+                            }
+                            widget.setText(valStr);
+                            d3.select(this).select('.progressbar-text').attr('style', d.textCss);
+                        }
 						
 						$this.widgets[d.serieIdx] = {widget: widget, type: d.type};
 					});
@@ -305,11 +315,15 @@
 					easing: 'easeInOut'
 				});
 
-				var format = d.valFormat.value();
-				if(JSB.isNumber(val) && format){
-					val = Formatter.format(format, {y: val});
+				if(d.showValues){
+                    var format = d.valFormat.value();
+                    if(JSB.isNumber(val) && format){
+                        val = Formatter.format(format, {y: val});
+                    }
+                    widget.setText('' + val);
+
+                    d3.select(this).select('.progressbar-text').attr('style', d.textCss);
 				}
-				widget.setText('' + val);
 				
 				d3.select(this).select('svg > path:first-child')
 					.attr('stroke', d.trailColor || '#f4f4f4')
@@ -318,8 +332,6 @@
 				d3.select(this).select('svg > path:last-child')
 					.attr('stroke', d.colSelector.value() || '#3a3a3a')
 					.attr('stroke-width', d.colWidth || 4);
-				
-				d3.select(this).select('.progressbar-text').attr('style', d.textCss);
 			});
 
 			// sort

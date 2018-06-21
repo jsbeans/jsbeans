@@ -1409,7 +1409,7 @@
 
             if(datacubePointOpts.filterData){  // not widget filters
                 // todo: isRange
-                for(var i = 0; i < datacubeOpts.filterData.bindings.length; i++){
+                for(var i = 0; i < datacubePointOpts.filterData.bindings.length; i++){
                     var fDesc = {
                         sourceId: context.source,
                         type: '$and',
@@ -1418,7 +1418,7 @@
                         value: datacubePointOpts.filterData.values[i]
                     };
 
-                    if(datacubeOpts.filterData.bindings[i] === binding){
+                    if(datacubePointOpts.filterData.bindings[i] === binding){
                         this._curFilters[this.addFilter(fDesc)] = fDesc;
                     } else {
                         this.addFilter(fDesc);
