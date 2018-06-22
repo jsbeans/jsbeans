@@ -47,15 +47,28 @@
         },
 
         next: function(){
+            function fillNullFields(value) {
+                for(var u = 0; u < $this.query.$union.length; u++){
+                    for(var alias in $this.query.$union[u].$select) {
+                        if (!value.hasOwnProperty(alias)) {
+                            value[alias] = null;
+                        }
+                    }
+                }
+            }
+
             while($this.unionPos < $this.unions.length) {
                 var value = $this.unions[$this.unionPos].next();
                 if(value == null) {
                     $this.unionPos++;
                     continue;
                 }
-                return value;
+
+                fillNullFields(value);
+
+                return $this.object = value;
             }
-            return null;
+            return $this.object = null;
         },
 
 	}

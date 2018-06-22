@@ -143,6 +143,10 @@
                         }
                         var fromQuery = typeof query.$from === 'string'
                                 ? findView.call(this, query, query.$from) : query.$from;
+
+                        if (JSB.isEqual(fromQuery, {})) {
+                            return true;
+                        }
                         if (!JSB.isObject(fromQuery)) {
                             throw new Error('Invalid $from type ' + typeof query.$from);
                         }

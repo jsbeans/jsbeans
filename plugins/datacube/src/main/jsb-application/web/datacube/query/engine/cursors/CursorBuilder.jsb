@@ -7,6 +7,7 @@
 		    'DataCube.Query.Engine.Cursors.QueryCursor',
 		    'DataCube.Query.Engine.Cursors.JoinCursor',
 		    'DataCube.Query.Engine.Cursors.UnionCursor',
+		    'DataCube.Query.Engine.Cursors.EmptyCursor',
 
 		    'DataCube.Query.QuerySyntax',
 		    'DataCube.Query.QueryUtils',
@@ -108,7 +109,7 @@
             var unionsCursor = new UnionCursor($this.executor, unionQuery, params, parent, caller);
 
             for(var i = 0; i < unionQuery.$union.length; i++) {
-                var subQuery = unionQuery.$unions[i];
+                var subQuery = unionQuery.$union[i];
                 QueryUtils.throwError(subQuery, 'Union {} contains undefined subquery', unionQuery.$context);
 
                 unionsCursor.addUnion(
@@ -116,7 +117,7 @@
                 );
             }
 
-            $this._buildViewFields(joinCursor);
+            $this._buildViewFields(unionsCursor);
 
             return unionsCursor;
         },

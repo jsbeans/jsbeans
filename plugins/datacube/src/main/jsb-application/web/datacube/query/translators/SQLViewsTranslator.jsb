@@ -34,7 +34,7 @@
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    $this.config = {
 //		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'),
-		        excludeProviderWrappers: Config.get('datacube.query.excludeProviderWrappers'),
+//		        excludeProviderWrappers: Config.get('datacube.query.excludeProviderWrappers'),
 		    }
 //debugger
 		},
@@ -263,13 +263,13 @@
             if (view instanceof QueryView) {
                 desc = view.sourceView.getField(name);
                 if (desc) {
-                    // try optimize provider wrapper
-                    if (desc && desc.context) {
-                        var sourceView = $this._findQueryView(desc.context);
-                        if ($this.config.excludeProviderWrappers && sourceView instanceof QueryView && sourceView.isProviderWrapper()) {
-                            return $this._translateField(name, desc.context, false, callerContext);
-                        }
-                    }
+//                    // try optimize provider wrapper
+//                    if (desc && desc.context) {
+//                        var sourceView = $this._findQueryView(desc.context);
+//                        if ($this.config.excludeProviderWrappers && sourceView instanceof QueryView && sourceView.isProviderWrapper()) {
+//                            return $this._translateField(name, desc.context, false, callerContext);
+//                        }
+//                    }
                     return $this._translateViewField(desc);
                 }
             }
@@ -411,9 +411,10 @@
         },
 
         _translateSelectColumns: function(view){
+debugger
             var sqlColumns = '';
             var fields = view.listFields();
-            for (var i in fields) {
+            for (var i = 0; i < fields.length; i++) {
                 if (sqlColumns.length > 0) sqlColumns += ', ';
                 var field = fields[i];
                 sqlColumns += $this._declareViewField(view.getField(field), view.getQuery());
@@ -466,12 +467,12 @@
             var sql = '';
             sql += $this._translateSourceView(view.getLeftView(), view.getLeftView().name);
             sql += ' ' + view.joinType.toUpperCase() + ' JOIN ';
-            if ($this.config.excludeProviderWrappers && view.getRightView() instanceof QueryView && view.getRightView().isProviderWrapper()) {
-                var rightView = view.getRightView().getSourceView();
-                sql += $this._translateSourceView(rightView, rightView.name);
-            } else {
-                sql += $this._translateSourceView(view.getRightView(), view.getRightView().name);
-            }
+//            if ($this.config.excludeProviderWrappers && view.getRightView() instanceof QueryView && view.getRightView().isProviderWrapper()) {
+//                var rightView = view.getRightView().getSourceView();
+//                sql += $this._translateSourceView(rightView, rightView.name);
+//            } else {
+            sql += $this._translateSourceView(view.getRightView(), view.getRightView().name);
+//            }
 
             sql += ' ON ';
 

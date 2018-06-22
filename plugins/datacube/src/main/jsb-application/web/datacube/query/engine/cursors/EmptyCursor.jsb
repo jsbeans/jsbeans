@@ -10,6 +10,8 @@
 		    $base(executor, parent, caller);
         },
 
+        _pos: -1,
+
         next: function(){
             return $this.object = (
                 $this._pos === -1

@@ -55,6 +55,8 @@
             }
             $this.chain.push('input');
 
+debugger;
+
             // фильтрация  - только в отношении входных полей (условия с выходными игнорируются)
             $this.query.$filter
                     && $this._installFilter(
@@ -145,7 +147,7 @@ debugger;
             var inputNext = $this.next;
 
             $this.next = function(){
-                var object = inputNext.call($this);
+                var object = $this.object = inputNext.call($this);
 
                 if (object != null) {
                     var obj = {};
@@ -204,6 +206,7 @@ debugger;
             var current = 0;
 
             $this.next = function offset(){
+debugger;
                 var object = inputNext.call($this);
                 while(object != null && current++ < $offset) {
                     object = inputNext.call($this);

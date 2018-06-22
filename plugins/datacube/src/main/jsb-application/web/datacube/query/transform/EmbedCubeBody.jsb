@@ -22,6 +22,10 @@
 		            try {
                         var query2 = JSB.merge({}, query, {$views: dcQuery.$views});
                         var usedFields = /**{field:usages};*/ QueryUtils.extractUsedFields(query2, cubeOrDataProvider);
+                        if (Object.keys(usedFields).length == 0) {
+                            query.$from = {};
+                            return;
+                        }
 
 		                var providers = cube
 		                        ? QueryUtils.extractQueryProviders(dcQuery, cube)

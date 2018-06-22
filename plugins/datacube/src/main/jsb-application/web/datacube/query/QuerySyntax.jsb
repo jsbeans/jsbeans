@@ -160,10 +160,11 @@
 		            '$cubeFilter': '$cubeFilter',
 		            '$sort': '$sort',
 		            '$limit': '$limit',
+		            '$offset': '$offset',
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
 		        },
-		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
+		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$offset']
 		    });
 
 		    new this.ComplexObject({
@@ -1068,6 +1069,15 @@
 		        displayName: 'Ограничить число элементов',
 		        desc: 'Ограничение количества элементов (строк) результата запроса',
 		        value: 10,
+		        editable: true
+		    });
+
+		    new this.EConstNumber({
+		        name: '$offset',
+		        category: 'Выражения запроса',
+		        displayName: 'Пропустить элементы',
+		        desc: 'Пропуск нескольких первых элементов (строк) результата запроса',
+		        value: 0,
 		        editable: true
 		    });
 		

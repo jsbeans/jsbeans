@@ -56,7 +56,6 @@ debugger;
                 var it =  rootCursor.asIterator();
                 var oldNext = it.next;
                 it.next = function(){
-debugger;
                     try {
                         return oldNext.apply(this, arguments);
                     }catch(e){

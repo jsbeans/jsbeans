@@ -45,7 +45,7 @@
 		        var inner = $this.views[i].getFromBody();
 		        from.$union.push(inner);
 		        for(var field in inner.$select) {
-		            if (!select[field]) {
+		            if (!from.$select[field]) {
 		                from.$select[field] = inner.$select[field];
                     }
 		        }
