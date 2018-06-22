@@ -139,10 +139,12 @@
 		        name: '$query',
 		        desc: 'Подзапрос',
 		        values: {
+		            '$views': '$views',
 		            '$context': '$contextName',
 		            '$filter': '$filter',
 		            '$groupBy': '$groupBy',
 		            '$select': '$select',
+		            '$recursiveTree': '$recursiveTree',
 		            '$from':'$from',
 		            '$distinct': '$distinctAll',
 		            '$postFilter': '$postFilter',
@@ -152,7 +154,18 @@
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
 		        },
-		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
+		        optional: ['$context', '$recursiveTree', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$views',
+		        desc: 'Именованные запросы, представляющие собой виртуальные таблицы-источники',
+		        displayName: 'Именованные запросы',
+		        onlyInRootQuery: true,
+		        customKey: '#viewName',
+		        values: {
+		            '#viewName': '$query'
+		        },
 		    });
 
 		    new this.ComplexObject({
@@ -163,6 +176,30 @@
 		        values: {
 		            '#outputFieldName': '$valueDefinition'
 		        },
+		    });
+
+		    new this.ComplexObject({
+		        name: '$recursiveTree',
+		        desc: 'Выражение дял превращения запроса в рекурсивный обход дерева',
+		        displayName: 'Рекурсивное дерево',
+		        values: {
+		            '$currentOutputField': '$recursiveTreeCurrentField',
+		            '$parentField': '$recursiveTreeParentField'
+		        },
+		    });
+
+		    new this.Group({
+		    	name: '$recursiveTreeCurrentField',
+		        displayName: 'Основное поле',
+		    	desc: 'Основное выходное поле запроса для пересечения',
+		        values: ['$field'],
+		    });
+
+		    new this.Group({
+		    	name: '$recursiveTreeParentField',
+		        displayName: 'Родительское поле',
+		    	desc: 'Основное родительское поле запроса для пересечения',
+		        values: ['$field'],
 		    });
 		
 		    new this.Group({
