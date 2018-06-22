@@ -129,7 +129,7 @@
             }
 
             this._editBlock.focus();
-            pasteHtmlAtCaret('<span class="variable" key="' + value + '" contenteditable="false">' + value + '</span> ');
+            pasteHtmlAtCaret('<span class="variable" key="' + value + '" contenteditable="false">' + value + '</span>');
 
             this.changeEvent();
 	    },
