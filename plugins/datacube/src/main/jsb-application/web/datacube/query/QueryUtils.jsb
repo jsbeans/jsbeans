@@ -704,6 +704,8 @@
         * 1) если поле является join (сравнивается по eq с любым полем другого запроса), то пропускаем
         */
         propagateGlobalFilter: function(dcQuery, cubeOrDataProvider) {
+
+        // TODO для recursiveTree если есть $startFilter и его поле фильтруется глобальным фильтром, то вставлять не в $filter, а в $startFilter
             var cubeFilter = {$and:[]};
             this.walkAllSubQueries(dcQuery, function(subQuery){
                 if (subQuery.$cubeFilter && Object.keys(subQuery.$cubeFilter).length > 0){
