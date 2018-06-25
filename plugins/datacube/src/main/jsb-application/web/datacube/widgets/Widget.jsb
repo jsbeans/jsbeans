@@ -221,10 +221,6 @@
             item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
             this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(serverData, fail){
-                if(fail){
-                    return;
-                }
-
                 if(item.fetchOpts.reset){
                     item.cursor = 0;
                     if(item.data){
@@ -246,8 +242,10 @@
                 if(callback){
                     if(fail){
                         JSB.getLogger().error(fail);
+                        callback.call($this, null, fail);
+                    } else {
+                    	callback.call($this, data, fail, serverData.widgetOpts);
                     }
-                    callback.call($this, data, fail, serverData.widgetOpts);
                 }
             });
             return true;
@@ -535,6 +533,10 @@
 				throw new Error('Main filter layer cannot be disabled');
 			}
 			JSB.merge(this.filterLayers, layerOpts);
+		},
+		
+		hasFilterLayer: function(lName){
+			return this.filterLayers[lName];
 		},
 
 		setFilterManager: function(filterManager){
