@@ -588,12 +588,16 @@
                 case 'date':
                     var desc = '<b>Форматирование даты</b><br/>%Y - год<br/>%m - месяц<br/>%d - день<br/><a href="http://php.net/manual/en/function.strftime.php" target="_blank">Больше форматов</a>',
                         description = this.$('<div class="description hidden">' + desc + '</div>'),
-                        msgIcon = this.createMsgIcon(description, 'desc fas fa-question-circle');
+                        msgIcon = this.createMsgIcon(description, 'desc fas fa-question-circle'),
+                        value = JSB.isDefined(variable.typeSettings.dateFormat) ? variable.typeSettings.dateFormat : '%d-%m-%Y';
+
+                    variable.typeSettings.dateFormat = value;
+                    variable.typeSettings.formatPart = value;
 
                     var dateLabel = this.$('<label class="label dateLabel">Формат даты</label>');
                     dateLabel.append(msgIcon);
                     var dateFormat = new Editor({
-                        value: JSB.isDefined(variable.typeSettings.dateFormat) ? variable.typeSettings.dateFormat : '%d-%m-%Y',
+                        value: value,
                         onchange: function(val){
                             variable.typeSettings.dateFormat = val;
 
