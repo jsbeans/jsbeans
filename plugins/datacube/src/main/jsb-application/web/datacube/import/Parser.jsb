@@ -678,6 +678,13 @@
 			}
 		},
 		
+		translateField: function(field){
+			if(!field || !JSB.isString(field)){
+				return field;
+			}
+			return field.replace(/\./g, '\uff0e');
+		},
+		
 		beginArray: function(field){
 			if($this.cancelFlag){
 				throw 'Cancel';
@@ -701,6 +708,7 @@
 					}
 				}
 			} else {
+				field = $this.translateField(field);
 				this.scopeTypeStack.push(this.scopeType);
 				if(this.mode == 0){
 					this.structStack.push(this.structScope);
@@ -775,6 +783,7 @@
 					this.dataScope = this.data;
 				}
 			} else {
+				field = $this.translateField(field);
 				this.scopeTypeStack.push(this.scopeType);
 				if(this.mode == 0){
 					this.structStack.push(this.structScope);
@@ -830,7 +839,7 @@
 		
 		detectValueTable: function(value){
 			var type = null;
-			if(JSB.isNull(value)){
+			if(JSB.isNull(value) || (JSB.isString(value) && value.length == 0)){
 				type = 'null';
 			} else if(JSB.isBoolean(value)){
 				type = 'boolean';
@@ -856,7 +865,7 @@
 			if($this.cancelFlag){
 				throw 'Cancel';
 			}
-
+			field = $this.translateField(field);
 			function checkTypeOrder(newType, oldType){
 				return $this.typeOrder[newType] > $this.typeOrder[oldType];
 			}

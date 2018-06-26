@@ -22,6 +22,9 @@
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field {
 	font-weight: bold;
+	overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 250px;
 }
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .separator {

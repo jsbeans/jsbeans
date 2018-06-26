@@ -299,6 +299,31 @@
 							return slices[a].getName().localeCompare(slices[b].getName());
 						});
 						
+						// add views
+						var views = editor.combineViews();
+						if(views && Object.keys(views).length > 0){
+							for(var viewName in views){
+								var listItem = $this.itemsListBox.addItem({
+									key: viewName,
+									value: viewName,
+									scheme: item,
+									desc: null,
+									element: `#dot
+										<div class="view" title="{{=viewName}}">
+											<div class="icon"></div>
+											<div class="name">{{=viewName}}</div>
+										</div>
+									`
+								});
+								if(selected && selected.scheme == item && selected.value == viewName){
+//									chosenListItem = listItem;
+									$this.itemsListBox.selectItem(listItem.key);
+									$this.itemsListBox.scrollTo(listItem.key);
+								}
+							}
+						}
+						
+						// add slices
 						for(var j = 0; j < sArr.length; j++){
 							var sId = sArr[j];
 							var slice = slices[sId];
