@@ -46,14 +46,14 @@ public class JsBridge {
     }
 
     public void lock(String str) {
-        if (!lockMap.containsKey(str)) {
+    	if (!lockMap.containsKey(str)){
             synchronized (lockMap) {
-                if (!lockMap.containsKey(str)) {
+    	        if (!lockMap.containsKey(str)) {
                     ReentrantLock l = new ReentrantLock();
                     lockMap.put(str, l);
-                }
+    	        }
             }
-        }
+    	}
         lockMap.get(str).lock();
     }
 
@@ -62,18 +62,16 @@ public class JsBridge {
             return;
         }
         ReentrantLock l = (ReentrantLock) lockMap.get(str);
-        if (l != null) {
-            if (l.isLocked()) {
-            	boolean needRemove = !l.hasQueuedThreads();
-                l.unlock();
-                if(needRemove && !l.isLocked()){
-                	synchronized (lockMap) {
-                		if (lockMap.containsKey(str)){
-                			 lockMap.remove(str);
-                		}
-                	}
-                }
-            }
+        if (l != null && l.isLocked()) {
+//        	boolean needRemove = !l.hasQueuedThreads();
+            l.unlock();
+/*            if(needRemove){
+            	synchronized (lockMap) {
+            		if (lockMap.containsKey(str) && !l.isLocked()){
+            			 lockMap.remove(str);
+            		}
+            	}
+            }*/
         }
     }
     
@@ -87,6 +85,10 @@ public class JsBridge {
         }
         synchronized (lockMap) {
         	if (lockMap.containsKey(str)) {
+        		ReentrantLock l = (ReentrantLock)lockMap.get(str);
+        		if(l.isLocked()){
+        			l.unlock();
+        		}
         		lockMap.remove(str);
             }
         }
