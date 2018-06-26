@@ -95,38 +95,66 @@
                             render: 'switch',
                             name: 'Группировка данных',
                             items: {
-                                /*
-                                approximation: {
+                                dataApproximation: {
                                     render: 'select',
-                                    name: 'Аппроксимация',
+                                    name: 'Аппроксимация значений',
                                     items: {
-                                        none: {
-                                            name: 'По умолчанию'
+                                        $sum: {
+                                            name: '$sum'
                                         },
-                                        average: {
-                                            name: 'average'
+                                        $any: {
+                                            name: '$any'
                                         },
-                                        averages: {
-                                            name: 'averages'
+                                        $last: {
+                                            name: '$last'
                                         },
-                                        open: {
-                                            name: 'open'
+                                        $first: {
+                                            name: '$first'
                                         },
-                                        high: {
-                                            name: 'high'
+                                        $count: {
+                                            name: '$count'
                                         },
-                                        low: {
-                                            name: 'low'
+                                        $min: {
+                                            name: '$min'
                                         },
-                                        close: {
-                                            name: 'close'
+                                        $max: {
+                                            name: '$max'
                                         },
-                                        sum: {
-                                            name: 'sum'
+                                        $avg: {
+                                            name: '$avg'
                                         }
                                     }
                                 },
-                                */
+                                dateApproximation: {
+                                    render: 'select',
+                                    name: 'Аппроксимация дат',
+                                    items: {
+                                        $any: {
+                                            name: '$any'
+                                        },
+                                        $last: {
+                                            name: '$last'
+                                        },
+                                        $first: {
+                                            name: '$first'
+                                        },
+                                        $sum: {
+                                            name: '$sum'
+                                        },
+                                        $count: {
+                                            name: '$count'
+                                        },
+                                        $min: {
+                                            name: '$min'
+                                        },
+                                        $max: {
+                                            name: '$max'
+                                        },
+                                        $avg: {
+                                            name: '$avg'
+                                        }
+                                    }
+                                },
                                 groupBy: {
                                     render: 'select',
                                     name: 'Группировка по',
@@ -223,6 +251,8 @@
                 this._schemeOpts = {
                     dateContext: this.getContext().find('xAxis xAxisDate'),
                     dataGrouping: {
+                        dataApproximation: dataGroupingPlotOptionsContext.find('dataApproximation').value(),
+                        dateApproximation: dataGroupingPlotOptionsContext.find('dateApproximation').value(),
                         isGrouped: dataGroupingPlotOptionsContext.checked(),
                         groupBy: groupBy,
                         groupConst: groupConst,
@@ -246,33 +276,56 @@
             }
 
             var seriesData = [],
-                groupBy;
+                groupBy = undefined,
+                wrapQuery = undefined;
 
             if(this._schemeOpts.dataGrouping.isGrouped){
-                groupBy = [{
-                    $toInt: {
-                      $div: [
-                        {
-                          $sub: [
-                            this._schemeOpts.dateContext.binding(),
+                wrapQuery = { $groupBy: [{
+                        $toInt: {
+                          $div: [
                             {
-                              $const: -(new Date()).getTimezoneOffset()*60 * 1000 // to current locale
+                              $sub: [
+                                this._schemeOpts.dateContext.binding(),
+                                {
+                                  $const: -(new Date()).getTimezoneOffset()*60 * 1000 // to current locale
+                                }
+                              ]
+                            },
+                            {
+                              $const: this._schemeOpts.dataGrouping.units * this._schemeOpts.dataGrouping.groupConst
                             }
                           ]
-                        },
-                        {
-                          $const: this._schemeOpts.dataGrouping.units * this._schemeOpts.dataGrouping.groupConst
                         }
-                      ]
-                    }
-                  }
-                ]
+                      }
+                    ],
+                    $select: {}
+                };
+
+                for(var i = 0; i < this._schemeOpts.series.length; i++){
+                    var binding = this._schemeOpts.series[i].dataSelector.binding(),
+                        seriesGroupsSelector = this._schemeOpts.series[i].seriesGroupsSelector.hasBinding() ? this._schemeOpts.series[i].seriesGroupsSelector.binding() : undefined,
+                        dataApproximation = {};
+
+                    dataApproximation[this._schemeOpts.dataGrouping.dataApproximation] = binding;
+
+                    wrapQuery.$select[binding] = dataApproximation;
+                }
+
+                var dateBinding = this._schemeOpts.dateContext.binding();
+
+                wrapQuery.$select[dateBinding] = {};
+                wrapQuery.$select[dateBinding][this._schemeOpts.dataGrouping.dateApproximation] = dateBinding;
+
+                if(seriesGroupsSelector){
+                    wrapQuery.$groupBy.push(seriesGroupsSelector);
+                    wrapQuery.$select[seriesGroupsSelector] = seriesGroupsSelector;
+                }
             }
 
             this.getElement().loader();
 
             function fetch(isReset){
-                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, groupBy: groupBy }, function(res){
+                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, wrapQuery: wrapQuery }, function(res){
                     try {
                         if(res.length === 0){
                             resultProcessing();

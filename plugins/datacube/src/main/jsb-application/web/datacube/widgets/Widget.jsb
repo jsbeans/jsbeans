@@ -207,6 +207,10 @@
                 item.fetchOpts.layers.main.$groupBy = opts.groupBy;
             }
 
+            if(opts.wrapQuery){
+                item.fetchOpts.wrapQuery = opts.wrapQuery;
+            }
+
             // construct hover layer
 /*					if($this.filterLayers.hover){
                 item.fetchOpts.layers.hover = $this.getLayerQuery('hover', item.source);
@@ -737,8 +741,10 @@
 					if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
 						// figure out data provider
 						if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-							var extQuery = opts.layers[layerName];
-	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, useCache: true});
+							var extQuery = opts.layers[layerName],
+							    wrapQuery = opts.wrapQuery;
+
+	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: true});
 							$this.completed[iteratorId] = false;
 						} else {
 							// TODO

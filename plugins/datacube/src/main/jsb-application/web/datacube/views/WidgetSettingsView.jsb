@@ -47,14 +47,14 @@
 			});
 			this.append(splitBox);
 
-			var schemeBlock = this.$('<div class="schemeBlock"></div>');
-			splitBox.append(schemeBlock);
+			this.schemeBlock = this.$('<div class="schemeBlock"></div>');
+			splitBox.append(this.schemeBlock);
 
 	        this.schemeScroll = new ScrollBox();
-	        schemeBlock.append(this.schemeScroll.getElement());
+	        this.schemeBlock.append(this.schemeScroll.getElement());
 
 	        this.warningBlock = this.$('<div class="warningBlock hidden"></div>');
-	        schemeBlock.append(this.warningBlock);
+	        this.schemeBlock.append(this.warningBlock);
 
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
 	        splitBox.append(this.widgetBlock);
@@ -74,6 +74,8 @@
                 this.widgetSchemeRenderer.destroy();
             }
 
+            this.schemeBlock.loader();
+
             this.wrapper.ensureWidgetInitialized(function(){
                 var widget = $this.wrapper.getWidget();
 
@@ -92,6 +94,8 @@
                     }
                 });
                 $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
+
+                $this.schemeBlock.loader('hide');
             });
 
             this.titleEditor.setData(this.entry.getName());
