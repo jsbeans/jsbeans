@@ -2014,6 +2014,8 @@ if(!(function(){return this;}).call(null).JSB){
 			});
 		
 			if(locker){ locker.unlock('JSB_lookup_waiters'); }
+			
+			return wList.length;
 		},
 		
 		_matchWaiters: function(readyState){
@@ -2124,10 +2126,10 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				return;
 			} else {
-				this._pushWaiter(name, callback, readyState);
+				var queueLength = this._pushWaiter(name, callback, readyState);
 				
 				// load object from the server
-				if(this.isClient() && (!this.objects[name] || forceUpdate)){
+				if(this.isClient() && (!this.objects[name] || forceUpdate) && queueLength == 1){
 					if(this.isNull(this.initQueue) || this.isNull(this.initQueue[name])){ 
 						if(this.provider){
 							if(!this.isNull(this.loadQueue) && !this.isNull(this.loadQueue[name]) && !forceUpdate){
