@@ -62,38 +62,13 @@
 		},
 		
 		getCubeField: function(field){
-			function extractCubeField(rValue){
-				if(JSB.isString(rValue)){
-					return rValue;
-				} else if(JSB.isObject(rValue)){
-					var d = ['$field','$first','$last','$any'];
-					for(var i = 0; i < d.length; i++){
-						if(JSB.isDefined(rValue[d[i]]) && JSB.isString(rValue[d[i]])){
-							return rValue[d[i]];
-						}
-					}
-					return null;
-				} else {
-					return null;
-				}
-			}
 			var sourceArr = this.getSourceIds();
 			if(!sourceArr || sourceArr.length == 0){
 				return;
 			}
 			var sourceId = sourceArr[0];
 			var source = this.sources[sourceId];
-			
-			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-				var q = source.getQuery();
-				if(q.$select && q.$select[field]){
-					var cubeField = extractCubeField(q.$select[field]);
-					if(cubeField){
-						return cubeField;
-					}
-				}
-			}
-			
+			return this.filterManager && this.filterManager.extractCubeField(source, field);
 		},
 
 		clearFilters: function(){
