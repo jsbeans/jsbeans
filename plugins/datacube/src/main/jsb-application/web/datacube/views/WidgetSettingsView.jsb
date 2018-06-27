@@ -80,9 +80,10 @@
                 var widget = $this.wrapper.getWidget();
 
                 $this.widgetSchemeRenderer = new Controller({
+                    advancedRenders: true,
+                    bootstrap: 'Datacube.Unimap.Bootstrap',
                     scheme: widget.getEntry().extractWidgetScheme(),
                     values: widget.getValues(),
-                    bootstrap: 'Datacube.Unimap.Bootstrap',
                     onchange: function(key, values){
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
                             return;
