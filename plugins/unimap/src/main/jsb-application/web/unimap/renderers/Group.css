@@ -61,14 +61,15 @@
     border: 1px solid #a09f9f;
     border-radius: 4px;
     background: #cccccc;
+	margin-top: -2px;
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem .sortableHandle div:first-child {
-    top: calc(50% - 10px);
+    top: calc(50% - 6px);
 }
 
 .groupRender > .jsb-panel > .content > .multipleItem .sortableHandle div:last-child {
-    top: calc(50% + 10px);
+    top: calc(50% + 6px);
 }
 
 .groupRender > .jsb-panel > .content > .btnMultiple {
