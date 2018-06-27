@@ -181,7 +181,7 @@
 			for(var fItemId in this.filters){
 				var fDesc = this.filters[fItemId];
 				var f = fDesc.cubeField || fDesc.field;
-				if(fDesc.boundTo == sourceId || cube.getFieldMap()[f]){
+				if(fDesc.boundTo == sourceId || (cube.getFieldMap() && cube.getFieldMap()[f])){
 					srcFilters[fItemId] = JSB.clone(fDesc);
 				}
 			}
