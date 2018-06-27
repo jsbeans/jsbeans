@@ -588,6 +588,12 @@
                     collapsible: true,
                     collapsed: true,
                     items: {
+                        connectNulls: {
+                            render: 'item',
+                            name: 'Соединять пустые значения',
+                            optional: true,
+                            editor: 'none'
+                        },
                         stacking: {
                             render: 'select',
                             name: 'Тип стека',
@@ -938,8 +944,7 @@
         },
 
         buildChart: function(data){
-            var chartOpts = this._buildChart(data),
-                styleSelector = this.getContext().find('chart colorScheme');
+            var chartOpts = this._buildChart(data);
 
             function buildWidget(chartOpts){
                 /*
@@ -1038,7 +1043,7 @@
                         inverted: chartContext.find('inverted').checked()
                     },
 
-                    colors: this._widgetOpts && this._widgetOpts.styleScheme,
+                    colors: this._widgetOpts && this._widgetOpts.styleScheme || undefined,
 
                     credits: {
                         enabled: creditsContext.find('enabled').checked(),
@@ -1085,6 +1090,7 @@
 
                     plotOptions: {
                         series: {
+                            connectNulls: plotOptionsContext.find('connectNulls').checked(),
                             dataLabels: {
                                 enabled: plotOptionsDataLabels.find('enabled').checked(),
                                 align: plotOptionsDataLabels.find('align').value(),

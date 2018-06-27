@@ -79,6 +79,8 @@
 					
 					fieldElt.prepend('<div class="icon"></div>');
 					fieldElt.append('<div class="type">'+$this.schemeMap[valObj.key].type+'</div>');
+					fieldElt.attr('type', $this.schemeMap[valObj.key].type);
+					fieldElt.attr('title', $this.schemeMap[valObj.key].field);
 					
 					this.find('> ._dwp_cbContainer').empty().append(fieldElt);
 					this.selectedObject = valObj;

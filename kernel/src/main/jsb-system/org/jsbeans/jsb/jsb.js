@@ -3885,6 +3885,14 @@ JSB({
 		}
 		this.$_destroyed = true;
 		this.unsubscribe();
+		if(this.$_locks){
+			var locker = $jsb.getLocker();
+			if(locker){
+				for(var lName in this.$_locks){
+					locker.clearLock(lName);
+				}
+			}
+		}
 		$jsb.unregister(this);
 		
 		if(!this.$_destroyLocal && (this.jsb.isServer() || (this.jsb.isSession() && this.$_bindKey))){
@@ -3975,6 +3983,10 @@ JSB({
 			if(lName){
 				mtxName += lName;
 			}
+			if(!this.$_locks){
+				this.$_locks = {};
+			}
+			this.$_locks[mtxName] = true;
 			$jsb.getLocker().lock(mtxName);
 		}
 	},

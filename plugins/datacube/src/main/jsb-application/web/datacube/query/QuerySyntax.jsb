@@ -154,7 +154,7 @@
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
 		        },
-		        optional: ['$context', '$recursiveTree', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
+		        optional: ['$context', '$recursiveTree', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$views', '$recursiveTree']
 		    });
 
 		    new this.ComplexObject({

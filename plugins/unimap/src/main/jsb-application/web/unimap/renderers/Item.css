@@ -62,6 +62,11 @@
 	max-width: 100%;
 }
 
+.itemRender:not(.checked) > .multipleContainer,
+.itemRender:not(.checked) > .item {
+    display: none;
+}
+
 .itemRender > .multipleContainer > .multipleItem > .jsb-editor,
 .itemRender > .item > .jsb-editor {
     width: 200px;

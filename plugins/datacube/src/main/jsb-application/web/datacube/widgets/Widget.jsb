@@ -207,6 +207,10 @@
                 item.fetchOpts.layers.main.$groupBy = opts.groupBy;
             }
 
+            if(opts.wrapQuery){
+                item.fetchOpts.wrapQuery = opts.wrapQuery;
+            }
+
             // construct hover layer
 /*					if($this.filterLayers.hover){
                 item.fetchOpts.layers.hover = $this.getLayerQuery('hover', item.source);
@@ -221,10 +225,6 @@
             item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
             this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(serverData, fail){
-                if(fail){
-                    return;
-                }
-
                 if(item.fetchOpts.reset){
                     item.cursor = 0;
                     if(item.data){
@@ -246,8 +246,10 @@
                 if(callback){
                     if(fail){
                         JSB.getLogger().error(fail);
+                        callback.call($this, null, fail);
+                    } else {
+                    	callback.call($this, data, fail, serverData.widgetOpts);
                     }
-                    callback.call($this, data, fail, serverData.widgetOpts);
                 }
             });
             return true;
@@ -536,6 +538,10 @@
 			}
 			JSB.merge(this.filterLayers, layerOpts);
 		},
+		
+		hasFilterLayer: function(lName){
+			return this.filterLayers[lName];
+		},
 
 		setFilterManager: function(filterManager){
 		    this.filterManager = filterManager;
@@ -737,8 +743,10 @@
 					if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
 						// figure out data provider
 						if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-							var extQuery = opts.layers[layerName];
-	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, useCache: true});
+							var extQuery = opts.layers[layerName],
+							    wrapQuery = opts.wrapQuery;
+
+	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: true});
 							$this.completed[iteratorId] = false;
 						} else {
 							// TODO
