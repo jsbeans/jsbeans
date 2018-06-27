@@ -5,6 +5,7 @@
 	sourceCount: 0,
 	fieldCount: 0,
 	sliceCount: 0,
+	fieldMap: null,
 	
 	getSourceCount: function(){
 		return this.sourceCount;
@@ -16,6 +17,10 @@
 
 	getSliceCount: function(){
 		return this.sliceCount;
+	},
+	
+	getFieldMap: function(){
+		return this.fieldMap;
 	},
 
 	$server: {
@@ -67,6 +72,9 @@
 			}
 			if(this.property('slices')){
 				this.sliceCount = this.property('slices');
+			}
+			if(this.property('fieldMap')){
+				this.fieldMap = this.property('fieldMap');
 			}
 		},
 		
@@ -156,6 +164,7 @@
 									delete this.fields[fDesc.field];
 								}
 							}
+							this.syncFieldMap();
 							
 							// construct materialization
 							if(snapshot.materialization && Object.keys(snapshot.materialization).length > 0 && snapshot.materialization.tables && Object.keys(snapshot.materialization.tables).length > 0){
@@ -446,9 +455,42 @@
 				this.property('sources', this.sourceCount);
 				this.property('fields', this.fieldCount);
 				this.property('slices', this.sliceCount);
+				this.syncFieldMap();
+				
 				this.getWorkspace().store();
 			} finally {
 				JSB.getLocker().unlock(mtxName);
+			}
+		},
+		
+		syncFieldMap: function(){
+			var bChanged = false;
+			if(!this.fieldMap){
+				this.fieldMap = {};
+				bChanged = true;
+			}
+			// remove unexisted
+			var toRemove = [];
+			for(var f in this.fieldMap){
+				if(!this.fields[f]){
+					toRemove.push(f);
+				}
+			}
+			for(var i = 0; i < toRemove.length; i++){
+				delete this.fieldMap[toRemove[i]];
+				bChanged = true;
+			}
+			
+			// add new
+			for(var f in this.fields){
+				if(!this.fieldMap[f]){
+					this.fieldMap[f] = this.fields[f].type;
+					bChanged = true;
+				}
+			}
+			
+			if(bChanged){
+				this.property('fieldMap', this.fieldMap);
 			}
 		},
 		
@@ -912,6 +954,7 @@
 				field: pField,
 				type: pType
 			});
+			this.fieldMap[nameCandidate] = true;
 			this.fieldCount = Object.keys(this.fields).length;
 			this.removeMaterialization();
 			this.invalidate();

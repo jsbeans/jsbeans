@@ -176,10 +176,12 @@
 		
 		getFiltersBySource: function(source){
 			var sourceId = source.getId();
+			var cube = source.getCube();
 			var srcFilters = {};
 			for(var fItemId in this.filters){
 				var fDesc = this.filters[fItemId];
-				if(!fDesc.boundTo || fDesc.boundTo == sourceId){
+				var f = fDesc.cubeField || fDesc.field;
+				if(fDesc.boundTo == sourceId || cube.getFieldMap()[f]){
 					srcFilters[fItemId] = JSB.clone(fDesc);
 				}
 			}

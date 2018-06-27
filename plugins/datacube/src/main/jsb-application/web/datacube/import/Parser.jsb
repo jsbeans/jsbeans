@@ -263,6 +263,10 @@
 		           'DataCube.ParserManager',
 		           'JSB.Crypt.MD5',
 		           'Moment'],
+		           
+		options: {
+			treatEmptyStringsAsNull: false
+		},
 		
 		entry: null,
 		context: null,
@@ -664,6 +668,9 @@
 					for(var colName in tableDesc.columns){
 						var colDesc = tableDesc.columns[colName];
 						var cellInfo = resolveCellValue(colDesc, tableDesc.bindingTree, dataBindMap);
+						if($this.options.treatEmptyStringsAsNull && JSB.isString(cellInfo.value) && cellInfo.value.length == 0){
+							cellInfo.value = null;
+						}
 						record[colName] = cellInfo.value;
 						columns[colName] = {type: cellInfo.type, comment: colDesc.comment};
 					}
@@ -839,7 +846,7 @@
 		
 		detectValueTable: function(value){
 			var type = null;
-			if(JSB.isNull(value) || (JSB.isString(value) && value.length == 0)){
+			if(JSB.isNull(value) || ($this.options.treatEmptyStringsAsNull && JSB.isString(value) && value.length == 0)){
 				type = 'null';
 			} else if(JSB.isBoolean(value)){
 				type = 'boolean';
@@ -1288,7 +1295,8 @@
 		storeBatch: function(mInst){
 			if(!this.importOpts){
 				this.importOpts = {
-					schema: this.getContext().find('databaseScheme').value() || 'public'
+					schema: this.getContext().find('databaseScheme').value() || 'public',
+					treatEmptyStringsAsNull: $this.options.treatEmptyStringsAsNull
 				};
 			}
 			for(var t in $this.importTables){
