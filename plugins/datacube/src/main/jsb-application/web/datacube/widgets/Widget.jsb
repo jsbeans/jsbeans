@@ -36,8 +36,18 @@
                     if(!res) { return ;}
 
                     $this.updateValues(res);
-
-                    $this.setTrigger('_dataLoaded');
+                    
+                    if(res.sources && Object.keys(res.sources).length > 0 && $this.filterManager){
+                    	JSB.chain(Object.keys(res.sources), function(srcId, callback){
+                    		$this.filterManager.registerSource($this, res.sources[srcId], function(){
+                    			callback();
+                    		})
+                    	}, function(){
+                    		$this.setTrigger('_dataLoaded');
+                    	});
+                    } else {
+                    	$this.setTrigger('_dataLoaded');
+                    }
                 });
 		    }
 		},

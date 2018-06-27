@@ -6,6 +6,7 @@
 		owner: null,
 		filters: {},
 		filterArr: [],
+		cubeFieldMap: {},
 		
 		$constructor: function(owner){
 			$base();
@@ -25,6 +26,19 @@
 		constructFilterId: function(fItem){
 			var f = fItem.cubeField || fItem.field;
 			return MD5.md5('' + f) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5(JSON.stringify(fItem.value));
+		},
+		
+		registerSource: function(widget, source, callback){
+			var cube = source.getCube();
+			if(this.cubeFieldMap[cube.getId()]){
+				callback.call($this);
+				return;
+			}
+			// get source fields
+			cube.server().getFieldMap(function(fm){
+				$this.cubeFieldMap[cube.getId()] = fm;
+				callback.call($this);
+			});
 		},
 		
 		removeFilter: function(itemId, dontPublish){
@@ -177,11 +191,12 @@
 		getFiltersBySource: function(source){
 			var sourceId = source.getId();
 			var cube = source.getCube();
+			var cubeFields = $this.cubeFieldMap[cube.getId()];
 			var srcFilters = {};
 			for(var fItemId in this.filters){
 				var fDesc = this.filters[fItemId];
 				var f = fDesc.cubeField || fDesc.field;
-				if(fDesc.boundTo == sourceId || !fDesc.boundTo/*(cube.getFieldMap() && cube.getFieldMap()[f])*/){
+				if(fDesc.boundTo == sourceId || (cubeFields && cubeFields[f])){
 					srcFilters[fItemId] = JSB.clone(fDesc);
 				}
 			}
