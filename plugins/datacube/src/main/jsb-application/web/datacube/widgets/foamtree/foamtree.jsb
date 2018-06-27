@@ -133,8 +133,7 @@
 
             JSB().loadScript(['tpl/carrotsearch/foamtree.js'], function(){
                     $this.setInitialized();
-                }
-            );
+            });
 
             this.container.resize(function(){
                 if(!$this.container.is(':visible') || !$this.foamtree){
@@ -382,11 +381,11 @@
 
         _buildChart: function(data){
             if(this.foamtree){
-                this.foamtree.set({
+                this.foamtree.set(JSB.merge(this._styles, {
                     dataObject: {
                         groups: data
                     }
-                });
+                }));
 
                 this.foamtree.redraw();
             } else {
