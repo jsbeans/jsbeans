@@ -82,7 +82,7 @@
 		},
 		
 		collectSettings: function(){
-			return {
+		    var settings = {
 				url: this.find('.connectionString > .editor').jsb().getData().getValue(),
 				properties: {
 					user: this.find('.user > .editor').jsb().getData().getValue(),
@@ -90,6 +90,14 @@
 				},
 				filter: this.find('.filter > .editor').jsb().getData().getValue()
 			};
+		    if (!settings.properties.user || /^\s*$/.test(settings.properties.user)) {
+		        delete settings.properties.user;
+		    }
+            if (!settings.properties.password || /^\s*$/.test(settings.properties.password)) {
+                delete settings.properties.password;
+            }
+
+			return settings;
 		},
 		
 		fillSettings: function(settings){

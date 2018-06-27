@@ -154,7 +154,7 @@
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
 		        },
-		        optional: ['$context', '$recursiveTree', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
+		        optional: ['$context', '$recursiveTree', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$views', '$recursiveTree']
 		    });
 
 		    new this.ComplexObject({
@@ -183,24 +183,53 @@
 		        desc: 'Выражение дял превращения запроса в рекурсивный обход дерева',
 		        displayName: 'Рекурсивное дерево',
 		        values: {
-		            '$currentOutputField': '$recursiveTreeCurrentField',
-		            '$parentField': '$recursiveTreeParentField'
+		            '$idField': '$recursiveTreeIdField',
+		            '$parentIdField': '$recursiveTreeParentIdField',
+		            '$startFilter': '$filter',
+		            '$direction': '$recursiveTreeDirection',
 		        },
 		    });
 
 		    new this.Group({
-		    	name: '$recursiveTreeCurrentField',
+		    	name: '$recursiveTreeIdField',
 		        displayName: 'Основное поле',
 		    	desc: 'Основное выходное поле запроса для пересечения',
 		        values: ['$field'],
 		    });
 
 		    new this.Group({
-		    	name: '$recursiveTreeParentField',
+		    	name: '$recursiveTreeParentIdField',
 		        displayName: 'Родительское поле',
 		    	desc: 'Основное родительское поле запроса для пересечения',
 		        values: ['$field'],
 		    });
+
+		    new this.Group({
+		        name: '$recursiveTreeDirection',
+		        values: ['$recursiveTreeDirectionUp', '$recursiveTreeDirectionBoth', '$recursiveTreeDirectionDown']
+		    });
+
+		    new this.EConstNumber({
+		        name: '$recursiveTreeDirectionUp',
+		    	displayName: 'Включать родительские элементы',
+		    	desc: 'Задает направление обхода дерева от начальных элементов вверх, включая родительские',
+		        value: 1,
+		    });
+
+		    new this.EConstNumber({
+		        name: '$recursiveTreeDirectionBoth',
+		    	displayName: 'Включать родительские и дочерние элементы',
+                desc: 'Задает направление обхода дерева в обе стороны, включая родительские и дочерние элементы',
+                value: 0,
+		    });
+
+		    new this.EConstNumber({
+		        name: '$recursiveTreeDirectionDown',
+		    	displayName: 'Включать дочерние элементы',
+                desc: 'Задает направление обхода дерева от начальных элементов вниз, включая дочерние элементы',
+                value: -1,
+		    });
+
 		
 		    new this.Group({
 		    	name: '$from',

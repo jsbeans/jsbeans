@@ -701,11 +701,10 @@
         },
 
         /** Встроить глобальный фильтр в фильры главного и дочерних запросов, но с оговорками:
-        * 1) если поле является join (сравнивается по eq с любым полем другого запроса), то пропускаем
+        * 1) если поле является join (сравнивается по eq с любым полем другого запроса), то пропускаем        *
+        // TODO 2) если запрос содержит $recursiveTree: если $startFilter содержит поля из глобального фильтра, то вставлять не в $filter, а в $startFilter
         */
         propagateGlobalFilter: function(dcQuery, cubeOrDataProvider) {
-
-        // TODO для recursiveTree если есть $startFilter и его поле фильтруется глобальным фильтром, то вставлять не в $filter, а в $startFilter
             var cubeFilter = {$and:[]};
             this.walkAllSubQueries(dcQuery, function(subQuery){
                 if (subQuery.$cubeFilter && Object.keys(subQuery.$cubeFilter).length > 0){
@@ -1276,11 +1275,16 @@
                 }
             }
             function walkSingleQueryFilter(query, name){
+                // main filter
                 if (query[name]) {
                     query[name] = walkMultiFilter(query[name]);
                     if (Object.keys(query[name]).length == 0) {
                         delete query[name];
                     }
+                }
+                // $recursiveTree embedded filter
+                if (query.$recursiveTree) {
+                    query.$recursiveTree.$startFilter = walkMultiFilter(query.$recursiveTree.$startFilter);
                 }
             }
 

@@ -263,6 +263,10 @@
 		           'DataCube.ParserManager',
 		           'JSB.Crypt.MD5',
 		           'Moment'],
+		           
+		options: {
+			treatEmptyStringsAsNull: false
+		},
 		
 		entry: null,
 		context: null,
@@ -664,6 +668,9 @@
 					for(var colName in tableDesc.columns){
 						var colDesc = tableDesc.columns[colName];
 						var cellInfo = resolveCellValue(colDesc, tableDesc.bindingTree, dataBindMap);
+						if($this.options.treatEmptyStringsAsNull && JSB.isString(cellInfo.value) && cellInfo.value.length == 0){
+							cellInfo.value = null;
+						}
 						record[colName] = cellInfo.value;
 						columns[colName] = {type: cellInfo.type, comment: colDesc.comment};
 					}
@@ -676,6 +683,13 @@
 			if(this.rowCollback){
 				this.rowCollback.call(this, tableDesc, record);
 			}
+		},
+		
+		translateField: function(field){
+			if(!field || !JSB.isString(field)){
+				return field;
+			}
+			return field.replace(/\./g, '\uff0e');
 		},
 		
 		beginArray: function(field){
@@ -701,6 +715,7 @@
 					}
 				}
 			} else {
+				field = $this.translateField(field);
 				this.scopeTypeStack.push(this.scopeType);
 				if(this.mode == 0){
 					this.structStack.push(this.structScope);
@@ -775,6 +790,7 @@
 					this.dataScope = this.data;
 				}
 			} else {
+				field = $this.translateField(field);
 				this.scopeTypeStack.push(this.scopeType);
 				if(this.mode == 0){
 					this.structStack.push(this.structScope);
@@ -830,7 +846,7 @@
 		
 		detectValueTable: function(value){
 			var type = null;
-			if(JSB.isNull(value)){
+			if(JSB.isNull(value) || ($this.options.treatEmptyStringsAsNull && JSB.isString(value) && value.length == 0)){
 				type = 'null';
 			} else if(JSB.isBoolean(value)){
 				type = 'boolean';
@@ -856,7 +872,7 @@
 			if($this.cancelFlag){
 				throw 'Cancel';
 			}
-
+			field = $this.translateField(field);
 			function checkTypeOrder(newType, oldType){
 				return $this.typeOrder[newType] > $this.typeOrder[oldType];
 			}
@@ -1279,7 +1295,8 @@
 		storeBatch: function(mInst){
 			if(!this.importOpts){
 				this.importOpts = {
-					schema: this.getContext().find('databaseScheme').value() || 'public'
+					schema: this.getContext().find('databaseScheme').value() || 'public',
+					treatEmptyStringsAsNull: $this.options.treatEmptyStringsAsNull
 				};
 			}
 			for(var t in $this.importTables){

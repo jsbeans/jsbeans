@@ -84,6 +84,10 @@
 			});
 		},
 		
+		options: {
+			treatEmptyStringsAsNull: true
+		},
+		
 		$constructor: function(entry, values){
 			$base(entry, values);
 			

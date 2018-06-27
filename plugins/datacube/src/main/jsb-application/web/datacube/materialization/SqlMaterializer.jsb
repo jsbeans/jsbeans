@@ -202,6 +202,10 @@
 						sql += '"' + fNameArr[i] + '"';
 						bFirst = false;
 					}
+					if(bFirst){
+						// no columns added
+						continue;
+					}
 					sql += ') values(';
 					var values = [];
 					bFirst = true;
@@ -223,7 +227,9 @@
 						values: values
 					});
 				}
-				JDBC.executeUpdate(connection, batch);
+				if(batch.length > 0){
+					JDBC.executeUpdate(connection, batch);
+				}
 			} finally {
 				connWrap.close();
 			}
