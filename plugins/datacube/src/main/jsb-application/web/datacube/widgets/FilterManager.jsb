@@ -11,6 +11,15 @@
 		$constructor: function(owner){
 			$base();
 			this.owner = owner;
+			this.subscribe('DataCube.Model.Cube.changed', {session: true}, function(sender, msg, params){
+				if($this.cubeFieldMap[sender.getId()]){
+					// update cube fields
+					sender.server().getFieldMap(function(fm){
+						$this.cubeFieldMap[sender.getId()] = fm;	
+					});
+					 
+				}
+			});
 		},
 		
 		getOwner: function(){

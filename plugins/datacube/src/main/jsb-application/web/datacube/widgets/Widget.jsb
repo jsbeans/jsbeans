@@ -35,19 +35,9 @@
                 this.widgetEntry.getData(function(res){
                     if(!res) { return ;}
 
-                    $this.updateValues(res);
-                    
-                    if(res.sources && Object.keys(res.sources).length > 0 && $this.filterManager){
-                    	JSB.chain(Object.keys(res.sources), function(srcId, callback){
-                    		$this.filterManager.registerSource($this, res.sources[srcId], function(){
-                    			callback();
-                    		})
-                    	}, function(){
-                    		$this.setTrigger('_dataLoaded');
-                    	});
-                    } else {
+                    $this.updateValues(res, function(){
                     	$this.setTrigger('_dataLoaded');
-                    }
+                    });
                 });
 		    }
 		},
@@ -575,13 +565,33 @@
 		    this._cache = data;
 		},
 
-		updateValues: function(opts){
+		updateValues: function(opts, readyCallback){
 			this.values = opts.values;
 
 			this.context = {};
 			if(opts.sourceMap && opts.sources){
 				this.sourceMap = opts.sourceMap;
 				this.sources = opts.sources;
+				
+				if($this.sources && Object.keys($this.sources).length > 0 && $this.filterManager){
+                	JSB.chain(Object.keys($this.sources), function(srcId, callback){
+                		$this.filterManager.registerSource($this, $this.sources[srcId], function(){
+                			callback();
+                		})
+                	}, function(){
+                		if(readyCallback){
+                			readyCallback.call($this);
+                		}
+                	});
+                } else {
+                	if(readyCallback){
+            			readyCallback.call($this);
+            		}
+                }
+			} else {
+				if(readyCallback){
+        			readyCallback.call($this);
+        		}
 			}
 		}
 	},
