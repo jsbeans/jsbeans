@@ -105,6 +105,7 @@
             switch(format){
                 case 'xls':
                 case 'csv':
+                case 'json':
                     this.getBindingsData(function(data){
                         Export.exportData(format, data, $this.wrapper.title);
                     });

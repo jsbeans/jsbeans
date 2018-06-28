@@ -68,6 +68,9 @@
                 },{
                     key: 'csv',
                     element: 'CSV'
+                },{
+                    key: 'json',
+                    element: 'JSON'
                 }],
                 exportBtn = new Button({
                     cssClass: 'btnUpdate',

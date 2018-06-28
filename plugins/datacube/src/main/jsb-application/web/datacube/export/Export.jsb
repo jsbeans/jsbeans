@@ -18,6 +18,9 @@
                 case 'csv':
                     this.downloadCSV(data, fileName);
                     break;
+                case 'json':
+                    this.downloadJSON(data, fileName);
+                    break;
                 case 'png':
                     this.downloadImage(data, fileName);
                 break;
@@ -61,6 +64,26 @@
                 'data:text/csv,\uFEFF' + encodeURIComponent(csv),
                 'csv',
                 csv,
+                fileName
+            );
+	    },
+	    
+	    downloadJSON: function(rows, fileName){
+	    	var json = [];
+	    	var header = rows[0];
+	    	for(var i = 1; i < rows.length; i++){
+	    		var r = {};
+	    		for(var j = 0; j < header.length; j++){
+	    			r[header[j]] = rows[i][j];
+	    		}
+	    		json.push(r);
+	    	}
+	    	var data = JSON.stringify(json, null, 4);
+
+            this.fileDownload(
+                'data:text/json,\uFEFF' + encodeURIComponent(data),
+                'json',
+                data,
                 fileName
             );
 	    },
