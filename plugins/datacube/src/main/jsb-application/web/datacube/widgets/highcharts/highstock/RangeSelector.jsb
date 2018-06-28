@@ -325,7 +325,7 @@
             this.getElement().loader();
 
             function fetch(isReset){
-                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, wrapQuery: wrapQuery }, function(res){
+                $this.fetchBinding($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res){
                     try {
                         if(res.length === 0){
                             resultProcessing();

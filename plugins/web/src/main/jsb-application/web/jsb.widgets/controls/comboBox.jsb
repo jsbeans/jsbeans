@@ -41,7 +41,7 @@
 				this.addClass('_dwp_dropDown');
 				this.getElement().append('<div class="_dwp_cbContainer"></div>');
 				this.getElement().append('<div class="_dwp_dropBtn"></div>');
-				
+
 				this.getElement().click(function(evt){
 					if(!self.options.enabled) return;
 					self.onDropDownClick();
@@ -198,7 +198,18 @@
 						this.options.onChange(valObj ? valObj.key : null, valObj);
 					}
 				}
-				
+
+				if(this.options.clearBtn){
+				    this.addClass('hasClearBtn');
+
+				    var clearBtn = this.$('<i class="clearBtn fas fa-times"></i>');
+				    clearBtn.click(function(evt){
+				        evt.stopPropagation();
+				        $this.setData();
+				        clearBtn.remove();
+				    });
+				    this.getElement().append(clearBtn);
+				}
 			} else {
 				var valObj = this.resolveItem(val);
 				var val = valObj.element;

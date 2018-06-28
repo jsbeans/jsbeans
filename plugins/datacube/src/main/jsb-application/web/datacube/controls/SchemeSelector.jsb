@@ -4,6 +4,7 @@
 	
 	$client: {
 		options: {
+		    clearBtn: false,
 			tree: true,
 			key: 'schemeSelector',
 			selectNodes: true
@@ -94,6 +95,18 @@
 					this.options.onChange(valObj ? valObj.key : null, valObj);
 				}
 			}
+
+            if(this.options.clearBtn){
+                this.addClass('hasClearBtn');
+
+                var clearBtn = this.$('<i class="clearBtn fas fa-times"></i>');
+                clearBtn.click(function(evt){
+                    evt.stopPropagation();
+                    $this.setData();
+                    clearBtn.remove();
+                });
+                this.getElement().append(clearBtn);
+            }
 		},
 		
 		setValue: function(val){
