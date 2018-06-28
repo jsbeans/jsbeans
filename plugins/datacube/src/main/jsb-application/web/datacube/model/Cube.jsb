@@ -245,6 +245,7 @@
 							
 						}
 						this.loaded = true;
+						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
 						this.doSync();
 					}
 				} finally {
@@ -322,6 +323,7 @@
 				}
 			}
 			if(bNeedSave){
+				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
 				this.store();
 			}
 		},
@@ -522,6 +524,7 @@
 			this.dataProviders[pId] = provider;
 			this.dataProviderEntries[pId] = providerEntry;
 			this.sourceCount = Object.keys(this.dataProviders).length;
+			this.publish('DataCube.Model.Cube.changed', {action: 'providerAdded'}, {session: true});
 			this.store();
 			this.doSync();
 			return provider;
@@ -720,6 +723,7 @@
 			}
 			if(bChanged){
 				provider.setOptions(curOpts);
+				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
 				this.store();
 	            this.doSync();
 			}
@@ -780,7 +784,8 @@
             delete this.dataProviderPositions[pId];
             delete this.dataProviderSizes[pId];
             this.sourceCount--;
-
+            this.publish('DataCube.Model.Cube.changed', {action: 'providerRemoved'}, {session: true});
+            
 		    this.store();
             this.doSync();
 
@@ -825,6 +830,7 @@
 			}
 
 			if(bNeedStore){
+				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
 				this.store();
 				this.doSync();
 			}
@@ -895,7 +901,7 @@
 					delete this.fields[fieldsToRemove[i]];
 				}
 			}
-			
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldRemoved'}, {session: true});
 			return bNeedStore;
 		},
 		
@@ -961,6 +967,7 @@
 			this.fieldCount = Object.keys(this.fields).length;
 			this.removeMaterialization();
 			this.invalidate();
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldAdded'}, {session: true});
 			this.store();
 			this.doSync();
 			return this.fields[nameCandidate];
@@ -1014,6 +1021,7 @@
 
 		    this.fieldCount = Object.keys(this.fields).length;
 		    this.invalidate();
+		    this.publish('DataCube.Model.Cube.changed', {action: 'fieldChanged'}, {session: true});
 		    this.store();
             this.doSync();
 
@@ -1051,6 +1059,7 @@
 				this.materialization.fields[n].field = n;
 			}
 			this.invalidate();
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldChanged'}, {session: true});
 			this.store();
 			this.doSync();
 			return this.fields[n];
@@ -1091,6 +1100,7 @@
 			// remove materialization
 			this.removeMaterialization();
 			this.invalidate();
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldRemoved'}, {session: true});
 			this.store();
 			this.doSync();
 
@@ -1156,6 +1166,7 @@
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
 			this.addChildEntry(slice);
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceAdded'}, {session: true});
 			this.store();
 			this.doSync();
 			return slice;
@@ -1184,6 +1195,7 @@
 			delete this.slices[sId];
 			this.removeChildEntry(sId);
 			slice.remove();
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceRemoved'}, {session: true});
 			this.sliceCount = Object.keys(this.slices).length;
 			this.store();
 		},
@@ -1863,6 +1875,7 @@
 				}
 			}
 			slice.setName(newName);
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceChanged'}, {session: true});
 			return slice;
 		},
 		
@@ -1876,6 +1889,7 @@
 			if(desc.queryParams){
 			    slice.setQueryParams(desc.queryParams);
 			}
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceChanged'}, {session: true});
 			this.store();
 			this.doSync();
 		},
