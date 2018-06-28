@@ -173,6 +173,55 @@
 	    	        									
 	    	        								}
 	    	        							},
+	    	        							rowHash: {
+	    	        								name: 'Вычисление хэша',
+	    	        								render: 'group',
+	    	        								items: {
+	    	        									hashColumns: {
+	    	        										render: 'group',
+	    	        										name: 'Дополнительные поля',
+	    	        										multiple: true,
+	    	        										collapsable: false,
+	    	        										sortable: true,
+	    	        										items: {
+	    	        											oddField: {
+	    	        												name: 'Поле',
+	    	    	        	                                	render: 'dataBinding',
+	    	    	        	                                	editor: 'scheme',
+	    	    	        	                                	selectNodes: false,
+	    	    	        	                                    linkTo: 'structure'
+	    	        											}
+	    	        										}
+	    	        									}
+	    	        								}
+	    	        							},
+	    	        							splitString: {
+	    	        								name: 'Разделение строки',
+	    	        								render: 'group',
+	    	        								items: {
+	    	        									splitDelimiter: {
+	    	        										name: 'Разделитель',
+	    	        										render: 'item',
+	    	        										value: ','
+	    	        									},
+	    	        									splitTrim: {
+	    	        										name: 'Обрезать пробелы',
+	    	        										render: 'item',
+	    	        										editor: 'none',
+	    	        										optional: 'checked'
+	    	        									},
+	    	        									splitRemoveEmpty: {
+	    	        										name: 'Удалять пустые элементы',
+	    	        										render: 'item',
+	    	        										editor: 'none',
+	    	        										optional: 'checked'
+	    	        									}
+	    	        								}
+	    	        							},
+	    	        							unwindArray: {
+	    	        								name: 'Разматывание массива',
+	    	        								render: 'item'
+	    	        							},
 	    	        							scriptExpression: {
 	    	        								render: 'group',
 	    	        								name: 'Скриптовое выражение',
@@ -609,6 +658,7 @@
 				break;
 			}
 			valDesc.type = targetType;
+			return valDesc;
 		},
 		
 		executeScript: function(valDesc, expression, vars, dataBindMap){
@@ -626,20 +676,83 @@
 			if(type != 'null'){
 				valDesc.type = type;
 			}
+			return valDesc;
+		},
+		
+		unwindArray: function(valDesc){
+			if(JSB.isArray(valDesc.value)){
+				var resDesc = [];
+				for(var i = 0; i < valDesc.value.length; i++){
+					resDesc.push({
+						value: valDesc.value[i],
+						type: $this.detectValueTable(valDesc.value[i])
+					});
+				}
+				return resDesc;
+			} else {
+				return valDesc;
+			}
+		},
+		
+		splitString: function(valDesc, tDesc){
+			if(JSB.isString(valDesc.value)){
+				valDesc.value = valDesc.value.split(tDesc.splitDelimiter);
+				valDesc.type = 'array';
+				for(var i = valDesc.value.length - 1; i >= 0; i--){
+					if(tDesc.splitTrim){
+						valDesc.value[i] = valDesc.value[i].trim();
+					}
+					if(tDesc.splitRemoveEmpty && valDesc.value[i].length == 0){
+						valDesc.value.splice(i, 1);
+					}
+				}
+			}
+			return valDesc;
+		},
+		
+		rowHash: function(valDesc, tDesc, dataBindMap){
+			var hashVal = JSON.stringify(valDesc.value);
+			for(var i = 0; i < tDesc.oddFields.length; i++){
+				hashVal += JSON.stringify(dataBindMap[tDesc.oddFields[i]]);
+			}
+			valDesc.value = MD5.md5(hashVal);
+			valDesc.type = 'string';
+			return valDesc;
 		},
 		
 		emitTables: function(){
-			function executeTransformChain(colDesc, valDesc, dataBindMap){
-				for(var i = 0; i < colDesc.transforms.length; i++){
-					var tDesc = colDesc.transforms[i];
+			function executeTransform(valDesc, tDesc, dataBindMap){
+				if(JSB.isArray(valDesc)){
+					var resDesc = [];
+					for(var i = 0; i < valDesc.length; i++){
+						resDesc.push(executeTransform(valDesc[i], tDesc, dataBindMap));
+					}
+					return resDesc;
+				} else {
 					switch(tDesc.op){
 					case 'convertType':
-						$this.executeConvertType(valDesc, tDesc.targetType, tDesc.pattern);
+						valDesc = $this.executeConvertType(valDesc, tDesc.targetType, tDesc.pattern);
 						break;
 					case 'scriptExpression':
-						$this.executeScript(valDesc, tDesc.expression, tDesc.vars, dataBindMap);
+						valDesc = $this.executeScript(valDesc, tDesc.expression, tDesc.vars, dataBindMap);
+						break;
+					case 'unwindArray':
+						valDesc = $this.unwindArray(valDesc);
+						break;
+					case 'splitString':
+						valDesc = $this.splitString(valDesc, tDesc);
+						break;
+					case 'rowHash':
+						valDesc = $this.rowHash(valDesc, tDesc, dataBindMap);
 						break;
 					}
+					return valDesc;
+				}
+			}
+			
+			function executeTransformChain(colDesc, valDesc, dataBindMap){
+				for(var i = 0; i < colDesc.transforms.length; i++){
+					valDesc = executeTransform(valDesc, colDesc.transforms[i], dataBindMap);
 				}
 				return valDesc;
 			}
@@ -650,11 +763,11 @@
 				}
 				return bindingInfo.type;
 			}
+			
 			function resolveCellValue(colDesc, rootSel, dataBindMap){
 				var val = dataBindMap[colDesc.field];
 				var type = resolveCellType(colDesc.bindingInfo);
 				return executeTransformChain(colDesc, {value: val, type: type}, dataBindMap);
-//				return {value: val, type: type};
 			}
 			
 			for(var i = 0; i < this.descriptors.length; i++){
@@ -663,18 +776,47 @@
 				tableDesc.bindingTree.setData(this.data, dataBindMap);
 				do {
 					// iterate over columns and construct record
-					var record = {};
+					var records = [{}];
 					var columns = {};
+					
+					function updateRecords(colName, cellInfo, records, colDesc){
+						if(!JSB.isArray(cellInfo) || cellInfo.length == 1){
+							if(JSB.isArray(cellInfo)){
+								cellInfo = cellInfo[0];
+							}
+							if($this.options.treatEmptyStringsAsNull && JSB.isString(cellInfo.value) && cellInfo.value.length == 0){
+								cellInfo.value = null;
+							}
+							if(!columns[colName]){
+								columns[colName] = {type: cellInfo.type, comment: colDesc.comment};
+							}
+							
+							if($this.typeOrder[columns[colName].type] < $this.typeOrder[cellInfo.type]){
+								columns[colName].type = cellInfo.type;
+							}
+							
+							for(var r = 0; r < records.length; r++){
+								records[r][colName] = cellInfo.value;
+							}
+						} else if(cellInfo.length > 1) {
+							var nRecords = [];
+							for(var a = 0; a < cellInfo.length; a++){
+								nRecords = nRecords.concat(updateRecords(colName, cellInfo[a], JSB.clone(records), colDesc));
+							}
+							return nRecords;
+						}
+						return records;
+					}
+					
 					for(var colName in tableDesc.columns){
 						var colDesc = tableDesc.columns[colName];
 						var cellInfo = resolveCellValue(colDesc, tableDesc.bindingTree, dataBindMap);
-						if($this.options.treatEmptyStringsAsNull && JSB.isString(cellInfo.value) && cellInfo.value.length == 0){
-							cellInfo.value = null;
-						}
-						record[colName] = cellInfo.value;
-						columns[colName] = {type: cellInfo.type, comment: colDesc.comment};
+						records = updateRecords(colName, cellInfo, records, colDesc);
 					}
-					this.emitRecord({table: tableDesc.table, columns: columns}, record);
+					for(var r = 0; r < records.length; r++){
+						this.emitRecord({table: tableDesc.table, columns: columns}, records[r]);	
+					}
+					
 				} while(tableDesc.bindingTree.next(dataBindMap));
 			}
 		},
@@ -1190,6 +1332,23 @@
 									}
 								}
 								transformDesc.expression = tCtx.find('expression').value();
+								break;
+							case 'splitString':
+								transformDesc.splitDelimiter = tCtx.find('splitDelimiter').value();
+								transformDesc.splitTrim = tCtx.find('splitTrim').checked();
+								transformDesc.splitRemoveEmpty = tCtx.find('splitRemoveEmpty').checked();
+								break;
+							case 'rowHash':
+								var valArrCtx = tCtx.find('hashColumns').values();
+								transformDesc.oddFields = [];
+								for(var v = 0; v < valArrCtx.length; v++){
+									var valCtx = valArrCtx[v];
+									var oddField = valCtx.find('oddField').binding();
+									transformDesc.oddFields.push(oddField);
+									if(oddField && oddField.length > 0 && !bindings[oddField]){
+										bindings[oddField] = true;
+									}
+								}
 								break;
 							}
 							colDesc.transforms.push(transformDesc);

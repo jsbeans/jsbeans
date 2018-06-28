@@ -6,6 +6,7 @@
 		owner: null,
 		filters: {},
 		filterArr: [],
+		cubeFieldMap: {},
 		
 		$constructor: function(owner){
 			$base();
@@ -25,6 +26,19 @@
 		constructFilterId: function(fItem){
 			var f = fItem.cubeField || fItem.field;
 			return MD5.md5('' + f) + '_' + MD5.md5('' + fItem.op) + '_' + MD5.md5(JSON.stringify(fItem.value));
+		},
+		
+		registerSource: function(widget, source, callback){
+			var cube = source.getCube();
+			if(this.cubeFieldMap[cube.getId()]){
+				callback.call($this);
+				return;
+			}
+			// get source fields
+			cube.server().getFieldMap(function(fm){
+				$this.cubeFieldMap[cube.getId()] = fm;
+				callback.call($this);
+			});
 		},
 		
 		removeFilter: function(itemId, dontPublish){
@@ -62,11 +76,10 @@
 			return false;
 		},
 		
-		translateFilter: function(fDesc, source){
-			var newDesc = JSB.clone(fDesc);
-			// translate local fields into cube fields
+		extractCubeField: function(source, field){
+			var cubeField = field;
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-				function extractCubeField(rValue){
+				function _extractCubeField(rValue){
 					if(JSB.isString(rValue)){
 						return rValue;
 					} else if(JSB.isObject(rValue)){
@@ -82,17 +95,26 @@
 					}
 				}
 				var q = source.getQuery();
-				if(q.$select && q.$select[newDesc.field]){
-					var cubeField = extractCubeField(q.$select[newDesc.field]);
-					if(cubeField){
-						newDesc.cubeField = cubeField;
-						newDesc.cubeId = source.getCube().getId();
-					} else {
-						newDesc.boundTo = source.getId();
-					}
+				var cube = source.getCube();
+				var cubeFields = $this.cubeFieldMap && $this.cubeFieldMap[cube.getId()];
+				if(q.$select && q.$select[field] && (!cubeFields || !cubeFields[field])){
+					cubeField = _extractCubeField(q.$select[field]);
 				}
 			} else {
 				throw new Error('Unknown source type: ' + source.getJsb().$name);
+			}
+			
+			return cubeField;
+		},
+		
+		translateFilter: function(fDesc, source){
+			var newDesc = JSB.clone(fDesc);
+			var cubeField = this.extractCubeField(source, newDesc.field);
+			if(cubeField){
+				newDesc.cubeField = cubeField;
+				newDesc.cubeId = source.getCube().getId();
+			} else {
+				newDesc.boundTo = source.getId();
 			}
 			return newDesc;
 		},
@@ -177,11 +199,12 @@
 		getFiltersBySource: function(source){
 			var sourceId = source.getId();
 			var cube = source.getCube();
+			var cubeFields = $this.cubeFieldMap[cube.getId()];
 			var srcFilters = {};
 			for(var fItemId in this.filters){
 				var fDesc = this.filters[fItemId];
 				var f = fDesc.cubeField || fDesc.field;
-				if(fDesc.boundTo == sourceId || (cube.getFieldMap() && cube.getFieldMap()[f])){
+				if(fDesc.boundTo == sourceId || (cubeFields && cubeFields[f])){
 					srcFilters[fItemId] = JSB.clone(fDesc);
 				}
 			}

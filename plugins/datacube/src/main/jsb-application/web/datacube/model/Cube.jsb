@@ -5,7 +5,7 @@
 	sourceCount: 0,
 	fieldCount: 0,
 	sliceCount: 0,
-	fieldMap: null,
+	
 	
 	getSourceCount: function(){
 		return this.sourceCount;
@@ -19,9 +19,6 @@
 		return this.sliceCount;
 	},
 	
-	getFieldMap: function(){
-		return this.fieldMap;
-	},
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
@@ -54,6 +51,7 @@
 		dataProviderSizes: {},
 		fieldOrder: [],
 		fields: {},
+		fieldMap: null,
 		slices: {},
 		slicePositions: {},
 		materialization: {},
@@ -84,6 +82,11 @@
 			}
 			$base();
 		},
+		
+		getFieldMap: function(){
+			return this.fieldMap;
+		},
+
 		
 		load: function(bRespond){
 			var mtxName = 'load_' + this.getId();
