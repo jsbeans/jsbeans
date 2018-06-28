@@ -8,7 +8,6 @@
 		context: {},
 		values: null,
 		sort: null,
-		sourceMap: null,
 		sources: null,
 		sourceFilterMap: null,
 		initCallbacks: [],
@@ -408,7 +407,7 @@
 		},
 
 		getSourceIds: function(){
-			return Object.keys(this.sourceMap);
+			return Object.keys(this.sources);
 		},
 
 		// old selector.getFilters
@@ -569,8 +568,7 @@
 			this.values = opts.values;
 
 			this.context = {};
-			if(opts.sourceMap && opts.sources){
-				this.sourceMap = opts.sourceMap;
+			if(opts.sources){
 				this.sources = opts.sources;
 				
 				if($this.sources && Object.keys($this.sources).length > 0 && $this.filterManager){

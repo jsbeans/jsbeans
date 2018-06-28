@@ -195,7 +195,8 @@
                         },
                         rootRowKeyValue: {
                         	render: 'item',
-                        	name: 'Значение поля у корневых строк'
+                        	name: 'Значение поля у корневых строк',
+                        	optional: true
                         },
                         childIdent: {
                         	render: 'item',
@@ -1377,7 +1378,7 @@
 				var parentField = $this.parentRowKeySelector.binding();
 				var q = {$in:[], $nin:[]};
 				// add top level query
-				var topVal = $this.rootRowKeyValue || null;
+				var topVal = $this.rootRowKeyValue;
 				q.$in.push({$const:topVal});
 				
 				function allowExpand(rowKey){
@@ -2273,7 +2274,11 @@
 			if(this.useTree){
 				this.addClass('useTree');
 				this.parentRowKeySelector = this.getContext().find('parentRowKey');
-				this.rootRowKeyValue = this.getContext().find('rootRowKeyValue').value();
+				if(this.getContext().find('rootRowKeyValue').checked()){
+					this.rootRowKeyValue = this.getContext().find('rootRowKeyValue').value() || '';
+				} else {
+					this.rootRowKeyValue = null;
+				}
 				this.childIdent = this.getContext().find('childIdent').value();
 				this.showChildCount = this.getContext().find('childCount').checked();
 				if(this.showChildCount){
