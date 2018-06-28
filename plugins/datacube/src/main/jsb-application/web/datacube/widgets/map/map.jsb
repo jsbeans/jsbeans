@@ -1534,7 +1534,7 @@
                                         });
                                     }
 
-                                    if($this._styles.regions[i].showValuesPermanent){
+                                    if($this._styles.regions[i].showValuesPermanent && reg){
                                         layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, i, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }
