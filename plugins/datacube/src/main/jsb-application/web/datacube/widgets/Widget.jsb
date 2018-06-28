@@ -260,7 +260,7 @@
                 result = [];
 
             function fetch(isReset){
-                $this.fetchBinding(sourceBindings[0], { fetchSize: 100, reset: isReset }, function(data){
+                $this.fetchBinding(sourceBindings[0], { batchSize: 100, reset: isReset }, function(data){
                     if(data.length === 0){
                         callback.call($this, result);
                         $this.getElement().loader('hide');

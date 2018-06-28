@@ -200,7 +200,7 @@
 
             try {
                 function fetch(isReset){
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                    $this.fetchBinding($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
                         if(res.length === 0){
                             resultProcessing();
                             return;

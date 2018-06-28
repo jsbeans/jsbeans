@@ -108,6 +108,7 @@
                 case 'scheme':
                 default:
                 	var editor = new SchemeSelector({
+                	    clearBtn: !this._scheme.multiple,
                 		items: this._dataList,
                 		value: values.value,
                 		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
