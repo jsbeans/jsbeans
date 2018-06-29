@@ -248,7 +248,7 @@
 		        values: [
 		            '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
 		            '$greatest', '$least',
-		            '$splitString', '$substring', '$trim', '$concat',
+		            '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
 		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString', '$toTimestamp',
 		            '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$timeHour', '$timeMinute', '$timeSecond',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
@@ -448,6 +448,22 @@
 		        }
 		    });
 
+		    new this.SingleObject({
+		        name: '$regexpReplace',
+		        category: 'Функции',
+		        desc: 'Замена подстроки с использованием регулярного выражения',
+		        values: ['$regexpReplaceExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$regexpReplaceExpr',
+		        values: {
+		            '$field': '$valueDefinition',
+		            '$pattern': '$constString',
+		            '$replacementString': '$constString',
+		            '$flags': '$constString',
+		        }
+		    });
 
 		    new this.SingleObject({
 		        name: '$coalesce',

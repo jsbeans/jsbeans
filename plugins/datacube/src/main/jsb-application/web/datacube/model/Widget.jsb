@@ -58,7 +58,6 @@
     },
 
 	$server: {
-        sourceMap: null,
         sources: {},
         sourcesIds: null,
         values: null,
@@ -102,8 +101,7 @@
 				    dashboard = this.property('dashboard'),
 				    wType = this.property('wType'),
 				    values = this.property('values'),
-				    sourcesIds = this.property('sourcesIds'),
-				    sourceMap = this.property('sourceMap');
+				    sourcesIds = this.property('sourcesIds');
 
 				if(dashboard){
 					this.dashboard = this.getWorkspace().entry(dashboard);
@@ -121,14 +119,8 @@
 				    this.sourcesIds = sourcesIds;
 				}
 
-				if(sourceMap){
-					this.sourceMap = sourceMap;
-					this.updateSources();
-				} else {
-					this.updateInteroperationMap();
-					bNeedSave = true;
-				}
-
+				this.updateSources();
+				
 				var wasUpdated = valueSelector.updateValues(this.extractWidgetScheme(), this.values);
 				if(wasUpdated){
 				    this.property('values', this.values);
@@ -153,7 +145,6 @@
 
 		getData: function(){
 		    return {
-                sourceMap: this.sourceMap,
                 sources: this.sources,
                 sourcesIds: this.sourcesIds,
 		        values: this.values
@@ -185,50 +176,20 @@
 			this.getDashboard().load(); // todo: update only after change source
 			// update interoperation maps in all widgets of current dashboard
 			var widgets = this.getDashboard().getWrappers();
-			for(var wId in widgets){
-				widgets[wId].updateInteroperationMap();
-			}
-
+			
 			this.dataVersion++;
 			
 			this.getDashboard().store();
-
-			return {sources: this.sources, sourceMap: this.sourceMap};
-		},
-
-		updateInteroperationMap: function(){
-		    if(!this.sourcesIds){
-		        return;
-		    }
-
-			var sourceMap = {};
-
-			for(var i = 0; i < this.sourcesIds.length; i++){
-			    var source = this.getWorkspace().entry(this.sourcesIds[i]);
-                sourceMap[this.sourcesIds[i]] = [];
-
-                if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-                    var cube = source.getCube();
-                    cube.load();
-                    var sliceMap = cube.getSlices();
-                    for(var sId in sliceMap){
-                        sourceMap[this.sourcesIds[i]].push(sId);
-                    }
-                } else {
-                    sourceMap[this.sourcesIds[i]].push(this.sourcesIds[i]);
-                }
-			}
-
-			this.sourceMap = sourceMap;
-			this.property('sourceMap', this.sourceMap);
 			this.updateSources();
-			return sourceMap;
+			return {sources: this.sources};
 		},
-
+		
 		updateSources: function(){
 			this.sources = {};
-			for(var sId in this.sourceMap){
-				this.sources[sId] = this.getWorkspace().entry(sId);
+			if(this.sourcesIds){
+				for(var i = 0; i < this.sourcesIds.length; i++){
+					this.sources[this.sourcesIds[i]] = this.getWorkspace().entry(this.sourcesIds[i]);
+				}
 			}
 		}
 	}

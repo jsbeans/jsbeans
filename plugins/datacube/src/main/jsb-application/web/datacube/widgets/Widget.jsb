@@ -8,7 +8,6 @@
 		context: {},
 		values: null,
 		sort: null,
-		sourceMap: null,
 		sources: null,
 		sourceFilterMap: null,
 		initCallbacks: [],
@@ -106,6 +105,7 @@
             switch(format){
                 case 'xls':
                 case 'csv':
+                case 'json':
                     this.getBindingsData(function(data){
                         Export.exportData(format, data, $this.wrapper.title);
                     });
@@ -408,7 +408,7 @@
 		},
 
 		getSourceIds: function(){
-			return Object.keys(this.sourceMap);
+			return Object.keys(this.sources);
 		},
 
 		// old selector.getFilters
@@ -569,8 +569,7 @@
 			this.values = opts.values;
 
 			this.context = {};
-			if(opts.sourceMap && opts.sources){
-				this.sourceMap = opts.sourceMap;
+			if(opts.sources){
 				this.sources = opts.sources;
 				
 				if($this.sources && Object.keys($this.sources).length > 0 && $this.filterManager){
