@@ -93,6 +93,9 @@
                                              ru_name: {
                                                  name: 'Название страны'
                                              },
+                                             name: {
+                                                 name: 'Название страны (англ)'
+                                             },
                                              id: {
                                                  name: 'Код ISO'
                                              }
@@ -1425,8 +1428,24 @@
 
         _buildChart: function(data){
             try {
-                var mapOpts = {};
+                var mapOpts = {
+                    center: [40.5, 40.5],
+                    zoom: 2
+                };
+
                 if(this.map){
+                    mapOpts = {
+                        center: this.map.getCenter(),
+                        zoom: this.map.getZoom()
+                    };
+
+                    this.map.remove();
+                    /*
+                    this.map.eachLayer(function(layer){
+                        layer.remove();
+                    });
+                    */
+                    /*
                     for(var i = 0; i < this._layers.markers.length; i++){
                         this._layers.markers[i].remove();
                     }
@@ -1434,12 +1453,17 @@
                     for(var i = 0; i < this._layers.geoJson.length; i++){
                         this._layers.geoJson[i].remove();
                     }
+                    */
                 } else {
+                    /*
                     this.map = L.map(this.container.get(0), {
                         center: [40.5, 40.5],
                         zoom: 2
                     });
+                    */
                 }
+
+                this.map = L.map(this.container.get(0), mapOpts);
 
                 // remove old controls
                 if(this._infoControl){
@@ -1486,7 +1510,8 @@
                     if(this._maps[i].data){
                         // create maps
                         (function(i, data){
-                            var tooltipLayers = [];
+                            var tooltipLayers = [],
+                                mapGroup = [];
 
                             if($this._styles.regions[i].valueDisplayType === 'legend'){
                                 $this._createInfoControl();
