@@ -338,7 +338,7 @@
                 delete $this.contextQueryViews[recursiveContext];
                 return sql;
             }
-debugger
+//debugger
             // reuse query view as template for translate sub views
             var originalQuery = view.query;
 
@@ -347,7 +347,7 @@ debugger
 
             var sql = '(';
 
-            if (originalQuery.recursiveTree.$recursiveTreeDirection == 1) {
+            if (originalQuery.$recursiveTree.$direction != -1) {
                 var recursiveContext = 'UP:' + view.name;
                 sql += '(WITH RECURSIVE ' +  $this._quotedName(recursiveContext) + ' AS (';
                 sql += translateRecursive(true, recursiveContext);
@@ -355,11 +355,11 @@ debugger
                 sql += ' SELECT * FROM ' + $this._quotedName(recursiveContext) + ')';
             }
 
-            if (originalQuery.recursiveTree.$recursiveTreeDirection == 0) {
+            if (originalQuery.$recursiveTree.$direction != 1 && originalQuery.$recursiveTree.$direction != -1) {
                 sql += ' UNION ALL ';
             }
 
-            if (originalQuery.recursiveTree.$recursiveTreeDirection == 1) {
+            if (originalQuery.$recursiveTree.$direction != 1) {
                 var recursiveContext = 'DOWN:' + view.name;
                 sql += '(WITH RECURSIVE ' +  $this._quotedName(recursiveContext) + ' AS (';
                 sql += translateRecursive(false, recursiveContext);
