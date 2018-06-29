@@ -83,6 +83,7 @@
                     scheme: widget.getEntry().extractWidgetScheme(),
                     values: widget.getValues(),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
+                    context: widget.getEntry().getId(),
                     onchange: function(key, values){
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
                             return;

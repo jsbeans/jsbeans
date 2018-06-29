@@ -1,7 +1,7 @@
 {
 	$name: 'DataCube.Controls.SchemeSelector',
 	$parent: 'JSB.Widgets.ComboBox',
-	
+	$require: ['Unimap.Render.DataBindingCache'],
 	$client: {
 		options: {
 		    clearBtn: false,
@@ -15,6 +15,8 @@
 		$constructor: function(opts){
 			var items = opts.items;
 			var value = opts.value;
+			this.context = opts.context;
+			this.sourceKey = opts.sourceKey;
 			if(JSB.isDefined(opts.items)){
 				delete opts.items;
 			}
@@ -43,8 +45,14 @@
 		
 		setItems: function(items){
 			$this.schemeItems = items;
-			$this.schemeMap = {};
-			var nItems = $this.translateItems();
+			var nItems = DataBindingCache.get(this.context, this.sourceKey, 'SchemeSelectorItems');
+			$this.schemeMap = DataBindingCache.get(this.context, this.sourceKey, 'SchemeSelectorMap');
+			if(!nItems || !$this.schemeMap){
+				$this.schemeMap = {};
+				nItems = $this.translateItems();
+				DataBindingCache.put(this.context, this.sourceKey, 'SchemeSelectorItems', nItems);
+				DataBindingCache.put(this.context, this.sourceKey, 'SchemeSelectorMap', $this.schemeMap);
+			}
 			return $base(nItems);
 		},
 		
