@@ -10,6 +10,7 @@
 
             this._scheme = opts.scheme;
             this._values = opts.values.values;
+            this._context = opts.context;
 
             if(opts.values.commonFields){
                 this.createCommonFieldsMap(opts.values.commonFields);
@@ -167,6 +168,10 @@
 
 	    getCommonGroupValues: function(commonGroup){
 	        return this._commonFieldsMap[commonGroup] && this._commonFieldsMap[commonGroup].commonValues;
+	    },
+
+	    getContext: function(){
+	        return this._context;
 	    },
 
 	    getLinkedFields: function(){

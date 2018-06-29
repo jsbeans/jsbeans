@@ -185,6 +185,10 @@
             return this._schemeController.getCommonGroupValues(commonGroup);
         },
 
+        getContext: function(){
+            return this._schemeController.getContext();
+        },
+
         getKey: function(){
             return this._key;
         },
