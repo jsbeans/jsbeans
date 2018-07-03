@@ -591,8 +591,12 @@
                         msgIcon = this.createMsgIcon(description, 'desc fas fa-question-circle'),
                         value = JSB.isDefined(variable.typeSettings.dateFormat) ? variable.typeSettings.dateFormat : '%d-%m-%Y';
 
-                    variable.typeSettings.dateFormat = value;
-                    variable.typeSettings.formatPart = value;
+                    if(!JSB.isDefined(variable.typeSettings.dateFormat)){
+                        variable.typeSettings.dateFormat = value;
+                        variable.typeSettings.formatPart = value;
+
+                        this.changeValue();
+                    }
 
                     var dateLabel = this.$('<label class="label dateLabel">Формат даты</label>');
                     dateLabel.append(msgIcon);
