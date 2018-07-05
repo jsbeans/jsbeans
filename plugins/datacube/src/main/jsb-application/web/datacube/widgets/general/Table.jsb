@@ -714,10 +714,10 @@
 			
 			this.addClass('tableWidget');
 			this.loadCss('Table.css');
-			
+/*			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
-			
+*/			
 			
 			this.header = this.$('<table class="header" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr></tr></thead></table>');
 			this.append(this.header);
@@ -1194,12 +1194,7 @@
 				if(fail){
 					JSB.getLogger().error(fail);
 					$this.rowAppending = false;
-					// show message
-					$this.showMessage('<strong>Ошибка!</strong><br />' + fail.message);
 					return;
-				} else {
-					// hide message
-					$this.hideMessage();
 				}
 				if(!rows || $this.blockFetch){
 					$this.rowAppending = false;
@@ -1422,7 +1417,7 @@
 					return;
 				}
 				$this.preFetching = true;
-				var fRes = $this.fetchBinding(rowsContext, {batchSize: preFetchSize}, function(data){
+				var fRes = $this.fetchBinding(rowsContext, {batchSize: preFetchSize}, function(data, fail){
 					$this.preFetching = false;
 					if(!data || data.length == 0){
 						return;
@@ -2173,16 +2168,6 @@
 					this.refresh();
 				}
 			}
-		},
-		
-		showMessage: function(txt){
-			this.messageBox.empty();
-			this.messageBox.append(txt);
-			this.messageBox.removeClass('hidden');
-		},
-		
-		hideMessage: function(){
-			this.messageBox.addClass('hidden');
 		},
 		
 		refresh: function(opts){

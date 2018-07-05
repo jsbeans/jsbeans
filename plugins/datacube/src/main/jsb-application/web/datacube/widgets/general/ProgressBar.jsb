@@ -223,7 +223,10 @@
 				series.push(serieDesc);
 			}
 
-            this.fetchBinding(dataSource, {batchSize: 1}, function(){
+            this.fetchBinding(dataSource, {batchSize: 1}, function(data, fail){
+            	if(fail){
+            		return;
+            	}
                 dataSource.next();
 
                 $this.draw(series);
