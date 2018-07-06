@@ -1636,7 +1636,7 @@
 					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
-						schemeValues = ['$views', '$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$cubeFilter', '$recursiveTree', '$sort', '$finalize', '$limit', '$sql'];
+						schemeValues = ['$views', '$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$limit', '$sql'];
 						
 						// perform $context
 						var ctxName = $this.value['$context'];
