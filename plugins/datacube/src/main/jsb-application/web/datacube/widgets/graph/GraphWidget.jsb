@@ -427,7 +427,7 @@
         innerRefresh: function(updateOpts){
             this.getElement().loader();
 
-            this.createLegend();
+            //this.createLegend();
 
             JSB.chain(this._styles.viewList, function(d, c){
                 if(!d.jsb){
@@ -459,9 +459,43 @@
                 links = [],
                 nodesMap = {};
 
+            function createNode(node, binding){
+                if(!nodesMap[node] && !$this._nodeList[node]){
+                    var entry = JSB().clone(viewList[binding]);
+
+                    if(entry){
+                        if(entry.values){
+                            entry.values = entry.values.getFullValues();
+                        }
+                        if(entry.header){
+                            entry.header = entry.header.value();
+                        }
+                        if(entry.caption){
+                            entry.caption = entry.caption.value();
+                        }
+                    } else {
+                        entry.header = node;
+                    }
+
+                    nodesMap[node] = entry;
+
+                    var diagNode = $this.diagram.createNode('graphNode', {entry: entry});
+
+                    if($this._styles.itemWidth && $this._styles.itemHeight){
+                        diagNode.getElement().width($this._styles.itemWidth);
+                        diagNode.getElement().height($this._styles.itemHeight);
+                    }
+
+                    $this._nodeList[node] = diagNode;
+                }
+                if(!nodesMap[node] && $this._nodeList[node]){
+                    nodesMap[node] = true;
+                }
+            }
+
             function innerFetch(isReset){
-                $this.fetchBinding($this._dataSource, { fetchSize: 50, reset: isReset }, function(res){
-                    if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                $this.fetchBinding($this._dataSource, { fetchSize: 50, reset: isReset }, function(res, fail){
+                    if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
                         $this.updateDispatcher.ready();
                         $this.getElement().loader('hide');
                         return;
@@ -479,65 +513,8 @@
                                 continue;
                             }
 
-                            if(!nodesMap[se] && !$this._nodeList[se]){
-                                var seEntry = JSB().clone(viewList[sourceElement.binding()]);
-
-                                if(seEntry){
-                                    if(seEntry.values){
-                                        seEntry.values = seEntry.values.getFullValues();
-                                    }
-                                    if(seEntry.header){
-                                        seEntry.header = seEntry.header.value();
-                                    }
-                                    if(seEntry.caption){
-                                        seEntry.caption = seEntry.caption.value();
-                                    }
-                                } else {
-                                    seEntry.header = se;
-                                }
-
-                                nodesMap[se] = seEntry;
-
-                                var node = $this.diagram.createNode('graphNode', {entry: seEntry});
-                                if($this._styles.itemWidth && $this._styles.itemHeight){
-                                    node.getElement().width($this._styles.itemWidth);
-                                    node.getElement().height($this._styles.itemHeight);
-                                }
-                                $this._nodeList[se] = node;
-                            }
-                            if(!nodesMap[se] && $this._nodeList[se]){
-                                nodesMap[se] = true;
-                            }
-
-                            if(!nodesMap[te] && !$this._nodeList[te]){
-                                var teEntry = JSB().clone(viewList[targetElement.binding()]);
-
-                                if(teEntry){
-                                    if(teEntry.values){
-                                        teEntry.values = teEntry.values.getFullValues();
-                                    }
-                                    if(teEntry.header){
-                                        teEntry.header = teEntry.header.value();
-                                    }
-                                    if(teEntry.caption){
-                                        teEntry.caption = teEntry.caption.value();
-                                    }
-                                } else {
-                                    teEntry.header = te;
-                                }
-
-                                nodesMap[te] = teEntry;
-
-                                var node = $this.diagram.createNode('graphNode', {entry: teEntry});
-                                if($this._styles.itemWidth && $this._styles.itemHeight){
-                                    node.getElement().width($this._styles.itemWidth);
-                                    node.getElement().height($this._styles.itemHeight);
-                                }
-                                $this._nodeList[te] = node;
-                            }
-                            if(!nodesMap[te] && $this._nodeList[te]){
-                                nodesMap[te] = true;
-                            }
+                            createNode(se, sourceElement.binding());
+                            createNode(te, targetElement.binding());
 
                             var flag = true,
                                 curLink = {

@@ -94,7 +94,6 @@
 			this.messageBox.addClass('hidden');
 		},
 
-
 		addDrilldownElement: function(opts){
 		    this.wrapper.addDrilldownElement(opts);
 		},

@@ -1163,13 +1163,14 @@
             function fetch(isReset){
                 $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res, fail){
                     try{
-                        if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                        if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
                             $this.updateDispatcher.ready();
                             $this.getElement().loader('hide');
                             return;
                         }
 
-                        if(res.length === 0){                            resultProcessing();
+                        if(res.length === 0){
+                            resultProcessing();
                             return;
                         }
 

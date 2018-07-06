@@ -234,13 +234,13 @@
             function fetch(isReset){
                 try{
                     $this.fetchBinding($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
-                    	if(fail){
-                    		return;
-                    	}                        if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                    	if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
                             $this.updateDispatcher.ready();
                             $this.getElement().loader('hide');
                             return;
-                        }                        if(res.length === 0){
+                        }
+
+                        if(res.length === 0){
                             resultProcessing();
                             return;
                         }

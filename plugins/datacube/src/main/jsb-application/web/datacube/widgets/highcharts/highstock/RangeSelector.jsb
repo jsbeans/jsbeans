@@ -329,14 +329,13 @@
             function fetch(isReset){
                 $this.fetchBinding($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res, fail){
                     try {
-                    	if(fail){
-                    		$this.getElement().loader('hide');
-                    		return;
-                    	}                        if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                    	if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
                             $this.updateDispatcher.ready();
                             $this.getElement().loader('hide');
                             return;
-                        }                        if(res.length === 0){
+                        }
+
+                        if(res.length === 0){
                             resultProcessing();
                             return;
                         }

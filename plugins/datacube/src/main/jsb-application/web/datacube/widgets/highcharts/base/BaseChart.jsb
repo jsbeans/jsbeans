@@ -1390,6 +1390,7 @@
                 datacubeOpts = point.series.options.datacube,
                 isFilterData = point.options.datacube && point.options.datacube.filterData || point.dataGroup && point.series.userOptions.data[point.dataGroup.start].datacube.filterData,
                 binding = point.series.options.datacube.binding || point.options.datacube.binding,
+                curFiltersCount = Object.keys(this._curFilters).length,
                 refreshOpts = {},
                 gLength;
 
@@ -1405,7 +1406,7 @@
                 }
             }
 
-            if(!accumulate && Object.keys(this._curFilters).length > 0){
+            if(!accumulate && curFiltersCount > 0){
                 this._select(this._curFilters, false, true);
 
                 for(var i in this._curFilters){
@@ -1465,7 +1466,7 @@
 
                 var fDesc = {
                     sourceId: context.source,
-                    type: isRange ? '$and' : '$or',
+                    type: isRange ? '$and' : (accumulate ? '$or' : '$and'),
                     op: isRange ? '$range' : '$eq',
                     field: binding,
                     value: isRange ? [startRangeValue, endRangeValue] : point[this._filterPropName]
