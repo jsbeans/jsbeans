@@ -144,7 +144,6 @@
 		            '$filter': '$filter',
 		            '$groupBy': '$groupBy',
 		            '$select': '$select',
-		            '$recursiveTree': '$recursiveTree',
 		            '$from':'$from',
 		            '$distinct': '$distinctAll',
 		            '$postFilter': '$postFilter',
@@ -154,7 +153,7 @@
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
 		        },
-		        optional: ['$context', '$recursiveTree', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$views', '$recursiveTree']
+		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$views']
 		    });
 
 		    new this.ComplexObject({
@@ -178,71 +177,18 @@
 		        },
 		    });
 
-		    new this.ComplexObject({
-		        name: '$recursiveTree',
-		        desc: 'Выражение дял превращения запроса в рекурсивный обход дерева',
-		        displayName: 'Рекурсивное дерево',
-		        values: {
-		            '$idField': '$recursiveTreeIdField',
-		            '$parentIdField': '$recursiveTreeParentIdField',
-		            '$startFilter': '$filter',
-		            '$direction': '$recursiveTreeDirection',
-		        },
-		    });
-
-		    new this.Group({
-		    	name: '$recursiveTreeIdField',
-		        displayName: 'Основное поле',
-		    	desc: 'Основное выходное поле запроса для пересечения',
-		        values: ['$field'],
-		    });
-
-		    new this.Group({
-		    	name: '$recursiveTreeParentIdField',
-		        displayName: 'Родительское поле',
-		    	desc: 'Основное родительское поле запроса для пересечения',
-		        values: ['$field'],
-		    });
-
-		    new this.Group({
-		        name: '$recursiveTreeDirection',
-		        values: ['$recursiveTreeDirectionUp', '$recursiveTreeDirectionBoth', '$recursiveTreeDirectionDown']
-		    });
-
-		    new this.EConstNumber({
-		        name: '$recursiveTreeDirectionUp',
-		    	displayName: 'Включать родительские элементы',
-		    	desc: 'Задает направление обхода дерева от начальных элементов вверх, включая родительские',
-		        value: 1,
-		    });
-
-		    new this.EConstNumber({
-		        name: '$recursiveTreeDirectionBoth',
-		    	displayName: 'Включать родительские и дочерние элементы',
-                desc: 'Задает направление обхода дерева в обе стороны, включая родительские и дочерние элементы',
-                value: 0,
-		    });
-
-		    new this.EConstNumber({
-		        name: '$recursiveTreeDirectionDown',
-		    	displayName: 'Включать дочерние элементы',
-                desc: 'Задает направление обхода дерева от начальных элементов вниз, включая дочерние элементы',
-                value: -1,
-		    });
-
-		
 		    new this.Group({
 		    	name: '$from',
 		        displayName: 'Источник запроса',
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
 		    });
-		
+
 		    new this.Group({
 		    	name: '$valueDefinition',
 		        values: ['$const', '$expression', '$query', '$field', '$param', '$sql'],
 		    });
-		
+
 		    new this.Group({
 		        name: '$expression',
 		        values: [
@@ -258,6 +204,7 @@
 		            '$gsum', '$gcount', '$gmin', '$gmax', '$gavg',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
+		            '$recursiveSelect',
 		            '$macros'
 		        ]
 		    });
@@ -403,12 +350,28 @@
 		        desc: 'Разделить строку на несколько (получить массив строк)',
 		        values: ['$splitStringExpr']
 		    });
-		    
+
 		    new this.ComplexObject({
 		        name: '$splitStringExpr',
 		        values: {
 		            '$field': '$valueDefinition',
 		            '$separator': '$constString'
+		        }
+		    });
+
+		    new this.SingleObject({
+		        name: '$recursiveSelect',
+		        category: 'Разное',
+		        desc: 'Выполнить рекурсивный аггрегируюий подзапрос',
+		        values: ['$recursiveSelectExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$recursiveSelectExpr',
+		        values: {
+		            '$aggregateExpr': '$valueDefinition',
+		            '$idField': '$valueDefinition',
+		            '$parentIdField': '$valueDefinition',
 		        }
 		    });
 
