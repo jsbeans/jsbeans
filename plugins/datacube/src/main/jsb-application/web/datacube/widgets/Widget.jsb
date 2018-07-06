@@ -131,7 +131,7 @@
 		},
 
 		// old selector.fetch
-        fetchBinding: function(selector, opts, callback){
+        fetch: function(selector, opts, callback){
             if(selector.isEmbeddedBinding()){
                 callback.call(this);
                 return;
@@ -214,7 +214,10 @@
 
             item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
-            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(serverData, fail){
+            if(!JSB.isDefined(item.fetchOpts.compress)){
+            	item.fetchOpts.compress = true;
+            }
+            this.server().fetch(item.source, $this.getEntry(), item.fetchOpts, function(serverData, fail){
                 if(item.fetchOpts.reset){
                     item.cursor = 0;
                     if(item.data){
@@ -226,7 +229,11 @@
                 var data = null;
 
                 if(serverData){
-                    data = $this.decompressData(serverData);
+                	if(item.fetchOpts.compress){
+                		data = $this.decompressData(serverData);
+                	} else {
+                		data = serverData;
+                	}
                     if(!item.data){
                         item.data = data;
                     } else {
@@ -257,7 +264,7 @@
                 result = [];
 
             function fetch(isReset){
-                $this.fetchBinding(sourceBindings[0], { batchSize: 100, reset: isReset }, function(data, fail){
+                $this.fetch(sourceBindings[0], { batchSize: 100, reset: isReset }, function(data, fail){
                 	if(fail){
                 		if(callback){
                 			callback.call($this, null, fail);
@@ -666,12 +673,12 @@
 			}
 		},
 
-		fetch: function(sourceId, dashboard, opts){
+		fetch: function(sourceId, widgetEntry, opts){
 			var mtx = 'fetch_' + $this.getId();
 			JSB.getLocker().lock(mtx);
 			try {
 				var batchSize = opts.batchSize || 50;
-				var source = dashboard.getWorkspace().entry(sourceId);
+				var source = widgetEntry.getWorkspace().entry(sourceId);
 				$this.sourceIds[sourceId] = true;
 				var data = [];
 				if(opts.reset){
@@ -883,49 +890,60 @@
 					data.push(el);
 				}
 
-				// compress data
-				var encoded = {
-					layers: [],
-					data: [],
-					dict: [],
-					widgetOpts: this.extendWidgetOpts(opts.widgetOpts)
-				};
-
-				var encMap = {};
-				var lMap = {};
-				var cIdx = 0;
-				for(var i = 0; i < data.length; i++){
-					var item = data[i];
-					var cItem = {};
-					for(var l in item){
-						var lItem = item[l];
-						if(!lMap[l]){
-							var lIdx = encoded.layers.length;
-							encoded.layers.push(l);
-							lMap[l] = '' + lIdx;
-						}
-						var pItem = cItem[lMap[l]] = {};
-						for(var fName in lItem){
-							if(!encMap[fName]){
-								// generate encoded field name
-								var cIdx = encoded.dict.length;
-								encoded.dict.push(fName);
-								encMap[fName] = '' + cIdx;
-							}
-							pItem[encMap[fName]] = lItem[fName];
-						}
+				if(opts.compress){
+					// compress data
+					var encoded = $this.compressData(data);
+					encoded.widgetOpts = this.extendWidgetOpts(opts.widgetOpts);
+	
+					if($this.needBreak){
+						throw new Error('Fetch broke');
 					}
-					encoded.data.push(cItem);
+					
+					return encoded;
+				} else {
+					return data;
 				}
-
-				if($this.needBreak){
-					throw new Error('Fetch broke');
-				}
-				
-				return encoded;
 			} finally {
 				JSB.getLocker().unlock(mtx);
 			}
+		},
+		
+		compressData: function(data){
+			// compress data
+			var encoded = {
+				layers: [],
+				data: [],
+				dict: []
+			};
+
+			var encMap = {};
+			var lMap = {};
+			var cIdx = 0;
+			for(var i = 0; i < data.length; i++){
+				var item = data[i];
+				var cItem = {};
+				for(var l in item){
+					var lItem = item[l];
+					if(!lMap[l]){
+						var lIdx = encoded.layers.length;
+						encoded.layers.push(l);
+						lMap[l] = '' + lIdx;
+					}
+					var pItem = cItem[lMap[l]] = {};
+					for(var fName in lItem){
+						if(!encMap[fName]){
+							// generate encoded field name
+							var cIdx = encoded.dict.length;
+							encoded.dict.push(fName);
+							encMap[fName] = '' + cIdx;
+						}
+						pItem[encMap[fName]] = lItem[fName];
+					}
+				}
+				encoded.data.push(cItem);
+			}
+			
+			return encoded;
 		},
 
 		extendWidgetOpts: function(opts){
@@ -946,7 +964,7 @@
 		    return widgetOpts;
 		},
 		
-		executeQuery: function(sourceId, dashboard, opts){
+		executeQuery: function(sourceId, widgetEntry, opts){
 			var it = null;
 			var data = [];
 			var mtx = 'executeQuery_' + $this.getId();
@@ -955,7 +973,7 @@
 				var extQuery = (opts && opts.extQuery) || {};
 				var wrapQuery = (opts && opts.wrapQuery) || {};
 				var batchSize = opts.batchSize || 50;
-				var source = dashboard.getWorkspace().entry(sourceId);
+				var source = widgetEntry.getWorkspace().entry(sourceId);
 				if(opts.reset){
 					this.needBreak = true;
 				}
