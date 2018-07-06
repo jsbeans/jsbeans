@@ -316,7 +316,10 @@
                 }
 			} else {
 			    if(recordContext.hasBinding && recordContext.hasBinding()){
-                    this.fetchBinding(recordContext, {batchSize: 1}, function(){
+                    this.fetchBinding(recordContext, {batchSize: 1}, function(data, fail){
+                    	if(fail){
+                    		return;
+                    	}
                         recordContext.next();
                         $this.draw(opts ? opts.isCacheMod : false);
                     });

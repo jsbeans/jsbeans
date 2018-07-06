@@ -1161,7 +1161,7 @@
             this._styles.contentData = [];
 
             function fetch(isReset){
-                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
+                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res, fail){
                     try{
                         if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
                             $this.updateDispatcher.ready();
@@ -1169,8 +1169,7 @@
                             return;
                         }
 
-                        if(res.length === 0){
-                            resultProcessing();
+                        if(res.length === 0){                            resultProcessing();
                             return;
                         }
 

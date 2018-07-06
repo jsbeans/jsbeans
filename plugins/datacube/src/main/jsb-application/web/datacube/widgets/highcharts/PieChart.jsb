@@ -182,13 +182,16 @@
             try {
                 function fetch(isReset){
                     $this.fetchBinding($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, widgetOpts){
+                    	if(fail){
+							$this.updateDispatcher.ready();
+                    		$this.getElement().loader('hide');
+                    		return;
+                    	}
                         if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
                             $this.updateDispatcher.ready();
                             $this.getElement().loader('hide');
                             return;
-                        }
-
-                        if(res.length === 0){
+                        }                        if(res.length === 0){
                             resultProcessing();
                             return;
                         }
@@ -232,6 +235,8 @@
                 console.log('PieChart load data exception');
                 console.log(ex);
                 $this.getElement().loader('hide');
+            } finally {
+            	
             }
         },
 

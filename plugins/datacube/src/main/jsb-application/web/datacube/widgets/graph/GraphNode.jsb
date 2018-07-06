@@ -42,7 +42,6 @@
 			    this.addClass('widgetMode');
 			    this.widget = new this.entry.cls();
 			    this.append(this.widget.getElement());
-debugger;
 			    this.widget.setWrapper(this.entry.wrapper, {values: this.entry.values});
 			    this.widget.refresh();
 			} else if(this.entry.header){

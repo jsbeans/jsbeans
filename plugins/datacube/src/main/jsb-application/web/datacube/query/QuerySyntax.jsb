@@ -674,7 +674,7 @@
 		    new this.SingleObject({
 		        name: '$flatArray',
 		        category: 'Функции агрегации',
-		        desc: 'Объединить все массивы в группы в один массив',
+		        desc: 'Объединить все массивы группы в один массив',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });

@@ -206,10 +206,9 @@
                             $this.updateDispatcher.ready();
                             $this.getElement().loader('hide');
                             return;
-                        }
+                        }                        
 
-                        if(res.length === 0){
-                            resultProcessing();
+						if(res.length === 0){                            resultProcessing();
                             return;
                         }
 

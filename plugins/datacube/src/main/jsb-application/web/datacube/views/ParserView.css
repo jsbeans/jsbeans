@@ -152,16 +152,16 @@
 }
 
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="string"] {
-	color: #0042a9;
+	color: #3e3e3e;
 }
 
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="integer"] {
-	color: #b36e02;
+	color: #017e86;
 }
 
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="float"],
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="number"] {
-	color: #9c8300;
+	color: #004c9c;
 }
 
 .parserView .tablesView > ._dwp_clientPane .tableControl .colHeader > .name[type="boolean"] {
