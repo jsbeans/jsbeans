@@ -35,10 +35,49 @@
                     if(!res) { return ;}
 
                     $this.updateValues(res, function(){
-                    	$this.setTrigger('_dataLoaded');
+                    	$this.setTrigger('_valuesLoaded');
                     });
                 });
 		    }
+
+		    var UpdateDispatcher = function(){
+		        var curTask,
+		            status = 'ready',
+		            needRefresh = false,
+		            refreshOpts;
+
+		        this.addTask = function(opts){
+		            var id = JSB.generateUid(),
+		                updateOpts = {
+		                    taskId: id
+		                };
+
+		            curTask = id;
+
+		            if(status === 'ready'){
+		                status = 'refreshing';
+		                $this._refresh(opts, updateOpts);
+		            } else {
+		                needRefresh = true;
+		                refreshOpts = opts;
+		            }
+		        }
+
+		        this.checkTask = function(id){
+		            return id === curTask;
+		        }
+
+		        this.ready = function(){
+		            if(needRefresh){
+		                needRefresh = false;
+		                $this._refresh(refreshOpts, {taskId: curTask});
+		            } else {
+		                status = 'ready';
+		            }
+		        }
+            }
+
+		    this.updateDispatcher = new UpdateDispatcher();
 		},
 
 		addDrilldownElement: function(opts){
@@ -98,7 +137,7 @@
 		},
 
 		ensureInitialized: function(callback){
-			this.ensureTrigger(['_widgetInitialized', '_dataLoaded'], callback);
+			this.ensureTrigger(['_widgetInitialized', '_valuesLoaded'], callback);
 		},
 
 		exportData: function(format){
@@ -477,6 +516,10 @@
 		},
 
 		refresh: function(opts){
+		    this.updateDispatcher.addTask(opts);
+		},
+
+		_refresh: function(opts){
 			this.localizeFilters();
 		},
 

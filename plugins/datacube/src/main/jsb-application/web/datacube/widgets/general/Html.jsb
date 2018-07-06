@@ -295,9 +295,14 @@
 			this.loadCss('Html.css');
 			$this.setInitialized();
 		},
-		
+
 		refresh: function(opts){
+		    this._refresh(opts);
+		},
+		
+		_refresh: function(opts){
 			$base();
+
 			var recordContext = this.getContext().find('record');
 
 			if(opts && opts.refreshFromCache){

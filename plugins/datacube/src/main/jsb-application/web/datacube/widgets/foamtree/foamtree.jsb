@@ -148,11 +148,12 @@
             this.container.visible(function(evt, isVisible){
                 if($this._isNeedUpdate && isVisible){
                     $this._buildChart($this.getCache());
+                    $this.updateDispatcher.ready();
                 }
             });
         },
 
-        refresh: function(opts){
+        _refresh: function(opts, updateOpts){
         	$base(opts);
         	if(opts && opts.initiator == this){
         	    return;
@@ -215,7 +216,8 @@
 
             var data = [],
                 colorCount = 0,
-                widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('settings colorScheme').value() };
+                widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('settings colorScheme').value() },
+                taskId = opts.taskId;
 
             this.getElement().loader();
 
@@ -232,6 +234,12 @@
             function fetch(isReset){
                 try{
                     $this.fetchBinding($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                        if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                            $this.updateDispatcher.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -374,6 +382,7 @@
         buildChart: function(data){
             if(this.container.is(':visible')){
                 this._buildChart(data);
+                this.updateDispatcher.ready();
             } else {
                 this._isNeedUpdate = true;
             }

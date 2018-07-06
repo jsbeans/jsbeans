@@ -901,7 +901,7 @@
             onMouseOut: null
         },
 
-        refresh: function(opts){
+        _refresh: function(opts){
             // if filter source is current widget
             if(opts && this == opts.initiator && !opts.filterData){
                 return false;
@@ -967,6 +967,8 @@
                 }
 
                 $this._resolvePointContextFilters();
+
+                $this.updateDispatcher.ready();
             }
 
             buildWidget(chartOpts);

@@ -174,8 +174,12 @@
 				$this.setInitialized();
 			});
 		},
-		
+
 		refresh: function(opts){
+		    this._refresh(opts);
+		},
+
+		_refresh: function(opts){
 		    var dataSource = this.getContext().find('dataSource');
             if(!dataSource.hasBinding || !dataSource.hasBinding()){
                 return;

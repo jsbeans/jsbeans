@@ -788,14 +788,16 @@
             map: null
         },
 
-        refresh: function(opts){
+        _refresh: function(opts, updateOpts){
             // if filter source is current widget
             if(opts && this == opts.initiator){
+                this.updateDispatcher.ready();
                 return;
             }
 
             // widget settings editor set style changes
             if(opts && opts.refreshFromCache){
+                this.updateDispatcher.ready();
                 return;
             }
 
@@ -809,6 +811,7 @@
                 this._dataSource = this.getContext().find('dataSource');
 
                 if(!this._dataSource.hasBinding()){
+                    this.updateDispatcher.ready();
                     return;
                 }
             }
@@ -1160,6 +1163,12 @@
             function fetch(isReset){
                 $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
                     try{
+                        if(!$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                            $this.updateDispatcher.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -1423,6 +1432,7 @@
         buildChart: function(data){
             this.ensureDataLoaded(function(){
                 $this._buildChart(data);
+                $this.updateDispatcher.ready();
             });
         },
 
