@@ -325,8 +325,12 @@
             this.getElement().loader();
 
             function fetch(isReset){
-                $this.fetchBinding($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res){
+                $this.fetchBinding($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res, fail){
                     try {
+                    	if(fail){
+                    		$this.getElement().loader('hide');
+                    		return;
+                    	}
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -375,6 +379,8 @@
                         console.log('RangeSelectorChart load data exception');
                         console.log(ex);
                         $this.getElement().loader('hide');
+                    } finally {
+                    	
                     }
                 });
             }

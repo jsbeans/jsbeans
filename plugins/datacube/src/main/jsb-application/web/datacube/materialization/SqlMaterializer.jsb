@@ -197,7 +197,7 @@
 							continue;
 						}
 						if(!bFirst){
-							sql += ', ';
+							sql += ',';
 						}
 						sql += '"' + fNameArr[i] + '"';
 						bFirst = false;
@@ -206,7 +206,7 @@
 						// no columns added
 						continue;
 					}
-					sql += ') values(';
+					sql += ') values (';
 					var values = [];
 					bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
@@ -215,9 +215,9 @@
 							continue;
 						}
 						if(!bFirst){
-							sql += ', ';
+							sql += ',';
 						}
-						sql += '?'
+						sql += '?';
 						values.push(fVal);
 						bFirst = false;
 					}

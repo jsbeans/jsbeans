@@ -199,14 +199,15 @@
 
 //		    var val = this.data[row][prop];
 		    var val = value;
-
+		    var valType = $this.detectType(val);
+/*
             // empty object or array
             if((JSB.isObject(val) && Object.keys(val).length === 0) || (JSB.isArray(val) && val.length === 0)){
             	$this.$(td).empty();
             	$this.$(td).append('<div class="tableCell"> </div>');
                 return td;
             }
-
+*/
             // object or array
             if(JSB.isObject(val) || JSB.isArray(val)){
             	JSB.lookup('JsonView', function(jvcls){
@@ -214,6 +215,7 @@
             		jvInst.setData(val);
             		$this.$(td).empty();
             		$this.$(td).append(jvInst.getElement());
+            		$this.$(td).attr('type', valType);
 /*            		
             		jvInst.getElement().resize(function(){
             			$this.deferredRender();
@@ -225,7 +227,12 @@
 
             // basic types
             $this.$(td).empty();
-            $this.$(td).append($this.$('<div class="tableCell"></div>').text(val));
+            $this.$(td).text(val);
+            $this.$(td).attr('type', valType);
+            
+            if(valType == 'boolean'){
+            	$this.$(td).attr('val', val);
+            }
             return td;
 		},
 
@@ -279,8 +286,8 @@
 					var val = row[f];
 					var type = this.detectType(val);
 					if(!colMap[f]){
-						var colDesc = {data: f, readOnly:true, copyable:true};
-						switch(type){
+						var colDesc = {data: f, readOnly:true, copyable:true, renderer:'customRenderer'};
+/*						switch(type){
 						case 'number':
 //							colDesc.type = 'numeric';
 							break;
@@ -290,11 +297,12 @@
 						case 'datetime':
 							colDesc.type = 'date';
 							break;
+						case 'null':
 						case 'object':
 						case 'array':
 							colDesc.renderer = 'customRenderer';
 							break;
-						}
+						}*/
 						cols.splice(idx, 0, colDesc);
 						colMap[f] = true;
 					}

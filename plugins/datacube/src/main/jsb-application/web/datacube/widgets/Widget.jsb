@@ -25,6 +25,10 @@
 		    $base();
 
 		    this.addClass('datacubeWidget');
+		    this.loadCss('Widget.css');
+		    
+		    this.messageBox = this.$('<div class="message hidden"></div>');
+			this.append(this.messageBox);
 
 		    if(opts){   // not embedded widget
                 this.widgetEntry = opts.widgetEntry;
@@ -40,6 +44,17 @@
                 });
 		    }
 		},
+		
+		showMessage: function(txt){
+			this.messageBox.empty();
+			this.messageBox.append(txt);
+			this.messageBox.removeClass('hidden');
+		},
+		
+		hideMessage: function(){
+			this.messageBox.addClass('hidden');
+		},
+
 
 		addDrilldownElement: function(opts){
 		    this.wrapper.addDrilldownElement(opts);
@@ -218,9 +233,16 @@
                         item.data = item.data.concat(data);
                     }
                 }
+                
+                if(fail){
+                    JSB.getLogger().error(fail);
+                    $this.showMessage('<strong>Ошибка!</strong><br />' + fail.message);
+                } else {
+                	$this.hideMessage();
+                }
+                
                 if(callback){
                     if(fail){
-                        JSB.getLogger().error(fail);
                         callback.call($this, null, fail);
                     } else {
                     	callback.call($this, data, fail, serverData.widgetOpts);
@@ -235,7 +257,13 @@
                 result = [];
 
             function fetch(isReset){
-                $this.fetchBinding(sourceBindings[0], { batchSize: 100, reset: isReset }, function(data){
+                $this.fetchBinding(sourceBindings[0], { batchSize: 100, reset: isReset }, function(data, fail){
+                	if(fail){
+                		if(callback){
+                			callback.call($this, null, fail);
+                		}
+                		return;
+                	}
                     if(data.length === 0){
                         callback.call($this, result);
                         $this.getElement().loader('hide');

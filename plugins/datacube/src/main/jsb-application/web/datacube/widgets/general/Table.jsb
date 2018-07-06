@@ -714,10 +714,10 @@
 			
 			this.addClass('tableWidget');
 			this.loadCss('Table.css');
-			
+/*			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
-			
+*/			
 			
 			this.header = this.$('<table class="header" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr></tr></thead></table>');
 			this.append(this.header);
@@ -1194,12 +1194,7 @@
 				if(fail){
 					JSB.getLogger().error(fail);
 					$this.rowAppending = false;
-					// show message
-					$this.showMessage('<strong>Ошибка!</strong><br />' + fail.message);
 					return;
-				} else {
-					// hide message
-					$this.hideMessage();
 				}
 				if(!rows || $this.blockFetch){
 					$this.rowAppending = false;
@@ -1373,13 +1368,15 @@
 			
 			// setup tree filters
 			if($this.useTree){
-				var contextFilter = $this.getContextFilter();
+				$this.prevContextFilter = $this.getContextFilter();
 				// generate parentId context filter
 				var parentField = $this.parentRowKeySelector.binding();
-				var q = {$in:[], $nin:[]};
+				var q = {$in:[]};
 				// add top level query
 				var topVal = $this.rootRowKeyValue;
-				q.$in.push({$const:topVal});
+				if(!JSB.isNull(topVal)){
+					q.$in.push({$const:topVal});
+				}
 				
 				function allowExpand(rowKey){
 					var expandedDesc = $this.expandedKeys[rowKey];
@@ -1400,19 +1397,34 @@
 						
 					}
 				}
+				var treeFilter = {};
+				if(JSB.isNull(topVal)){
+					var topQ = {};
+					topQ[parentField] = {$eq:{$const:null}};
+					treeFilter.$or = [topQ];
+					if(q.$in.length > 0){
+						var nodeQ = {};
+						nodeQ[parentField] = q;
+						treeFilter.$or.push(nodeQ);
+					}
+				} else {
+					treeFilter[parentField] = q;
+				}
 				
-				contextFilter[parentField] = q;
-				$this.setContextFilter(contextFilter);
+				// setup tree filter
+				var newContextFilter = null;
+				if($this.prevContextFilter && Object.keys($this.prevContextFilter).length > 0){
+					newContextFilter = {$and:[$this.prevContextFilter, treeFilter]};
+				} else {
+					newContextFilter = treeFilter;
+				}
+				$this.setContextFilter(newContextFilter);
 			}
 			
 			var preCallback = function(rows, fail){
 				if($this.useTree){
-					var contextFilter = $this.getContextFilter();
-					var parentField = $this.parentRowKeySelector.binding();
-					if(contextFilter[parentField]){
-						delete contextFilter[parentField];
-					}
-					$this.setContextFilter(contextFilter);
+					// remove tree filter
+					$this.setContextFilter($this.prevContextFilter || {});
 				}
 				return callback.call($this, rows, fail);
 			};
@@ -1422,7 +1434,7 @@
 					return;
 				}
 				$this.preFetching = true;
-				var fRes = $this.fetchBinding(rowsContext, {batchSize: preFetchSize}, function(data){
+				var fRes = $this.fetchBinding(rowsContext, {batchSize: preFetchSize}, function(data, fail){
 					$this.preFetching = false;
 					if(!data || data.length == 0){
 						return;
@@ -2173,16 +2185,6 @@
 					this.refresh();
 				}
 			}
-		},
-		
-		showMessage: function(txt){
-			this.messageBox.empty();
-			this.messageBox.append(txt);
-			this.messageBox.removeClass('hidden');
-		},
-		
-		hideMessage: function(){
-			this.messageBox.addClass('hidden');
 		},
 		
 		refresh: function(opts){

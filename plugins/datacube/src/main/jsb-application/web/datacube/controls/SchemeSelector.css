@@ -65,19 +65,19 @@
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="integer"],
 ._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="integer"] > .field {
-	color: #b36e02;
+	color: #017e86;
 }
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="float"],
 ._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="float"] > .field,
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="number"],
 ._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="number"] > .field {
-	color: #9c8300;
+	color: #004c9c;
 }
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="string"],
 ._dwp_dropTreeTool[key="schemeSelector"] .schemeField[type="string"] > .field {
-	color: #0042a9;
+	color: #3e3e3e;
 }
 
 .schemeSelector > ._dwp_cbContainer > .schemeField > .field[type="null"],
