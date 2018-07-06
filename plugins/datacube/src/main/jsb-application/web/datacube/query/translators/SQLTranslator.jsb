@@ -497,6 +497,8 @@
 
             // aggregate operators
             switch(op) {
+                case '$recursiveSelect':
+                    return this._translateRecursiveSelect(exp[op], dcQuery);
                 case '$distinct':
                     return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$any':
