@@ -34,7 +34,33 @@
                                     name: 'Bar'
                                 },
                                 column: {
-                                    name: 'Column'
+                                    name: 'Column',
+                                    items: {
+                                        pointPadding: {
+                                            render: 'item',
+                                            name: 'Отступ колонки',
+                                            valueType: 'number',
+                                            defaultValue: 0.1,
+                                            editorOpts: {
+                                                min: 0,
+                                                max: 0.5,
+                                                step: 0.05,
+                                                defaultValue: 0.1
+                                            }
+                                        },
+                                        pointPlacement: {
+                                            render: 'item',
+                                            name: 'Положение колонки',
+                                            valueType: 'number',
+                                            defaultValue: 0,
+                                            editorOpts: {
+                                                min: 0,
+                                                max: 0.5,
+                                                step: 0.05,
+                                                defaultValue: 0
+                                            }
+                                        }
+                                    }
                                 },
                                 line: {
                                     name: 'Line'
@@ -450,6 +476,8 @@
                             datacube: {
                                 binding: $this._schemeOpts.xAxisFilterBinding
                             },
+                            pointPadding: seriesContext[seriesData[j].index].find('pointPadding').value(),
+                            pointPlacement: seriesContext[seriesData[j].index].find('pointPlacement').value(),
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,
                             stack: seriesContext[seriesData[j].index].find('stack').value(),

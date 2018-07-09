@@ -216,8 +216,7 @@
 
             var data = [],
                 colorCount = 0,
-                widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('settings colorScheme').value() },
-                taskId = opts.taskId;
+                widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('settings colorScheme').value() };
 
             this.getElement().loader();
 

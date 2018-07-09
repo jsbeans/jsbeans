@@ -2,7 +2,7 @@
 	$name: 'JSB.Controls.Editor',
 	$parent: 'JSB.Controls.Control',
 	$client: {
-	    _types: [],
+	    _types: ['text', 'password', 'color', 'search', 'number'],
 	    _value: null,
 
 	    $constructor: function(opts){
@@ -16,11 +16,16 @@
 
             this.editor = this.getElement();
 
-            if(this.options.type !== 'text' || this.options.type !== 'password' || this.options.type !== 'color' || this.options.type !== 'search'){
+            if(this._types.indexOf(this.options.type) < 0){
                 this.options.type = 'text';
             }
-
             this.editor.attr('type', this.options.type);
+
+            if(this.options.type = 'number'){
+                this.editor.attr('min', this.options.min);
+                this.editor.attr('max', this.options.max);
+                this.editor.attr('step', this.options.step);
+            }
 
             if(this.options.readonly){
                 this.editor.attr('readonly', true);
@@ -28,6 +33,10 @@
 
             if(this.options.placeholder){
                 this.editor.attr('placeholder', this.options.placeholder);
+            }
+
+            if(this.options.defaultValue){
+                this.editor.attr('defaultValue', this.options.defaultValue);
             }
 
             if(this.options.dataList){
@@ -73,9 +82,16 @@
 
 	    options: {
 	        readonly: false,
-	        type: 'text',    // password, color, search
+	        type: 'text',    // password, color, search, number
 	        placeholder: null,
 	        value: null,
+	        defaultValue: null,
+
+	        // number attributes
+	        min: 0,
+	        max: 100,
+	        step: 1,
+	        //
 
 	        dataList: null,
 
