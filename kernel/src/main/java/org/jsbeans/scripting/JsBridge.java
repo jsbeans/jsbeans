@@ -122,7 +122,13 @@ public class JsBridge {
 		Await.result(future, Duration.Inf());
 */
     }
-
+    
+    public void waitJavaObject(Object javaObj) throws InterruptedException{
+    	synchronized (javaObj) {
+    		javaObj.wait();	
+		}
+    }
+    
     public String setTimeout(ScriptableObject callback, long duration) {
         return this.setTimeoutOrInterval(true, callback, duration);
     }

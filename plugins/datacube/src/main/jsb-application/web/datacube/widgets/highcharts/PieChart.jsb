@@ -141,8 +141,9 @@
             $this.setInitialized();
         },
 
-        refresh: function(opts){
+        _refresh: function(opts, updateOpts){
             if(!$base(opts)){
+                this.updateDispatcher.ready();
                 return;
             }
 
@@ -168,6 +169,7 @@
             }
 
             if(!this._resolvePointFilters(this._schemeOpts.bindings)){
+                this.updateDispatcher.ready();
                 return;
             }
 
@@ -179,7 +181,13 @@
 
             try {
                 function fetch(isReset){
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, widgetOpts){
+                    $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, widgetOpts){
+                        if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                            $this.updateDispatcher.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -224,6 +232,8 @@
                 console.log('PieChart load data exception');
                 console.log(ex);
                 $this.getElement().loader('hide');
+            } finally {
+            	
             }
         },
 

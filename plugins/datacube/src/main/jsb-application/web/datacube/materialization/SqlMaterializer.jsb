@@ -197,12 +197,16 @@
 							continue;
 						}
 						if(!bFirst){
-							sql += ', ';
+							sql += ',';
 						}
 						sql += '"' + fNameArr[i] + '"';
 						bFirst = false;
 					}
-					sql += ') values(';
+					if(bFirst){
+						// no columns added
+						continue;
+					}
+					sql += ') values (';
 					var values = [];
 					bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
@@ -211,9 +215,9 @@
 							continue;
 						}
 						if(!bFirst){
-							sql += ', ';
+							sql += ',';
 						}
-						sql += '?'
+						sql += '?';
 						values.push(fVal);
 						bFirst = false;
 					}
@@ -223,7 +227,9 @@
 						values: values
 					});
 				}
-				JDBC.executeUpdate(connection, batch);
+				if(batch.length > 0){
+					JDBC.executeUpdate(connection, batch);
+				}
 			} finally {
 				connWrap.close();
 			}

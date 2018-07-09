@@ -206,8 +206,9 @@
 	        });
 	    },
 
-	    refresh: function(opts){
+	    _refresh: function(opts, updateOpts){
             if(!$base(opts)){
+                this.updateDispatcher.ready();
                 return;
             }
 
@@ -272,6 +273,7 @@
             }
 
             if(!this._resolveFilters(this._schemeOpts.dateContext.binding())){
+                this.updateDispatcher.ready();
                 return;
             }
 
@@ -325,8 +327,14 @@
             this.getElement().loader();
 
             function fetch(isReset){
-                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, wrapQuery: wrapQuery }, function(res){
+                $this.fetch($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res, fail){
                     try {
+                    	if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                            $this.updateDispatcher.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -375,6 +383,8 @@
                         console.log('RangeSelectorChart load data exception');
                         console.log(ex);
                         $this.getElement().loader('hide');
+                    } finally {
+                    	
                     }
                 });
             }

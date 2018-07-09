@@ -2,7 +2,7 @@
 	$name: 'Unimap.Render.SourceBinding',
 	$parent: 'Unimap.Render.Item',
 	$client: {
-	    $require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
+	    $require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button', 'Unimap.Render.DataBindingCache'],
 
 	    _beans: [],
 	    _render: null,
@@ -247,7 +247,7 @@
 		    this._values.values[itemIndex] = {
 		        binding: this._items[itemIndex].dataScheme,
 		    }
-
+		    DataBindingCache.remove(this.getContext(), this.getKey());
 		    this.onchange();
 		},
 

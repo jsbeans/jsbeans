@@ -174,40 +174,7 @@
 		
 		getWidget: function(){
 			return $this.mainWidget;
-		},
-		/*
-		localizeFilter: function(src){
-			return WidgetController.getFilterManager().localizeFilter(src);
-		},
-		
-		constructFilterBySource: function(source){
-			return WidgetController.getFilterManager().constructFilterBySource(source);
-		},
-
-		constructFilterByLocal: function(filters, src){
-			return WidgetController.getFilterManager().constructFilterByLocal(filters, src);
-		},
-
-		clearFilters: function(widget){
-			WidgetController.getFilterManager().clearFilters(widget);
-		},
-		
-		hasFilter: function(fDesc){
-			return WidgetController.getFilterManager().hasFilter(fDesc);
-		},
-		
-		addFilter: function(fDesc, sourceIds, widget){
-			return WidgetController.getFilterManager().addFilter(fDesc, sourceIds, widget);
-		},
-		
-		removeFilter: function(fItemId, widget){
-			return WidgetController.getFilterManager().removeFilter(fItemId, widget);
-		},
-		
-		getFilterManager: function(){
-			return WidgetController.getFilterManager();
 		}
-		*/
 	},
 	
 	$server: {

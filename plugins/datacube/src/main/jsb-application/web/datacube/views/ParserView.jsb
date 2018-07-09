@@ -271,6 +271,7 @@
 	                    scheme: pDesc.scheme,
 	                    values: vals,
 	                    bootstrap: bootstrap,
+	                    context: $this.entry.getId(),
 	                    onchange: function(key, values){
 	                    	$this.schemeChanged(key, values);
 	                    }
@@ -307,6 +308,7 @@
                 scheme: pDesc.scheme,
                 values: values,
                 bootstrap: bootstrap,
+                context: $this.entry.getId(),
                 onchange: function(key, values){
                 	$this.schemeChanged(key, values);
                 }

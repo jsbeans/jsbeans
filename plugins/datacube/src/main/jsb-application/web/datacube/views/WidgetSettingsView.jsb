@@ -80,10 +80,10 @@
                 var widget = $this.wrapper.getWidget();
 
                 $this.widgetSchemeRenderer = new Controller({
-                    advancedRenders: true,
-                    bootstrap: 'Datacube.Unimap.Bootstrap',
                     scheme: widget.getEntry().extractWidgetScheme(),
                     values: widget.getValues(),
+                    bootstrap: 'Datacube.Unimap.Bootstrap',
+                    context: widget.getEntry().getId(),
                     onchange: function(key, values){
                         if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
                             return;
@@ -101,10 +101,8 @@
 
             this.titleEditor.setData(this.entry.getName());
 		},
-
-		applySettings: function(){
-		    var values = this.widgetSchemeRenderer.getValues();
-
+		
+		extractSourceIds: function(){
 		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),
 		        sourcesIds = [];
 
@@ -117,6 +115,13 @@
                     }
                 }
             }
+            return sourcesIds;
+		},
+
+		applySettings: function(){
+		    var values = this.widgetSchemeRenderer.getValues();
+
+		    var sourcesIds = this.extractSourceIds();
 
             this.updateValidation();
 
@@ -130,7 +135,6 @@
 
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.entry.getId(),
-				    sourceMap: sourceDesc.sourceMap,
 				    sources: sourceDesc.sources,
                     values: values
                 });
@@ -141,8 +145,17 @@
 		    if(!this.warningBlock.hasClass('hidden')){
 		        this.updateValidation();
 		    }
+		    
+		    var sourcesIds = this.extractSourceIds();
+		    var sources = {};
+		    for(var i = 0; i < sourcesIds.length; i++){
+		    	sources[sourcesIds[i]] = JSB.getInstance(sourcesIds[i]);
+		    }
 
-		    this.wrapper.getWidget().updateValues({values: this.widgetSchemeRenderer.getValues()});
+		    this.wrapper.getWidget().updateValues({
+		    	values: this.widgetSchemeRenderer.getValues(),
+		    	sources: sources
+		    });
 
             this.wrapper.getWidget().ensureInitialized(function(){
                 $this.wrapper.getWidget().refresh({

@@ -1,7 +1,7 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector', 'Unimap.Render.DataBindingCache'],
 	$client: {
 	    _editors: [],
 	    _errorList: [],
@@ -9,8 +9,14 @@
 	    construct: function(){
 	        this.addClass('dataBindingRender');
 	        this.loadCss('DataBinding.css');
-
-	        this.createDataList(this.getValueByKey(this._scheme.linkTo));
+	        
+	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList');
+	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo');
+	        if(!this._dataList || !this._bindingsInfo){
+	        	this.createDataList(this.getValueByKey(this._scheme.linkTo));
+	        	DataBindingCache.put(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList', this._dataList);
+	        	DataBindingCache.put(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo', this._bindingsInfo);
+	        }
 
 	        $base();
 
@@ -108,6 +114,9 @@
                 case 'scheme':
                 default:
                 	var editor = new SchemeSelector({
+                		context: this.getContext(),
+                		sourceKey: this._scheme.linkTo,
+                	    clearBtn: !this._scheme.multiple,
                 		items: this._dataList,
                 		value: values.value,
                 		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
@@ -172,7 +181,13 @@
 	    },
 
 	    changeLinkTo: function(values){
-	        this.createDataList(values);
+	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList');
+	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo');
+	        if(!this._dataList || !this._bindingsInfo){
+	        	this.createDataList(values);
+	        	DataBindingCache.put(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList', this._dataList);
+	        	DataBindingCache.put(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo', this._bindingsInfo);
+	        }
 
             for(var i = 0; i < this._editors.length; i++){
                 this._editors[i].setOptions(this._dataList, true);
@@ -205,8 +220,7 @@
                             key: curPath,
                             value: $this.$('<div class="sliceRender">' + f + '</div>'),
                             child: [],
-                            scheme: schemeRef,
-                            parent: parent
+                            scheme: schemeRef
                         };
 	        			$this._bindingsInfo[curPath] = schemeRef;
 	        			items.push(item);

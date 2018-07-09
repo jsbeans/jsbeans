@@ -1,14 +1,11 @@
 .graphNode {
-    /*
     border: 2px solid saddlebrown;
     border-radius: 5px;
     background: antiquewhite;
     color: firebrick;
     font-size: 1.1em;
-    */
     box-sizing: border-box;
     padding: 5px;
-    /* overflow: hidden; */
 }
 
 .graphNode .connector {

@@ -133,8 +133,7 @@
 
             JSB().loadScript(['tpl/carrotsearch/foamtree.js'], function(){
                     $this.setInitialized();
-                }
-            );
+            });
 
             this.container.resize(function(){
                 if(!$this.container.is(':visible') || !$this.foamtree){
@@ -149,11 +148,12 @@
             this.container.visible(function(evt, isVisible){
                 if($this._isNeedUpdate && isVisible){
                     $this._buildChart($this.getCache());
+                    $this.updateDispatcher.ready();
                 }
             });
         },
 
-        refresh: function(opts){
+        _refresh: function(opts, updateOpts){
         	$base(opts);
         	if(opts && opts.initiator == this){
         	    return;
@@ -216,7 +216,8 @@
 
             var data = [],
                 colorCount = 0,
-                widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('settings colorScheme').value() };
+                widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('settings colorScheme').value() },
+                taskId = opts.taskId;
 
             this.getElement().loader();
 
@@ -232,7 +233,13 @@
 
             function fetch(isReset){
                 try{
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                    $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                    	if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                            $this.updateDispatcher.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -375,6 +382,7 @@
         buildChart: function(data){
             if(this.container.is(':visible')){
                 this._buildChart(data);
+                this.updateDispatcher.ready();
             } else {
                 this._isNeedUpdate = true;
             }
@@ -382,11 +390,11 @@
 
         _buildChart: function(data){
             if(this.foamtree){
-                this.foamtree.set({
+                this.foamtree.set(JSB.merge(this._styles, {
                     dataObject: {
                         groups: data
                     }
-                });
+                }));
 
                 this.foamtree.redraw();
             } else {

@@ -151,7 +151,7 @@
             	}
 
             }
-            if(opts && opts.wrapQuery){
+            if(opts && opts.wrapQuery && Object.keys(opts.wrapQuery).length > 0){
             	var q = JSB.clone(opts.wrapQuery);
             	if(preparedQuery.$cubeFilter){
             		if(q.$cubeFilter){

@@ -2,7 +2,7 @@
 	$name: 'Unimap.Render.ParserSourceBinding',
 	$parent: 'Unimap.Render.Basic',
 	$client: {
-	    $require: ['JSB.Widgets.Button'],
+	    $require: ['JSB.Widgets.Button', 'Unimap.Render.DataBindingCache'],
 
 	    _beans: [],
 	    _render: null,
@@ -106,7 +106,7 @@
 		    this._values.values[0] = {
 		        binding: scheme
 		    }
-
+		    DataBindingCache.remove(this.getContext(), this.getKey());
 		    this.onchange();
 		},
 		
@@ -272,7 +272,7 @@
 		    this._values.values[itemIndex] = {
 		        binding: this._items[itemIndex].dataScheme,
 		    }
-
+		    DataBindingCache.remove(this.getContext(), this.getKey());
 		    this.onchange();
 		},
 

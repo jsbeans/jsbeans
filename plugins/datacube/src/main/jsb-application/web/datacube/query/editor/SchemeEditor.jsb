@@ -140,7 +140,7 @@
 			var allowWrap = false;
 			if(entryType == 'entry'){
 				hoverDesc = $this.hoverEntries;
-				if(($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value') 
+				if(($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value' || $this.scheme.customKey == '#viewName') 
 					&& $this.scheme.name != '$postFilter' 
 					&& JSB.isObject($this.scheme.values) 
 					&& !$this.scheme.values[entryKey] ){
@@ -340,6 +340,10 @@
 			return colMap;
 		},
 		
+		combineViews: function(){
+			return this.value['$views'];
+		},
+		
 		getSourceFields: function(callback){
 			var curEditor = this;
 			while(curEditor && curEditor.scheme){
@@ -419,6 +423,16 @@
 				}
 			}
 			
+			function generateViewName(){
+				var prefix = 'Вид';
+				for(var idx = 1;; idx++){
+					var suggestedName = prefix + '_' + idx;
+					if(!$this.value[suggestedName]){
+						return suggestedName;
+					}
+				}
+			}
+			
 			var schemeDesc = QuerySyntax.getSchema()[schemeName];
 			if(schemeDesc.expressionType == 'ComplexObject' || schemeDesc.expressionType == 'SingleObject'){
 				value = {};
@@ -467,6 +481,8 @@
 								fName = $this.chooseBestColumn();
 							} else if(schemeDesc.name == '$select' && vName == '#outputFieldName'){
 								fName = generateColumnName();
+							} else if(schemeDesc.name == '$views' && vName == '#viewName'){
+								fName = generateViewName();
 							} else if((schemeDesc.name == '$postFilter' && vName == '#outputFieldName')||(schemeDesc.name == '$finalizeFields' && vName == '#field')){
 								fName = $this.chooseBestColumn();
 							} else if(vName == '#value') {
@@ -561,6 +577,19 @@
 						}
 					}
 					
+					function generateViewName(prefix){
+						if(prefix && !$this.value[prefix]){
+							return prefix;
+						}
+						prefix = prefix || 'Вид';
+						for(var idx = 2;; idx++){
+							var suggestedName = prefix + '_' + idx;
+							if(!$this.value[suggestedName]){
+								return suggestedName;
+							}
+						}
+					}
+					
 					var colName = null;
 					var value = undefined;
 					var schemeName = null;
@@ -577,6 +606,11 @@
 								prefix = chosenObj.value.value;
 							}
 							colName = generateColumnName(prefix);
+							askRename = true;
+						} else if($this.scheme.name == '$views' && chosenObj.key == '#viewName') {
+							// autogenerate view name
+							var prefix = null;
+							colName = generateViewName(prefix);
 							askRename = true;
 						} else {
 							throw new Error('Unexpected key: ' + chosenObj.key);
@@ -1000,7 +1034,7 @@
 				}
 				chooseType = 'value';
 			} else if(JSB.isObject(schemes)){
-				if(Object.keys(schemes).length == 1 && $this.scheme.name == '$select'){
+				if(Object.keys(schemes).length == 1 && ($this.scheme.name == '$select' || $this.scheme.name == '$views')){
 					chooseType = 'value';
 					// pass first
 					chosenObjectKey = Object.keys(schemes)[0];
@@ -1299,7 +1333,7 @@
 				keyElt.empty();
 				keyElt.append(keyDecl.displayName);
 			} else {
-				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value'){
+				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value' || $this.scheme.customKey == '#viewName'){
 					var keyEditor = keyElt.find('> .keyEditor').jsb();
 					if(!keyEditor){
 						keyEditor = new PrimitiveEditor({
@@ -1321,6 +1355,9 @@
 				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#field'){
 					keyElt.addClass('outputField');
 					keyComment = 'Поле';
+				} else if($this.scheme.customKey == '#viewName'){
+					keyElt.addClass('view');
+					keyComment = 'Вид';
 				}
 
 			}
@@ -1599,7 +1636,7 @@
 					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
-						schemeValues = ['$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql', '$cubeFilter'];
+						schemeValues = ['$views', '$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$limit', '$sql'];
 						
 						// perform $context
 						var ctxName = $this.value['$context'];

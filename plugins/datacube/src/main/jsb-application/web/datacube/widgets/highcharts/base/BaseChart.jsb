@@ -909,7 +909,7 @@
             onMouseOut: null
         },
 
-        refresh: function(opts){
+        _refresh: function(opts){
             // if filter source is current widget
             if(opts && this == opts.initiator && !opts.filterData){
                 return false;
@@ -975,6 +975,8 @@
                 }
 
                 $this._resolvePointContextFilters();
+
+                $this.updateDispatcher.ready();
             }
 
             buildWidget(chartOpts);
@@ -1394,8 +1396,9 @@
         _addPointFilter: function(point, accumulate, isRange){
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
-                datacubePointOpts = point.options.datacube,
+                isFilterData = point.options.datacube && point.options.datacube.filterData || point.dataGroup && point.series.userOptions.data[point.dataGroup.start].datacube.filterData,
                 binding = point.series.options.datacube.binding || point.options.datacube.binding,
+                curFiltersCount = Object.keys(this._curFilters).length,
                 refreshOpts = {},
                 gLength;
 
@@ -1411,7 +1414,7 @@
                 }
             }
 
-            if(!accumulate && Object.keys(this._curFilters).length > 0){
+            if(!accumulate && curFiltersCount > 0){
                 this._select(this._curFilters, false, true);
 
                 for(var i in this._curFilters){
@@ -1421,46 +1424,60 @@
                 this._curFilters = {};
             }
 
-            if(datacubePointOpts.filterData){  // not widget filters
-                // todo: isRange
-                for(var i = 0; i < datacubePointOpts.filterData.bindings.length; i++){
-                    var fDesc = {
-                        sourceId: context.source,
-                        type: '$and',
-                        op: '$eq',
-                        field: datacubePointOpts.filterData.bindings[i],
-                        value: datacubePointOpts.filterData.values[i]
-                    };
+            if(isFilterData){  // not widget filters
+                if(isRange){
+                    // todo: isRange
+                } else {
+                    var datacubePointOpts = point.options.datacube;
 
-                    if(datacubePointOpts.filterData.bindings[i] === binding){
-                        this._curFilters[this.addFilter(fDesc)] = fDesc;
-                    } else {
-                        this.addFilter(fDesc);
-                        refreshOpts.filterData = true;
+                    for(var i = 0; i < datacubePointOpts.filterData.bindings.length; i++){
+                        var fDesc = {
+                            sourceId: context.source,
+                            type: '$and',
+                            op: '$eq',
+                            field: datacubePointOpts.filterData.bindings[i],
+                            value: datacubePointOpts.filterData.values[i]
+                        };
+
+                        if(datacubePointOpts.filterData.bindings[i] === binding){
+                            this._curFilters[this.addFilter(fDesc)] = fDesc;
+                        } else {
+                            this.addFilter(fDesc);
+                            refreshOpts.filterData = true;
+                        }
                     }
                 }
             } else {    // widget filters
-                if(isRange && this._schemeOpts.dataGrouping && this._schemeOpts.dataGrouping.isGrouped){
-                    var startRangeValue = point.x,
-                        groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
-                        units = this._schemeOpts.dataGrouping.units || 1;
+                if(isRange){
+                    var startRangeValue,
+                        endRangeValue;
 
-                    switch(this._schemeOpts.dataGrouping.groupBy){
-                        case 'millisecond':
-                            startRangeValue = point.x;
-                            break;
-                        default:
-                            startRangeValue = Math.floor(point.x / groupConst) * groupConst;
-                            break;
+                    if(this._schemeOpts.dataGrouping && this._schemeOpts.dataGrouping.isGrouped){   // user grouping
+                        var groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
+                            units = this._schemeOpts.dataGrouping.units || 1;
+
+                        switch(this._schemeOpts.dataGrouping.groupBy){
+                            case 'millisecond':
+                                startRangeValue = point.x;
+                                break;
+                            default:
+                                startRangeValue = Math.floor(point.x / groupConst) * groupConst;
+                                break;
+                        }
+
+                        endRangeValue = startRangeValue + gLength * groupConst * units;
+                    } else {    // highcharts grouping
+                        startRangeValue = point.series.xData[point.dataGroup.start];
+                        endRangeValue = point.series.xData[point.dataGroup.start + point.dataGroup.length];
                     }
                 }
 
                 var fDesc = {
                     sourceId: context.source,
-                    type: isRange ? '$and' : '$or',
+                    type: isRange ? '$and' : (accumulate ? '$or' : '$and'),
                     op: isRange ? '$range' : '$eq',
                     field: binding,
-                    value: isRange ? [startRangeValue, startRangeValue + gLength * groupConst * units] : point[this._filterPropName]
+                    value: isRange ? [startRangeValue, endRangeValue] : point[this._filterPropName]
                 };
 
                 this._curFilters[this.addFilter(fDesc)] = fDesc;

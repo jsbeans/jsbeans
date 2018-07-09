@@ -9,7 +9,8 @@
 			'java:java.io.OutputStream',
 			'java:java.lang.reflect.Array',
 			'java:java.lang.Byte',
-			'java:java.lang.Class'],
+			'java:java.lang.Class',
+			'JSB.System.Kernel'],
 		
 		input: null,
 		output: null,
@@ -155,6 +156,7 @@
 					break;
 				} else if(count == 0){
 					this.input.wait();
+//					Kernel.waitJavaObject(this.input);
 					continue;
 				}
 				output.write(buffer, 0, count);

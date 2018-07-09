@@ -93,6 +93,9 @@
                                              ru_name: {
                                                  name: 'Название страны'
                                              },
+                                             name: {
+                                                 name: 'Название страны (англ)'
+                                             },
                                              id: {
                                                  name: 'Код ISO'
                                              }
@@ -785,14 +788,16 @@
             map: null
         },
 
-        refresh: function(opts){
+        _refresh: function(opts, updateOpts){
             // if filter source is current widget
             if(opts && this == opts.initiator){
+                this.updateDispatcher.ready();
                 return;
             }
 
             // widget settings editor set style changes
             if(opts && opts.refreshFromCache){
+                this.updateDispatcher.ready();
                 return;
             }
 
@@ -806,6 +811,7 @@
                 this._dataSource = this.getContext().find('dataSource');
 
                 if(!this._dataSource.hasBinding()){
+                    this.updateDispatcher.ready();
                     return;
                 }
             }
@@ -1155,8 +1161,14 @@
             this._styles.contentData = [];
 
             function fetch(isReset){
-                $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res){
+                $this.fetch($this._dataSource, { fetchSize: 100, reset: isReset }, function(res, fail){
                     try{
+                        if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
+                            $this.updateDispatcher.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -1420,13 +1432,30 @@
         buildChart: function(data){
             this.ensureDataLoaded(function(){
                 $this._buildChart(data);
+                $this.updateDispatcher.ready();
             });
         },
 
         _buildChart: function(data){
             try {
-                var mapOpts = {};
+                var mapOpts = {
+                    center: [40.5, 40.5],
+                    zoom: 2
+                };
+
                 if(this.map){
+                    mapOpts = {
+                        center: this.map.getCenter(),
+                        zoom: this.map.getZoom()
+                    };
+
+                    this.map.remove();
+                    /*
+                    this.map.eachLayer(function(layer){
+                        layer.remove();
+                    });
+                    */
+                    /*
                     for(var i = 0; i < this._layers.markers.length; i++){
                         this._layers.markers[i].remove();
                     }
@@ -1434,12 +1463,17 @@
                     for(var i = 0; i < this._layers.geoJson.length; i++){
                         this._layers.geoJson[i].remove();
                     }
+                    */
                 } else {
+                    /*
                     this.map = L.map(this.container.get(0), {
                         center: [40.5, 40.5],
                         zoom: 2
                     });
+                    */
                 }
+
+                this.map = L.map(this.container.get(0), mapOpts);
 
                 // remove old controls
                 if(this._infoControl){
@@ -1486,7 +1520,8 @@
                     if(this._maps[i].data){
                         // create maps
                         (function(i, data){
-                            var tooltipLayers = [];
+                            var tooltipLayers = [],
+                                mapGroup = [];
 
                             if($this._styles.regions[i].valueDisplayType === 'legend'){
                                 $this._createInfoControl();
@@ -1534,7 +1569,7 @@
                                         });
                                     }
 
-                                    if($this._styles.regions[i].showValuesPermanent){
+                                    if($this._styles.regions[i].showValuesPermanent && reg){
                                         layer.bindTooltip(String($this._format($this._styles.regions[i].displayContent, i, {y: reg.value})), {permanent: true, direction: "center", interactive: true, className: 'permanentTooltips', opacity: 0.7});
                                         tooltipLayers.push(layer);
                                     }

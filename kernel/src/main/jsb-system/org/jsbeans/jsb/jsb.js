@@ -2014,6 +2014,8 @@ if(!(function(){return this;}).call(null).JSB){
 			});
 		
 			if(locker){ locker.unlock('JSB_lookup_waiters'); }
+			
+			return wList.length;
 		},
 		
 		_matchWaiters: function(readyState){
@@ -2124,10 +2126,10 @@ if(!(function(){return this;}).call(null).JSB){
 				}
 				return;
 			} else {
-				this._pushWaiter(name, callback, readyState);
+				var queueLength = this._pushWaiter(name, callback, readyState);
 				
 				// load object from the server
-				if(this.isClient() && (!this.objects[name] || forceUpdate)){
+				if(this.isClient() && (!this.objects[name] || forceUpdate) && queueLength == 1){
 					if(this.isNull(this.initQueue) || this.isNull(this.initQueue[name])){ 
 						if(this.provider){
 							if(!this.isNull(this.loadQueue) && !this.isNull(this.loadQueue[name]) && !forceUpdate){
@@ -3399,9 +3401,12 @@ if(!(function(){return this;}).call(null).JSB){
 						}, opts);
 					} else if(res.__type && res.__type == 'File') {
 						if(callback && JSB().isServer()){
-							JSB().getProvider().ensureUpload(res.__id, function(javaStream){
+							JSB().getProvider().ensureUpload(res.__id, function(stream){
+/*								
 								var StreamClass = JSB().get('JSB.IO.Stream').getClass();
 								callback(new StreamClass(javaStream));
+*/								
+								callback(stream);
 							})
 						}
 					} else if(res.__type && res.__type == 'ArrayBuffer'){
@@ -6483,15 +6488,52 @@ JSB({
 		},
 		
 		performUpload: function(streamId){
+			JSB.getLogger().debug('performUpload: ' + streamId);
 			var scope = (function(){return this;}).call(null);
 			var javaStream = scope[streamId];
-			
-			this.lock('uploadMap');
-			this.uploadMap[streamId] = javaStream;
-			this.unlock('uploadMap');
-			
 			delete scope[streamId];
-			this.setTrigger('uploadMap' + streamId);
+			
+			// create proxy file stream
+			var StreamClass = JSB().get('JSB.IO.Stream').getClass();
+			var ProxyStreamClass = JSB().get('JSB.IO.ProxyStream').getClass();
+			var stream = new StreamClass(javaStream);
+			var fs = JSB().getInstance('JSB.IO.FileSystem');
+			var cfg = JSB().getInstance('JSB.System.Config');
+			var uploadFileDir = fs.join(fs.getUserDirectory(), cfg.get('web.uploadCacheFolder'));
+			// create directory if not existed
+			if(!fs.exists(uploadFileDir)){
+				fs.createDirectory(uploadFileDir, true);
+			}
+				
+			var uploadFilePath = fs.join(uploadFileDir, streamId + '.upload');
+			var writeStream = fs.open(uploadFilePath, {write:true, binary:true});
+			var readStream = fs.open(uploadFilePath, {read:true, binary:true});
+			var proxyStream = new ProxyStreamClass(writeStream, readStream, {
+				onWriteComplete: function(){
+					writeStream.close();
+					stream.close();
+				},
+				onReadComplete: function(){
+					readStream.close();
+					proxyStream.destroy();
+					// remove file
+					if(fs.exists(uploadFilePath)){
+						fs.remove(uploadFilePath);
+					}
+				}
+			});
+
+			this.lock('uploadMap');
+			this.uploadMap[streamId] = proxyStream;
+			this.unlock('uploadMap');
+
+			// start reading in parallel thread
+			JSB.defer(function(){
+				stream.copy(proxyStream);
+				proxyStream.complete();
+				$this.setTrigger('uploadMap' + streamId);
+			}, 0);
+			
 		},
 		
 		ensureUpload: function(streamId, callback){

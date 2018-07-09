@@ -144,7 +144,6 @@
 		            '$filter': '$filter',
 		            '$groupBy': '$groupBy',
 		            '$select': '$select',
-		            '$recursiveTree': '$recursiveTree',
 		            '$from':'$from',
 		            '$distinct': '$distinctAll',
 		            '$postFilter': '$postFilter',
@@ -154,7 +153,7 @@
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
 		        },
-		        optional: ['$context', '$recursiveTree', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit']
+		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$views']
 		    });
 
 		    new this.ComplexObject({
@@ -178,48 +177,24 @@
 		        },
 		    });
 
-		    new this.ComplexObject({
-		        name: '$recursiveTree',
-		        desc: 'Выражение дял превращения запроса в рекурсивный обход дерева',
-		        displayName: 'Рекурсивное дерево',
-		        values: {
-		            '$currentOutputField': '$recursiveTreeCurrentField',
-		            '$parentField': '$recursiveTreeParentField'
-		        },
-		    });
-
-		    new this.Group({
-		    	name: '$recursiveTreeCurrentField',
-		        displayName: 'Основное поле',
-		    	desc: 'Основное выходное поле запроса для пересечения',
-		        values: ['$field'],
-		    });
-
-		    new this.Group({
-		    	name: '$recursiveTreeParentField',
-		        displayName: 'Родительское поле',
-		    	desc: 'Основное родительское поле запроса для пересечения',
-		        values: ['$field'],
-		    });
-		
 		    new this.Group({
 		    	name: '$from',
 		        displayName: 'Источник запроса',
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
 		    });
-		
+
 		    new this.Group({
 		    	name: '$valueDefinition',
 		        values: ['$const', '$expression', '$query', '$field', '$param', '$sql'],
 		    });
-		
+
 		    new this.Group({
 		        name: '$expression',
 		        values: [
 		            '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
 		            '$greatest', '$least',
-		            '$splitString', '$substring', '$trim', '$concat',
+		            '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
 		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString', '$toTimestamp',
 		            '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$timeHour', '$timeMinute', '$timeSecond',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
@@ -229,6 +204,7 @@
 		            '$gsum', '$gcount', '$gmin', '$gmax', '$gavg',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
+		            '$recursiveSelect',
 		            '$macros'
 		        ]
 		    });
@@ -374,12 +350,28 @@
 		        desc: 'Разделить строку на несколько (получить массив строк)',
 		        values: ['$splitStringExpr']
 		    });
-		    
+
 		    new this.ComplexObject({
 		        name: '$splitStringExpr',
 		        values: {
 		            '$field': '$valueDefinition',
 		            '$separator': '$constString'
+		        }
+		    });
+
+		    new this.SingleObject({
+		        name: '$recursiveSelect',
+		        category: 'Разное',
+		        desc: 'Выполнить рекурсивный аггрегируюий подзапрос',
+		        values: ['$recursiveSelectExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$recursiveSelectExpr',
+		        values: {
+		            '$aggregateExpr': '$valueDefinition',
+		            '$idField': '$valueDefinition',
+		            '$parentIdField': '$valueDefinition',
 		        }
 		    });
 
@@ -419,6 +411,22 @@
 		        }
 		    });
 
+		    new this.SingleObject({
+		        name: '$regexpReplace',
+		        category: 'Функции',
+		        desc: 'Замена подстроки с использованием регулярного выражения',
+		        values: ['$regexpReplaceExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$regexpReplaceExpr',
+		        values: {
+		            '$field': '$valueDefinition',
+		            '$pattern': '$constString',
+		            '$replacementString': '$constString',
+		            '$flags': '$constString',
+		        }
+		    });
 
 		    new this.SingleObject({
 		        name: '$coalesce',
@@ -629,7 +637,7 @@
 		    new this.SingleObject({
 		        name: '$flatArray',
 		        category: 'Функции агрегации',
-		        desc: 'Объединить все массивы в группы в один массив',
+		        desc: 'Объединить все массивы группы в один массив',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
