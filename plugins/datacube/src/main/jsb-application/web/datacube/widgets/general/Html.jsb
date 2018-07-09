@@ -316,7 +316,7 @@
                 }
 			} else {
 			    if(recordContext.hasBinding && recordContext.hasBinding()){
-                    this.fetchBinding(recordContext, {batchSize: 1}, function(data, fail){
+                    this.fetch(recordContext, {batchSize: 1}, function(data, fail){
                     	if(fail){
                     		return;
                     	}

@@ -697,6 +697,8 @@
 		colDesc: [],
 		rows: [],
 		rowKeyMap: {},
+		expandedKeys: {},
+		collapsedKeys: {},
 		rowFilterFields: [],
 		widgetMap: {},
 		blockFetch: true,
@@ -851,9 +853,6 @@
 		toggleRowExpansion: function(rowKey){
 			var rowElt = this.find('.row[key="'+rowKey+'"]');
 			if(rowElt.length > 0){
-				if(!$this.expandedKeys){
-					$this.expandedKeys = {};
-				}
 				// extract row id
 				var rowDesc = $this.rowKeyMap[rowKey];
 				var rowKeyVal = rowDesc.rowKeyVal;
@@ -861,10 +860,14 @@
 					// collapse
 					if(JSB.isDefined($this.expandedKeys[rowKey])){
 						delete $this.expandedKeys[rowKey];
-					}
+					} 
+					$this.collapsedKeys[rowKey] = {rowKeyVal: rowDesc.rowKeyVal, pRowKeyVal: rowDesc.pRowKeyVal, pKey: rowDesc.pKey};
 					rowElt.removeClass('expanded');
 				} else {
 					// expand
+					if(JSB.isDefined($this.collapsedKeys[rowKey])){
+						delete $this.collapsedKeys[rowKey];
+					}
 					$this.expandedKeys[rowKey] = {rowKeyVal: rowDesc.rowKeyVal, pRowKeyVal: rowDesc.pRowKeyVal, pKey: rowDesc.pKey};
 					rowElt.addClass('expanded');
 				}
@@ -882,16 +885,11 @@
 				return;
 			}
 			
-			
 			var source = this.rowsContext.binding().source;
-			var query = this.getLayerQuery('main', source);
-			if($this.hasFilterLayer('back')){
-				query = this.getLayerQuery('back', source);
-			}
 			var wrapQuery = {$select:{'cnt':{$count: 1}}, $filter:{}};
 			wrapQuery.$filter[$this.parentRowKeySelector.binding()] = {$eq:{$const:rowDesc.rowKeyVal}};
 			
-			$this.server().executeQuery(source, $this.getWrapper().getDashboard(), {extQuery: query, wrapQuery: wrapQuery}, function(res){
+			$this.server().executeQuery(source, $this.getEntry(), {extQuery: {}, wrapQuery: wrapQuery}, function(res){
 				if(res.length > 0 && JSB.isDefined(res[0].cnt)){
 					$this.descendantsMap[rowDesc.key] = res[0].cnt;
 				} else {
@@ -922,33 +920,41 @@
 					if(toggleElt.length == 0){
 						toggleElt = $this.$('<div class="toggle"></div>');
 						collEl.prepend(toggleElt);
-						var childCountElt = null;
-						if($this.showChildCount){
+						toggleElt.click(function(evt){
+							evt.stopPropagation();
+							$this.toggleRowExpansion(d.rowKey);
+						});
+
+					}
+					
+					var childCountElt = collEl.find('.childCount');
+					if($this.showChildCount){
+						if(childCountElt.length == 0){
 							childCountElt = $this.$('<div class="childCount"></div>');
 							collEl.append(childCountElt);
 						}
-						
-						toggleElt.addClass('resolvingDescendants');
-						$this.resolveDescendants(rowDesc, function(descendantsCount){
-							toggleElt.removeClass('resolvingDescendants');
-							if(descendantsCount > 0){
-								toggleElt.addClass('hasDescendants');
-								collEl.addClass('hasDescendants');
-								toggleElt.click(function(evt){
-									evt.stopPropagation();
-									$this.toggleRowExpansion(d.rowKey);
-								});
-								if($this.showChildCount){
-									childCountElt.text(descendantsCount);
-								}
-							} else {
-								toggleElt.removeClass('hasDescendants');
-								collEl.removeClass('hasDescendants');
-							}
-						})
-						
-						
+					} else {
+						if(childCountElt.length > 0){
+							// remove
+							childCountElt.remove();
+						}
 					}
+					
+					toggleElt.addClass('resolvingDescendants');
+					$this.resolveDescendants(rowDesc, function(descendantsCount){
+						toggleElt.removeClass('resolvingDescendants');
+						if(descendantsCount > 0){
+							toggleElt.addClass('hasDescendants');
+							collEl.addClass('hasDescendants');
+							if($this.showChildCount){
+								childCountElt.text(descendantsCount);
+							}
+						} else {
+							toggleElt.removeClass('hasDescendants');
+							collEl.removeClass('hasDescendants');
+						}
+					});
+					
 				}
 			}
 			
@@ -1030,7 +1036,7 @@
 					.classed('back', !!d.flags.back)
 					.classed('hover', !!d.flags.hover)
 					.classed('rowFilter', d.filter && d.filter.length > 0)
-					.classed('expanded', JSB.isDefined($this.expandedKeys) && JSB.isDefined($this.expandedKeys[d.key]))
+					.classed('expanded', d.expanded)
 					.attr('pos', function(d){return d.position;})
 					.attr('depth', function(d){return d.depth;});
 			});
@@ -1122,7 +1128,7 @@
 						.attr('pos', function(d){return d.position;})
 						.attr('depth', function(d){return d.depth;})
 						.classed('rowFilter', function(d){return d.filter && d.filter.length > 0;})
-						.classed('expanded', function(d){return JSB.isDefined($this.expandedKeys) && JSB.isDefined($this.expandedKeys[d.key]);})
+						.classed('expanded', function(d){return d.expanded;})
 						.on('click',function(d){
 							$this.onRowClick(d);
 						})
@@ -1275,6 +1281,7 @@
 						if($this.treeKeyMap[pKey]){
 							// insert
 							$this.treeKeyMap[pKey].children.push(node);
+							$this.treeKeyMap[pKey].rowDesc.expanded = true;
 						} else {
 							// append to unsorted
 							if(!$this.treePKeyMap[pKey]){
@@ -1285,6 +1292,7 @@
 						// dock children if existed
 						if($this.treePKeyMap[key]){
 							node.children = $this.treePKeyMap[key];
+							node.rowDesc.expanded = true;
 							delete $this.treePKeyMap[key];
 						}
 					}
@@ -1368,64 +1376,34 @@
 			
 			// setup tree filters
 			if($this.useTree){
-				$this.prevContextFilter = $this.getContextFilter();
+				var expandedVals = [];
+				var collapsedVals = [];
 				// generate parentId context filter
 				var parentField = $this.parentRowKeySelector.binding();
-				var q = {$in:[]};
-				// add top level query
-				var topVal = $this.rootRowKeyValue;
-				if(!JSB.isNull(topVal)){
-					q.$in.push({$const:topVal});
-				}
+				var idField = $this.rowKeySelector.binding();
 				
-				function allowExpand(rowKey){
-					var expandedDesc = $this.expandedKeys[rowKey];
-					if(!JSB.isDefined(expandedDesc)){
-						return false;
-					}
-					if(expandedDesc.pRowKeyVal == topVal){
-						return true;
-					}
-					return allowExpand(expandedDesc.pKey);
-				}
 				// add expanded keys
 				for(var expKey in $this.expandedKeys){
-					if(allowExpand(expKey)){
-						var val = $this.expandedKeys[expKey].rowKeyVal;
-						q.$in.push({$const:val});
-					} else {
-						
-					}
-				}
-				var treeFilter = {};
-				if(JSB.isNull(topVal)){
-					var topQ = {};
-					topQ[parentField] = {$eq:{$const:null}};
-					treeFilter.$or = [topQ];
-					if(q.$in.length > 0){
-						var nodeQ = {};
-						nodeQ[parentField] = q;
-						treeFilter.$or.push(nodeQ);
-					}
-				} else {
-					treeFilter[parentField] = q;
+					var val = $this.expandedKeys[expKey].rowKeyVal;
+					expandedVals.push(val);
 				}
 				
-				// setup tree filter
-				var newContextFilter = null;
-				if($this.prevContextFilter && Object.keys($this.prevContextFilter).length > 0){
-					newContextFilter = {$and:[$this.prevContextFilter, treeFilter]};
-				} else {
-					newContextFilter = treeFilter;
+				// add collapsed keys
+				for(var collKey in $this.collapsedKeys){
+					var val = $this.collapsedKeys[collKey].rowKeyVal;
+					collapsedVals.push(val);
 				}
-				$this.setContextFilter(newContextFilter);
+				
+				$this.treeOpts = {
+					rootRowKeyValue: $this.rootRowKeyValue,
+					parentField: parentField,
+					idField: idField,
+					expanded: expandedVals,
+					collapsed: collapsedVals
+				};
 			}
 			
 			var preCallback = function(rows, fail){
-				if($this.useTree){
-					// remove tree filter
-					$this.setContextFilter($this.prevContextFilter || {});
-				}
 				return callback.call($this, rows, fail);
 			};
 			
@@ -1434,7 +1412,7 @@
 					return;
 				}
 				$this.preFetching = true;
-				var fRes = $this.fetchBinding(rowsContext, {batchSize: preFetchSize}, function(data, fail){
+				var fRes = $this.fetch(rowsContext, {batchSize: preFetchSize}, function(data, fail){
 					$this.preFetching = false;
 					if(!data || data.length == 0){
 						return;
@@ -1589,8 +1567,13 @@
 				if(rowsContext.isReset()){
 					$this.setDeferredLoader();
 				}
-
-				$this.fetchBinding(rowsContext, {batchSize: $this.useTree ? batchSize : batchSize - rows.length},function(data, fail){
+				
+				var fetchOpts = {batchSize: batchSize - rows.length};
+				if($this.useTree){
+					fetchOpts.batchSize = batchSize;
+					fetchOpts.treeOpts = $this.treeOpts;
+				}
+				$this.fetch(rowsContext, fetchOpts, function(data, fail){
 					if(fail){
 						$this.stopPreFetch = false;
 						$this.cancelDeferredLoader();
@@ -1977,7 +1960,7 @@
 				return;
 			}
 			var wrapQuery = {$select:{'val':valQ}};
-			this.server().executeQuery(source, $this.getWrapper().getDashboard(), {extQuery: mainQuery, wrapQuery: wrapQuery}, function(res){
+			this.server().executeQuery(source, $this.getEntry(), {extQuery: mainQuery, wrapQuery: wrapQuery}, function(res){
 				if(res && res.length > 0 && JSB.isDefined(res[0].val)){
 					var val = res[0].val;
 					if(statusDesc.summaryFormat && JSB.isNumber(val) && statusDesc.summaryFormat.length > 0){
@@ -2501,6 +2484,237 @@
 			} else {
 				// update rows
 				this.updateRows();
+			}
+		}
+	},
+	
+	$server: {
+		rows: [],
+		lastPosition: 0,
+		
+		fetch: function(sourceId, widgetEntry, opts){
+			if(opts.treeOpts){
+				var needCompress = opts.compress;
+				var batchSize = opts.batchSize || 50;
+				opts.compress = false;
+				
+				if(opts.reset){
+					this.rows = [];
+					this.lastPosition = 0;
+					
+					var extQuery = opts.layers.main;
+					var hasContextFilter = extQuery.$postFilter && Object.keys(extQuery.$postFilter).length > 0;
+					var hasCubeFilter = extQuery.$cubeFilter && Object.keys(extQuery.$cubeFilter).length > 0;
+					
+					// generate expanded map
+					var expandedMap = {};
+					for(var i = 0; i < opts.treeOpts.expanded.length; i++){
+						expandedMap[opts.treeOpts.expanded[i]] = true;
+					}
+
+					// generate collapsed map
+					var collapsedMap = {};
+					for(var i = 0; i < opts.treeOpts.collapsed.length; i++){
+						collapsedMap[opts.treeOpts.collapsed[i]] = true;
+					}
+
+					// tree functions
+					var idMap = {};
+					var pIdMap = {};
+					var tree = [];
+					function getBindingData(row, binding){
+						var val = null;
+						var d = row.main || row.back;
+						if(binding.indexOf('.') >= 0){
+							// dot-split function
+							if(d){
+								var bParts = binding.split('.');
+								var curScope = d;
+								for(var i = 0; i < bParts.length; i++){
+									curScope = curScope[bParts[i]];
+									if(!JSB.isDefined(curScope)){
+										break;
+									}
+								}
+								val = curScope;
+							}
+							
+						} else {
+							// direct binding
+							if(d){
+								val = d[binding];
+							}
+						}
+						
+						return val;
+					}
+
+					function appendToTree(rows){
+						for(var i = 0; i < rows.length; i++){
+							var row = rows[i];
+							var id = getBindingData(row, opts.treeOpts.idField);
+							var parentId = getBindingData(row, opts.treeOpts.parentField);
+							var node = {
+								id: id,
+								pId: parentId,
+								row: row,
+								matched: (row.main ? true : false),
+								children: []
+							};
+							idMap[id] = node;
+							if(pIdMap[id]){
+								node.children = pIdMap[id];
+								delete pIdMap[id];
+								if(!node.matched){
+									for(var c = 0; c < node.children.length; c++){
+										if(node.children[c].matched){
+											node.matched = true;
+											break;
+										}
+									}
+								}
+							}
+							if(parentId != opts.treeOpts.rootRowKeyValue){
+								if(idMap[parentId]){
+									idMap[parentId].children.push(node);
+									idMap[parentId].matched = idMap[parentId].matched || node.matched;
+								} else {
+									if(!pIdMap[parentId]){
+										pIdMap[parentId] = [];
+									}
+									pIdMap[parentId].push(node);
+								}
+							} else {
+								tree.push(node);
+							}
+							
+						}
+					}
+					
+					// construct rows
+					function serializeNode(node){
+						$this.rows.push(node.row);
+						if(!node.matched && !expandedMap[node.id] && !hasContextFilter){
+							return;
+						}
+						if(collapsedMap[node.id]){
+							return;
+						}
+						for(var i = 0; i < node.children.length; i++){
+							serializeNode(node.children[i]);
+						}
+					}
+					
+					function serializeTree(){
+						for(var i = 0; i < tree.length; i++){
+							serializeNode(tree[i]);
+						}
+					}
+
+
+					// translate tree
+					if(hasContextFilter || hasCubeFilter){
+	
+						
+						// combine leafs matching filter
+						var allRows = [];
+						while(true){
+							var rows = $base(sourceId, widgetEntry, opts);
+							opts.reset = false;
+							if(rows.length == 0){
+								break;
+							}
+							allRows = allRows.concat(rows);
+						}
+						
+						
+						
+						// collect parent nodes
+						var curRows = allRows;
+						var parentIds = [];
+						while(curRows && curRows.length > 0){
+							appendToTree(curRows);
+							var pIdArr = Object.keys(pIdMap);
+							if(pIdArr.length == 0){
+								break;
+							}
+							
+							// load parent nodes
+							var q = {$or:[]};
+							for(var i = 0; i < pIdArr.length; i++){
+								var curQ = {};
+								curQ[opts.treeOpts.idField] = {$eq:{$const:pIdArr[i]}};
+								q.$or.push(curQ);
+							}
+							var qOpts = {
+								extQuery: {$postFilter:q},
+								batchSize: pIdArr.length * 2
+							};
+							var pRows = $this.executeQuery(sourceId, widgetEntry, qOpts);
+							var newRows = [];
+							for(var i = 0; i < pRows.length; i++){
+								var e = {
+									back:pRows[i]
+								};
+								newRows.push(e);
+								
+							}
+							curRows = newRows;
+						}
+						
+						serializeTree();
+						
+					} else {
+						// open only specified nodes
+						var treeFilter = {$or:[]};
+
+						// add top nodes
+						var topQ = {};
+						topQ[opts.treeOpts.parentField] = {$eq:{$const:opts.treeOpts.rootRowKeyValue}};
+						treeFilter.$or.push(topQ);
+						
+						// add expanded
+						for(var i = 0; i < opts.treeOpts.expanded.length; i++){
+							var expQ = {};
+							expQ[opts.treeOpts.parentField] = {$eq:{$const:opts.treeOpts.expanded[i]}};
+							treeFilter.$or.push(expQ);
+						}
+						
+						if(opts.layers.main){
+							opts.layers.main.$postFilter = treeFilter;
+						}
+						if(opts.layers.back){
+							opts.layers.back.$postFilter = treeFilter;
+						}
+						
+						opts.reset = true;
+						var allRows = [];
+						while(true){
+							var rows = $base(sourceId, widgetEntry, opts);
+							opts.reset = false;
+							if(rows.length == 0){
+								break;
+							}
+							allRows = allRows.concat(rows);
+						}
+						appendToTree(allRows);
+						serializeTree();
+					}
+				}
+				
+				var retRows = this.rows.slice(this.lastPosition, this.lastPosition + batchSize);
+				this.lastPosition += retRows.length;
+				
+				if(needCompress){
+					var encoded = $this.compressData(retRows);
+					encoded.widgetOpts = $this.extendWidgetOpts(opts.widgetOpts);
+					return encoded;
+				} else {
+					return retRows;
+				}
+
+			} else {
+				return $base(sourceId, widgetEntry, opts);
 			}
 		}
 	}

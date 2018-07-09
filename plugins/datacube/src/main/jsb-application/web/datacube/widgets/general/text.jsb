@@ -170,7 +170,7 @@
                 return;
             }
 
-            this.fetchBinding(dataSource, {batchSize: 1}, function(data, fail){
+            this.fetch(dataSource, {batchSize: 1}, function(data, fail){
             	if(fail){
             		return;
             	}

@@ -327,7 +327,7 @@
             this.getElement().loader();
 
             function fetch(isReset){
-                $this.fetchBinding($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res, fail){
+                $this.fetch($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res, fail){
                     try {
                     	if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
                             $this.updateDispatcher.ready();
