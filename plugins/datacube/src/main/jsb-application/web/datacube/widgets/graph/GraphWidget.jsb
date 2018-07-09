@@ -496,7 +496,7 @@
             }
 
             function innerFetch(isReset){
-                $this.fetchBinding($this._dataSource, { fetchSize: 50, reset: isReset }, function(res, fail){
+                $this.fetch($this._dataSource, { fetchSize: 50, reset: isReset }, function(res, fail){
                     if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
                         $this.updateDispatcher.ready();
                         $this.getElement().loader('hide');
