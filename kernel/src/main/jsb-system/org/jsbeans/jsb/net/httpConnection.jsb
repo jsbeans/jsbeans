@@ -41,6 +41,10 @@
 
             var proxyHost = options.proxy_host || options.proxyHost || options.proxy && options.proxy.host;
             if (proxyHost) {
+                if (this.options.spnego) {
+                    throw new Error('Connection with proxy and SPNEGO not inplemented yet');
+                }
+
                 var proxyPort = options.proxy_port || options.proxyPort || options.proxy && options.proxy.port;
                 var proxyUser = options.proxy_user || options.proxyUser || options.proxy && options.proxy.user;
                 var proxyPwd = options.proxy_password || options.proxyPassword || options.proxy && options.proxy.password;
@@ -55,7 +59,20 @@
                     this.HttpHelper.defaultAuth(proxyUser, proxyPwd); // TODO:
                 }
             } else {
-               this.httpConnection = url.openConnection();
+                if (this.options.spnego) {
+                    var SpnegoHttpURLConnection = Packages.net.sourceforge.spnego.SpnegoHttpURLConnection;
+
+                    if (this.options.spnego.loginModule) {
+                        this.spnego = new SpnegoHttpURLConnection(this.options.spnego.loginModule);
+                    } else if (this.options.spnego.gssCredential) {
+                        this.spnego = new SpnegoHttpURLConnection(this.options.spnego.gssCredential);
+                    } else {
+                        throw new Error('Spnego options are not defined');
+                    }
+                    this.httpConnection = this.spnego.connect(url);
+                } else {
+                    this.httpConnection = url.openConnection();
+                }
             }
 
 //                this.log.trace('connect(): connected with ' + options.url);
@@ -84,7 +101,11 @@
         	if (this.outputStream) try { this.outputStream.close(); } finally {}
             if (this.inputStream) try { this.inputStream.close(); } finally {}
             if (this.errorStream) try { this.errorStream.close(); } finally {}
-            this.httpConnection.disconnect();
+            if (this.spnego) {
+                this.spnego.disconnect();
+            } else {
+                this.httpConnection.disconnect();
+            }
         },
 
         destroy: function(){
