@@ -72,6 +72,7 @@
 	border-radius: 6px 6px 0 0;
 	padding: 3px 8px 3px 6px;
 	top: 1px;
+	vertical-align: bottom;
 }
 
 ._dwp_tabview._dwp_tabBottom > ._dwp_tabPane > li._dwp_tab {
