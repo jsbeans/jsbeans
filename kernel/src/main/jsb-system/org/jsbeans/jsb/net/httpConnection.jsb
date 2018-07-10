@@ -11,6 +11,7 @@
             this.HttpURLConnection = Packages.java.net.HttpURLConnection;
             this.InetSocketAddress = Packages.java.net.InetSocketAddress;
             this.HttpHelper = Packages.org.jsbeans.helpers.HttpHelper;
+            this.SpnegoHttpURLConnection = Packages.net.sourceforge.spnego.SpnegoHttpURLConnection;
 
             this.options = JSB().merge(true, {}, this.defaultOptions, options);
             this.log = this.logger(this.options.id, this.options.debug, this.options.trace);
@@ -41,6 +42,10 @@
 
             var proxyHost = options.proxy_host || options.proxyHost || options.proxy && options.proxy.host;
             if (proxyHost) {
+                if (this.options.spnego) {
+                    throw new Error('Connection with proxy and SPNEGO not inplemented yet');
+                }
+
                 var proxyPort = options.proxy_port || options.proxyPort || options.proxy && options.proxy.port;
                 var proxyUser = options.proxy_user || options.proxyUser || options.proxy && options.proxy.user;
                 var proxyPwd = options.proxy_password || options.proxyPassword || options.proxy && options.proxy.password;
@@ -55,7 +60,15 @@
                     this.HttpHelper.defaultAuth(proxyUser, proxyPwd); // TODO:
                 }
             } else {
-               this.httpConnection = url.openConnection();
+                if (this.options.spnego) {
+                    if (this.options.spnego.loginModule) {
+                        this.httpConnection = new SpnegoHttpURLConnection(this.options.spnego.loginModule);
+                    } else if (this.options.spnego.gssCredential) {
+                        this.httpConnection = new SpnegoHttpURLConnection(this.options.spnego.gssCredential);
+                    }
+                } else {
+                    this.httpConnection = url.openConnection();
+                }
             }
 
 //                this.log.trace('connect(): connected with ' + options.url);
