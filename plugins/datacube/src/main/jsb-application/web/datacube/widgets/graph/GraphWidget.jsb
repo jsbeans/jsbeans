@@ -62,7 +62,7 @@
                     name: 'Тип маркера',
                     items: {
                         simpleGraph: {
-                            name: 'Простые графы',
+                            name: 'Узел графа',
                             items: {
                                 header: {
                                     render: 'item',
@@ -82,9 +82,9 @@
                         }
                     }
                 },
-                name: {
+                header: {
                     render: 'dataBinding',
-                    name: 'Имя',
+                    name: 'Заголовок',
                     linkTo: 'dataSource'
                 },
                 caption: {
@@ -111,19 +111,22 @@
                     render: 'item',
                     name: 'Максимальное число вершин',
                     valueType: 'number',
-                    defaultValue: 100
+                    defaultValue: 100,
+                    value: 100
                 },
                 itemHeight: {
                     render: 'item',
                     name: 'Высота ячейки',
                     valueType: 'number',
-                    defaultValue: 50
+                    defaultValue: 50,
+                    value: 50
                 },
                 itemWidth: {
                     render: 'item',
                     name: 'Ширина ячейки',
                     valueType: 'number',
-                    defaultValue: 50
+                    defaultValue: 50,
+                    value: 50
                 },
                 layoutAlgorithm: {
                     render: 'group',
@@ -137,31 +140,36 @@
                                     render: 'item',
                                     name: 'alpha',
                                     valueType: 'number',
-                                    defaultValue: 1
+                                    defaultValue: 1,
+                                    value: 1
                                 },
                                 alphaMin: {
                                     render: 'item',
                                     name: 'alphaMin',
                                     valueType: 'number',
-                                    defaultValue: 0.001
+                                    defaultValue: 0.001,
+                                    value: 0.001
                                 },
                                 alphaDecay: {
                                     render: 'item',
                                     name: 'alphaDecay',
                                     valueType: 'number',
-                                    defaultValue: 0.0228
+                                    defaultValue: 0.0228,
+                                    value: 0.0228
                                 },
                                 alphaTarget: {
                                     render: 'item',
                                     name: 'alphaTarget',
                                     valueType: 'number',
-                                    defaultValue: 0
+                                    defaultValue: 0,
+                                    value: 0
                                 },
                                 velocityDecay: {
                                     render: 'item',
                                     name: 'velocityDecay',
                                     valueType: 'number',
-                                    defaultValue: 0.4
+                                    defaultValue: 0.4,
+                                    value: 0.4
                                 }
                             }
                         },
@@ -173,19 +181,22 @@
                                     render: 'item',
                                     name: 'radius',
                                     valueType: 'number',
-                                    defaultValue: 1
+                                    defaultValue: 1,
+                                    value: 1
                                 },
                                 strength: {
                                     render: 'item',
                                     name: 'strength',
                                     valueType: 'number',
-                                    defaultValue: 0.7
+                                    defaultValue: 0.7,
+                                    value: 0.7
                                 },
                                 iterations: {
                                     render: 'item',
                                     name: 'iterations',
                                     valueType: 'number',
-                                    defaultValue: 1
+                                    defaultValue: 1,
+                                    value: 1
                                 }
                             }
                         },
@@ -197,13 +208,15 @@
                                     render: 'item',
                                     name: 'distance',
                                     valueType: 'number',
-                                    defaultValue: 30
+                                    defaultValue: 30,
+                                    value: 30
                                 },
                                 iterations: {
                                     render: 'item',
                                     name: 'iterations',
                                     valueType: 'number',
-                                    defaultValue: 1
+                                    defaultValue: 1,
+                                    value: 1
                                 }
                             }
                         }
@@ -303,10 +316,12 @@
             }
 
             if(!this._styles){
-                this._styles = {};
+                this._styles = {
+                    requireWidgets: [],
+                    viewListObj: {}
+                };
 
                 var viewTypes = this.getContext().find('viewTypes').values(),
-                    viewList = [],
                     bindingMap = {};
 
                 for(var i = 0; i < viewTypes.length; i++){
@@ -322,29 +337,34 @@
                         nClass = 'nodeType_' + JSB().generateUid();
 
                     if(viewSelector.value() === 'widgetGroup'){
-                        var widget = viewSelector.find("widgetBinding");
+                        var widget = viewSelector.find("widgetBinding"),
+                            jsb = widget.getWidgetBean(),
+                            obj = {
+                                jsb: jsb,
+                                wrapper: this.getWrapper(),
+                                values: widget,
+                                caption: caption,
+                                nClass: nClass,
+                                nodeCss: viewTypes[i].find('nodeCss').value()
+                            };
+
+                        this._styles.viewListObj[binding] = obj;
+
+                        this._styles.requireWidgets.push({
+                            jsb: jsb,
+                            obj: obj
+                        });
 
                         this.embeddedBindings = this.embeddedBindings.concat(widget.findRendersByName('sourceBinding'));
 
-                        viewList.push({
-                            binding: binding,
-                            jsb: widget.getWidgetBean(),
-                            wrapper: this.getWrapper(),
-                            values: widget, // .value()
-                            caption: caption,
-                            nClass: nClass,
-                            nodeCss: viewTypes[i].find('nodeCss').value()
-                        });
-
                         this._namesList[name] = { binding: binding, type: 'widget', nClass: nClass };
                     } else {
-                        viewList.push({
-                            binding: binding,
-                            header: viewSelector.find('header'),
+                        this._styles.viewListObj[binding] = {
+                            header: viewTypes[i].find('header'),
                             caption: caption,
                             nClass: nClass,
                             nodeCss: viewTypes[i].find('nodeCss').value()
-                        });
+                        }
 
                         this._namesList[name] = { binding: binding, type: 'simpleGraph', nClass: nClass };
                     }
@@ -352,21 +372,31 @@
                     bindingMap[binding] = true;
                 }
 
-                this._styles.viewList = viewList;
-                this._styles.viewListObj = viewList.reduce(function(obj, el){
-                   obj[el.binding] = el;
-                   return obj;
-                }, {});
-
                 var graphGroups = this.getContext().find('graphGroups').values(),
                     graphList = [];
 
+                function checkGraphGroup(el){
+                    if(!$this._styles.viewListObj[el.binding()]){
+                        $this._styles.viewListObj[el.binding()] = {
+                            caption: el,
+                            header: el,
+                            nClass: 'nodeType_' + JSB().generateUid()
+                        }
+                    }
+                }
+
                 for(var i = 0; i < graphGroups.length; i++){
+                    var srcEl = graphGroups[i].find('sourceElement'),
+                        tgtEl = graphGroups[i].find('targetElement');
+
                     graphList.push({
                         css: graphGroups[i].find('linkCss').value(),
-                        sourceElement: graphGroups[i].find('sourceElement'),
-                        targetElement: graphGroups[i].find('targetElement')
-                    })
+                        sourceElement: srcEl,
+                        targetElement: tgtEl
+                    });
+
+                    checkGraphGroup(srcEl);
+                    checkGraphGroup(tgtEl);
                 }
 
                 this._styles.graphList = graphList;
@@ -429,12 +459,12 @@
 
             //this.createLegend();
 
-            JSB.chain(this._styles.viewList, function(d, c){
+            JSB.chain(this._styles.requireWidgets, function(d, c){
                 if(!d.jsb){
                     c();
                 } else {
                     JSB.lookup(d.jsb, function(cls){
-                        d.cls = cls;
+                        d.obj.cls = cls;
                         c();
                     });
                 }
@@ -606,7 +636,6 @@
                         .iterations(collideOpts.iterations))
                     .force("charge", d3.forceManyBody());
 
-
                 links.forEach(function(d){
                     var link = $this.diagram.createLink('bind');
 
@@ -639,7 +668,6 @@
 
                 this.simulation.force("link")
                           .links(links);
-                
             } catch(ex){
                 console.log(ex);
 
