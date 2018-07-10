@@ -61,7 +61,6 @@
             } else {
                 if (this.options.spnego) {
                     var SpnegoHttpURLConnection = Packages.net.sourceforge.spnego.SpnegoHttpURLConnection;
-
                     if (this.options.spnego.loginModule) {
                         this.spnego = new SpnegoHttpURLConnection(this.options.spnego.loginModule);
                     } else if (this.options.spnego.gssCredential) {
