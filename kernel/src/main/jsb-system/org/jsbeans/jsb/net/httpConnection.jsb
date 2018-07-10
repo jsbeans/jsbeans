@@ -11,7 +11,6 @@
             this.HttpURLConnection = Packages.java.net.HttpURLConnection;
             this.InetSocketAddress = Packages.java.net.InetSocketAddress;
             this.HttpHelper = Packages.org.jsbeans.helpers.HttpHelper;
-            this.SpnegoHttpURLConnection = Packages.net.sourceforge.spnego.SpnegoHttpURLConnection;
 
             this.options = JSB().merge(true, {}, this.defaultOptions, options);
             this.log = this.logger(this.options.id, this.options.debug, this.options.trace);
@@ -61,11 +60,16 @@
                 }
             } else {
                 if (this.options.spnego) {
+                    var SpnegoHttpURLConnection = Packages.net.sourceforge.spnego.SpnegoHttpURLConnection;
+
                     if (this.options.spnego.loginModule) {
-                        this.httpConnection = new SpnegoHttpURLConnection(this.options.spnego.loginModule);
+                        this.spnego = new SpnegoHttpURLConnection(this.options.spnego.loginModule);
                     } else if (this.options.spnego.gssCredential) {
-                        this.httpConnection = new SpnegoHttpURLConnection(this.options.spnego.gssCredential);
+                        this.spnego = new SpnegoHttpURLConnection(this.options.spnego.gssCredential);
+                    } else {
+                        throw new Error('Spnego options are not defined');
                     }
+                    this.httpConnection = this.spnego.connect(url);
                 } else {
                     this.httpConnection = url.openConnection();
                 }
@@ -97,7 +101,11 @@
         	if (this.outputStream) try { this.outputStream.close(); } finally {}
             if (this.inputStream) try { this.inputStream.close(); } finally {}
             if (this.errorStream) try { this.errorStream.close(); } finally {}
-            this.httpConnection.disconnect();
+            if (this.spnego) {
+                this.spnego.disconnect();
+            } else {
+                this.httpConnection.disconnect();
+            }
         },
 
         destroy: function(){
