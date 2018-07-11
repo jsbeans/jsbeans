@@ -111,7 +111,7 @@
                 }
             } else {
                 var editor = new Editor({
-                    type: this._scheme.valueType === 'number' ? 'number' : 'text',
+                    type: this._scheme.editorOpts && this._scheme.editorOpts.type,
                     value: values.value,
                     onchange: function(){
                         var newValue = this.getValue();

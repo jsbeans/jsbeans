@@ -168,7 +168,6 @@
             }
 		},
 
-		// old selector.fetch
         fetch: function(selector, opts, callback){
             if(selector.isEmbeddedBinding()){
                 callback.call(this);
@@ -281,7 +280,7 @@
                 
                 if(fail){
                     JSB.getLogger().error(fail);
-                    $this.showMessage('<strong>Ошибка!</strong><br />' + fail.message);
+                    $this.showMessage('<strong>Ошибка!</strong><br /> ' + fail.message);
                 } else {
                 	$this.hideMessage();
                 }

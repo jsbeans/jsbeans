@@ -177,8 +177,8 @@
                                     render: 'item',
                                     name: 'radius',
                                     valueType: 'number',
-                                    defaultValue: 1,
-                                    value: 1
+                                    defaultValue: 100,
+                                    value: 100
                                 },
                                 strength: {
                                     render: 'item',
@@ -294,6 +294,11 @@
                 this._styles = null;
                 this._dataSource = null;
                 this.embeddedBindings = [];
+
+                for(var i in this._nodeList){
+                    this.diagram.remove(this._nodeList[i]);
+                }
+
                 this._nodeList = {};
                 this._namesList = {};
             }
@@ -554,15 +559,20 @@
                             });
                         }
 
-                        $this.ensureInitialized(function(){
-                            $this.removeOldNodes(nodesMap);
+                        $this.removeOldNodes(nodesMap);
 
-                            var data = {
-                                nodes: nodes,
-                                links: links
-                            }
+                        for(var i = 0; i < links.length; i++){
+                            var link = $this.diagram.createLink('bind');
 
-                            $this.createGraph(data);
+                            link.setSource($this._nodeList[links[i].source].connector);
+                            link.setTarget($this._nodeList[links[i].target].connector);
+
+                            link.path.attr('style', links[i].css);
+                        }
+
+                        $this.simulateGraph({
+                            nodes: nodes,
+                            links: links
                         });
                     } else {
                         innerFetch();
@@ -573,7 +583,7 @@
             innerFetch(true);
         },
 
-        createGraph: function(data){
+        simulateGraph: function(data){
             var nodes = data.nodes,
                 links = data.links;
 
@@ -593,34 +603,10 @@
                     .force("link", d3.forceLink().id(function(d) { return d.id })
                         .distance(linkOpts.distance)
                         .iterations(linkOpts.iterations))
-                    .force("collide", d3.forceCollide( function(d){
-                        if(collideOpts.radius){
-                            return collideOpts.radius;
-                        }
-
-                        if(!itemWidth){
-                            itemWidth = $this._nodeList[d.id].getElement().width();
-                        }
-                        if(!itemHeight){
-                            itemHeight = $this._nodeList[d.id].getElement().height();
-                        }
-                        return (Math.sqrt(Math.pow(itemWidth, 2) + Math.pow(itemHeight, 2))) / 2;
-                    })
-                        .radius(collideOpts.radius)
+                    .force("collide", d3.forceCollide(collideOpts.radius)
                         .strength(collideOpts.strength)
                         .iterations(collideOpts.iterations))
                     .force("charge", d3.forceManyBody());
-
-                links.forEach(function(d){
-                    var link = $this.diagram.createLink('bind');
-
-                    link.setSource($this._nodeList[d.source].connector);
-                    link.setTarget($this._nodeList[d.target].connector);
-
-                    for(var i in d.css){
-                        link.path.style(i, d.css[i]);
-                    }
-                });
 
                 function ticked(){
                     try{
