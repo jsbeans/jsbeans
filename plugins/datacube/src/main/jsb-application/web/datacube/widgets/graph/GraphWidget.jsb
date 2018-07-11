@@ -242,7 +242,7 @@
             });
 
             this.diagram = new Diagram({
-                minZoom: 0.25,
+                minZoom: 0.2,
                 highlightSelecting: false,
                 autoLayout: false,
                 background: 'none',

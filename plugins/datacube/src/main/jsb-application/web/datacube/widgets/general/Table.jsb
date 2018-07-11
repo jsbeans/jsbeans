@@ -2183,6 +2183,7 @@
 		refresh: function(opts){
 		    this._refresh(opts);
 		},
+		
 		_refresh: function(opts){
 			if(!this.ready){
 				this.ensureInitialized(function(){
