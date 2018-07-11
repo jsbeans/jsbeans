@@ -343,10 +343,6 @@
             fetch(true);
 		},
 
-		getCache: function(){
-		    return this._cache;
-		},
-
 		getContext: function(ctxName){
 			if(!ctxName){
 				ctxName = 'main';
@@ -636,10 +632,6 @@
 			this.wrapper = w;
 			this.widgetEntry = w.getWidgetEntry();
 			this.updateValues(valuesOpts, sourceDesc);
-		},
-
-		storeCache: function(data){
-		    this._cache = data;
 		},
 
 		updateValues: function(opts, readyCallback){

@@ -915,15 +915,6 @@
                 return false;
             }
 
-            // widget settings editor set style changes
-            if(opts && opts.refreshFromCache){
-                var cache = this.getCache();
-                if(cache){
-                    this.buildChart(cache);
-                    return false;
-                }
-            }
-
             if(opts && opts.updateStyles){
                 this._styles = null;
                 this._dataSource = null;

@@ -795,12 +795,6 @@
                 return;
             }
 
-            // widget settings editor set style changes
-            if(opts && opts.refreshFromCache){
-                this.updateDispatcher.ready();
-                return;
-            }
-
             if(opts && opts.updateStyles){
                 this._styles = null;
                 this._maps = [];

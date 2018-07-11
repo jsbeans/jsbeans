@@ -83,16 +83,7 @@
                     scheme: widget.getEntry().extractWidgetScheme(),
                     values: widget.getValues(),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
-                    context: widget.getEntry().getId(),
-                    onchange: function(key, values){
-                        if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
-                            return;
-                        }
-
-                        JSB().defer(function(){
-                            $this.setChanges();
-                        }, 800, "widgetSettingsView_setChanges" + $this.getId());
-                    }
+                    context: widget.getEntry().getId()
                 });
                 $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
 
@@ -141,11 +132,11 @@
             });
 		},
 
-		setChanges: function(isUpdateData){
+		setChanges: function(){
 		    if(!this.warningBlock.hasClass('hidden')){
 		        this.updateValidation();
 		    }
-		    
+
 		    var sourcesIds = this.extractSourceIds();
 		    var sources = {};
 		    for(var i = 0; i < sourcesIds.length; i++){
@@ -159,8 +150,6 @@
 
             this.wrapper.getWidget().ensureInitialized(function(){
                 $this.wrapper.getWidget().refresh({
-                    isCacheMod: isUpdateData,
-                    refreshFromCache: !isUpdateData,
                     updateStyles: true
                 });
         	});

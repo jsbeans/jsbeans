@@ -409,12 +409,6 @@
                         }
                     }
 
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache({
-                            data: data
-                        });
-                    }
-
                     $this.buildChart({
                         data: data
                     });

@@ -65,8 +65,9 @@
                             name: 'Узел графа',
                             items: {
                                 header: {
-                                    render: 'item',
-                                    name: 'Заголовки'
+                                    render: 'dataBinding',
+                                    name: 'Заголовок',
+                                    linkTo: 'dataSource'
                                 }
                             }
                         },
@@ -81,11 +82,6 @@
                             }
                         }
                     }
-                },
-                header: {
-                    render: 'dataBinding',
-                    name: 'Заголовок',
-                    linkTo: 'dataSource'
                 },
                 caption: {
                     render: 'dataBinding',
@@ -294,16 +290,12 @@
                 return;
             }
 
-            // widget settings editor set style changes
-            if(opts && opts.refreshFromCache){
-                this.updateDispatcher.ready();
-                return;
-            }
-
             if(opts && opts.updateStyles){
                 this._styles = null;
                 this._dataSource = null;
                 this.embeddedBindings = [];
+                this._nodeList = {};
+                this._namesList = {};
             }
 
             if(!this._dataSource){
@@ -434,24 +426,11 @@
 
             $base();
 
-            // cache
-            this._isCacheMod = opts && opts.isCacheMod ? opts.isCacheMod : false;
-
             if($this.simulation){
                 $this.simulation.stop();
             }
 
-            if(opts && opts.refreshFromCache){
-                var cache = $this.getCache();
-
-                if(!cache) {
-                    return;
-                }
-
-                this.createGraph(cache);
-            } else {
-                this.innerRefresh(updateOpts);
-            }
+            this.innerRefresh(updateOpts);
         },
 
         innerRefresh: function(updateOpts){
@@ -581,10 +560,6 @@
                             var data = {
                                 nodes: nodes,
                                 links: links
-                            }
-
-                            if($this._isCacheMod){
-                                $this.storeCache(data);
                             }
 
                             $this.createGraph(data);

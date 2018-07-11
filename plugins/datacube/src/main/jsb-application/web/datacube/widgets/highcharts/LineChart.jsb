@@ -410,13 +410,6 @@
                         });
                     }
 
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache({
-                            data: data,
-                            xAxisData: xAxisData
-                        });
-                    }
-
                     $this.buildChart({
                         data: data,
                         xAxisData: xAxisData

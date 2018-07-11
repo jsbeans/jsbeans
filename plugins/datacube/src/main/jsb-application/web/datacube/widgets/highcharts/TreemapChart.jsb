@@ -289,10 +289,6 @@
                     var seriesData = [];
                     resolveData(seriesData, data);
 
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache(seriesData);
-                    }
-
                     $this.buildChart(seriesData);
 
                     $this.getElement().loader('hide');

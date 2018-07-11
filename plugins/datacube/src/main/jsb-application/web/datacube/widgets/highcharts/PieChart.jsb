@@ -218,10 +218,6 @@
                 }
 
                 function resultProcessing(){
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache(data);
-                    }
-
                     $this.buildChart(data);
 
                     $this.getElement().loader('hide');
