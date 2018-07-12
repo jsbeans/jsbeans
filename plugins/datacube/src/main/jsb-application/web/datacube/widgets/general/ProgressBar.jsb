@@ -176,10 +176,10 @@
 		},
 
 		refresh: function(opts){
-		    this._refresh(opts);
+		    this.onRefresh(opts);
 		},
 
-		_refresh: function(opts){
+		onRefresh: function(opts){
 		    var dataSource = this.getContext().find('dataSource');
             if(!dataSource.hasBinding || !dataSource.hasBinding()){
                 return;

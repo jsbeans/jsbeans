@@ -45,36 +45,28 @@
 		    }
 
 		    var UpdateDispatcher = function(){
-		        var curTask,
-		            status = 'ready',
+		        var status = 'ready',
 		            needRefresh = false,
 		            refreshOpts;
 
 		        this.addTask = function(opts){
-		            var id = JSB.generateUid(),
-		                updateOpts = {
-		                    taskId: id
-		                };
-
-		            curTask = id;
-
 		            if(status === 'ready'){
 		                status = 'refreshing';
-		                $this._refresh(opts, updateOpts);
+		                $this.onRefresh(opts);
 		            } else {
-		                needRefresh = true;
 		                refreshOpts = opts;
+		                needRefresh = true;
 		            }
 		        }
 
-		        this.checkTask = function(id){
-		            return id === curTask;
+		        this.isNeedRefresh = function(){
+		            return needRefresh;
 		        }
 
 		        this.ready = function(){
 		            if(needRefresh){
 		                needRefresh = false;
-		                $this._refresh(refreshOpts, {taskId: curTask});
+		                $this.onRefresh(refreshOpts);
 		            } else {
 		                status = 'ready';
 		            }
@@ -255,6 +247,11 @@
             	item.fetchOpts.compress = true;
             }
             this.server().fetch(item.source, $this.getEntry(), item.fetchOpts, function(serverData, fail){
+                if($this.updateDispatcher.isNeedRefresh()){
+                    $this.ready();
+                    return;
+                }
+
                 if(item.fetchOpts.reset){
                     item.cursor = 0;
                     if(item.data){
@@ -479,7 +476,6 @@
 			return Object.keys(this.sources);
 		},
 
-		// old selector.getFilters
 		getSourceFilters: function(selector){
 		    if(selector.getRenderName() !== 'sourceBinding'){
 		        return;
@@ -544,11 +540,15 @@
             }
 		},
 
+		ready: function(){
+		    this.updateDispatcher.ready();
+		},
+
 		refresh: function(opts){
 		    this.updateDispatcher.addTask(opts);
 		},
 
-		_refresh: function(opts){
+		onRefresh: function(opts){
 			this.localizeFilters();
 		},
 

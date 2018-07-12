@@ -215,6 +215,38 @@
                                     value: 1
                                 }
                             }
+                        },
+                        charge: {
+                            render: 'group',
+                            name: 'charge',
+                            items: {
+                                strength: {
+                                    render: 'item',
+                                    name: 'strength',
+                                    valueType: 'number',
+                                    defaultValue: -30,
+                                    value: -30
+                                },
+                                theta: {
+                                    render: 'item',
+                                    name: 'theta',
+                                    valueType: 'number',
+                                    defaultValue: 0.9,
+                                    value: 0.9
+                                },
+                                distanceMin: {
+                                    render: 'item',
+                                    name: 'distanceMin',
+                                    valueType: 'number',
+                                    defaultValue: 1,
+                                    value: 1
+                                },
+                                distanceMax: {
+                                    render: 'item',
+                                    name: 'distanceMax',
+                                    valueType: 'number'
+                                }
+                            }
                         }
                     }
                 }
@@ -283,10 +315,10 @@
             this.append(this.diagram);
         },
 
-        _refresh: function(opts, updateOpts){
+        onRefresh: function(opts){
             // if filter source is current widget
             if(opts && this == opts.initiator){
-                this.updateDispatcher.ready();
+                this.ready();
                 return;
             }
 
@@ -307,7 +339,7 @@
                 this._dataSource = this.getContext().find('dataSource');
 
                 if(!this._dataSource.hasBinding()){
-                    this.updateDispatcher.ready();
+                    this.ready();
                     return;
                 }
             }
@@ -427,6 +459,15 @@
                     distance: linkOpts.find('distance').value(),
                     iterations: linkOpts.find('iterations').value()
                 }
+
+                // chargeOpts
+                var chargeOpts = this.getContext().find('settings layoutAlgorithm charge');
+                this._styles.chargeOpts = {
+                    strength: chargeOpts.find('strength').value(),
+                    theta: chargeOpts.find('theta').value(),
+                    distanceMin: chargeOpts.find('distanceMin').value(),
+                    distanceMax: chargeOpts.find('distanceMax').value()
+                }
             }
 
             $base();
@@ -435,10 +476,10 @@
                 $this.simulation.stop();
             }
 
-            this.innerRefresh(updateOpts);
+            this.innerRefresh();
         },
 
-        innerRefresh: function(updateOpts){
+        innerRefresh: function(){
             this.getElement().loader();
 
             //this.createLegend();
@@ -454,12 +495,12 @@
                 }
             }, function(){
                 $this.ensureInitialized(function(){
-                    $this.fetchWidget(updateOpts);
+                    $this.fetchWidget();
                 });
             });
         },
 
-        fetchWidget: function(updateOpts){
+        fetchWidget: function(){
             var viewList = $this._styles.viewListObj,
                 graphList = $this._styles.graphList;
 
@@ -509,8 +550,8 @@
 
             function innerFetch(isReset){
                 $this.fetch($this._dataSource, { fetchSize: 50, reset: isReset }, function(res, fail){
-                    if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
-                        $this.updateDispatcher.ready();
+                    if(fail){
+                        $this.ready();
                         $this.getElement().loader('hide');
                         return;
                     }
@@ -592,7 +633,8 @@
                     itemHeight = this._styles.itemHeight,
                     simulationOpts = this._styles.simulationOpts,
                     collideOpts = this._styles.collideOpts,
-                    linkOpts = this._styles.linkOpts;
+                    linkOpts = this._styles.linkOpts,
+                    chargeOpts = this._styles.chargeOpts;
 
                 this.simulation = d3.forceSimulation()
                     .alpha(simulationOpts.alpha)
@@ -606,7 +648,11 @@
                     .force("collide", d3.forceCollide(collideOpts.radius)
                         .strength(collideOpts.strength)
                         .iterations(collideOpts.iterations))
-                    .force("charge", d3.forceManyBody());
+                    .force("charge", d3.forceManyBody()
+                        .strength(chargeOpts.strength)
+                        .theta(chargeOpts.theta)
+                        .distanceMin(chargeOpts.distanceMin)
+                        .distanceMax(chargeOpts.distanceMax));
 
                 function ticked(){
                     try{
@@ -638,7 +684,7 @@
 
                 $this.getElement().loader('hide');
             } finally {
-                this.updateDispatcher.ready();
+                this.ready();
             }
         },
 

@@ -206,9 +206,9 @@
 	        });
 	    },
 
-	    _refresh: function(opts, updateOpts){
+	    onRefresh: function(opts){
             if(!$base(opts)){
-                this.updateDispatcher.ready();
+                this.ready();
                 return;
             }
 
@@ -273,7 +273,7 @@
             }
 
             if(!this._resolveFilters(this._schemeOpts.dateContext.binding())){
-                this.updateDispatcher.ready();
+                this.ready();
                 return;
             }
 
@@ -329,8 +329,8 @@
             function fetch(isReset){
                 $this.fetch($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res, fail){
                     try {
-                    	if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
-                            $this.updateDispatcher.ready();
+                    	if(fail){
+                            $this.ready();
                             $this.getElement().loader('hide');
                             return;
                         }

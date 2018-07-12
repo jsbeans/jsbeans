@@ -162,9 +162,9 @@
             $this.setInitialized();
         },
 
-        _refresh: function(opts, updateOpts){
+        onRefresh: function(opts){
             if(!$base(opts)){
-                this.updateDispatcher.ready();
+                this.ready();
                 return;
             }
 
@@ -210,7 +210,7 @@
             }
 
             if(!this._resolvePointFilters(this._schemeOpts.xAxisFilterBinding)){
-                this.updateDispatcher.ready();
+                this.ready();
                 return;
             }
 
@@ -226,8 +226,8 @@
             try{
                 function fetch(isReset){
                     $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
-                    	if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
-                            $this.updateDispatcher.ready();
+                    	if(fail){
+                            $this.ready();
                             $this.getElement().loader('hide');
                             return;
                         }
