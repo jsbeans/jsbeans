@@ -147,7 +147,7 @@
 
             this.container.visible(function(evt, isVisible){
                 if($this._isNeedUpdate && isVisible){
-                    $this._buildChart($this.getCache());
+                    $this._buildChart($this._data);
                     $this.updateDispatcher.ready();
                 }
             });
@@ -208,11 +208,6 @@
                     descriptionGroupType: settings.find('descriptionGroupType').value()
         	    }
         	}
-
-            if(opts && opts.refreshFromCache){
-                this.buildChart(this.getCache());
-                return;
-            }
 
             var data = [],
                 colorCount = 0,
@@ -363,8 +358,6 @@
                     var seriesData = [];
                     resolveData(seriesData, data);
 
-                    $this.storeCache(seriesData);
-
                     $this.buildChart(seriesData);
 
                     $this.getElement().loader('hide');
@@ -384,6 +377,7 @@
                 this.updateDispatcher.ready();
             } else {
                 this._isNeedUpdate = true;
+                this._data = data;
             }
         },
 
