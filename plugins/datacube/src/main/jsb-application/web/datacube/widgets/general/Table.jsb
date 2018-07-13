@@ -2240,10 +2240,10 @@
 		},
 
 		refresh: function(opts){
-		    this._refresh(opts);
+		    this.onRefresh(opts);
 		},
 		
-		_refresh: function(opts){
+		onRefresh: function(opts){
 			if(!this.ready){
 				this.ensureInitialized(function(){
 					$this.refresh(opts);

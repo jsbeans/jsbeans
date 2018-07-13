@@ -151,8 +151,6 @@
 	    }
 	},
 	$client: {
-		ready: false,
-		
 		$constructor: function(opts){
 			var doT = {
 				version: "1.0.3",
@@ -297,10 +295,10 @@
 		},
 
 		refresh: function(opts){
-		    this._refresh(opts);
+		    this.onRefresh(opts);
 		},
 		
-		_refresh: function(opts){
+		onRefresh: function(opts){
 			$base();
 
 			var recordContext = this.getContext().find('record');

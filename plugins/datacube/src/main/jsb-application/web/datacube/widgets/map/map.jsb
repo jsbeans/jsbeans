@@ -788,10 +788,10 @@
             map: null
         },
 
-        _refresh: function(opts, updateOpts){
+        onRefresh: function(opts){
             // if filter source is current widget
             if(opts && this == opts.initiator){
-                this.updateDispatcher.ready();
+                this.ready();
                 return;
             }
 
@@ -805,7 +805,7 @@
                 this._dataSource = this.getContext().find('dataSource');
 
                 if(!this._dataSource.hasBinding()){
-                    this.updateDispatcher.ready();
+                    this.ready();
                     return;
                 }
             }
@@ -1157,8 +1157,8 @@
             function fetch(isReset){
                 $this.fetch($this._dataSource, { fetchSize: 100, reset: isReset }, function(res, fail){
                     try{
-                        if(fail || !$this.updateDispatcher.checkTask(updateOpts.taskId)){
-                            $this.updateDispatcher.ready();
+                        if(fail){
+                            $this.ready();
                             $this.getElement().loader('hide');
                             return;
                         }
@@ -1426,7 +1426,7 @@
         buildChart: function(data){
             this.ensureDataLoaded(function(){
                 $this._buildChart(data);
-                $this.updateDispatcher.ready();
+                $this.ready();
             });
         },
 
