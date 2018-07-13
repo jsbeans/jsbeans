@@ -125,6 +125,10 @@
 
         if(scheme.items && value){
             for(var i in scheme.items[value].items){
+                if(!values.values[0].items){
+                    values.values[0].items = {};
+                }
+
                 if(!values.values[0].items[i] && scheme.items[value].items[i].render){
                     if(opts.removedValues[i]){   // move keys
                         values.values[0].items[i] = opts.removedValues[i].shift();
