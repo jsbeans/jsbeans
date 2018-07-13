@@ -1458,8 +1458,11 @@
 
                         endRangeValue = startRangeValue + gLength * groupConst * units;
                     } else {    // highcharts grouping
-                        startRangeValue = point.series.xData[point.dataGroup.start];
-                        endRangeValue = point.series.xData[point.dataGroup.start + point.dataGroup.length];
+                        var startIndex = point.dataGroup && point.dataGroup.start || point.index,
+                            endIndex = point.dataGroup && (point.dataGroup.start + point.dataGroup.length) || (point.index + 1);
+
+                        startRangeValue = point.series.xData[startIndex];
+                        endRangeValue = point.series.xData[endIndex];
                     }
                 }
 

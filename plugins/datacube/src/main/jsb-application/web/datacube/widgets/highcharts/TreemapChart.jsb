@@ -189,6 +189,7 @@
             }
 
             if(!this._resolvePointFilters(this._schemeOpts.bindings)){
+                this.ready();
                 return;
             }
 
