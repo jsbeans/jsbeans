@@ -293,7 +293,14 @@
 	                name: 'Использовать упреждающую загрузку данных',
 	                optional: true,
 	                editor: 'none'
+	    	    },
+	    	    useAnimation: {
+	    	    	render: 'item',
+	                name: 'Анимация',
+	                optional: 'checked',
+	                editor: 'none'
 	    	    }
+
 	        }
 	    },
 	    columns: {
@@ -1022,9 +1029,7 @@
 			var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
 			var rowsSel = tbody.selectAll('tr.row');
 			var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
-			
-			rowsSelData.order();
-			
+
 			rowsSelData.each(function(d){
 				if($this.highlightedRowKey == d.key){
 					$this.highlightedRowKey = null;
@@ -1041,6 +1046,7 @@
 					.attr('depth', function(d){return d.depth;});
 			});
 			
+			// columns
 			var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
 			
 			if($this.rowsDrawn === 0){ // updating after refresh
@@ -1099,27 +1105,34 @@
 						});
 				
 			
-			// destroy widgets
-			rowsSelData.exit()
-				.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
-					.each(function(d){
-						var cell = d3.select(this).select('div.cell');
-						var cellEl = $this.$(cell.node());
-						
-						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
-							$this.widgetMap[d.rowKey][d.column].destroy();
-							delete $this.widgetMap[d.rowKey][d.column];
-							if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
-								delete $this.widgetMap[d.rowKey];
-							}
-						}
-					});
-					
-			rowsSelData.exit()
-				.remove();
 			
-			rowsSelData
-				.enter()
+			function _removeRows(){
+				var removedRowsSel = rowsSelData.exit();
+				
+				// destroy widgets
+				removedRowsSel
+					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
+						.each(function(d){
+							var cell = d3.select(this).select('div.cell');
+							var cellEl = $this.$(cell.node());
+							
+							if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+								$this.widgetMap[d.rowKey][d.column].destroy();
+								delete $this.widgetMap[d.rowKey][d.column];
+								if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+									delete $this.widgetMap[d.rowKey];
+								}
+							}
+						});
+				
+				// destroy rows
+				removedRowsSel.remove();
+			}
+			
+			function _appendRows(){
+				rowsSelData.order();
+				var newRowsSel = rowsSelData.enter();
+				newRowsSel
 					.append('tr')
 						.classed('row', true)
 						.classed('main', function(d){return !!d.flags.main;})
@@ -1129,6 +1142,8 @@
 						.attr('depth', function(d){return d.depth;})
 						.classed('rowFilter', function(d){return d.filter && d.filter.length > 0;})
 						.classed('expanded', function(d){return d.expanded;})
+						.style('transform', function(d){return $this.useAnimation ? (d.depth > 0 ? 'scale(0,0)':'translate(-'+$this.getElement().width()+'px,0)') : null;})
+						.style('opacity', function(d){return $this.useAnimation ? 0 : null;})
 						.on('click',function(d){
 							$this.onRowClick(d);
 						})
@@ -1160,6 +1175,50 @@
 									.each(function(d){
 										updateCell.call(this, d);
 									});
+				if($this.useAnimation){
+					newRowsSel.selectAll('tr.row')
+						.transition().duration(800)
+							.style('opacity', 1)
+							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'});
+				}
+
+			}
+
+			// rows		
+			if($this.useAnimation){
+				var removedRowsSel = rowsSelData.exit();
+				if(removedRowsSel.size() > 0){
+					var rKeyMap = {};
+					removedRowsSel.each(function(d){
+						rKeyMap[d.key] = true;
+					});
+					
+					removedRowsSel
+						.style('transform', 'scale(1,1)')
+						.style('opacity', 1);
+				
+					removedRowsSel.transition()
+						.duration(800)
+						.style('transform', 'scale(0,0)')
+						.style('opacity', 0)
+						.on('end', function(d){
+							if(rKeyMap[d.key]){
+								delete rKeyMap[d.key];
+							}
+							if(Object.keys(rKeyMap).length == 0){
+								_removeRows();
+								_appendRows();
+							}
+						});
+				} else {
+					_removeRows();
+					_appendRows();
+				}
+			} else {
+				_removeRows();
+				_appendRows();
+			}
+			
 
 		},
 		
@@ -1171,7 +1230,7 @@
 			var fetchSize = 30;
 			
 			if(bRefresh){
-				if(this.rows.length > 0){
+				if(this.rows.length > fetchSize){
 					fetchSize = this.rows.length;
 				}
 				this.rows = [];
@@ -2257,6 +2316,7 @@
 			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
 			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
 			this.usePrefetch = this.getContext().find('usePrefetch').checked();
+			this.useAnimation = this.getContext().find('useAnimation').checked();
 			
 			this.rowClickParamsSelector = this.callApiOnClick ? this.getContext().find('rowClickParams') : null;
 

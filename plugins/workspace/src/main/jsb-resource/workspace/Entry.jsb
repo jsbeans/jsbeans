@@ -72,7 +72,9 @@
 			}
 
 			$base();
-			this._owner = Kernel.user();
+			if(!this._owner){
+				this._owner = Kernel.user();
+			}
 			this.getWorkspace()._attachEntry(this);
 			this.loadEntry();
 			this._checkChildren();
