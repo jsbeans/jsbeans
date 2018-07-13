@@ -297,7 +297,7 @@
 	    	    useAnimation: {
 	    	    	render: 'item',
 	                name: 'Анимация',
-	                optional: 'checked',
+	                optional: true,
 	                editor: 'none'
 	    	    }
 
