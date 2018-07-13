@@ -297,7 +297,7 @@
 	    	    useAnimation: {
 	    	    	render: 'item',
 	                name: 'Анимация',
-	                optional: true,
+	                optional: 'checked',
 	                editor: 'none'
 	    	    }
 
@@ -1105,7 +1105,7 @@
 						});
 				
 			
-			
+			// rows	
 			function _removeRows(){
 				var removedRowsSel = rowsSelData.exit();
 				
@@ -1130,7 +1130,11 @@
 			}
 			
 			function _appendRows(){
+				
+				// sort existed rows
 				rowsSelData.order();
+				
+				// append new rows
 				var newRowsSel = rowsSelData.enter();
 				newRowsSel
 					.append('tr')
@@ -1175,7 +1179,21 @@
 									.each(function(d){
 										updateCell.call(this, d);
 									});
+				
 				if($this.useAnimation){
+					// fixup new row positions
+					var paneRc = $this.scroll.getPane().find('table.rows').get(0).getBoundingClientRect();
+					rowsSelData.each(function(rd){
+						var rowRc = this.getBoundingClientRect();
+						var newPos = rowRc.top - paneRc.top;
+						var dif = rd.vPos - newPos;
+						if(dif != 0){
+							var curSel = d3.select(this);
+							curSel.style('transform', 'translate(0, '+dif+'px)');
+							curSel.transition().duration(800).style('transform', 'translate(0,0)');
+						}
+					});
+					
 					newRowsSel.selectAll('tr.row')
 						.transition().duration(800)
 							.style('opacity', 1)
@@ -1184,8 +1202,16 @@
 
 			}
 
-			// rows		
+				
 			if($this.useAnimation){
+				// store row positions before update
+				var paneRc = $this.scroll.getPane().find('table.rows').get(0).getBoundingClientRect();
+				rowsSelData.each(function(rd){
+					var rowRc = this.getBoundingClientRect();
+					var pos = rowRc.top - paneRc.top;
+					rd.vPos = pos;
+				});
+				
 				var removedRowsSel = rowsSelData.exit();
 				if(removedRowsSel.size() > 0){
 					var rKeyMap = {};
