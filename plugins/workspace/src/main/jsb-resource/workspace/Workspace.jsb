@@ -27,6 +27,7 @@
 		$constructor: function(id, cfg, wDesc){
             this.config = cfg;
             this.wDesc = wDesc;
+            this._owner = wDesc.wOwner;
             
             // create entry store
             var entryStoreCfg = this.config.entryStore;

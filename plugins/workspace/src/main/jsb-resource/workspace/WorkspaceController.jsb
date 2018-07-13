@@ -267,6 +267,12 @@
 			if(!wDesc){
 				throw new Error('Missing workspace with id: ' + wId);
 			}
+			return {
+				wId: wId,
+				wType: wDesc.wType,
+				wOwner: wDesc.wOwner
+			};
+/*
 			if(Kernel.isAdmin() || wDesc.wOwner == Kernel.user()){
 				return {
 					wId: wId,
@@ -275,6 +281,7 @@
 				};
 			}
 			throw new Error('Workspace restricted for user: ' + Kernel.user());
+*/			
 		},
 		
 		getWorkspace: function(wId){
