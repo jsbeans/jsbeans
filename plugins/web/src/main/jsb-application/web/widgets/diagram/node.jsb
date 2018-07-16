@@ -61,14 +61,15 @@
 		},
 		
 		setPosition: function(x, y){
-			if(JSB().isPlainObject(x)){
+			if(JSB().isObject(x)){
 				y = x.y;
 				x = x.x;
 			}
 			var cellSize = this.diagram.getOption('cellSize');
 			this.getElement().css({
 				'left': Math.round(x / cellSize) * cellSize,
-				'top': Math.round(y / cellSize) * cellSize
+				'top': Math.round(y / cellSize) * cellSize,
+				'position': 'absolute'
 			});
 			
 			this.updateLinks();

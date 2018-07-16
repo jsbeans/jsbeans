@@ -506,6 +506,7 @@
 
             if(this.simulation) {
                 this.simulation.stop();
+                this.simulation = null;
             }
 
             this.diagram.setPan({x: 0, y: 0});
@@ -625,9 +626,10 @@
         },
 
         simulateGraph: function(data){
+        	console.log('simulateGraph');
+        	var tickIter = 0;
             var nodes = data.nodes,
                 links = data.links;
-
             try{
                 var itemWidth = this._styles.itemWidth,
                     itemHeight = this._styles.itemHeight,
@@ -635,26 +637,12 @@
                     collideOpts = this._styles.collideOpts,
                     linkOpts = this._styles.linkOpts,
                     chargeOpts = this._styles.chargeOpts;
-
-                this.simulation = d3.forceSimulation()
-                    .alpha(simulationOpts.alpha)
-                    .alphaMin(simulationOpts.alphaMin)
-                    .alphaDecay(simulationOpts.alphaDecay)
-                    .alphaTarget(simulationOpts.alphaTarget)
-                    .velocityDecay(simulationOpts.velocityDecay)
-                    .force("link", d3.forceLink().id(function(d) { return d.id })
-                        .distance(linkOpts.distance)
-                        .iterations(linkOpts.iterations))
-                    .force("collide", d3.forceCollide(collideOpts.radius)
-                        .strength(collideOpts.strength)
-                        .iterations(collideOpts.iterations))
-                    .force("charge", d3.forceManyBody()
-                        .strength(chargeOpts.strength)
-                        .theta(chargeOpts.theta)
-                        .distanceMin(chargeOpts.distanceMin)
-                        .distanceMax(chargeOpts.distanceMax));
-
+                
                 function ticked(){
+                	tickIter++;
+                	if(tickIter % 10 !== 1){
+                		return;
+                	}
                     try{
                         nodes.forEach(function(el){
                             $this._nodeList[el.id].setPosition(el.x, el.y);
@@ -668,13 +656,27 @@
                     }
                 }
 
+                this.simulation = d3.forceSimulation(nodes)
+                    .alpha(simulationOpts.alpha)
+                    .alphaMin(simulationOpts.alphaMin)
+                    .alphaDecay(simulationOpts.alphaDecay)
+                    .alphaTarget(simulationOpts.alphaTarget)
+                    .velocityDecay(simulationOpts.velocityDecay)
+                	.force("charge", d3.forceManyBody()
+                        .strength(chargeOpts.strength)
+                        .theta(chargeOpts.theta)
+/*                        .distanceMin(chargeOpts.distanceMin)
+                        .distanceMax(chargeOpts.distanceMax)*/)
+                    .force("link", d3.forceLink().id(function(d) { return d.id })
+                        .distance(linkOpts.distance)
+                        .iterations(linkOpts.iterations)
+                        .links(links))
+                    .force("collide", d3.forceCollide(collideOpts.radius)
+                        .strength(collideOpts.strength)
+                        .iterations(collideOpts.iterations))
+                    
+                    .on("tick", ticked);
                 $this.getElement().loader('hide');
-
-                this.simulation.nodes(nodes)
-                          .on("tick", ticked);
-
-                this.simulation.force("link")
-                          .links(links);
             } catch(ex){
                 console.log(ex);
 
