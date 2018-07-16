@@ -181,6 +181,8 @@
                     this._schemeOpts.series.push({
                         nameSelector: seriesContext[i].find('name'),
                         dataSelector: seriesContext[i].find('data'),
+                        parentSelector: seriesContext[i].find('parent'),
+                        seriesNameSelector: seriesContext[i].find('seriesName'),
                         autoSize: seriesContext[i].find('autoSize').checked(),
                         isSum: seriesContext[i].find('isSum').checked(),
                         skipEmptyNamedGroups: seriesContext[i].find('skipEmptyNamedGroups').checked()
@@ -200,17 +202,17 @@
             var data = {},
                 colorCount = 0;
 
-            try {
-                function fetch(isReset){
-                    $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+            function fetch(isReset){
+                $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                    try{
                         if(fail){
                             $this.ready();
                             $this.getElement().loader('hide');
                             return;
-                        }                        
+                        }
 
-						if(res.length === 0){
-						    resultProcessing();
+                        if(res.length === 0){
+                            resultProcessing();
                             return;
                         }
 
@@ -222,14 +224,14 @@
                             var curCat = data;
 
                             for(var i = 0; i < $this._schemeOpts.series.length; i++){
-                                var name = $this._schemeOpts.series[i].nameSelector.value(),
+                                var name = $this._schemeOpts.series[i].seriesNameSelector.value() || $this._schemeOpts.series[i].nameSelector.value(),
                                     value = $this._schemeOpts.series[i].dataSelector.value();
 
                                 if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
                                     break;
                                 }
 
-                                var id = name + '_' + i;
+                                var id = $this._schemeOpts.series[i].seriesNameSelector.value() || $this._schemeOpts.series[i].nameSelector.value();
 
                                 if(curCat[name]){
                                     if($this._schemeOpts.series[i].autoSize){
@@ -257,6 +259,7 @@
                                             color: color,
                                             id: id,
                                             name: name,
+                                            parent: parent,
                                             value: $this._schemeOpts.series[i].autoSize ? 0 : value
                                         }
                                     };
@@ -269,17 +272,25 @@
                         }
 
                         fetch();
-                    });
-                }
+                    } catch (ex){
+                        console.log('TreemapChart load data exception');
+                        console.log(ex);
+                        $this.getElement().loader('hide');
+                    }
+                });
+            }
 
-                function resultProcessing(){
+            function resultProcessing(){
+                try{
                     function resolveData(arr, data, parent){
                         if(!data){
                             return;
                         }
 
                         for(var i in data){
-                            data[i].chartOpts.parent = parent;
+                            if(!data[i].chartOpts.parent){
+                                data[i].chartOpts.parent = parent;
+                            }
 
                             arr.push(data[i].chartOpts);
 
@@ -291,16 +302,15 @@
                     resolveData(seriesData, data);
 
                     $this.buildChart(seriesData);
-
+                } catch (ex){
+                    console.log('TreemapChart processing data exception');
+                    console.log(ex);
+                } finally {
                     $this.getElement().loader('hide');
                 }
-
-                fetch(true);
-            } catch (ex){
-                console.log('TreemapChart load data exception');
-                console.log(ex);
-                $this.getElement().loader('hide');
             }
+
+            fetch(true);
 	    },
 
 	    _buildChart: function(data){

@@ -32,6 +32,11 @@
                             name: 'Размеры частей',
                             linkTo: 'source'
                         },
+                        parent: {
+                            render: 'dataBinding',
+                            name: 'Родитель',
+                            linkTo: 'source'
+                        },
                         autoSize: {
                             render: 'item',
                             name: 'Автоматически считать размеры',
@@ -78,6 +83,8 @@
                     this._schemeOpts.series.push({
                         nameSelector: seriesContext[i].find('name'),
                         dataSelector: seriesContext[i].find('data'),
+                        parentSelector: seriesContext[i].find('parent'),
+                        seriesNameSelector: seriesContext[i].find('seriesName'),
                         autoSize: seriesContext[i].find('autoSize').checked(),
                         isSum: seriesContext[i].find('isSum').checked()
                     });
@@ -89,7 +96,9 @@
                 return;
             }
 
-            var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() };
+            var widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('chart colorScheme').value() },
+                data = {},
+                colorCount = 0;
 
             this.getElement().loader();
 
@@ -115,14 +124,15 @@
                             var curCat = data;
 
                             for(var i = 0; i < $this._schemeOpts.series.length; i++){
-                                var name = $this._schemeOpts.series[i].nameSelector.value(),
-                                    value = $this._schemeOpts.series[i].dataSelector.value();
+                                var name = $this._schemeOpts.series[i].seriesNameSelector.value() || $this._schemeOpts.series[i].nameSelector.value(),
+                                    value = $this._schemeOpts.series[i].dataSelector.value(),
+                                    parent = $this._schemeOpts.series[i].parentSelector.value();
 
                                 if($this._schemeOpts.series[i].skipEmptyNamedGroups && name.length === 0){
                                     break;
                                 }
 
-                                var id = name + '_' + i;
+                                var id = $this._schemeOpts.series[i].seriesNameSelector.value() || $this._schemeOpts.series[i].nameSelector.value();
 
                                 if(curCat[name]){
                                     if($this._schemeOpts.series[i].autoSize){
@@ -150,6 +160,7 @@
                                             color: color,
                                             id: id,
                                             name: name,
+                                            parent: parent,
                                             value: $this._schemeOpts.series[i].autoSize ? 0 : value
                                         }
                                     };
@@ -171,26 +182,35 @@
             }
 
             function resultProcessing(){
-                function resolveData(arr, data, parent){
-                    if(!data){
-                        return;
+                try{
+                    function resolveData(arr, data, parent){
+                        if(!data){
+                            return;
+                        }
+
+                        for(var i in data){
+                            if(!data[i].chartOpts.parent){
+                                data[i].chartOpts.parent = parent;
+                            }
+
+                            arr.push(data[i].chartOpts);
+
+                            resolveData(arr, data[i].child, data[i].chartOpts.id);
+                        }
                     }
 
-                    for(var i in data){
-                        data[i].chartOpts.parent = parent;
+                    var seriesData = [];
+                    resolveData(seriesData, data, '');
 
-                        arr.push(data[i].chartOpts);
+                    $this.buildChart(seriesData);
 
-                        resolveData(arr, data[i].child, data[i].chartOpts.id);
-                    }
+
+                } catch(ex){
+                    console.log('Sunburst processing data exception');
+                    console.log(ex);
+                } finally{
+                    $this.getElement().loader('hide');
                 }
-
-                var seriesData = [];
-                resolveData(seriesData, data);
-
-                $this.buildChart(seriesData);
-
-                $this.getElement().loader('hide');
             }
 
             fetch(true);
@@ -215,7 +235,7 @@
 
                 var chartOpts = {
                     series: [{
-                        type: "treemap",
+                        type: "sunburst",
                         allowDrillToNode: true,
                         data: data
                     }]
