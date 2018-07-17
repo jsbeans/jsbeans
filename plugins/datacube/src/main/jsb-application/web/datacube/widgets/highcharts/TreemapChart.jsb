@@ -30,6 +30,11 @@
                             name: 'Размеры частей',
                             linkTo: 'source'
                         },
+                        parent: {
+                            render: 'dataBinding',
+                            name: 'Родитель',
+                            linkTo: 'source'
+                        },
                         autoSize: {
                             render: 'item',
                             name: 'Автоматически считать размеры',
