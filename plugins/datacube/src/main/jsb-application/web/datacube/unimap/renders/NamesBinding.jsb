@@ -47,10 +47,6 @@
 	        } else {
 	            this.append(item);
 	        }
-
-            if(values.value){
-                this.createInnerScheme(item, values.value, itemIndex);
-            }
 	    },
 
 	    changeLinkTo: function(values){
