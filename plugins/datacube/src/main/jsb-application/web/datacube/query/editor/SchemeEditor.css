@@ -9,36 +9,85 @@
 
 /* substrate */
 .schemeEditor > .container > .entry > .substrate,
-.schemeEditor > .container > .entry > .value > .substrate  {
+.schemeEditor > .container > .entry > .value > .substrate {
 	position: absolute;
+	
 	left: -3px;
     top: 0;
     right: -3px;
     bottom: 0;
-	background-color: transparent;
-	border: 1px solid rgba(255,255,255,0);
 	border-radius: 6px;
 	overflow: hidden;
+    
+	background-color: transparent;
+	border: 1px solid rgba(255,255,255,0);
+	
+	transition: background-color 100ms, border-color 100ms;
+}
+
+.schemeEditor > .container > .entry > .wrapSubstrate,
+.schemeEditor > .container > .entry > .value > .wrapSubstrate {
+	display: none;
+}
+
+.schemeEditor > .container > .entry.allowWrap > .wrapSubstrate,
+.schemeEditor > .container > .entry > .value.allowWrap > .wrapSubstrate {
+	display: block;
+	position: absolute;
+	
+	left: -8px;
+	right: -8px;
+	top: -5px;
+	bottom: -5px;
+	border-radius: 6px;
+	overflow: hidden;
+	
+	background-color: transparent;
+	border: 1px solid rgba(255,255,255,0);
 	
 	transition: background-color 100ms, border-color 100ms;
 }
 
 .schemeEditor > .container > .entry.hover > .substrate,
-.schemeEditor > .container > .entry > .value.hover > .substrate {
-	background-color: rgb(239, 194, 130);
-    opacity: 0.3;
-    border-color: rgb(169, 102, 71);
+.schemeEditor > .container > .entry > .value.hover > .substrate,
+.schemeEditor > .container > .entry.allowReplace.hover.wrap > .substrate,
+.schemeEditor > .container > .entry > .value.allowReplace.hover.wrap > .substrate {
+	background-color: rgb(241, 223, 198);
+    border-color: rgb(189, 150, 131);
     
     transition: background-color 300ms, border-color 300ms;
 }
 
-.schemeEditor > .container > .entry.hover.allowReplace > .substrate,
-.schemeEditor > .container > .entry > .value.hover.allowReplace > .substrate {
-	opacity: 0.6;
+.schemeEditor > .container > .entry.allowReplace.hover > .substrate,
+.schemeEditor > .container > .entry > .value.allowReplace.hover > .substrate {
+	background-color: rgb(241, 207, 158);
+    border-color: rgb(158, 118, 100);
+	
+	transition: background-color 300ms, border-color 300ms;
 }
 
+.schemeEditor > .container > .entry.hover.allowWrap > .wrapSubstrate,
+.schemeEditor > .container > .entry > .value.hover.allowWrap > .wrapSubstrate {
+	background-color: rgb(241, 223, 198);
+    border-color: rgb(189, 150, 131);
+    
+    transition: background-color 300ms, border-color 300ms;
+}
+
+.schemeEditor > .container > .entry.hover.wrap.allowWrap > .wrapSubstrate,
+.schemeEditor > .container > .entry > .value.hover.wrap.allowWrap > .wrapSubstrate {
+	background-color: rgb(241, 207, 158);
+    border-color: rgb(158, 118, 100);
+    
+    transition: background-color 300ms, border-color 300ms;
+}
+
+
+
 .schemeEditor > .container > .entry.hover.allowReplace,
-.schemeEditor > .container > .entry > .value.hover.allowReplace {
+.schemeEditor > .container > .entry.hover.allowWrap,
+.schemeEditor > .container > .entry > .value.hover.allowReplace,
+.schemeEditor > .container > .entry > .value.hover.allowWrap {
 	cursor: pointer;
 }
 
@@ -64,6 +113,7 @@
 
 .schemeEditor > .container > * {
 	vertical-align: middle;
+	max-width: 100%;
 }
 
 .schemeEditor > .container > .entry {
@@ -406,7 +456,7 @@
 }
 
 .schemeEditor[etype = "EArray"] > .container > .entry {
-	padding-left: 14px;
+	padding-left: 16px;
 	min-height: 20px;
     padding-top: 1px;
     padding-bottom: 1px;

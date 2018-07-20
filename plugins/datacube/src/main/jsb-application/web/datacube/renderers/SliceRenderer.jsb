@@ -12,6 +12,7 @@
 			this.loadCss('SliceRenderer.css');
 			
 			if(opts.showCube){
+				this.addClass('showCube');
 				this.server().getCube(entry, function(cubeEntry){
 					$this.append('<div class="leftParen">(</div>');
 					$this.append(RendererRepository.createRendererFor(cubeEntry).getElement());
