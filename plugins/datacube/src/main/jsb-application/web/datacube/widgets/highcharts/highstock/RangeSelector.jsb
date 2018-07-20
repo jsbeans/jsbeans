@@ -10,6 +10,12 @@
 	},
 	$scheme: {
         series: {
+	        linkedFields: {
+	            data: {
+	                type: 'number',
+	                repeat: true
+	            }
+	        },
             items: {
                 seriesItem: {
                     items: {

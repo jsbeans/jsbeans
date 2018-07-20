@@ -10,6 +10,16 @@
     },
     $scheme: {
         series: {
+	        linkedFields: {
+	            name: {
+	                type: 'string',
+	                repeat: true
+	            },
+	            data: {
+	                type: 'number',
+	                repeat: true
+	            }
+	        },
             items: {
                 seriesItem: {
                     items: {
@@ -31,8 +41,7 @@
                         innerSize: {
                             render: 'item',
                             name: 'Внутренний диаметр',
-                            valueType: 'string',
-                            //defaultValue: '0'
+                            valueType: 'string'
                         },
                         dataLabels: {
                             render: 'group',
@@ -47,8 +56,7 @@
                                 distance: {
                                     render: 'item',
                                     name: 'Расстояние от внешнего радиуса',
-                                    valueType: 'number',
-                                    //defaultValue: 30
+                                    valueType: 'number'
                                 }
                             }
                         }

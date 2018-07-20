@@ -2,43 +2,54 @@
 	$name: 'Unimap.Render.AutocompleteGroup',
 	$parent: 'Unimap.Render.Group',
 	$client: {
-	    changeLinkTo: function(values){
-	        if(this._values.values.length > 0 || !this._scheme.linkedFields || !values.values[0].binding){ return; }
+	    changeLinkTo: function(values, render){
+	        if(this._values.values.length > 0 || !this._scheme.linkedFields || !values.values[0].binding){
+	            return;
+            }
 
-	        var fields = values.values[0].binding.arrayType.record,
-	            keys = Object.keys(values.values[0].binding.arrayType.record),
-	            k = 0,
-	            addValues = [];
+	        var fields = render.getFields(),
+	            addValues = [],
+	            index = 0,
+	            val = {};
 
-            while(k < keys.length){
-                var f = true,
-                    val = {};
+            while(index < fields.length){
+                for(var j in this._scheme.linkedFields){
+                    var next = false;
 
-                for(var i in this._scheme.linkedFields){
-                    switch(this._scheme.linkedFields[i].type){
+                    switch(this._scheme.linkedFields[j].type){
                         case 'any':
-                            val[i] = [fields[keys[k]].field];
+                            val[j] = fields[index];
+                            next = true;
+                            break;
+                        case 'number':
+                            if('integer' == fields[index].type || 'number' === fields[index].type){
+                                val[j] = fields[index];
+                                next = true;
+                            }
                             break;
                         default:
-                            if(this._scheme.linkedFields[i].type == fields[keys[k]].type){
-                                val[i] = [fields[keys[k]].field];
+                            if(this._scheme.linkedFields[j].type == fields[index].type){
+                                val[j] = fields[index];
+                                next = true;
                             }
                     }
 
-                    if(val[i] && !this._scheme.linkedFields[i].repeat){
-                        k++;
-
-                        if(k < keys.length){
-                            break;
-                        }
+                    if(next){
+                        break;
                     }
                 }
 
-                if(Object.keys(val).length === Object.keys(this._scheme.linkedFields).length){
-                    addValues.push(val);
-                }
+                index++;
 
-                k++;
+                if(Object.keys(val).length === Object.keys(this._scheme.linkedFields).length){
+                    for(var i in val){
+                        val[i].used = true;
+                    }
+
+                    addValues.push(val);
+
+                    val = {};
+                }
             }
 
             if(addValues.length > 0){
@@ -50,7 +61,7 @@
                     var renders = this.findRendersByKey(i);
 
                     for(var j = 0; j < renders.length; j++){
-                        renders[j].setValues(addValues[j][i]);
+                        renders[j].setValues([addValues[j][i].field]);
                     }
                 }
             }

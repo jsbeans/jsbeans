@@ -17,10 +17,11 @@
 	    },
 
 	    series: {
-	        render: 'group',
+	        render: 'autocompleteGroup',
 	        name: 'Серии',
             collapsible: true,
             multiple: true,
+            linkTo: 'source',
             items: {
                 seriesItem: {
                     render: 'group',

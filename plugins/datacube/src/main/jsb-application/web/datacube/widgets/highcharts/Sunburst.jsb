@@ -10,10 +10,16 @@
     },
     $scheme: {
         series: {
-	        render: 'group',
-	        name: 'Серии',
-            collapsible: true,
-            multiple: true,
+	        linkedFields: {
+	            name: {
+	                type: 'string',
+	                repeat: true
+	            },
+	            data: {
+	                type: 'number',
+	                repeat: true
+	            }
+	        },
             items: {
                 seriesItem: {
                     render: 'group',

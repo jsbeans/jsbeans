@@ -92,11 +92,11 @@
                 parent: parent,
                 options: opts,
                 schemeController: this,
-                onchange: function(value){
+                onchange: function(value, callback){
                     if(JSB.isFunction($this.options.onchange)){
                         $this.options.onchange.call($this, key, value);
                     }
-                    $this.updateLinks(key, value);
+                    $this.updateLinks(key, value, callback);
                     /*
                     if(scheme.commonField){
                         $this.updateCommonFields(key, scheme.commonField, value);
@@ -204,6 +204,10 @@
 	        return links;
 	    },
 
+	    getLinkedRenders: function(key){
+	        return this._linksMap[key].linkedRenders;
+	    },
+
 	    getRenderByName: function(name){
 	        if(this._rendersMap[name]){
 	            return this._rendersMap[name];
@@ -281,14 +285,14 @@
 	        }
 	    },
 
-	    updateLinks: function(key, value){
+	    updateLinks: function(key, value, callback){
 	        if(this._linksMap[key]){
 	            if(!this._linksMap[key].render){
 	                this._linksMap[key].render = this.findRenderByKey(key);
 	            }
 
 	            for(var i = 0; i < this._linksMap[key].linkedRenders.length; i++){
-	                this._linksMap[key].linkedRenders[i].changeLinkTo(value, this._linksMap[key].render);
+	                this._linksMap[key].linkedRenders[i].changeLinkTo(value, this._linksMap[key].render, callback);
 	            }
 	        }
 	    }

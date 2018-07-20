@@ -185,6 +185,10 @@
             return this._schemeController.findRendersByKey(key);
         },
 
+        getLinkedRenders: function(){
+            return this._schemeController.getLinkedRenders(this.getKey());
+        },
+
         getCommonGroupValues: function(commonGroup){
             return this._schemeController.getCommonGroupValues(commonGroup);
         },
@@ -237,7 +241,7 @@
             return this._scheme.multiple;
         },
 
-        onchange: function(){
+        onchange: function(callback){
             // check require
             if(this._warningIcon){
                 if(this._scheme.require && (this._values.values.length === 0 || !this._values.values[0].value)){
@@ -252,7 +256,7 @@
             }
 
             if(JSB.isFunction(this.options.onchange)){
-                this.options.onchange.call(this, this._values);
+                this.options.onchange.call(this, this._values, callback);
             }
         },
 
