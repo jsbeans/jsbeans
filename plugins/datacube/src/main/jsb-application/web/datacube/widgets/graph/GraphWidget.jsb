@@ -137,62 +137,70 @@
                                     name: 'alpha',
                                     valueType: 'number',
                                     defaultValue: 1,
-                                    value: 1
+                                    value: 1,
+                                    optional: true
                                 },
                                 alphaMin: {
                                     render: 'item',
                                     name: 'alphaMin',
                                     valueType: 'number',
                                     defaultValue: 0.001,
-                                    value: 0.001
+                                    value: 0.001,
+                                    optional: true
                                 },
                                 alphaDecay: {
                                     render: 'item',
                                     name: 'alphaDecay',
                                     valueType: 'number',
                                     defaultValue: 0.0228,
-                                    value: 0.0228
+                                    value: 0.0228,
+                                    optional: true
                                 },
                                 alphaTarget: {
                                     render: 'item',
                                     name: 'alphaTarget',
                                     valueType: 'number',
                                     defaultValue: 0,
-                                    value: 0
+                                    value: 0,
+                                    optional: true
                                 },
                                 velocityDecay: {
                                     render: 'item',
                                     name: 'velocityDecay',
                                     valueType: 'number',
                                     defaultValue: 0.4,
-                                    value: 0.4
+                                    value: 0.4,
+                                    optional: true
                                 }
                             }
                         },
                         collide: {
                             render: 'group',
                             name: 'Коллизия',
+                            optional: true,
                             items: {
                                 radius: {
                                     render: 'item',
-                                    name: 'radius',
+                                    name: 'Радиус',
                                     valueType: 'number',
-                                    defaultValue: 100,
-                                    value: 100
+                                    defaultValue: 50,
+                                    value: 50
                                 },
                                 strength: {
                                     render: 'item',
-                                    name: 'strength',
+                                    name: 'Сила',
                                     valueType: 'number',
                                     defaultValue: 0.7,
-                                    value: 0.7
+                                    value: 0.7,
+                                    optional: true
                                 },
                                 iterations: {
                                     render: 'item',
                                     name: 'iterations',
                                     valueType: 'number',
                                     defaultValue: 1,
-                                    value: 1
+                                    value: 1,
+                                    optional: true
                                 }
                             }
                         },
@@ -202,49 +210,63 @@
                             items: {
                                 distance: {
                                     render: 'item',
-                                    name: 'distance',
+                                    name: 'Расстояние',
                                     valueType: 'number',
-                                    defaultValue: 30,
-                                    value: 30
+                                    defaultValue: 80,
+                                    value: 80,
+                                },
+                                strength: {
+                                    render: 'item',
+                                    name: 'Сила',
+                                    valueType: 'number',
+                                    defaultValue: 0.5,
+                                    value: 0.5,
+                                    optional: true
                                 },
                                 iterations: {
                                     render: 'item',
                                     name: 'iterations',
                                     valueType: 'number',
                                     defaultValue: 1,
-                                    value: 1
+                                    value: 1,
+                                    optional: true
                                 }
                             }
                         },
                         charge: {
                             render: 'group',
-                            name: 'charge',
+                            name: 'Заряд',
                             items: {
                                 strength: {
                                     render: 'item',
-                                    name: 'strength',
+                                    name: 'Сила',
                                     valueType: 'number',
-                                    defaultValue: -30,
-                                    value: -30
+                                    defaultValue: -150,
+                                    value: -150
                                 },
                                 theta: {
                                     render: 'item',
-                                    name: 'theta',
+                                    name: 'Theta',
                                     valueType: 'number',
                                     defaultValue: 0.9,
-                                    value: 0.9
+                                    value: 0.9,
+                                    optional: true
                                 },
                                 distanceMin: {
                                     render: 'item',
-                                    name: 'distanceMin',
+                                    name: 'Минимальное расстояние',
                                     valueType: 'number',
-                                    defaultValue: 1,
-                                    value: 1
+                                    defaultValue: 50,
+                                    value: 50,
+                                    optional: true
                                 },
                                 distanceMax: {
                                     render: 'item',
-                                    name: 'distanceMax',
-                                    valueType: 'number'
+                                    name: 'Максимальное расстояние',
+                                    valueType: 'number',
+                                    defaultValue: 500,
+                                    value: 500,
+                                    optional: true
                                 }
                             }
                         }
@@ -438,35 +460,40 @@
                 // simulationOpts
                 var simulationOpts = this.getContext().find('settings layoutAlgorithm simulation');
                 this._styles.simulationOpts = {
-                    alpha: simulationOpts.find('alpha').value(),
-                    alphaMin: simulationOpts.find('alphaMin').value(),
-                    alphaDecay: simulationOpts.find('alphaDecay').value(),
-                    alphaTarget: simulationOpts.find('alphaTarget').value(),
-                    velocityDecay: simulationOpts.find('velocityDecay').value()
+                    alpha: simulationOpts.find('alpha').checked() ? simulationOpts.find('alpha').value() : undefined,
+                    alphaMin: simulationOpts.find('alphaMin').checked() ? simulationOpts.find('alphaMin').value() : undefined,
+                    alphaDecay: simulationOpts.find('alphaDecay').checked() ? simulationOpts.find('alphaDecay').value() : undefined,
+                    alphaTarget: simulationOpts.find('alphaTarget').checked() ? simulationOpts.find('alphaTarget').value() : undefined,
+                    velocityDecay: simulationOpts.find('velocityDecay').checked() ? simulationOpts.find('velocityDecay').value() : undefined
                 };
 
                 // collideOpts
                 var collideOpts = this.getContext().find('settings layoutAlgorithm collide');
-                this._styles.collideOpts = {
-                    radius: collideOpts.find('radius').value(),
-                    strength: collideOpts.find('strength').value(),
-                    iterations: collideOpts.find('iterations').value()
-                };
+                if(collideOpts.checked()){
+	                this._styles.collideOpts = {
+	                    radius: collideOpts.find('radius').value(),
+	                    strength: collideOpts.find('strength').checked() ? collideOpts.find('strength').value() : undefined,
+	                    iterations: collideOpts.find('iterations').checked() ? collideOpts.find('iterations').value() : undefined
+	                };
+                } else {
+                	this._styles.collideOpts = undefined;
+                }
 
                 // linkOpts
                 var linkOpts = this.getContext().find('settings layoutAlgorithm link');
                 this._styles.linkOpts = {
                     distance: linkOpts.find('distance').value(),
-                    iterations: linkOpts.find('iterations').value()
+                    strength: linkOpts.find('strength').checked() ? linkOpts.find('strength').value() : undefined,
+                    iterations: linkOpts.find('iterations').checked() ? linkOpts.find('iterations').value() : undefined
                 }
 
                 // chargeOpts
                 var chargeOpts = this.getContext().find('settings layoutAlgorithm charge');
                 this._styles.chargeOpts = {
                     strength: chargeOpts.find('strength').value(),
-                    theta: chargeOpts.find('theta').value(),
-                    distanceMin: chargeOpts.find('distanceMin').value(),
-                    distanceMax: chargeOpts.find('distanceMax').value()
+                    theta: chargeOpts.find('theta').checked() ? chargeOpts.find('theta').value() : undefined,
+                    distanceMin: chargeOpts.find('distanceMin').checked() ? chargeOpts.find('distanceMin').value() : undefined,
+                    distanceMax: chargeOpts.find('distanceMax').checked() ? chargeOpts.find('distanceMax').value() : undefined
                 }
             }
 
@@ -592,7 +619,7 @@
                         count = Object.keys(nodesMap).length;
                     }
 
-                    if(count >= $this._styles.maxNodes || res.length !== 50){
+                    if(count >= $this._styles.maxNodes || res.length < 50){
                         var nodes = [];
                         for(var i in nodesMap){
                             nodes.push({
@@ -656,26 +683,64 @@
                     }
                 }
 
-                this.simulation = d3.forceSimulation(nodes)
-                    .alpha(simulationOpts.alpha)
-                    .alphaMin(simulationOpts.alphaMin)
-                    .alphaDecay(simulationOpts.alphaDecay)
-                    .alphaTarget(simulationOpts.alphaTarget)
-                    .velocityDecay(simulationOpts.velocityDecay)
-                	.force("charge", d3.forceManyBody()
-                        .strength(chargeOpts.strength)
-                        .theta(chargeOpts.theta)
-/*                        .distanceMin(chargeOpts.distanceMin)
-                        .distanceMax(chargeOpts.distanceMax)*/)
-                    .force("link", d3.forceLink().id(function(d) { return d.id })
-                        .distance(linkOpts.distance)
-                        .iterations(linkOpts.iterations)
-                        .links(links))
-                    .force("collide", d3.forceCollide(collideOpts.radius)
-                        .strength(collideOpts.strength)
-                        .iterations(collideOpts.iterations))
+                this.simulation = d3.forceSimulation(nodes);
+                if(JSB.isDefined(simulationOpts.alpha)){
+                	this.simulation.alpha(simulationOpts.alpha);
+                }
+                if(JSB.isDefined(simulationOpts.alphaMin)){
+                	this.simulation.alphaMin(simulationOpts.alphaMin);
+                }
+                if(JSB.isDefined(simulationOpts.alphaDecay)){
+                	this.simulation.alphaDecay(simulationOpts.alphaDecay);
+                }
+                if(JSB.isDefined(simulationOpts.alphaTarget)){
+                	this.simulation.alphaTarget(simulationOpts.alphaTarget);
+                }
+                if(JSB.isDefined(simulationOpts.velocityDecay)){
+                	this.simulation.velocityDecay(simulationOpts.velocityDecay);
+                }
                     
+                var forceManyBody = d3.forceManyBody()
+	                .strength(chargeOpts.strength);
+                
+                if(JSB.isDefined(chargeOpts.theta)){
+                	forceManyBody.theta(chargeOpts.theta);
+                }
+                if(JSB.isDefined(chargeOpts.distanceMin)){
+                	forceManyBody.distanceMin(chargeOpts.distanceMin)
+                }
+                if(JSB.isDefined(chargeOpts.distanceMax)){
+                	forceManyBody.distanceMax(chargeOpts.distanceMax);
+                }
+                
+                var forceLink = d3.forceLink()
+                	.id(function(d) { return d.id })
+                	.distance(linkOpts.distance)
+	                .links(links);
+                
+                if(JSB.isDefined(linkOpts.strength)){
+                	forceLink.strength(linkOpts.strength);
+                }
+                if(JSB.isDefined(linkOpts.iterations)){
+                	forceLink.iterations(linkOpts.iterations);
+                }
+                
+                this.simulation                    
+                	.force("charge", forceManyBody)
+                    .force("link", forceLink)
                     .on("tick", ticked);
+                
+                if(collideOpts){
+                	var forceCollide = d3.forceCollide(collideOpts.radius);
+                	if(JSB.isDefined(collideOpts.strength)){
+                		forceCollide.strength(collideOpts.strength);
+                	}
+                	if(JSB.isDefined(collideOpts.iterations)){
+                		forceCollide.iterations(collideOpts.iterations);
+                	}
+                	this.simulation.force("collide", forceCollide);
+                }
+                
                 $this.getElement().loader('hide');
             } catch(ex){
                 console.log(ex);

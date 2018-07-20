@@ -1,9 +1,9 @@
 ._dwp_toolWrapper.schemePopupToolWrapper {
 	border-radius: 3px !important;
-    background: #efd9be !important;
+    background: rgb(241, 207, 158) !important;
     border: none !important;
     padding: 0;
-    box-shadow: 1px 1px 3px #585858;
+    box-shadow: 1px 1px 1px #585858;
 }
 
 .schemePopupTool {

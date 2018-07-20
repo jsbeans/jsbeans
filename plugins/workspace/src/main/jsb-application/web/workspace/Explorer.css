@@ -94,7 +94,7 @@
 
 .workspaceExplorer > ._dwp_treeview ._dwp_treeViewNode > ._dwp_nodeHeader > ._dwp_expandCollapseToggle {
 	margin: 0;
-    margin-top: -4px;
+    margin-top: -5px;
     position: absolute;
     top: 50%;
 }

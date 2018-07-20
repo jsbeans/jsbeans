@@ -15,6 +15,10 @@
 	padding-left: 26px;
 }
 
+.sliceRenderer.showCube > .title {
+	max-width: 60%;
+}
+
 .sliceRenderer > .leftParen {
 	margin-left: 2px;
 }
@@ -26,3 +30,6 @@
 	vertical-align: middle;
 }
 
+.sliceRenderer.showCube > .cubeRenderer {
+	max-width: calc(40% - 10px);
+}
