@@ -83,6 +83,15 @@
 			});
 			this.append(this.opSelector);
 			this.setOp('$eq');
+			this.fixBtn = this.$('<div class="fixBtn" title="Зафиксировать фильтр"></div>');
+			this.append(this.fixBtn);
+			
+			this.fixBtn.click(function(){
+				if($this.options.onFix){
+					$this.options.onFix.call($this, $this.getFilter());
+				}
+			});
+			
 		},
 		
 		setOp: function(op){
@@ -104,6 +113,10 @@
 			this.classed('showBoolean', this.filterFieldType == 'boolean');
 			this.editor.setData(val);
 			this.setOp(op);
+		},
+		
+		allowFix: function(bFix){
+			this.classed('allowFix', bFix);
 		},
 		
 		setFocus: function(){

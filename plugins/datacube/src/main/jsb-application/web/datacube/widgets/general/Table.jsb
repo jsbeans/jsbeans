@@ -444,7 +444,7 @@
                                             name: 'Фильтровать по полю',
                                             linkTo: 'rows'
                                         },
-                                        widgetСontextFilterFixed: {
+                                        widgetContextFilterFixed: {
                                             render: 'item',
                                             name: 'Всегда показывать фильтр',
                                             optional: true,
@@ -2146,11 +2146,26 @@
 							filterEntry = new FilterEntry({
 								onChange: function(filter){
 									$this.updateContextFilter(filter);
+								},
+								onFix: function(filter){
+									$this.globalizeContextFilter(filter);
 								}
 							});
 							elt.append(filterEntry.getElement());
 						}
 						filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
+						filterEntry.allowFix(false);
+						if($this.filterManager){
+						    var sourceArr = $this.getSourceIds();
+							if(sourceArr && sourceArr.length > 0){
+								var source = $this.sources[sourceArr[0]];
+								var cubeField = $this.filterManager.extractCubeField(source, d.contextFilterField);
+								if(cubeField){
+									filterEntry.allowFix(true);
+								}
+							}
+							
+						}
 						
 						if(d.contextFilterFixed){
 							elt.addClass('contextFilterFixed');
@@ -2253,6 +2268,25 @@
 					this.refresh();
 				}
 			}
+		},
+		
+		globalizeContextFilter: function(q){
+			if(!q || Object.keys(q).length == 0){
+				return;
+			}
+			
+			var field = Object.keys(q)[0];
+			var op = Object.keys(q[field])[0];
+			var val = q[field][op][Object.keys(q[field][op])[0]];
+			
+			this.addFilter({
+				type: '$and',
+				op: op,
+				field: field,
+				value: val
+			});
+			
+			this.refreshAll();
 		},
 		
 		showMessage: function(txt){
@@ -2498,14 +2532,12 @@
                         }
                         var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
                         if(widgetContextFilterSelector.checked()){
-                            if(widgetContextFilterSelector.find('widgetСontextFilterFixed').checked()){
+                            if(widgetContextFilterSelector.find('widgetContextFilterFixed').checked()){
                                 desc.contextFilterFixed = true;
                             }
                             var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
-                            if(widgetContextFilterFieldSelector.checked()){
-                                desc.contextFilterField = widgetContextFilterFieldSelector.binding();
-                                desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
-                            }
+                            desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+                            desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
                             desc.contextFilterValue = widgetContextFilterSelector.find('widgetContextFilterValue').value() || '';
                             desc.contextFilterOp = widgetContextFilterSelector.find('widgetContextFilterOp').value() || '$eq';
                         }
