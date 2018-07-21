@@ -36,7 +36,7 @@
 					bDesc.pos = this.buffers[this.lastBuffer].pos + this.buffers[this.lastBuffer].buffer.length;
 					this.length += bDesc.buffer.length;
 					if(this.opts && this.opts.onProgress){
-						this.opts.onProgress(this.length, this.stream.available());
+						this.opts.onProgress(this.stream.getTotalRead(), this.stream.available());
 					}
 				}
 			},
