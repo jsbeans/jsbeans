@@ -178,6 +178,21 @@
 		},
 		
 		insert: function(tName, objArr, opts){
+			function fixupValue(val){
+				if(!JSB.isString(val)){
+					return val;
+				}
+				// check for invalid UTF-8 symbols
+				var newVal = '';
+				for(var i = 0; i < val.length; i++){
+					if(val[i] == \u0000){
+						continue;
+					}
+					newVal += val[i];
+				}
+				return newVal;
+			}
+			
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);
 			var connection = connWrap.get();
@@ -218,7 +233,7 @@
 							sql += ',';
 						}
 						sql += '?';
-						values.push(fVal);
+						values.push(fixupValue(fVal));
 						bFirst = false;
 					}
 					sql += ')';
