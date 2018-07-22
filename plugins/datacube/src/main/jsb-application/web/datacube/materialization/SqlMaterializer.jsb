@@ -185,7 +185,7 @@
 				// check for invalid UTF-8 symbols
 				var newVal = '';
 				for(var i = 0; i < val.length; i++){
-					if(val[i] == \u0000){
+					if(val[i] == '\u0000'){
 						continue;
 					}
 					newVal += val[i];
