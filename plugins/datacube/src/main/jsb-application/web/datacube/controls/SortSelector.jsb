@@ -83,10 +83,10 @@
 		
 		toggleOrder: function(){
 			function _toggleOrder(){
-				if($this.sortDir === null || $this.sortDir == -1){
-					$this.sortDir = 1;
-				} else {
+				if($this.sortDir === null || $this.sortDir == 1){
 					$this.sortDir = -1;
+				} else {
+					$this.sortDir = 1;
 				}
 				if($this.options.onChange){
 					var sortQuery = {};

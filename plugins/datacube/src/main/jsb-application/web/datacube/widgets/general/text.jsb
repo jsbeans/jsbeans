@@ -152,6 +152,10 @@
 		},
 
 		refresh: function(opts){
+		    this.onRefresh(opts);
+		},
+
+		onRefresh: function(opts){
 		    var dataSource = this.getContext().find('source');
             if(!dataSource.hasBinding || !dataSource.hasBinding()){
                 return;
@@ -166,7 +170,10 @@
                 return;
             }
 
-            this.fetchBinding(dataSource, {batchSize: 1}, function(){
+            this.fetch(dataSource, {batchSize: 1}, function(data, fail){
+            	if(fail){
+            		return;
+            	}
                 dataSource.next();
                 $this.update();
             });

@@ -47,14 +47,14 @@
 			});
 			this.append(splitBox);
 
-			var schemeBlock = this.$('<div class="schemeBlock"></div>');
-			splitBox.append(schemeBlock);
+			this.schemeBlock = this.$('<div class="schemeBlock"></div>');
+			splitBox.append(this.schemeBlock);
 
 	        this.schemeScroll = new ScrollBox();
-	        schemeBlock.append(this.schemeScroll.getElement());
+	        this.schemeBlock.append(this.schemeScroll.getElement());
 
 	        this.warningBlock = this.$('<div class="warningBlock hidden"></div>');
-	        schemeBlock.append(this.warningBlock);
+	        this.schemeBlock.append(this.warningBlock);
 
 	        this.widgetBlock = this.$('<div class="widgetBlock"></div>');
 	        splitBox.append(this.widgetBlock);
@@ -74,6 +74,8 @@
                 this.widgetSchemeRenderer.destroy();
             }
 
+            this.schemeBlock.loader();
+
             this.wrapper.ensureWidgetInitialized(function(){
                 var widget = $this.wrapper.getWidget();
 
@@ -81,25 +83,17 @@
                     scheme: widget.getEntry().extractWidgetScheme(),
                     values: widget.getValues(),
                     bootstrap: 'Datacube.Unimap.Bootstrap',
-                    onchange: function(key, values){
-                        if(values.render === 'dataBinding' || values.render === 'sourceBinding'){
-                            return;
-                        }
-
-                        JSB().defer(function(){
-                            $this.setChanges();
-                        }, 800, "widgetSettingsView_setChanges" + $this.getId());
-                    }
+                    context: widget.getEntry().getId()
                 });
                 $this.schemeScroll.append($this.widgetSchemeRenderer.getElement());
+
+                $this.schemeBlock.loader('hide');
             });
 
             this.titleEditor.setData(this.entry.getName());
 		},
-
-		applySettings: function(){
-		    var values = this.widgetSchemeRenderer.getValues();
-
+		
+		extractSourceIds: function(){
 		    var sources = this.widgetSchemeRenderer.findRendersByRender('sourceBinding'),
 		        sourcesIds = [];
 
@@ -112,6 +106,13 @@
                     }
                 }
             }
+            return sourcesIds;
+		},
+
+		applySettings: function(){
+		    var values = this.widgetSchemeRenderer.getValues();
+
+		    var sourcesIds = this.extractSourceIds();
 
             this.updateValidation();
 
@@ -125,24 +126,30 @@
 
                 $this.publish('widgetSettings.updateValues', {
                     entryId: $this.entry.getId(),
-				    sourceMap: sourceDesc.sourceMap,
 				    sources: sourceDesc.sources,
                     values: values
                 });
             });
 		},
 
-		setChanges: function(isUpdateData){
+		setChanges: function(){
 		    if(!this.warningBlock.hasClass('hidden')){
 		        this.updateValidation();
 		    }
 
-		    this.wrapper.getWidget().updateValues({values: this.widgetSchemeRenderer.getValues()});
+		    var sourcesIds = this.extractSourceIds();
+		    var sources = {};
+		    for(var i = 0; i < sourcesIds.length; i++){
+		    	sources[sourcesIds[i]] = JSB.getInstance(sourcesIds[i]);
+		    }
+
+		    this.wrapper.getWidget().updateValues({
+		    	values: this.widgetSchemeRenderer.getValues(),
+		    	sources: sources
+		    });
 
             this.wrapper.getWidget().ensureInitialized(function(){
                 $this.wrapper.getWidget().refresh({
-                    isCacheMod: isUpdateData,
-                    refreshFromCache: !isUpdateData,
                     updateStyles: true
                 });
         	});

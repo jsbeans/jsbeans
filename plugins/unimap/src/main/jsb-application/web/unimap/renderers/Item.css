@@ -17,7 +17,8 @@
 
 .itemRender > .jsb-checkbox > .caption,
 .itemRender > .name {
-    min-width: 150px;
+	display: inline-block;
+    min-width: 120px;
     font-size: 15px;
     color: #73879C;
     font-family: "Helvetica Neue",Roboto,Arial,"Droid Sans",sans-serif;
@@ -60,6 +61,11 @@
 .itemRender > .item {
     display: inline-block;
 	max-width: 100%;
+}
+
+.itemRender:not(.checked) > .multipleContainer,
+.itemRender:not(.checked) > .item {
+    display: none;
 }
 
 .itemRender > .multipleContainer > .multipleItem > .jsb-editor,

@@ -10,9 +10,20 @@
 	},
 	$scheme: {
         series: {
+	        linkedFields: {
+	            data: {
+	                type: 'number',
+	                repeat: true
+	            }
+	        },
             items: {
                 seriesItem: {
                     items: {
+                        name: {
+                            render: 'dataBinding',
+                            name: 'Группы серий',
+                            linkTo: 'source'
+                        },
                         data: {
                             render: 'dataBinding',
                             name: 'Данные',
@@ -90,56 +101,66 @@
                             render: 'switch',
                             name: 'Группировка данных',
                             items: {
-                                approximation: {
+                                dataApproximation: {
                                     render: 'select',
-                                    name: 'Аппроксимация',
+                                    name: 'Аппроксимация значений',
                                     items: {
-                                        none: {
-                                            name: 'По умолчанию'
+                                        $sum: {
+                                            name: '$sum'
                                         },
-                                        average: {
-                                            name: 'average'
+                                        $any: {
+                                            name: '$any'
                                         },
-                                        averages: {
-                                            name: 'averages'
+                                        $last: {
+                                            name: '$last'
                                         },
-                                        open: {
-                                            name: 'open'
+                                        $first: {
+                                            name: '$first'
                                         },
-                                        high: {
-                                            name: 'high'
+                                        $count: {
+                                            name: '$count'
                                         },
-                                        low: {
-                                            name: 'low'
+                                        $min: {
+                                            name: '$min'
                                         },
-                                        close: {
-                                            name: 'close'
+                                        $max: {
+                                            name: '$max'
                                         },
-                                        sum: {
-                                            name: 'sum'
+                                        $avg: {
+                                            name: '$avg'
                                         }
                                     }
                                 },
-                                /*
-                                forced: {
-                                    render: 'item',
-                                    name: 'Принудительно',
-                                    optional: 'checked',
-                                    editor: 'none'
+                                dateApproximation: {
+                                    render: 'select',
+                                    name: 'Аппроксимация дат',
+                                    items: {
+                                        $any: {
+                                            name: '$any'
+                                        },
+                                        $last: {
+                                            name: '$last'
+                                        },
+                                        $first: {
+                                            name: '$first'
+                                        },
+                                        $sum: {
+                                            name: '$sum'
+                                        },
+                                        $count: {
+                                            name: '$count'
+                                        },
+                                        $min: {
+                                            name: '$min'
+                                        },
+                                        $max: {
+                                            name: '$max'
+                                        },
+                                        $avg: {
+                                            name: '$avg'
+                                        }
+                                    }
                                 },
-                                groupAll: {
-                                    render: 'item',
-                                    name: 'Группировать все',
-                                    optional: true,
-                                    editor: 'none'
-                                },
-                                smoothed: {
-                                    render: 'item',
-                                    name: 'Сгладить границы',
-                                    optional: true,
-                                    editor: 'none'
-                                },
-                                */
                                 groupBy: {
                                     render: 'select',
                                     name: 'Группировка по',
@@ -191,15 +212,17 @@
 	        });
 	    },
 
-	    refresh: function(opts){
+	    onRefresh: function(opts){
             if(!$base(opts)){
+                this.ready();
                 return;
             }
 
             if(!this._schemeOpts){
                 var dataGroupingPlotOptionsContext = this.getContext().find('plotOptions series dataGrouping'),
                     groupConst,
-                    groupBy = dataGroupingPlotOptionsContext.find('groupBy').value();
+                    groupBy = dataGroupingPlotOptionsContext.find('groupBy').value(),
+                    seriesContext = this.getContext().find('series').values();
 
                 switch(groupBy){
                     case 'millisecond':
@@ -235,49 +258,89 @@
                 this._schemeOpts = {
                     dateContext: this.getContext().find('xAxis xAxisDate'),
                     dataGrouping: {
+                        dataApproximation: dataGroupingPlotOptionsContext.find('dataApproximation').value(),
+                        dateApproximation: dataGroupingPlotOptionsContext.find('dateApproximation').value(),
                         isGrouped: dataGroupingPlotOptionsContext.checked(),
                         groupBy: groupBy,
                         groupConst: groupConst,
                         units: dataGroupingPlotOptionsContext.find('groupUnits').value()
                     },
-                    seriesContext: this.getContext().find('series').values(),
+                    series: [],
                     seriesTypes: []
                 };
+
+                for(var i = 0; i < seriesContext.length; i++){
+                    this._schemeOpts.series.push({
+                        isSeriesGroups: seriesContext[i].find('name').hasBinding(),
+                        seriesGroupsSelector: seriesContext[i].find('name'),
+                        dataSelector: seriesContext[i].find('data')
+                    });
+                }
             }
 
             if(!this._resolveFilters(this._schemeOpts.dateContext.binding())){
+                this.ready();
                 return;
             }
 
             var seriesData = [],
-                groupBy;
+                groupBy = undefined,
+                wrapQuery = undefined;
 
             if(this._schemeOpts.dataGrouping.isGrouped){
-                groupBy = [{
-                    $toInt: {
-                      $div: [
-                        {
-                          $sub: [
-                            this._schemeOpts.dateContext.binding(),
+                wrapQuery = { $groupBy: [{
+                        $toInt: {
+                          $div: [
                             {
-                              $const: -(new Date()).getTimezoneOffset()*60 * 1000 // to current locale
+                              $sub: [
+                                this._schemeOpts.dateContext.binding(),
+                                {
+                                  $const: -(new Date()).getTimezoneOffset()*60 * 1000 // to current locale
+                                }
+                              ]
+                            },
+                            {
+                              $const: this._schemeOpts.dataGrouping.units * this._schemeOpts.dataGrouping.groupConst
                             }
                           ]
-                        },
-                        {
-                          $const: this._schemeOpts.dataGrouping.units * this._schemeOpts.dataGrouping.groupConst
                         }
-                      ]
-                    }
-                  }
-                ]
+                      }
+                    ],
+                    $select: {}
+                };
+
+                for(var i = 0; i < this._schemeOpts.series.length; i++){
+                    var binding = this._schemeOpts.series[i].dataSelector.binding(),
+                        seriesGroupsSelector = this._schemeOpts.series[i].seriesGroupsSelector.hasBinding() ? this._schemeOpts.series[i].seriesGroupsSelector.binding() : undefined,
+                        dataApproximation = {};
+
+                    dataApproximation[this._schemeOpts.dataGrouping.dataApproximation] = binding;
+
+                    wrapQuery.$select[binding] = dataApproximation;
+                }
+
+                var dateBinding = this._schemeOpts.dateContext.binding();
+
+                wrapQuery.$select[dateBinding] = {};
+                wrapQuery.$select[dateBinding][this._schemeOpts.dataGrouping.dateApproximation] = dateBinding;
+
+                if(seriesGroupsSelector){
+                    wrapQuery.$groupBy.push(seriesGroupsSelector);
+                    wrapQuery.$select[seriesGroupsSelector] = seriesGroupsSelector;
+                }
             }
 
             this.getElement().loader();
 
-            try {
-                function fetch(isReset){
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, groupBy: groupBy }, function(res){
+            function fetch(isReset){
+                $this.fetch($this._dataSource, { batchSize: 1000, reset: isReset, wrapQuery: wrapQuery }, function(res, fail){
+                    try {
+                    	if(fail){
+                            $this.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -285,12 +348,13 @@
 
                         while($this._dataSource.next()){
                             // series data
-                            for(var i = 0; i < $this._schemeOpts.seriesContext.length; i++){
+                            for(var i = 0; i < $this._schemeOpts.series.length; i++){
                                 if(!seriesData[i]){
-                                    seriesData[i] = [];
+                                    seriesData[i] = {};
                                 }
 
-                                var x = $this._schemeOpts.dateContext.value();
+                                var x = $this._schemeOpts.dateContext.value(),
+                                    seriesGroup = $this._schemeOpts.series[i].isSeriesGroups ? $this._schemeOpts.series[i].seriesGroupsSelector.value() : '$nonSeriesGroupSeries$';
 
                                 if(!$this._schemeOpts.seriesTypes[i]){
                                     var type = 'number';
@@ -306,9 +370,13 @@
                                     x = x.getTime();
                                 }
 
-                                seriesData[i].push({
+                                if(!seriesData[i][seriesGroup]){
+                                    seriesData[i][seriesGroup] = [];
+                                }
+
+                                seriesData[i][seriesGroup].push({
                                     x: x,
-                                    y: $this._schemeOpts.seriesContext[i].find('data').value(),
+                                    y: $this._schemeOpts.series[i].dataSelector.value(),
                                     datacube: {
                                         filterData: $this._addFilterData()
                                     }
@@ -317,61 +385,80 @@
                         }
 
                         fetch();
-                    });
-                }
-
-                function resultProcessing(){
-                    for(var i = 0; i < seriesData.length; i++){
-                        seriesData[i].sort(function(a, b){
-                            return a.x < b.x ? -1 : 1;
-                        });
+                    } catch(ex){
+                        console.log('RangeSelectorChart load data exception');
+                        console.log(ex);
+                        $this.getElement().loader('hide');
+                    } finally {
+                    	
                     }
+                });
+            }
 
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache({
-                            data: seriesData
-                        });
+            function resultProcessing(){
+                try{
+                    var data = [];
+
+                    for(var i = 0; i < seriesData.length; i++){
+                        for(var j in seriesData[i]){
+                            var item = {
+                                seriesIndex: i,
+                                seriesName: j,
+                                data: seriesData[i][j]
+                            };
+
+                            item.data.sort(function(a, b){
+                                return a.x < b.x ? -1 : 1;
+                            });
+
+                            data.push(item);
+                        }
                     }
 
                     $this.buildChart({
-                        data: seriesData
+                        data: data
                     });
 
                     $this.getElement().loader('hide');
+                } catch(ex){
+                    console.log('RangeSelectorChart processing data exception');
+                    console.log(ex);
+                    $this.getElement().loader('hide');
                 }
-
-                fetch(true);
-            } catch(ex){
-                console.log('RangeSelectorChart load data exception');
-                console.log(ex);
-                $this.getElement().loader('hide');
             }
+
+            fetch(true);
 	    },
 
 	    _buildChart: function(data){
 	        var baseChartOpts;
 
 	        try{
-                function includeData(chartOpts, seriesData){
+                function includeData(chartOpts, data){
                     chartOpts = JSB.clone(chartOpts);
 
-                    var seriesContext = $this.getContext().find('series').values();
+                    var seriesContext = $this.getContext().find('series').values(),
+                        chartOptsSeries = JSB.clone(chartOpts.series);
 
-                    for(var j = 0; j < seriesData.length; j++){
-                        var yAxis = chartOpts.yAxisNames.indexOf(seriesContext[j].find("yAxis").value());
+                    for(var j = 0; j < data.length; j++){
+                        var seriesIndex = data[j].seriesIndex,
+                            yAxis = chartOpts.yAxisNames.indexOf(seriesContext[seriesIndex].find("yAxis").value());
 
                         var series = {
-                            data: seriesData[j],
+                            data: data[j].data,
                             datacube: {
                                 binding: $this._schemeOpts.dateContext.binding(),
-                                valueType: $this._schemeOpts.seriesTypes[j]
+                                valueType: $this._schemeOpts.seriesTypes[seriesIndex]
                             },
-                            type: seriesContext[j].find('type').value(),
-                            color: seriesContext[j].find('color').value(),
-                            stack: seriesContext[j].find('stack').value(),
-                            step: $this.isNone(seriesContext[j].find('step').value()),
+                            name: data[j].seriesName === '$nonSeriesGroupSeries$' ? undefined : data[j].seriesName,
+                            type: seriesContext[seriesIndex].find('type').value(),
+                            color: seriesContext[seriesIndex].find('color').value(),
+                            stack: seriesContext[seriesIndex].find('stack').value(),
+                            step: $this.isNone(seriesContext[seriesIndex].find('step').value()),
                             yAxis: yAxis > -1 ? yAxis : undefined
                         };
+
+                        chartOpts.series[j] = JSB.clone(chartOptsSeries[seriesIndex]);
 
                         JSB.merge(true, chartOpts.series[j], series);
                     }
@@ -383,32 +470,6 @@
                     baseChartOpts = includeData(this._styles, data.data);
                 } else {
                     baseChartOpts = $base();
-                    /*
-                    var dataGroupingPlotOptionsContext = this.getContext().find('plotOptions series dataGrouping'),
-                        dataGrouping;
-
-                    if(dataGroupingPlotOptionsContext.checked()){
-                        var units = dataGroupingPlotOptionsContext.find('groupUnits').value();
-
-                        dataGrouping = {
-                            approximation: $this.isNone(dataGroupingPlotOptionsContext.find('approximation').value()),
-                            forced: dataGroupingPlotOptionsContext.find('forced').checked(),
-                            groupAll: dataGroupingPlotOptionsContext.find('groupAll').checked(),
-                            smoothed: dataGroupingPlotOptionsContext.find('smoothed').checked(),
-                            units: [[dataGroupingPlotOptionsContext.find('groupBy').value(), units ? units.split(',') : 1]]
-                        }
-                    }
-
-                    var chartOpts = {
-                        plotOptions: {
-                            series: {
-                                dataGrouping: dataGrouping
-                            }
-                        }
-                    }
-
-                    JSB.merge(true, baseChartOpts, chartOpts);
-                    */
 
                     this._styles = baseChartOpts;
 

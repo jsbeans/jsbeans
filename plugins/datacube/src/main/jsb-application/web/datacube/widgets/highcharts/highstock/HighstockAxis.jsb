@@ -10,7 +10,10 @@
                 xAxisDate: {
                     render: 'dataBinding',
                     name: 'Дата',
-                    linkTo: 'source'
+                    linkTo: 'source',
+                    autocomplete: {
+                        type: 'date'
+                    }
                 },
                 labels: {
                     render: 'group',

@@ -140,7 +140,7 @@
 			var allowWrap = false;
 			if(entryType == 'entry'){
 				hoverDesc = $this.hoverEntries;
-				if(($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value') 
+				if(($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value' || $this.scheme.customKey == '#viewName') 
 					&& $this.scheme.name != '$postFilter' 
 					&& JSB.isObject($this.scheme.values) 
 					&& !$this.scheme.values[entryKey] ){
@@ -160,6 +160,7 @@
 						}
 						if($this.scheme.name == '$filter' || $this.scheme.name == '$postFilter' || $this.scheme.name == '$cubeFilter'){
 							allowReplace = true;
+							allowWrap = true;
 						}
 					}
 				}
@@ -179,16 +180,19 @@
 					if(JSB.isObject(opts.acceptedSchemes)){
 						if(Object.keys(opts.acceptedSchemes).length > 1){
 							allowReplace = true;
+							allowWrap = true;
 						} else {
 							ac = opts.acceptedSchemes[Object.keys(opts.acceptedSchemes)[0]];
 							if(ac.length > 1 || (ac.length == 1 && (ac[0] == '$fieldName' || ac[0] == '$fieldExpr'))){
-								allowReplace = true;	
+								allowReplace = true;
+								allowWrap = true;
 							}
 						}
 					} else {
 						ac = opts.acceptedSchemes;
 						if(ac.length > 1 || (ac.length == 1 && (ac[0] == '$fieldName' || ac[0] == '$fieldExpr'))){
-							allowReplace = true;	
+							allowReplace = true;
+							allowWrap = true;
 						}
 					}
 				}
@@ -231,52 +235,94 @@
 				return;
 			}
 			
-			handle.on({
-				mouseover: function(evt){
-					evt.stopPropagation();
-					
-					var keyElt = elt;
-					if(entryType == 'value'){
-						keyElt = keyElt.parent();
-					}
-					var entryKey = keyElt.attr('key');
-					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
-
-					JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
-					JSB.defer(function(){
-						$this.selectHover(entryType, entryKey, true);
-					}, 300, 'DataCube.Query.SchemeEditor.over:' + entryId);
-				},
-				mouseout: function(evt){
-					evt.stopPropagation();
-					
-					var keyElt = elt;
-					if(entryType == 'value'){
-						keyElt = keyElt.parent();
-					}
-					var entryKey = keyElt.attr('key');
-					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
-					
-					JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
-					JSB.defer(function(){
-						$this.selectHover(entryType, entryKey, false);
-					}, 300, 'DataCube.Query.SchemeEditor.out:' + entryId);
-
+			var handleOverProc = function(evt){
+				evt.stopPropagation();
+				var keyElt = elt;
+				if(entryType == 'value'){
+					keyElt = keyElt.parent();
 				}
+				var entryKey = keyElt.attr('key');
+				var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+
+				JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
+				JSB.defer(function(){
+					$this.selectHover(entryType, entryKey, true);
+				}, 200, 'DataCube.Query.SchemeEditor.over:' + entryId);
+			};
+			
+			var handleOutProc = function(evt){
+				evt.stopPropagation();
+				
+				var keyElt = elt;
+				if(entryType == 'value'){
+					keyElt = keyElt.parent();
+				}
+				var entryKey = keyElt.attr('key');
+				var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+				
+				JSB.cancelDefer('DataCube.Query.SchemeEditor.over:' + entryId);
+				JSB.defer(function(){
+					$this.selectHover(entryType, entryKey, false);
+				}, 200, 'DataCube.Query.SchemeEditor.out:' + entryId);
+			};
+			
+			var handleClickProc = function(evt){
+				if(!allowReplace){
+					return;
+				}
+				evt.stopPropagation();
+				
+				var keyElt = elt;
+				if(entryType == 'value'){
+					keyElt = keyElt.parent();
+				}
+				var entryKey = keyElt.attr('key');
+				var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+				
+				$this.doReplace($this.$(evt.currentTarget), entryType, entryKey);
+			};
+			
+			handle.on({
+				mouseover: handleOverProc,
+				mouseout: handleOutProc,
+				click: handleClickProc
 			});
 			
-			if(allowReplace){
-				handle.click(function(evt){
-					evt.stopPropagation();
-					
-					var keyElt = elt;
-					if(entryType == 'value'){
-						keyElt = keyElt.parent();
+			elt.find('> .substrate').on({
+				mouseover: handleOverProc,
+				mouseout: handleOutProc,
+				click: handleClickProc
+			});
+			
+			if(allowWrap){
+				elt.find('> .wrapSubstrate').on({
+					mouseover: function(evt){
+						evt.stopPropagation();
+						var keyElt = elt;
+						if(entryType == 'value'){
+							keyElt = keyElt.parent();
+						}
+						var entryKey = keyElt.attr('key');
+						var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+	
+						JSB.cancelDefer('DataCube.Query.SchemeEditor.out:' + entryId);
+						JSB.defer(function(){
+							$this.selectHover(entryType, entryKey, true, true);
+						}, 200, 'DataCube.Query.SchemeEditor.over:' + entryId);
+					},
+					mouseout: handleOutProc,
+					click: function(evt){
+						evt.stopPropagation();
+						
+						var keyElt = elt;
+						if(entryType == 'value'){
+							keyElt = keyElt.parent();
+						}
+						var entryKey = keyElt.attr('key');
+						var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
+						
+						$this.doReplace(keyElt, entryType, entryKey, true);
 					}
-					var entryKey = keyElt.attr('key');
-					var entryId = $this.getId() + '_' + entryType + '_' + entryKey;
-					
-					$this.doReplace($this.$(evt.currentTarget), entryType, entryKey);
 				});
 			}
 		},
@@ -338,6 +384,10 @@
 			}
 			
 			return colMap;
+		},
+		
+		combineViews: function(){
+			return this.value['$views'];
 		},
 		
 		getSourceFields: function(callback){
@@ -419,6 +469,16 @@
 				}
 			}
 			
+			function generateViewName(){
+				var prefix = 'Вид';
+				for(var idx = 1;; idx++){
+					var suggestedName = prefix + '_' + idx;
+					if(!$this.value[suggestedName]){
+						return suggestedName;
+					}
+				}
+			}
+			
 			var schemeDesc = QuerySyntax.getSchema()[schemeName];
 			if(schemeDesc.expressionType == 'ComplexObject' || schemeDesc.expressionType == 'SingleObject'){
 				value = {};
@@ -426,6 +486,9 @@
 				var schemeVal = $this.combineAcceptedSchemes(schemeDesc);
 				if(JSB.isArray(schemeVal)){
 					var subFound = false;
+					if(subValues && !JSB.isArray(subValues)){
+						subValues = [subValues];
+					}
 					if(subValues && subValues.length > 0){
 						for(var i = 0; i < subValues.length; i++){
 							var subVal = subValues[i];
@@ -439,91 +502,209 @@
 					}
 					
 					if(!subFound){
-						value[schemeDesc.name] = $this.constructEmptyValue(schemeVal[0]);
+						value[schemeDesc.name] = $this.constructEmptyValue(schemeVal[0], subValues);
 					}
 				} else {
-					var optMap = {};
-					if(schemeDesc.optional && schemeDesc.optional.length > 0){
-						for(var i = 0; i < schemeDesc.optional.length; i++){
-							if(((schemeDesc.name == '$filter' || schemeDesc.name == '$cubeFilter') && schemeDesc.optional[i] == '#fieldName')
-								||(schemeDesc.name == '$postFilter' && schemeDesc.optional[i] == '#outputFieldName')){
-								continue;	// use field name always
-							}
-							optMap[schemeDesc.optional[i]] = true;
-						}	
+					var bValueFilled = false;
+					if(subValues && !JSB.isArray(subValues)){
+						subValues = [subValues];
+					}
+					if(subValues && subValues.length > 0){
+						var testValue = subValues[0];
+						var testMatch = $this.resolve(schemeName, testValue);
+						if(testMatch.w == 1){
+							value = testValue;
+							bValueFilled = true;
+						}
 					}
 					
-					for(var vName in schemeVal){
-						if(optMap[vName]){
-							continue;
+					if(!bValueFilled){
+						var optMap = {};
+						if(schemeDesc.optional && schemeDesc.optional.length > 0){
+							for(var i = 0; i < schemeDesc.optional.length; i++){
+								if(((schemeDesc.name == '$filter' || schemeDesc.name == '$cubeFilter') && schemeDesc.optional[i] == '#fieldName')
+									||(schemeDesc.name == '$postFilter' && schemeDesc.optional[i] == '#outputFieldName')){
+									continue;	// use field name always
+								}
+								optMap[schemeDesc.optional[i]] = true;
+							}	
 						}
 						
-						var fName = vName;
-						
-						if(schemeDesc.customKey && schemeDesc.customKey == vName){
-							if((schemeDesc.name == '$filter' || schemeDesc.name == '$cubeFilter') && vName == '#fieldName'){
-								fName = $this.chooseBestCubeField();
-							} else if(schemeDesc.name == '$sortField' && vName == '#anyFieldName'){
-								fName = $this.chooseBestColumn();
-							} else if(schemeDesc.name == '$select' && vName == '#outputFieldName'){
-								fName = generateColumnName();
-							} else if((schemeDesc.name == '$postFilter' && vName == '#outputFieldName')||(schemeDesc.name == '$finalizeFields' && vName == '#field')){
-								fName = $this.chooseBestColumn();
-							} else if(vName == '#value') {
-								fName = $this.chooseBestValue();
-							} else {
-								debugger;	
+						for(var vName in schemeVal){
+							if(optMap[vName]){
+								continue;
 							}
-						} 
-						
-						value[fName] = $this.constructEmptyValue(schemeVal[vName][0]);
+							
+							var fName = vName;
+							
+							if(schemeDesc.customKey && schemeDesc.customKey == vName){
+								if((schemeDesc.name == '$filter' || schemeDesc.name == '$cubeFilter') && vName == '#fieldName'){
+									fName = $this.chooseBestCubeField();
+								} else if(schemeDesc.name == '$sortField' && vName == '#anyFieldName'){
+									fName = $this.chooseBestColumn();
+								} else if(schemeDesc.name == '$select' && vName == '#outputFieldName'){
+									fName = generateColumnName();
+								} else if(schemeDesc.name == '$views' && vName == '#viewName'){
+									fName = generateViewName();
+								} else if((schemeDesc.name == '$postFilter' && vName == '#outputFieldName')||(schemeDesc.name == '$finalizeFields' && vName == '#field')){
+									fName = $this.chooseBestColumn();
+								} else if(vName == '#value') {
+									fName = $this.chooseBestValue();
+								} else {
+									debugger;	
+								}
+							}
+							
+							var choosenValue = undefined;
+							if(subValues && !JSB.isArray(subValues)){
+								subValues = [subValues];
+							}
+							if(subValues && subValues.length > 0 && JSB.isObject(schemeDesc.values) && JSB.isDefined(schemeDesc.values[vName])){
+								for(var i = 0; i < subValues.length; i++){
+									var testMatch = $this.resolve(schemeDesc.values[vName], subValues[i]);
+									if(testMatch.w == 1){
+										choosenValue = subValues[i];
+										break;
+									}
+								}	
+							}
+							
+							if(JSB.isDefined(choosenValue)){
+								value[fName] = choosenValue;
+							} else {
+								value[fName] = $this.constructEmptyValue(schemeVal[vName][0]);
+							}
+						}
 					}
 				}
 				
 			} else if(schemeDesc.expressionType == 'EArray') {
-				var schemeVal = $this.combineAcceptedSchemes(schemeDesc)[0];
+				var schemeVal = null;
+				var resolvedSubs = [];
+				var bResolved = false;
+				if(subValues && !JSB.isArray(subValues)){
+					subValues = [subValues];
+				}
+				if(subValues && subValues.length > 0){
+					for(var i = 0; i < subValues.length; i++){
+						var testMatch = $this.resolve(schemeDesc.name, [subValues[i]]);
+						if(testMatch.w == 1){
+							bResolved = true;
+							resolvedSubs[i] = true;
+						} else {
+							resolvedSubs[i] = false;
+						}
+					}
+				}
+				schemeVal = $this.combineAcceptedSchemes(schemeDesc)[0];
+				
 				value = [];
+				
 				switch(schemeDesc.name){
 				case '$mulValues':
 				case '$divValues':
 				case '$divzValues':
 				case '$modValues':
-					value.push($this.constructEmptyValue(schemeVal));
-					value.push({$const:1});
+					if(resolvedSubs.length > 0 && resolvedSubs[0]){
+						value.push(subValues[0]);
+					} else {
+						value.push($this.constructEmptyValue(schemeVal));
+					}
+					if(resolvedSubs.length > 1 && resolvedSubs[1]){
+						value.push(subValues[1]);
+					} else {
+						value.push({$const:1});
+					}
 					break;
 				case '$groupBy':
-					value.push($this.chooseBestCubeField());
+					if(bResolved){
+						for(var i = 0; i < resolvedSubs.length; i++){
+							if(resolvedSubs[i]){
+								value.push(subValues[i]);
+							}
+						}
+					} else {
+						value.push($this.chooseBestCubeField());
+					}
 					break;
 				default:
 					for(var i = 0; i < schemeDesc.minOperands; i++){
-						value.push($this.constructEmptyValue(schemeVal));
+						if(resolvedSubs.length > i && resolvedSubs[i]){
+							value.push(subValues[i]);
+						} else {
+							value.push($this.constructEmptyValue(schemeVal));
+						}
 					}
 				}
 			} else if(schemeDesc.expressionType == 'EConstBoolean'){
-				if(JSB.isDefined(schemeDesc.value)){
-					value = schemeDesc.value;
+				var bResolved = false;
+				if(subValues && !JSB.isArray(subValues)){
+					subValues = [subValues];
+				}
+				if(subValues && subValues.length > 0){
+					var testMatch = $this.resolve(schemeDesc.name, subValues[0]);
+					if(testMatch.w == 1){
+						bResolved = true;
+					}
+				}
+				
+				if(bResolved){
+					value = subValues[0];
 				} else {
-					value = false;
+					if(JSB.isDefined(schemeDesc.value)){
+						value = schemeDesc.value;
+					} else {
+						value = false;
+					}
 				}
 			} else if(schemeDesc.expressionType == 'EConstString'){
-				if(schemeDesc.name == '$fieldName'){
-					value = $this.chooseBestCubeField();
-				} else if(JSB.isDefined(schemeDesc.value)){
-					value = schemeDesc.value;
+				var bResolved = false;
+				if(subValues && !JSB.isArray(subValues)){
+					subValues = [subValues];
+				}
+				if(subValues && subValues.length > 0){
+					var testMatch = $this.resolve(schemeDesc.name, subValues[0]);
+					if(testMatch.w == 1){
+						bResolved = true;
+					}
+				}
+				if(bResolved){
+					value = subValues[0];
 				} else {
-					value = "";
+					if(schemeDesc.name == '$fieldName'){
+						value = $this.chooseBestCubeField();
+					} else if(JSB.isDefined(schemeDesc.value)){
+						value = schemeDesc.value;
+					} else {
+						value = "";
+					}
 				}
 				
 			} else if(schemeDesc.expressionType == 'EConstNumber'){
-				if(JSB.isDefined(schemeDesc.value)){
-					value = schemeDesc.value;
+				var bResolved = false;
+				if(subValues && !JSB.isArray(subValues)){
+					subValues = [subValues];
+				}
+				if(subValues && subValues.length > 0){
+					var testMatch = $this.resolve(schemeDesc.name, subValues[0]);
+					if(testMatch.w == 1){
+						bResolved = true;
+					}
+				}
+				if(bResolved){
+					value = subValues[0];
 				} else {
-					value = 0;
+					if(JSB.isDefined(schemeDesc.value)){
+						value = schemeDesc.value;
+					} else {
+						value = 0;
+					}
 				}
 			} else if(schemeDesc.expressionType == 'EConstNull'){
 				value = null;
 			} else if(schemeDesc.expressionType == 'Group'){
-				return $this.constructEmptyValue(schemeDesc.values[0]);
+				debugger;
+				return $this.constructEmptyValue(schemeDesc.values[0], subValues);
 			} else {
 				throw new Error('Unexpected empty value type: ' + schemeDesc.expressionType);
 			}
@@ -561,6 +742,19 @@
 						}
 					}
 					
+					function generateViewName(prefix){
+						if(prefix && !$this.value[prefix]){
+							return prefix;
+						}
+						prefix = prefix || 'Вид';
+						for(var idx = 2;; idx++){
+							var suggestedName = prefix + '_' + idx;
+							if(!$this.value[suggestedName]){
+								return suggestedName;
+							}
+						}
+					}
+					
 					var colName = null;
 					var value = undefined;
 					var schemeName = null;
@@ -577,6 +771,11 @@
 								prefix = chosenObj.value.value;
 							}
 							colName = generateColumnName(prefix);
+							askRename = true;
+						} else if($this.scheme.name == '$views' && chosenObj.key == '#viewName') {
+							// autogenerate view name
+							var prefix = null;
+							colName = generateViewName(prefix);
 							askRename = true;
 						} else {
 							throw new Error('Unexpected key: ' + chosenObj.key);
@@ -692,7 +891,7 @@
 			});
 		},
 		
-		doReplace: function(targetElt, entryType, entryKey){
+		doReplace: function(targetElt, entryType, entryKey, bWrap){
 			if(entryType == 'entry' && $this.scheme.name != '$filter' && $this.scheme.name != '$cubeFilter' && $this.scheme.name != '$postFilter'){
 				return;
 			}
@@ -740,10 +939,22 @@
 						return;
 					}
 					if(existedObj.scheme == chosenObj.key.scheme){
-						// just replace key
-						$this.value[newKey] = $this.value[entryKey];
+						if(bWrap){
+							var oldValue = {};
+							oldValue[entryKey] = $this.value[entryKey];
+							$this.value[newKey] = $this.constructEmptyValue(acceptedSchemes[chosenObj.key.scheme][0], [oldValue]);
+						} else {
+							// just replace key
+							$this.value[newKey] = $this.value[entryKey];
+						}
 					} else {
-						$this.value[newKey] = $this.constructEmptyValue(acceptedSchemes[chosenObj.key.scheme][0]);
+						if(bWrap){
+							var oldValue = {};
+							oldValue[entryKey] = $this.value[entryKey];
+							$this.value[newKey] = $this.constructEmptyValue(acceptedSchemes[chosenObj.key.scheme][0], [oldValue]);
+						} else {
+							$this.value[newKey] = $this.constructEmptyValue(acceptedSchemes[chosenObj.key.scheme][0], $this.value[entryKey]);
+						}
 					}
 					delete $this.value[entryKey];
 					
@@ -783,13 +994,17 @@
 						
 					} else {
 						var oldValue = $this.value[entryKey];
-						var subValues = [];
-						if(JSB.isObject(oldValue) && Object.keys(oldValue).length == 1 /* single object */){
-							for(var sKey in oldValue){
-								subValues.push(oldValue[sKey]);
+						if(bWrap){
+							value = $this.constructEmptyValue(schemeName, [oldValue]);
+						} else {
+							var subValues = [];
+							if(JSB.isObject(oldValue) && Object.keys(oldValue).length == 1 /* single object */){
+								for(var sKey in oldValue){
+									subValues.push(oldValue[sKey]);
+								}
 							}
+							value = $this.constructEmptyValue(schemeName, subValues);
 						}
-						value = $this.constructEmptyValue(schemeName, subValues);
 					}
 					$this.value[entryKey] = value;
 					if(JSB.isArray($this.value)){
@@ -832,6 +1047,14 @@
 				}
 				
 				entryElt.remove();
+			}
+			
+			// fixup array keys
+			if(JSB.isArray($this.value)){
+				var entries = $this.find('> .container > .entry');
+				for(var i = 0; i < entries.length; i++){
+					$this.$(entries.get(i)).attr('key', i);
+				}
 			}
 			
 			if($this.scheme.name == '$query' && entryKey == '$groupBy'){
@@ -1000,7 +1223,7 @@
 				}
 				chooseType = 'value';
 			} else if(JSB.isObject(schemes)){
-				if(Object.keys(schemes).length == 1 && $this.scheme.name == '$select'){
+				if(Object.keys(schemes).length == 1 && ($this.scheme.name == '$select' || $this.scheme.name == '$views')){
 					chooseType = 'value';
 					// pass first
 					chosenObjectKey = Object.keys(schemes)[0];
@@ -1129,7 +1352,8 @@
 				scope: null,
 				target: {
 					selector: targetElt,
-					dock: 'bottom'
+					dock: 'bottom',
+					offsetVert: -1
 				},
 				constraints: [{
 					selector: targetElt,
@@ -1153,7 +1377,7 @@
 			});
 		},
 		
-		selectHover: function(entryType, entryKey, bSelect){
+		selectHover: function(entryType, entryKey, bSelect, bWrap){
 			var hoverElt = null;
 			if(!entryType || !JSB.isDefined(entryKey)){
 				throw new Error('Missing entryType or entryKey');
@@ -1165,11 +1389,39 @@
 			} else {
 				hoverElt = $this.find('> .container > .entry[key="'+entryKey+'"] > .value');
 			}
+			
+			
+			if(bSelect){
+				if(bWrap && hoverElt.hasClass('hover') && hoverElt.hasClass('wrap')){
+					return;
+				}
+				if(!bWrap && hoverElt.hasClass('hover') && !hoverElt.hasClass('wrap')){
+					return;
+				}
+			} else {
+				if(!hoverElt.hasClass('hover')){
+					return;
+				}
+			}
+			
+			if(bSelect){
+				hoverElt.addClass('hover');
+				if(bWrap){
+					hoverElt.addClass('wrap');
+				} else {
+					hoverElt.removeClass('wrap');
+				}
+			} else {
+				hoverElt.removeClass('hover');
+				hoverElt.removeClass('wrap');
+			}
 
+
+/*
 			if((bSelect && hoverElt.hasClass('hover')) || (!bSelect && !hoverElt.hasClass('hover'))){
 				return;
 			}
-			
+*/			
 			var allowEdit = false;
 			var allowRemove = false;
 			
@@ -1185,11 +1437,6 @@
 			}
 			
 			$this.publish('DataCube.Query.SchemeEditor.selected', {entryType: entryType, entryKey:entryKey, selected: bSelect});
-			if(bSelect){
-				hoverElt.addClass('hover');
-			} else {
-				hoverElt.removeClass('hover');
-			}
 			
 			// show popup menu
 			if(bSelect && (allowEdit || allowRemove)){
@@ -1209,7 +1456,7 @@
 					target: {
 						selector: hoverElt,
 						dock: 'top',
-						offsetVert: -1
+						offsetVert: 1
 					},
 					constraints: [{
 						selector: hoverElt,
@@ -1299,7 +1546,7 @@
 				keyElt.empty();
 				keyElt.append(keyDecl.displayName);
 			} else {
-				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value'){
+				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#value' || $this.scheme.customKey == '#viewName'){
 					var keyEditor = keyElt.find('> .keyEditor').jsb();
 					if(!keyEditor){
 						keyEditor = new PrimitiveEditor({
@@ -1321,6 +1568,9 @@
 				if($this.scheme.customKey == '#outputFieldName' || $this.scheme.customKey == '#field'){
 					keyElt.addClass('outputField');
 					keyComment = 'Поле';
+				} else if($this.scheme.customKey == '#viewName'){
+					keyElt.addClass('view');
+					keyComment = 'Вид';
 				}
 
 			}
@@ -1379,6 +1629,7 @@
 			if($this.scheme.expressionType != 'SingleObject'){
 				if(entryElt.find('> .substrate').length == 0){
 					entryElt.prepend('<div class="substrate"></div>');
+					entryElt.prepend('<div class="wrapSubstrate"></div>');
 					$this.installHoverHandlers('entry', valName, keyElt);
 				}
 			}
@@ -1422,6 +1673,7 @@
 			
 			// inject value substrate
 			valueEditor.prepend('<div class="substrate"></div>');
+			valueEditor.prepend('<div class="wrapSubstrate"></div>');
 			
 			if(valueEditor.isCollapsible()){
 				entryElt.addClass('collapsible');
@@ -1465,6 +1717,7 @@
 			var curVal = $this.value[i];
 			
 			var acceptedSchemes = $this.combineAcceptedSchemes();
+			
 			var entryElt = $this.container.find('> .entry[key="'+i+'"]');
 			if(entryElt.length == 0){
 				entryElt = $this.$('<div class="entry"></div>');
@@ -1496,6 +1749,7 @@
 
 			// inject value substrate
 			valueEditor.prepend('<div class="substrate"></div>');
+			valueEditor.prepend('<div class="wrapSubstrate"></div>');
 			
 			var valScheme = QuerySyntax.getSchema()[valScheme];
 			if(valScheme.expressionType == 'ComplexObject' || valScheme.expressionType == 'EArray'){
@@ -1599,7 +1853,7 @@
 					var usedFields = {};
 					
 					if($this.scheme.name == '$query'){
-						schemeValues = ['$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$sort', '$finalize', '$limit', '$sql', '$cubeFilter'];
+						schemeValues = ['$views', '$from', '$select', '$groupBy', '$filter', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$limit', '$sql'];
 						
 						// perform $context
 						var ctxName = $this.value['$context'];
@@ -1679,6 +1933,24 @@
 				$this.append($this.handle);
 				$this.addClass('hasHandle');
 				$this.collapsible = true;
+				
+				$this.container.sortable({
+					handle: '> .handle',
+	                update: function(){
+	                	// reorder
+	                	var values = JSB.clone($this.value);
+	                	var entries = $this.container.find('> .entry');
+	                	for(var i = 0; i < entries.length; i++){
+	                		var entryElt = $this.$(entries.get(i));
+	                		var oldKey = parseInt(entryElt.attr('key'));
+	                		$this.value[i] = values[oldKey];
+	                		entryElt.attr('key', i);
+	                	}
+	                	
+	                	$this.notifyChanged();
+	                }
+				});
+				
 				$this.updateButtons();
 			} else if($this.scheme.expressionType == 'Group'){
 				throw new Error('Unable to render Group');

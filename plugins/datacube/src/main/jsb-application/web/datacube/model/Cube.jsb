@@ -6,6 +6,7 @@
 	fieldCount: 0,
 	sliceCount: 0,
 	
+	
 	getSourceCount: function(){
 		return this.sourceCount;
 	},
@@ -17,6 +18,7 @@
 	getSliceCount: function(){
 		return this.sliceCount;
 	},
+	
 
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController',
@@ -49,6 +51,7 @@
 		dataProviderSizes: {},
 		fieldOrder: [],
 		fields: {},
+		fieldMap: null,
 		slices: {},
 		slicePositions: {},
 		materialization: {},
@@ -68,6 +71,9 @@
 			if(this.property('slices')){
 				this.sliceCount = this.property('slices');
 			}
+			if(this.property('fieldMap')){
+				this.fieldMap = this.property('fieldMap');
+			}
 		},
 		
 		destroy: function(){
@@ -76,6 +82,11 @@
 			}
 			$base();
 		},
+		
+		getFieldMap: function(){
+			return this.fieldMap;
+		},
+
 		
 		load: function(bRespond){
 			var mtxName = 'load_' + this.getId();
@@ -156,6 +167,7 @@
 									delete this.fields[fDesc.field];
 								}
 							}
+							this.syncFieldMap();
 							
 							// construct materialization
 							if(snapshot.materialization && Object.keys(snapshot.materialization).length > 0 && snapshot.materialization.tables && Object.keys(snapshot.materialization.tables).length > 0){
@@ -233,6 +245,7 @@
 							
 						}
 						this.loaded = true;
+						this.publish('DataCube.Model.Cube.changed', {action: 'loaded'}, {session: true});
 						this.doSync();
 					}
 				} finally {
@@ -310,6 +323,7 @@
 				}
 			}
 			if(bNeedSave){
+				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
 				this.store();
 			}
 		},
@@ -446,9 +460,42 @@
 				this.property('sources', this.sourceCount);
 				this.property('fields', this.fieldCount);
 				this.property('slices', this.sliceCount);
+				this.syncFieldMap();
+				
 				this.getWorkspace().store();
 			} finally {
 				JSB.getLocker().unlock(mtxName);
+			}
+		},
+		
+		syncFieldMap: function(){
+			var bChanged = false;
+			if(!this.fieldMap){
+				this.fieldMap = {};
+				bChanged = true;
+			}
+			// remove unexisted
+			var toRemove = [];
+			for(var f in this.fieldMap){
+				if(!this.fields[f]){
+					toRemove.push(f);
+				}
+			}
+			for(var i = 0; i < toRemove.length; i++){
+				delete this.fieldMap[toRemove[i]];
+				bChanged = true;
+			}
+			
+			// add new
+			for(var f in this.fields){
+				if(!this.fieldMap[f]){
+					this.fieldMap[f] = this.fields[f].type;
+					bChanged = true;
+				}
+			}
+			
+			if(bChanged){
+				this.property('fieldMap', this.fieldMap);
 			}
 		},
 		
@@ -477,6 +524,7 @@
 			this.dataProviders[pId] = provider;
 			this.dataProviderEntries[pId] = providerEntry;
 			this.sourceCount = Object.keys(this.dataProviders).length;
+			this.publish('DataCube.Model.Cube.changed', {action: 'providerAdded'}, {session: true});
 			this.store();
 			this.doSync();
 			return provider;
@@ -675,6 +723,7 @@
 			}
 			if(bChanged){
 				provider.setOptions(curOpts);
+				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
 				this.store();
 	            this.doSync();
 			}
@@ -735,7 +784,8 @@
             delete this.dataProviderPositions[pId];
             delete this.dataProviderSizes[pId];
             this.sourceCount--;
-
+            this.publish('DataCube.Model.Cube.changed', {action: 'providerRemoved'}, {session: true});
+            
 		    this.store();
             this.doSync();
 
@@ -780,6 +830,7 @@
 			}
 
 			if(bNeedStore){
+				this.publish('DataCube.Model.Cube.changed', {action: 'providerChanged'}, {session: true});
 				this.store();
 				this.doSync();
 			}
@@ -850,7 +901,7 @@
 					delete this.fields[fieldsToRemove[i]];
 				}
 			}
-			
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldRemoved'}, {session: true});
 			return bNeedStore;
 		},
 		
@@ -912,9 +963,11 @@
 				field: pField,
 				type: pType
 			});
+			this.fieldMap[nameCandidate] = true;
 			this.fieldCount = Object.keys(this.fields).length;
 			this.removeMaterialization();
 			this.invalidate();
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldAdded'}, {session: true});
 			this.store();
 			this.doSync();
 			return this.fields[nameCandidate];
@@ -968,6 +1021,7 @@
 
 		    this.fieldCount = Object.keys(this.fields).length;
 		    this.invalidate();
+		    this.publish('DataCube.Model.Cube.changed', {action: 'fieldChanged'}, {session: true});
 		    this.store();
             this.doSync();
 
@@ -1005,6 +1059,7 @@
 				this.materialization.fields[n].field = n;
 			}
 			this.invalidate();
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldChanged'}, {session: true});
 			this.store();
 			this.doSync();
 			return this.fields[n];
@@ -1045,6 +1100,7 @@
 			// remove materialization
 			this.removeMaterialization();
 			this.invalidate();
+			this.publish('DataCube.Model.Cube.changed', {action: 'fieldRemoved'}, {session: true});
 			this.store();
 			this.doSync();
 
@@ -1110,6 +1166,7 @@
 			this.slices[sId] = slice;
 			this.sliceCount = Object.keys(this.slices).length;
 			this.addChildEntry(slice);
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceAdded'}, {session: true});
 			this.store();
 			this.doSync();
 			return slice;
@@ -1138,6 +1195,7 @@
 			delete this.slices[sId];
 			this.removeChildEntry(sId);
 			slice.remove();
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceRemoved'}, {session: true});
 			this.sliceCount = Object.keys(this.slices).length;
 			this.store();
 		},
@@ -1817,6 +1875,7 @@
 				}
 			}
 			slice.setName(newName);
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceChanged'}, {session: true});
 			return slice;
 		},
 		
@@ -1830,6 +1889,7 @@
 			if(desc.queryParams){
 			    slice.setQueryParams(desc.queryParams);
 			}
+			this.publish('DataCube.Model.Cube.changed', {action: 'sliceChanged'}, {session: true});
 			this.store();
 			this.doSync();
 		},

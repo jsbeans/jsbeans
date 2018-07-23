@@ -1,11 +1,11 @@
 /*
  * This file is the part of jsBeans, high-level JavaScript client-server framework.
  * The contents of this file are subject to the MIT License (MIT).
- * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2016
+ * (c) aa@sis.ru, da@sis.ru, Special Information Systems, LLC, 2011-2018
  *
  * Настоящий файл является частью клиент-сервеной JavaScript платформы.
  * Условия использования и распространения содержимого данного файла соответствуют программному обеспечению с открытыми исходными кодами и равнозначно MIT License (MIT).
- * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2016гг.
+ * Авторские права принадлежат aa@sis.ru, da@sis.ru, ООО СИС, 2011-2018гг.
  */
 
 package org.jsbeans.security;
@@ -52,7 +52,7 @@ public class SecurityService extends Service {
             String permissionsRepositoryClassName = ConfigHelper.getConfigString("kernel.security.permissionsRepository");
 
             try {
-                // create user credetials repo
+                // create user credentials repo
                 Class<? extends UserCredentialsRepository> userRepoClass = (Class<? extends UserCredentialsRepository>) Class.forName(userRepoClassName);
                 userCredRepo = userRepoClass.newInstance();
 
@@ -74,6 +74,8 @@ public class SecurityService extends Service {
                 Class<? extends PermissionsRepository> permissionsRepoClass = (Class<? extends PermissionsRepository>) Class.forName(permissionsRepositoryClassName);
                 if (permissionsRepoClass.equals(userRepoClass)) {
                     permissionsRepo = (PermissionsRepository) userCredRepo;
+                } else if (permissionsRepoClass.equals(tokenRepoClass)) {
+                	permissionsRepo = (PermissionsRepository) tokenRepo;
                 } else {
                     permissionsRepo = permissionsRepoClass.newInstance();
                 }

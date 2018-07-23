@@ -9,12 +9,15 @@
 			'java:java.io.OutputStream',
 			'java:java.lang.reflect.Array',
 			'java:java.lang.Byte',
-			'java:java.lang.Class'],
+			'java:java.lang.Class',
+			'JSB.System.Kernel'],
 		
 		input: null,
 		output: null,
 		buffer: null,
 		closed: true,
+		readTotal: 0,
+		writeTotal: 0,
 		
 		$constructor: function(stream){
 			$base();
@@ -40,9 +43,11 @@
 			if(Class.forName('java.io.InputStream').isAssignableFrom(obj.getClass())){
 				this.input = obj;
 				this.closed = false;
+				this.readTotal = 0;
 			} else if(Class.forName('java.io.OutputStream').isAssignableFrom(obj.getClass())){
 				this.output = obj;
 				this.closed = false;
+				this.writeTotal = 0;
 			} else {
 				throw new Error('Internal error: failed to setStream in JSB.IO.Stream._setStream');
 			}
@@ -67,6 +72,14 @@
 	        return this.input.available();
 		},
 		
+		getTotalRead: function(){
+			return this.readTotal;
+		},
+		
+		getTotalWritten: function(){
+			return this.writeTotal;
+		},
+		
 		read: function(arg, from, to){
 	        if ($jsb.isNull(this.input)) {
 	            throw new Error("No input stream");
@@ -80,6 +93,7 @@
 	        	}
 				var count = this.input.read(this.buffer, 0, to - from);
 				if(count > 0){
+					this.readTotal += count;
 					BufferHelper.copyToArrayBuffer(this.buffer, 0, arrayBuffer, from, count);
 				}
 				return count;
@@ -90,6 +104,7 @@
 	        	}
                 var read = this.input.read(this.buffer, 0, limit);
                 if(read > 0){
+                	this.readTotal += read;
 	            	var filled = new ArrayBuffer(read);
 	            	BufferHelper.copyToArrayBuffer(this.buffer, 0, filled, 0, read);
                 	return filled;
@@ -101,7 +116,9 @@
 	        	var byteArray = arg;
 				from = from || 0;
 				to = to || byteArray.length;
-				return this.input.read(byteArray, from, to - from);
+				var read = this.input.read(byteArray, from, to - from);
+				this.readTotal += read;
+				return read;
 	        } else if(!$jsb.isNull(arg)){
 	        	throw new Error('Unknown argument passed');
 	        } else {
@@ -111,6 +128,7 @@
 	            var read, count = 0;
                 while ((read = this.input.read(this.buffer, count, this.buffer.length - count)) > -1) {
                     count += read;
+                    this.readTotal += read;
                     if (count == this.buffer.length) {
                     	var b = Array.newInstance(Byte.TYPE, this.buffer.length * 2);
                         System.arraycopy(this.buffer, 0, b, 0, count);
@@ -140,6 +158,7 @@
 			from = from || 0;
 			to = to || arrayBuffer.byteLength;
 			this.output.write(BufferHelper.toByteArray(arrayBuffer), from, to - from);
+			this.writeTotal += to - from;
 			return to - from;
 		},
 		
@@ -155,6 +174,7 @@
 					break;
 				} else if(count == 0){
 					this.input.wait();
+//					Kernel.waitJavaObject(this.input);
 					continue;
 				}
 				output.write(buffer, 0, count);

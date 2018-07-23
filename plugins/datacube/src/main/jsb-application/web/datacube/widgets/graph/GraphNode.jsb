@@ -35,14 +35,14 @@
             }
 
             if(this.entry.nodeCss){
-                this.getElement().css(this.entry.nodeCss);
+                this.getElement().attr('style', this.entry.nodeCss);
             }
 
 			if(this.entry.cls){
 			    this.addClass('widgetMode');
 			    this.widget = new this.entry.cls();
 			    this.append(this.widget.getElement());
-			    this.widget.setWrapper(this.entry.wrapper,  JSB().clone(this.entry.value.unwrap()));
+			    this.widget.setWrapper(this.entry.wrapper, {values: this.entry.values});
 			    this.widget.refresh();
 			} else if(this.entry.header){
 			    this.addClass('simpleMode');

@@ -10,6 +10,12 @@
     },
     $scheme: {
         series: {
+	        linkedFields: {
+	            data: {
+	                type: 'number',
+	                repeat: true
+	            }
+	        },
             items: {
                 seriesItem: {
                     items: {
@@ -34,7 +40,33 @@
                                     name: 'Bar'
                                 },
                                 column: {
-                                    name: 'Column'
+                                    name: 'Column',
+                                    items: {
+                                        pointPadding: {
+                                            render: 'item',
+                                            name: 'Отступ колонки',
+                                            valueType: 'number',
+                                            defaultValue: 0.1,
+                                            editorOpts: {
+                                                min: 0,
+                                                max: 0.5,
+                                                step: 0.05,
+                                                defaultValue: 0.1
+                                            }
+                                        },
+                                        pointPlacement: {
+                                            render: 'item',
+                                            name: 'Положение колонки',
+                                            valueType: 'number',
+                                            defaultValue: 0,
+                                            editorOpts: {
+                                                min: 0,
+                                                max: 0.5,
+                                                step: 0.05,
+                                                defaultValue: 0
+                                            }
+                                        }
+                                    }
                                 },
                                 line: {
                                     name: 'Line'
@@ -136,8 +168,9 @@
             $this.setInitialized();
         },
 
-        refresh: function(opts){
+        onRefresh: function(opts){
             if(!$base(opts)){
+                this.ready();
                 return;
             }
 
@@ -183,6 +216,7 @@
             }
 
             if(!this._resolvePointFilters(this._schemeOpts.xAxisFilterBinding)){
+                this.ready();
                 return;
             }
 
@@ -197,7 +231,13 @@
 
             try{
                 function fetch(isReset){
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                    $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                    	if(fail){
+                            $this.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -376,13 +416,6 @@
                         });
                     }
 
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache({
-                            data: data,
-                            xAxisData: xAxisData
-                        });
-                    }
-
                     $this.buildChart({
                         data: data,
                         xAxisData: xAxisData
@@ -442,6 +475,8 @@
                             datacube: {
                                 binding: $this._schemeOpts.xAxisFilterBinding
                             },
+                            pointPadding: seriesContext[seriesData[j].index].find('pointPadding').value(),
+                            pointPlacement: seriesContext[seriesData[j].index].find('pointPlacement').value(),
                             type: seriesContext[seriesData[j].index].find('type').value(),
                             color: seriesData[j].color,
                             stack: seriesContext[seriesData[j].index].find('stack').value(),

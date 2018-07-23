@@ -8,7 +8,6 @@
 		context: {},
 		values: null,
 		sort: null,
-		sourceMap: null,
 		sources: null,
 		sourceFilterMap: null,
 		initCallbacks: [],
@@ -26,6 +25,10 @@
 		    $base();
 
 		    this.addClass('datacubeWidget');
+		    this.loadCss('Widget.css');
+		    
+		    this.messageBox = this.$('<div class="message hidden"></div>');
+			this.append(this.messageBox);
 
 		    if(opts){   // not embedded widget
                 this.widgetEntry = opts.widgetEntry;
@@ -35,11 +38,52 @@
                 this.widgetEntry.getData(function(res){
                     if(!res) { return ;}
 
-                    $this.updateValues(res);
-
-                    $this.setTrigger('_dataLoaded');
+                    $this.updateValues(res, function(){
+                    	$this.setTrigger('_valuesLoaded');
+                    });
                 });
 		    }
+
+		    var UpdateDispatcher = function(){
+		        var status = 'ready',
+		            needRefresh = false,
+		            refreshOpts;
+
+		        this.addTask = function(opts){
+		            if(status === 'ready'){
+		                status = 'refreshing';
+		                $this.onRefresh(opts);
+		            } else {
+		                refreshOpts = opts;
+		                needRefresh = true;
+		            }
+		        }
+
+		        this.isNeedRefresh = function(){
+		            return needRefresh;
+		        }
+
+		        this.ready = function(){
+		            if(needRefresh){
+		                needRefresh = false;
+		                $this.onRefresh(refreshOpts);
+		            } else {
+		                status = 'ready';
+		            }
+		        }
+            }
+
+		    this.updateDispatcher = new UpdateDispatcher();
+		},
+		
+		showMessage: function(txt){
+			this.messageBox.empty();
+			this.messageBox.append(txt);
+			this.messageBox.removeClass('hidden');
+		},
+		
+		hideMessage: function(){
+			this.messageBox.addClass('hidden');
 		},
 
 		addDrilldownElement: function(opts){
@@ -52,38 +96,13 @@
 		},
 		
 		getCubeField: function(field){
-			function extractCubeField(rValue){
-				if(JSB.isString(rValue)){
-					return rValue;
-				} else if(JSB.isObject(rValue)){
-					var d = ['$field','$first','$last','$any'];
-					for(var i = 0; i < d.length; i++){
-						if(JSB.isDefined(rValue[d[i]]) && JSB.isString(rValue[d[i]])){
-							return rValue[d[i]];
-						}
-					}
-					return null;
-				} else {
-					return null;
-				}
-			}
 			var sourceArr = this.getSourceIds();
 			if(!sourceArr || sourceArr.length == 0){
 				return;
 			}
 			var sourceId = sourceArr[0];
 			var source = this.sources[sourceId];
-			
-			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-				var q = source.getQuery();
-				if(q.$select && q.$select[field]){
-					var cubeField = extractCubeField(q.$select[field]);
-					if(cubeField){
-						return cubeField;
-					}
-				}
-			}
-			
+			return this.filterManager && this.filterManager.extractCubeField(source, field);
 		},
 
 		clearFilters: function(){
@@ -124,13 +143,14 @@
 		},
 
 		ensureInitialized: function(callback){
-			this.ensureTrigger(['_widgetInitialized', '_dataLoaded'], callback);
+			this.ensureTrigger(['_widgetInitialized', '_valuesLoaded'], callback);
 		},
 
 		exportData: function(format){
             switch(format){
                 case 'xls':
                 case 'csv':
+                case 'json':
                     this.getBindingsData(function(data){
                         Export.exportData(format, data, $this.wrapper.title);
                     });
@@ -140,8 +160,7 @@
             }
 		},
 
-		// old selector.fetch
-        fetchBinding: function(selector, opts, callback){
+        fetch: function(selector, opts, callback){
             if(selector.isEmbeddedBinding()){
                 callback.call(this);
                 return;
@@ -207,6 +226,10 @@
                 item.fetchOpts.layers.main.$groupBy = opts.groupBy;
             }
 
+            if(opts.wrapQuery){
+                item.fetchOpts.wrapQuery = opts.wrapQuery;
+            }
+
             // construct hover layer
 /*					if($this.filterLayers.hover){
                 item.fetchOpts.layers.hover = $this.getLayerQuery('hover', item.source);
@@ -220,8 +243,12 @@
 
             item.fetchOpts.context = selector.getContext();
             item.fetchOpts.rowKeyColumns = $this.rowKeyColumns;
-            this.server().fetch(item.source, $this.getWrapper().getDashboard(), item.fetchOpts, function(serverData, fail){
-                if(fail){
+            if(!JSB.isDefined(item.fetchOpts.compress)){
+            	item.fetchOpts.compress = true;
+            }
+            this.server().fetch(item.source, $this.getEntry(), item.fetchOpts, function(serverData, fail){
+                if($this.updateDispatcher.isNeedRefresh()){
+                    $this.ready();
                     return;
                 }
 
@@ -236,18 +263,31 @@
                 var data = null;
 
                 if(serverData){
-                    data = $this.decompressData(serverData);
+                	if(item.fetchOpts.compress){
+                		data = $this.decompressData(serverData);
+                	} else {
+                		data = serverData;
+                	}
                     if(!item.data){
                         item.data = data;
                     } else {
                         item.data = item.data.concat(data);
                     }
                 }
+                
+                if(fail){
+                    JSB.getLogger().error(fail);
+                    $this.showMessage('<strong>Ошибка!</strong><br /> ' + fail.message);
+                } else {
+                	$this.hideMessage();
+                }
+                
                 if(callback){
                     if(fail){
-                        JSB.getLogger().error(fail);
+                        callback.call($this, null, fail);
+                    } else {
+                    	callback.call($this, data, fail, serverData.widgetOpts);
                     }
-                    callback.call($this, data, fail, serverData.widgetOpts);
                 }
             });
             return true;
@@ -258,7 +298,13 @@
                 result = [];
 
             function fetch(isReset){
-                $this.fetchBinding(sourceBindings[0], { fetchSize: 100, reset: isReset }, function(data){
+                $this.fetch(sourceBindings[0], { batchSize: 100, reset: isReset }, function(data, fail){
+                	if(fail){
+                		if(callback){
+                			callback.call($this, null, fail);
+                		}
+                		return;
+                	}
                     if(data.length === 0){
                         callback.call($this, result);
                         $this.getElement().loader('hide');
@@ -291,10 +337,6 @@
 
             this.getElement().loader();
             fetch(true);
-		},
-
-		getCache: function(){
-		    return this._cache;
 		},
 
 		getContext: function(ctxName){
@@ -431,10 +473,9 @@
 		},
 
 		getSourceIds: function(){
-			return Object.keys(this.sourceMap);
+			return Object.keys(this.sources);
 		},
 
-		// old selector.getFilters
 		getSourceFilters: function(selector){
 		    if(selector.getRenderName() !== 'sourceBinding'){
 		        return;
@@ -499,7 +540,15 @@
             }
 		},
 
+		ready: function(){
+		    this.updateDispatcher.ready();
+		},
+
 		refresh: function(opts){
+		    this.updateDispatcher.addTask(opts);
+		},
+
+		onRefresh: function(opts){
 			this.localizeFilters();
 		},
 
@@ -535,6 +584,10 @@
 				throw new Error('Main filter layer cannot be disabled');
 			}
 			JSB.merge(this.filterLayers, layerOpts);
+		},
+		
+		hasFilterLayer: function(lName){
+			return this.filterLayers[lName];
 		},
 
 		setFilterManager: function(filterManager){
@@ -580,17 +633,32 @@
 			this.updateValues(valuesOpts, sourceDesc);
 		},
 
-		storeCache: function(data){
-		    this._cache = data;
-		},
-
-		updateValues: function(opts){
+		updateValues: function(opts, readyCallback){
 			this.values = opts.values;
 
 			this.context = {};
-			if(opts.sourceMap && opts.sources){
-				this.sourceMap = opts.sourceMap;
+			if(opts.sources){
 				this.sources = opts.sources;
+				
+				if($this.sources && Object.keys($this.sources).length > 0 && $this.filterManager){
+                	JSB.chain(Object.keys($this.sources), function(srcId, callback){
+                		$this.filterManager.registerSource($this, $this.sources[srcId], function(){
+                			callback();
+                		})
+                	}, function(){
+                		if(readyCallback){
+                			readyCallback.call($this);
+                		}
+                	});
+                } else {
+                	if(readyCallback){
+            			readyCallback.call($this);
+            		}
+                }
+			} else {
+				if(readyCallback){
+        			readyCallback.call($this);
+        		}
 			}
 		}
 	},
@@ -638,12 +706,12 @@
 			}
 		},
 
-		fetch: function(sourceId, dashboard, opts){
+		fetch: function(sourceId, widgetEntry, opts){
 			var mtx = 'fetch_' + $this.getId();
 			JSB.getLocker().lock(mtx);
 			try {
 				var batchSize = opts.batchSize || 50;
-				var source = dashboard.getWorkspace().entry(sourceId);
+				var source = widgetEntry.getWorkspace().entry(sourceId);
 				$this.sourceIds[sourceId] = true;
 				var data = [];
 				if(opts.reset){
@@ -737,8 +805,10 @@
 					if(!$this.iterators[iteratorId] && !$this.completed[iteratorId]){
 						// figure out data provider
 						if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
-							var extQuery = opts.layers[layerName];
-	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, useCache: true});
+							var extQuery = opts.layers[layerName],
+							    wrapQuery = opts.wrapQuery;
+
+	                    	$this.iterators[iteratorId] = source.executeQuery({extQuery: extQuery, wrapQuery: wrapQuery, useCache: true});
 							$this.completed[iteratorId] = false;
 						} else {
 							// TODO
@@ -853,49 +923,60 @@
 					data.push(el);
 				}
 
-				// compress data
-				var encoded = {
-					layers: [],
-					data: [],
-					dict: [],
-					widgetOpts: this.extendWidgetOpts(opts.widgetOpts)
-				};
-
-				var encMap = {};
-				var lMap = {};
-				var cIdx = 0;
-				for(var i = 0; i < data.length; i++){
-					var item = data[i];
-					var cItem = {};
-					for(var l in item){
-						var lItem = item[l];
-						if(!lMap[l]){
-							var lIdx = encoded.layers.length;
-							encoded.layers.push(l);
-							lMap[l] = '' + lIdx;
-						}
-						var pItem = cItem[lMap[l]] = {};
-						for(var fName in lItem){
-							if(!encMap[fName]){
-								// generate encoded field name
-								var cIdx = encoded.dict.length;
-								encoded.dict.push(fName);
-								encMap[fName] = '' + cIdx;
-							}
-							pItem[encMap[fName]] = lItem[fName];
-						}
+				if(opts.compress){
+					// compress data
+					var encoded = $this.compressData(data);
+					encoded.widgetOpts = this.extendWidgetOpts(opts.widgetOpts);
+	
+					if($this.needBreak){
+						throw new Error('Fetch broke');
 					}
-					encoded.data.push(cItem);
+					
+					return encoded;
+				} else {
+					return data;
 				}
-
-				if($this.needBreak){
-					throw new Error('Fetch broke');
-				}
-				
-				return encoded;
 			} finally {
 				JSB.getLocker().unlock(mtx);
 			}
+		},
+		
+		compressData: function(data){
+			// compress data
+			var encoded = {
+				layers: [],
+				data: [],
+				dict: []
+			};
+
+			var encMap = {};
+			var lMap = {};
+			var cIdx = 0;
+			for(var i = 0; i < data.length; i++){
+				var item = data[i];
+				var cItem = {};
+				for(var l in item){
+					var lItem = item[l];
+					if(!lMap[l]){
+						var lIdx = encoded.layers.length;
+						encoded.layers.push(l);
+						lMap[l] = '' + lIdx;
+					}
+					var pItem = cItem[lMap[l]] = {};
+					for(var fName in lItem){
+						if(!encMap[fName]){
+							// generate encoded field name
+							var cIdx = encoded.dict.length;
+							encoded.dict.push(fName);
+							encMap[fName] = '' + cIdx;
+						}
+						pItem[encMap[fName]] = lItem[fName];
+					}
+				}
+				encoded.data.push(cItem);
+			}
+			
+			return encoded;
 		},
 
 		extendWidgetOpts: function(opts){
@@ -916,7 +997,7 @@
 		    return widgetOpts;
 		},
 		
-		executeQuery: function(sourceId, dashboard, opts){
+		executeQuery: function(sourceId, widgetEntry, opts){
 			var it = null;
 			var data = [];
 			var mtx = 'executeQuery_' + $this.getId();
@@ -925,7 +1006,7 @@
 				var extQuery = (opts && opts.extQuery) || {};
 				var wrapQuery = (opts && opts.wrapQuery) || {};
 				var batchSize = opts.batchSize || 50;
-				var source = dashboard.getWorkspace().entry(sourceId);
+				var source = widgetEntry.getWorkspace().entry(sourceId);
 				if(opts.reset){
 					this.needBreak = true;
 				}

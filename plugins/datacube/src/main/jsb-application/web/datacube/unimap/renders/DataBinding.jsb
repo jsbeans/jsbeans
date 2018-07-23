@@ -1,8 +1,10 @@
 {
 	$name: 'Unimap.Render.DataBinding',
 	$parent: 'Unimap.Render.Item',
-	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector'],
+	$require: ['JSB.Controls.Button', 'JSB.Controls.Select', 'JSB.Controls.ComboEditor', 'DataCube.Controls.SchemeSelector', 'Unimap.Render.DataBindingCache'],
 	$client: {
+        _dataList: [],
+        _bindingsInfo: {},
 	    _editors: [],
 	    _errorList: [],
 
@@ -10,7 +12,8 @@
 	        this.addClass('dataBindingRender');
 	        this.loadCss('DataBinding.css');
 
-	        this.createDataList(this.getValueByKey(this._scheme.linkTo));
+	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList') || [];
+	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo') || {};
 
 	        $base();
 
@@ -108,6 +111,9 @@
                 case 'scheme':
                 default:
                 	var editor = new SchemeSelector({
+                		context: this.getContext(),
+                		sourceKey: this._scheme.linkTo,
+                	    clearBtn: !this._scheme.multiple,
                 		items: this._dataList,
                 		value: values.value,
                 		selectNodes: JSB.isDefined(this._scheme.selectNodes) ? this._scheme.selectNodes : true,
@@ -171,53 +177,23 @@
 	        }
 	    },
 
-	    changeLinkTo: function(values){
-	        this.createDataList(values);
+	    changeLinkTo: function(values, render, callback){
+	        this._dataList = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_dataList');
+	        this._bindingsInfo = DataBindingCache.get(this.getContext(), this._scheme.linkTo, 'DataBinding_bindingsInfo');
 
             for(var i = 0; i < this._editors.length; i++){
                 this._editors[i].setOptions(this._dataList, true);
             }
 
-            this.updateCurrentBindings();
-	    },
+            if(this._values.values[0] && !this._values.values[0].value && this._scheme.autocomplete){
+                var val = render.getField(this.getKey());
 
-	    createDataList: function(values){
-	        this._dataList = [];
-	        this._bindingsInfo = {};
-
-	        function collectFields(desc, items, path){
-	        	if(!desc){
-	        		return;
-	        	}
-	        	if(desc.type == 'array'){
-	        		collectFields(desc.arrayType, items, path);
-	        	} else if(desc.type == 'object'){
-	        		var fieldArr = Object.keys(desc.record);
-	        		fieldArr.sort(function(a, b){
-	        			return a.toLowerCase().localeCompare(b.toLowerCase());
-	        		});
-	        		for(var i = 0; i < fieldArr.length; i++){
-	        			var f = fieldArr[i];
-	        			var rf = desc.record[f];
-	        			var curPath = (path ? path + '.' : '') + f;
-	        			var schemeRef = JSB.merge({field: f}, rf);
-	        			var item = {
-                            key: curPath,
-                            value: $this.$('<div class="sliceRender">' + f + '</div>'),
-                            child: [],
-                            scheme: schemeRef,
-                            parent: parent
-                        };
-	        			$this._bindingsInfo[curPath] = schemeRef;
-	        			items.push(item);
-	        			collectFields(rf, item.child, curPath);
-	        		}
-	        	}
-	        }
-	        
-            if(values.values && values.values.length > 0 && values.values[0].binding){
-            	collectFields(values.values[0].binding, this._dataList, '')
+                if(val){
+                    this.setValues([val]);
+                }
             }
+
+            this.updateCurrentBindings();
 	    },
 
 	    destroy: function(){

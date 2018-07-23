@@ -244,6 +244,9 @@
                             key: 'csv',
                             element: 'CSV'
                         },{
+                            key: 'json',
+                            element: 'JSON'
+                        },{
                             key: 'png',
                             element: 'Изображение'
                         }];

@@ -23,10 +23,10 @@
 }
 
 
-._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet {
-}
+._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet {}
 
-._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet > ._jsb_diagramNode {}
+._jsb_diagram > ._jsb_diagramCanvas > ._jsb_diagramSheet > ._jsb_diagramNode {
+}
 
 
 

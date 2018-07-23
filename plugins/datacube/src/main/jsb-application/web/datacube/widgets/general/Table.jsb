@@ -186,12 +186,28 @@
 	            },
 	            useTree: {
 	                render: 'switch',
-	                name: 'Отображать первый столбец в виде дерева',
+	                name: 'Формировать дерево',
 	                items: {
                         parentRowKey: {
                             render: 'dataBinding',
-                            name: 'Поля идентификации родительских строк',
+                            name: 'Полe идентификации родительских строк',
                             linkTo: 'rows'
+                        },
+                        rootRowKeyValue: {
+                        	render: 'item',
+                        	name: 'Значение поля у корневых строк',
+                        	optional: true
+                        },
+                        childIdent: {
+                        	render: 'item',
+                        	name: 'Размер отступа у дочерних строк',
+                        	value: '15px'
+                        },
+                        childCount: {
+                        	render: 'item',
+                        	name: 'Отображать количество дочерних строк',
+                        	editor: 'none',
+                        	optional: 'checked'
                         }
 	                }
 	            },
@@ -277,7 +293,14 @@
 	                name: 'Использовать упреждающую загрузку данных',
 	                optional: true,
 	                editor: 'none'
+	    	    },
+	    	    useAnimation: {
+	    	    	render: 'item',
+	                name: 'Анимация',
+	                optional: 'checked',
+	                editor: 'none'
 	    	    }
+
 	        }
 	    },
 	    columns: {
@@ -421,7 +444,7 @@
                                             name: 'Фильтровать по полю',
                                             linkTo: 'rows'
                                         },
-                                        widgetСontextFilterFixed: {
+                                        widgetContextFilterFixed: {
                                             render: 'item',
                                             name: 'Всегда показывать фильтр',
                                             optional: true,
@@ -681,6 +704,8 @@
 		colDesc: [],
 		rows: [],
 		rowKeyMap: {},
+		expandedKeys: {},
+		collapsedKeys: {},
 		rowFilterFields: [],
 		widgetMap: {},
 		blockFetch: true,
@@ -698,10 +723,10 @@
 			
 			this.addClass('tableWidget');
 			this.loadCss('Table.css');
-			
+/*			
 			this.messageBox = this.$('<div class="message hidden"></div>');
 			this.append(this.messageBox);
-			
+*/			
 			
 			this.header = this.$('<table class="header" cellpadding="0" cellspacing="0"><colgroup></colgroup><thead><tr></tr></thead></table>');
 			this.append(this.header);
@@ -832,19 +857,416 @@
 			return names;
 		},
 		
+		toggleRowExpansion: function(rowKey){
+			var rowElt = this.find('.row[key="'+rowKey+'"]');
+			if(rowElt.length > 0){
+				// extract row id
+				var rowDesc = $this.rowKeyMap[rowKey];
+				var rowKeyVal = rowDesc.rowKeyVal;
+				if(rowElt.hasClass('expanded')){
+					// collapse
+					if(JSB.isDefined($this.expandedKeys[rowKey])){
+						delete $this.expandedKeys[rowKey];
+					} 
+					$this.collapsedKeys[rowKey] = {rowKeyVal: rowDesc.rowKeyVal, pRowKeyVal: rowDesc.pRowKeyVal, pKey: rowDesc.pKey};
+					rowElt.removeClass('expanded');
+				} else {
+					// expand
+					if(JSB.isDefined($this.collapsedKeys[rowKey])){
+						delete $this.collapsedKeys[rowKey];
+					}
+					$this.expandedKeys[rowKey] = {rowKeyVal: rowDesc.rowKeyVal, pRowKeyVal: rowDesc.pRowKeyVal, pKey: rowDesc.pKey};
+					rowElt.addClass('expanded');
+				}
+				
+				this.refresh();
+			}
+		},
+		
+		resolveDescendants: function(rowDesc, callback){
+			if(!$this.descendantsMap){
+				$this.descendantsMap = {};
+			}
+			if(JSB.isDefined($this.descendantsMap[rowDesc.key])){
+				callback.call($this, $this.descendantsMap[rowDesc.key]);
+				return;
+			}
+			
+			var source = this.rowsContext.binding().source;
+			var wrapQuery = {$select:{'cnt':{$count: 1}}, $filter:{}};
+			wrapQuery.$filter[$this.parentRowKeySelector.binding()] = {$eq:{$const:rowDesc.rowKeyVal}};
+			
+			$this.server().executeQuery(source, $this.getEntry(), {extQuery: {}, wrapQuery: wrapQuery}, function(res){
+				if(res.length > 0 && JSB.isDefined(res[0].cnt)){
+					$this.descendantsMap[rowDesc.key] = res[0].cnt;
+				} else {
+					$this.descendantsMap[rowDesc.key] = 0;
+				}
+				callback.call($this, $this.descendantsMap[rowDesc.key]);
+			});
+		},
+		
+		drawRows: function(){
+			function updateColl(d){
+				if(!$this.useTree){
+					return;
+				}
+				var collEl = $this.$(this);
+				if(d.colIdx > 0){
+					// remove toggle if existed
+					var toggleElt = collEl.find('> .toggle');
+					collEl.css('padding-left', 0);
+					if(toggleElt.length > 0){
+						toggleElt.remove();
+					}
+				} else {
+					// add toggle if not existed
+					var toggleElt = collEl.find('> .toggle');
+					var rowDesc = $this.rowKeyMap[d.rowKey];
+					collEl.css('padding-left', 'calc('+$this.childIdent+' * '+rowDesc.depth+')');
+					if(toggleElt.length == 0){
+						toggleElt = $this.$('<div class="toggle"></div>');
+						collEl.prepend(toggleElt);
+						toggleElt.click(function(evt){
+							evt.stopPropagation();
+							$this.toggleRowExpansion(d.rowKey);
+						});
+
+					}
+					
+					var childCountElt = collEl.find('.childCount');
+					if($this.showChildCount){
+						if(childCountElt.length == 0){
+							childCountElt = $this.$('<div class="childCount"></div>');
+							collEl.append(childCountElt);
+						}
+					} else {
+						if(childCountElt.length > 0){
+							// remove
+							childCountElt.remove();
+						}
+					}
+					
+					toggleElt.addClass('resolvingDescendants');
+					$this.resolveDescendants(rowDesc, function(descendantsCount){
+						toggleElt.removeClass('resolvingDescendants');
+						if(descendantsCount > 0){
+							toggleElt.addClass('hasDescendants');
+							collEl.addClass('hasDescendants');
+							if($this.showChildCount){
+								childCountElt.text(descendantsCount);
+							}
+						} else {
+							toggleElt.removeClass('hasDescendants');
+							collEl.removeClass('hasDescendants');
+						}
+					});
+					
+				}
+			}
+			
+			function updateCell(d){
+				var cellEl = $this.$(this);
+				var cell = d3.select(this);
+				cell.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle});
+				if($this.colDesc[d.colIdx].widget){
+					var widget = $this.widgetMap[d.rowKey][d.column];
+					var cellWidget = cellEl.attr('widget');
+					if(cellWidget){
+						if(widget.getId() != cellWidget){
+							var oldWidget = JSB.getInstance(cellWidget);
+							if(oldWidget){
+								oldWidget.destroy();
+							}
+							cellEl.empty().append(widget.getElement());
+							cellEl.attr('widget', widget.getId());
+						}
+					} else {
+						cellEl.empty().append(widget.getElement());
+						cellEl.attr('widget', widget.getId());
+					}
+					widget.refresh();
+				} else {
+					var val = null;
+					var mainVal = d.value.main;
+					var backVal = d.value.back;
+					var hoverVal = d.value.hover;
+					
+					if(JSB.isDefined(mainVal)){
+						val = mainVal;
+					} else if(JSB.isDefined(backVal)){
+						if(JSB.isNumber(backVal)){
+							val = 0;
+						} else {
+							val = backVal;
+						}
+					}
+					
+					var fVal = val;
+					if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
+						fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
+					}
+					cellEl.text(fVal !== null ? fVal : '');
+					cellEl.attr('title', val);
+					
+					if(cellEl.attr('widget')){
+						cellEl.removeAttr('widget');
+					}
+					
+					// destroy previously created widget
+					if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+						var widget = $this.widgetMap[d.rowKey][d.column];
+						widget.destroy();
+						delete $this.widgetMap[d.rowKey][d.column];
+						if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+							delete $this.widgetMap[d.rowKey];
+						}
+					}
+				}
+			}
+
+			// accociate with DOM
+			var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
+			var rowsSel = tbody.selectAll('tr.row');
+			var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
+
+			rowsSelData.each(function(d){
+				if($this.highlightedRowKey == d.key){
+					$this.highlightedRowKey = null;
+					$this.rowFilterTool.addClass('hidden');
+				}
+				d3.select(this)
+					.classed('highlight', false)
+					.classed('main', !!d.flags.main)
+					.classed('back', !!d.flags.back)
+					.classed('hover', !!d.flags.hover)
+					.classed('rowFilter', d.filter && d.filter.length > 0)
+					.classed('expanded', d.expanded)
+					.attr('pos', function(d){return d.position;})
+					.attr('depth', function(d){return d.depth;});
+			});
+			
+			// columns
+			var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
+			
+			if($this.rowsDrawn === 0){ // updating after refresh
+				rowsSelDataColData.order();
+				
+				rowsSelDataColData
+					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle;})
+					.attr('type', function(d){return $this.colDesc[d.colIdx].widget ? 'widget':'text';})
+					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
+					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz;})
+					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert;});
+			
+				rowsSelDataColData.each(function(d){
+					var coll = d3.select(this);
+					updateColl.call(coll.node(), d);
+					var cell = coll.select('div.cell');
+					updateCell.call(cell.node(), d)
+				});
+			}
+			
+			rowsSelDataColData.exit()
+				.each(function(d){
+					var cell = d3.select(this).select('div.cell');
+					var cellEl = $this.$(cell.node());
+					
+					if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+						$this.widgetMap[d.rowKey][d.column].destroy();
+						delete $this.widgetMap[d.rowKey][d.column];
+						if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+							delete $this.widgetMap[d.rowKey];
+						}
+					}
+				})
+				.remove();
+				
+			rowsSelDataColData.enter()
+				.append('td')
+					.classed('col', true)
+					.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
+					.attr('key', function(d){ return d.key;})
+					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
+					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
+					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
+					.each(function(d){
+						updateColl.call(this, d);
+					})
+					.append('div')
+						.classed('cell', true)
+						.attr('key', function(d){ return d.key;})
+						.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+						.each(function(d){
+							updateCell.call(this, d);
+						});
+				
+			
+			// rows	
+			function _removeRows(){
+				var removedRowsSel = rowsSelData.exit();
+				
+				// destroy widgets
+				removedRowsSel
+					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
+						.each(function(d){
+							var cell = d3.select(this).select('div.cell');
+							var cellEl = $this.$(cell.node());
+							
+							if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
+								$this.widgetMap[d.rowKey][d.column].destroy();
+								delete $this.widgetMap[d.rowKey][d.column];
+								if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
+									delete $this.widgetMap[d.rowKey];
+								}
+							}
+						});
+				
+				// destroy rows
+				removedRowsSel.remove();
+			}
+			
+			function _appendRows(){
+				
+				// sort existed rows
+				rowsSelData.order();
+				
+				// append new rows
+				var newRowsSel = rowsSelData.enter();
+				newRowsSel
+					.append('tr')
+						.classed('row', true)
+						.classed('main', function(d){return !!d.flags.main;})
+						.classed('back', function(d){return !!d.flags.back;})
+						.classed('hover', function(d){return !!d.flags.hover;})
+						.attr('pos', function(d){return d.position;})
+						.attr('depth', function(d){return d.depth;})
+						.classed('rowFilter', function(d){return d.filter && d.filter.length > 0;})
+						.classed('expanded', function(d){return d.expanded;})
+						.style('transform', function(d){return $this.useAnimation ? (d.depth > 0 ? 'scale(0,0)':'translate(-'+$this.getElement().width()+'px,0)') : null;})
+						.style('opacity', function(d){return $this.useAnimation ? 0 : null;})
+						.on('click',function(d){
+							$this.onRowClick(d);
+						})
+						.on('mouseover', function(d){
+							$this.onRowHover(d, $this.$(this));
+						})
+						.on('mouseout', function(d){
+							$this.onRowOut(d, $this.$(this));
+						})
+						.attr('key', function(d){ return d.key;})
+						.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
+						.enter()
+							.append('td')
+								.classed('col', true)
+								.attr('key', function(d){ return d.key;})
+								.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+								.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
+								.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
+								.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
+								.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
+								.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
+								.each(function(d){
+									updateColl.call(this, d);
+								})
+								.append('div')
+								.classed('cell', true)
+									.attr('key', function(d){return d.key})
+									.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
+									.each(function(d){
+										updateCell.call(this, d);
+									});
+				
+				if($this.useAnimation){
+					// fixup new row positions
+					var paneRc = $this.scroll.getPane().find('table.rows').get(0).getBoundingClientRect();
+					rowsSelData.each(function(rd){
+						var rowRc = this.getBoundingClientRect();
+						var newPos = rowRc.top - paneRc.top;
+						var dif = rd.vPos - newPos;
+						if(dif != 0){
+							var curSel = d3.select(this);
+							curSel.style('transform', 'translate(0, '+dif+'px)');
+							curSel.transition().duration(800).style('transform', 'translate(0,0)');
+						}
+					});
+					
+					newRowsSel.selectAll('tr.row')
+						.transition().duration(800)
+							.style('opacity', 1)
+							.style('transform', function(d){return d.depth > 0 ? 'scale(1,1)':'translate(0,0)'});
+				}
+
+			}
+
+				
+			if($this.useAnimation){
+				// store row positions before update
+				var paneRc = $this.scroll.getPane().find('table.rows').get(0).getBoundingClientRect();
+				rowsSelData.each(function(rd){
+					var rowRc = this.getBoundingClientRect();
+					var pos = rowRc.top - paneRc.top;
+					rd.vPos = pos;
+				});
+				
+				var removedRowsSel = rowsSelData.exit();
+				if(removedRowsSel.size() > 0){
+					var rKeyMap = {};
+					removedRowsSel.each(function(d){
+						rKeyMap[d.key] = true;
+					});
+					
+					removedRowsSel
+						.style('transform', 'scale(1,1)')
+						.style('opacity', 1);
+				
+					removedRowsSel.transition()
+						.duration(800)
+						.style('transform', 'scale(0,0)')
+						.style('opacity', 0)
+						.on('end', function(d){
+							if(rKeyMap[d.key]){
+								delete rKeyMap[d.key];
+							}
+							if(Object.keys(rKeyMap).length == 0){
+								_removeRows();
+								_appendRows();
+							}
+						});
+				} else {
+					_removeRows();
+					_appendRows();
+				}
+			} else {
+				_removeRows();
+				_appendRows();
+			}
+			
+
+		},
+		
 		appendRows: function(bRefresh){
-			if(!$this.ready || this.rowAppending || $this.blockFetch /*|| !$this.scroll.getElement().is(':visible')*/){
+			if(!$this.ready || $this.rowAppending || $this.blockFetch){
 				return;
 			}
 			this.rowAppending = true;
-			var fetchSize = 20;
+			var fetchSize = 30;
 			
 			if(bRefresh){
-				if(this.rows.length > 0){
+				if(this.rows.length > fetchSize){
 					fetchSize = this.rows.length;
 				}
 				this.rows = [];
-				this.rowKeyMap = {};
+				$this.rowKeyMap = {};
+				this.rowsDrawn = 0;
+				
+				// row block chain for tree
+				this.treeKeyMap = {};
+				this.treePKeyMap = {};
+				
 			} else {
 				// check scroll
 				var scrollPos = $this.scroll.getScrollPosition();
@@ -883,6 +1305,7 @@
 					if($this.rowKeyMap[key]){
 						continue;
 					}
+					rowDesc.depth = 0;
 					rowDesc.position = idxOffset + pRows.length;
 					pRows.push(rowDesc);
 					$this.rowKeyMap[key] = rowDesc;
@@ -934,6 +1357,31 @@
 							}
 						}
 					}
+					
+					if($this.useTree){
+						// update row chain
+						var node = {children:[], rowDesc: rowDesc};
+						var pKey = rowDesc.pKey;
+						$this.treeKeyMap[key] = node;
+						if($this.treeKeyMap[pKey]){
+							// insert
+							$this.treeKeyMap[pKey].children.push(node);
+							$this.treeKeyMap[pKey].rowDesc.expanded = true;
+						} else {
+							// append to unsorted
+							if(!$this.treePKeyMap[pKey]){
+								$this.treePKeyMap[pKey] = [];
+							}
+							$this.treePKeyMap[pKey].push(node);
+						}
+						// dock children if existed
+						if($this.treePKeyMap[key]){
+							node.children = $this.treePKeyMap[key];
+							node.rowDesc.expanded = true;
+							delete $this.treePKeyMap[key];
+						}
+					}
+					
 				}
 				
 				if(pRows.length == 0 && !bRefresh){
@@ -941,272 +1389,31 @@
 					return;
 				}
 				
-				$this.rows = $this.rows.concat(pRows);
-				
-				// accociate with DOM
-				var tbody = d3.select($this.scroll.getElement().get(0)).select('._dwp_scrollPane > table').select('tbody');
-				var rowsSel = tbody.selectAll('tr.row');
-				var rowsSelData = rowsSel.data($this.rows, function(d){ return d ? d.key : $this.$(this).attr('key');});
-				
-				rowsSelData.order();
-				
-				rowsSelData.each(function(d){
-					if($this.highlightedRowKey == d.key){
-						$this.highlightedRowKey = null;
-						$this.rowFilterTool.addClass('hidden');
-					}
-					d3.select(this)
-						.classed('highlight', false)
-						.classed('main', !!d.flags.main)
-						.classed('back', !!d.flags.back)
-						.classed('hover', !!d.flags.hover)
-						.classed('rowFilter', d.filter && d.filter.length > 0)
-						.attr('pos', function(d){return d.position;})
-						/*.on('click',function(d){
-							if(!d.filter || d.filter.length == 0){
-								return;
-							}
-							$this.onRowClick(d);
-						})
-						.on('mouseover', function(d){
-							if(!d.filter || d.filter.length == 0){
-								return;
-							}
-							$this.onRowHover(d, $this.$(this));
-						})
-						.on('mouseout', function(d){
-							if(!d.filter || d.filter.length == 0){
-								return;
-							}
-							$this.onRowOut(d, $this.$(this));
-						})*/;
-				});
-				
-				var rowsSelDataColData = rowsSelData.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')});
-				
-				rowsSelDataColData.order();
-				
-				rowsSelDataColData
-					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle;})
-					.attr('type', function(d){return $this.colDesc[d.colIdx].widget ? 'widget':'text';})
-					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
-					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
-					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz;})
-					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert;});
-			
-				rowsSelDataColData.each(function(d){
-					var tdCell = d3.select(this);
-					var cell = tdCell.select('div.cell');
-					cell.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle});
-					var cellEl = $this.$(cell.node());
-					
-					if($this.colDesc[d.colIdx].widget){
-						var widget = $this.widgetMap[d.rowKey][d.column];
-						var cellWidget = cellEl.attr('widget');
-						if(cellWidget){
-							if(widget.getId() != cellWidget){
-								var oldWidget = JSB.getInstance(cellWidget);
-								if(oldWidget){
-									oldWidget.destroy();
-								}
-								cellEl.empty().append(widget.getElement());
-								cellEl.attr('widget', widget.getId());
-							}
-						} else {
-							cellEl.empty().append(widget.getElement());
-							cellEl.attr('widget', widget.getId());
-						}
-						widget.refresh();
-					} else {
-						var val = null;
-						var mainVal = d.value.main;
-						var backVal = d.value.back;
-						var hoverVal = d.value.hover;
-						
-						if(JSB.isDefined(mainVal)){
-							val = mainVal;
-						} else if(JSB.isDefined(backVal)){
-							if(JSB.isNumber(backVal)){
-								val = 0;
-							} else {
-								val = backVal;
-							}
-						}
-						
-						var fVal = val;
-						if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-							fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
-						}
-						cellEl.text(fVal !== null ? fVal : '');
-						cellEl.attr('title', val);
-						
-						if(cellEl.attr('widget')){
-							cellEl.removeAttr('widget');
-						}
-						
-						// destroy previously created widget
-						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
-							var widget = $this.widgetMap[d.rowKey][d.column];
-							widget.destroy();
-							delete $this.widgetMap[d.rowKey][d.column];
-							if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
-								delete $this.widgetMap[d.rowKey];
-							}
+				$this.rowsDrawn = $this.rows.length;
+				if($this.useTree){
+					$this.rows = [];
+					// serialize tree
+					function serializeNode(node, depth){
+						node.rowDesc.depth = depth;
+						$this.rows.push(node.rowDesc);
+						for(var c = 0; c < node.children.length; c++){
+							serializeNode(node.children[c], depth + 1);
 						}
 					}
-				});
-				
-				rowsSelDataColData.exit()
-					.each(function(d){
-						var cell = d3.select(this).select('div.cell');
-						var cellEl = $this.$(cell.node());
-						
-						if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
-							$this.widgetMap[d.rowKey][d.column].destroy();
-							delete $this.widgetMap[d.rowKey][d.column];
-							if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
-								delete $this.widgetMap[d.rowKey];
-							}
+					for(var pk in $this.treePKeyMap){
+						var pkArr = $this.treePKeyMap[pk];
+						for(var pi = 0; pi < pkArr.length; pi++){
+							serializeNode(pkArr[pi], 0);
 						}
-					})
-					.remove();
-					
-				rowsSelDataColData.enter()
-				.append('td')
-					.classed('col', true)
-					.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
-					.attr('key', function(d){ return d.key;})
-					.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-					.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
-					.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
-					.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
-					.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
-						.append('div')
-							.classed('cell', true)
-							.attr('key', function(d){ return d.key;})
-							.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-							.each(function(d){
-								var cellEl = $this.$(this);
-								if($this.colDesc[d.colIdx].widget){
-									var widget = $this.widgetMap[d.rowKey][d.column];
-									cellEl.append(widget.getElement());
-									cellEl.attr('widget', widget.getId());
-									widget.refresh();
-								} else {
-									var val = null;
-									var mainVal = d.value.main;
-									var backVal = d.value.back;
-									var hoverVal = d.value.hover;
-									
-									if(JSB.isDefined(mainVal)){
-										val = mainVal;
-									} else if(JSB.isDefined(backVal)){
-										if(JSB.isNumber(backVal)){
-											val = 0;
-										} else {
-											val = backVal;
-										}
-									}
-									
-									var fVal = val;
-									if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-										fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
-									}
-									
-									cellEl.attr('title', val);
-									cellEl.text(fVal !== null ? fVal : '');
-								}
-							});
-					
+					}
+				} else {
+					$this.rows = $this.rows.concat(pRows);
+				}
 				
-				// destroy widgets
-				rowsSelData.exit()
-					.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
-						.each(function(d){
-							var cell = d3.select(this).select('div.cell');
-							var cellEl = $this.$(cell.node());
-							
-							if($this.widgetMap[d.rowKey] && $this.widgetMap[d.rowKey][d.column]){
-								$this.widgetMap[d.rowKey][d.column].destroy();
-								delete $this.widgetMap[d.rowKey][d.column];
-								if(Object.keys($this.widgetMap[d.rowKey]).length == 0){
-									delete $this.widgetMap[d.rowKey];
-								}
-							}
-						});
-						
-				rowsSelData.exit()
-					.remove();
+				$this.drawRows();
 				
-				rowsSelData
-					.enter()
-						.append('tr')
-							.classed('row', true)
-							.classed('main', function(d){return !!d.flags.main;})
-							.classed('back', function(d){return !!d.flags.back;})
-							.classed('hover', function(d){return !!d.flags.hover;})
-							.attr('pos', function(d){return d.position;})
-							.classed('rowFilter', function(d){return d.filter && d.filter.length > 0})
-							.on('click',function(d){
-								$this.onRowClick(d);
-							})
-							.on('mouseover', function(d){
-								$this.onRowHover(d, $this.$(this));
-							})
-							.on('mouseout', function(d){
-								$this.onRowOut(d, $this.$(this));
-							})
-							.attr('key', function(d){ return d.key;})
-							.selectAll('td.col').data(function(d){ return d.row; }, function(d){ return d ? d.key: $this.$(this).attr('key')})
-							.enter()
-								.append('td')
-									.classed('col', true)
-									.attr('key', function(d){ return d.key;})
-									.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-									.attr('type', function(d){ return $this.colDesc[d.colIdx].widget ? 'widget':'text'})
-									.attr('rowspan', function(d){return JSB.isDefined(d.spanCount) ? d.spanCount : null;})
-									.classed('spanned', function(d){return JSB.isDefined(d.spanFrom);})
-									.style('text-align', function(d){ return $this.colDesc[d.colIdx].style.alignHorz})
-									.style('vertical-align', function(d){ return $this.colDesc[d.colIdx].style.alignVert})
-									.append('div')
-									.classed('cell', true)
-										.attr('key', function(d){return d.key})
-										.attr('style', function(d){ return $this.colDesc[d.colIdx].style.cssStyle})
-										.each(function(d){
-											var cellEl = $this.$(this);
-											if($this.colDesc[d.colIdx].widget){
-												var widget = $this.widgetMap[d.rowKey][d.column];
-												cellEl.append(widget.getElement());
-												cellEl.attr('widget', widget.getId());
-												widget.refresh();
-											} else {
-												var val = null;
-												var mainVal = d.value.main;
-												var backVal = d.value.back;
-												var hoverVal = d.value.hover;
-												
-												if(JSB.isDefined(mainVal)){
-													val = mainVal;
-												} else if(JSB.isDefined(backVal)){
-													if(JSB.isNumber(backVal)){
-														val = 0;
-													} else {
-														val = backVal;
-													}
-												}
-												
-												var fVal = val;
-												if(JSB.isNumber(val) && $this.colDesc[d.colIdx].format){
-													fVal = Formatter.format($this.colDesc[d.colIdx].format, {y: val});
-												}
-												
-												cellEl.text(fVal !== null ? fVal : '');
-												cellEl.attr('title', val);
-											}
-										});
-
 				$this.rowAppending = false;
-				if(pRows.length > 0){
+				if(!$this.useTree && pRows.length > 0){
 					var lastRow = $this.rows[$this.rows.length - 1];
 					var lastRowElt = $this.find('.row[key="'+lastRow.key+'"]');
 					JSB.deferUntil(function(){
@@ -1235,32 +1442,62 @@
 			}
 			var rows = [];
 			var cols = [];
-			var rowsContext = this.getContext().find('rows');
-			var rowKeySelector = this.getContext().find('rowKey');
-			var rowFilterSelector = this.getContext().find('rowFilter');
+			var rowsContext = this.rowsContext;
+			var rowKeySelector = this.rowKeySelector;
+			var rowFilterSelector = this.rowFilterSelector;
+			var rowClickParamsSelector = this.rowClickParamsSelector;
 			var rowFilterBinding = rowFilterSelector.bindings(true);
-			
-			var rowClickParamsSelector = this.callApiOnClick ? this.getContext().find('rowClickParams') : null;
 			var rowClickParamsBinding = rowClickParamsSelector && rowClickParamsSelector.bindings(true);
 
-			var gArr = this.getContext().find('columns').values();
+			var gArr = this.columnsSelector.values();
 			for(var i = 0; i < gArr.length; i++){
-				//var valueSelector = gArr[i].find('view');
-
 				cols.push({
 					colName: $this.colDesc[i].title,
 					colKey: $this.colDesc[i].key,
-					colType: gArr[i].find('view').value(),
-					//valueSelector: valueSelector,
+					colType: $this.colDesc[i].type,
 					textSelector: $this.colDesc[i].textSelector
 				});
 			}
+			
+			// setup tree filters
+			if($this.useTree){
+				var expandedVals = [];
+				var collapsedVals = [];
+				// generate parentId context filter
+				var parentField = $this.parentRowKeySelector.binding();
+				var idField = $this.rowKeySelector.binding();
+				
+				// add expanded keys
+				for(var expKey in $this.expandedKeys){
+					var val = $this.expandedKeys[expKey].rowKeyVal;
+					expandedVals.push(val);
+				}
+				
+				// add collapsed keys
+				for(var collKey in $this.collapsedKeys){
+					var val = $this.collapsedKeys[collKey].rowKeyVal;
+					collapsedVals.push(val);
+				}
+				
+				$this.treeOpts = {
+					rootRowKeyValue: $this.rootRowKeyValue,
+					parentField: parentField,
+					idField: idField,
+					expanded: expandedVals,
+					collapsed: collapsedVals
+				};
+			}
+			
+			var preCallback = function(rows, fail){
+				return callback.call($this, rows, fail);
+			};
+			
 			function preFetch(){
 				if($this.stopPreFetch){
 					return;
 				}
 				$this.preFetching = true;
-				var fRes = $this.fetchBinding(rowsContext, {batchSize: preFetchSize}, function(data){
+				var fRes = $this.fetch(rowsContext, {batchSize: preFetchSize}, function(data, fail){
 					$this.preFetching = false;
 					if(!data || data.length == 0){
 						return;
@@ -1276,7 +1513,7 @@
 					var row = [];
 					var rowFlags = {};
 					// construct key
-					var rowKey = null;
+					var rowKey = null, rowKeyVal = null;
 					var keyValsMain = rowKeySelector.values('main', true);
 					var keyValsBack = rowKeySelector.values('back', true);
 					var keyValsHover = rowKeySelector.values('hover', true);
@@ -1299,10 +1536,31 @@
 						if(!keyVal){
 							continue;
 						}
+						if(!rowKeyVal){
+							rowKeyVal = keyVal;
+						}
 						if(!rowKey){
 							rowKey = '';
 						}
 						rowKey += MD5.md5('' + keyVal);
+					}
+					
+					var parentRowKey = null, parentRowKeyVal = null;
+					if($this.useTree){
+						var pKeyValMain = $this.parentRowKeySelector.value('main');
+						var pKeyValBack = $this.parentRowKeySelector.value('back');
+						var pKeyValHover = $this.parentRowKeySelector.value('hover');
+						var pKeyVal = pKeyValMain;
+						if(!JSB.isDefined(pKeyVal)){
+							pKeyVal = pKeyValBack;
+						}
+						if(!JSB.isDefined(pKeyVal)){
+							pKeyVal = '';
+						}
+						if(!parentRowKeyVal){
+							parentRowKeyVal = pKeyVal;
+						}
+						parentRowKey = MD5.md5('' + pKeyVal);
 					}
 					
 					// construct row filter
@@ -1352,7 +1610,7 @@
 					
 					// iterate by cells
 					for(var i = 0; i < gArr.length; i++){
-						var rDesc = {
+						var cDesc = {
 							key: cols[i].colKey,
 							column: cols[i].colName,
 							colIdx: i
@@ -1362,28 +1620,31 @@
 							var mainValue = colSel.value();
 							var backValue = colSel.value('back');
 							var hoverValue = colSel.value('hover');
-							rDesc.value = {main: mainValue, back: backValue, hover: hoverValue};
+							cDesc.value = {main: mainValue, back: backValue, hover: hoverValue};
 						} else if(cols[i].colType == 'widgetGroup'){
 						    if($this.colDesc[i].widget){
-						        rDesc.value = JSB.clone($this.colDesc[i].widget.widgetSelector.getFullValues());
+						        cDesc.value = JSB.clone($this.colDesc[i].widget.widgetSelector.getFullValues());
 						    } else {
-						        rDesc.value = {};
+						        cDesc.value = {};
 						    }
 						}
 						
-						row.push(rDesc);	// push cell
+						row.push(cDesc);	// push cell
 					}
 					
-					rows.push({row: row, key: rowKey, filter: rowFilter, flags: rowFlags, clickParams: rowClickParams});
+					var rDesc = {row: row, key: rowKey, rowKeyVal: rowKeyVal, pRowKeyVal: parentRowKeyVal, filter: rowFilter, flags: rowFlags, clickParams: rowClickParams};
+					if($this.useTree){
+						rDesc.pKey = parentRowKey;
+					}
+					rows.push(rDesc);
 					
-					if(rows.length >= batchSize){
-						
+					if(rows.length >= batchSize && !$this.useTree){
 						if($this.usePrefetch){
 							$this.stopPreFetch = false;
 							preFetch();
 						}
-						
-						callback.call($this, rows);
+						$this.cancelDeferredLoader();
+						preCallback.call($this, rows);
 						return;
 					}
 				}
@@ -1391,14 +1652,25 @@
 				if(rowsContext.isReset()){
 					$this.setDeferredLoader();
 				}
-
-				$this.fetchBinding(rowsContext, {batchSize: batchSize - rows.length},function(data, fail){
-					$this.cancelDeferredLoader();
+				
+				var fetchOpts = {batchSize: batchSize - rows.length};
+				if($this.useTree){
+					fetchOpts.batchSize = batchSize;
+					fetchOpts.treeOpts = $this.treeOpts;
+				}
+				$this.fetch(rowsContext, fetchOpts, function(data, fail){
+					if(fail){
+						$this.stopPreFetch = false;
+						$this.cancelDeferredLoader();
+						preCallback.call($this, [], fail);
+						return;
+					}
 					if(data && data.length){
 						iterateRows();
 					} else {
 						$this.stopPreFetch = false;
-						callback.call($this, rows, fail);
+						$this.cancelDeferredLoader();
+						preCallback.call($this, rows, fail);
 					}
 				});
 			}
@@ -1773,7 +2045,7 @@
 				return;
 			}
 			var wrapQuery = {$select:{'val':valQ}};
-			this.server().executeQuery(source, $this.getWrapper().getDashboard(), {extQuery: mainQuery, wrapQuery: wrapQuery}, function(res){
+			this.server().executeQuery(source, $this.getEntry(), {extQuery: mainQuery, wrapQuery: wrapQuery}, function(res){
 				if(res && res.length > 0 && JSB.isDefined(res[0].val)){
 					var val = res[0].val;
 					if(statusDesc.summaryFormat && JSB.isNumber(val) && statusDesc.summaryFormat.length > 0){
@@ -1807,112 +2079,139 @@
 
 				var rowsBody = headerTable.select('thead').select('tr');
 				var colData = rowsBody.selectAll('th.col').data($this.colDesc, function(d){ return d ? d.key : this.attr('key')});
+				
+				function updateHeaderItem(d, bAppend){
+					var elt = $this.$(this);
+					
+					var hWrapper = elt.find('> .hWrapper');
+					if(hWrapper.length == 0){
+						hWrapper = $this.$('<div class="hWrapper"></div>');
+						elt.append(hWrapper);
+						hWrapper.append($this.$('<div class="text"></div>').text(d.title).attr('title',d.title));
+					} else {
+						elt.find('> .hWrapper > .text').text(d.title).attr('title', d.title);
+					}
+					
+					// sort
+					function _updateSortOrder(order){
+						if(order == 'asc'){
+							elt.addClass('sortAsc');
+							elt.removeClass('sortDesc');
+						} else if(order == 'desc'){
+							elt.addClass('sortDesc');
+							elt.removeClass('sortAsc');
+						} else {
+							elt.removeClass('sortAsc');
+							elt.removeClass('sortDesc');
+						}
+					}
+					
+					var sortSelector = hWrapper.find('> .sortSelector').jsb();
+					if(d.sortFields && d.sortFields.length > 0){
+						if(!sortSelector){
+							sortSelector = new SortSelector({
+								onChange: function(q){
+									$this.updateOrder(this, q);
+									_updateSortOrder(this.getCurrentOrder());
+								}
+							});
+							hWrapper.append(sortSelector.getElement());
+							elt.find('> .hWrapper > .text').on('click.sort', function(){
+								sortSelector.toggleOrder();
+							});
+						}
+						sortSelector.setFields(d.sortFields);
+						elt.addClass('sortable');
+						if($this.showSortIcon){
+							elt.addClass('showSortIcon');
+						} else {
+							elt.removeClass('showSortIcon');
+						}
+						_updateSortOrder(sortSelector.getCurrentOrder());
+					} else {
+						if(sortSelector){
+							sortSelector.destroy();
+							elt.find('> .hWrapper > .text').off('click.sort');
+						}
+						elt.removeClass('sortable');
+						elt.removeClass('showSortIcon');
+					}
+					
+					// filter
+					var filterEntry = elt.find('> .filterEntry').jsb();
+					var filterButtonElt = hWrapper.find('> .filterButton');
+					if(d.contextFilterField && d.contextFilterFieldType){
+						elt.addClass('contextFilter');
+						if(!filterEntry){
+							filterEntry = new FilterEntry({
+								onChange: function(filter){
+									$this.updateContextFilter(filter);
+								},
+								onFix: function(filter){
+									$this.globalizeContextFilter(filter);
+								}
+							});
+							elt.append(filterEntry.getElement());
+						}
+						filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
+						filterEntry.allowFix(false);
+						if($this.filterManager){
+						    var sourceArr = $this.getSourceIds();
+							if(sourceArr && sourceArr.length > 0){
+								var source = $this.sources[sourceArr[0]];
+								var cubeField = $this.filterManager.extractCubeField(source, d.contextFilterField);
+								if(cubeField){
+									filterEntry.allowFix(true);
+								}
+							}
+							
+						}
+						
+						if(d.contextFilterFixed){
+							elt.addClass('contextFilterFixed');
+							if(filterButtonElt.length > 0){
+								filterButtonElt.remove();
+							}
+							$this.updateContextFilter(filterEntry.getFilter(), true);
+						} else {
+							elt.removeClass('contextFilterFixed');
+							if(filterButtonElt.length == 0){
+								filterButtonElt = $this.$('<div class="filterButton"></div>');
+								hWrapper.append(filterButtonElt);
+								filterButtonElt.click(function(){
+									elt.toggleClass('filtered');
+									if(elt.hasClass('filtered')){
+										var filter = filterEntry.getFilter();
+										$this.updateContextFilter(filter);
+										filterEntry.setFocus();
+									} else {
+										// clear field filter
+										var filter = {};
+										filter[d.contextFilterField] = null;
+										$this.updateContextFilter(filter);
+									}
+								});
+							}
+						}
+						
+						
+					} else {
+						elt.removeClass('contextFilter');
+						if(filterEntry){
+							filterEntry.destroy();
+						}
+						if(filterButtonElt.length > 0){
+							filterButtonElt.remove();
+						}
+					}
+				}
 
 				colData
 					.attr('style', function(d){ return d.hStyle.cssStyle})
 					.style('text-align', function(d){ return d.hStyle.alignHorz})
 					.style('vertical-align', function(d){ return d.hStyle.alignVert})
 					.each(function(d){
-						var elt = $this.$(this);
-						var hWrapper = elt.find('> .hWrapper');
-						elt.find('> .hWrapper > .text').text(d.title).attr('title', d.title);
-						
-						// sort
-						function _updateSortOrder(order){
-							if(order == 'asc'){
-								elt.addClass('sortAsc');
-								elt.removeClass('sortDesc');
-							} else if(order == 'desc'){
-								elt.addClass('sortDesc');
-								elt.removeClass('sortAsc');
-							} else {
-								elt.removeClass('sortAsc');
-								elt.removeClass('sortDesc');
-							}
-						}
-						var sortSelector = hWrapper.find('> .sortSelector').jsb();
-						if(d.sortFields && d.sortFields.length > 0){
-							if(!sortSelector){
-								sortSelector = new SortSelector({
-									onChange: function(q){
-										$this.updateOrder(this, q);
-										_updateSortOrder(this.getCurrentOrder());
-									}
-								});
-								hWrapper.append(sortSelector.getElement());
-								elt.find('> .hWrapper > .text').on('click.sort', function(){
-									sortSelector.toggleOrder();
-								});
-							}
-							sortSelector.setFields(d.sortFields);
-							elt.addClass('sortable');
-							if($this.showSortIcon){
-								elt.addClass('showSortIcon');
-							} else {
-								elt.removeClass('showSortIcon');
-							}
-							_updateSortOrder(sortSelector.getCurrentOrder());
-						} else {
-							if(sortSelector){
-								sortSelector.destroy();
-								elt.find('> .hWrapper > .text').off('click.sort');
-							}
-							elt.removeClass('sortable');
-							elt.removeClass('showSortIcon');
-						}
-						
-						// filter
-						var filterEntry = elt.find('> .filterEntry').jsb();
-						var filterButtonElt = hWrapper.find('> .filterButton');
-						if(d.contextFilterField && d.contextFilterFieldType){
-							elt.addClass('contextFilter');
-							if(!filterEntry){
-								filterEntry = new FilterEntry({
-									onChange: function(filter){
-										$this.updateContextFilter(filter);
-									}
-								});
-								elt.append(filterEntry.getElement());
-							}
-							filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
-							
-							if(d.contextFilterFixed){
-								elt.addClass('contextFilterFixed');
-								if(filterButtonElt.length > 0){
-									filterButtonElt.remove();
-								}
-								$this.updateContextFilter(filterEntry.getFilter(), true);
-							} else {
-								elt.removeClass('contextFilterFixed');
-								if(filterButtonElt.length == 0){
-									filterButtonElt = $this.$('<div class="filterButton"></div>');
-									hWrapper.append(filterButtonElt);
-									filterButtonElt.click(function(){
-										elt.toggleClass('filtered');
-										if(elt.hasClass('filtered')){
-											var filter = filterEntry.getFilter();
-											$this.updateContextFilter(filter);
-											filterEntry.setFocus();
-										} else {
-											// clear field filter
-											var filter = {};
-											filter[d.contextFilterField] = null;
-											$this.updateContextFilter(filter);
-										}
-									});
-								}
-							}
-							
-							
-						} else {
-							elt.removeClass('contextFilter');
-							if(filterEntry){
-								filterEntry.destroy();
-							}
-							if(filterButtonElt.length > 0){
-								filterButtonElt.remove();
-							}
-						}
+						updateHeaderItem.call(this, d, false);
 					});
 					
 				colData.enter()
@@ -1923,79 +2222,7 @@
 						.style('text-align', function(d){ return d.hStyle.alignHorz})
 						.style('vertical-align', function(d){ return d.hStyle.alignVert})
 						.each(function(d){
-							var elt = $this.$(this);
-							var hWrapper = $this.$('<div class="hWrapper"></div>');
-							elt.append(hWrapper);
-							hWrapper.append($this.$('<div class="text"></div>').text(d.title).attr('title',d.title));
-							
-							// sort
-							function _updateSortOrder(order){
-								if(order == 'asc'){
-									elt.addClass('sortAsc');
-									elt.removeClass('sortDesc');
-								} else if(order == 'desc'){
-									elt.addClass('sortDesc');
-									elt.removeClass('sortAsc');
-								} else {
-									elt.removeClass('sortAsc');
-									elt.removeClass('sortDesc');
-								}
-							}
-							if(d.sortFields && d.sortFields.length > 0){
-								elt.addClass('sortable');
-								var sortSelector = new SortSelector({
-									onChange: function(q){
-										$this.updateOrder(this, q);
-										_updateSortOrder(this.getCurrentOrder());
-									}
-								});
-								hWrapper.append(sortSelector.getElement());
-								sortSelector.setFields(d.sortFields);
-								elt.find('> .hWrapper > .text').on('click.sort', function(){
-									sortSelector.toggleOrder();
-								});
-								if($this.showSortIcon){
-									elt.addClass('showSortIcon');
-								} else {
-									elt.removeClass('showSortIcon');
-								}
-								_updateSortOrder(sortSelector.getCurrentOrder());
-							}
-							
-							// filter
-							if(d.contextFilterField && d.contextFilterFieldType){
-								elt.addClass('contextFilter');
-								var filterEntry = new FilterEntry({
-									onChange: function(filter){
-										$this.updateContextFilter(filter);
-									}
-								});
-								elt.append(filterEntry.getElement());
-								filterEntry.setField(d.contextFilterField, d.contextFilterFieldType, d.contextFilterValue, d.contextFilterOp);
-								
-								if(d.contextFilterFixed){
-									elt.addClass('contextFilterFixed');
-									$this.updateContextFilter(filterEntry.getFilter(), true);
-								} else {
-									var filterButtonElt = $this.$('<div class="filterButton"></div>');
-									hWrapper.append(filterButtonElt);
-									filterButtonElt.click(function(){
-										elt.toggleClass('filtered');
-										if(elt.hasClass('filtered')){
-											var filter = filterEntry.getFilter();
-											$this.updateContextFilter(filter);
-											filterEntry.setFocus();
-											filterEntry.setFocus();
-										} else {
-											var filter = {};
-											filter[d.contextFilterField] = null;
-											$this.updateContextFilter(filter);
-										}
-									});
-								}
-								
-								
-							}
+							updateHeaderItem.call(this, d, true);
 						});
 				
 				colData.exit()
@@ -2043,6 +2270,25 @@
 			}
 		},
 		
+		globalizeContextFilter: function(q){
+			if(!q || Object.keys(q).length == 0){
+				return;
+			}
+			
+			var field = Object.keys(q)[0];
+			var op = Object.keys(q[field])[0];
+			var val = q[field][op][Object.keys(q[field][op])[0]];
+			
+			this.addFilter({
+				type: '$and',
+				op: op,
+				field: field,
+				value: val
+			});
+			
+			this.refreshAll();
+		},
+		
 		showMessage: function(txt){
 			this.messageBox.empty();
 			this.messageBox.append(txt);
@@ -2052,8 +2298,12 @@
 		hideMessage: function(){
 			this.messageBox.addClass('hidden');
 		},
-		
+
 		refresh: function(opts){
+		    this.onRefresh(opts);
+		},
+		
+		onRefresh: function(opts){
 			if(!this.ready){
 				this.ensureInitialized(function(){
 					$this.refresh(opts);
@@ -2083,7 +2333,8 @@
 			var colSizes = [];
 			var fixedSize = 0;
 			var fixedCount = 0;
-			var gArr = this.getContext().find('columns').values();
+			this.columnsSelector = this.getContext().find('columns');
+			var gArr = this.columnsSelector.values();
 			for(var i = 0; i < gArr.length; i++){
 				var colSize = gArr[i].find('colWidth').value();
 				if(colSize && colSize != 'auto' || !isNaN(parseFloat(colSize))){
@@ -2113,9 +2364,50 @@
 				return cssText.replace(/\r/g,'').replace(/\n/g,'').trim();
 			}
 
-			// check rowKey
+			// rows
 			var rowKeySelector = this.getContext().find('rowKey');
+			this.rowKeySelector = rowKeySelector;
 			var rowKeyFields = rowKeySelector.bindings();
+			this.rowsContext = dataSource;
+			this.rowFilterSelector = this.getContext().find('rowFilter');
+			
+			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
+			this.showSortIcon = this.getContext().find('showSortIcon').checked();
+			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
+			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
+			this.usePrefetch = this.getContext().find('usePrefetch').checked();
+			this.useAnimation = this.getContext().find('useAnimation').checked();
+			
+			this.rowClickParamsSelector = this.callApiOnClick ? this.getContext().find('rowClickParams') : null;
+
+			
+			// update row filters
+			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();
+			this.setFilterLayer({back: this.preserveFilteredRows});
+
+			this.hoverFilteredRows = this.getContext().find('hoverFilteredRows').checked();
+			this.setFilterLayer({hover: this.hoverFilteredRows});
+			
+			// tree options
+			this.useTree = this.getContext().find('useTree').checked();
+			if(this.useTree){
+				this.addClass('useTree');
+				this.parentRowKeySelector = this.getContext().find('parentRowKey');
+				if(this.getContext().find('rootRowKeyValue').checked()){
+					this.rootRowKeyValue = this.getContext().find('rootRowKeyValue').value() || '';
+				} else {
+					this.rootRowKeyValue = null;
+				}
+				this.childIdent = this.getContext().find('childIdent').value();
+				this.showChildCount = this.getContext().find('childCount').checked();
+				if(this.showChildCount){
+					this.addClass('showChildCount');
+				} else {
+					this.removeClass('showChildCount');
+				}
+			} else {
+				this.removeClass('useTree');
+			}
 
 			for(var i = rowKeyFields.length - 1; i >= 0; i--){
 				if(!rowKeyFields[i]){
@@ -2127,6 +2419,8 @@
 			} else {
 				this.setKeyColumns(rowKeyFields);
 			}
+			
+			// columns
 			for(var i = 0; i < gArr.length; i++){
 				var colTitle = gArr[i].find('title').value();
 				var colSize = colSizes[i];
@@ -2178,6 +2472,7 @@
 						alignVert: hAlignVert,
 						cssStyle: hCssStyle
 					},
+					type: gArr[i].find('view').value(),
 					widget: null,
 					textSelector: null,
 					format: null,
@@ -2237,14 +2532,12 @@
                         }
                         var widgetContextFilterSelector = viewSelector.find('widgetContextFilter');
                         if(widgetContextFilterSelector.checked()){
-                            if(widgetContextFilterSelector.find('widgetСontextFilterFixed').checked()){
+                            if(widgetContextFilterSelector.find('widgetContextFilterFixed').checked()){
                                 desc.contextFilterFixed = true;
                             }
                             var widgetContextFilterFieldSelector = widgetContextFilterSelector.find('widgetContextFilterField');
-                            if(widgetContextFilterFieldSelector.checked()){
-                                desc.contextFilterField = widgetContextFilterFieldSelector.binding();
-                                desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
-                            }
+                            desc.contextFilterField = widgetContextFilterFieldSelector.binding();
+                            desc.contextFilterFieldType = widgetContextFilterFieldSelector.bindingType();
                             desc.contextFilterValue = widgetContextFilterSelector.find('widgetContextFilterValue').value() || '';
                             desc.contextFilterOp = widgetContextFilterSelector.find('widgetContextFilterOp').value() || '$eq';
                         }
@@ -2276,18 +2569,8 @@
 				this.colDesc.push(desc);
 			}
 			
-			this.useFilterOnClick = this.getContext().find('useFilterOnClick').checked();
-			this.showSortIcon = this.getContext().find('showSortIcon').checked();
-			this.callApiOnClick = this.getContext().find('callApiOnClick').checked();
-			this.useDrillDownOnClick = this.getContext().find('useDrillDownOnClick').checked();
-			this.usePrefetch = this.getContext().find('usePrefetch').checked();
-			
-			// update row filters
-			this.preserveFilteredRows = this.getContext().find('preserveFilteredRows').checked();
-			this.setFilterLayer({back: this.preserveFilteredRows});
 
-			this.hoverFilteredRows = this.getContext().find('hoverFilteredRows').checked();
-			this.setFilterLayer({hover: this.hoverFilteredRows});
+			
 
 			// update grid
 			if(this.getContext().find('showGrid').checked()){
@@ -2320,6 +2603,237 @@
 			} else {
 				// update rows
 				this.updateRows();
+			}
+		}
+	},
+	
+	$server: {
+		rows: [],
+		lastPosition: 0,
+		
+		fetch: function(sourceId, widgetEntry, opts){
+			if(opts.treeOpts){
+				var needCompress = opts.compress;
+				var batchSize = opts.batchSize || 50;
+				opts.compress = false;
+				
+				if(opts.reset){
+					this.rows = [];
+					this.lastPosition = 0;
+					
+					var extQuery = opts.layers.main;
+					var hasContextFilter = extQuery.$postFilter && Object.keys(extQuery.$postFilter).length > 0;
+					var hasCubeFilter = extQuery.$cubeFilter && Object.keys(extQuery.$cubeFilter).length > 0;
+					
+					// generate expanded map
+					var expandedMap = {};
+					for(var i = 0; i < opts.treeOpts.expanded.length; i++){
+						expandedMap[opts.treeOpts.expanded[i]] = true;
+					}
+
+					// generate collapsed map
+					var collapsedMap = {};
+					for(var i = 0; i < opts.treeOpts.collapsed.length; i++){
+						collapsedMap[opts.treeOpts.collapsed[i]] = true;
+					}
+
+					// tree functions
+					var idMap = {};
+					var pIdMap = {};
+					var tree = [];
+					function getBindingData(row, binding){
+						var val = null;
+						var d = row.main || row.back;
+						if(binding.indexOf('.') >= 0){
+							// dot-split function
+							if(d){
+								var bParts = binding.split('.');
+								var curScope = d;
+								for(var i = 0; i < bParts.length; i++){
+									curScope = curScope[bParts[i]];
+									if(!JSB.isDefined(curScope)){
+										break;
+									}
+								}
+								val = curScope;
+							}
+							
+						} else {
+							// direct binding
+							if(d){
+								val = d[binding];
+							}
+						}
+						
+						return val;
+					}
+
+					function appendToTree(rows){
+						for(var i = 0; i < rows.length; i++){
+							var row = rows[i];
+							var id = getBindingData(row, opts.treeOpts.idField);
+							var parentId = getBindingData(row, opts.treeOpts.parentField);
+							var node = {
+								id: id,
+								pId: parentId,
+								row: row,
+								matched: (row.main ? true : false),
+								children: []
+							};
+							idMap[id] = node;
+							if(pIdMap[id]){
+								node.children = pIdMap[id];
+								delete pIdMap[id];
+								if(!node.matched){
+									for(var c = 0; c < node.children.length; c++){
+										if(node.children[c].matched){
+											node.matched = true;
+											break;
+										}
+									}
+								}
+							}
+							if(parentId != opts.treeOpts.rootRowKeyValue){
+								if(idMap[parentId]){
+									idMap[parentId].children.push(node);
+									idMap[parentId].matched = idMap[parentId].matched || node.matched;
+								} else {
+									if(!pIdMap[parentId]){
+										pIdMap[parentId] = [];
+									}
+									pIdMap[parentId].push(node);
+								}
+							} else {
+								tree.push(node);
+							}
+							
+						}
+					}
+					
+					// construct rows
+					function serializeNode(node){
+						$this.rows.push(node.row);
+						if(!node.matched && !expandedMap[node.id] && !hasContextFilter){
+							return;
+						}
+						if(collapsedMap[node.id]){
+							return;
+						}
+						for(var i = 0; i < node.children.length; i++){
+							serializeNode(node.children[i]);
+						}
+					}
+					
+					function serializeTree(){
+						for(var i = 0; i < tree.length; i++){
+							serializeNode(tree[i]);
+						}
+					}
+
+
+					// translate tree
+					if(hasContextFilter || hasCubeFilter){
+	
+						
+						// combine leafs matching filter
+						var allRows = [];
+						while(true){
+							var rows = $base(sourceId, widgetEntry, opts);
+							opts.reset = false;
+							if(rows.length == 0){
+								break;
+							}
+							allRows = allRows.concat(rows);
+						}
+						
+						
+						
+						// collect parent nodes
+						var curRows = allRows;
+						var parentIds = [];
+						while(curRows && curRows.length > 0){
+							appendToTree(curRows);
+							var pIdArr = Object.keys(pIdMap);
+							if(pIdArr.length == 0){
+								break;
+							}
+							
+							// load parent nodes
+							var q = {$or:[]};
+							for(var i = 0; i < pIdArr.length; i++){
+								var curQ = {};
+								curQ[opts.treeOpts.idField] = {$eq:{$const:pIdArr[i]}};
+								q.$or.push(curQ);
+							}
+							var qOpts = {
+								extQuery: {$postFilter:q},
+								batchSize: pIdArr.length * 2
+							};
+							var pRows = $this.executeQuery(sourceId, widgetEntry, qOpts);
+							var newRows = [];
+							for(var i = 0; i < pRows.length; i++){
+								var e = {
+									back:pRows[i]
+								};
+								newRows.push(e);
+								
+							}
+							curRows = newRows;
+						}
+						
+						serializeTree();
+						
+					} else {
+						// open only specified nodes
+						var treeFilter = {$or:[]};
+
+						// add top nodes
+						var topQ = {};
+						topQ[opts.treeOpts.parentField] = {$eq:{$const:opts.treeOpts.rootRowKeyValue}};
+						treeFilter.$or.push(topQ);
+						
+						// add expanded
+						for(var i = 0; i < opts.treeOpts.expanded.length; i++){
+							var expQ = {};
+							expQ[opts.treeOpts.parentField] = {$eq:{$const:opts.treeOpts.expanded[i]}};
+							treeFilter.$or.push(expQ);
+						}
+						
+						if(opts.layers.main){
+							opts.layers.main.$postFilter = treeFilter;
+						}
+						if(opts.layers.back){
+							opts.layers.back.$postFilter = treeFilter;
+						}
+						
+						opts.reset = true;
+						var allRows = [];
+						while(true){
+							var rows = $base(sourceId, widgetEntry, opts);
+							opts.reset = false;
+							if(rows.length == 0){
+								break;
+							}
+							allRows = allRows.concat(rows);
+						}
+						appendToTree(allRows);
+						serializeTree();
+					}
+				}
+				
+				var retRows = this.rows.slice(this.lastPosition, this.lastPosition + batchSize);
+				this.lastPosition += retRows.length;
+				
+				if(needCompress){
+					var encoded = $this.compressData(retRows);
+					encoded.widgetOpts = $this.extendWidgetOpts(opts.widgetOpts);
+					return encoded;
+				} else {
+					return retRows;
+				}
+
+			} else {
+				return $base(sourceId, widgetEntry, opts);
 			}
 		}
 	}

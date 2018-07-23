@@ -10,6 +10,16 @@
     },
     $scheme: {
         series: {
+	        linkedFields: {
+	            name: {
+	                type: 'string',
+	                repeat: true
+	            },
+	            data: {
+	                type: 'number',
+	                repeat: true
+	            }
+	        },
             items: {
                 seriesItem: {
                     items: {
@@ -31,8 +41,7 @@
                         innerSize: {
                             render: 'item',
                             name: 'Внутренний диаметр',
-                            valueType: 'string',
-                            //defaultValue: '0'
+                            valueType: 'string'
                         },
                         dataLabels: {
                             render: 'group',
@@ -47,8 +56,7 @@
                                 distance: {
                                     render: 'item',
                                     name: 'Расстояние от внешнего радиуса',
-                                    valueType: 'number',
-                                    //defaultValue: 30
+                                    valueType: 'number'
                                 }
                             }
                         }
@@ -141,8 +149,9 @@
             $this.setInitialized();
         },
 
-        refresh: function(opts){
+        onRefresh: function(opts){
             if(!$base(opts)){
+                this.ready();
                 return;
             }
 
@@ -168,6 +177,7 @@
             }
 
             if(!this._resolvePointFilters(this._schemeOpts.bindings)){
+                this.ready();
                 return;
             }
 
@@ -179,7 +189,13 @@
 
             try {
                 function fetch(isReset){
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, widgetOpts){
+                    $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, widgetOpts){
+                        if(fail){
+                            $this.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
@@ -210,10 +226,6 @@
                 }
 
                 function resultProcessing(){
-                    if(opts && opts.isCacheMod){
-                        $this.storeCache(data);
-                    }
-
                     $this.buildChart(data);
 
                     $this.getElement().loader('hide');
@@ -224,6 +236,8 @@
                 console.log('PieChart load data exception');
                 console.log(ex);
                 $this.getElement().loader('hide');
+            } finally {
+            	
             }
         },
 

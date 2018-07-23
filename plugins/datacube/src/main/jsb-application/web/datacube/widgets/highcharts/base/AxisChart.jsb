@@ -22,7 +22,10 @@
                         categories: {
                             render: 'dataBinding',
                             name: 'Категории',
-                            linkTo: 'source'
+                            linkTo: 'source',
+                            autocomplete: {
+                                type: 'string'
+                            }
                         },
                         linkedTo: {
                             render: 'select',

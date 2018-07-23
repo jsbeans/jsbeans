@@ -15,6 +15,10 @@
 
 		$constructor: function(){
 			$base();
+
+			$this.defaults = Config.has('jdbc.connection.defaults')
+			        ? Config.get('jdbc.connection.defaults')
+			        : {};
 		},
 
 		JDBCDrivers: {
@@ -46,11 +50,16 @@
 
 		getConnection: function(url, properties) {
 		    var properties = properties || {};
-
 		    var connectionProps = new Properties();
             for (var p in properties) if (properties.hasOwnProperty(p)) {
                 connectionProps.put(p, properties[p]);
             }
+            for (var p in $this.defaults) if ($this.defaults.hasOwnProperty(p)) {
+                if (!connectionProps.containsKey(p)) {
+                    connectionProps.put(p, $this.defaults[p]);
+                }
+            }
+
 		    return DriverManager.getConnection(url, connectionProps);
 		},
 

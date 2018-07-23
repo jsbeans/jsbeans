@@ -4,6 +4,13 @@
 	$singleton: true,
 
 	$constructor: function(){
+	    // for avicomp
+	    /*
+	    this._lang = {
+            decimalPoint: ',',
+            thousandsSep: ' '
+	    };
+	    */
 	    this._lang = {
             decimalPoint: (1.1).toLocaleString()[1],
             thousandsSep: (1.1).toLocaleString()[1] === ',' ? ' ' : ','

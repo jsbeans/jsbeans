@@ -60,8 +60,8 @@
 
 			var uploadItem = this.toolbar.addItem({
 				key: 'import',
-				tooltip: 'Импортировать файл',
-				element: '<div class="icon"><input type="file" style="display: none;" /></div>',
+				tooltip: 'Импортировать файлы',
+				element: '<div class="icon"><input type="file" multiple style="display: none;" /></div>',
 				click: function(evt, id, obj){
 					var input = obj.wrapper.find('input[type="file"]');
 					if(evt.target == input.get(0)){
@@ -71,53 +71,62 @@
 				}
 			});
 			uploadItem.wrapper.find('input[type="file"]').change(function(){
-				var self = this;
-				var item = $this.tree.getSelected();
-				var parentNode = null;
-				var parentKey = null;
-				if(item == null){
-					// choose root
-				} else {
-					if(JSB().isArray(item)){
-						item = item[0];
-					}
-					if(JSB().isInstanceOf(item.obj, 'JSB.Workspace.FolderNode')){
-						parentNode = item.obj;
-						parentKey = parentNode.treeNode.key;
+				try {
+					var self = this;
+					var item = $this.tree.getSelected();
+					var parentNode = null;
+					var parentKey = null;
+					if(item == null){
+						// choose root
 					} else {
-						// move up to nearest parent
-						parentNode = $this.tree.get(item.parent).obj;
-						parentKey = parentNode.treeNode.key;
-					}
-				}
-				
-				var files = [];
-				for(var i = 0; i < this.files.length; i++ ){
-					files.push(this.files[i]);
-				}
-				
-				$this.expandNode(parentKey, function(){
-					for(var i = 0; i < files.length; i++ ){
-						var file = files[i];
-						// upload file
-						var uploadNode = new UploadNode({
-							file: file, 
-							node: parentNode, 
-							item: null, 
-							tree: $this.tree,
-							w: $this,
-							workspace: $this.currentWorkspace
-						});
-						var curTreeNode = $this.tree.addNode({
-							key: JSB().generateUid(),
-							element: uploadNode,
-						}, parentKey);
-						uploadNode.treeNode = curTreeNode;
-						uploadNode.execute();
+						if(JSB().isArray(item)){
+							item = item[0];
+						}
+						var curItem = item;
+						while(curItem){
+							if(JSB().isInstanceOf(curItem.obj, 'JSB.Workspace.FolderNode')){
+								parentNode = curItem.obj;
+								parentKey = parentNode.treeNode.key;
+								break;
+							}
+							if(!curItem.parent){
+								break;
+							}
+							curItem = $this.tree.get(curItem.parent);
+						}
 					}
 					
-				});
+					var files = [];
+					for(var i = 0; i < this.files.length; i++ ){
+						files.push(this.files[i]);
+					}
+					
+					$this.expandNode(parentKey, function(){
+						for(var i = 0; i < files.length; i++ ){
+							var file = files[i];
+							// upload file
+							var uploadNode = new UploadNode({
+								file: file, 
+								node: parentNode, 
+								item: null, 
+								tree: $this.tree,
+								w: $this,
+								workspace: $this.currentWorkspace
+							});
+							var curTreeNode = $this.tree.addNode({
+								key: JSB().generateUid(),
+								element: uploadNode,
+							}, parentKey);
+							uploadNode.treeNode = curTreeNode;
+							uploadNode.execute();
+						}
+						
+					});
+				} catch(e){
+					JSB.getLogger().error(e);
+				}
 				
+//				uploadItem.wrapper.find('input[type="file"]').val('');
 			});
 			
 			var downloadItem = this.toolbar.addItem({

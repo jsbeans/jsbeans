@@ -2,6 +2,43 @@
     overflow: visible;
 }
 
+.scheme .basicRender.advancedRender {
+    display: none;
+}
+
+.scheme.advancedMode .basicRender.advancedRender {
+    display: block;
+}
+
+.scheme > .clearfix > .advancedBtn {
+    float: right;
+    cursor: pointer;
+    font-size: 1.1em;
+}
+
+.scheme > .clearfix > .advancedBtn > i {
+    margin-left: 5px;
+    transition: 0.2s ease-out;
+}
+
+.scheme.advancedMode > .clearfix > .advancedBtn > i {
+    color: green;
+}
+
+.scheme > .clearfix > .advancedBtn:hover {
+    opacity: 0.8;
+}
+
+.scheme > .clearfix > .advancedBtn:hover > i {
+    -webkit-transform: rotateZ(360deg);
+    -moz-transform: rotateZ(360deg);
+    transform: rotateZ(360deg);
+}
+
+.scheme > .clearfix {
+    overflow: auto;
+}
+
 .scheme i.btn {
     cursor: pointer;
     font-size: 16px;

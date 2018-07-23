@@ -2,16 +2,23 @@
 	$name: 'Unimap.Render.SourceBinding',
 	$parent: 'Unimap.Render.Item',
 	$client: {
-	    $require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button'],
+	    $require: ['JSB.Controls.Editor', 'DataCube.Providers.DataProviderRepository', 'JSB.Widgets.RendererRepository', 'JSB.Controls.Button', 'Unimap.Render.DataBindingCache'],
 
 	    _beans: [],
+	    _dataList: [],
+	    _bindingsInfo: {},
+	    _fields: [],
 	    _render: null,
+	    _resolvedFields: {},
 	    _disabled: false,
 	    _items: [],
 
 	    construct: function(){
 	        this.addClass('sourceBindingRender');
 	        this.loadCss('SourceBinding.css');
+
+	        this.createDataList();
+
 	        $base();
 	    },
 
@@ -80,6 +87,51 @@
             }
 	    },
 
+	    createDataList: function(){
+	        function collectFields(desc, items, path){
+	        	if(!desc){
+	        		return;
+	        	}
+	        	if(desc.type == 'array'){
+	        		collectFields(desc.arrayType, items, path);
+	        	} else if(desc.type == 'object'){
+	        		var fieldArr = Object.keys(desc.record);
+	        		fieldArr.sort(function(a, b){
+	        			return a.toLowerCase().localeCompare(b.toLowerCase());
+	        		});
+	        		for(var i = 0; i < fieldArr.length; i++){
+	        			var f = fieldArr[i];
+	        			var rf = desc.record[f];
+	        			var curPath = (path ? path + '.' : '') + f;
+	        			var schemeRef = JSB.merge({field: f}, rf);
+	        			var item = {
+                            key: curPath,
+                            value: $this.$('<div class="sliceRender">' + f + '</div>'),
+                            child: [],
+                            scheme: schemeRef
+                        };
+                        $this._fields.push(schemeRef);
+	        			$this._bindingsInfo[curPath] = schemeRef;
+	        			items.push(item);
+	        			collectFields(rf, item.child, curPath);
+	        		}
+	        	}
+	        }
+
+	        this._fields = [];
+	        this._dataList = [];
+	        this._bindingsInfo = {};
+
+	        if(!this._values.values || !this._values.values[0]){
+	            return;
+	        }
+
+	        collectFields(this._values.values[0].binding, this._dataList, '');
+
+            DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_dataList', this._dataList);
+            DataBindingCache.put(this.getContext(), this.getKey(), 'DataBinding_bindingsInfo', this._bindingsInfo);
+	    },
+
 	    destroy: function(){
             if(this._render){
                 this._render.destroy();
@@ -128,6 +180,66 @@
 	        }
 
 	        return dataSchemes;
+	    },
+
+	    getField: function(key){
+	        return this._resolvedFields[key];
+	    },
+
+	    getFields: function(){
+	        return this._fields;
+	    },
+
+	    resolveLinkedFields: function(){
+	        function getField(type){
+                for(var i = 0; i < $this._fields.length; i++){
+                    if(!$this._fields[i].used){
+                        if(type){
+                            var fieldType = null;
+
+                            switch($this._fields[i].type){
+                                case 'integer':
+                                    fieldType = 'number';
+                                    break;
+                                default:
+                                    fieldType = $this._fields[i].type;
+                            }
+
+                            if(fieldType === type){
+                                $this._fields[i].used = true;
+                                return $this._fields[i];
+                            }
+                        } else {
+                            $this._fields[i].used = true;
+                            return $this._fields[i];
+                        }
+                    }
+                }
+	        }
+
+	        var linkedRenders = this.getLinkedRenders(),
+	            excludeKeys = [];
+
+	        for(var i = 0; i < linkedRenders.length; i++){
+	            if(JSB.isInstanceOf(linkedRenders[i], 'Unimap.Render.AutocompleteGroup')){
+	                excludeKeys = excludeKeys.concat(Object.keys(linkedRenders[i].getScheme().linkedFields));
+	                continue;
+	            }
+
+	            if(JSB.isInstanceOf(linkedRenders[i], 'Unimap.Render.DataBinding') && excludeKeys.indexOf(linkedRenders[i].getKey()) < 0){
+	                var autocomplete = linkedRenders[i].getScheme().autocomplete;
+
+	                if(!autocomplete){
+	                    continue;
+	                }
+
+	                var val = getField(autocomplete.type);
+
+                    if(val){
+                        this._resolvedFields[linkedRenders[i].getKey()] = val.field;
+                    }
+	            }
+	        }
 	    },
 
 	    setBinding: function(entry, itemIndex){
@@ -244,8 +356,19 @@
 		},
 
 		changeBinding: function(itemIndex){
+		    var needResolve = false;
+		    if(!this._values.values[0].binding){
+		        needResolve = true;
+		    }
+
 		    this._values.values[itemIndex] = {
 		        binding: this._items[itemIndex].dataScheme,
+		    }
+		    DataBindingCache.remove(this.getContext(), this.getKey());
+		    this.createDataList();
+
+		    if(needResolve){
+		        this.resolveLinkedFields();
 		    }
 
 		    this.onchange();

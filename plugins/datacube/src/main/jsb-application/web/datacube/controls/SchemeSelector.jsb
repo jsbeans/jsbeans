@@ -1,9 +1,10 @@
 {
 	$name: 'DataCube.Controls.SchemeSelector',
 	$parent: 'JSB.Widgets.ComboBox',
-	
+	$require: ['Unimap.Render.DataBindingCache'],
 	$client: {
 		options: {
+		    clearBtn: false,
 			tree: true,
 			key: 'schemeSelector',
 			selectNodes: true
@@ -14,6 +15,8 @@
 		$constructor: function(opts){
 			var items = opts.items;
 			var value = opts.value;
+			this.context = opts.context;
+			this.sourceKey = opts.sourceKey;
 			if(JSB.isDefined(opts.items)){
 				delete opts.items;
 			}
@@ -42,8 +45,14 @@
 		
 		setItems: function(items){
 			$this.schemeItems = items;
-			$this.schemeMap = {};
-			var nItems = $this.translateItems();
+			var nItems = DataBindingCache.get(this.context, this.sourceKey, 'SchemeSelectorItems');
+			$this.schemeMap = DataBindingCache.get(this.context, this.sourceKey, 'SchemeSelectorMap');
+			if(!nItems || !$this.schemeMap){
+				$this.schemeMap = {};
+				nItems = $this.translateItems();
+				DataBindingCache.put(this.context, this.sourceKey, 'SchemeSelectorItems', nItems);
+				DataBindingCache.put(this.context, this.sourceKey, 'SchemeSelectorMap', $this.schemeMap);
+			}
 			return $base(nItems);
 		},
 		
@@ -79,6 +88,8 @@
 					
 					fieldElt.prepend('<div class="icon"></div>');
 					fieldElt.append('<div class="type">'+$this.schemeMap[valObj.key].type+'</div>');
+					fieldElt.attr('type', $this.schemeMap[valObj.key].type);
+					fieldElt.attr('title', $this.schemeMap[valObj.key].field);
 					
 					this.find('> ._dwp_cbContainer').empty().append(fieldElt);
 					this.selectedObject = valObj;
@@ -92,6 +103,18 @@
 					this.options.onChange(valObj ? valObj.key : null, valObj);
 				}
 			}
+
+            if(this.options.clearBtn){
+                this.addClass('hasClearBtn');
+
+                var clearBtn = this.$('<i class="clearBtn fas fa-times"></i>');
+                clearBtn.click(function(evt){
+                    evt.stopPropagation();
+                    $this.setData();
+                    clearBtn.remove();
+                });
+                this.getElement().append(clearBtn);
+            }
 		},
 		
 		setValue: function(val){

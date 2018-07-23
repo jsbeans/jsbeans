@@ -10,6 +10,7 @@
 
             this._scheme = opts.scheme;
             this._values = opts.values.values;
+            this._context = opts.context;
 
             if(opts.values.commonFields){
                 this.createCommonFieldsMap(opts.values.commonFields);
@@ -19,6 +20,19 @@
                 this._rendersMap = opts.rendersMap;
             } else {
                 this._rendersMap = JSB.getInstance(opts.bootstrap ? opts.bootstrap : 'Unimap.Bootstrap').getRendersMap();
+            }
+
+            if(opts.advancedRenders){
+                var advBtn = this.$('<span class="advancedBtn">Расширенные настройки<i class="fas fa-cog"></i></span>'),
+                    advBtnCont = this.$('<div class="clearfix"></div>');
+
+                advBtn.click(function(){
+                    $this.toggleClass('advancedMode');
+                });
+
+                advBtnCont.append(advBtn);
+
+                this.append(advBtnCont);
             }
 
             this.construct();
@@ -78,11 +92,11 @@
                 parent: parent,
                 options: opts,
                 schemeController: this,
-                onchange: function(value){
+                onchange: function(value, callback){
                     if(JSB.isFunction($this.options.onchange)){
                         $this.options.onchange.call($this, key, value);
                     }
-                    $this.updateLinks(key, value);
+                    $this.updateLinks(key, value, callback);
                     /*
                     if(scheme.commonField){
                         $this.updateCommonFields(key, scheme.commonField, value);
@@ -169,6 +183,10 @@
 	        return this._commonFieldsMap[commonGroup] && this._commonFieldsMap[commonGroup].commonValues;
 	    },
 
+	    getContext: function(){
+	        return this._context;
+	    },
+
 	    getLinkedFields: function(){
 	        var links = {};
 
@@ -184,6 +202,10 @@
 	        }
 
 	        return links;
+	    },
+
+	    getLinkedRenders: function(key){
+	        return this._linksMap[key].linkedRenders;
 	    },
 
 	    getRenderByName: function(name){
@@ -263,14 +285,14 @@
 	        }
 	    },
 
-	    updateLinks: function(key, value){
+	    updateLinks: function(key, value, callback){
 	        if(this._linksMap[key]){
 	            if(!this._linksMap[key].render){
 	                this._linksMap[key].render = this.findRenderByKey(key);
 	            }
 
 	            for(var i = 0; i < this._linksMap[key].linkedRenders.length; i++){
-	                this._linksMap[key].linkedRenders[i].changeLinkTo(value, this._linksMap[key].render);
+	                this._linksMap[key].linkedRenders[i].changeLinkTo(value, this._linksMap[key].render, callback);
 	            }
 	        }
 	    }

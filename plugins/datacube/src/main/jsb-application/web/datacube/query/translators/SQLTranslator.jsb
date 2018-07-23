@@ -346,6 +346,10 @@
                     return 'substring(' + this._translateExpression(exp[op].$field, dcQuery, useAlias) + " for " + exp[op].$length + ')';
                 case '$trim':
                     return 'TRIM(both from ' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
+                case '$regexpReplace':
+                    return 'REGEXP_REPLACE(' + this._translateExpression(exp[op].$field, dcQuery, useAlias)
+                        + ', \'' + exp[op].$pattern + '\', \'' + exp[op].$replacementString + '\', \'' + exp[op].$flags + '\')';
+
 
                 case '$toInt':
                     return 'CAST((' + wrapEmptyToNull(this._translateExpression(exp[op], dcQuery, useAlias)) + ' ) as int)';
@@ -384,6 +388,8 @@
 
             // aggregate operators
             switch(op) {
+                case '$recursiveSelect':
+                    return this._translateRecursiveSelect(exp[op], dcQuery);
                 case '$distinct':
                     return 'DISTINCT(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$any':

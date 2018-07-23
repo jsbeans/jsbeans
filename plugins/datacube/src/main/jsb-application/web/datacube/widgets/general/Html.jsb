@@ -151,8 +151,6 @@
 	    }
 	},
 	$client: {
-		ready: false,
-		
 		$constructor: function(opts){
 			var doT = {
 				version: "1.0.3",
@@ -295,9 +293,14 @@
 			this.loadCss('Html.css');
 			$this.setInitialized();
 		},
-		
+
 		refresh: function(opts){
+		    this.onRefresh(opts);
+		},
+		
+		onRefresh: function(opts){
 			$base();
+
 			var recordContext = this.getContext().find('record');
 
 			if(opts && opts.refreshFromCache){
@@ -311,7 +314,10 @@
                 }
 			} else {
 			    if(recordContext.hasBinding && recordContext.hasBinding()){
-                    this.fetchBinding(recordContext, {batchSize: 1}, function(){
+                    this.fetch(recordContext, {batchSize: 1}, function(data, fail){
+                    	if(fail){
+                    		return;
+                    	}
                         recordContext.next();
                         $this.draw(opts ? opts.isCacheMod : false);
                     });

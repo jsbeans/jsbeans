@@ -94,14 +94,18 @@
 				'position': 'absolute',
 				'z-index': 1,
 				'left': '50%',
-				'top': '50%'
+				'top': '50%',
+				'width': 0,
+				'height': 0
 			});
 			
 			self.toolContainer = self.$('<div class="_jsb_diagramToolContainer"></div>');
 			self.toolContainer.css({
 				'position': 'absolute',
 				'left': '50%',
-				'top': '50%'
+				'top': '50%',
+				'width': 0,
+				'height': 0
 			});
 			elt.prepend(self.toolContainer);
 

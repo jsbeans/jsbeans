@@ -6,27 +6,11 @@
 	    _editors: [],
 
 	    construct: function(){
-	        this.addClass('itemRender');
+	        this.addClass('itemRender checked');
 	        this.loadCss('Item.css');
 
 	        if(this._scheme.optional){
 	            this.addClass('optional');
-
-	            function hideInput(b){
-                    if(b){
-                        if($this._scheme.multiple){
-                            $this.multipleContainer.removeClass('hidden');
-                        } else {
-                            $this._editors[0] && $this._editors[0].removeClass('hidden');
-                        }
-                    } else {
-                        if($this._scheme.multiple){
-                            $this.multipleContainer.addClass('hidden');
-                        } else {
-                            $this._editors[0] && $this._editors[0].addClass('hidden');
-                        }
-                    }
-	            }
 
 	            this._values.checked = JSB.isDefined(this._values.checked) ? this._values.checked : this._scheme.optional == 'checked';
 
@@ -36,7 +20,11 @@
 	                onchange: function(b){
 	                    $this._values.checked = b;
 
-	                    hideInput(b);
+	                    if(b){
+	                        $this.addClass('checked');
+	                    } else {
+	                        $this.removeClass('checked');
+	                    }
 
 	                    $this.options.onchange.call($this, $this._values);
 	                }
@@ -82,8 +70,8 @@
                 }
 	        }
 	        
-	        if(this._scheme.optional){
-                hideInput(this._values.checked);
+	        if(this._scheme.optional && !this._values.checked){
+                this.removeClass('checked');
 	        }
 	    },
 
@@ -123,7 +111,7 @@
                 }
             } else {
                 var editor = new Editor({
-                    type: this._scheme.editorOpts && this._scheme.editorOpts.type ? this._scheme.editorOpts.type : undefined,
+                    type: this._scheme.editorOpts && this._scheme.editorOpts.type,
                     value: values.value,
                     onchange: function(){
                         var newValue = this.getValue();

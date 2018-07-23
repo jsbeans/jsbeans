@@ -41,6 +41,10 @@
 			Bridge.sleep(msec);
 		},
 		
+		waitJavaObject: function(javaObj){
+			Bridge.waitJavaObject(javaObj);
+		},
+		
 		tell: function(svcName, msgType, msgBody, node){
 			Bridge.tell({
 				serviceName: svcName,

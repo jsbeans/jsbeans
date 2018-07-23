@@ -71,6 +71,10 @@
             render: 'group',
             name: 'Настройки отображения',
             items: {
+                colorScheme: {
+                    render: 'styleBinding',
+                    name: 'Цветовая схема'
+                },
                 layout: {
                     render: 'select',
                     name: 'Алгоритм построения слоёв',
@@ -129,8 +133,7 @@
 
             JSB().loadScript(['tpl/carrotsearch/foamtree.js'], function(){
                     $this.setInitialized();
-                }
-            );
+            });
 
             this.container.resize(function(){
                 if(!$this.container.is(':visible') || !$this.foamtree){
@@ -144,14 +147,16 @@
 
             this.container.visible(function(evt, isVisible){
                 if($this._isNeedUpdate && isVisible){
-                    $this._buildChart($this.getCache());
+                    $this._buildChart($this._data);
+                    $this.ready();
                 }
             });
         },
 
-        refresh: function(opts){
+        onRefresh: function(opts){
         	$base(opts);
         	if(opts && opts.initiator == this){
+        	    $this.ready();
         	    return;
         	}
 
@@ -166,6 +171,7 @@
         	    var dataSource = this.getContext().find('source');
 
                 if(!dataSource.hasBinding()){
+                    $this.ready();
                     return;
                 }
 
@@ -205,13 +211,9 @@
         	    }
         	}
 
-            if(opts && opts.refreshFromCache){
-                this.buildChart(this.getCache());
-                return;
-            }
-
             var data = [],
-                colorCount = 0;
+                colorCount = 0,
+                widgetOpts = this._widgetOpts ? undefined : { styleScheme: this.getContext().find('settings colorScheme').value() };
 
             this.getElement().loader();
 
@@ -227,10 +229,20 @@
 
             function fetch(isReset){
                 try{
-                    $this.fetchBinding($this._dataSource, { fetchSize: 100, reset: isReset }, function(res, fail, serverWidgetOpts){
+                    $this.fetch($this._dataSource, { batchSize: 100, reset: isReset, widgetOpts: isReset ? widgetOpts : undefined }, function(res, fail, serverWidgetOpts){
+                    	if(fail){
+                            $this.ready();
+                            $this.getElement().loader('hide');
+                            return;
+                        }
+
                         if(res.length === 0){
                             resultProcessing();
                             return;
+                        }
+
+                        if(serverWidgetOpts){
+                            $this._widgetOpts = serverWidgetOpts;
                         }
 
                         var resCount = 0;
@@ -253,20 +265,16 @@
                                         curCat[name].weight += value;
                                     }
                                 } else {
-                                    var color;
-                                    /*
-                                    if(i === 0){
-                                        if($this._widgetOpts.styleScheme){
-                                            color = $this._widgetOpts.styleScheme[colorCount%$this._widgetOpts.styleScheme.length];
-                                        } else {
-                                            color = Highcharts.getOptions().colors[colorCount%10];
-                                        }
+                                    var color = undefined;
+
+                                    if(i === 0 && $this._widgetOpts.styleScheme){
+                                        color = $this._widgetOpts.styleScheme[colorCount%$this._widgetOpts.styleScheme.length];
                                     }
-                                    */
 
                                     curCat[name] = {
                                         binding: $this._schemeOpts.series[i].nameSelector.binding(),
                                         child: {},
+                                        color: color,
                                         image: $this._schemeOpts.series[i].url ? Formatter.format($this._schemeOpts.series[i].url, parseFormatterData(res[resCount])) : undefined,
                                         showLabels: $this._schemeOpts.series[i].showLabels,
                                         name: name,
@@ -302,6 +310,7 @@
                             var groups = []
                                 group = {
                                     binding: data[i].binding,
+                                    color: data[i].color,
                                     groups: groups,
                                     label: data[i].name,
                                     showLabels: data[i].showLabels,
@@ -351,8 +360,6 @@
                     var seriesData = [];
                     resolveData(seriesData, data);
 
-                    $this.storeCache(seriesData);
-
                     $this.buildChart(seriesData);
 
                     $this.getElement().loader('hide');
@@ -369,18 +376,20 @@
         buildChart: function(data){
             if(this.container.is(':visible')){
                 this._buildChart(data);
+                this.ready();
             } else {
                 this._isNeedUpdate = true;
+                this._data = data;
             }
         },
 
         _buildChart: function(data){
             if(this.foamtree){
-                this.foamtree.set({
+                this.foamtree.set(JSB.merge(this._styles, {
                     dataObject: {
                         groups: data
                     }
-                });
+                }));
 
                 this.foamtree.redraw();
             } else {
@@ -421,7 +430,7 @@
                         }
                     },
 
-                    // for images
+                    // images
                     groupContentDecorator: function (opts, props, vars) {
                         var group = props.group;
 
@@ -436,6 +445,7 @@
                         var now = Date.now();
 
                         // Don't draw default labels and polygons, we'll draw everything on our own.
+                        vars.groupLabelDrawn = false;
                         if(props.exposure >= 1){
                             vars.groupLabelDrawn = true;
                         } else {
@@ -498,8 +508,7 @@
                             // Rectangle inscribed in the polygon. We'll set the aspect ratio of the rectangle to be the
                             // same as the aspect ratio of the image. When the group is exposed, we'll draw the full
                             // image in the inscribed rectangle.
-                            group.inscribedBox = CarrotSearchFoamTree.geometry.rectangleInPolygon(
-                              props.polygon, props.polygonCenterX, props.polygonCenterY, group.image.width / group.image.height, 0.95);
+                            group.inscribedBox = CarrotSearchFoamTree.geometry.rectangleInPolygon(props.polygon, props.polygonCenterX, props.polygonCenterY, group.image.width / group.image.height, 0.95);
 
                             // Check if there's enough space for the label. If not, shift the inscribed box upwards a bit.
                             var descriptionHeight = group.boundingBox.y + group.boundingBox.h - group.inscribedBox.y - group.inscribedBox.h;
@@ -590,8 +599,24 @@
                           }
                         }
                     },
+                    groupContentDecoratorTriggering: "onSurfaceDirty",
 
-                    groupContentDecoratorTriggering: "onSurfaceDirty" //onShapeDirty
+                    // colors
+                    groupColorDecorator: function(opts, params, vars){
+                        if(params.group.color){
+                            vars.groupColor = params.group.color;
+                            vars.labelColor = "auto";
+                        }
+                    },
+
+                    incrementalDraw: 'none',
+
+                    // todo
+                    /*
+                    groupLabelDecorator: function(opts, props, vars){
+                        vars.labelText = vars.labelText;
+                    }
+                    */
                 }));
             }
 

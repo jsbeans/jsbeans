@@ -50,7 +50,7 @@
 		    - выражение/константа - типизированное значение в $const с дополнительными ограничениями
 		    - выражение/параметр - значение именованного параметра запроса
 		    */
-		
+
 		    /** Abstract expression value
 		    */
 		    this.Expression = function Expression(desc) {
@@ -118,7 +118,6 @@
 		    this.EObject = function EObject(desc) {
 		        desc.type = 'object';
 		        desc.expressionType = desc.expressionType || 'EObject';
-		        desc.expressionType = desc.expressionType || 'EObject';
 		        var _super = installSuper(this, new $this.Expression(desc));
 		    };
 		
@@ -150,6 +149,7 @@
 		        name: '$query',
 		        desc: 'Подзапрос',
 		        values: {
+		            '$views': '$views',
 		            '$context': '$contextName',
 		            '$filter': '$filter',
 		            '$groupBy': '$groupBy',
@@ -164,7 +164,18 @@
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
 		        },
-		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$offset']
+		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$offset', '$views']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$views',
+		        desc: 'Именованные запросы, представляющие собой виртуальные таблицы-источники',
+		        displayName: 'Именованные запросы',
+		        onlyInRootQuery: true,
+		        customKey: '#viewName',
+		        values: {
+		            '#viewName': '$query'
+		        },
 		    });
 
 		    new this.ComplexObject({
@@ -176,25 +187,25 @@
 		            '#outputFieldName': '$valueDefinition'
 		        },
 		    });
-		
+
 		    new this.Group({
 		    	name: '$from',
 		        displayName: 'Источник запроса',
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
 		    });
-		
+
 		    new this.Group({
 		    	name: '$valueDefinition',
 		        values: ['$const', '$expression', '$query', '$field', '$param', '$sql'],
 		    });
-		
+
 		    new this.Group({
 		        name: '$expression',
 		        values: [
 		            '$add', '$sub', '$mul', '$div', '$divz', '$mod', '$sqrt', '$pow2',
 		            '$greatest', '$least',
-		            '$splitString', '$substring', '$trim', '$concat',
+		            '$splitString', '$substring', '$trim', '$concat', '$regexpReplace',
 		            '$toInt', '$toDouble', '$toBoolean', '$toDate', '$toString', '$toTimestamp',
 		            '$dateMonthDay', '$dateWeekDay', '$dateYearDay', '$timeHour', '$timeMinute', '$timeSecond',
 		            '$dateYear', '$dateMonth', '$dateTotalSeconds', '$dateIntervalOrder',
@@ -204,6 +215,7 @@
 		            '$gsum', '$gcount', '$gmin', '$gmax', '$gavg',
 		            '$grmaxsum', '$grmaxcount', '$grmaxavg', '$grmax', '$grmin',
 		            '$if', '$coalesce',
+		            '$recursiveSelect',
 		            '$macros'
 		        ]
 		    });
@@ -349,12 +361,28 @@
 		        desc: 'Разделить строку на несколько (получить массив строк)',
 		        values: ['$splitStringExpr']
 		    });
-		    
+
 		    new this.ComplexObject({
 		        name: '$splitStringExpr',
 		        values: {
 		            '$field': '$valueDefinition',
 		            '$separator': '$constString'
+		        }
+		    });
+
+		    new this.SingleObject({
+		        name: '$recursiveSelect',
+		        category: 'Разное',
+		        desc: 'Выполнить рекурсивный аггрегируюий подзапрос',
+		        values: ['$recursiveSelectExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$recursiveSelectExpr',
+		        values: {
+		            '$aggregateExpr': '$valueDefinition',
+		            '$idField': '$valueDefinition',
+		            '$parentIdField': '$valueDefinition',
 		        }
 		    });
 
@@ -394,6 +422,22 @@
 		        }
 		    });
 
+		    new this.SingleObject({
+		        name: '$regexpReplace',
+		        category: 'Функции',
+		        desc: 'Замена подстроки с использованием регулярного выражения',
+		        values: ['$regexpReplaceExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$regexpReplaceExpr',
+		        values: {
+		            '$field': '$valueDefinition',
+		            '$pattern': '$constString',
+		            '$replacementString': '$constString',
+		            '$flags': '$constString',
+		        }
+		    });
 
 		    new this.SingleObject({
 		        name: '$coalesce',
@@ -604,7 +648,7 @@
 		    new this.SingleObject({
 		        name: '$flatArray',
 		        category: 'Функции агрегации',
-		        desc: 'Объединить все массивы в группы в один массив',
+		        desc: 'Объединить все массивы группы в один массив',
 		        aggregate: true,
 		        values: ['$field', '$const', '$expression', '$query', '$param'],
 		    });
@@ -1080,7 +1124,7 @@
 		        value: 0,
 		        editable: true
 		    });
-		
+
 		    new this.Group({
 		        name: '$finalize',
 		        category: 'Выражения запроса',

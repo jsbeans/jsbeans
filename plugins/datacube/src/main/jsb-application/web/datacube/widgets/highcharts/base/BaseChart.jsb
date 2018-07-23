@@ -12,14 +12,16 @@
             name: 'Фильтрующие поля',
             linkTo: 'source',
             multiple: true,
-            optional: true
+            optional: true,
+            advancedRender: true
 	    },
 
 	    series: {
-	        render: 'group',
+	        render: 'autocompleteGroup',
 	        name: 'Серии',
             collapsible: true,
             multiple: true,
+            linkTo: 'source',
             items: {
                 seriesItem: {
                     render: 'group',
@@ -38,29 +40,6 @@
                         name: {},
                         data: {},
                         date: {},
-                        tooltip: {
-                            render: 'group',
-                            name: 'Всплывающая подсказка',
-                            collapsible: true,
-                            items: {
-                                valueDecimals: {
-                                    render: 'item',
-                                    name: 'Число знаков после запятой',
-                                    valueType: 'number',
-                                    defaultValue: 2
-                                },
-                                valuePrefix: {
-                                    render: 'item',
-                                    name: 'Префикс значения',
-                                    valueType: 'string'
-                                },
-                                valueSuffix: {
-                                    render: 'item',
-                                    name: 'Суффикс значения',
-                                    valueType: 'string'
-                                }
-                            }
-                        },
                         visible: {
                             render: 'item',
                             name: 'Показывать по-умолчанию',
@@ -90,6 +69,29 @@
                                 }
                             }
                         },
+                        tooltip: {
+                            render: 'group',
+                            name: 'Всплывающая подсказка',
+                            collapsible: true,
+                            items: {
+                                valueDecimals: {
+                                    render: 'item',
+                                    name: 'Число знаков после запятой',
+                                    valueType: 'number',
+                                    defaultValue: 2
+                                },
+                                valuePrefix: {
+                                    render: 'item',
+                                    name: 'Префикс значения',
+                                    valueType: 'string'
+                                },
+                                valueSuffix: {
+                                    render: 'item',
+                                    name: 'Суффикс значения',
+                                    valueType: 'string'
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -99,154 +101,53 @@
 
         yAxis: {},
 
-	    chart: {
+        // Авторская подпись
+	    credits: {
 	        render: 'group',
-	        name: 'Настройки диаграммы',
+	        name: 'Авторская подпись',
             collapsible: true,
             collapsed: true,
+            advancedRender: true,
             items: {
-                animation: {
+                enabled: {
                     render: 'item',
-                    name: 'Анимация',
-                    optional: 'checked',
-                    editor: 'none'
-                },
-                inverted: {
-                    render: 'item',
-                    name: 'Инвертировать оси',
+                    name: 'Активна',
                     optional: true,
                     editor: 'none'
                 },
-                colorScheme: {
-                    render: 'styleBinding',
-                    name: 'Цветовая схема'
-                },
-                /*
-                backgroundColor: {
-                    render: 'item',
-                    name: 'Анимация',
-                }
-                */
-            }
-	    },
-
-	    header: {
-	        render: 'group',
-	        name: 'Заголовок',
-            collapsible: true,
-            collapsed: true,
-            items: {
                 text: {
                     render: 'item',
                     name: 'Текст',
                     valueType: 'string',
-                    defaultValue: ''
+                    defaultValue: 'Highcharts.com'
                 },
-                align: {
-                    render: 'select',
-                    name: 'Горизонтальное выравнивание',
-                    items: {
-                        center: {
-                            name: 'По центру'
-                        },
-                        left: {
-                            name: 'По левому краю'
-                        },
-                        right: {
-                            name: 'По правому краю'
-                        }
-                    }
-                },
-                verticalAlign: {
-                    render: 'select',
-                    name: 'Вертикальное выравнивание',
-                    items: {
-                        none: {
-                            name: 'Нет'
-                        },
-                        top: {
-                            name: 'По верхнему краю'
-                        },
-                        middle: {
-                            name: 'По центру'
-                        },
-                        bottom: {
-                            name: 'По нижнему краю'
-                        }
-                    }
-                },
-                floating: {
+                href: {
                     render: 'item',
-                    name: 'Обтекание',
-                    optional: true,
-                    editor: 'none'
-                },
-                margin: {
-                    render: 'item',
-                    name: 'Отступ',
-                    valueType: 'number',
-                    defaultValue: 15
+                    name: 'Ссылка',
+                    valueType: 'string',
+                    defaultValue: 'http://www.highcharts.com'
                 },
                 fontColor: {
                     render: 'item',
                     name: 'Цвет шрифта',
                     editor: 'JSB.Widgets.ColorEditor',
-                    defaultValue: '#333333'
+                    defaultValue: '#999999'
                 },
                 fontSize: {
                     render: 'item',
                     name: 'Размер шрифта',
                     valueType: 'number',
-                    defaultValue: 18
-                },
-                x: {
-                    render: 'item',
-                    name: 'X',
-                    valueType: 'number',
-                    defaultValue: 0
-                },
-                y: {
-                    render: 'item',
-                    name: 'Y',
-                    valueType: 'number',
-                    defaultValue: 10
-                }
-            }
-	    },
-
-	    legend: {
-	        render: 'group',
-	        name: 'Легенда',
-            collapsible: true,
-            collapsed: true,
-            items: {
-                enabled: {
-                    render: 'item',
-                    name: 'Активна',
-                    optional: 'checked',
-                    editor: 'none'
-                },
-                layout: {
-                    render: 'select',
-                    name: 'Расположение',
-                    items: {
-                        horizontal: {
-                            name: 'Горизонтальное'
-                        },
-                        vertical: {
-                            name: 'Вертикальное'
-                        }
-                    }
+                    defaultValue: 9
                 },
                 align: {
                     render: 'select',
                     name: 'Горизонтальное выравнивание',
                     items: {
-                        center: {
-                            name: 'По центру'
-                        },
                         left: {
                             name: 'По левому краю'
+                        },
+                        center: {
+                            name: 'По центру'
                         },
                         right: {
                             name: 'По правому краю'
@@ -257,140 +158,33 @@
                     render: 'select',
                     name: 'Вертикальное выравнивание',
                     items: {
-                        bottom: {
-                            name: 'По нижнему краю'
+                        top: {
+                            name: 'По верхнему краю'
                         },
                         middle: {
                             name: 'По центру'
                         },
-                        top: {
-                            name: 'По верхнему краю'
+                        bottom: {
+                            name: 'По нижнему краю'
                         }
                     }
-                },
-                backgroundColor: {
-                    render: 'item',
-                    name: 'Цвет фона',
-                    editor: 'JSB.Widgets.ColorEditor'
-                },
-                borderColor: {
-                    render: 'item',
-                    name: 'Цвет границы',
-                    editor: 'JSB.Widgets.ColorEditor'
-                },
-                borderRadius: {
-                    render: 'item',
-                    name: 'Радиус границы',
-                    valueType: 'number',
-                    defaultValue: 0
-                },
-                borderWidth: {
-                    render: 'item',
-                    name: 'Толщина границы',
-                    valueType: 'number',
-                    defaultValue: 0
-                },
-                floating: {
-                    render: 'item',
-                    name: 'Обтекание',
-                    optional: true,
-                    editor: 'none'
-                },
-                itemDistance: {
-                    render: 'item',
-                    name: 'Интервал между элементами легенды',
-                    valueType: 'number',
-                    defaultValue: 20
-                },
-                itemWidth: {
-                    render: 'item',
-                    name: 'Ширина подписей',
-                    valueType: 'number'
-                },
-                itemMarginTop: {
-                    render: 'item',
-                    name: 'Отступ сверху',
-                    valueType: 'number',
-                    defaultValue: 0
-                },
-                itemMarginBottom: {
-                    render: 'item',
-                    name: 'Отступ снизу',
-                    valueType: 'number',
-                    defaultValue: 0
-                },
-                itemStyle: {
-                    render: 'group',
-                    name: 'Стиль подписей',
-                    collapsible: true,
-                    items: {
-                        color: {
-                            render: 'item',
-                            name: 'Цвет',
-                            editor: 'JSB.Widgets.ColorEditor',
-                            defaultValue: '#333333'
-                        },
-                        fontSize: {
-                            render: 'item',
-                            name: 'Размер шрифта',
-                            valueType: 'number',
-                            defaultValue: 12
-                        },
-                        fontWeight: {
-                            render: 'item',
-                            name: 'Полнота шрифта',
-                            valueType: 'string',
-                            defaultValue: 'bold'
-                        }
-                    }
-                },
-                labelFormat: {
-                    render: 'formatter',
-                    name: 'Формат подписей',
-                    formatterOpts: {
-                        variables: [
-                            {
-                                alias: 'Имя серии',
-                                type: 'string',
-                                value: 'name'
-                            }
-                        ]
-                    },
-                    valueType: 'string',
-                    defaultValue: '{name}'
-                },
-                reversed: {
-                    render: 'item',
-                    name: 'Обратный порядок',
-                    optional: true,
-                    editor: 'none'
-                },
-                shadow: {
-                    render: 'item',
-                    name: 'Тень',
-                    optional: true,
-                    editor: 'none'
-                },
-                width: {
-                    render: 'item',
-                    name: 'Ширина',
-                    valueType: 'number'
                 },
                 x: {
                     render: 'item',
-                    name: 'Расположение по оси Х',
+                    name: 'X',
                     valueType: 'number',
-                    defaultValue: 0
+                    defaultValue: -10
                 },
                 y: {
                     render: 'item',
-                    name: 'Расположение по оси Y',
+                    name: 'Y',
                     valueType: 'number',
-                    defaultValue: 0
+                    defaultValue: -5
                 }
             }
 	    },
 
+	    // Всплывающая подсказка
 	    mainTooltip: {
 	        render: 'group',
 	        name: 'Всплывающая подсказка',
@@ -576,9 +370,305 @@
             }
 	    },
 
+	    // Заголовок
+	    header: {
+	        render: 'group',
+	        name: 'Заголовок',
+            collapsible: true,
+            collapsed: true,
+            items: {
+                text: {
+                    render: 'item',
+                    name: 'Текст',
+                    valueType: 'string',
+                    defaultValue: ''
+                },
+                align: {
+                    render: 'select',
+                    name: 'Горизонтальное выравнивание',
+                    items: {
+                        center: {
+                            name: 'По центру'
+                        },
+                        left: {
+                            name: 'По левому краю'
+                        },
+                        right: {
+                            name: 'По правому краю'
+                        }
+                    }
+                },
+                verticalAlign: {
+                    render: 'select',
+                    name: 'Вертикальное выравнивание',
+                    items: {
+                        none: {
+                            name: 'Нет'
+                        },
+                        top: {
+                            name: 'По верхнему краю'
+                        },
+                        middle: {
+                            name: 'По центру'
+                        },
+                        bottom: {
+                            name: 'По нижнему краю'
+                        }
+                    }
+                },
+                floating: {
+                    render: 'item',
+                    name: 'Обтекание',
+                    optional: true,
+                    editor: 'none'
+                },
+                margin: {
+                    render: 'item',
+                    name: 'Отступ',
+                    valueType: 'number',
+                    defaultValue: 15
+                },
+                fontColor: {
+                    render: 'item',
+                    name: 'Цвет шрифта',
+                    editor: 'JSB.Widgets.ColorEditor',
+                    defaultValue: '#333333'
+                },
+                fontSize: {
+                    render: 'item',
+                    name: 'Размер шрифта',
+                    valueType: 'number',
+                    defaultValue: 18
+                },
+                x: {
+                    render: 'item',
+                    name: 'X',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                y: {
+                    render: 'item',
+                    name: 'Y',
+                    valueType: 'number',
+                    defaultValue: 10
+                }
+            }
+	    },
+
+	    // Легенда
+	    legend: {
+	        render: 'group',
+	        name: 'Легенда',
+            collapsible: true,
+            collapsed: true,
+            items: {
+                enabled: {
+                    render: 'item',
+                    name: 'Активна',
+                    optional: 'checked',
+                    editor: 'none'
+                },
+                layout: {
+                    render: 'select',
+                    name: 'Расположение',
+                    items: {
+                        horizontal: {
+                            name: 'Горизонтальное'
+                        },
+                        vertical: {
+                            name: 'Вертикальное'
+                        }
+                    }
+                },
+                align: {
+                    render: 'select',
+                    name: 'Горизонтальное выравнивание',
+                    items: {
+                        center: {
+                            name: 'По центру'
+                        },
+                        left: {
+                            name: 'По левому краю'
+                        },
+                        right: {
+                            name: 'По правому краю'
+                        }
+                    }
+                },
+                verticalAlign: {
+                    render: 'select',
+                    name: 'Вертикальное выравнивание',
+                    items: {
+                        bottom: {
+                            name: 'По нижнему краю'
+                        },
+                        middle: {
+                            name: 'По центру'
+                        },
+                        top: {
+                            name: 'По верхнему краю'
+                        }
+                    }
+                },
+                backgroundColor: {
+                    render: 'item',
+                    name: 'Цвет фона',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
+                borderColor: {
+                    render: 'item',
+                    name: 'Цвет границы',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
+                borderRadius: {
+                    render: 'item',
+                    name: 'Радиус границы',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                borderWidth: {
+                    render: 'item',
+                    name: 'Толщина границы',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                floating: {
+                    render: 'item',
+                    name: 'Обтекание',
+                    optional: true,
+                    editor: 'none'
+                },
+                itemDistance: {
+                    render: 'item',
+                    name: 'Интервал между элементами легенды',
+                    valueType: 'number',
+                    defaultValue: 20
+                },
+                itemWidth: {
+                    render: 'item',
+                    name: 'Ширина подписей',
+                    valueType: 'number'
+                },
+                itemMarginTop: {
+                    render: 'item',
+                    name: 'Отступ сверху',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                itemMarginBottom: {
+                    render: 'item',
+                    name: 'Отступ снизу',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                itemStyle: {
+                    render: 'group',
+                    name: 'Стиль подписей',
+                    collapsible: true,
+                    items: {
+                        color: {
+                            render: 'item',
+                            name: 'Цвет',
+                            editor: 'JSB.Widgets.ColorEditor',
+                            defaultValue: '#333333'
+                        },
+                        fontSize: {
+                            render: 'item',
+                            name: 'Размер шрифта',
+                            valueType: 'number',
+                            defaultValue: 12
+                        },
+                        fontWeight: {
+                            render: 'item',
+                            name: 'Полнота шрифта',
+                            valueType: 'string',
+                            defaultValue: 'bold'
+                        }
+                    }
+                },
+                labelFormat: {
+                    render: 'formatter',
+                    name: 'Формат подписей',
+                    formatterOpts: {
+                        variables: [
+                            {
+                                alias: 'Имя серии',
+                                type: 'string',
+                                value: 'name'
+                            }
+                        ]
+                    },
+                    valueType: 'string',
+                    defaultValue: '{name}'
+                },
+                reversed: {
+                    render: 'item',
+                    name: 'Обратный порядок',
+                    optional: true,
+                    editor: 'none'
+                },
+                shadow: {
+                    render: 'item',
+                    name: 'Тень',
+                    optional: true,
+                    editor: 'none'
+                },
+                width: {
+                    render: 'item',
+                    name: 'Ширина',
+                    valueType: 'number'
+                },
+                x: {
+                    render: 'item',
+                    name: 'Расположение по оси Х',
+                    valueType: 'number',
+                    defaultValue: 0
+                },
+                y: {
+                    render: 'item',
+                    name: 'Расположение по оси Y',
+                    valueType: 'number',
+                    defaultValue: 0
+                }
+            }
+	    },
+
+	    // Настройки диаграммы
+	    chart: {
+	        render: 'group',
+	        name: 'Настройки диаграммы',
+            collapsible: true,
+            collapsed: true,
+            items: {
+                animation: {
+                    render: 'item',
+                    name: 'Анимация',
+                    optional: 'checked',
+                    editor: 'none'
+                },
+                inverted: {
+                    render: 'item',
+                    name: 'Инвертировать оси',
+                    optional: true,
+                    editor: 'none'
+                },
+                colorScheme: {
+                    render: 'styleBinding',
+                    name: 'Цветовая схема'
+                },
+                /*
+                backgroundColor: {
+                    render: 'item',
+                    name: 'Анимация',
+                }
+                */
+            }
+	    },
+
+	    // Настройки серий
         plotOptions: {
 	        render: 'group',
-	        name: 'Опции точек',
+	        name: 'Настройки серий',
             collapsible: true,
             collapsed: true,
             items: {
@@ -588,6 +678,12 @@
                     collapsible: true,
                     collapsed: true,
                     items: {
+                        connectNulls: {
+                            render: 'item',
+                            name: 'Соединять пустые значения',
+                            optional: true,
+                            editor: 'none'
+                        },
                         stacking: {
                             render: 'select',
                             name: 'Тип стека',
@@ -773,88 +869,7 @@
                     }
                 }
             }
-        },
-
-	    credits: {
-	        render: 'group',
-	        name: 'Авторская подпись',
-            collapsible: true,
-            collapsed: true,
-            items: {
-                enabled: {
-                    render: 'item',
-                    name: 'Активна',
-                    optional: true,
-                    editor: 'none'
-                },
-                text: {
-                    render: 'item',
-                    name: 'Текст',
-                    valueType: 'string',
-                    defaultValue: 'Highcharts.com'
-                },
-                href: {
-                    render: 'item',
-                    name: 'Ссылка',
-                    valueType: 'string',
-                    defaultValue: 'http://www.highcharts.com'
-                },
-                fontColor: {
-                    render: 'item',
-                    name: 'Цвет шрифта',
-                    editor: 'JSB.Widgets.ColorEditor',
-                    defaultValue: '#999999'
-                },
-                fontSize: {
-                    render: 'item',
-                    name: 'Размер шрифта',
-                    valueType: 'number',
-                    defaultValue: 9
-                },
-                align: {
-                    render: 'select',
-                    name: 'Горизонтальное выравнивание',
-                    items: {
-                        left: {
-                            name: 'По левому краю'
-                        },
-                        center: {
-                            name: 'По центру'
-                        },
-                        right: {
-                            name: 'По правому краю'
-                        }
-                    }
-                },
-                verticalAlign: {
-                    render: 'select',
-                    name: 'Вертикальное выравнивание',
-                    items: {
-                        top: {
-                            name: 'По верхнему краю'
-                        },
-                        middle: {
-                            name: 'По центру'
-                        },
-                        bottom: {
-                            name: 'По нижнему краю'
-                        }
-                    }
-                },
-                x: {
-                    render: 'item',
-                    name: 'X',
-                    valueType: 'number',
-                    defaultValue: -10
-                },
-                y: {
-                    render: 'item',
-                    name: 'Y',
-                    valueType: 'number',
-                    defaultValue: -5
-                }
-            }
-	    }
+        }
     },
     $client: {
         $require: ['JSB.Tpl.Highcharts'],
@@ -895,19 +910,10 @@
             onMouseOut: null
         },
 
-        refresh: function(opts){
+        onRefresh: function(opts){
             // if filter source is current widget
             if(opts && this == opts.initiator && !opts.filterData){
                 return false;
-            }
-
-            // widget settings editor set style changes
-            if(opts && opts.refreshFromCache){
-                var cache = this.getCache();
-                if(cache){
-                    this.buildChart(cache);
-                    return false;
-                }
             }
 
             if(opts && opts.updateStyles){
@@ -938,8 +944,7 @@
         },
 
         buildChart: function(data){
-            var chartOpts = this._buildChart(data),
-                styleSelector = this.getContext().find('chart colorScheme');
+            var chartOpts = this._buildChart(data);
 
             function buildWidget(chartOpts){
                 /*
@@ -962,6 +967,8 @@
                 }
 
                 $this._resolvePointContextFilters();
+
+                $this.ready();
             }
 
             buildWidget(chartOpts);
@@ -1038,7 +1045,7 @@
                         inverted: chartContext.find('inverted').checked()
                     },
 
-                    colors: this._widgetOpts && this._widgetOpts.styleScheme,
+                    colors: this._widgetOpts && this._widgetOpts.styleScheme || undefined,
 
                     credits: {
                         enabled: creditsContext.find('enabled').checked(),
@@ -1085,6 +1092,7 @@
 
                     plotOptions: {
                         series: {
+                            connectNulls: plotOptionsContext.find('connectNulls').checked(),
                             dataLabels: {
                                 enabled: plotOptionsDataLabels.find('enabled').checked(),
                                 align: plotOptionsDataLabels.find('align').value(),
@@ -1380,8 +1388,9 @@
         _addPointFilter: function(point, accumulate, isRange){
             var context = this.getContext().find('source').binding(),
                 datacubeOpts = point.series.options.datacube,
-                datacubePointOpts = point.options.datacube,
+                isFilterData = point.options.datacube && point.options.datacube.filterData || point.dataGroup && point.series.userOptions.data[point.dataGroup.start].datacube.filterData,
                 binding = point.series.options.datacube.binding || point.options.datacube.binding,
+                curFiltersCount = Object.keys(this._curFilters).length,
                 refreshOpts = {},
                 gLength;
 
@@ -1397,7 +1406,7 @@
                 }
             }
 
-            if(!accumulate && Object.keys(this._curFilters).length > 0){
+            if(!accumulate && curFiltersCount > 0){
                 this._select(this._curFilters, false, true);
 
                 for(var i in this._curFilters){
@@ -1407,46 +1416,63 @@
                 this._curFilters = {};
             }
 
-            if(datacubePointOpts.filterData){  // not widget filters
-                // todo: isRange
-                for(var i = 0; i < datacubePointOpts.filterData.bindings.length; i++){
-                    var fDesc = {
-                        sourceId: context.source,
-                        type: '$and',
-                        op: '$eq',
-                        field: datacubePointOpts.filterData.bindings[i],
-                        value: datacubePointOpts.filterData.values[i]
-                    };
+            if(isFilterData){  // not widget filters
+                if(isRange){
+                    // todo: isRange
+                } else {
+                    var datacubePointOpts = point.options.datacube;
 
-                    if(datacubePointOpts.filterData.bindings[i] === binding){
-                        this._curFilters[this.addFilter(fDesc)] = fDesc;
-                    } else {
-                        this.addFilter(fDesc);
-                        refreshOpts.filterData = true;
+                    for(var i = 0; i < datacubePointOpts.filterData.bindings.length; i++){
+                        var fDesc = {
+                            sourceId: context.source,
+                            type: '$and',
+                            op: '$eq',
+                            field: datacubePointOpts.filterData.bindings[i],
+                            value: datacubePointOpts.filterData.values[i]
+                        };
+
+                        if(datacubePointOpts.filterData.bindings[i] === binding){
+                            this._curFilters[this.addFilter(fDesc)] = fDesc;
+                        } else {
+                            this.addFilter(fDesc);
+                            refreshOpts.filterData = true;
+                        }
                     }
                 }
             } else {    // widget filters
-                if(isRange && this._schemeOpts.dataGrouping && this._schemeOpts.dataGrouping.isGrouped){
-                    var startRangeValue = point.x,
-                        groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
-                        units = this._schemeOpts.dataGrouping.units || 1;
+                if(isRange){
+                    var startRangeValue,
+                        endRangeValue;
 
-                    switch(this._schemeOpts.dataGrouping.groupBy){
-                        case 'millisecond':
-                            startRangeValue = point.x;
-                            break;
-                        default:
-                            startRangeValue = Math.floor(point.x / groupConst) * groupConst;
-                            break;
+                    if(this._schemeOpts.dataGrouping && this._schemeOpts.dataGrouping.isGrouped){   // user grouping
+                        var groupConst = this._schemeOpts.dataGrouping.groupConst || 1,
+                            units = this._schemeOpts.dataGrouping.units || 1;
+
+                        switch(this._schemeOpts.dataGrouping.groupBy){
+                            case 'millisecond':
+                                startRangeValue = point.x;
+                                break;
+                            default:
+                                startRangeValue = Math.floor(point.x / groupConst) * groupConst;
+                                break;
+                        }
+
+                        endRangeValue = startRangeValue + gLength * groupConst * units;
+                    } else {    // highcharts grouping
+                        var startIndex = point.dataGroup && point.dataGroup.start || point.index,
+                            endIndex = point.dataGroup && (point.dataGroup.start + point.dataGroup.length) || (point.index + 1);
+
+                        startRangeValue = point.series.xData[startIndex];
+                        endRangeValue = point.series.xData[endIndex];
                     }
                 }
 
                 var fDesc = {
                     sourceId: context.source,
-                    type: isRange ? '$and' : '$or',
+                    type: isRange ? '$and' : (accumulate ? '$or' : '$and'),
                     op: isRange ? '$range' : '$eq',
                     field: binding,
-                    value: isRange ? [startRangeValue, startRangeValue + gLength * groupConst * units] : point[this._filterPropName]
+                    value: isRange ? [startRangeValue, endRangeValue] : point[this._filterPropName]
                 };
 
                 this._curFilters[this.addFilter(fDesc)] = fDesc;

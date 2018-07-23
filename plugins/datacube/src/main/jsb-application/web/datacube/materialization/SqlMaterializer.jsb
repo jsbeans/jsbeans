@@ -178,6 +178,21 @@
 		},
 		
 		insert: function(tName, objArr, opts){
+			function fixupValue(val){
+				if(!JSB.isString(val)){
+					return val;
+				}
+				// check for invalid UTF-8 symbols
+				var newVal = '';
+				for(var i = 0; i < val.length; i++){
+					if(val[i] == '\u0000'){
+						continue;
+					}
+					newVal += val[i];
+				}
+				return newVal;
+			}
+			
 			var store = this.source.getStore();
 			var connWrap = store.getConnection(true);
 			var connection = connWrap.get();
@@ -197,12 +212,16 @@
 							continue;
 						}
 						if(!bFirst){
-							sql += ', ';
+							sql += ',';
 						}
 						sql += '"' + fNameArr[i] + '"';
 						bFirst = false;
 					}
-					sql += ') values(';
+					if(bFirst){
+						// no columns added
+						continue;
+					}
+					sql += ') values (';
 					var values = [];
 					bFirst = true;
 					for(var i = 0; i < fNameArr.length; i++){
@@ -211,10 +230,10 @@
 							continue;
 						}
 						if(!bFirst){
-							sql += ', ';
+							sql += ',';
 						}
-						sql += '?'
-						values.push(fVal);
+						sql += '?';
+						values.push(fixupValue(fVal));
 						bFirst = false;
 					}
 					sql += ')';
@@ -223,7 +242,9 @@
 						values: values
 					});
 				}
-				JDBC.executeUpdate(connection, batch);
+				if(batch.length > 0){
+					JDBC.executeUpdate(connection, batch);
+				}
 			} finally {
 				connWrap.close();
 			}
