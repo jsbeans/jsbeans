@@ -2,17 +2,21 @@
 	$name: 'DataCube.GraphWidget.GraphNode',
 	$parent: 'JSB.Widgets.Diagram.Node',
 	$client: {
+		options: {
+			checkSize: false
+		},
+		
 		$constructor: function(diagram, key, opts){
 			$base(diagram, key, opts);
 			this.addClass('graphNode');
 			this.loadCss('GraphNode.css');
 
 			this.entry = opts.entry;
-
+/*
 			this.append(`#dot
                 <div class="connector"></div>
             `);
-
+*/
             this.updateEntry(opts.entry);
 
 			this._createConnectors();
@@ -53,6 +57,8 @@
 			}
 
 			if(this.entry.caption){
+				this.attr('title', this.entry.caption);
+/*				
                 this.caption = this.$('<div class="graphNodePopup hidden">' + this.entry.caption + '</div>');
                 this.append(this.caption);
 
@@ -62,6 +68,7 @@
                 this.getElement().mousemove(function(evt){
                     $this.caption.offset({top: evt.pageY + 10, left: evt.pageX + 10 });
                 });
+*/                
 			}
 
 			this._createConnectors();
@@ -86,7 +93,9 @@
 
 		_createConnectors: function(){
 		    this.connector = this.installConnector('nodeConnector', {
-		        origin: this.find('.connector'),
+		        origin: this.getElement()/*find('.connector')*/,
+		        hAlign: 'left',
+		        vAlign: 'top'
 		    });
 		}
 	}
