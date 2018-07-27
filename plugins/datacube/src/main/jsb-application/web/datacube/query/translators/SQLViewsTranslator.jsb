@@ -175,6 +175,9 @@
 		},
 
         _translateWith: function(query){
+            if (query.$context != $this.dcQuery) {
+                return '';
+            }
             var sql = '';
             if ($this.dcQuery.$id && $this.dcQuery.$id == query.$id) {
                 var views = $this._orderedIsolatedViews(query);
@@ -404,6 +407,12 @@
                         value: exp.$aggregateExpr[aggFunc],
                     }
                 };
+                if (dcQuery.$from) {
+                    firstQuery.$from = dcQuery.$from;
+                    firstQuery.$views = $this.dcQuery.$views;
+                    recursiveQuery.$from = dcQuery.$from;
+                    recursiveQuery.$views = $this.dcQuery.$views;
+                }
                 try {
                     var builder1 = new QueryViewsBuilder(startQuery, $this.cube, $this.providers);
                     var startView = builder1.build();

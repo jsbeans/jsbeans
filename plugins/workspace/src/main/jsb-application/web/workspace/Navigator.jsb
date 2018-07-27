@@ -30,7 +30,7 @@
 			});
 
             this.subscribe('JSB.Workspace.Entry.destroyed', function(sender){
-            	if($this.currentNode && $this.currentNode.getEntry() == sender){
+            	if($this.currentNode && $this.currentNode.getTargetEntry() == sender){
                     $this.setCurrentNode(null);
                     $this.publish('JSB.Workspace.nodeOpen', null);
             	}
@@ -93,7 +93,7 @@
 						var nodeElt = $this.$('<li class="tag"></li>');
 						
 						if(JSB.isInstanceOf(curNode, 'JSB.Workspace.EntryNode')){
-							nodeElt.append(RendererRepository.createRendererFor(curNode.getEntry()).getElement());
+							nodeElt.append(RendererRepository.createRendererFor(curNode.getTargetEntry()).getElement());
 						} else {
 							nodeElt.append('<div class="icon"></div>');
 							nodeElt.append(`#dot <div class="text">{{=curNode.getName()}}</div>`);

@@ -22,7 +22,7 @@
 
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
-				if(sender != $this.getEntry()){
+				if(sender != $this.getTargetEntry()){
 					return;
 				}
 				$this.update();
@@ -32,7 +32,7 @@
 		},
 		
 		update: function(){
-			var childCount = $this.getEntry().getChildCount();
+			var childCount = $this.getTargetEntry().getChildCount();
 			$this.find('> .renderer > .childCount > span').text(childCount);
 			if(childCount == 0){
 				$this.find('> .renderer > .childCount').addClass('empty');

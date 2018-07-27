@@ -18,7 +18,7 @@
 			});
 			
 			this.subscribe(['JSB.Workspace.FileEntry.upload','DataCube.Parser.progress'], {session: true}, function(sender, msg, params){
-				if(sender != $this.getEntry()){
+				if(sender != $this.getTargetEntry()){
 					return;
 				}
 				$this.update(params.status);
@@ -40,11 +40,11 @@
 				statusElt.append(status);
 				statusElt.attr('title', status);
 			} else {
-				if($this.getEntry().getLastTimestamp()){
+				if($this.getTargetEntry().getLastTimestamp()){
 					statusElt.append(`#dot
-						<div class="item tables">Таблиц: <span class="count">{{=$this.getEntry().getTablesCount()}}</span>; </div>
-						<div class="item columns">cтолбцов: <span class="count">{{=$this.getEntry().getColumnsCount()}}</span>; </div>
-						<div class="item records">записей: <span class="count">{{=$this.getEntry().getRecordsCount()}}</span></div>
+						<div class="item tables">Таблиц: <span class="count">{{=$this.getTargetEntry().getTablesCount()}}</span>; </div>
+						<div class="item columns">cтолбцов: <span class="count">{{=$this.getTargetEntry().getColumnsCount()}}</span>; </div>
+						<div class="item records">записей: <span class="count">{{=$this.getTargetEntry().getRecordsCount()}}</span></div>
 					`);
 				} else {
 					statusElt.append('<span>Файл еще не обработан</span>');

@@ -103,6 +103,7 @@
             contextMenu: false,
 
             allowEmpty: true,
+            
 
             stretchH: 'all',    // "last" or "all" or "none",
 /*
@@ -117,7 +118,8 @@
 
 		options: {
 		    isInit: false,
-		    preLoadItems: 10
+		    preLoadItems: 10,
+		    jsonArrayLimit: 100
 		},
 		
 		deferredRender: function(){
@@ -212,6 +214,9 @@
             if(JSB.isObject(val) || JSB.isArray(val)){
             	JSB.lookup('JsonView', function(jvcls){
             		var jvInst = new jvcls({collapsed:true});
+            		if(JSB.isArray(val) && val.length > $this.options.jsonArrayLimit){
+            			val = val.slice(0, $this.options.jsonArrayLimit);
+            		}
             		jvInst.setData(val);
             		$this.$(td).empty();
             		$this.$(td).append(jvInst.getElement());

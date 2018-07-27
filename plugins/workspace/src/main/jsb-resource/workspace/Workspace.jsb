@@ -365,6 +365,7 @@
 		},
 
 		remove: function(){
+			JSB.cancelDefer('JSB.Workspace.Workspace.store.' + $this.getId());
 			// remove artifacts
 			var aMap = this.getArtifacts();
 			for(var aName in aMap){
@@ -375,6 +376,7 @@
 			this._entryStore.remove(this);
 			
 			WorkspaceController.removeWorkspace(this.getId());
+			this.destroy();
 		},
 		
 		search: function(pat){

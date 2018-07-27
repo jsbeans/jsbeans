@@ -177,7 +177,7 @@
 		
 		updateRequest: function(){
 			// construct slice request
-			var entry = this.node.getEntry();
+			var entry = this.node.getTargetEntry();
 			var wid = entry.getWorkspace().getId();
 			var eid = entry.getId();
 			
@@ -224,7 +224,7 @@
 		
 		fillSettings: function(){
 			var idGroup = this.find('.cubeSettings').jsb();
-			var entry = this.node.getEntry();
+			var entry = this.node.getTargetEntry();
 			if(JSB.isInstanceOf(entry, 'DataCube.Model.Cube')){
 				this.isCube = true;
 				idGroup.setTitle('Идентификация куба');

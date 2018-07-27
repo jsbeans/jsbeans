@@ -58,7 +58,7 @@
                                 continue;
                             }
 
-                            var entry = obj.getEntry();
+                            var entry = obj.getTargetEntry();
                             if(JSB.isInstanceOf(entry, 'DataCube.Model.Widget') || JSB.isInstanceOf(entry, 'DataCube.Model.Dashboard')){
                                 return true;
                             }
@@ -85,7 +85,7 @@
                     $this.styleElementBlock.removeClass('acceptDraggable');
                     $this.styleElementBlock.addClass('filled');
                     for(var i in d.get(0).draggingItems){
-                        $this.setStyleElement(d.get(0).draggingItems[i].obj.getEntry());
+                        $this.setStyleElement(d.get(0).draggingItems[i].obj.getTargetEntry());
                         break;
                     }
                 }
@@ -93,7 +93,7 @@
         },
 
         refresh: function(){
-            var entry = this.node.getEntry();
+            var entry = this.node.getTargetEntry();
 
             entry.getStyles(function(styles, fail){
                 if(fail) { return; };
@@ -118,7 +118,7 @@
 
         saveSettings: function(){
             this.getElement().loader({message:'Сохранение...'});
-            this.node.getEntry().server().setStyles($this.styleScheme.getValues().values, function(){
+            this.node.getTargetEntry().server().setStyles($this.styleScheme.getValues().values, function(){
                 $this.getElement().loader('hide');
             });
         },

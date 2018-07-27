@@ -176,7 +176,7 @@
 					this.find('> ._dwp_cbContainer').empty();
 					this.getElement().removeAttr('value');
 					if(!JSB().isNull(this.options.onChange) && this.initialized){
-						this.options.onChange(null, null);
+						this.options.onChange.call($this, null, null);
 					}
 					return;
 				}
@@ -185,7 +185,11 @@
 				if(JSB().isNull(this.selectedObject) || this.selectedObject.key != valObj.key) {
 					if(this.itemMap[valObj.key]){
 						valObj = this.itemMap[valObj.key];
-						this.find('> ._dwp_cbContainer').empty().append($this.$(valObj.element).clone());
+						var dt = valObj.element;
+						if(!JSB.isString(dt)){
+							dt = $this.$(valObj.element).clone();
+						}
+						this.find('> ._dwp_cbContainer').empty().append(dt);
 						this.selectedObject = valObj;
 						this.getElement().attr('value', valObj.key);
 					} else {
@@ -195,7 +199,7 @@
 					}
 					
 					if(!JSB().isNull(this.options.onChange) && this.initialized){
-						this.options.onChange(valObj ? valObj.key : null, valObj);
+						this.options.onChange.call($this, valObj ? valObj.key : null, valObj);
 					}
 				}
 
@@ -219,7 +223,7 @@
 				if(this.editor.getData().getValue() != val){
 					this.editor.setData(val);
 					if(!JSB().isNull(this.options.onChange) && this.initialized){
-						this.options.onChange(valObj.key, valObj);
+						this.options.onChange.call($this, valObj.key, valObj);
 					}
 				}
 				this.getElement().attr('value', valObj.key);

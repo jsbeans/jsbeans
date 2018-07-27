@@ -32,7 +32,7 @@
 			});
 			
 			this.subscribe('DataCube.Model.Cube.status', {session: true}, function(sender, msg, params){
-				if(sender != $this.getEntry()){
+				if(sender != $this.getTargetEntry()){
 					return;
 				}
                 $this.update(params.status, params.success !== true);
@@ -44,7 +44,7 @@
 		
 		createSlice: function(){
 			$this.explorer.expandNode($this.treeNode.key, function(){
-				$this.getEntry().server().addSlice(function(slice){
+				$this.getTargetEntry().server().addSlice(function(slice){
 					var node = $this.explorer.addTreeItem({
                         entry: slice,
                         hasEntryChildren: 0,
@@ -68,9 +68,9 @@
 				statusElt.attr('title', status);
 			} else {
 				statusElt.append(`#dot
-					<div class="item sources">Источников: <span class="count">{{=$this.getEntry().getSourceCount()}}</span>; </div>
-					<div class="item fields">полей: <span class="count">{{=$this.getEntry().getFieldCount()}}</span>; </div>
-					<div class="item slices">срезов: <span class="count">{{=$this.getEntry().getSliceCount()}}</span></div>
+					<div class="item sources">Источников: <span class="count">{{=$this.getTargetEntry().getSourceCount()}}</span>; </div>
+					<div class="item fields">полей: <span class="count">{{=$this.getTargetEntry().getFieldCount()}}</span>; </div>
+					<div class="item slices">срезов: <span class="count">{{=$this.getTargetEntry().getSliceCount()}}</span></div>
 				`);
 			}
 		}

@@ -135,7 +135,7 @@
 							if(!JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 								continue;
 							}
-							var entry = node.getEntry();
+							var entry = node.getTargetEntry();
 							var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
 							if(dpInfo){
 								if(JSB.isInstanceOf(entry, 'DataCube.Model.SqlTable')){
@@ -170,7 +170,7 @@
 					if(d && d.length > 0 && d.get(0).draggingItems){
 						for(var i = 0; i < d.get(0).draggingItems.length; i++){
 							var node = d.get(0).draggingItems[i].obj;
-							var entry = node.getEntry();
+							var entry = node.getTargetEntry();
 							var dpInfo = DataProviderRepository.queryDataProviderInfo(entry);
 							if(dpInfo){
 								// create data provider

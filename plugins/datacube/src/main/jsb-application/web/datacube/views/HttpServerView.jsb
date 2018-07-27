@@ -70,7 +70,7 @@
 			}
 			JSB.defer(function(){
 				var settings = $this.collectSettings();
-				var entry = $this.node.getEntry();
+				var entry = $this.node.getTargetEntry();
 				entry.server().updateSettings(settings);
 			}, 300, 'updateSettings_' + this.getId());
 			
@@ -89,7 +89,7 @@
 				});
 				return;
 			}
-			var entry = this.node.getEntry();
+			var entry = this.node.getTargetEntry();
 			entry.server().getSettings(function(settings){
 				$this.fillSettings(settings);
 			});

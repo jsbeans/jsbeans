@@ -6,6 +6,12 @@
 		_lalCallCnt: 0,
 		remoteConnectors: {},
 		links: {},
+		originRc: {
+			left: 0,
+			top: 0,
+			width: 0,
+			height: 0
+		},
 		
 		options: {
 			enabled: true,
@@ -75,6 +81,14 @@
 			$base();
 		},
 		
+		updateOrigin: function(){
+			var nodePos = this.node.getElement().get(0).getBoundingClientRect();
+			var originRc = this.options.origin.get(0).getBoundingClientRect();
+			this.originRc.left = originRc.left - nodePos.left;
+			this.originRc.top = originRc.top - nodePos.top;
+			this.originRc.width = originRc.right - originRc.left;
+			this.originRc.height = originRc.bottom - originRc.top;
+		},
 		
 		install: function(){
 			var self = this;
@@ -86,6 +100,10 @@
 			var cOpts = this.node.diagram.connectorDescs[this.key].options;
 			
 			this.options = JSB().merge(this.options, cOpts);
+			
+			if(this.options.origin){
+				this.updateOrigin();
+			}
 
 			if(this.options.handle && this.options.userLink){
 				var handle = this.options.handle;
@@ -174,27 +192,29 @@
 			if(!this.installed){
 				return null;
 			}
-			var sheetRect = this.node.diagram.sheet.get(0).getBoundingClientRect();
-			var originRect = this.options.origin.get(0).getBoundingClientRect();
 			
-			var ox = Math.round((originRect.left + originRect.right) / 2);
-			var oy = Math.round((originRect.top + originRect.bottom) / 2);
-			
-			switch(this.options.align){
+			var nodePos = this.node.getPosition();
+			var ox = Math.round(this.originRc.left + this.originRc.width / 2);
+			var oy = Math.round(this.originRc.top + this.originRc.height / 2);
+
+			switch(this.options.hAlign){
 			case 'left':
-				ox = originRect.left;
+				ox = this.originRc.left;
 				break;
 			case 'right':
-				ox = originRect.right;
-				break;
-			case 'top':
-				oy = originRect.top;
-				break;
-			case 'bottom':
-				oy = originRect.bottom;
+				ox = this.originRc.left + this.originRc.width - 1;
 				break;
 			}
 			
+			switch(this.options.vAlign){
+			case 'top':
+				oy = this.originRc.top;
+				break;
+			case 'bottom':
+				oy = this.originRc.top + this.originRc.height - 1;
+				break;
+			}
+
 			if(this.options.offsetX){
 				ox += this.options.offsetX;
 			}
@@ -202,10 +222,15 @@
 			if(this.options.offsetY){
 				oy += this.options.offsetY;
 			}
-
+/*
 			return {
 				x: (ox - sheetRect.left) / this.node.diagram.getOption('zoom'),
 				y: (oy - sheetRect.top) / this.node.diagram.getOption('zoom')
+			};
+*/
+			return {
+				x: nodePos.x + ox,
+				y: nodePos.y + oy
 			};
 		},
 

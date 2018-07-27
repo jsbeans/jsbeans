@@ -16,7 +16,7 @@
 					return;
 				}
 				var file = this.files[0];
-				$this.getEntry().server().uploadFile({data: file, size: file.size, name: file.name}, function(){
+				$this.getTargetEntry().server().uploadFile({data: file, size: file.size, name: file.name}, function(){
 					$this.update();
 				});
 			});

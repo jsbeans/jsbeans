@@ -9,6 +9,10 @@
 		return this.descriptor.name;
 	},
 	
+	getExplorer: function(){
+		return this.explorer;
+	},
+	
 	
 	$client: {
 		selected: false,
@@ -22,9 +26,7 @@
 			this.loadCss('ExplorerNode.css');
 			this.addClass('workspaceExplorerNode');
 			
-			this.icon = this.$('<div class="icon"></div>');
-			this.append(this.icon);
-			this.attr('title', this.descriptor.name);
+			this.attr('title', this.getName());
 			
 			$this.toolbox = $this.$('<div class="toolbox hidden"></div>');
 			$this.append($this.toolbox);

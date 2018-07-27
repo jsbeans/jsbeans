@@ -258,7 +258,7 @@
 			}
 		},
 		
-		addWidget: function(widget){
+		addWidget: function(widget, bPreserveActive){
 			// create wodgetContainer if necessary
 			if(!this.widgetContainer){
 				this.widgetContainer = new WidgetContainer({
@@ -266,7 +266,14 @@
 				});
 				this.clientContainer.append(this.widgetContainer.getElement());
 			}
+			var curWidget = this.widgetContainer.getActiveWidget();
 			this.widgetContainer.attachWidget(widget);
+			
+			// switch to the first widget
+			if(curWidget && bPreserveActive){
+				this.widgetContainer.switchWidget(curWidget);
+			}
+			
 			this.dashboard.widgets[widget.getId()] = widget;
 			this.dashboard.widgetStates[widget.getId()] = 'docked';
 			this.type = 'widget';
@@ -404,7 +411,7 @@
 					var wId = layout.widgets[i];
 					var w = this.dashboard.widgets[wId];
 					if(w){
-						this.addWidget(w);
+						this.addWidget(w, true);
 					}
 				}
 				if(!this.widgetContainer || Object.keys(this.widgetContainer.widgets).length == 0){

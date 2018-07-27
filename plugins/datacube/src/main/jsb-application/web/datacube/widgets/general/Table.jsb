@@ -699,7 +699,7 @@
 		           'DataCube.Controls.FilterEntry',
 		           'JSB.Utils.Formatter'],
 		
-		ready: false,
+		_ready: false,
 		headerDesc: [],
 		colDesc: [],
 		rows: [],
@@ -826,7 +826,7 @@
 						});
 					}
 */
-					$this.ready = true;
+					$this._ready = true;
 					$this.setInitialized();
 				});
 			});
@@ -1249,7 +1249,7 @@
 		},
 		
 		appendRows: function(bRefresh){
-			if(!$this.ready || $this.rowAppending || $this.blockFetch){
+			if(!$this._ready || $this.rowAppending || $this.blockFetch){
 				return;
 			}
 			this.rowAppending = true;
@@ -2304,7 +2304,7 @@
 		},
 		
 		onRefresh: function(opts){
-			if(!this.ready){
+			if(!this._ready){
 				this.ensureInitialized(function(){
 					$this.refresh(opts);
 				});

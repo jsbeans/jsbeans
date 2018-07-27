@@ -167,7 +167,7 @@
 		},
 		
 		refresh: function(){
-			this.entry = this.node.getEntry();
+			this.entry = this.node.getTargetEntry();
 			$this.enableStage('analysis', false);
 			$this.clearTablesPreview();
 			ParserManager.server().logRead(this.entry, function(logEntries){

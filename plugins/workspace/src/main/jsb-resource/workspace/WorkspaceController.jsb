@@ -144,7 +144,8 @@
 				}
 				var wDesc = {
 					wId: wId,
-					wType: wType
+					wType: wType,
+					wOwner: opts && opts.owner
 				};
 				
 				var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
@@ -246,7 +247,9 @@
 					wMap = this.workspacesById;
 				}
 			} else {
-				user = Kernel.user();
+				if(!user){
+					user = Kernel.user();
+				}
 				wMap = this.workspacesByUser[user];
 			}
 			if(wMap && Object.keys(wMap).length > 0){
@@ -287,6 +290,12 @@
 		getWorkspace: function(wId){
 			var wDesc = this.getWorkspaceInfo(wId);
 			return this.loadWorkspace(wDesc.wId);
+		},
+		
+		getUsers: function(){
+			// In future - need to obtain an allowed list of users to share with via security service.
+			// TEMP: return all users that have at least one workspace.
+			return Object.keys(this.workspacesByUser);
 		},
 		
 		workspaceIds: function(user){

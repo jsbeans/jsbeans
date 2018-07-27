@@ -12,14 +12,14 @@
 			`);
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
-				if(sender != $this.getEntry()){
+				if(sender != $this.getTargetEntry()){
 					return;
 				}
 				$this.update();
 			});
 			
 			this.subscribe('DataCube.Model.SqlSource.extractScheme', {session: true}, function(sender, msg, params){
-				if(sender != $this.getEntry()){
+				if(sender != $this.getTargetEntry()){
 					return;
 				}
                 $this.update(params.status);

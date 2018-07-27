@@ -61,7 +61,7 @@
 		},
 
 		refresh: function(){
-			this.entry = this.node.getEntry();
+			this.entry = this.node.getTargetEntry();
 
             if(this.wrapper) {
                 this.wrapper.destroy();
