@@ -279,6 +279,7 @@
         _translateRecursiveSelect: function (exp, dcQuery) {
 
             function translateRecursive(){
+//debugger;
                 var firstQuery = {
                     $context: 'start:' + dcQuery.$context,
                     $select: {
@@ -301,6 +302,12 @@
                         value: exp.$aggregateExpr[aggFunc],
                     }
                 };
+                if (dcQuery.$from) {
+                    firstQuery.$from = dcQuery.$from;
+                    firstQuery.$views = dcQuery.$views;
+                    recursiveQuery.$from = dcQuery.$from;
+                    recursiveQuery.$views = dcQuery.$views;
+                }
                 try {
                     var builder1 = new QueryViewsBuilder(firstQuery, $this.cube, $this.providers);
                     var startView = builder1.build();
@@ -331,27 +338,6 @@
                 } else {
                     throw new Error('Internal error: Invalid query format, unexpected end');
                 }
-//                sql += 'SELECT '
-//                        + $this._quotedName(exp.$idField.$field||exp.$idField) + ' AS id, '
-//                        + $this._quotedName(exp.$parentIdField.$field||exp.$parentIdField) + ' AS parentId, '
-//                        + $this._translateExpression(exp.$aggregateExpr[aggFunc], dcQuery) + ' AS value'; // TODO delete context: try useAlias
-//                sql += ' FROM ' + $this._translateAnyView(view.getSourceView());
-//                sql += ' WHERE ' + $this._quotedName(exp.$idField.$field||exp.$idField)
-//                        + ' = '
-//                        + $this._translateExpression(exp.$idField, dcQuery);
-//
-//                sql += ' UNION ALL ';
-//
-//                var recursiveContext = 'recursive:' + dcQuery.$context;
-//                sql += 'SELECT '
-//                        + $this._quotedName(recursiveContext) + '.' + $this._quotedName(exp.$idField.$field||exp.$idField) + ' AS id, '
-//                        + $this._quotedName(recursiveContext) + '.' + $this._quotedName(exp.$parentIdField.$field||exp.$parentIdField) + ' AS parentId, '
-//                        + $this._translateExpression(exp.$aggregateExpr[aggFunc], dcQuery) + ' AS value';  // TODO wrong context: try useAlias
-//                sql += ' FROM ' + $this._translateAnyView(view.getSourceView());// + ' AS ' + $this._quotedName(recursiveContext);
-//                sql += ' JOIN ' + $this._quotedName(treeContext);
-//                sql += ' ON ' + $this._quotedName(recursiveContext) + '.' + $this._quotedName(exp.$parentIdField.$field||exp.$parentIdField)
-//                        + ' = '
-//                        + $this._quotedName(treeContext) + '.id';
                 return sql;
             }
 
