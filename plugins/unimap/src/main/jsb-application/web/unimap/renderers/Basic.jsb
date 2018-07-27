@@ -78,6 +78,7 @@
             return new Controller({
                 scheme: scheme,
                 values: {values: values},
+                context: this._schemeController.getContext(),
                 onchange: onchange,
                 rendersMap: this._schemeController.getRenderMap(),
             });

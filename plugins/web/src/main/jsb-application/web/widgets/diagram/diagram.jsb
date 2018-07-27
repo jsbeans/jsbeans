@@ -28,10 +28,11 @@
 		
 		nodes: {},
 		links: {},
+		sheetRc: null,
 		
 		options: {
 			zoom: 1,
-			zoomStep: 0.05,
+			zoomStep: 0.1,
 			minZoom: 0.1,
 			maxZoom: 1,
 			panX: 0,
@@ -98,6 +99,7 @@
 				'width': 0,
 				'height': 0
 			});
+			$this.sheetRc = self.sheet.get(0).getBoundingClientRect();
 			
 			self.toolContainer = self.$('<div class="_jsb_diagramToolContainer"></div>');
 			self.toolContainer.css({
@@ -316,10 +318,10 @@
 		},
 		
 		pageToSheetCoords: function(pt){
-			var sheetRc = this.sheet.get(0).getBoundingClientRect();
+			//var sheetRc = this.sheet.get(0).getBoundingClientRect();
 			return {
-				x: (pt.x - sheetRc.left) / this.options.zoom,
-				y: (pt.y - sheetRc.top) / this.options.zoom
+				x: (pt.x - this.sheetRc.left) / this.options.zoom,
+				y: (pt.y - this.sheetRc.top) / this.options.zoom
 			};
 		},
 		
@@ -370,6 +372,7 @@
 			self.sheet.css({
 				'transform': 'scale('+this.options.zoom+') translate('+panOffset.x+'px, '+panOffset.y+'px)'
 			});
+			$this.sheetRc = self.sheet.get(0).getBoundingClientRect();
 			
 			var gridSideX = Math.ceil((w / 2 + Math.abs(this.options.panX)) / this.options.zoom / 50 ) * 50;
 			var gridSideY = Math.ceil((h / 2 + Math.abs(this.options.panY)) / this.options.zoom / 50 ) * 50;
@@ -856,13 +859,13 @@
 		
 		getNodesUnderCursor: function(pt){
 			var selMap = {};
-			var sheetRc = this.sheet.get(0).getBoundingClientRect();
+			//var sheetRc = this.sheet.get(0).getBoundingClientRect();
 			for(var nodeId in this.nodes){
 				var node = this.nodes[nodeId];
 				var nodeRc = node.getElement().get(0).getBoundingClientRect();
 				
-				var nodeMinPt = {x: (nodeRc.left - sheetRc.left) / this.options.zoom, y: (nodeRc.top - sheetRc.top)/ this.options.zoom};
-				var nodeMaxPt = {x: (nodeRc.right - sheetRc.left)/ this.options.zoom, y: (nodeRc.bottom - sheetRc.top)/ this.options.zoom};
+				var nodeMinPt = {x: (nodeRc.left - this.sheetRc.left) / this.options.zoom, y: (nodeRc.top - this.sheetRc.top)/ this.options.zoom};
+				var nodeMaxPt = {x: (nodeRc.right - this.sheetRc.left)/ this.options.zoom, y: (nodeRc.bottom - this.sheetRc.top)/ this.options.zoom};
 				
 				if(nodeMinPt.x <= pt.x && nodeMinPt.y <= pt.y && nodeMaxPt.x >= pt.x && nodeMaxPt.y >= pt.y){
 					selMap[nodeId] = node;
@@ -875,10 +878,10 @@
 		getItemsUnderSelection: function(){
 			var selMap = {};
 			var toolRc = this.selectorTool.get(0).getBoundingClientRect();
-			var sheetRc = this.sheet.get(0).getBoundingClientRect();
+			//var sheetRc = this.sheet.get(0).getBoundingClientRect();
 			
-			var selMinPt = {x: (toolRc.left - sheetRc.left) / this.options.zoom, y: (toolRc.top - sheetRc.top) / this.options.zoom};
-			var selMaxPt = {x: (toolRc.right - sheetRc.left) / this.options.zoom, y: (toolRc.bottom - sheetRc.top) / this.options.zoom};
+			var selMinPt = {x: (toolRc.left - this.sheetRc.left) / this.options.zoom, y: (toolRc.top - this.sheetRc.top) / this.options.zoom};
+			var selMaxPt = {x: (toolRc.right - this.sheetRc.left) / this.options.zoom, y: (toolRc.bottom - this.sheetRc.top) / this.options.zoom};
 			
 			// iterate over each node
 			for(var nodeId in this.nodes){

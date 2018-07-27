@@ -292,7 +292,8 @@
             });
 
             this.diagram = new Diagram({
-                minZoom: 0.2,
+            	zoom: 0.25,
+                minZoom: 0.05,
                 highlightSelecting: false,
                 autoLayout: false,
                 background: 'none',
@@ -335,15 +336,32 @@
                 }
             });
             this.append(this.diagram);
+            
+            $this.getElement().visible(function(evt, isVisible){
+				if(!isVisible){
+					return;
+				}
+				if($this.refreshOrdered){
+					$this.refresh($this.refreshOrderedOpts);
+				}
+			});
         },
 
         onRefresh: function(opts){
+        	if(!$this.getElement().is(':visible')){
+				$this.refreshOrdered = true;
+				$this.refreshOrderedOpts = opts;
+				this.ready();
+				return;
+			}
+			$this.refreshOrdered = false;
+        	
             // if filter source is current widget
             if(opts && this == opts.initiator){
                 this.ready();
                 return;
             }
-
+			
             if(opts && opts.updateStyles){
                 this._styles = null;
                 this._dataSource = null;
@@ -565,8 +583,15 @@
                     var diagNode = $this.diagram.createNode('graphNode', {entry: entry});
 
                     if($this._styles.itemWidth && $this._styles.itemHeight){
-                        diagNode.getElement().width($this._styles.itemWidth);
-                        diagNode.getElement().height($this._styles.itemHeight);
+                    	var css = {
+                    		'width': $this._styles.itemWidth,
+                    		'height': $this._styles.itemHeight,
+                    		'margin-left': -$this._styles.itemWidth / 2,
+                    		'margin-top': -$this._styles.itemHeight / 2
+                    	};
+                    	diagNode.getElement().css(css);
+/*                        diagNode.getElement().width($this._styles.itemWidth);
+                        diagNode.getElement().height($this._styles.itemHeight);*/
                     }
 
                     $this._nodeList[node] = diagNode;
@@ -577,7 +602,8 @@
             }
 
             function innerFetch(isReset){
-                $this.fetch($this._dataSource, { fetchSize: 50, reset: isReset }, function(res, fail){
+            	var batchSize = 100;
+                $this.fetch($this._dataSource, { batchSize: batchSize, reset: isReset }, function(res, fail){
                     if(fail){
                         $this.ready();
                         $this.getElement().loader('hide');
@@ -619,7 +645,7 @@
                         count = Object.keys(nodesMap).length;
                     }
 
-                    if(count >= $this._styles.maxNodes || res.length < 50){
+                    if(count >= $this._styles.maxNodes || res.length < batchSize){
                         var nodes = [];
                         for(var i in nodesMap){
                             nodes.push({
@@ -667,7 +693,7 @@
                 
                 function ticked(){
                 	tickIter++;
-                	if(tickIter % 10 !== 1){
+                	if(tickIter % 4 !== 1){
                 		return;
                 	}
                     try{

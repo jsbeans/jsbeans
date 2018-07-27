@@ -9,6 +9,10 @@
 		connectors: {},
 		dragHandles: {},
 		resizeHandles: {},
+		position: {x: 0, y: 0},
+		options: {
+			checkSize: true
+		},
 		
 		$constructor: function(diagram, key, opts){
 			var self = this;
@@ -30,19 +34,29 @@
 			}
 			
 			// install connector
-			for(var cKey in this.connectors){
-				if(!JSB().isNull(this.connectors[cKey].installed) && !this.connectors[cKey].installed){
-					this.connectors[cKey].install();
+			for(var cKey in $this.connectors){
+				if(!JSB().isNull($this.connectors[cKey].installed) && !$this.connectors[cKey].installed){
+					$this.connectors[cKey].install();
 				}
 			}
 			
-			this.getElement().resize(function(){
+			var resizeProc = function(){
 				if(!$this.getElement().is(':visible')){
 					return;
 				}
-				self.updateLinks();
-				self.diagram.updateLayout(self);
-			});
+				$this.updateLinks();
+				$this.diagram.updateLayout($this);
+			};
+			
+			if($this.options.checkSize){
+				$this.getElement().on({
+					resize: resizeProc
+				});
+			} else {
+				$this.updateLinks();
+				$this.diagram.updateLayout($this);
+			}
+			
 		},
 		
 		destroy: function(){
@@ -66,33 +80,40 @@
 				x = x.x;
 			}
 			var cellSize = this.diagram.getOption('cellSize');
+			this.position.x = Math.round(x / cellSize) * cellSize;
+			this.position.y = Math.round(y / cellSize) * cellSize;
 			this.getElement().css({
-				'left': Math.round(x / cellSize) * cellSize,
-				'top': Math.round(y / cellSize) * cellSize,
+				'left': this.position.x,
+				'top': this.position.y,
 				'position': 'absolute'
 			});
 			
 			this.updateLinks();
 			this.diagram.updateLayout(this);
 			if(this.options.onPositionChanged){
-				this.options.onPositionChanged.call(this, x, y);
+				this.options.onPositionChanged.call(this, this.position.x, this.position.y);
 			}
+//			console.log('setPosition X:' + this.position.x + '; Y:' + this.position.y);
 		},
 		
 		getPosition: function(){
-			var sheetRc = this.diagram.sheet.get(0).getBoundingClientRect();
+/*			var sheetRc = this.diagram.sheetRc;//.get(0).getBoundingClientRect();
 			var nodePos = this.getElement().get(0).getBoundingClientRect();
-			return {x: (nodePos.left - sheetRc.left) / this.diagram.options.zoom, y: (nodePos.top - sheetRc.top) / this.diagram.options.zoom};
+			var x = (nodePos.left - sheetRc.left) / this.diagram.options.zoom;
+			var y = (nodePos.top - sheetRc.top) / this.diagram.options.zoom;
+			console.log('getPosition X:' + x + '; Y:' + y + '; oX:' + this.position.x + '; oY:' + this.position.y);
+*/			
+			return {x: this.position.x, y: this.position.y};
 		},
 		
 		setRect: function(r){
 			var curR = this.getRect();
 			var cssObj = {};
 			if(r.x != curR.x){
-				cssObj.left = r.x;
+				this.position.x = cssObj.left = r.x;
 			}
 			if(r.y != curR.y){
-				cssObj.top = r.y;
+				this.position.y = cssObj.top = r.y;
 			}
 			if(r.w != curR.w){
 				cssObj.width = r.w;

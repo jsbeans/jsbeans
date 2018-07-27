@@ -417,7 +417,7 @@
 				break;
 			case 'mousewheel':
 				var currentZoom = this.diagram.getZoom();
-				currentZoom += /*Math.exp(currentZoom) */ params.delta * this.diagram.getOption('zoomStep');
+				currentZoom += /*Math.exp(currentZoom) */ params.delta * this.diagram.getOption('zoomStep') * currentZoom;
 				this.diagram.setZoom(currentZoom);
 				break;
 			}
