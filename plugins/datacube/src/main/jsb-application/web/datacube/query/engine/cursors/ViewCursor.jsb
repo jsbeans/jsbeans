@@ -57,13 +57,13 @@
             $this.source.reset();
         },
 
-        close: function(){
+        destroy: function(){
             if ($this.closed) return;
             var nested = $this.getNested();
             for(var c in nested){
-                nested[c] && nested[c].close();
+                nested[c] && nested[c].destroy();
             }
-            $this.source && $this.source.close();
+            $this.source && $this.source.destroy();
             $base();
         },
 

@@ -8,7 +8,7 @@
 		$constructor: function(executor, parent, caller){
 		    $this.Class = JSB.get($this.getJsb().$name).getClass();
 		    $this.executor = executor;
-		    $this.profiler = executor.profiler;
+		    $this.tracer = executor.tracer;
 		    $this.parent = parent;
 		    $this.caller = caller;
         },
@@ -19,15 +19,19 @@
             throw new Error('Not implemented');
         },
 
+        close: function(){
+            $this.destroy();
+        },
+
         getFieldValue: function(e) {
             return $this.object[e.$field||e];
         },
 
-        close: function(){
+        destroy: function(){
             if ($this.closed) return;
             $this.closed = true;
             $this.object = null;
-            $this.destroy();
+            $base();
         },
 
         reset: function(){
@@ -44,7 +48,7 @@
                     return $this.next();
                 },
                 close: function(){
-                    $this.close();
+                    $this.destroy();
                 },
             };
 		},

@@ -18,7 +18,7 @@
             var cube = cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube' && cubeOrDataProvider;
 		    dcQuery = JSB.clone(dcQuery);
 		    QueryUtils.walkAllSubQueries(dcQuery, function(query){
-		        if (!query.$from) {
+		        if (!query.$from && !query.$provider && !query.$join && !query.$union  || query.$cube) {
 		            try {
                         var query2 = JSB.merge({}, query, {$views: dcQuery.$views});
                         var usedFields = /**{field:usages};*/ QueryUtils.extractUsedFields(query2, cubeOrDataProvider);

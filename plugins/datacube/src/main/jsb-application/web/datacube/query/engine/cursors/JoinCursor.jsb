@@ -32,7 +32,7 @@
 
         setRight: function(cursor){
             if ($this.right) {
-                $this.right.close();
+                $this.right.destroy();
             }
             $this.right = cursor;
             $this.rightContext = cursor.context;
@@ -53,7 +53,7 @@
             return nested;
         },
 
-        close: function(){
+        destroy: function(){
             if ($this.closed) return;
             $this.left = null;
             $this.right = null;
@@ -115,7 +115,7 @@ debugger;
                 $this.isRightFirstObject = true;
                 $this.right = $this.createRight(filter, params);
 
-                $this.profiler && $this.profiler.profile('New right cursor', params);
+                $this.tracer && $this.tracer.profile('New right cursor', params);
             }
 
             _NEXT: while(true) {
@@ -123,9 +123,9 @@ debugger;
                 /// next left or complete
                 if (!$this.leftObject) {
                     $this.leftObject = $this.left.next();
-                    $this.profiler && $this.profiler.profile('Next left object ['+ $this.count.left++ +']', $this.leftObject);
+                    $this.tracer && $this.tracer.profile('Next left object ['+ $this.count.left++ +']', $this.leftObject);
 
-                    $this.right && $this.right.close();
+                    $this.right && $this.right.destroy();
                     $this.right = null;
                     if ($this.leftObject == null) {
                         return null;
@@ -140,11 +140,11 @@ debugger;
 
                 /// next right
                 var rightObject = $this.right.next();
-                $this.profiler && $this.profiler.profile('Next right object ['+ $this.count.right++ +']', rightObject);
+                $this.tracer && $this.tracer.profile('Next right object ['+ $this.count.right++ +']', rightObject);
 
                 if (rightObject == null) {
                     // clear right
-                    $this.right.close();
+                    $this.right.destroy();
                     $this.right = null;
                     if ($this.types[1] === 'outer' && $this.isRightFirstObject) {
                         /// only left
@@ -158,7 +158,7 @@ debugger;
                     }
                 } else {
                     $this.object = $this._merge(rightObject);
-                    $this.profiler && $this.profiler.profile('Return object ['+ $this.count.result++ +']', $this.object);
+                    $this.tracer && $this.tracer.profile('Return object ['+ $this.count.result++ +']', $this.object);
                     return $this.object;
                 }
             }

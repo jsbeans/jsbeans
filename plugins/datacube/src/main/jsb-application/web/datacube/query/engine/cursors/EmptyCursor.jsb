@@ -20,7 +20,7 @@
             );
         },
 
-        close: function(){
+        destroy: function(){
             if ($this.closed) return;
             $this.object = null;
             $base();

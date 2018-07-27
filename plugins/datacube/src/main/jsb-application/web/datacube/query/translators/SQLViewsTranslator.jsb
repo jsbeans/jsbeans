@@ -278,6 +278,10 @@
 
             // if query field
             var desc = view.getField(name);
+            if (!desc) {
+                // unknown field: print as-is
+                return $this._quotedName(name);
+            }
             return $this._translateViewField(desc);
         },
 
@@ -323,7 +327,8 @@
             } else if(view instanceof DataProviderView) {
                 /// if as-is return table name or generate subquery
 
-                if (!view.query.$filter
+                if (!view.query
+                        || !view.query.$filter
                         && !view.query.$groupBy
                         && !view.query.$sort
                         && !view.query.$limit
@@ -377,7 +382,7 @@
         _translateRecursiveSelect: function (exp, dcQuery) {
 
             function translateRecursive(){
-                var firstQuery = {
+                var startQuery = {
                     $context: 'start:' + dcQuery.$context,
                     $select: {
                         id: exp.$idField.$field||exp.$idField,
@@ -400,7 +405,7 @@
                     }
                 };
                 try {
-                    var builder1 = new QueryViewsBuilder(firstQuery, $this.cube, $this.providers);
+                    var builder1 = new QueryViewsBuilder(startQuery, $this.cube, $this.providers);
                     var startView = builder1.build();
 
                     var builder2 = new QueryViewsBuilder(recursiveQuery, $this.cube, $this.providers);
@@ -413,7 +418,7 @@
                     builder1 && builder1.destroy();
                     builder2 && builder2.destroy();
                 }
-
+debugger
                 var sql = '';
                 sql += $this._translateAnyView(startView);
                 sql += ' UNION ALL ';
@@ -422,34 +427,13 @@
                     // HACK: remove ')'
                     sql = sql.substring(0, sql.length-1);
                     sql += ' JOIN ' + $this._quotedName(treeContext);
-                    sql += ' ON ' + $this._translateField(exp.$parentIdField.$field||exp.$parentIdField, recursiveView.name)
+                    sql += ' ON ' + $this._translateField(exp.$parentIdField.$field||exp.$parentIdField, recursiveView.name, false, recursiveView.name)
                         + ' = '
                         + $this._quotedName(treeContext) + '.id';
                     sql += ')';
                 } else {
                     throw new Error('Internal error: Invalid query format, unexpected end');
                 }
-//                sql += 'SELECT '
-//                        + $this._quotedName(exp.$idField.$field||exp.$idField) + ' AS id, '
-//                        + $this._quotedName(exp.$parentIdField.$field||exp.$parentIdField) + ' AS parentId, '
-//                        + $this._translateExpression(exp.$aggregateExpr[aggFunc], dcQuery) + ' AS value'; // TODO delete context: try useAlias
-//                sql += ' FROM ' + $this._translateAnyView(view.getSourceView());
-//                sql += ' WHERE ' + $this._quotedName(exp.$idField.$field||exp.$idField)
-//                        + ' = '
-//                        + $this._translateExpression(exp.$idField, dcQuery);
-//
-//                sql += ' UNION ALL ';
-//
-//                var recursiveContext = 'recursive:' + dcQuery.$context;
-//                sql += 'SELECT '
-//                        + $this._quotedName(recursiveContext) + '.' + $this._quotedName(exp.$idField.$field||exp.$idField) + ' AS id, '
-//                        + $this._quotedName(recursiveContext) + '.' + $this._quotedName(exp.$parentIdField.$field||exp.$parentIdField) + ' AS parentId, '
-//                        + $this._translateExpression(exp.$aggregateExpr[aggFunc], dcQuery) + ' AS value';  // TODO wrong context: try useAlias
-//                sql += ' FROM ' + $this._translateAnyView(view.getSourceView());// + ' AS ' + $this._quotedName(recursiveContext);
-//                sql += ' JOIN ' + $this._quotedName(treeContext);
-//                sql += ' ON ' + $this._quotedName(recursiveContext) + '.' + $this._quotedName(exp.$parentIdField.$field||exp.$parentIdField)
-//                        + ' = '
-//                        + $this._quotedName(treeContext) + '.id';
                 return sql;
             }
 
@@ -628,7 +612,6 @@
         },
 
         _translateSelectColumns: function(view){
-debugger
             var sqlColumns = '';
             var fields = view.listFields();
             for (var i = 0; i < fields.length; i++) {

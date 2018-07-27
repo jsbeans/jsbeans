@@ -1,5 +1,5 @@
 {
-	$name: 'DataCube.Query.Engine.QueryProfiler',
+	$name: 'DataCube.Query.Engine.QueryTracer',
 	$server: {
 		$require: [
 		    'DataCube.Query.QueryUtils',

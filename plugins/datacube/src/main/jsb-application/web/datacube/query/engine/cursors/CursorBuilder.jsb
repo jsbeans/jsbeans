@@ -15,10 +15,14 @@
 
 		$constructor: function(executor){
 		    $this.executor = executor;
-		    $this.profiler = $this.executor.profiler;
+		    $this.tracer = $this.executor.tracer;
 
-            $this._translateOnlyProviders        = Config.has('datacube.queryengine.translateOnlyProviders') && Config.get('datacube.queryengine.translateOnlyProviders');
-            $this._translateQueriesFromProviders = Config.has('datacube.queryengine.translateQueriesFromProviders') && Config.get('datacube.queryengine.translateQueriesFromProviders');
+            $this._translatorSkipQueries =
+                    Config.has('query.translator.skipQueries.enabled')
+                    && Config.get('query.translator.skipQueries.enabled');
+
+            /// # задает нужно ли транслировать запросы к датапровайдру (использутется в JOIN для получения только склеиваемых записей)
+            $this._translateQueriesFromProviders = true
         },
 
         buildAnyCursor:function(query, params, parent, caller) {
@@ -26,11 +30,37 @@
             if (query == null || JSB.isEqual(query, {})) {
                 return $this.buildEmptyCursor(parent, caller);
             }
-            // is provider or translate whole query
-            if ($this._checkTranslateQuery(query)) {
+            // is translatable: provider or whole query
+            if (query.$provider
+
+                    || (!$this._translatorSkipQueries)
+
+                    || $this._translateQueriesFromProviders
+                        && query.$from
+                        && query.$from.$provider
+            ) {
                 var cursor = $this.buildTranslatedCursor(query, params, parent, caller);
                 if (cursor) {
                     return cursor;
+                } else if (query.$provider) {
+                    QueryUtils.throwError(false, 'Compatible translator does not exist for provider query "{}"', query.$context);
+                }
+            }
+            // is translatable: provider or translate whole query
+            if (query.$provider
+
+                    || (!$this._translatorSkipQueries)
+
+                    || $this._translateQueriesFromProviders
+                        && query.$from
+                        && (query.$from.$provider || $this.query.$views && $this.query.$views[query.$from])
+                        && true // TODO filter provider-queries by fields
+            ) {
+                var cursor = $this.buildTranslatedCursor(query, params, parent, caller);
+                if (cursor) {
+                    return cursor;
+                } else {
+                    QueryUtils.throwError(false, 'Compatible translator does not exist for provider query "{}"', query.$context);
                 }
             }
             // is union
@@ -48,55 +78,64 @@
         buildTranslatedCursor: function(query, params, parent, caller) {
             var it = $this.executor.tryTranslateQuery(query, params);
             if (it) {
-                var cursor = new TranslatedCursor($this.executor, query, parent, caller, function(){
-                    if(it) {
-                        // use pre-created
-                        var curIt = it;
-                        it = null;
-                        return curIt;
-                    } else {
-                        // create new
-                        return $this.executor.tryTranslateQuery(query, params);
-                    }
-                });
-                $this._buildViewFields(cursor);
-                return cursor;
+                try {
+                    var cursor = new TranslatedCursor($this.executor, query, parent, caller, function(){
+                        if(it) {
+                            // use pre-created
+                            var curIt = it;
+                            it = null;
+                            return curIt;
+                        } else {
+                            // create new
+                            return $this.executor.tryTranslateQuery(query, params);
+                        }
+                    });
+                    $this._buildViewFields(cursor);
+                    return cursor;
+                } catch(e) {
+                    it && it.close();
+                    cursor && cursor.destroy();
+                    throw e;
+                }
             }
             return null;
         },
 
         buildQueryCursor: function(query, params, parent, caller){
-            QueryUtils.throwError(query.$from, 'Query source/$from is undefined in context {}', query.$context);
+            try {
+                var cursor = new QueryCursor($this.executor, query, params, parent, caller);
+                QueryUtils.throwError(query.$from, 'Query source/$from is undefined in context {}', query.$context);
 
-            var cursor = new QueryCursor($this.executor, query, params, parent, caller);
+                cursor.source = $this.buildAnyCursor(query.$from, params, parent, cursor);
 
-            cursor.source = $this.buildAnyCursor(query.$from, params, parent, cursor);
-
-            QueryUtils.walkQueries(
-                JSB.merge({},query,{$from:null}),
-                {
-                    depth : 1,
-                    findView: function(context){
-                        return $this.executor.contextQueries[context];
+                QueryUtils.walkQueries(
+                    JSB.merge({},query,{$from:null}),
+                    {
+                        depth : 1,
+                        findView: function(context){
+                            return $this.executor.contextQueries[context];
+                        }
+                    },
+                    function enterCallback(subQuery){
+                    },
+                    function leaveCallback(subQuery){
+                        if (subQuery.$context != query.$context) {
+                            cursor.addNested(
+                                subQuery.$context,
+                                $this.buildAnyCursor(subQuery, params, cursor, cursor)
+                            );
+                        }
                     }
-                },
-                function enterCallback(subQuery){
-                },
-                function leaveCallback(subQuery){
-                    if (subQuery.$context != query.$context) {
-                        cursor.addNested(
-                            subQuery.$context,
-                            $this.buildAnyCursor(subQuery, params, cursor, cursor)
-                        );
-                    }
-                }
-            );
+                );
 
-            $this._buildViewFields(cursor);
+                $this._buildViewFields(cursor);
 
-            cursor.buildQueryBody();
-
-            return cursor;
+                cursor.buildQueryBody();
+                return cursor;
+            } catch(e) {
+                cursor && cursor.destroy();
+                throw e;
+            }
         },
 
         buildEmptyCursor: function(parent, caller){
@@ -104,7 +143,7 @@
         },
 
         buildUnionCursor: function(unionQuery, params, parent, caller){
-            $this.profiler && $this.profiler.profile('Create union source cursor at {}', unionQuery.$context);
+            $this.tracer && $this.tracer.profile('Create union source cursor at {}', unionQuery.$context);
 
             var unionsCursor = new UnionCursor($this.executor, unionQuery, params, parent, caller);
 
@@ -123,18 +162,18 @@
         },
 
         buildJoinCursor: function(joinQuery, params, parent, caller){
-            $this.profiler && $this.profiler.profile('Create join cursor at {}', joinQuery.$context);
+            $this.tracer && $this.tracer.profile('Create join cursor at {}', joinQuery.$context);
 
             var joinCursor = new JoinCursor($this.executor, joinQuery, params, parent);
 
             QueryUtils.throwError(joinQuery.$join.$left, 'Join {} contains undefined left query', joinQuery.$context);
             QueryUtils.throwError(joinQuery.$join.$right, 'Join {} contains undefined right query', joinQuery.$context);
 
-            $this.profiler && $this.profiler.profile('Create left join cursor at {}', joinQuery.$join.$left);
+            $this.tracer && $this.tracer.profile('Create left join cursor at {}', joinQuery.$join.$left);
             joinCursor.setLeft(
                 $this.buildAnyCursor(joinQuery.$join.$left, params, parent, joinCursor)
             );
-            $this.profiler && $this.profiler.profile('Create right join cursor at {}', joinQuery.$join.$right);
+            $this.tracer && $this.tracer.profile('Create right join cursor at {}', joinQuery.$join.$right);
             joinCursor.setRight(
                 $this.buildAnyCursor(joinQuery.$join.$right, params, parent, joinCursor)
             );
@@ -156,12 +195,6 @@
             $this._buildViewFields(joinCursor);
 
             return joinCursor;
-        },
-
-        _checkTranslateQuery: function(query) {
-            return query.$provider
-                || !$this._translateOnlyProviders
-                || $this._translateQueriesFromProviders && query.$from && query.$from.$provider;
         },
 
         _buildViewFields: function(viewCursor){

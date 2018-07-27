@@ -3,7 +3,7 @@
 	$session: false,
 	$server: {
 		$require: [
-		    'DataCube.Query.Engine.QueryProfiler',
+		    'DataCube.Query.Engine.QueryTracer',
 		    'DataCube.Query.Transforms.QueryTransformer',
 		    'DataCube.Query.Views.QueryViewsBuilder',
 		    'DataCube.Query.Engine.Cursors.CursorBuilder',
@@ -16,7 +16,7 @@
 		    'DataCube.Query.QueryUtils',
         ],
 
-        doProfile: true,
+        traceEnabled: true,
 
 		$constructor: function(queryEngine, cubeOrDataProvider, dcQuery, params){
 		    $this.query = JSB.clone(dcQuery);
@@ -24,16 +24,15 @@
 			$this.queryEngine = queryEngine;
 		    $this.params = params;
 
-		    $this.profiler = $this.doProfile ? new QueryProfiler($this.qid) : null;
-            $this.profiler && $this.profiler.start({
+		    $this.tracer = $this.traceEnabled ? new QueryTracer($this.qid) : null;
+            $this.tracer && $this.tracer.start({
                 query: $this.query,
                 params: params
             });
 
             if (cubeOrDataProvider.getJsb().$name == 'DataCube.Model.Cube') {
                 $this.cube = cubeOrDataProvider;
-                $this.providers = QueryUtils.extractQueryProviders(dcQuery, $this.cube);
-                $this.profiler && $this.profiler.profile('cube query', $this.cube.id);
+                $this.tracer && $this.tracer.profile('cube query', $this.cube.id);
             } else {
                 $this.providers = [cubeOrDataProvider];
             }
@@ -43,38 +42,41 @@
 
 		execute: function(){
 		    try {
-		        $this.profiler && $this.profiler.profile('execute query started');
+		        $this.tracer && $this.tracer.profile('execute query started');
 
                 $this._prepareQuery();
+                if ($this.cube) {
+                    $this.providers = QueryUtils.extractQueryProviders($this.query, $this.cube);
+                    $this.tracer && $this.tracer.profile('query providers extracted', Object.keys($this.providers).length);
+                }
 		        $this.contextQueries = QueryUtils.defineContextQueries($this.query);
-                $this.profiler && $this.profiler.profile('query prepared', $this.preparedQuery);
-debugger;
+                $this.tracer && $this.tracer.profile('query prepared', $this.preparedQuery);
 
                 var rootCursor = $this.builder.buildAnyCursor($this.query, $this.params, null);
-                $this.profiler && $this.profiler.profile('root cursor created');
-                rootCursor.analyze();
+                $this.tracer && $this.tracer.profile('root cursor created');
+//                rootCursor.analyze();
                 var it =  rootCursor.asIterator();
                 var oldNext = it.next;
                 it.next = function(){
                     try {
                         return oldNext.apply(this, arguments);
                     }catch(e){
-                        $this.profiler && $this.profiler.failed('execute query next failed', e);
+                        $this.tracer && $this.tracer.failed('execute query next failed', e);
                         this.close();
                     }
                 };
                 return it;
 
             } catch(e) {
-                $this.profiler && $this.profiler.failed('execute query failed', e);
+                $this.tracer && $this.tracer.failed('execute query failed', e);
                 throw e;
             }
 		},
 
 		destroy: function() {
 		    $this.builder.destroy();
-            $this.profiler && $this.profiler.complete('builder destroyed');
-		    $this.profiler && $this.profiler.destroy();
+            $this.tracer && $this.tracer.complete('builder destroyed');
+		    $this.tracer && $this.tracer.destroy();
 		    $base();
 		},
 
@@ -93,9 +95,12 @@ debugger;
                                 $this.queryEngine
                         );
                         var it = translator.translatedQueryIterator(query, params);
-                        return it;
-                    } finally {
+                        if (it) {
+                            return it;
+                        }
+                    } catch(e) {
                         if(translator) translator.close();
+                        throw e;
                     }
                 }
             }

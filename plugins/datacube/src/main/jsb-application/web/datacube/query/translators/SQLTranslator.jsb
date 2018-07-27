@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.Query.Translators.SQLTranslator',
-	$parent: 'DataCube.Query.Translators.Translator',
+	$parent: 'DataCube.Query.Translators.BaseTranslator',
 
 	$server: {
 		vendor: 'PostgreSQL',
@@ -23,6 +23,10 @@
 		    if ($this.cube) {
 		        $this.cubeFields = $this.cube.getManagedFields();
             }
+		},
+
+		translatedQueryIterator: function(dcQuery, params){
+		    return $base(dcQuery, params);
 		},
 
 		executeQuery: function(translatedQuery){

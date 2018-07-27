@@ -35,7 +35,7 @@
             $this.buildQueryBody();
         },
 
-        close: function(){
+        destroy: function(){
             if ($this.closed) return;
             $this.chain = null;
             $this.state = null;
@@ -134,8 +134,8 @@ debugger;
                 return $this.object = objects[++currentPos];
             }
 
-            var inputClose = $this.close;
-            $this.close = function(){
+            var inputClose = $this.destroy;
+            $this.destroy = function(){
                 inputClose.call($this);
                 objects = null;
             };
@@ -173,8 +173,8 @@ debugger;
                 return $this.object = object;
             };
 
-            var inputClose = $this.close;
-            $this.close = function(){
+            var inputClose = $this.destroy;
+            $this.destroy = function(){
                 inputClose.call($this);
                 ids = {};
             };
@@ -191,8 +191,8 @@ debugger;
                 return inputNext.call($this);
             };
 
-            var inputClose = $this.close;
-            $this.close = function sorting(){
+            var inputClose = $this.destroy;
+            $this.destroy = function sorting(){
                 // TODO sort close
                 inputClose.call($this);
                 objects = {};

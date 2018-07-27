@@ -20,7 +20,7 @@
             return $this.object = $this.iterator.next();
         },
 
-        close: function(){
+        destroy: function(){
             if ($this.closed) return;
             $this.object = null;
             $this.iterator && $this.iterator.close();

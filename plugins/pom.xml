@@ -26,11 +26,19 @@
 
     <modules>
         <module>web</module>
+
+        <module>store</module>
+        <module>store-jdbc</module>
+        <module>store-mongodb</module>
+
         <module>workspace</module>
-	<module>unimap</module>
+        <module>unimap</module>
         <module>textextractors</module>
         <module>worker</module>
+
         <module>datacube</module>
+        <module>datacube-jdbc</module>
+        <module>datacube-mongodb</module>
 
         <module>empty</module>
     </modules>

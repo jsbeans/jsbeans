@@ -26,7 +26,7 @@
             return nested;
         },
 
-        close: function(){
+        destroy: function(){
             if ($this.closed) return;
             $this.unions = [];
             $base();
