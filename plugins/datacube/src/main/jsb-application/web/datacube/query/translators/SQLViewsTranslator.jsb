@@ -159,6 +159,9 @@
 		},
 
         _translateWith: function(query){
+            if (query.$context != $this.dcQuery) {
+                return '';
+            }
             var sql = '';
             var views = $this._orderedIsolatedViews(query);
             for(var i in views) {
@@ -279,7 +282,6 @@
         _translateRecursiveSelect: function (exp, dcQuery) {
 
             function translateRecursive(){
-//debugger;
                 var firstQuery = {
                     $context: 'start:' + dcQuery.$context,
                     $select: {
@@ -304,9 +306,9 @@
                 };
                 if (dcQuery.$from) {
                     firstQuery.$from = dcQuery.$from;
-                    firstQuery.$views = dcQuery.$views;
+                    firstQuery.$views = $this.dcQuery.$views;
                     recursiveQuery.$from = dcQuery.$from;
-                    recursiveQuery.$views = dcQuery.$views;
+                    recursiveQuery.$views = $this.dcQuery.$views;
                 }
                 try {
                     var builder1 = new QueryViewsBuilder(firstQuery, $this.cube, $this.providers);
