@@ -12,11 +12,6 @@
 			this.loadCss('GraphNode.css');
 
 			this.entry = opts.entry;
-/*
-			this.append(`#dot
-                <div class="connector"></div>
-            `);
-*/
             this.updateEntry(opts.entry);
 
 			this._createConnectors();
@@ -24,7 +19,9 @@
 
 		destroy: function(){
 		    // destroy widget
-		    if(this.widget) this.widget.destroy();
+		    if(this.widget){ 
+		    	this.widget.destroy();
+		    }
 
 		    $base();
 		},
@@ -93,7 +90,7 @@
 
 		_createConnectors: function(){
 		    this.connector = this.installConnector('nodeConnector', {
-		        origin: this.getElement()/*find('.connector')*/,
+		        origin: this.getElement(),
 		        hAlign: 'left',
 		        vAlign: 'top'
 		    });

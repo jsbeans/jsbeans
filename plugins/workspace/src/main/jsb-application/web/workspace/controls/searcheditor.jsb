@@ -8,7 +8,7 @@
 		$constructor: function(opts){
 			var self = this;
 			$base(opts);
-			this.loadCss('searcheditor.css');
+			this.loadCss('SearchEditor.css');
 			this.addClass('searchEditor');
 			
 			this.editor = new Editor({

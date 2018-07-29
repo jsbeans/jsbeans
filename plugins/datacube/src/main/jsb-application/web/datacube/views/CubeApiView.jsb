@@ -142,7 +142,7 @@
 		
 		updateRequest: function(){
 			// construct slice request
-			var entry = this.node.getEntry();
+			var entry = this.node.getTargetEntry();
 			var wid = entry.getWorkspace().getId();
 			var eid = entry.getId();
 			
@@ -197,7 +197,7 @@
 		},
 		
 		fillSettings: function(fields, slices){
-			var entry = this.node.getEntry();
+			var entry = this.node.getTargetEntry();
 			this.requestOpts = {
 				query: {$select:{}, $groupBy:[], $filter:{}, $sort:[]},
 				skip: 0,
@@ -242,7 +242,7 @@
 				return;
 			}
 			
-			var entry = this.node.getEntry();
+			var entry = this.node.getTargetEntry();
 			entry.server().getOutputFields(function(fields){
 				entry.server().getSlices(function(slices){
 					$this.fillSettings(fields, slices);	

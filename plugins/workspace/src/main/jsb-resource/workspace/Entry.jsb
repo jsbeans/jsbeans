@@ -12,6 +12,7 @@
 	_owner: null,
 	_childCount: 0,
 	_artifactCount: 0,
+	_shareCount: 0,
 	
 	getName: function(){
 		return this._name;
@@ -33,8 +34,20 @@
 		return this._artifactCount;
 	},
 	
+	getShareCount: function(){
+		return this._shareCount;
+	},
+	
 	getEntryProps: function(){
 		return this._props;
+	},
+	
+	getOwner: function(){
+		return this._owner;
+	},
+
+	isLink: function(){
+		return false;
 	},
 	
 	$client: {
@@ -49,7 +62,7 @@
 	},
 
 	$server: {
-		$require: ['JSB.System.Kernel'],
+		$require: ['JSB.System.Kernel', 'JSB.Workspace.WorkspaceController'],
 		$disableRpcInstance: true,
 		
 		_eDoc: {},
@@ -63,6 +76,7 @@
 		
 		_children: {},
 		_artifacts: {},
+		_shares: {},
 		
 		$constructor: function(id, workspace){
 			this.id = id;
@@ -79,10 +93,6 @@
 			this.loadEntry();
 			this._checkChildren();
 			this.getWorkspace()._ensureEntryDesc(this, true);
-		},
-		
-		getOwner: function(){
-			return this._owner;
 		},
 		
 		getEntryDoc: function(){
@@ -144,6 +154,10 @@
 				this._parent =  this._eDoc._parent || null;
 				this._owner = this._eDoc._owner || null;
 				
+				// load shares
+				this._shares = this._eDoc._shares || {};
+				this._shareCount = Object.keys(this._shares).length;
+				
 				// load children
 				var mtx = 'JSB.Workspace.Entry.children.' + this.getId();
 				JSB.getLocker().lock(mtx);
@@ -179,6 +193,7 @@
 			doc._name = this._name;
 			doc._parent = this._parent;
 			doc._owner = this._owner;
+			doc._shares = this._shares;
 			
 			// serialize children
 			var mtx = 'JSB.Workspace.Entry.children.' + this.getId();
@@ -304,6 +319,7 @@
 		},
 		
 		setName: function(title){
+			this.requireAccess(2);
 			if(this._name == title){
 				return false;
 			}
@@ -353,7 +369,6 @@
 			if(!this._children[entry.getId()]){
 				return;
 			}
-			
 			var mtx = 'JSB.Workspace.Entry.children.' + this.getId();
 			JSB.getLocker().lock(mtx);
 			delete this._children[entry.getId()];
@@ -579,6 +594,281 @@
 				this._markStored(false);
 			} finally {
 				JSB.getLocker().unlock(mtxName);
+			}
+		},
+		
+		getShareInfo: function(){
+			var users = WorkspaceController.getUsers();
+			var wArr = WorkspaceController.getWorkspacesInfo(Kernel.user());
+			
+			var shareMap = {}, wMap = {}, userMap = {};
+			
+			// proceed existed shares
+			for(var shareId in $this._shares){
+				var existedShare = $this._shares[shareId];
+				if(Kernel.user() != existedShare.user && Kernel.user() != $this.getOwner()){
+					continue;	// prevent user share to foreign user
+				}
+				var ws = WorkspaceController.getWorkspace(existedShare.wId);
+				if(Kernel.user() == existedShare.user && ws.getWorkspaceType() == 'shared'){
+					continue;	// prevent local share into shared workspace
+				}
+				
+				if(Kernel.user() == $this.getOwner() && Kernel.user() != existedShare.user && ws.getWorkspaceType() != 'shared'){
+					continue;	// prevent owner to see reshares
+				}
+					
+				wMap[existedShare.wId] = true;
+				userMap[existedShare.user] = true;
+				
+				shareMap[shareId] = {
+					id: shareId,
+					user: existedShare.user,
+					local: Kernel.user() == existedShare.user,
+					wId: existedShare.wId,
+					access: existedShare.access,
+					wName: ws.getName()
+				};
+			}
+			
+			// proceed workspaces
+			for(var i = 0; i < wArr.length; i++){
+				var wDesc = wArr[i];
+				if(wDesc.wId == this.getWorkspace().getId() || wDesc.wType == 'shared'){
+					continue;
+				}
+				if(wMap[wDesc.wId]){
+					continue;
+				}
+				var w = WorkspaceController.getWorkspace(wDesc.wId);
+				var shareId = JSB.generateUid();
+				shareMap[shareId] = {
+					id: shareId,
+					user: Kernel.user(),
+					local: true,
+					wId: wDesc.wId,
+					wName: w.getName(),
+					access: 0
+				};
+			}
+
+			if(Kernel.user() == $this.getOwner()){
+				// proceed users
+				for(var i = 0; i < users.length; i++){
+					if(Kernel.user() == users[i]){
+						continue;	// skip current user
+					}
+					if(userMap[users[i]]){
+						continue;
+					}
+					var shareId = JSB.generateUid();
+					shareMap[shareId] = {
+						id: shareId,
+						user: users[i],
+						local: false,
+						wId: null,
+						wName: null,
+						access: 0
+					};
+				}
+			}
+			
+			
+			return {
+				shares: shareMap,
+				maxAccess: $this.getAccessForUser()
+			};
+		},
+		
+		changeShares: function(newShareMap){
+			this.lock('JSB.Workspace.Entry.shares');
+			var bNeedStore = false;
+			try {
+				for(var shareId in newShareMap){
+					var newShare = newShareMap[shareId];
+					
+					// check allowed access
+					var maxAccess = $this.getAccessForUser();
+					if(newShare.access > maxAccess){
+						newShare.access = maxAccess;
+					}
+
+					if(($this._shares[shareId] && $this._shares[shareId].access == newShare.access) || (!$this._shares[shareId] && newShare.access == 0)){
+						continue;
+					}
+					bNeedStore = true;
+					if(!$this._shares[shareId]){
+						// create new share
+						var ws = null;
+						if(newShare.wId){
+							ws = WorkspaceController.getWorkspace(newShare.wId);
+						} else {
+							// obtain shared workspace
+							var wsInfoArr = WorkspaceController.getWorkspacesInfo(newShare.user);
+							for(var i = 0; i < wsInfoArr.length; i++){
+								var wsInfo = wsInfoArr[i];
+								if(wsInfo.wType == 'shared'){
+									ws = WorkspaceController.getWorkspace(wsInfo.wId);
+									break;
+								}
+							}
+							if(!ws){
+								// create shared workspace for target user
+								ws = WorkspaceController.createWorkspace('shared', {
+									owner: newShare.user
+								});
+							}
+						}
+						
+						
+						// create new link entry
+						var EntryLink = JSB.get('JSB.Workspace.EntryLink').getClass();
+						var el = new EntryLink(shareId, ws, {
+							entry: $this,
+							access: newShare.access
+						});
+						
+						$this._shares[shareId] = {
+							user: ws.getOwner(),
+							wId: ws.getId(),
+							access: newShare.access,
+							lId: el.getId()
+						};
+						
+						$this._shareCount = Object.keys($this._shares).length;
+						
+						ws._markStored(false);
+						
+					} else {
+						// change existing share
+						var ws = WorkspaceController.getWorkspace($this._shares[shareId].wId);
+						var el = null;
+						if(ws.existsEntry($this._shares[shareId].lId)){
+							el = ws.entry($this._shares[shareId].lId);
+						}
+						var reShares = {};
+						if(!newShare.local){
+							// combine descendant reshares of target user
+							function _combineReshares(entry){
+								for(var reshareId in entry._shares){
+									if(entry._shares && entry._shares[reshareId].user == newShare.user && reshareId != shareId){
+										var reshareWs = WorkspaceController.getWorkspace(entry._shares[reshareId].wId);
+										if(reshareWs.getWorkspaceType() == 'shared'){
+											continue;
+										}
+										if(!reShares[reshareId]){
+											reShares[reshareId] = {
+												entry: entry,
+												share: reshareId
+											};
+										}
+									}
+									
+									// iterate children
+									var children = entry.getChildren();
+									for(var chId in children){
+										_combineReshares(children[chId]);
+									}
+								}
+							}
+							_combineReshares($this);
+						}
+
+						if(newShare.access == 0){
+							// remove link
+							if(el){
+								el.remove();
+							}
+							delete $this._shares[shareId];
+							$this._shareCount = Object.keys($this._shares).length;
+							
+							if(!newShare.local){
+								// avoid reshares
+								for(var reshareId in reShares){
+									var reshareEntry = reShares[reshareId].entry;
+									var reshareWs = WorkspaceController.getWorkspace(reshareEntry._shares[reshareId].wId);
+									if(reshareWs.existsEntry(reshareEntry._shares[reshareId].lId)){
+										var reshareEl = reshareWs.entry(reshareEntry._shares[reshareId].lId);
+										reshareEl.remove();
+									}
+									delete reshareEntry._shares[reshareId];
+									reshareEntry._shareCount = Object.keys(reshareEntry._shares).length;
+									reshareEntry._markStored(false);
+								}
+								
+								// remove shared workspace if it's empty
+								if(ws.getWorkspaceType() == 'shared' && ws.getChildCount() == 0){
+									WorkspaceController.removeWorkspace(ws);
+								}
+							}
+						} else {
+							// change access
+							$this._shares[shareId].access = newShare.access;
+							if(el){
+								el.setAccess(newShare.access);
+							} else {
+								var EntryLink = JSB.get('JSB.Workspace.EntryLink').getClass();
+								el = new EntryLink(shareId, ws, {
+									entry: $this,
+									access: newShare.access
+								});
+							}
+							if(!newShare.local){
+								// change reshare access
+								for(var reshareId in reShares){
+									var reshareEntry = reShares[reshareId].entry;
+									if(reshareEntry._shares[reshareId].access > newShare.access){
+										reshareEntry._shares[reshareId].access = newShare.access;
+										var reshareWs = WorkspaceController.getWorkspace(reshareEntry._shares[reshareId].wId);
+										if(reshareWs.existsEntry(reshareEntry._shares[reshareId].lId)){
+											var reshareEl = reshareWs.entry(reshareEntry._shares[reshareId].lId);
+											reshareEl.setAccess(newShare.access);
+										}
+										reshareEntry._markStored(false);
+									}
+								}
+							}
+						}
+					}
+				}
+				if(bNeedStore){
+					this._markStored(false);
+				}
+			} finally {
+				this.unlock('JSB.Workspace.Entry.shares');
+			}
+		},
+		
+		getAccessForUser: function(user){
+			if(!user){
+				user = Kernel.user();
+			}
+			if($this.getOwner() == user){
+				return 2;	// read/write access
+			}
+			var curEntry = $this;
+			while(curEntry){
+				// iterate over shares
+				if(curEntry._shares){
+					for(var shareId in curEntry._shares){
+						if(curEntry._shares[shareId].user == user){
+							var ws = WorkspaceController.getWorkspace(curEntry._shares[shareId].wId);
+							if(ws.getWorkspaceType() != 'shared'){
+								continue;
+							}
+							return curEntry._shares[shareId].access;
+						}
+					}
+				}
+				curEntry = curEntry.getParent();
+			}
+			
+			return 0;
+		},
+		
+		requireAccess: function(access){
+			if($this.getAccessForUser() < access){
+				throw new Error('Access denied');
 			}
 		}
 	}

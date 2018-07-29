@@ -18,7 +18,7 @@
 				this.editor = new DashboardEditor();
 				this.append(this.editor);
 			}
-			this.editor.setCurrentEntry(this.node.getEntry());
+			this.editor.setCurrentEntry(this.node.getTargetEntry());
 		}
 		
 	},

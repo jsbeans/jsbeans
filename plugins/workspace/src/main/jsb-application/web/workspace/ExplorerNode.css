@@ -10,15 +10,6 @@
     font-weight: bold;
 }
 
-.workspaceExplorerNode > .icon {
-	width: 20px;
-    height: 20px;
-    position: absolute;
-	left: 2px;
-	top: 50%;
-    margin-top: -10px;
-}
-
 .workspaceExplorerNode > .title {
     text-overflow: ellipsis;
     display: inline-block;

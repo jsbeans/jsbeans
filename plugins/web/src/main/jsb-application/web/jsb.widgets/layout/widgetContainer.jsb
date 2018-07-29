@@ -101,6 +101,13 @@
 			return w;
 		},
 		
+		getActiveWidget: function(){
+			var curTab = this.wcView.getCurrentTab();
+			if(curTab){
+				return curTab.ctrl;
+			}
+		},
+		
 		getWidget: function(id){
 			if(id){
 				return this.widgets[id].w;

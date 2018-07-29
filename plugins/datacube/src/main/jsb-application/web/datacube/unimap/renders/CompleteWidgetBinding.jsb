@@ -32,7 +32,7 @@
                             if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
                                 continue;
                             }
-                            var entry = obj.getEntry();
+                            var entry = obj.getTargetEntry();
                             if(JSB.isInstanceOf(entry,'DataCube.Model.Widget')){
                                 return true;
                             }
@@ -52,7 +52,7 @@
 						if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 							continue;
 						}
-						$this.setValueFromEntry(obj.getEntry());
+						$this.setValueFromEntry(obj.getTargetEntry());
 						break;
                     }
                 }

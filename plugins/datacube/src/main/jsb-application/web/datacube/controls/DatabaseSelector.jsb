@@ -40,7 +40,7 @@
 							if(!JSB.isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 								continue;
 							}
-							var entry = obj.getEntry();
+							var entry = obj.getTargetEntry();
 							if(JSB.isInstanceOf(entry,'DataCube.Model.DatabaseSource')){
 								return true;
 							}
@@ -71,7 +71,7 @@
 						if(!JSB().isInstanceOf(obj, 'JSB.Workspace.ExplorerNode')){
 							continue;
 						}
-						$this.setSource(obj.getEntry());
+						$this.setSource(obj.getTargetEntry());
 						break;
 					}
 				}

@@ -14,7 +14,7 @@
 			`);
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender){
-                if(sender != $this.getEntry()){
+                if(sender != $this.getTargetEntry()){
                     return;
                 }
                 $this.update();

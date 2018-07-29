@@ -5,7 +5,12 @@
 		Editor: 'JSB.Widgets.PrimitiveEditor',
 		Button: 'JSB.Widgets.Button',
 		RendererRepository: 'JSB.Widgets.RendererRepository',
-		ToolManager: 'JSB.Widgets.ToolManager'
+		ToolManager: 'JSB.Widgets.ToolManager',
+		ShareTool: 'JSB.Workspace.ShareTool'
+	},
+	
+	isLink: function(){
+		return this.descriptor.isLink;
 	},
 	
 	$client: {
@@ -17,8 +22,19 @@
 			this.loadCss('EntryNode.css');
 			this.addClass('entryNode');
 			
+			if(this.isLink()){
+				var linkIcon = this.$('<div class="linkIcon"></div>');
+				this.append(linkIcon);
+			}
+			
+			var shareIcon = this.$('<div class="shareIcon"></div>');
+			this.append(shareIcon);
+			
+			$this.updateShareState();
+			
+			
 			RendererRepository.ensureReady(function(){
-				$this.renderer = RendererRepository.createRendererFor($this.descriptor.entry, {
+				$this.renderer = RendererRepository.createRendererFor($this.getTargetEntry(), {
 					editable: true,
 					onValidate: function(val){
 						return val && val.trim().length >= 3;
@@ -27,11 +43,16 @@
 						if($this.descriptor.name == val){
 							return;
 						}
-						$this.server().rename($this.descriptor.entry, val, function(){
+						$this.server().rename($this.getTargetEntry(), val, function(res, fail){
+							if(fail){
+								$this.renderer.update();
+								$this.getExplorer().displayError(fail);
+								return;
+							}
 							$this.descriptor.name = val;
 							$this.publish('JSB.Workspace.renameEntry', {
 								node: $this,
-								entry: $this.getEntry(),
+								entry: $this.getTargetEntry(),
 								name: val
 							});
 						});
@@ -73,16 +94,19 @@
 			});
 			
 			this.subscribe('JSB.Workspace.Entry.updated', function(sender, msg, syncInfo){
-				if($this.getEntry() != sender || $this.isDestroyed()){
+				if($this.getTargetEntry() != sender || $this.isDestroyed()){
 					return;
 				}
 				if(syncInfo.isChanged('_childCount')){
 					$this.explorer.synchronizeNodeChildren($this.treeNode.key);
 				}
+				if(syncInfo.isChanged('_shareCount')){
+					$this.updateShareState();
+				}
 			});
 			
 			this.subscribe('JSB.Workspace.Entry.destroyed', function(sender){
-				if(sender != $this.getEntry()){
+				if(sender != $this.getTargetEntry()){
 					return;
 				}
 				if($this.isDestroyed()){
@@ -97,6 +121,14 @@
 				// destroy self
 				$this.destroy();
 			});
+		},
+		
+		updateShareState: function(){
+			if($this.getEntry().getShareCount() > 0){
+				$this.addClass('hasShares');
+			} else {
+				$this.removeClass('hasShares');
+			}
 		},
 		
 		collectMenuItems: function(){
@@ -126,15 +158,53 @@
 					}
 				});
 			}
+			
+			if($this.options.allowShare) {
+				items.push({
+					key: 'entryShare',
+					element: '<div class="icon"></div><div class="text">Поделиться...</div>',
+					allowHover: true,
+					allowSelect: true,
+					callback: function(evt){
+						// show share dialog
+						ToolManager.activate({
+							id: 'JSB.Workspace.ShareTool',
+							cmd: 'show',
+							data: {
+								entry: $this.getTargetEntry(),
+								explorer: $this.explorer
+							},
+							key: 'shareMenu',
+							target: {
+								selector: $this.getElement(),
+								weight: 10.0
+							},
+							constraints: [{
+								selector: $this.getElement(),
+								weight: 10.0
+							}]
+						});
+					}
+				});
+			}
+			
 			return items;
 		},
 		
 		getName: function(){
-			return this.descriptor.name || this.descriptor.entry.getName();
+			return this.descriptor.name || $this.getTargetEntry().getName();
 		},
 		
 		getEntry: function(){
 			return this.descriptor.entry;
+		},
+		
+		getTargetEntry: function(){
+			var entry = this.getEntry();
+			if(entry.isLink()){
+				return entry.getTargetEntry();
+			}
+			return entry;
 		},
 		
 		updateState: function(){

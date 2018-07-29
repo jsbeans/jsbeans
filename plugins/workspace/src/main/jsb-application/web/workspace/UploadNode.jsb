@@ -31,7 +31,7 @@
 					isDir = true;
 					// change is node to directory
 					self.options.w.pushIgnoreSync();
-					self.options.w.server().createNewEntry('JSB.Workspace.FolderEntry', {}, $this.getName(), $this.options.node ? $this.options.node.getEntry() : null, function(desc){
+					self.options.w.server().createNewEntry('JSB.Workspace.FolderEntry', {}, $this.getName(), $this.options.node ? $this.options.node.getTargetEntry() : null, function(desc){
 						if(!desc){
 							// internal error: folder already exists
 							return;
@@ -91,7 +91,7 @@
 			if(!isDir){
 				self.options.w.pushIgnoreSync();
 				self.options.workspace.server().uploadFile({
-					parent: self.options.node ? self.options.node.getEntry().getId() : null,
+					parent: self.options.node ? self.options.node.getTargetEntry().getId() : null,
 					name: self.options.file.name,
 					content: self.options.file
 				}, function(nDesc){
@@ -115,7 +115,7 @@
 					debugger;
 					self.options.w.pushIgnoreSync();
 					self.options.workspace.server().uploadFile({
-						parent: self.options.node ? self.options.node.getEntry().getId() : null,
+						parent: self.options.node ? self.options.node.getTargetEntry().getId() : null,
 						name: self.options.file.name,
 						content: reader.result
 					}, function(nDesc){

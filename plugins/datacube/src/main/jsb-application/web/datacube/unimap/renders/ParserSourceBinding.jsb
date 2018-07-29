@@ -51,7 +51,7 @@
                                 continue;
                             }
 
-                            var entry = obj.getEntry();
+                            var entry = obj.getTargetEntry();
                             if(JSB.isInstanceOf(entry,'DataCube.Model.Slice')){
                                 return true;
                             }
@@ -72,7 +72,7 @@
                     var d = ui.draggable;
 
                     for(var i in d.get(0).draggingItems){
-                        $this.setBinding(d.get(0).draggingItems[i].obj.getEntry(), itemIndex);
+                        $this.setBinding(d.get(0).draggingItems[i].obj.getTargetEntry(), itemIndex);
                         break;
                     }
                 }

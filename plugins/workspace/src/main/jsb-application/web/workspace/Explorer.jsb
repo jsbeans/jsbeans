@@ -34,6 +34,9 @@
 			this.loadCss('Explorer.css');
 			this.addClass('workspaceExplorer');
 			
+			this.messageBox = this.$('<div class="message"></div>');
+			this.append(this.messageBox);
+			
 			// create toolbar
 			this.toolbar = new ToolBar();
 			this.append(this.toolbar);
@@ -193,7 +196,7 @@
 						var nodeElt = '';
 						var node = selToDel[i].obj;
 						if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
-							var entry = node.getEntry();
+							var entry = node.getTargetEntry();
 							var renderer = RendererRepository.createRendererFor(entry, {editable:false});
 							nodeElt = renderer.getElement();
 						} else {
@@ -266,7 +269,7 @@
 
 			    var nodeKey = $this.wTreeMap[node.descriptor.entry.getId()] ? $this.wTreeMap[node.descriptor.entry.getId()].key : null;
 			    if(!nodeKey) return;
-			    if(node.getEntry().getChildCount() > 0){
+			    if(node.getTargetEntry().getChildCount() > 0){
 			        $this.tree.expandNode(nodeKey);
 			    }
 			    $this.tree.selectItem(nodeKey);
@@ -330,6 +333,10 @@
 				$this.setCurrentWorkspaceId(lastId);
 			});
 			
+		},
+		
+		getCurrentWorkspace: function(){
+			return $this.currentWorkspace;
 		},
 		
 		setCurrentWorkspaceId: function(wId, callback){
@@ -466,7 +473,7 @@
 			
 			function _highlightFiltered(scope){
 				for(var eId in scope){
-					if(scope[eId].matched){
+					if(scope[eId].matched && $this.wTreeMap[eId]){
 						$this.wTreeMap[eId].node.setColored(true);
 						var rcNode = $this.wTreeMap[eId].node.getElement().get(0).getBoundingClientRect();
 						if(JSB.isNull(minTop) || rcNode.top < minTop){
@@ -597,12 +604,15 @@
 				
 				var userWorkspaceIds = [];
 				var systemWorkspaceIds = [];
+				var sharedWorkspaceIds = [];
 				for(var wId in wMap){
 					if(wId == $this.currentWorkspace.getId()){
 						continue;
 					}
 					if(wMap[wId].wType == 'system'){
 						systemWorkspaceIds.push(wId);
+					} else if(wMap[wId].wType == 'shared'){
+						sharedWorkspaceIds.push(wId);
 					} else {
 						userWorkspaceIds.push(wId);
 					}
@@ -614,6 +624,27 @@
 				
 				systemWorkspaceIds.sort(_compareWorkspaces);
 				userWorkspaceIds.sort(_compareWorkspaces);
+				sharedWorkspaceIds.sort(_compareWorkspaces);
+				
+				// add separator
+				if(sharedWorkspaceIds.length > 0){
+					items.push({
+						key: 'menuSeparator',
+						element: '<div class="separator"></div>',
+						cssClass: 'menuSeparator',
+						allowHover: false,
+						allowSelect: false
+					});
+				}
+				
+				for(var i = 0; i < sharedWorkspaceIds.length; i++){
+					wId = sharedWorkspaceIds[i];
+					items.push({
+						key: wId,
+						element: '<div class="icon"></div><div class="text">'+wMap[wId].wName+'</div>',
+						cssClass: 'menuItem menuWorkspace sharedWorkspace'
+					});
+				}
 
 				// add separator
 				if(userWorkspaceIds.length > 0){
@@ -640,9 +671,13 @@
 							}
 							$this.tryRemoveWorkspace(wId, wMap[wId].wName, evt, $this.messageTool);
 						});
+						var elt = '<div class="icon"></div><div class="text">'+wMap[wId].wName+'</div>';
+						if(userWorkspaceIds.length > 1){
+							elt += '<div class="delete" onclick="('+strProc+')(event)"><div class="icon"></div></div>';
+						}
 						items.push({
 							key: wId,
-							element: '<div class="icon"></div><div class="text">'+wMap[wId].wName+'</div><div class="delete" onclick="('+strProc+')(event)"><div class="icon"></div></div>',
+							element: elt,
 							cssClass: 'menuItem menuWorkspace userWorkspace'
 						});
 					})(wId);
@@ -742,7 +777,7 @@
 							}
 							
 							// moveable check
-							var nodeDesc = $this.explorerNodeTypes[obj.getEntry().getJsb().$name];
+							var nodeDesc = $this.explorerNodeTypes[obj.getTargetEntry().getJsb().$name];
 							if(nodeDesc && !nodeDesc.move){
 								continue;
 							}
@@ -854,7 +889,7 @@
 			for(var i = 0; i < sel.length; i++){
 				var node = sel[i].obj;
 				if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
-					var entry = node.getEntry();
+					var entry = node.getTargetEntry();
 					var nDesc = $this.explorerNodeTypes[entry.getJsb().$name];
 					if(nDesc && !nDesc.remove){
 						continue;
@@ -917,13 +952,12 @@
 		addTreeItem: function(itemDesc, parent, bReplace, treeNodeOpts){
 		    var key = JSB().generateUid();
 			var node = null;
-/*			
-			if(this.wTreeMap[itemDesc.entry.getId()] && !bReplace){
-				return this.wTreeMap[itemDesc.entry.getId()].node;
-			}
-*/			
 			var nodeSlice = this.explorerNodeTypes;
-			var nodeType = nodeSlice[itemDesc.entry.getJsb().$name].nodeType;
+			var targetEntry = itemDesc.entry;
+			if(targetEntry.isLink()){
+				targetEntry = targetEntry.getTargetEntry();
+			}
+			var nodeType = nodeSlice[targetEntry.getJsb().$name].nodeType;
 			if(!nodeType || !JSB.get(nodeType)){
 				return null;
 			}
@@ -931,12 +965,13 @@
 			node = new nodeCls({
 				descriptor: itemDesc,
 				allowOpen: true,
-				allowEdit: true
+				allowEdit: true,
+				allowShare: true
 			});
 			this.wTreeMap[itemDesc.entry.getId()] = {
                 id: itemDesc.entry.getId(),
                 key: key,
-                parent: itemDesc.entry.getParentId(),
+                parent: targetEntry.getParentId(),// itemDesc.entry.getParentId(),
                 parentKey: parent,
                 node: node
             };
@@ -955,7 +990,7 @@
 					return;
 				}
 				$this._isReady = false;
-				$this.server().loadNodes(itemDesc.entry, function(nTree){
+				$this.server().loadNodes(targetEntry, function(nTree){
 					var chArr = Object.keys(nTree);
 					chArr.sort(function(a, b){
 						var an = nTree[a].name || '';
@@ -1050,7 +1085,7 @@
 					
 					function prepareNodeForDragging(node){
 						if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
-							return RendererRepository.createRendererFor(node.getEntry()).getElement();
+							return RendererRepository.createRendererFor(node.getTargetEntry()).getElement();
 						} else {
 							return node.getElement().clone();
 						}
@@ -1151,13 +1186,17 @@
 		},
 		
 		doMove: function(targetNode, sourceNodes){
-			var targetId = targetNode ? targetNode.getEntry().getId() : null;
-			var sourceIds = [];
+			var target = targetNode ? targetNode.getEntry() : null;
+			var sources = [];
 			for(var i = 0; i < sourceNodes.length; i++){
-				sourceIds.push(sourceNodes[i].getEntry().getId());
+				sources.push(sourceNodes[i].getEntry());
 			}
 			
-			this.server().moveItems(targetId, sourceIds, function(res){
+			this.server().moveItems(target, sources, function(res, fail){
+				if(fail){
+					$this.displayError(fail);
+					return;
+				}
 				if(targetNode){
 					$this.tree.expandNode(targetNode.treeNode.key);
 				}
@@ -1178,11 +1217,16 @@
 				} else if(JSB().isInstanceOf(node, 'JSB.Workspace.EntryNode')){
 					batch.push({
 						id: node.getEntry().getId(),
+						entry: node.getEntry(),
 						key: sel[i].key
 					});
 				}
 			}
-			this.server().removeItems(batch, function(removed){
+			this.server().removeItems(batch, function(removed, fail){
+				if(fail){
+					$this.displayError(fail);
+					return;
+				}
 				for(var i = 0; i < removed.length; i++){
 					if($this.tree.get(removed[i])){
 						$this.tree.deleteNode(removed[i]);
@@ -1199,7 +1243,7 @@
 			var treeNode = null;
 			if(pKey){
 				treeNode = this.tree.get(pKey).obj;
-				pEntry = treeNode.getEntry();
+				pEntry = treeNode.getTargetEntry();
 				
 				if(this.tree.isDynamicChildren(pKey) && pEntry.getChildCount() > 0){
 					return;
@@ -1219,14 +1263,17 @@
 			
 			
 			// load actual children
-			this.server().loadNodes(pEntry, function(nTree){
+			this.server().loadNodes(pEntry, function(nTree, fail){
+				if(fail){
+					return;
+				}
 				// collect current tree children
 				var treeChildren = {};
 				var chArr = $this.tree.getChildNodes(pKey);
 				for(var i = 0; i < chArr.length; i++){
 					var node = $this.tree.get(chArr[i]).obj;
 					if(JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
-						var e = node.getEntry();
+						var e = node.getTargetEntry();
 						treeChildren[e.getId()] = chArr[i];
 					}
 				}
@@ -1289,7 +1336,7 @@
 				var curItem = item;
 				while(curItem){
 					if(JSB().isInstanceOf(curItem.obj, 'JSB.Workspace.FolderNode')){
-						parentEntry = curItem.obj.getEntry();
+						parentEntry = curItem.obj.getTargetEntry();
 						parentKey = curItem.key;
 						break;
 					} else {
@@ -1303,7 +1350,12 @@
 			}
 			$this.pushIgnoreSync();
 			$this.expandNode(parentKey, function(){
-				$this.server().createNewEntry(eType, opts, prefixName, parentEntry, function(desc){
+				$this.server().createNewEntry(eType, opts, prefixName, parentEntry, function(desc, fail){
+					if(fail){
+						$this.popIgnoreSync();
+						$this.displayError(fail);
+						return;
+					}
 					if(!desc){
 						// internal error: folder already exists
 						$this.popIgnoreSync();
@@ -1344,7 +1396,7 @@
     		    	if(!node || !JSB.isInstanceOf(node, 'JSB.Workspace.EntryNode')){
     		    		continue;
     		    	}
-    		    	if(node.getEntry().getId() === entryId ){
+    		    	if(node.getTargetEntry().getId() === entryId ){
     		    		return $this.tree.itemMap[i].key;
     		    	}
     		    }
@@ -1379,6 +1431,17 @@
 		            // TODO: expand hierarchy
 		        }
 		    }
+		},
+		
+		displayError: function(err){
+			var errMtx = 'message.' + this.getId();
+			JSB.cancelDefer(errMtx);
+			this.messageBox.text(err.message);
+			this.messageBox.fadeIn(200, function(){
+				JSB.defer(function(){
+					$this.messageBox.fadeOut(800);
+				}, 1000, errMtx);
+			})
 		}
 	},
 	
@@ -1478,35 +1541,35 @@
 			this.currentWorkspace.store();
 		},
 		
-		moveItems: function(tId, sources){
-			var bNeedStore = false;
+		moveItems: function(target, sources){
 			for(var i = 0; i < sources.length; i++){
-				var sId = sources[i];
-				if(sId == tId){
+				var source = sources[i];
+				if(target && source.getId() == target.getId()){
 					continue;
 				}
 				
 				// check for cycle
-				var curEntry = tId ? this.currentWorkspace.entry(tId) : this.currentWorkspace;
+				var curEntry = target || this.currentWorkspace;
 				var bCycle = false;
 				while(curEntry && curEntry.getParentId()){
-					if(curEntry.getParentId() == sId){
+					if(curEntry.getParentId() == source.getId()){
 						bCycle = true;
 						break;
 					}
-					curEntry = this.currentWorkspace.entry(curEntry.getParentId());
+					curEntry = curEntry.getParent();
 				}
 				
 				if(bCycle){
 					continue;
 				}
 				
-				var target = tId ? this.currentWorkspace.entry(tId) : this.currentWorkspace;
-				target.addChildEntry(this.currentWorkspace.entry(sId));
-				bNeedStore = true;
-			}
-			if(bNeedStore){
-				this.currentWorkspace.store();
+				var target = target || this.currentWorkspace;
+				target.requireAccess(2);
+				source.requireAccess(2);
+				if(target.getWorkspace().getId() != source.getWorkspace().getId()){
+					throw new Error('Moving objects across workspaces is not implemented yet');
+				}
+				target.addChildEntry(source);
 			}
 		},
 		
@@ -1514,16 +1577,16 @@
 			var removed = [];
 			// remove entries
 			for(var i = 0; i < items.length; i++){
-				var entry = this.currentWorkspace.entry(items[i].id);
-				try {
-					entry.remove();
-					removed.push(items[i].key);
-				} catch(e){
-					//TODO:
+				var entry = items[i].entry;
+				entry.requireAccess(2);
+				if(entry.isLink()){
+					throw new Error('Shared objects can\'t be removed');
 				}
+				entry.remove();
+				removed.push(items[i].key);
 			}
 			
-			this.currentWorkspace.store();
+//			this.currentWorkspace.store();
 			
 			return removed;
 		},
@@ -1533,12 +1596,18 @@
 			if(!eJsb){
 				throw new Error('Unable to file entry type: ' + eType);
 			}
-			var eCls = eJsb.getClass();
-			var entry = new eCls($jsb.generateUid(), this.currentWorkspace, opts);
 			
 			if(!parent){
 				parent = this.currentWorkspace;
 			}
+			
+			parent.requireAccess(2);
+			
+			var ws = parent.getWorkspace();
+
+			var eCls = eJsb.getClass();
+			var entry = new eCls($jsb.generateUid(), ws, opts);
+			
 			var children = parent.getChildren();
 			var testName = null;
 			for(var suffix = 1; ; suffix++ ){
@@ -1561,8 +1630,8 @@
 			
 			entry.setName(testName);
 			parent.addChildEntry(entry);
-			this.currentWorkspace.store();
-			this.currentWorkspace.doSync();
+			ws.store();
+			ws.doSync();
 			return {
 				entry: entry,
 				name: testName
@@ -1571,6 +1640,7 @@
 		
 		loadNodes: function(pEntry, opts){
 			pEntry = pEntry || this.currentWorkspace;
+			pEntry.requireAccess(1);
 			var children = pEntry.getChildren();
 			var nTree = {};
 			for(var chId in children){
@@ -1578,11 +1648,21 @@
 /*				if(!chEntry.getName()){
 					debugger;
 				}*/
+				var isLink = false;
+				var linkEntry = null;
+				if(chEntry.isLink()){
+					isLink = true;
+					linkEntry = chEntry.getTargetEntry();
+				}
 				nTree[chId] = {
 					children: {},
-					name: chEntry.getName(),
+					name: isLink ? linkEntry.getName() : chEntry.getName(),
 					entry: chEntry,
-					hasEntryChildren: chEntry.children().count() > 0
+					hasEntryChildren: isLink ? linkEntry.children().count() > 0 : chEntry.children().count() > 0
+				}
+				if(isLink){
+					nTree[chId].targetEntry = linkEntry;
+					nTree[chId].isLink = true;
 				}
 			}
 			return nTree;
@@ -1590,6 +1670,7 @@
 		
 		loadFilteredNodes: function(filter){
 			var nTree = {};
+			this.currentWorkspace.requireAccess(1);
 			function place(e, scope, matched){
 				if(e.getParent()){
 					var chScope = place(e.getParent(), scope);

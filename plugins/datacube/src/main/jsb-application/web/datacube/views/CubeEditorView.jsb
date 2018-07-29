@@ -53,7 +53,7 @@
 				}, 100, 'CubeEditorView.refresh');
 				return;
 			}
-			cubeEditor.setCurrentEntry(this.node.getEntry());
+			cubeEditor.setCurrentEntry(this.node.getTargetEntry());
 
 			var gridView = this.find('div[key="gridView"] > ._dwp_widget').jsb();
 			if(gridView && gridView.table){

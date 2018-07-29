@@ -68,7 +68,7 @@
 			`);
 			
 			this.subscribe('DataCube.Model.SqlSource.extractScheme', {session: true}, function(sender, msg, params){
-				if(sender != $this.node.getEntry()){
+				if(sender != $this.node.getTargetEntry()){
 					return;
 				}
 				$this.updateSchemeStatus(params.status);
@@ -117,7 +117,7 @@
 			}
 			JSB.defer(function(){
 				var settings = $this.collectSettings();
-				var entry = $this.node.getEntry();
+				var entry = $this.node.getTargetEntry();
 				entry.server().updateSettings(settings);
 			}, 300, 'updateSettings_' + this.getId());
 			
@@ -131,7 +131,7 @@
 		
 		testConnection: function(){
 			var settings = $this.collectSettings();
-			var entry = $this.node.getEntry();
+			var entry = $this.node.getTargetEntry();
 			entry.server().testConnection(settings, function(res, fail){
 				if(fail){
 					$this.find('.connectionSettings .message').addClass('fail').removeClass('ok').text(fail.message);
@@ -157,7 +157,7 @@
 		},
 		
 		extractScheme: function(){
-			var entry = $this.node.getEntry();
+			var entry = $this.node.getTargetEntry();
 			entry.server().extractScheme(function(details, fail){
 				if(fail){
 					$this.find('.scheme .status').addClass('fail').removeClass('progress').removeClass('ok');
@@ -169,7 +169,7 @@
 		},
 		
 		clearCache: function(){
-			var entry = $this.node.getEntry();
+			var entry = $this.node.getTargetEntry();
 			$this.getElement().loader({message:'Очистка кэша...', onShow: function(){
 				entry.server().clearCache(function(){
 					$this.getElement().loader('hide');
@@ -178,7 +178,7 @@
 		},
 		
 		updateCache: function(){
-			var entry = $this.node.getEntry();
+			var entry = $this.node.getTargetEntry();
 			$this.getElement().loader({message:'Загрузка подключенных кубов...', onShow: function(){
 				entry.server().updateCache(function(){
 					$this.getElement().loader('hide');
@@ -200,7 +200,7 @@
 				});
 				return;
 			}
-			var entry = this.node.getEntry();
+			var entry = this.node.getTargetEntry();
 			entry.server().getSettings(function(settings){
 				$this.fillSettings(settings);
 				$this.updateButtons();
