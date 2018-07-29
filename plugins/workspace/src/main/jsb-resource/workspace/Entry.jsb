@@ -319,7 +319,6 @@
 		},
 		
 		setName: function(title){
-			this.requireAccess(2);
 			if(this._name == title){
 				return false;
 			}
@@ -596,8 +595,16 @@
 				JSB.getLocker().unlock(mtxName);
 			}
 		},
-		
+
 		getShareInfo: function(){
+		    try {
+		        return $this.getShareInfoInternal();
+            }catch (e) {
+                Log.error(e);
+            }
+		},
+		
+		getShareInfoInternal: function(){
 			var users = WorkspaceController.getUsers();
 			var wArr = WorkspaceController.getWorkspacesInfo(Kernel.user());
 			

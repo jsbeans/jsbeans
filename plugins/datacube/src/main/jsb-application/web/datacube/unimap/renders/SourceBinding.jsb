@@ -198,6 +198,7 @@
                             var fieldType = null;
 
                             switch($this._fields[i].type){
+                                case 'float':
                                 case 'integer':
                                     fieldType = 'number';
                                     break;
