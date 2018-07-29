@@ -4,8 +4,9 @@ import org.jsbeans.helpers.ConfigHelper;
 import org.jsbeans.plugin.DependsOn;
 import org.jsbeans.plugin.KernelPluginActivator;
 import org.jsbeans.plugin.PluginActivator;
+import org.jsbeans.store.StorePluginActivator;
 
-@DependsOn({KernelPluginActivator.class})
+@DependsOn({KernelPluginActivator.class, StorePluginActivator.class})
 public class MongodbStorePluginActivator implements PluginActivator {
     public void init() {
         String folder = ConfigHelper.getConfigString("store.folder");
