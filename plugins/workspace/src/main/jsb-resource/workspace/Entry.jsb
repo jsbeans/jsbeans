@@ -846,7 +846,7 @@
 			if($this.getOwner() == user){
 				return 2;	// read/write access
 			}
-			return 1;	// temp
+//			return 1;	// temp
 			var curEntry = $this;
 			while(curEntry){
 				// iterate over shares
@@ -868,7 +868,7 @@
 		},
 		
 		requireAccess: function(access){
-			return;	// TEMP
+//			return;	// TEMP
 			if($this.getAccessForUser() < access){
 				throw new Error('Access denied');
 			}

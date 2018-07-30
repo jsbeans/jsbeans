@@ -145,7 +145,7 @@
 				var wDesc = {
 					wId: wId,
 					wType: wType,
-					wOwner: opts.owner
+					wOwner: opts && opts.owner
 				};
 				
 				var resolvedConf = this._resolveConfigVariables(wCfg, JSB.merge({}, this.configVariables, {'WORKSPACE_ID':wId}));
