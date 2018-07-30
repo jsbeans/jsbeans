@@ -846,6 +846,7 @@
 			if($this.getOwner() == user){
 				return 2;	// read/write access
 			}
+			return 1;	// temp
 			var curEntry = $this;
 			while(curEntry){
 				// iterate over shares
