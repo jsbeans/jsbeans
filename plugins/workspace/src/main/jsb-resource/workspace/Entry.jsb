@@ -867,6 +867,7 @@
 		},
 		
 		requireAccess: function(access){
+			return;	// TEMP
 			if($this.getAccessForUser() < access){
 				throw new Error('Access denied');
 			}
