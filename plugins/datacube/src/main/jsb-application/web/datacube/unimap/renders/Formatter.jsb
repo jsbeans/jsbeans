@@ -574,6 +574,10 @@
 	                var decimals = new Editor({
                         value: JSB.isDefined(variable.typeSettings.decimals) ? variable.typeSettings.decimals : (variable.type === 'float' ? 2 : 0),
                         onchange: function(val){
+                            if(val === ''){
+                                val = '0';
+                            }
+
                             variable.typeSettings.decimals = val;
 
                             variable.typeSettings.formatPart = variable.typeSettings.formatPart.replace(/[0-9]+/, val);
