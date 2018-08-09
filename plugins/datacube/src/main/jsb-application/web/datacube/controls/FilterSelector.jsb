@@ -144,7 +144,7 @@
 				
 				return fTag;
 			}
-			
+
 			// construct logic tree
 			var ffMap = {};
 			for(var fItemId in filters){
@@ -218,7 +218,7 @@
 			} else if(drawTree.values.length == 1){
 				drawTree = drawTree.values[0];
 			}
-			
+
 			function _renderTree(treeNode){
 				if(treeNode.type == 'tag'){
 					return _constructTag(treeNode.id);
@@ -226,7 +226,22 @@
 					var nodeElt = $this.$('<div class="node"></div>');
 					for(var i = 0; i < treeNode.values.length; i++){
 						if(i > 0){
-							nodeElt.append($this.$('<div class="separator"></div>').text(treeNode.type == 'and' ? 'И' : 'ИЛИ').attr('type', treeNode.type));
+						    var separator = $this.$('<div class="separator"></div>').text(treeNode.type == 'and' ? 'И' : 'ИЛИ').attr('type', treeNode.type);
+							nodeElt.append(separator);
+
+							(function(fId, type){
+                                separator.click(function(evt){
+                                    evt.stopPropagation();
+
+                                    //separator.attr('type', type == 'and' ? 'or' : 'and');
+
+                                    $this.filterManager.changeFilterType(fId, type == 'and' ? '$or' : '$and');
+
+                                    JSB.defer(function(){
+                                        $this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'changeFilter', fItemIds: [fId]});
+                                    });
+                                });
+							})(treeNode.values[i].id, treeNode.type);
 						}
 						nodeElt.append(_renderTree(treeNode.values[i]));
 					}
