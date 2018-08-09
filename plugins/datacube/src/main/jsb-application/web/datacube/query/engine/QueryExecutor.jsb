@@ -8,8 +8,6 @@
 		    'DataCube.Query.Views.QueryViewsBuilder',
 		    'DataCube.Query.Engine.Cursors.CursorBuilder',
 
-		    'DataCube.Providers.SqlTableDataProvider',
-
 		    'DataCube.Query.Translators.TranslatorRegistry',
 
 		    'DataCube.Query.QuerySyntax',
@@ -113,10 +111,15 @@
 		},
 
 		_getProviderGroupKey: function (provider) {
-		    // store key for SQL or unique for other
-            return provider instanceof SqlTableDataProvider
-                ? provider.getJsb().$name + '/' + provider.getStore().getName()
-                : provider.id;
+		    var jsbSqlTableDataProvider = JSB.get('DataCube.Providers.SqlTableDataProvider');
+		    if (jsbSqlTableDataProvider) {
+		        var SqlTableDataProvider = jsbSqlTableDataProvider.getClass();
+                // store key for SQL or unique for other
+                return provider instanceof SqlTableDataProvider
+                    ? provider.getJsb().$name + '/' + provider.getStore().getName()
+                    : provider.id;
+            }
+            return provider.id;
         },
 
         _extractProviders: function(query){

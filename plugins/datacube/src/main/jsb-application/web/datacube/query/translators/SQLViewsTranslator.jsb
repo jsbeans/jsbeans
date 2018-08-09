@@ -433,7 +433,7 @@ debugger
                 sql += ' UNION ALL ';
                 sql += $this._translateAnyView(recursiveView);
                 if(sql.endsWith(')')) {
-                    // HACK: remove ')'
+                    // HACK: paste join on before ')'
                     sql = sql.substring(0, sql.length-1);
                     sql += ' JOIN ' + $this._quotedName(treeContext);
                     sql += ' ON ' + $this._translateField(exp.$parentIdField.$field||exp.$parentIdField, recursiveView.name, false, recursiveView.name)
