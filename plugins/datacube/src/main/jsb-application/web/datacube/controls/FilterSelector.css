@@ -39,6 +39,9 @@
 	display: inline-block;
 	vertical-align: middle;
 	margin: 0 2px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+	cursor: pointer;
 }
 
 .filterSelector > .filterContainer .node > .separator[type="and"] {
@@ -86,7 +89,7 @@
     border-radius: 6px;
 	padding: 0px 4px 0px 4px;
     border: 2px dotted #0000;
-    
+
     transition: background-color 300ms;
 }
 
@@ -94,7 +97,8 @@
 	border: 2px dotted #b56d37;
 }
 
-.filterSelector > .filterContainer .filterTag:hover {
+.filterSelector > .filterContainer .filterTag:hover,
+.filterSelector > .filterContainer .node > .separator:hover {
 	background-color: rgba(24, 108, 138, 0.2);
 	
 	transition: background-color 300ms;

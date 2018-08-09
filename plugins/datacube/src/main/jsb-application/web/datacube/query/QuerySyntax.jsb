@@ -11,10 +11,10 @@
 	    return this.schemeExpressions;
 	},
 
-	isAggregateOperator: function(op){
+	isAggregateOperator: function(op, skipError){
 	    var desc = this.getSchema()[op];
-	    if (!desc) throw new Error('Operator ' + op + ' is not defined in schema');
-	    return !!desc.aggregate;
+	    if (!desc && !skipError) throw new Error('Operator ' + op + ' is not defined in schema');
+	    return desc && !!desc.aggregate;
 	},
 
 	$client: {

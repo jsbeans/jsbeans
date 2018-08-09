@@ -1053,9 +1053,9 @@
 
 		isAggregatedExpression: function(expr){
 		    function findAggregated(e) {
-                if (JSB.isObject(e)) {
-                    for (var f in e) if (typeof e[f] !== 'undefined') {
-                        if (QuerySyntax.isAggregateOperator(f)) {
+                if (JSB.isPlainObject(e)) {
+                    for (var f in e) if (e.hasOwnProperty(f)) {
+                        if (QuerySyntax.isAggregateOperator(f, true)) {
                             return true;
                         }
                         findAggregated(e[f]);

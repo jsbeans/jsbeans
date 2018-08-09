@@ -136,6 +136,7 @@
 				if(!opts || opts.dashboard != $this.getDashboard()){
 					return;
 				}
+
 				$this.currentWidget.ensureInitialized(function(){
 			    	 $this.currentWidget.refresh(opts);
 				});

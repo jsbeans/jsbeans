@@ -148,7 +148,7 @@
 					} else if(nv == 'true'){
 						return true;
 					}
-					if(/^[+-]?[\.e0-9]+$/i.test(nv)){
+					if(/^[+-]?\d+(\.\d+)?([eE][+-]?\d+)?$/i.test(nv)){
 						var fVal = parseFloat(nv);
 						var iVal = parseInt(nv);
 						if(!JSB.isNaN(fVal) && !JSB.isNaN(iVal)){
@@ -182,7 +182,7 @@
 			LF          = '\n'
 			NL          = CR LF / CR / LF
 			TEXTDATA    = [^{{=quote}}{{=comma}}\r\n]
-			D_DQUOTE    = '{{=quote}}' '{{=quote}}'
+			D_DQUOTE    = '{{=quote}}' '{{=quote}}' { return '{{=quote}}'; }
 			`;
 
 		},

@@ -52,31 +52,31 @@
 		
 		removeFilter: function(itemId, dontPublish){
 			var pfCount = Object.keys($this.filters).length;
-			
+
 			// remove from filters
 			if($this.filters[itemId]){
 				delete $this.filters[itemId];
 			}
-			
+
 			// remove from array
 			for(var i = $this.filterArr.length - 1; i >= 0 ; i--){
 				if($this.filterArr[i].id == itemId){
 					$this.filterArr.splice(i, 1);
 				}
 			}
-			
+
 			if(Object.keys($this.filters) != pfCount && !dontPublish){
 				this.publish('DataCube.filterChanged');
 			}
 		},
-		
+
 		clearFilters: function(){
 			var filtersIds = Object.keys($this.filters);
 			for(var i = 0; i < filtersIds.length; i++){
 				$this.removeFilter(filtersIds[i], true);
 			}
 		},
-		
+
 		hasFilter: function(fDesc){
 			var fId = this.constructFilterId(fDesc);
 			if($this.filters[fId]){
@@ -84,7 +84,7 @@
 			}
 			return false;
 		},
-		
+
 		extractCubeField: function(source, field){
 			var cubeField = field;
 			if(JSB.isInstanceOf(source, 'DataCube.Model.Slice')){
@@ -112,10 +112,10 @@
 			} else {
 				throw new Error('Unknown source type: ' + source.getJsb().$name);
 			}
-			
+
 			return cubeField;
 		},
-		
+
 		translateFilter: function(fDesc, source){
 			var newDesc = JSB.clone(fDesc);
 			var cubeField = this.extractCubeField(source, newDesc.field);
@@ -127,7 +127,7 @@
 			}
 			return newDesc;
 		},
-		
+
 		addFilter: function(fDesc){
             // create new filters
 			var itemId = this.constructFilterId(fDesc);
@@ -187,7 +187,7 @@
                     	break;
                 }
             }
-			
+
 			$this.filters[itemId] = {
 				id: itemId,
 				type: fDesc.type,
@@ -199,10 +199,22 @@
 				options: fDesc.options
 			};
 			$this.filterArr.push($this.filters[itemId]);
-			
+
 			$this.publish('DataCube.filterChanged');
 
 			return itemId;
+		},
+
+		changeFilterType: function(itemId, nType){
+			if($this.filters[itemId]){
+				$this.filters[itemId].type = nType;
+			}
+
+			for(var i = $this.filterArr.length - 1; i >= 0 ; i--){
+				if($this.filterArr[i].id == itemId){
+					$this.filterArr[i].type = nType;
+				}
+			}
 		},
 		
 		getFiltersBySource: function(source){

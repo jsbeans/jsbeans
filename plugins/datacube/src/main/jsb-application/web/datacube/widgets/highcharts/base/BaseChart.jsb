@@ -208,6 +208,11 @@
                     name: 'Цвет границы',
                     editor: 'JSB.Widgets.ColorEditor'
                 },
+                color: {
+                    render: 'item',
+                    name: 'Цвет текста',
+                    editor: 'JSB.Widgets.ColorEditor'
+                },
                 borderRadius: {
                     render: 'item',
                     name: 'Радиус границы',
@@ -1001,10 +1006,10 @@
                     titleContext = this.getContext().find('header'),
                     tooltipContext = this.getContext().find('mainTooltip'),
 
-                    legendItemStyle = legendContext.find('itemStyle'),
                     plotOptionsDataLabels = plotOptionsContext.find('dataLabels'),
 
-                    series = [];
+                    series = [],
+                    legend;
 
                 for(var i = 0; i < seriesContext.length; i++){
                     var allowPointSelect = seriesContext[i].find('allowPointSelect').checked(),
@@ -1061,33 +1066,6 @@
                             x: creditsContext.find('x').value(),
                             y: creditsContext.find('y').value()
                         }
-                    },
-
-                    legend: {
-                        enabled: legendContext.find('enabled').checked(),
-                        layout: legendContext.find('layout').value(),
-                        align: legendContext.find('align').value(),
-                        verticalAlign: legendContext.find('verticalAlign').value(),
-                        backgroundColor: legendContext.find('backgroundColor').value(),
-                        borderColor: legendContext.find('borderColor').value(),
-                        borderRadius: legendContext.find('borderRadius').value(),
-                        borderWidth: legendContext.find('borderWidth').value(),
-                        floating: legendContext.find('floating').checked(),
-                        itemDistance: legendContext.find('itemDistance').value(),
-                        itemWidth: legendContext.find('itemWidth').value(),
-                        itemMarginTop: legendContext.find('itemMarginTop').value(),
-                        itemMarginBottom: legendContext.find('itemMarginBottom').value(),
-                        itemStyle: {
-                            color: legendItemStyle.find('color').value(),
-                            fontSize: legendItemStyle.find('fontSize').value() + 'px',
-                            fontWeight: legendItemStyle.find('fontWeight').value()
-                        },
-                        labelFormat: legendContext.find('labelFormat').value(),
-                        reversed: legendContext.find('reversed').checked(),
-                        shadow: legendContext.find('shadow').checked(),
-                        width: legendContext.find('width').value(),
-                        x: legendContext.find('x').value(),
-                        y: legendContext.find('y').value()
                     },
 
                     plotOptions: {
@@ -1203,9 +1181,43 @@
                         footerFormat: tooltipContext.find('footerFormat').value(),
                         padding: tooltipContext.find('padding').value(),
                         shadow: tooltipContext.find('shadow').checked(),
+                        style: {
+                            color: tooltipContext.find('color').value()
+                        },
                         valueDecimals: tooltipContext.find('valueDecimals').value(),
                         valuePrefix: tooltipContext.find('valuePrefix').value(),
                         valueSuffix: tooltipContext.find('valueSuffix').value()
+                    }
+                }
+
+                if(legendContext.find){
+                    var legendItemStyle = legendContext.find('itemStyle');
+
+                    chartOpts.legend = {
+                        enabled: legendContext.find('enabled').checked(),
+                        layout: legendContext.find('layout').value(),
+                        align: legendContext.find('align').value(),
+                        verticalAlign: legendContext.find('verticalAlign').value(),
+                        backgroundColor: legendContext.find('backgroundColor').value(),
+                        borderColor: legendContext.find('borderColor').value(),
+                        borderRadius: legendContext.find('borderRadius').value(),
+                        borderWidth: legendContext.find('borderWidth').value(),
+                        floating: legendContext.find('floating').checked(),
+                        itemDistance: legendContext.find('itemDistance').value(),
+                        itemWidth: legendContext.find('itemWidth').value(),
+                        itemMarginTop: legendContext.find('itemMarginTop').value(),
+                        itemMarginBottom: legendContext.find('itemMarginBottom').value(),
+                        itemStyle: {
+                            color: legendItemStyle.find('color').value(),
+                            fontSize: legendItemStyle.find('fontSize').value() + 'px',
+                            fontWeight: legendItemStyle.find('fontWeight').value()
+                        },
+                        labelFormat: legendContext.find('labelFormat').value(),
+                        reversed: legendContext.find('reversed').checked(),
+                        shadow: legendContext.find('shadow').checked(),
+                        width: legendContext.find('width').value(),
+                        x: legendContext.find('x').value(),
+                        y: legendContext.find('y').value()
                     }
                 }
             } catch(e){

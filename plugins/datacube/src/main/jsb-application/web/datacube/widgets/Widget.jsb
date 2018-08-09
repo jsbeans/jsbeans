@@ -114,7 +114,7 @@
 		createFilterHash: function(filter){
             var str = '';
 		    for(var i in filter){
-		        str += '' + i;
+		        str += '' + i + filter[i].type;
 		    }
 
 		    return MD5.md5(str);
