@@ -763,7 +763,7 @@
 		    function findAggregated(e) {
                 if (JSB.isPlainObject(e)) {
                     for (var f in e) if (e.hasOwnProperty(f)) {
-                        if (QuerySyntax.isAggregateOperator(f)) {
+                        if (QuerySyntax.isAggregateOperator(f, true)) {
                             return true;
                         }
                         findAggregated(e[f]);
