@@ -215,8 +215,6 @@
 					$this.filterArr[i].type = nType;
 				}
 			}
-
-			this.publish('DataCube.filterChanged');
 		},
 		
 		getFiltersBySource: function(source){

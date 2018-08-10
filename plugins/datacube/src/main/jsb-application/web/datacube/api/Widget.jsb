@@ -126,6 +126,7 @@
 						if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){
 							return;
 						}
+
 						$this.mainWidget.refresh(params);
 					});
 					$this.subscribe('DataCube.Widget.eventFired', function(sender, msg, params){

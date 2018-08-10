@@ -24,6 +24,7 @@
 				if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.FilterManager')){
 					return;
 				}
+
 				$this.redraw();
 			});
 		},
@@ -233,12 +234,10 @@
                                 separator.click(function(evt){
                                     evt.stopPropagation();
 
-                                    //separator.attr('type', type == 'and' ? 'or' : 'and');
-
                                     $this.filterManager.changeFilterType(fId, type == 'and' ? '$or' : '$and');
 
                                     JSB.defer(function(){
-                                        $this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'changeFilter', fItemIds: [fId]});
+                                        $this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'changeFilterType', fItemIds: [fId]});
                                     });
                                 });
 							})(treeNode.values[i].id, treeNode.type);
