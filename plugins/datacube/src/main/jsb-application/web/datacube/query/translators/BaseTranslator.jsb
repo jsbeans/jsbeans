@@ -64,7 +64,15 @@
             this._verifyFields();
 
             // translate query to dataprovider format
-		    var translatedQuery = this.translateQuery();
+            try {
+    		    var translatedQuery = this.translateQuery();
+            } catch(e) {
+                if ($this._translatorBreak) {
+                    return null;
+                } else {
+                    throw e;
+                }
+            }
 
 		    // create iterator
 		    if (this.dcQuery.$analyze) {
@@ -202,6 +210,10 @@ debugger;
 		translateResult: function(result) {
 		    // implement
 		    return result;
+		},
+
+		_breakTranslator: function(reason) {
+		    throw new Error($this._translatorBreak = reason);
 		},
 
         _collectContextQueries: function(){

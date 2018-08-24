@@ -1,5 +1,5 @@
 ({
-	$name: 'JSB.Store.mongodb.Mongodb',
+	$name: 'JSB.Store.Mongodb.Mongodb',
 	$singleton: true,
 
 	$server: {
@@ -161,6 +161,10 @@ debugger;
             var resultDB = $this.getDB(client, dbName).runCommand($this.toDBObject(query));
             var result = $this.toScriptable(resultDB);
             return result;
+        },
+
+        dropCollection: function(client, dbName, collectionName) {
+            $this.getDB(client, dbName).getCollection(collectionName).drop();
         },
 
 

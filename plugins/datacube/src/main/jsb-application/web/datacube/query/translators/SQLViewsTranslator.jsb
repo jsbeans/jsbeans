@@ -227,7 +227,8 @@
 
         _translateField: function(name, context, useAlias, callerContext) {
 
-//if (name.indexOf("Код отрасли") != -1) debugger;
+//if (name.indexOf("ID_термина") != -1) debugger;
+//if (context == 'RightWrapper:DataProvider[1#1]:d5f2c471d705fe580f141f9a62ecdc78|dp_8ef6b67011879d53cf0d55744b7bd9a7') debugger;
 //if (context == 'RightWrapper:DataProvider[1#1]:d5f2c471d705fe580f141f9a62ecdc78|dp_8ef6b67011879d53cf0d55744b7bd9a7') debugger;
 
             // TODO адресация полей по контексту может быть:
@@ -408,8 +409,8 @@
                     }
                 };
                 if (dcQuery.$from) {
-                    firstQuery.$from = dcQuery.$from;
-                    firstQuery.$views = $this.dcQuery.$views;
+                    startQuery.$from = dcQuery.$from;
+                    startQuery.$views = $this.dcQuery.$views;
                     recursiveQuery.$from = dcQuery.$from;
                     recursiveQuery.$views = $this.dcQuery.$views;
                 }
@@ -427,7 +428,7 @@
                     builder1 && builder1.destroy();
                     builder2 && builder2.destroy();
                 }
-debugger
+
                 var sql = '';
                 sql += $this._translateAnyView(startView);
                 sql += ' UNION ALL ';

@@ -30,6 +30,10 @@
             if (query == null || JSB.isEqual(query, {})) {
                 return $this.buildEmptyCursor(parent, caller);
             }
+            if ($this.executor.providers.length == 0) {
+                return $this.buildQueryCursor(query, params, parent, caller);
+            }
+
             // is translatable: provider or whole query
             if (query.$provider
 
@@ -49,7 +53,7 @@
             // is translatable: provider or translate whole query
             if (query.$provider
 
-                    || (!$this._translatorSkipQueries)
+                    || !$this._translatorSkipQueries
 
                     || $this._translateQueriesFromProviders
                         && query.$from

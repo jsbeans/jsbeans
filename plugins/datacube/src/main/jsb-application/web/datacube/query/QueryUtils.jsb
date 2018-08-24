@@ -454,13 +454,13 @@
                     queriesByContext[query.$context] = query;
                 }
 		    });
+            var managedFields = cube.getManagedFields();
 
 		    this.walkQueryFields(dcQuery, includeSubQueries, function(field, context, query) {
 		        var fieldQuery = context && queriesByContext[context];
 		        var isFieldNotAlias = $this.isOriginalCubeField(
 		                field, fieldQuery || query, cube);
                 if (isFieldNotAlias) {
-                    var managedFields = cube.getManagedFields();
                     if (!managedFields[field]) {
                         throw new Error('Cube field is undefined: ' + field);
                     }
@@ -612,25 +612,40 @@
         },
 
         extractUsedFields: function(dcQuery, cubeOrDataProvider) {
+
+            function callback(field, context, q, binding){
+$this.logDebug('cubeField: ' + field);
+                if (!usedFields[field]) {
+                    usedFields[field] = 0;
+                }
+                usedFields[field]++;
+            }
             var usedFields = {/**usages*/};
             if(cubeOrDataProvider.getJsb().$name != 'DataCube.Model.Cube') {
-                $this.walkDataProviderFields(dcQuery, /**includeSubQueries=*/false, cubeOrDataProvider,
-                    function(field, context, q){
-                        if (!usedFields[field]) {
-                            usedFields[field] = 0;
-                        }
-                        usedFields[field]++;
-                    }
-                );
+
+                $this.walkDataProviderFields(dcQuery, /**includeSubQueries=*/false, cubeOrDataProvider, callback);
+
             } else {
-                $this.walkCubeFields(dcQuery, /**includeSubQueries=*/false, cubeOrDataProvider,
-                    function(field, context, q, binding){
-                        if (!usedFields[field]) {
-                            usedFields[field] = 0;
+
+                $this.walkCubeFields(dcQuery, /**includeSubQueries=*/false, cubeOrDataProvider, callback);
+
+                // add join on fields
+                var providers = $this.extractQueryProviders(dcQuery, cubeOrDataProvider);
+                var managedFields = cubeOrDataProvider.getManagedFields();
+                var candidates = {};
+                for(var field in managedFields) {
+                    var binding = managedFields[field].binding;
+                    for(var b = 0; b < binding.length; b++) {
+                        var found = providers.indexOf(binding[b].provider) != -1;
+                        if (found) {
+                            candidates[field] = (candidates[field]||0) + 1;
+                            if (candidates[field] >= 2) {
+                                callback(field, dcQuery.$context, dcQuery, binding);
+                            }
                         }
-                        usedFields[field]++;
+
                     }
-                );
+                }
             }
             return usedFields;
         },
@@ -1206,13 +1221,23 @@
             }
 		},
 
-        mergeFilters: function (dcQuery){
-            if (dcQuery.$postFilter) {
-                if (!dcQuery.$filter) dcQuery.$filter = {};
-                if (!dcQuery.$filter.$and) dcQuery.$filter.$and = [];
-                dcQuery.$filter.$and.push(dcQuery.$postFilter);
-                delete dcQuery.$postFilter;
+        mergeFilters: function (filter1, filter2 /**, ...*/){
+            var result = {$and:[]};
+            for(var i = 0; i < arguments.length; i++) {
+                var filter = arguments[i];
+                if (!filter) continue;
+                for(var op in filter) {
+                    if (op == '$and') {
+                        result.$and = result.$and.concat(filter.$and);
+                    } else {
+                        var f = {};
+                        f[op] = filter[op];
+                        result.$and.push(f);
+                    }
+                }
+
             }
+            return result.$and.length > 0 ? result : null;
         },
 
         unwrapSort: function(dcQuery) {

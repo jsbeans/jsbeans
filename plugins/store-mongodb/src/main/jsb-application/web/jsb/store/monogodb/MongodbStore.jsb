@@ -1,17 +1,18 @@
 ({
-	$name: 'JSB.Store.mongodb.MongodbStore',
+	$name: 'JSB.Store.Mongodb.MongodbStore',
 	$parent: 'JSB.Store.DataStore',
 	$session: false,
 	$server: {
 		$require: [
-		    'JSB.Store.mongodb.Mongodb',
+		    'JSB.Store.Mongodb.Mongodb',
 		],
 
 		connections: {},
 
 		$constructor: function(config, storeManager){
 			$base(JSB.merge({
-//                    type: JSB.Store.mongodb.MongodbStore,
+//                    type: JSB.Store.Mongodb.MongodbStore,
+//                    dbName: 'db',
 			    }, config), storeManager);
 
             // create pooled mongo client connection manager
@@ -39,10 +40,18 @@
             throw new Error('Not implemented');
         },
 
-		asMongo: function() {
+		asMongodb: function() {
             return {
-                iteratedQuery: function(dbName, colName, query, onClose) {
-                    return Mongodb.iteratedQuery($this.mongoClient, dbName, colName, query, onClose);
+                iteratedQuery: function(colName, query, onClose) {
+                    return Mongodb.iteratedQuery($this.mongoClient, $this.config.dbName, colName, query, onClose);
+                },
+
+                runCommand: function(query) {
+                    return Mongodb.iteratedQuery($this.mongoClient, $this.config.dbName, query);
+                },
+
+                dropCollection: function(collection) {
+                    return Mongodb.dropCollection($this.mongoClient, $this.config.dbName, collection);
                 },
 
             };

@@ -10,7 +10,8 @@
         $constructor: function(){
         	$base();
         	
-        	this.translatorsCfg = Config.get('datacube.query.translators');
+        	$this.translatorsCfg = Config.get('datacube.query.translators');
+        	$this.fixedTranslator = Config.get('datacube.queryengine.fixedTranslator');
         },
 
 		register: function(translatorJsb, dataProviderName){
@@ -41,7 +42,7 @@
 
 		newTranslator: function(providerOrProviders, cube){
 		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
-		    var translatorName = this._dataProviderTranslator[dataProvider.getJsb().$name];
+		    var translatorName = $this.fixedTranslator  || this._dataProviderTranslator[dataProvider.getJsb().$name ];
 		    if (!translatorName) {
 		        throw new Error('Translator not found for ' + dataProvider.getJsb().$name);
 		    }
