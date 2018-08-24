@@ -30,11 +30,11 @@ import scala.concurrent.Future;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class JsBridge {
     private static JsBridge instance = new JsBridge();
-    private ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
+    
+    private ConcurrentHashMap<String, LockEntry> lockMap = new ConcurrentHashMap<>();
 
 /*	
 	private Object mutex = new Object();
@@ -46,36 +46,45 @@ public class JsBridge {
     }
 
     public void lock(String str) {
-    	if (!lockMap.containsKey(str)){
-            synchronized (lockMap) {
-    	        if (!lockMap.containsKey(str)) {
-                    ReentrantLock l = new ReentrantLock();
-                    lockMap.put(str, l);
-    	        }
-            }
+    	LockEntry l = null;
+    	synchronized (lockMap) {
+	    	if (!lockMap.containsKey(str)){
+	        	l = new LockEntry();
+                lockMap.put(str, l);
+	    	} else {
+	    		l = lockMap.get(str);
+	    	}
+	    	l.reserve();
     	}
-        lockMap.get(str).lock();
+    	l.lock();
     }
 
     public void unlock(String str) {
         if (!lockMap.containsKey(str)) {
             return;
         }
-        ReentrantLock l = (ReentrantLock) lockMap.get(str);
-        if (l != null && l.isLocked()) {
-//        	boolean needRemove = !l.hasQueuedThreads();
-            l.unlock();
-/*            if(needRemove){
-            	synchronized (lockMap) {
-            		if (lockMap.containsKey(str) && !l.isLocked()){
-            			 lockMap.remove(str);
-            		}
-            	}
-            }*/
+        LockEntry l = (LockEntry) lockMap.get(str);
+        if(l != null){
+	        if(l.getLocks() > 0) {
+	            l.unlock();
+	            if(l.canRemove()) {
+	            	synchronized (lockMap) {
+	            		if (lockMap.containsKey(str) && l.canRemove()){
+	            			 lockMap.remove(str);
+	            		}
+	            	}
+	            }
+	        } else {
+	        	synchronized (lockMap) {
+	        		if (lockMap.containsKey(str) && l.canRemove()){
+	        			lockMap.remove(str);
+	           		}
+	        	}
+	        }
         }
     }
     
-    public Map<String, ReentrantLock> getLockMap(){
+    public Map<String, LockEntry> getLockMap(){
     	return lockMap;
     }
 
@@ -83,15 +92,17 @@ public class JsBridge {
         if (!lockMap.containsKey(str)) {
             return;
         }
+        LockEntry l = null;
         synchronized (lockMap) {
         	if (lockMap.containsKey(str)) {
-        		ReentrantLock l = (ReentrantLock)lockMap.get(str);
-        		if(l.isLocked()){
-        			l.unlock();
-        		}
+        		l = (LockEntry)lockMap.get(str);
         		lockMap.remove(str);
             }
         }
+		if(l.getLocks() > 0){
+			l.unlock();
+		}
+
     }
     
     public boolean isJavaObject(Object obj){
