@@ -242,9 +242,8 @@
 				var lock = lockMap.get(curLockName);
 				stats.push({
 					lock: '' + curLockName,
-					locked: lock.isLocked(),
-					queueLength: lock.getQueueLength(),
-					queued: lock.hasQueuedThreads()
+					locked: lock.getLock().isLocked(),
+					queueLength: lock.getLocks()
 				});
 			}
 			

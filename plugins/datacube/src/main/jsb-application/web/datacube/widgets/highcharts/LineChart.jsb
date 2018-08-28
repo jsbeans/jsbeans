@@ -315,7 +315,7 @@
 
                 function resultProcessing(){
                     function resolveLinkedCategories(cats, result, index, max, curX){
-                        var keys = Object.keys(cats).sort();
+                        var keys = Object.keys(cats);
 
                         if(!result.categoriesArrays[index]){
                             result.categoriesArrays[index] = [];

@@ -236,6 +236,10 @@
 
                                     $this.filterManager.changeFilterType(fId, type == 'and' ? '$or' : '$and');
 
+                                    separator.text(type == 'and' ? 'ИЛИ' : 'И');
+
+                                    type = (type === type == 'and' ? 'or' : 'and');
+
                                     JSB.defer(function(){
                                         $this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'changeFilterType', fItemIds: [fId]});
                                     });
