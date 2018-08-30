@@ -14,7 +14,7 @@
 
 		transform: function(dcQuery, cubeOrDataProvider){
             // ensure queries has defined $context
-            QueryUtils.defineContextQueries(dcQuery);
+            QueryUtils.defineContextQueries(JSB.clone(dcQuery));
 		    return dcQuery;
 		},
 	}

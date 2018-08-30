@@ -78,6 +78,7 @@
             var queryDepth = -1;
             var trace = options.trace || false;
             var visitedQueries = new HashMap();
+            var path = [];
 
             if(trace) {
                 var oldCallback = leaveCallback;
@@ -125,6 +126,7 @@
                 }
 
                 queryDepth++;
+                path.push(query);
                 try {
 
                     if (options.depth && queryDepth > options.depth) {
@@ -158,8 +160,10 @@
                                 isView : typeof query.$from === 'string',
                                 isValueQuery: false,
                                 inFrom : true,
+                                path: path
                             },
-                            fromQuery
+                            fromQuery,
+                            query
                         );
                         if (res === false) return false;
                     }
@@ -171,9 +175,13 @@
                             {
                                 nestedPath: this.nestedPath.concat([keys[i]]),
                                 fromPath: this.fromPath,
+                                inJoin: keys[i] == '$join',
+                                inUnion: keys[i] == '$union',
+                                path: path
                             },
                             query[keys[i]],
-                            keys[i]
+                            keys[i],
+                            query
                         );
                         if (res === false) return false;
                     }
@@ -186,6 +194,7 @@
                     return res === false ? false : true;
                 } finally {
                     queryDepth--;
+                    path.pop();
                 }
             }
 
@@ -201,6 +210,9 @@
                                 isView : false,
                                 isValueQuery: this.isValueQuery,
                                 inFrom : false,
+                                inJoin: this.inJoin,
+                                inUnion: this.inUnion,
+                                path: path
                             },
                             exp
                         );
@@ -211,9 +223,12 @@
                                 {
                                     nestedPath: this.nestedPath.concat([f]),
                                     fromPath: this.fromPath,
+                                    inJoin: this.inJoin && (f === '$left' || f === '$right'),
+                                    path: path
                                 },
                                 exp[f],
-                                f
+                                f,
+                                exp
                             );
                             if (res === false) return false;
                         }
@@ -224,9 +239,12 @@
                             {
                                 nestedPath: this.nestedPath.concat([i]),
                                 fromPath: this.fromPath,
+                                inUnion: this.inUnion,
+                                path: path
                             },
                             exp[i],
-                            i
+                            i,
+                             exp
                         );
                         if (res === false) return false;
                     }
@@ -244,15 +262,19 @@
                         isView : false,
                         isValueQuery: false,
                         inFrom : false,
+                        path: path
                     },
-                    dcQuery
+                    dcQuery,
+                    null
                 )
                 : walkExpression.call(
                     {
                         nestedPath: [],
                         fromPath: [],
+                        path: path
                     },
                     dcQuery,
+                    null,
                     null
                 );
             visitedQueries.clear();
@@ -1069,6 +1091,7 @@ $this.logDebug('cubeField: ' + field);
 		isAggregatedExpression: function(expr){
 		    function findAggregated(e) {
                 if (JSB.isPlainObject(e)) {
+                    if (e.$select && e != expr) return;
                     for (var f in e) if (e.hasOwnProperty(f)) {
                         if (QuerySyntax.isAggregateOperator(f, true)) {
                             return true;
@@ -1743,31 +1766,133 @@ $this.logDebug('cubeField: ' + field);
             return null;
         },
 
-        defineContextQueries: function(dcQuery){
-            var idx = 0;
-            var contextQueries = {};
-            $this.walkAllSubQueries(dcQuery, function(query, isFromQuery, isValueQuery, isViewQuery){
-                if (!query.$context) query.$context = 'context_' + idx++;
-                if (contextQueries[query.$context] && contextQueries[query.$context] != query) {
-                    // remove if context has no links
-                    var hasLinks = false;
-                    var query2 = JSB.merge({}, query, {$views: dcQuery.$views});
-                    $this.walkQueryFields(query2, false, function(field, context, q){
-                        if (query2 != q) {
-                            hasLinks = true;
+        defineContextQueries: function(dcQuery, getContextName){
+            /// первым делом обойти и при встрече дублирующегося контекста (если один запрос - колонровать) переименовать
+            /// считается, что при встрече неуникального контекста, то на него "сверху", кробе юниона и джоина, никто не ссылается
+            /// следовательно переименовать надо все вложенное
+//            var idx = 0;
+            var contextsMap = {};
+            var getContextName = getContextName
+//                || function(oldName){
+//                    if (!oldName) {
+//                        var context = 'Q' + idx++;
+//                        return contextsMap[context] = context;
+//                    }
+//                    if(!contextsMap[oldName]) {
+//                        contextsMap[oldName] = 'Q' + idx++;
+//                    }
+//
+//                    return contextsMap[oldName];
+//
+//                }
+                || function(oldName) {
+                    if (!oldName) {
+                        oldName = JSB.generateUid();
+                    }
+                    if(!contextsMap[oldName]) {
+                        if (this.path.length == 1) {
+                            return contextsMap[oldName] = 'RootQuery';
                         }
-                    });
-                    if (!hasLinks) {
-                        query.$context = 'context_' + idx++;
-                    } else {
-                        throw new Error('Duplicate query context: ' + query.$context);
+                        if (!this.inFrom && !this.inJoin && !this.inUnion) {
+                            var name = 'Expression';
+                        }
+                        if (this.query.$join) {
+                            var name = (name||'') + 'JoinQuery';
+                        } else if (this.query.$union) {
+                            var name = (name||'') + 'UnionQuery';
+                        } else if (!name) {
+                            var name = 'Query';
+                        }
+
+                        if(!contextsMap[name]) contextsMap[name] = 0;
+                        name += contextsMap[name]++;
+
+                        if (this.inJoin) {
+                            name += '-join-' + this.nestedPath[this.nestedPath.length -1].substring(1);
+                        } else if (this.inUnion) {
+                            name += '-union-' + this.nestedPath[this.nestedPath.length -1].substring(1);
+                        }
+                        return contextsMap[oldName] = name;
+                    }
+                    return contextsMap[oldName];
+                };
+
+            function walkExpression(exp, oldContext, newContext){
+                if (JSB.isObject(exp)) {
+                    if (exp.$from) {
+                        var sourceQuery = JSB.isString(exp.$from) ? dcQuery.$views[exp.$from] : exp.$from;
+                        walkExpression(sourceQuery, oldContext, newContext);
+                    }
+                    if (exp.$join || exp.$union) {
+                        walkExpression(exp.$join || exp.$union, oldContext, newContext);
+                    }
+                    for(var i in exp) {
+                        if (i !=='$from' && i !=='$join' && i !=='$union' && typeof exp[i] === "object") {
+                            walkExpression(exp[i], oldContext, newContext);
+                        }
+                    }
+                    if (exp.$context == oldContext) {
+                        exp.$context = newContext;
+                    }
+                } else if (JSB.isArray(exp)) {
+                    for(var i=0;i<exp.length;i++){
+                        if (typeof exp[i] === "object") {
+                            walkExpression(exp[i], oldContext, newContext);
+                        }
                     }
                 }
-                contextQueries[query.$context] = query;
-            });
+            }
 
-            // TODO clear field contexts (remove self context from fields)
-            return contextQueries;
+            var oldContexts = {};
+//            (function collectContexts(exp){
+//                if (JSB.isObject(exp)) {
+//                    if (exp.$from) {
+//                        var sourceQuery = JSB.isString(exp.$from) ? dcQuery.$views[exp.$from] : exp.$from;
+//                        collectContexts(sourceQuery);
+//                    }
+//                    for(var i in exp) {
+//                        if (i !=='$from') {
+//                            collectContexts(exp[i]);
+//                        }
+//                    }
+//                    if (exp.$select) {
+//                        if (!exp.$context) {
+//                            exp.$context = JSB.generateUid();
+//                        }
+//                        if (!oldContexts[exp.$context]) oldContexts[exp.$context] = 0
+//                        oldContexts[exp.$context]++;
+//                    }
+//                } else if (JSB.isArray(exp)) {
+//                    for(var i=0;i<exp.length;i++){
+//                        if (typeof exp[i] === "object") {
+//                            collectContexts(exp[i]);
+//                        }
+//                    }
+//                }
+//            })(dcQuery);
+            $this.walkQueries(dcQuery, {},
+                function enterCallback(query){
+                    /// на входе собрать названия контекстов и посчитать
+                    if (!query.$context) {
+                        query.$context = JSB.generateUid();
+                    }
+                    oldContexts[query.$context] = (oldContexts[query.$context]||0) + 1;
+                }
+            );
+
+            $this.walkQueries(dcQuery, {},
+                function enterCallback(){},
+                function leaveCallback(query){
+                    if (oldContexts[query.$context] > 1 && this.inJoin) {
+                        var parentJoin = this.path[this.path.length-2];
+                        walkExpression(parentJoin, query.$context, getContextName.call(this, query.$context));
+                    } else if (oldContexts[query.$context] > 1) {
+                        walkExpression(query, query.$context, getContextName.call(this, null));
+                    } else {
+                        walkExpression(query, query.$context, getContextName.call(this, query.$context));
+                    }
+                }
+            );
         },
 
 		unwrapMacros: function(dcQuery) {

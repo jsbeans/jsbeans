@@ -3,7 +3,6 @@
 	$parent: 'DataCube.Query.Translators.BaseTranslator',
 
 	$server: {
-		vendor: 'PostgreSQL',
 		
 		$require: [
 		    'DataCube.Query.Translators.TranslatorRegistry',
@@ -21,8 +20,6 @@
 
         storedViews: {},
 
-        fieldsMap: {},
-
 		$constructor: function(providerOrProviders, cubeOrQueryEngine){
 		    $base(providerOrProviders, cubeOrQueryEngine);
 		    if ($this.cube) {
@@ -36,6 +33,8 @@
 		},
 
 		executeQuery: function(translatedQuery){
+            QueryUtils.logDebug('Executing mongodb translated query: {}', JSON.stringify(translatedQuery));
+
 		    var store = this.providers[0].getStore();
 		    var iterator = store.asMongodb().runCommand(translatedQuery);
 		    var oldClose = iterator.close;
@@ -122,6 +121,8 @@
 		        $this._buildMatch(aggregate, query);
 		    }
 
+		    $this._buildJoinedSubQueries(aggregate, query);
+
 		    if (query.$groupBy && query.$groupBy.length > 0) {
 		        $this._buildGroupBy(aggregate, query);
 		    }
@@ -165,13 +166,13 @@ debugger
                     from:     joinedAggregate.aggregate,
                     let:      joinedAggregate.let,
                     pipeline: joinedAggregate.pipeline,
-                    as:       $this._getFieldForJoinedContext(rightQuery.$context),
+                    as:       $this._getContextFieldName(rightQuery.$context),
                 };
                 aggregate.pipeline.push({ $lookup: joinedAggregate });
                 // push to aggregate.pipeline $unwind stage
                 aggregate.pipeline.push({
                     $unwind: {
-                        path: '$' + $this._getFieldForJoinedContext(rightQuery.$context),
+                        path: '$' + $this._getContextFieldName(rightQuery.$context),
                         preserveNullAndEmptyArrays: true
                     }
                 });
@@ -191,12 +192,6 @@ debugger
                 }
             }
             QueryUtils.throwError(0, 'Unknown data provider {}', providerId);
-		},
-
-		_extractFilterExternalVars : function(aggregate, query){
-            // TODO extract foreign fields and push to externalVars
-            var vars = {};
-
 		},
 
 		_buildMatch: function(aggregate, query, filter){
@@ -303,13 +298,55 @@ debugger
             });
 		},
 
+		_buildJoinedSubQueries: function(aggregate, query){
+            for(var alias in query.$select) {
+                lookupQuery(query.$select[alias], joinSubQuery);
+            }
+
+            function lookupQuery(e, callback) {
+                if (e.$select) {
+                    callback(e);
+                    return;
+                }
+                if (JSB.isObject(e)) {
+                    for(var x in e) {
+                        lookupQuery(e[x]);
+                    }
+                } else if (JSB.isArray(e)) {
+                    for(var i=0;i<e.length;i++){
+                        lookupQuery(e[i]);
+                    }
+                }
+            }
+
+            function joinSubQuery(subQuery) {
+debugger
+                var joinedAggregate = { let: {}, pipeline: [] };
+                $this._buildQuery(joinedAggregate, subQuery);
+                joinedAggregate = {
+                    from:     joinedAggregate.aggregate,
+                    let:      joinedAggregate.let,
+                    pipeline: joinedAggregate.pipeline,
+                    as:       $this._getContextFieldName(subQuery.$context),
+                };
+                aggregate.pipeline.push({ $lookup: joinedAggregate });
+                // push to aggregate.pipeline $unwind stage
+                aggregate.pipeline.push({
+                    $unwind: {
+                        path: '$' + $this._getContextFieldName(subQuery.$context),
+                        preserveNullAndEmptyArrays: true
+                    }
+                });
+            }
+		},
+
 		_buildProject: function(aggregate, query){
 		    var project = {};
 		    var hasGroupBy = query.$groupBy && query.$groupBy.length > 0;
             for(var alias in query.$select) {
                 var e = query.$select[alias];
 
-                if (query.$join) {
+                if (e.$select || query.$join) {
 //debugger
                     project[alias] = $this._translateExpression(aggregate, query, e);
 
@@ -323,15 +360,12 @@ debugger
 
                 } else {
 
-                    project[alias] = $this._translateExpression(aggregate, query, query.$select[alias]);
+                    project[alias] = $this._translateExpression(aggregate, query, e);
 
-                }
-
-
-                if (e.$field || JSB.isString(e)) {
-                    $this.fieldsMap[(e.$context||query.$context) + '.' + (e.$field||e)] = query.$context + '.' + alias;
                 }
             }
+
+            project._queryContext = query.$context;
 
 		    for(var val in project) {
                 aggregate.pipeline.push({
@@ -347,18 +381,16 @@ debugger
 		    }
 
 		    QueryUtils.throwError(JSB.isObject(exp), 'Unexpected expression type {}', typeof exp);
-		    // TODO subquery expression: 1) prepare external fields vars, 2) join over $lookup
+
+		    if (exp.$select) {
+		        return '$' + $this._getContextFieldName(exp.$context) + '.' + Object.keys(exp.$select)[0];
+		    }
 		    QueryUtils.throwError(!exp.$select, 'Sub-query expression not supported');
 //debugger
 		    if (exp.$const) {
 		        return exp.$const;
 		    }
 		    if (exp.$field) {
-//		        if(!exp.$context || exp.$context == query.$context) {
-//		            return $this._translateField(aggregate, query, exp.$field, query.$context);
-//		        } else {
-//		            return $this._translateExternalField(aggregate, query, exp.$field, exp.$context);
-//		        }
                 return $this._translateField(aggregate, query, exp.$field, exp.$context || query.$context);
 		    }
 
@@ -454,21 +486,28 @@ debugger
 		},
 
 		_translateField: function(aggregate, query, field, context) {
-            if (aggregate != $this.mainAggregate) {
+
+		    if (query.$context != context){
+                if (query.$join) {
+                    if (query.$join.$left.$context == context) {
+                        return '$' + field;
+                    }
+                    if (query.$join.$right.$context == context) {
+                        return '$' + $this._getContextFieldName(context) + '.' + field;
+                    }
+                }
+                return declareVar();
+            }
+            return '$' + field;
+
+            function declareVar(){
                 QueryUtils.throwError(aggregate.let, 'Unexpected external field {} in {}', field, query.$context);
                 aggregate.let[field] ='$' + field;
                 return '$$' + field;
             }
-
-            if (query.$join) {
-                if (query.$join.$right.$context == context) {
-                    return '$' + $this._getFieldForJoinedContext(context) + '.' + field;
-                }
-            }
-            return '$' + field;
 		},
 
-		_getFieldForJoinedContext: function(context){
+		_getContextFieldName: function(context){
 		    return MD5.md5(context);
 		},
 	}

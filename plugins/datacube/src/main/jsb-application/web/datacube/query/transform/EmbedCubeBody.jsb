@@ -33,7 +33,7 @@
 		                var builder = new CubeViewsBuilder(cube, providers);
 
                         var view = builder.build(query.$context, usedFields);
-                        query.$from = view.getFromBody();
+                        query.$from = JSB.clone(view.getFromBody());
 		            } finally {
 		                builder && builder.destroy();
 		                view && view.destroy();
@@ -41,6 +41,8 @@
 
                 }
 		    });
+
+		    QueryUtils.defineContextQueries(dcQuery);
 
 		    return dcQuery;
 		},

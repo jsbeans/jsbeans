@@ -115,7 +115,7 @@ debugger;
 		        $context : $this.name,
                 $select: null,
                 $join: {
-                    $context : $this.name,
+//                    $context : $this.name,
                     $joinType: $this.joinType,
                     $left: null,
                     $right: null,
