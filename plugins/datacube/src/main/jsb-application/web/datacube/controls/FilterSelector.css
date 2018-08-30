@@ -42,6 +42,7 @@
     border: 1px solid transparent;
     border-radius: 5px;
 	cursor: pointer;
+	padding: 1px;
 }
 
 .filterSelector > .filterContainer .node > .separator[type="and"] {
@@ -100,7 +101,6 @@
 .filterSelector > .filterContainer .filterTag:hover,
 .filterSelector > .filterContainer .node > .separator:hover {
 	background-color: rgba(24, 108, 138, 0.2);
-	
 	transition: background-color 300ms;
 }
 

@@ -65,12 +65,14 @@
 	        	tables: {
 	        		render: 'group',
 	        		name: 'MyTable',
-	        		editableName: true,
+	        		editableName: {
+	        			commonField: 'tableName'
+	        		},
 	        		items: {
 	        			columns: {
 	        				render: 'group',
 	        				multiple: true,
-	        				collapsible: false,
+	        				collapsible: true,
 	        				name: 'Столбцы',
 	        				items: {
     							field: {
@@ -83,6 +85,12 @@
 	        					columnAlias: {
                                     name: 'Столбец',
         							render: 'item'
+    							},
+    							mandatory: {
+    								render: 'item',
+    								editor: 'none',
+    								name: 'Обязательное поле',
+    								optional: true
     							},
     							columnComment: {
     								name: 'Вставить комментарий',
@@ -264,7 +272,29 @@
 	        						}
 	        					}
 	        				}
-	        			}
+	        			},
+	        			
+	        			additionalSettings: {
+	        				render: 'group',
+	        				name: 'Дополнительные настройки',
+	        				collapsible: true,
+	        				items: {
+	    	        			unionWithTable: {
+	    	        				render: 'select',
+	    	    					name: 'Объединить с таблицей',
+	    	    					optional: true,
+	    	    					commonField: 'tableName'
+	    	        			}
+	        				}
+	        			}/*,
+	        			
+	        			indices: {
+	        				render: 'group',
+	        				name: 'Индексы',
+	        				collapsible: true,
+	        				items: {}
+	        			}*/
+
 	        		}
 	        	}
 	        }
@@ -770,8 +800,10 @@
 				return executeTransformChain(colDesc, {value: val, type: type}, dataBindMap);
 			}
 			
-			for(var i = 0; i < this.descriptors.length; i++){
-				var tableDesc = this.descriptors[i];
+			for(var tableName in this.descriptors){
+				var tableDesc = this.descriptors[tableName];
+				
+				
 				var dataBindMap = {};
 				tableDesc.bindingTree.setData(this.data, dataBindMap);
 				do {
@@ -808,13 +840,33 @@
 						return records;
 					}
 					
+					var mandatoryColumns = [];
 					for(var colName in tableDesc.columns){
 						var colDesc = tableDesc.columns[colName];
+						if(colDesc.mandatory){
+							mandatoryColumns.push(colName);
+						}
 						var cellInfo = resolveCellValue(colDesc, tableDesc.bindingTree, dataBindMap);
 						records = updateRecords(colName, cellInfo, records, colDesc);
 					}
+					var targetTable = tableDesc.table;
+					if(tableDesc.unionWithTable && this.descriptors[tableDesc.unionWithTable]){
+						targetTable = tableDesc.unionWithTable;
+					}
 					for(var r = 0; r < records.length; r++){
-						this.emitRecord({table: tableDesc.table, columns: columns}, records[r]);	
+						if(mandatoryColumns.length > 0){
+							var bSkip = false;
+							for(var m = 0; m < mandatoryColumns.length; m++){
+								if(JSB.isNull(records[r][mandatoryColumns[m]])){
+									bSkip = true;
+									break;
+								}
+							}
+							if(bSkip){
+								continue;
+							}
+						}
+						this.emitRecord({table: targetTable, columns: columns}, records[r]);	
 					}
 					
 				} while(tableDesc.bindingTree.next(dataBindMap));
@@ -1232,7 +1284,7 @@
 				}
 			};
 			
-			this.descriptors = [];
+			this.descriptors = {};
 			
 			// combine bindings
 			var sourceCtx = this.context.find('structure');
@@ -1251,6 +1303,13 @@
 					columns: {},
 					bindingTree: {}
 				};
+				
+				if(tableCtx.find('unionWithTable').checked()){
+					var unionWithTable = tableCtx.find('unionWithTable').value();
+					if(unionWithTable && unionWithTable != tableName){
+						tableDesc.unionWithTable = unionWithTable;
+					}
+				}
 				
 				var columnsCtxArr = tableCtx.find('columns').values();
 				if(columnsCtxArr.length == 0){
@@ -1271,6 +1330,7 @@
 					var colDesc = tableDesc.columns[colName] = {
 						column: colName,
 						field: colField,
+						mandatory: columnCtx.find('mandatory').checked(),
 						type: colType,
 						bindingInfo: colBindingInfo,
 						transforms: []
@@ -1367,7 +1427,7 @@
 					}
 				}
 				tableDesc.bindingTree = bindingTree;
-				this.descriptors.push(tableDesc);
+				this.descriptors[tableDesc.table] = tableDesc;
 			}
 			this.execute();
 		},

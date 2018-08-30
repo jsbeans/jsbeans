@@ -207,6 +207,12 @@
 				for(var i = 0; i < tablesCtxArr.length; i++){
 					var tableCtx = tablesCtxArr[i];
 					var tableName = tableCtx.getName();
+					if(tableCtx.find('unionWithTable').checked()){
+						var unionWithTable = tableCtx.find('unionWithTable').value();
+						if(unionWithTable && unionWithTable != tableName){
+							continue;
+						}
+					}
 					tables[tableName] = {
 						columns: null,
 						rows: []

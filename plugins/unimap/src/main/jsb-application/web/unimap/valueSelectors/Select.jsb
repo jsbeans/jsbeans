@@ -5,14 +5,18 @@
     createDefaultValues: function(key, scheme, values, opts){
         $base(key, scheme, values, opts);
 
-        var val = Object.keys(scheme.items)[0];
+        var val;
+        
+        if(scheme.items){
+        	val = Object.keys(scheme.items)[0];
+        }
 
         values.values[0] = {
             items: {},
             value: val
         };
 
-        if(scheme.items[val].items){
+        if(scheme.items && scheme.items[val].items){
             for(var i in scheme.items[val].items){
                 values.values[0].items[i] = {};
 

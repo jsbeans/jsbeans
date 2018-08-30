@@ -551,10 +551,10 @@
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
-		    this._artifactStore.write(this, name, a, opts);
 		    if(bNeedStoreEntry){
 		    	this._markStored(false);
 		    }
+		    this._artifactStore.write(this, name, a, opts);
 		},
 
 		removeArtifact: function(name) {

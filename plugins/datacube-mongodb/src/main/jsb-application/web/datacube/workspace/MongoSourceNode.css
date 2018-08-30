@@ -1,0 +1,33 @@
+@CHARSET "UTF-8";
+
+.workspaceExplorerNode.mongoSourceNode {
+	
+}
+
+.workspaceExplorerNode.mongoSourceNode > .entryRenderer {
+	
+}
+
+.workspaceExplorerNode.mongoSourceNode > .entryRenderer > .icon {
+	width: 26px;
+    height: 26px;
+    margin-top: -13px;
+}
+
+.workspaceExplorerNode.mongoSourceNode > .entryRenderer > .title {
+	padding-left: 32px;
+	padding-bottom: 10px;
+}
+
+.workspaceExplorerNode.mongoSourceNode > .status {
+	position: absolute;
+    top: 16px;
+    left: 0;
+	padding-left: 32px;
+    font-size: 10px;
+    color: #555;
+}
+
+.workspaceExplorerNode.mongoSourceNode > .status > .count {
+	color: #773e01;
+}

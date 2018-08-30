@@ -75,7 +75,7 @@ debugger;
 		    var mongoClient = new MongoClient(
                 ServerAddressHelper.createServerAddress(host, port),
                 properties && (properties.user || properties.authenticationMechanism)
-                    ? new MongoCredential(AuthenticationMechanism.valueOf("MONGODB-CR"), properties.user, properties.db, properties.password, null)
+                    ? new MongoCredential(properties.authenticationMechanism ? AuthenticationMechanism.valueOf(properties.authenticationMechanism) : AuthenticationMechanism.valueOf("MONGODB-CR"), properties.user, properties.db, properties.password, null)
                     : Collections.emptyList(),
                 MongoClientOptions.builder().build(),    // TODO build from properties
                 MongoDriverInformation.builder().build() // TODO build from properties

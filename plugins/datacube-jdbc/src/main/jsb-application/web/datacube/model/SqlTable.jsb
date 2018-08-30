@@ -1,13 +1,8 @@
 {
 	$name: 'DataCube.Model.SqlTable',
-	$parent: 'JSB.Workspace.Entry',
+	$parent: 'DataCube.Model.DatabaseTable',
 
-	missing: false,
 	view: false,
-	
-	isMissing: function(){
-		return this.missing;
-	},
 	
 	isView: function(){
 		return this.view;
@@ -68,10 +63,7 @@
 			$this.publish('DataCube.Model.SqlTable.updated');
 		},
 		
-		setMissing: function(bMissing){
-			this.missing = bMissing;
-			this.property('missing', this.missing);
-		},
+		
 		
 		getDescriptor: function(){
 			return this.descriptor;

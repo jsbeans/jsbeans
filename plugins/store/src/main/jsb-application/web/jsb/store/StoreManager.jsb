@@ -4,10 +4,6 @@
 	$globalize: 'StoreManager',
 
 	$server: {
-		$require: [
-		    'JSB.Store.Sql.SQLStore'
-		],
-
 		_stores: {},
 
 		$constructor: function(){
@@ -56,12 +52,12 @@
                     store = null;
                 }
                 if (!store) {
-//                    var TypedStore = JSB(config.type).getClass();
-                    if (config.type == 'JSB.Store.Sql.SQLStore') {
-                        var TypedStore = SQLStore;
-                    } else {
-                        throw new Error('Not supported store type ' + config.type);
-                    }
+                	var TypeStoreJsb = JSB.get(config.type);
+                	if(!TypeStoreJsb){
+                		throw new Error('Not supported store type ' + config.type);
+                	}
+                	
+                    var TypedStore = TypeStoreJsb.getClass();
                     store = $this._stores[config.name] = new TypedStore(config, $this);
                 }
                 return store;
