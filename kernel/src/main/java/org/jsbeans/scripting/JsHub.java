@@ -248,7 +248,7 @@ public class JsHub extends Service {
                 RhinoException re = (RhinoException) e;
                 sb.append("\n--> Stack trace:\n").append(re.getScriptStackTrace());
             }
-            getLog().error(e, sb.toString());
+            getLog().error(sb.toString(), e);
     	} finally {
             Context.exit();
 		}
@@ -474,7 +474,7 @@ public class JsHub extends Service {
             	}
             }
         } catch (Exception e) {
-            getLog().error(e, "JsHub failed to collect garbage sessions with message: " + e.getMessage());
+            getLog().error("JsHub failed to collect garbage sessions with message: " + e.getMessage(), e);
         }
     }
 
@@ -676,7 +676,7 @@ public class JsHub extends Service {
                         RhinoException re = (RhinoException) e;
                         sb.append("\n--> Stack trace:\n").append(re.getScriptStackTrace());
                     }
-                    getLog().error(e, sb.toString());
+                    getLog().error(sb.toString(), e);
 
                     String messageStr = "";
                     Throwable ex = e.getCause();
@@ -708,10 +708,10 @@ public class JsHub extends Service {
 		try {
 			this.threadPool.execute(r);
 		} catch(RejectedExecutionException re){
-			getLog().warning(re.getLocalizedMessage());
+			getLog().warn(re.getLocalizedMessage());
 			self.tell(msg, sender);
 		} catch(Exception e){
-			getLog().error(e, e.getLocalizedMessage());
+			getLog().error(e.getLocalizedMessage(), e);
 		}
 
     }

@@ -11,8 +11,6 @@
 package org.jsbeans.services;
 
 import akka.actor.UntypedActor;
-import akka.event.Logging;
-import akka.event.LoggingAdapter;
 import org.jsbeans.PlatformException;
 import org.jsbeans.helpers.ActorHelper;
 import org.jsbeans.messages.Message;
@@ -24,7 +22,7 @@ import scala.concurrent.ExecutionContext;
 
 public abstract class Service extends UntypedActor {
     private final Logger traceLogger = LoggerFactory.getLogger(this.getClass()); // trace logger
-    private final LoggingAdapter logger = Logging.getLogger(getContext().system(), this);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final String serviceName = this.self().path().name();
     private boolean isInitializing = false;
@@ -32,7 +30,7 @@ public abstract class Service extends UntypedActor {
     private long startedTime;
     private long intitializedTime;
 
-    protected LoggingAdapter getLog() {
+    protected Logger getLog() {
         return this.logger;
     }
 
@@ -106,7 +104,7 @@ public abstract class Service extends UntypedActor {
             try {
                 this.onMessage(msg);
             } catch (PlatformException ex) {
-                getLog().error(ex, ex.getMessage());
+                getLog().error(ex.getMessage(), ex);
             }
         }
     }
@@ -119,7 +117,7 @@ public abstract class Service extends UntypedActor {
         try {
             this.onInit();
         } catch (Throwable e) {
-            getLog().error(e, "Initialization fatal error");
+            getLog().error("Initialization fatal error", e);
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e1) {

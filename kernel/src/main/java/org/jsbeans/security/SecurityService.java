@@ -301,7 +301,7 @@ public class SecurityService extends Service {
     private void doAuth(AuthMessage msg) throws PlatformException {
 
         if (!this.enabled) {
-            this.getLog().warning("Security disabled");
+            this.getLog().warn("Security disabled");
             getSender().tell(msg.createResponse(null), getSelf());
             return;
         }

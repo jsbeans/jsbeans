@@ -165,9 +165,9 @@ public class ServiceManagerService extends Service {
                 }
             }
 
-            getLog().warning(String.format("Dead letter %n\tfrom=%s %n\tto=%s %n\nmessage=%s", dl.sender(), dl.recipient(), message));
+            getLog().warn(String.format("Dead letter %n\tfrom=%s %n\tto=%s %n\nmessage=%s", dl.sender(), dl.recipient(), message));
         } else if (msg instanceof Throwable) {
-            getLog().error((Throwable) msg, msg.toString());
+            getLog().error(msg.toString(), (Throwable) msg);
         } else {
             unhandled(msg);
         }

@@ -303,7 +303,7 @@ public class JsbRegistryService extends Service {
             try {
                 jsonElt = new JsonParser().parse(data);
             } catch (Exception e) {
-                getLog().error(e, "Error parsing JSON data: " + data);
+                getLog().error("Error parsing JSON data: " + data, e);
                 getLog().info("Request headers: " + msg.getClientRequestId());
                 throw new PlatformException(e);
             }
@@ -362,7 +362,7 @@ public class JsbRegistryService extends Service {
                         rpcEntryResp.addToObject("error", fail.getMessage());
                         rpcEntryResp.addToObject("success", false);
                         rpcEntryResp.addToObject("result", (JsObject) null);
-                        getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
+                        getLog().error("JsoRegistryService handleRpc failed with message: " + fail.getMessage(), fail);
 
                     }
                     rpcEntryResp.addToObject("completed", true);
@@ -442,7 +442,7 @@ public class JsbRegistryService extends Service {
             try {
                 UpdateStatusMessage result = (UpdateStatusMessage) Await.result(f, timeout.duration());
             } catch (Throwable fail) {
-                getLog().error(fail, "JsoRegistryService handleRpc failed with message: " + fail.getMessage());
+                getLog().error("JsoRegistryService handleRpc failed with message: " + fail.getMessage(), fail);
 
             }
 		} catch(PlatformException e) {
