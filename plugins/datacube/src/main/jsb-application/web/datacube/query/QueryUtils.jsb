@@ -1302,7 +1302,7 @@ $this.logDebug('cubeField: ' + field);
             function patchFields(exp, query) {
                 var fieldName = JSB.isPlainObject(exp) && exp.$field || typeof exp === 'string' && !exp.startsWith('$') && exp;
                 if (fieldName) {
-                    var fieldQuery = exp.$context || query.$context ? queriesByContext[exp.$context || query.$context] : query;
+                    var fieldQuery = query.$context ? queriesByContext[exp.$context || query.$context] : query;
                     var isAlias = !!fieldQuery.$select[fieldName];
                     if (isAlias) {
 
@@ -1880,19 +1880,25 @@ $this.logDebug('cubeField: ' + field);
                 }
             );
 
+            var contextQueriesMap = {};
             $this.walkQueries(dcQuery, {},
                 function enterCallback(){},
                 function leaveCallback(query){
-                    if (oldContexts[query.$context] > 1 && this.inJoin) {
-                        var parentJoin = this.path[this.path.length-2];
-                        walkExpression(parentJoin, query.$context, getContextName.call(this, query.$context));
-                    } else if (oldContexts[query.$context] > 1) {
-                        walkExpression(query, query.$context, getContextName.call(this, null));
-                    } else {
-                        walkExpression(query, query.$context, getContextName.call(this, query.$context));
+                    var startQuery = query;
+                    if (this.inJoin) {
+                        startQuery = this.path[this.path.length-2];
                     }
+
+                    if (oldContexts[query.$context] > 1) {
+                        walkExpression(startQuery, query.$context, getContextName.call(this, null));
+                    } else {
+                        walkExpression(startQuery, query.$context, getContextName.call(this, query.$context));
+                    }
+
+                    contextQueriesMap[query.$context] = query;
                 }
             );
+            return contextQueriesMap;
         },
 
 		unwrapMacros: function(dcQuery) {

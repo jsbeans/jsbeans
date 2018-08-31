@@ -72,7 +72,7 @@
 //            return context;
             if (!$this._translatedContexts[context]) {
                 var name = $this._translatedContexts[context] = 'Q'+Object.keys($this._translatedContexts).length;
-                QueryUtils.logDebug('Query context: {} = {}',name, context);
+//                QueryUtils.logDebug('Query context: {} = {}',name, context);
                 return name;
 
             }
@@ -997,6 +997,10 @@
             if (query.$groupBy) {
                 if (!JSB.isArray(query.$groupBy)) {
                     throw new Error('Unsupported $groupBy expression type (must be array):' + JSON.stringify(query.$groupBy));
+                }
+
+                if (query.$groupBy.length == 1 && query.$groupBy[0].$const) {
+                    return sql;
                 }
 
                 for (var i = 0; i < query.$groupBy.length; i++) {
