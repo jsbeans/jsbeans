@@ -3,7 +3,7 @@
 	$parent: 'JSB.Widgets.Control',
 
 	$client: {
-		$require: ['DataCube.Widgets.FilterManager', 'DataCube.Api.WidgetController', 'JSB.Controls.Navigator'],
+		$require: ['DataCube.Widgets.FilterManager', 'DataCube.Api.WidgetController', 'JSB.Controls.Navigator', 'DataCube.Controls.WidgetFilterSelector'],
 		
 		options: {
 			wsid: null,
@@ -17,6 +17,9 @@
 		childWidgets: [],
 		currentWidget: null,
 		mainWidget: null,
+		filterManager: null,
+		filterSelector: null,
+		_drilldownPanel: null,
 		
 		$constructor: function(opts){
 			$base(opts);
@@ -28,6 +31,15 @@
 			var wId = opts.wid;
 			this.server().getWidgetEntry(wsId, wId, function(wEntry){
 				$this.widgetEntry = wEntry;
+				$this.filterManager = WidgetController.getFilterManager();
+				if($this.filterManager){
+					$this.filterSelector = new WidgetFilterSelector($this, $this.filterManager);
+					$this.append($this.filterSelector);
+					$this.filterSelector.getElement().resize(function(){
+						$this.updateSizes();
+					});
+				}
+
 				$this.init();
 			});
 		},
@@ -39,6 +51,19 @@
 		ensureWidgetInitialized: function(callback){
 		    this.ensureTrigger('_widgetInitialized', callback);
 		},
+		
+		addFilter: function(fId){
+			if(this.filterSelector){
+				this.filterSelector.addFilter(fId);
+			}
+		},
+		
+		updateFilters: function(){
+			if(this.filterSelector){
+				this.filterSelector.redraw();
+			}
+		},
+
 
 		addDrilldownElement: function(opts){
 		    if(!this._drilldownPanel){
@@ -48,6 +73,9 @@
 		            }
 		        });
 		        this.prepend(this._drilldownPanel);
+		        this._drilldownPanel.getElement().resize(function(){
+					$this.updateSizes();
+				});
 
 		        this._drilldownPanel.addElement({
 		            key: 'root',
@@ -122,12 +150,18 @@
 				$this.append($this.mainWidget);
 				$this.mainWidget.ensureInitialized(function(){
 					$this.setWidgetInitialized();
-					$this.subscribe('DataCube.filterChanged', function(sender, msg, params){
-						if(!JSB.isInstanceOf(sender, 'DataCube.Widgets.Widget')){
+					$this.subscribe('DataCube.filterChanged', function(sender, msg, opts){
+						if(JSB.isInstanceOf(sender, 'DataCube.Widgets.FilterManager')){
+							return;
+						}
+						
+						if(!opts || opts.manager != $this.filterManager){
 							return;
 						}
 
-						$this.mainWidget.refresh(params);
+						$this.currentWidget.ensureInitialized(function(){
+					    	 $this.currentWidget.refresh(opts);
+						});
 					});
 					$this.subscribe('DataCube.Widget.eventFired', function(sender, msg, params){
 						if($this.currentWidget != sender){
@@ -175,6 +209,19 @@
 		
 		getWidget: function(){
 			return $this.mainWidget;
+		},
+		
+		updateSizes: function(){
+			var offset = 0;
+			if(this.filterSelector){
+				offset += this.filterSelector.getElement().outerHeight();
+			}
+			if(this._drilldownPanel){
+				offset += this._drilldownPanel.getElement().outerHeight();
+			}
+			if($this.currentWidget){
+				$this.currentWidget.getElement().css('height', 'calc(100% - '+offset+'px)');
+			}
 		}
 	},
 	

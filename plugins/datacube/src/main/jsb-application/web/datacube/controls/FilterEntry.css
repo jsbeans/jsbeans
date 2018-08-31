@@ -64,7 +64,8 @@
     color: #fff;
 }
 
-.filterEntry > .fixBtn {
+.filterEntry > .fixBtn,
+.filterEntry > .fixedArea {
 	display: none;
 }
 
@@ -84,4 +85,8 @@
 
 .filterEntry.allowFix > .fixBtn:hover {
 	opacity: 1;
+}
+
+.filterEntry.allowFix > .fixedArea {
+	display: block;
 }
