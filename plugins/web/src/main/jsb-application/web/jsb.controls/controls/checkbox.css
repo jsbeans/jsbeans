@@ -46,3 +46,21 @@
 .jsb-checkbox.disabled {
     display: none;
 }
+
+.jsb-checkbox > .loader {
+    display: none;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 15px;
+    height: 15px;
+    background-image: url('/../../jsb.widgets/images/loading.gif');
+}
+
+.jsb-checkbox.loading > .loader {
+    display: block;
+}
+
+.jsb-checkbox.loading > .check-elem {
+    background-position: -44px 0;
+}

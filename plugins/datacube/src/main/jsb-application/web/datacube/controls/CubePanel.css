@@ -1,0 +1,5 @@
+.cubePanel {
+    display: inline-block;
+    width: 20%;
+    border-left: 1px solid lightgrey;
+}

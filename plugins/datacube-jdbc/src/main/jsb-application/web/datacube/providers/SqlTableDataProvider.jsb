@@ -75,12 +75,16 @@
 		},
 		
 		extractFields: function(opts){
-			var desc = this.getTableDescriptor();
-			var fields = {};
+			var desc = this.getTableDescriptor(),
+			    fields = {},
+			    isIdProps = opts && opts.idProps;
+
 			for(var colName in desc.columns){
 				var nativeType = desc.columns[colName].datatypeName;
 				var type = JDBC.toJsonType(nativeType);
-				var fDesc = {};
+				var fDesc = {
+				    id: desc.id + '.' + colName
+				};
 				if(opts && Object.keys(opts).length > 0){
 					if(opts.type){
 						fDesc.type = type;
@@ -109,7 +113,7 @@
 					fDesc.type = type;
 					fDesc.nativeType = nativeType;
 				}
-				fields[colName] = fDesc;
+				fields[isIdProps ? desc.id : colName] = fDesc;
 			}
 			return fields;
 		}
