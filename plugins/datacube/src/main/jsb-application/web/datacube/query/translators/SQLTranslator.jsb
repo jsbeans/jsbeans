@@ -115,42 +115,6 @@
             return sql;
         },
 
-        _extractWhereOrHavingFilter: function(query, whereOrHaving /*where is true, having is false*/) {
-            function isHaving(filteredField, filteredExpr){
-                // is aggregated alias
-                if (query.$select[filteredField]) {
-                    var e = query.$select[filteredField];
-                    if(QueryUtils.isAggregatedExpression(e)) {
-                        // if cube field has same name
-                        if($this.cube && $this.cubeFields[filteredField]) {
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
-                // is not simple cube field
-                if (filteredExpr == filteredField || filteredExpr.$field == filteredField) {
-                    return false;
-                }
-                // is in groupBy expression
-                for(var i in query.$groupBy) {
-                    var groupByExpr = query.$groupBy[i];
-                    if (JSB.isEqual(groupByExpr, filteredExpr)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            var filter = QueryUtils.filterFilterByFields(query.$filter || {}, function(filteredField, filteredExpr){
-                return whereOrHaving
-                        ? !isHaving.call(null, filteredField, filteredExpr)
-                        : isHaving.call(null, filteredField, filteredExpr);
-            });
-            return filter ? filter : {};
-        },
-
         _translateExpression: function(exp, dcQuery, useAlias) {
 
             function translateGlobalAggregate(subExp, func){
