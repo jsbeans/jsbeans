@@ -19,20 +19,22 @@
 					<div jsb="JSB.Widgets.GroupBox" caption="Настройки соединения" class="connectionSettings">
 						<div class="option connectionString">
 							<div class="icon"></div>
-							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Строка соединения"
+							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Адрес"
 								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
 						</div>
 						
-						<div class="option user">
-							<div class="icon"></div>
-							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Имя пользователя"
-								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
-						</div>
-						
-						<div class="option password">
-							<div class="icon"></div>
-							<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Пароль" password="true"
-								onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+						<div class="option useAuth" jsb="JSB.Widgets.CheckBox" label="Использовать аутентификацию" checked="false">
+							<div class="option user">
+								<div class="icon"></div>
+								<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Имя пользователя"
+									onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+							</div>
+							
+							<div class="option password">
+								<div class="icon"></div>
+								<div class="editor" jsb="JSB.Widgets.PrimitiveEditor" placeholder="Пароль" password="true"
+									onchange="{{=this.callbackAttr(function(val){$this.updateSettings()})}}"></div>
+							</div>
 						</div>
 						
 						<div class="option buttons">
@@ -55,12 +57,6 @@
 								<div class="icon"></div>
 								<div class="message"></div>
 							</div>
-							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnClearCache" caption="Очистить кэш с данными"
-								onclick="{{=this.callbackAttr(function(evt){$this.clearCache()})}}"></div>
-							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnUpdateCache" caption="Обновить кэш с данными"
-								onclick="{{=this.callbackAttr(function(evt){$this.updateCache()})}}"></div>
-
-
 						</div>
 						<div class="option details"></div>
 					</div>
@@ -166,24 +162,6 @@
 				}
 				$this.fillDetails(details);
 			});
-		},
-		
-		clearCache: function(){
-			var entry = $this.node.getTargetEntry();
-			$this.getElement().loader({message:'Очистка кэша...', onShow: function(){
-				entry.server().clearCache(function(){
-					$this.getElement().loader('hide');
-				});
-			}});
-		},
-		
-		updateCache: function(){
-			var entry = $this.node.getTargetEntry();
-			$this.getElement().loader({message:'Загрузка подключенных кубов...', onShow: function(){
-				entry.server().updateCache(function(){
-					$this.getElement().loader('hide');
-				});
-			}});
 		},
 		
 		updateSchemeStatus: function(status){
