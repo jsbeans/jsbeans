@@ -1827,7 +1827,9 @@ $this.logDebug('cubeField: ' + field);
                         walkExpression(exp.$join || exp.$union, oldContext, newContext);
                     }
                     for(var i in exp) {
-                        if (i !=='$from' && i !=='$join' && i !=='$union' && typeof exp[i] === "object") {
+                        if (i !=='$from' && i !=='$join' && i !=='$union'
+                                && typeof exp[i] === "object" && exp[i] != null
+                        ) {
                             walkExpression(exp[i], oldContext, newContext);
                         }
                     }
@@ -1836,7 +1838,7 @@ $this.logDebug('cubeField: ' + field);
                     }
                 } else if (JSB.isArray(exp)) {
                     for(var i=0;i<exp.length;i++){
-                        if (typeof exp[i] === "object") {
+                        if (typeof exp[i] === "object" && exp[i] != null) {
                             walkExpression(exp[i], oldContext, newContext);
                         }
                     }

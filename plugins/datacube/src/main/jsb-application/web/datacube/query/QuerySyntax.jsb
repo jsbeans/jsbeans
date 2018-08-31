@@ -154,7 +154,6 @@
 		            '$filter': '$filter',
 		            '$groupBy': '$groupBy',
 		            '$select': '$select',
-		            '$from':'$from',
 		            '$distinct': '$distinctAll',
 		            '$postFilter': '$postFilter',
 		            '$cubeFilter': '$cubeFilter',
@@ -163,8 +162,24 @@
 		            '$offset': '$offset',
 		            '$finalize': '$finalize',
 		            '$sql': '$sqlQuery',
+
+		            '$from':'$from',
+		            '$join':'$join',
+		            '$union':'$union',
+		            '$cube':'$cube',
+		            '$provider':'$provider',
 		        },
-		        optional: ['$context', '$filter', '$groupBy', '$from', '$distinct', '$postFilter', '$cubeFilter', '$sort', '$finalize', '$sql','$limit', '$offset', '$views']
+		        optional: ['$context', '$filter', '$groupBy', '$distinct',
+		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
+		                '$sql','$limit', '$offset', '$views',
+		                '$from', '$join', '$union', '$cube', '$provider'],
+		        incompatible: {
+		            $from:     ['$join', '$union', '$cube', '$provider'],
+		            $cube:     ['$from', '$join', '$union', '$provider'],
+		            $provider: ['$from', '$join', '$union', '$cube'],
+		            $join:     ['$from', '$union', '$cube', '$provider'],
+		            $union:    ['$from', '$join', '$cube', '$provider'],
+		        }
 		    });
 
 		    new this.ComplexObject({
@@ -193,6 +208,24 @@
 		        displayName: 'Источник запроса',
 		    	desc: 'Промежуточный запрос с несколькими столбцами',
 		        values: ['$query', '$viewName'],
+		    });
+
+		    new this.SingleObject({
+		        name: '$join',
+		        category: 'Источник запроса',
+		        displayName: 'Пересечение',
+		        desc: 'Задает в качестве источника запроса перечесение результатов двух запросов',
+		        values: ['$joinExpr']
+		    });
+
+		    new this.ComplexObject({
+		        name: '$joinExpr',
+		        values: {
+		            '$joinType': '$joinType',
+		            '$filter': '$joinFilter',
+		            '$left': '$query',
+		            '$right': '$query',
+		        }
 		    });
 
 		    new this.Group({
@@ -750,7 +783,18 @@
 		        maxOperands: -1,
 		        values: ['$field', '$expression'],
 		    });
-		
+
+
+		    new this.EArray({
+		        name: '$union',
+		        category: 'Источник запроса',
+		        displayName: 'Объединение',
+		        desc: 'Задает в качестве источника запроса объединение результатов нескольких запросов',
+		        minOperands: 2,
+		        maxOperands: -1,
+		        values: ['$query'],
+		    });
+
 		    new this.ComplexObject({
 		        name: '$filter',
 		        category: 'Выражения запроса',
@@ -759,11 +803,11 @@
 		        customKey: '#fieldName',
 		        values: {
 		            '#fieldName': '$valueCondition',
-		
+
 		            '$or': '$or',
 		            '$and': '$and',
 		            '$not': '$filter',
-		
+
 		            '$eq': '$eqExpr',
 		            '$ne': '$neExpr',
 		            '$gt': '$gtExpr',
@@ -776,6 +820,24 @@
 		            '$nin': '$ninExpr',
 		        },
 		        optional: ['#fieldName', '$and', '$or', '$not', '$eq', '$ne', '$gte', '$gt', '$lte', '$lt', '$ilike', '$like', '$in', '$nin']
+		    });
+		
+		    new this.ComplexObject({
+		        name: '$joinFilter',
+		        category: 'Выражения запроса',
+		        displayName: 'Условия пересечения',
+		        desc: 'Задает условия пересечения двух запросов',
+		        customKey: '#fieldName',
+		        values: {
+		            '#fieldName': '$valueCondition',
+		
+		            '$or': '$or',
+		            '$and': '$and',
+		            '$not': '$joinFilter',
+		
+		            '$eq': '$eqExpr',
+		        },
+		        optional: ['#fieldName', '$and', '$or', '$not', '$eq']
 		    });
 		
 		
@@ -1099,6 +1161,41 @@
 		        value: -1,
 		    });
 
+		    new this.Group({
+		        name: '$joinType',
+		        values: ['$joinTypeLIJ', '$joinTypeLOJ', '$joinTypeRIJ', '$joinTypeROJ', '$joinTypeFJ']
+		    });
+
+		    new this.EConstNumber({
+		        name: '$joinTypeLIJ',
+		    	displayName: 'left inner',
+		        value: 'left inner',
+		    });
+
+		    new this.EConstNumber({
+		        name: '$joinTypeLOJ',
+		    	displayName: 'left outer',
+		        value: 'left outer',
+		    });
+
+		    new this.EConstNumber({
+		        name: '$joinTypeRIJ',
+		    	displayName: 'right inner',
+		        value: 'right inner',
+		    });
+
+		    new this.EConstNumber({
+		        name: '$joinTypeROJ',
+		    	displayName: 'right outer',
+		        value: 'right outer',
+		    });
+
+		    new this.EConstNumber({
+		        name: '$joinTypeFJ',
+		    	displayName: 'full',
+		        value: 'full',
+		    });
+
 		    new this.EConstNumber({
 		        name: '$constOne',
 		    	displayName: '1',
@@ -1217,6 +1314,18 @@
 		    new this.EConstString({
 		        name: '$viewName',
 		        desc: 'Имя среза источника'
+		    });
+
+		    new this.EConstString({
+		        name: '$cube',
+		        category: 'Источник запроса',
+		        desc: 'Идентификатор куба'
+		    });
+
+		    new this.EConstString({
+		        name: '$provider',
+		        category: 'Источник запроса',
+		        desc: 'Идентификатор первичного источника данных'
 		    });
 
 		    new this.EConstNumber({
