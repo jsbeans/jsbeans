@@ -10,14 +10,20 @@
 	$client: {
 		$constructor: function(opts){
 			$base(opts);
+
+			this._widgetsCount = Object.keys(this.options.widgets).length;
+
 			this.construct();
 		},
 		
 		paneMap: {},
-		
+		_widgetsCount: 0,
+		_widgetsReadyCount: 0,
+
 		options: {
 			layouts: {},
-			widgets: {}
+			widgets: {},
+			widgetsReadyCallback: null
 		},
 		
 		constructArea: function(desc, layoutName, callback){
@@ -176,9 +182,12 @@
 					desc.ignoreTrackWidgetChange = false;
 					var wDesc = self.options.widgets[desc.defaultWidget];
 					ctrl.switchWidget(wDesc.jsb);
-					
+
+                    if(self._widgetsReadyCount === self._widgetsCount && JSB.isFunction(self.options.widgetsReadyCallback)){
+                        self.options.widgetsReadyCallback.call(self);
+                    }
 				}
-				
+
 				for(var i = 0; i < desc.widgets.length; i++ ){
 					(function(idx){
 						var wName = desc.widgets[idx];
@@ -199,6 +208,7 @@
 							JSB().lookup(wDesc.jsb, function(wCls){
 								if(!JSB().isBean(wDesc.jsb)){
 									wDesc.jsb = JSB().isBean(wCls) ? wCls : new wCls(wDesc.options || {});
+									self._widgetsReadyCount++;
 								}
 								_checkWidgetInstances();
 							});
@@ -292,6 +302,10 @@
 			}
 			return null;
 		},
+
+		getWidget: function(wName){
+		    return this.options.widgets[wName].jsb;
+		},
 		
 		construct: function(){
 			var self = this;
@@ -303,7 +317,7 @@
 				dontSwitchOnCreate: true
 			});
 			this.append(this.layoutsView);
-			
+
 			// construct layouts
 			if(this.options.layouts){
 				for(var l in this.options.layouts){

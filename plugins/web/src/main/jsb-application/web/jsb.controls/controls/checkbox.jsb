@@ -78,6 +78,19 @@
 			}
 		},
 
+		setLoading: function(b){
+		    if(!this.loader && b){
+		        this.loader = this.$('<div class="loader hidden"></div>');
+		        this.getElement().append(this.loader);
+		    }
+
+		    if(b){
+		        this.addClass('loading');
+		    } else {
+		        this.removeClass('loading');
+		    }
+		},
+
 		toggleChecked: function(hideEvent){
 		    var input = this.find('> .check-elem > input'),
 		        checked = input.prop('checked');

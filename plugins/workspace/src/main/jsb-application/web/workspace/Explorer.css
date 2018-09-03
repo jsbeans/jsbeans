@@ -264,6 +264,7 @@
 
 ._dwp_droplistTool[key="createMenu"] ._dwp_listBoxItem {
 	position: relative;
+    min-height: 45px;
 }
 
 ._dwp_droplistTool[key="createMenu"] ._dwp_listBoxItem > div {
