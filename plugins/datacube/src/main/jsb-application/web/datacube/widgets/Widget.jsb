@@ -92,8 +92,48 @@
 
 		addFilter: function(fDesc){
 		    if(!this.filterManager){ return; }
-			return this.filterManager.addFilter(this.translateFilter(fDesc));
+			var filterId = this.filterManager.addFilter(this.translateFilter(fDesc));
+			this.getWrapper().addFilter(filterId);
+			return filterId;
 		},
+		
+		getFilter: function(fId){
+			if(!this.filterManager){ return; }
+			return this.filterManager.getFilters()[fId];
+		},
+		
+		removeFilter: function(fItemId, dontPublish){
+		    if(!this.filterManager){ return; }
+			this.filterManager.removeFilter(fItemId, dontPublish);
+			this.getWrapper().updateFilters();
+		},
+		
+		hasFilter: function(fDesc){
+		    if(!this.filterManager){ return; }
+			return this.filterManager.hasFilter(this.translateFilter(fDesc));
+		},
+
+		localizeFilters: function(){
+		    if(!this.filterManager){ return; }
+			this.sourceFilterMap = {};
+			for(var srcId in this.sources){
+				var src = this.sources[srcId];
+				
+				this.sourceFilterMap[srcId] = this.filterManager.getFiltersBySource(src);
+			}
+		},
+
+
+		removeAllFilters: function(){
+            var fm = this.getFilterManager();
+            if(fm){
+                var filters = fm.getFilters();
+                for(var i in filters){
+                    this.removeFilter(i);
+                }
+            }
+		},
+
 		
 		getCubeField: function(field){
 			var sourceArr = this.getSourceIds();
@@ -511,21 +551,6 @@
 			return fDesc;
 		},
 
-		hasFilter: function(fDesc){
-		    if(!this.filterManager){ return; }
-			return this.filterManager.hasFilter(this.translateFilter(fDesc));
-		},
-
-		localizeFilters: function(){
-		    if(!this.filterManager){ return; }
-			this.sourceFilterMap = {};
-			for(var srcId in this.sources){
-				var src = this.sources[srcId];
-				
-				this.sourceFilterMap[srcId] = this.filterManager.getFiltersBySource(src);
-			}
-		},
-
 		parseFormatterData: function(bindings, dataArr, res){
             if(bindings.length > 0){
                 for(var j = 0; j < res.length; j++){
@@ -553,22 +578,7 @@
 		},
 
 		refreshAll: function(opts){
-			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, dashboard: $this.getWrapper().getDashboard()}, opts || {}));
-		},
-
-		removeFilter: function(fItemId, dontPublish){
-		    if(!this.filterManager){ return; }
-			return this.filterManager.removeFilter(fItemId, dontPublish);
-		},
-
-		removeAllFilters: function(){
-            var fm = this.getFilterManager();
-            if(fm){
-                var filters = fm.getFilters();
-                for(var i in filters){
-                    this.removeFilter(i);
-                }
-            }
+			$this.publish('DataCube.filterChanged', JSB.merge({initiator: this, manager: $this.filterManager}, opts || {}));
 		},
 
 		setContextFilter: function(q){

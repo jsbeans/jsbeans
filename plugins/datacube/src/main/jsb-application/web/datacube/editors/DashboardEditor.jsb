@@ -44,7 +44,8 @@
 						for(var i in d.get(0).draggingItems){
 							var obj = d.get(0).draggingItems[i];
 							if(JSB.isInstanceOf(obj, 'DataCube.Widgets.WidgetListItem')){
-								$this.entry.server().createWidgetWrapper(obj.descriptor.jsb, obj.descriptor.name, function(widgetEntry){
+								$this.entry.server().createWidgetWrapper(obj.descriptor.jsb, obj.descriptor.name, function(widgetEntry, fail){
+									
 									var wWrapper = new WidgetWrapper(widgetEntry, $this, {
 										showSettings: true
 									});

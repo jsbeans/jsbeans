@@ -123,6 +123,10 @@
 					$this.getElement().loader({style:'connection', message:'<div class="title">Потеряна связь с сервером!</div><div class="subtitle">Вероятно, выполняется обновление</div>'});
 				}
 			});
+			
+			this.subscribe(['JSB.Workspace.Workspace.blocked'], function(sender, msg, error){
+				$this.getElement().loader({style:'error', message:'<div class="title">Внутренняя ошибка сервера</div><div class="subtitle">'+error.message+'</div>'});
+			});
 		}
 	},
 	

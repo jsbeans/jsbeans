@@ -2143,12 +2143,20 @@
 					if(d.contextFilterField && d.contextFilterFieldType){
 						elt.addClass('contextFilter');
 						if(!filterEntry){
+							var bIgnoreFilter = false;
 							filterEntry = new FilterEntry({
 								onChange: function(filter){
-									$this.updateContextFilter(filter);
+									if(!bIgnoreFilter){
+										$this.updateContextFilter(filter);
+									}
 								},
 								onFix: function(filter){
-									$this.globalizeContextFilter(filter);
+									var filterId = $this.globalizeContextFilter(filter);
+									var fDesc = $this.getFilter(filterId);
+									bIgnoreFilter = true;
+									filterEntry.clear();
+									bIgnoreFilter = false;
+//									filterEntry.addFixedFilter(fDesc);
 								}
 							});
 							elt.append(filterEntry.getElement());
@@ -2279,7 +2287,7 @@
 			var op = Object.keys(q[field])[0];
 			var val = q[field][op][Object.keys(q[field][op])[0]];
 			
-			this.addFilter({
+			var filterId = this.addFilter({
 				type: '$and',
 				op: op,
 				field: field,
@@ -2287,6 +2295,8 @@
 			});
 			
 			this.refreshAll();
+			
+			return filterId;
 		},
 		
 		showMessage: function(txt){
