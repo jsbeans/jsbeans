@@ -71,7 +71,8 @@
 		           'JSB.Widgets.Button',
 		           'JSB.Widgets.PrimitiveEditor',
 		           'JSB.Widgets.ToolManager',
-		           'JSB.Controls.Navigator'],
+		           'JSB.Controls.Navigator',
+		           'DataCube.Controls.WidgetFilterSelector'],
 
 		attached: false,
 		childWidgets: [],
@@ -79,6 +80,9 @@
 		mainWidget: null,
 		owner: null,
 		settingsVisible: false,
+		filterManager: null,
+		filterSelector: null,
+		_drilldownPanel: null,
 		
 		options: {
 			auto: true
@@ -88,6 +92,8 @@
 			$base(opts);
 			this.widgetEntry = widgetEntry;
 			this.owner = owner;
+			
+			this.filterManager = this.owner && this.owner.getFilterManager();
 
 			this.loadCss('WidgetWrapper.css');
 			this.addClass('widgetWrapper');
@@ -97,10 +103,18 @@
 			if(!this.options.viewMode){
 				this.updateTabHeader();
 			}
+			
+			if(this.filterManager){
+				this.filterSelector = new WidgetFilterSelector(this, this.filterManager);
+				this.append(this.filterSelector);
+				this.filterSelector.getElement().resize(function(){
+					$this.updateSizes();
+				});
+			}
 
 			JSB.lookup($this.getWidgetType(), function(WidgetClass){
 				$this.mainWidget = new WidgetClass({
-				    filterManager: owner ? owner.getFilterManager() : null,
+				    filterManager: $this.filterManager,
 				    widgetEntry: $this.widgetEntry,
 				    widgetWrapper: $this
 				});
@@ -133,7 +147,8 @@
 				if(JSB.isInstanceOf(sender, 'DataCube.Widgets.FilterManager')){
 					return;
 				}
-				if(!opts || opts.dashboard != $this.getDashboard()){
+				
+				if(!opts || opts.manager != $this.filterManager){
 					return;
 				}
 
@@ -159,6 +174,18 @@
 			    this.publish('JSB.Workspace.Entry.open', $this.widgetEntry);
 			}
 		},
+		
+		addFilter: function(fId){
+			if(this.filterSelector){
+				this.filterSelector.addFilter(fId);
+			}
+		},
+		
+		updateFilters: function(){
+			if(this.filterSelector){
+				this.filterSelector.redraw();
+			}
+		},
 
 		addDrilldownElement: function(opts){
 		    if(!this._drilldownPanel){
@@ -168,6 +195,10 @@
 		            }
 		        });
 		        this.prepend(this._drilldownPanel);
+				this._drilldownPanel.getElement().resize(function(){
+					$this.updateSizes();
+				});
+
 
 		        this._drilldownPanel.addElement({
 		            key: 'root',
@@ -308,6 +339,19 @@
 
 		setWidgetInitialized: function(){
 		    this.setTrigger('_widgetInitialized');
+		},
+		
+		updateSizes: function(){
+			var offset = 0;
+			if(this.filterSelector){
+				offset += this.filterSelector.getElement().outerHeight();
+			}
+			if(this._drilldownPanel){
+				offset += this._drilldownPanel.getElement().outerHeight();
+			}
+			if($this.currentWidget){
+				$this.currentWidget.getElement().css('height', 'calc(100% - '+offset+'px)');
+			}
 		},
 
 		updateTabHeader: function(){

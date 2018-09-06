@@ -65,7 +65,7 @@
 				}
 			}
 
-			if(Object.keys($this.filters) != pfCount && !dontPublish){
+			if(Object.keys($this.filters).length != pfCount && !dontPublish){
 				this.publish('DataCube.filterChanged');
 			}
 		},
