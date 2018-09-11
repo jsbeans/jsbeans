@@ -1670,7 +1670,6 @@
 		
 		loadFilteredNodes: function(filter){
 			var nTree = {};
-			this.currentWorkspace.requireAccess(1);
 			function place(e, scope, matched){
 				if(e.getParent()){
 					var chScope = place(e.getParent(), scope);
@@ -1698,7 +1697,8 @@
 				}
 			}
 			
-			if(filter && filter.length >= 3){
+			if(filter && filter.length >= 3 && this.currentWorkspace){
+				this.currentWorkspace.requireAccess(1);
 				var it = this.currentWorkspace.search(filter);
 				while(it.hasNext()){
 					var e = it.next();

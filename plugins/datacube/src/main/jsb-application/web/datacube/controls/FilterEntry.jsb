@@ -9,6 +9,8 @@
 		defaultFilterValue: null,
 		defaultFilterOp: null,
 		curOp: null,
+		fixedArea: null,
+		fixedFilters: {},
 		
 		opMap: {
 			'$eq': '=',
@@ -83,6 +85,7 @@
 			});
 			this.append(this.opSelector);
 			this.setOp('$eq');
+			
 			this.fixBtn = this.$('<div class="fixBtn" title="Зафиксировать фильтр"></div>');
 			this.append(this.fixBtn);
 			
@@ -178,7 +181,54 @@
 			}
 			return fieldFilter;
 		},
+/*		
+		addFixedFilter: function(fDesc){
+			if(this.fixedFilters[fDesc.id]){
+				return;
+			}
+			this.fixedFilters[fDesc.id] = fDesc;
+			this.updateFixedFilters();
+			
+			
+			var fixedTag = constructFixedTag(fDesc);
+			this.fixedArea.append(fixedTag);
+		},
 		
+		removeFixedFilter: function(fId){
+			if(this.fixedFilters[fId]){
+				delete this.fixedFilters[fId];
+				this.updateFixedFilters();
+			}
+		},
+		
+		constructFixedTag: function(fDesc){
+			return this.$('<div class="fixedTag"></div>').text(fDesc.value);
+		},
+
+		
+		updateFixedFilters: function(){
+			if(Object.keys(this.fixedFilters).length > 0){
+				// has filters
+				if(!this.fixedArea){
+					this.fixedArea = this.$('<div class="fixedArea"></div>');
+					this.append(this.fixedArea);
+				}
+				
+				// remove missing filters
+				
+				
+				// add new filters
+
+				
+				
+			} else {
+				// no filters
+				if(this.fixedArea){
+					this.fixedArea.remove();
+				}
+			}
+		},
+*/		
 		update: function(){
 			if($this.options.onChange){
 				$this.options.onChange.call($this, $this.getFilter());

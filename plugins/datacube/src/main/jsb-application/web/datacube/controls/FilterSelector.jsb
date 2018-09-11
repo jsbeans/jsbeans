@@ -137,7 +137,7 @@
 						$this.updateVisibility();
 						
 						JSB.defer(function(){
-							$this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'removeFilter', fItemIds: [fId]});
+							$this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'removeFilter', fItemIds: [fId]});
 						});
 					}
 				});
@@ -241,7 +241,7 @@
                                     type = (type === type == 'and' ? 'or' : 'and');
 
                                     JSB.defer(function(){
-                                        $this.publish('DataCube.filterChanged', {initiator: $this, dashboard: $this.getOwner().getDashboard(), type: 'changeFilterType', fItemIds: [fId]});
+                                        $this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'changeFilterType', fItemIds: [fId]});
                                     });
                                 });
 							})(treeNode.values[i].id, treeNode.type);

@@ -14,6 +14,12 @@
 		return this._wt;
 	},
 	
+	$client: {
+		blockWithException: function(e){
+			this.publish('JSB.Workspace.Workspace.blocked', e);
+		},
+	},
+	
 	$server: {
 		$require: ['JSB.Workspace.WorkspaceController'],
 		$disableRpcInstance: true,
@@ -21,6 +27,8 @@
 		config: null,
 		wDesc: null,
 		storeQueued: false,
+		_blocked: false,
+		_blockedException: null,
 		_entries: {},
 		_changedEntries: {},
 		
@@ -54,7 +62,25 @@
             $base(id, this);
 		},
 		
+		blockWithException: function(e){
+			this._blocked = true;
+			this._blockedException = e;
+			this.client().blockWithException(e);
+		},
+		
+		unblock: function(){
+			this._blocked = false;
+			this._blockedException = null;
+		},
+		
+		checkBlocked: function(){
+			if(this._blocked && this._blockedException){
+				throw this._blockedException;
+			}
+		},
+		
 		setWorkspaceType: function(t){
+			this.checkBlocked();
 			if(this._wt == t){
 				return;
 			}
@@ -63,6 +89,7 @@
 		},
 		
 		loadEntry: function(){
+			this.checkBlocked();
 			$base();
 			
 			// fill entry indices
@@ -178,6 +205,7 @@
 			if(entry == this){
 				return;	// not need attach workspace to itself 
 			}
+			this.checkBlocked();
 			entry._entryStore = this._entryStore;
 			entry._artifactStore = this._artifactStore;
 			
@@ -191,6 +219,7 @@
 			if(entry == this){
 				return;	// not need detach workspace from itself 
 			}
+			this.checkBlocked();
 			if(!this._entries[entry.getId()]){
 				return;
 			}
@@ -216,6 +245,7 @@
 			if(this.storeQueued){
 				return;
 			}
+			this.checkBlocked();
 			this.storeQueued = true;
 			JSB.defer(function(){
 				var mtxName = 'JSB.Workspace.Workspace.store';
@@ -328,6 +358,7 @@
 		},
 		
 		removeEntry: function(id){
+			this.checkBlocked();
 			if(this.existsEntry(id)){
 				this.entry(id).remove();
 				return true;
@@ -365,6 +396,7 @@
 		},
 
 		remove: function(){
+			this.checkBlocked();
 			JSB.cancelDefer('JSB.Workspace.Workspace.store.' + $this.getId());
 			// remove artifacts
 			var aMap = this.getArtifacts();
@@ -417,6 +449,7 @@
 		},
 		
 		uploadFile: function(fileDesc){
+			this.checkBlocked();
 			try {
 				var pId = fileDesc.parent;
 				var fileName = fileDesc.name;

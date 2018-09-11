@@ -593,10 +593,9 @@
                 var from  = $this._translateSourceView(view.getSourceView(), view.getSourceView().getContext());
             }
             var columns = $this._translateSelectColumns(view);
-
-            var where = $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, true));
+            var where = $this._translateWhere(query, $this._extractWhereOrHavingFilter(view, true));
             var group = $this._translateGroup(query);
-            var having = $this._translateWhere(query, $this._extractWhereOrHavingFilter(query, false));
+            var having = $this._translateWhere(query, $this._extractWhereOrHavingFilter(view, false));
             var order = $this._translateOrder(query);
 
             var offset = query.$offset ? ' OFFSET ' + query.$offset: '';
@@ -619,6 +618,43 @@
             }
             return $this._translateAnyView(sourceView) +
                 ' AS ' + $this._quotedName($this._translateContext(context));
+        },
+
+        _extractWhereOrHavingFilter: function(view, whereOrHaving /*where is true, having is false*/) {
+            function isHaving(filteredField, filteredExpr){
+                // is aggregated alias
+                if (query.$select[filteredField]) {
+                    var e = query.$select[filteredField];
+                    if(QueryUtils.isAggregatedExpression(e)) {
+                        // if source field
+                        if(view.getSourceView().getField(filteredField)) {
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+                // is not simple cube field
+                if (filteredExpr == filteredField || filteredExpr.$field == filteredField) {
+                    return false;
+                }
+                // is in groupBy expression
+                for(var i in query.$groupBy) {
+                    var groupByExpr = query.$groupBy[i];
+                    if (JSB.isEqual(groupByExpr, filteredExpr)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            var query = view.getQuery();
+            var filter = QueryUtils.filterFilterByFields(query.$filter || {}, function(filteredField, filteredExpr){
+                return whereOrHaving
+                        ? !isHaving.call(null, filteredField, filteredExpr)
+                        : isHaving.call(null, filteredField, filteredExpr);
+            });
+            return filter ? filter : {};
         },
 
         _translateSelectColumns: function(view){

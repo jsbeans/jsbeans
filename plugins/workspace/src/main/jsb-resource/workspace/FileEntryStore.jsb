@@ -96,6 +96,9 @@
 					var dataStr = FileSystem.read(eFileName);
 					return JSON.parse(dataStr);
 				}
+			} catch(e){
+				entry.getWorkspace().blockWithException(e);
+				throw e;
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
@@ -116,6 +119,9 @@
 
 				// write file
 				FileSystem.write(eFileName, JSON.stringify(entry.getEntryDoc(), null, 4));
+			} catch(e){
+				entry.getWorkspace().blockWithException(e);
+				throw e;
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
@@ -140,6 +146,9 @@
 						FileSystem.remove(eDir);
 					}
 				}
+			} catch(e){
+				entry.getWorkspace().blockWithException(e);
+				throw e;
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}

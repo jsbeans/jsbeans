@@ -63,6 +63,9 @@
 					throw new Error('Unexpected artifact type: ' + artifactType);
 				}
 				
+			} catch(e){
+				entry.getWorkspace().blockWithException(e);
+				throw e;
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
@@ -110,6 +113,9 @@
 					throw new Error('Unexpected artifact type: ' + artifactType);
 				}
 
+			} catch(e){
+				entry.getWorkspace().blockWithException(e);
+				throw e;
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
@@ -130,6 +136,9 @@
 						FileSystem.remove(eDir);
 					}
 				}
+			} catch(e){
+				entry.getWorkspace().blockWithException(e);
+				throw e;
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
@@ -145,6 +154,9 @@
 				if(FileSystem.exists(eFileName)){
 					FileSystem.move(eFileName, eFileNewName);
 				}
+			} catch(e){
+				entry.getWorkspace().blockWithException(e);
+				throw e;
 			} finally {
 				JSB.getLocker().unlock(mtxName);
 			}
