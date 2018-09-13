@@ -131,6 +131,7 @@
                 for(var i in filters){
                     this.removeFilter(i);
                 }
+                this.getWrapper().updateFilters();
             }
 		},
 
@@ -149,6 +150,7 @@
 		    if(!this.filterManager){ return; }
 
 			this.filterManager.clearFilters();
+			this.getWrapper().updateFilters();
 		},
 
 		createFilterHash: function(filter){

@@ -51,11 +51,12 @@
 		},
 		
 		removeFilter: function(itemId, dontPublish){
-			var pfCount = Object.keys($this.filters).length;
+			var bRemoved = false;
 
 			// remove from filters
 			if($this.filters[itemId]){
 				delete $this.filters[itemId];
+				bRemoved = true;
 			}
 
 			// remove from array
@@ -65,15 +66,20 @@
 				}
 			}
 
-			if(Object.keys($this.filters).length != pfCount && !dontPublish){
+			if(bRemoved && !dontPublish){
 				this.publish('DataCube.filterChanged');
 			}
 		},
 
 		clearFilters: function(){
+			var bRemoved = false;
 			var filtersIds = Object.keys($this.filters);
 			for(var i = 0; i < filtersIds.length; i++){
 				$this.removeFilter(filtersIds[i], true);
+				bRemoved = true;
+			}
+			if(bRemoved){
+				this.publish('DataCube.filterChanged');
 			}
 		},
 
