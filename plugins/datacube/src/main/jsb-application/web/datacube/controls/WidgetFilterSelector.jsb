@@ -140,6 +140,7 @@
 					var fTag = _constructTag(fId);
 					$this.append(fTag);
 					fTag.click(function(){
+						fTag.remove();
 						$this.filterManager.removeFilter(fId);
 						JSB.defer(function(){
                             $this.publish('DataCube.filterChanged', {initiator: $this, manager: $this.filterManager, type: 'changeFilterType', fItemIds: [fId]});
