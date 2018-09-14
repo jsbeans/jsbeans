@@ -27,7 +27,7 @@
 			$base(opts);
 			this.loadCss('SchemeEditor.css')
 			this.addClass('schemeEditor');
-			
+
 			$this.parent = opts.parent;
 			$this.acceptedSchemes = opts.acceptedSchemes;
 			$this.schemeName = opts.schemeName;
@@ -36,6 +36,13 @@
 			$this.value = opts.value;
 			
 			$this.handle = $this.getElement();
+
+			// 'from' query
+			/*
+			if(this.options.editorType === 'queryDataProvider'){
+			    // todo: 'from' query
+			}
+			*/
 			
 			$this.container = $this.$('<div class="container"></div>');
 			$this.append($this.container);
@@ -49,7 +56,7 @@
 				}
 			});
 			$this.append($this.btnAdd);
-			
+
 			if(JSB.isDefined($this.value)){
 				$this.refresh();
 			}
@@ -728,7 +735,6 @@
 		doAdd: function(targetElt){
 			$this.showPopupTool($this.combineAcceptedSchemes(), targetElt, null, null, null, function(chosenObj){
 				if($this.scheme.expressionType == 'ComplexObject'){
-					
 					function generateColumnName(prefix){
 						if(prefix && !$this.value[prefix]){
 							return prefix;
@@ -761,7 +767,7 @@
 					var context = null;
 					var askRename = false;
 					var bGroupByChanged = false;
-					
+
 					// detect key
 					if(JSB.isString(chosenObj.key)){
 						if($this.scheme.name == '$select' && chosenObj.key == '#outputFieldName'){
@@ -1437,7 +1443,9 @@
 			}
 			
 			$this.publish('DataCube.Query.SchemeEditor.selected', {entryType: entryType, entryKey:entryKey, selected: bSelect});
-			
+
+            // todo: check cube fields
+//debugger;
 			// show popup menu
 			if(bSelect && (allowEdit || allowRemove)){
 				$this.menuTool = ToolManager.activate({
@@ -1806,7 +1814,6 @@
 			}
 			return false;
 		},
-
 		
 		construct: function(){
 /*			if($this.scheme.name == '$select'){
@@ -1814,7 +1821,7 @@
 			}*/
 			$this.attr('etype', $this.scheme.expressionType);
 			$this.attr('sname', $this.scheme.name);
-			
+
 			if($this.constructHeuristic()){
 				$this.attr('heuristic', true);
 				return;
@@ -2006,7 +2013,6 @@
 			}  else {
 				throw new Error('Unknown expression type: ' + $this.scheme.expressionType);
 			}
-			
 		},
 
 		combineSchemes: function(schemeName){
@@ -2035,13 +2041,29 @@
 				scheme = key;
 				key = arg2;
 			}
+
 			if(key){
 				return $this.combineSchemes(scheme.values[key]);
 			} else {
 				if(JSB.isObject(scheme.values)){
 					var schemes = {};
 					for(var vName in scheme.values){
-						schemes[vName] = $this.combineSchemes(scheme.values[vName]);
+					    var isAdd = true;
+
+					    if(scheme.incompatible){
+                            for(var i = 0; i < scheme.incompatible.length; i++){
+                                for(var j in this.value){
+                                    if(scheme.incompatible[i].indexOf(j) > -1 && scheme.incompatible[i].indexOf(vName) > -1){
+                                        isAdd = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if(isAdd){
+						    schemes[vName] = $this.combineSchemes(scheme.values[vName]);
+                        }
 					}
 					return schemes;
 				} else if(JSB.isArray(scheme.values)){
@@ -2276,9 +2298,5 @@
 				throw new Error('Unexpected expression type: ' + scheme.expressionType);
 			}
 		}
-	},
-	
-	$server: {
-		
 	}
 }

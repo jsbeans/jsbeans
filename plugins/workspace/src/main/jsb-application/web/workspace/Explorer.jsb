@@ -573,7 +573,7 @@
 			items.sort(function(a, b){
 				return a.order - b.order;
 			});
-			
+
 			ToolManager.activate({
 				id: '_dwp_droplistTool',
 				cmd: 'show',
