@@ -542,7 +542,35 @@
 			});
 			
 			return viewArr;
-		}
+		},
+		
+		constructBrowserViewSlice: function(wType){
+			var slice = {};
+			var wTypes = [null];
+			if(wType){
+				wTypes.push(wType);
+			}
+			for(var j = 0; j < wTypes.length; j++){
+				wType = wTypes[j];
+				if(!this.browserViewRegistry[wType]){
+					continue;
+				}
+				for(var nType in this.browserViewRegistry[wType]){
+					if(!slice[nType]){
+						slice[nType] = [];
+					}
+					slice[nType] = slice[nType].concat(this.browserViewRegistry[wType][nType]);
+				}
+			}
+			for(var nType in slice){
+				var arr = slice[nType];
+				arr.sort(function(a, b){
+					return b.priority - a.priority;
+				});
+			}
+			
+			return slice;
+		},
 
 	}
 }
