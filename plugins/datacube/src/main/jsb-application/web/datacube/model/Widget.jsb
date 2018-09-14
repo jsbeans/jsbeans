@@ -73,7 +73,9 @@
         		nodeType:'DataCube.WidgetNode',
         		create: false,
 				move: false,
-				remove: false
+				remove: false,
+				rename: true,
+				share: false
         	});
         },
 
