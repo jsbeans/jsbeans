@@ -137,6 +137,26 @@
                                     }
                                 }
                              },
+                             moscowAO_КСП: {
+                                name: 'Москва. Административные округа КСП',
+                                items: {
+                                    compareTo: {
+                                        render: 'select',
+                                        name: 'Сопоставление по',
+                                        items: {
+                                            NAME: {
+                                                name: 'Имя'
+                                            },
+                                            OKATO: {
+                                                name: 'Код ОКАТО'
+                                            },
+                                            ABBREV: {
+                                                name: 'Аббревиатура'
+                                            }
+                                        }
+                                    }
+                                }
+                             },
                              moscowMO: {
                                 name: 'Москва. Муниципальные образования',
                                 items: {
@@ -618,6 +638,32 @@
             collapsible: true,
             collapsed: true,
             items: {
+                startPosition: {
+                    render: 'group',
+                    name: 'Начальное положение',
+                    collapsible: true,
+                    collapsed: false,
+                    items: {
+                        latitude: {
+                            render: 'item',
+                            name: 'Широта',
+                            valueType: 'number',
+                            defaultValue: 40.5
+                        },
+                        longitude: {
+                            render: 'item',
+                            name: 'Долгота',
+                            valueType: 'number',
+                            defaultValue: 40.5
+                        },
+                        zoom: {
+                            render: 'item',
+                            name: 'Приближение',
+                            valueType: 'number',
+                            defaultValue: 2
+                        }
+                    }
+                },
                 formatter: {
                     render: 'formatter',
                     name: 'Форматирование значений',
@@ -901,6 +947,11 @@
                     var settingsContext = this.getContext().find('settings');
 
                     this._styles.settings = {
+                        startPosition: {
+                            latitude: settingsContext.find('startPosition latitude').value(),
+                            longitude: settingsContext.find('startPosition longitude').value(),
+                            zoom: settingsContext.find('startPosition zoom').value()
+                        },
                         formatter: settingsContext.find('formatter').value(),
                         infoControl: {
                             header: settingsContext.find('infoControl header').value(),
@@ -995,6 +1046,12 @@
                                     maps.push(JSB.merge(r, {
                                         data: null,
                                         path: 'geojson/moscowAO.json'
+                                    }));
+                                    break;
+                                case 'moscowAO_КСП':
+                                    maps.push(JSB.merge(r, {
+                                        data: null,
+                                        path: 'geojson/moscowAO_КСП.json'
                                     }));
                                     break;
                                 case 'moscowMO':
@@ -1442,8 +1499,8 @@
         _buildChart: function(data){
             try {
                 var mapOpts = {
-                    center: [40.5, 40.5],
-                    zoom: 2
+                    center: [this._styles.settings.startPosition.latitude, this._styles.settings.startPosition.longitude],
+                    zoom: this._styles.settings.startPosition.zoom
                 };
 
                 if(this.map){
