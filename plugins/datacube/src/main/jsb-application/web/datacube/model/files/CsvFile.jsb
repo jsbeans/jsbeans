@@ -40,7 +40,9 @@
 				nodeType:'DataCube.CsvFileNode',
 				create: false,
 				move: true,
-				remove: true
+				remove: true, 
+				share: true,
+				rename: true
 			});
 			
 		},
