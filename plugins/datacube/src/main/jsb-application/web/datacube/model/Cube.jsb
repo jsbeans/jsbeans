@@ -760,6 +760,18 @@
 			if(name[name.length - 1] == '\"' || name[name.length - 1] == '\''){
 				name = name.substr(0, name.length - 1);
 			}
+			
+			if(name.indexOf('.') >= 0){
+				var parts = name.split(/[\.\s]/i);
+				name = '';
+				for(var i = 0; i < parts.length; i++){
+					var pName = parts[i];
+					if(i > 0){
+						pName = pName[0].toUpperCase() + pName.substr(1);
+					}
+					name += pName;
+				}
+			}
 
 			return name;
 		},

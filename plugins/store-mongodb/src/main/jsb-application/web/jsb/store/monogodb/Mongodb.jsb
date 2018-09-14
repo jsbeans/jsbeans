@@ -62,6 +62,38 @@ debugger;
         toScriptable: function(obj) {
             return MongodbHelper.toScriptable(obj, $this);
         },
+        
+        createIterator: function(iterable, opts){
+        	var cursor = iterable.iterator();
+            var closed = false;
+            return {
+                next: function(){
+                    if (cursor.hasNext()) {
+                        var value = cursor.next();
+                        if (value) {
+                            value = $this.toScriptable(value);
+                        }
+
+                        if (JSB.isNull(value)) {
+                            cursor.close();
+                        }
+                        return value;
+                    }
+                },
+                hasNext: function(){
+                	return cursor.hasNext();
+                },
+                close: function(){
+                    if (!closed) {
+                        cursor.close();
+                        if (opts && JSB.isFunction(opts.onClose)) {
+                        	opts.onClose.call($this);
+                        }
+                        closed = true;
+                    }
+                },
+            };
+        },
 
 		getMongoClient: function(url, properties) {
 		    if (url.startsWith('mongodb://')) {
@@ -75,7 +107,7 @@ debugger;
 		    var mongoClient = new MongoClient(
                 ServerAddressHelper.createServerAddress(host, port),
                 properties && (properties.user || properties.authenticationMechanism)
-                    ? new MongoCredential(properties.authenticationMechanism ? AuthenticationMechanism.valueOf(properties.authenticationMechanism) : AuthenticationMechanism.valueOf("MONGODB-CR"), properties.user, properties.db, properties.password, null)
+                    ? MongodbHelper.createMongoCredential(properties.authenticationMechanism ? AuthenticationMechanism.valueOf(properties.authenticationMechanism) : AuthenticationMechanism.valueOf("MONGODB-CR"), properties.user, properties.db, properties.password)
                     : Collections.emptyList(),
                 MongoClientOptions.builder().build(),    // TODO build from properties
                 MongoDriverInformation.builder().build() // TODO build from properties
@@ -92,18 +124,27 @@ debugger;
             client.dropDatabase(dbName);
         },
 
-        listDatabaseNames: function(){
+        listDatabaseNames: function(client, opts){
             var names = client.listDatabaseNames();
-			return $this.toScriptable(names);
+            return $this.createIterator(names, opts);
         },
 
-        listCollections: function(client, dbName){
-            var names = $this.getDB(client, dbName).getCollectionNames();
-            return $this.toScriptable(names);
+        listCollectionNames: function(client, dbName, opts){
+            var names = $this.getDB(client, dbName).listCollectionNames();
+            return $this.createIterator(names, opts);
         },
-
-        iteratedQuery: function(client, dbName, query, onClose) {
-
+        
+        listCollections: function(client, dbName, opts){
+        	var collections = $this.getDB(client, dbName).listCollections​();
+        	return $this.createIterator(collections, opts);
+        },
+        
+        listIndexes: function(client, dbName, collectionName, opts){
+        	var indexes = $this.getDB(client, dbName).getCollection(collectionName).listIndexes​();
+        	return $this.createIterator(indexes, opts);
+        },
+        
+        iteratedQuery: function(client, dbName, query, opts) {
             if (!JSB.isArray(query)) {
                 query = [query];
             }
@@ -127,34 +168,8 @@ debugger;
                     find = find[op](arg);
                 }
             }
-
-            var cursor = find.iterator();
-
-            var closed = false;
-            return {
-                next: function(){
-                    if (cursor.hasNext()) {
-                        var value = cursor.next();
-                        if (value) {
-                            value = $this.toScriptable(value);
-                        }
-
-                        if (JSB.isNull(value)) {
-                            cursor.close();
-                        }
-                        return value;
-                    }
-                },
-                close: function(){
-                    if (!closed) {
-                        cursor.close();
-                        if (JSB.isFunction(onClose)) {
-                            onClose();
-                        }
-                        closed = true;
-                    }
-                },
-            };
+            
+            return $this.createIterator(find, opts);
         },
 
         runCommand: function(client, dbName, query) {
@@ -167,7 +182,13 @@ debugger;
             $this.getDB(client, dbName).getCollection(collectionName).drop();
         },
 
-
+        count: function(client, dbName, collectionName, query){
+        	var collection = $this.getDB(client, dbName).getCollection(collectionName);
+        	if(!query){
+        		return collection.count();
+        	}
+        	return collection.count($this.toDBObject(query));
+        },
 
         _mongoError: function(obj) {
             throw new Error('MongoError: ' + obj);
