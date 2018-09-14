@@ -57,13 +57,15 @@
 		
 		collectMenuItems: function(){
 			var items = $base();
-			items.push({
-				key: 'menuSeparator',
-				element: '<div class="separator"></div>',
-				cssClass: 'menuSeparator',
-				allowHover: false,
-				allowSelect: false
-			});
+			if(items.length > 0){
+				items.push({
+					key: 'menuSeparator',
+					element: '<div class="separator"></div>',
+					cssClass: 'menuSeparator',
+					allowHover: false,
+					allowSelect: false
+				});
+			}
 			
 			items.push({
 				key: 'clearCache',

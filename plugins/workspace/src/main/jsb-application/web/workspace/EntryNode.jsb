@@ -66,30 +66,32 @@
 				
 				$this.append($this.renderer);
 				
-				var menuBtn = new Button({
-					cssClass: 'roundButton btnMenu btn10',
-					tooltip: 'Дополнительные опции',
-					onClick: function(evt){
-						var pivot = $this.$(evt.currentTarget);
-						var items = $this.collectMenuItems();
-						ToolManager.activate({
-							id: '_dwp_droplistTool',
-							cmd: 'show',
-							data: items,
-							key: 'entryMenu',
-							target: {
-								selector: pivot,
-								dock: 'bottom'
-							},
-							callback: function(key, item, evt){
-								if(item && item.callback){
-									item.callback(evt);
+				var menuItems = $this.collectMenuItems();
+				if(menuItems.length > 0){
+					var menuBtn = new Button({
+						cssClass: 'roundButton btnMenu btn10',
+						tooltip: 'Дополнительные опции',
+						onClick: function(evt){
+							var pivot = $this.$(evt.currentTarget);
+							ToolManager.activate({
+								id: '_dwp_droplistTool',
+								cmd: 'show',
+								data: menuItems,
+								key: 'entryMenu',
+								target: {
+									selector: pivot,
+									dock: 'bottom'
+								},
+								callback: function(key, item, evt){
+									if(item && item.callback){
+										item.callback(evt);
+									}
 								}
-							}
-						});
-					}
-				});
-				$this.toolbox.append(menuBtn.getElement());
+							});
+						}
+					});
+					$this.toolbox.append(menuBtn.getElement());
+				}
 
 			});
 			
