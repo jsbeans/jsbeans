@@ -55,6 +55,42 @@
 			});
 		},
 		
+		collectMenuItems: function(){
+			var items = $base();
+			items.push({
+				key: 'menuSeparator',
+				element: '<div class="separator"></div>',
+				cssClass: 'menuSeparator',
+				allowHover: false,
+				allowSelect: false
+			});
+			
+			items.push({
+				key: 'clearCache',
+				element: '<div class="icon"></div><div class="text">Очистить кэш</div>',
+				allowHover: true,
+				allowSelect: true,
+				callback: function(){
+					$this.getTargetEntry().server().invalidate(function(){
+						
+					});
+				}
+			});
+			
+			items.push({
+				key: 'updateCache',
+				element: '<div class="icon"></div><div class="text">Обновить кэш</div>',
+				allowHover: true,
+				allowSelect: true,
+				callback: function(){
+					$this.getTargetEntry().server().updateCache(function(){
+						
+					});
+				}
+			});
+			return items;
+		},
+		
 		update: function(status, bFail){
 			var statusElt = this.find('.status');
 			statusElt.empty();

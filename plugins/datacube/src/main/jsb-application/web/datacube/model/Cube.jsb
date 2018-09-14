@@ -1974,7 +1974,9 @@
 		},
 		
 		invalidate: function(){
+			$this.publish('DataCube.Model.Cube.status', {status: 'Очистка кэша', success: true}, {session: true});
 			JSB.defer(function(){
+				$this.load();
 				// invalidate slices
 				for(var slId in $this.slices){
 					var slice = $this.slices[slId];
@@ -1985,11 +1987,13 @@
 				if($this.queryCache){
 					$this.queryCache.clear();
 				}
+				$this.publish('DataCube.Model.Cube.status', {status: null, success: true}, {session: true});
 			}, 300, 'invalidate_' + this.getId());
 		},
 		
 		updateCache: function(){
 			JSB.defer(function(){
+				$this.load();
 				$this.lock('DataCube.Model.Cube.updateCache');
 				$this.updatingCache = true;
 				try {

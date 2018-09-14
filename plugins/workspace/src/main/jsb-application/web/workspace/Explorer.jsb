@@ -347,6 +347,7 @@
 				var explorerNodeTypes = wInfo.explorerNodeTypes;
 				$this.currentWorkspace = w;
 				$this.explorerNodeTypes = explorerNodeTypes;
+				$this.browserViewTypes = wInfo.browserViewTypes;
 				$this.publish('JSB.Workspace.changeWorkspace', w);
 
 				// upload all node type beans
@@ -953,10 +954,12 @@
 		    var key = JSB().generateUid();
 			var node = null;
 			var nodeSlice = this.explorerNodeTypes;
+			var viewSlice = this.browserViewTypes;
 			var targetEntry = itemDesc.entry;
 			if(targetEntry.isLink()){
 				targetEntry = targetEntry.getTargetEntry();
 			}
+			var nodeInfo = nodeSlice[targetEntry.getJsb().$name];
 			var nodeType = nodeSlice[targetEntry.getJsb().$name].nodeType;
 			if(!nodeType || !JSB.get(nodeType)){
 				return null;
@@ -964,9 +967,9 @@
 			var nodeCls = JSB.get(nodeType).getClass();
 			node = new nodeCls({
 				descriptor: itemDesc,
-				allowOpen: true,
-				allowEdit: true,
-				allowShare: true
+				allowOpen: viewSlice && viewSlice[nodeType] && viewSlice[nodeType].length > 0,
+				allowEdit: JSB.isDefined(nodeInfo.rename) ? nodeInfo.rename : JSB.isDefined(nodeInfo.create) ? nodeInfo.create: true,
+				allowShare: JSB.isDefined(nodeInfo.share) ? nodeInfo.share: true
 			});
 			this.wTreeMap[itemDesc.entry.getId()] = {
                 id: itemDesc.entry.getId(),
@@ -1490,9 +1493,11 @@
 			}
 			$this.currentWorkspace = WorkspaceController.getWorkspace(wId);
 			$this.explorerNodeTypes = WorkspaceController.constructExplorerNodeTypeSlice($this.currentWorkspace.getWorkspaceType());
+			$this.browserViewTypes = WorkspaceController.constructBrowserViewSlice($this.currentWorkspace.getWorkspaceType());
 			return {
 				workspace: $this.currentWorkspace, 
-				explorerNodeTypes: $this.explorerNodeTypes
+				explorerNodeTypes: $this.explorerNodeTypes,
+				browserViewTypes: $this.browserViewTypes
 			};
 		},
 		
@@ -1645,9 +1650,6 @@
 			var nTree = {};
 			for(var chId in children){
 				var chEntry = children[chId];
-/*				if(!chEntry.getName()){
-					debugger;
-				}*/
 				var isLink = false;
 				var linkEntry = null;
 				if(chEntry.isLink()){
