@@ -143,13 +143,13 @@
 	    },
 	    showHeader: {
 	        render: 'item',
-	        name: 'Показывать заголовки столбцов',
+	        name: 'Отображать заголовок',
 	        optional: 'checked',
 	        editor: 'none'
 	    },
 	    showGrid: {
             render: 'item',
-            name: 'Показывать сетку',
+            name: 'Отображать сетку',
 	        optional: 'checked',
 	        editor: 'none'
 	    },
@@ -180,7 +180,7 @@
 	            
 	            showSortIcon: {
 	                render: 'item',
-	                name: 'Не скрывать значок сортировки',
+	                name: 'Отображать значок сортировки',
 					optional: 'checked',
 					editor: 'none'
 	            },
@@ -258,7 +258,7 @@
 	    	            },
 	    	            showRowToolTip: {
 	    	            	render: 'switch',
-	    	            	name: 'Показывать виджет в выноске',
+	    	            	name: 'Отображать виджет в выноске',
 	    	            	items: {
 	    	            		toolWidgetType: {
 	    	            			render: 'select',
