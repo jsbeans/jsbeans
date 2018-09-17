@@ -148,6 +148,25 @@
 	            }
 	        }
 
+	        var keys = Object.keys(this._scheme.items);
+
+	        keys.sort(function(a, b){
+	            var aPriority = $this._scheme.items[a].priority || 0.5,
+	                bPriority = $this._scheme.items[b].priority || 0.5;
+
+                if(aPriority > bPriority){
+                    return -1;
+                }
+
+                if(aPriority < bPriority){
+                    return 1;
+                }
+
+                if(aPriority === bPriority){
+                    return 0;
+                }
+	        });
+
 	        if(this._scheme.multiple){
 	            var item = this.$('<div class="multipleItem"></div>');
 
@@ -165,16 +184,18 @@
                     `);
                 }
 
-                for(var i in this._scheme.items){
-                    if(!this._scheme.items[i].render){
+                for(var i = 0; i < keys.length; i++){
+                    var k = keys[i];
+
+                    if(!this._scheme.items[k].render){
                         continue;
                     }
 
-                    if(!values[i]){
-                        values[i] = {};
+                    if(!values[k]){
+                        values[k] = {};
                     }
 
-                    var render = this.createRender(i, this._scheme.items[i], values[i], { name: name });
+                    var render = this.createRender(k, this._scheme.items[k], values[k], { name: name });
 
                     if(render){
                         item.append(render.getElement());
@@ -197,16 +218,18 @@
 
                 this.multipleBtn.before(item);
 	        } else {
-                for(var i in this._scheme.items){
-                    if(!this._scheme.items[i].render){
+                for(var i = 0; i < keys.length; i++){
+                    var k = keys[i];
+
+                    if(!this._scheme.items[k].render){
                         continue;
                     }
 
-                    if(!values[i]){
-                        values[i] = {};
+                    if(!values[k]){
+                        values[k] = {};
                     }
 
-                    var render = this.createRender(i, this._scheme.items[i], values[i])
+                    var render = this.createRender(k, this._scheme.items[k], values[k])
                     if(render){
                         this.group.appendContent(render);
                     }

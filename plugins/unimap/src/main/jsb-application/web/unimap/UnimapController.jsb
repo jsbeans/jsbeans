@@ -49,16 +49,37 @@
         },
 
 	    construct: function(){
-	        for(var i in this._scheme){
-	            if(!this._scheme[i].render){
+	        var keys = Object.keys(this._scheme);
+
+	        keys.sort(function(a, b){
+	            var aPriority = $this._scheme[a].priority || 0.5,
+	                bPriority = $this._scheme[b].priority || 0.5;
+
+                if(aPriority > bPriority){
+                    return -1;
+                }
+
+                if(aPriority < bPriority){
+                    return 1;
+                }
+
+                if(aPriority === bPriority){
+                    return 0;
+                }
+	        });
+
+	        for(var i = 0; i < keys.length; i++){
+	            var k = keys[i];
+
+	            if(!this._scheme[k].render){
 	                continue;
 	            }
 
-	            if(!this._values[i]){
-	                this._values[i] = {}
+	            if(!this._values[k]){
+	                this._values[k] = {}
 	            }
 
-	            var render = this.createRender(null, i, this._scheme[i], this._values[i]);
+	            var render = this.createRender(null, k, this._scheme[k], this._values[k]);
 	            if(render){
 	                this.append(render);
 	            }
