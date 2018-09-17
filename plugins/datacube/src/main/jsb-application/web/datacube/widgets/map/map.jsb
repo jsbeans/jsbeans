@@ -916,6 +916,7 @@
                         this._deselectFeature(i);
                     }
                     this._curFilters = {};
+                    this.ready();
                     return;
                 }
                 this._curFilterHash = null;
@@ -2090,7 +2091,8 @@
                     continue;
                 }
 
-                if(name.indexOf(region) > -1){
+                //if(name.indexOf(region) > -1){
+                if(name === region){
                     return {
                         index: j,
                         region: array[j]
