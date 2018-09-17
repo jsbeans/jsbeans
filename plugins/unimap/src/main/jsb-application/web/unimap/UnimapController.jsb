@@ -50,10 +50,13 @@
 
 	    construct: function(){
 	        var keys = Object.keys(this._scheme);
+	        for(var i = 0; i < keys.length; i++){
+	        	this._scheme[keys[i]]._order = i;
+	        }
 
 	        keys.sort(function(a, b){
-	            var aPriority = $this._scheme[a].priority || 0.5,
-	                bPriority = $this._scheme[b].priority || 0.5;
+	            var aPriority = JSB.isDefined($this._scheme[a].priority) ? $this._scheme[a].priority : 0.5,
+	                bPriority = JSB.isDefined($this._scheme[b].priority) ? $this._scheme[b].priority : 0.5;
 
                 if(aPriority > bPriority){
                     return -1;
@@ -62,10 +65,8 @@
                 if(aPriority < bPriority){
                     return 1;
                 }
-
-                if(aPriority === bPriority){
-                    return 0;
-                }
+                
+                return $this._scheme[a]._order - $this._scheme[b]._order;
 	        });
 
 	        for(var i = 0; i < keys.length; i++){

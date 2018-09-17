@@ -334,7 +334,7 @@
 		},
 		
 		getWidget: function(){
-			return this.mainWidget;
+			return $this.currentWidget;
 		},
 
 		setWidgetInitialized: function(){

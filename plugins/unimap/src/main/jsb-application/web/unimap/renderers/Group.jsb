@@ -149,10 +149,13 @@
 	        }
 
 	        var keys = Object.keys(this._scheme.items);
+	        for(var i = 0; i < keys.length; i++){
+	        	this._scheme.items[keys[i]]._order = i;
+	        }
 
 	        keys.sort(function(a, b){
-	            var aPriority = $this._scheme.items[a].priority || 0.5,
-	                bPriority = $this._scheme.items[b].priority || 0.5;
+	            var aPriority = JSB.isDefined($this._scheme.items[a].priority) ? $this._scheme.items[a].priority : 0.5,
+	                bPriority = JSB.isDefined($this._scheme.items[b].priority) ? $this._scheme.items[b].priority : 0.5;
 
                 if(aPriority > bPriority){
                     return -1;
@@ -162,9 +165,7 @@
                     return 1;
                 }
 
-                if(aPriority === bPriority){
-                    return 0;
-                }
+                return $this._scheme.items[a]._order - $this._scheme.items[b]._order;
 	        });
 
 	        if(this._scheme.multiple){
