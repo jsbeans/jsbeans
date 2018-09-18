@@ -4,7 +4,9 @@
 
     createDefaultValues: function(key, scheme, values, opts){
         $base(key, scheme, values, opts);
-
+        if(!scheme.items || Object.keys(scheme.items).length == 0){
+        	return;
+        }
         var val = Object.keys(scheme.items)[0];
 
         values.values[0] = {
