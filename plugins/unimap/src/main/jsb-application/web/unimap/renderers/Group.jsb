@@ -115,6 +115,10 @@
 	            if(!this._scheme.multiple || JSB.isObject(this._scheme.multiple) && this._scheme.multiple.createDefault){
                     this.addItem(null, 0);
                 }
+
+                if(!this._scheme.items || Object.keys(this._scheme.items).length === 0){
+                    this.addClass('hidden');
+                }
             }
 	    },
 
