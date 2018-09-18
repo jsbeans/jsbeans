@@ -1499,10 +1499,7 @@
 				
 				entry.lastTimestamp = Date.now();
 				entry.property('lastTimestamp', entry.lastTimestamp);
-/*				
-				entry.fileSize = $this.getFileSize();
-				entry.property('fileSize', entry.fileSize);
-*/				
+				
 				dbSource.extractScheme();
 			} finally {
 				if(mInst){
