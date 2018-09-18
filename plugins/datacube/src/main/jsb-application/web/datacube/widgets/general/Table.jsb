@@ -137,22 +137,33 @@
 		2HQfguy2bp97RnGMKxpfeP217f8TYADeMEj5cXfIoQAAAABJRU5ErkJggg==`
 	},
 	$scheme: {
+		common: {
+			items: {
+				showHeader: {
+			        render: 'item',
+			        name: 'Отображать заголовок',
+			        optional: 'checked',
+			        editor: 'none'
+			    },
+			    showGrid: {
+		            render: 'item',
+		            name: 'Отображать сетку',
+			        optional: 'checked',
+			        editor: 'none'
+			    },
+			    showSortIcon: {
+	                render: 'item',
+	                name: 'Отображать значок сортировки',
+					optional: 'checked',
+					editor: 'none'
+	            },
+			}
+		},
 	    rows: {
 	        render: 'sourceBinding',
 	        name: 'Источник'
 	    },
-	    showHeader: {
-	        render: 'item',
-	        name: 'Показывать заголовки столбцов',
-	        optional: 'checked',
-	        editor: 'none'
-	    },
-	    showGrid: {
-            render: 'item',
-            name: 'Показывать сетку',
-	        optional: 'checked',
-	        editor: 'none'
-	    },
+	    
 	    rowSettings: {
 	        render: 'group',
 	        name: 'Строки',
@@ -178,12 +189,6 @@
 					editor: 'none'
 	            },
 	            
-	            showSortIcon: {
-	                render: 'item',
-	                name: 'Не скрывать значок сортировки',
-					optional: 'checked',
-					editor: 'none'
-	            },
 	            useTree: {
 	                render: 'switch',
 	                name: 'Формировать дерево',
@@ -258,7 +263,7 @@
 	    	            },
 	    	            showRowToolTip: {
 	    	            	render: 'switch',
-	    	            	name: 'Показывать виджет в выноске',
+	    	            	name: 'Отображать виджет в выноске',
 	    	            	items: {
 	    	            		toolWidgetType: {
 	    	            			render: 'select',

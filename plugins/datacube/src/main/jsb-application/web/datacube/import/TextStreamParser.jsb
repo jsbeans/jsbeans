@@ -1,6 +1,6 @@
 {
 	$name: 'DataCube.TextStreamParser',
-	$parent: 'DataCube.Parser',
+	$parent: 'DataCube.FileParser',
 	$session: false,
 	$scheme: {
 		parserSettings: {

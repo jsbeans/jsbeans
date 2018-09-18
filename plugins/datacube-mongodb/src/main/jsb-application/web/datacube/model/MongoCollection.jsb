@@ -24,7 +24,9 @@
 				nodeType:'DataCube.MongoCollectionNode',
 				create: false,
 				move: false,
-				remove: false
+				remove: false,
+				share: false,
+				rename: false
 			});
 		},
 

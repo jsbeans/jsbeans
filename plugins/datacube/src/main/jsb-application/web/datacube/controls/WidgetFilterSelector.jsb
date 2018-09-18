@@ -44,7 +44,9 @@
 		
 		updateVisibility: function(){
 			var filtersCount = Object.keys(this.filters).length;
-			if(filtersCount > 0){
+			var bFiltersEnabled = this.getOwner() && this.getOwner().getWidget() && this.getOwner().getWidget().getContext().find('common > showFilters').checked();
+			
+			if(filtersCount > 0 && bFiltersEnabled){
 				if(!this.visible){
 					this.getElement().css('height', 18);
 					this.visible = true;

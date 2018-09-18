@@ -16,7 +16,9 @@
 				nodeType:'JSB.Workspace.FileNode',
 				create: false,
 				move:true,
-				remove: true
+				remove: true,
+				share: true,
+				rename: true
 			});
 		},
 
