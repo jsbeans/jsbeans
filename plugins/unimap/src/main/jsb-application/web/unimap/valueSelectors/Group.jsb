@@ -48,6 +48,10 @@
             return;
         }
 
+        if(!scheme.items || Object.keys(scheme.items).length === 0){
+            return;
+        }
+
         var val = {};
         values.values.push(val);
 
