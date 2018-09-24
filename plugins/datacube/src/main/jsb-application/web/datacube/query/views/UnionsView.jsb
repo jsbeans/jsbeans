@@ -46,7 +46,7 @@
 		        from.$union.push(inner);
 		        for(var field in inner.$select) {
 		            if (!from.$select[field]) {
-		                from.$select[field] = inner.$select[field];
+		                from.$select[field] = field; //inner.$select[field];
                     }
 		        }
 		    }

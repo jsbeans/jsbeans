@@ -29,11 +29,11 @@
         withContextViews: {},
         
         $bootstrap: function(){
-        	TranslatorRegistry.register(this);
+//        	TranslatorRegistry.register(this);
         },
 
-		$constructor: function(providerOrProviders, cubeOrQueryEngine){
-		    $base(providerOrProviders, cubeOrQueryEngine);
+		$constructor: function(providerOrProviders, cube){
+		    $base(providerOrProviders, cube);
 		    $this.config = {
 //		        printIsolatedQueriesInWith: Config.get('datacube.query.translateExtractedIsolatedViews'),
 //		        excludeProviderWrappers: Config.get('datacube.query.excludeProviderWrappers'),
@@ -42,11 +42,11 @@
 		},
 
 		translateQuery: function() {
-		    $this._verifyFields();
+//		    $this._verifyFields();
 
 		    // build QueryView and nested views
 		    $this.buildViews();
-		    $this._buildUsedFields();
+//		    $this._buildUsedFields();
 
 		    // translate query
 		    var sql = $this.translateQueryExpression($this.dcQuery);
@@ -149,30 +149,9 @@
 		    return new Error(message);
 		},
 
-		_buildUsedFields: function(){
-            // check if query without source or build cube
-            var usedFields = {/**usages*/};
-            if(!$this.cube) {
-                QueryUtils.walkDataProviderFields($this.dcQuery, /**includeSubQueries=*/true, $this.providers[0],
-                    function(field, context, query){
-                        if (!usedFields[field]) {
-                            usedFields[field] = 0;
-                        }
-                        usedFields[field]++;
-                    }
-                );
-            } else {
-                QueryUtils.walkCubeFields($this.dcQuery, /**includeSubQueries=*/true, $this.cube,
-                    function(field, context, query, binding){
-                        if (!usedFields[field]) {
-                            usedFields[field] = 0;
-                        }
-                        usedFields[field]++;
-                    }
-                );
-            }
-            $this.usedFields = usedFields;
-		},
+//		_buildUsedFields: function(){
+//            $this.usedFields = QueryUtils.extractInputFields($this.dcQuery, $this.cube, function(name){return $this.dcQuery.$views[name];});
+//		},
 
         _translateWith: function(query){
             if (query.$context != $this.dcQuery) {
@@ -649,7 +628,7 @@
             }
 
             var query = view.getQuery();
-            var filter = QueryUtils.filterFilterByFields(query.$filter || {}, function(filteredField, filteredExpr){
+            var filter = QueryUtils.filterFilterByFields(query.$filter || {}, query, function(filteredField, filteredExpr){
                 return whereOrHaving
                         ? !isHaving.call(null, filteredField, filteredExpr)
                         : isHaving.call(null, filteredField, filteredExpr);
@@ -670,6 +649,7 @@
         },
 
         _translateUnionsView: function(unionsView) {
+debugger
             var unionsFields = unionsView.listFields();
             var views = unionsView.listViews();
             var sqlUnions = ''
@@ -677,11 +657,6 @@
                 var view = views[v];
                 var fieldsSql = '';
                 for (var f in unionsFields) {
-                    if (!$this.usedFields[unionsFields[f]]) {
-                        /// skip unused field
-                        continue;
-                    }
-
                     var field = unionsFields[f];
                     var viewField = view.getField(field);
                     if (fieldsSql.length > 0) fieldsSql += ', ';
@@ -705,7 +680,7 @@
                 if (sqlUnions.length > 0) sqlUnions  += ' UNION ALL ';
                 sqlUnions += viewSql;
             }
-            sqlUnions = '(' + sqlUnions + ') AS ' + $this._quotedName($this._translateContext(unionsView.getContext()));
+//            sqlUnions = '(' + sqlUnions + ') AS ' + $this._quotedName($this._translateContext(unionsView.getContext()));
             return sqlUnions;
         },
 

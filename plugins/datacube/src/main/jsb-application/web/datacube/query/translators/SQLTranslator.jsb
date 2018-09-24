@@ -15,14 +15,12 @@
         ],
         
         $bootstrap: function(){
-        	TranslatorRegistry.register(this);
+//        	TranslatorRegistry.register(this);
         },
 
-		$constructor: function(providerOrProviders, cubeOrQueryEngine){
-		    $base(providerOrProviders, cubeOrQueryEngine);
-		    if ($this.cube) {
-		        $this.cubeFields = $this.cube.getManagedFields();
-            }
+		$constructor: function(providerOrProviders, cube){
+		    $base(providerOrProviders, cube);
+		    $this.cubeFields = $this.cube.getManagedFields();
 		},
 
 		translatedQueryIterator: function(dcQuery, params){
@@ -72,7 +70,7 @@
 //            return context;
             if (!$this._translatedContexts[context]) {
                 var name = $this._translatedContexts[context] = 'Q'+Object.keys($this._translatedContexts).length;
-//                QueryUtils.logDebug('Query context: {} = {}',name, context);
+                QueryUtils.logDebug('Query context: {} = {}',name, context);
                 return name;
 
             }
@@ -246,15 +244,24 @@
             var op = Object.keys(exp)[0];
             // const or field
             switch(op) {
+                case '$type':
                 case '$const':
-                    if (JSB.isString(exp[op])) {
-                        return "'" + exp[op] + "'"
-                    } else if (JSB.isNumber(exp[op])) {
-                        return '' + exp[op];
-                    } else if (JSB.isBoolean(exp[op])) {
-                        return ('' + exp[op]).toUpperCase();
-                    } else if (exp[op] == null) {
-                        return 'NULL';
+                    if (JSB.isString(exp.$const)) {
+                        return "'" + exp.$const + "'"
+                    } else if (JSB.isNumber(exp.$const)) {
+                        return '' + exp.$const;
+                    } else if (JSB.isBoolean(exp.$const)) {
+                        return ('' + exp.$const).toUpperCase();
+                    } else if (exp.$const == null) {
+                        if (exp.$type) {
+                            var jdbcType = JDBC.translateType(exp.$type, $this.vendor);
+                            if (/^bit$/i.test(jdbcType)) {
+                                jdbcType = 'BOOLEAN';
+                            }
+                            return 'NULL::' + jdbcType;
+                        } else {
+                            return 'NULL';
+                        }
                     }
                     throw new Error('Unsupported $const type ' + typeof exp[op]);
                 case '$field':
@@ -309,13 +316,13 @@
                     return 'LEAST(' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
 
                 case '$splitString':
-                    return 'string_to_array(' + this._translateExpression(exp[op].$field, dcQuery, useAlias) + ", '" + exp[op].$separator + "'" + ')';
+                    return 'string_to_array(' + this._translateExpression(exp[op].$value, dcQuery, useAlias) + ", '" + exp[op].$separator + "'" + ')';
                 case '$substring':
-                    return 'substring(' + this._translateExpression(exp[op].$field, dcQuery, useAlias) + " for " + exp[op].$length + ')';
+                    return 'substring(' + this._translateExpression(exp[op].$value, dcQuery, useAlias) + " for " + exp[op].$length + ')';
                 case '$trim':
                     return 'TRIM(both from ' + this._translateExpression(exp[op], dcQuery, useAlias) + ')';
                 case '$regexpReplace':
-                    return 'REGEXP_REPLACE(' + this._translateExpression(exp[op].$field, dcQuery, useAlias)
+                    return 'REGEXP_REPLACE(' + this._translateExpression(exp[op].$value, dcQuery, useAlias)
                         + ', \'' + exp[op].$pattern + '\', \'' + exp[op].$replacementString + '\', \'' + exp[op].$flags + '\')';
 
 
@@ -351,7 +358,7 @@
                     return 'extract(second from ' + (this._translateExpression(exp[op], dcQuery, useAlias)) + ')';
 
                 case '$dateIntervalOrder':
-                    return 'CAST((extract(epoch from ' + (this._translateExpression(exp.$dateIntervalOrder.$field, dcQuery, useAlias)) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
+                    return 'CAST((extract(epoch from ' + (this._translateExpression(exp.$dateIntervalOrder.$value, dcQuery, useAlias)) + ')/' + exp.$dateIntervalOrder.$seconds + ') as int)';
             }
 
             // aggregate operators
@@ -775,7 +782,6 @@
 
             //      if single provider - simple SELECT from provider`s table
             if (Object.keys(providers).length == 1) {
-                var sql = buildSingleTableAndFieldsMap(allFields, providers, fieldsMap);
                 return sql;
             }
 

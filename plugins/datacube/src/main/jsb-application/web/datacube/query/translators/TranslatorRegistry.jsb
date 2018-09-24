@@ -3,7 +3,10 @@
 	$singleton: true,
 
 	$server: {
-		$require: ['JSB.System.Config'],
+		$require: [
+		    'JSB.System.Config',
+		    'DataCube.Query.QueryUtils'
+        ],
 
         _dataProviderTranslator: {},
         
@@ -41,6 +44,7 @@
 		},
 
 		newTranslator: function(providerOrProviders, cube){
+		    QueryUtils.assert(cube, 'Cube is undefined');
 		    var dataProvider = JSB.isArray(providerOrProviders) ? providerOrProviders[0] : providerOrProviders;
 		    var translatorName = $this.fixedTranslator  || this._dataProviderTranslator[dataProvider.getJsb().$name ];
 		    if (!translatorName) {

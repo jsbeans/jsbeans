@@ -9,6 +9,8 @@
 
 		    'DataCube.Query.Views.CubeViewsBuilder',
         ],
+
+        $deprecated: 'код устарел относительно текущей версии движка',
         
         $bootstrap: function(){
         	QueryTransformer.register(this);
