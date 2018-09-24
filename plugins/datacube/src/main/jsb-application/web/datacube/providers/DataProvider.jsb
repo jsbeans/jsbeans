@@ -28,6 +28,10 @@
 		return this.options[opt];
 	},
 	
+	getEntry: function(){
+		return this.entry;
+	},
+	
 	$server: {
 		$disableRpcInstance: true,
 		

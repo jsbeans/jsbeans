@@ -93,6 +93,9 @@
 			
 			var comma = this.getContext().find('delimiter').value();
 			var quote = this.getContext().find('escapeChar').value();
+			if(quote == '\''){
+				quote = '\\\'';
+			}
 			var useHeader = this.getContext().find('header').checked();
 			var resolveTypes = this.getContext().find('resolveTypes').checked();
 			var trimValues = this.getContext().find('trimValues').checked();

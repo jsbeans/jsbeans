@@ -18,7 +18,7 @@
 				$this.update();
 			});
 			
-			this.subscribe('DataCube.Model.SqlSource.extractScheme', {session: true}, function(sender, msg, params){
+			this.subscribe('DataCube.Model.MongoSource.extractScheme', {session: true}, function(sender, msg, params){
 				if(sender != $this.getTargetEntry()){
 					return;
 				}
@@ -37,7 +37,7 @@
 			if(!details || !details.updated){
 				this.find('.status').empty().text('Схема не загружена');
 			} else {
-				this.find('.status').empty().append('Схем: <span class="count">' + details.schemes + '</span>; таблиц: <span class="count">' + details.tables + '</span>; столбцов: <span class="count">' + details.columns + '</span>');
+				this.find('.status').empty().append('Коллекций: <span class="count">' + details.collections + '</span>; индексов: <span class="count">' + details.indexes + '</span>; записей: <span class="count">' + details.items + '</span>');
 			}
 		}
 		

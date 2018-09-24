@@ -385,7 +385,6 @@
 			this.entry = entry;
 			this.values = values;
 			
-			this.fileSize = entry.getFileSize();
 			this.lastProgress = -1;
 			
 			this.context = new ValueSelector({
@@ -418,9 +417,6 @@
 			});
 		},
 		
-		getFileSize: function(){
-			return this.fileSize;
-		},
 		
 		getParserScheme: function(jsb){
 			if(!jsb || !jsb.getDescriptor() || !jsb.isSubclassOf('DataCube.Parser')){
@@ -1107,6 +1103,10 @@
 			throw new Error('This method should be overriden');
 		},
 		
+		getSourcePreview: function(){
+			return null;
+		},
+		
 		analyze: function(){
 			this.mode = 0;	// analyze mode
 			this.useHeuristics = this.getContext().find('useHeuristics').checked();
@@ -1499,9 +1499,6 @@
 				
 				entry.lastTimestamp = Date.now();
 				entry.property('lastTimestamp', entry.lastTimestamp);
-				
-				entry.fileSize = $this.getFileSize();
-				entry.property('fileSize', entry.fileSize);
 				
 				dbSource.extractScheme();
 			} finally {

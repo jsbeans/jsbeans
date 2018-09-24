@@ -47,7 +47,8 @@
 	vertical-align: top;
 	background-color: #e8d9c8;
 	width: 350px;
-    min-height: 250px;
+	height: 300px;
+    min-height: 300px;
     max-height: 300px;
 	border: 1px solid rgb(197, 153, 90);
     border-radius: 4px;

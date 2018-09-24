@@ -1,6 +1,5 @@
 ({
 	$name: 'JSB.Store.Sql.SQLSchemaInspector',
-	$parent: 'JSB.Store.DataStore',
 
 	$server: {
 		$require: ['java:java.sql.JDBCType'],

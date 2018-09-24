@@ -1,9 +1,13 @@
 package org.jsbeans.store.mongodb;
 
+import com.mongodb.AuthenticationMechanism;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.MongoCredential;
+
 import org.bson.BSONObject;
+import org.bson.BsonTimestamp;
 import org.bson.types.BSONTimestamp;
 import org.bson.types.ObjectId;
 import org.jsbeans.serialization.GsonWrapper;
@@ -23,6 +27,10 @@ public class MongodbHelper {
     private static Pattern objectidPtr = Pattern.compile("^\\s*new\\s+ObjectId\\s*\\(([\"']?[A-Fa-f0-9]+[\"']?)?\\)\\s*$", 0);
 
 
+    public static MongoCredential createMongoCredential(AuthenticationMechanism authMechanism, String user, String db, String password){
+    	return MongoCredential.createCredential(user, db, password.toCharArray()).withMechanism(authMechanism);
+    }
+    
     @SuppressWarnings("unchecked")
     public static Object toDBObject(Object obj) {
         if (obj == null) {
@@ -111,6 +119,11 @@ public class MongodbHelper {
         if (obj instanceof BSONObject) {
             BSONObject bson = (BSONObject) obj;
             return toScriptable(bson.toMap(), ctx, scope);
+        } else if(obj instanceof ObjectId){
+        	return toScriptable(obj.toString(), ctx, scope);
+        } else if(obj instanceof BsonTimestamp){
+        	BsonTimestamp timestamp = (BsonTimestamp)obj;
+        	return toScriptable(timestamp.getValue(), ctx, scope);
         } else if (obj instanceof Map) {
             Map<Object, Object> map = (Map<Object, Object>) obj;
             Scriptable result = ctx.newObject(scope);

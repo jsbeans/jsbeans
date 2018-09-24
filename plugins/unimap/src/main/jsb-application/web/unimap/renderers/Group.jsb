@@ -112,6 +112,11 @@
 	                this.addItem(this._values.values[i], i);
 	            }
 	        } else {
+                if(!this._scheme.items || Object.keys(this._scheme.items).length === 0){
+                    this.addClass('hidden');
+                    return;
+                }
+
 	            if(!this._scheme.multiple || JSB.isObject(this._scheme.multiple) && this._scheme.multiple.createDefault){
                     this.addItem(null, 0);
                 }
@@ -148,6 +153,26 @@
 	            }
 	        }
 
+	        var keys = Object.keys(this._scheme.items);
+	        for(var i = 0; i < keys.length; i++){
+	        	this._scheme.items[keys[i]]._order = i;
+	        }
+
+	        keys.sort(function(a, b){
+	            var aPriority = JSB.isDefined($this._scheme.items[a].priority) ? $this._scheme.items[a].priority : 0.5,
+	                bPriority = JSB.isDefined($this._scheme.items[b].priority) ? $this._scheme.items[b].priority : 0.5;
+
+                if(aPriority > bPriority){
+                    return -1;
+                }
+
+                if(aPriority < bPriority){
+                    return 1;
+                }
+
+                return $this._scheme.items[a]._order - $this._scheme.items[b]._order;
+	        });
+
 	        if(this._scheme.multiple){
 	            var item = this.$('<div class="multipleItem"></div>');
 
@@ -165,16 +190,18 @@
                     `);
                 }
 
-                for(var i in this._scheme.items){
-                    if(!this._scheme.items[i].render){
+                for(var i = 0; i < keys.length; i++){
+                    var k = keys[i];
+
+                    if(!this._scheme.items[k].render){
                         continue;
                     }
 
-                    if(!values[i]){
-                        values[i] = {};
+                    if(!values[k]){
+                        values[k] = {};
                     }
 
-                    var render = this.createRender(i, this._scheme.items[i], values[i], { name: name });
+                    var render = this.createRender(k, this._scheme.items[k], values[k], { name: name });
 
                     if(render){
                         item.append(render.getElement());
@@ -197,16 +224,18 @@
 
                 this.multipleBtn.before(item);
 	        } else {
-                for(var i in this._scheme.items){
-                    if(!this._scheme.items[i].render){
+                for(var i = 0; i < keys.length; i++){
+                    var k = keys[i];
+
+                    if(!this._scheme.items[k].render){
                         continue;
                     }
 
-                    if(!values[i]){
-                        values[i] = {};
+                    if(!values[k]){
+                        values[k] = {};
                     }
 
-                    var render = this.createRender(i, this._scheme.items[i], values[i])
+                    var render = this.createRender(k, this._scheme.items[k], values[k])
                     if(render){
                         this.group.appendContent(render);
                     }

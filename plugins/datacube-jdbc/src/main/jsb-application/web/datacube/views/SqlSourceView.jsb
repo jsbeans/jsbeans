@@ -4,7 +4,6 @@
 	
 	$client: {
 		$require: 'JSB.Widgets.SplitLayoutManager',
-		ready: false,
 		ignoreHandlers: false,
 		
 		$constructor: function(opts){
@@ -55,14 +54,19 @@
 								<div class="icon"></div>
 								<div class="message"></div>
 							</div>
-							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnClearCache" caption="Очистить кэш с данными"
-								onclick="{{=this.callbackAttr(function(evt){$this.clearCache()})}}"></div>
-							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnUpdateCache" caption="Обновить кэш с данными"
-								onclick="{{=this.callbackAttr(function(evt){$this.updateCache()})}}"></div>
-
-
 						</div>
 						<div class="option details"></div>
+					</div>
+					
+					<div jsb="JSB.Widgets.GroupBox" caption="Кэш" class="cache">
+						<div class="option buttons">
+							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnClearCache" caption="Очистить кэш"
+								onclick="{{=this.callbackAttr(function(evt){$this.clearCache()})}}">
+							</div>
+							<div jsb="JSB.Widgets.Button" class="roundButton btn16 btnUpdateCache" caption="Обновить кэш"
+								onclick="{{=this.callbackAttr(function(evt){$this.updateCache()})}}">
+							</div>
+						</div>
 					</div>
 				</div>
 			`);
@@ -75,7 +79,7 @@
 			});
 			
 			JSB.deferUntil(function(){
-				$this.ready = true;
+				$this.setTrigger('ready');
 			}, function(){
 				return $this.isContentReady();
 			});
@@ -192,21 +196,15 @@
 		},
 		
 		refresh: function(){
-			if(!this.ready){
-				JSB.deferUntil(function(){
-					$this.refresh();
-				}, function(){
-					return $this.ready;
+			$this.ensureTrigger('ready', function(){
+				var entry = $this.node.getTargetEntry();
+				entry.server().getSettings(function(settings){
+					$this.fillSettings(settings);
+					$this.updateButtons();
 				});
-				return;
-			}
-			var entry = this.node.getTargetEntry();
-			entry.server().getSettings(function(settings){
-				$this.fillSettings(settings);
-				$this.updateButtons();
-			});
-			entry.server().getDetails(function(details){
-				$this.fillDetails(details);
+				entry.server().getDetails(function(details){
+					$this.fillDetails(details);
+				});
 			});
 		}
 		

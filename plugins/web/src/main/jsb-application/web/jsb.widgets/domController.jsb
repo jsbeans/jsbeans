@@ -229,7 +229,7 @@
 			var jVal = null;
 			// try to eval
 			try {
-				jVal = eval(tVal);
+				jVal = eval('(' + tVal + ')');
 			} catch(e){
 				jVal = val;
 			}

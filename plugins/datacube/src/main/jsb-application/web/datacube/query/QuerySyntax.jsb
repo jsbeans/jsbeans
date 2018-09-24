@@ -173,6 +173,10 @@
 		                '$postFilter', '$cubeFilter', '$sort', '$finalize',
 		                '$sql','$limit', '$offset', '$views',
 		                '$from', '$join', '$union', '$cube', '$provider'],
+		        incompatible: [
+		            ['$from', '$join', '$union', '$cube', '$provider']
+		        ]
+		        /*
 		        incompatible: {
 		            $from:     ['$join', '$union', '$cube', '$provider'],
 		            $cube:     ['$from', '$join', '$union', '$provider'],
@@ -180,6 +184,7 @@
 		            $join:     ['$from', '$union', '$cube', '$provider'],
 		            $union:    ['$from', '$join', '$cube', '$provider'],
 		        }
+		        */
 		    });
 
 		    new this.ComplexObject({
@@ -343,7 +348,6 @@
 		        maxOperands: -1,
 		        values: ['$const', '$expression', '$query', '$field', '$param'],
 		    });
-
 
 		    new this.SingleObject({
 		        name: '$sqrt',

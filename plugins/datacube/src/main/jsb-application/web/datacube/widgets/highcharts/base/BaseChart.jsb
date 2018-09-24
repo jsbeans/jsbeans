@@ -6,6 +6,11 @@
 	        render: 'sourceBinding',
 	        name: 'Источник'
 	    },
+	    
+	    common: {
+	    	collapsible: true,
+            collapsed: true
+	    },
 
 	    filterFields: {
             render: 'dataBinding',

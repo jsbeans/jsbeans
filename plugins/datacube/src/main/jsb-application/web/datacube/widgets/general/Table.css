@@ -272,8 +272,22 @@
 /*	background: #fff;*/
 	display: table-cell;
 	
-	/*transition: background-color 200ms;*/
+	transition: background-color 100ms;
 }
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row:not(.highlight):nth-child(even) > td.col {
+	background-color: #d3e6f24f;
+}
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row.back:not(.main):not(.highlight):nth-child(even) > td.col {
+	background-color: #d3e6f21c;
+}
+
+
+.tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row:nth-child(odd) > td.col {
+	
+}
+
 
 .tableWidget > .pane > ._dwp_scrollPane > table.rows > tbody > tr.row > td.col.spanned {
 	display: none;

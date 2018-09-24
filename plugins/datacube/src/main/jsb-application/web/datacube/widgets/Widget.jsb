@@ -2,6 +2,23 @@
 	$name: 'DataCube.Widgets.Widget',
 	$parent: 'JSB.Widgets.Widget',
 
+	$scheme: {
+		common: {
+			name: 'Разное',
+			render: 'group',
+			priority: 0,
+			items: {
+				showFilters: {
+			        render: 'item',
+			        name: 'Отображать фильтры',
+			        priority: 0,
+			        optional: 'checked',
+			        editor: 'none'
+			    },
+			}
+		}
+	},
+	
 	$client: {
 		wrapper: null,
 		widgetEntry: null,
@@ -131,6 +148,7 @@
                 for(var i in filters){
                     this.removeFilter(i);
                 }
+                this.getWrapper().updateFilters();
             }
 		},
 
@@ -149,6 +167,7 @@
 		    if(!this.filterManager){ return; }
 
 			this.filterManager.clearFilters();
+			this.getWrapper().updateFilters();
 		},
 
 		createFilterHash: function(filter){

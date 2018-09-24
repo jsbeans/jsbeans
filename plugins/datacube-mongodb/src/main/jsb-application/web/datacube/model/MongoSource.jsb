@@ -45,13 +45,18 @@
 		updateSettings: function(settings){
 			this.settings = JSB.merge({
 				name: $this.getId(),
-				type: 'JSB.Store.Sql.SQLStore',
+				type: 'JSB.Store.Mongodb.MongodbStore',
 				url: '',
+				dbName: '',
+				useAuth: false,
 				properties: {}
 			}, settings);
+			if(!this.settings.properties.db){
+				this.settings.properties.db = this.settings.dbName;
+			}
 			this.property('settings', this.settings);
 			this.getWorkspace().store();
-			this.publish('DataCube.Model.SqlSource.updateSettings');
+			this.publish('DataCube.Model.MongoSource.updateSettings');
 		},
 		
 		testConnection: function(settings){
@@ -93,7 +98,7 @@
 				e.fixupProviders();
 			}
 		},
-		
+/*		
 		clearCache: function(){
 			this.loadAffectedCubes();
 			$this.publish('DataCube.Model.SqlSource.clearCache');
@@ -103,44 +108,41 @@
 			this.loadAffectedCubes();
 			$this.publish('DataCube.Model.SqlSource.updateCache');
 		},
-		
+*/		
 		extractScheme: function(){
-			var mtx = 'DataCube.Model.SqlSource.extractScheme.' + this.getId();
+			var mtx = 'DataCube.Model.MongoSource.extractScheme.' + this.getId();
 			JSB.getLocker().lock(mtx);
 			try {
-				$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Соединение с базой данных', success: true}, {session: true});
+				$this.publish('DataCube.Model.MongoSource.extractScheme', {status: 'Соединение с базой данных', success: true}, {session: true});
 				var store = this.getStore();
 				var lastPP = -1;
-				$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Получение списка таблиц', success: true}, {session: true});
+				$this.publish('DataCube.Model.MongoSource.extractScheme', {status: 'Получение списка коллекций', success: true}, {session: true});
 				var schema = store.extractSchema(function(idx, total){
 					var pp = Math.round(idx * 100 / total);
 	            	if(pp > lastPP){
-	            		$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Обновление схемы ' + pp + '%', success: true}, {session: true});
+	            		$this.publish('DataCube.Model.MongoSource.extractScheme', {status: 'Обновление схемы ' + pp + '%', success: true}, {session: true});
 	            		lastPP = pp;
 	            	}
 				}, this.settings.filter);
-				$this.publish('DataCube.Model.SqlSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
-	
+				$this.publish('DataCube.Model.MongoSource.extractScheme', {status: 'Сохранение схемы', success: true}, {session: true});
+				
 				// update entries
 				var existedTables = JSB.clone(this.getChildren());
-				for(var sName in schema){
-					var sDesc = schema[sName];
-					for(var tName in sDesc.tables){
-						var tDesc = sDesc.tables[tName];
-						var tId = MD5.md5(this.getId() + '|' + sName + '|' + tName);
-						if(existedTables[tId]){
-							// already exists
-							existedTables[tId].updateDescriptor(tDesc);
-							if(existedTables[tId].isMissing()){
-								existedTables[tId].setMissing(false);
-								existedTables[tId].doSync();
-							}
-							delete existedTables[tId];
-							continue;
+				for(var cName in schema.collections){
+					var cDesc = schema.collections[cName];
+					var tId = MD5.md5(this.getId() + '|' + cName);
+					if(existedTables[tId]){
+						// already exists
+						existedTables[tId].updateDescriptor(cDesc);
+						if(existedTables[tId].isMissing()){
+							existedTables[tId].setMissing(false);
+							existedTables[tId].doSync();
 						}
-						var tEntry = new SqlTable(tId, this.getWorkspace(), tDesc);
-						this.addChildEntry(tEntry);
+						delete existedTables[tId];
+						continue;
 					}
+					var tEntry = new MongoCollection(tId, this.getWorkspace(), cDesc);
+					this.addChildEntry(tEntry);
 				}
 				
 				// remove unexisted
@@ -158,24 +160,19 @@
 				// construct details
 				var details = {
 					updated: Date.now(),
-					schemes: 0,
-					tables: 0,
-					columns: 0
+					collections: 0,
+					indexes: 0,
+					items: 0
 				};
-				for(var sName in schema){
-					details.schemes++;
-					var sDesc = schema[sName];
-					for(var tName in sDesc.tables){
-						details.tables++;
-						var tDesc = sDesc.tables[tName];
-						for(var cName in tDesc.columns){
-							details.columns++;
-						}
-					}
+				for(var cName in schema.collections){
+					details.collections++;
+					var cDesc = schema.collections[cName];
+					details.indexes += Object.keys(cDesc.indexes).length;
+					details.items += cDesc.count;
 				}
 				this.details = details;
 				this.property('details', this.details);
-				$this.publish('DataCube.Model.SqlSource.schemeUpdated');
+				$this.publish('DataCube.Model.MongoSource.schemeUpdated');
 			} finally {
 				JSB.getLocker().unlock(mtx);
 			}
