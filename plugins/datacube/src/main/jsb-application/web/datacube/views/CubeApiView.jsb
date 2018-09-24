@@ -182,6 +182,7 @@
 		sendRequest: function(){
 			var url = this.find('.requestEditor').jsb().getData().getValue();
 			$this.resultsTab.getElement().loader();
+			$this.updateResults({});
 			$this.ajax(url, {}, function(result, obj){
 				$this.resultsTab.getElement().loader('hide');
 				if(JSB.isString(obj)){
